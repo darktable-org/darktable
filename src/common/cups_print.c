@@ -234,15 +234,13 @@ GList *dt_get_papers(const char *printer_name)
     int num_dests = cupsGetDests(&dests);
     cups_dest_t *dest = cupsGetDest(printer_name, NULL, num_dests, dests);
 
-    int cancel;
-    const size_t ressize = 1024;
-    char resource[ressize];
+    int cancel = 0; // important
 
-    cancel = 0; // important
+    char resource[1024];
 
     if (dest)
     {
-      http_t *hcon = cupsConnectDest (dest, 0, 2000, &cancel, resource, ressize, NULL, (void *)NULL);
+      http_t *hcon = cupsConnectDest(dest, 0, 2000, &cancel, resource, sizeof(resource), NULL, (void *)NULL);
 
       if (hcon)
       {
@@ -404,7 +402,7 @@ static void _get_image_dimension (int32_t imgid, int32_t *iwidth, int32_t *iheig
   if(res)
   {
     // set mem pointer to 0, won't be used.
-    dt_dev_pixelpipe_set_input(&pipe, &dev, NULL, wd, ht, 1.0f, 0);
+    dt_dev_pixelpipe_set_input(&pipe, &dev, NULL, wd, ht, 1.0f);
     dt_dev_pixelpipe_create_nodes(&pipe, &dev);
     dt_dev_pixelpipe_synch_all(&pipe, &dev);
     dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,

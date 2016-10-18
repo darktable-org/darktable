@@ -76,8 +76,8 @@ static void _dt_history_cleanup_multi_instance(int imgid, int minnum)
 
   // we first reload all the newly added history item
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, multi_priority from "
-                                                             "history where imgid=?1 and num>=?2 order by "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT num, operation, multi_priority FROM "
+                                                             "main.history WHERE imgid=?1 AND num>=?2 ORDER BY "
                                                              "operation, multi_priority",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -139,14 +139,14 @@ static void _dt_history_cleanup_multi_instance(int imgid, int minnum)
 
   // and we update the history items
   char *req = NULL;
-  req = dt_util_dstrcat(req, "%s", "update history set multi_priority = case num ");
+  req = dt_util_dstrcat(req, "%s", "UPDATE main.history SET multi_priority = CASE num ");
   items = g_list_first(hitems);
   while(items)
   {
     _history_item_t *hi = (_history_item_t *)(items->data);
     if(hi->mi != hi->new_mi)
     {
-      req = dt_util_dstrcat(req, "when %d then %d ", hi->num, hi->new_mi);
+      req = dt_util_dstrcat(req, "WHEN %d THEN %d ", hi->num, hi->new_mi);
     }
     items = g_list_next(items);
   }
@@ -164,19 +164,19 @@ static void _dt_history_cleanup_multi_instance(int imgid, int minnum)
 void dt_history_delete_on_image(int32_t imgid)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "update images set history_end = 0 where id = ?1", -1, &stmt, NULL);
+                              "UPDATE main.images SET history_end = 0 WHERE id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from mask where imgid = ?1", -1, &stmt,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.mask WHERE imgid = ?1", -1, &stmt,
                               NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
@@ -197,7 +197,8 @@ void dt_history_delete_on_image(int32_t imgid)
 void dt_history_delete_on_selection()
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images",
+                              -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(stmt, 0);
@@ -227,7 +228,8 @@ int dt_history_load_and_apply_on_selection(gchar *filename)
 {
   int res = 0;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images",
+                              -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(stmt, 0);
@@ -259,20 +261,22 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
     /* apply on top of history stack */
     // first trim the stack to get rid of whatever is above the selected entry
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "DELETE FROM history WHERE imgid = ?1 AND num >= (SELECT history_end FROM images WHERE id = imgid)", -1, &stmt, NULL);
+                                "DELETE FROM main.history WHERE imgid = ?1 AND num >= (SELECT history_end "
+                                "FROM main.images WHERE id = imgid)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT IFNULL(MAX(num), -1)+1 FROM history WHERE imgid = ?1", -1, &stmt, NULL);
+                                "SELECT IFNULL(MAX(num), -1)+1 FROM main.history WHERE imgid = ?1",
+                                -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW) offs = sqlite3_column_int(stmt, 0);
   }
   else
   {
     /* replace history stack */
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
                                 &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
     sqlite3_step(stmt);
@@ -280,16 +284,16 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   sqlite3_finalize(stmt);
 
   /* delete all items from the temp styles_items, this table is used only to get a ROWNUM of the results */
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM MEMORY.style_items", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.style_items", NULL, NULL, NULL);
 
   /* copy history items from styles onto temp table */
 
   //  prepare SQL request
   char req[2048];
-  g_strlcpy(req, "INSERT INTO MEMORY.style_items (num, module, operation, op_params, enabled, blendop_params, "
+  g_strlcpy(req, "INSERT INTO memory.style_items (num, module, operation, op_params, enabled, blendop_params, "
                  "blendop_version, multi_name, multi_priority) SELECT num, module, operation, "
                  "op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority FROM "
-                 "history WHERE imgid = ?1",
+                 "main.history WHERE imgid = ?1",
             sizeof(req));
 
   //  Add ops selection if any format: ... and num in (val1, val2)
@@ -297,7 +301,7 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   {
     GList *l = ops;
     int first = 1;
-    g_strlcat(req, " and num in (", sizeof(req));
+    g_strlcat(req, " AND num IN (", sizeof(req));
 
     while(l)
     {
@@ -321,11 +325,11 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   /* copy the history items into the history of the dest image */
   /* note: rowid starts at 1 while num has to start at 0! */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO history "
+                              "INSERT INTO main.history "
                               "(imgid,num,module,operation,op_params,enabled,blendop_params,blendop_"
                               "version,multi_priority,multi_name) SELECT "
                               "?1,?2+rowid-1,module,operation,op_params,enabled,blendop_params,blendop_"
-                              "version,multi_priority,multi_name FROM MEMORY.style_items",
+                              "version,multi_priority,multi_name FROM memory.style_items",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offs);
@@ -345,7 +349,7 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   else
   {
     // let's remove all existing shapes
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from mask where imgid = ?1", -1, &stmt,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.mask WHERE imgid = ?1", -1, &stmt,
                                 NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
     sqlite3_step(stmt);
@@ -353,8 +357,8 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   }
 
   // let's copy now
-  g_strlcpy(req, "insert into mask (imgid, formid, form, name, version, points, points_count, source) select "
-                 "?1, formid, form, name, version, points, points_count, source from mask where imgid = ?2",
+  g_strlcpy(req, "INSERT INTO main.mask (imgid, formid, form, name, version, points, points_count, source) SELECT "
+                 "?1, formid, form, name, version, points, points_count, source FROM main.mask WHERE imgid = ?2",
             sizeof(req));
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), req, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
@@ -364,7 +368,8 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
 
   // always make the whole stack active
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE images SET history_end = (SELECT MAX(num) + 1 FROM history WHERE imgid = ?1) WHERE id = ?1",
+                              "UPDATE main.images SET history_end = (SELECT MAX(num) + 1 FROM main.history "
+                              "WHERE imgid = ?1) WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   sqlite3_step(stmt);
@@ -391,9 +396,9 @@ GList *dt_history_get_items(int32_t imgid, gboolean enabled)
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select num, operation, enabled, multi_name from history where imgid=?1 and "
-                              "num in (select MAX(num) from history hst2 where hst2.imgid=?1 and "
-                              "hst2.operation=history.operation group by multi_priority) order by num desc",
+                              "SELECT num, operation, enabled, multi_name FROM main.history WHERE imgid=?1 AND "
+                              "num IN (SELECT MAX(num) FROM main.history hst2 WHERE hst2.imgid=?1 AND "
+                              "hst2.operation=main.history.operation GROUP BY multi_priority) ORDER BY num DESC",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -445,7 +450,7 @@ char *dt_history_get_items_as_string(int32_t imgid)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select operation, enabled, multi_name from history where imgid=?1 order by num desc", -1, &stmt, NULL);
+      "SELECT operation, enabled, multi_name FROM main.history WHERE imgid=?1 ORDER BY num DESC", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   // collect all the entries in the history from the db
@@ -474,7 +479,7 @@ int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList 
   int res = 0;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select * from selected_images where imgid != ?1", -1, &stmt, NULL);
+                              "SELECT imgid FROM main.selected_images WHERE imgid != ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {

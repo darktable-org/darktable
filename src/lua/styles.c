@@ -190,7 +190,7 @@ static int style_table_index(lua_State *L)
   }
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  snprintf(query, sizeof(query), "select name from styles order by name limit 1 offset %d", index - 1);
+  snprintf(query, sizeof(query), "SELECT name FROM data.styles ORDER BY name LIMIT 1 OFFSET %d", index - 1);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -211,7 +211,7 @@ static int style_table_index(lua_State *L)
 static int style_table_len(lua_State *L)
 {
   sqlite3_stmt *stmt = NULL;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(*) from styles", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM data.styles", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     lua_pushnumber(L, sqlite3_column_int(stmt, 0));
   else

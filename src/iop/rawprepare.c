@@ -151,20 +151,6 @@ void connect_key_accels(dt_iop_module_t *self)
   }
 }
 
-void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in,
-                     const dt_iop_roi_t *const roi_out, dt_develop_tiling_t *tiling)
-{
-  float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
-
-  tiling->factor = 1.0f + ioratio; // in + out, no temp
-  tiling->maxbuf = 1.0f;
-  tiling->overhead = 0;
-  tiling->overlap = 0;
-  tiling->xalign = 2; // Bayer pattern
-  tiling->yalign = 2; // Bayer pattern
-  return;
-}
-
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
@@ -269,7 +255,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float scale = roi_in->scale / piece->iscale;
   const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
   { // raw mosaic
 
     const uint16_t *const in = (const uint16_t *const)ivoid;
@@ -320,6 +306,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
   }
+
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 }
 
 #if defined(__SSE2__)
@@ -334,7 +322,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
   const float scale = roi_in->scale / piece->iscale;
   const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
   { // raw mosaic
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -386,7 +374,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
       for(; i < roi_out->width; i++, in++, out++)
       {
         const int id = BL(roi_out, d, j, i);
-        *out = MAX(0.0f, ((float)(*in)) - d->sub[id]) / d->div[id];
+        *out = (((float)(*in)) - d->sub[id]) / d->div[id];
       }
     }
 
@@ -417,6 +405,9 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
       }
     }
   }
+
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
+
   _mm_sfence();
 }
 #endif
@@ -435,7 +426,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   int kernel = -1;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
   {
     kernel = gd->kernel_rawprepare_1f;
   }
@@ -473,11 +464,13 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
   {
     piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
     adjust_xtrans_filters(piece->pipe, csx, csy);
   }
+
+  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 
   return TRUE;
 
@@ -500,7 +493,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->width = p->crop.named.width;
   d->height = p->crop.named.height;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters)
   {
     const float white = (float)p->raw_white_point;
 

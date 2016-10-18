@@ -27,8 +27,10 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
                     const double **target,    // target values, one pointer per dimension
                     int S,                    // desired sparsity level, actual result will be returned
                     int *permutation, // pointing to original order of points, to identify correct output coeff
-                    double **coeff);  // output coefficient arrays for each dimension, ordered according to
+                    double **coeff,   // output coefficient arrays for each dimension, ordered according to
                                       // permutation[dim]
+                    double *avgerr,           // average error
+                    double *maxerr);          // max error
 
 float thinplate_color_pos(float L, float a, float b);
 

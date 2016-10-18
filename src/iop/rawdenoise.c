@@ -22,7 +22,6 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
-#include "common/gaussian.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -352,22 +351,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  if (dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
-  {
-    const float radius = 30.0f*powf(fmax(0.0f, d->threshold), 0.7f);  // just a rough visual match
-    const float sigma = radius * roi_in->scale / piece ->iscale;
-    const int order = 0;
-    const int ch = 4;
-
-    const float RGBmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
-    const float RGBmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
-
-    dt_gaussian_t *g = dt_gaussian_init(width, height, ch, RGBmax, RGBmin, sigma, order);
-    if(!g) return;
-    dt_gaussian_blur_4c(g, ivoid, ovoid);
-    dt_gaussian_free(g);
-  }
-  else if (!(d->threshold > 0.0f))
+  if(!(d->threshold > 0.0f))
   {
     memcpy(ovoid, ivoid, (size_t)sizeof(float)*width*height);
   }

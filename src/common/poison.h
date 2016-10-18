@@ -17,6 +17,7 @@
 //#pragma GCC poison strncpy  // use g_strncpy
 #pragma GCC poison strcat  // use g_strncat
 #pragma GCC poison strncat // use g_strncat
+#pragma GCC poison pthread_create // use dt_pthread_create, musl issues
 #endif
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

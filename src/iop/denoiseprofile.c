@@ -737,15 +737,15 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // get our data struct:
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
 
-  const int max_max_scale = 5; // hard limit
+#define MAX_MAX_SCALE (5) // hard limit
+
   int max_scale = 0;
   const float in_scale = roi_in->scale / piece->iscale;
   // largest desired filter on input buffer (20% of input dim)
-  const float supp0
-      = MIN(2 * (2 << (max_max_scale - 1)) + 1,
-            MAX(piece->buf_in.height * piece->iscale, piece->buf_in.width * piece->iscale) * 0.2f);
+  const float supp0 = MIN(2 * (2 << (MAX_MAX_SCALE - 1)) + 1,
+                          MAX(piece->buf_in.height * piece->iscale, piece->buf_in.width * piece->iscale) * 0.2f);
   const float i0 = dt_log2f((supp0 - 1.0f) * .5f);
-  for(; max_scale < max_max_scale; max_scale++)
+  for(; max_scale < MAX_MAX_SCALE; max_scale++)
   {
     // actual filter support on scaled buffer
     const float supp = 2 * (2 << max_scale) + 1;
@@ -768,7 +768,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     return;
   }
 
-  float *buf[max_max_scale];
+  float *buf[MAX_MAX_SCALE];
   float *tmp = NULL;
   float *buf1 = NULL, *buf2 = NULL;
   for(int k = 0; k < max_scale; k++)
@@ -877,6 +877,8 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   dt_free_align(tmp);
 
   if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, width, height);
+
+#undef MAX_MAX_SCALE
 }
 
 static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
@@ -1475,8 +1477,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   cl_mem dev_m = NULL;
   cl_mem dev_r = NULL;
   cl_mem dev_filter = NULL;
-  cl_mem dev_detail[max_max_scale];
-  for(int k = 0; k < max_scale; k++) dev_detail[k] = NULL;
+  cl_mem *dev_detail = calloc(max_max_scale, sizeof(cl_mem));
 
   // corner case of extremely small image. this is not really likely to happen but would cause issues later
   // when we divide by (n-1). so let's be prepared
@@ -1487,6 +1488,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     size_t region[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
+    free(dev_detail);
     return TRUE;
   }
 
@@ -1520,7 +1522,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   {
     // very small blocksize. this is really unlikely to happen, but let's be prepared: give up on opencl in
     // that case
-    return FALSE;
+    goto error;
   }
 
   const size_t bwidth = ROUNDUP(width, blocksize);
@@ -1657,10 +1659,14 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     if(err != CL_SUCCESS) goto error;
 
 
-    float sumsum[4 * reducesize];
+    float *sumsum = malloc(4 * reducesize * sizeof(float));
     err = dt_opencl_read_buffer_from_device(devid, (void *)sumsum, dev_r, 0,
                                             (size_t)reducesize * 4 * sizeof(float), CL_TRUE);
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS)
+    {
+      free(sumsum);
+      goto error;
+    }
 
     for(int k = 0; k < reducesize; k++)
     {
@@ -1669,6 +1675,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
         sum_y2[c] += sumsum[4 * k + c];
       }
     }
+    free(sumsum);
 
     const float sb2 = sigma_band * sigma_band;
     const float var_y[3] = { sum_y2[0] / (npixels - 1.0f), sum_y2[1] / (npixels - 1.0f), sum_y2[2] / (npixels - 1.0f) };
@@ -1745,6 +1752,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   if(dev_filter != NULL) dt_opencl_release_mem_object(dev_filter);
   for(int k = 0; k < max_scale; k++)
     if(dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+  free(dev_detail);
   return TRUE;
 
 error:
@@ -1754,6 +1762,7 @@ error:
   if(dev_filter != NULL) dt_opencl_release_mem_object(dev_filter);
   for(int k = 0; k < max_scale; k++)
     if(dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+  free(dev_detail);
   dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d, devid %d\n", err, devid);
   return FALSE;
 }

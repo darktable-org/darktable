@@ -38,6 +38,11 @@
 
 DT_MODULE(1)
 
+typedef struct dt_undo_geotag_t
+{
+  int imgid;
+  float longitude, latitude, elevation;
+} dt_undo_geotag_t;
 
 typedef struct dt_map_t
 {
@@ -845,7 +850,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 void init_key_accels(dt_view_t *self)
 {
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
-  dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_r, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_y, GDK_CONTROL_MASK);
   // Film strip shortcuts
   dt_accel_register_view(self, NC_("accel", "toggle film strip"), GDK_KEY_f, GDK_CONTROL_MASK);
 }
@@ -853,10 +858,14 @@ void init_key_accels(dt_view_t *self)
 static gboolean _view_map_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                         GdkModifierType modifier, gpointer data)
 {
-  if(keyval == GDK_KEY_z)
-    dt_undo_do_undo(darktable.undo, DT_UNDO_GEOTAG);
-  else
-    dt_undo_do_redo(darktable.undo, DT_UNDO_GEOTAG);
+  dt_undo_do_undo(darktable.undo, DT_UNDO_GEOTAG);
+  return TRUE;
+}
+
+static gboolean _view_map_redo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                        GdkModifierType modifier, gpointer data)
+{
+  dt_undo_do_redo(darktable.undo, DT_UNDO_GEOTAG);
   return TRUE;
 }
 
@@ -871,8 +880,10 @@ static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *accele
 
 void connect_key_accels(dt_view_t *self)
 {
+  // undo/redo
   GClosure *closure = g_cclosure_new(G_CALLBACK(_view_map_undo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "undo", closure);
+  closure = g_cclosure_new(G_CALLBACK(_view_map_redo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "redo", closure);
   // Film strip shortcuts
   closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL);
@@ -960,8 +971,8 @@ static OsmGpsMapPolygon *_view_map_add_polygon(const dt_view_t *view, GList *poi
     osm_gps_map_track_add_point(track, point);
   }
 
-  g_object_set(poly, "track", track, NULL);
-  g_object_set(poly, "editable", FALSE, NULL);
+  g_object_set(poly, "track", track, (gchar *)0);
+  g_object_set(poly, "editable", FALSE, (gchar *)0);
 
   osm_gps_map_polygon_add(lib->map, poly);
 
@@ -988,7 +999,7 @@ static OsmGpsMapTrack *_view_map_add_track(const dt_view_t *view, GList *points)
     osm_gps_map_track_add_point(track, point);
   }
 
-  g_object_set(track, "editable", FALSE, NULL);
+  g_object_set(track, "editable", FALSE, (gchar *)0);
 
   osm_gps_map_track_add(lib->map, track);
 
@@ -1073,8 +1084,9 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
   }
 }
 
-static void pop_undo(dt_view_t *self, dt_undo_type_t type, dt_undo_data_t *data)
+static void pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
 {
+  dt_view_t *self = (dt_view_t *)user_data;
   dt_map_t *lib = (dt_map_t *)self->data;
 
   if(type == DT_UNDO_GEOTAG)
@@ -1096,14 +1108,14 @@ static void pop_undo(dt_view_t *self, dt_undo_type_t type, dt_undo_data_t *data)
 
 static void _push_position(dt_view_t *self, int imgid, float longitude, float latitude, float elevation)
 {
-  dt_undo_geotag_t *geotag = g_malloc(sizeof(dt_undo_geotag_t));
+  dt_undo_geotag_t *geotag = malloc(sizeof(dt_undo_geotag_t));
 
   geotag->imgid = imgid;
   geotag->longitude = longitude;
   geotag->latitude = latitude;
   geotag->elevation = elevation;
 
-  dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo);
+  dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo, free);
 }
 
 static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude, float *elevation)
@@ -1163,7 +1175,7 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
     else if(*imgid == -1) // everything which is selected
     {
       sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct imgid from selected_images",
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT imgid FROM main.selected_images",
                                   -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
         _view_map_add_image_to_map(self, sqlite3_column_int(stmt, 0), x, y);
@@ -1261,13 +1273,14 @@ static void _view_map_build_main_query(dt_map_t *lib)
   lib->max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
   if(lib->max_images_drawn == 0) lib->max_images_drawn = 100;
   lib->filter_images_drawn = dt_conf_get_bool("plugins/map/filter_images_drawn");
-  geo_query = g_strdup_printf(
-      "select * from (select id, latitude from %s where \
-                               longitude >= ?1 and longitude <= ?2 and latitude <= ?3 and latitude >= ?4 \
-                               and longitude not NULL and latitude not NULL order by abs(latitude - ?5), abs(longitude - ?6) \
-                               limit 0, %d) order by (180 - latitude), id",
-      lib->filter_images_drawn ? "images i inner join memory.collected_images c on i.id = c.imgid" : "images",
-      lib->max_images_drawn);
+  geo_query = g_strdup_printf("SELECT * FROM (SELECT id, latitude FROM %s WHERE longitude >= ?1 AND "
+                              "longitude <= ?2 AND latitude <= ?3 AND latitude >= ?4 AND longitude NOT NULL AND "
+                              "latitude NOT NULL ORDER BY ABS(latitude - ?5), ABS(longitude - ?6) LIMIT 0, %d) "
+                              "ORDER BY (180 - latitude), id",
+                              lib->filter_images_drawn
+                              ? "main.images i INNER JOIN memory.collected_images c ON i.id = c.imgid"
+                              : "main.images",
+                              lib->max_images_drawn);
 
   /* prepare the main query statement */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);

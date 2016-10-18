@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
     copyright (c) 2011 henrik andersson.
+    copyright (c) 2016 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,6 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/color_picker.h"
 #include "common/colorspaces.h"
 #include "common/histogram.h"
 #include "common/imageio.h"
@@ -23,13 +25,13 @@
 #include "control/control.h"
 #include "control/signal.h"
 #include "develop/blend.h"
+#include "develop/format.h"
 #include "develop/imageop_math.h"
 #include "develop/pixelpipe.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "libs/colorpicker.h"
 #include "libs/lib.h"
-#include "develop/format.h"
 
 #include <assert.h>
 #include <math.h>
@@ -59,6 +61,9 @@ typedef enum dt_pixelpipe_picker_source_t
 } dt_pixelpipe_picker_source_t;
 
 #include "develop/pixelpipe_cache.c"
+
+static void get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
+                              dt_develop_t *dev, dt_iop_buffer_dsc_t *dsc);
 
 static char *_pipe_type_to_str(int pipe_type)
 {
@@ -147,19 +152,15 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   return 1;
 }
 
-void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width,
-                                int height, float iscale, int pre_monochrome_demosaiced)
+void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height,
+                                float iscale)
 {
   pipe->iwidth = width;
   pipe->iheight = height;
   pipe->iscale = iscale;
   pipe->input = input;
-  pipe->pre_monochrome_demosaiced = pre_monochrome_demosaiced;
   pipe->image = dev->image_storage;
-  pipe->dsc = pipe->image.buf_dsc;
-
-  pipe->dsc.filters = pipe->image.buf_dsc.filters;
-  memcpy(pipe->dsc.xtrans, pipe->image.buf_dsc.xtrans, sizeof(pipe->dsc.xtrans));
+  get_output_format(NULL, pipe, NULL, dev, &pipe->dsc);
 }
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
@@ -220,10 +221,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
       piece->histogram_stats.bins_count = 0;
       piece->histogram_stats.pixels = 0;
       piece->colors
-          = ((dt_iop_module_colorspace(module) == iop_cs_RAW)
-             && (!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW)))
-                ? 1
-                : 4;
+          = ((dt_iop_module_colorspace(module) == iop_cs_RAW) && (pipe->image.flags & DT_IMAGE_RAW)) ? 1 : 4;
       piece->iscale = pipe->iscale;
       piece->iwidth = pipe->iwidth;
       piece->iheight = pipe->iheight;
@@ -333,18 +331,12 @@ static void get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe,
   if(module) return module->output_format(module, pipe, piece, dsc);
 
   // first input.
-  // mipf and non-raw images have 4 floats per pixel
-  if(dt_dev_pixelpipe_uses_downsampled_input(pipe) || !(pipe->image.flags & DT_IMAGE_RAW))
-  {
-    dsc->channels = 4;
-    dsc->datatype = TYPE_FLOAT;
+  *dsc = pipe->image.buf_dsc;
 
+  if(!(pipe->image.flags & DT_IMAGE_RAW))
+  {
     // image max is normalized before
     for(int k = 0; k < 4; k++) dsc->processed_maximum[k] = 1.0f;
-  }
-  else
-  {
-    *dsc = pipe->image.buf_dsc;
   }
 }
 
@@ -424,9 +416,9 @@ static void histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_me
 #endif
 
 // helper for color picking
-static void pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *roi,
-                             float *picked_color, float *picked_color_min, float *picked_color_max,
-                             dt_pixelpipe_picker_source_t picker_source)
+static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *roi, float *picked_color,
+                                   float *picked_color_min, float *picked_color_max,
+                                   dt_pixelpipe_picker_source_t picker_source, int *box)
 {
   const float wd = darktable.develop->preview_pipe->backbuf_width;
   const float ht = darktable.develop->preview_pipe->backbuf_height;
@@ -435,153 +427,15 @@ static void pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt
 
   // initialize picker values. a positive value of picked_color_max[0] can later be used to check for validity
   // of data
-  for(int k = 0; k < 3; k++) picked_color_min[k] = INFINITY;
-  for(int k = 0; k < 3; k++) picked_color_max[k] = -INFINITY;
-  for(int k = 0; k < 3; k++) picked_color[k] = 0.0f;
+  for(int k = 0; k < 4; k++) picked_color_min[k] = INFINITY;
+  for(int k = 0; k < 4; k++) picked_color_max[k] = -INFINITY;
+  for(int k = 0; k < 4; k++) picked_color[k] = 0.0f;
 
   // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined
   // position
-  if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
+  if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return 1;
 
-  if(darktable.lib->proxy.colorpicker.size)
-  {
-    int box[4];
-    float fbox[4];
-
-    // get absolute pixel coordinates in final preview image
-    for(int k = 0; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * wd;
-    for(int k = 1; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * ht;
-
-    // transform back to current module coordinates
-    dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
-                                      module->priority + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1),
-                                      99999, fbox, 2);
-
-    fbox[0] -= roi->x;
-    fbox[1] -= roi->y;
-    fbox[2] -= roi->x;
-    fbox[3] -= roi->y;
-
-    // re-order edges of bounding box
-    box[0] = fminf(fbox[0], fbox[2]);
-    box[1] = fminf(fbox[1], fbox[3]);
-    box[2] = fmaxf(fbox[0], fbox[2]);
-    box[3] = fmaxf(fbox[1], fbox[3]);
-
-    // do not continue if box is completely outside of roi
-    if(box[0] >= width || box[1] >= height || box[2] < 0 || box[3] < 0) return;
-
-    // clamp bounding box to roi
-    for(int k = 0; k < 4; k += 2) box[k] = MIN(width - 1, MAX(0, box[k]));
-    for(int k = 1; k < 4; k += 2) box[k] = MIN(height - 1, MAX(0, box[k]));
-
-    const float w = 1.0 / ((box[3] - box[1] + 1) * (box[2] - box[0] + 1));
-
-    const int numthreads = dt_get_num_threads();
-
-    float mean[3 * numthreads];
-    float mmin[3 * numthreads];
-    float mmax[3 * numthreads];
-
-    for(int n = 0; n < 3 * numthreads; n++)
-    {
-      mean[n] = 0.0f;
-      mmin[n] = INFINITY;
-      mmax[n] = -INFINITY;
-    }
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img, box, mean, mmin, mmax) schedule(static)
-#endif
-    for(size_t j = box[1]; j <= box[3]; j++)
-    {
-      for(size_t i = box[0]; i <= box[2]; i++)
-      {
-        const int tnum = dt_get_thread_num();
-        float *tmean = mean + 3 * tnum;
-        float *tmmin = mmin + 3 * tnum;
-        float *tmmax = mmax + 3 * tnum;
-        const size_t k = 4 * (width * j + i);
-        const float L = img[k];
-        const float a = img[k + 1];
-        const float b = img[k + 2];
-        tmean[0] += w * L;
-        tmean[1] += w * a;
-        tmean[2] += w * b;
-        tmmin[0] = fminf(tmmin[0], L);
-        tmmin[1] = fminf(tmmin[1], a);
-        tmmin[2] = fminf(tmmin[2], b);
-        tmmax[0] = fmaxf(tmmax[0], L);
-        tmmax[1] = fmaxf(tmmax[1], a);
-        tmmax[2] = fmaxf(tmmax[2], b);
-      }
-    }
-
-    for(int n = 0; n < numthreads; n++)
-    {
-      for(int k = 0; k < 3; k++)
-      {
-        picked_color[k] += mean[3 * n + k];
-        picked_color_min[k] = fminf(picked_color_min[k], mmin[3 * n + k]);
-        picked_color_max[k] = fmaxf(picked_color_max[k], mmax[3 * n + k]);
-      }
-    }
-  }
-  else
-  {
-    int point[2];
-    float fpoint[2];
-
-    // get absolute pixel coordinates in final preview image
-    fpoint[0] = module->color_picker_point[0] * wd;
-    fpoint[1] = module->color_picker_point[1] * ht;
-
-    // transform back to current module coordinates
-    dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
-                                      module->priority  + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1),
-                                      99999, fpoint, 1);
-
-    point[0] = fpoint[0] - roi->x;
-    point[1] = fpoint[1] - roi->y;
-
-    // do not continue if point is outside of roi
-    if(point[0] >= width || point[1] >= height || point[0] < 0 || point[1] < 0) return;
-
-    for(int i = 0; i < 3; i++)
-      picked_color[i] = picked_color_min[i] = picked_color_max[i]
-          = img[4 * (width * point[1] + point[0]) + i];
-  }
-}
-
-
-#ifdef HAVE_OPENCL
-// helper for OpenCL color picking
-//
-// this algorithm is inefficient as hell when it comes to larger images. it's only acceptable
-// as long as we work on small image sizes like in image preview
-static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop_roi_t *roi,
-                                float *picked_color, float *picked_color_min, float *picked_color_max,
-                                float *buffer, size_t bufsize, dt_pixelpipe_picker_source_t picker_source)
-{
-  const float wd = darktable.develop->preview_pipe->backbuf_width;
-  const float ht = darktable.develop->preview_pipe->backbuf_height;
-  const int width = roi->width;
-  const int height = roi->height;
-  int box[4];
   float fbox[4];
-
-  size_t origin[3];
-  size_t region[3];
-
-  // initialize picker values. a positive value of picked_color_max[0] can later be used to check for validity
-  // of data
-  for(int k = 0; k < 3; k++) picked_color_min[k] = INFINITY;
-  for(int k = 0; k < 3; k++) picked_color_max[k] = -INFINITY;
-  for(int k = 0; k < 3; k++) picked_color[k] = 0.0f;
-
-  // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined
-  // position
-  if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
 
   // get absolute pixel coordinates in final preview image
   if(darktable.lib->proxy.colorpicker.size)
@@ -597,8 +451,8 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, 
 
   // transform back to current module coordinates
   dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
-                                    module->priority  + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1),
-                                    99999, fbox, 2);
+                                    module->priority + (picker_source == PIXELPIPE_PICKER_INPUT ? 0 : 1), 99999,
+                                    fbox, 2);
 
   fbox[0] -= roi->x;
   fbox[1] -= roi->y;
@@ -611,12 +465,52 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, 
   box[2] = fmaxf(fbox[0], fbox[2]);
   box[3] = fmaxf(fbox[1], fbox[3]);
 
+  if(!darktable.lib->proxy.colorpicker.size)
+  {
+    // if we are sampling one point, make sure that we actually sample it.
+    for(int k = 2; k < 4; k++) box[k] += 1;
+  }
+
   // do not continue if box is completely outside of roi
-  if(box[0] >= width || box[1] >= height || box[2] < 0 || box[3] < 0) return;
+  if(box[0] >= width || box[1] >= height || box[2] < 0 || box[3] < 0) return 1;
 
   // clamp bounding box to roi
   for(int k = 0; k < 4; k += 2) box[k] = MIN(width - 1, MAX(0, box[k]));
   for(int k = 1; k < 4; k += 2) box[k] = MIN(height - 1, MAX(0, box[k]));
+
+  return 0;
+}
+
+static void pixelpipe_picker(dt_iop_module_t *module, dt_iop_buffer_dsc_t *dsc, const float *pixel,
+                             const dt_iop_roi_t *roi, float *picked_color, float *picked_color_min,
+                             float *picked_color_max, dt_pixelpipe_picker_source_t picker_source)
+{
+  int box[4];
+
+  if(pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
+    return;
+
+  dt_color_picker_helper(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
+}
+
+
+#ifdef HAVE_OPENCL
+// helper for OpenCL color picking
+//
+// this algorithm is inefficient as hell when it comes to larger images. it's only acceptable
+// as long as we work on small image sizes like in image preview
+static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_iop_buffer_dsc_t *dsc, cl_mem img,
+                                const dt_iop_roi_t *roi, float *picked_color, float *picked_color_min,
+                                float *picked_color_max, float *buffer, size_t bufsize,
+                                dt_pixelpipe_picker_source_t picker_source)
+{
+  int box[4];
+
+  if(pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
+    return;
+
+  size_t origin[3];
+  size_t region[3];
 
   // Initializing bounds of colorpicker box
   origin[0] = box[0];
@@ -632,96 +526,32 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, 
 
   const size_t size = region[0] * region[1];
 
+  const size_t bpp = dt_iop_buffer_dsc_to_bpp(dsc);
+
   // if a buffer is supplied and if size fits let's use it
-  if(buffer && bufsize >= size * 4 * sizeof(float))
+  if(buffer && bufsize >= size * bpp)
     pixel = buffer;
   else
-    pixel = tmpbuf = dt_alloc_align(64, size * 4 * sizeof(float));
+    pixel = tmpbuf = dt_alloc_align(64, size * bpp);
 
   if(pixel == NULL) return;
 
   // get the required part of the image from opencl device
-  cl_int err = dt_opencl_read_host_from_device_raw(devid, pixel, img, origin, region,
-                                                   region[0] * 4 * sizeof(float), CL_TRUE);
+  cl_int err = dt_opencl_read_host_from_device_raw(devid, pixel, img, origin, region, region[0] * bpp, CL_TRUE);
 
-  if(err == CL_SUCCESS)
-  {
-    const float w = 1.0f / (region[0] * region[1]);
+  if(err != CL_SUCCESS) goto error;
 
-    if(size > 100) // avoid inefficient multi-threading in case of small region size (arbitrary limit)
-    {
-      const int numthreads = dt_get_num_threads();
+  dt_iop_roi_t roi_copy = (dt_iop_roi_t){.x = roi->x + box[0], .y = roi->y + box[1], .width = region[0], .height = region[1] };
 
-      float mean[3 * numthreads];
-      float mmin[3 * numthreads];
-      float mmax[3 * numthreads];
+  box[0] = 0;
+  box[1] = 0;
+  box[2] = region[0];
+  box[3] = region[1];
 
-      for(int n = 0; n < 3 * numthreads; n++)
-      {
-        mean[n] = 0.0f;
-        mmin[n] = INFINITY;
-        mmax[n] = -INFINITY;
-      }
+  dt_color_picker_helper(dsc, pixel, &roi_copy, box, picked_color, picked_color_min, picked_color_max);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(pixel, mean, mmin, mmax, region) schedule(static)
-#endif
-      for(size_t j = 0; j < region[1]; j++)
-      {
-        for(size_t i = 0; i < region[0]; i++)
-        {
-          const int tnum = dt_get_thread_num();
-          float *tmean = mean + 3 * tnum;
-          float *tmmin = mmin + 3 * tnum;
-          float *tmmax = mmax + 3 * tnum;
-          const size_t k = 4 * (region[0] * j + i);
-          const float L = pixel[k];
-          const float a = pixel[k + 1];
-          const float b = pixel[k + 2];
-          tmean[0] += w * L;
-          tmean[1] += w * a;
-          tmean[2] += w * b;
-          tmmin[0] = fminf(tmmin[0], L);
-          tmmin[1] = fminf(tmmin[1], a);
-          tmmin[2] = fminf(tmmin[2], b);
-          tmmax[0] = fmaxf(tmmax[0], L);
-          tmmax[1] = fmaxf(tmmax[1], a);
-          tmmax[2] = fmaxf(tmmax[2], b);
-        }
-      }
-
-      for(int n = 0; n < numthreads; n++)
-      {
-        for(int k = 0; k < 3; k++)
-        {
-          picked_color[k] += mean[3 * n + k];
-          picked_color_min[k] = fminf(picked_color_min[k], mmin[3 * n + k]);
-          picked_color_max[k] = fmaxf(picked_color_max[k], mmax[3 * n + k]);
-        }
-      }
-    }
-    else
-    {
-      // code path for small region, especially for color picker point mode
-      for(size_t k = 0; k < 4 * size; k += 4)
-      {
-        const float L = pixel[k];
-        const float a = pixel[k + 1];
-        const float b = pixel[k + 2];
-        picked_color[0] += w * L;
-        picked_color[1] += w * a;
-        picked_color[2] += w * b;
-        picked_color_min[0] = fminf(picked_color_min[0], L);
-        picked_color_min[1] = fminf(picked_color_min[1], a);
-        picked_color_min[2] = fminf(picked_color_min[2], b);
-        picked_color_max[0] = fmaxf(picked_color_max[0], L);
-        picked_color_max[1] = fmaxf(picked_color_max[1], a);
-        picked_color_max[2] = fmaxf(picked_color_max[2], b);
-      }
-    }
-  }
-
-  if(tmpbuf) dt_free_align(tmpbuf);
+error:
+  dt_free_align(tmpbuf);
 }
 #endif
 
@@ -733,6 +563,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 {
   dt_iop_roi_t roi_in = *roi_out;
 
+  char module_name[256] = { 0 };
   void *input = NULL;
   void *cl_mem_input = NULL;
   *cl_mem_output = NULL;
@@ -749,6 +580,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                           g_list_previous(modules), g_list_previous(pieces), pos - 1);
   }
 
+  if(module) g_strlcpy(module_name, module->op, MIN(sizeof(module_name), sizeof(module->op)));
   get_output_format(module, pipe, piece, dev, *out_format);
   const size_t bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
   const size_t bufsize = (size_t)bpp * roi_out->width * roi_out->height;
@@ -767,8 +599,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     // dev->preview_pipe ? "[preview]" : "", hash);
 
     (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output, out_format);
-
-    pipe->dsc = **out_format;
 
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     if(!modules) return 0;
@@ -799,18 +629,16 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     }
     dt_times_t start;
     dt_get_times(&start);
-    if(!dt_dev_pixelpipe_uses_downsampled_input(pipe)) // we're looking for the full buffer
+    // we're looking for the full buffer
     {
       if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width
          && pipe->iheight == roi_out->height)
       {
         *output = pipe->input;
-        **out_format = pipe->dsc;
       }
       else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output, out_format))
       {
-        **out_format = pipe->dsc;
-        memset(*output, 0, pipe->backbuf_size);
+        memset(*output, 0, bufsize);
         if(roi_in.scale == 1.0f)
         {
           // fast branch for 1:1 pixel copies.
@@ -842,26 +670,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       }
       // else found in cache.
     }
-    // optimized branch (for mipf-preview):
-    else if(dt_dev_pixelpipe_uses_downsampled_input(pipe) && roi_out->scale == 1.0 && roi_out->x == 0
-            && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
-    {
-      *output = pipe->input;
-      **out_format = pipe->dsc;
-    }
-    else
-    {
-      // reserve new cache line: output
-      if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output, out_format))
-      {
-        roi_in.x /= roi_out->scale;
-        roi_in.y /= roi_out->scale;
-        roi_in.width = pipe->iwidth;
-        roi_in.height = pipe->iheight;
-        roi_in.scale = 1.0f;
-        dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
-      }
-    }
+
     dt_show_times(&start, "[dev_pixelpipe]", "initing base buffer [%s]", _pipe_type_to_str(pipe->type));
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
   }
@@ -880,6 +689,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
     // recurse to get actual data of input buffer
+
     dt_iop_buffer_dsc_t _input_format = { 0 };
     dt_iop_buffer_dsc_t *input_format = &_input_format;
 
@@ -1049,7 +859,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             if(success_opencl)
             {
-              cl_int err = dt_opencl_write_host_to_device_non_blocking(pipe->devid, input, cl_mem_input,
+              cl_int err = dt_opencl_write_host_to_device(pipe->devid, input, cl_mem_input,
                                                                        roi_in.width, roi_in.height, in_bpp);
               if(err != CL_SUCCESS)
               {
@@ -1149,12 +959,12 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             // pixelpipe_picker_cl()
             size_t outbufsize = roi_out->width * roi_out->height * bpp;
 
-            pixelpipe_picker_cl(pipe->devid, module, cl_mem_input, &roi_in, module->picked_color,
+            pixelpipe_picker_cl(pipe->devid, module, &piece->dsc_in, cl_mem_input, &roi_in, module->picked_color,
                                 module->picked_color_min, module->picked_color_max, *output, outbufsize,
                                 PIXELPIPE_PICKER_INPUT);
-            pixelpipe_picker_cl(pipe->devid, module, (*cl_mem_output), roi_out, module->picked_output_color,
-                                module->picked_output_color_min, module->picked_output_color_max, *output,
-                                outbufsize, PIXELPIPE_PICKER_OUTPUT);
+            pixelpipe_picker_cl(pipe->devid, module, &pipe->dsc, (*cl_mem_output), roi_out,
+                                module->picked_output_color, module->picked_output_color_min,
+                                module->picked_output_color_max, *output, outbufsize, PIXELPIPE_PICKER_OUTPUT);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1282,9 +1092,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
              module == dev->gui_module && // only modules with focus can pick
              module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
           {
-            pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min,
-                             module->picked_color_max, PIXELPIPE_PICKER_INPUT);
-            pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color,
+            pixelpipe_picker(module, &piece->dsc_in, (float *)input, &roi_in, module->picked_color,
+                             module->picked_color_min, module->picked_color_max, PIXELPIPE_PICKER_INPUT);
+            pixelpipe_picker(module, &pipe->dsc, (float *)(*output), roi_out, module->picked_output_color,
                              module->picked_output_color_min, module->picked_output_color_max,
                              PIXELPIPE_PICKER_OUTPUT);
 
@@ -1496,9 +1306,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
              module == dev->gui_module && // only modules with focus can pick
              module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
           {
-            pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min,
-                             module->picked_color_max, PIXELPIPE_PICKER_INPUT);
-            pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color,
+            pixelpipe_picker(module, &piece->dsc_in, (float *)input, &roi_in, module->picked_color,
+                             module->picked_color_min, module->picked_color_max, PIXELPIPE_PICKER_INPUT);
+            pixelpipe_picker(module, &pipe->dsc, (float *)(*output), roi_out, module->picked_output_color,
                              module->picked_output_color_min, module->picked_output_color_max,
                              PIXELPIPE_PICKER_OUTPUT);
 
@@ -1629,9 +1439,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
            module == dev->gui_module && // only modules with focus can pick
            module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
         {
-          pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min,
-                           module->picked_color_max, PIXELPIPE_PICKER_INPUT);
-          pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color,
+          pixelpipe_picker(module, &piece->dsc_in, (float *)input, &roi_in, module->picked_color,
+                           module->picked_color_min, module->picked_color_max, PIXELPIPE_PICKER_INPUT);
+          pixelpipe_picker(module, &pipe->dsc, (float *)(*output), roi_out, module->picked_output_color,
                            module->picked_output_color_min, module->picked_output_color_max,
                            PIXELPIPE_PICKER_OUTPUT);
 
@@ -1727,9 +1537,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
          module == dev->gui_module && // only modules with focus can pick
          module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
       {
-        pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min,
-                         module->picked_color_max, PIXELPIPE_PICKER_INPUT);
-        pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color,
+        pixelpipe_picker(module, &piece->dsc_in, (float *)input, &roi_in, module->picked_color,
+                         module->picked_color_min, module->picked_color_max, PIXELPIPE_PICKER_INPUT);
+        pixelpipe_picker(module, &pipe->dsc, (float *)(*output), roi_out, module->picked_output_color,
                          module->picked_output_color_min, module->picked_output_color_max,
                          PIXELPIPE_PICKER_OUTPUT);
 
@@ -1812,11 +1622,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
        module == dev->gui_module && // only modules with focus can pick
        module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
     {
-      pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min,
-                       module->picked_color_max, PIXELPIPE_PICKER_INPUT);
-      pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color,
-                       module->picked_output_color_min, module->picked_output_color_max,
-                       PIXELPIPE_PICKER_OUTPUT);
+      pixelpipe_picker(module, &piece->dsc_in, (float *)input, &roi_in, module->picked_color,
+                       module->picked_color_min, module->picked_color_max, PIXELPIPE_PICKER_INPUT);
+      pixelpipe_picker(module, &pipe->dsc, (float *)(*output), roi_out, module->picked_output_color,
+                       module->picked_output_color_min, module->picked_output_color_max, PIXELPIPE_PICKER_OUTPUT);
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -2406,9 +2215,6 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
 
 // re-entry point: in case of late opencl errors we start all over again with opencl-support disabled
 restart:
-
-  // image max is normalized before
-  for(int k = 0; k < 4; k++) pipe->dsc.processed_maximum[k] = 1.0f;
 
   // check if we should obsolete caches
   if(pipe->cache_obsolete) dt_dev_pixelpipe_cache_flush(&(pipe->cache));

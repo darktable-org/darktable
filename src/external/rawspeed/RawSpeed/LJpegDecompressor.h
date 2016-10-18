@@ -173,6 +173,7 @@ public:
   bool mUseBigtable;    // Use only for large images
   bool mCanonFlipDim;   // Fix Canon 6D mRaw where width/height is flipped
   bool mCanonDoubleHeight; // Fix Canon double height on 4 components (EOS 5DS R)
+  bool mWrappedCr2Slices; // Fix Canon 80D mRaw where the slices are wrapped
   virtual void addSlices(vector<int> slices) {slicesW=slices;};  // CR2 slices.
 protected:
   virtual void parseSOF(SOFInfo* i);

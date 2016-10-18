@@ -61,6 +61,8 @@ int dt_film_is_empty(const int id);
 int dt_film_new(dt_film_t *film, const char *directory);
 /** removes all empty film rolls. */
 void dt_film_remove_empty();
+/** gets all image ids in film. the returned GList has to be freed with g_list_free(). */
+GList *dt_film_get_image_ids(const int filmid);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

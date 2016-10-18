@@ -461,7 +461,7 @@ export_thumbnail() {
 	convert "$input" -resize 1024x1024 "$output"
 }
 
-check_exposition() {
+check_exposure() {
 	local orig input over under ret convert_flags
 	orig=$1
 	input=$2

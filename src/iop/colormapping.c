@@ -220,6 +220,9 @@ static void invert_histogram(const int *hist, float *inv_hist)
   // HISTN-1)]);
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wvla"
+
 static void get_cluster_mapping(const int n, float mi[n][2], float wi[n], float mo[n][2], float wo[n],
                                 const float dominance, int mapio[n])
 {
@@ -295,8 +298,10 @@ static void kmeans(const float *col, const int width, const int height, const in
   const int nit = 40;                       // number of iterations
   const int samples = width * height * 0.2; // samples: only a fraction of the buffer.
 
-  float mean[n][2], var[n][2];
-  int cnt[n], count;
+  float(*const mean)[2] = malloc(2 * n * sizeof(float));
+  float(*const var)[2] = malloc(2 * n * sizeof(float));
+  int *const cnt = malloc(n * sizeof(int));
+  int count;
 
   float a_min = FLT_MAX, b_min = FLT_MAX, a_max = FLT_MIN, b_max = FLT_MIN;
 
@@ -327,7 +332,7 @@ static void kmeans(const float *col, const int width, const int height, const in
     for(int k = 0; k < n; k++) cnt[k] = 0;
 // randomly sample col positions inside roi
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(col, var, mean, mean_out, cnt)
+#pragma omp parallel for default(none) schedule(static) shared(col, mean_out)
 #endif
     for(int s = 0; s < samples; s++)
     {
@@ -384,6 +389,10 @@ static void kmeans(const float *col, const int width, const int height, const in
     // var_out[k][0], var_out[k][1], weight_out[k]);
   }
 
+  free(cnt);
+  free(var);
+  free(mean);
+
   for(int k = 0; k < n; k++)
   {
     // "eliminate" clusters with a variance of zero
@@ -422,6 +431,8 @@ static void kmeans(const float *col, const int width, const int height, const in
     }
   }
 }
+
+#pragma GCC diagnostic pop
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -464,11 +475,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float equalization = data->equalization / 100.0f;
 
     // get mapping from input clusters to target clusters
-    int mapio[data->n];
+    int *const mapio = malloc(data->n * sizeof(int));
+
     get_cluster_mapping(data->n, data->target_mean, data->target_weight, data->source_mean,
                         data->source_weight, dominance, mapio);
 
-    float var_ratio[data->n][2];
+    float(*const var_ratio)[2] = malloc(2 * data->n * sizeof(float));
+
     for(int i = 0; i < data->n; i++)
     {
       var_ratio[i][0]
@@ -499,19 +512,26 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       // bilateral blur of delta L to avoid artifacts caused by limited histogram resolution
       dt_bilateral_t *b = dt_bilateral_init(width, height, sigma_s, sigma_r);
-      if(!b) return;
+      if(!b)
+      {
+        free(var_ratio);
+        free(mapio);
+        return;
+      }
       dt_bilateral_splat(b, out);
       dt_bilateral_blur(b);
       dt_bilateral_slice(b, out, out, -1.0f);
       dt_bilateral_free(b);
     }
 
+    float *const weight_buf = malloc(data->n * dt_get_num_threads() * sizeof(float));
+
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(data, in, out, var_ratio, mapio, equalization)
+#pragma omp parallel for default(none) schedule(static) shared(data, in, out, equalization)
 #endif
     for(int k = 0; k < height; k++)
     {
-      float weight[data->n];
+      float *weight = weight_buf + data->n * dt_get_thread_num();
       size_t j = (size_t)ch * width * k;
       for(int i = 0; i < width; i++)
       {
@@ -535,6 +555,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         j += ch;
       }
     }
+
+    free(weight_buf);
+    free(var_ratio);
+    free(mapio);
   }
   // incomplete parameter set -> do nothing
   else

@@ -142,7 +142,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int range = 2 * radius + 1;
   const int hr = range / 2;
 
-  const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
+  const size_t size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
+  float *const scanline_buf = malloc(size * dt_get_num_threads() * sizeof(float));
 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
@@ -151,7 +152,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
-      float scanline[size];
+      float *scanline = scanline_buf + size * dt_get_thread_num();
       float L = 0;
       int hits = 0;
       const size_t index = (size_t)y * roi_out->width;
@@ -178,12 +179,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     /* vertical pass on blurlightness */
     const int opoffs = -(hr + 1) * roi_out->width;
     const int npoffs = (hr)*roi_out->width;
+
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(blurlightness) schedule(static)
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
-      float scanline[size];
+      float *scanline = scanline_buf + size * dt_get_thread_num();
       float L = 0;
       int hits = 0;
       size_t index = (size_t)x - hr * roi_out->width;
@@ -209,6 +212,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(int y = 0; y < roi_out->height; y++) blurlightness[y * roi_out->width + x] = scanline[y];
     }
   }
+  free(scanline_buf);
 
 /* screen blend lightness with original */
 #ifdef _OPENMP

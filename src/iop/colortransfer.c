@@ -175,6 +175,9 @@ static void invert_histogram(const int *hist, float *inv_hist)
   // HISTN-1)]/(float)HISTN, inv_hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]);
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wvla"
+
 static void get_cluster_mapping(const int n, float mi[n][2], float mo[n][2], int mapio[n])
 {
   for(int ki = 0; ki < n; ki++)
@@ -238,8 +241,9 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
   const int nit = 10;                                 // number of iterations
   const int samples = roi->width * roi->height * 0.2; // samples: only a fraction of the buffer.
 
-  float mean[n][2], var[n][2];
-  int cnt[n];
+  float(*const mean)[2] = malloc(2 * n * sizeof(float));
+  float(*const var)[2] = malloc(2 * n * sizeof(float));
+  int *const cnt = malloc(n * sizeof(int));
 
   // init n clusters for a, b channels at random
   for(int k = 0; k < n; k++)
@@ -254,7 +258,7 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
     for(int k = 0; k < n; k++) cnt[k] = 0;
 // randomly sample col positions inside roi
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(col, var, mean, mean_out, cnt)
+#pragma omp parallel for default(none) schedule(static) shared(col, mean_out)
 #endif
     for(int s = 0; s < samples; s++)
     {
@@ -303,6 +307,9 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
     // for(int k=0;k<n;k++) printf("%f %f -- var %f %f\n", mean_out[k][0], mean_out[k][1], var_out[k][0],
     // var_out[k][1]);
   }
+  free(cnt);
+  free(var);
+  free(mean);
   for(int k = 0; k < n; k++)
   {
     // we actually want the std deviation.
@@ -310,6 +317,8 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
     var_out[k][1] = sqrtf(var_out[k][1]);
   }
 }
+
+#pragma GCC diagnostic pop
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -362,16 +371,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // cluster input buffer
-    float mean[data->n][2], var[data->n][2];
+    float(*const mean)[2] = malloc(2 * data->n * sizeof(float));
+    float(*const var)[2] = malloc(2 * data->n * sizeof(float));
+
     kmeans(in, roi_in, data->n, mean, var);
 
     // get mapping from input clusters to target clusters
-    int mapio[data->n];
+    int *const mapio = malloc(data->n * sizeof(int));
+
     get_cluster_mapping(data->n, mean, data->mean, mapio);
 
 // for all pixels: find input cluster, transfer to mapped target cluster
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(data, mean, var, mapio, in, out)
+#pragma omp parallel for default(none) schedule(static) shared(data, in, out)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -401,6 +413,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         j += ch;
       }
     }
+
+    free(mapio);
+    free(var);
+    free(mean);
   }
   else
   {

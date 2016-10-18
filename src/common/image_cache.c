@@ -41,7 +41,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       "SELECT id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
       "aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance, "
       "raw_parameters, longitude, latitude, altitude, color_matrix, colorspace, version, raw_black, "
-      "raw_maximum FROM images WHERE id = ?1",
+      "raw_maximum FROM main.images WHERE id = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -212,7 +212,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "UPDATE images SET width = ?1, height = ?2, maker = ?3, model = ?4, "
+      "UPDATE main.images SET width = ?1, height = ?2, maker = ?3, model = ?4, "
       "lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, "
       "focus_distance = ?10, film_id = ?11, datetime_taken = ?12, flags = ?13, "
       "crop = ?14, orientation = ?15, raw_parameters = ?16, group_id = ?17, longitude = ?18, "

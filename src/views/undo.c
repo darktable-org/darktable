@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2012 tobias ellinghaus.
+    copyright (c) 2016 pascal obry
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,15 +16,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "develop/imageop.h"
 #include "views/undo.h"
 #include <glib.h>
 
 typedef struct dt_undo_item_t
 {
-  dt_view_t *view;
+  gpointer user_data;
   dt_undo_type_t type;
   dt_undo_data_t *data;
-  void (*undo)(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data);
+  void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data);
+  void (*free_data)(gpointer data);
 } dt_undo_item_t;
 
 dt_undo_t *dt_undo_init(void)
@@ -43,21 +44,30 @@ void dt_undo_cleanup(dt_undo_t *self)
   dt_pthread_mutex_destroy(&self->mutex);
 }
 
-void dt_undo_record(dt_undo_t *self, dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data,
-                    void (*undo)(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *item))
+static void _free_undo_data(void *p)
 {
-  dt_undo_item_t *item = g_malloc(sizeof(dt_undo_item_t));
+  dt_undo_item_t *item = (dt_undo_item_t *)p;
+  if (item->free_data) item->free_data(item->data);
+  free(item);
+}
 
-  item->view = view;
-  item->type = type;
-  item->data = data;
-  item->undo = undo;
+void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
+                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
+                    void (*free_data)(gpointer data))
+{
+  dt_undo_item_t *item = malloc(sizeof(dt_undo_item_t));
+
+  item->user_data = user_data;
+  item->type      = type;
+  item->data      = data;
+  item->undo      = undo;
+  item->free_data = free_data;
 
   dt_pthread_mutex_lock(&self->mutex);
   self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
 
   // recording an undo data invalidate all the redo
-  g_list_free_full(self->redo_list, &g_free);
+  g_list_free_full(self->redo_list, _free_undo_data);
   self->redo_list = NULL;
   dt_pthread_mutex_unlock(&self->mutex);
 }
@@ -78,7 +88,7 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
       self->redo_list = g_list_remove(self->redo_list, item);
 
       //  callback with redo data
-      item->undo(item->view, item->type, item->data);
+      item->undo(item->user_data, item->type, item->data);
 
       //  add old position back into the undo list
       self->undo_list = g_list_prepend(self->undo_list, item);
@@ -105,7 +115,7 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
       self->undo_list = g_list_remove(self->undo_list, item);
 
       //  callback with undo data
-      item->undo(item->view, item->type, item->data);
+      item->undo(item->user_data, item->type, item->data);
 
       //  add element into the redo list as filed with our previous position (before undo)
 
@@ -117,7 +127,7 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
   dt_pthread_mutex_unlock(&self->mutex);
 }
 
-static void dt_undo_clear_list(GList **list, uint32_t filter)
+static void _undo_clear_list(GList **list, uint32_t filter)
 {
   GList *l = g_list_first(*list);
 
@@ -130,8 +140,8 @@ static void dt_undo_clear_list(GList **list, uint32_t filter)
     if(item->type & filter)
     {
       //  remove this element
-      g_free(item->data);
       *list = g_list_remove(*list, item);
+      _free_undo_data((void *)item);
     }
     l = next;
   };
@@ -140,11 +150,36 @@ static void dt_undo_clear_list(GList **list, uint32_t filter)
 void dt_undo_clear(dt_undo_t *self, uint32_t filter)
 {
   dt_pthread_mutex_lock(&self->mutex);
-  dt_undo_clear_list(&self->undo_list, filter);
-  dt_undo_clear_list(&self->redo_list, filter);
+  _undo_clear_list(&self->undo_list, filter);
+  _undo_clear_list(&self->redo_list, filter);
   self->undo_list = NULL;
   self->redo_list = NULL;
   dt_pthread_mutex_unlock(&self->mutex);
+}
+
+static void _undo_iterate(GList *list, uint32_t filter, gpointer user_data,
+                          void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item))
+{
+  GList *l = g_list_first(list);
+
+  // check for first item that is matching the given pattern
+
+  while(l)
+  {
+    dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    if(item->type & filter)
+    {
+      apply(user_data, item->type, item->data);
+    }
+    l = l->next;
+  };
+}
+
+void dt_undo_iterate(dt_undo_t *self, uint32_t filter, gpointer user_data,
+                     void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item))
+{
+  _undo_iterate(self->undo_list, filter, user_data, apply);
+  _undo_iterate(self->redo_list, filter, user_data, apply);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

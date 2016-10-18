@@ -26,15 +26,13 @@
 
 #include <inttypes.h>
 
-#define FILTERS_ARE_CYGM(filters) (\
-  (filters) == 0xb4b4b4b4 \
-)
+#define FILTERS_ARE_CYGM(filters)                                                                                 \
+  ((filters) == 0xb4b4b4b4 || (filters) == 0x4b4b4b4b || (filters) == 0x1e1e1e1e || (filters) == 0xe1e1e1e1)
 
-#define FILTERS_ARE_RGBE(filters) (\
-  (filters) == 0x63636363 ||\
-  (filters) == 0x9c9c9c9c \
-)
+#define FILTERS_ARE_RGBE(filters)                                                                                 \
+  ((filters) == 0x63636363 || (filters) == 0x36363636 || (filters) == 0x9c9c9c9c || (filters) == 0xc9c9c9c9)
 
+// FIXME: kill this pls.
 #define FILTERS_ARE_4BAYER(filters) (FILTERS_ARE_CYGM(filters) || FILTERS_ARE_RGBE(filters))
 
 typedef enum dt_imageio_levels_t

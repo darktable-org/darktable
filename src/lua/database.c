@@ -149,7 +149,7 @@ static int import_images(lua_State *L)
 static int database_len(lua_State *L)
 {
   sqlite3_stmt *stmt = NULL;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(*) from images ", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM main.images ", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     lua_pushnumber(L, sqlite3_column_int(stmt, 0));
   else
@@ -167,7 +167,7 @@ static int database_numindex(lua_State *L)
   }
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  snprintf(query, sizeof(query), "select images.id from images order by images.id limit 1 offset %d",
+  snprintf(query, sizeof(query), "SELECT id FROM main.images ORDER BY id LIMIT 1 OFFSET %d",
            index - 1);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)

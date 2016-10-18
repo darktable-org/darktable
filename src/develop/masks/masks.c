@@ -857,7 +857,7 @@ void dt_masks_read_forms(dt_develop_t *dev)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select imgid, formid, form, name, version, points, points_count, source from mask where imgid = ?1",
+      "SELECT imgid, formid, form, name, version, points, points_count, source FROM main.mask WHERE imgid = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
 
@@ -961,15 +961,15 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
   // we first erase all masks for the image present in the db
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "delete from mask where imgid = ?1 and formid = ?2", -1, &stmt, NULL);
+                              "DELETE FROM main.mask WHERE imgid = ?1 AND formid = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, form->formid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
   // and we write the form
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into mask (imgid, formid, form, name, "
-                                                             "version, points, points_count,source) values "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO main.mask (imgid, formid, form, name, "
+                                                             "version, points, points_count,source) VALUES "
                                                              "(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
@@ -1062,7 +1062,7 @@ void dt_masks_write_forms(dt_develop_t *dev)
 {
   // we first erase all masks for the image present in the db
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from mask where imgid = ?1", -1, &stmt,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.mask WHERE imgid = ?1", -1, &stmt,
                               NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
   sqlite3_step(stmt);
@@ -1074,8 +1074,8 @@ void dt_masks_write_forms(dt_develop_t *dev)
   {
     dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into mask (imgid, formid, form, name, "
-                                                               "version, points, points_count,source) values "
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO main.mask (imgid, formid, form, name, "
+                                                               "version, points, points_count,source) VALUES "
                                                                "(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
