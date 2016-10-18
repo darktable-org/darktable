@@ -299,7 +299,7 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 #ifdef HAVE_OPENCL
-//static
+static
 int gauss_blur_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                   cl_mem dev_in, cl_mem dev_out, cl_mem dev_tmp,
                   const int width, const int height)
@@ -329,7 +329,7 @@ int gauss_blur_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   return TRUE;
 }
 
-//static
+static
 int gauss_expand_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                     cl_mem dev_in, cl_mem dev_out, cl_mem dev_tmp,
                     const int width, const int height)
@@ -351,7 +351,7 @@ int gauss_expand_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 }
 
 
-//static
+static
 int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                     cl_mem dev_in, cl_mem dev_coarse, cl_mem dev_detail,
                     cl_mem dev_tmp1, cl_mem dev_tmp2,
