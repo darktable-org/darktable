@@ -27,6 +27,7 @@
 typedef struct dt_cache_entry_t
 {
   void *data;
+  size_t data_size;
   size_t cost;
   GList *link;
   dt_pthread_rwlock_t lock;
