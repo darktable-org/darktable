@@ -859,14 +859,15 @@ void dt_mipmap_cache_write_get_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_b
   dt_mipmap_cache_get_with_caller(cache, buf, imgid, mip, DT_MIPMAP_BLOCKING, 'w', file, line);
 }
 
-void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf)
+void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf, const char *file,
+                                         int line)
 {
   if(buf->size == DT_MIPMAP_NONE) return;
   assert(buf->imgid > 0);
   // assert(buf->size >= DT_MIPMAP_0); // breaks gcc-4.6/4.7 build
   assert(buf->size < DT_MIPMAP_NONE);
   assert(buf->cache_entry);
-  dt_cache_release(&_get_cache(cache, buf->size)->cache, buf->cache_entry);
+  dt_cache_release_with_caller(&_get_cache(cache, buf->size)->cache, buf->cache_entry, file, line);
   buf->size = DT_MIPMAP_NONE;
   buf->buf = NULL;
 }
