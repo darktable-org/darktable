@@ -134,6 +134,12 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
     if(end - start > 0.1)
       fprintf(stderr, "try+ wait time %.06fs mode %c \n", end - start, mode);
 
+    if(mode == 'w')
+    {
+      assert(entry->data_size);
+      ASAN_POISON_MEMORY_REGION(entry->data, entry->data_size);
+    }
+
     // WARNING: do *NOT* unpoison here. it must be done by the caller!
 
     return entry;
@@ -186,6 +192,12 @@ restart:
       assert(!pthread_equal(writer, pthread_self()));
     }
 #endif
+
+    if(mode == 'w')
+    {
+      assert(entry->data_size);
+      ASAN_POISON_MEMORY_REGION(entry->data, entry->data_size);
+    }
 
     // WARNING: do *NOT* unpoison here. it must be done by the caller!
 
