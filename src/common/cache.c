@@ -52,10 +52,17 @@ void dt_cache_cleanup(dt_cache_t *cache)
   while(l)
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
+
     if(cache->cleanup)
+    {
+      assert(entry->data_size);
+      ASAN_UNPOISON_MEMORY_REGION(entry->data, entry->data_size);
+
       cache->cleanup(cache->cleanup_data, entry);
+    }
     else
       dt_free_align(entry->data);
+
     dt_pthread_rwlock_destroy(&entry->lock);
     g_slice_free1(sizeof(*entry), entry);
     l = g_list_next(l);
@@ -278,9 +285,15 @@ restart:
   cache->lru = g_list_delete_link(cache->lru, entry->link);
 
   if(cache->cleanup)
+  {
+    assert(entry->data_size);
+    ASAN_UNPOISON_MEMORY_REGION(entry->data, entry->data_size);
+
     cache->cleanup(cache->cleanup_data, entry);
+  }
   else
     dt_free_align(entry->data);
+
   dt_pthread_rwlock_unlock(&entry->lock);
   dt_pthread_rwlock_destroy(&entry->lock);
   cache->cost -= entry->cost;
@@ -319,9 +332,15 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     cache->cost -= entry->cost;
 
     if(cache->cleanup)
+    {
+      assert(entry->data_size);
+      ASAN_UNPOISON_MEMORY_REGION(entry->data, entry->data_size);
+
       cache->cleanup(cache->cleanup_data, entry);
+    }
     else
       dt_free_align(entry->data);
+
     dt_pthread_rwlock_unlock(&entry->lock);
     dt_pthread_rwlock_destroy(&entry->lock);
     g_slice_free1(sizeof(*entry), entry);
