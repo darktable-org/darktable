@@ -226,9 +226,11 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
 {
   assert(buf->size == DT_MIPMAP_FULL);
 
+  dt_cache_entry_t *entry = buf->cache_entry;
+  struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
+
   const int wd = img->width;
   const int ht = img->height;
-  struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
 
   const size_t bpp = dt_iop_buffer_dsc_to_bpp(&img->buf_dsc);
   const size_t buffer_size = (size_t)wd * ht * bpp + sizeof(*dsc);
@@ -237,19 +239,24 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
   // so only check size and re-alloc if necessary:
   if(!buf->buf || (dsc->size < buffer_size) || ((void *)dsc == (void *)dt_mipmap_cache_static_dead_image))
   {
-    if((void *)dsc != (void *)dt_mipmap_cache_static_dead_image) dt_free_align(buf->cache_entry->data);
-    buf->cache_entry->data = dt_alloc_align(64, buffer_size);
-    if(!buf->cache_entry->data)
+    if((void *)dsc != (void *)dt_mipmap_cache_static_dead_image) dt_free_align(entry->data);
+
+    entry->data = dt_alloc_align(64, buffer_size);
+
+    if(!entry->data)
     {
       // return fallback: at least alloc size for a dead image:
-      buf->cache_entry->data = (void*)dt_mipmap_cache_static_dead_image;
+      entry->data = (void *)dt_mipmap_cache_static_dead_image;
+
       // allocator holds the pointer. but let imageio client know that allocation failed:
       return NULL;
     }
+
     // set buffer size only if we're making it larger.
-    dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
+    dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
     dsc->size = buffer_size;
   }
+
   dsc->width = wd;
   dsc->height = ht;
   dsc->iscale = 1.0f;
