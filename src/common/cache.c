@@ -195,6 +195,7 @@ restart:
   int ret = dt_pthread_rwlock_init(&entry->lock, 0);
   if(ret) fprintf(stderr, "rwlock init: %d\n", ret);
   entry->data = 0;
+  entry->data_size = cache->entry_size;
   entry->cost = 1;
   entry->link = g_list_append(0, entry);
   entry->key = key;
