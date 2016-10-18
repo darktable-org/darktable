@@ -271,31 +271,37 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
   // for full image buffers
   struct dt_mipmap_buffer_dsc *dsc = entry->data;
   const dt_mipmap_size_t mip = get_size(entry->key);
+
   // alloc mere minimum for the header + broken image buffer:
   if(!dsc)
   {
     if(mip <= DT_MIPMAP_F)
     {
       // these are fixed-size:
-      entry->data = dt_alloc_align(16, cache->buffer_size[mip]);
+      entry->data_size = cache->buffer_size[mip];
     }
     else
     {
-      entry->data = dt_alloc_align(16, sizeof(*dsc) + sizeof(float) * 4 * 64);
+      entry->data_size = sizeof(*dsc) + sizeof(float) * 4 * 64;
     }
+
+    entry->data = dt_alloc_align(16, entry->data_size);
+
     // fprintf(stderr, "[mipmap cache] alloc dynamic for key %u %p\n", key, *buf);
     if(!(entry->data))
     {
       fprintf(stderr, "[mipmap cache] memory allocation failed!\n");
       exit(1);
     }
+
     dsc = entry->data;
+
     if(mip <= DT_MIPMAP_F)
     {
       dsc->width = cache->max_width[mip];
       dsc->height = cache->max_height[mip];
       dsc->iscale = 1.0f;
-      dsc->size = cache->buffer_size[mip];
+      dsc->size = entry->data_size;
       dsc->color_space = DT_COLORSPACE_NONE;
     }
     else
@@ -304,9 +310,10 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       dsc->height = 0;
       dsc->iscale = 0.0f;
       dsc->color_space = DT_COLORSPACE_NONE;
-      dsc->size = sizeof(*dsc) + sizeof(float) * 4 * 64;
+      dsc->size = entry->data_size;
     }
   }
+
   assert(dsc->size >= sizeof(*dsc));
 
   int loaded_from_disk = 0;
