@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-13 16:35+0200\n"
-"PO-Revision-Date: 2016-10-13 16:46+0200\n"
+"POT-Creation-Date: 2016-10-18 19:02+0200\n"
+"PO-Revision-Date: 2016-10-18 19:05+0200\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -926,13 +926,13 @@ msgstr ""
 #: ../src/common/collection.c:845 ../src/develop/lightroom.c:919
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:448
 #: ../src/iop/channelmixer.c:459 ../src/iop/colorbalance.c:597
-#: ../src/iop/temperature.c:1286 ../src/libs/collect.c:954
+#: ../src/iop/temperature.c:1328 ../src/libs/collect.c:954
 #: ../src/libs/collect.c:955 ../src/libs/collect.c:956
 msgid "red"
 msgstr "rood"
 
 #: ../src/common/collection.c:847 ../src/develop/lightroom.c:921
-#: ../src/iop/temperature.c:1277 ../src/libs/collect.c:958
+#: ../src/iop/temperature.c:1319 ../src/libs/collect.c:958
 #: ../src/libs/collect.c:959 ../src/libs/collect.c:960
 msgid "yellow"
 msgstr "geel"
@@ -940,7 +940,7 @@ msgstr "geel"
 #: ../src/common/collection.c:849 ../src/develop/lightroom.c:923
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:449
 #: ../src/iop/channelmixer.c:465 ../src/iop/colorbalance.c:604
-#: ../src/iop/temperature.c:1274 ../src/iop/temperature.c:1287
+#: ../src/iop/temperature.c:1316 ../src/iop/temperature.c:1329
 #: ../src/libs/collect.c:962 ../src/libs/collect.c:963
 #: ../src/libs/collect.c:964
 msgid "green"
@@ -949,7 +949,7 @@ msgstr "groen"
 #: ../src/common/collection.c:851 ../src/develop/lightroom.c:925
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:450
 #: ../src/iop/channelmixer.c:471 ../src/iop/colorbalance.c:611
-#: ../src/iop/temperature.c:1288 ../src/libs/collect.c:966
+#: ../src/iop/temperature.c:1330 ../src/libs/collect.c:966
 #: ../src/libs/collect.c:967 ../src/libs/collect.c:968
 msgid "blue"
 msgstr "blauw"
@@ -1065,29 +1065,29 @@ msgstr "fout tijdens afdrukken afbeelding %d op `%s'"
 msgid "printing image %d on `%s'"
 msgstr "afdrukken afbeelding %d op `%s'"
 
-#: ../src/common/darktable.c:325
+#: ../src/common/darktable.c:327
 #, c-format
 msgid "found strange path `%s'"
 msgstr "onlogisch pad `%s'  gevonden "
 
-#: ../src/common/darktable.c:342
+#: ../src/common/darktable.c:344
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "fout bij het inladen van map `%s'"
 
-#: ../src/common/darktable.c:365
+#: ../src/common/darktable.c:367
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "bestand `%s' heeft een onbekend formaat!"
 
-#: ../src/common/darktable.c:378 ../src/libs/import.c:838
+#: ../src/common/darktable.c:380 ../src/libs/import.c:838
 #, c-format
 msgid "error loading file `%s'"
 msgstr "fout bij het inladen van bestand `%s'"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:1552 ../src/common/database.c:1628
+#: ../src/common/database.c:1574 ../src/common/database.c:1650
 #, c-format
 msgid ""
 "an error has occured while trying to open the database from\n"
@@ -1106,15 +1106,15 @@ msgstr ""
 "wilt u darktable sluiten voor een handmatig herstel vanuit\n"
 "een backup of moet gestart worden met een nieuwe exemplaar?"
 
-#: ../src/common/database.c:1562 ../src/common/database.c:1638
+#: ../src/common/database.c:1584 ../src/common/database.c:1660
 msgid "darktable - error opening database"
 msgstr "darktable - fout voor openen database"
 
-#: ../src/common/database.c:1563 ../src/common/database.c:1639
+#: ../src/common/database.c:1585 ../src/common/database.c:1661
 msgid "close darktable"
 msgstr "darktable afsluiten"
 
-#: ../src/common/database.c:1563 ../src/common/database.c:1639
+#: ../src/common/database.c:1585 ../src/common/database.c:1661
 msgid "delete database"
 msgstr "verwijder database"
 
@@ -1184,7 +1184,7 @@ msgstr ""
 "verwijderen van lokale kopie is niet mogelijk wanneer het origineel niet "
 "toegankelijk is"
 
-#: ../src/common/image.c:1581
+#: ../src/common/image.c:1595
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -2257,7 +2257,7 @@ msgstr "%s is uitgeschakeld"
 #: ../src/gui/accelerators.c:719 ../src/gui/accelerators.c:884
 #: ../src/gui/accelerators.c:910 ../src/gui/presets.c:191
 #: ../src/gui/presets.c:298 ../src/gui/presets.c:640
-#: ../src/iop/temperature.c:1337 ../src/libs/import.c:555 ../src/libs/lib.c:308
+#: ../src/iop/temperature.c:1379 ../src/libs/import.c:555 ../src/libs/lib.c:308
 #: ../src/libs/lib.c:333 ../src/libs/lib.c:1151
 msgid "preset"
 msgstr "voorkeur"
@@ -4562,12 +4562,12 @@ msgid "fusion"
 msgstr "samensmelten"
 
 #: ../src/iop/basecurve.c:1343
-msgid "0ev, +3ev"
-msgstr "0ev, +3ev"
+msgid "two exposures"
+msgstr "twee belichtingen"
 
 #: ../src/iop/basecurve.c:1344
-msgid "0ev, +3ev, +6ev"
-msgstr "0ev, +3ev, +6ev"
+msgid "three exposures"
+msgstr "drie belichtingen"
 
 #: ../src/iop/basecurve.c:1345
 msgid ""
@@ -4612,19 +4612,19 @@ msgid "radius"
 msgstr "straal"
 
 #: ../src/iop/bilateral.cc:85 ../src/iop/channelmixer.c:130
-#: ../src/iop/temperature.c:169
+#: ../src/iop/temperature.c:196
 msgctxt "accel"
 msgid "red"
 msgstr "rood"
 
 #: ../src/iop/bilateral.cc:86 ../src/iop/channelmixer.c:131
-#: ../src/iop/temperature.c:170
+#: ../src/iop/temperature.c:197
 msgctxt "accel"
 msgid "green"
 msgstr "groen"
 
 #: ../src/iop/bilateral.cc:87 ../src/iop/channelmixer.c:132
-#: ../src/iop/temperature.c:171
+#: ../src/iop/temperature.c:198
 msgctxt "accel"
 msgid "blue"
 msgstr "blauw"
@@ -5561,56 +5561,56 @@ msgstr "mate van histogramegalisatie"
 msgid "output color profile"
 msgstr "uitgaand kleurprofiel"
 
-#: ../src/iop/colorout.c:653
+#: ../src/iop/colorout.c:658
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "ontbrekend uitgaand profiel is vervangen door sRGB!"
 
-#: ../src/iop/colorout.c:670
+#: ../src/iop/colorout.c:675
 msgid "missing softproof profile has been replaced by sRGB!"
 msgstr "ontbrekend softproof profiel is vervangen door sRGB!"
 
-#: ../src/iop/colorout.c:713
+#: ../src/iop/colorout.c:718
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "een niet ondersteund uitgaand profiel is vervangen door sRGB!"
 
-#: ../src/iop/colorout.c:851
+#: ../src/iop/colorout.c:858
 msgid "output intent"
 msgstr "voorgenomen output "
 
-#: ../src/iop/colorout.c:852 ../src/libs/export.c:617
+#: ../src/iop/colorout.c:859 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1063 ../src/libs/print_settings.c:1274
 #: ../src/views/darkroom.c:1724 ../src/views/lighttable.c:2431
 msgid "perceptual"
 msgstr "perceptueel"
 
-#: ../src/iop/colorout.c:853 ../src/libs/export.c:618
+#: ../src/iop/colorout.c:860 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1064 ../src/libs/print_settings.c:1275
 #: ../src/views/darkroom.c:1725 ../src/views/lighttable.c:2432
 msgid "relative colorimetric"
 msgstr "relatieve colorimetrie"
 
-#: ../src/iop/colorout.c:854 ../src/libs/export.c:619
+#: ../src/iop/colorout.c:861 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1065 ../src/libs/print_settings.c:1276
 #: ../src/views/darkroom.c:1726 ../src/views/lighttable.c:2433
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "verzadiging"
 
-#: ../src/iop/colorout.c:855 ../src/libs/export.c:620
+#: ../src/iop/colorout.c:862 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1066 ../src/libs/print_settings.c:1277
 #: ../src/views/darkroom.c:1727 ../src/views/lighttable.c:2434
 msgid "absolute colorimetric"
 msgstr "absolute colorimetrie"
 
-#: ../src/iop/colorout.c:864
+#: ../src/iop/colorout.c:871
 msgid "output profile"
 msgstr "uitgaand profiel"
 
-#: ../src/iop/colorout.c:873
+#: ../src/iop/colorout.c:880
 msgid "rendering intent"
 msgstr "rendering intent"
 
-#: ../src/iop/colorout.c:874
+#: ../src/iop/colorout.c:881
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC profielen in%s/kleur/uit van %s/kleur/uit"
@@ -7482,75 +7482,90 @@ msgctxt "modulename"
 msgid "white balance"
 msgstr "witbalans"
 
-#: ../src/iop/temperature.c:167
+#: ../src/iop/temperature.c:194
 msgctxt "accel"
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:168
+#: ../src/iop/temperature.c:195
 msgctxt "accel"
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:695
+#: ../src/iop/temperature.c:200
+msgctxt "accel"
+msgid "preset/camera"
+msgstr "voorkeur/camera"
+
+#: ../src/iop/temperature.c:201
+msgctxt "accel"
+msgid "preset/camera neutral"
+msgstr "voorkeur/camera neutraal"
+
+#: ../src/iop/temperature.c:202
+msgctxt "accel"
+msgid "preset/spot"
+msgstr "voorkeur/spot"
+
+#: ../src/iop/temperature.c:737
 msgctxt "white balance"
 msgid "camera"
 msgstr "camera"
 
-#: ../src/iop/temperature.c:696
+#: ../src/iop/temperature.c:738
 msgctxt "white balance"
 msgid "camera neutral"
 msgstr "cameraneutraal"
 
-#: ../src/iop/temperature.c:697
+#: ../src/iop/temperature.c:739
 msgctxt "white balance"
 msgid "spot"
 msgstr "spot"
 
-#: ../src/iop/temperature.c:872
+#: ../src/iop/temperature.c:914
 #, c-format
 msgid "`%s' color matrix not found for image"
 msgstr "`%s' kleuren matrix is niet gevonden"
 
-#: ../src/iop/temperature.c:916
+#: ../src/iop/temperature.c:958
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "ophalen camera-witbalans info van `%s' is niet gelukt!"
 
-#: ../src/iop/temperature.c:1275
+#: ../src/iop/temperature.c:1317
 msgid "magenta"
 msgstr "magenta"
 
-#: ../src/iop/temperature.c:1276
+#: ../src/iop/temperature.c:1318
 msgid "cyan"
 msgstr "cyaan"
 
-#: ../src/iop/temperature.c:1289
+#: ../src/iop/temperature.c:1331
 msgid "emerald"
 msgstr "smaragd"
 
-#: ../src/iop/temperature.c:1322
+#: ../src/iop/temperature.c:1364
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:1323
+#: ../src/iop/temperature.c:1365
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:1339
+#: ../src/iop/temperature.c:1381
 msgid "choose white balance preset from camera"
 msgstr "kies voor camera-witbalans "
 
-#: ../src/iop/temperature.c:1342
+#: ../src/iop/temperature.c:1384
 msgid "finetune"
 msgstr "fijnafstelling"
 
-#: ../src/iop/temperature.c:1343
+#: ../src/iop/temperature.c:1385
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:1347
+#: ../src/iop/temperature.c:1389
 msgid "fine tune white balance preset"
 msgstr "fijnafstelling witbalans voorkeur"
 
@@ -10057,6 +10072,10 @@ msgstr "organiseer en ontwikkel afbeeldingen van digitale camera's"
 msgid "* contributors *"
 msgstr "* met dank aan *"
 
+#: ../src/libs/tools/darktable.c:310
+msgid "And all those of you that made previous releases possible"
+msgstr "en iedereen die eerdere uitgaven mogelijk maakten"
+
 #: ../src/libs/tools/darktable.c:313
 msgid "translator-credits"
 msgstr ""
@@ -10738,6 +10757,12 @@ msgstr ""
 "we adviseren u dringend om over te gaan naar een geschikte 64-bit build\n"
 "anders zult u zeker problemen ervaren die niet kunnen worden opgelost\n"
 
+#~ msgid "0ev, +3ev"
+#~ msgstr "0ev, +3ev"
+
+#~ msgid "0ev, +3ev, +6ev"
+#~ msgstr "0ev, +3ev, +6ev"
+
 #~ msgid "color checker lut"
 #~ msgstr "color checker lut"
 
@@ -11190,9 +11215,6 @@ msgstr ""
 
 #~ msgid "cache locally"
 #~ msgstr "cache lokaal"
-
-#~ msgid "reset cache"
-#~ msgstr "reset cache"
 
 #~ msgid "remove the local copy of the image"
 #~ msgstr "verwijder de lokale kopie van een afbeelding"
