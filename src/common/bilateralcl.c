@@ -47,8 +47,8 @@ void dt_bilateral_free_cl(dt_bilateral_cl_t *b)
   // be sure we're done with the memory:
   dt_opencl_finish(b->devid);
   // free device mem
-  if(b->dev_grid) dt_opencl_release_mem_object(b->dev_grid);
-  if(b->dev_grid_tmp) dt_opencl_release_mem_object(b->dev_grid_tmp);
+  dt_opencl_release_mem_object(b->dev_grid);
+  dt_opencl_release_mem_object(b->dev_grid_tmp);
   free(b);
 }
 
@@ -328,7 +328,7 @@ cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem o
   return err;
 
 error:
-  if(tmp != NULL) dt_opencl_release_mem_object(tmp);
+  dt_opencl_release_mem_object(tmp);
   return err;
 }
 
