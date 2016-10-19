@@ -264,6 +264,13 @@
               you. You may also give <quote>:memory:</quote> as a library file in which case the
               database is kept in system memory&nbsp;&ndash; all changes are discarded when
               darktable terminates.
+            </para>
+            
+            <para>
+              Whenever darktable starts, it will lock the library to the current user. It does this 
+              by writing the current process identifier (PID) into a lock file 
+              <quote>&lt;library file&gt;.lock</quote> next to the library specified. If darktable 
+              finds an existing lock file for the library, it will terminate immediately.
             </para></listitem>
 
           </varlistentry>
