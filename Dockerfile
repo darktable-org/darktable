@@ -71,3 +71,10 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
 # than traditional ld.bfd; plus, at this time, ld.gold seems like the future.
 RUN dpkg-divert --add --rename --divert /usr/bin/ld.original /usr/bin/ld && \
     ln -s /usr/bin/ld.gold /usr/bin/ld
+
+# optional: usermanual deps
+# pls keep sorted :)
+RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
+    apt-get install  default-jdk-headless default-jre-headless docbook-xsl \
+    docbook-xsl-saxon fop gnome-doc-utils imagemagick libsaxon-java xsltproc \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*

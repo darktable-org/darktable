@@ -36,6 +36,7 @@ if [ "$1" = "-p" ]; then
     echo "$Q1C" | sqlite3
     echo "$Q1" | sqlite3
 else
+    echo The following tags are not used:
     echo "$Q1C" | sqlite3
     echo
     echo to really purge from the database call:
