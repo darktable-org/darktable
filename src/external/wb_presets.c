@@ -5166,6 +5166,16 @@ const wb_data wb_preset[] =
   { "Pentax", "K-50", Flash, 0,               { 2.544677734375, 1, 1.4359130859375, 0 } },
   { "Pentax", "K-50", WarmWhiteFluorescent, 0,        { 1.8070068359375, 1, 2.58935546875, 0 } },
 
+  /* Pentax K-70 Firmware Version 1.10 */
+  { "Pentax", "K-70", Daylight                     , 0, { 2.14453125, 1, 1.70703125, 0 } },
+  { "Pentax", "K-70", Shade                        , 0, { 2.65625, 1, 1.25, 0 } },
+  { "Pentax", "K-70", Cloudy                       , 0, { 2.37890625, 1, 1.46484375, 0 } },
+  { "Pentax", "K-70", Tungsten                     , 0, { 1.3125, 1, 2.9765625, 0 } },
+  { "Pentax", "K-70", WarmWhiteFluorescent         , 0, { 1.69921875, 1, 2.91015625, 0 } },
+  { "Pentax", "K-70", DayWhiteFluorescent          , 0, { 2.23046875, 1, 1.9140625, 0 } },
+  { "Pentax", "K-70", DaylightFluorescent          , 0, { 2.62890625, 1, 1.671875, 0 } },
+  { "Pentax", "K-70", WhiteFluorescent             , 0, { 2.01953125, 1, 2.3046875, 0 } },
+
     /* Pentax K-500 Firmware Version 1.00 */
   { "Pentax", "K-500", Daylight, 0,           { 2.2076416015625, 1, 1.6060791015625, 0 } },
   { "Pentax", "K-500", Shade, 0,              { 2.6376953125, 1, 1.19873046875, 0 } },

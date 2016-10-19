@@ -80,16 +80,29 @@
         fine-grained adjustment of the shadows.
       </para>
     </sect5>
+    
     <sect5>
       <title>fusion</title>
       <para>
         This control triggers the <emphasis>exposure fusion</emphasis> feature. You can choose
-        to merge the image with a copy of itself after applying the current base curve, as well as
-        boosting the exposure by a couple of stops. Use this to compress dynamic range for extremely
-        underexposed images and true HDR input. For best results, use the exposure module (see <xref linkend="exposure"/>) to expose the image for the highlights before toggling this feature on.
+        to merge the image with one or two copies of itself after applying the current base curve, as well as
+        boosting the exposure by a couple of stops. The resulting image is thus a combination of two
+        or three different exposures of the same image. Use this to compress dynamic range for extremely
+        underexposed images and true HDR input. For best results, use the exposure module 
+        (see <xref linkend="exposure"/>) to expose the image for the highlights before toggling 
+        this feature on.
       </para>
     </sect5>
 
+    <sect5>
+      <title>exposure shift</title>
+      <para>
+        This slider is only visible if the <emphasis>exposure fusion</emphasis> feature is activated. It
+        allows you to set the exposure difference between the merged images in ev units (default 3).
+      </para>
+    </sect5>
+
+    
   </sect4>
 
 </sect3>

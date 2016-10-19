@@ -54,7 +54,8 @@ IGNORE_ONLY_MODE = {
   ["NIKON", "COOLPIX P7100"] => "uncompressed",
   ["NIKON", "COOLPIX P7700"] => "compressed",
   ["NIKON", "COOLPIX P7800"] => "compressed",
-  ["NIKON", "E5400"] => "uncompressed"
+  ["NIKON", "E5400"] => "uncompressed",
+  ["NIKON", "E5700"] => "uncompressed"
 }
 
 IGNORE_HIGH_WHITELEVEL = [
@@ -63,15 +64,18 @@ IGNORE_HIGH_WHITELEVEL = [
   ["NIKON CORPORATION", "NIKON 1 S2"],
   ["NIKON CORPORATION", "NIKON 1 V2"],
   ["NIKON CORPORATION", "NIKON D1"],
+  ["NIKON CORPORATION", "NIKON D1H"],
   ["NIKON CORPORATION", "NIKON D1X"],
   ["NIKON CORPORATION", "NIKON D50"],
   ["NIKON CORPORATION", "NIKON D70"],
   ["NIKON CORPORATION", "NIKON D70s"],
+  ["NIKON CORPORATION", "NIKON D100"],
   ["NIKON", "COOLPIX P330"],
   ["NIKON", "COOLPIX P6000"],
   ["NIKON", "COOLPIX P7700"],
   ["NIKON", "COOLPIX P7800"],
-  ["NIKON", "E5400"]
+  ["NIKON", "E5400"],
+  ["NIKON", "E5700"]
 ]
 
 require 'nokogiri'
