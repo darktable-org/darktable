@@ -1830,11 +1830,11 @@ static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     if(err != CL_SUCCESS) goto error;
   }
 
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_tmp);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_color_smoothing] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -2080,9 +2080,9 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     }
   }
 
-  if(dev_aux != NULL && dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
-  if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
+  dt_opencl_release_mem_object(dev_green_eq);
+  dt_opencl_release_mem_object(dev_tmp);
   dev_aux = dev_green_eq = dev_tmp = NULL;
 
   // color smoothing
@@ -2095,9 +2095,9 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   return TRUE;
 
 error:
-  if(dev_aux != NULL && dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
-  if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
+  dt_opencl_release_mem_object(dev_green_eq);
+  dt_opencl_release_mem_object(dev_tmp);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -2495,27 +2495,27 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   }
 
 
-  if(dev_aux != NULL && dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
+  if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
   dev_aux = NULL;
 
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_tmp);
   dev_tmp = NULL;
 
-  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
+  dt_opencl_release_mem_object(dev_xtrans);
   dev_xtrans = NULL;
 
-  if(dev_lookup != NULL) dt_opencl_release_mem_object(dev_lookup);
+  dt_opencl_release_mem_object(dev_lookup);
   dev_lookup = NULL;
 
   free(lookup);
 
-  if(dev_code != NULL) dt_opencl_release_mem_object(dev_code);
+  dt_opencl_release_mem_object(dev_code);
   dev_code = NULL;
 
-  if(dev_ips != NULL) dt_opencl_release_mem_object(dev_ips);
+  dt_opencl_release_mem_object(dev_ips);
   dev_ips = NULL;
 
-  if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
+  dt_opencl_release_mem_object(dev_green_eq);
   dev_green_eq = NULL;
 
   free(ips);
@@ -2531,14 +2531,14 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   return TRUE;
 
 error:
-  if(dev_aux != NULL && dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
-  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
-  if(dev_lookup != NULL) dt_opencl_release_mem_object(dev_lookup);
+  if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
+  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_xtrans);
+  dt_opencl_release_mem_object(dev_lookup);
   free(lookup);
-  if(dev_code != NULL) dt_opencl_release_mem_object(dev_code);
-  if(dev_ips != NULL) dt_opencl_release_mem_object(dev_ips);
-  if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
+  dt_opencl_release_mem_object(dev_code);
+  dt_opencl_release_mem_object(dev_ips);
+  dt_opencl_release_mem_object(dev_green_eq);
   free(ips);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
   return FALSE;
@@ -2895,7 +2895,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     // end of multi pass
 
     // gminmax data no longer needed
-    if(dev_gminmax != NULL) dt_opencl_release_mem_object(dev_gminmax);
+    dt_opencl_release_mem_object(dev_gminmax);
     dev_gminmax = NULL;
 
     // jump back to the first set of rgb buffers (this is a noop for Markesteijn-1)
@@ -3000,7 +3000,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     // get rid of dev_drv buffers
     for(int n = 0; n < 8; n++)
     {
-      if(dev_drv[n] != NULL) dt_opencl_release_mem_object(dev_drv[n]);
+      dt_opencl_release_mem_object(dev_drv[n]);
       dev_drv[n] = NULL;
     }
 
@@ -3134,35 +3134,35 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     // now it's time to get rid of most of the temporary buffers (except of dev_tmp and dev_xtrans)
     for(int n = 0; n < 8; n++)
     {
-      if(dev_rgbv[n] != NULL) dt_opencl_release_mem_object(dev_rgbv[n]);
+      dt_opencl_release_mem_object(dev_rgbv[n]);
       dev_rgbv[n] = NULL;
     }
 
     for(int n = 0; n < 8; n++)
     {
-      if(dev_homo[n] != NULL) dt_opencl_release_mem_object(dev_homo[n]);
+      dt_opencl_release_mem_object(dev_homo[n]);
       dev_homo[n] = NULL;
     }
 
     for(int n = 0; n < 8; n++)
     {
-      if(dev_homosum[n] != NULL) dt_opencl_release_mem_object(dev_homosum[n]);
+      dt_opencl_release_mem_object(dev_homosum[n]);
       dev_homosum[n] = NULL;
     }
 
-    if(dev_aux != NULL) dt_opencl_release_mem_object(dev_aux);
+    dt_opencl_release_mem_object(dev_aux);
     dev_aux = NULL;
 
-    if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
+    dt_opencl_release_mem_object(dev_xtrans);
     dev_xtrans = NULL;
 
-    if(dev_allhex != NULL) dt_opencl_release_mem_object(dev_allhex);
+    dt_opencl_release_mem_object(dev_allhex);
     dev_allhex = NULL;
 
-    if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
+    dt_opencl_release_mem_object(dev_green_eq);
     dev_green_eq = NULL;
 
-    if(dev_tmptmp != NULL) dt_opencl_release_mem_object(dev_tmptmp);
+    dt_opencl_release_mem_object(dev_tmptmp);
     dev_tmptmp = NULL;
 
     // take care of image borders. the algorihm above leaves an unprocessed border of pad_tile pixels.
@@ -3256,10 +3256,10 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
   }
 
   // free remaining temporary buffers
-  if(dev_tmp != NULL && dev_tmp != dev_out) dt_opencl_release_mem_object(dev_tmp);
+  if(dev_tmp != dev_out) dt_opencl_release_mem_object(dev_tmp);
   dev_tmp = NULL;
 
-  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
+  dt_opencl_release_mem_object(dev_xtrans);
   dev_xtrans = NULL;
 
 
@@ -3273,23 +3273,24 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
   return TRUE;
 
 error:
+  if(dev_tmp != dev_out) dt_opencl_release_mem_object(dev_tmp);
+
   for(int n = 0; n < 8; n++)
-    if(dev_rgbv[n] != NULL) dt_opencl_release_mem_object(dev_rgbv[n]);
+    dt_opencl_release_mem_object(dev_rgbv[n]);
   for(int n = 0; n < 8; n++)
-    if(dev_drv[n] != NULL) dt_opencl_release_mem_object(dev_drv[n]);
+    dt_opencl_release_mem_object(dev_drv[n]);
   for(int n = 0; n < 8; n++)
-    if(dev_homo[n] != NULL) dt_opencl_release_mem_object(dev_homo[n]);
+    dt_opencl_release_mem_object(dev_homo[n]);
   for(int n = 0; n < 8; n++)
-    if(dev_homosum[n] != NULL) dt_opencl_release_mem_object(dev_homosum[n]);
-  if(dev_gminmax != NULL) dt_opencl_release_mem_object(dev_gminmax);
-  if(dev_tmp != NULL && dev_tmp != dev_out) dt_opencl_release_mem_object(dev_tmp);
-  if(dev_tmptmp != NULL) dt_opencl_release_mem_object(dev_tmptmp);
-  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
-  if(dev_allhex != NULL) dt_opencl_release_mem_object(dev_allhex);
-  if(dev_green_eq != NULL) dt_opencl_release_mem_object(dev_green_eq);
-  if(dev_aux != NULL) dt_opencl_release_mem_object(dev_aux);
-  if(dev_edge_in != NULL) dt_opencl_release_mem_object(dev_edge_in);
-  if(dev_edge_out != NULL) dt_opencl_release_mem_object(dev_edge_out);
+    dt_opencl_release_mem_object(dev_homosum[n]);
+  dt_opencl_release_mem_object(dev_gminmax);
+  dt_opencl_release_mem_object(dev_tmptmp);
+  dt_opencl_release_mem_object(dev_xtrans);
+  dt_opencl_release_mem_object(dev_allhex);
+  dt_opencl_release_mem_object(dev_green_eq);
+  dt_opencl_release_mem_object(dev_aux);
+  dt_opencl_release_mem_object(dev_edge_in);
+  dt_opencl_release_mem_object(dev_edge_out);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
