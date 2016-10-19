@@ -1944,14 +1944,14 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
   return CL_SUCCESS;
 
 error:
-  if(dev_hindex != NULL) dt_opencl_release_mem_object(dev_hindex);
-  if(dev_hlength != NULL) dt_opencl_release_mem_object(dev_hlength);
-  if(dev_hkernel != NULL) dt_opencl_release_mem_object(dev_hkernel);
-  if(dev_hmeta != NULL) dt_opencl_release_mem_object(dev_hmeta);
-  if(dev_vindex != NULL) dt_opencl_release_mem_object(dev_vindex);
-  if(dev_vlength != NULL) dt_opencl_release_mem_object(dev_vlength);
-  if(dev_vkernel != NULL) dt_opencl_release_mem_object(dev_vkernel);
-  if(dev_vmeta != NULL) dt_opencl_release_mem_object(dev_vmeta);
+  dt_opencl_release_mem_object(dev_hindex);
+  dt_opencl_release_mem_object(dev_hlength);
+  dt_opencl_release_mem_object(dev_hkernel);
+  dt_opencl_release_mem_object(dev_hmeta);
+  dt_opencl_release_mem_object(dev_vindex);
+  dt_opencl_release_mem_object(dev_vlength);
+  dt_opencl_release_mem_object(dev_vkernel);
+  dt_opencl_release_mem_object(dev_vmeta);
   dt_free_align(hlength);
   dt_free_align(vlength);
   dt_print(DT_DEBUG_OPENCL, "[opencl_resampling] couldn't enqueue kernel! %d\n", err);

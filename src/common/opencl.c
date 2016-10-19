@@ -939,7 +939,7 @@ error:
   dt_gaussian_free_cl(g);
   dt_free_align(buf);
   free(tea_states);
-  if(dev_mem != NULL) dt_opencl_release_mem_object(dev_mem);
+  dt_opencl_release_mem_object(dev_mem);
   return INFINITY;
 }
 
@@ -1995,9 +1995,14 @@ void *dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const 
 }
 
 
-void dt_opencl_release_mem_object(void *mem)
+void dt_opencl_release_mem_object(cl_mem mem)
 {
   if(!darktable.opencl->inited) return;
+
+  // the OpenCL specs are not absolutely clear if clReleaseMemObject(NULL) is a no-op. we take care of the
+  // case in a centralized way at this place
+  if(mem == NULL) return;
+
   (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(mem);
 }
 
