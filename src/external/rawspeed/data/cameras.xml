@@ -6724,7 +6724,7 @@
 		<Sensor black="0" white="3839"/>
 	</Camera>
 	<Camera make="RICOH IMAGING COMPANY, LTD." model="PENTAX K-70">
-		<ID make="Pentax" model="K-70">>PENTAX K-70</ID>
+		<ID make="Pentax" model="K-70">PENTAX K-70</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
