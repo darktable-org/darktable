@@ -3496,7 +3496,6 @@
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
 			<Color x="0" y="1">GREEN</Color>
-
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
@@ -3505,7 +3504,7 @@
 			<Hint name="coolpixmangled" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P7000" mode="12bit-compressed" decoder_version="1" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON" model="COOLPIX P7000" mode="12bit-uncompressed" decoder_version="1">
 		<ID make="Nikon" model="Coolpix P7000">Nikon Coolpix P7000</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3515,26 +3514,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
-		<Sensor black="250" white="4095" iso_min="400" iso_max="0"/>
+		<Sensor black="255" white="4095" iso_min="400" iso_max="3200"/>
 		<!-- In usual Nikon style, ISO 6400 is marked as ISO 0 -->
-		<Sensor black="260" white="4095" iso_min="0" iso_max="1"/>
-		<Hints>
-			<Hint name="coolpixmangled" value=""/>
-		</Hints>
-	</Camera>
-	<Camera make="NIKON" model="COOLPIX P7000" mode="12bit-uncompressed" decoder_version="1" supported="no"> <!-- need raw sample for whitelevel -->
-		<ID make="Nikon" model="Coolpix P7000">Nikon Coolpix P7000</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="4095"/>
-		<Sensor black="250" white="4095" iso_min="400" iso_max="0"/>
-		<!-- In usual Nikon style, ISO 6400 is marked as ISO 0 -->
-		<Sensor black="260" white="4095" iso_min="0" iso_max="1"/>
+		<Sensor black="255" white="4095" iso_min="0" iso_max="1"/>
 		<Hints>
 			<Hint name="coolpixmangled" value=""/>
 		</Hints>
