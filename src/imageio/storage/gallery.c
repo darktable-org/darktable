@@ -416,46 +416,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   copy_res("/style/style.css", filename);
   sprintf(c, "/style/favicon.ico");
   copy_res("/style/favicon.ico", filename);
-#if 0
-  sprintf(c, "/style/bullet.gif");
-  copy_res("/style/bullet.gif", filename);
-  sprintf(c, "/style/close.gif");
-  copy_res("/style/close.gif", filename);
-  sprintf(c, "/style/closelabel.gif");
-  copy_res("/style/closelabel.gif", filename);
-  sprintf(c, "/style/donate-button.gif");
-  copy_res("/style/donate-button.gif", filename);
-  sprintf(c, "/style/download-icon.gif");
-  copy_res("/style/download-icon.gif", filename);
-  sprintf(c, "/style/image-1.jpg");
-  copy_res("/style/image-1.jpg", filename);
-  sprintf(c, "/style/lightbox.css");
-  copy_res("/style/lightbox.css", filename);
-  sprintf(c, "/style/loading.gif");
-  copy_res("/style/loading.gif", filename);
-  sprintf(c, "/style/nextlabel.gif");
-  copy_res("/style/nextlabel.gif", filename);
-  sprintf(c, "/style/prevlabel.gif");
-  copy_res("/style/prevlabel.gif", filename);
-  sprintf(c, "/style/thumb-1.jpg");
-  copy_res("/style/thumb-1.jpg", filename);
 
-  // create subdir   js for lightbox2 viewer scripts
-  sprintf(c, "/js");
-  g_mkdir_with_parents(filename, 0755);
-  sprintf(c, "/js/builder.js");
-  copy_res("/js/builder.js", filename);
-  sprintf(c, "/js/effects.js");
-  copy_res("/js/effects.js", filename);
-  sprintf(c, "/js/lightbox.js");
-  copy_res("/js/lightbox.js", filename);
-  sprintf(c, "/js/lightbox-web.js");
-  copy_res("/js/lightbox-web.js", filename);
-  sprintf(c, "/js/prototype.js");
-  copy_res("/js/prototype.js", filename);
-  sprintf(c, "/js/scriptaculous.js");
-  copy_res("/js/scriptaculous.js", filename);
-#endif
   // create subdir pswp for photoswipe scripts
   sprintf(c, "/pswp/default-skin/");
   g_mkdir_with_parents(filename, 0755);
