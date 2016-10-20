@@ -57,13 +57,6 @@ typedef char* LPCWSTR;
 #endif
 #endif // __unix__
 
-#ifndef TRUE
-#define TRUE 1
-#endif
-#ifndef FALSE
-#define FALSE 0
-#endif
-
 #define get2BE(data,pos) ((((ushort16)(data)[pos]) << 8) | \
                            ((ushort16)(data)[pos+1]))
 
