@@ -100,7 +100,7 @@ static void init_source (j_decompress_ptr cinfo) {}
 static boolean fill_input_buffer (j_decompress_ptr cinfo)
 {
   struct jpeg_source_mgr* src = (struct jpeg_source_mgr*) cinfo->src;
-  return !!src->bytes_in_buffer;
+  return (boolean)!!src->bytes_in_buffer;
 }
 static void skip_input_data (j_decompress_ptr cinfo, long num_bytes)
 {

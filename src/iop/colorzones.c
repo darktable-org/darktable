@@ -274,9 +274,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  if(dev_L != NULL) dt_opencl_release_mem_object(dev_L);
-  if(dev_a != NULL) dt_opencl_release_mem_object(dev_a);
-  if(dev_b != NULL) dt_opencl_release_mem_object(dev_b);
+  dt_opencl_release_mem_object(dev_L);
+  dt_opencl_release_mem_object(dev_a);
+  dt_opencl_release_mem_object(dev_b);
   dt_print(DT_DEBUG_OPENCL, "[opencl_colorzones] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

@@ -873,7 +873,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
           if(pipe->shutdown)
           {
-            if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
+            dt_opencl_release_mem_object(cl_mem_input);
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
             return 1;
           }
@@ -943,7 +943,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
           if(pipe->shutdown)
           {
-            if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
+            dt_opencl_release_mem_object(cl_mem_input);
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
             return 1;
           }
@@ -995,7 +995,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
           if(pipe->shutdown)
           {
-            if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
+            dt_opencl_release_mem_object(cl_mem_input);
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
             return 1;
           }
@@ -1138,7 +1138,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
         if(pipe->shutdown)
         {
-          if(cl_mem_input) dt_opencl_release_mem_object(cl_mem_input);
+          dt_opencl_release_mem_object(cl_mem_input);
           dt_pthread_mutex_unlock(&pipe->busy_mutex);
           return 1;
         }
@@ -1184,14 +1184,14 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             if(pipe->shutdown)
             {
-              if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
+              dt_opencl_release_mem_object(cl_mem_input);
               dt_pthread_mutex_unlock(&pipe->busy_mutex);
               return 1;
             }
           }
 
           /* we can now release cl_mem_input */
-          if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
+          dt_opencl_release_mem_object(cl_mem_input);
           cl_mem_input = NULL;
           // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
           // so we're not just yet invalidating the (empty) output cache line.
@@ -2151,7 +2151,7 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
   dt_pthread_mutex_lock(&pipe->busy_mutex);
   if(ret)
   {
-    if(*cl_mem_output != 0) dt_opencl_release_mem_object(*cl_mem_output);
+    dt_opencl_release_mem_object(*cl_mem_output);
     *cl_mem_output = NULL;
   }
   else
@@ -2242,7 +2242,7 @@ restart:
   if(oclerr || (err && pipe->opencl_error))
   {
     // Well, there were errors -> we might need to free an invalid opencl memory object
-    if(cl_mem_out != NULL) dt_opencl_release_mem_object(cl_mem_out);
+    dt_opencl_release_mem_object(cl_mem_out);
     dt_opencl_unlock_device(pipe->devid); // release opencl resource
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     pipe->opencl_enabled = 0; // disable opencl for this pipe
