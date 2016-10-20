@@ -263,11 +263,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
-  if(dev_r != NULL) dt_opencl_release_mem_object(dev_r);
-  if(dev_g != NULL) dt_opencl_release_mem_object(dev_g);
-  if(dev_b != NULL) dt_opencl_release_mem_object(dev_b);
-  if(dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
+  dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_r);
+  dt_opencl_release_mem_object(dev_g);
+  dt_opencl_release_mem_object(dev_b);
+  dt_opencl_release_mem_object(dev_coeffs);
   dt_print(DT_DEBUG_OPENCL, "[opencl_colorout] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

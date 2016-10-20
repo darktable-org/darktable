@@ -280,7 +280,7 @@ void *dt_opencl_alloc_device_buffer(const int devid, const size_t size);
 
 void *dt_opencl_alloc_device_buffer_with_flags(const int devid, const size_t size, const int flags);
 
-void dt_opencl_release_mem_object(void *mem);
+void dt_opencl_release_mem_object(cl_mem mem);
 
 void *dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, const int flags, size_t offset,
                            size_t size);

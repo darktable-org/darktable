@@ -89,7 +89,7 @@ void X3fDecoder::decodeMetaDataInternal( CameraMetaData *meta )
 //
 // If the name is read, it will return true, and the make/model
 // will be available in camera_make/camera_model members.
-boolean X3fDecoder::readName() {
+bool X3fDecoder::readName() {
   if (camera_make.length() != 0 && camera_model.length() != 0) {
     return true;
   }

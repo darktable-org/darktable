@@ -55,7 +55,7 @@ protected:
   int SigmaDecode(BitPumpMSB *bits);
   string getIdAsString(ByteStream *bytes);
   void SigmaSkipOne(BitPumpMSB *bits);
-  boolean readName();
+  bool readName();
   X3fImage *curr_image;
   int pred[3];
   uint32 plane_sizes[3];

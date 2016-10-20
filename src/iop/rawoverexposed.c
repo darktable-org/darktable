@@ -387,23 +387,23 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
-  if(dev_colors != NULL) dt_opencl_release_mem_object(dev_colors);
-  if(dev_thresholds != NULL) dt_opencl_release_mem_object(dev_thresholds);
-  if(dev_coord != NULL) dt_opencl_release_mem_object(dev_coord);
-  if(coordbuf != NULL) dt_free_align(coordbuf);
-  if(dev_raw != NULL) dt_opencl_release_mem_object(dev_raw);
+  dt_opencl_release_mem_object(dev_xtrans);
+  dt_opencl_release_mem_object(dev_colors);
+  dt_opencl_release_mem_object(dev_thresholds);
+  dt_opencl_release_mem_object(dev_coord);
+  dt_free_align(coordbuf);
+  dt_opencl_release_mem_object(dev_raw);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
   return TRUE;
 
 error:
-  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
-  if(dev_colors != NULL) dt_opencl_release_mem_object(dev_colors);
-  if(dev_thresholds != NULL) dt_opencl_release_mem_object(dev_thresholds);
-  if(dev_coord != NULL) dt_opencl_release_mem_object(dev_coord);
-  if(coordbuf != NULL) dt_free_align(coordbuf);
-  if(dev_raw != NULL) dt_opencl_release_mem_object(dev_raw);
+  dt_opencl_release_mem_object(dev_xtrans);
+  dt_opencl_release_mem_object(dev_colors);
+  dt_opencl_release_mem_object(dev_thresholds);
+  dt_opencl_release_mem_object(dev_coord);
+  dt_free_align(coordbuf);
+  dt_opencl_release_mem_object(dev_raw);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   dt_print(DT_DEBUG_OPENCL, "[opencl_rawoverexposed] couldn't enqueue kernel! %d\n", err);
   return FALSE;

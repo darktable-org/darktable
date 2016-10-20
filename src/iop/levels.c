@@ -365,7 +365,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   return TRUE;
 
 error:
-  if(dev_lut != NULL) dt_opencl_release_mem_object(dev_lut);
+  dt_opencl_release_mem_object(dev_lut);
   dt_print(DT_DEBUG_OPENCL, "[opencl_levels] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
