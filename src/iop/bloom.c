@@ -372,12 +372,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err != CL_SUCCESS) goto error;
 
   for(int i = 0; i < NUM_BUCKETS; i++)
-    if(dev_tmp[i] != NULL) dt_opencl_release_mem_object(dev_tmp[i]);
+    dt_opencl_release_mem_object(dev_tmp[i]);
   return TRUE;
 
 error:
   for(int i = 0; i < NUM_BUCKETS; i++)
-    if(dev_tmp[i] != NULL) dt_opencl_release_mem_object(dev_tmp[i]);
+    dt_opencl_release_mem_object(dev_tmp[i]);
   dt_print(DT_DEBUG_OPENCL, "[opencl_bloom] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

@@ -669,7 +669,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_coeffs);
-  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
+  dt_opencl_release_mem_object(dev_xtrans);
 
   piece->pipe->dsc.temperature.enabled = 1;
   for(int k = 0; k < 3; k++)
@@ -680,8 +680,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  if(dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
-  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
+  dt_opencl_release_mem_object(dev_coeffs);
+  dt_opencl_release_mem_object(dev_xtrans);
   dt_print(DT_DEBUG_OPENCL, "[opencl_white_balance] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

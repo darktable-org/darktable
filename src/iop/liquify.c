@@ -1454,12 +1454,12 @@ static cl_int_t apply_global_distortion_map_cl (struct dt_iop_module_t *module,
 
 error:
 
-  if (dev_kernel    ) dt_opencl_release_mem_object (dev_kernel);
-  if (dev_kdesc     ) dt_opencl_release_mem_object (dev_kdesc);
-  if (dev_map_extent) dt_opencl_release_mem_object (dev_map_extent);
-  if (dev_map       ) dt_opencl_release_mem_object (dev_map);
-  if (dev_roi_out   ) dt_opencl_release_mem_object (dev_roi_out);
-  if (dev_roi_in    ) dt_opencl_release_mem_object (dev_roi_in);
+  dt_opencl_release_mem_object (dev_kernel);
+  dt_opencl_release_mem_object (dev_kdesc);
+  dt_opencl_release_mem_object (dev_map_extent);
+  dt_opencl_release_mem_object (dev_map);
+  dt_opencl_release_mem_object (dev_roi_out);
+  dt_opencl_release_mem_object (dev_roi_in);
   if (k             ) free (k);
 
   return err;
