@@ -3468,7 +3468,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="200" white="3800"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="COOLPIX A" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="COOLPIX A" mode="14bit-compressed">
 		<ID make="Nikon" model="Coolpix A">Nikon Coolpix A</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3477,18 +3477,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-44" height="0"/>
-		<Sensor black="0" white="4095"/>
-	</Camera>
-	<Camera make="NIKON CORPORATION" model="COOLPIX A" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
-		<ID make="Nikon" model="Coolpix A">Nikon Coolpix A</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="-44" height="0"/>
-		<Sensor black="0" white="4095"/>
+		<Sensor black="0" white="15892"/>
 	</Camera>
 	<Camera make="NIKON" model="COOLPIX P6000" mode="12bit-uncompressed" decoder_version="1">
 		<ID make="Nikon" model="Coolpix P6000">Nikon Coolpix P6000</ID>
