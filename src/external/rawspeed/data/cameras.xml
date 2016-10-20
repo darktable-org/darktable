@@ -3336,7 +3336,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 AW1" mode="12bit-compressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON 1 AW1" mode="12bit-compressed" decoder_version="4">
 		<ID make="Nikon" model="1 AW1">Nikon 1 AW1</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3346,17 +3346,7 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
-	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 AW1" mode="12bit-uncompressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
-		<ID make="Nikon" model="1 AW1">Nikon 1 AW1</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="4095"/>
+		<Sensor black="0" white="3300" iso_list="160"/>
 	</Camera>
 	<Camera make="NIKON" model="E5400" mode="12bit-uncompressed" decoder_version="3">
 		<ID make="Nikon" model="E5400">Nikon E5400</ID>
