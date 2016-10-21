@@ -384,7 +384,7 @@
 				<Horizontal y="0" height="33"/>
 			</BlackAreas>
 		</Camera>
-		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw1"> <!-- "mRaw" -->
+		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw1" decoder_version="7">
 			<ID make="Canon" model="EOS 80D">Canon EOS 80D</ID>
 			<Crop x="28" y="10" width="0" height="0"/>
 			<Sensor black="0" white="48816" iso_list="320 640 1250 2500 5000"/>
@@ -398,7 +398,7 @@
 				<Hint name="wrapped_cr2_slices" value=""/>
 			</Hints>
 		</Camera>
-		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw2"> <!-- "sRaw" -->
+		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw2" decoder_version="7">
 			<ID make="Canon" model="EOS 80D">Canon EOS 80D</ID>
 			<Crop x="0" y="0" width="0" height="0"/>
 			<Sensor black="0" white="48468" iso_list="2500"/>
