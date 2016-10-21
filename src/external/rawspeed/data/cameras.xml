@@ -384,7 +384,7 @@
 				<Horizontal y="0" height="33"/>
 			</BlackAreas>
 		</Camera>
-		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw1" supported="yes"> <!-- "mRaw" -->
+		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw1"> <!-- "mRaw" -->
 			<ID make="Canon" model="EOS 80D">Canon EOS 80D</ID>
 			<Crop x="28" y="10" width="0" height="0"/>
 			<Sensor black="0" white="48816" iso_list="320 640 1250 2500 5000"/>
