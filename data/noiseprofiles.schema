@@ -17,7 +17,9 @@
         "properties": {
           "maker": {
             "type": "string",
+            "pattern": "^[a-zA-Z]+$",
             "minLength": 3,
+            "maxLength": 9,
             "enum": [
               "Canon",
               "Fujifilm",
@@ -42,7 +44,9 @@
                 },
                 "model": {
                   "type": "string",
-                  "minLength": 2
+                  "pattern": "^[a-zA-Z0-9\\- \\*]+$",
+                  "minLength": 2,
+                  "maxLength": 18
                 },
                 "profiles": {
                   "type": "array",
@@ -51,7 +55,9 @@
                     "properties": {
                       "name": {
                         "type": "string",
-                        "minLength": 10
+                        "pattern": "^[a-zA-Z0-9\\- \\*]+ iso [0-9]{2,6}$",
+                        "minLength": 10,
+                        "maxLength": 32
                       },
                       "iso": {
                         "type": "integer",
@@ -75,7 +81,11 @@
                         "maxItems": 3
                       },
                       "skip": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "default" : false,
+                        "enum": [
+                          true
+                        ]
                       }
                     },
                     "required": [
