@@ -29,7 +29,7 @@ namespace RawSpeed {
 
 Cr2Decoder::Cr2Decoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
-  decoderVersion = 6;
+  decoderVersion = 7;
 }
 
 Cr2Decoder::~Cr2Decoder(void) {
