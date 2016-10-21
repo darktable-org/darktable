@@ -125,7 +125,7 @@
   </xs:complexType>
   <xs:simpleType name="ColorRowTypeType">
     <xs:restriction base="xs:string">
-      <xs:pattern value="[RGB]{2,6}"/>
+      <xs:pattern value="[RGB]{2,2}([RGB]{4,4})?"/>
       <xs:minLength value="2"/>
       <xs:maxLength value="6"/>
       <xs:enumeration value="BG"/>
@@ -182,7 +182,10 @@
   </xs:simpleType>
   <xs:complexType name="CFA2Type">
     <xs:sequence>
-      <xs:element type="ColorRowType" name="ColorRow" minOccurs="2" maxOccurs="6"/>
+      <xs:choice>
+        <xs:element type="ColorRowType" name="ColorRow" minOccurs="2" maxOccurs="2"/>
+        <xs:element type="ColorRowType" name="ColorRow" minOccurs="6" maxOccurs="6"/>
+      </xs:choice>
     </xs:sequence>
     <xs:attribute type="CFA2TypeWidthType" name="width" use="required"/>
     <xs:attribute type="CFA2TypeHeightType" name="height" use="required"/>
@@ -197,12 +200,28 @@
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
+  <xs:simpleType name="IsoType">
+    <xs:restriction base="xs:unsignedInt">
+      <xs:pattern value="[0-9]{1,6}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="IsoList">
+    <xs:restriction>
+      <xs:simpleType>
+        <xs:list itemType="IsoType"/>
+      </xs:simpleType>
+      <xs:minLength value="1"/>
+      <xs:maxLength value="12"/>
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="SensorTypeIsoListType">
-    <xs:list itemType="xs:unsignedInt"/>
+    <xs:restriction base="IsoList">
+      <xs:pattern value="[0-9]{2,6}( [0-9]{3,6}){0,11}"/>
+    </xs:restriction>
   </xs:simpleType>
   <xs:attributeGroup name="SensorTypeIsoLimitsType">
-    <xs:attribute type="xs:unsignedShort" name="iso_min"/>
-    <xs:attribute type="xs:unsignedShort" name="iso_max"/>
+    <xs:attribute type="IsoType" name="iso_min"/>
+    <xs:attribute type="IsoType" name="iso_max"/>
   </xs:attributeGroup>
   <xs:complexType name="SensorType">
     <xs:simpleContent>
@@ -232,8 +251,10 @@
   </xs:complexType>
   <xs:complexType name="BlackAreasType">
     <xs:sequence>
-      <xs:element type="VerticalType" name="Vertical" minOccurs="0" maxOccurs="2"/>
-      <xs:element type="HorizontalType" name="Horizontal" minOccurs="0" maxOccurs="2"/>
+      <xs:choice minOccurs="1" maxOccurs="2">
+        <xs:element type="VerticalType" name="Vertical" minOccurs="1" maxOccurs="2"/>
+        <xs:element type="HorizontalType" name="Horizontal" minOccurs="1" maxOccurs="2"/>
+      </xs:choice>
     </xs:sequence>
   </xs:complexType>
   <xs:simpleType name="AliasTypeType">
@@ -313,7 +334,7 @@
   </xs:complexType>
   <xs:simpleType name="CameraMakeType">
     <xs:restriction base="xs:string">
-      <xs:pattern value="[a-zA-Z ,./-]{3,27}"/>
+      <xs:pattern value="[a-zA-Z \-,./]{3,27}"/>
       <xs:minLength value="3"/>
       <xs:maxLength value="27"/>
       <xs:enumeration value="ARRI"/>
