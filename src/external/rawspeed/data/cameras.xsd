@@ -301,7 +301,6 @@
       <xs:enumeration value="invert_sraw_wb"/>
       <xs:enumeration value="jpeg32_bitorder"/>
       <xs:enumeration value="msb_override"/>
-      <xs:enumeration value="nikon_override_auto_black"/>
       <xs:enumeration value="nikon_wb_adjustment"/>
       <xs:enumeration value="no_decompressed_lowbits"/>
       <xs:enumeration value="offset"/>
