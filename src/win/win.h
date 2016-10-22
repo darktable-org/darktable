@@ -20,6 +20,7 @@
 // before including windows.h, but then we will miss some defines needed for libraries like libjpeg.
 #undef near
 #undef grp2
+#undef interface
 
 #define sleep(n) Sleep(1000 * n)
 #define HAVE_BOOLEAN
