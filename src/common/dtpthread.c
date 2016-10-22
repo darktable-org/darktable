@@ -26,12 +26,16 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef _WIN32
+#include "win/rlimit.h"
+#else
 #include <sys/resource.h>
+#endif //_WIN32
 
 int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *arg)
 {
   int ret;
-
+  
   struct rlimit rlim = { 0 };
 
   ret = getrlimit(RLIMIT_STACK, &rlim);
@@ -54,7 +58,7 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
 
     rlim.rlim_cur = WANTED_STACK_SIZE;
   }
-
+  
   pthread_attr_t attr;
 
   ret = pthread_attr_init(&attr);
@@ -86,7 +90,7 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
       fprintf(stderr, "[dt_pthread_create] error: pthread_attr_setstacksize() returned %i\n", ret);
     }
   }
-
+  
   ret = pthread_create(thread, &attr, start_routine, arg);
 
   pthread_attr_destroy(&attr);

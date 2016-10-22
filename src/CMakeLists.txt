@@ -115,6 +115,10 @@ if(WIN32)
   list(APPEND HEADER_FILES "win/statvfs.h")
 
   list(APPEND SOURCE_FILES "win/getrusage.c")
+  list(APPEND HEADER_FILES "win/getrusage.h")
+
+  list(APPEND SOURCE_FILES "win/rlimit.c")
+  list(APPEND HEADER_FILES "win/rlimit.h")
 
   # Use mingw's sprintf instead of windows's
   ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
@@ -411,9 +415,7 @@ if(WIN32)
   SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
   SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
 
-  # Don't really need these IMHO
-  #list(APPEND LIBS ws2_32)
-  #list(APPEND LIBS msvcrt) # Needed for _aligned_alloc()
+  list(APPEND LIBS psapi) # Needed for GetProcessMemoryInfo()
 endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
