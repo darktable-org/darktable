@@ -1978,7 +1978,7 @@
 		<Crop x="2" y="0" width="4282" height="2844"/>
 		<Sensor black="0" white="3972"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="14bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="14bit-compressed">
 		<ID make="Nikon" model="D3S">Nikon D3S</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -1986,10 +1986,10 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="16384"/>
+		<Crop x="2" y="0" width="0" height="0"/>
+		<Sensor black="0" white="15520"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="14bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="14bit-uncompressed">
 		<ID make="Nikon" model="D3S">Nikon D3S</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -1997,8 +1997,8 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="16384"/>
+		<Crop x="2" y="0" width="0" height="0"/>
+		<Sensor black="0" white="15520"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="12bit-compressed">
 		<ID make="Nikon" model="D3S">Nikon D3S</ID>
@@ -2008,7 +2008,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="2" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3880"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="12bit-uncompressed">
@@ -2019,7 +2019,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="2" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3880"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3X" mode="14bit-compressed">
