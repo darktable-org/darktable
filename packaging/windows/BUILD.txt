@@ -9,10 +9,10 @@ How to make a darktable windows installer (64 bit Intel only):
     $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,libglade,dbus-glib,libusb-compat,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk-engines,gtk3,pugixml,sdl,libexif}
     
     For osm-gps-map:
-    $ pacman -S mingw-w64-x86_64-{python2-cairo,python2-pygtk}
+    $ pacman -S mingw-w64-x86_64-{python2-cairo,python2-pygtk,osm-gps-map}
 
     For gphoto2:
-    $ pacman -S mingw-w64-x86_64-{libusb,popt}
+    $ pacman -S mingw-w64-x86_64-{libusb,popt,libgphoto2}
 
     For Saxon:
     $ pacman -S unzip perl-Locale-Gettext perl-TermReadKey perl-sgmls
@@ -104,13 +104,13 @@ ISSUES - FIXED
     * Added SLIDESHOW
     * Added OPENMAP Support
     * Added LIBGPHOTO (camera support)
+    * fixed getrlimit/setrlimit
 
 ISSUES - TO BE FIXED
     lua select() replacement in function read_cb
     ADD COLORD or find a way to replace it
-    lensfun database should be deployed to Appdata/local/lensfun (no version_1 subfolder), alternatively unders darktable/share
+    lensfun database should be deployed to Appdata/local/lensfun (no version_1 subfolder), alternatively under darktable/share
     check asprntf in rs-identify
-    check _JOB_TYPE_EXECUTE_LIVE_VIEW why doesnt work?
     right alignment of views at the toolbar
     OpenCL64.dll!!!
     fix getrlimit: https://msdn.microsoft.com/ko-kr/library/ms811896.aspx#ucmgch09_topic9
