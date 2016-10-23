@@ -98,13 +98,12 @@ ISSUES - FIXED
     * Finding OpenCL library - done
     * Replacing OpenCL symlinks with a filename/MD5tag combination
     * Loading libraries / finding plugin library
-    * Do we need lib ws2_32? - no, done
-    * Do we need lib msvcrt? - no, done
+    * Removing ws2_32 and msvcrt as not needed
     * Added LUA (needs a special old, 5.2 version of the package)
     * Added SLIDESHOW
     * Added OPENMAP Support
     * Added LIBGPHOTO (camera support)
-    * fixed getrlimit/setrlimit
+    * fixed getrlimit/setrlimit using https://msdn.microsoft.com/ko-kr/library/ms811896.aspx#ucmgch09_topic9
 
 ISSUES - TO BE FIXED
     lua select() replacement in function read_cb
@@ -113,4 +112,4 @@ ISSUES - TO BE FIXED
     check asprntf in rs-identify
     right alignment of views at the toolbar
     OpenCL64.dll!!!
-    fix getrlimit: https://msdn.microsoft.com/ko-kr/library/ms811896.aspx#ucmgch09_topic9
+    fix dt_print_mem_usage in darktable.h
