@@ -13,6 +13,7 @@
 #define _WIN32_WINNT 0x0600
 #include <winsock2.h>
 #include <windows.h>
+#include <psapi.h>
 
 // ugly hack to make our code work. windows.h has some terrible includes which define these things
 // that clash with our variable names. Including them can be omitted when adding
