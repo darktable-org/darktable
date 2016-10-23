@@ -720,13 +720,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
 error:
   if(b != NULL) dt_bilateral_free_cl(b);
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
-  if(dev_target_hist != NULL) dt_opencl_release_mem_object(dev_target_hist);
-  if(dev_source_ihist != NULL) dt_opencl_release_mem_object(dev_source_ihist);
-  if(dev_target_mean != NULL) dt_opencl_release_mem_object(dev_target_mean);
-  if(dev_source_mean != NULL) dt_opencl_release_mem_object(dev_source_mean);
-  if(dev_var_ratio != NULL) dt_opencl_release_mem_object(dev_var_ratio);
-  if(dev_mapio != NULL) dt_opencl_release_mem_object(dev_mapio);
+  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_target_hist);
+  dt_opencl_release_mem_object(dev_source_ihist);
+  dt_opencl_release_mem_object(dev_target_mean);
+  dt_opencl_release_mem_object(dev_source_mean);
+  dt_opencl_release_mem_object(dev_var_ratio);
+  dt_opencl_release_mem_object(dev_mapio);
   dt_print(DT_DEBUG_OPENCL, "[opencl_colormapping] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

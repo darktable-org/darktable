@@ -224,11 +224,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                         piece->pipe->dsc.processed_maximum[2]);
   for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
 
-  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
+  dt_opencl_release_mem_object(dev_xtrans);
   return TRUE;
 
 error:
-  if(dev_xtrans != NULL) dt_opencl_release_mem_object(dev_xtrans);
+  dt_opencl_release_mem_object(dev_xtrans);
   dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
