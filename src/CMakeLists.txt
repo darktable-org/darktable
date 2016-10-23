@@ -120,6 +120,9 @@ if(WIN32)
   list(APPEND SOURCE_FILES "win/rlimit.c")
   list(APPEND HEADER_FILES "win/rlimit.h")
 
+  list(APPEND SOURCE_FILES "win/getdelim.c")
+  list(APPEND HEADER_FILES "win/getdelim.h")
+
   # Use mingw's sprintf instead of windows's
   ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
 endif(WIN32)
