@@ -773,30 +773,6 @@ if(BUILD_SLIDESHOW)
   endif(SDL_FOUND AND OPENGL_FOUND)
 endif(BUILD_SLIDESHOW)
 
-#diagnostic at the end of the CMAKE file
-
-get_cmake_property(_variableNames VARIABLES)
-foreach (_variableName ${_variableNames})
-    #message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
-
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-  #message(STATUS "dir='${dir}'")
-endforeach()
-
-foreach(lib ${LIBS})
-  message(STATUS "lib='${lib}'")
-endforeach()
-
-#message(STATUS "lib='${LIBS}'")
-
-# the compiler flags for compiling C sources 
-MESSAGE( STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS} )
-
-# the compiler flags for compiling C++ sources 
-MESSAGE( STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS} )
-
 #
 # build darktable executable
 #

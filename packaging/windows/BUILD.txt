@@ -92,11 +92,11 @@ How to make a darktable windows installer (64 bit Intel only):
      $ ./make-windows-installer
 
 ISSUES - FIXED
-    * darktablerc config file  is being generated with Windows style line endings ( CRLF \r\n) , and file reading functions are expecting a UNIX style line ending (only CR \n)
-    same problem with strip_semicolons_from_keymap function 
+    * darktablerc config file  is being generated with Windows style line endings ( CRLF \r\n) , and config file reading functions are expecting a UNIX style line ending (only CR \n)
+    same problem with strip_semicolons_from_keymap function
     * Reading system parameters (memory/CPU) at init - done
     * Finding OpenCL library - done
-    * Replacing OpenCL symlinks with a filename/MD5tag combination
+    * Replacing OpenCL symlinks with a filename/MD5tag combination (symlinks require admin priviledges on windows)
     * Loading libraries / finding plugin library
     * Removing ws2_32 and msvcrt as not needed
     * Added LUA (needs a special old, 5.2 version of the package)
@@ -108,8 +108,10 @@ ISSUES - FIXED
     * Added dt_print_mem_usage for Windows
 
 TODO LIST
-    lua select() replacement in function read_cb
-    ADD COLORD or find a way to replace it
-    lensfun database should be deployed to Appdata/local/lensfun (no version_1 subfolder), alternatively under darktable/share
-    right alignment of views at the toolbar
-    OpenCL64.dll!!!
+    Port lua select() in function read_cb: https://msdn.microsoft.com/en-us/library/aa363858(VS.85).aspx ?
+    Port COLORD or find a way to replace it
+    Port CUPS or find a way to replace it
+    Port FLICKCURL
+    lensfun database should be deployed to Appdata/local/lensfun (no version_1 subfolder), alternatively under darktable/share at install
+    right alignment of views at the toolbar (_lib_view_toolbox_add ?)
+    OpenCL64.dll or OpenCL.dll?
