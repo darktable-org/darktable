@@ -530,6 +530,7 @@ ssize_t dt_tag_import(const char *filename)
   char *line = NULL;
   size_t len = 0;
   ssize_t count = 0;
+
   while(getline(&line, &len, fd) != -1)
   {
     // remove newlines and set start past the initial tabs
