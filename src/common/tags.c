@@ -16,7 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "common/tags.h"
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -24,6 +23,9 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include <glib.h>
+#if defined (_WIN32)
+#include "win/getdelim.h"
+#endif // defined (_WIN32)
 
 gboolean dt_tag_new(const char *name, guint *tagid)
 {
@@ -528,7 +530,6 @@ ssize_t dt_tag_import(const char *filename)
   char *line = NULL;
   size_t len = 0;
   ssize_t count = 0;
-
   while(getline(&line, &len, fd) != -1)
   {
     // remove newlines and set start past the initial tabs
