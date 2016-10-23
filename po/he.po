@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-22 16:39+0300\n"
-"PO-Revision-Date: 2016-10-22 17:31+0200\n"
+"POT-Creation-Date: 2016-10-23 16:01+0300\n"
+"PO-Revision-Date: 2016-10-23 16:11+0200\n"
 "Last-Translator: Shlomi Alon-Braitbart <sbraitbart@gmail.com>\n"
 "Language-Team: \n"
 "Language: he_IL\n"
@@ -723,7 +723,7 @@ msgstr "בדוק זמני עדכון עבור כל קבצי xmp בעליה בכ�
 
 #: ../build/src/preferences_gen.h:2721
 msgid "executable for playing audio files"
-msgstr "קובץ הרצה לניגון קבצי שמע"
+msgstr "קובץ ריצה לניגון קבצי שמע"
 
 #: ../build/src/preferences_gen.h:2737
 msgid ""
@@ -1422,13 +1422,13 @@ msgstr "תמונות חייבות להיות בעלות גודל ואורינט�
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
-msgstr[0] "מאחד תמונה %d "
-msgstr[1] "מאחד תמונות %d "
+msgstr[0] "ממזג תמונה %d "
+msgstr[1] "ממזג תמונות %d "
 
 #: ../src/control/jobs/control_jobs.c:487
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "איחוד HDR נכתב '%s'"
+msgstr "מיזוג HDR נכתב '%s'"
 
 #: ../src/control/jobs/control_jobs.c:513
 #, c-format
