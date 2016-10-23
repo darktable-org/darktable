@@ -484,8 +484,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
 error:
   if(b) dt_bilateral_free_cl(b);
-  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
-  if(dev_r != NULL) dt_opencl_release_mem_object(dev_r);
+  dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_r);
   dt_print(DT_DEBUG_OPENCL, "[opencl_global_tonemap] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

@@ -30,7 +30,7 @@
     </para>
 
     <para>
-      Some cameras are particularly advanced in offering various film simulation modes at your
+      Some cameras are particularly advanced in offering various film simulation modes of your
       choice. With the help of <filename>darktable-chart</filename> and the underlying modules
       you can now create styles that replicate these film simulations from within darktable.
     </para>
@@ -242,7 +242,7 @@
     </title>
 
     <para>
-      To start with, you need a suited photo of your color reference card in RAW+JPEG format. It
+      To start with, you need a suitable photo of your color reference card in RAW+JPEG format. It
       goes beyond the scope of this manual to explain the details of how to take this photo, but
       in a nutshell you need to make the shot on a sunny day around midday with the light source
       (sun) shining at an angle onto the card. You need to avoid any glare in the image. The
@@ -256,8 +256,8 @@
 
     <para>
       You then open the raw file in darktable and disable most modules, especially
-      <emphasis>base curve</emphasis>. You select the standard input matrix in the
-      <emphasis>input color profile</emphasis> module and disable gamut clipping. You select
+      <emphasis>base curve</emphasis>. Select the standard input matrix in the
+      <emphasis>input color profile</emphasis> module and disable gamut clipping. Select
       <quote>camera white balance</quote> in the <emphasis>white balance</emphasis> module (see
       <xref linkend="base_curve"/>, <xref linkend="input_color_profile"/>, and
       <xref linkend="whitebalance"/>).

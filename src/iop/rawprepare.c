@@ -475,8 +475,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   return TRUE;
 
 error:
-  if(dev_sub != NULL) dt_opencl_release_mem_object(dev_sub);
-  if(dev_div != NULL) dt_opencl_release_mem_object(dev_div);
+  dt_opencl_release_mem_object(dev_sub);
+  dt_opencl_release_mem_object(dev_div);
   dt_print(DT_DEBUG_OPENCL, "[opencl_rawprepare] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

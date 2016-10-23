@@ -2979,10 +2979,10 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
 error:
   if(_mask != NULL) dt_free_align(_mask);
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
-  if(dev_mask != NULL) dt_opencl_release_mem_object(dev_mask);
-  if(dev_masktmp != NULL) dt_opencl_release_mem_object(dev_masktmp);
-  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_mask);
+  dt_opencl_release_mem_object(dev_masktmp);
+  dt_opencl_release_mem_object(dev_m);
   dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

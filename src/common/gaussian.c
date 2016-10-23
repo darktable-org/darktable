@@ -524,8 +524,8 @@ void dt_gaussian_free_cl(dt_gaussian_cl_t *g)
   free(g->min);
   free(g->max);
   // free device mem
-  if(g->dev_temp1) dt_opencl_release_mem_object(g->dev_temp1);
-  if(g->dev_temp2) dt_opencl_release_mem_object(g->dev_temp2);
+  dt_opencl_release_mem_object(g->dev_temp1);
+  dt_opencl_release_mem_object(g->dev_temp2);
   free(g);
 }
 
@@ -619,8 +619,8 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
 error:
   free(g->min);
   free(g->max);
-  if(g->dev_temp1) dt_opencl_release_mem_object(g->dev_temp1);
-  if(g->dev_temp2) dt_opencl_release_mem_object(g->dev_temp2);
+  dt_opencl_release_mem_object(g->dev_temp1);
+  dt_opencl_release_mem_object(g->dev_temp2);
   g->dev_temp1 = g->dev_temp2 = NULL;
   free(g);
   return NULL;
