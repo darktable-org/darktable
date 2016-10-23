@@ -1,0 +1,468 @@
+<?xml version="1.0"?>
+<!--
+  License: CC-BY-SA 3.0
+
+  This work is licensed under a
+  Creative Commons Attribution-ShareAlike 3.0 Unported License.
+
+  See more at:
+  http://creativecommons.org/licenses/by-sa/3.0/
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified">
+  <xs:simpleType name="IDTypeType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z0-9 \-*()]{2,28}"/>
+      <xs:minLength value="2"/>
+      <xs:maxLength value="28"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="IDTypeMakeType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z ]{4,10}"/>
+      <xs:minLength value="4"/>
+      <xs:maxLength value="10"/>
+      <xs:enumeration value="Canon"/>
+      <xs:enumeration value="Epson"/>
+      <xs:enumeration value="Fujifilm"/>
+      <xs:enumeration value="GITUP"/>
+      <xs:enumeration value="Hasselblad"/>
+      <xs:enumeration value="Kodak"/>
+      <xs:enumeration value="Leaf"/>
+      <xs:enumeration value="Leica"/>
+      <xs:enumeration value="Mamiya"/>
+      <xs:enumeration value="Minolta"/>
+      <xs:enumeration value="Nikon"/>
+      <xs:enumeration value="Olympus"/>
+      <xs:enumeration value="OnePlus"/>
+      <xs:enumeration value="Panasonic"/>
+      <xs:enumeration value="Pentax"/>
+      <xs:enumeration value="Phase One"/>
+      <xs:enumeration value="Ricoh"/>
+      <xs:enumeration value="Samsung"/>
+      <xs:enumeration value="Sinar"/>
+      <xs:enumeration value="Sony"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="IDTypeModelType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z0-9 \-*()]{1,22}"/>
+      <xs:minLength value="1"/>
+      <xs:maxLength value="22"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="IDType">
+    <xs:simpleContent>
+      <xs:extension base="IDTypeType">
+        <xs:attribute type="IDTypeMakeType" name="make" use="required"/>
+        <xs:attribute type="IDTypeModelType" name="model" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:simpleType name="ColorTypeType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[A-Z_]{3,10}"/>
+      <xs:minLength value="3"/>
+      <xs:maxLength value="10"/>
+      <xs:enumeration value="BLUE"/>
+      <xs:enumeration value="CYAN"/>
+      <xs:enumeration value="FUJI_GREEN"/>
+      <xs:enumeration value="GREEN"/>
+      <xs:enumeration value="MAGENTA"/>
+      <xs:enumeration value="RED"/>
+      <xs:enumeration value="YELLOW"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ColorTypeXType">
+    <xs:restriction base="xs:unsignedByte">
+      <xs:pattern value="[0-2]{1,1}"/>
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="2"/>
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ColorTypeYType">
+    <xs:restriction base="xs:unsignedByte">
+      <xs:pattern value="[0-2]{1,1}"/>
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="2"/>
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ColorType">
+    <xs:simpleContent>
+      <xs:extension base="ColorTypeType">
+        <xs:attribute type="ColorTypeXType" name="x" use="required"/>
+        <xs:attribute type="ColorTypeYType" name="y" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:simpleType name="CFATypeWidthType">
+    <xs:restriction base="xs:unsignedByte">
+      <xs:pattern value="[2]{1,1}"/>
+      <xs:minInclusive value="2"/>
+      <xs:maxInclusive value="2"/>
+      <xs:enumeration value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="CFATypeHeightType">
+    <xs:restriction base="xs:unsignedByte">
+      <xs:pattern value="[2]{1,1}"/>
+      <xs:minInclusive value="2"/>
+      <xs:maxInclusive value="2"/>
+      <xs:enumeration value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="CFAType">
+    <xs:sequence>
+      <xs:element type="ColorType" name="Color" minOccurs="4" maxOccurs="4"/>
+    </xs:sequence>
+    <xs:attribute type="CFATypeWidthType" name="width" use="required"/>
+    <xs:attribute type="CFATypeHeightType" name="height" use="required"/>
+  </xs:complexType>
+  <xs:simpleType name="ColorRowTypeType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[RGB]{2,2}([RGB]{4,4})?"/>
+      <xs:minLength value="2"/>
+      <xs:maxLength value="6"/>
+      <xs:enumeration value="BG"/>
+      <xs:enumeration value="BGBRGR"/>
+      <xs:enumeration value="BRGRBG"/>
+      <xs:enumeration value="GB"/>
+      <xs:enumeration value="GBGGRG"/>
+      <xs:enumeration value="GGBGGR"/>
+      <xs:enumeration value="GGRGGB"/>
+      <xs:enumeration value="GR"/>
+      <xs:enumeration value="GRGGBG"/>
+      <xs:enumeration value="RBGBRG"/>
+      <xs:enumeration value="RG"/>
+      <xs:enumeration value="RGRBGB"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ColorRowTypeTypeYType">
+    <xs:restriction base="xs:unsignedByte">
+      <xs:pattern value="[0-6]{1,1}"/>
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="6"/>
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="3"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="5"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ColorRowType">
+    <xs:simpleContent>
+      <xs:extension base="ColorRowTypeType">
+        <xs:attribute type="ColorRowTypeTypeYType" name="y" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:simpleType name="CFA2TypeWidthType">
+    <xs:restriction base="xs:unsignedByte">
+      <xs:pattern value="[26]{1,1}"/>
+      <xs:minInclusive value="2"/>
+      <xs:maxInclusive value="6"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="6"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="CFA2TypeHeightType">
+    <xs:restriction base="xs:unsignedByte">
+      <xs:pattern value="[26]{1,1}"/>
+      <xs:minInclusive value="2"/>
+      <xs:maxInclusive value="6"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="6"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="CFA2Type">
+    <xs:sequence>
+      <xs:choice>
+        <xs:element type="ColorRowType" name="ColorRow" minOccurs="2" maxOccurs="2"/>
+        <xs:element type="ColorRowType" name="ColorRow" minOccurs="6" maxOccurs="6"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute type="CFA2TypeWidthType" name="width" use="required"/>
+    <xs:attribute type="CFA2TypeHeightType" name="height" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="CropType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:unsignedShort" name="x" use="required"/>
+        <xs:attribute type="xs:unsignedByte" name="y" use="required"/>
+        <xs:attribute type="xs:short" name="width" use="required"/>
+        <xs:attribute type="xs:short" name="height" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:simpleType name="IsoType">
+    <xs:restriction base="xs:unsignedInt">
+      <xs:pattern value="[0-9]{1,6}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="IsoList">
+    <xs:restriction>
+      <xs:simpleType>
+        <xs:list itemType="IsoType"/>
+      </xs:simpleType>
+      <xs:minLength value="1"/>
+      <xs:maxLength value="12"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="SensorTypeIsoListType">
+    <xs:restriction base="IsoList">
+      <xs:pattern value="[0-9]{2,6}( [0-9]{3,6}){0,11}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attributeGroup name="SensorTypeIsoLimitsType">
+    <xs:attribute type="IsoType" name="iso_min"/>
+    <xs:attribute type="IsoType" name="iso_max"/>
+  </xs:attributeGroup>
+  <xs:complexType name="SensorType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:unsignedShort" name="black" use="required"/>
+        <xs:attribute type="xs:unsignedShort" name="white" use="required"/>
+        <xs:attribute type="SensorTypeIsoListType" name="iso_list"/>
+        <xs:attributeGroup ref="SensorTypeIsoLimitsType"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="VerticalType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:unsignedShort" name="x" use="required"/>
+        <xs:attribute type="xs:unsignedShort" name="width" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="HorizontalType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:unsignedShort" name="y" use="required"/>
+        <xs:attribute type="xs:unsignedByte" name="height" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="BlackAreasType">
+    <xs:sequence>
+      <xs:choice minOccurs="1" maxOccurs="2">
+        <xs:element type="VerticalType" name="Vertical" minOccurs="1" maxOccurs="2"/>
+        <xs:element type="HorizontalType" name="Horizontal" minOccurs="1" maxOccurs="2"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="AliasTypeType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z0-9 \-,]{6,27}"/>
+      <xs:minLength value="6"/>
+      <xs:maxLength value="27"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="AliasTypeIdType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z0-9 \-]{7,21}"/>
+      <xs:minLength value="7"/>
+      <xs:maxLength value="21"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="AliasType">
+    <xs:simpleContent>
+      <xs:extension base="AliasTypeType">
+        <xs:attribute type="AliasTypeIdType" name="id"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="AliasesType">
+    <xs:sequence>
+      <xs:element type="AliasType" name="Alias" minOccurs="1" maxOccurs="4"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="HintTypeNameType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z0-9_]{6,26}"/>
+      <xs:minLength value="6"/>
+      <xs:maxLength value="26"/>
+      <xs:enumeration value="coolpixmangled"/>
+      <xs:enumeration value="coolpixsplit"/>
+      <xs:enumeration value="double_line_ljpeg"/>
+      <xs:enumeration value="double_width_unpacked"/>
+      <xs:enumeration value="easyshare_offset_hack"/>
+      <xs:enumeration value="filesize"/>
+      <xs:enumeration value="force_uncompressed"/>
+      <xs:enumeration value="fuji_rotate"/>
+      <xs:enumeration value="full_height"/>
+      <xs:enumeration value="full_width"/>
+      <xs:enumeration value="invert_sraw_wb"/>
+      <xs:enumeration value="jpeg32_bitorder"/>
+      <xs:enumeration value="msb_override"/>
+      <xs:enumeration value="nikon_wb_adjustment"/>
+      <xs:enumeration value="no_decompressed_lowbits"/>
+      <xs:enumeration value="offset"/>
+      <xs:enumeration value="old_format"/>
+      <xs:enumeration value="packed_with_control"/>
+      <xs:enumeration value="pixel_aspect_ratio"/>
+      <xs:enumeration value="real_bpp"/>
+      <xs:enumeration value="sr2_format"/>
+      <xs:enumeration value="sraw_40d"/>
+      <xs:enumeration value="sraw_new"/>
+      <xs:enumeration value="srf_format"/>
+      <xs:enumeration value="swapped_wb"/>
+      <xs:enumeration value="wb_mangle"/>
+      <xs:enumeration value="wb_offset"/>
+      <xs:enumeration value="wrapped_cr2_slices"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="HintType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="HintTypeNameType" name="name" use="required"/>
+        <xs:attribute type="xs:string" name="value" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="HintsType">
+    <xs:sequence>
+      <xs:element type="HintType" name="Hint" minOccurs="1" maxOccurs="4"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="CameraMakeType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z \-,./]{3,27}"/>
+      <xs:minLength value="3"/>
+      <xs:maxLength value="27"/>
+      <xs:enumeration value="ARRI"/>
+      <xs:enumeration value="AVT"/>
+      <xs:enumeration value="AgfaPhoto"/>
+      <xs:enumeration value="Alcatel"/>
+      <xs:enumeration value="Baumer"/>
+      <xs:enumeration value="Canon"/>
+      <xs:enumeration value="Casio"/>
+      <xs:enumeration value="Creative"/>
+      <xs:enumeration value="Creo/Leaf"/>
+      <xs:enumeration value="DJI"/>
+      <xs:enumeration value="EASTMAN KODAK COMPANY"/>
+      <xs:enumeration value="FUJIFILM"/>
+      <xs:enumeration value="Foculus"/>
+      <xs:enumeration value="GITUP"/>
+      <xs:enumeration value="Generic"/>
+      <xs:enumeration value="Hasselblad"/>
+      <xs:enumeration value="KODAK"/>
+      <xs:enumeration value="KONICA MINOLTA"/>
+      <xs:enumeration value="Kodak"/>
+      <xs:enumeration value="Konica Minolta Camera, Inc."/>
+      <xs:enumeration value="LEICA"/>
+      <xs:enumeration value="Leaf"/>
+      <xs:enumeration value="Leica Camera AG"/>
+      <xs:enumeration value="Mamiya-OP Co.,Ltd."/>
+      <xs:enumeration value="Matrix"/>
+      <xs:enumeration value="Micron"/>
+      <xs:enumeration value="Minolta Co., Ltd."/>
+      <xs:enumeration value="Minolta"/>
+      <xs:enumeration value="NIKON CORPORATION"/>
+      <xs:enumeration value="NIKON"/>
+      <xs:enumeration value="Nikon"/>
+      <xs:enumeration value="OLYMPUS CORPORATION"/>
+      <xs:enumeration value="OLYMPUS IMAGING CORP."/>
+      <xs:enumeration value="OLYMPUS OPTICAL CO.,LTD"/>
+      <xs:enumeration value="Olympus"/>
+      <xs:enumeration value="OnePlus"/>
+      <xs:enumeration value="PENTAX Corporation"/>
+      <xs:enumeration value="PENTAX RICOH IMAGING"/>
+      <xs:enumeration value="PENTAX"/>
+      <xs:enumeration value="Panasonic"/>
+      <xs:enumeration value="Pentax"/>
+      <xs:enumeration value="Phase One A/S"/>
+      <xs:enumeration value="Pixelink"/>
+      <xs:enumeration value="RICOH IMAGING COMPANY, LTD."/>
+      <xs:enumeration value="RICOH"/>
+      <xs:enumeration value="RoverShot"/>
+      <xs:enumeration value="SAMSUNG DIGITAL IMA"/>
+      <xs:enumeration value="SAMSUNG"/>
+      <xs:enumeration value="SEIKO EPSON CORP."/>
+      <xs:enumeration value="SIGMA"/>
+      <xs:enumeration value="SONY"/>
+      <xs:enumeration value="ST Micro"/>
+      <xs:enumeration value="Samsung"/>
+      <xs:enumeration value="Sinar Photography AG"/>
+      <xs:enumeration value="Sinar"/>
+      <xs:enumeration value="Sony"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="CameraModelType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z0-9 \-().,/*]{0,51}"/>
+      <xs:minLength value="0"/>
+      <xs:maxLength value="51"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="CameraTypeModeType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z0-9:\-x]{3,29}"/>
+      <xs:minLength value="3"/>
+      <xs:maxLength value="29"/>
+      <xs:enumeration value="12bit"/>
+      <xs:enumeration value="12bit-compressed"/>
+      <xs:enumeration value="12bit-uncompressed"/>
+      <xs:enumeration value="14bit-compressed"/>
+      <xs:enumeration value="14bit-uncompressed"/>
+      <xs:enumeration value="16:9"/>
+      <xs:enumeration value="1:1"/>
+      <xs:enumeration value="3:2"/>
+      <xs:enumeration value="4:3"/>
+      <xs:enumeration value="7424x4924-14bit-uncompressed"/>
+      <xs:enumeration value="chdk"/>
+      <xs:enumeration value="chdk-a"/>
+      <xs:enumeration value="chdk-b"/>
+      <xs:enumeration value="chdk-c"/>
+      <xs:enumeration value="chdk-d"/>
+      <xs:enumeration value="dng"/>
+      <xs:enumeration value="sNEF-uncompressed"/>
+      <xs:enumeration value="sRaw1"/>
+      <xs:enumeration value="sRaw2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="CameraTypeSupportedType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="no"/>
+      <xs:minLength value="2"/>
+      <xs:maxLength value="2"/>
+      <xs:enumeration value="no"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="CameraType">
+    <xs:sequence>
+      <xs:element type="IDType" name="ID" minOccurs="0" maxOccurs="1"/>
+      <xs:choice>
+        <xs:element type="CFAType" name="CFA" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="CFA2Type" name="CFA2" minOccurs="0" maxOccurs="1"/>
+      </xs:choice>
+      <xs:element type="CropType" name="Crop" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="SensorType" name="Sensor" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element type="BlackAreasType" name="BlackAreas" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="AliasesType" name="Aliases" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="HintsType" name="Hints" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute type="CameraMakeType" name="make" use="required"/>
+    <xs:attribute type="CameraModelType" name="model" use="required"/>
+    <xs:attribute type="xs:unsignedByte" name="decoder_version"/>
+    <xs:attribute type="CameraTypeModeType" name="mode"/>
+    <xs:attribute type="CameraTypeSupportedType" name="supported"/>
+  </xs:complexType>
+  <xs:complexType name="CamerasType">
+    <xs:sequence>
+      <xs:element type="CameraType" name="Camera" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Cameras" type="CamerasType"/>
+</xs:schema>
+<!--
+vim: tabstop=2 shiftwidth=2 softtabstop=2 expandtab
+kate: tab-width: 2; indent-width 2; replace-tabs on; tab-indents: off;
+kate: indent-mode xml; remove-trailing-spaces modified;
+-->

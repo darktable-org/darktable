@@ -94,6 +94,7 @@ else()
 endif(${BIGENDIAN})
 
 check_c_source_compiles("
+#include <stdio.h>
 int main() {
 #include \"${CMAKE_SOURCE_DIR}/src/is_supported_platform.h\"
 }" IS_SUPPORTED_PLATFORM)

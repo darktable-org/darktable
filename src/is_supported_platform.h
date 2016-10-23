@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// WARNING: do not #include anything in here!
+
 #if !defined(__BYTE_ORDER__) || __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
 #error "Unfortunately we only work on litte-endian systems."
 #endif
