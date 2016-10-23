@@ -18,7 +18,7 @@
     <title>Overview</title>
 
     <para>
-      With <filename>darktagle-chart</filename> we provide a tool for extracting luminance and
+      With <filename>darktable-chart</filename> we provide a tool for extracting luminance and
       color values out of images taken from color reference cards like IT8.7/1 charts. Its main
       purpose is to compare a source image (typically a largely unprocessed raw image) to a
       target image (typically a JPEG image created in-camera) and produce a darktable style that
@@ -30,9 +30,9 @@
     </para>
 
     <para>
-      Some cameras are particularly advanced in offering various film simulation modes at your
-      choice. With the help of <filename>darktagle-chart</filename> and the underlying modules
-      you can now generate styles that replicate these film simulations from within darktable.
+      Some cameras are particularly advanced in offering various film simulation modes of your
+      choice. With the help of <filename>darktable-chart</filename> and the underlying modules
+      you can now create styles that replicate these film simulations from within darktable.
     </para>
 
   </sect2>
@@ -131,14 +131,14 @@
       or you supply a photographic image (mode <quote>color chart image</quote>) much in the
       same way as described above. This second image must also be supplied in Lab Portable Float
       Map format. There is no need to supply the chart file again as
-      <filename>darktagle-chart</filename> takes the same one as defined under <quote>source
+      <filename>darktable-chart</filename> takes the same one as defined under <quote>source
       image</quote>. You only need to again align the layout grid and the image and potentially
       adjust the <quote>size</quote> slider.
     </para>
 
     <para>
       In a typical use case the second image will be based on a JPEG file produced in-camera.
-      This way you can generate a style to simulate the in-camera processing within darktable.
+      This way you can create a style to simulate the in-camera processing within darktable.
     </para>
 
     <para>
@@ -178,7 +178,7 @@
     </para>
 
     <para>
-      You first need to tell <filename>darktagle-chart</filename> which of the patches represent
+      You first need to tell <filename>darktable-chart</filename> which of the patches represent
       the gray ramp. In the screenshot displayed further above the gray ramp is positioned in
       the lower part of the color reference chart, denoted as <quote>GS00...GS23</quote>.
     </para>
@@ -221,14 +221,14 @@
 
     <para>
       You supply a style name and a style description under which the style will later appear in
-      darktable. <filename>darktagle-chart</filename> saves the style as a
+      darktable. <filename>darktable-chart</filename> saves the style as a
       <emphasis>.dtstyle</emphasis> file which can be imported into darktable (see
       <xref linkend="styles"/>) and shared with others.
     </para>
 
     <para>
       The <quote>export raw data as csv</quote> button allows you to save the extracted raw data
-      as a CSV file for debugging purposes or later usage. <filename>darktagle-chart</filename>
+      as a CSV file for debugging purposes or later usage. <filename>darktable-chart</filename>
       offers a command line option to produce a style with the desired number of final patches
       from a supplied CSV file (see <xref linkend="darktable_chart_commandline_parameters"/>).
     </para>
@@ -237,12 +237,12 @@
 
   <sect2 status="draft">
 
-    <title>Generating input images for <filename>darktagle-chart</filename>
+    <title>Making input images for <filename>darktable-chart</filename>
 
     </title>
 
     <para>
-      To start with, you need a suited photo of your color reference card in RAW+JPEG format. It
+      To start with, you need a suitable photo of your color reference card in RAW+JPEG format. It
       goes beyond the scope of this manual to explain the details of how to take this photo, but
       in a nutshell you need to make the shot on a sunny day around midday with the light source
       (sun) shining at an angle onto the card. You need to avoid any glare in the image. The
@@ -256,8 +256,8 @@
 
     <para>
       You then open the raw file in darktable and disable most modules, especially
-      <emphasis>base curve</emphasis>. You select the standard input matrix in the
-      <emphasis>input color profile</emphasis> module and disable gamut clipping. You select
+      <emphasis>base curve</emphasis>. Select the standard input matrix in the
+      <emphasis>input color profile</emphasis> module and disable gamut clipping. Select
       <quote>camera white balance</quote> in the <emphasis>white balance</emphasis> module (see
       <xref linkend="base_curve"/>, <xref linkend="input_color_profile"/>, and
       <xref linkend="whitebalance"/>).
@@ -289,11 +289,11 @@
 
     <para>
       Then select <quote>PFM (float)</quote> as output format and press <quote>export</quote> to
-      generate the source image.
+      generate the source image file.
     </para>
 
     <para>
-      In a similar way you generate the corresponding reference (target) image from the JPEG.
+      In a similar way you produce the corresponding reference (target) image from the JPEG.
       Also this time you need to disable all modules and export with <quote>Lab</quote> output
       color profile in <quote>PFM (float)</quote> format.
     </para>

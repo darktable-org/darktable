@@ -229,7 +229,7 @@
       <title>automatic fit</title>
       <para>
         Clicking on one of the icons starts an automatic fitting of the module parameters based
-        on the selected vertical and/or horizontal lines. You can chose to correct only vertical
+        on the selected vertical and/or horizontal lines. You can choose to correct only vertical
         distortions (
         <inlinegraphic fileref="&icon_ashift_vertical;" scalefit="1" width="2%" align="center" />
         ), only horizontal distortions (

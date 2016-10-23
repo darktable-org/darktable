@@ -1502,11 +1502,11 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_new[k];
 
   if(input_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_input, input_buffer);
-  if(pinned_input != NULL) dt_opencl_release_mem_object(pinned_input);
+  dt_opencl_release_mem_object(pinned_input);
   if(output_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_output, output_buffer);
-  if(pinned_output != NULL) dt_opencl_release_mem_object(pinned_output);
-  if(input != NULL) dt_opencl_release_mem_object(input);
-  if(output != NULL) dt_opencl_release_mem_object(output);
+  dt_opencl_release_mem_object(pinned_output);
+  dt_opencl_release_mem_object(input);
+  dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
   return TRUE;
 
@@ -1514,11 +1514,11 @@ error:
   /* copy back stored processed_maximum */
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
   if(input_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_input, input_buffer);
-  if(pinned_input != NULL) dt_opencl_release_mem_object(pinned_input);
+  dt_opencl_release_mem_object(pinned_input);
   if(output_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_output, output_buffer);
-  if(pinned_output != NULL) dt_opencl_release_mem_object(pinned_output);
-  if(input != NULL) dt_opencl_release_mem_object(input);
-  if(output != NULL) dt_opencl_release_mem_object(output);
+  dt_opencl_release_mem_object(pinned_output);
+  dt_opencl_release_mem_object(input);
+  dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
   dt_print(
       DT_DEBUG_OPENCL,
@@ -1938,11 +1938,11 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   /* copy back final processed_maximum */
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_new[k];
   if(input_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_input, input_buffer);
-  if(pinned_input != NULL) dt_opencl_release_mem_object(pinned_input);
+  dt_opencl_release_mem_object(pinned_input);
   if(output_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_output, output_buffer);
-  if(pinned_output != NULL) dt_opencl_release_mem_object(pinned_output);
-  if(input != NULL) dt_opencl_release_mem_object(input);
-  if(output != NULL) dt_opencl_release_mem_object(output);
+  dt_opencl_release_mem_object(pinned_output);
+  dt_opencl_release_mem_object(input);
+  dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
   return TRUE;
 
@@ -1950,11 +1950,11 @@ error:
   /* copy back stored processed_maximum */
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
   if(input_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_input, input_buffer);
-  if(pinned_input != NULL) dt_opencl_release_mem_object(pinned_input);
+  dt_opencl_release_mem_object(pinned_input);
   if(output_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_output, output_buffer);
-  if(pinned_output != NULL) dt_opencl_release_mem_object(pinned_output);
-  if(input != NULL) dt_opencl_release_mem_object(input);
-  if(output != NULL) dt_opencl_release_mem_object(output);
+  dt_opencl_release_mem_object(pinned_output);
+  dt_opencl_release_mem_object(input);
+  dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
   dt_print(
       DT_DEBUG_OPENCL,

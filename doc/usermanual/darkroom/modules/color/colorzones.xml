@@ -74,7 +74,7 @@
     <sect5>
       <title>select by</title>
       <para>
-        Defines the horizontal axis, i.e. the range of values you work on. You can chose between
+        Defines the horizontal axis, i.e. the range of values you work on. You can choose between
         <quote>lightness</quote>, <quote>saturation</quote>, and <quote>hue</quote> (default).
         Changing this parameter resets any defined curve to a straight horizontal line.
       </para>
