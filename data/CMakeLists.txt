@@ -74,7 +74,7 @@ if(${VALIDATE_APPDATA_FILE})
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
     SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
     COMMAND ${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
-    COMMAND ${appstream_util_BIN} validate ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
+    COMMAND ${appstream_util_BIN} validate --nonet ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
     MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
     DEPENDS ${PO_FILES}
   )
