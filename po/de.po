@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-13 16:12+0200\n"
-"PO-Revision-Date: 2016-10-13 16:11+0200\n"
+"POT-Creation-Date: 2016-10-23 17:07+0200\n"
+"PO-Revision-Date: 2016-10-23 17:09+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 1.8.9\n"
+"X-Generator: Poedit 1.8.10\n"
 
 #: ../build/src/preferences_gen.h:1460
 msgid "GUI options"
@@ -880,7 +880,7 @@ msgstr ""
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:461
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:584
 #: ../src/iop/colorbalance.c:623 ../src/iop/colorbalance.c:662
-#: ../src/iop/temperature.c:1254 ../src/libs/collect.c:982
+#: ../src/iop/temperature.c:1296 ../src/libs/collect.c:982
 #: ../src/libs/collect.c:983
 msgid "red"
 msgstr "Rot"
@@ -894,7 +894,7 @@ msgstr "Gelb"
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:462
 #: ../src/iop/channelmixer.c:480 ../src/iop/colorbalance.c:593
 #: ../src/iop/colorbalance.c:632 ../src/iop/colorbalance.c:671
-#: ../src/iop/temperature.c:1255 ../src/libs/collect.c:988
+#: ../src/iop/temperature.c:1297 ../src/libs/collect.c:988
 #: ../src/libs/collect.c:989
 msgid "green"
 msgstr "Grün"
@@ -903,7 +903,7 @@ msgstr "Grün"
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:486 ../src/iop/colorbalance.c:602
 #: ../src/iop/colorbalance.c:641 ../src/iop/colorbalance.c:680
-#: ../src/iop/temperature.c:1256 ../src/libs/collect.c:991
+#: ../src/iop/temperature.c:1298 ../src/libs/collect.c:991
 #: ../src/libs/collect.c:992
 msgid "blue"
 msgstr "Blau"
@@ -2139,7 +2139,7 @@ msgstr "%s ist ausgeschaltet"
 #: ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:847
 #: ../src/gui/accelerators.c:873 ../src/gui/presets.c:191
 #: ../src/gui/presets.c:297 ../src/gui/presets.c:643
-#: ../src/iop/temperature.c:1266 ../src/libs/import.c:553 ../src/libs/lib.c:309
+#: ../src/iop/temperature.c:1308 ../src/libs/import.c:553 ../src/libs/lib.c:309
 #: ../src/libs/lib.c:334 ../src/libs/lib.c:1152
 msgid "preset"
 msgstr "Voreinstellung"
@@ -4233,19 +4233,19 @@ msgid "radius"
 msgstr "Radius"
 
 #: ../src/iop/bilateral.cc:83 ../src/iop/channelmixer.c:128
-#: ../src/iop/temperature.c:137
+#: ../src/iop/temperature.c:164
 msgctxt "accel"
 msgid "red"
 msgstr "Rot"
 
 #: ../src/iop/bilateral.cc:84 ../src/iop/channelmixer.c:129
-#: ../src/iop/temperature.c:138
+#: ../src/iop/temperature.c:165
 msgctxt "accel"
 msgid "green"
 msgstr "Grün"
 
 #: ../src/iop/bilateral.cc:85 ../src/iop/channelmixer.c:130
-#: ../src/iop/temperature.c:139
+#: ../src/iop/temperature.c:166
 msgctxt "accel"
 msgid "blue"
 msgstr "Blau"
@@ -6913,58 +6913,73 @@ msgctxt "modulename"
 msgid "white balance"
 msgstr "Weißabgleich"
 
-#: ../src/iop/temperature.c:135
+#: ../src/iop/temperature.c:162
 msgctxt "accel"
 msgid "tint"
 msgstr "Farbton"
 
-#: ../src/iop/temperature.c:136
+#: ../src/iop/temperature.c:163
 msgctxt "accel"
 msgid "temperature"
 msgstr "Farbtemperatur"
 
-#: ../src/iop/temperature.c:625
+#: ../src/iop/temperature.c:168
+msgctxt "accel"
+msgid "preset/camera"
+msgstr "Voreinstellung/Kamera"
+
+#: ../src/iop/temperature.c:169
+msgctxt "accel"
+msgid "preset/camera neutral"
+msgstr "Voreinstellung/Neutral"
+
+#: ../src/iop/temperature.c:170
+msgctxt "accel"
+msgid "preset/spot"
+msgstr "Voreinstellung/Manuell setzen"
+
+#: ../src/iop/temperature.c:667
 msgctxt "white balance"
 msgid "camera"
 msgstr "Kamera"
 
-#: ../src/iop/temperature.c:626
+#: ../src/iop/temperature.c:668
 msgctxt "white balance"
 msgid "camera neutral"
 msgstr "neutral"
 
-#: ../src/iop/temperature.c:627
+#: ../src/iop/temperature.c:669
 msgctxt "white balance"
 msgid "spot"
 msgstr "manuell setzen"
 
-#: ../src/iop/temperature.c:895
+#: ../src/iop/temperature.c:937
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "Konnte Weißabgleichsdaten der Kamera nicht aus „%s“ lesen!"
 
-#: ../src/iop/temperature.c:1252
+#: ../src/iop/temperature.c:1294
 msgid "tint"
 msgstr "Farbton"
 
-#: ../src/iop/temperature.c:1253
+#: ../src/iop/temperature.c:1295
 msgid "temperature"
 msgstr "Farbtemperatur"
 
-#: ../src/iop/temperature.c:1268
+#: ../src/iop/temperature.c:1310
 msgid "choose white balance preset from camera"
 msgstr "aus den Weißabgleichsvorgaben der Kamera wählen"
 
-#: ../src/iop/temperature.c:1272
+#: ../src/iop/temperature.c:1314
 msgid "finetune"
 msgstr "anpassen"
 
-#: ../src/iop/temperature.c:1273
+#: ../src/iop/temperature.c:1315
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f Mired"
 
-#: ../src/iop/temperature.c:1277
+#: ../src/iop/temperature.c:1319
 msgid "fine tune white balance preset"
 msgstr "Weißabgleichsvorgabe feinabstimmen"
 
@@ -10306,9 +10321,6 @@ msgstr ""
 
 #~ msgid "cache locally"
 #~ msgstr "lokal cachen"
-
-#~ msgid "reset cache"
-#~ msgstr "Cache zurücksetzen"
 
 #~ msgid "remove the local copy of the image"
 #~ msgstr "lokale Kopie des Bildes aus dem Cache entfernen"
