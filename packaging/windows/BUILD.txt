@@ -103,13 +103,12 @@ ISSUES - FIXED
     * Added SLIDESHOW
     * Added OPENMAP Support
     * Added LIBGPHOTO (camera support)
-    * fixed getrlimit/setrlimit using https://msdn.microsoft.com/ko-kr/library/ms811896.aspx#ucmgch09_topic9
+    * Added getrlimit/setrlimit using https://msdn.microsoft.com/ko-kr/library/ms811896.aspx#ucmgch09_topic9
+    * Added dt_print_mem_usage for Windows
 
-ISSUES - TO BE FIXED
+TODO LIST
     lua select() replacement in function read_cb
     ADD COLORD or find a way to replace it
     lensfun database should be deployed to Appdata/local/lensfun (no version_1 subfolder), alternatively under darktable/share
-    check asprntf in rs-identify
     right alignment of views at the toolbar
     OpenCL64.dll!!!
-    fix dt_print_mem_usage in darktable.h
