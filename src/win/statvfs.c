@@ -31,16 +31,22 @@ int statvfs(const char *path, struct statvfs *buf)
 {
 	BOOL res;
 	
-	DWORD lpSectorsPerCluster;
-	DWORD lpBytesPerSector;
-	DWORD lpNumberOfFreeClusters;
-	DWORD lpTotalNumberOfClusters;
+	DWORD lpSectorsPerCluster=0;
+	DWORD lpBytesPerSector=0;
+	DWORD lpNumberOfFreeClusters=0;
+	DWORD lpTotalNumberOfClusters=0;
+	char  szDrive[4];
 
-	res = GetDiskFreeSpace(path, &lpSectorsPerCluster, &lpBytesPerSector, &lpNumberOfFreeClusters, &lpTotalNumberOfClusters);
+	szDrive[0]=path[0];
+	szDrive[1]=':';
+	szDrive[2]='\\';
+	szDrive[3]='\0';
+
+	res = GetDiskFreeSpace(&szDrive, &lpSectorsPerCluster, &lpBytesPerSector, &lpNumberOfFreeClusters, &lpTotalNumberOfClusters);
 	//free(unicodestr);
 
 	buf->f_bsize = lpBytesPerSector; /* file system block size */
-	buf->f_frsize = 0; /* fragment size */
+	buf->f_frsize = lpBytesPerSector * lpSectorsPerCluster; /* fragment size */
 	buf->f_blocks = lpTotalNumberOfClusters; /* size of fs in f_frsize units */
 	buf->f_bfree = lpNumberOfFreeClusters; /* # free blocks */
 	buf->f_bavail = lpNumberOfFreeClusters; /* # free blocks for unprivileged users */
@@ -51,5 +57,8 @@ int statvfs(const char *path, struct statvfs *buf)
 	buf->f_flag = 0; /* mount flags */
 	buf->f_namemax = 250; /* maximum filename length */
 	
-	return res;
+	if (res!=0) 
+		return 0;
+	else 
+		return 1;
 }

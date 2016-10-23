@@ -103,6 +103,7 @@ ISSUES - FIXED
     * Added SLIDESHOW
     * Added OPENMAP Support
     * Added LIBGPHOTO (camera support)
+    * Addes statvfs for Windows
     * Added getrlimit/setrlimit using https://msdn.microsoft.com/ko-kr/library/ms811896.aspx#ucmgch09_topic9
     * Added dt_print_mem_usage for Windows
 
