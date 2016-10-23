@@ -31,12 +31,8 @@
 #include <GL/glu.h>
 #include <SDL/SDL.h>
 #include <stdlib.h>
-#if !defined(_WIN32)
-  double drand48(void);
-#endif
-#if !defined(_WIN32)
-  void srand48(long int);
-#endif
+double drand48(void);
+void srand48(long int);
 #include <inttypes.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -384,6 +380,8 @@ int main(int argc, char *arg[])
   dtv_shutdown();
 
   free(m_arg);
+
+  return 0;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
