@@ -133,7 +133,7 @@ profile_image() {
 
 	echo "--> Run noiseprofile"
 	dat="${pfm%.pfm}.dat"
-	$noiseprofile "$pfm" > "$dat"
+	"$noiseprofile" "$pfm" > "$dat"
 
 	echo "--> Plotting $pfm"
 	title="$maker, $model, $iso ISO ($(basename "${pfm%.pfm}"))"
