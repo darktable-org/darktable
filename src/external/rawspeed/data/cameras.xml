@@ -7070,6 +7070,17 @@
 		<Crop x="0" y="0" width="-8" height="0"/>
 		<Sensor black="800" white="16300"/>
 	</Camera>
+	 <Camera make="SONY" model="DSC-RX10M3">
+		<ID make="Sony" model="DSC-RX10M3">Sony DSC-RX10M3</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-8" height="0"/>
+		<Sensor black="800" white="16300"/>
+	</Camera>
 	<!-- Still needs to interpolate/upscale some pixels -->
 	<Camera make="SIGMA" model="SIGMA dp2 Quattro" supported="no">
 		<Crop x="204" y="24" width="-236" height="-24"/>
