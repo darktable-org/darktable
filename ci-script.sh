@@ -26,7 +26,7 @@
 set -e
 
 cd "$BUILD_DIR"
-cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -DCMAKE_BUILD_TYPE=RelWithDebInfo "$SRC_DIR"
+cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVALIDATE_APPDATA_FILE=On "$SRC_DIR"
 
 # to get as much of the issues into the log as possible
 cmake --build "$BUILD_DIR" -- -j3 || cmake --build "$BUILD_DIR" -- -j1 -k
