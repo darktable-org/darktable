@@ -1,14 +1,14 @@
-# SOME DESCRIPTIVE TITLE.
+# DARKTABLE HEBREW TRANSLATION.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# This file is distributed under the same license as Darktable.
+# FIRST AUTHOR <sbraitbart@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-22 16:39+0300\n"
-"PO-Revision-Date: 2016-10-22 17:31+0200\n"
+"POT-Creation-Date: 2016-10-25 20:25+0300\n"
+"PO-Revision-Date: 2016-10-25 21:32+0200\n"
 "Last-Translator: Shlomi Alon-Braitbart <sbraitbart@gmail.com>\n"
 "Language-Team: \n"
 "Language: he_IL\n"
@@ -723,7 +723,7 @@ msgstr "בדוק זמני עדכון עבור כל קבצי xmp בעליה בכ�
 
 #: ../build/src/preferences_gen.h:2721
 msgid "executable for playing audio files"
-msgstr "קובץ הרצה לניגון קבצי שמע"
+msgstr "קובץ ריצה לניגון קבצי שמע"
 
 #: ../build/src/preferences_gen.h:2737
 msgid ""
@@ -812,7 +812,7 @@ msgstr "גרפיקה;צילום;raw;"
 #: ../src/control/jobs/control_jobs.c:1505 ../src/gui/hist_dialog.c:137
 #: ../src/gui/preferences.c:1046 ../src/gui/preferences.c:1069
 #: ../src/gui/presets.c:382 ../src/gui/styles_dialog.c:283
-#: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:103
+#: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/latex.c:103 ../src/libs/collect.c:227
 #: ../src/libs/copy_history.c:72 ../src/libs/geotagging.c:454
 #: ../src/libs/import.c:774 ../src/libs/import.c:873 ../src/libs/lib.c:216
@@ -1319,10 +1319,10 @@ msgstr "מ'"
 
 #: ../src/common/variables.c:254 ../src/common/variables.c:268
 #: ../src/common/variables.c:282 ../src/common/variables.c:296
-#: ../src/common/variables.c:310 ../src/iop/basecurve.c:1342
-#: ../src/iop/clipping.c:1548 ../src/iop/clipping.c:1838
-#: ../src/iop/clipping.c:1856 ../src/iop/clipping.c:1996
-#: ../src/iop/clipping.c:2023 ../src/iop/colorreconstruction.c:1378
+#: ../src/common/variables.c:310 ../src/iop/basecurve.c:1806
+#: ../src/iop/clipping.c:1556 ../src/iop/clipping.c:1846
+#: ../src/iop/clipping.c:1864 ../src/iop/clipping.c:2004
+#: ../src/iop/clipping.c:2031 ../src/iop/colorreconstruction.c:1378
 #: ../src/iop/lens.c:2034 ../src/libs/export.c:486 ../src/libs/live_view.c:348
 #: ../src/libs/live_view.c:373 ../src/libs/live_view.c:382
 #: ../src/libs/print_settings.c:1020 ../src/libs/print_settings.c:1289
@@ -1422,13 +1422,13 @@ msgstr "תמונות חייבות להיות בעלות גודל ואורינט�
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
-msgstr[0] "מאחד תמונה %d "
-msgstr[1] "מאחד תמונות %d "
+msgstr[0] "ממזג תמונה %d "
+msgstr[1] "ממזג תמונות %d "
 
 #: ../src/control/jobs/control_jobs.c:487
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "איחוד HDR נכתב '%s'"
+msgstr "מיזוג HDR נכתב '%s'"
 
 #: ../src/control/jobs/control_jobs.c:513
 #, c-format
@@ -1627,8 +1627,8 @@ msgstr "העבר תמונות"
 
 #: ../src/control/jobs/control_jobs.c:1451
 #: ../src/control/jobs/control_jobs.c:1505 ../src/imageio/storage/disk.c:92
-#: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:103
-#: ../src/imageio/storage/gallery.c:164 ../src/imageio/storage/latex.c:103
+#: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:104
+#: ../src/imageio/storage/gallery.c:165 ../src/imageio/storage/latex.c:103
 #: ../src/imageio/storage/latex.c:164 ../src/libs/styles.c:209
 #: ../src/lua/preferences.c:592
 msgid "select directory"
@@ -3414,8 +3414,8 @@ msgstr "גודל מסגרת לא חוקית, משתמש ב 0"
 
 #: ../src/imageio/format/pdf.c:255 ../src/imageio/storage/disk.c:293
 #: ../src/imageio/storage/email.c:133 ../src/imageio/storage/facebook.c:1294
-#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:337
-#: ../src/imageio/storage/gallery.c:357 ../src/imageio/storage/picasa.c:1446
+#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:328
+#: ../src/imageio/storage/gallery.c:362 ../src/imageio/storage/picasa.c:1446
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "לא ניתן לייצא לקובץ `%s'!"
@@ -3429,7 +3429,7 @@ msgstr "PDF"
 #. clang-format off
 #. xmp
 #: ../src/imageio/format/pdf.c:579 ../src/imageio/storage/facebook.c:1108
-#: ../src/imageio/storage/flickr.c:532 ../src/imageio/storage/gallery.c:170
+#: ../src/imageio/storage/flickr.c:532 ../src/imageio/storage/gallery.c:171
 #: ../src/imageio/storage/latex.c:171 ../src/imageio/storage/picasa.c:1299
 #: ../src/libs/collect.h:32 ../src/libs/metadata.c:334
 #: ../src/libs/metadata_view.c:115
@@ -3502,13 +3502,13 @@ msgid "rotate images"
 msgstr "סובב תמונה"
 
 #: ../src/imageio/format/pdf.c:665 ../src/imageio/format/pdf.c:690
-#: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1866
+#: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1874
 #: ../src/libs/export.c:585 ../src/libs/metadata_view.c:257
 msgid "no"
 msgstr "לא"
 
 #: ../src/imageio/format/pdf.c:666 ../src/imageio/format/pdf.c:691
-#: ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1867
+#: ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1875
 #: ../src/libs/export.c:586 ../src/libs/metadata_view.c:257
 msgid "yes"
 msgstr "כן"
@@ -3689,12 +3689,12 @@ msgstr "איור"
 msgid "file on disk"
 msgstr "קובץ על דיסק"
 
-#: ../src/imageio/storage/disk.c:93 ../src/imageio/storage/gallery.c:104
+#: ../src/imageio/storage/disk.c:93 ../src/imageio/storage/gallery.c:105
 #: ../src/imageio/storage/latex.c:104
 msgid "_select as output destination"
 msgstr "_בחר כיעד לפלט"
 
-#: ../src/imageio/storage/disk.c:145 ../src/imageio/storage/gallery.c:157
+#: ../src/imageio/storage/disk.c:145 ../src/imageio/storage/gallery.c:158
 #: ../src/imageio/storage/latex.c:157
 msgid ""
 "enter the path where to put exported images\n"
@@ -3715,7 +3715,7 @@ msgstr "צור שם קובץ ייחודי"
 msgid "overwrite"
 msgstr "דרוס"
 
-#: ../src/imageio/storage/disk.c:251 ../src/imageio/storage/gallery.c:264
+#: ../src/imageio/storage/disk.c:251 ../src/imageio/storage/gallery.c:262
 #: ../src/imageio/storage/latex.c:259
 #, c-format
 msgid "could not create directory `%s'!"
@@ -3727,7 +3727,7 @@ msgid "could not write to directory `%s'!"
 msgstr "נכשל בכתיבה לתיקיה `%s'!"
 
 #: ../src/imageio/storage/disk.c:300 ../src/imageio/storage/email.c:142
-#: ../src/imageio/storage/gallery.c:367 ../src/imageio/storage/latex.c:349
+#: ../src/imageio/storage/gallery.c:372 ../src/imageio/storage/latex.c:349
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgid_plural "%d/%d exported to `%s%s'"
@@ -3986,11 +3986,11 @@ msgid_plural "%d/%d exported to flickr webalbum"
 msgstr[0] "יוצא %d/%d לאלבום רשת flickr"
 msgstr[1] "יוצאו %d/%d לאלבום רשת flickr"
 
-#: ../src/imageio/storage/gallery.c:67
+#: ../src/imageio/storage/gallery.c:68
 msgid "website gallery"
 msgstr "גלריה של אתר אינטרנט"
 
-#: ../src/imageio/storage/gallery.c:176
+#: ../src/imageio/storage/gallery.c:177
 msgid "enter the title of the website"
 msgstr "הכנס את שם אתר האינטרנט"
 
@@ -4102,14 +4102,14 @@ msgid "lens shift (%s)"
 msgstr "הסחת עדשה (%s)"
 
 #: ../src/iop/ashift.c:4173 ../src/iop/ashift.c:4174 ../src/iop/ashift.c:4273
-#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1550
-#: ../src/iop/clipping.c:1839 ../src/iop/clipping.c:1858
+#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1558
+#: ../src/iop/clipping.c:1847 ../src/iop/clipping.c:1866
 msgid "horizontal"
 msgstr "אופקי"
 
 #: ../src/iop/ashift.c:4173 ../src/iop/ashift.c:4174 ../src/iop/ashift.c:4273
-#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1549
-#: ../src/iop/clipping.c:1840 ../src/iop/clipping.c:1857
+#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1557
+#: ../src/iop/clipping.c:1848 ../src/iop/clipping.c:1865
 msgid "vertical"
 msgstr "אנכי"
 
@@ -4130,12 +4130,12 @@ msgstr "הסחת עדשה (אופקית)"
 msgid "shear"
 msgstr "גזור"
 
-#: ../src/iop/ashift.c:4395 ../src/iop/clipping.c:1989
+#: ../src/iop/ashift.c:4395 ../src/iop/clipping.c:1997
 #: ../src/libs/live_view.c:341
 msgid "guides"
 msgstr "מנחים"
 
-#: ../src/iop/ashift.c:4401 ../src/iop/clipping.c:1865
+#: ../src/iop/ashift.c:4401 ../src/iop/clipping.c:1873
 msgid "automatic cropping"
 msgstr "חיתוך אוטומטי"
 
@@ -4195,7 +4195,7 @@ msgstr "גזור תמונה לאורך האלכסון"
 msgid "display guide lines overlay"
 msgstr "הראה תכסית של קווים מנחים"
 
-#: ../src/iop/ashift.c:4517 ../src/iop/clipping.c:1868
+#: ../src/iop/ashift.c:4517 ../src/iop/clipping.c:1876
 msgid "automatically crop to avoid black edges"
 msgstr "חתוך אוטומטית על מנת להימנע משוליים שחורים"
 
@@ -4390,130 +4390,130 @@ msgstr "ערבב"
 msgid "make effect stronger or weaker"
 msgstr "חזק או החלש את האפקט"
 
-#: ../src/iop/basecurve.c:114
+#: ../src/iop/basecurve.c:115
 msgid "neutral"
 msgstr "ניטרלי "
 
-#: ../src/iop/basecurve.c:115
+#: ../src/iop/basecurve.c:116
 msgid "canon eos like"
 msgstr "דומה ל canon eos"
 
-#: ../src/iop/basecurve.c:116
+#: ../src/iop/basecurve.c:117
 msgid "canon eos like alternate"
 msgstr "דומה ל canon eos תחליף"
 
-#: ../src/iop/basecurve.c:117
+#: ../src/iop/basecurve.c:118
 msgid "nikon like"
 msgstr "דומה ל nikon"
 
-#: ../src/iop/basecurve.c:118
+#: ../src/iop/basecurve.c:119
 msgid "nikon like alternate"
 msgstr "דומה ל nikon תחליף"
 
-#: ../src/iop/basecurve.c:119
+#: ../src/iop/basecurve.c:120
 msgid "sony alpha like"
 msgstr "דומה ל sony alpha"
 
-#: ../src/iop/basecurve.c:120
+#: ../src/iop/basecurve.c:121
 msgid "pentax like"
 msgstr "דומה ל pentax"
 
-#: ../src/iop/basecurve.c:121
+#: ../src/iop/basecurve.c:122
 msgid "ricoh like"
 msgstr "דומה ל ricoh"
 
-#: ../src/iop/basecurve.c:122
+#: ../src/iop/basecurve.c:123
 msgid "olympus like"
 msgstr "דומה ל olympus"
 
-#: ../src/iop/basecurve.c:123
+#: ../src/iop/basecurve.c:124
 msgid "olympus like alternate"
 msgstr "דומה ל olympus תחליף"
 
-#: ../src/iop/basecurve.c:124
+#: ../src/iop/basecurve.c:125
 msgid "panasonic like"
 msgstr "דומה ל panasonic"
 
-#: ../src/iop/basecurve.c:125
+#: ../src/iop/basecurve.c:126
 msgid "leica like"
 msgstr "דומה ל leica"
 
-#: ../src/iop/basecurve.c:126
+#: ../src/iop/basecurve.c:127
 msgid "kodak easyshare like"
 msgstr "דומה ל kodak easyshare"
 
-#: ../src/iop/basecurve.c:127
+#: ../src/iop/basecurve.c:128
 msgid "konica minolta like"
 msgstr "דומה ל konica minolta"
 
-#: ../src/iop/basecurve.c:128
+#: ../src/iop/basecurve.c:129
 msgid "samsung like"
 msgstr "דומה ל samsung"
 
-#: ../src/iop/basecurve.c:129
+#: ../src/iop/basecurve.c:130
 msgid "fujifilm like"
 msgstr "דומה ל fujifilm"
 
-#: ../src/iop/basecurve.c:130
+#: ../src/iop/basecurve.c:131
 msgid "nokia like"
 msgstr "דומה ל nokia"
 
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:178
+#: ../src/iop/basecurve.c:179
 msgid "cubic spline"
 msgstr "אינטרפולציית spline ממעלה שלישית"
 
-#: ../src/iop/basecurve.c:235
+#: ../src/iop/basecurve.c:250
 msgid "base curve"
 msgstr "עקום בסיס"
 
-#: ../src/iop/basecurve.c:1327
+#: ../src/iop/basecurve.c:1791
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "אבסציסה: קלט, אורדינטה: פלט. עובד על ערוצי RGB"
 
-#: ../src/iop/basecurve.c:1332 ../src/iop/lens.c:2174
+#: ../src/iop/basecurve.c:1796 ../src/iop/lens.c:2174
 #: ../src/iop/vignette.c:1146 ../src/iop/watermark.c:1349
 msgid "scale"
 msgstr "סקאלה"
 
-#: ../src/iop/basecurve.c:1333 ../src/iop/profile_gamma.c:321
+#: ../src/iop/basecurve.c:1797 ../src/iop/profile_gamma.c:321
 #: ../src/iop/tonecurve.c:435
 msgid "linear"
 msgstr "לינארית"
 
-#: ../src/iop/basecurve.c:1334
+#: ../src/iop/basecurve.c:1798
 msgid "logarithmic"
 msgstr "לוגריתמית"
 
-#: ../src/iop/basecurve.c:1335
+#: ../src/iop/basecurve.c:1799
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
 msgstr "סקאלה לשימוש בגרף"
 
-#: ../src/iop/basecurve.c:1341
+#: ../src/iop/basecurve.c:1805
 msgid "fusion"
 msgstr "מיזוג"
 
-#: ../src/iop/basecurve.c:1343
+#: ../src/iop/basecurve.c:1807
 msgid "two exposures"
 msgstr "שתי חשיפות"
 
-#: ../src/iop/basecurve.c:1344
+#: ../src/iop/basecurve.c:1808
 msgid "three exposures"
 msgstr "שלוש חשיפות"
 
-#: ../src/iop/basecurve.c:1345
+#: ../src/iop/basecurve.c:1809
 msgid ""
 "fuse this image stopped up a couple of times with itself, to compress high "
 "dynamic range. expose for the highlights before use."
 msgstr ""
 
-#: ../src/iop/basecurve.c:1350
+#: ../src/iop/basecurve.c:1814
 msgid "how many stops to shift the individual exposures apart"
 msgstr "כמה סטופים להסיח את התמונות אחת מהשניה"
 
-#: ../src/iop/basecurve.c:1351
+#: ../src/iop/basecurve.c:1815
 msgid "exposure shift"
 msgstr "הסחת חשיפה"
 
@@ -4679,7 +4679,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:916 ../src/iop/clipping.c:1884
+#: ../src/iop/borders.c:916 ../src/iop/clipping.c:1892
 msgid "golden cut"
 msgstr "חיתוך לפי יחס הזהב"
 
@@ -4699,7 +4699,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:921 ../src/iop/clipping.c:1874
+#: ../src/iop/borders.c:921 ../src/iop/clipping.c:1882
 msgid "square"
 msgstr "ריבוע"
 
@@ -4735,7 +4735,7 @@ msgstr "עובי מסגרת"
 msgid "size of the border in percent of the full image"
 msgstr "עובי מסגרת באחוזים מגודל התמונה המלא"
 
-#: ../src/iop/borders.c:985 ../src/iop/clipping.c:1971
+#: ../src/iop/borders.c:985 ../src/iop/clipping.c:1979
 msgid "aspect"
 msgstr "כיוון"
 
@@ -4941,129 +4941,129 @@ msgstr "עוצמת האפקט"
 msgid "crop and rotate"
 msgstr "חתוך וסובב"
 
-#: ../src/iop/clipping.c:1447
+#: ../src/iop/clipping.c:1455
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "פורמט יחס לא חוקי. נדרש \"מספר:מספר\""
 
-#: ../src/iop/clipping.c:1551 ../src/iop/clipping.c:1859
+#: ../src/iop/clipping.c:1559 ../src/iop/clipping.c:1867
 msgid "full"
 msgstr "מלא"
 
-#: ../src/iop/clipping.c:1552
+#: ../src/iop/clipping.c:1560
 msgid "old system"
 msgstr "מערכת ישנה"
 
-#: ../src/iop/clipping.c:1553
+#: ../src/iop/clipping.c:1561
 msgid "correction applied"
 msgstr "תיקונים יושמו"
 
-#: ../src/iop/clipping.c:1837 ../src/libs/live_view.c:372
+#: ../src/iop/clipping.c:1845 ../src/libs/live_view.c:372
 msgid "flip"
 msgstr "הפוך"
 
-#: ../src/iop/clipping.c:1841 ../src/iop/clipping.c:2026
+#: ../src/iop/clipping.c:1849 ../src/iop/clipping.c:2034
 #: ../src/libs/live_view.c:376
 msgid "both"
 msgstr "שניהם"
 
-#: ../src/iop/clipping.c:1843
+#: ../src/iop/clipping.c:1851
 msgid "mirror image horizontally and/or vertically"
 msgstr "שקף את התמונה אופקית ו/או אנכית"
 
-#: ../src/iop/clipping.c:1848
+#: ../src/iop/clipping.c:1856
 msgid "angle"
 msgstr "זווית"
 
-#: ../src/iop/clipping.c:1851
+#: ../src/iop/clipping.c:1859
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "הקלק כפתור ימני וגרור קו על התמונה לקבע קו ישר"
 
-#: ../src/iop/clipping.c:1855
+#: ../src/iop/clipping.c:1863
 msgid "keystone"
 msgstr "keystone"
 
-#: ../src/iop/clipping.c:1860
+#: ../src/iop/clipping.c:1868
 msgid "set perspective correction for your image"
 msgstr "קבע תיקון פרספקטיבה עבור התמונה"
 
-#: ../src/iop/clipping.c:1872
+#: ../src/iop/clipping.c:1880
 msgid "freehand"
 msgstr "יד חופשית"
 
-#: ../src/iop/clipping.c:1873
+#: ../src/iop/clipping.c:1881
 msgid "original image"
 msgstr "תמונה מקורית"
 
-#: ../src/iop/clipping.c:1875
+#: ../src/iop/clipping.c:1883
 msgid "10:8 in print"
 msgstr "בהדפסה 10:8"
 
-#: ../src/iop/clipping.c:1876
+#: ../src/iop/clipping.c:1884
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:1877
+#: ../src/iop/clipping.c:1885
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:1878
+#: ../src/iop/clipping.c:1886
 msgid "8.5x11, letter"
 msgstr "8.5x11, letter"
 
-#: ../src/iop/clipping.c:1879
+#: ../src/iop/clipping.c:1887
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:1880
+#: ../src/iop/clipping.c:1888
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:1881
+#: ../src/iop/clipping.c:1889
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:1882
+#: ../src/iop/clipping.c:1890
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:1883
+#: ../src/iop/clipping.c:1891
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:1885
+#: ../src/iop/clipping.c:1893
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:1886
+#: ../src/iop/clipping.c:1894
 msgid "widescreen"
 msgstr "מסך רחב"
 
-#: ../src/iop/clipping.c:1887
+#: ../src/iop/clipping.c:1895
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:1888
+#: ../src/iop/clipping.c:1896
 msgid "cinemascope"
 msgstr "סינמהסקופ"
 
-#: ../src/iop/clipping.c:1889
+#: ../src/iop/clipping.c:1897
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:1890
+#: ../src/iop/clipping.c:1898
 msgid "anamorphic"
 msgstr "אנאמורפי"
 
-#: ../src/iop/clipping.c:1891
+#: ../src/iop/clipping.c:1899
 msgid "3:1, panorama"
 msgstr "פנורמה 3:1"
 
-#: ../src/iop/clipping.c:1923 ../src/iop/clipping.c:1935
+#: ../src/iop/clipping.c:1931 ../src/iop/clipping.c:1943
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "פורמט יחס לא חוקי עבור `%s'. צריך להיות \"מספר:מספר\""
 
-#: ../src/iop/clipping.c:1982
+#: ../src/iop/clipping.c:1990
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -5071,29 +5071,29 @@ msgstr ""
 "קבע יחס גובה רוחב\n"
 "הרשימה מסודרת: מהריבועי ביותר עד המלבני ביותר"
 
-#: ../src/iop/clipping.c:2018 ../src/libs/live_view.c:368
+#: ../src/iop/clipping.c:2026 ../src/libs/live_view.c:368
 msgid "display guide lines to help compose your photograph"
 msgstr "הראה קווים מנחים בכדי לעזור בהרכבת התמונה"
 
-#: ../src/iop/clipping.c:2022 ../src/iop/clipping.c:2027
+#: ../src/iop/clipping.c:2030 ../src/iop/clipping.c:2035
 #: ../src/libs/live_view.c:377
 msgid "flip guides"
 msgstr "הפוך קווים מנחים"
 
-#: ../src/iop/clipping.c:2024 ../src/libs/live_view.c:374
+#: ../src/iop/clipping.c:2032 ../src/libs/live_view.c:374
 msgid "horizontally"
 msgstr "אופקי"
 
-#: ../src/iop/clipping.c:2025 ../src/libs/live_view.c:375
+#: ../src/iop/clipping.c:2033 ../src/libs/live_view.c:375
 msgid "vertically"
 msgstr "אנכי"
 
-#: ../src/iop/clipping.c:3089
+#: ../src/iop/clipping.c:3097
 msgctxt "accel"
 msgid "commit"
 msgstr "התחייב"
 
-#: ../src/iop/clipping.c:3090
+#: ../src/iop/clipping.c:3098
 msgctxt "accel"
 msgid "angle"
 msgstr "זווית"
@@ -9842,7 +9842,7 @@ msgstr "ייצא"
 
 #: ../src/libs/tagging.c:557
 msgid "export all tags to a Lightroom keyword file"
-msgstr "ייצא את כל התגיות ל Lightroom keyword file"
+msgstr "ייצא את כל התגיות ל קובץ מילות מפתח של Lightroom"
 
 #: ../src/libs/tools/colorlabels.c:40
 msgid "colorlabels"
@@ -10177,7 +10177,7 @@ msgstr "בדיקת מכלול צבע"
 
 #: ../src/views/darkroom.c:397
 msgid "soft proof"
-msgstr "סמלוץ הדפסה"
+msgstr "הדמיית הדפסה"
 
 #: ../src/views/darkroom.c:891
 msgid "no userdefined presets for favorite modules were found"
@@ -10296,7 +10296,7 @@ msgstr "סף למה שיחשב חשיפת חסר"
 
 #: ../src/views/darkroom.c:1652
 msgid "upper threshold"
-msgstr "סך עליון"
+msgstr "סף עליון"
 
 #: ../src/views/darkroom.c:1653
 msgid "threshold of what shall be considered overexposed"
