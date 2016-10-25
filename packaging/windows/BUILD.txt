@@ -1,4 +1,4 @@
-How to make a darktable windows installer (64 bit Intel only):
+How to make a darktable windows installer (64 bit only):
 
 1). Install MSYS2 (instructions and prerequisites can be found on official website: https://msys2.github.io/).
     
@@ -17,6 +17,9 @@ How to make a darktable windows installer (64 bit Intel only):
 
     For Saxon:
     $ pacman -S unzip perl-Locale-Gettext perl-TermReadKey perl-sgmls
+
+    For usermanual 
+    $ pacman -S mingw-w64-x86_64-imagemagick
 
     For other gtk libraries:
     $ pacman -S mingw-w64-x86_64-{atkmm, glibmm, cairomm, gtkmm3, gtksourceview3}
@@ -53,7 +56,15 @@ How to make a darktable windows installer (64 bit Intel only):
     #Update your CLASSPATH
     CLASSPATH=$CLASSPATH:/usr/share/java/saxon/saxon9he.jar:/usr/share/java/docbook-xsl-saxon/saxon653.jar
     export CLASSPATH
-    
+
+    #Update your PATH for fop
+    PATH=$PATH:/usr/share/java/fop
+
+    #https://www.ict.griffith.edu.au/anthony/info/graphics/imagemagick.hints
+    export MAGICK_HOME="$PREFIX/bin"
+    export MAGICK_CONFIGURE_PATH="$PREFIX/etc/ImageMagick-7"
+    export MAGICK_CODER_MODULE_PATH="$PREFIX/lib/ImageMagick-7.0.3/modules-Q16HDRI/coders"
+
     execute the following command to actviate  profile changes 
     $. .bash_profile
 
@@ -71,6 +82,9 @@ How to make a darktable windows installer (64 bit Intel only):
 
         After this darktable will be installed in /opt/darktable directory and can be started by typing /opt/darktable/bin/darktable.exe in MSYS2 MINGW64 terminal.
 
+    For building the usermanual
+        Add -DBUILD_USERMANUAL=ON flag to the cmake command line
+        
 2). Download and install gtk-bundle for Windows and install it
     https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer
     Pls note: you need to run the installer as admin to run the cache generation
