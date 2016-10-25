@@ -28,8 +28,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.css DESTINATION ${CMAKE_INST
 FILE(GLOB WEB_FILES "style/*")
 install(FILES ${WEB_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/style)
 
-FILE(GLOB WEB_FILES "js/*")
-install(FILES ${WEB_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/js)
+install(DIRECTORY "pswp" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable)
 
 #
 # latex book template support files:
