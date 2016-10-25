@@ -74,54 +74,61 @@
    necessary.  Returns the number of characters read (not including
    the null terminator), or -1 on error or EOF.  */
 
-ssize_t getdelim(char **lineptr, size_t *n, int delimiter, FILE *fp) {
+ssize_t getdelim(char **lineptr, size_t *n, int delimiter, FILE *fp)
+{
   ssize_t result;
   size_t cur_len = 0;
 
-  if (lineptr == NULL || n == NULL || fp == NULL) {
+  if(lineptr == NULL || n == NULL || fp == NULL)
+  {
     errno = EINVAL;
     return -1;
   }
 
   flockfile(fp);
 
-  if (*lineptr == NULL || *n == 0) {
+  if(*lineptr == NULL || *n == 0)
+  {
     char *new_lineptr;
     *n = 120;
     new_lineptr = (char *)realloc(*lineptr, *n);
-    if (new_lineptr == NULL) {
+    if(new_lineptr == NULL)
+    {
       result = -1;
       goto unlock_return;
     }
     *lineptr = new_lineptr;
   }
 
-  for (;;) {
+  for(;;)
+  {
     int i;
 
     i = getc_maybe_unlocked(fp);
-    if (i == EOF) {
+    if(i == EOF)
+    {
       result = -1;
       break;
     }
 
     /* Make enough space for len+1 (for final NUL) bytes.  */
-    if (cur_len + 1 >= *n) {
-      size_t needed_max =
-          SSIZE_MAX < SIZE_MAX ? (size_t)SSIZE_MAX + 1 : SIZE_MAX;
+    if(cur_len + 1 >= *n)
+    {
+      size_t needed_max = SSIZE_MAX < SIZE_MAX ? (size_t)SSIZE_MAX + 1 : SIZE_MAX;
       size_t needed = 2 * *n + 1; /* Be generous. */
       char *new_lineptr;
 
-      if (needed_max < needed)
-        needed = needed_max;
-      if (cur_len + 1 >= needed) {
+      if(needed_max < needed) needed = needed_max;
+      if(cur_len + 1 >= needed)
+      {
         result = -1;
         errno = EOVERFLOW;
         goto unlock_return;
       }
 
       new_lineptr = (char *)realloc(*lineptr, needed);
-      if (new_lineptr == NULL) {
+      if(new_lineptr == NULL)
+      {
         result = -1;
         goto unlock_return;
       }
@@ -133,8 +140,7 @@ ssize_t getdelim(char **lineptr, size_t *n, int delimiter, FILE *fp) {
     (*lineptr)[cur_len] = i;
     cur_len++;
 
-    if (i == delimiter)
-      break;
+    if(i == delimiter) break;
   }
   (*lineptr)[cur_len] = '\0';
   result = cur_len ? cur_len : result;
@@ -145,6 +151,11 @@ unlock_return:
   return result;
 }
 
-ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
+ssize_t getline(char **lineptr, size_t *n, FILE *stream)
+{
   return getdelim(lineptr, n, '\n', stream);
 }
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
