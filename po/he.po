@@ -7,8 +7,18 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
 "POT-Creation-Date: 2016-10-25 20:25+0300\n"
 "PO-Revision-Date: 2016-10-25 21:32+0200\n"
+=======
+<<<<<<< HEAD
+"POT-Creation-Date: 2016-10-25 20:25+0300\n"
+"PO-Revision-Date: 2016-10-25 21:32+0200\n"
+=======
+"POT-Creation-Date: 2016-10-23 16:01+0300\n"
+"PO-Revision-Date: 2016-10-23 16:11+0200\n"
+>>>>>>> ece0285555b065d4cb8d874fc7ac64cddeae08ce
+>>>>>>> Fixes in Hebrew translation
 "Last-Translator: Shlomi Alon-Braitbart <sbraitbart@gmail.com>\n"
 "Language-Team: \n"
 "Language: he_IL\n"
