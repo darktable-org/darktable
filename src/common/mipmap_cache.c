@@ -947,6 +947,7 @@ void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
     dt_cache_entry_t *entry = dt_cache_testget(&_get_cache(cache, k)->cache, key, 'w');
     if(entry)
     {
+      ASAN_UNPOISON_MEMORY_REGION(entry->data, dt_mipmap_buffer_dsc_size);
       struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
       dsc->flags |= DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE;
       dt_cache_release(&_get_cache(cache, k)->cache, entry);
