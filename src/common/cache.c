@@ -364,6 +364,20 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 
 void dt_cache_release_with_caller(dt_cache_t *cache, dt_cache_entry_t *entry, const char *file, int line)
 {
+#if((__has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)) && 1)
+  // yes, this is *HIGHLY* unportable and is accessing implementation details.
+#ifdef _DEBUG
+  if(entry->lock.lock.__data.__nr_readers <= 1)
+#else
+  if(entry->lock.__data.__nr_readers <= 1)
+#endif
+  {
+    // only if there are no other reades we may poison.
+    assert(entry->data_size);
+    ASAN_POISON_MEMORY_REGION(entry->data, entry->data_size);
+  }
+#endif
+
   dt_pthread_rwlock_unlock(&entry->lock);
 }
 
