@@ -1,4 +1,4 @@
-How to make a darktable windows installer (64 bit only):
+How to make a darktable windows installer (64 bit only) - native compile using MSYS2:
 
 1). Install MSYS2 (instructions and prerequisites can be found on official website: https://msys2.github.io/).
     
@@ -45,7 +45,7 @@ How to make a darktable windows installer (64 bit only):
     $ ./Build
     $ ./Build install
 
-    Modify your bash_profile file in your HOME directory
+    Modify your bash_profile file in your HOME directory and add the following lines:
     # added as per http://wiki.gimp.org/wiki/Hacking:Building/Windows
     export PREFIX="/mingw64"
     export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
@@ -66,17 +66,17 @@ How to make a darktable windows installer (64 bit only):
     export MAGICK_CODER_MODULE_PATH="$PREFIX/lib/ImageMagick-7.0.3/modules-Q16HDRI/coders"
 
     execute the following command to actviate  profile changes 
-    $. .bash_profile
+    $ . .bash_profile
 
-    Clone darktable git repository (in this example into ~/src):
-        $ mkdir ~/src
-        $ cd ~/src
+    Clone darktable git repository (in this example into ~/darktable):
+        $ mkdir ~/darktable
+        $ cd ~/darktable
         $ git clone git://github.com/darktable-org/darktable.git
     
     Finally build and install darktable:
-        $ mkdir darktablebuild
-        $ cd darktablebuild
-        $ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DPROJECT_VERSION=2.0.6 -DCMAKE_INSTALL_PREFIX=/opt/darktable ../darktable
+        $ mkdir build
+        $ cd build
+        $ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ../darktable
         $ cmake --build .
         $ cmake --build . --target install
 
@@ -87,7 +87,7 @@ How to make a darktable windows installer (64 bit only):
         
 2). Download and install gtk-bundle for Windows and install it
     https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer
-    Pls note: you need to run the installer as admin to run the cache generation
+    Please note: you need to run the installer as admin to run the cache generation
 
     $ gdk-pixbuf-query-loaders --update-cache 
 
@@ -116,5 +116,4 @@ TODO LIST
     Port CUPS or find a way to replace it
     Port FLICKCURL
     lensfun database should be deployed to Appdata/local/lensfun (no version_1 subfolder), alternatively under darktable/share at install
-    right alignment of views at the toolbar (_lib_view_toolbox_add ?)
     OpenCL64.dll or OpenCL.dll?
