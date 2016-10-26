@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-10-18 19:02+0200\n"
-"PO-Revision-Date: 2016-10-18 19:05+0200\n"
+"PO-Revision-Date: 2016-10-26 20:50+0200\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -4559,7 +4559,7 @@ msgstr ""
 
 #: ../src/iop/basecurve.c:1341
 msgid "fusion"
-msgstr "samensmelten"
+msgstr "fusion"
 
 #: ../src/iop/basecurve.c:1343
 msgid "two exposures"
@@ -4574,16 +4574,18 @@ msgid ""
 "fuse this image stopped up a couple of times with itself, to compress high "
 "dynamic range. expose for the highlights before use."
 msgstr ""
-"het samensmelten van deze afbeelding stopte een paar keer met zichzelf, voor "
-"compressie van een groot dynamisch bereik, belicht hooglichten voor gebruik"
+"de afbeelding wordt samengevoegd nadat op zichzelf een aantal belichtingen "
+"(stops) zijn toegepast, dit met als doel een hoog dynamisch bereik te "
+"comprimeren, bij het fotograferen moeten de hooglichten al correct zijn "
+"belicht"
 
 #: ../src/iop/basecurve.c:1350
 msgid "how many stops to shift the individual exposures apart"
-msgstr "aantal stops om de individuele belichtingen gescheiden te verhogen"
+msgstr "het aantal belichtingen waarmee wordt gewerkt"
 
 #: ../src/iop/basecurve.c:1351
 msgid "exposure shift"
-msgstr "instellen belichting"
+msgstr "belichtingsverschuiving"
 
 #: ../src/iop/bilat.c:61 ../src/iop/clahe.c:64
 msgid "local contrast"
