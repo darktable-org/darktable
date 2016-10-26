@@ -79,8 +79,23 @@ struct dt_mipmap_buffer_dsc
   size_t size;
   dt_mipmap_buffer_dsc_flags flags;
   dt_colorspaces_color_profile_type_t color_space;
+
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+  // do not touch!
+  // must be the last element.
+  // must be no less than 16bytes
+  char redzone[16];
+#endif
+
   /* NB: sizeof must be a multiple of 4*sizeof(float) */
 } __attribute__((packed, aligned(16)));
+
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+static const size_t dt_mipmap_buffer_dsc_size __attribute__((unused))
+= sizeof(struct dt_mipmap_buffer_dsc) - sizeof(((struct dt_mipmap_buffer_dsc *)0)->redzone);
+#else
+static const size_t dt_mipmap_buffer_dsc_size __attribute__((unused)) = sizeof(struct dt_mipmap_buffer_dsc);
+#endif
 
 // last resort mem alloc for dead images. sizeof(dt_mipmap_buffer_dsc) + dead image pixels (8x8)
 // Must be alignment to 4 * sizeof(float).
