@@ -598,15 +598,15 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)malloc(sizeof(dt_lib_geotagging_t));
   self->data = (void *)d;
   d->timezones = _lib_geotagging_get_timezones();
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   GtkBox *hbox;
   GtkWidget *button, *label;
 
   /* the offset line */
-  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10)));
   label = GTK_WIDGET(gtk_label_new(_("time offset")));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(hbox, label, TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox, label, FALSE, TRUE, 0);
 
   d->offset_entry = gtk_entry_new();
   dt_gui_key_accel_block_on_focus_connect(d->offset_entry);
@@ -623,7 +623,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_entry_set_text(GTK_ENTRY(d->offset_entry), "+00:00:00");
   g_free(str);
 
-  GtkBox *button_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+  GtkBox *button_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
   button = dtgtk_button_new(dtgtk_cairo_paint_zoom, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_tooltip_text(button, _("calculate the time offset from an image"));
   gtk_box_pack_start(button_box, button, TRUE, TRUE, 0);
@@ -634,7 +634,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(button_box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geotagging_apply_offset_callback), self);
 
-  gtk_box_pack_start(hbox, GTK_WIDGET(button_box), TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(button_box), FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   /* gpx */
