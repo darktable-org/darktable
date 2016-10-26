@@ -237,9 +237,11 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
 
   // buf might have been alloc'ed before,
   // so only check size and re-alloc if necessary:
-  if(!buf->buf || (dsc->size < buffer_size) || ((void *)dsc == (void *)dt_mipmap_cache_static_dead_image))
+  if(!buf->buf || ((void *)dsc == (void *)dt_mipmap_cache_static_dead_image) || (entry->data_size < buffer_size))
   {
     if((void *)dsc != (void *)dt_mipmap_cache_static_dead_image) dt_free_align(entry->data);
+
+    entry->data_size = 0;
 
     entry->data = dt_alloc_align(64, buffer_size);
 
@@ -252,10 +254,13 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
       return NULL;
     }
 
+    entry->data_size = buffer_size;
+
     // set buffer size only if we're making it larger.
     dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
-    dsc->size = buffer_size;
   }
+
+  dsc->size = buffer_size;
 
   dsc->width = wd;
   dsc->height = ht;
