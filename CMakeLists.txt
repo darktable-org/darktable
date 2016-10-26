@@ -14,6 +14,9 @@ If(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
   message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
 endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+
 project(darktable CXX C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -144,12 +147,7 @@ if(APPLE)
 	add_definitions("-DOS_OBJECT_USE_OBJC=0")
 endif(APPLE)
 
-if(CMAKE_COMPILER_IS_GNUCC)
-  if (CMAKE_C_COMPILER_VERSION VERSION_LESS 4.3)
-		message("-- Disabling OpenMP because GCC is 4.2 or older!")
-		set(USE_OPENMP OFF)
-  endif()
-endif()
+include(compiler-versions)
 
 if(WIN32)
   message("-- Win32 build detected, setting default features")
@@ -241,9 +239,6 @@ add_custom_target(
   DEPENDS ${CMAKE_BINARY_DIR}/src/version_gen.c
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
 # Add a sensible build type default and warning because empty means no optimization and no debug info.
 if(NOT CMAKE_BUILD_TYPE)
