@@ -266,7 +266,7 @@ void init(dt_iop_module_t *self)
   self->default_params = calloc(1, sizeof(dt_iop_scalepixels_params_t));
   self->default_enabled = (!isnan(image->pixel_aspect_ratio) && image->pixel_aspect_ratio > 0.0f
                            && image->pixel_aspect_ratio != 1.0f);
-  self->priority = 219; // module order created by iop_dependencies.py, do not edit!
+  self->priority = 253; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_scalepixels_params_t);
   self->gui_data = NULL;
 }
