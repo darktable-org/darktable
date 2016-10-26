@@ -1,11 +1,11 @@
 # DARKTABLE HEBREW TRANSLATION.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as Darktable.
+# This file is distributed under the same license as darktable.
 # FIRST AUTHOR <sbraitbart@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Darktable hebrew translation\n"
+"Project-Id-Version: darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-10-25 20:25+0300\n"
 "PO-Revision-Date: 2016-10-25 21:32+0200\n"
