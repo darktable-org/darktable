@@ -124,11 +124,6 @@ def add_edges(gr):
   gr.add_edge(('flip', 'spots'))
   gr.add_edge(('flip', 'liquify'))
   gr.add_edge(('flip', 'ashift'))
-  
-  # ashift wants a lens corrected image with straight lines.
-  # therefore lens shoucl come before and liquify should come after ashift
-  gr.add_edge(('ashift', 'lens'))
-  gr.add_edge(('liquify', 'ashift'))
 
   # plus, it confuses crop/rotate, vignetting and graduated density
   gr.add_edge(('clipping', 'flip'))
@@ -136,6 +131,11 @@ def add_edges(gr):
   gr.add_edge(('vignette', 'flip'))
   # gives the ability to change the space of shadow recovery fusion.
   # maybe this has to go the other way round, let's see what experience shows!
+  
+  # ashift wants a lens corrected image with straight lines.
+  # therefore lens should come before and liquify should come after ashift
+  gr.add_edge(('ashift', 'lens'))
+  gr.add_edge(('liquify', 'ashift'))
 
   # this evil hack for nikon crap profiles needs to come
   # as late as possible before the input profile:
@@ -172,6 +172,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'colisa'))
   gr.add_edge(('colorout', 'defringe'))
   gr.add_edge(('colorout', 'colorreconstruction'))
+  gr.add_edge(('colorout', 'filmulate'))
   gr.add_edge(('bloom', 'colorin'))
   gr.add_edge(('nlmeans', 'colorin'))
   gr.add_edge(('colortransfer', 'colorin'))
@@ -196,6 +197,7 @@ def add_edges(gr):
   gr.add_edge(('colisa', 'colorin'))
   gr.add_edge(('defringe', 'colorin'))
   gr.add_edge(('colorreconstruction', 'colorin'))
+  gr.add_edge(('filmulate', 'colorin'))
 
   # we want color reconstruction come before all other tone and color altering modules
   gr.add_edge(('bloom', 'colorreconstruction'))
@@ -221,6 +223,7 @@ def add_edges(gr):
   gr.add_edge(('colorize', 'colorreconstruction'))
   gr.add_edge(('colisa', 'colorreconstruction'))
   gr.add_edge(('defringe', 'colorreconstruction'))
+  gr.add_edge(('filmulate', 'colorreconstruction'))
 
 
   # spot removal works on demosaiced data
@@ -464,7 +467,31 @@ def add_edges(gr):
   gr.add_edge(('colorize', 'colorchecker'))
   gr.add_edge(('colisa', 'colorchecker'))
   gr.add_edge(('defringe', 'colorchecker'))
+  gr.add_edge(('filmulate', 'colorchecker'))
   gr.add_edge(('colorchecker', 'colorreconstruction'))
+  
+  # filmulate should happen after perspective correction
+  # so that it operates in the final image space (not compressed or stretched)
+  # but it also needs to happen after clipping because it doesn't like black
+  # borders inside of the image, as might be caused by perspective correction.
+  gr.add_edge(('filmulate', 'clipping'))#It should be applied after cropping.
+  gr.add_edge(('filmulate', 'ashift'))#It should work after stretching or shrinking.
+  gr.add_edge(('filmulate', 'defringe'))#It benefits from defringing
+  gr.add_edge(('filmulate', 'denoiseprofile'))#It benefits from NR
+  gr.add_edge(('filmulate', 'nlmeans'))
+  gr.add_edge(('filmulate', 'basecurve'))#It can benefit from having a curve before,
+                                         # but you'd usually disable base curve
+  gr.add_edge(('filmulate', 'bloom'))#bloom probably likes linear input
+  gr.add_edge(('filmulate', 'graduatednd'))#the ND should be in linear space
+
+  gr.add_edge(('globaltonemap', 'filmulate'))#filmulator competes with tone mapping
+
+  gr.add_edge(('grain', 'filmulate'))#Grain should apply to the result
+  gr.add_edge(('sharpen', 'filmulate'))#sharpen after filmulate
+  gr.add_edge(('colorzones', 'filmulate'))#this is more useful after filmulate
+  gr.add_edge(('lowpass', 'filmulate'))#this is more useful after filmulate
+  gr.add_edge(('equalizer', 'filmulate'))#this is more useful after filmulate
+  
 
 gr = digraph()
 gr.add_nodes([
@@ -497,6 +524,7 @@ gr.add_nodes([
 'dither',
 'equalizer', # deprecated
 'exposure',
+'filmulate',
 'finalscale',
 'flip',
 'gamma',
