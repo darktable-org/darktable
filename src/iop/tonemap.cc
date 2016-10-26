@@ -266,7 +266,7 @@ void init(dt_iop_module_t *module)
   module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_enabled = 0;
-  module->priority = 153; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 149; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonemapping_params_t);
   module->gui_data = NULL;
 }
