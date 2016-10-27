@@ -1002,7 +1002,10 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
     // shift-left while colour picking: replace source colour
     // if clicked outside the valid patches: add new one
     if(p->num_patches < 24 && (patch < 0 || patch >= p->num_patches))
-      patch = p->num_patches++;
+    {
+      p->num_patches = MIN(MAX_PATCHES, p->num_patches + 1);
+      patch = p->num_patches - 1;
+    }
     p->target_L[patch] = p->source_L[patch] = self->picked_color[0];
     p->target_a[patch] = p->source_a[patch] = self->picked_color[1];
     p->target_b[patch] = p->source_b[patch] = self->picked_color[2];
