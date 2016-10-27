@@ -24,13 +24,16 @@
 
 IGNORE_ONLY_14BIT = [
   ["NIKON CORPORATION", "NIKON D5100"],
-  ["NIKON CORPORATION", "NIKON D5200"]
+  ["NIKON CORPORATION", "NIKON D5200"],
+  ["NIKON CORPORATION", "COOLPIX A"]
 ]
 
 IGNORE_ONLY_MODE = {
+  ["NIKON CORPORATION", "NIKON 1 AW1"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 J1"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 J2"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 J3"] => "compressed",
+  ["NIKON CORPORATION", "NIKON 1 J4"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 S1"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 S2"] => "compressed",
   ["NIKON CORPORATION", "NIKON 1 V1"] => "compressed",
@@ -50,6 +53,7 @@ IGNORE_ONLY_MODE = {
   ["NIKON CORPORATION", "NIKON D5200"] => "compressed",
   ["NIKON CORPORATION", "NIKON D7000"] => "compressed",
   ["NIKON CORPORATION", "NIKON D7100"] => "compressed",
+  ["NIKON CORPORATION", "COOLPIX A"] => "compressed",
   ["NIKON", "COOLPIX P330"] => "compressed",
   ["NIKON", "COOLPIX P6000"] => "uncompressed",
   ["NIKON", "COOLPIX P7000"] => "uncompressed",
@@ -61,6 +65,7 @@ IGNORE_ONLY_MODE = {
 }
 
 IGNORE_HIGH_WHITELEVEL = [
+  ["NIKON CORPORATION", "NIKON 1 AW1"],
   ["NIKON CORPORATION", "NIKON 1 J2"],
   ["NIKON CORPORATION", "NIKON 1 J3"],
   ["NIKON CORPORATION", "NIKON 1 S2"],
