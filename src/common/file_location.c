@@ -150,25 +150,23 @@ char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
 char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
 {
   gchar *runtime_prefix;
-  gchar *slash;  
+  gchar *slash;
   gchar *finaldir;
   wchar_t fn[PATH_MAX];
-  
-  GetModuleFileNameW (NULL, fn, G_N_ELEMENTS (fn));
-  runtime_prefix = g_utf16_to_utf8 (fn, -1, NULL, NULL, NULL);
-  
-  //strip off /darktable
-  slash = strrchr (runtime_prefix, '\\');
-  *slash = '\0';
-  
-  //strip off /bin
-  slash = strrchr (runtime_prefix, '\\');
+
+  GetModuleFileNameW(NULL, fn, G_N_ELEMENTS(fn));
+  runtime_prefix = g_utf16_to_utf8(fn, -1, NULL, NULL, NULL);
+
+  // strip off /darktable
+  slash = strrchr(runtime_prefix, '\\');
   *slash = '\0';
 
-  finaldir = g_strconcat (runtime_prefix,
-                            suffix,
-                            NULL);
-                            
+  // strip off /bin
+  slash = strrchr(runtime_prefix, '\\');
+  *slash = '\0';
+
+  finaldir = g_strconcat(runtime_prefix, suffix, NULL);
+
   return g_strdup(finaldir);
 }
 #endif

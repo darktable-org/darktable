@@ -1447,58 +1447,57 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   char linkedfile[PATH_MAX] = { 0 };
   ssize_t linkedfile_len = 0;
 
-  #if defined(_WIN32)
-    // No symlinks on Windows
-    // Have to figure out the name using the filename + md5sum
-    char dup[PATH_MAX] = { 0 };
-    g_strlcpy(dup, binname, sizeof(dup));
-    snprintf(dup, sizeof(dup), "%s.%s", binname, md5sum);
-    FILE *cached = fopen_stat(dup, &cachedstat);
-    g_strlcpy(linkedfile, md5sum, sizeof(linkedfile));
-    linkedfile_len = strlen(md5sum);
-  #else 
-    FILE *cached = fopen_stat(binname, &cachedstat);
-  #endif
-  
+#if defined(_WIN32)
+  // No symlinks on Windows
+  // Have to figure out the name using the filename + md5sum
+  char dup[PATH_MAX] = { 0 };
+  snprintf(dup, sizeof(dup), "%s.%s", binname, md5sum);
+  FILE *cached = fopen_stat(dup, &cachedstat);
+  g_strlcpy(linkedfile, md5sum, sizeof(linkedfile));
+  linkedfile_len = strlen(md5sum);
+#else
+  FILE *cached = fopen_stat(binname, &cachedstat);
+#endif
+
   if(cached)
   {
-    #if !defined(_WIN32)
-      linkedfile_len = readlink(binname, linkedfile, sizeof(linkedfile) - 1);
-    #endif // !defined(_WIN32)
-      if (linkedfile_len > 0)
+#if !defined(_WIN32)
+    linkedfile_len = readlink(binname, linkedfile, sizeof(linkedfile) - 1);
+#endif // !defined(_WIN32)
+    if(linkedfile_len > 0)
+    {
+      linkedfile[linkedfile_len] = '\0';
+
+      if(strncmp(linkedfile, md5sum, 33) == 0)
       {
-        linkedfile[linkedfile_len] = '\0';
+        // md5sum matches, load cached binary
+        size_t cached_filesize = cachedstat.st_size;
 
-        if(strncmp(linkedfile, md5sum, 33) == 0)
+        unsigned char *cached_content = (unsigned char *)malloc(cached_filesize + 1);
+        rd = fread(cached_content, sizeof(char), cached_filesize, cached);
+        if(rd != cached_filesize)
         {
-          // md5sum matches, load cached binary
-          size_t cached_filesize = cachedstat.st_size;
-
-          unsigned char *cached_content = (unsigned char *)malloc(cached_filesize + 1);
-          rd = fread(cached_content, sizeof(char), cached_filesize, cached);
-          if(rd != cached_filesize)
+          dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not read all of file `%s'!\n", binname);
+        }
+        else
+        {
+          cl->dev[dev].program[prog] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(
+              cl->dev[dev].context, 1, &(cl->dev[dev].devid), &cached_filesize,
+              (const unsigned char **)&cached_content, NULL, &err);
+          if(err != CL_SUCCESS)
           {
-            dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not read all of file `%s'!\n", binname);
+            dt_print(DT_DEBUG_OPENCL,
+                     "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n", binname,
+                     err);
           }
           else
           {
-            cl->dev[dev].program[prog] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(
-                cl->dev[dev].context, 1, &(cl->dev[dev].devid), &cached_filesize,
-                (const unsigned char **)&cached_content, NULL, &err);
-            if(err != CL_SUCCESS)
-            {
-              dt_print(DT_DEBUG_OPENCL,
-                      "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n",
-                      binname, err);
-            }
-            else
-            {
-              cl->dev[dev].program_used[prog] = 1;
-              *loaded_cached = 1;
-            }
+            cl->dev[dev].program_used[prog] = 1;
+            *loaded_cached = 1;
           }
-          free(cached_content);
         }
+        free(cached_content);
+      }
     }
     fclose(cached);
   }
