@@ -1,6 +1,6 @@
-#ifndef _RELEASE
-
 #pragma once
+
+#ifndef _RELEASE
 
 //
 // We needed to poison certaion functions in order to disallow their usage
