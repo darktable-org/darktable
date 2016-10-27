@@ -68,6 +68,8 @@ def get_exif(filename)
   return exifhash
 end
 
+BLACKDIFF_MAX = 4
+
 class Array
   def handle_data_dups
     iso = self.first
@@ -84,7 +86,7 @@ class Array
 
     blacklevels = self.last.map { |black, white| black }.uniq
 
-    if (blacklevels.max - blacklevels.min) > 4
+    if (blacklevels.max - blacklevels.min) > BLACKDIFF_MAX
       $stderr.puts "ISO #{iso} has multiple variants with too different black levels: #{self.last}"
       return [iso, [-1, -1]]
     end
@@ -92,14 +94,6 @@ class Array
     blacklevel = blacklevels.max
 
     return [iso, [blacklevel, whitelevel]]
-  end
-
-  def handle_different_black_levels
-    white = self.first
-    black = self.last.keys.max
-    isos = self.last.values.flatten
-
-    return isos, [black, white]
   end
 end
 
@@ -160,24 +154,33 @@ sensors.map!(&:handle_data_dups)
 invsensors = {}
 
 if make == "Canon"
-  isohash = {} # white => black => iso
-
+  isohash = {}
   sensors.each do |iso, dsc|
-    black = dsc.first
-    white = dsc.last
-
-    isohash[white] = {} if not isohash[white]
-    isohash[white][black] = [] if not isohash[white][black]
-    isohash[white][black] << iso
+    isohash[dsc] = [] if not isohash[dsc]
+    isohash[dsc] << iso
   end
 
-  # group by white level, take the max black level.
-  invsensors = isohash.map(&:handle_different_black_levels)
-
   tmp = {}
-  invsensors.each do |iso, dsc|
+  isohash.each do |dsc, isos|
+    isohash.each do |dsc2, isos2|
+      # don't process diagonal
+      next if dsc == dsc2
+
+      # only if white level match
+      next if dsc[1] != dsc2[1]
+
+      b = [dsc[0], dsc2[0]]
+
+      next if b.max - b.min > BLACKDIFF_MAX
+
+      # ok, can take this blacklevel
+      dsc[0] = b.max
+
+      isos += isos2
+    end
+
     tmp[dsc] = [] if not tmp[dsc]
-    tmp[dsc] << iso.flatten.sort
+    tmp[dsc] = (tmp[dsc] + isos).uniq.sort
   end
 
   invsensors = tmp

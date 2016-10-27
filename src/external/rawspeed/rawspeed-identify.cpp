@@ -177,14 +177,38 @@ int main(int argc, const char* argv[])
     fprintf(stdout, "pixel_aspect_ratio: %f\n", r->metadata.pixelAspectRatio);
 
     double sum = 0.0f;
-    for(uint32 row = 0; row < ((uint32) dimUncropped.y); row++)
     {
-      uchar8 *data = r->getDataUncropped(0, row);
-      for(uint32 byte = 0; byte < ((uint32) dimUncropped.x*bpp) ; byte++)
-        sum += (double) data[byte];
+      uchar8 *data = r->getDataUncropped(0, 0);
+      for(uint32 k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x*bpp*cpp); k++)
+      {
+        sum += (double) data[k];
+      }
     }
     fprintf(stdout, "Image byte sum: %lf\n", sum);
-    fprintf(stdout, "Image byte avg: %lf\n", sum/(dimUncropped.y*dimUncropped.x*bpp));
+    fprintf(stdout, "Image byte avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x*bpp*cpp));
+
+    if(r->getDataType() == TYPE_FLOAT32)
+    {
+      sum = 0.0f;
+      float *data = (float *)r->getDataUncropped(0, 0);
+      for(uint32 k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x*cpp); k++)
+      {
+        sum += (double) data[k];
+      }
+      fprintf(stdout, "Image float sum: %lf\n", sum);
+      fprintf(stdout, "Image float avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x*cpp));
+    }
+    else if(r->getDataType() == TYPE_USHORT16)
+    {
+      sum = 0.0f;
+      uint16_t *data = (uint16_t *)r->getDataUncropped(0, 0);
+      for(uint32 k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x*cpp); k++)
+      {
+        sum += (double) data[k];
+      }
+      fprintf(stdout, "Image uint16_t sum: %lf\n", sum);
+      fprintf(stdout, "Image uint16_t avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x*cpp));
+    }
   }
   catch(const std::exception &exc)
   {

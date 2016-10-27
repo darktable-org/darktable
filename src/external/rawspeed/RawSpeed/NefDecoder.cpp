@@ -573,7 +573,7 @@ void NefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
 
   if (white != 65536)
     mRaw->whitePoint = white;
-  if (black >= 0 && hints.find(string("nikon_override_auto_black")) == hints.end())
+  if (black != -1)
     mRaw->blackLevel = black;
 }
 

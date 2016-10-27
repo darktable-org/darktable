@@ -303,7 +303,7 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   module->default_enabled = 0;
   // we are pretty late in the pipe:
-  module->priority = 800; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 791; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorcontrast_params_t);
   module->gui_data = NULL;
   // init defaults:

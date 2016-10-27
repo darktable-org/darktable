@@ -384,7 +384,7 @@
 				<Horizontal y="0" height="33"/>
 			</BlackAreas>
 		</Camera>
-		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw1" supported="yes"> <!-- "mRaw" -->
+		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw1" decoder_version="7">
 			<ID make="Canon" model="EOS 80D">Canon EOS 80D</ID>
 			<Crop x="28" y="10" width="0" height="0"/>
 			<Sensor black="0" white="48816" iso_list="320 640 1250 2500 5000"/>
@@ -398,7 +398,7 @@
 				<Hint name="wrapped_cr2_slices" value=""/>
 			</Hints>
 		</Camera>
-		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw2"> <!-- "sRaw" -->
+		<Camera make="Canon" model="Canon EOS 80D" mode="sRaw2" decoder_version="7">
 			<ID make="Canon" model="EOS 80D">Canon EOS 80D</ID>
 			<Crop x="0" y="0" width="0" height="0"/>
 			<Sensor black="0" white="48468" iso_list="2500"/>
@@ -632,6 +632,26 @@
 			<Hint name="sraw_new" value=""/>
 			<Hint name="invert_sraw_wb" value=""/>
 		</Hints>
+	</Camera>
+	<Camera make="Canon" model="Canon EOS 5D Mark IV">
+		<ID make="Canon" model="EOS 5D Mark IV">Canon EOS 5D Mark IV</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="136" y="44" width="0" height="0"/>
+		<Sensor black="2049" white="14448"/>
+		<Sensor black="513" white="14008" iso_list="50 100 125"/>
+		<Sensor black="512" white="10838" iso_list="160"/>
+		<Sensor black="512" white="14448" iso_list="200 250"/>
+		<Sensor black="2048" white="10838" iso_list="320 640 1250 2500 5000 10000 20000"/>
+		<Sensor black="2049" white="13533" iso_list="102400"/>
+		<BlackAreas>
+			<Vertical x="0" width="134"/>
+			<Horizontal y="0" height="40"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 5DS" decoder_version="6">
 		<ID make="Canon" model="EOS 5DS">Canon EOS 5DS</ID>
@@ -1978,7 +1998,7 @@
 		<Crop x="2" y="0" width="4282" height="2844"/>
 		<Sensor black="0" white="3972"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="14bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="14bit-compressed">
 		<ID make="Nikon" model="D3S">Nikon D3S</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -1986,10 +2006,10 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="16384"/>
+		<Crop x="2" y="0" width="0" height="0"/>
+		<Sensor black="0" white="15520"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="14bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="14bit-uncompressed">
 		<ID make="Nikon" model="D3S">Nikon D3S</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -1997,8 +2017,8 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="16384"/>
+		<Crop x="2" y="0" width="0" height="0"/>
+		<Sensor black="0" white="15520"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="12bit-compressed">
 		<ID make="Nikon" model="D3S">Nikon D3S</ID>
@@ -2008,7 +2028,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="2" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3880"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3S" mode="12bit-uncompressed">
@@ -2019,7 +2039,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="2" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3880"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3X" mode="14bit-compressed">
@@ -2186,9 +2206,6 @@
 		</CFA>
 		<Crop x="8" y="8" width="-8" height="-8"/>
 		<Sensor black="150" white="3880"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3300" mode="12bit-uncompressed">
 		<ID make="Nikon" model="D3300">Nikon D3300</ID>
@@ -2200,9 +2217,6 @@
 		</CFA>
 		<Crop x="8" y="8" width="-8" height="-8"/>
 		<Sensor black="150" white="3880"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3400" mode="12bit-compressed">
 		<ID make="Nikon" model="D3400">Nikon D3400</ID>
@@ -2269,9 +2283,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="400" white="15520"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5" mode="14bit-uncompressed">
 		<ID make="Nikon" model="D5">Nikon D5</ID>
@@ -2283,9 +2294,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="400" white="15520"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5" mode="12bit-compressed">
 		<ID make="Nikon" model="D5">Nikon D5</ID>
@@ -2297,9 +2305,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="100" white="3880"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5" mode="12bit-uncompressed">
 		<ID make="Nikon" model="D5">Nikon D5</ID>
@@ -2311,9 +2316,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="100" white="3880"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="14bit-compressed">
 		<ID make="Nikon" model="Df">Nikon Df</ID>
@@ -2458,9 +2460,6 @@
 		</CFA>
 		<Crop x="2" y="2" width="-2" height="-2"/>
 		<Sensor black="400" white="15520"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D500" mode="14bit-uncompressed" supported="no">
 		<ID make="Nikon" model="D500">Nikon D500</ID>
@@ -2472,9 +2471,6 @@
 		</CFA>
 		<Crop x="2" y="2" width="-2" height="-2"/>
 		<Sensor black="400" white="15520"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D500" mode="12bit-compressed">
 		<ID make="Nikon" model="D500">Nikon D500</ID>
@@ -2486,9 +2482,6 @@
 		</CFA>
 		<Crop x="2" y="2" width="-2" height="-2"/>
 		<Sensor black="100" white="3880"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D500" mode="12bit-uncompressed" supported="no">
 		<ID make="Nikon" model="D500">Nikon D500</ID>
@@ -2500,9 +2493,6 @@
 		</CFA>
 		<Crop x="2" y="2" width="-2" height="-2"/>
 		<Sensor black="100" white="3880"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5000" mode="12bit-compressed">
 		<ID make="Nikon" model="D5000">Nikon D5000</ID>
@@ -2547,9 +2537,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="150" white="3972"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5300" mode="12bit-uncompressed">
 		<ID make="Nikon" model="D5300">Nikon D5300</ID>
@@ -2561,9 +2548,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="150" white="3972"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5300" mode="14bit-compressed">
 		<ID make="Nikon" model="D5300">Nikon D5300</ID>
@@ -2575,9 +2559,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="600" white="15892"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5300" mode="14bit-uncompressed">
 		<ID make="Nikon" model="D5300">Nikon D5300</ID>
@@ -2589,9 +2570,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="600" white="15892"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5500" mode="12bit-compressed">
 		<ID make="Nikon" model="D5500">Nikon D5500</ID>
@@ -2603,9 +2581,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="150" white="3972"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5500" mode="12bit-uncompressed">
 		<ID make="Nikon" model="D5500">Nikon D5500</ID>
@@ -2617,9 +2592,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="150" white="3972"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5500" mode="14bit-compressed">
 		<ID make="Nikon" model="D5500">Nikon D5500</ID>
@@ -2631,9 +2603,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="600" white="15892"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5500" mode="14bit-uncompressed">
 		<ID make="Nikon" model="D5500">Nikon D5500</ID>
@@ -2645,9 +2614,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="600" white="15892"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D60" mode="12bit-compressed">
 		<ID make="Nikon" model="D60">Nikon D60</ID>
@@ -2780,9 +2746,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="150" white="3880"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D750" mode="14bit-compressed">
 		<ID make="Nikon" model="D750">Nikon D750</ID>
@@ -2794,9 +2757,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="600" white="15520"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D7000" mode="14bit-compressed">
 		<ID make="Nikon" model="D7000">Nikon D7000</ID>
@@ -2852,9 +2812,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="600" white="15892"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D7200" mode="14bit-uncompressed" supported="no">
 		<ID make="Nikon" model="D7200">Nikon D7200</ID>
@@ -2866,9 +2823,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="600" white="15892"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D7200" mode="12bit-compressed">
 		<ID make="Nikon" model="D7200">Nikon D7200</ID>
@@ -2880,9 +2834,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="150" white="3972"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D7200" mode="12bit-uncompressed" supported="no">
 		<ID make="Nikon" model="D7200">Nikon D7200</ID>
@@ -2894,9 +2845,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="150" white="3972"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D70s" mode="12bit-compressed">
 		<ID make="Nikon" model="D70s">Nikon D70s</ID>
@@ -3058,7 +3006,7 @@
 		<Sensor black="150" white="3880"/>
 		<Hints>
 			<Hint name="msb_override" value=""/>
-			<Hint name="nikon_override_auto_black" value=""/>
+
 		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="12bit-compressed">
@@ -3071,9 +3019,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="150" white="3880"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="14bit-uncompressed">
 		<ID make="Nikon" model="D810">Nikon D810</ID>
@@ -3087,7 +3032,7 @@
 		<Sensor black="600" white="15520"/>
 		<Hints>
 			<Hint name="msb_override" value=""/>
-			<Hint name="nikon_override_auto_black" value=""/>
+
 		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="14bit-compressed">
@@ -3100,9 +3045,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="600" white="15520"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="sNEF-uncompressed">
 		<ID make="Nikon" model="D4S">Nikon D4S</ID>
@@ -3119,9 +3061,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="192" white="3880"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="12bit-uncompressed">
 		<ID make="Nikon" model="D4S">Nikon D4S</ID>
@@ -3135,7 +3074,7 @@
 		<Sensor black="192" white="3880"/>
 		<Hints>
 			<Hint name="msb_override" value=""/>
-			<Hint name="nikon_override_auto_black" value=""/>
+
 		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="14bit-uncompressed">
@@ -3150,7 +3089,7 @@
 		<Sensor black="768" white="15520"/>
 		<Hints>
 			<Hint name="msb_override" value=""/>
-			<Hint name="nikon_override_auto_black" value=""/>
+
 		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="14bit-compressed">
@@ -3163,9 +3102,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="768" white="15520"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D90" mode="12bit-compressed">
 		<ID make="Nikon" model="D90">Nikon D90</ID>
@@ -3222,7 +3158,7 @@
 		<Crop x="0" y="0" width="0" height="-2"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 J4" mode="12bit-compressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON 1 J4" mode="12bit-compressed" decoder_version="4">
 		<ID make="Nikon" model="1 J4">Nikon 1 J4</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3231,24 +3167,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="200" white="4095"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
-	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 J4" mode="12bit-uncompressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
-		<ID make="Nikon" model="1 J4">Nikon 1 J4</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="200" white="4095"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
+		<Sensor black="200" white="4000"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 J5" mode="12bit-compressed">
 		<ID make="Nikon" model="1 J5">Nikon 1 J5</ID>
@@ -3260,9 +3179,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="200" white="3800"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 J5" mode="12bit-uncompressed">
 		<ID make="Nikon" model="1 J5">Nikon 1 J5</ID>
@@ -3274,9 +3190,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="200" white="3800"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 S1" mode="12bit-compressed" decoder_version="4">
 		<ID make="Nikon" model="1 S1">Nikon 1 S1</ID>
@@ -3299,9 +3212,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="200" white="4095"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 V1" mode="12bit-compressed" decoder_version="4">
 		<ID make="Nikon" model="1 V1">Nikon 1 V1</ID>
@@ -3335,9 +3245,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="200" white="4000"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 V3" mode="12bit-uncompressed" decoder_version="4">
 		<ID make="Nikon" model="1 V3">Nikon 1 V3</ID>
@@ -3349,11 +3256,8 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="200" white="4000"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 AW1" mode="12bit-compressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON 1 AW1" mode="12bit-compressed" decoder_version="4">
 		<ID make="Nikon" model="1 AW1">Nikon 1 AW1</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3363,17 +3267,7 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
-	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 AW1" mode="12bit-uncompressed" decoder_version="4" supported="no"> <!-- need raw sample for whitelevel -->
-		<ID make="Nikon" model="1 AW1">Nikon 1 AW1</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="4095"/>
+		<Sensor black="0" white="3300" iso_list="160"/>
 	</Camera>
 	<Camera make="NIKON" model="E5400" mode="12bit-uncompressed" decoder_version="3">
 		<ID make="Nikon" model="E5400">Nikon E5400</ID>
@@ -3468,7 +3362,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="200" white="3800"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="COOLPIX A" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="COOLPIX A" mode="14bit-compressed">
 		<ID make="Nikon" model="Coolpix A">Nikon Coolpix A</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3477,18 +3371,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-44" height="0"/>
-		<Sensor black="0" white="4095"/>
-	</Camera>
-	<Camera make="NIKON CORPORATION" model="COOLPIX A" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
-		<ID make="Nikon" model="Coolpix A">Nikon Coolpix A</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="-44" height="0"/>
-		<Sensor black="0" white="4095"/>
+		<Sensor black="0" white="15892"/>
 	</Camera>
 	<Camera make="NIKON" model="COOLPIX P6000" mode="12bit-uncompressed" decoder_version="1">
 		<ID make="Nikon" model="Coolpix P6000">Nikon Coolpix P6000</ID>
@@ -6762,7 +6645,7 @@
 		<Sensor black="0" white="3839"/>
 	</Camera>
 	<Camera make="RICOH IMAGING COMPANY, LTD." model="PENTAX K-70">
-		<ID make="Pentax" model="K-70">>PENTAX K-70</ID>
+		<ID make="Pentax" model="K-70">PENTAX K-70</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -7198,6 +7081,17 @@
 	</Camera>
 	<Camera make="SONY" model="DSC-RX10M2">
 		<ID make="Sony" model="DSC-RX10M2">Sony DSC-RX10M2</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-8" height="0"/>
+		<Sensor black="800" white="16300"/>
+	</Camera>
+	 <Camera make="SONY" model="DSC-RX10M3">
+		<ID make="Sony" model="DSC-RX10M3">Sony DSC-RX10M3</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
