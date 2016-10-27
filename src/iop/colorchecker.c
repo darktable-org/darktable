@@ -517,7 +517,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)p1;
   dt_iop_colorchecker_data_t *d = (dt_iop_colorchecker_data_t *)piece->data;
 
-  d->num_patches = p->num_patches;
+  d->num_patches = MIN(MAX_PATCHES, p->num_patches);
   for(int k=0;k<p->num_patches;k++)
   {
     d->source_Lab[3*k+0] = p->source_L[k];
