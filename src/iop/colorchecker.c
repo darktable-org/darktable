@@ -931,7 +931,8 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   }
   const float mx = mouse_x * cells_x / (float)width;
   const float my = mouse_y * cells_y / (float)height;
-  int patch = CLAMP((int)mx + cells_x*(int)my, 0, p->num_patches-1);
+  const int patch = (int)mx + cells_x * (int)my;
+  if(patch < 0 || patch >= p->num_patches) return FALSE;
   char tooltip[1024];
   snprintf(tooltip, sizeof(tooltip),
       _("(%2.2f %2.2f %2.2f)\n"
