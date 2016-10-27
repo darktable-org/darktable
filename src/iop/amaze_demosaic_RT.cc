@@ -18,24 +18,21 @@
 
 #define __STDC_FORMAT_MACROS
 
-#define POISON_H
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
 
 extern "C" {
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
 // otherwise the name will be mangled and the linker won't be able to see the function ...
 void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in,
                        float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                        const int filters);
 }
-
-#include <algorithm>
-#include <cmath>
 
 static __inline float clampnan(const float x, const float m, const float M)
 {
