@@ -398,11 +398,15 @@ static void transform(float *x, float *o, const float *m, const float t_h, const
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
+  // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
+  // as a workaround, we use a factor for preview pipes
+  float factor = 1.0f;
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) factor = 100.0f;
   // we first need to be sure that all data values are computed
   // this is done in modify_roi_out fct, so we create tmp roi
   dt_iop_roi_t roi_out, roi_in;
-  roi_in.width = piece->buf_in.width;
-  roi_in.height = piece->buf_in.height;
+  roi_in.width = piece->buf_in.width * factor;
+  roi_in.height = piece->buf_in.height * factor;
   self->modify_roi_out(self, piece, &roi_out, &roi_in);
 
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
@@ -423,24 +427,24 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
     if(d->k_apply == 1) keystone_transform(pi, k_space, ma, mb, md, me, mg, mh, kxa, kya);
 
-    pi[0] -= d->tx;
-    pi[1] -= d->ty;
+    pi[0] -= d->tx / factor;
+    pi[1] -= d->ty / factor;
     // transform this point using matrix m
     transform(pi, po, d->m, d->k_h, d->k_v);
 
     if(d->flip)
     {
-      po[1] += d->tx;
-      po[0] += d->ty;
+      po[1] += d->tx / factor;
+      po[0] += d->ty / factor;
     }
     else
     {
-      po[0] += d->tx;
-      po[1] += d->ty;
+      po[0] += d->tx / factor;
+      po[1] += d->ty / factor;
     }
 
-    points[i] = po[0] - d->cix + d->enlarge_x;
-    points[i + 1] = po[1] - d->ciy + d->enlarge_y;
+    points[i] = po[0] - (d->cix - d->enlarge_x) / factor;
+    points[i + 1] = po[1] - (d->ciy - d->enlarge_y) / factor;
   }
 
   return 1;
@@ -448,11 +452,15 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
                           size_t points_count)
 {
+  // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
+  // as a workaround, we use a factor for preview pipes
+  float factor = 1.0f;
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) factor = 100.0f;
   // we first need to be sure that all data values are computed
   // this is done in modify_roi_out fct, so we create tmp roi
   dt_iop_roi_t roi_out, roi_in;
-  roi_in.width = piece->buf_in.width;
-  roi_in.height = piece->buf_in.height;
+  roi_in.width = piece->buf_in.width * factor;
+  roi_in.height = piece->buf_in.height * factor;
   self->modify_roi_out(self, piece, &roi_out, &roi_in);
 
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
@@ -469,24 +477,24 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
-    pi[0] = -d->enlarge_x + d->cix + points[i];
-    pi[1] = -d->enlarge_y + d->ciy + points[i + 1];
+    pi[0] = -(d->enlarge_x - d->cix) / factor + points[i];
+    pi[1] = -(d->enlarge_y - d->ciy) / factor + points[i + 1];
 
     // transform this point using matrix m
     if(d->flip)
     {
-      pi[1] -= d->tx;
-      pi[0] -= d->ty;
+      pi[1] -= d->tx / factor;
+      pi[0] -= d->ty / factor;
     }
     else
     {
-      pi[0] -= d->tx;
-      pi[1] -= d->ty;
+      pi[0] -= d->tx / factor;
+      pi[1] -= d->ty / factor;
     }
 
     backtransform(pi, po, d->m, d->k_h, d->k_v);
-    po[0] += d->tx;
-    po[1] += d->ty;
+    po[0] += d->tx / factor;
+    po[1] += d->ty / factor;
     if(d->k_apply == 1) keystone_backtransform(po, k_space, ma, mb, md, me, mg, mh, kxa, kya);
 
     points[i] = po[0];
@@ -1663,7 +1671,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
-  module->priority = 446; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 447; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)

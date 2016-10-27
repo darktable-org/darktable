@@ -14,7 +14,7 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wlarger-than=${MAX_MEANINGFUL_SIZE})
 if(USE_XMLLINT)
 	add_custom_target(
 		validate_cameras_xml ALL
-		COMMAND ${Xmllint_BIN} --valid --noout ${CMAKE_CURRENT_SOURCE_DIR}/data/cameras.xml
+		COMMAND ${Xmllint_BIN} --valid --noout --schema ${CMAKE_CURRENT_SOURCE_DIR}/data/cameras.xsd ${CMAKE_CURRENT_SOURCE_DIR}/data/cameras.xml
 		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/data/cameras.xml
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 		COMMENT "Checking validity of external/rawspeed/data/cameras.xml"
