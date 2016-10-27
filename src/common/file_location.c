@@ -154,7 +154,7 @@ char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
   gchar *finaldir;
   wchar_t fn[PATH_MAX];
   
-  GetModuleFileNameW (NULL, fn, G_N_ELEMENTS (fn) );
+  GetModuleFileNameW (NULL, fn, G_N_ELEMENTS (fn));
   runtime_prefix = g_utf16_to_utf8 (fn, -1, NULL, NULL, NULL);
   
   //strip off /darktable
