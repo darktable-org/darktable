@@ -1,5 +1,5 @@
-#ifndef __WIN_H__
-#define __WIN_H__
+#ifndef DT_WIN_H
+#define DT_WIN_H
 
 #ifdef __MSVCRT_VERSION__
 #undef __MSVCRT_VERSION__
@@ -26,7 +26,7 @@
 #define sleep(n) Sleep(1000 * n)
 #define HAVE_BOOLEAN
 
-#endif
+#endif // DT_WIN_H
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
