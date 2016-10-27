@@ -842,7 +842,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
     g_setenv("LANGUAGE", lang, 1);
     if(setlocale(LC_ALL, lang) != NULL) gtk_disable_setlocale();
     setlocale(LC_MESSAGES, lang);
-    g_setenv("LANGUAGE", lang, 1);
+    g_setenv("LANG", lang, 1);
   }
   g_free((gchar *)lang);
 
