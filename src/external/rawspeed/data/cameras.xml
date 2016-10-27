@@ -2345,7 +2345,7 @@
 			<Vertical x="4984" width="8"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-compressed">
 		<ID make="Nikon" model="Df">Nikon Df</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2354,12 +2354,12 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="2" y="0" width="-50" height="0"/>
-		<Sensor black="0" white="4096"/>
+		<Sensor black="0" white="3880"/>
 		<BlackAreas>
 			<Vertical x="4984" width="8"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-uncompressed">
 		<ID make="Nikon" model="Df">Nikon Df</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2368,7 +2368,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="2" y="0" width="-50" height="0"/>
-		<Sensor black="0" white="4096"/>
+		<Sensor black="0" white="3880"/>
 		<BlackAreas>
 			<Vertical x="4984" width="8"/>
 		</BlackAreas>
