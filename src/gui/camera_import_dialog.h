@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_CAMERA_IMPORT_DIALOG_H
-#define DT_CAMERA_IMPORT_DIALOG_H
+#pragma once
 
 #include "common/camera_control.h"
 #include <glib.h>
@@ -34,9 +33,6 @@ typedef struct dt_camera_import_dialog_param_t
 
 /** Fires up the camera import dialog, result is a list of images paths on camera to be imported. */
 void dt_camera_import_dialog_new(dt_camera_import_dialog_param_t *param);
-
-#endif
-
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

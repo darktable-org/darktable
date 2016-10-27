@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DARKTABLE_ACCELERATORS_H
-#define DARKTABLE_ACCELERATORS_H
+#pragma once
 
 #include <gtk/gtk.h>
 
@@ -90,7 +89,6 @@ void dt_accel_rename_preset_lib(dt_lib_module_t *module, const gchar *path, cons
 void dt_accel_rename_global(const gchar *path, const gchar *new_path);
 void dt_accel_rename_lua(const gchar *path, const gchar *new_path);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
