@@ -722,6 +722,7 @@ static void target_L_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  if(g->patch >= p->num_patches || g->patch < 0) return;
   p->target_L[g->patch] = p->source_L[g->patch] + dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -731,6 +732,7 @@ static void target_a_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  if(g->patch >= p->num_patches || g->patch < 0) return;
   p->target_a[g->patch] = CLAMP(p->source_a[g->patch] + dt_bauhaus_slider_get(slider), -128.0, 128.0);
   const float Cin = sqrtf(
       p->source_a[g->patch]*p->source_a[g->patch] +
@@ -750,6 +752,7 @@ static void target_b_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  if(g->patch >= p->num_patches || g->patch < 0) return;
   p->target_b[g->patch] = CLAMP(p->source_b[g->patch] + dt_bauhaus_slider_get(slider), -128.0, 128.0);
   const float Cin = sqrtf(
       p->source_a[g->patch]*p->source_a[g->patch] +
@@ -769,6 +772,7 @@ static void target_C_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  if(g->patch >= p->num_patches || g->patch < 0) return;
   const float Cin = sqrtf(
       p->source_a[g->patch]*p->source_a[g->patch] +
       p->source_b[g->patch]*p->source_b[g->patch]);
