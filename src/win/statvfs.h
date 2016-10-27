@@ -36,8 +36,8 @@
  * limitations under the License.
  */
 
-#ifndef RDPDR_DISK_STATVFS_H
-#define RDPDR_DISK_STATVFS_H
+#ifndef DT_STATVFS_H
+#define DT_STATVFS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,7 +67,7 @@ int statvfs(const char *path, struct statvfs *buf);
 }
 #endif
 
-#endif /* RDPDR_DISK_STATVFS_H */
+#endif // DT_STATVFS_H
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
