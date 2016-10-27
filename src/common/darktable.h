@@ -378,26 +378,27 @@ static inline void dt_print_mem_usage()
   MEMORYSTATUSEX memInfo;
   memInfo.dwLength = sizeof(MEMORYSTATUSEX);
   GlobalMemoryStatusEx(&memInfo);
-  //DWORDLONG totalVirtualMem = memInfo.ullTotalPageFile;
-  
-  //Virtual Memory currently used by current process:
+  // DWORDLONG totalVirtualMem = memInfo.ullTotalPageFile;
+
+  // Virtual Memory currently used by current process:
   PROCESS_MEMORY_COUNTERS_EX pmc;
-  GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*) &pmc, sizeof(pmc));
-  SIZE_T virtualMemUsedByMe = pmc.PagefileUsage;
-  SIZE_T virtualMemUsedByMeMax = pmc.PeakPagefileUsage;
+  GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS *)&pmc, sizeof(pmc));
+  size_t virtualMemUsedByMe = pmc.PagefileUsage;
+  size_t virtualMemUsedByMeMax = pmc.PeakPagefileUsage;
 
-  //Max Physical Memory currently used by current process
-  SIZE_T physMemUsedByMeMax = pmc.PeakWorkingSetSize;
+  // Max Physical Memory currently used by current process
+  size_t physMemUsedByMeMax = pmc.PeakWorkingSetSize;
 
-  //Physical Memory currently used by current process
-  SIZE_T physMemUsedByMe = pmc.WorkingSetSize;
-  
+  // Physical Memory currently used by current process
+  size_t physMemUsedByMe = pmc.WorkingSetSize;
+
 
   fprintf(stderr, "[memory] max address space (vmpeak): %12llu kB\n"
                   "[memory] cur address space (vmsize): %12llu kB\n"
                   "[memory] max used memory   (vmhwm ): %12llu kB\n"
                   "[memory] cur used memory   (vmrss ): %12llu Kb\n",
-          virtualMemUsedByMeMax / 1024, virtualMemUsedByMe / 1024, physMemUsedByMeMax / 1024, physMemUsedByMe / 1024);
+          virtualMemUsedByMeMax / 1024, virtualMemUsedByMe / 1024, physMemUsedByMeMax / 1024,
+          physMemUsedByMe / 1024);
 
 #else
   fprintf(stderr, "dt_print_mem_usage() currently unsupported on this platform\n");
@@ -477,7 +478,7 @@ static inline int dt_get_num_atom_cores()
 
   return hw_ncpu;
 #elif defined _WIN32
-  
+
   SYSTEM_INFO sysinfo;
   GetSystemInfo(&sysinfo);
   return sysinfo.dwNumberOfProcessors;
@@ -516,7 +517,7 @@ static inline size_t dt_get_total_memory()
   MEMORYSTATUSEX memInfo;
   memInfo.dwLength = sizeof(MEMORYSTATUSEX);
   GlobalMemoryStatusEx(&memInfo);
-  return memInfo.ullTotalPhys / 1024;
+  return memInfo.ullTotalPhys / (uint64_t)1024;
 #else
   // assume 2GB until we have a better solution.
   fprintf(stderr, "Unknown memory size. Assuming 2GB\n");
