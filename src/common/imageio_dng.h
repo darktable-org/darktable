@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_DNG_WRITER_H
-#define DT_DNG_WRITER_H
+
+#pragma once
 
 // writes buffers as digital negative (dng) raw images
 
@@ -235,7 +235,6 @@ static inline void dt_imageio_write_dng(
 #undef LONG
 #undef RATIONAL
 #undef SRATIONAL
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

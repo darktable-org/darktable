@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 * ------------------------------------------------------------------------*/
 
-#ifndef INTERPOLATION_H
-#define INTERPOLATION_H
+#pragma once
 
 #include "common/opencl.h"
 #include "develop/pixelpipe_hb.h"
@@ -184,9 +183,6 @@ int dt_interpolation_resample_roi_cl(const struct dt_interpolation *itor, int de
                                      const dt_iop_roi_t *const roi_out, cl_mem dev_in,
                                      const dt_iop_roi_t *const roi_in);
 #endif
-
-
-#endif /* INTERPOLATION_H */
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

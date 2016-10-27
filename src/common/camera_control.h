@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_CAMERA_CONTROL_H
-#define DT_CAMERA_CONTROL_H
+#pragma once
 
 #include "common/darktable.h"
 
@@ -259,8 +258,6 @@ const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c, cons
 /** build a popup menu with all properties available */
 void dt_camctl_camera_build_property_menu(const dt_camctl_t *c, const dt_camera_t *cam, GtkMenu **menu,
                                           GCallback item_activate, gpointer user_data);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

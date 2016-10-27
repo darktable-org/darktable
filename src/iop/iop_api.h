@@ -19,8 +19,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_IOP_API_H
-#define DT_IOP_API_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -203,8 +202,6 @@ dt_introspection_field_t *get_f(const char *name);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

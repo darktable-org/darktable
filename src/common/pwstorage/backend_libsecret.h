@@ -21,8 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef __BACKEND_LIBSECRET_H__
-#define __BACKEND_LIBSECRET_H__
+#pragma once
 
 #include <glib.h>
 
@@ -66,8 +65,6 @@ gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t *context, 
  * @return table List of (key,value) pairs
  */
 GHashTable *dt_pwstorage_libsecret_get(const backend_libsecret_context_t *context, const gchar *slot);
-
-#endif // __BACKEND_LIBSECRET_H__
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

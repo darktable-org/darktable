@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_MODULE_API_H
-#define DT_MODULE_API_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,8 +36,6 @@ int dt_module_mod_version();
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

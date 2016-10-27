@@ -16,8 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_LIB_H
-#define DT_LIB_H
+
+#pragma once
 
 #include "common/darktable.h"
 #include "views/view.h"
@@ -185,8 +185,6 @@ void dt_lib_colorpicker_set_point(dt_lib_t *lib, float x, float y);
 gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b);
 /** init presets for a newly created lib */
 void dt_lib_init_presets(dt_lib_module_t *module);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

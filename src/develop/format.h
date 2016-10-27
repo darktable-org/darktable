@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_DEVELOP_FORMAT_H
-#define DT_DEVELOP_FORMAT_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -66,8 +65,6 @@ void default_input_format(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_
 
 void default_output_format(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                            struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

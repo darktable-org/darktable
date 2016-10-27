@@ -18,8 +18,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_CONTROL_JOBS_H
-#define DT_CONTROL_JOBS_H
+#pragma once
 
 #include <glib.h>
 #include <inttypes.h>
@@ -100,7 +99,6 @@ int32_t dt_control_get_threadid();
 #include "control/jobs/film_jobs.h"
 #include "control/jobs/image_jobs.h"
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
