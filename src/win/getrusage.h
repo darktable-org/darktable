@@ -5,8 +5,7 @@
  This file is licensed under a BSD license.
 */
 
-#ifndef DT_GETRUSAGE_H
-#define DT_GETRUSAGE_H
+#pragma once
 
 #include <sys/time.h> /* for struct timeval */
 
@@ -42,8 +41,6 @@ struct rusage {
 #endif
 
 extern int getrusage(int who, struct rusage *rusage);
-
-#endif // DT_GETRUSAGE_H
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

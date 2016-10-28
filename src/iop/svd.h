@@ -18,6 +18,8 @@
  *   v = returns the right orthogonal transformation matrix
 */
 
+#pragma once
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>

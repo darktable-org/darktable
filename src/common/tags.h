@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_TAGS_H
-#define DT_TAGS_H
+#pragma once
 
 #include <glib.h>
 #include <sqlite3.h>
@@ -108,7 +107,6 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest);
 /** make sure that main.used_tags has everything. to be used after changes to main.tagged_images */
 void dt_tag_update_used_tags();
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

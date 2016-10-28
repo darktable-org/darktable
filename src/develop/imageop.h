@@ -17,8 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_DEVELOP_IMAGEOP_H
-#define DT_DEVELOP_IMAGEOP_H
+
+#pragma once
 
 #include <gmodule.h>
 #include <gtk/gtk.h>
@@ -535,8 +535,6 @@ gchar *dt_iop_get_localized_name(const gchar *op);
 
 /** Connects common accelerators to an iop module */
 void dt_iop_connect_common_accels(dt_iop_module_t *module);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

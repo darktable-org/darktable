@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_STYLES_H
-#define DT_STYLES_H
+#pragma once
 
 #include "common/darktable.h"
 #include "develop/blend.h"
@@ -106,7 +105,7 @@ void dt_styles_import_from_file(const char *style_path);
 void init_styles_key_accels();
 /** connect global style accelerators at start time */
 void connect_styles_key_accels();
-#endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -15,7 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_IMAGE_COMPRESSION
+
+#pragma once
+
 #include <inttypes.h>
 
 /** K. Roimela, T. Aarnio and J. Itäranta. High Dynamic Range Texture Compression. Proceedings of SIGGRAPH
@@ -23,7 +25,6 @@
 void dt_image_compress(const float *in, uint8_t *out, const int32_t width, const int32_t height);
 void dt_image_uncompress(const uint8_t *in, float *out, const int32_t width, const int32_t height);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -14,6 +14,9 @@ If(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
   message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
 endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+
 project(darktable CXX C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -72,7 +75,8 @@ option(BUILD_CMSTEST "Build a test program to check your system's color manageme
 option(USE_OPENEXR "Enable OpenEXR support" ON)
 option(BUILD_PRINT "Build the print module" ON)
 option(BUILD_RS_IDENTIFY "Build the darktable-rs-identify debug aid" ON)
-OPTION(BUILD_SSE2_CODEPATHS "(EXPERIMENTAL OPTION, DO NOT DISABLE) Building SSE2-optimized codepaths" ON)
+option(BUILD_SSE2_CODEPATHS "(EXPERIMENTAL OPTION, DO NOT DISABLE) Building SSE2-optimized codepaths" ON)
+option(VALIDATE_APPDATA_FILE "Use appstream-util (if found) to validate the .appdata file" OFF)
 
 if(BUILD_SSE2_CODEPATHS)
   CHECK_C_COMPILER_FLAG("-msse2" _MSSE2)
@@ -143,12 +147,7 @@ if(APPLE)
 	add_definitions("-DOS_OBJECT_USE_OBJC=0")
 endif(APPLE)
 
-if(CMAKE_COMPILER_IS_GNUCC)
-  if (CMAKE_C_COMPILER_VERSION VERSION_LESS 4.3)
-		message("-- Disabling OpenMP because GCC is 4.2 or older!")
-		set(USE_OPENMP OFF)
-  endif()
-endif()
+include(compiler-versions)
 
 if(WIN32)
   message("-- Win32 build detected, setting default features")
@@ -256,9 +255,6 @@ add_custom_target(
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
-
 # Add a sensible build type default and warning because empty means no optimization and no debug info.
 if(NOT CMAKE_BUILD_TYPE)
 	message("WARNING: CMAKE_BUILD_TYPE is not defined!\n         Defaulting to CMAKE_BUILD_TYPE=RelWithDebInfo. Use ccmake to set a proper value.")
@@ -322,14 +318,15 @@ else(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
 endif(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
 
 # we need appstream-util to check darktable.appdata.xml
-find_program(appstream_util_BIN appstream-util)
-if(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
-  message(STATUS "Missing appstream-util, problems in darktable.appdata.xml might go unnoticed")
-  set(VALIDATE_APPDATA_FILE 0)
-else(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
-  message(STATUS "Found appstream-util")
-  set(VALIDATE_APPDATA_FILE 1)
-endif(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
+if(VALIDATE_APPDATA_FILE)
+  find_program(appstream_util_BIN appstream-util)
+  if(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
+    message(STATUS "Missing appstream-util, problems in darktable.appdata.xml might go unnoticed")
+    set(VALIDATE_APPDATA_FILE OFF)
+  else(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
+    message(STATUS "Found appstream-util")
+  endif(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
+endif(VALIDATE_APPDATA_FILE)
 
 # we need jsonschema to check noiseprofiles.json
 find_program(jsonschema_BIN jsonschema)
@@ -378,15 +375,12 @@ endif(NOT EXTERNAL_PROGRAMS_FOUND)
 # The path can be modified by setting CMAKE_INSTALL_LOCALEDIR
 if(USE_NLS)
     find_package(Gettext)
-    if(Gettext_FOUND)
-        find_package(Msgfmt)
-        if(Msgfmt_FOUND)
-            message(STATUS "Found msgfmt to convert language file. Translation enabled")
-            add_subdirectory(po)
-        else()
-            message(STATUS "Cannot find msgfmt to convert language file. Translation won't be enabled")
-        endif()
-    endif(Gettext_FOUND)
+    if(GETTEXT_MSGFMT_EXECUTABLE)
+        message(STATUS "Found msgfmt to convert .po file. Translation enabled")
+        add_subdirectory(po)
+    else()
+        message(STATUS "Cannot find msgfmt to convert .po file. Translation won't be enabled")
+    endif()
 endif(USE_NLS)
 
 #find a temporary directory
