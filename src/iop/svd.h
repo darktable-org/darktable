@@ -206,13 +206,13 @@ static inline int dsvd(
       flag = 1;
       for (l = k; l >= 0; l--) 
       {                     /* test for splitting */
-        nm = l - 1;
+        nm = MAX(0, l - 1);
         if (fabs(rv1[l]) + anorm == anorm) 
         {
           flag = 0;
           break;
         }
-        if (fabs(w[nm]) + anorm == anorm) 
+        if (l == 0 || fabs(w[nm]) + anorm == anorm)
           break;
       }
       if (flag) 
