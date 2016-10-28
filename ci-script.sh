@@ -23,13 +23,15 @@
 #   SRC_DIR - read-only directory with git checkout to compile
 #   CC, CXX, CFLAGS, CXXFLAGS are not required, should make sense too
 
-set -e
+set -ex
+
+PARALLEL="-j2"
 
 cd "$BUILD_DIR"
-cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVALIDATE_APPDATA_FILE=On "$SRC_DIR"
+cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVALIDATE_APPDATA_FILE=On "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
 
 # to get as much of the issues into the log as possible
-cmake --build "$BUILD_DIR" -- -j3 || cmake --build "$BUILD_DIR" -- -j1 -k
+cmake --build "$BUILD_DIR" -- $PARALLEL -v || cmake --build "$BUILD_DIR" -- -j1 -v -k0
 
 # and now check that it installs where told and only there.
-cmake --build "$BUILD_DIR" --target install -- -j3 || cmake --build "$BUILD_DIR" --target install -- -j1 -k
+cmake --build "$BUILD_DIR" --target install -- $PARALLEL -v || cmake --build "$BUILD_DIR" --target install -- -j1 -v -k0
