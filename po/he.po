@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-25 20:25+0300\n"
-"PO-Revision-Date: 2016-10-25 21:32+0200\n"
+"POT-Creation-Date: 2016-10-28 08:06+0300\n"
+"PO-Revision-Date: 2016-10-28 08:34+0200\n"
 "Last-Translator: Shlomi Alon-Braitbart <sbraitbart@gmail.com>\n"
 "Language-Team: \n"
 "Language: he_IL\n"
@@ -1140,19 +1140,19 @@ msgstr ""
 msgid "orphaned image"
 msgstr "תמונה יתומה"
 
-#: ../src/common/image.c:1349
+#: ../src/common/image.c:1356
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "אין אפשרות ליצור עותק מקומי כאשר קובץ המקור אינו זמין."
 
-#: ../src/common/image.c:1363
+#: ../src/common/image.c:1370
 msgid "cannot create local copy."
 msgstr "אין אפשרות ליצור עותק מקומי"
 
-#: ../src/common/image.c:1429 ../src/control/jobs/control_jobs.c:636
+#: ../src/common/image.c:1436 ../src/control/jobs/control_jobs.c:636
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "לא ניתן להסיר עותק מקומי כאשר ה קובץ המקורי אינו זמין."
 
-#: ../src/common/image.c:1595
+#: ../src/common/image.c:1602
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1586,8 +1586,8 @@ msgstr "הסר תמונות"
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
 "do you really want to remove %d selected images from the collection?"
-msgstr[0] "האם אתה באמת מעוניין להסיר תמונה נבחרת %d מהאוסף?"
-msgstr[1] "האם אתה באמת מעוניין להסיר תמונות נבחרות %d מהאוסף?"
+msgstr[0] "האם את/ה באמת מעוניין/ת להסיר תמונה נבחרת %d מהאוסף?"
+msgstr[1] "האם את/ה באמת מעוניין/ת להסיר תמונות נבחרות %d מהאוסף?"
 
 #: ../src/control/jobs/control_jobs.c:1381
 msgid "remove images?"
@@ -1602,16 +1602,16 @@ msgstr "מחק תמונות"
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
-msgstr[0] "האם אתה באמת מעוניין לשלוח תמונה נבחרת %d לסל המחזור?"
-msgstr[1] "האם אתה באמת מעוניין לשלוח תמונות נבחרות %d לסל המחזור?"
+msgstr[0] "האם את/ה באמת מעוניין/ת לשלוח תמונה נבחרת %d לסל המחזור?"
+msgstr[1] "האם את/ה באמת מעוניין/ת לשלוח תמונות נבחרות %d לסל המחזור?"
 
 #: ../src/control/jobs/control_jobs.c:1422
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
 "do you really want to physically delete %d selected images from disk?"
-msgstr[0] "האם אתה באמת מעוניין למחוק פיסית תמונה נבחרת %d מהדיסק?"
-msgstr[1] "האם אתה באמת מעוניין למחוק פיסית תמונות נבחרות %d מהדיסק?"
+msgstr[0] "האם את/ה באמת מעוניין/ת למחוק פיסית תמונה נבחרת %d מהדיסק?"
+msgstr[1] "האם את/ה באמת מעוניין/ת למחוק פיסית תמונות נבחרות %d מהדיסק?"
 
 #: ../src/control/jobs/control_jobs.c:1426
 msgid "trash images?"
@@ -1668,8 +1668,8 @@ msgstr "העתק תמונות"
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
-msgstr[0] "האם אתה באמת מעוניין להעתיק פיסית את התמונה הנבחרת %d אל %s?"
-msgstr[1] "האם אתה באמת מעוניין להעתיק פיסית את התמונות הנבחרות %d אל %s?"
+msgstr[0] "האם את/ה באמת מעוניין/ת להעתיק פיסית את התמונה הנבחרת %d אל %s?"
+msgstr[1] "האם את/ה באמת מעוניין/ת להעתיק פיסית את התמונות הנבחרות %d אל %s?"
 
 #: ../src/control/jobs/control_jobs.c:1527
 msgid "copy image?"
@@ -3103,7 +3103,7 @@ msgstr "האם את/ה בטוח/ה שברצונך למחוק את פריסט `%s
 #: ../src/gui/preferences.c:1009 ../src/gui/presets.c:187
 #: ../src/libs/lib.c:329
 msgid "delete preset?"
-msgstr "מחק הגדרה?"
+msgstr "מחק פריסט?"
 
 #. Non-zero value indicates export
 #: ../src/gui/preferences.c:1045
@@ -3219,15 +3219,15 @@ msgstr "(ברירת מחדל)"
 #: ../src/libs/lib.c:300 ../src/libs/lib.c:308 ../src/libs/lib.c:310
 #: ../src/libs/lib.c:312
 msgid "new preset"
-msgstr "הגדרה חדשה"
+msgstr "פריסט חדש"
 
 #: ../src/gui/presets.c:225
 msgid "please give preset a name"
-msgstr "אנה תן/י שם לפריסט"
+msgstr "אנא תן/י שם לפריסט"
 
 #: ../src/gui/presets.c:227
 msgid "unnamed preset"
-msgstr "הגדרה ללא שם"
+msgstr "פריסט ללא שם"
 
 #: ../src/gui/presets.c:252 ../src/libs/lib.c:142
 #, c-format
@@ -3240,11 +3240,11 @@ msgstr ""
 
 #: ../src/gui/presets.c:254 ../src/libs/lib.c:143
 msgid "overwrite preset?"
-msgstr "דרוס הגדרה?"
+msgstr "דרוס פריסט?"
 
 #: ../src/gui/presets.c:400 ../src/libs/lib.c:237
 msgid "name of the preset"
-msgstr "שם ההגדרה"
+msgstr "שם הפריסט"
 
 #: ../src/gui/presets.c:870
 msgid "disabled: wrong module version"
@@ -3252,19 +3252,19 @@ msgstr "מנוטרל: גרסת מודול לא נכונה"
 
 #: ../src/gui/presets.c:891 ../src/libs/lib.c:464
 msgid "edit this preset.."
-msgstr "ערוך הגדרה זו.."
+msgstr "ערוך פריסט זה.."
 
 #: ../src/gui/presets.c:895 ../src/libs/lib.c:468
 msgid "delete this preset"
-msgstr "מחק הגדרה זו"
+msgstr "מחק פריסט זה"
 
 #: ../src/gui/presets.c:901 ../src/libs/lib.c:475
 msgid "store new preset.."
-msgstr "שמור הגדרה חדשה.."
+msgstr "שמור פריסט חדש.."
 
 #: ../src/gui/presets.c:907 ../src/libs/lib.c:482
 msgid "update preset"
-msgstr "עדכן הגדרה"
+msgstr "עדכן פריסט"
 
 #: ../src/gui/styles_dialog.c:165 ../src/gui/styles_dialog.c:171
 #: ../src/libs/styles.c:217
@@ -7469,7 +7469,7 @@ msgstr "%.0f mired"
 
 #: ../src/iop/temperature.c:1389
 msgid "fine tune white balance preset"
-msgstr "כוונון עדין של פריסט איזון לבן"
+msgstr "כוונון עדין של הגדרות איזון לבן"
 
 #: ../src/iop/tonecurve.c:150
 msgid "tone curve"
@@ -10602,7 +10602,7 @@ msgstr "אין מצלמה זמינה לשימוש עם תמיכה בקשירה"
 
 #: ../src/views/view.c:323
 msgid "you are making a mistake!"
-msgstr "אתה עושה טעות!"
+msgstr "את/ה עושה טעות!"
 
 #: ../src/views/view.c:324
 msgid "_yes, i understood. please let me suffer by using 32-bit darktable."
@@ -10619,7 +10619,7 @@ msgid ""
 "otherwise, you are GUARANTEED to experience issues which cannot be fixed.\n"
 msgstr ""
 "אזהרה!\n"
-"אתה משתמש בגרסת 32 ביט של darktable.\n"
+"את/ה משתמש/ת בגרסת 32 ביט של darktable.\n"
 "לגרסת 32 ביט מרחב כתובות זיכרון מוגבל ביותר.\n"
 "יש לנו דיווחים רבים ש darktable מתנהג בצורה בעייתית וקורס בגרסת 32 ביט.\n"
 "אנחנו ממליצים בחום לעבור לגרסה הנכונה של 64 ביט.\n"
