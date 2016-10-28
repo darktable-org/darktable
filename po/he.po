@@ -1,11 +1,11 @@
 # DARKTABLE HEBREW TRANSLATION.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as Darktable.
+# This file is distributed under the same license as darktable.
 # FIRST AUTHOR <sbraitbart@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Darktable hebrew translation\n"
+"Project-Id-Version: darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-10-25 20:25+0300\n"
 "PO-Revision-Date: 2016-10-25 21:32+0200\n"
@@ -4508,6 +4508,8 @@ msgid ""
 "fuse this image stopped up a couple of times with itself, to compress high "
 "dynamic range. expose for the highlights before use."
 msgstr ""
+"מזג תמונה זו עם עצמה מספר פעמים בחשיפה גבוהה יותר על מנת לדחוס טווח דינמי "
+"גבוהה. חשוף לפרטים הבהירים לפני השימוש."
 
 #: ../src/iop/basecurve.c:1814
 msgid "how many stops to shift the individual exposures apart"
@@ -7016,60 +7018,64 @@ msgstr ""
 msgid "raw overexposed"
 msgstr "קובץ ה raw בחשיפת יתר"
 
-#: ../src/iop/rawprepare.c:45
+#: ../src/iop/rawprepare.c:46
 msgid "crop x"
 msgstr "חיתוך x"
 
-#: ../src/iop/rawprepare.c:45
+#: ../src/iop/rawprepare.c:46
 msgid "crop from left border"
 msgstr "חתוך מגבול שמאלי"
 
-#: ../src/iop/rawprepare.c:46
+#: ../src/iop/rawprepare.c:47
 msgid "crop y"
 msgstr "חיתוך y"
 
-#: ../src/iop/rawprepare.c:46
+#: ../src/iop/rawprepare.c:47
 msgid "crop from top"
 msgstr "חתוך מלמעלה"
 
-#: ../src/iop/rawprepare.c:47
+#: ../src/iop/rawprepare.c:48
 msgid "crop width"
 msgstr "רוחב חיתוך"
 
-#: ../src/iop/rawprepare.c:47
+#: ../src/iop/rawprepare.c:48
 msgid "crop from right border"
 msgstr "חתוך מגבול ימני"
 
-#: ../src/iop/rawprepare.c:48
+#: ../src/iop/rawprepare.c:49
 msgid "crop height"
 msgstr "גובה חיתוך"
 
-#: ../src/iop/rawprepare.c:48
+#: ../src/iop/rawprepare.c:49
 msgid "crop from bottom"
 msgstr "חתוך מהתחתית"
 
-#: ../src/iop/rawprepare.c:94
+#: ../src/iop/rawprepare.c:95
 msgctxt "modulename"
 msgid "raw black/white point"
 msgstr "נקודות שחור/לבן raw"
 
-#: ../src/iop/rawprepare.c:116 ../src/iop/rawprepare.c:138
-#: ../src/iop/rawprepare.c:685
+#: ../src/iop/rawprepare.c:117
+msgid "passthrough"
+msgstr "העבר"
+
+#: ../src/iop/rawprepare.c:133 ../src/iop/rawprepare.c:155
+#: ../src/iop/rawprepare.c:702
 #, c-format
 msgid "black level %i"
 msgstr "רמת שחור %i"
 
-#: ../src/iop/rawprepare.c:129
+#: ../src/iop/rawprepare.c:146
 msgctxt "accel"
 msgid "white point"
 msgstr "נקודת לבן"
 
-#: ../src/iop/rawprepare.c:143 ../src/iop/rawprepare.c:699
-#: ../src/iop/rawprepare.c:700
+#: ../src/iop/rawprepare.c:160 ../src/iop/rawprepare.c:716
+#: ../src/iop/rawprepare.c:717
 msgid "white point"
 msgstr "נקודת לבן"
 
-#: ../src/iop/rawprepare.c:721
+#: ../src/iop/rawprepare.c:738
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
