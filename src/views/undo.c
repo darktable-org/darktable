@@ -16,9 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "develop/imageop.h"
 #include "views/undo.h"
-#include <glib.h>
+#include <glib.h>    // for GList, gpointer, g_list_first, g_list_prepend
+#include <stdlib.h>  // for NULL, malloc, free
 
 typedef struct dt_undo_item_t
 {

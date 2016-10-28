@@ -20,7 +20,6 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/debug.h"
 #include "common/exif.h"
 #include "common/film.h"
 #include "common/gpx.h"

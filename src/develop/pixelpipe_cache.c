@@ -17,8 +17,8 @@
 */
 
 #include "develop/pixelpipe_cache.h"
-#include "develop/pixelpipe_hb.h"
 #include "develop/format.h"
+#include "develop/pixelpipe_hb.h"
 #include "libs/lib.h"
 #include <stdlib.h>
 

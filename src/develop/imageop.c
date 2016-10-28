@@ -28,6 +28,7 @@
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/develop.h"
+#include "develop/format.h"
 #include "develop/masks.h"
 #include "develop/tiling.h"
 #include "dtgtk/button.h"
@@ -38,7 +39,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "libs/modulegroups.h"
-#include "develop/format.h"
 
 #include <assert.h>
 #include <gmodule.h>
