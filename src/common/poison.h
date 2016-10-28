@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef _RELEASE
+#if !defined(_RELEASE) && !defined(__cplusplus)
 
 //
 // We needed to poison certaion functions in order to disallow their usage
