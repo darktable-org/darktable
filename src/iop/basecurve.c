@@ -25,6 +25,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
@@ -226,7 +227,21 @@ typedef struct dt_iop_basecurve_data_t
 
 typedef struct dt_iop_basecurve_global_data_t
 {
-  int kernel_basecurve;
+  int kernel_basecurve_lut;
+  int kernel_basecurve_zero;
+  int kernel_basecurve_ev_lut;
+  int kernel_basecurve_compute_features;
+  int kernel_basecurve_blur_h;
+  int kernel_basecurve_blur_v;
+  int kernel_basecurve_expand;
+  int kernel_basecurve_reduce;
+  int kernel_basecurve_detail;
+  int kernel_basecurve_adjust_features;
+  int kernel_basecurve_blend_gaussian;
+  int kernel_basecurve_blend_laplacian;
+  int kernel_basecurve_normalize;
+  int kernel_basecurve_reconstruct;
+  int kernel_basecurve_finalize;
 } dt_iop_basecurve_global_data_t;
 
 
@@ -284,8 +299,389 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static
+int gauss_blur_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                  cl_mem dev_in, cl_mem dev_out, cl_mem dev_tmp,
+                  const int width, const int height)
+{
+  dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  /* horizontal blur */
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_h, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_h, 1, sizeof(cl_mem), (void *)&dev_tmp);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_h, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_h, 3, sizeof(int), (void *)&height);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_blur_h, sizes);
+  if(err != CL_SUCCESS) return FALSE;
+
+  /* vertical blur */
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_v, 0, sizeof(cl_mem), (void *)&dev_tmp);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_v, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_v, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_v, 3, sizeof(int), (void *)&height);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_blur_v, sizes);
+  if(err != CL_SUCCESS) return FALSE;
+
+  return TRUE;
+}
+
+static
+int gauss_expand_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                    cl_mem dev_in, cl_mem dev_out, cl_mem dev_tmp,
+                    const int width, const int height)
+{
+  dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_expand, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_expand, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_expand, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_expand, 3, sizeof(int), (void *)&height);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_expand, sizes);
+  if(err != CL_SUCCESS) return FALSE;
+
+  return gauss_blur_cl(self, piece, dev_out, dev_out, dev_tmp, width, height);
+}
+
+
+static
+int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                    cl_mem dev_in, cl_mem dev_coarse, cl_mem dev_detail,
+                    cl_mem dev_tmp1, cl_mem dev_tmp2,
+                    const int width, const int height)
+{
+  dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+
+  do
+  {
+    if(!gauss_blur_cl(self, piece, dev_in, dev_tmp1, dev_tmp2, width, height))
+      return FALSE;
+
+    const int cw = (width - 1) / 2 + 1;
+    const int ch = (height - 1) / 2 + 1;
+
+    size_t sizes[] = { ROUNDUPWD(cw), ROUNDUPHT(ch), 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reduce, 0, sizeof(cl_mem), (void *)&dev_tmp1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reduce, 1, sizeof(cl_mem), (void *)&dev_coarse);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reduce, 2, sizeof(int), (void *)&cw);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reduce, 3, sizeof(int), (void *)&ch);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_reduce, sizes);
+    if(err != CL_SUCCESS) return FALSE;
+  } while(0);
+
+
+  if(dev_detail != NULL)
+  {
+    if(!gauss_expand_cl(self, piece, dev_coarse, dev_tmp1, dev_tmp2, width, height))
+      return FALSE;
+
+    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_detail, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_detail, 1, sizeof(cl_mem), (void *)&dev_tmp1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_detail, 2, sizeof(cl_mem), (void *)&dev_detail);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_detail, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_detail, 4, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_detail, sizes);
+    if(err != CL_SUCCESS) return FALSE;
+  }
+
+  return TRUE;
+}
+
+
+static
+int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
+  dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->data;
+
+  cl_int err = -999;
+
+  const int num_levels_max = 8;
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int rad = MIN(width, ceilf(256 * roi_in->scale / piece->iscale));
+
+  cl_mem *dev_col = calloc(num_levels_max, sizeof(cl_mem));
+  cl_mem *dev_comb = calloc(num_levels_max, sizeof(cl_mem));
+
+  cl_mem dev_tmp1 = NULL;
+  cl_mem dev_tmp2 = NULL;
+  cl_mem dev_m = NULL;
+  cl_mem dev_coeffs = NULL;
+
+  int num_levels = num_levels_max;
+
+  dev_tmp1 = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  if(dev_tmp1 == NULL) goto error;
+
+  dev_tmp2 = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  if(dev_tmp2 == NULL) goto error;
+
+  // allocate buffers for wavelet transform and blending
+  for(int k = 0, step = 1, w = width, h = height; k < num_levels; k++)
+  {
+    // coarsest step is some % of image width.
+    dev_col[k]  = dt_opencl_alloc_device(devid, w, h, 4 * sizeof(float));
+    if(dev_col[k] == NULL) goto error;
+
+    dev_comb[k] = dt_opencl_alloc_device(devid, w, h, 4 * sizeof(float));
+    if(dev_comb[k] == NULL) goto error;
+
+    size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_zero, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_zero, 1, sizeof(int), (void *)&w);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_zero, 2, sizeof(int), (void *)&h);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_zero, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    w = (w - 1) / 2 + 1;
+    h = (h - 1) / 2 + 1;
+    step *= 2;
+
+    if(step > rad || w < 4 || h < 4)
+    {
+      num_levels = k + 1;
+      break;
+    }
+  }
+
+  dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
+  if(dev_m == NULL) goto error;
+
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs);
+  if(dev_coeffs == NULL) goto error;
+
+
+  for(int e = 0; e < d->exposure_fusion + 1; e++)
+  {
+    // for every exposure fusion image: push by some ev, apply base curve and compute features
+    do
+    {
+      const float ev = powf(2.0f, d->exposure_stops * e);
+
+      size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 0, sizeof(cl_mem), (void *)&dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 1, sizeof(cl_mem), (void *)&dev_tmp1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 4, sizeof(float), (void *)&ev);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 5, sizeof(cl_mem), (void *)&dev_m);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_ev_lut, sizes);
+      if(err != CL_SUCCESS) goto error;
+
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 0, sizeof(cl_mem), (void *)&dev_tmp1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 1, sizeof(cl_mem), (void *)&dev_col[0]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 3, sizeof(int), (void *)&height);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_compute_features, sizes);
+      if(err != CL_SUCCESS) goto error;
+    } while(0);
+
+    // create gaussian pyramid of color buffer
+    if(!gauss_reduce_cl(self, piece, dev_col[0], dev_col[1], dev_out, dev_tmp1, dev_tmp2, width, height))
+      goto error;
+
+    // adjust features
+    do
+    {
+      size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 0, sizeof(cl_mem), (void *)&dev_col[0]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 1, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 2, sizeof(cl_mem), (void *)&dev_tmp1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 3, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 4, sizeof(int), (void *)&height);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_adjust_features, sizes);
+      if(err != CL_SUCCESS) goto error;
+
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { width, height, 1 };
+      err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_col[0], origin, origin, region);
+      if(err != CL_SUCCESS) goto error;
+    } while(0);
+
+
+    for(int k = 1, w = width, h = height; k < num_levels; k++)
+    {
+      if(!gauss_reduce_cl(self, piece, dev_col[k-1], dev_col[k], NULL, dev_tmp1, dev_tmp2, w, h))
+        goto error;
+
+      w = (w - 1) / 2 + 1;
+      h = (h - 1) / 2 + 1;
+    }
+
+    // update pyramid coarse to fine
+    for(int k = num_levels - 1; k >= 0; k--)
+    {
+      int w = width;
+      int h = height;
+
+      for(int i = 0; i < k; i++)
+      {
+        w = (w - 1) / 2 + 1;
+        h = (h - 1) / 2 + 1;
+      }
+
+      // dev_col[k+1] -> dev_tmp2[k]
+      if(k != num_levels - 1)
+        if(!gauss_expand_cl(self, piece, dev_col[k+1], dev_tmp2, dev_tmp1, w, h))
+          goto error;
+
+      // blend images into output pyramid
+      if(k == num_levels - 1)
+      {
+        // blend gaussian base
+        size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_gaussian, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_gaussian, 1, sizeof(cl_mem), (void *)&dev_col[k]);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_gaussian, 2, sizeof(cl_mem), (void *)&dev_tmp1);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_gaussian, 3, sizeof(int), (void *)&w);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_gaussian, 4, sizeof(int), (void *)&h);
+        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_blend_gaussian, sizes);
+        if(err != CL_SUCCESS) goto error;
+
+        size_t origin[] = { 0, 0, 0 };
+        size_t region[] = { w, h, 1 };
+        err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_comb[k], origin, origin, region);
+        if(err != CL_SUCCESS) goto error;
+      }
+      else
+      {
+        // blend laplacian
+        size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 1, sizeof(cl_mem), (void *)&dev_col[k]);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 2, sizeof(cl_mem), (void *)&dev_tmp2);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 3, sizeof(cl_mem), (void *)&dev_tmp1);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 4, sizeof(int), (void *)&w);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 5, sizeof(int), (void *)&h);
+        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_blend_laplacian, sizes);
+        if(err != CL_SUCCESS) goto error;
+
+        size_t origin[] = { 0, 0, 0 };
+        size_t region[] = { w, h, 1 };
+        err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_comb[k], origin, origin, region);
+        if(err != CL_SUCCESS) goto error;
+      }
+    }
+  }
+
+  // normalize and reconstruct output pyramid buffer coarse to fine
+  for(int k = num_levels - 1; k >= 0; k--)
+  {
+    int w = width;
+    int h = height;
+
+    for(int i = 0; i < k; i++)
+    {
+      w = (w - 1) / 2 + 1;
+      h = (h - 1) / 2 + 1;
+    }
+
+    do
+    {
+      // normalize both gaussian base and laplacian
+      size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_normalize, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_normalize, 1, sizeof(cl_mem), (void *)&dev_tmp1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_normalize, 2, sizeof(int), (void *)&w);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_normalize, 3, sizeof(int), (void *)&h);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_normalize, sizes);
+      if(err != CL_SUCCESS) goto error;
+
+      // dev_tmp1[k] -> dev_comb[k]
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { w, h, 1 };
+      err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_comb[k], origin, origin, region);
+      if(err != CL_SUCCESS) goto error;
+    } while(0);
+
+
+    if(k < num_levels - 1)
+    {
+      // reconstruct output image
+
+      // dev_comb[k+1] -> dev_tmp1
+      if(!gauss_expand_cl(self, piece, dev_comb[k+1], dev_tmp1, dev_tmp2, w, h))
+        goto error;
+
+      // dev_comb[k] + dev_tmp1 -> dev_tmp2
+      size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reconstruct, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reconstruct, 1, sizeof(cl_mem), (void *)&dev_tmp1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reconstruct, 2, sizeof(cl_mem), (void *)&dev_tmp2);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reconstruct, 3, sizeof(int), (void *)&w);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reconstruct, 4, sizeof(int), (void *)&h);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_reconstruct, sizes);
+      if(err != CL_SUCCESS) goto error;
+
+      // dev_tmp2 -> dev_comb[k]
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { w, h, 1 };
+      err = dt_opencl_enqueue_copy_image(devid, dev_tmp2, dev_comb[k], origin, origin, region);
+      if(err != CL_SUCCESS) goto error;
+    }
+  }
+
+  // copy output buffer
+  do
+  {
+    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 1, sizeof(cl_mem), (void *)&dev_comb[0]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 2, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 4, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_finalize, sizes);
+    if(err != CL_SUCCESS) goto error;
+  } while(0);
+
+
+  for(int k = 0; k < num_levels_max; k++)
+  {
+    dt_opencl_release_mem_object(dev_col[k]);
+    dt_opencl_release_mem_object(dev_comb[k]);
+  }
+  dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_coeffs);
+  dt_opencl_release_mem_object(dev_tmp1);
+  dt_opencl_release_mem_object(dev_tmp2);
+  free(dev_comb);
+  free(dev_col);
+  return TRUE;
+
+error:
+  for(int k = 0; k < num_levels_max; k++)
+  {
+    dt_opencl_release_mem_object(dev_col[k]);
+    dt_opencl_release_mem_object(dev_comb[k]);
+  }
+  dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_coeffs);
+  dt_opencl_release_mem_object(dev_tmp1);
+  dt_opencl_release_mem_object(dev_tmp2);
+  free(dev_comb);
+  free(dev_col);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_basecurve_fusion] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+
+static
+int process_cl_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+                   const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->data;
@@ -303,13 +699,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs);
   if(dev_coeffs == NULL) goto error;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 4, sizeof(cl_mem), (void *)&dev_m);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 5, sizeof(cl_mem), (void *)&dev_coeffs);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve, sizes);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 5, sizeof(cl_mem), (void *)&dev_coeffs);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_lut, sizes);
 
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);
@@ -319,10 +715,51 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_coeffs);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_basecurve] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_basecurve_lut] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
+
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
+
+  if(d->exposure_fusion)
+    return process_cl_fusion(self, piece, dev_in, dev_out, roi_in, roi_out);
+  else
+    return process_cl_lut(self, piece, dev_in, dev_out, roi_in, roi_out);
+}
 #endif
+
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
+
+  if(d->exposure_fusion)
+  {
+    const int rad = MIN(roi_in->width, ceilf(256 * roi_in->scale / piece->iscale));
+
+    tiling->factor = 6.666f;                 // in + out + col[] + comb[] + 2*tmp
+    tiling->maxbuf = 1.0f;
+    tiling->overhead = 0;
+    tiling->xalign = 1;
+    tiling->yalign = 1;
+    tiling->overlap = rad;
+  }
+  else
+  {
+    tiling->factor = 2.0f;                   // in + out
+    tiling->maxbuf = 1.0f;
+    tiling->overhead = 0;
+    tiling->xalign = 1;
+    tiling->yalign = 1;
+    tiling->overlap = 0;
+  }
+  return;
+}
+
 
 static inline void apply_ev_and_curve(
     const float *const in,
@@ -664,7 +1101,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)p1;
 
   // TODO: implement opencl version:
-  if(p->exposure_fusion) piece->process_cl_ready = 0;
   d->exposure_fusion = p->exposure_fusion;
   d->exposure_stops = p->exposure_stops;
 
@@ -736,7 +1172,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_basecurve_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_basecurve_params_t));
   module->default_enabled = 0;
-  module->priority = 307; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 298; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_basecurve_params_t);
   module->gui_data = NULL;
   dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t){
@@ -762,17 +1198,45 @@ void cleanup(dt_iop_module_t *module)
 
 void init_global(dt_iop_module_so_t *module)
 {
-  const int program = 2; // basic.cl, from programs.conf
+  const int program = 18; // basecurve.cl, from programs.conf
   dt_iop_basecurve_global_data_t *gd
       = (dt_iop_basecurve_global_data_t *)malloc(sizeof(dt_iop_basecurve_global_data_t));
   module->data = gd;
-  gd->kernel_basecurve = dt_opencl_create_kernel(program, "basecurve");
+  gd->kernel_basecurve_lut = dt_opencl_create_kernel(program, "basecurve_lut");
+  gd->kernel_basecurve_zero = dt_opencl_create_kernel(program, "basecurve_zero");
+  gd->kernel_basecurve_ev_lut = dt_opencl_create_kernel(program, "basecurve_ev_lut");
+  gd->kernel_basecurve_compute_features = dt_opencl_create_kernel(program, "basecurve_compute_features");
+  gd->kernel_basecurve_blur_h = dt_opencl_create_kernel(program, "basecurve_blur_h");
+  gd->kernel_basecurve_blur_v = dt_opencl_create_kernel(program, "basecurve_blur_v");
+  gd->kernel_basecurve_expand = dt_opencl_create_kernel(program, "basecurve_expand");
+  gd->kernel_basecurve_reduce = dt_opencl_create_kernel(program, "basecurve_reduce");
+  gd->kernel_basecurve_detail = dt_opencl_create_kernel(program, "basecurve_detail");
+  gd->kernel_basecurve_adjust_features = dt_opencl_create_kernel(program, "basecurve_adjust_features");
+  gd->kernel_basecurve_blend_gaussian = dt_opencl_create_kernel(program, "basecurve_blend_gaussian");
+  gd->kernel_basecurve_blend_laplacian = dt_opencl_create_kernel(program, "basecurve_blend_laplacian");
+  gd->kernel_basecurve_normalize = dt_opencl_create_kernel(program, "basecurve_normalize");
+  gd->kernel_basecurve_reconstruct = dt_opencl_create_kernel(program, "basecurve_reconstruct");
+  gd->kernel_basecurve_finalize = dt_opencl_create_kernel(program, "basecurve_finalize");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_basecurve);
+  dt_opencl_free_kernel(gd->kernel_basecurve_lut);
+  dt_opencl_free_kernel(gd->kernel_basecurve_zero);
+  dt_opencl_free_kernel(gd->kernel_basecurve_ev_lut);
+  dt_opencl_free_kernel(gd->kernel_basecurve_compute_features);
+  dt_opencl_free_kernel(gd->kernel_basecurve_blur_h);
+  dt_opencl_free_kernel(gd->kernel_basecurve_blur_v);
+  dt_opencl_free_kernel(gd->kernel_basecurve_expand);
+  dt_opencl_free_kernel(gd->kernel_basecurve_reduce);
+  dt_opencl_free_kernel(gd->kernel_basecurve_detail);
+  dt_opencl_free_kernel(gd->kernel_basecurve_adjust_features);
+  dt_opencl_free_kernel(gd->kernel_basecurve_blend_gaussian);
+  dt_opencl_free_kernel(gd->kernel_basecurve_blend_laplacian);
+  dt_opencl_free_kernel(gd->kernel_basecurve_normalize);
+  dt_opencl_free_kernel(gd->kernel_basecurve_reconstruct);
+  dt_opencl_free_kernel(gd->kernel_basecurve_finalize);
   free(module->data);
   module->data = NULL;
 }

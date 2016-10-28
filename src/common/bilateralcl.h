@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_COMMON_BILATERAL_CL_H
-#define DT_COMMON_BILATERAL_CL_H
+#pragma once
 
 #ifdef HAVE_OPENCL
 
@@ -62,8 +61,7 @@ cl_int dt_bilateral_slice_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem out, const 
 
 void dt_bilateral_free_cl_global(dt_bilateral_cl_global_t *b);
 
-#endif
-#endif
+#endif // HAVE_OPENCL
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

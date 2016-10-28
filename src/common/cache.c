@@ -52,10 +52,17 @@ void dt_cache_cleanup(dt_cache_t *cache)
   while(l)
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
+
     if(cache->cleanup)
+    {
+      assert(entry->data_size);
+      ASAN_UNPOISON_MEMORY_REGION(entry->data, entry->data_size);
+
       cache->cleanup(cache->cleanup_data, entry);
+    }
     else
       dt_free_align(entry->data);
+
     dt_pthread_rwlock_destroy(&entry->lock);
     g_slice_free1(sizeof(*entry), entry);
     l = g_list_next(l);
@@ -126,6 +133,15 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
     double end = dt_get_wtime();
     if(end - start > 0.1)
       fprintf(stderr, "try+ wait time %.06fs mode %c \n", end - start, mode);
+
+    if(mode == 'w')
+    {
+      assert(entry->data_size);
+      ASAN_POISON_MEMORY_REGION(entry->data, entry->data_size);
+    }
+
+    // WARNING: do *NOT* unpoison here. it must be done by the caller!
+
     return entry;
   }
   dt_pthread_mutex_unlock(&cache->lock);
@@ -177,6 +193,14 @@ restart:
     }
 #endif
 
+    if(mode == 'w')
+    {
+      assert(entry->data_size);
+      ASAN_POISON_MEMORY_REGION(entry->data, entry->data_size);
+    }
+
+    // WARNING: do *NOT* unpoison here. it must be done by the caller!
+
     return entry;
   }
 
@@ -195,20 +219,31 @@ restart:
   int ret = dt_pthread_rwlock_init(&entry->lock, 0);
   if(ret) fprintf(stderr, "rwlock init: %d\n", ret);
   entry->data = 0;
+  entry->data_size = cache->entry_size;
   entry->cost = 1;
   entry->link = g_list_append(0, entry);
   entry->key = key;
   entry->_lock_demoting = 0;
+
   g_hash_table_insert(cache->hashtable, GINT_TO_POINTER(key), entry);
-  // if allocate callback is given, always return a write lock
-  int write = ((mode == 'w') || cache->allocate);
+
+  assert(cache->allocate || entry->data_size);
+
   if(cache->allocate)
     cache->allocate(cache->allocate_data, entry);
   else
-    entry->data = dt_alloc_align(16, cache->entry_size);
+    entry->data = dt_alloc_align(16, entry->data_size);
+
+  assert(entry->data_size);
+  ASAN_POISON_MEMORY_REGION(entry->data, entry->data_size);
+
+  // if allocate callback is given, always return a write lock
+  const int write = ((mode == 'w') || cache->allocate);
+
   // write lock in case the caller requests it:
   if(write) dt_pthread_rwlock_wrlock_with_caller(&entry->lock, file, line);
   else      dt_pthread_rwlock_rdlock_with_caller(&entry->lock, file, line);
+
   cache->cost += entry->cost;
 
   // put at end of lru list (most recently used):
@@ -218,6 +253,9 @@ restart:
   double end = dt_get_wtime();
   if(end - start > 0.1)
     fprintf(stderr, "wait time %.06fs\n", end - start);
+
+  // WARNING: do *NOT* unpoison here. it must be done by the caller!
+
   return entry;
 }
 
@@ -262,9 +300,15 @@ restart:
   cache->lru = g_list_delete_link(cache->lru, entry->link);
 
   if(cache->cleanup)
+  {
+    assert(entry->data_size);
+    ASAN_UNPOISON_MEMORY_REGION(entry->data, entry->data_size);
+
     cache->cleanup(cache->cleanup_data, entry);
+  }
   else
     dt_free_align(entry->data);
+
   dt_pthread_rwlock_unlock(&entry->lock);
   dt_pthread_rwlock_destroy(&entry->lock);
   cache->cost -= entry->cost;
@@ -303,17 +347,37 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     cache->cost -= entry->cost;
 
     if(cache->cleanup)
+    {
+      assert(entry->data_size);
+      ASAN_UNPOISON_MEMORY_REGION(entry->data, entry->data_size);
+
       cache->cleanup(cache->cleanup_data, entry);
+    }
     else
       dt_free_align(entry->data);
+
     dt_pthread_rwlock_unlock(&entry->lock);
     dt_pthread_rwlock_destroy(&entry->lock);
     g_slice_free1(sizeof(*entry), entry);
   }
 }
 
-void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry)
+void dt_cache_release_with_caller(dt_cache_t *cache, dt_cache_entry_t *entry, const char *file, int line)
 {
+#if((__has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)) && 1)
+  // yes, this is *HIGHLY* unportable and is accessing implementation details.
+#ifdef _DEBUG
+  if(entry->lock.lock.__data.__nr_readers <= 1)
+#else
+  if(entry->lock.__data.__nr_readers <= 1)
+#endif
+  {
+    // only if there are no other reades we may poison.
+    assert(entry->data_size);
+    ASAN_POISON_MEMORY_REGION(entry->data, entry->data_size);
+  }
+#endif
+
   dt_pthread_rwlock_unlock(&entry->lock);
 }
 

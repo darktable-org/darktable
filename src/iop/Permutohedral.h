@@ -27,8 +27,7 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED O
 DAMAGE.
 */
 
-#ifndef IMAGESTACK_PERMUTOHEDRAL_LATTICE_H
-#define IMAGESTACK_PERMUTOHEDRAL_LATTICE_H
+#pragma once
 
 /*******************************************************************
  * Permutohedral Lattice implementation from:                      *
@@ -526,7 +525,6 @@ private:
   HashTablePermutohedral<D, VD> *hashTables;
 };
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

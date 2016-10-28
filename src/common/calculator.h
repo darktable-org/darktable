@@ -16,13 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CALCULATOR_H__
-#define __CALCULATOR_H__
+#pragma once
 
 /** solve the mathematical expression in formula, the only allowed variable is 'x' */
 float dt_calculator_solve(float x, const char *formula);
-
-#endif // __CALCULATOR_H__
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

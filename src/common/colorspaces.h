@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_COLORSPACES_H
-#define DT_COLORSPACES_H
+
+#pragma once
 
 #include "common/darktable.h"
 #include <lcms2.h>
@@ -197,7 +197,6 @@ void dt_colorspaces_cygm_to_rgb(float *out, int num, double CAM_to_RGB[3][4]);
 /** convert RGB buffer to CYGM */
 void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3]);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

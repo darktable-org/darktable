@@ -15,8 +15,8 @@
  *   You should have received a copy of the GNU General Public License
  *   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LUA_CAIRO_H
-#define LUA_CAIRO_H
+
+#pragma once
 
 #include <cairo.h>
 #include <lua/lua.h>
@@ -25,8 +25,6 @@ typedef cairo_t *dt_lua_cairo_t;
 
 /** initialize lua stuff at DT start time */
 int dt_lua_init_cairo(lua_State *L);
-
-#endif // LUA_CAIRO_H
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

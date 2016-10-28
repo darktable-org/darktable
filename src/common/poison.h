@@ -1,6 +1,7 @@
+#pragma once
+
 #ifndef _RELEASE
-#ifndef POISON_H
-#define POISON_H
+
 //
 // We needed to poison certaion functions in order to disallow their usage
 // but not in bundled libs
@@ -18,8 +19,9 @@
 #pragma GCC poison strcat  // use g_strncat
 #pragma GCC poison strncat // use g_strncat
 #pragma GCC poison pthread_create // use dt_pthread_create, musl issues
+
 #endif
-#endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

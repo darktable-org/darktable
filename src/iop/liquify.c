@@ -1531,7 +1531,7 @@ void init (dt_iop_module_t *module)
 {
   // module is disabled by default
   module->default_enabled = 0;
-  module->priority = 230; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 223; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_liquify_params_t);
   module->gui_data = NULL;
 

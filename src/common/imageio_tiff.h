@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_IMAGEIO_TIFF_H
-#define DT_IMAGEIO_TIFF_H
+
+#pragma once
 
 #include "common/image.h"
 #include "common/mipmap_cache.h"
@@ -25,7 +25,6 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
 int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

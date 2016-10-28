@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef VARIABLES_H
-#define VARIABLES_H
+#pragma once
 
 #include <glib.h>
 #include <stdint.h>
@@ -61,7 +60,6 @@ gchar *dt_variables_get_result(dt_variables_params_t *params);
 /** reset sequence number */
 void dt_variables_reset_sequence(dt_variables_params_t *params);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

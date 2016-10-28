@@ -157,6 +157,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'colorzones'))
   gr.add_edge(('colorout', 'lowlight'))
   gr.add_edge(('colorout', 'monochrome'))
+  gr.add_edge(('colorout', 'vibrance'))
   gr.add_edge(('colorout', 'zonesystem'))
   gr.add_edge(('colorout', 'tonecurve'))
   gr.add_edge(('colorout', 'levels'))
@@ -181,6 +182,7 @@ def add_edges(gr):
   gr.add_edge(('colorzones', 'colorin'))
   gr.add_edge(('lowlight', 'colorin'))
   gr.add_edge(('monochrome', 'colorin'))
+  gr.add_edge(('vibrance', 'colorin'))
   gr.add_edge(('zonesystem', 'colorin'))
   gr.add_edge(('tonecurve', 'colorin'))
   gr.add_edge(('levels', 'colorin'))
@@ -207,6 +209,7 @@ def add_edges(gr):
   gr.add_edge(('colorzones', 'colorreconstruction'))
   gr.add_edge(('lowlight', 'colorreconstruction'))
   gr.add_edge(('monochrome', 'colorreconstruction'))
+  gr.add_edge(('vibrance', 'colorreconstruction'))
   gr.add_edge(('zonesystem', 'colorreconstruction'))
   gr.add_edge(('tonecurve', 'colorreconstruction'))
   gr.add_edge(('levels', 'colorreconstruction'))
@@ -390,6 +393,7 @@ def add_edges(gr):
 
   # defringe before color manipulations (colorbalance is sufficient) and before equalizer
   gr.add_edge(('colorbalance', 'defringe'))
+  gr.add_edge(('vibrance', 'defringe'))
   gr.add_edge(('equalizer', 'defringe'))
 
   # levels come after tone curve
@@ -450,6 +454,7 @@ def add_edges(gr):
   gr.add_edge(('colorzones', 'colorchecker'))
   gr.add_edge(('lowlight', 'colorchecker'))
   gr.add_edge(('monochrome', 'colorchecker'))
+  gr.add_edge(('vibrance', 'colorchecker'))
   gr.add_edge(('zonesystem', 'colorchecker'))
   gr.add_edge(('tonecurve', 'colorchecker'))
   gr.add_edge(('levels', 'colorchecker'))
@@ -465,6 +470,11 @@ def add_edges(gr):
   gr.add_edge(('colisa', 'colorchecker'))
   gr.add_edge(('defringe', 'colorchecker'))
   gr.add_edge(('colorchecker', 'colorreconstruction'))
+
+  # ugly hack: don't let vibrance drift any more
+  # gr.add_edge(('vibrance', 'defringe'))
+  gr.add_edge(('colorbalance', 'vibrance'))
+  gr.add_edge(('colorize', 'vibrance'))
 
 gr = digraph()
 gr.add_nodes([
@@ -530,6 +540,7 @@ gr.add_nodes([
 'tonecurve',
 'tonemap',
 'velvia',
+'vibrance',
 'vignette',
 'watermark',
 'zonesystem',

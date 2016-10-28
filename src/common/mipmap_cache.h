@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_MIPMAP_CACHE_H
-#define DT_MIPMAP_CACHE_H
+
+#pragma once
 
 #include "common/cache.h"
 #include "common/colorspaces.h"
@@ -135,7 +135,9 @@ void dt_mipmap_cache_write_get_with_caller(
     int line);
 
 // drop a lock
-void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf);
+#define dt_mipmap_cache_release(A, B) dt_mipmap_cache_release_with_caller(A, B, __FILE__, __LINE__)
+void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf, const char *file,
+                                         int line);
 
 // remove thumbnails, so they will be regenerated:
 void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid);
@@ -161,7 +163,6 @@ dt_colorspaces_color_profile_type_t dt_mipmap_cache_get_colorspace();
 // only copies over the jpg backend on disk, doesn't directly affect the in-memory cache.
 void dt_mipmap_cache_copy_thumbnails(const dt_mipmap_cache_t *cache, const uint32_t dst_imgid, const uint32_t src_imgid);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
