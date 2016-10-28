@@ -2031,10 +2031,12 @@ rawoverexposed_falsecolor (
   if(raw_pixel < threshold[c]) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  float4 *p = &pixel;
 
+  float p[4];
+  vstore4(pixel, 0, p);
   // falsecolor
   p[c] = 0.0;
+  pixel = vload4(0, p);
 
   write_imagef (out, (int2)(x, y), pixel);
 }
