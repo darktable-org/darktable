@@ -650,7 +650,7 @@ void gui_update(struct dt_iop_module_t *self)
       p->target_a[g->patch]*p->target_a[g->patch]+
       p->target_b[g->patch]*p->target_b[g->patch]);
   dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
-  if(g->patch != g->drawn_patch) gtk_widget_queue_draw(g->area);
+  gtk_widget_queue_draw(g->area);
 }
 
 void init(dt_iop_module_t *module)
