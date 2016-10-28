@@ -478,6 +478,9 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   for(int k = 0; k < 4; k += 2) box[k] = MIN(width - 1, MAX(0, box[k]));
   for(int k = 1; k < 4; k += 2) box[k] = MIN(height - 1, MAX(0, box[k]));
 
+  // safety check: area needs to have minimum 1 pixel width and height
+  if(box[2] - box[0] < 1 || box[3] - box[1] < 1) return 1;
+
   return 0;
 }
 
@@ -517,8 +520,8 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_iop_buffe
   origin[1] = box[1];
   origin[2] = 0;
 
-  region[0] = box[2] - box[0] + 1;
-  region[1] = box[3] - box[1] + 1;
+  region[0] = box[2] - box[0];
+  region[1] = box[3] - box[1];
   region[2] = 1;
 
   float *pixel;
