@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_IMAGE_IO_H
-#define DT_IMAGE_IO_H
+
+#pragma once
 
 #include "common/image.h"
 #include "common/imageio_module.h"
@@ -99,7 +99,7 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const f
 // allocate buffer and return 0 on success along with largest jpg thumbnail from raw.
 int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
                                dt_colorspaces_color_profile_type_t *color_space);
-#endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

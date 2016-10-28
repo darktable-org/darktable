@@ -323,7 +323,7 @@ void init(dt_iop_module_t *module)
   module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
   module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
   module->default_enabled = 0;
-  module->priority = 323; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 313; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_bilateral_params_t);
   module->gui_data = NULL;
   dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t){ { 15.0, 15.0, 0.005, 0.005, 0.005 } };

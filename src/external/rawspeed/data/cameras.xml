@@ -633,6 +633,26 @@
 			<Hint name="invert_sraw_wb" value=""/>
 		</Hints>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS 5D Mark IV">
+		<ID make="Canon" model="EOS 5D Mark IV">Canon EOS 5D Mark IV</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="136" y="44" width="0" height="0"/>
+		<Sensor black="2049" white="14448"/>
+		<Sensor black="513" white="14008" iso_list="50 100 125"/>
+		<Sensor black="512" white="10838" iso_list="160"/>
+		<Sensor black="512" white="14448" iso_list="200 250"/>
+		<Sensor black="2048" white="10838" iso_list="320 640 1250 2500 5000 10000 20000"/>
+		<Sensor black="2049" white="13533" iso_list="102400"/>
+		<BlackAreas>
+			<Vertical x="0" width="134"/>
+			<Horizontal y="0" height="40"/>
+		</BlackAreas>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS 5DS" decoder_version="6">
 		<ID make="Canon" model="EOS 5DS">Canon EOS 5DS</ID>
 		<CFA width="2" height="2">
@@ -2325,7 +2345,7 @@
 			<Vertical x="4984" width="8"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-compressed">
 		<ID make="Nikon" model="Df">Nikon Df</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2334,12 +2354,12 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="2" y="0" width="-50" height="0"/>
-		<Sensor black="0" white="4096"/>
+		<Sensor black="0" white="3880"/>
 		<BlackAreas>
 			<Vertical x="4984" width="8"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-uncompressed">
 		<ID make="Nikon" model="Df">Nikon Df</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2348,7 +2368,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="2" y="0" width="-50" height="0"/>
-		<Sensor black="0" white="4096"/>
+		<Sensor black="0" white="3880"/>
 		<BlackAreas>
 			<Vertical x="4984" width="8"/>
 		</BlackAreas>
@@ -7061,6 +7081,17 @@
 	</Camera>
 	<Camera make="SONY" model="DSC-RX10M2">
 		<ID make="Sony" model="DSC-RX10M2">Sony DSC-RX10M2</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-8" height="0"/>
+		<Sensor black="800" white="16300"/>
+	</Camera>
+	 <Camera make="SONY" model="DSC-RX10M3">
+		<ID make="Sony" model="DSC-RX10M3">Sony DSC-RX10M3</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>

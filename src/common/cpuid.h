@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_COMMON_CPUID_H
-#define DT_COMMON_CPUID_H
+#pragma once
 
 #include <glib.h>
 
@@ -38,8 +37,6 @@ typedef enum dt_cpu_flags_t
 } dt_cpu_flags_t;
 
 dt_cpu_flags_t dt_detect_cpu_features();
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

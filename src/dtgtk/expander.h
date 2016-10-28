@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DTGTK_EXPANDER_H
-#define DTGTK_EXPANDER_H
+
+#pragma once
 
 #include <glib-object.h>
 #include <gtk/gtk.h>
@@ -62,8 +62,6 @@ gboolean dtgtk_expander_get_expanded(GtkDarktableExpander *expander);
 GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body);
 
 G_END_DECLS
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

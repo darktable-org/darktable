@@ -15,8 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_LUA_MODULES_H
-#define DT_LUA_MODULES_H
+
+#pragma once
+
 #include <common/imageio_module.h>
 #include <lua/lua.h>
 
@@ -56,7 +57,7 @@ void dt_lua_register_current_preset(lua_State *L, const char *module_type_name, 
 
 
 int dt_lua_init_early_modules(lua_State *L);
-#endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

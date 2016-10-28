@@ -739,6 +739,13 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 5D Mark III", Flash, 8,	{ 2.509766, 1, 1.297852, 0 } },
   { "Canon", "EOS 5D Mark III", Flash, 9,	{ 2.541016, 1, 1.278320, 0 } },
 
+  { "Canon", "EOS 5D Mark IV", Daylight, 0, { 1.9765625, 1, 1.4345703125, 0 } },
+  { "Canon", "EOS 5D Mark IV", Shade, 0, { 2.2607421875, 1, 1.2431640625, 0 } },
+  { "Canon", "EOS 5D Mark IV", Cloudy, 0, { 2.115234375, 1, 1.3330078125, 0 } },
+  { "Canon", "EOS 5D Mark IV", Tungsten, 0, { 1.416015625, 1, 2.01953125, 0 } },
+  { "Canon", "EOS 5D Mark IV", WhiteFluorescent, 0, { 1.6728515625, 1, 1.9462890625, 0 } },
+  { "Canon", "EOS 5D Mark IV", Flash, 0, { 2.1650390625, 1, 1.330078125, 0 } },
+
   { "Canon", "EOS 5DS", Daylight            , 0, { 2.255859, 1, 1.717773, 0 } },
   { "Canon", "EOS 5DS", Shade               , 0, { 2.605469, 1, 1.484375, 0 } },
   { "Canon", "EOS 5DS", Cloudy              , 0, { 2.438477, 1, 1.589844, 0 } },

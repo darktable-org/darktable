@@ -517,8 +517,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)p1;
   dt_iop_colorchecker_data_t *d = (dt_iop_colorchecker_data_t *)piece->data;
 
-  d->num_patches = p->num_patches;
-  for(int k=0;k<p->num_patches;k++)
+  d->num_patches = MIN(MAX_PATCHES, p->num_patches);
+  for(int k = 0; k < d->num_patches; k++)
   {
     d->source_Lab[3*k+0] = p->source_L[k];
     d->source_Lab[3*k+1] = p->source_a[k];
@@ -658,7 +658,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colorchecker_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorchecker_params_t));
   module->default_enabled = 0;
-  module->priority = 384; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 373; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorchecker_params_t);
   module->gui_data = NULL;
   dt_iop_colorchecker_params_t tmp;
@@ -722,6 +722,7 @@ static void target_L_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  if(g->patch >= p->num_patches || g->patch < 0) return;
   p->target_L[g->patch] = p->source_L[g->patch] + dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -731,6 +732,7 @@ static void target_a_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  if(g->patch >= p->num_patches || g->patch < 0) return;
   p->target_a[g->patch] = CLAMP(p->source_a[g->patch] + dt_bauhaus_slider_get(slider), -128.0, 128.0);
   const float Cin = sqrtf(
       p->source_a[g->patch]*p->source_a[g->patch] +
@@ -750,6 +752,7 @@ static void target_b_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  if(g->patch >= p->num_patches || g->patch < 0) return;
   p->target_b[g->patch] = CLAMP(p->source_b[g->patch] + dt_bauhaus_slider_get(slider), -128.0, 128.0);
   const float Cin = sqrtf(
       p->source_a[g->patch]*p->source_a[g->patch] +
@@ -769,6 +772,7 @@ static void target_C_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  if(g->patch >= p->num_patches || g->patch < 0) return;
   const float Cin = sqrtf(
       p->source_a[g->patch]*p->source_a[g->patch] +
       p->source_b[g->patch]*p->source_b[g->patch]);
@@ -931,7 +935,8 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   }
   const float mx = mouse_x * cells_x / (float)width;
   const float my = mouse_y * cells_y / (float)height;
-  int patch = CLAMP((int)mx + cells_x*(int)my, 0, p->num_patches-1);
+  const int patch = (int)mx + cells_x * (int)my;
+  if(patch < 0 || patch >= p->num_patches) return FALSE;
   char tooltip[1024];
   snprintf(tooltip, sizeof(tooltip),
       _("(%2.2f %2.2f %2.2f)\n"
@@ -997,7 +1002,10 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
     // shift-left while colour picking: replace source colour
     // if clicked outside the valid patches: add new one
     if(p->num_patches < 24 && (patch < 0 || patch >= p->num_patches))
-      patch = p->num_patches++;
+    {
+      p->num_patches = MIN(MAX_PATCHES, p->num_patches + 1);
+      patch = p->num_patches - 1;
+    }
     p->target_L[patch] = p->source_L[patch] = self->picked_color[0];
     p->target_a[patch] = p->source_a[patch] = self->picked_color[1];
     p->target_b[patch] = p->source_b[patch] = self->picked_color[2];
