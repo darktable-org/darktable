@@ -54,16 +54,16 @@ RUN echo 'APT::Get::Fix-Missing "true";' > /etc/apt/apt.conf.d/80fixmissin
 
 # pls keep sorted :)
 RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
-    apt-get install appstream-util clang-3.8 cmake desktop-file-utils g++ gcc gettext git \
-    intltool libatk1.0-dev libcairo2-dev libcolord-dev libcolord-gtk-dev \
-    libcups2-dev libcurl4-gnutls-dev libexiv2-dev libflickcurl-dev \
-    libgdk-pixbuf2.0-dev libglib2.0-dev libgphoto2-dev libgraphicsmagick1-dev \
-    libgtk-3-dev libjpeg-dev libjson-glib-dev liblcms2-dev liblensfun-dev \
-    liblua5.2-dev libopenexr-dev libopenjp2-7-dev libosmgpsmap-1.0-dev \
-    libpango1.0-dev libpng-dev libpugixml-dev librsvg2-dev libsaxon-java \
-    libsdl1.2-dev libsecret-1-dev libsoup2.4-dev libsqlite3-dev libtiff5-dev \
-    libwebp-dev libx11-dev libxml2-dev libxml2-utils make perl po4a \
-    python3-jsonschema xsltproc && \
+    apt-get install  appstream-util clang-3.8 cmake desktop-file-utils g++ \
+    gcc gettext git intltool libatk1.0-dev libcairo2-dev libcolord-dev \
+    libcolord-gtk-dev libcups2-dev libcurl4-gnutls-dev libexiv2-dev \
+    libflickcurl-dev libgdk-pixbuf2.0-dev libglib2.0-dev libgphoto2-dev \
+    libgraphicsmagick1-dev libgtk-3-dev libjpeg-dev libjson-glib-dev \
+    liblcms2-dev liblensfun-dev liblua5.2-dev libopenexr-dev libopenjp2-7-dev \
+    libosmgpsmap-1.0-dev libpango1.0-dev libpng-dev libpugixml-dev \
+    librsvg2-dev libsaxon-java libsdl1.2-dev libsecret-1-dev libsoup2.4-dev
+    libsqlite3-dev libtiff5-dev libwebp-dev libx11-dev libxml2-dev \
+    libxml2-utils make ninja-build perl po4a python3-jsonschema xsltproc && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # i'd like to explicitly use ld.gold
