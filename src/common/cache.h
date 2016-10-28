@@ -26,6 +26,7 @@
 typedef struct dt_cache_entry_t
 {
   void *data;
+  size_t data_size;
   size_t cost;
   GList *link;
   dt_pthread_rwlock_t lock;
@@ -79,7 +80,8 @@ dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache, const uint32_t key
 // same but returns 0 if not allocated yet (both will block and wait for entry rw locks to be released)
 dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char mode);
 // release a lock on a cache entry. the cache knows which one you mean (r or w).
-void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry);
+#define dt_cache_release(A, B) dt_cache_release_with_caller(A, B, __FILE__, __LINE__)
+void dt_cache_release_with_caller(dt_cache_t *cache, dt_cache_entry_t *entry, const char *file, int line);
 
 // 0: not contained
 int32_t dt_cache_contains(dt_cache_t *cache, const uint32_t key);
