@@ -1188,8 +1188,12 @@ void modify_roi_in (struct dt_iop_module_t *module,
 
   distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params);
 
-  cairo_rectangle_int_t pipe_rect
-      = { 0, 0, piece->buf_in.width * roi_in->scale, piece->buf_in.height * roi_in->scale };
+  cairo_rectangle_int_t pipe_rect = {
+    0,
+    0,
+    lroundf((double)piece->buf_in.width * roi_in->scale),
+    lroundf((double)piece->buf_in.height * roi_in->scale)
+  };
 
   cairo_rectangle_int_t roi_in_rect = {
     roi_in->x,
