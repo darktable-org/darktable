@@ -152,7 +152,7 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.xml.in ${CMAKE_CURRE
 if(USE_XMLLINT)
   add_custom_target(
     validate_darktableconfig_xml ALL
-    COMMAND ${Xmllint_BIN} --valid --noout ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
+    COMMAND ${Xmllint_BIN} --nonet --valid --noout ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
     COMMENT "Checking validity of data/darktableconfig.xml"
