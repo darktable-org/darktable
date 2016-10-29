@@ -119,7 +119,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_basecurve_params3_t *o = (dt_iop_basecurve_params3_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
     memcpy(n, o, sizeof(dt_iop_basecurve_params3_t));
-    n->exposure_fusion = 0;
     n->exposure_stops = (o->exposure_fusion == 0 && o->exposure_stops == 0) ? 3.0f : o->exposure_stops;
     return 0;
   }
