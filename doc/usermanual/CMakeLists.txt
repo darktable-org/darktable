@@ -91,7 +91,7 @@ if(can_build_usermanual)
 	string(REGEX REPLACE "/" "\\\\/" binary_path ${CMAKE_CURRENT_BINARY_DIR})
 	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable_profile.xml
-		COMMAND ${Xsltproc_BIN} --xinclude --output ${CMAKE_CURRENT_BINARY_DIR}/darktable_profile.xml xsl/darktable_profile.xsl darktable.xml
+		COMMAND ${Xsltproc_BIN} --nonet --xinclude --output ${CMAKE_CURRENT_BINARY_DIR}/darktable_profile.xml xsl/darktable_profile.xsl darktable.xml
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		DEPENDS darktable.xml ${XML_FILES}
 		COMMENT "Generating the profiled docbook xml file" VERBATIM
@@ -113,7 +113,7 @@ if(can_build_usermanual)
 #	#
 #	add_custom_command(
 #		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml
-#		COMMAND ${Xsltproc_BIN} --output ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml --stringparam profile.status "final" xsl/darktable_profile.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+#		COMMAND ${Xsltproc_BIN} --nonet --output ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml --stringparam profile.status "final" xsl/darktable_profile.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
 #		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 #		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
 #		COMMENT "Profiling final docbook xml file" VERBATIM
@@ -125,7 +125,7 @@ if(can_build_usermanual)
 	#
 	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.pdf
-		COMMAND ${Xsltproc_BIN} --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.fo xsl/darktable_fo.xsl  ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+		COMMAND ${Xsltproc_BIN} --nonet --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.fo xsl/darktable_fo.xsl  ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
 		COMMAND fop -c fopconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.fo -pdf ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.pdf
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		DEPENDS  ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
@@ -221,7 +221,7 @@ if(can_build_usermanual)
 #	#
 #	add_custom_command(
 #		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-en.pdf
-#		COMMAND ${Xsltproc_BIN} --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled_final.fo xsl/darktable_fo.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml
+#		COMMAND ${Xsltproc_BIN} --nonet --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled_final.fo xsl/darktable_fo.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml
 #		COMMAND fop -c fopconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled_final.fo -pdf ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-final.pdf
 #		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 #		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
@@ -246,7 +246,7 @@ if(can_build_usermanual)
 #			add_custom_command(
 #				OUTPUT ${pdffile}
 #				COMMAND xml2po -e -p ${pofile} -l ${language} ${xmlfile} > ${xmllangfile}
-#				COMMAND ${Xsltproc_BIN} --output ${fofile} xsl/darktable_fo.xsl ${xmllangfile}
+#				COMMAND ${Xsltproc_BIN} --nonet --output ${fofile} xsl/darktable_fo.xsl ${xmllangfile}
 #				COMMAND fop -c fopconfig.xml ${fofile} -pdf ${pdffile}
 #				DEPENDS ${pofile} ${CMAKE_CURRENT_BINARY_DIR}/darktable_single_final.xml
 #				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -276,7 +276,7 @@ if(can_build_usermanual)
 				OUTPUT ${pdffile}
 				COMMAND xml2po -e -p ${pofile} -l ${language} ${xmlfile} > ${xmllangtmp}
 		                COMMAND cat ${xmllangtmp} | sed "s/fileref=\"\\([^>]*\\)\\(\\/images\\/\\)\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1\\/\\3.jpg\"/g ; s/fileref=\"images\\/\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1.jpg\"/g" > ${xmllangfile}
-				COMMAND ${Xsltproc_BIN} --output ${fofile} xsl/darktable_fo.xsl ${xmllangfile}
+				COMMAND ${Xsltproc_BIN} --nonet --output ${fofile} xsl/darktable_fo.xsl ${xmllangfile}
 				COMMAND fop -c fopconfig.xml ${fofile} -pdf ${pdffile}
 				DEPENDS ${pofile} ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
 				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -297,7 +297,7 @@ if(can_build_usermanual)
 	#
 	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf
-		COMMAND ${Xsltproc_BIN} --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.fo xsl/darktable_fo.xsl  ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
+		COMMAND ${Xsltproc_BIN} --nonet --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.fo xsl/darktable_fo.xsl  ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
 		COMMAND fop -c fopconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.fo -pdf ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
@@ -406,7 +406,7 @@ if(can_build_usermanual)
 				OUTPUT ${pdffile}
 				COMMAND xml2po -e -p ${pofile} -l ${language} ${xmlfile} > ${xmllangtmp}
 		                COMMAND cat ${xmllangtmp} | sed "s/fileref=\"\\([^>]*\\)\\(\\/images\\/\\)\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1\\/\\3.jpg\"/g ; s/fileref=\"images\\/\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1.jpg\"/g" > ${xmllangfile}
-				COMMAND ${Xsltproc_BIN} --output ${fofile} xsl/darktable_fo.xsl ${xmllangfile}
+				COMMAND ${Xsltproc_BIN} --nonet --output ${fofile} xsl/darktable_fo.xsl ${xmllangfile}
 				COMMAND fop -c fopconfig.xml ${fofile} -pdf ${pdffile}
 				DEPENDS ${pofile} ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
 				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
