@@ -20,7 +20,7 @@ if(can_update_usermanual )
 	# update template
 	add_custom_command(
 		OUTPUT darktable-usermanual.pot
-		COMMAND ${Xsltproc_BIN} --xinclude --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled.xml ../xsl/darktable_profile.xsl ../darktable.xml
+		COMMAND ${Xsltproc_BIN} --nonet --xinclude --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled.xml ../xsl/darktable_profile.xsl ../darktable.xml
 		COMMAND ${Xml2po_BIN} -a -e -o darktable-usermanual.pot ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled.xml
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		DEPENDS ../darktable.xml ../xsl/darktable_profile.xsl
