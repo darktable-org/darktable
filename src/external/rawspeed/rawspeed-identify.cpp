@@ -107,6 +107,8 @@ int main(int argc, const char* argv[])
     __AFL_INIT();
 #endif
 
+    fprintf(stderr, "Loading file: \"%s\"\n", argv[1]);
+
     FileReader f((char *) argv[1]);
 
     std::unique_ptr<FileMap> m(f.readFile());
@@ -179,35 +181,35 @@ int main(int argc, const char* argv[])
     double sum = 0.0f;
     {
       uchar8 *data = r->getDataUncropped(0, 0);
-      for(uint32 k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x*bpp*cpp); k++)
+      for(uint32 k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x*bpp); k++)
       {
         sum += (double) data[k];
       }
     }
     fprintf(stdout, "Image byte sum: %lf\n", sum);
-    fprintf(stdout, "Image byte avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x*bpp*cpp));
+    fprintf(stdout, "Image byte avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x*bpp));
 
     if(r->getDataType() == TYPE_FLOAT32)
     {
       sum = 0.0f;
       float *data = (float *)r->getDataUncropped(0, 0);
-      for(uint32 k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x*cpp); k++)
+      for(uint32 k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x); k++)
       {
         sum += (double) data[k];
       }
       fprintf(stdout, "Image float sum: %lf\n", sum);
-      fprintf(stdout, "Image float avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x*cpp));
+      fprintf(stdout, "Image float avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x));
     }
     else if(r->getDataType() == TYPE_USHORT16)
     {
       sum = 0.0f;
       uint16_t *data = (uint16_t *)r->getDataUncropped(0, 0);
-      for(uint32 k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x*cpp); k++)
+      for(uint32 k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x); k++)
       {
         sum += (double) data[k];
       }
       fprintf(stdout, "Image uint16_t sum: %lf\n", sum);
-      fprintf(stdout, "Image uint16_t avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x*cpp));
+      fprintf(stdout, "Image uint16_t avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x));
     }
   }
   catch(const std::exception &exc)
