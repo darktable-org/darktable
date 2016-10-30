@@ -87,15 +87,22 @@ typedef struct dt_bauhaus_slider_data_t
   float (*callback)(GtkWidget*, float, dt_bauhaus_callback_t); // callback function
 } dt_bauhaus_slider_data_t;
 
+typedef enum dt_bauhaus_combobox_alignment_t
+{
+  DT_BAUHAUS_COMBOBOX_ALIGN_LEFT = 0,
+  DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT = 1
+} dt_bauhaus_combobox_alignment_t;
+
 // data portion for a combobox
 typedef struct dt_bauhaus_combobox_data_t
 {
-  int num_labels; // number of elements
-  int active;     // currently active element
-  int defpos;     // default position
-  int editable;   // 1 if arbitrary text may be typed
-  char text[180]; // roughly as much as a slider
-  GList *labels;  // list of elements
+  int num_labels;    // number of elements
+  int active;        // currently active element
+  int defpos;        // default position
+  int editable;      // 1 if arbitrary text may be typed
+  char text[180];    // roughly as much as a slider
+  GList *labels;     // list of elements
+  GList *alignments; // alignments of the labels. we keep this extra to make it easy to pass the labels around
 } dt_bauhaus_combobox_data_t;
 
 typedef union dt_bauhaus_data_t
@@ -269,6 +276,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* widget,dt_iop_module_t
 GtkWidget *dt_bauhaus_combobox_new(dt_iop_module_t *self);
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text);
+void dt_bauhaus_combobox_add_aligned(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align);
 void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
 void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos);
 void dt_bauhaus_combobox_insert(GtkWidget *widget, const char *text,int pos);
