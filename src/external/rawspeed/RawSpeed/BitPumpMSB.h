@@ -50,7 +50,8 @@ public:
  __inline uint32 peekBitsNoFill( uint32 nbits )
  {
    int shift = mLeft-nbits;
-   uint32 ret = *(uint32*)&current_buffer[shift>>3];
+   uint32 ret;
+   memcpy(&ret, (uint32*)&current_buffer[shift>>3], sizeof(uint32));
    ret >>= shift & 7;
    return ret & ((1 << nbits) - 1);
  }
