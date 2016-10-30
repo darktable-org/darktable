@@ -1669,9 +1669,7 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
     {
       if(nb == 0)
       {
-        char str2[256] = "<";
-        g_strlcat(str2, _("add existing shape"), sizeof(str2));
-        dt_bauhaus_combobox_add(combo, str2);
+        dt_bauhaus_combobox_add_aligned(combo, _("add existing shape"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
         cids[pos++] = 0; // nothing to do
       }
       dt_bauhaus_combobox_add(combo, form->name);
@@ -1696,9 +1694,7 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
       {
         if(nb == 0)
         {
-          char str2[256] = "<";
-          g_strlcat(str2, _("use same shapes as"), sizeof(str2));
-          dt_bauhaus_combobox_add(combo, str2);
+          dt_bauhaus_combobox_add_aligned(combo, _("use same shapes as"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
           cids[pos++] = 0; // nothing to do
         }
         gchar *module_label = dt_history_item_get_name(m);
