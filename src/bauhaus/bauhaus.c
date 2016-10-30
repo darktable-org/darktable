@@ -973,6 +973,8 @@ static void dt_bauhaus_combobox_destroy(dt_bauhaus_widget_t *widget, gpointer us
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   g_list_free_full(d->labels, g_free);
   d->labels = NULL;
+  g_list_free(d->alignments);
+  d->alignments = NULL;
   d->num_labels = 0;
 }
 
@@ -989,6 +991,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   dt_bauhaus_widget_init(w, self);
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->labels = NULL;
+  d->alignments = NULL;
   d->num_labels = 0;
   d->defpos = 0;
   d->active = d->defpos;
@@ -1018,11 +1021,17 @@ void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(struct 
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
 {
+  dt_bauhaus_combobox_add_aligned(widget, text, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT);
+}
+
+void dt_bauhaus_combobox_add_aligned(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align)
+{
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->num_labels++;
   d->labels = g_list_append(d->labels, g_strdup(text));
+  d->alignments = g_list_append(d->alignments, GINT_TO_POINTER(align));
 }
 
 void dt_bauhaus_combobox_set_editable(GtkWidget *widget, int editable)
@@ -1050,7 +1059,12 @@ void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos)
   if(pos < 0 || pos >= d->num_labels) return;
 
   GList *rm = g_list_nth(d->labels, pos);
+  g_free(rm->data);
   d->labels = g_list_delete_link(d->labels, rm);
+
+  rm = g_list_nth(d->alignments, pos);
+  d->alignments = g_list_delete_link(d->alignments, rm);
+
   d->num_labels--;
 }
 
@@ -1060,7 +1074,8 @@ void dt_bauhaus_combobox_insert(GtkWidget *widget, const char *text,int pos)
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->num_labels++;
-  d->labels = g_list_insert(d->labels, g_strdup(text),pos);
+  d->labels = g_list_insert(d->labels, g_strdup(text), pos);
+  d->alignments = g_list_insert(d->alignments, GINT_TO_POINTER(DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT), pos);
 }
 
 int dt_bauhaus_combobox_length(GtkWidget *widget)
@@ -1098,6 +1113,8 @@ void dt_bauhaus_combobox_clear(GtkWidget *widget)
   d->active = 0;
   g_list_free_full(d->labels, g_free);
   d->labels = NULL;
+  g_list_free(d->alignments);
+  d->alignments = NULL;
   d->num_labels = 0;
 }
 
@@ -1552,13 +1569,14 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       cairo_save(cr);
       set_text_color(cr, 1);
-      GList *it = d->labels;
       int k = 0, i = 0;
       int hovered = darktable.bauhaus->mouse_y / (ht + get_line_space());
       gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, -1);
-      while(it)
+      for(GList *it_label = d->labels, *it_align = d->alignments; it_label && it_align;
+          it_label = g_list_next(it_label), it_align = g_list_next(it_align))
       {
-        gchar *text = (gchar *)it->data;
+        dt_bauhaus_combobox_alignment_t align = GPOINTER_TO_INT(it_align->data);
+        gchar *text = (gchar *)it_label->data;
         gchar *text_cmp = g_utf8_casefold(text, -1);
         if(!strncmp(text_cmp, keys, darktable.bauhaus->keys_cnt))
         {
@@ -1568,21 +1586,19 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
             highlight = TRUE;
           }
 
+          // remove this once we are sure that no more of those are lurking in our code
           if(text[0] == '<')
-          {
-            gchar *text2 = (gchar *)(text + 1);
-            show_pango_text(cr, text2, 2, (get_line_space() + ht) * k, 0, FALSE, !highlight, highlight);
-          }
+            fprintf(stderr, "FIXME: please report `%s' as being a label using inband signalling for alignment\n",
+                    text);
+
+          if(align == DT_BAUHAUS_COMBOBOX_ALIGN_LEFT)
+            show_pango_text(cr, text, 2, (get_line_space() + ht) * k, 0, FALSE, !highlight, highlight);
           else
-          {
-            show_pango_text(cr, text, wd - 4 - ht, (get_line_space() + ht) * k, 0, TRUE, !highlight,
-                            highlight);
-          }
+            show_pango_text(cr, text, wd - 4 - ht, (get_line_space() + ht) * k, 0, TRUE, !highlight, highlight);
 
           k++;
         }
         i++;
-        it = g_list_next(it);
         g_free(text_cmp);
       }
       cairo_restore(cr);
