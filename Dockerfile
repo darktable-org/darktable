@@ -75,6 +75,6 @@ RUN dpkg-divert --add --rename --divert /usr/bin/ld.original /usr/bin/ld && \
 # optional: usermanual deps
 # pls keep sorted :)
 RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
-    apt-get install  default-jdk-headless default-jre-headless docbook-xsl \
-    docbook-xsl-saxon fop gnome-doc-utils imagemagick libsaxon-java xsltproc \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get install default-jdk-headless default-jre-headless docbook \
+    docbook-xml docbook-xsl docbook-xsl-saxon fop gnome-doc-utils imagemagick \
+    libsaxon-java xsltproc && apt-get clean && rm -rf /var/lib/apt/lists/*
