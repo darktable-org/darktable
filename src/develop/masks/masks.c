@@ -1647,12 +1647,9 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
       forms = g_list_next(forms);
       continue;
     }
-    char str[256] = "";
-    g_strlcat(str, form->name, sizeof(str));
-    g_strlcat(str, "   ", sizeof(str));
-    int used = 0;
 
     // we search were this form is used in the current module
+    int used = 0;
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
     if(grp && (grp->type & DT_MASKS_GROUP))
     {
@@ -1677,7 +1674,7 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
         dt_bauhaus_combobox_add(combo, str2);
         cids[pos++] = 0; // nothing to do
       }
-      dt_bauhaus_combobox_add(combo, str);
+      dt_bauhaus_combobox_add(combo, form->name);
       cids[pos++] = form->formid;
       nb++;
     }
