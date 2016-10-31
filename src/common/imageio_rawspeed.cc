@@ -244,6 +244,12 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     if((r->getDataType() != TYPE_USHORT16) && (r->getDataType() != TYPE_FLOAT32)) return DT_IMAGEIO_FILE_CORRUPTED;
 
+    if((r->getBpp() != sizeof(uint16_t)) && (r->getBpp() != sizeof(float))) return DT_IMAGEIO_FILE_CORRUPTED;
+
+    if((r->getDataType() == TYPE_USHORT16) && (r->getBpp() != sizeof(uint16_t))) return DT_IMAGEIO_FILE_CORRUPTED;
+
+    if((r->getDataType() == TYPE_FLOAT32) && (r->getBpp() != sizeof(float))) return DT_IMAGEIO_FILE_CORRUPTED;
+
     const float cpp = r->getCpp();
     if(cpp != 1) return DT_IMAGEIO_FILE_CORRUPTED;
 
@@ -373,6 +379,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   img->buf_dsc.datatype = TYPE_FLOAT;
 
   if(r->getDataType() != TYPE_USHORT16) return DT_IMAGEIO_FILE_CORRUPTED;
+
+  if(r->getBpp() != sizeof(uint16_t)) return DT_IMAGEIO_FILE_CORRUPTED;
+
+  if((r->getDataType() == TYPE_USHORT16) && (r->getBpp() != sizeof(uint16_t))) return DT_IMAGEIO_FILE_CORRUPTED;
 
   const uint32_t cpp = r->getCpp();
   if(cpp != 1 && cpp != 3 && cpp != 4) return DT_IMAGEIO_FILE_CORRUPTED;
