@@ -167,6 +167,20 @@ awk is needed to parse gphot2(1) output."; then
 	return $missing_tool
 }
 
+pdf_tools_installed() {
+	local missing_tool
+	missing_tool=0
+
+	echo "--> Check for pdf tools availability"
+
+	if ! tool_installed pdftk "
+pdftk is needed if you want one single result pdf."; then
+		missing_tool=1
+	fi
+
+	return $missing_tool
+}
+
 profiling_tools_installed() {
 	local missing_tool
 	missing_tool=0
