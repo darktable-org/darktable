@@ -28,9 +28,9 @@
           <row>
             <entry>
               This module takes highlights, blurs them and then blends (screen blend lightness)
-              with the original to create a soft blooms over the image, hence
-              the name of the effect. There are numerous ways to use this module depending on
-              the image's actual scenery lighting.
+              with the original to create a soft blooms over the image, hence the name of the
+              effect. There are numerous ways to use this module depending on the image's actual
+              scenery lighting.
             </entry>
             <entry>
               <graphic fileref="darkroom/modules/images/bloom.png" scalefit="1" width="80%" align="center" />
