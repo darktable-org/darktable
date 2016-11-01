@@ -45,7 +45,7 @@
 
   </sect3>
 
-  <sect3 status="draft" id="rawoverexposed">
+  <sect3 status="final" id="rawoverexposed">
 
     <title>Raw overexposed warning</title>
 
@@ -61,11 +61,11 @@
     <para>
       Clicking the
       <inlinegraphic fileref="&icon_module_rawoverexposed;" scalefit="1" width="2%" align="center" />
-      icon warns you about areas of your raw input image with clipped color channels. 
-      Clipped color channels imply an overexposed image with loss of information in the affected
-      areas. You may use the <emphasis>highlight reconstruction</emphasis> module or the
-      <emphasis>color reconstruction</emphasis> module in order to reconstruct those areas
-      (see <xref linkend="highlight_reconstruction"/> and <xref linkend="color_reconstruction"/>).
+      icon warns you about areas of your raw input image with clipped color channels. Clipped
+      color channels imply an overexposed image with loss of information in the affected areas.
+      You may use the <emphasis>highlight reconstruction</emphasis> module or the
+      <emphasis>color reconstruction</emphasis> module in order to reconstruct those areas (see
+      <xref linkend="highlight_reconstruction"/> and <xref linkend="color_reconstruction"/>).
     </para>
 
     <informaltable frame="none">
@@ -88,11 +88,12 @@
     <bridgehead renderas="sect5">mode</bridgehead>
 
     <para>
-      The default <quote>mark with CFA color</quote> mode displays a pattern of the respective primary colors
-      (red, green, and blue) to indicate which color channels are found to be clipped. In the 
-      <quote>mark with solid color</quote> mode clipped areas are marked with a user defined solid 
-      color (see below) independent of the affected color channels. In the <quote>false color</quote>
-      mode clipped color channels are set to zero in the affected areas.
+      The default <quote>mark with CFA color</quote> mode displays a pattern of the respective
+      primary colors (red, green, and blue) to indicate which color channels are found to be
+      clipped. In the <quote>mark with solid color</quote> mode clipped areas are marked with a
+      user defined solid color (see below) independent of the affected color channels. In the
+      <quote>false color</quote> mode clipped color channels are set to zero in the affected
+      areas.
     </para>
 
     <bridgehead renderas="sect5">color scheme</bridgehead>
@@ -109,7 +110,7 @@
     </para>
 
   </sect3>
-  
+
   <sect3 status="final" id="overexposed">
 
     <title>Over/underexposed warning</title>
@@ -309,11 +310,11 @@
     </para>
 
     <para>
-      The picture currently processed is selected and highlighted; with a single click
-      you can select any other picture from the filmstrip without changing the picture currently
+      The picture currently processed is selected and highlighted; with a single click you can
+      select any other picture from the filmstrip without changing the picture currently
       processed. With the <emphasis>ctrl-a</emphasis> shortcut you select all the pictures of
-      the filmstrip. With the shortcut <emphasis>ctrl-shift-a</emphasis> you unselect all images,
-      and with <emphasis>ctrl-i</emphasis> you reverse the current selection.
+      the filmstrip. With the shortcut <emphasis>ctrl-shift-a</emphasis> you unselect all
+      images, and with <emphasis>ctrl-i</emphasis> you reverse the current selection.
     </para>
 
     <para>

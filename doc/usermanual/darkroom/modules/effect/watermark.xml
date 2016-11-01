@@ -447,9 +447,9 @@
     <sect5>
       <title>text color</title>
       <para>
-        This field shows the text color. Clicking on the colored field will open a
-        color selector dialog which offers you a choice of commonly used colors,
-        or allows to define a color in RGB color space.
+        This field shows the text color. Clicking on the colored field will open a color
+        selector dialog which offers you a choice of commonly used colors, or allows to define a
+        color in RGB color space.
       </para>
     </sect5>
 
