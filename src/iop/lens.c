@@ -152,7 +152,7 @@ int operation_tags()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
+  return /* IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | */ IOP_FLAGS_ONE_INSTANCE;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -788,6 +788,7 @@ error:
 }
 #endif
 
+#if 0
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
@@ -800,6 +801,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->yalign = 1;
   return;
 }
+#endif
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
