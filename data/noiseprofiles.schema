@@ -12,6 +12,7 @@
     },
     "noiseprofiles": {
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "object",
         "properties": {
@@ -50,6 +51,7 @@
                 },
                 "profiles": {
                   "type": "array",
+                  "uniqueItems": true,
                   "items": {
                     "type": "object",
                     "properties": {
@@ -115,7 +117,8 @@
         ],
         "additionalProperties": false
       },
-      "minItems": 1
+      "minItems": 11,
+      "maxItems": 11
     }
   },
   "required": [
