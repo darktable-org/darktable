@@ -872,38 +872,61 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
-    // acquire temp memory for distorted pixel coords
-    const size_t bufsize = (size_t)roi_in->width * 2 * 3;
-    void *const buf = dt_alloc_align(16, bufsize * dt_get_num_threads() * sizeof(float));
+    const int xoff = roi_in->x;
+    const int yoff = roi_in->y;
+    const int width = roi_in->width;
+    const int height = roi_in->height;
+    const int awidth = abs(width);
+    const int aheight = abs(height);
+    const int xstep = (width < 0) ? -1 : 1;
+    const int ystep = (height < 0) ? -1 : 1;
+
+    const size_t nbpoints = 2 * awidth + 2 * aheight;
+
+    float *buf = dt_alloc_align(16, nbpoints * 2 * 3 * sizeof(float));
+
+    float *bufptr = buf;
 
 #ifdef _OPENMP
-#pragma omp parallel default(none) shared(modifier) reduction(min : xm, ym) reduction(max : xM, yM)
+#pragma omp parallel for default(none) shared(modifier, bufptr) schedule(static)
 #endif
+    for(int i = 0; i < awidth; i++)
+      lf_modifier_apply_subpixel_geometry_distortion(modifier, xoff + i * xstep, yoff, 1, 1, bufptr + 6 * i);
+
+    bufptr += 6 * awidth;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(modifier, bufptr) schedule(static)
+#endif
+    for(int i = 0; i < awidth; i++)
+      lf_modifier_apply_subpixel_geometry_distortion(modifier, xoff + i * xstep, yoff + (height - 1), 1, 1, bufptr + 6 * i);
+
+    bufptr += 6 * awidth;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(modifier, bufptr) schedule(static)
+#endif
+    for(int j = 0; j < aheight; j++)
+      lf_modifier_apply_subpixel_geometry_distortion(modifier, xoff, yoff + j * ystep, 1, 1, bufptr + 6 * j);
+
+    bufptr += 6 * aheight;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(modifier, bufptr) schedule(static)
+#endif
+    for(int j = 0; j < aheight; j++)
+      lf_modifier_apply_subpixel_geometry_distortion(modifier, xoff + (width - 1), yoff + j * ystep, 1, 1, bufptr + 6 * j);
+
+
+#ifdef _OPENMP
+#pragma omp parallel default(none) shared(buf) reduction(min : xm, ym) reduction(max : xM, yM)
+#endif
+    for(int k = 0; k < nbpoints; k++)
     {
-      float *const bufptr = ((float *)buf) + (size_t)bufsize * dt_get_thread_num();
-
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-      for(int y = 0; y < roi_out->height; y++)
-      {
-        lf_modifier_apply_subpixel_geometry_distortion(modifier, roi_out->x, roi_out->y + y, roi_out->width, 1,
-                                                       bufptr);
-
-        // reverse transform the global coords from lf to our buffer
-        for(int x = 0; x < roi_out->width; x++)
-        {
-          for(int c = 0; c < 3; c++)
-          {
-            const size_t k = (size_t)3 * c * x;
-
-            xm = MIN(xm, bufptr[k + 0]);
-            xM = MAX(xM, bufptr[k + 0]);
-            ym = MIN(ym, bufptr[k + 1]);
-            yM = MAX(yM, bufptr[k + 1]);
-          }
-        }
-      }
+      xm = fminf(xm, buf[6 * k + 0]);
+      xM = fmaxf(xM, buf[6 * k + 0]);
+      ym = fminf(ym, buf[6 * k + 3]);
+      yM = fmaxf(yM, buf[6 * k + 3]);
     }
 
     dt_free_align(buf);
