@@ -61,7 +61,7 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
     libgraphicsmagick1-dev libgtk-3-dev libjpeg-dev libjson-glib-dev \
     liblcms2-dev liblensfun-dev liblua5.2-dev libopenexr-dev libopenjp2-7-dev \
     libosmgpsmap-1.0-dev libpango1.0-dev libpng-dev libpugixml-dev \
-    librsvg2-dev libsaxon-java libsdl1.2-dev libsecret-1-dev libsoup2.4-dev \
+    librsvg2-dev libsaxon-java libsecret-1-dev libsoup2.4-dev \
     libsqlite3-dev libtiff5-dev libwebp-dev libx11-dev libxml2-dev \
     libxml2-utils make ninja-build perl po4a python3-jsonschema xsltproc && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
