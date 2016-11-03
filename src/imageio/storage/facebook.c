@@ -46,7 +46,7 @@ DT_MODULE(1)
 
 #define FB_CALLBACK_ID "facebook"
 #define FB_WS_BASE_URL "https://www.facebook.com/"
-#define FB_GRAPH_BASE_URL "https://graph.facebook.com/"
+#define FB_GRAPH_BASE_URL "https://graph.facebook.com/v2.8/"
 #define FB_API_KEY "315766121847254"
 
 // facebook doesn't allow pictures bigger than FB_IMAGE_MAX_SIZExFB_IMAGE_MAX_SIZE px
@@ -441,7 +441,7 @@ static GList *fb_get_album_list(FBContext *ctx, gboolean *ok)
   *ok = TRUE;
   GList *album_list = NULL;
 
-  JsonObject *reply = fb_query_get(ctx, "me/albums", NULL);
+  JsonObject *reply = fb_query_get(ctx, "me/albums?fields=id,name,can_upload", NULL);
   if(reply == NULL) goto error;
 
   JsonArray *jsalbums = json_object_get_array_member(reply, "data");
