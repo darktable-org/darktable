@@ -17,34 +17,44 @@ The Big Ones:
 - Add new automatic perspective correction module (https://www.darktable.org/2016/03/a-new-module-for-automatic-perspective-correction/)
 - Liquify tool for all your fancy pixel moving (https://www.darktable.org/2016/04/liquify-liquify/)
 - A new image module to use a Color Look Up Table (CLUT) to change colors in the image (https://www.darktable.org/2016/05/colour-manipulation-with-the-colour-checker-lut-module/)
+- In Highlight reconstruction module, the mode LCh reconstruction was completedy rewritten, and is no longer useless!
 - A new tool, darktable-chart, that goes along with the CLUT module, to create styles for the latter
 - Exposure fusion in the basecurve module to lower the dynamic range of images (https://www.darktable.org/2016/08/compressing-dynamic-range-with-exposure-fusion/)
 - Add new raw overexposure indication (https://www.darktable.org/2016/10/raw-overexposed/)
+- Darkroom: the preview (in top-left corner) is now no longer pre-demosaiced, thus the color picker, histogram show the proper results when there is highlight clipping.
 - Add undo/redo support for the darkroom
 
 Quite Interesting Changes:
 
 - Split the database into a library containing images and a general one with styles, presets and tags. That allows having access to those when for example running with a :memory: library
-- Support running on platforms other than x86 (https://www.darktable.org/2016/04/running-on-non-x86-platforms/)
+- Support running on platforms other than x86 (64bit little-endian, currently ARM64 only) (https://www.darktable.org/2016/04/running-on-non-x86-platforms/)
 - Allow darktable-cli to work on folders
 - Allow to import/export tags from Lightroom keyword files
-- Allow using the cursor keys to interact with sliders, comboboxen and curves
+- Allow using modifier keys to modify the step for sliders and curves. Defaults: Ctrl - x0.1; Shift - x10
+- Allow using the [keyboard] cursor keys to interact with sliders, comboboxes and curves
 - Support presets in "more modules" so you can quickly switch between your favorite sets of modules shown in the GUI
-- Add range opertor and date compare to the collection module
+- Add range operator and date compare to the collection module
 - Support the Exif date and time when importing photos from camera
-- CMYG and RGBE support
+- CYGM and RGBE color filter array support
+- Preview pipe now does run demosaic module too, and it's input is no longer pre-demosaiced, but is just downscaled without demosaicing it at the same time.
 - Nicer web gallery exporter -- now touch friendly!
 - OpenCL implementation of VNG/VNG4 demosaicing methods
 - OpenCL implementation of Markesteijn demosaicing method for X-Trans sensors
+- Filter-out some useless EXIF tags when exporting, helps keep EXIF size under ~64Kb
+- OpenCL: properly discard CPU-based OpenCL devices. Fixes crashes on startup with some partially-working OpenCL implementations like pocl.
+- darktable-cli: do not even try to open display, we don't need it.
+- Hotpixels iop: make it actually work for X-Trans
 
 Some More Changes, Probably Not Complete:
 
+- Drop darktable-viewer tool in favor of slideshow view
 - Remove gnome keyring password backend, use libsecret instead
 - When using libsecret to store passwords then put them into the correct collection
 - Hint via window manager when import/export is done
 - Quick tagging searches anywhere, not just at the start of tags
 - darktable is now happy to use smaller stack sizes. That should allow using musl libc
 - The sidecar XMP schema for history entries is now more consistent and less error prone
+- Rawspeed: fixes for building with libjpeg (as opposed to libjpeg-turbo)
 - Give the choice of equidistant and proportional feathering when using elliptical masks
 - Add geolocation to watermark variables
 - Support greyscale color profiles
@@ -57,12 +67,14 @@ Some More Changes, Probably Not Complete:
 
 Changed Dependencies:
 
+- CMake 3.0 is now required.
 - In order to compile darktable you now need at least gcc-4.7+/clang-3.3+, but better use gcc-5.0+
 - Drop support for OS X 10.6
 - Bump required libexiv2 version up to 0.24
 - Bump GTK+ requirement to gtk-3.14. (because even debian stable has it)
+- Bump GLib requirement to glib-2.40.
 - Port to OpenJPEG2
-
+- SDL is no longer needed.
 
 TODO:
 Camera Support
