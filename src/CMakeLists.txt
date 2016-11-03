@@ -738,15 +738,6 @@ endif(BUILD_CMSTEST)
 # have a gui tool to create CLUTs from colour chart targets
 add_subdirectory(chart)
 
-# build opengl slideshow viewer?
-if(BUILD_SLIDESHOW)
-  find_package(SDL)
-  find_package(OpenGL)
-  if(SDL_FOUND AND OPENGL_FOUND)
-    add_subdirectory(dtview)
-  endif(SDL_FOUND AND OPENGL_FOUND)
-endif(BUILD_SLIDESHOW)
-
 #
 # build darktable executable
 #
