@@ -919,7 +919,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
 
 #ifdef _OPENMP
-#pragma omp parallel default(none) shared(buf) reduction(min : xm, ym) reduction(max : xM, yM)
+#pragma omp parallel for default(none) shared(buf) reduction(min : xm, ym) reduction(max : xM, yM)
 #endif
     for(int k = 0; k < nbpoints; k++)
     {
