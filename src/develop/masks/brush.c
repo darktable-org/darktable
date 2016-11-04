@@ -1089,6 +1089,13 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       {
         float amount = 1.03f;
         if(up) amount = 0.97f;
+        // do not exceed upper limit of 1.0 and lower limit of 0.004
+        for(int k = 0; k < nb; k++)
+        {
+          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
+          if(amount > 1.0f && (point->border[0] > 1.0f || point->border[1] > 1.0f)) return 1;
+          if(amount < 1.0f && (point->border[0] < 0.004f && point->border[1] < 0.004f)) return 1;
+        }
         for(int k = 0; k < nb; k++)
         {
           dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
