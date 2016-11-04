@@ -844,11 +844,18 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
     }
     else
     {
-      float amount = 1.03;
-      if(up) amount = 0.97;
+      float amount = 1.03f;
+      if(up) amount = 0.97f;
       guint nb = g_list_length(form->points);
       if(gui->border_selected)
       {
+        // do not exceed upper limit of 1.0 and lower limit of 0.004
+        for(int k = 0; k < nb; k++)
+        {
+          dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points, k);
+          if(amount > 1.0f && (point->border[0] > 1.0f || point->border[1] > 1.0f)) return 1;
+          if(amount < 1.0f && (point->border[0] < 0.004f && point->border[1] < 0.004f)) return 1;
+        }
         for(int k = 0; k < nb; k++)
         {
           dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points, k);
@@ -885,10 +892,11 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
           by += (point1->corner[1] + point2->corner[1])
                 * (point1->corner[0] * point2->corner[1] - point2->corner[0] * point1->corner[1]);
         }
-        bx /= 3.0 * surf;
-        by /= 3.0 * surf;
+        bx /= 3.0f * surf;
+        by /= 3.0f * surf;
 
-        if(amount < 1.0 && surf < 0.00001 && surf > -0.00001) return 1;
+        if(amount < 1.0f && surf < 0.00001f && surf > -0.00001f) return 1;
+        if(amount > 1.0f && surf > 4.0f) return 1;
 
         // now we move each point
         for(int k = 0; k < nb; k++)
