@@ -92,10 +92,10 @@
                   <emphasis>camera neutral</emphasis>
                 </entry>
                 <entry>
-                  Essentially sets temperature to 6502K.
-                  The actual math: it computes such white balance channel multipliers,
-                  so that pure white color in camera colorspace is converted into pure white color in sRGB D65.
-                  (pure white color here means having the same equal value for each channel = 1.0)
+                  Essentially sets temperature to 6502K. The actual math: it computes such white
+                  balance channel multipliers, so that pure white color in camera colorspace is
+                  converted into pure white color in sRGB D65. (pure white color here means
+                  having the same equal value for each channel = 1.0)
                 </entry>
               </row>
               <row>

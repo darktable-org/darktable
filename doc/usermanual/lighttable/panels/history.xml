@@ -96,15 +96,15 @@
       </para>
 
     </sect4>
-    
+
     <sect4>
 
       <title>mode</title>
 
       <para>
         This setting defines how a new history stack behaves when pasted on an image that
-        already has a history stack. The <quote>overwrite</quote> mode deletes the previous history
-        stack, whereas <quote>append</quote> will concatenate the two history stacks.
+        already has a history stack. The <quote>overwrite</quote> mode deletes the previous
+        history stack, whereas <quote>append</quote> will concatenate the two history stacks.
       </para>
 
       <para>

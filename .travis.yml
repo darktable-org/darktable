@@ -46,8 +46,12 @@ env:
     - INSTALL_PREFIX=/build/darktable-install
     - CFLAGS=-pipe CXXFLAGS=-pipe
   matrix:
-    - CC=gcc CXX=g++
-    - CC=clang-3.8 CXX=clang++-3.8
+    - CC=gcc CXX=g++ TARGET=build
+    - CC=clang-3.8 CXX=clang++-3.8 TARGET=build
+    - CC=gcc CXX=g++ TARGET=usermanual # EXTRA_TMPFS="--tmpfs /tmp"
+
+matrix:
+  fast_finish: true
 
 script:
-  - docker run --read-only --volume $TRAVIS_BUILD_DIR:$SRC_DIR:ro --tmpfs $BUILD_DIR --workdir $BUILD_DIR --tmpfs $INSTALL_PREFIX --env CC --env CXX --env CFLAGS --env CXXFLAGS --env SRC_DIR --env BUILD_DIR --env INSTALL_PREFIX darktable/darktable sh -c "$SRC_DIR/ci-script.sh"
+  - docker run --read-only --volume $TRAVIS_BUILD_DIR:$SRC_DIR:ro --tmpfs $BUILD_DIR --workdir $BUILD_DIR --tmpfs $INSTALL_PREFIX $EXTRA_TMPFS --env CC --env CXX --env CFLAGS --env CXXFLAGS --env SRC_DIR --env BUILD_DIR --env INSTALL_PREFIX --env TARGET darktable/darktable sh -c "$SRC_DIR/ci-script.sh"

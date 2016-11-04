@@ -48,6 +48,15 @@ if(${Convert_BIN} STREQUAL "Convert_BIN-NOTFOUND")
 	set(can_build_usermanual OFF)
 endif()
 
+if(USE_XMLLINT)
+  add_custom_target(
+    validate_usermanual_xml
+    COMMAND ${Xmllint_BIN} --nonet --xinclude --noout --postvalid ${CMAKE_CURRENT_SOURCE_DIR}/darktable.xml
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/darktable.xml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    COMMENT "Checking validity of the usermanual darktable.xml"
+  )
+endif(USE_XMLLINT)
 
 if(can_build_usermanual)
 
@@ -105,6 +114,10 @@ if(can_build_usermanual)
 		COMMENT "Generating the main docbook xml file" VERBATIM
 	)
 	add_custom_target(darktable_single_xml DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml)
+
+if(USE_XMLLINT)
+  add_dependencies(darktable_single_xml validate_usermanual_xml)
+endif(USE_XMLLINT)
 
 
 
