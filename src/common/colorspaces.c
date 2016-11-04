@@ -1137,6 +1137,22 @@ static void cms_error_handler(cmsContext ContextID, cmsUInt32Number ErrorCode, c
   fprintf(stderr, "[lcms2] error %d: %s\n", ErrorCode, text);
 }
 
+static gint _sort_profiles(gconstpointer a, gconstpointer b)
+{
+  const dt_colorspaces_color_profile_t *profile_a = (dt_colorspaces_color_profile_t *)a;
+  const dt_colorspaces_color_profile_t *profile_b = (dt_colorspaces_color_profile_t *)b;
+
+  gchar *name_a = g_utf8_casefold(profile_a->name, -1);
+  gchar *name_b = g_utf8_casefold(profile_b->name, -1);
+
+  gint result = g_strcmp0(name_a, name_b);
+
+  g_free(name_a);
+  g_free(name_b);
+
+  return result;
+}
+
 dt_colorspaces_t *dt_colorspaces_init()
 {
   cmsSetLogErrorHandler(cms_error_handler);
@@ -1213,6 +1229,9 @@ dt_colorspaces_t *dt_colorspaces_init()
                                                                _("BRG (for testing)"),
                                                                ++in_pos, ++out_pos, ++display_pos));
 
+  // temporary list of profiles to be added, we keep this separate to be able to sort it before adding
+  GList *temp_profiles = NULL;
+
   // read {userconfig,datadir}/color/in/*.icc, in this order.
   snprintf(dirname, sizeof(dirname), "%s/color/in", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR)) snprintf(dirname, sizeof(dirname), "%s/color/in", datadir);
@@ -1238,7 +1257,7 @@ dt_colorspaces_t *dt_colorspaces_init()
         prof->in_pos = ++in_pos;
         prof->out_pos = -1;
         prof->display_pos = -1;
-        res->profiles = g_list_append(res->profiles, prof);
+        temp_profiles = g_list_append(temp_profiles, prof);
       }
     }
     g_dir_close(dir);
@@ -1270,13 +1289,14 @@ dt_colorspaces_t *dt_colorspaces_init()
         prof->in_pos = -1;
         prof->out_pos = ++out_pos;
         prof->display_pos = ++display_pos;
-        res->profiles = g_list_append(res->profiles, prof);
+        temp_profiles = g_list_append(temp_profiles, prof);
       }
     }
     g_dir_close(dir);
   }
 
-  res->profiles = g_list_first(res->profiles);
+  temp_profiles = g_list_sort(temp_profiles, _sort_profiles);
+  res->profiles = g_list_concat(res->profiles, temp_profiles);
 
   // init display profile and softproof/gama checking from conf
   res->display_type = dt_conf_get_int("ui_last/color/display_type");

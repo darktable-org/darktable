@@ -4,7 +4,6 @@
 set(MANPAGES
   "darktable.pod"
   "darktable-cli.pod"
-  "darktable-viewer.pod"
   "darktable-generate-cache.pod"
   "darktable-cltest.pod"
   "darktable-cmstest.pod"
