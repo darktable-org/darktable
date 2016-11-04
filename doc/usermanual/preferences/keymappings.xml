@@ -453,6 +453,22 @@
       </row>
       <row>
         <entry>
+          views/darkroom/undo
+        </entry>
+        <entry>
+          &lt;Primary&gt;z
+        </entry>
+      </row>
+      <row>
+        <entry>
+          views/darkroom/redo
+        </entry>
+        <entry>
+          &lt;Primary&gt;y
+        </entry>
+      </row>
+      <row>
+        <entry>
           views/darkroom/decrease brush hardness
         </entry>
         <entry>
@@ -797,10 +813,18 @@
       </row>
       <row>
         <entry>
+          views/map/undo
+        </entry>
+        <entry>
+          &lt;Primary&gt;z
+        </entry>
+      </row>
+      <row>
+        <entry>
           views/map/redo
         </entry>
         <entry>
-          &lt;Primary&gt;r
+          &lt;Primary&gt;y
         </entry>
       </row>
       <row>
