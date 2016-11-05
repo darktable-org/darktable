@@ -17,13 +17,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_GETDELIM_H
-#define DT_GETDELIM_H
+#pragma once
 
 ssize_t getdelim(char **lineptr, size_t *n, int delimiter, FILE *fp);
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
-
-#endif // DT_GETDELIM_H
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
