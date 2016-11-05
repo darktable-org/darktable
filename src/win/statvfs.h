@@ -36,8 +36,7 @@
  * limitations under the License.
  */
 
-#ifndef DT_STATVFS_H
-#define DT_STATVFS_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,8 +65,6 @@ int statvfs(const char *path, struct statvfs *buf);
 #ifdef __cplusplus
 }
 #endif
-
-#endif // DT_STATVFS_H
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -17,14 +17,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef STRPTIME_H
-#define STRPTIME_H
+#pragma once
 
 #ifdef _WIN32
 char *strptime(const char *buf, const char *format, struct tm *tm);
 #endif
-
-#endif //#ifndef STRPTIME_H
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
