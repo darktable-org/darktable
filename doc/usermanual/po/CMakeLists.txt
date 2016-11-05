@@ -20,8 +20,8 @@ if(can_update_usermanual )
 	# update template
 	add_custom_command(
 		OUTPUT darktable-usermanual.pot
-		COMMAND xsltproc --xinclude --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled.xml ../xsl/darktable_profile.xsl ../darktable.xml
-		COMMAND xml2po -a -e -o darktable-usermanual.pot ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled.xml
+		COMMAND ${Xsltproc_BIN} --nonet --xinclude --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled.xml ../xsl/darktable_profile.xsl ../darktable.xml
+		COMMAND ${Xml2po_BIN} -a -e -o darktable-usermanual.pot ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled.xml
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		DEPENDS ../darktable.xml ../xsl/darktable_profile.xsl
 		COMMENT "Updating usermanual template" VERBATIM
@@ -35,7 +35,7 @@ if(can_update_usermanual )
 		add_custom_command(
 			OUTPUT ${pofile}
 			COMMAND sh -c "if test ! -f ${pofile}; then ${CMAKE_COMMAND} -E copy darktable-usermanual.pot ${pofile}; fi"
-			COMMAND xml2po -a -e -u ${pofile} ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled.xml
+			COMMAND ${Xml2po_BIN} -a -e -u ${pofile} ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual_profiled.xml
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 			COMMENT "Updating ${language} usermanual pofile" VERBATIM
 		)

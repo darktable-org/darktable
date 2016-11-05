@@ -39,8 +39,8 @@
     <para>
       To perform the conversion, just activate the <emphasis>monochrome</emphasis> module
       (<xref linkend="monochrome"/>). You can then simulate a color filter, by dragging the
-      circle above the colors you want to filter. Filter size can be modified via scrolling
-      the mouse wheel.
+      circle above the colors you want to filter. Filter size can be modified via scrolling the
+      mouse wheel.
     </para>
 
   </sect3>
@@ -68,7 +68,7 @@
 
   </sect3>
 
-  <sect3 status="draft">
+  <sect3 status="final">
 
     <title>The LAB way: color contrast module</title>
 

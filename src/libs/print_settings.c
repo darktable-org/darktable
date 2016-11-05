@@ -23,7 +23,6 @@
 #include "common/colorspaces.h"
 #include "common/cups_print.h"
 #include "common/image_cache.h"
-#include "common/image_cache.h"
 #include "common/pdf.h"
 #include "common/printprof.h"
 #include "common/styles.h"

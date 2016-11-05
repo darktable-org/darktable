@@ -1071,6 +1071,24 @@ static double log_gamma_windschitl(double x)
  */
 #define TABSIZE 100000
 
+// clang-format on
+
+static double *inv = NULL; /* table to keep computed inverse values */
+
+__attribute__((constructor)) static void invConstructor()
+{
+  if(inv) return;
+  inv = malloc(sizeof(double) * TABSIZE);
+}
+
+__attribute__((destructor)) static void invDestructor()
+{
+  free(inv);
+  inv = NULL;
+}
+
+// clang-format off
+
 /*----------------------------------------------------------------------------*/
 /** Computes -log10(NFA).
 
@@ -1115,7 +1133,6 @@ static double log_gamma_windschitl(double x)
  */
 static double nfa(int n, int k, double p, double logNT)
 {
-  static double inv[TABSIZE];   /* table to keep computed inverse values */
   double tolerance = 0.1;       /* an error of 10% in the result is accepted */
   double log1term,term,bin_term,mult_term,bin_tail,err,p_term;
   int i;

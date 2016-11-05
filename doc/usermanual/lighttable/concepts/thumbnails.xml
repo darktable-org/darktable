@@ -148,8 +148,8 @@
     <para>
       The third possible cause for getting skulls is memory shortage: If darktable runs out of
       memory while generating a thumbnail, it will warn you and display a skull&nbsp;&ndash;
-      this can happen if darktable is run with suboptimal settings, especially on a 32-bit system.
-      Please consult <xref linkend="darktable_and_memory"/> for more information.
+      this can happen if darktable is run with suboptimal settings, especially on a 32-bit
+      system. Please consult <xref linkend="darktable_and_memory"/> for more information.
     </para>
 
   </sect3>

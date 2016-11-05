@@ -60,7 +60,6 @@ option(USE_FLICKR "Enable Flickr support" ON)
 option(USE_KWALLET "Build kwallet password storage back-end" ON)
 option(USE_LIBSECRET "Build libsecret password storage back-end" ON)
 option(USE_UNITY "Use libunity to report progress in the launcher" OFF)
-option(BUILD_SLIDESHOW "Build the opengl slideshow viewer" ON)
 option(USE_OPENMP "Use openmp threading support." ON)
 option(USE_OPENCL "Use OpenCL support." ON)
 option(USE_GRAPHICSMAGICK "Use GraphicsMagick library for image import." ON)
@@ -132,7 +131,6 @@ endif()
 #
 if(APPLE)
 	message("-- Mac OS X build detected, setting default features")
-	set(BUILD_SLIDESHOW OFF)
 
 	# prefer macports and/or user-installed libraries over system ones
 	LIST(APPEND CMAKE_PREFIX_PATH /opt/local /usr/local)

@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-10-28 08:06+0300\n"
-"PO-Revision-Date: 2016-10-28 08:34+0200\n"
+"PO-Revision-Date: 2016-10-28 19:42+0200\n"
 "Last-Translator: Shlomi Alon-Braitbart <sbraitbart@gmail.com>\n"
 "Language-Team: \n"
 "Language: he_IL\n"
@@ -1905,7 +1905,7 @@ msgstr "מסיכה מצויירת"
 
 #: ../src/develop/blend_gui.c:1265
 msgid "show and edit mask elements"
-msgstr "הראה וערוך אלמנטים במסיכה"
+msgstr "הצג וערוך אלמנטים במסיכה"
 
 #: ../src/develop/blend_gui.c:1272
 msgid "toggle polarity of drawn mask"
@@ -2238,7 +2238,7 @@ msgstr "אתחל את הפרמרטרים של המודול "
 #: ../src/develop/imageop.c:1288 ../src/libs/lib.c:587
 msgctxt "accel"
 msgid "show preset menu"
-msgstr "הראה תפריט של פריסטים"
+msgstr "הצג תפריט פריסטים"
 
 #: ../src/develop/imageop.c:1854
 msgid "multiple instances actions"
@@ -2914,7 +2914,7 @@ msgstr "הכל"
 
 #: ../src/gui/guides.c:375
 msgid "show some extra guides"
-msgstr "הראה מספר נוסף של מנחים"
+msgstr "הצג מספר נוסף של מנחים"
 
 #: ../src/gui/guides.c:407
 msgid "grid"
@@ -3145,7 +3145,7 @@ msgstr "יישם אוטומטית פריסט זה עבור תמונות תואמ
 
 #: ../src/gui/preferences.c:1252 ../src/gui/presets.c:410
 msgid "only show this preset for matching images"
-msgstr "הראה פריסט זה רק עבור תמונות תואמות"
+msgstr "הצג פריסט זה רק עבור תמונות תואמות"
 
 #: ../src/gui/preferences.c:1254 ../src/gui/presets.c:411
 msgid ""
@@ -3603,7 +3603,7 @@ msgid ""
 msgstr ""
 "רגיל -- פשוט הכנס תמונות לpdf ללא שינוי\n"
 "טיוטה -- תמונות מוחלפות במלבנים\n"
-"מציאת שגיאות -- הראה רק קווי מתאר ומסגרות"
+"מציאת שגיאות -- הצג רק קווי מתאר ומסגרות"
 
 #: ../src/imageio/format/pfm.c:118
 msgid "PFM (float)"
@@ -4193,7 +4193,7 @@ msgstr "גזור תמונה לאורך האלכסון"
 
 #: ../src/iop/ashift.c:4516
 msgid "display guide lines overlay"
-msgstr "הראה תכסית של קווים מנחים"
+msgstr "הצג תכסית של קווים מנחים"
 
 #: ../src/iop/ashift.c:4517 ../src/iop/clipping.c:1876
 msgid "automatically crop to avoid black edges"
@@ -5075,7 +5075,7 @@ msgstr ""
 
 #: ../src/iop/clipping.c:2026 ../src/libs/live_view.c:368
 msgid "display guide lines to help compose your photograph"
-msgstr "הראה קווים מנחים בכדי לעזור בהרכבת התמונה"
+msgstr "הצג קווים מנחים בכדי לעזור בהרכבת התמונה"
 
 #: ../src/iop/clipping.c:2030 ../src/iop/clipping.c:2035
 #: ../src/libs/live_view.c:377
@@ -8216,7 +8216,7 @@ msgid ""
 "copy part history stack of\n"
 "first selected image"
 msgstr ""
-"העתק חלק מחסנית ההיסטוריה של\n"
+"העתק חלק ממחסנית ההיסטוריה של\n"
 "תמונה נבחרת ראשונה"
 
 #: ../src/libs/copy_history.c:248
@@ -8240,7 +8240,7 @@ msgid ""
 "discard history stack of\n"
 "all selected images"
 msgstr ""
-"השלך מחסנית ההיסטוריה\n"
+"השלך את מחסנית ההיסטוריה\n"
 "של כל התמונות הנבחרות"
 
 #: ../src/libs/copy_history.c:261
@@ -8252,7 +8252,7 @@ msgid ""
 "paste part history stack to\n"
 "all selected images"
 msgstr ""
-"הדבק חלק מחסנית היסטוריה ל\n"
+"הדבק חלק ממחסנית היסטוריה ל\n"
 "כל התמונות הנבחרות"
 
 #: ../src/libs/copy_history.c:268
@@ -10075,11 +10075,11 @@ msgstr "החבא את ציפויי התמונה "
 #: ../src/libs/tools/global_toolbox.c:96
 #: ../src/libs/tools/global_toolbox.c:147
 msgid "show image overlays"
-msgstr "הראה את ציפויי התמונה"
+msgstr "הצג את ציפויי התמונה"
 
 #: ../src/libs/tools/global_toolbox.c:104
 msgid "show global preferences"
-msgstr "הראה העדפות גלובליות"
+msgstr "הצג העדפות גלובליות"
 
 #: ../src/libs/tools/global_toolbox.c:162
 msgctxt "accel"
@@ -10094,7 +10094,7 @@ msgstr "העדפות"
 #: ../src/libs/tools/global_toolbox.c:164
 msgctxt "accel"
 msgid "show overlays"
-msgstr "הראה ציפויים"
+msgstr "הצג ציפויים"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"

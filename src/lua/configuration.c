@@ -18,9 +18,9 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "lua/configuration.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
+#include "lua/configuration.h"
 #include "lua/lua.h"
 
 static int check_version(lua_State *L)

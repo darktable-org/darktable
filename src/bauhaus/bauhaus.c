@@ -109,6 +109,13 @@ static int show_pango_text(cairo_t *cr, char *text, float x_pos, float y_pos, fl
   PangoLayout *layout;
 
   layout = pango_cairo_create_layout(cr);
+
+  if(max_width > 0)
+  {
+    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
+    pango_layout_set_width(layout, (int)(PANGO_SCALE * max_width + 0.5f));
+  }
+
   if(text) {
     pango_layout_set_text(layout, text, -1);
   } else {
@@ -121,31 +128,17 @@ static int show_pango_text(cairo_t *cr, char *text, float x_pos, float y_pos, fl
 
   int pango_width, pango_height;
   pango_layout_get_size(layout, &pango_width, &pango_height);
-  float wd = pango_width / (float)PANGO_SCALE;
-  float ht = pango_height / (float)PANGO_SCALE;
+  float text_width = ((double)pango_width/PANGO_SCALE);
 
-  if(right_aligned) x_pos -= wd;
+  if(right_aligned) x_pos -= text_width;
 
-  cairo_save(cr);
   if(sensitive) set_text_color(cr, sensitive);
   if(indicator) set_indicator_color(cr, 1);
-  if(max_width > 0)
-  {
-    cairo_move_to(cr, x_pos + wd - max_width, ht * .5);
-    cairo_line_to(cr, x_pos + wd - max_width + ht * .5f, ht + 1);
-    cairo_line_to(cr, x_pos + wd + 1, ht + 1);
-    cairo_line_to(cr, x_pos + wd + 1, -1);
-    cairo_line_to(cr, x_pos + wd - max_width + ht * .5f, -1);
-    cairo_close_path(cr);
-    // cairo_rectangle(cr, x_pos+wd-max_width, -50, max_width, 100.0);
-    cairo_clip(cr);
-    cairo_new_path(cr);
-  }
   cairo_move_to(cr, x_pos, y_pos);
   pango_cairo_show_layout(cr, layout);
   g_object_unref(layout);
-  cairo_restore(cr);
-  return pango_width / (float)PANGO_SCALE;
+
+  return text_width;
 }
 
 // -------------------------------
@@ -973,6 +966,8 @@ static void dt_bauhaus_combobox_destroy(dt_bauhaus_widget_t *widget, gpointer us
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   g_list_free_full(d->labels, g_free);
   d->labels = NULL;
+  g_list_free(d->alignments);
+  d->alignments = NULL;
   d->num_labels = 0;
 }
 
@@ -989,6 +984,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   dt_bauhaus_widget_init(w, self);
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->labels = NULL;
+  d->alignments = NULL;
   d->num_labels = 0;
   d->defpos = 0;
   d->active = d->defpos;
@@ -1018,11 +1014,17 @@ void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(struct 
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
 {
+  dt_bauhaus_combobox_add_aligned(widget, text, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT);
+}
+
+void dt_bauhaus_combobox_add_aligned(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align)
+{
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->num_labels++;
   d->labels = g_list_append(d->labels, g_strdup(text));
+  d->alignments = g_list_append(d->alignments, GINT_TO_POINTER(align));
 }
 
 void dt_bauhaus_combobox_set_editable(GtkWidget *widget, int editable)
@@ -1050,7 +1052,12 @@ void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos)
   if(pos < 0 || pos >= d->num_labels) return;
 
   GList *rm = g_list_nth(d->labels, pos);
+  g_free(rm->data);
   d->labels = g_list_delete_link(d->labels, rm);
+
+  rm = g_list_nth(d->alignments, pos);
+  d->alignments = g_list_delete_link(d->alignments, rm);
+
   d->num_labels--;
 }
 
@@ -1060,7 +1067,8 @@ void dt_bauhaus_combobox_insert(GtkWidget *widget, const char *text,int pos)
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->num_labels++;
-  d->labels = g_list_insert(d->labels, g_strdup(text),pos);
+  d->labels = g_list_insert(d->labels, g_strdup(text), pos);
+  d->alignments = g_list_insert(d->alignments, GINT_TO_POINTER(DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT), pos);
 }
 
 int dt_bauhaus_combobox_length(GtkWidget *widget)
@@ -1098,6 +1106,8 @@ void dt_bauhaus_combobox_clear(GtkWidget *widget)
   d->active = 0;
   g_list_free_full(d->labels, g_free);
   d->labels = NULL;
+  g_list_free(d->alignments);
+  d->alignments = NULL;
   d->num_labels = 0;
 }
 
@@ -1547,18 +1557,19 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     break;
     case DT_BAUHAUS_COMBOBOX:
     {
-      show_pango_text(cr, w->label, 2, 0, 0, FALSE, TRUE, FALSE);
-
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       cairo_save(cr);
       set_text_color(cr, 1);
-      GList *it = d->labels;
+      float first_label_width = 0.0;
+      gboolean first_label = TRUE;
       int k = 0, i = 0;
       int hovered = darktable.bauhaus->mouse_y / (ht + get_line_space());
       gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, -1);
-      while(it)
+      for(GList *it_label = d->labels, *it_align = d->alignments; it_label && it_align;
+          it_label = g_list_next(it_label), it_align = g_list_next(it_align))
       {
-        gchar *text = (gchar *)it->data;
+        dt_bauhaus_combobox_alignment_t align = GPOINTER_TO_INT(it_align->data);
+        gchar *text = (gchar *)it_label->data;
         gchar *text_cmp = g_utf8_casefold(text, -1);
         if(!strncmp(text_cmp, keys, darktable.bauhaus->keys_cnt))
         {
@@ -1568,24 +1579,39 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
             highlight = TRUE;
           }
 
+          // remove this once we are sure that no more of those are lurking in our code
           if(text[0] == '<')
-          {
-            gchar *text2 = (gchar *)(text + 1);
-            show_pango_text(cr, text2, 2, (get_line_space() + ht) * k, 0, FALSE, !highlight, highlight);
-          }
+            fprintf(stderr, "FIXME: please report `%s' as being a label using inband signalling for alignment\n",
+                    text);
+
+          float max_width = wd - 4 - ht;
+          if(first_label) max_width *= 0.8; // give the label at least some room
+
+          float label_width;
+          if(align == DT_BAUHAUS_COMBOBOX_ALIGN_LEFT)
+            label_width = show_pango_text(cr, text, 2, (get_line_space() + ht) * k, max_width, FALSE, !highlight,
+                                          highlight);
           else
+            label_width = show_pango_text(cr, text, wd - 4 - ht, (get_line_space() + ht) * k, max_width, TRUE,
+                                          !highlight, highlight);
+
+          // prefer the entry over the label wrt. ellipsization when expanded
+          if(first_label)
           {
-            show_pango_text(cr, text, wd - 4 - ht, (get_line_space() + ht) * k, 0, TRUE, !highlight,
-                            highlight);
+            first_label_width = label_width;
+            first_label = FALSE;
           }
 
           k++;
         }
         i++;
-        it = g_list_next(it);
         g_free(text_cmp);
       }
       cairo_restore(cr);
+
+      // left aligned box label. add it to the gui after the entries so we can ellipsize it if needed
+      show_pango_text(cr, w->label, 2, 0, wd - 8 - ht - first_label_width, FALSE, TRUE, FALSE);
+
       g_free(keys);
     }
     break;

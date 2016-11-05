@@ -24,9 +24,9 @@
 #include "control/control.h"
 #include <gphoto2/gphoto2-file.h>
 
+#include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 /***/
 typedef enum _camctl_camera_job_type_t

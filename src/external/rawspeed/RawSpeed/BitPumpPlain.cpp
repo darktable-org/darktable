@@ -45,7 +45,9 @@ uint32 BitPumpPlain::getBit() throw() {
 }
 
 uint32 BitPumpPlain::getBits(uint32 nbits) throw() {
-  uint32 v = *(uint32*) & buffer[off>>3] >> (off & 7) & ((1 << nbits) - 1);
+  uint32 v;
+  memcpy(&v, (uint32*) & buffer[off>>3], sizeof(uint32));
+  v = v >> (off & 7) & ((1 << nbits) - 1);
   off += nbits;
   return v;
 }

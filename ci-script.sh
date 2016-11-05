@@ -22,14 +22,50 @@
 #   INSTALL_DIR - the installation prefix.
 #   SRC_DIR - read-only directory with git checkout to compile
 #   CC, CXX, CFLAGS, CXXFLAGS are not required, should make sense too
+#   TARGET - either build or usermanual
 
-set -e
+set -ex
+
+PARALLEL="-j2"
+
+target_build()
+{
+  # to get as much of the issues into the log as possible
+  cmake --build "$BUILD_DIR" -- $PARALLEL -v || cmake --build "$BUILD_DIR" -- -j1 -v -k0
+
+  # and now check that it installs where told and only there.
+  cmake --build "$BUILD_DIR" --target install -- $PARALLEL -v || cmake --build "$BUILD_DIR" --target install -- -j1 -v -k0
+}
+
+target_usermanual()
+{
+  cmake --build "$BUILD_DIR" -- -j1 -v -k0 validate_usermanual_xml
+
+  # # to get as much of the issues into the log as possible
+  # cmake --build "$BUILD_DIR" -- $PARALLEL -v darktable-usermanual || cmake --build "$BUILD_DIR" -- -j1 -v -k0 darktable-usermanual
+  # test -r doc/usermanual/darktable-usermanual.pdf
+  # ls -lah doc/usermanual/darktable-usermanual.pdf
+}
+
+du -hcs "$SRC_DIR"
+du -hcs "$BUILD_DIR"
+du -hcs "$INSTALL_PREFIX"
 
 cd "$BUILD_DIR"
-cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVALIDATE_APPDATA_FILE=On "$SRC_DIR"
+cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVALIDATE_APPDATA_FILE=On "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
 
-# to get as much of the issues into the log as possible
-cmake --build "$BUILD_DIR" -- -j3 || cmake --build "$BUILD_DIR" -- -j1 -k
+case "$TARGET" in
+  "usermanual")
+    target_usermanual
+    ;;
+  "build")
+    target_build
+    ;;
+  *)
+    exit 1
+    ;;
+esac
 
-# and now check that it installs where told and only there.
-cmake --build "$BUILD_DIR" --target install -- -j3 || cmake --build "$BUILD_DIR" --target install -- -j1 -k
+du -hcs "$SRC_DIR"
+du -hcs "$BUILD_DIR"
+du -hcs "$INSTALL_PREFIX"
