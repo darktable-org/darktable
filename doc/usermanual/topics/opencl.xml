@@ -109,8 +109,8 @@
       GPU. If that is OK, darktable tries to setup its OpenCL environment: a processing context
       needs to be initialized, a calculation pipeline to be started, OpenCL source code files
       (extension is .cl) need to be read and compiled and the included routines (called OpenCL
-      kernels) need to be prepared for darktable's modules. If all that is done, the
-      preparation is finished.
+      kernels) need to be prepared for darktable's modules. If all that is done, the preparation
+      is finished.
     </para>
 
     <para>
@@ -384,10 +384,10 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
         darktable might fail to compile its OpenCL source files at run-time. In that case you
         will get a number of error messages looking like typical compiler errors. This could
         indicate an incompatibility between your OpenCL implementation and our interpretation of
-	the standard. In that case visit us in IRC in #darktable on FreeNode or on the developers
-	mailing list at darktable-dev@lists.darktable.org and report the
-        problem. Chances are good that we can help you. Please also report if you see
-        significant differences between CPU and GPU processing of an image!
+        the standard. In that case visit us in IRC in #darktable on FreeNode or on the
+        developers mailing list at darktable-dev@lists.darktable.org and report the problem.
+        Chances are good that we can help you. Please also report if you see significant
+        differences between CPU and GPU processing of an image!
       </para></listitem>
 
     </itemizedlist>

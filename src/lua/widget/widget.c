@@ -21,7 +21,6 @@
 #include "lua/modules.h"
 #include "lua/types.h"
 #include "lua/widget/common.h"
-#include "lua/widget/common.h"
 #include "stdarg.h"
 /**
   TODO
