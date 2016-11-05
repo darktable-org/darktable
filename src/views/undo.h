@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include "common/dtpthread.h"
-#include <glib.h>
+#include "common/dtpthread.h"  // for dt_pthread_mutex_t
+#include <glib.h>              // for gpointer, GList
+#include <stdint.h>            // for uint32_t
 
 //  types that are known by the undo module
 typedef enum dt_undo_type_t

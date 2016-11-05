@@ -17,19 +17,19 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "rawspeed/RawSpeed/RawSpeed-API.h"  // IWYU pragma: keep
+#include <cstddef>                           // for size_t
+#include <cstdio>                            // for fprintf, stdout, stderr
+#include <exception>                         // for exception
+#include <memory>                            // for unique_ptr, allocator
+#include <stdint.h>                          // for uint16_t
+#include <string>                            // for string, operator+, basic...
+#include <sys/stat.h>                        // for stat
+#include <vector>                            // for vector
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-#include <cstddef>    // for size_t
-#include <cstdio>     // for fprintf, stdout, stderr
-#include <exception>  // for exception
-#include <memory>     // for unique_ptr, allocator
-#include <string>     // for string, operator+
-#include <sys/stat.h> // for stat
-#include <vector>     // for vector
-
-#include "rawspeed/RawSpeed/RawSpeed-API.h" // IWYU pragma: keep
 
 // define this function, it is only declared in rawspeed:
 int rawspeed_get_number_of_processor_cores()
@@ -107,6 +107,8 @@ int main(int argc, const char* argv[])
     __AFL_INIT();
 #endif
 
+    fprintf(stderr, "Loading file: \"%s\"\n", argv[1]);
+
     #if defined (_WIN32)
     FileReader f((LPCWSTR)argv[1]);
     #else 
@@ -159,14 +161,14 @@ int main(int argc, const char* argv[])
     fprintf(stdout, "isCFA: %d\n", r->isCFA);
     uint32 filters = r->cfa.getDcrawFilter();
     fprintf(stdout, "filters: %d (0x%x)\n", filters, filters);
-    uint32 bpp = r->getBpp();
+    const uint32 bpp = r->getBpp();
     fprintf(stdout, "bpp: %d\n", bpp);
     uint32 cpp = r->getCpp();
     fprintf(stdout, "cpp: %d\n", cpp);
     fprintf(stdout, "dataType: %d\n", r->getDataType());
 
     // dimensions of uncropped image
-    iPoint2D dimUncropped = r->getUncroppedDim();
+    const iPoint2D dimUncropped = r->getUncroppedDim();
     fprintf(stdout, "dimUncropped: %dx%d\n", dimUncropped.x, dimUncropped.y);
 
     // dimensions of cropped image
@@ -182,36 +184,51 @@ int main(int argc, const char* argv[])
 
     double sum = 0.0f;
     {
-      uchar8 *data = r->getDataUncropped(0, 0);
-      for(uint32 k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x*bpp*cpp); k++)
+      uchar8 *const data = r->getDataUncropped(0, 0);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) reduction(+:sum)
+#endif
+      for(size_t k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x*bpp); k++)
       {
         sum += (double) data[k];
       }
+
     }
     fprintf(stdout, "Image byte sum: %lf\n", sum);
-    fprintf(stdout, "Image byte avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x*bpp*cpp));
+    fprintf(stdout, "Image byte avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x*bpp));
 
     if(r->getDataType() == TYPE_FLOAT32)
     {
       sum = 0.0f;
-      float *data = (float *)r->getDataUncropped(0, 0);
-      for(uint32 k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x*cpp); k++)
+      float *const data = (float *)r->getDataUncropped(0, 0);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) reduction(+:sum)
+#endif
+      for(size_t k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x); k++)
       {
         sum += (double) data[k];
       }
+
       fprintf(stdout, "Image float sum: %lf\n", sum);
-      fprintf(stdout, "Image float avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x*cpp));
+      fprintf(stdout, "Image float avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x));
     }
     else if(r->getDataType() == TYPE_USHORT16)
     {
       sum = 0.0f;
-      uint16_t *data = (uint16_t *)r->getDataUncropped(0, 0);
-      for(uint32 k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x*cpp); k++)
+      uint16_t *const data = (uint16_t *)r->getDataUncropped(0, 0);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) reduction(+:sum)
+#endif
+      for(size_t k = 0; k < ((size_t) dimUncropped.y*dimUncropped.x); k++)
       {
         sum += (double) data[k];
       }
+
       fprintf(stdout, "Image uint16_t sum: %lf\n", sum);
-      fprintf(stdout, "Image uint16_t avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x*cpp));
+      fprintf(stdout, "Image uint16_t avg: %lf\n", sum/(double)(dimUncropped.y*dimUncropped.x));
     }
   }
   catch(const std::exception &exc)

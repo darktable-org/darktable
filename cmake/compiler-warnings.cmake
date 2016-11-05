@@ -34,10 +34,9 @@ math(EXPR MAX_MEANINGFUL_SIZE 32*1024)
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wframe-larger-than=${MAX_MEANINGFUL_SIZE})
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wstack-usage=${MAX_MEANINGFUL_SIZE})
 
-# 1Mb
-# # src/iop/ashift_lsd.c, nfa(), static double inv[TABSIZE]; <- 800000 bytes
+# 512Kb
 # # src/external/wb_presets.c, wb_preset <- ~400Kb
-math(EXPR MAX_MEANINGFUL_SIZE 1*1024*1024)
+math(EXPR MAX_MEANINGFUL_SIZE 512*1024)
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wlarger-than=${MAX_MEANINGFUL_SIZE})
 
 # minimal stack/frame stack size. (musl)
