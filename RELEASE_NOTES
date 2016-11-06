@@ -55,7 +55,7 @@ Some More Changes, Probably Not Complete:
 - Quick tagging searches anywhere, not just at the start of tags
 - The sidecar XMP schema for history entries is now more consistent and less error prone
 - Rawspeed: fixes for building with libjpeg (as opposed to libjpeg-turbo)
-- Give the choice of equidistant and proportional feathering when using elliptical masks
+- Give the choice of equidistant and proportional feathering when using elliptical masks (shift+click)
 - Add geolocation to watermark variables
 - Fix some crashes with missing configured ICC profiles
 - Support greyscale color profiles
