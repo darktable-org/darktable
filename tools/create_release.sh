@@ -29,8 +29,8 @@ echo "* removing usermanual"
 rm -rf darktable-$dt_decoration/doc/usermanual
 
 # ... and also remove RELEASE_NOTES. that file is just for internal use
-echo "* removing RELEASE_NOTES"
-rm -rf darktable-$dt_decoration/RELEASE_NOTES
+#echo "* removing RELEASE_NOTES"
+#rm -rf darktable-$dt_decoration/RELEASE_NOTES
 
 # wrap it up again
 echo "* creating final tarball"
