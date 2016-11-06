@@ -76,6 +76,11 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formty
     else if(gui->form_selected)
       g_strlcat(msg, _("scroll to set hardness, ctrl+scroll to set shape opacity"), sizeof(msg));
   }
+  else if(formtype & DT_MASKS_CIRCLE)
+  {
+    if(gui->form_selected)
+      g_strlcat(msg, _("ctrl+scroll to set shape opacity"), sizeof(msg));
+  }
 
   dt_control_hinter_message(darktable.control, msg);
 }
