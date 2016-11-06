@@ -17,7 +17,7 @@ The Big Ones:
 - Add new automatic perspective correction module (https://www.darktable.org/2016/03/a-new-module-for-automatic-perspective-correction/)
 - Liquify tool for all your fancy pixel moving (https://www.darktable.org/2016/04/liquify-liquify/)
 - A new image module to use a Color Look Up Table (CLUT) to change colors in the image (https://www.darktable.org/2016/05/colour-manipulation-with-the-colour-checker-lut-module/)
-- In Highlight reconstruction module, the mode LCh reconstruction was completedy rewritten, and is no longer useless!
+- In Highlight reconstruction module, the mode LCh reconstruction was completely rewritten, and is no longer useless!
 - A new tool, darktable-chart, that goes along with the CLUT module, to create styles for the latter
 - Exposure fusion in the basecurve module to lower the dynamic range of images (https://www.darktable.org/2016/08/compressing-dynamic-range-with-exposure-fusion/)
 - Add new raw overexposure indication (https://www.darktable.org/2016/10/raw-overexposed/)
