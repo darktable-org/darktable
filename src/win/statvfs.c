@@ -61,7 +61,7 @@ int statvfs(const char *path, struct statvfs *buf)
   szDrive[2] = '\\';
   szDrive[3] = '\0';
 
-  res = GetDiskFreeSpace(&szDrive, &lpSectorsPerCluster, &lpBytesPerSector, &lpNumberOfFreeClusters,
+  res = GetDiskFreeSpace((LPCSTR)szDrive, &lpSectorsPerCluster, &lpBytesPerSector, &lpNumberOfFreeClusters,
                          &lpTotalNumberOfClusters);
   // free(unicodestr);
 

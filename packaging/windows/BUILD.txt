@@ -116,10 +116,16 @@ ISSUES - FIXED
 
 TODO LIST
     Port lua select() in function read_cb: https://msdn.microsoft.com/en-us/library/aa363858(VS.85).aspx ?
-    Port COLORD or find a way to replace it
-    Port CUPS or find a way to replace it
+    FInd a way to replace COLORD
+    Find a way to replace it CUPS
     lensfun database should be deployed to Appdata/local/lensfun (no version_1 subfolder), alternatively under darktable/share at install
     OpenCL64.dll or OpenCL.dll?
+    Get rid of warnings
+    Unify conditional directrives to _WIN32 instead of __WIN32__ and WIN32 and G_OS_WIN32
+    Unicode handling in file an folder names
+    Switching UI language based on locale
+    Reimport of pictures with existing sidecar XMP file
+    Filmrolls
 
 B) Cross compile on Linux
     In order to build darktable for Windows there is a chance to cross compile it
