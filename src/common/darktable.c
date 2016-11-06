@@ -244,13 +244,13 @@ gboolean dt_supported_image(const gchar *filename)
 static void strip_semicolons_from_keymap(const char *path)
 {
   char pathtmp[PATH_MAX] = { 0 };
-  FILE *fin = fopen(path, "r");
+  FILE *fin = fopen(path, "rb");
   FILE *fout;
   int i;
   int c = '\0';
 
   snprintf(pathtmp, sizeof(pathtmp), "%s_tmp", path);
-  fout = fopen(pathtmp, "w");
+  fout = fopen(pathtmp, "wb");
 
   // First ignoring the first three lines
   for(i = 0; i < 3; i++)
@@ -259,17 +259,15 @@ static void strip_semicolons_from_keymap(const char *path)
     while(c != '\n') c = fgetc(fin);
   }
 
-  
+  // Then ignore the first two characters of each line, copying the rest out
   while(c != EOF)
   {
-    //Ignore the first two characters of each line, copying the rest out
-    c = fgetc(fin);
-    c = fgetc(fin);
-    while((c = fgetc(fin)) != EOF)
+    fseek(fin, 2, SEEK_CUR);
+    do
     {
-      fputc(c, fout);
-      if(c == '\n') {break;} 
-    }
+      c = fgetc(fin);
+      if(c != EOF) fputc(c, fout);
+    } while(c != '\n' && c != EOF);
   }
 
   fclose(fin);
