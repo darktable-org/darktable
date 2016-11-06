@@ -5,6 +5,20 @@ include(manage-symbol-visibility)
 add_definitions(-include common/module_api.h)
 add_definitions(-include libs/lib_api.h)
 
+add_custom_command(
+  DEPENDS ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/tools/
+  COMMAND ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  COMMENT "Generating authors.h for about dialog."
+)
+
+add_custom_target(
+  generate_authors_h ALL
+  DEPENDS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 # The modules
 set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs colorpicker masks session)
 
@@ -46,7 +60,10 @@ add_library(session MODULE "session.c")
 
 # tools
 add_library(viewswitcher MODULE "tools/viewswitcher.c")
+
 add_library(darktable_label MODULE "tools/darktable.c")
+add_dependencies(darktable_label generate_authors_h)
+
 add_library(colorlabels MODULE "tools/colorlabels.c")
 add_library(ratings MODULE "tools/ratings.c")
 add_library(filter MODULE "tools/filter.c")
