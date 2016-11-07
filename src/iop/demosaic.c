@@ -772,10 +772,10 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             {
               for(int c = 0; c < 2; c++, h ^= 2)
               {
-                float g = 2 * rfx[0][1] - rfx[i << c][1] - rfx[-i << c][1];
-                color[h][d] = g + rfx[i << c][h] + rfx[-i << c][h];
+                float g = 2 * rfx[0][1] - rfx[i << c][1] - rfx[-(i << c)][1];
+                color[h][d] = g + rfx[i << c][h] + rfx[-(i << c)][h];
                 if(d > 1)
-                  diff[d] += SQR(rfx[i << c][1] - rfx[-i << c][1] - rfx[i << c][h] + rfx[-i << c][h])
+                  diff[d] += SQR(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h])
                              + SQR(g);
               }
               if(d > 1 && (d & 1))
@@ -864,6 +864,11 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             yuv[1][row][col] = (rx[2] - y) * 0.56433f;
             yuv[2][row][col] = (rx[0] - y) * 0.67815f;
           }
+        // Note that f can offset by a column (-1 or +1) and by a row
+        // (-TS or TS). The row-wise offsets cause the undefined
+        // behavior sanitizer to warn of an out of bounds index, but
+        // as yfx is multi-dimensional and there is sufficient
+        // padding, that is not actually so.
         const int f = dir[d & 3];
         const int pad_drv = (passes == 1) ? 9 : 14;
         for(int row = pad_drv; row < mrow - pad_drv; row++)
