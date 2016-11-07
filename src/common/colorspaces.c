@@ -1413,6 +1413,23 @@ static void dt_colorspaces_get_display_profile_colord_callback(GObject *source, 
 }
 #endif
 
+#if GTK_CHECK_VERSION(3, 22, 0)
+static int _gtk_get_monitor_num(GdkMonitor *monitor)
+{
+  GdkDisplay *display;
+  int n_monitors, i;
+
+  display = gdk_monitor_get_display(monitor);
+  n_monitors = gdk_display_get_n_monitors(display);
+  for(i = 0; i < n_monitors; i++)
+  {
+    if(gdk_display_get_monitor(display, i) == monitor) return i;
+  }
+
+  return -1;
+}
+#endif
+
 // Get the display ICC profile of the monitor associated with the widget.
 // For X display, uses the ICC profile specifications version 0.2 from
 // http://burtonini.com/blog/computers/xicc
@@ -1452,9 +1469,17 @@ void dt_colorspaces_set_display_profile()
   if(use_xatom)
   {
     GtkWidget *widget = dt_ui_center(darktable.gui->ui);
+    GdkWindow *window = gtk_widget_get_window(widget);
     GdkScreen *screen = gtk_widget_get_screen(widget);
     if(screen == NULL) screen = gdk_screen_get_default();
-    int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+    GdkDisplay *display = gtk_widget_get_display(widget);
+    int monitor = _gtk_get_monitor_num(gdk_display_get_monitor_at_window(display, window));
+#else
+    int monitor = gdk_screen_get_monitor_at_window(screen, window);
+#endif
+
     char *atom_name;
     if(monitor > 0)
       atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor);
