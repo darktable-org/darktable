@@ -47,7 +47,7 @@ static void dt_set_rlimits_stack()
 
   assert((ret == 0 && WANTED_STACK_SIZE <= rlim.rlim_max) || (ret != 0));
 
-  if(ret != 0 || rlim.rlim_cur < WANTED_STACK_SIZE)
+  if(ret != 0 || rlim.rlim_cur < WANTED_STACK_SIZE /*|| 1*/)
   {
     // looks like we need to bump/set it...
 
