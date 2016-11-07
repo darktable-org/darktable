@@ -2612,6 +2612,7 @@ void gui_focus (struct dt_iop_module_t *module, gboolean in)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
   g->mouse_pointer_in_widget = module->enabled && in;
+  dt_control_hinter_message (darktable.control, "");
 }
 
 static void sync_pipe (struct dt_iop_module_t *module, gboolean history)
