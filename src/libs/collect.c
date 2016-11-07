@@ -360,10 +360,14 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_c
 
   gtk_widget_show_all(menu);
 
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
+#else
   /* Note: event can be NULL here when called from view_onPopupMenu;
    *  gdk_event_get_time() accepts a NULL argument */
   gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, (event != NULL) ? event->button : 0,
                  gdk_event_get_time((GdkEvent *)event));
+#endif
 }
 
 static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_collect_t *d)
