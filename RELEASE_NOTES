@@ -36,6 +36,7 @@ Quite Interesting Changes:
 - Support presets in "more modules" so you can quickly switch between your favorite sets of modules shown in the GUI
 - Add range operator and date compare to the collection module
 - Support the Exif date and time when importing photos from camera
+- Input color profile module, when profile is just matrix (and linear curve), is 1/3 faster now.
 - Rudimentary CYGM and RGBE color filter array support
 - Nicer web gallery exporter -- now touch friendly!
 - OpenCL implementation of VNG/VNG4 demosaicing methods
@@ -183,6 +184,12 @@ Base Support
 - Sony DSLR-A380
 - Sony ILCA-68
 - Sony ILCE-6300
+
+We were unable to bring back these 3 cameras, because we have no samples.
+If anyone reading this owns such a camera, please do consider providing samples.
+- Nikon E8400
+- Nikon E8800
+- Nikon D3X (12-bit)
 
 White Balance Presets
 - Canon EOS 1200D
