@@ -1254,7 +1254,7 @@ dt_colorspaces_t *dt_colorspaces_init()
         g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         prof->type = DT_COLORSPACE_FILE;
         prof->profile = tmpprof;
-        prof->in_pos = ++in_pos;
+        prof->in_pos = -1; // will be set after sorting!
         prof->out_pos = -1;
         prof->display_pos = -1;
         temp_profiles = g_list_append(temp_profiles, prof);
@@ -1262,6 +1262,15 @@ dt_colorspaces_t *dt_colorspaces_init()
     }
     g_dir_close(dir);
   }
+  temp_profiles = g_list_sort(temp_profiles, _sort_profiles);
+  for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
+  {
+    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
+    prof->in_pos = ++in_pos;
+  }
+  res->profiles = g_list_concat(res->profiles, temp_profiles);
+
+  temp_profiles = NULL;
 
   // read {conf,data}dir/color/out/*.icc
   snprintf(dirname, sizeof(dirname), "%s/color/out", confdir);
@@ -1287,15 +1296,20 @@ dt_colorspaces_t *dt_colorspaces_init()
         prof->type = DT_COLORSPACE_FILE;
         prof->profile = tmpprof;
         prof->in_pos = -1;
-        prof->out_pos = ++out_pos;
-        prof->display_pos = ++display_pos;
+        prof->out_pos = -1; // will be set after sorting!
+        prof->display_pos = -1;  // will be set after sorting!
         temp_profiles = g_list_append(temp_profiles, prof);
       }
     }
     g_dir_close(dir);
   }
-
   temp_profiles = g_list_sort(temp_profiles, _sort_profiles);
+  for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
+  {
+    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
+    prof->out_pos = ++out_pos;
+    prof->display_pos = ++display_pos;
+  }
   res->profiles = g_list_concat(res->profiles, temp_profiles);
 
   // init display profile and softproof/gama checking from conf
