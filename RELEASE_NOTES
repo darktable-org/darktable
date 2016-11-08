@@ -17,11 +17,11 @@ The Big Ones:
 - Add new automatic perspective correction module (https://www.darktable.org/2016/03/a-new-module-for-automatic-perspective-correction/)
 - Liquify tool for all your fancy pixel moving (https://www.darktable.org/2016/04/liquify-liquify/)
 - A new image module to use a Color Look Up Table (CLUT) to change colors in the image (https://www.darktable.org/2016/05/colour-manipulation-with-the-colour-checker-lut-module/)
-- In Highlight reconstruction module, the mode LCh reconstruction was completedy rewritten, and is no longer useless!
+- In Highlight reconstruction module, the mode LCh reconstruction was completely rewritten, and is no longer useless!
 - A new tool, darktable-chart, that goes along with the CLUT module, to create styles for the latter
 - Exposure fusion in the basecurve module to lower the dynamic range of images (https://www.darktable.org/2016/08/compressing-dynamic-range-with-exposure-fusion/)
 - Add new raw overexposure indication (https://www.darktable.org/2016/10/raw-overexposed/)
-- Darkroom: the preview (in top-left corner) is now no longer pre-demosaiced, thus the preview, color picker, histogram show the proper results when there is highlight clipping.
+- Darkroom: the preview (in top-left corner) is now no longer pre-demosaiced (but just downscaled without demosaicing it at the same time), thus the preview, color picker, histogram show the proper results, especially when there is highlight clipping.
 - Add undo/redo support for the darkroom
 
 Quite Interesting Changes:
@@ -37,7 +37,6 @@ Quite Interesting Changes:
 - Add range operator and date compare to the collection module
 - Support the Exif date and time when importing photos from camera
 - Rudimentary CYGM and RGBE color filter array support
-- Preview pipe now does run demosaic module too, and it's input is no longer pre-demosaiced, but is just downscaled without demosaicing it at the same time.
 - Nicer web gallery exporter -- now touch friendly!
 - OpenCL implementation of VNG/VNG4 demosaicing methods
 - OpenCL implementation of Markesteijn demosaicing method for X-Trans sensors
@@ -55,7 +54,7 @@ Some More Changes, Probably Not Complete:
 - Quick tagging searches anywhere, not just at the start of tags
 - The sidecar XMP schema for history entries is now more consistent and less error prone
 - Rawspeed: fixes for building with libjpeg (as opposed to libjpeg-turbo)
-- Give the choice of equidistant and proportional feathering when using elliptical masks
+- Give the choice of equidistant and proportional feathering when using elliptical masks (shift+click)
 - Add geolocation to watermark variables
 - Fix some crashes with missing configured ICC profiles
 - Support greyscale color profiles
@@ -79,6 +78,182 @@ Changed Dependencies:
 
 A special note to all the darktable Fedora users: Fedora-provided darktable packages are intentionally built with Lua disabled. Thus, Lua scripting will not work. This breaks e.g. darktable-gimp integration. Please bug Fedora. In the mean time you could fix that by self-compiling darktable (pass -DDONT_USE_INTERNAL_LUA=OFF to cmake in order to enable use of bundled Lua5.2.4).
 
-TODO:
-Camera Support
+Base Support
+- Canon EOS-1D X Mark II
+- Canon EOS 5D Mark IV
+- Canon EOS 80D
+- Canon EOS 1300D
+- Canon EOS Kiss X80
+- Canon EOS Rebel T6
+- Canon EOS M10
+- Canon PowerShot A720 IS (dng)
+- Canon PowerShot G7 X Mark II
+- Canon PowerShot G9 X
+- Canon PowerShot SD450 (dng)
+- Canon PowerShot SX130 IS (dng)
+- Canon PowerShot SX260 HS (dng)
+- Canon PowerShot SX510 HS (dng)
+- Fujifilm FinePix S100FS
+- Fujifilm X-Pro2
+- Fujifilm X-T2
+- Fujifilm X70
+- Fujifilm XQ2
+- GITUP GIT2 (chdk-a, chdk-b)
+- (most nikon cameras here are just fixes, and they were supported before already)
+- Nikon 1 AW1 (12bit-compressed)
+- Nikon 1 J1 (12bit-compressed)
+- Nikon 1 J2 (12bit-compressed)
+- Nikon 1 J3 (12bit-compressed)
+- Nikon 1 J4 (12bit-compressed)
+- Nikon 1 J5 (12bit-compressed, 12bit-uncompressed)
+- Nikon 1 S1 (12bit-compressed)
+- Nikon 1 S2 (12bit-compressed)
+- Nikon 1 V1 (12bit-compressed)
+- Nikon 1 V2 (12bit-compressed)
+- Nikon 1 V3 (12bit-compressed, 12bit-uncompressed)
+- Nikon Coolpix A (14bit-compressed)
+- Nikon Coolpix P330 (12bit-compressed)
+- Nikon Coolpix P340 (12bit-compressed, 12bit-uncompressed)
+- Nikon Coolpix P6000 (12bit-uncompressed)
+- Nikon Coolpix P7000 (12bit-uncompressed)
+- Nikon Coolpix P7100 (12bit-uncompressed)
+- Nikon Coolpix P7700 (12bit-compressed)
+- Nikon Coolpix P7800 (12bit-compressed)
+- Nikon D1 (12bit-uncompressed)
+- Nikon D100 (12bit-compressed, 12bit-uncompressed)
+- Nikon D1H (12bit-compressed, 12bit-uncompressed)
+- Nikon D1X (12bit-compressed, 12bit-uncompressed)
+- Nikon D200 (12bit-compressed, 12bit-uncompressed)
+- Nikon D2H (12bit-compressed, 12bit-uncompressed)
+- Nikon D2Hs (12bit-compressed, 12bit-uncompressed)
+- Nikon D2X (12bit-compressed, 12bit-uncompressed)
+- Nikon D3 (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
+- Nikon D300 (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
+- Nikon D3000 (12bit-compressed)
+- Nikon D300S (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
+- Nikon D3100 (12bit-compressed)
+- Nikon D3200 (12bit-compressed)
+- Nikon D3300 (12bit-compressed, 12bit-uncompressed)
+- Nikon D3400 (12bit-compressed)
+- Nikon D3S (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
+- Nikon D3X (14bit-compressed, 14bit-uncompressed)
+- Nikon D4 (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
+- Nikon D40 (12bit-compressed, 12bit-uncompressed)
+- Nikon D40X (12bit-compressed, 12bit-uncompressed)
+- Nikon D4S (14bit-compressed)
+- Nikon D5 (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
+- Nikon D50 (12bit-compressed)
+- Nikon D500 (14bit-compressed, 12bit-compressed)
+- Nikon D5000 (12bit-compressed, 12bit-uncompressed)
+- Nikon D5100 (14bit-compressed, 14bit-uncompressed)
+- Nikon D5200 (14bit-compressed)
+- Nikon D5300 (12bit-uncompressed, 14bit-compressed, 14bit-uncompressed)
+- Nikon D5500 (12bit-uncompressed, 14bit-compressed, 14bit-uncompressed)
+- Nikon D60 (12bit-compressed, 12bit-uncompressed)
+- Nikon D600 (14bit-compressed, 12bit-compressed)
+- Nikon D610 (14bit-compressed, 12bit-compressed)
+- Nikon D70 (12bit-compressed)
+- Nikon D700 (12bit-compressed, 12bit-uncompressed, 14bit-compressed)
+- Nikon D7000 (14bit-compressed, 12bit-compressed)
+- Nikon D70s (12bit-compressed)
+- Nikon D7100 (14bit-compressed, 12bit-compressed)
+- Nikon D80 (12bit-compressed, 12bit-uncompressed)
+- Nikon D800 (14bit-compressed, 12bit-compressed, 12bit-uncompressed)
+- Nikon D800E (14bit-compressed, 12bit-compressed, 12bit-uncompressed)
+- Nikon D90 (12bit-compressed, 12bit-uncompressed)
+- Nikon Df (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
+- Nikon E5400 (12bit-uncompressed)
+- Nikon E5700 (12bit-uncompressed)
+- Olympus PEN-F
+- OnePlus One (dng)
+- Panasonic DMC-FZ150 (1:1, 16:9)
+- Panasonic DMC-FZ18 (16:9, 3:2)
+- Panasonic DMC-FZ300 (4:3)
+- Panasonic DMC-FZ50 (16:9, 3:2)
+- Panasonic DMC-G8 (4:3)
+- Panasonic DMC-G80 (4:3)
+- Panasonic DMC-GX80 (4:3)
+- Panasonic DMC-GX85 (4:3)
+- Panasonic DMC-LX3 (1:1)
+- Pentax K-1
+- Pentax K-70
+- Samsung GX20 (dng)
+- Sony DSC-F828
+- Sony DSC-RX10M3
+- Sony DSLR-A380
+- Sony ILCA-68
+- Sony ILCE-6300
+
+White Balance Presets
+- Canon EOS 1200D
+- Canon EOS Kiss X70
+- Canon EOS Rebel T5
+- Canon EOS 1300D
+- Canon EOS Kiss X80
+- Canon EOS Rebel T6
+- Canon EOS 5D Mark IV
+- Canon EOS 5DS
+- Canon EOS 5DS R
+- Canon EOS 750D
+- Canon EOS Kiss X8i
+- Canon EOS Rebel T6i
+- Canon EOS 760D
+- Canon EOS 8000D
+- Canon EOS Rebel T6s
+- Canon EOS 80D
+- Canon EOS M10
+- Canon EOS-1D X Mark II
+- Canon PowerShot G7 X Mark II
+- Fujifilm X-Pro2
+- Fujifilm X-T10
+- Fujifilm X100T
+- Fujifilm X20
+- Fujifilm X70
+- Nikon 1 V3
+- Nikon D5500
+- Olympus PEN-F
+- Pentax K-70
+- Pentax K-S1
+- Pentax K-S2
+- Sony ILCA-68
+- Sony ILCE-6300
+
+Noise Profiles
+- Canon EOS 5DS R
+- Canon EOS 80D
+- Canon PowerShot G15
+- Canon PowerShot S100
+- Canon PowerShot SX50 HS
+- Fujifilm X-T10
+- Fujifilm X-T2
+- Fujifilm X100T
+- Fujifilm X20
+- Fujifilm X70
+- Nikon 1 V3
+- Nikon D5500
+- Olympus E-PL6
+- Olympus PEN-F
+- Panasonic DMC-FZ1000
+- Panasonic DMC-GF7
+- Pentax K-S2
+- Ricoh GR
+- Sony DSC-RX10
+- Sony SLT-A37
+
 Translations
+  Added
+  - Hebrew
+  - Slovenian
+
+  Updated:
+  - Catalan
+  - Czech
+  - Danish
+  - Dutch
+  - French
+  - German
+  - Hungarian
+  - Russian
+  - Slovak
+  - Spanish
+  - Swedish

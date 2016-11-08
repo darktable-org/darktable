@@ -43,16 +43,16 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
             strerror(errsv));
   }
 
-  assert((ret == 0 && WANTED_STACK_SIZE <= rlim.rlim_max) || (ret != 0));
+  assert((ret == 0 && WANTED_THREADS_STACK_SIZE <= rlim.rlim_max) || (ret != 0));
 
-  if(ret != 0 || rlim.rlim_cur < WANTED_STACK_SIZE)
+  if(ret != 0 || rlim.rlim_cur < WANTED_THREADS_STACK_SIZE /*|| 1*/)
   {
     // looks like we need to bump/set it...
 
     fprintf(stderr, "[dt_pthread_create] ERROR: RLIMIT_STACK rlim_cur is less than we thought it is: %ju < %i\n",
-            (uintmax_t)rlim.rlim_cur, WANTED_STACK_SIZE);
+            (uintmax_t)rlim.rlim_cur, WANTED_THREADS_STACK_SIZE);
 
-    rlim.rlim_cur = WANTED_STACK_SIZE;
+    rlim.rlim_cur = WANTED_THREADS_STACK_SIZE;
   }
 
   pthread_attr_t attr;

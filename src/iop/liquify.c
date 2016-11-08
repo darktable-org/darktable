@@ -3021,6 +3021,7 @@ int button_released (struct dt_iop_module_t *module,
   // right click == cancel or delete
   if (which == 3)
   {
+    dt_control_hinter_message (darktable.control, "");
     end_drag (g);
 
     // cancel line or curve creation
