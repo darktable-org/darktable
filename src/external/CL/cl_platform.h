@@ -380,7 +380,7 @@ typedef unsigned int cl_GLenum;
 
 #if defined( __AVX__ )
     #if defined( __MINGW64__ )
-        #include <intrin.h>
+        #include <x86intrin.h>
     #else
         #include <immintrin.h> 
     #endif

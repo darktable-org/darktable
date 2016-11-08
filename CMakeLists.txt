@@ -154,17 +154,6 @@ if(WIN32)
   set(USE_KWALLET OFF)
   set(BUILD_CMSTEST OFF)
   set(BUILD_PRINT OFF)
-  set(CUSTOM_CFLAGS ON)
-
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error")
-  # add it to have proper time.h functions available
-  add_definitions(-D_POSIX_THREAD_SAFE_FUNCTIONS)
-
-  # add it to have printf formatting functions available
-  add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
-
-  message(STATUS "CMAKE_BASE_NAME: ${CMAKE_BASE_NAME}")
-
 endif(WIN32)
 
 
