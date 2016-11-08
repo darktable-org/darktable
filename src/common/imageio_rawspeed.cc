@@ -120,7 +120,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
 #ifdef __WIN32__
   const size_t len = strlen(filename) + 1;
-  wchar_t filen[len];
+  wchar_t filen[MAX_PATH];
   mbstowcs(filen, filename, len);
   FileReader f(filen);
 #else
