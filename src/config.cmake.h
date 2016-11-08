@@ -24,6 +24,7 @@ extern const char darktable_package_string[];
 #define SHARED_MODULE_SUFFIX "@CMAKE_SHARED_MODULE_SUFFIX@"
 
 #define WANTED_STACK_SIZE (@WANTED_STACK_SIZE@)
+#define WANTED_THREADS_STACK_SIZE (@WANTED_THREADS_STACK_SIZE@)
 
 // clang-format on
 
