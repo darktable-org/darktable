@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-11-08 22:45+0900\n"
-"PO-Revision-Date: 2016-11-08 18:58+0900\n"
+"PO-Revision-Date: 2016-11-08 22:53+0900\n"
 "Last-Translator: a3novy <a3novy01@gmail.com>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -4094,7 +4094,7 @@ msgstr "レンズ シフト (v)"
 #: ../src/iop/ashift.c:511
 msgctxt "accel"
 msgid "lens shift (h)"
-msgstr "ブルー シフト (h)"
+msgstr "レンズ シフト (h)"
 
 #: ../src/iop/ashift.c:512
 msgctxt "accel"
