@@ -25,7 +25,7 @@
 
 namespace RawSpeed {
 
-void ThrowTPE(const char* fmt, ...) __attribute__ ((format (printf, 1, 2)));
+void ThrowTPE(const char* fmt, ...) __attribute__ ((format (gnu_printf, 1, 2)));
 
 class TiffParserException : public std::runtime_error
 {
