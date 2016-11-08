@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Traduction des manpages de darktable\n"
-"POT-Creation-Date: 2015-12-08 11:20+0100\n"
+"POT-Creation-Date: 2016-11-08 08:46+0100\n"
 "PO-Revision-Date: 2015-12-08 12:07+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Michel Leblond <michel.leblond62@gmail.com>\n"
@@ -17,9 +17,8 @@ msgstr ""
 "X-Generator: Poedit 1.6.10\n"
 
 #. type: =head1
-#: darktable.pod:2 darktable-cli.pod:2 darktable-viewer.pod:2
-#: darktable-generate-cache.pod:2 darktable-cltest.pod:2
-#: darktable-cmstest.pod:2
+#: darktable.pod:2 darktable-cli.pod:2 darktable-generate-cache.pod:2
+#: darktable-cltest.pod:2 darktable-cmstest.pod:2
 msgid "NAME"
 msgstr "NOM"
 
@@ -31,9 +30,8 @@ msgstr ""
 "photos numériques"
 
 #. type: =head1
-#: darktable.pod:6 darktable-cli.pod:6 darktable-viewer.pod:6
-#: darktable-generate-cache.pod:6 darktable-cltest.pod:6
-#: darktable-cmstest.pod:6
+#: darktable.pod:6 darktable-cli.pod:6 darktable-generate-cache.pod:6
+#: darktable-cltest.pod:6 darktable-cmstest.pod:6
 msgid "SYNOPSIS"
 msgstr "SYNOPSIS"
 
@@ -93,9 +91,8 @@ msgstr ""
 "\n"
 
 #. type: =head1
-#: darktable.pod:29 darktable-cli.pod:19 darktable-viewer.pod:10
-#: darktable-generate-cache.pod:10 darktable-cltest.pod:10
-#: darktable-cmstest.pod:10
+#: darktable.pod:29 darktable-cli.pod:19 darktable-generate-cache.pod:10
+#: darktable-cltest.pod:10 darktable-cmstest.pod:10
 msgid "DESCRIPTION"
 msgstr "DESCRIPTION"
 
@@ -111,9 +108,14 @@ msgstr ""
 
 #. type: textblock
 #: darktable.pod:33
+#, fuzzy
+#| msgid ""
+#| "The application is designed to ease editing and consistent processing of "
+#| "large photo sessions and provides an easy to use digital light-table and "
+#| "a set of sophisticated post-processing tools."
 msgid ""
 "The application is designed to ease editing and consistent processing of "
-"large photo sessions and provides an easy to use digital light-table and a "
+"large photo sessions and provides an easy to use digital lighttable and a "
 "set of sophisticated post-processing tools."
 msgstr ""
 "L'application est conçue pour faciliter l'édition et le traitement cohérent "
@@ -134,12 +136,19 @@ msgstr ""
 
 #. type: textblock
 #: darktable.pod:41
+#, fuzzy
+#| msgid ""
+#| "The application relies on a modern plug-in architecture thus making it "
+#| "easy for 3rd party developers to extend the existing capabilities of the "
+#| "application.  All lighttable and darkroom features are implemented as "
+#| "plug-ins, so you can create your plug-ins reusing existing code.  Most "
+#| "workflow specific things can also be scripted in B<Lua>."
 msgid ""
-"The application relies on a modern plug-in architecture thus making it easy "
+"The application relies on a modern plugin architecture thus making it easy "
 "for 3rd party developers to extend the existing capabilities of the "
-"application.  All lighttable and darkroom features are implemented as plug-"
-"ins, so you can create your plug-ins reusing existing code.  Most workflow "
-"specific things can also be scripted in B<Lua>."
+"application.  All lighttable and darkroom features are implemented as "
+"plugins, so you can create your plugins reusing existing code.  Most "
+"workflow specific things can also be scripted in B<Lua>."
 msgstr ""
 "L'application repose sur une architecture moderne de plugins rendant aisée "
 "l'extension des capacités existantes de l'application par des développeurs "
@@ -149,8 +158,7 @@ msgstr ""
 "du flux de travail peuvent être écrites dans un script B<Lua>."
 
 #. type: =head1
-#: darktable.pod:47 darktable-cli.pod:27 darktable-viewer.pod:18
-#: darktable-generate-cache.pod:18
+#: darktable.pod:47 darktable-cli.pod:27 darktable-generate-cache.pod:18
 msgid "OPTIONS"
 msgstr "OPTIONS"
 
@@ -1066,9 +1074,8 @@ msgid "Start/stop playback"
 msgstr "Démarrer/arrêter la lecture"
 
 #. type: =head1
-#: darktable.pod:492 darktable-cli.pod:93 darktable-viewer.pod:49
-#: darktable-generate-cache.pod:47 darktable-cltest.pod:18
-#: darktable-cmstest.pod:17
+#: darktable.pod:492 darktable-cli.pod:94 darktable-generate-cache.pod:57
+#: darktable-cltest.pod:18 darktable-cmstest.pod:17
 msgid "SEE ALSO"
 msgstr "VOIR AUSSI"
 
@@ -1113,27 +1120,11 @@ msgstr ""
 
 #. type: =head1
 #: darktable.pod:506
-msgid "RELATED"
-msgstr "EN RELATION"
-
-#. type: =item
-#: darktable.pod:510
-msgid ""
-"B<darktable-viewer> screensaver version of darktable.  Shows the last active "
-"collection in full screen as a slideshow.  Using the slideshow mode of "
-"darktable is encouraged."
-msgstr ""
-"B<darktable-viewer> la version économiseur d'écran de darktable, montre la "
-"dernière collection active en mode plein écran comme un diaporama. Utiliser "
-"le mode diaporama de darktable est encouragé."
-
-#. type: =head1
-#: darktable.pod:516
 msgid "REPORTING BUGS"
 msgstr "SIGNALER DES BOGUES"
 
 #. type: textblock
-#: darktable.pod:518
+#: darktable.pod:508
 msgid ""
 "Please use the bug tracker on L<http://www.darktable.org/redmine/projects/"
 "darktable/issues/> to report bugs, feature requests and so on."
@@ -1143,16 +1134,14 @@ msgstr ""
 "demandes de fonctionnalité, etc."
 
 #. type: =head1
-#: darktable.pod:522 darktable-cli.pod:97 darktable-viewer.pod:53
-#: darktable-generate-cache.pod:51 darktable-cltest.pod:22
-#: darktable-cmstest.pod:21
+#: darktable.pod:512 darktable-cli.pod:98 darktable-generate-cache.pod:61
+#: darktable-cltest.pod:22 darktable-cmstest.pod:21
 msgid "AUTHORS"
 msgstr "AUTEURS"
 
 #. type: textblock
-#: darktable.pod:524 darktable-cli.pod:99 darktable-viewer.pod:55
-#: darktable-generate-cache.pod:53 darktable-cltest.pod:24
-#: darktable-cmstest.pod:23
+#: darktable.pod:514 darktable-cli.pod:100 darktable-generate-cache.pod:63
+#: darktable-cltest.pod:24 darktable-cmstest.pod:23
 msgid ""
 "The principal developer of darktable is Johannes Hanika.  The (hopefully) "
 "complete list of contributors to the project is:"
@@ -1161,14 +1150,13 @@ msgstr ""
 "l'espère complète, des contributeurs du projet est :"
 
 #. type: textblock
-#: darktable.pod:527 darktable-cli.pod:102 darktable-viewer.pod:58
-#: darktable-generate-cache.pod:56 darktable-cltest.pod:27
-#: darktable-cmstest.pod:26
+#: darktable.pod:517 darktable-cli.pod:103 darktable-generate-cache.pod:66
+#: darktable-cltest.pod:27 darktable-cmstest.pod:26
 msgid "DREGGNAUTHORS -- don't translate this line!"
 msgstr "DREGGNAUTHORS"
 
 #. type: textblock
-#: darktable.pod:529
+#: darktable.pod:519
 msgid ""
 "This man page was written by Alexandre Prokoudine E<lt>alexandre."
 "prokoudine@gmail.comE<gt> and Richard Levitte E<lt>richard@levittr."
@@ -1179,12 +1167,12 @@ msgstr ""
 "Des compléments ont été ajoutés par Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
 
 #. type: =head1
-#: darktable.pod:534
+#: darktable.pod:524
 msgid "HISTORY"
 msgstr "HISTORIQUE"
 
 #. type: textblock
-#: darktable.pod:536
+#: darktable.pod:526
 msgid ""
 "The project was started by Johannes Hanika in early 2009 to fill the gap "
 "(or, rather, a black hole) of a digital photography workflow tool on Linux."
@@ -1194,23 +1182,20 @@ msgstr ""
 "un flux de travail pour le traitement des photos numériques. "
 
 #. type: =head1
-#: darktable.pod:539 darktable-cli.pod:107 darktable-viewer.pod:64
-#: darktable-generate-cache.pod:62 darktable-cltest.pod:33
-#: darktable-cmstest.pod:31
+#: darktable.pod:529 darktable-cli.pod:108 darktable-generate-cache.pod:72
+#: darktable-cltest.pod:33 darktable-cmstest.pod:31
 msgid "COPYRIGHT AND LICENSE"
 msgstr "COPYRIGHT ET LICENCE"
 
 #. type: textblock
-#: darktable.pod:541 darktable-cli.pod:109 darktable-viewer.pod:66
-#: darktable-generate-cache.pod:64 darktable-cltest.pod:35
-#: darktable-cmstest.pod:33
+#: darktable.pod:531 darktable-cli.pod:110 darktable-generate-cache.pod:74
+#: darktable-cltest.pod:35 darktable-cmstest.pod:33
 msgid "B<Copyright (C)> 2009-2015 by Authors."
 msgstr "B<Copyright (C)> 2009-2015 par les Auteurs."
 
 #. type: textblock
-#: darktable.pod:543 darktable-cli.pod:111 darktable-viewer.pod:68
-#: darktable-generate-cache.pod:66 darktable-cltest.pod:37
-#: darktable-cmstest.pod:35
+#: darktable.pod:533 darktable-cli.pod:112 darktable-generate-cache.pod:76
+#: darktable-cltest.pod:37 darktable-cmstest.pod:35
 msgid ""
 "B<darktable> is free software; you can redistribute it and/or modify it "
 "under the terms of the GPL v3 or (at your option) any later version."
@@ -1220,7 +1205,7 @@ msgstr ""
 "de toute autre version ultérieure."
 
 #. type: =for
-#: darktable.pod:546 darktable-cli.pod:114
+#: darktable.pod:536 darktable-cli.pod:115
 msgid "comment $Date: 2015-11-08$ $Release: 2.0$"
 msgstr "comment $Date: 2015-11-08$ $Release: 2.0$"
 
@@ -1260,8 +1245,7 @@ msgstr ""
 "\n"
 
 #. type: textblock
-#: darktable-cli.pod:21 darktable-viewer.pod:12
-#: darktable-generate-cache.pod:12 darktable-cltest.pod:12
+#: darktable-cli.pod:21 darktable-generate-cache.pod:12 darktable-cltest.pod:12
 #: darktable-cmstest.pod:12
 msgid ""
 "B<darktable> is a digital photography workflow application for B<Linux>, "
@@ -1324,20 +1308,25 @@ msgstr "B<< <fichier de sortie> >>"
 
 #. type: textblock
 #: darktable-cli.pod:47
+#, fuzzy
+#| msgid ""
+#| "The name of the output file.  darktable derives the export file format "
+#| "from the file extension."
 msgid ""
 "The name of the output file.  darktable derives the export file format from "
-"the file extension."
+"the file extension.  You can also use all the variables available in "
+"B<darktable>'s export module in the output filename."
 msgstr ""
 "Le nom du fichier de sortie. darktable déduit le format d'exportation à "
 "partir de l'extension du fichier."
 
 #. type: =item
-#: darktable-cli.pod:50
+#: darktable-cli.pod:51
 msgid "B<< --width <max width> >>"
 msgstr "B<< --width <largeur maximale> >>"
 
 #. type: textblock
-#: darktable-cli.pod:52
+#: darktable-cli.pod:53
 msgid ""
 "This optional parameter allows one to limit the width of the exported image "
 "to that number of pixels."
@@ -1346,12 +1335,12 @@ msgstr ""
 "nombre de pixels."
 
 #. type: =item
-#: darktable-cli.pod:55
+#: darktable-cli.pod:56
 msgid "B<< --height <max height> >>"
 msgstr "B<< --height <hauteur maximale> >>"
 
 #. type: textblock
-#: darktable-cli.pod:57
+#: darktable-cli.pod:58
 msgid ""
 "This optional parameter allows one to limit the height of the exported image "
 "to that number of pixels."
@@ -1360,12 +1349,12 @@ msgstr ""
 "nombre de pixels."
 
 #. type: =item
-#: darktable-cli.pod:60
+#: darktable-cli.pod:61
 msgid "B<< --bpp <bpp> >>"
 msgstr "B<< --bpp <bpp> >>"
 
 #. type: textblock
-#: darktable-cli.pod:62
+#: darktable-cli.pod:63
 msgid ""
 "An optional parameter to define the bit depth of the exported image; allowed "
 "values depend on the file format.  Currently this option is not yet "
@@ -1379,7 +1368,7 @@ msgstr ""
 "suivante :"
 
 #. type: verbatim
-#: darktable-cli.pod:67
+#: darktable-cli.pod:68
 #, no-wrap
 msgid ""
 "    --core --conf plugins/imageio/format/<FORMAT>/bpp=<VALUE>\n"
@@ -1389,19 +1378,19 @@ msgstr ""
 "\n"
 
 #. type: textblock
-#: darktable-cli.pod:69
+#: darktable-cli.pod:70
 msgid ""
 "where B<FORMAT> is the name of the selected output format, for example "
 "B<png>."
 msgstr "où <FORMAT> est le nom du format de sortie choisi, par exemple B<png>"
 
 #. type: =item
-#: darktable-cli.pod:71
+#: darktable-cli.pod:72
 msgid "B<< --hq <0|1|true|false> >>"
 msgstr "B<< --hq <0|1|true|false> >>"
 
 #. type: textblock
-#: darktable-cli.pod:73
+#: darktable-cli.pod:74
 msgid ""
 "A flag that defines whether to use high quality resampling during export.  "
 "Defaults to true."
@@ -1410,12 +1399,12 @@ msgstr ""
 "qualité lors l'exportation. true par défaut."
 
 #. type: =item
-#: darktable-cli.pod:76
+#: darktable-cli.pod:77
 msgid "B<< --upscale <0|1|true|false> >>"
 msgstr "B<< --upscale <0|1|true|false> >>"
 
 #. type: textblock
-#: darktable-cli.pod:78
+#: darktable-cli.pod:79
 msgid ""
 "A flag that defines whether to allow upscaling during export.  Defaults to "
 "false."
@@ -1424,24 +1413,22 @@ msgstr ""
 "l'exportation. false par défaut."
 
 #. type: =item
-#: darktable-cli.pod:81
+#: darktable-cli.pod:82
 msgid "B<< --verbose >>"
 msgstr "B<< --verbose >>"
 
 #. type: textblock
-#: darktable-cli.pod:83
+#: darktable-cli.pod:84
 msgid "Enables verbose output."
 msgstr "Autoriser la sortie détaillée."
 
 #. type: =item
-#: darktable-cli.pod:85 darktable-viewer.pod:41
-#: darktable-generate-cache.pod:39
+#: darktable-cli.pod:86 darktable-generate-cache.pod:49
 msgid "B<< --core <darktable options> >>"
 msgstr "B<< --core <options de darktable> >>"
 
 #. type: textblock
-#: darktable-cli.pod:87 darktable-viewer.pod:43
-#: darktable-generate-cache.pod:41
+#: darktable-cli.pod:88 darktable-generate-cache.pod:51
 msgid ""
 "All command line parameters following B<--core> are passed to the darktable "
 "core and handled as standard parameters.  See L<darktable(1)|darktable(1)> "
@@ -1452,122 +1439,23 @@ msgstr ""
 "L<darktable(1)|darktable(1)> pour une description détaillée des ces options."
 
 #. type: textblock
-#: darktable-cli.pod:95 darktable-viewer.pod:51
-#: darktable-generate-cache.pod:49 darktable-cltest.pod:20
+#: darktable-cli.pod:96 darktable-generate-cache.pod:59 darktable-cltest.pod:20
 #: darktable-cmstest.pod:19
 msgid "L<darktable(1)|darktable(1)>"
 msgstr "L<darktable(1)|darktable(1)>"
 
 #. type: textblock
-#: darktable-cli.pod:104
+#: darktable-cli.pod:105
+#, fuzzy
+#| msgid ""
+#| "This man page was written by Richard Levitte E<lt>richard@levittr."
+#| "orgE<gt>.  Additions were made by Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
 msgid ""
-"This man page was written by Richard Levitte E<lt>richard@levittr.orgE<gt>.  "
+"This man page was written by Richard Levitte E<lt>richard@levitte.orgE<gt>.  "
 "Additions were made by Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
 msgstr ""
 "Ce manpage a été écrit par Richard Levitte E<lt>richard@levittr.orgE<gt>.  "
 "Des compléments ont été ajoutés par Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
-
-#. type: textblock
-#: darktable-viewer.pod:4
-msgid ""
-"darktable-viewer - a stand-alone slideshow viewer that displays the images "
-"of your current collection fullscreen"
-msgstr ""
-"darktable-viewer - une visionneuse de diaporama autonome qui affiche en "
-"plein écran les images de votre collection courante."
-
-#. type: verbatim
-#: darktable-viewer.pod:8
-#, no-wrap
-msgid ""
-"    darktable-viewer [-h, --help; --version] [--random] [--repeat] [--core <darktable options>]\n"
-"\n"
-msgstr ""
-"    darktable-viewer [-h, --help; --version] [--random] [--repeat] [--core <darktable options>]\n"
-"\n"
-
-#. type: textblock
-#: darktable-viewer.pod:15
-msgid ""
-"B<darktable-viewer> is a stand-alone slideshow viewer that displays the "
-"images of your current collection fullscreen.  Press B<Esc> to stop."
-msgstr ""
-"B<darktable-viewer> est une visionneuse de diaporama autonome qui affiche en "
-"plein écran les images de votre collection courante. Tapez B<Esc> pour "
-"stopper."
-
-#. type: textblock
-#: darktable-viewer.pod:20
-msgid ""
-"All parameters are optional.  If started without parameters B<darktable-"
-"viewer> uses reasonable defaults."
-msgstr ""
-"Tous les paramètres sont optionnels. S'il est lancé sans paramètre  "
-"B<darktable-viewer> utilise des valeurs par défaut raisonnables."
-
-#. type: =item
-#: darktable-viewer.pod:25 darktable-generate-cache.pod:25
-msgid "B<-h, --help>"
-msgstr "B<-h, --help>"
-
-#. type: textblock
-#: darktable-viewer.pod:27 darktable-generate-cache.pod:27
-msgid "Gives usage information and terminates."
-msgstr "Donne des informations d'utilisation et se termine."
-
-#. type: =item
-#: darktable-viewer.pod:29 darktable-generate-cache.pod:29
-msgid "B<--version>"
-msgstr "B<--version>"
-
-#. type: textblock
-#: darktable-viewer.pod:31 darktable-generate-cache.pod:31
-msgid "Gives copyright and version information and terminates."
-msgstr "Donne des informations de copyright et de version et se termine."
-
-#. type: =item
-#: darktable-viewer.pod:33
-msgid "B<--random>"
-msgstr "B<--random>"
-
-#. type: textblock
-#: darktable-viewer.pod:35
-msgid "Displays images in random instead of the default sequential order."
-msgstr ""
-"Affiche les images dans un ordre aléatoire au lieu de l'ordre séquentiel par "
-"défaut."
-
-#. type: =item
-#: darktable-viewer.pod:37
-msgid "B<--repeat>"
-msgstr "B<--repeat>"
-
-#. type: textblock
-#: darktable-viewer.pod:39
-msgid ""
-"Continues the slideshow in an endless loop instead of terminating after the "
-"last image."
-msgstr ""
-"Continue le diaporama dans une boucle sans fin au lieu de s'arrêter après la "
-"dernière image."
-
-#. type: textblock
-#: darktable-viewer.pod:60 darktable-generate-cache.pod:58
-#: darktable-cltest.pod:29 darktable-cmstest.pod:28
-msgid ""
-"This man page was written by Ulrich Pegelow E<lt>ulrich.pegelow@tongareva."
-"deE<gt> as part of the usermanual.  It was turned into a man page by Tobias "
-"Ellinghaus E<lt>me@houz.orgE<gt>."
-msgstr ""
-"Ce man-page a été écrit par Ulrich Pegelow E<lt>ulrich.pegelow@tongareva."
-"deE<gt> dans le cadre du manuel utilisateur. Il a été transformé en man-page "
-"par Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
-
-#. type: =for
-#: darktable-viewer.pod:71 darktable-generate-cache.pod:69
-#: darktable-cltest.pod:40 darktable-cmstest.pod:38
-msgid "comment $Date: 2015-11-17$ $Release: 2.0$"
-msgstr "comment $Date: 2015-11-17$ $Release: 2.0$"
 
 #. type: textblock
 #: darktable-generate-cache.pod:4
@@ -1606,18 +1494,54 @@ msgstr ""
 "B<darktable-generate-cache> utilise des valeurs par défaut raisonnables."
 
 #. type: =item
+#: darktable-generate-cache.pod:25
+msgid "B<-h, --help>"
+msgstr "B<-h, --help>"
+
+#. type: textblock
+#: darktable-generate-cache.pod:27
+msgid "Gives usage information and terminates."
+msgstr "Donne des informations d'utilisation et se termine."
+
+#. type: =item
+#: darktable-generate-cache.pod:29
+msgid "B<--version>"
+msgstr "B<--version>"
+
+#. type: textblock
+#: darktable-generate-cache.pod:31
+msgid "Gives copyright and version information and terminates."
+msgstr "Donne des informations de copyright et de version et se termine."
+
+#. type: =item
 #: darktable-generate-cache.pod:33
+#, fuzzy
+#| msgid "B<< -m, --max-mip <0-7> >>"
+msgid "B<< --min-mip <0-7> >>"
+msgstr "B<< -m, --max-mip <0-7> >>"
+
+#. type: =item
+#: darktable-generate-cache.pod:35
 msgid "B<< -m, --max-mip <0-7> >>"
 msgstr "B<< -m, --max-mip <0-7> >>"
 
 #. type: textblock
-#: darktable-generate-cache.pod:35
+#: darktable-generate-cache.pod:37
+#, fuzzy
+#| msgid ""
+#| "B<darktable> can handle and store thumbnails with up to eight different "
+#| "resolution steps for each image.  This parameter defines which maximum "
+#| "resolution should be generated and defaults to B<2>.  There is normally "
+#| "no need to generate all possible resolutions here; missing ones will be "
+#| "automatically generated by darktable the moment they are needed."
 msgid ""
 "B<darktable> can handle and store thumbnails with up to eight different "
-"resolution steps for each image.  This parameter defines which maximum "
-"resolution should be generated and defaults to B<2>.  There is normally no "
-"need to generate all possible resolutions here; missing ones will be "
-"automatically generated by darktable the moment they are needed."
+"resolution steps for each image.  These parameters define which maximum "
+"resolution should be generated and default to a range of B<0-2>.  There is "
+"normally no need to generate all possible resolutions here; missing ones "
+"will be automatically generated by darktable the moment they are needed.  "
+"When asked to generate multiple resolutions at once, the lower-resolution "
+"images are quickly downsampled from the highest-resolution image."
 msgstr ""
 "B<darktable> peut gérer et stocker, pour chaque image, des miniatures ayant "
 "jusqu'à huit niveaux différents de résolution. Ce paramètre définit le "
@@ -1625,6 +1549,46 @@ msgstr ""
 "défaut est B<2>. Il n'est normalement pas nécessaire de générer ici toutes "
 "les résolutions possibles ; celles qui manquent seront générées "
 "automatiquement par darktable au moment où elles seront nécessaires."
+
+#. type: =item
+#: darktable-generate-cache.pod:42
+#, fuzzy
+#| msgid "B<< -m, --max-mip <0-7> >>"
+msgid "B<< --min-imgid <N> >>"
+msgstr "B<< -m, --max-mip <0-7> >>"
+
+#. type: =item
+#: darktable-generate-cache.pod:44
+#, fuzzy
+#| msgid "B<< -m, --max-mip <0-7> >>"
+msgid "B<< --max-imgid <N> >>"
+msgstr "B<< -m, --max-mip <0-7> >>"
+
+#. type: textblock
+#: darktable-generate-cache.pod:46
+msgid ""
+"Specifies the range of internal image IDs from the database to work on.  If "
+"no range is given, B<darktable-generate-cache> will process all images from "
+"the entire collection."
+msgstr ""
+
+#. type: textblock
+#: darktable-generate-cache.pod:68 darktable-cltest.pod:29
+#: darktable-cmstest.pod:28
+msgid ""
+"This man page was written by Ulrich Pegelow E<lt>ulrich.pegelow@tongareva."
+"deE<gt> as part of the usermanual.  It was turned into a man page by Tobias "
+"Ellinghaus E<lt>me@houz.orgE<gt>."
+msgstr ""
+"Ce man-page a été écrit par Ulrich Pegelow E<lt>ulrich.pegelow@tongareva."
+"deE<gt> dans le cadre du manuel utilisateur. Il a été transformé en man-page "
+"par Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
+
+#. type: =for
+#: darktable-generate-cache.pod:79 darktable-cltest.pod:40
+#: darktable-cmstest.pod:38
+msgid "comment $Date: 2015-11-17$ $Release: 2.0$"
+msgstr "comment $Date: 2015-11-17$ $Release: 2.0$"
 
 #. type: textblock
 #: darktable-cltest.pod:4
@@ -1685,6 +1649,65 @@ msgstr ""
 "B<darktable-cmstest> teste si le sous-système de gestion de la couleur de "
 "votre ordinateur est correctement configuré et affiche des informations "
 "utiles concernant le(s) profil(s) écran installé(s)."
+
+#~ msgid "RELATED"
+#~ msgstr "EN RELATION"
+
+#~ msgid ""
+#~ "B<darktable-viewer> screensaver version of darktable.  Shows the last "
+#~ "active collection in full screen as a slideshow.  Using the slideshow "
+#~ "mode of darktable is encouraged."
+#~ msgstr ""
+#~ "B<darktable-viewer> la version économiseur d'écran de darktable, montre "
+#~ "la dernière collection active en mode plein écran comme un diaporama. "
+#~ "Utiliser le mode diaporama de darktable est encouragé."
+
+#~ msgid ""
+#~ "darktable-viewer - a stand-alone slideshow viewer that displays the "
+#~ "images of your current collection fullscreen"
+#~ msgstr ""
+#~ "darktable-viewer - une visionneuse de diaporama autonome qui affiche en "
+#~ "plein écran les images de votre collection courante."
+
+#~ msgid ""
+#~ "    darktable-viewer [-h, --help; --version] [--random] [--repeat] [--core <darktable options>]\n"
+#~ "\n"
+#~ msgstr ""
+#~ "    darktable-viewer [-h, --help; --version] [--random] [--repeat] [--core <darktable options>]\n"
+#~ "\n"
+
+#~ msgid ""
+#~ "B<darktable-viewer> is a stand-alone slideshow viewer that displays the "
+#~ "images of your current collection fullscreen.  Press B<Esc> to stop."
+#~ msgstr ""
+#~ "B<darktable-viewer> est une visionneuse de diaporama autonome qui affiche "
+#~ "en plein écran les images de votre collection courante. Tapez B<Esc> pour "
+#~ "stopper."
+
+#~ msgid ""
+#~ "All parameters are optional.  If started without parameters B<darktable-"
+#~ "viewer> uses reasonable defaults."
+#~ msgstr ""
+#~ "Tous les paramètres sont optionnels. S'il est lancé sans paramètre  "
+#~ "B<darktable-viewer> utilise des valeurs par défaut raisonnables."
+
+#~ msgid "B<--random>"
+#~ msgstr "B<--random>"
+
+#~ msgid "Displays images in random instead of the default sequential order."
+#~ msgstr ""
+#~ "Affiche les images dans un ordre aléatoire au lieu de l'ordre séquentiel "
+#~ "par défaut."
+
+#~ msgid "B<--repeat>"
+#~ msgstr "B<--repeat>"
+
+#~ msgid ""
+#~ "Continues the slideshow in an endless loop instead of terminating after "
+#~ "the last image."
+#~ msgstr ""
+#~ "Continue le diaporama dans une boucle sans fin au lieu de s'arrêter après "
+#~ "la dernière image."
 
 #~ msgid "show/hide film strip"
 #~ msgstr "Montrer, cacher le bandeau"
