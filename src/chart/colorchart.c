@@ -128,6 +128,11 @@ static void free_labels_list(gpointer data)
   g_list_free_full((GList *)data, g_free);
 }
 
+// In some environments ERROR is already defined, ie: WIN32
+#if defined(ERROR)
+#undef ERROR
+#endif // defined (ERROR)
+
 #define ERROR                                                                                                     \
   {                                                                                                               \
     lineno = __LINE__;                                                                                            \
