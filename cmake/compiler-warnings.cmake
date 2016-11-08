@@ -6,8 +6,14 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wall)
 
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-fno-strict-aliasing)
 
-CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wformat)
-CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wformat-security)
+if(WIN32)
+  # MSYS2 gcc compiler gives false positive warnings for (format (printf, 1, 2) - need to turn off for the time being
+  CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-format)
+
+  CHECK_COMPILER_FLAG_AND_ENABLE_IT(-mms-bitfields)
+else()
+  CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wformat-security)
+endif()
 
 # cleanup this once we no longer need to support gcc-4.9
 if(NOT (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_LESS 5.0))
