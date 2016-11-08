@@ -125,6 +125,10 @@ if(WIN32)
 
   # Use mingw's sprintf instead of windows's
   ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
+
+  # add it to have proper time.h functions available
+  ADD_DEFINITIONS(-D_POSIX_THREAD_SAFE_FUNCTIONS)
+
 endif(WIN32)
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
@@ -395,19 +399,11 @@ if(NOT WIN32)
 endif(NOT WIN32)
 
 if(WIN32)
-  # get rid of the console window. do we need both?
-#   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -Wl,-subsystem,windows")
-#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows -Wl,-subsystem,windows")
-  
   #TODO: Review these
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
   set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
 
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mms-bitfields")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mms-bitfields")
-
-  #removed the -s flag, as it has stripped the debug symbols even from debug builds
   SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
   SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
 
@@ -552,7 +548,7 @@ find_package(Pugixml 1.2 REQUIRED)
 include_directories(SYSTEM ${Pugixml_INCLUDE_DIRS})
 list(APPEND LIBS ${Pugixml_LIBRARIES})
 
-if(NOT SOURCE_PACKAGE AND NOT APPLE AND NOT WIN32)
+if(NOT SOURCE_PACKAGE AND NOT APPLE)
   # apple build fails on deprecated warnings..
   add_definitions(-Werror)
 endif()
