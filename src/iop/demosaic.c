@@ -615,7 +615,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                 pix[cc] = 0.0f;
               else
               {
-#define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 1) : abs(n))
+#define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 2) : abs(n))
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
                 if(c == FCxtrans(cy, cx, roi_in, xtrans))
                   pix[c] = in[roi_in->width * cy + cx];
