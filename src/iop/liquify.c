@@ -2612,7 +2612,12 @@ void gui_focus (struct dt_iop_module_t *module, gboolean in)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
   g->mouse_pointer_in_widget = module->enabled && in;
+
   dt_control_hinter_message (darktable.control, "");
+  gtk_toggle_button_set_active (g->btn_point_tool, FALSE);
+  gtk_toggle_button_set_active (g->btn_line_tool,  FALSE);
+  gtk_toggle_button_set_active (g->btn_curve_tool, FALSE);
+  gtk_toggle_button_set_active (g->btn_node_tool,  FALSE);
 }
 
 static void sync_pipe (struct dt_iop_module_t *module, gboolean history)
