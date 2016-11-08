@@ -368,7 +368,7 @@ static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
 
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
   {
     float old_a = p->a, old_b = p->b, old_size = p->size;
     p->a = self->picked_color[1];
@@ -558,7 +558,7 @@ static void picker_callback(GtkWidget *button, gpointer user_data)
 
   dt_iop_request_focus(self);
 
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
     dt_dev_reprocess_all(self->dev);
   else
     dt_control_queue_redraw();
