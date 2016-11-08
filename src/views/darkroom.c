@@ -885,7 +885,12 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
   if(darktable.gui->presets_popup_menu)
   {
     gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+    gtk_menu_popup_at_pointer(darktable.gui->presets_popup_menu, NULL);
+#else
     gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, 0, 0);
+#endif
   }
   else
     dt_control_log(_("no userdefined presets for favorite modules were found"));
@@ -945,7 +950,11 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
   /* if we got any styles, lets popup menu for selection */
   if(menu)
   {
+#if GTK_CHECK_VERSION(3, 22, 0)
+    gtk_menu_popup_at_pointer(GTK_MENU(menu), NULL);
+#else
     gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 0, 0);
+#endif
   }
   else
     dt_control_log(_("no styles have been created yet"));

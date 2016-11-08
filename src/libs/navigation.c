@@ -515,7 +515,12 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
     gtk_menu_shell_append(menu, item);
 
     gtk_widget_show_all(GTK_WIDGET(menu));
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+    gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
+#else
     gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
+#endif
 
     return TRUE;
   }
