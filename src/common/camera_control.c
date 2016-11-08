@@ -901,7 +901,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
       CameraFile* camfile;
       int res = GP_OK;
       const uint8_t* data = NULL;
-      size_t size;
+      unsigned long int size;
 
       gp_file_new(&camfile);
       if ((res = gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, camfile, NULL)) < GP_OK) {
