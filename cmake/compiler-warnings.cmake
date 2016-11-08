@@ -12,6 +12,7 @@ if(WIN32)
 
   CHECK_COMPILER_FLAG_AND_ENABLE_IT(-mms-bitfields)
 else()
+  CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wformat)
   CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wformat-security)
 endif()
 
