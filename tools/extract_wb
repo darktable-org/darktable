@@ -76,7 +76,7 @@ ARGV.each do |filename|
   red = green = blue = maker = model = preset = nil
   listed_presets = []
   fl_count = 0
-  IO.popen("exiftool \"-WB_*\" -WhiteBalance -WhiteBalance2 -WhitePoint -Make -Model \"#{filename}\"") do |io|
+  IO.popen("exiftool \"-WB_*\" -WhiteBalance -WhiteBalance2 -RedBalance -BlueBalance -WhitePoint -Make -Model \"#{filename}\"") do |io|
     while !io.eof?
       lineparts = io.readline.split(":")
       tag = lineparts[0].strip
@@ -112,6 +112,11 @@ ARGV.each do |filename|
       elsif tag == "White Balance" || tag == "White Balance 2"
         preset = values.join(" ")
         preset = FL_PRESET_REPLACE[preset] if FL_PRESET_REPLACE[preset]
+      elsif tag == "Red Balance"
+        red = values[0].to_f
+        green = 1
+      elsif tag == "Blue Balance"
+        blue = values[0].to_f
       elsif ["WB RGB Levels", "WB RGGB Levels"].include? tag.split[0..2].join(" ")
         p = tag.split[3..-1].join
 
