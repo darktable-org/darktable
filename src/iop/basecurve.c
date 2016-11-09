@@ -1828,7 +1828,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), c->fusion, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->fusion), "value-changed", G_CALLBACK(fusion_callback), self);
 
-  c->exstep = dt_bauhaus_slider_new_with_range(self, 0.01, 4.0, 0.100, 3.0, 3);
+  c->exstep = dt_bauhaus_slider_new_with_range(self, 0.01, 4.0, 0.100, 1.0, 3);
   gtk_widget_set_tooltip_text(c->exstep, _("how many stops to shift the individual exposures apart"));
   dt_bauhaus_widget_set_label(c->exstep, NULL, _("exposure shift"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->exstep, TRUE, TRUE, 0);

@@ -1240,7 +1240,6 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 80D", Tungsten, 7,          { 1.3837890625, 1, 2.1376953125, 0 } },
   { "Canon", "EOS 80D", Tungsten, 8,          { 1.404296875, 1, 2.1025390625, 0 } },
   { "Canon", "EOS 80D", Tungsten, 9,          { 1.42578125, 1, 2.0732421875, 0 } },
-  { "Canon", "EOS 80D", Fluorescent, 0,       { 1.4755859375, 1, 2.216796875, 0 } },
   { "Canon", "EOS 80D", Fluorescent, -9,      { 1.291015625, 1, 2.5595703125, 0 } },
   { "Canon", "EOS 80D", Fluorescent, -8,      { 1.3115234375, 1, 2.5224609375, 0 } },
   { "Canon", "EOS 80D", Fluorescent, -7,      { 1.33203125, 1, 2.4794921875, 0 } },

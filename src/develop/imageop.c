@@ -893,8 +893,13 @@ static void dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
   gtk_menu_shell_append(menu, item);
 
   gtk_widget_show_all(GTK_WIDGET(menu));
+
   // popup
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_pointer(GTK_MENU(menu), NULL);
+#else
   gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
+#endif
 }
 
 static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
@@ -1498,7 +1503,7 @@ static void dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module
   dt_dev_add_history_item(module->dev, module, TRUE);
 }
 
-
+#if !GTK_CHECK_VERSION(3, 22, 0)
 static void _preset_popup_position(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer data)
 {
   GtkRequisition requisition = { 0 };
@@ -1509,12 +1514,21 @@ static void _preset_popup_position(GtkMenu *menu, gint *x, gint *y, gboolean *pu
   gtk_widget_get_allocation(GTK_WIDGET(data), &allocation);
   (*y) += allocation.height;
 }
+#endif
 
 static void popup_callback(GtkButton *button, dt_iop_module_t *module)
 {
   dt_gui_presets_popup_menu_show_for_module(module);
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu,
+                           dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander)), GDK_GRAVITY_SOUTH_WEST,
+                           GDK_GRAVITY_NORTH_WEST, NULL);
+#else
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_position, button, 0,
                  gtk_get_current_event_time());
+#endif
+
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
 }
@@ -1703,7 +1717,13 @@ static gboolean _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, g
   else if(e->button == 3)
   {
     dt_gui_presets_popup_menu_show_for_module(module);
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+    gtk_menu_popup_at_pointer(darktable.gui->presets_popup_menu, (GdkEvent *)e);
+#else
     gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
+#endif
+
     gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
     return TRUE;
   }
@@ -1730,7 +1750,13 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
   else if(e->button == 3)
   {
     dt_gui_presets_popup_menu_show_for_module(module);
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+    gtk_menu_popup_at_pointer(darktable.gui->presets_popup_menu, (GdkEvent *)e);
+#else
     gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
+#endif
+
     gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
     return TRUE;
