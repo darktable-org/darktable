@@ -113,9 +113,9 @@ static void _new_connection(SoupServer *server, SoupMessage *msg, const char *pa
 end:
   if(res)
   {
-    g_signal_connect(G_OBJECT(server), "request-finished", G_CALLBACK(_request_finished_callback),
-                     params->server);
+    dt_http_server_t *http_server = params->server;
     soup_server_remove_handler(server, path);
+    g_signal_connect(G_OBJECT(server), "request-finished", G_CALLBACK(_request_finished_callback), http_server);
   }
 }
 
