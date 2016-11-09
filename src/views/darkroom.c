@@ -2384,7 +2384,7 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "image back"), GDK_KEY_BackSpace, 0);
 
   // toggle raw overexposure indication
-  dt_accel_register_view(self, NC_("accel", "raw overexposed"), GDK_KEY_r, 0);
+  dt_accel_register_view(self, NC_("accel", "raw overexposed"), GDK_KEY_o, GDK_SHIFT_MASK);
 
   // toggle overexposure indication
   dt_accel_register_view(self, NC_("accel", "overexposed"), GDK_KEY_o, 0);
