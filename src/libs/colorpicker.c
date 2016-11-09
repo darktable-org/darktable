@@ -74,12 +74,14 @@ int position()
 
 void init_key_accels(dt_lib_module_t *self)
 {
+  dt_accel_register_lib(self, NC_("accel", "pick color"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "add sample"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_colorpicker_t *d = (dt_lib_colorpicker_t *)self->data;
+  dt_accel_connect_button_lib(self, "pick color", d->picker_button);
   dt_accel_connect_button_lib(self, "add sample", d->add_sample_button);
 }
 
