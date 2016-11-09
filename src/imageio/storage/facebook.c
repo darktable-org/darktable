@@ -1302,7 +1302,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
 
   if(p->facebook_ctx->album_id == NULL)
   {
-    if(p->facebook_ctx->album_title == NULL)
+    if(p->facebook_ctx->album_title == NULL || strlen(p->facebook_ctx->album_title) == 0)
     {
       dt_control_log(_("unable to create album, no title provided"));
       result = 0;
