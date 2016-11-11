@@ -464,19 +464,21 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
           "    <div class=\"page\">\n",
           title, title);
 
+  uint64_t count = 0;
   GList *tmp = d->l;
   while(tmp)
   {
     pair_t *p = (pair_t *)tmp->data;
     fprintf(f, "%s", p->line);
     tmp = g_list_next(tmp);
+    count++;
   }
 
   fprintf(f, "        <p style=\"clear:both;\"></p>\n"
              "    </div>\n"
              "    <div class=\"footer\">\n"
              "      <script language=\"JavaScript\" type=\"text/javascript\">\n"
-             "      document.write(\"download all: <em>wget -r -np -nc -k \" + document.documentURI + \"</em>\")\n"
+             "      document.write(\"download all: <em>curl -O#  \" + document.documentURI.replace( /\\\\/g, '/' ).replace( /\\/[^\\/]*$/, '' ) + \"/img_[0000-%04lu].jpg</em>\")\n"
              "      </script><br />\n"
              "      created with %s\n"
              "    </div>\n"
@@ -520,6 +522,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
              "<script>\n"
              "var pswpElement = document.querySelectorAll('.pswp')[0];\n"
              "var items = [\n",
+          count,
           darktable_package_string);
   while(d->l)
   {

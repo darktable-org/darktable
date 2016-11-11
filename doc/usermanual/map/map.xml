@@ -115,6 +115,42 @@
 
     </sect2>
 
+    <sect2>
+
+      <title>Undo/redo</title>
+
+      <indexterm>
+        <primary>undo</primary>
+      </indexterm>
+
+      <indexterm>
+        <primary>redo</primary>
+      </indexterm>
+
+      <para>
+        All image moves in the map view are recorded by darktable. It is then possible to undo
+        or redo such changes to recover a previous state. Note that this undo/redo facility is
+        unlimited while moving images but it is reset each time the map view is left.
+      </para>
+
+      <para>
+        The default key shortcuts are:
+        <itemizedlist>
+
+          <listitem><para>
+            <emphasis>Ctrl-z</emphasis> : undo last move
+          </para></listitem>
+
+          <listitem><para>
+            <emphasis>Ctrl-y</emphasis> : redo last undo (does nothing if undo has not been used
+            yet)
+          </para></listitem>
+
+        </itemizedlist>
+      </para>
+
+    </sect2>
+
   </sect1>
 
 <!-- Panels -->
