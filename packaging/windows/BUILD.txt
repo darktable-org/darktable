@@ -105,7 +105,7 @@ ISSUES - FIXED
     * Replacing OpenCL symlinks with a filename/MD5tag combination (symlinks require admin priviledges on windows)
     * Loading libraries / finding plugin library
     * Removing ws2_32 and msvcrt as not needed
-    * Added LUA (needs a special old, 5.2 version of the package)
+    * Added LUA (needed a special old, 5.2 version of the package)
     * Added SLIDESHOW
     * Added OPENMAP Support
     * Added LIBGPHOTO (camera support)
@@ -113,6 +113,8 @@ ISSUES - FIXED
     * Added getrlimit/setrlimit using https://msdn.microsoft.com/ko-kr/library/ms811896.aspx#ucmgch09_topic9
     * Added dt_print_mem_usage for Windows
     * Added FLICKCURL
+    * Got rid of all warnings
+    * Switching UI language based on default locale
 
 TODO LIST
     Port lua select() in function read_cb: https://msdn.microsoft.com/en-us/library/aa363858(VS.85).aspx ?
@@ -120,12 +122,10 @@ TODO LIST
     Find a way to replace it CUPS
     lensfun database should be deployed to Appdata/local/lensfun (no version_1 subfolder), alternatively under darktable/share at install
     OpenCL64.dll or OpenCL.dll?
-    Get rid of warnings
     Unify conditional directrives to _WIN32 instead of __WIN32__ and WIN32 and G_OS_WIN32
     Unicode handling in file an folder names
-    Switching UI language based on locale
-    Reimport of pictures with existing sidecar XMP file
-    Filmrolls
+    Re-import of pictures with existing sidecar XMP file
+    Filmrolls display
 
 B) Cross compile on Linux
     In order to build darktable for Windows there is a chance to cross compile it
