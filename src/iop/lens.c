@@ -1507,7 +1507,12 @@ static void camera_menusearch_clicked(GtkWidget *button, gpointer user_data)
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   if(!camlist) return;
   camera_menu_fill(self, camlist);
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_pointer(GTK_MENU(g->camera_menu), NULL);
+#else
   gtk_menu_popup(GTK_MENU(g->camera_menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
+#endif
 }
 
 static void camera_autosearch_clicked(GtkWidget *button, gpointer user_data)
@@ -1541,7 +1546,11 @@ static void camera_autosearch_clicked(GtkWidget *button, gpointer user_data)
     lf_free(camlist);
   }
 
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_pointer(GTK_MENU(g->camera_menu), NULL);
+#else
   gtk_menu_popup(GTK_MENU(g->camera_menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
+#endif
 }
 
 /* -- end camera -- */
@@ -1848,7 +1857,11 @@ static void lens_menusearch_clicked(GtkWidget *button, gpointer user_data)
   lens_menu_fill(self, lenslist);
   lf_free(lenslist);
 
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_pointer(GTK_MENU(g->lens_menu), NULL);
+#else
   gtk_menu_popup(GTK_MENU(g->lens_menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
+#endif
 }
 
 static void lens_autosearch_clicked(GtkWidget *button, gpointer user_data)
@@ -1872,7 +1885,11 @@ static void lens_autosearch_clicked(GtkWidget *button, gpointer user_data)
   lens_menu_fill(self, lenslist);
   lf_free(lenslist);
 
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_pointer(GTK_MENU(g->lens_menu), NULL);
+#else
   gtk_menu_popup(GTK_MENU(g->lens_menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
+#endif
 }
 
 /* -- end lens -- */

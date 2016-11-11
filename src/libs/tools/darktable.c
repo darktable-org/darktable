@@ -297,17 +297,9 @@ static void _lib_darktable_show_about_dialog()
     icon = g_strdup("darktable");
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), icon);
   g_free(icon);
-  const char *authors[]
-      = { _("* contributors *"),
-          "Roman Lebedev", "Pedro Côrte-Real", "Tobias Ellinghaus", "Pascal Obry",
-          "Jérémy Rosen", "johannes hanika", "Michel Leblond", "Ulrich Pegelow",
-          "Pascal de Bruijn", "Ger Siemerink", "parafin", "Richard Levitte", "Edouard Gomez",
-          "Aldric Renaudin", "tatica", "JohnnyRun", "Josep V. Moragues",
-          "Jean-Sébastien Pédron", "ralfbrown", "Dušan Kazik", "Novy Sawai", "Robert William Hutton",
-          "Bruce Guenter", "K. Adam Christensen", "Guillaume Benny", "Matthieu Volat",
-          "Jan Kundrát", "Matthias Gehre", "Tom Vijlbrief", "Alexandre Prokoudine",
-          "Axel Burri", "Guillaume Subiron", "Martin Brodbeck", "Simon Spannagel",
-          _("And all those of you that made previous releases possible"), NULL };
+
+#include "libs/tools/darktable_authors.h"
+
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
 
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));

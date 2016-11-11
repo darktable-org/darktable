@@ -357,12 +357,21 @@ void enter(dt_view_t *self)
 
   // alloc screen-size double buffer
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  GdkRectangle rect;
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+  GdkDisplay *display = gtk_widget_get_display(window);
+  GdkMonitor *mon = gdk_display_get_monitor_at_window(display, gtk_widget_get_window(window));
+  gdk_monitor_get_geometry(mon, &rect);
+#else
   GdkScreen *screen = gtk_widget_get_screen(window);
   if(!screen) screen = gdk_screen_get_default();
   int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(window));
-  GdkRectangle rect;
   gdk_screen_get_monitor_geometry(screen, monitor, &rect);
+#endif
+
   dt_pthread_mutex_lock(&d->lock);
+
   d->width = rect.width * darktable.gui->ppd;
   d->height = rect.height * darktable.gui->ppd;
   d->buf1 = dt_alloc_align(64, sizeof(uint32_t) * d->width * d->height);
