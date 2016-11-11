@@ -211,4 +211,48 @@
 
   </sect3>
 
+  <sect3>
+
+    <title>Undo/redo</title>
+
+    <indexterm>
+      <primary>undo</primary>
+    </indexterm>
+
+    <indexterm>
+      <primary>redo</primary>
+    </indexterm>
+
+    <para>
+      During editing darktable records all changes made in the history (see
+      <xref linkend="history"/>). This includes modifications of any parameter in a module
+      itself but also if a module instance is added or removed. Thanks to this recording it is
+      possible to undo changes or redo them to recover a previous editing state. Note that this
+      undo/redo facility is unlimited in the number of steps while editing an image but it is
+      reset each time the darkroom is switched to a new image.
+    </para>
+
+    <para>
+      The default key shortcuts are:
+      <itemizedlist>
+
+        <listitem><para>
+          <emphasis>Ctrl-z</emphasis> : undo last history modification
+        </para></listitem>
+
+        <listitem><para>
+          <emphasis>Ctrl-y</emphasis> : redo last undo (does nothing if undo has not been used
+          yet)
+        </para></listitem>
+
+      </itemizedlist>
+    </para>
+    
+    <para>
+      Please note that changes to drawn masks (see <xref linkend="drawn_mask"/>) are not recorded
+      and thus cannot be undone.
+    </para>
+
+  </sect3>
+
 </sect2>

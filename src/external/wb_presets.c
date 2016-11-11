@@ -1240,7 +1240,6 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 80D", Tungsten, 7,          { 1.3837890625, 1, 2.1376953125, 0 } },
   { "Canon", "EOS 80D", Tungsten, 8,          { 1.404296875, 1, 2.1025390625, 0 } },
   { "Canon", "EOS 80D", Tungsten, 9,          { 1.42578125, 1, 2.0732421875, 0 } },
-  { "Canon", "EOS 80D", Fluorescent, 0,       { 1.4755859375, 1, 2.216796875, 0 } },
   { "Canon", "EOS 80D", Fluorescent, -9,      { 1.291015625, 1, 2.5595703125, 0 } },
   { "Canon", "EOS 80D", Fluorescent, -8,      { 1.3115234375, 1, 2.5224609375, 0 } },
   { "Canon", "EOS 80D", Fluorescent, -7,      { 1.33203125, 1, 2.4794921875, 0 } },
@@ -1965,6 +1964,14 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X-T1", Incandescent, 0,      { 1.268212, 1, 2.284768, 0 } },
   { "Fujifilm", "X-T1", Underwater, 0,        { 1.89404, 1, 1.569536, 0 } },
   { "Fujifilm", "X-T1", "5000K", 0,             { 1.847682, 1, 1.546358, 0 } },
+
+  { "Fujifilm", "X-T2", Daylight, 0, { 1.877483, 1, 1.940397, 0 } },
+  { "Fujifilm", "X-T2", Shade, 0, { 2.086093, 1, 1.672185, 0 } },
+  { "Fujifilm", "X-T2", DaylightFluorescent, 0, { 2.360927, 1, 1.668874, 0 } },
+  { "Fujifilm", "X-T2", DayWhiteFluorescent, 0, { 1.976821, 1, 2.05298, 0 } },
+  { "Fujifilm", "X-T2", WhiteFluorescent, 0, { 1.86755, 1, 2.639073, 0 } },
+  { "Fujifilm", "X-T2", Incandescent, 0, { 1.248344, 1, 2.907285, 0 } },
+  { "Fujifilm", "X-T2", Underwater, 0, { 1.877483, 1, 1.940397, 0 } },
 
   /* Fujifilm X-T10 Firmware Version 1.21 */
   { "Fujifilm", "X-T10", Daylight, 0,		{ 1.884106, 1, 1.526490, 0 } },
@@ -5306,6 +5313,20 @@ const wb_data wb_preset[] =
   { "Pentax", "K-5", Flash, 0,			{ 2.4023, 1, 1.4492, 0 } },
   { "Pentax", "K-5", "3000K", 0,		{ 1.3867, 1, 2.2578, 0 } },
   { "Pentax", "K-5", "5000K", 0,		{ 2.0508, 1, 1.4883, 0 } },
+
+  /* Pentax K-1 Firmware Version 1.10 */
+  { "Pentax", "K-1", Daylight, 0,  { 2.14062, 1.0, 1.66406, 0.0 } },
+  { "Pentax", "K-1", Shade, 0,     { 2.65625, 1.0, 1.25000, 0.0 } },
+  { "Pentax", "K-1", Cloudy, 0,    { 2.37109, 1.0, 1.43750, 0.0 } },
+  { "Pentax", "K-1", DaylightFluorescent, 0,      { 2.61328, 1.0, 1.60938, 0.0 } },
+  { "Pentax", "K-1", CoolWhiteFluorescent, 0,     { 2.23047, 1.0, 1.82031, 0.0 } },
+  { "Pentax", "K-1", WhiteFluorescent, 0,         { 2.01953, 1.0, 2.19531, 0.0 } },
+  { "Pentax", "K-1", WarmWhiteFluorescent, 0,    { 1.70312, 1.0, 2.77734, 0.0 } },
+  { "Pentax", "K-1", Tungsten, 0,  { 1.32422, 1.0, 2.92969, 0.0 } },
+  { "Pentax", "K-1", "2500K", 0,    { 1.14062, 1.0, 2.75391, 0.0 } },
+  { "Pentax", "K-1", "3000K", 0,    { 1.40234, 1.0, 2.33984, 0.0 } },
+  { "Pentax", "K-1", "5000K", 0,    { 2.07812, 1.0, 1.54688, 0.0 } },
+  { "Pentax", "K-1", "5500K", 0,    { 2.19141, 1.0, 1.45703, 0.0 } },
 
   /* Pentax K-50 Firmware Version 1.00 */
   { "Pentax", "K-50", Daylight, 0,            { 2.244384765625, 1, 1.560302734375, 0 } },

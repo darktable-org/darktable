@@ -702,7 +702,7 @@ static void picker_callback(GtkWidget *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
 
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE)
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
   else
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
@@ -835,15 +835,16 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
       Lab.L = p->source_L[patch];
       Lab.a = p->source_a[patch];
       Lab.b = p->source_b[patch];
-      if((picked_mean[0] - Lab.L)*(picked_mean[0] - Lab.L) +
-         (picked_mean[1] - Lab.a)*(picked_mean[1] - Lab.a) +
-         (picked_mean[2] - Lab.b)*(picked_mean[2] - Lab.b) <
-         (picked_mean[0] - p->source_L[cells_x*bestj+besti])*
-         (picked_mean[0] - p->source_L[cells_x*bestj+besti])+
-         (picked_mean[1] - p->source_a[cells_x*bestj+besti])*
-         (picked_mean[1] - p->source_a[cells_x*bestj+besti])+
-         (picked_mean[2] - p->source_b[cells_x*bestj+besti])*
-         (picked_mean[2] - p->source_b[cells_x*bestj+besti]))
+      if((self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
+         && ((picked_mean[0] - Lab.L) * (picked_mean[0] - Lab.L)
+                 + (picked_mean[1] - Lab.a) * (picked_mean[1] - Lab.a)
+                 + (picked_mean[2] - Lab.b) * (picked_mean[2] - Lab.b)
+             < (picked_mean[0] - p->source_L[cells_x * bestj + besti])
+                       * (picked_mean[0] - p->source_L[cells_x * bestj + besti])
+                   + (picked_mean[1] - p->source_a[cells_x * bestj + besti])
+                         * (picked_mean[1] - p->source_a[cells_x * bestj + besti])
+                   + (picked_mean[2] - p->source_b[cells_x * bestj + besti])
+                         * (picked_mean[2] - p->source_b[cells_x * bestj + besti])))
       {
         besti = i;
         bestj = j;
@@ -878,16 +879,20 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
     }
   }
 
+  dt_bauhaus_widget_set_quad_paint(
+      g->combobox_patch, dtgtk_cairo_paint_colorpicker,
+      (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE ? CPF_ACTIVE : CPF_NONE));
+
   // highlight patch that is closest to picked colour,
   // or the one selected in the combobox.
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE)
   {
     int i = dt_bauhaus_combobox_get(g->combobox_patch);
     besti = i % cells_x;
     bestj = i / cells_x;
     g->drawn_patch = cells_x * bestj + besti;
   }
-  else
+  else if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
   {
     // freshly picked, also select it in gui:
     int pick = self->request_color_pick;
@@ -1056,7 +1061,7 @@ void gui_init(struct dt_iop_module_t *self)
     dt_bauhaus_combobox_add(g->combobox_patch, cboxentry);
   }
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  dt_bauhaus_widget_set_quad_paint(g->combobox_patch, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE);
+  dt_bauhaus_widget_set_quad_paint(g->combobox_patch, dtgtk_cairo_paint_colorpicker, CPF_NONE);
 
   g->scale_L = dt_bauhaus_slider_new_with_range(self, -100.0, 100.0, 1.0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_L, _("lightness offset"));
