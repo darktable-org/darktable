@@ -123,6 +123,9 @@ if(WIN32)
   list(APPEND SOURCE_FILES "win/getdelim.c")
   list(APPEND HEADER_FILES "win/getdelim.h")
 
+  list(APPEND SOURCE_FILES "win/dtwin.c")
+  list(APPEND HEADER_FILES "win/dtwin.h")
+
   # Use mingw's sprintf instead of windows's
   ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
 
