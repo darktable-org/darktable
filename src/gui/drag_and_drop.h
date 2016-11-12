@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DARKTABLE_DRAG_AND_DROP_H
-#define DARKTABLE_DRAG_AND_DROP_H
+#pragma once
 
 #define _BYTE 8
 #define _WORD 16
@@ -42,8 +41,6 @@ static const guint n_targets_external = G_N_ELEMENTS(target_list_external);
 static const GtkTargetEntry target_list_all[]
     = { { "image-id", 0, DND_TARGET_IMGID }, { "text/uri-list", 0, DND_TARGET_URI } };
 static const guint n_targets_all = G_N_ELEMENTS(target_list_all);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

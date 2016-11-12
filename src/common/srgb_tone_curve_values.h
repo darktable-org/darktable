@@ -1,5 +1,4 @@
-#ifndef __SRGB_TONE_CURVE_VALUES__
-#define __SRGB_TONE_CURVE_VALUES__
+#pragma once
 
 static const uint16_t dt_srgb_tone_curve_values[] = {
   0,     5,     10,    15,    20,    25,    30,    35,    40,    45,    50,    55,    59,    64,    69,
@@ -74,8 +73,6 @@ static const uint16_t dt_srgb_tone_curve_values[] = {
 };
 
 static const guint dt_srgb_tone_curve_values_n = G_N_ELEMENTS(dt_srgb_tone_curve_values);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

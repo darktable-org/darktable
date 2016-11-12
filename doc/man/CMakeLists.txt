@@ -4,7 +4,6 @@
 set(MANPAGES
   "darktable.pod"
   "darktable-cli.pod"
-  "darktable-viewer.pod"
   "darktable-generate-cache.pod"
   "darktable-cltest.pod"
   "darktable-cmstest.pod"
@@ -26,8 +25,8 @@ macro(add_manpage pod)
   set(target ${CMAKE_CURRENT_BINARY_DIR}/${manpage})
   add_custom_command(
     OUTPUT ${target}
-    COMMAND ${CMAKE_SOURCE_DIR}/tools/makeman.sh ${source} ${CMAKE_CURRENT_SOURCE_DIR}/../AUTHORS ${target}
-    DEPENDS ${source} ${CMAKE_CURRENT_SOURCE_DIR}/../AUTHORS ${CMAKE_SOURCE_DIR}/tools/makeman.sh
+    COMMAND ${CMAKE_SOURCE_DIR}/tools/makeman.sh ${source} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${target}
+    DEPENDS ${source} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${CMAKE_SOURCE_DIR}/tools/makeman.sh
   )
   add_custom_target(manpage_${manpage} ALL DEPENDS ${target})
   add_dependencies(manpages manpage_${manpage})
@@ -65,8 +64,8 @@ else()
       # turn the .pod into a manpage
       add_custom_command(
         OUTPUT ${target}
-        COMMAND ${CMAKE_SOURCE_DIR}/tools/makeman.sh ${tmppod} ${CMAKE_CURRENT_SOURCE_DIR}/../AUTHORS ${target}
-        DEPENDS ${tmppod} ${CMAKE_CURRENT_SOURCE_DIR}/../AUTHORS ${CMAKE_SOURCE_DIR}/tools/makeman.sh
+        COMMAND ${CMAKE_SOURCE_DIR}/tools/makeman.sh ${tmppod} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${target}
+        DEPENDS ${tmppod} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${CMAKE_SOURCE_DIR}/tools/makeman.sh
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       )
       add_custom_target(manpage-${language}-${manpage} ALL DEPENDS ${target})

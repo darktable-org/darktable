@@ -68,7 +68,7 @@
 
   </sect2>
 
-  <sect2 status="draft">
+  <sect2 status="final">
 
     <title>Memory fragmentation</title>
 
@@ -80,9 +80,9 @@
       is often not the case. The system's memory allocator may no longer see this area as one
       contiguous 1.5GB block but as a row of 300MB areas. If there is no other free area of
       1.5GB available, the allocation would fail. During a program run this mechanism will take
-      away more and more of the larger memory blocks in favor of smaller ones. darktable 2.0
-      mip map cache allocates several small memory blocks per each thumbnail, so this problem
-      is even bigger. For this reason, as of darktable 2.0, 32-bit support is soft-deprecated.
+      away more and more of the larger memory blocks in favor of smaller ones. darktable 2.0 mip
+      map cache allocates several small memory blocks per each thumbnail, so this problem is
+      even bigger. For this reason, as of darktable 2.0, 32-bit support is soft-deprecated.
     </para>
 
   </sect2>
@@ -122,8 +122,8 @@
 
     <para>
       As we've seen 32-bit systems are difficult environments for darktable. Still some users
-      are running darktable on them, if the basic requirements in terms of total
-      system memory and the topics mentioned in the paragraphs above are addressed properly.
+      are running darktable on them, if the basic requirements in terms of total system memory
+      and the topics mentioned in the paragraphs above are addressed properly.
     </para>
 
     <para>
@@ -197,7 +197,8 @@
             As a starting point set this to something like 256MB. Since darktable 2.0, the cache
             does allocate a few small buffers per each thumbnail in cache, thus causing
             significant memory fragmentation. As explained before, this poses a problem for
-            32-bit systems. For this reason, as of darktable 2.0, 32-bit support is soft-deprecated.
+            32-bit systems. For this reason, as of darktable 2.0, 32-bit support is
+            soft-deprecated.
           </para></listitem>
 
         </varlistentry>

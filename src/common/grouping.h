@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __GROUPING_H__
-#define __GROUPING_H__
+#pragma once
 
 /** add an image to a group */
 void dt_grouping_add_to_group(int group_id, int image_id);
@@ -27,8 +26,6 @@ int dt_grouping_remove_from_group(int image_id);
 
 /** make an image the representative of the group it is in. returns the new group_id. */
 int dt_grouping_change_representative(int image_id);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

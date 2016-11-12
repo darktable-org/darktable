@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __INTROSPECTION_H__
-#define __INTROSPECTION_H__
+#pragma once
 
 #include <glib.h>
 #include <stdlib.h>
@@ -297,8 +296,6 @@ static inline const char *dt_introspection_get_enum_name(dt_introspection_field_
 
   return NULL;
 }
-
-#endif // __INTROSPECTION_H__
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_COMMON_BILATERAL_H
-#define DT_COMMON_BILATERAL_H
+#pragma once
 
 #include <stddef.h> // for size_t
 
@@ -64,8 +63,6 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
                                   const float detail);
 
 void dt_bilateral_free(dt_bilateral_t *b);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

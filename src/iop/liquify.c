@@ -1188,8 +1188,12 @@ void modify_roi_in (struct dt_iop_module_t *module,
 
   distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params);
 
-  cairo_rectangle_int_t pipe_rect
-      = { 0, 0, piece->buf_in.width * roi_in->scale, piece->buf_in.height * roi_in->scale };
+  cairo_rectangle_int_t pipe_rect = {
+    0,
+    0,
+    lroundf((double)piece->buf_in.width * roi_in->scale),
+    lroundf((double)piece->buf_in.height * roi_in->scale)
+  };
 
   cairo_rectangle_int_t roi_in_rect = {
     roi_in->x,
@@ -2608,6 +2612,12 @@ void gui_focus (struct dt_iop_module_t *module, gboolean in)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
   g->mouse_pointer_in_widget = module->enabled && in;
+
+  dt_control_hinter_message (darktable.control, "");
+  gtk_toggle_button_set_active (g->btn_point_tool, FALSE);
+  gtk_toggle_button_set_active (g->btn_line_tool,  FALSE);
+  gtk_toggle_button_set_active (g->btn_curve_tool, FALSE);
+  gtk_toggle_button_set_active (g->btn_node_tool,  FALSE);
 }
 
 static void sync_pipe (struct dt_iop_module_t *module, gboolean history)
@@ -3017,6 +3027,7 @@ int button_released (struct dt_iop_module_t *module,
   // right click == cancel or delete
   if (which == 3)
   {
+    dt_control_hinter_message (darktable.control, "");
     end_drag (g);
 
     // cancel line or curve creation

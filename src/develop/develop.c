@@ -38,9 +38,9 @@
 #include "develop/imageop.h"
 #include "develop/lightroom.h"
 #include "develop/masks.h"
-#include "views/undo.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "views/undo.h"
 
 #define DT_DEV_AVERAGE_DELAY_START 250
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50

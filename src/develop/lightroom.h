@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_LIGHTROOM_H
-#define DT_LIGHTROOM_H
+#pragma once
 
 #include "develop/imageop.h"
 
@@ -29,8 +28,6 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto);
 
 /* returns NULL if not found, or g_strdup'ed pathname, the caller should g_free it. */
 char *dt_get_lightroom_xmp(int imgid);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

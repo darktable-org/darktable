@@ -113,8 +113,8 @@
         of your image. Set this combobox to the aimed projection type, like
         <quote>rectilinear</quote>, <quote>fish-eye</quote>, <quote>panoramic</quote>,
         <quote>equirectangular</quote>, <quote>orthographic</quote>,
-        <quote>stereographic</quote>, <quote>equisolid angle</quote>,
-        <quote>thoby fish-eye</quote>.
+        <quote>stereographic</quote>, <quote>equisolid angle</quote>, <quote>thoby
+        fish-eye</quote>.
       </para>
     </sect5>
 
@@ -130,8 +130,8 @@
     <sect5>
       <title>mode</title>
       <para>
-        The default behavior of this module is to correct lens flaws. Switch this combobox
-        to <quote>distort</quote> in order to simulate the behavior of a specific lens (inverted
+        The default behavior of this module is to correct lens flaws. Switch this combobox to
+        <quote>distort</quote> in order to simulate the behavior of a specific lens (inverted
         effect).
       </para>
     </sect5>

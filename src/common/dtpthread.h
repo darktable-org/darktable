@@ -17,8 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_PTHREAD_H_
-#define DT_PTHREAD_H_
+#pragma once
 
 #include <assert.h>
 #include <errno.h>
@@ -316,8 +315,6 @@ static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *r
 #endif
 
 int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *arg);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

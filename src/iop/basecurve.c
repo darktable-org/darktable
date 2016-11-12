@@ -45,7 +45,7 @@
 #define MAXNODES 20
 
 
-DT_MODULE_INTROSPECTION(3, dt_iop_basecurve_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_basecurve_params_t)
 
 typedef struct dt_iop_basecurve_node_t
 {
@@ -63,6 +63,9 @@ typedef struct dt_iop_basecurve_params_t
   int exposure_fusion;    // number of exposure fusion steps
   float exposure_stops;   // number of stops between fusion images
 } dt_iop_basecurve_params_t;
+
+// same but semantics/defaults changed
+typedef dt_iop_basecurve_params_t dt_iop_basecurve_params3_t;
 
 typedef struct dt_iop_basecurve_params2_t
 {
@@ -82,7 +85,7 @@ typedef struct dt_iop_basecurve_params1_t
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 4)
   {
     dt_iop_basecurve_params1_t *o = (dt_iop_basecurve_params1_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
@@ -93,20 +96,30 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
                                         { { 0.0, 0.0 }, { 1.0, 1.0 } },
                                       },
                                       { 2, 3, 3 },
-                                      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE } , 0, 3};
+                                      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE } , 0, 1};
     for(int k = 0; k < 6; k++) n->basecurve[0][k].x = o->tonecurve_x[k];
     for(int k = 0; k < 6; k++) n->basecurve[0][k].y = o->tonecurve_y[k];
     n->basecurve_nodes[0] = 6;
     n->basecurve_type[0] = CUBIC_SPLINE;
+    n->exposure_fusion = 0;
+    n->exposure_stops = 1;
     return 0;
   }
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2 && new_version == 4)
   {
     dt_iop_basecurve_params2_t *o = (dt_iop_basecurve_params2_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
     memcpy(n, o, sizeof(dt_iop_basecurve_params2_t));
     n->exposure_fusion = 0;
-    n->exposure_stops = 3;
+    n->exposure_stops = 1;
+    return 0;
+  }
+  if(old_version == 3 && new_version == 4)
+  {
+    dt_iop_basecurve_params3_t *o = (dt_iop_basecurve_params3_t *)old_params;
+    dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
+    memcpy(n, o, sizeof(dt_iop_basecurve_params3_t));
+    n->exposure_stops = (o->exposure_fusion == 0 && o->exposure_stops == 0) ? 1.0f : o->exposure_stops;
     return 0;
   }
   return 1;
@@ -266,9 +279,16 @@ static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *pres
   // transform presets above to db entries.
   for(int k = 0; k < count; k++)
   {
+    // disable exposure fusion if not explicitly inited in params struct definition above:
+    dt_iop_basecurve_params_t tmp = presets[k].params;
+    if(tmp.exposure_fusion == 0 && tmp.exposure_stops == 0.0f)
+    {
+      tmp.exposure_fusion = 0;
+      tmp.exposure_stops = 1.0f;
+    }
     // add the preset.
     dt_gui_presets_add_generic(_(presets[k].name), self->op, self->version(),
-                               &presets[k].params, sizeof(dt_iop_basecurve_params_t), 1);
+                               &tmp, sizeof(dt_iop_basecurve_params_t), 1);
     // and restrict it to model, maker, iso, and raw images
     dt_gui_presets_update_mml(_(presets[k].name), self->op, self->version(),
                               presets[k].maker, presets[k].model, "");
@@ -1184,7 +1204,7 @@ void init(dt_iop_module_t *module)
     },
     { 2, 0, 0 }, // number of nodes per curve
     { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
-    0, 3.0f,     // no exposure fusion, but if we would, add 3 stops
+    0, 1.0f,     // no exposure fusion, but if we would, add one stop
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_basecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_basecurve_params_t));
@@ -1740,8 +1760,6 @@ static void fusion_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   int fuse = dt_bauhaus_combobox_get(widget);
-  if(p->exposure_fusion == 0 && p->exposure_stops == 0)
-    p->exposure_stops = ((dt_iop_basecurve_params_t *)self->default_params)->exposure_stops;
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   if(p->exposure_fusion == 0 && fuse != 0)
     gtk_widget_set_visible(g->exstep, TRUE);
@@ -1810,7 +1828,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), c->fusion, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->fusion), "value-changed", G_CALLBACK(fusion_callback), self);
 
-  c->exstep = dt_bauhaus_slider_new_with_range(self, 0.01, 4.0, 0.100, 3.0, 3);
+  c->exstep = dt_bauhaus_slider_new_with_range(self, 0.01, 4.0, 0.100, 1.0, 3);
   gtk_widget_set_tooltip_text(c->exstep, _("how many stops to shift the individual exposures apart"));
   dt_bauhaus_widget_set_label(c->exstep, NULL, _("exposure shift"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->exstep, TRUE, TRUE, 0);

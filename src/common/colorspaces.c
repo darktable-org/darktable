@@ -1137,6 +1137,22 @@ static void cms_error_handler(cmsContext ContextID, cmsUInt32Number ErrorCode, c
   fprintf(stderr, "[lcms2] error %d: %s\n", ErrorCode, text);
 }
 
+static gint _sort_profiles(gconstpointer a, gconstpointer b)
+{
+  const dt_colorspaces_color_profile_t *profile_a = (dt_colorspaces_color_profile_t *)a;
+  const dt_colorspaces_color_profile_t *profile_b = (dt_colorspaces_color_profile_t *)b;
+
+  gchar *name_a = g_utf8_casefold(profile_a->name, -1);
+  gchar *name_b = g_utf8_casefold(profile_b->name, -1);
+
+  gint result = g_strcmp0(name_a, name_b);
+
+  g_free(name_a);
+  g_free(name_b);
+
+  return result;
+}
+
 dt_colorspaces_t *dt_colorspaces_init()
 {
   cmsSetLogErrorHandler(cms_error_handler);
@@ -1213,6 +1229,9 @@ dt_colorspaces_t *dt_colorspaces_init()
                                                                _("BRG (for testing)"),
                                                                ++in_pos, ++out_pos, ++display_pos));
 
+  // temporary list of profiles to be added, we keep this separate to be able to sort it before adding
+  GList *temp_profiles = NULL;
+
   // read {userconfig,datadir}/color/in/*.icc, in this order.
   snprintf(dirname, sizeof(dirname), "%s/color/in", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR)) snprintf(dirname, sizeof(dirname), "%s/color/in", datadir);
@@ -1235,14 +1254,23 @@ dt_colorspaces_t *dt_colorspaces_init()
         g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         prof->type = DT_COLORSPACE_FILE;
         prof->profile = tmpprof;
-        prof->in_pos = ++in_pos;
+        prof->in_pos = -1; // will be set after sorting!
         prof->out_pos = -1;
         prof->display_pos = -1;
-        res->profiles = g_list_append(res->profiles, prof);
+        temp_profiles = g_list_append(temp_profiles, prof);
       }
     }
     g_dir_close(dir);
   }
+  temp_profiles = g_list_sort(temp_profiles, _sort_profiles);
+  for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
+  {
+    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
+    prof->in_pos = ++in_pos;
+  }
+  res->profiles = g_list_concat(res->profiles, temp_profiles);
+
+  temp_profiles = NULL;
 
   // read {conf,data}dir/color/out/*.icc
   snprintf(dirname, sizeof(dirname), "%s/color/out", confdir);
@@ -1268,15 +1296,21 @@ dt_colorspaces_t *dt_colorspaces_init()
         prof->type = DT_COLORSPACE_FILE;
         prof->profile = tmpprof;
         prof->in_pos = -1;
-        prof->out_pos = ++out_pos;
-        prof->display_pos = ++display_pos;
-        res->profiles = g_list_append(res->profiles, prof);
+        prof->out_pos = -1; // will be set after sorting!
+        prof->display_pos = -1;  // will be set after sorting!
+        temp_profiles = g_list_append(temp_profiles, prof);
       }
     }
     g_dir_close(dir);
   }
-
-  res->profiles = g_list_first(res->profiles);
+  temp_profiles = g_list_sort(temp_profiles, _sort_profiles);
+  for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
+  {
+    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
+    prof->out_pos = ++out_pos;
+    prof->display_pos = ++display_pos;
+  }
+  res->profiles = g_list_concat(res->profiles, temp_profiles);
 
   // init display profile and softproof/gama checking from conf
   res->display_type = dt_conf_get_int("ui_last/color/display_type");
@@ -1393,6 +1427,23 @@ static void dt_colorspaces_get_display_profile_colord_callback(GObject *source, 
 }
 #endif
 
+#if GTK_CHECK_VERSION(3, 22, 0) && defined GDK_WINDOWING_X11
+static int _gtk_get_monitor_num(GdkMonitor *monitor)
+{
+  GdkDisplay *display;
+  int n_monitors, i;
+
+  display = gdk_monitor_get_display(monitor);
+  n_monitors = gdk_display_get_n_monitors(display);
+  for(i = 0; i < n_monitors; i++)
+  {
+    if(gdk_display_get_monitor(display, i) == monitor) return i;
+  }
+
+  return -1;
+}
+#endif
+
 // Get the display ICC profile of the monitor associated with the widget.
 // For X display, uses the ICC profile specifications version 0.2 from
 // http://burtonini.com/blog/computers/xicc
@@ -1432,9 +1483,17 @@ void dt_colorspaces_set_display_profile()
   if(use_xatom)
   {
     GtkWidget *widget = dt_ui_center(darktable.gui->ui);
+    GdkWindow *window = gtk_widget_get_window(widget);
     GdkScreen *screen = gtk_widget_get_screen(widget);
     if(screen == NULL) screen = gdk_screen_get_default();
-    int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+    GdkDisplay *display = gtk_widget_get_display(widget);
+    int monitor = _gtk_get_monitor_num(gdk_display_get_monitor_at_window(display, window));
+#else
+    int monitor = gdk_screen_get_monitor_at_window(screen, window);
+#endif
+
     char *atom_name;
     if(monitor > 0)
       atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor);

@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_CTL_SETTINGS_H
-#define DT_CTL_SETTINGS_H
+
+#pragma once
 
 #include "common/darktable.h"
 #include "common/dtpthread.h"
@@ -53,8 +53,6 @@ typedef enum dt_lib_filter_t
   DT_LIB_FILTER_STAR_5 = 6,
   DT_LIB_FILTER_REJECT = 7
 } dt_lib_filter_t;
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

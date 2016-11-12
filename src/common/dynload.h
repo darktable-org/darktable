@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_DYNLOAD_H
-#define DT_DYNLOAD_H
+#pragma once
 
 #ifdef HAVE_OPENCL
 
@@ -44,9 +43,7 @@ dt_gmodule_t *dt_gmodule_open(const char *);
 /* get pointer to function */
 int dt_gmodule_symbol(dt_gmodule_t *, const char *, void (**)(void));
 
-
-#endif
-#endif
+#endif // HAVE_OPENCL
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

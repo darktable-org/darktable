@@ -34,16 +34,23 @@ math(EXPR MAX_MEANINGFUL_SIZE 32*1024)
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wframe-larger-than=${MAX_MEANINGFUL_SIZE})
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wstack-usage=${MAX_MEANINGFUL_SIZE})
 
-# 1Mb
-# # src/iop/ashift_lsd.c, nfa(), static double inv[TABSIZE]; <- 800000 bytes
+# 512Kb
 # # src/external/wb_presets.c, wb_preset <- ~400Kb
-math(EXPR MAX_MEANINGFUL_SIZE 1*1024*1024)
+math(EXPR MAX_MEANINGFUL_SIZE 512*1024)
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wlarger-than=${MAX_MEANINGFUL_SIZE})
 
-# minimal stack/frame stack size. (musl)
-# let's see if 1Mb is good-enough...
+# minimal main thread's stack/frame stack size. (musl)
+# 1Mb seems enough, and 256Kb seems to work too.
+# 128Kb does NOT work, based on my testing. Roman.
 # MUST be a multiple of the system page size !!!
-math(EXPR WANTED_STACK_SIZE 1*1024*1024)
+# see  $ getconf PAGESIZE
+math(EXPR WANTED_STACK_SIZE 64*4*1024)
+
+# minimal pthread stack/frame stack size. (musl)
+# should be fine with 64Kb+?
+# MUST be a multiple of the system page size !!!
+# see  $ getconf PAGESIZE
+math(EXPR WANTED_THREADS_STACK_SIZE 16*4*1024)
 
 if(SOURCE_PACKAGE)
   add_definitions(-D_RELEASE)

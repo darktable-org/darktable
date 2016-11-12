@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_VIEW_API_H
-#define DT_VIEW_API_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,8 +68,6 @@ void connect_key_accels(struct dt_view_t *self);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

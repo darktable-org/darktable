@@ -1790,27 +1790,35 @@ static GList *read_history_v1(const char *filename)
     current_entry->params = dt_exif_xmp_decode(params_iter->child_value(), strlen(params_iter->child_value()),
                                                &current_entry->params_len);
 
-    if(multi_name)
+    if(multi_name && multi_name_iter != multi_name.node().children().end())
+    {
       current_entry->multi_name = g_strdup(multi_name_iter->child_value());
+      multi_name_iter++;
+    }
 
-    if(multi_priority)
+    if(multi_priority && multi_priority_iter != multi_priority.node().children().end())
+    {
       current_entry->multi_priority = atoi(multi_priority_iter->child_value());
+      multi_priority_iter++;
+    }
 
-    if(blendop_version)
+    if(blendop_version && blendop_version_iter != blendop_version.node().children().end())
+    {
       current_entry->blendop_version = atoi(blendop_version_iter->child_value());
+      blendop_version_iter++;
+    }
 
-    if(blendop_params)
+    if(blendop_params && blendop_params_iter != blendop_params.node().children().end())
+    {
       current_entry->blendop_params = dt_exif_xmp_decode(blendop_params_iter->child_value(),
                                                          strlen(blendop_params_iter->child_value()),
                                                          &current_entry->blendop_params_len);
+      blendop_params_iter++;
+    }
 
     modversion_iter++;
     enabled_iter++;
     params_iter++;
-    if(blendop_params) blendop_params_iter++;
-    if(blendop_version) blendop_version_iter++;
-    if(multi_priority) multi_priority_iter++;
-    if(multi_name) multi_name_iter++;
   }
 
   return history_entries;

@@ -61,7 +61,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string.h>
 #include <strings.h>
 
 // load a full-res thumbnail:

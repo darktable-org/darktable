@@ -64,7 +64,7 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formty
     if(gui->point_selected >= 0)
       g_strlcat(msg, _("ctrl+click to rotate"), sizeof(msg));
     else if(gui->form_selected)
-      g_strlcat(msg, _("ctrl+scroll to set shape opacity"), sizeof(msg));
+      g_strlcat(msg, _("shift+click to switch feathering mode, ctrl+scroll to set shape opacity"), sizeof(msg));
   }
   else if(formtype & DT_MASKS_BRUSH)
   {
@@ -75,6 +75,11 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formty
       g_strlcat(msg, _("scroll to set brush size"), sizeof(msg));
     else if(gui->form_selected)
       g_strlcat(msg, _("scroll to set hardness, ctrl+scroll to set shape opacity"), sizeof(msg));
+  }
+  else if(formtype & DT_MASKS_CIRCLE)
+  {
+    if(gui->form_selected)
+      g_strlcat(msg, _("ctrl+scroll to set shape opacity"), sizeof(msg));
   }
 
   dt_control_hinter_message(darktable.control, msg);
@@ -1647,12 +1652,9 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
       forms = g_list_next(forms);
       continue;
     }
-    char str[256] = "";
-    g_strlcat(str, form->name, sizeof(str));
-    g_strlcat(str, "   ", sizeof(str));
-    int used = 0;
 
     // we search were this form is used in the current module
+    int used = 0;
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
     if(grp && (grp->type & DT_MASKS_GROUP))
     {
@@ -1672,12 +1674,10 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
     {
       if(nb == 0)
       {
-        char str2[256] = "<";
-        g_strlcat(str2, _("add existing shape"), sizeof(str2));
-        dt_bauhaus_combobox_add(combo, str2);
+        dt_bauhaus_combobox_add_aligned(combo, _("add existing shape"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
         cids[pos++] = 0; // nothing to do
       }
-      dt_bauhaus_combobox_add(combo, str);
+      dt_bauhaus_combobox_add(combo, form->name);
       cids[pos++] = form->formid;
       nb++;
     }
@@ -1699,9 +1699,7 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
       {
         if(nb == 0)
         {
-          char str2[256] = "<";
-          g_strlcat(str2, _("use same shapes as"), sizeof(str2));
-          dt_bauhaus_combobox_add(combo, str2);
+          dt_bauhaus_combobox_add_aligned(combo, _("use same shapes as"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
           cids[pos++] = 0; // nothing to do
         }
         gchar *module_label = dt_history_item_get_name(m);

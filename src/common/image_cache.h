@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_IMAGE_CACHE_H
-#define DT_IMAGE_CACHE_H
+
+#pragma once
 
 #include "common/cache.h"
 #include "common/image.h"
@@ -66,7 +66,6 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
 // remove the image from the cache
 void dt_image_cache_remove(dt_image_cache_t *cache, const uint32_t imgid);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __DBUS_H__
-#define __DBUS_H__
+#pragma once
 
 #include <glib.h>
 
@@ -30,8 +29,6 @@ void dt_dbus_destroy(const struct dt_dbus_t *);
 /** have we managed to get the dbus name? when not, then there is already another instance of darktable
  * running */
 gboolean dt_dbus_connected(const struct dt_dbus_t *);
-
-#endif // __DBUS_H__
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

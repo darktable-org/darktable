@@ -17,6 +17,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 #include <glib.h>
 #include <glib/gi18n.h>
 

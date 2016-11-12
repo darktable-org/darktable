@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_J2K_H
-#define DT_J2K_H
+
+#pragma once
 
 #include "common/image.h"
 #include "common/mipmap_cache.h"
@@ -26,7 +26,6 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
 /** reads the color profile attached to the image */
 int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

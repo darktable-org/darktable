@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_SELECTION_H
-#define DT_SELECTION_H
+
+#pragma once
 
 #include <glib.h>
 #include <inttypes.h>
@@ -44,7 +44,7 @@ void dt_selection_select_filmroll(struct dt_selection_t *selection);
 void dt_selection_select_unaltered(struct dt_selection_t *selection);
 /** selects a set of images from a list. the list is unaltered */
 void dt_selection_select_list(struct dt_selection_t *selection, GList *list);
-#endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

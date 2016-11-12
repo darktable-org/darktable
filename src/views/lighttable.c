@@ -1299,7 +1299,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   {
     if(lib->full_res_thumb_id != lib->full_preview_id)
     {
-      gboolean from_cache = FALSE;
+      gboolean from_cache = TRUE;
       char filename[PATH_MAX] = { 0 };
       dt_image_full_path(lib->full_preview_id, filename, sizeof(filename), &from_cache);
       free(lib->full_res_thumb);

@@ -15,8 +15,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_COMMON_FOCUS_H
-#define DT_COMMON_FOCUS_H
+#pragma once
 
 #include "common/image_cache.h"
 
@@ -347,7 +346,7 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid
 #undef CHANNEL
 #undef gbuf
 #undef FOCUS_THRS
-#endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

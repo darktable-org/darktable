@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __METADATA_H__
-#define __METADATA_H__
+#pragma once
 
 #include "common/darktable.h"
 #include "gui/gtk.h"
@@ -32,7 +31,6 @@ GList *dt_metadata_get(int id, const char *key, uint32_t *count);
 /** Remove metadata from specific images, or all selected for id == -1. */
 void dt_metadata_clear(int id);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

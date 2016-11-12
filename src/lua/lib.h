@@ -15,8 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_LUA_LIB_H
-#define DT_LUA_LIB_H
+
+#pragma once
+
 #include "libs/lib.h"
 #include <lua/lua.h>
 
@@ -29,7 +30,6 @@ void dt_lua_lib_register(lua_State *L, struct dt_lib_module_t *self);
 
 int dt_lua_init_early_lib(lua_State *L);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

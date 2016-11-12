@@ -21,7 +21,6 @@
 #include "bauhaus/bauhaus.h"
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
-#include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"

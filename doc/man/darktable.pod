@@ -503,16 +503,6 @@ B<darktablerc.html> An overview over all default config settings.
 The default place depends on your installation.
 Typical places are C</opt/darktable/share/doc/darktable/> and C</usr/share/doc/darktable/>.
 
-=head1 RELATED
-
-=over
-
-=item B<darktable-viewer> screensaver version of darktable.
-It shows the last active collection in full screen as a slideshow.
-Using the slideshow mode of darktable is encouraged.
-
-=back
-
 =head1 REPORTING BUGS
 
 Please use the bug tracker on

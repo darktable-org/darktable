@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CONTROL_JOBS_H__
-#define __CONTROL_JOBS_H__
+#pragma once
 
 #include <glib.h>
 
@@ -66,9 +65,6 @@ gboolean dt_control_progress_has_progress_bar(dt_progress_t *progress);
 
 /** has a job been linked to the progress object? */
 gboolean dt_control_progress_cancellable(dt_progress_t *progress);
-
-
-#endif // __CONTROL_JOBS_H__
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -17,6 +17,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 #include "common/image.h"
 #include <glib.h>
 #include <json-glib/json-glib.h>

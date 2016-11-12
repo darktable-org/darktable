@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_FSWATCH_H
-#define DT_FSWATCH_H
+
+#pragma once
 
 #include "common/darktable.h"
 #include "common/dtpthread.h"
@@ -49,7 +49,6 @@ void dt_fswatch_add(const dt_fswatch_t *fswatch, dt_fswatch_type_t type, void *d
 /** removes an watch of type and assigned data. */
 void dt_fswatch_remove(const dt_fswatch_t *fswatch, dt_fswatch_type_t type, void *data);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
