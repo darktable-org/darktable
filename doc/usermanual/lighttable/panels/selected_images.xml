@@ -140,7 +140,7 @@
         <ulink url="http://qtpfsgui.sourceforge.net/"><emphasis>Luminance
         HDR</emphasis></ulink>, and later import them into darktable for further processing (see
         <xref linkend="supported_file_formats"/>). Note that darktable will only creates HDR
-	images from raw files.
+        images from raw files.
       </para>
 
     </sect4>

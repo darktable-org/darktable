@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_PIXELPIPE_CACHE_H
-#define DT_PIXELPIPE_CACHE_H
+
+#pragma once
 
 #include <inttypes.h>
 
@@ -80,8 +80,6 @@ void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *da
 
 /** print out cache lines/hashes (debug). */
 void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

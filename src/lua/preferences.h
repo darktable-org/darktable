@@ -15,8 +15,9 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DT_LUA_PREFS_H
-#define DT_LUA_PREFS_H
+
+#pragma once
+
 #include <gtk/gtk.h>
 #include <lua/lua.h>
 
@@ -24,8 +25,6 @@ GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *tab);
 void destroy_tab_lua( GtkGrid *grid);
 
 int dt_lua_init_preferences(lua_State *L);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

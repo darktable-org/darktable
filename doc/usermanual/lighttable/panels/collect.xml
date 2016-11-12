@@ -258,9 +258,19 @@
         In the text field to the right of the attribute, you write a pattern. The pattern is
         compared against all database entries with the selected attribute. This search detects a
         match if the images' attribute contains the pattern in its full text. You may use
-        <quote>%</quote> as wildcard character. The collection gets limited to those images
+        <emphasis>%</emphasis> as wildcard character. The collection gets limited to those images
         where the query matches. Leaving the text field empty matches all images for that
         attribute.
+      </para>
+      
+      <para>
+        Attributes with numerical values as well as date and time attributes can be used in
+        combination with comparative and range operators. Write <emphasis>&lt;</emphasis>,
+        <emphasis>&lt;=</emphasis>, <emphasis>&gt;</emphasis>, <emphasis>&gt;=</emphasis>,
+        <emphasis>&lt;&gt;</emphasis>, and <emphasis>=</emphasis> to select images
+        with attributes less, less or equal, greater, greater or equal, not equal, or equal to
+        the a given value, respectively. An expression in the form <emphasis>[from;to]</emphasis>
+        selects a range of values.
       </para>
 
       <para>
@@ -333,14 +343,14 @@
       <title>updating folder path</title>
 
       <para>
-        While it is best to not touch imported files behind darktable's back, this module can help you recover from 
-        situations when you move imported folders after import.
-        The collect images module has a feature that allows you to tell darktable about
-        the new location of imported folders which have been moved.
-        You set the combobox to <emphasis>folders</emphasis> to find the original folder name in the tree.
-        The folder name will be displayed striked-out to emphasize that it is no longer there.
-        Then you right-click on the folder name, select <quote>search filmroll...</quote>,
-        and then select the new location of the folder.
+        While it is best to not touch imported files behind darktable's back, this module can
+        help you recover from situations when you move imported folders after import. The
+        collect images module has a feature that allows you to tell darktable about the new
+        location of imported folders which have been moved. You set the combobox to
+        <emphasis>folders</emphasis> to find the original folder name in the tree. The folder
+        name will be displayed striked-out to emphasize that it is no longer there. Then you
+        right-click on the folder name, select <quote>search filmroll...</quote>, and then
+        select the new location of the folder.
       </para>
 
     </sect4>

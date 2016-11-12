@@ -1,5 +1,4 @@
-#ifndef __KNIGHT_FONT_H__
-#define __KNIGHT_FONT_H__
+#pragma once
 
 /*
 
@@ -1224,8 +1223,6 @@ static const int n_letters = sizeof(font) / sizeof(*font);
 #undef XXX_X
 #undef XXXX_
 #undef XXXXX
-
-#endif // __KNIGHT_FONT_H__
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

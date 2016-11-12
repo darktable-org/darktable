@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 // edge-avoiding wavelet:
 #define gweight(i, j, ii, jj)                                                                                \
   1.0 / (fabsf(weight_a[l][(size_t)wd * ((j) >> (l - 1)) + ((i) >> (l - 1))]                                 \

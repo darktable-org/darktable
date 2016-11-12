@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_OPENCL_H
-#define DT_OPENCL_H
+
+#pragma once
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -439,8 +439,6 @@ static inline void dt_opencl_events_profiling(const int devid, const int aggrega
 }
 #endif
 
-
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

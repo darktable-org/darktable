@@ -757,6 +757,7 @@ void dtgtk_gradient_slider_multivalue_set_resetvalues(GtkDarktableGradientSlider
 void dtgtk_gradient_slider_multivalue_set_picker(GtkDarktableGradientSlider *gslider, gdouble value)
 {
   gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = value;
+  gtk_widget_queue_draw(GTK_WIDGET(gslider));
 }
 
 void dtgtk_gradient_slider_multivalue_set_picker_meanminmax(GtkDarktableGradientSlider *gslider, gdouble mean,
@@ -765,6 +766,7 @@ void dtgtk_gradient_slider_multivalue_set_picker_meanminmax(GtkDarktableGradient
   gslider->picker[0] = mean;
   gslider->picker[1] = min;
   gslider->picker[2] = max;
+  gtk_widget_queue_draw(GTK_WIDGET(gslider));
 }
 
 void dtgtk_gradient_slider_multivalue_set_margins(GtkDarktableGradientSlider *gslider, gint value)
@@ -832,6 +834,7 @@ void dtgtk_gradient_slider_set_resetvalue(GtkDarktableGradientSlider *gslider, g
 void dtgtk_gradient_slider_set_picker(GtkDarktableGradientSlider *gslider, gdouble value)
 {
   gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = value;
+  gtk_widget_queue_draw(GTK_WIDGET(gslider));
 }
 
 void dtgtk_gradient_slider_set_picker_meanminmax(GtkDarktableGradientSlider *gslider, gdouble mean,
@@ -840,6 +843,7 @@ void dtgtk_gradient_slider_set_picker_meanminmax(GtkDarktableGradientSlider *gsl
   gslider->picker[0] = mean;
   gslider->picker[1] = min;
   gslider->picker[2] = max;
+  gtk_widget_queue_draw(GTK_WIDGET(gslider));
 }
 
 void dtgtk_gradient_slider_set_margins(GtkDarktableGradientSlider *gslider, gint value)
