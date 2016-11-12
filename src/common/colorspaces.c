@@ -1427,7 +1427,7 @@ static void dt_colorspaces_get_display_profile_colord_callback(GObject *source, 
 }
 #endif
 
-#if GTK_CHECK_VERSION(3, 22, 0)
+#if GTK_CHECK_VERSION(3, 22, 0) && defined GDK_WINDOWING_X11
 static int _gtk_get_monitor_num(GdkMonitor *monitor)
 {
   GdkDisplay *display;
