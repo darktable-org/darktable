@@ -2345,7 +2345,7 @@
 			<Vertical x="4984" width="8"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-compressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-compressed">
 		<ID make="Nikon" model="Df">Nikon Df</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2354,12 +2354,12 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="2" y="0" width="-50" height="0"/>
-		<Sensor black="0" white="4096"/>
+		<Sensor black="0" white="3880"/>
 		<BlackAreas>
 			<Vertical x="4984" width="8"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-uncompressed" supported="no"> <!-- need raw sample for whitelevel -->
+	<Camera make="NIKON CORPORATION" model="NIKON Df" mode="12bit-uncompressed">
 		<ID make="Nikon" model="Df">Nikon Df</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2368,12 +2368,23 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="2" y="0" width="-50" height="0"/>
-		<Sensor black="0" white="4096"/>
+		<Sensor black="0" white="3880"/>
 		<BlackAreas>
 			<Vertical x="4984" width="8"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5100" mode="14bit-compressed" decoder_version="2">
+		<ID make="Nikon" model="D5100">Nikon D5100</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-46" height="0"/>
+		<Sensor black="0" white="15892"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D5100" mode="14bit-uncompressed" decoder_version="2"> <!-- the camera lies, see https://redmine.darktable.org/issues/11268 -->
 		<ID make="Nikon" model="D5100">Nikon D5100</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>

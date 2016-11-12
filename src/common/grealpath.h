@@ -3,8 +3,7 @@
  According to http://git.gnome.org/browse/gobject-introspection/tree/COPYING it's licensed under the LGPLv2+.
 */
 
-#ifndef __G_REALPATH_H__
-#define __G_REALPATH_H__
+#pragma once
 
 #include <stdlib.h>
 
@@ -53,8 +52,6 @@ static inline gchar *g_realpath(const char *path)
   return buffer;
 #endif
 }
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

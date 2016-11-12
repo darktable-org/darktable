@@ -17,8 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_DEVELOP_BLEND_H
-#define DT_DEVELOP_BLEND_H
+#pragma once
 
 #include "common/opencl.h"
 #include "develop/pixelpipe.h"
@@ -399,8 +398,6 @@ int dt_iop_gui_blending_mode_seq(dt_iop_gui_blend_data_t *bd, int mode);
 int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                                 cl_mem dev_in, cl_mem dev_out, const struct dt_iop_roi_t *roi_in,
                                 const struct dt_iop_roi_t *roi_out);
-#endif
-
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

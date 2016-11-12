@@ -144,7 +144,7 @@ int operation_tags()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
+  return /* IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | */ IOP_FLAGS_ONE_INSTANCE;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -780,6 +780,7 @@ error:
 }
 #endif
 
+#if 0
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
@@ -792,6 +793,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->yalign = 1;
   return;
 }
+#endif
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
@@ -874,34 +876,38 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   {
     // acquire temp memory for distorted pixel coords
     const size_t bufsize = (size_t)roi_in->width * 2 * 3;
+    void *const buf = dt_alloc_align(16, bufsize * dt_get_num_threads() * sizeof(float));
 
-#if defined(_OPENMP) && __GNUC_PREREQ(4, 7)
-    void *buf = dt_alloc_align(16, bufsize * dt_get_num_threads() * sizeof(float));
-
-#pragma omp parallel for default(none) shared(buf, modifier) reduction(min : xm, ym) reduction(max : xM, yM) \
-    schedule(static)
-#else
-    void *buf = dt_alloc_align(16, bufsize * sizeof(float));
+#ifdef _OPENMP
+#pragma omp parallel default(none) shared(modifier) reduction(min : xm, ym) reduction(max : xM, yM)
 #endif
-    for(int y = 0; y < roi_out->height; y++)
     {
-      float *bufptr = ((float *)buf) + (size_t)bufsize * dt_get_thread_num();
+      float *const bufptr = ((float *)buf) + (size_t)bufsize * dt_get_thread_num();
 
-      lf_modifier_apply_subpixel_geometry_distortion(modifier, roi_out->x, roi_out->y + y, roi_out->width, 1,
-                                                     bufptr);
-
-      // reverse transform the global coords from lf to our buffer
-      for(int x = 0; x < roi_out->width; x++)
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+      for(int y = 0; y < roi_out->height; y++)
       {
-        for(int c = 0; c < 3; c++, bufptr += 2)
+        lf_modifier_apply_subpixel_geometry_distortion(modifier, roi_out->x, roi_out->y + y, roi_out->width, 1,
+                                                       bufptr);
+
+        // reverse transform the global coords from lf to our buffer
+        for(int x = 0; x < roi_out->width; x++)
         {
-          xm = MIN(xm, bufptr[0]);
-          xM = MAX(xM, bufptr[0]);
-          ym = MIN(ym, bufptr[1]);
-          yM = MAX(yM, bufptr[1]);
+          for(int c = 0; c < 3; c++)
+          {
+            const size_t k = (size_t)3 * c * x;
+
+            xm = MIN(xm, bufptr[k + 0]);
+            xM = MAX(xM, bufptr[k + 0]);
+            ym = MIN(ym, bufptr[k + 1]);
+            yM = MAX(yM, bufptr[k + 1]);
+          }
         }
       }
     }
+
     dt_free_align(buf);
 
     // LensFun can return NAN coords, so we need to handle them carefully.
@@ -1501,7 +1507,12 @@ static void camera_menusearch_clicked(GtkWidget *button, gpointer user_data)
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   if(!camlist) return;
   camera_menu_fill(self, camlist);
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_pointer(GTK_MENU(g->camera_menu), NULL);
+#else
   gtk_menu_popup(GTK_MENU(g->camera_menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
+#endif
 }
 
 static void camera_autosearch_clicked(GtkWidget *button, gpointer user_data)
@@ -1535,7 +1546,11 @@ static void camera_autosearch_clicked(GtkWidget *button, gpointer user_data)
     lf_free(camlist);
   }
 
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_pointer(GTK_MENU(g->camera_menu), NULL);
+#else
   gtk_menu_popup(GTK_MENU(g->camera_menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
+#endif
 }
 
 /* -- end camera -- */
@@ -1842,7 +1857,11 @@ static void lens_menusearch_clicked(GtkWidget *button, gpointer user_data)
   lens_menu_fill(self, lenslist);
   lf_free(lenslist);
 
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_pointer(GTK_MENU(g->lens_menu), NULL);
+#else
   gtk_menu_popup(GTK_MENU(g->lens_menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
+#endif
 }
 
 static void lens_autosearch_clicked(GtkWidget *button, gpointer user_data)
@@ -1866,7 +1885,11 @@ static void lens_autosearch_clicked(GtkWidget *button, gpointer user_data)
   lens_menu_fill(self, lenslist);
   lf_free(lenslist);
 
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_pointer(GTK_MENU(g->lens_menu), NULL);
+#else
   gtk_menu_popup(GTK_MENU(g->lens_menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
+#endif
 }
 
 /* -- end lens -- */

@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __HTTP_SERVER__
-#define __HTTP_SERVER__
+#pragma once
 
 #include <libsoup/soup.h>
 
@@ -40,10 +39,6 @@ dt_http_server_t *dt_http_server_create(const int *ports, const int n_ports, con
  *  this also frees server.
  */
 void dt_http_server_kill(dt_http_server_t *server);
-
-
-
-#endif // __HTTP_SERVER__
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

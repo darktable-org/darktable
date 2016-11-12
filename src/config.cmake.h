@@ -1,8 +1,5 @@
-#pragma once
-
 // CMake uses config.cmake.h to generate config.h within the build folder.
-#ifndef DARKTABLE_CONFIG_H
-#define DARKTABLE_CONFIG_H
+#pragma once
 
 // clang-format off
 // it butchers @@ and ${} :(
@@ -27,6 +24,7 @@ extern const char darktable_package_string[];
 #define SHARED_MODULE_SUFFIX "@CMAKE_SHARED_MODULE_SUFFIX@"
 
 #define WANTED_STACK_SIZE (@WANTED_STACK_SIZE@)
+#define WANTED_THREADS_STACK_SIZE (@WANTED_THREADS_STACK_SIZE@)
 
 // clang-format on
 
@@ -60,8 +58,6 @@ extern const char darktable_package_string[];
 #else
 #define ASAN_POISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
-#endif
-
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

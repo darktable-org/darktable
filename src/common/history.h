@@ -16,8 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_HISTORY_H
-#define DT_HISTORY_H
+#pragma once
+
 #include <glib.h>
 #include <inttypes.h>
 #include <sqlite3.h>
@@ -55,8 +55,6 @@ GList *dt_history_get_items(int32_t imgid, gboolean enabled);
 /** get list of history items for image as a nice string */
 char *dt_history_get_items_as_string(int32_t imgid);
 
-
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

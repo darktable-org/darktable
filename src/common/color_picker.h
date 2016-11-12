@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_COMMON_COLOR_PICKER_H
-#define DT_COMMON_COLOR_PICKER_H
+#pragma once
 
 struct dt_iop_buffer_dsc_t;
 struct dt_iop_roi_t;
@@ -25,8 +24,6 @@ struct dt_iop_roi_t;
 void dt_color_picker_helper(const struct dt_iop_buffer_dsc_t *dsc, const float *const pixel,
                             const struct dt_iop_roi_t *roi, const int *const box, float *const picked_color,
                             float *const picked_color_min, float *const picked_color_max);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

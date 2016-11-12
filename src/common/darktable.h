@@ -16,8 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DARKTABLE_H
-#define DARKTABLE_H
+
+#pragma once
 
 // just to be sure. the build system should set this for us already:
 #if defined __DragonFly__ || defined __FreeBSD__ || defined __NetBSD__ || defined __OpenBSD__
@@ -526,8 +526,6 @@ static inline void dt_unreachable_codepath_with_caller(const char *description, 
  *          created with previous DT_MAX_PATH_FOR_PARAMS.
  */
 #define DT_MAX_PATH_FOR_PARAMS 4096
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

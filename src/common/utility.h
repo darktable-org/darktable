@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __UTILITY_H__
-#define __UTILITY_H__
+#pragma once
 
 #include <gtk/gtk.h>
 #include <string.h>
@@ -58,7 +57,6 @@ gchar *dt_util_latitude_str(float latitude);
 gchar *dt_util_longitude_str(float longitude);
 gchar *dt_util_elevation_str(float elevation);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
