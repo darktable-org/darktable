@@ -1,0 +1,11 @@
+# Build only this branch for the time being
+branches:
+  only:
+  - windows-build
+
+init:
+  - git config --global core.autocrlf input
+
+build_script:
+  - C:\msys64\usr\bin\pacman --noconfirm --sync --refresh --refresh --sysupgrade --sysupgrade
+  - C:\msys64\usr\bin\bash --login -c "$(cygpath ${APPVEYOR_BUILD_FOLDER})/ci-build.sh"
