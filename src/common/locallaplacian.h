@@ -65,6 +65,7 @@ static inline void ll_fill_boundary(
     const int wd,
     const int ht)
 {
+  // TODO: find out whether or not this weird stencil access pattern actually needs 2x2 bounds!
   for(int j=1;j<ht-1;j++) input[j*wd] = input[j*wd+1];
   for(int j=1;j<ht-1;j++) input[j*wd+wd-1] = input[j*wd+wd-2];
   memcpy(input, input+wd, sizeof(float)*wd);
@@ -80,8 +81,8 @@ static inline void gauss_expand(
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) collapse(2)
 #endif
-  for(int j=1;j<ht-1;j++)
-    for(int i=1;i<wd-1;i++)
+  for(int j=2;j<ht-2;j++)
+    for(int i=2;i<wd-2;i++)
       fine[j*wd+i] = ll_expand_gaussian(input, i, j, wd, ht);
   ll_fill_boundary(fine, wd, ht);
 }
@@ -268,8 +269,8 @@ static inline void local_laplacian(
     const float clarity)        // user param: increase clarity/local contrast
 {
   // XXX TODO: the paper says level 5 is good enough, too?
-#define num_levels 5
-#define num_gamma 5
+#define num_levels 7
+#define num_gamma 20
   const int max_supp = 1<<(num_levels-1);
   int w, h;
   float *padded[num_levels] = {0};
@@ -346,7 +347,7 @@ static inline void local_laplacian(
     gauss_expand(output[l+1], output[l], pw, ph);
     // go through all coefficients in the upsampled gauss buffer:
 #pragma omp parallel for default(none) schedule(static) collapse(2) shared(w,h,buf,output,l,gamma,padded)
-    for(int j=1;j<ph-1;j++) for(int i=1;i<pw-1;i++)
+    for(int j=2;j<ph-2;j++) for(int i=2;i<pw-2;i++)
     {
       const float v = padded[l][j*pw+i];
       // const float v = output[l][j*pw+i];
