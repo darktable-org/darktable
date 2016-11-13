@@ -79,19 +79,20 @@ int groups()
   return IOP_GROUP_COLOR;
 }
 
-static inline void process_lightness(dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-                                     const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void process_lightness(
+    dt_dev_pixelpipe_iop_t *piece, const void *const ib, void *const ob,
+    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
   fprintf(stderr, "ch is %f", (float)ch);
-  fprintf(stderr, "first three values are %f %f %f", ((float *)i)[0], ((float *)i)[1], ((float *)i)[2]);
+  fprintf(stderr, "first three values are %f %f %f", ((float *)ib)[0], ((float *)ib)[1], ((float *)ib)[2]);
 
   float *in;
   float *out;
   for(int j = 0; j < roi_out->height; ++j)
   {
-    in = ((float *)i) + (size_t)ch * roi_in->width * j;
-    out = ((float *)o) + (size_t)ch * roi_out->width * j;
+    in  = ((float *)ib) + (size_t)ch * roi_in->width * j;
+    out = ((float *)ob) + (size_t)ch * roi_out->width * j;
     for(int i = 0; i < roi_out->width; ++i, in += ch, out += ch)
     {
       out[0] = in[0];
@@ -101,8 +102,9 @@ static inline void process_lightness(dt_dev_pixelpipe_iop_t *piece, const void *
   }
 }
 
-static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-                                              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void process_apparent_grayscale(
+    dt_dev_pixelpipe_iop_t *piece, const void *const ib, void *const ob,
+    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
 #define PI atan2f(0, -1)
 
@@ -131,8 +133,8 @@ static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, con
   float *out;
   for(int j = 0; j < roi_out->height; ++j)
   {
-    in = ((float *)i) + (size_t)ch * roi_in->width * j;
-    out = ((float *)o) + (size_t)ch * roi_out->width * j;
+    in  = ((float *)ib) + (size_t)ch * roi_in->width * j;
+    out = ((float *)ob) + (size_t)ch * roi_out->width * j;
     for(int i = 0; i < roi_out->width; ++i, in += ch, out += ch)
     {
       // Lab -> XYZ
@@ -159,19 +161,20 @@ static inline void process_apparent_grayscale(dt_dev_pixelpipe_iop_t *piece, con
   }
 }
 
-static inline void process_local_laplacian(dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-                                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void process_local_laplacian(
+    dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_bw_params_t *d = (dt_iop_bw_params_t *)piece->data;
-
   float contrast = d->apparent.colorcontrast;
-  int num_levels = (int) d->apparent.colorcontrast_distance;
-  const int stride = piece->colors;
-  local_laplacian(i, (float *)o, roi_out->width, roi_out->height, stride, contrast, num_levels);
+  local_laplacian((const float *const)i, (float *const)o,
+      roi_out->width, roi_out->height, 0.1, 1.0, 1.0, contrast);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(
+    struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+    const void *const i, void *const o,
+    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_bw_params_t *d = (dt_iop_bw_params_t *)piece->data;
 
@@ -182,7 +185,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       break;
 
     case OPERATOR_APPARENT_GRAYSCALE:
-      process_apparent_grayscale(piece, i, o, roi_in, roi_out);
+      // XXX FIXME: this first call does nothing, does it.
+      // XXX FIXME: (the second overwrites the o buffer)
+      // process_apparent_grayscale(piece, i, o, roi_in, roi_out);
       process_local_laplacian(piece, i, o, roi_in, roi_out);
       break;
   }
