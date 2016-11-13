@@ -12,7 +12,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     $ pacman -S git
 
     Install required libraries and dependencies:
-    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,libglade,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk-engines,gtk3,pugixml,libexif,SDL}
+    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,libglade,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk-engines,gtk3,pugixml,libexif,SDL,flickcurl}
     
     For osm-gps-map:
     $ pacman -S mingw-w64-x86_64-{osm-gps-map}
@@ -126,6 +126,10 @@ TODO LIST
     Unicode handling in file an folder names
     Re-import of pictures with existing sidecar XMP file
     Filmrolls display
+    Fix g_realpath
+    Fix _stop_audio
+    Fix dt_control_load_config: not resizing if on windows
+    FIx glob.h
 
 B) Cross compile on Linux
     In order to build darktable for Windows there is a chance to cross compile it

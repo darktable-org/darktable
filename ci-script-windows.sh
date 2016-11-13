@@ -69,5 +69,5 @@ message() { local status="${1}"; local items=("${@:2}"); _status message "${stat
 # Install build environment and build
 PATH=/c/msys64/mingw64/bin:$PATH
 execute 'Installing base-devel and toolchain'  pacman -S --noconfirm mingw-w64-x86_64-{toolchain,cmake}
-execute 'Installing dependencies' pacman -S --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,lensfun,libglade,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk-engines,gtk3,pugixml,libexif,SDL}
+execute 'Installing dependencies' pacman -S --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,lensfun,libglade,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk-engines,gtk3,pugixml,libexif,SDL,osm-gps-map,libgphoto2,flickcurl}
 execute 'Building darktable' build_darktable
