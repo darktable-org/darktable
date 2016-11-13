@@ -122,7 +122,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   const size_t len = mbstowcs(NULL, filename, 0) + 1;
   wchar_t filen[MAX_PATH];
   if(len > MAX_PATH) return DT_IMAGEIO_FILE_NOT_FOUND;
-  mbstowcs(filen, filename, len);
+  size_t convertedchars = 0;
+  convertedchars = mbstowcs(filen, filename, sizeof(filen) / sizeof(wchar_t));
+  if(convertedchars == (size_t)-1) return DT_IMAGEIO_FILE_NOT_FOUND;
   FileReader f(filen);
 #else
   char filen[PATH_MAX] = { 0 };
