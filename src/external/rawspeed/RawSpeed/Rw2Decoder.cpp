@@ -101,23 +101,6 @@ RawImage Rw2Decoder::decodeRawInternal() {
     input_start = new ByteStream(mFile, off);
     DecodeRw2();
   }
-  // Read blacklevels
-  if (raw->hasEntry((TiffTag)0x1c) && raw->hasEntry((TiffTag)0x1d) && raw->hasEntry((TiffTag)0x1e)) {
-    mRaw->blackLevelSeparate[0] = mRaw->blackLevelSeparate[3] = raw->getEntry((TiffTag)0x1d)->getInt() + 15;
-    mRaw->blackLevelSeparate[1] = raw->getEntry((TiffTag)0x1e)->getInt() + 15;
-    mRaw->blackLevelSeparate[2] = raw->getEntry((TiffTag)0x1c)->getInt() + 15;
-  }
-
-  // Read WB levels
-  if (raw->hasEntry((TiffTag)0x0024) && raw->hasEntry((TiffTag)0x0025) && raw->hasEntry((TiffTag)0x0026)) {
-    mRaw->metadata.wbCoeffs[0] = (float) raw->getEntry((TiffTag)0x0024)->getShort();
-    mRaw->metadata.wbCoeffs[1] = (float) raw->getEntry((TiffTag)0x0025)->getShort();
-    mRaw->metadata.wbCoeffs[2] = (float) raw->getEntry((TiffTag)0x0026)->getShort();
-  } else if (raw->hasEntry((TiffTag)0x0011) && raw->hasEntry((TiffTag)0x0012)) {
-    mRaw->metadata.wbCoeffs[0] = (float) raw->getEntry((TiffTag)0x0011)->getShort();
-    mRaw->metadata.wbCoeffs[1] = 256.0f;
-    mRaw->metadata.wbCoeffs[2] = (float) raw->getEntry((TiffTag)0x0012)->getShort();
-  }
 
   return mRaw;
 }
@@ -234,6 +217,48 @@ void Rw2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
     mRaw->metadata.mode = mode;
     _RPT1(0, "Mode not found in DB: %s", mode.c_str());
     setMetaData(meta, make, model, "", iso);
+  }
+
+  data = mRootIFD->getIFDsWithTag(PANASONIC_STRIPOFFSET);
+  TiffIFD* raw = data[0];
+
+  // Read blacklevels
+  if (raw->hasEntry((TiffTag)0x1c) && raw->hasEntry((TiffTag)0x1d) && raw->hasEntry((TiffTag)0x1e)) {
+    const int blackRed = raw->getEntry((TiffTag)0x1c)->getInt() + 15;
+    const int blackGreen = raw->getEntry((TiffTag)0x1d)->getInt() + 15;
+    const int blackBlue = raw->getEntry((TiffTag)0x1e)->getInt() + 15;
+
+    for(int i = 0; i < 2; i++) {
+      for(int j = 0; j < 2; j++) {
+        const int k = i + 2 * j;
+        const CFAColor c = mRaw->cfa.getColorAt(i, j);
+        switch (c) {
+          case CFA_RED:
+            mRaw->blackLevelSeparate[k] = blackRed;
+            break;
+          case CFA_GREEN:
+            mRaw->blackLevelSeparate[k] = blackGreen;
+            break;
+          case CFA_BLUE:
+            mRaw->blackLevelSeparate[k] = blackBlue;
+            break;
+          default:
+            ThrowRDE("RW2 Decoder: Unexpected CFA color %s.", ColorFilterArray::colorToString(c).c_str());
+            break;
+        }
+      }
+    }
+  }
+
+  // Read WB levels
+  if (raw->hasEntry((TiffTag)0x0024) && raw->hasEntry((TiffTag)0x0025) && raw->hasEntry((TiffTag)0x0026)) {
+    mRaw->metadata.wbCoeffs[0] = (float) raw->getEntry((TiffTag)0x0024)->getShort();
+    mRaw->metadata.wbCoeffs[1] = (float) raw->getEntry((TiffTag)0x0025)->getShort();
+    mRaw->metadata.wbCoeffs[2] = (float) raw->getEntry((TiffTag)0x0026)->getShort();
+  } else if (raw->hasEntry((TiffTag)0x0011) && raw->hasEntry((TiffTag)0x0012)) {
+    mRaw->metadata.wbCoeffs[0] = (float) raw->getEntry((TiffTag)0x0011)->getShort();
+    mRaw->metadata.wbCoeffs[1] = 256.0f;
+    mRaw->metadata.wbCoeffs[2] = (float) raw->getEntry((TiffTag)0x0012)->getShort();
   }
 }
 
