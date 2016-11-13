@@ -12,7 +12,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     $ pacman -S git
 
     Install required libraries and dependencies:
-    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,libglade,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk-engines,gtk3,pugixml,libexif,SDL,flickcurl}
+    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,flickcurl}
     
     For osm-gps-map:
     $ pacman -S mingw-w64-x86_64-{osm-gps-map}
