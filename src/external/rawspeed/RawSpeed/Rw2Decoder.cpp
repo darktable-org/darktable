@@ -103,9 +103,9 @@ RawImage Rw2Decoder::decodeRawInternal() {
   }
   // Read blacklevels
   if (raw->hasEntry((TiffTag)0x1c) && raw->hasEntry((TiffTag)0x1d) && raw->hasEntry((TiffTag)0x1e)) {
-    mRaw->blackLevelSeparate[0] = raw->getEntry((TiffTag)0x1c)->getInt() + 15;
-    mRaw->blackLevelSeparate[1] = mRaw->blackLevelSeparate[2] = raw->getEntry((TiffTag)0x1d)->getInt() + 15;
-    mRaw->blackLevelSeparate[3] = raw->getEntry((TiffTag)0x1e)->getInt() + 15;
+    mRaw->blackLevelSeparate[0] = mRaw->blackLevelSeparate[3] = raw->getEntry((TiffTag)0x1d)->getInt() + 15;
+    mRaw->blackLevelSeparate[1] = raw->getEntry((TiffTag)0x1e)->getInt() + 15;
+    mRaw->blackLevelSeparate[2] = raw->getEntry((TiffTag)0x1c)->getInt() + 15;
   }
 
   // Read WB levels
