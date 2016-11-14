@@ -129,13 +129,14 @@ static inline void process_apparent_grayscale(
       dt_Lab_to_XYZ(in, XYZ);
 
       // XYZ -> Luv
-      uv_prime[0] = (4.0f * XYZ[0]) / (XYZ[0] + 15.0f * XYZ[1] + 3.0f * XYZ[2]);
-      uv_prime[1] = (9.0f * XYZ[1]) / (XYZ[0] + 15.0f * XYZ[1] + 3.0f * XYZ[2]);
+      uv_prime[0] = (4.0f * XYZ[0]) / (XYZ[0] + 15.0f * XYZ[1] + 3.0f * XYZ[2] + 1e-5f);
+      uv_prime[1] = (9.0f * XYZ[1]) / (XYZ[0] + 15.0f * XYZ[1] + 3.0f * XYZ[2] + 1e-5f);
 
       // Calculate monochrome value.
-      s_uv = 13.0f * sqrtf(powf(uv_prime[0] - uv_prime_c[0], 2) + powf(uv_prime[1] - uv_prime_c[1], 2));
+      s_uv = 13.0f * sqrtf(MAX(0.0f, powf(uv_prime[0] - uv_prime_c[0], 2) + powf(uv_prime[1] - uv_prime_c[1], 2)));
       theta = atan2f(uv_prime[1] - uv_prime_c[1],
                      uv_prime[0] - uv_prime_c[0]); // FIXME Check for domain error, atan2f(0, 0)
+      if(!(theta == theta)) theta = 0.0f;
 
       q = -0.01585f - 0.03016f * cosf(theta) - 0.04556f * cosf(2.0f * theta) - 0.02667f * cosf(3.0f * theta)
           - 0.00295 * cosf(4.0f * theta) + 0.14592f * sinf(theta) + 0.05084f * sinf(2.0f * theta)
