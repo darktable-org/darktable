@@ -278,7 +278,7 @@ static inline void local_laplacian(
     const float clarity)        // user param: increase clarity/local contrast
 {
   // XXX TODO: the paper says level 5 is good enough, too? more does look significantly different.
-#define num_levels 7
+#define num_levels 10
 #define num_gamma 8
   const int max_supp = 1<<(num_levels-1);
   int w, h;
