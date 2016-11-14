@@ -22,9 +22,42 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 
-static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
-                                    const dt_iop_roi_t *roi, const int *const box, float *const picked_color,
-                                    float *const picked_color_min, float *const picked_color_max)
+static void color_picker_helper_4ch_seq(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
+                                        const dt_iop_roi_t *roi, const int *const box, float *const picked_color,
+                                        float *const picked_color_min, float *const picked_color_max)
+{
+  const int width = roi->width;
+
+  const size_t size = ((box[3] - box[1]) * (box[2] - box[0]));
+
+  const float w = 1.0f / (float)size;
+
+  // code path for small region, especially for color picker point mode
+  for(size_t j = box[1]; j < box[3]; j++)
+  {
+    for(size_t i = box[0]; i < box[2]; i++)
+    {
+      const size_t k = 4 * (width * j + i);
+      const float L = pixel[k];
+      const float a = pixel[k + 1];
+      const float b = pixel[k + 2];
+      picked_color[0] += w * L;
+      picked_color[1] += w * a;
+      picked_color[2] += w * b;
+      picked_color_min[0] = fminf(picked_color_min[0], L);
+      picked_color_min[1] = fminf(picked_color_min[1], a);
+      picked_color_min[2] = fminf(picked_color_min[2], b);
+      picked_color_max[0] = fmaxf(picked_color_max[0], L);
+      picked_color_max[1] = fmaxf(picked_color_max[1], a);
+      picked_color_max[2] = fmaxf(picked_color_max[2], b);
+    }
+  }
+}
+
+static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
+                                             const dt_iop_roi_t *roi, const int *const box,
+                                             float *const picked_color, float *const picked_color_min,
+                                             float *const picked_color_max)
 {
   const int width = roi->width;
 
@@ -46,7 +79,7 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *dsc, const float 
   }
 
 #ifdef _OPENMP
-#pragma omp parallel if(size > 100) default(none)
+#pragma omp parallel default(none)
 #endif
   {
     const int tnum = dt_get_thread_num();
@@ -94,15 +127,59 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *dsc, const float 
   free(mean);
 }
 
-static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
-                                      const dt_iop_roi_t *const roi, const int *const box,
-                                      float *const picked_color, float *const picked_color_min,
-                                      float *const picked_color_max)
+static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
+                                    const dt_iop_roi_t *roi, const int *const box, float *const picked_color,
+                                    float *const picked_color_min, float *const picked_color_max)
+{
+  const size_t size = ((box[3] - box[1]) * (box[2] - box[0]));
+
+  if(size > 100) // avoid inefficient multi-threading in case of small region size (arbitrary limit)
+    return color_picker_helper_4ch_parallel(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
+  else
+    return color_picker_helper_4ch_seq(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
+}
+
+static void color_picker_helper_bayer_seq(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
+                                          const dt_iop_roi_t *const roi, const int *const box,
+                                          float *const picked_color, float *const picked_color_min,
+                                          float *const picked_color_max)
 {
   const int width = roi->width;
   const uint32_t filters = dsc->filters;
 
-  const size_t size __attribute__((unused)) = ((box[3] - box[1]) * (box[2] - box[0]));
+  uint32_t weights[4] = { 0u, 0u, 0u, 0u };
+
+  // code path for small region, especially for color picker point mode
+  for(size_t j = box[1]; j < box[3]; j++)
+  {
+    for(size_t i = box[0]; i < box[2]; i++)
+    {
+      const int c = FC(j + roi->y, i + roi->x, filters);
+      const size_t k = width * j + i;
+
+      const float v = pixel[k];
+
+      picked_color[c] += v;
+      picked_color_min[c] = fminf(picked_color_min[c], v);
+      picked_color_max[c] = fmaxf(picked_color_max[c], v);
+      weights[c]++;
+    }
+  }
+
+  // and finally normalize data. For bayer, there is twice as much green.
+  for(int c = 0; c < 4; c++)
+  {
+    picked_color[c] = weights[c] ? (picked_color[c] / (float)weights[c]) : 0.0f;
+  }
+}
+
+static void color_picker_helper_bayer_parallel(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
+                                               const dt_iop_roi_t *const roi, const int *const box,
+                                               float *const picked_color, float *const picked_color_min,
+                                               float *const picked_color_max)
+{
+  const int width = roi->width;
+  const uint32_t filters = dsc->filters;
 
   uint32_t weights[4] = { 0u, 0u, 0u, 0u };
 
@@ -122,7 +199,7 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
   }
 
 #ifdef _OPENMP
-#pragma omp parallel if(size > 100) default(none)
+#pragma omp parallel default(none)
 #endif
   {
     const int tnum = dt_get_thread_num();
@@ -175,15 +252,61 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
   }
 }
 
-static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
-                                       const dt_iop_roi_t *const roi, const int *const box,
-                                       float *const picked_color, float *const picked_color_min,
-                                       float *const picked_color_max)
+static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
+                                      const dt_iop_roi_t *roi, const int *const box, float *const picked_color,
+                                      float *const picked_color_min, float *const picked_color_max)
+{
+  const size_t size = ((box[3] - box[1]) * (box[2] - box[0]));
+
+  if(size > 100) // avoid inefficient multi-threading in case of small region size (arbitrary limit)
+    return color_picker_helper_bayer_parallel(dsc, pixel, roi, box, picked_color, picked_color_min,
+                                              picked_color_max);
+  else
+    return color_picker_helper_bayer_seq(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
+}
+
+static void color_picker_helper_xtrans_seq(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
+                                           const dt_iop_roi_t *const roi, const int *const box,
+                                           float *const picked_color, float *const picked_color_min,
+                                           float *const picked_color_max)
 {
   const int width = roi->width;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])dsc->xtrans;
 
-  const size_t size __attribute__((unused)) = ((box[3] - box[1]) * (box[2] - box[0]));
+  uint32_t weights[3] = { 0u, 0u, 0u };
+
+  // code path for small region, especially for color picker point mode
+  for(size_t j = box[1]; j < box[3]; j++)
+  {
+    for(size_t i = box[0]; i < box[2]; i++)
+    {
+      const int c = FCxtrans(j, i, roi, xtrans);
+      const size_t k = width * j + i;
+
+      const float v = pixel[k];
+
+      picked_color[c] += v;
+      picked_color_min[c] = fminf(picked_color_min[c], v);
+      picked_color_max[c] = fmaxf(picked_color_max[c], v);
+      weights[c]++;
+    }
+  }
+
+  // and finally normalize data.
+  // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell
+  for(int c = 0; c < 3; c++)
+  {
+    picked_color[c] /= (float)weights[c];
+  }
+}
+
+static void color_picker_helper_xtrans_parallel(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
+                                                const dt_iop_roi_t *const roi, const int *const box,
+                                                float *const picked_color, float *const picked_color_min,
+                                                float *const picked_color_max)
+{
+  const int width = roi->width;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])dsc->xtrans;
 
   uint32_t weights[3] = { 0u, 0u, 0u };
 
@@ -203,7 +326,7 @@ static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *const dsc, con
   }
 
 #ifdef _OPENMP
-#pragma omp parallel if(size > 100) default(none)
+#pragma omp parallel default(none)
 #endif
   {
     const int tnum = dt_get_thread_num();
@@ -249,11 +372,25 @@ static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *const dsc, con
   free(mmin);
   free(msum);
 
-  // and finally normalize data. For bayer, there is twice as much green.
+  // and finally normalize data.
+  // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell
   for(int c = 0; c < 3; c++)
   {
     picked_color[c] /= (float)weights[c];
   }
+}
+
+static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
+                                       const dt_iop_roi_t *roi, const int *const box, float *const picked_color,
+                                       float *const picked_color_min, float *const picked_color_max)
+{
+  const size_t size = ((box[3] - box[1]) * (box[2] - box[0]));
+
+  if(size > 100) // avoid inefficient multi-threading in case of small region size (arbitrary limit)
+    return color_picker_helper_xtrans_parallel(dsc, pixel, roi, box, picked_color, picked_color_min,
+                                               picked_color_max);
+  else
+    return color_picker_helper_xtrans_seq(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
 }
 
 void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const pixel, const dt_iop_roi_t *roi,
