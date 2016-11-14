@@ -15,7 +15,8 @@ static inline int dl(int size, const int level)
   return size;
 }
 
-// needs a boundary of 1px around i,j or else it will crash.
+// needs a boundary of 2px around i,j or else it will crash.
+// (translates to a 1px boundary around the corresponding pixel in the coarse buffer)
 static inline float ll_expand_gaussian(
     const float *const coarse,
     const int i,
@@ -60,16 +61,29 @@ static inline float ll_expand_gaussian(
 }
 
 // helper to fill in one pixel boundary by copying it
-static inline void ll_fill_boundary(
+static inline void ll_fill_boundary1(
     float *const input,
     const int wd,
     const int ht)
 {
-  // TODO: find out whether or not this weird stencil access pattern actually needs 2x2 bounds!
   for(int j=1;j<ht-1;j++) input[j*wd] = input[j*wd+1];
   for(int j=1;j<ht-1;j++) input[j*wd+wd-1] = input[j*wd+wd-2];
-  memcpy(input, input+wd, sizeof(float)*wd);
+  memcpy(input,    input+wd, sizeof(float)*wd);
   memcpy(input+wd*(ht-1), input+wd*(ht-2), sizeof(float)*wd);
+}
+
+// helper to fill in two pixels boundary by copying it
+static inline void ll_fill_boundary2(
+    float *const input,
+    const int wd,
+    const int ht)
+{
+  for(int j=1;j<ht-1;j++) input[j*wd] = input[j*wd+1] = input[j*wd+2];
+  for(int j=1;j<ht-1;j++) input[j*wd+wd-1] = input[j*wd+wd-2] = input[j*wd+wd-3];
+  memcpy(input,    input+2*wd, sizeof(float)*wd);
+  memcpy(input+wd, input+2*wd, sizeof(float)*wd);
+  memcpy(input+wd*(ht-1), input+wd*(ht-3), sizeof(float)*wd);
+  memcpy(input+wd*(ht-2), input+wd*(ht-3), sizeof(float)*wd);
 }
 
 static inline void gauss_expand(
@@ -84,7 +98,7 @@ static inline void gauss_expand(
   for(int j=2;j<ht-2;j++)
     for(int i=2;i<wd-2;i++)
       fine[j*wd+i] = ll_expand_gaussian(input, i, j, wd, ht);
-  ll_fill_boundary(fine, wd, ht);
+  ll_fill_boundary2(fine, wd, ht);
 }
 
 static inline void gauss_reduce(
@@ -102,13 +116,8 @@ static inline void gauss_reduce(
   // direct 5x5 stencil only on required pixels:
   for(int j=1;j<ch-1;j++) for(int i=1;i<cw-1;i++)
     for(int jj=-2;jj<=2;jj++) for(int ii=-2;ii<=2;ii++)
-    {
       coarse[j*cw+i] += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
-      assert(
-      coarse[j*cw+i] ==
-      coarse[j*cw+i]);
-    }
-  ll_fill_boundary(coarse, cw, ch);
+  ll_fill_boundary1(coarse, cw, ch);
 }
 
 static inline void rgb_to_yuv(
@@ -268,9 +277,9 @@ static inline void local_laplacian(
     const float highlights,     // user param: compress highlights
     const float clarity)        // user param: increase clarity/local contrast
 {
-  // XXX TODO: the paper says level 5 is good enough, too?
+  // XXX TODO: the paper says level 5 is good enough, too? more does look significantly different.
 #define num_levels 7
-#define num_gamma 20
+#define num_gamma 8
   const int max_supp = 1<<(num_levels-1);
   int w, h;
   float *padded[num_levels] = {0};
@@ -296,8 +305,8 @@ static inline void local_laplacian(
   // evenly sample brightness [0,1]:
   float gamma[num_gamma] = {0.0f};
   // for(int k=0;k<num_gamma;k++) gamma[k] = powf(k/(num_gamma-1.0f), 2.0); // XXX DEBUG
-  // for(int k=0;k<num_gamma;k++) gamma[k] = (k+.5f)/num_gamma;
-  for(int k=0;k<num_gamma;k++) gamma[k] = k/(num_gamma-1.0f);
+  for(int k=0;k<num_gamma;k++) gamma[k] = (k+.5f)/(float)num_gamma;
+  // for(int k=0;k<num_gamma;k++) gamma[k] = k/(num_gamma-1.0f);
 
   // XXX FIXME: don't need to alloc all the memory at once!
   // XXX FIXME: accumulate into output pyramid one by one?
@@ -363,24 +372,8 @@ static inline void local_laplacian(
       float laplace = l0 * (1.0f-a) + l1 * a;
       output[l][j*pw+i] += laplace;
     }
-    ll_fill_boundary(output[l], pw, ph);
+    ll_fill_boundary2(output[l], pw, ph);
   }
-#if 0 // shad/hi by subtracting ll result
-#pragma omp parallel for default(none) schedule(static) collapse(2) shared(w,h,output)
-  for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
-  {
-    const int shad = 1;
-    float x = output[0][(j+max_supp)*w+max_supp+i];
-    // else x = .5f * (2.0f*x - powf(1.0-2.0f*x, 2*highlights+1));
-    // output[0][j*wd+i] = x;
-    float yuv[3];
-    rgb_to_yuv(input+3*(j*wd+i), yuv);
-    const float ydetail = yuv[0] - x;
-    if(x < .5f) x = (x - powf(1.-2.*x, 2*(int)shad+1))/3.+1./3.;
-    yuv[0] = x + ydetail;//output[0][(j+max_supp)*w+max_supp+i];
-    yuv_to_rgb(yuv, out+3*(j*wd+i));
-  }
-#else // output result of ll
 #pragma omp parallel for default(none) schedule(dynamic) collapse(2) shared(w,output,buf)
   for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
   {
@@ -391,11 +384,9 @@ static inline void local_laplacian(
     // yuv_to_rgb(yuv, out+3*(j*wd+i));
 
     out[4*(j*wd+i)+0] = 100.0f * output[0][(j+max_supp)*w+max_supp+i]; // [0,1] -> L
-    // out[3*(j*wd+i)+1] = buf[num_gamma/2][0][(j+max_supp)*w+max_supp+i]; // XXX DEBUG copy processed channel w/o pyramid
     out[4*(j*wd+i)+1] = 0.0;// input[4*(j*wd+i)+1]; // XXX DEBUG copy original channel
     out[4*(j*wd+i)+2] = 0.0;// input[4*(j*wd+i)+2];
   }
-#endif
   // free all buffers!
   for(int l=0;l<num_levels;l++)
   {
