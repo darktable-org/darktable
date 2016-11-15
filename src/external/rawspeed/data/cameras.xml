@@ -5745,6 +5745,54 @@
 		<Crop x="0" y="0" width="-74" height="0"/>
 		<Sensor black="15" white="3971"/>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-LX15">
+		<ID make="Panasonic" model="DMC-LX15">Panasonic DMC-LX9</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="143" white="4095"/>
+		<Sensor black="142" white="2095" iso_list="80"/>
+		<Sensor black="142" white="3400" iso_list="100"/>
+		<Sensor black="142" white="4095" iso_list="125"/>
+		<Sensor black="144" white="4095" iso_list="640 800"/>
+		<Sensor black="145" white="4095" iso_list="1250 1600"/>
+		<Sensor black="149" white="4095" iso_list="3200"/>
+		<Sensor black="154" white="4095" iso_list="6400"/>
+		<Sensor black="166" white="4095" iso_list="12800"/>
+		<Sensor black="167" white="4095" iso_list="25600"/>
+		<Aliases>
+			<Alias>DMC-LX9</Alias>
+			<Alias>DMC-LX10</Alias>
+		</Aliases>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-LX15" mode="3:2">
+		<ID make="Panasonic" model="DMC-LX15">Panasonic DMC-LX9</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="143" white="4095"/>
+		<Sensor black="142" white="2095" iso_list="80"/>
+		<Sensor black="142" white="3400" iso_list="100"/>
+		<Sensor black="142" white="4095" iso_list="125"/>
+		<Sensor black="144" white="4095" iso_list="640 800"/>
+		<Sensor black="145" white="4095" iso_list="1250 1600"/>
+		<Sensor black="149" white="4095" iso_list="3200"/>
+		<Sensor black="154" white="4095" iso_list="6400"/>
+		<Sensor black="166" white="4095" iso_list="12800"/>
+		<Sensor black="167" white="4095" iso_list="25600"/>
+		<Aliases>
+			<Alias>DMC-LX9</Alias>
+			<Alias>DMC-LX10</Alias>
+		</Aliases>
+	</Camera>
 	<Camera make="LEICA" model="DIGILUX 2" decoder_version="2">
 		<ID make="Leica" model="Digilux 2">Leica Digilux 2</ID>
 		<CFA width="2" height="2">
