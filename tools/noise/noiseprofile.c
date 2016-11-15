@@ -63,6 +63,7 @@ read_pfm(const char *filename, int *wd, int*ht)
 
   float *p = (float *)malloc(sizeof(float)*3*(*wd)*(*ht));
   fread(p, sizeof(float)*3, (*wd)*(*ht), f);
+  for(int k=0;k<3*(*wd)*(*ht);k++) p[k] = fmaxf(0.0f, p[k]);
   fclose(f);
   return p;
 }

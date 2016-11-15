@@ -1728,7 +1728,8 @@ static void free_entry(gpointer data)
 
 // we have to use pugixml as the old format could contain empty rdf:li elements in the multi_name array
 // which causes problems when accessing it with libexiv2 :(
-static GList *read_history_v1(const char *filename)
+// superold is a flag indicating that data is wrapped in <rdf:Bag> instead of <rdf:Seq>.
+static GList *read_history_v1(const char *filename, const int superold)
 {
   GList *history_entries = NULL;
 
@@ -1746,23 +1747,55 @@ static GList *read_history_v1(const char *filename)
   // get the old elements
   // select_single_node() is deprecated and just kept for old versions shipped in some distributions
 #if defined(PUGIXML_VERSION) && PUGIXML_VERSION >= 150
-  pugi::xpath_node modversion = doc.select_node("//darktable:history_modversion/rdf:Seq");
-  pugi::xpath_node enabled = doc.select_node("//darktable:history_enabled/rdf:Seq");
-  pugi::xpath_node operation = doc.select_node("//darktable:history_operation/rdf:Seq");
-  pugi::xpath_node params = doc.select_node("//darktable:history_params/rdf:Seq");
-  pugi::xpath_node blendop_params = doc.select_node("//darktable:blendop_params/rdf:Seq");
-  pugi::xpath_node blendop_version = doc.select_node("//darktable:blendop_version/rdf:Seq");
-  pugi::xpath_node multi_priority = doc.select_node("//darktable:multi_priority/rdf:Seq");
-  pugi::xpath_node multi_name = doc.select_node("//darktable:multi_name/rdf:Seq");
+  pugi::xpath_node modversion      = superold ?
+    doc.select_node("//darktable:history_modversion/rdf:Bag"):
+    doc.select_node("//darktable:history_modversion/rdf:Seq");
+  pugi::xpath_node enabled         = superold ?
+    doc.select_node("//darktable:history_enabled/rdf:Bag"):
+    doc.select_node("//darktable:history_enabled/rdf:Seq");
+  pugi::xpath_node operation       = superold ?
+    doc.select_node("//darktable:history_operation/rdf:Bag"):
+    doc.select_node("//darktable:history_operation/rdf:Seq");
+  pugi::xpath_node params          = superold ?
+    doc.select_node("//darktable:history_params/rdf:Bag"):
+    doc.select_node("//darktable:history_params/rdf:Seq");
+  pugi::xpath_node blendop_params  = superold ?
+    doc.select_node("//darktable:blendop_params/rdf:Bag"):
+    doc.select_node("//darktable:blendop_params/rdf:Seq");
+  pugi::xpath_node blendop_version = superold ?
+    doc.select_node("//darktable:blendop_version/rdf:Bag"):
+    doc.select_node("//darktable:blendop_version/rdf:Seq");
+  pugi::xpath_node multi_priority  = superold ?
+    doc.select_node("//darktable:multi_priority/rdf:Bag"):
+    doc.select_node("//darktable:multi_priority/rdf:Seq");
+  pugi::xpath_node multi_name      = superold ?
+    doc.select_node("//darktable:multi_name/rdf:Bag"):
+    doc.select_node("//darktable:multi_name/rdf:Bag");
 #else
-  pugi::xpath_node modversion = doc.select_single_node("//darktable:history_modversion/rdf:Seq");
-  pugi::xpath_node enabled = doc.select_single_node("//darktable:history_enabled/rdf:Seq");
-  pugi::xpath_node operation = doc.select_single_node("//darktable:history_operation/rdf:Seq");
-  pugi::xpath_node params = doc.select_single_node("//darktable:history_params/rdf:Seq");
-  pugi::xpath_node blendop_params = doc.select_single_node("//darktable:blendop_params/rdf:Seq");
-  pugi::xpath_node blendop_version = doc.select_single_node("//darktable:blendop_version/rdf:Seq");
-  pugi::xpath_node multi_priority = doc.select_single_node("//darktable:multi_priority/rdf:Seq");
-  pugi::xpath_node multi_name = doc.select_single_node("//darktable:multi_name/rdf:Seq");
+  pugi::xpath_node modversion      = superold ?
+    doc.select_single_node("//darktable:history_modversion/rdf:Bag"):
+    doc.select_single_node("//darktable:history_modversion/rdf:Seq");
+  pugi::xpath_node enabled         = superold ?
+    doc.select_single_node("//darktable:history_enabled/rdf:Bag"):
+    doc.select_single_node("//darktable:history_enabled/rdf:Seq");
+  pugi::xpath_node operation       = superold ?
+    doc.select_single_node("//darktable:history_operation/rdf:Bag"):
+    doc.select_single_node("//darktable:history_operation/rdf:Seq");
+  pugi::xpath_node params          = superold ?
+    doc.select_single_node("//darktable:history_params/rdf:Bag"):
+    doc.select_single_node("//darktable:history_params/rdf:Seq");
+  pugi::xpath_node blendop_params  = superold ?
+    doc.select_single_node("//darktable:blendop_params/rdf:Bag"):
+    doc.select_single_node("//darktable:blendop_params/rdf:Seq");
+  pugi::xpath_node blendop_version = superold ?
+    doc.select_single_node("//darktable:blendop_version/rdf:Bag"):
+    doc.select_single_node("//darktable:blendop_version/rdf:Seq");
+  pugi::xpath_node multi_priority  = superold ?
+    doc.select_single_node("//darktable:multi_priority/rdf:Bag"):
+    doc.select_single_node("//darktable:multi_priority/rdf:Seq");
+  pugi::xpath_node multi_name      = superold ?
+    doc.select_single_node("//darktable:multi_name/rdf:Bag"):
+    doc.select_single_node("//darktable:multi_name/rdf:Bag");
 #endif
 
   // fill the list of history entries. we are iterating over history_operation as we know that it's there.
@@ -1790,27 +1823,35 @@ static GList *read_history_v1(const char *filename)
     current_entry->params = dt_exif_xmp_decode(params_iter->child_value(), strlen(params_iter->child_value()),
                                                &current_entry->params_len);
 
-    if(multi_name)
+    if(multi_name && multi_name_iter != multi_name.node().children().end())
+    {
       current_entry->multi_name = g_strdup(multi_name_iter->child_value());
+      multi_name_iter++;
+    }
 
-    if(multi_priority)
+    if(multi_priority && multi_priority_iter != multi_priority.node().children().end())
+    {
       current_entry->multi_priority = atoi(multi_priority_iter->child_value());
+      multi_priority_iter++;
+    }
 
-    if(blendop_version)
+    if(blendop_version && blendop_version_iter != blendop_version.node().children().end())
+    {
       current_entry->blendop_version = atoi(blendop_version_iter->child_value());
+      blendop_version_iter++;
+    }
 
-    if(blendop_params)
+    if(blendop_params && blendop_params_iter != blendop_params.node().children().end())
+    {
       current_entry->blendop_params = dt_exif_xmp_decode(blendop_params_iter->child_value(),
                                                          strlen(blendop_params_iter->child_value()),
                                                          &current_entry->blendop_params_len);
+      blendop_params_iter++;
+    }
 
     modversion_iter++;
     enabled_iter++;
     params_iter++;
-    if(blendop_params) blendop_params_iter++;
-    if(blendop_version) blendop_version_iter++;
-    if(multi_priority) multi_priority_iter++;
-    if(multi_name) multi_name_iter++;
   }
 
   return history_entries;
@@ -2068,7 +2109,11 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     GList *history_entries = NULL;
 
     if(version < 2)
-      history_entries = read_history_v1(filename);
+    {
+      history_entries = read_history_v1(filename, 0);
+      if(!history_entries) // didn't work? try super old version with rdf:Bag
+        history_entries = read_history_v1(filename, 1);
+    }
     else if(version == 2)
       history_entries = read_history_v2(xmpData, filename);
     else
