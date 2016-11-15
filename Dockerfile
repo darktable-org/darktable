@@ -72,6 +72,12 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
 RUN dpkg-divert --add --rename --divert /usr/bin/ld.original /usr/bin/ld && \
     ln -s /usr/bin/ld.gold /usr/bin/ld
 
+# optional: opencl kernels test-compilation
+# pls keep sorted :)
+RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
+    apt-get install clang-3.9 libclang-common-3.9-dev llvm-3.9-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # optional: usermanual deps
 # pls keep sorted :)
 RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
