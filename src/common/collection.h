@@ -204,6 +204,9 @@ void dt_collection_hint_message(const dt_collection_t *collection);
 /** returns the image offset in the collection */
 int dt_collection_image_offset(int imgid);
 
+/** returns the image offset for the specified collection */
+int dt_collection_image_offset_with_collection(const dt_collection_t *collection, int imgid);
+
 /* serialize and deserialize into a string. */
 void dt_collection_deserialize(char *buf);
 int dt_collection_serialize(char *buf, int bufsize);
