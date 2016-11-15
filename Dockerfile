@@ -54,7 +54,7 @@ RUN echo 'APT::Get::Fix-Missing "true";' > /etc/apt/apt.conf.d/80fixmissin
 
 # pls keep sorted :)
 RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
-    apt-get install  appstream-util clang-3.8 cmake desktop-file-utils g++ \
+    apt-get install  appstream-util clang-3.9 cmake desktop-file-utils g++ \
     gcc gettext git intltool libatk1.0-dev libcairo2-dev libcolord-dev \
     libcolord-gtk-dev libcups2-dev libcurl4-gnutls-dev libexiv2-dev \
     libflickcurl-dev libgdk-pixbuf2.0-dev libglib2.0-dev libgphoto2-dev \
