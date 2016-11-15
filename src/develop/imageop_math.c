@@ -976,8 +976,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *cons
 void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const uint16_t *const in,
                                                    const dt_iop_roi_t *const roi_out,
                                                    const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                                   const int32_t in_stride, const uint8_t (*const xtrans)[6],
-                                                   const uint16_t whitelevel)
+                                                   const int32_t in_stride, const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
   const int samples = round(px_footprint / 3);
@@ -1000,30 +999,19 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
       px = MIN(roi_in->width - 4, px);
       int maxi = MIN(roi_in->width - 3, px + 3 * samples);
 
-      uint16_t pc = 0;
-      for(int ii = 0; ii < 3; ++ii)
-        for(int jj = 0; jj < 3; ++jj) pc = MAX(pc, in[px + ii + in_stride * (py + jj)]);
-
       uint8_t num[3] = { 0 };
       uint32_t sum[3] = { 0 };
 
       for(int j = py; j <= maxj; j += 3)
         for(int i = px; i <= maxi; i += 3)
         {
-          uint16_t lcl_max = 0;
-          for(int ii = 0; ii < 3; ++ii)
-            for(int jj = 0; jj < 3; ++jj) lcl_max = MAX(lcl_max, in[i + ii + in_stride * (j + jj)]);
-
-          if(!((pc >= whitelevel) ^ (lcl_max >= whitelevel)))
-          {
+          for(int jj = 0; jj < 3; ++jj)
             for(int ii = 0; ii < 3; ++ii)
-              for(int jj = 0; jj < 3; ++jj)
-              {
-                const uint8_t c = FCxtrans(j + jj, i + ii, roi_in, xtrans);
-                sum[c] += in[i + ii + in_stride * (j + jj)];
-                num[c]++;
-              }
-          }
+            {
+              const uint8_t c = FCxtrans(j + jj, i + ii, roi_in, xtrans);
+              sum[c] += in[i + ii + in_stride * (j + jj)];
+              num[c]++;
+            }
         }
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
