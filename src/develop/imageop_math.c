@@ -1002,14 +1002,14 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
       uint8_t num[3] = { 0 };
       uint32_t sum[3] = { 0 };
 
-      for(int j = py; j <= maxj; j += 3)
-        for(int i = px; i <= maxi; i += 3)
+      for(int yy = py; yy <= maxj; yy += 3)
+        for(int xx = px; xx <= maxi; xx += 3)
         {
-          for(int jj = 0; jj < 3; ++jj)
-            for(int ii = 0; ii < 3; ++ii)
+          for(int j = 0; j < 3; ++j)
+            for(int i = 0; i < 3; ++i)
             {
-              const uint8_t c = FCxtrans(j + jj, i + ii, roi_in, xtrans);
-              sum[c] += in[i + ii + in_stride * (j + jj)];
+              const uint8_t c = FCxtrans(yy + j, xx + i, roi_in, xtrans);
+              sum[c] += in[xx + i + in_stride * (yy + j)];
               num[c]++;
             }
         }
