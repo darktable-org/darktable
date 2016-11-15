@@ -981,6 +981,9 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
   const float px_footprint = 1.f / roi_out->scale;
   const int samples = round(px_footprint / 3);
 
+  // X-Trans RGB weighting for each 3x3 cell
+  static const int rgb_weights[3] = { 2, 5, 2 };
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
@@ -999,8 +1002,8 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
       px = MIN(roi_in->width - 4, px);
       int maxi = MIN(roi_in->width - 3, px + 3 * samples);
 
-      uint8_t num[3] = { 0 };
-      uint32_t sum[3] = { 0 };
+      int num = 0;
+      uint32_t col[3] = { 0 };
 
       for(int yy = py; yy <= maxj; yy += 3)
         for(int xx = px; xx <= maxi; xx += 3)
@@ -1008,14 +1011,14 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
           for(int j = 0; j < 3; ++j)
             for(int i = 0; i < 3; ++i)
             {
-              const uint8_t c = FCxtrans(yy + j, xx + i, roi_in, xtrans);
-              sum[c] += in[xx + i + in_stride * (yy + j)];
-              num[c]++;
+              const int c = FCxtrans(yy + j, xx + i, roi_in, xtrans);
+              col[c] += in[xx + i + in_stride * (yy + j)];
             }
+          num++;
         }
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
-      *outc = (uint16_t)((float)(sum[c]) / (float)(num[c]));
+      *outc = (uint16_t)((float)col[c] / (float)(num * rgb_weights[c]));
     }
   }
 }
@@ -1030,7 +1033,7 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const flo
 
   // A slightly different algorithm than
   // dt_iop_clip_and_zoom_demosaic_half_size_f() which aligns to 2x2
-  // Bayer grid and hence most pull additional data from all edges
+  // Bayer grid and hence must pull additional data from all edges
   // which don't align with CFA. Instead align to a 3x3 pattern (which
   // is semi-regular in X-Trans CFA). If instead had aligned the
   // samples to the full 6x6 X-Trans CFA, wouldn't need to perform a
