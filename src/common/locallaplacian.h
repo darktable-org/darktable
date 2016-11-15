@@ -384,8 +384,8 @@ static inline void local_laplacian(
     // yuv_to_rgb(yuv, out+3*(j*wd+i));
 
     out[4*(j*wd+i)+0] = 100.0f * output[0][(j+max_supp)*w+max_supp+i]; // [0,1] -> L
-    out[4*(j*wd+i)+1] = 0.0;// input[4*(j*wd+i)+1]; // XXX DEBUG copy original channel
-    out[4*(j*wd+i)+2] = 0.0;// input[4*(j*wd+i)+2];
+    out[4*(j*wd+i)+1] = input[4*(j*wd+i)+1]; // copy original colour channels
+    out[4*(j*wd+i)+2] = input[4*(j*wd+i)+2];
   }
   // free all buffers!
   for(int l=0;l<num_levels;l++)
