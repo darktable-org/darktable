@@ -311,7 +311,7 @@ static inline void local_laplacian(
   // XXX FIXME: don't need to alloc all the memory at once!
   // XXX FIXME: accumulate into output pyramid one by one?
   // allocate memory for intermediate laplacian pyramids
-  float *buf[num_gamma][num_levels] = {0};
+  float *buf[num_gamma][num_levels] = {{0}};
   for(int k=0;k<num_gamma;k++) for(int l=0;l<num_levels;l++)
     buf[k][l] = (float *)malloc(sizeof(float)*dl(w,l)*dl(h,l));
 
