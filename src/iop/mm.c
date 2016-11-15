@@ -94,8 +94,6 @@ static inline void process_apparent_grayscale(
     dt_dev_pixelpipe_iop_t *piece, const void *const ib, void *const ob,
     const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-#define PI atan2f(0, -1)
-
   const float d50[3] = { 0.9642f, 1.0f, 0.8249f };
   const int ch = piece->colors;
 
@@ -135,7 +133,7 @@ static inline void process_apparent_grayscale(
       // Calculate monochrome value.
       s_uv = 13.0f * sqrtf(MAX(0.0f, powf(uv_prime[0] - uv_prime_c[0], 2) + powf(uv_prime[1] - uv_prime_c[1], 2)));
       theta = atan2f(uv_prime[1] - uv_prime_c[1],
-                     uv_prime[0] - uv_prime_c[0]); // FIXME Check for domain error, atan2f(0, 0)
+                     uv_prime[0] - uv_prime_c[0]);
       if(!(theta == theta)) theta = 0.0f;
 
       q = -0.01585f - 0.03016f * cosf(theta) - 0.04556f * cosf(2.0f * theta) - 0.02667f * cosf(3.0f * theta)
