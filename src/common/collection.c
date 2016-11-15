@@ -1228,9 +1228,14 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   int c = dt_collection_get_count(collection);
   int cs = dt_collection_get_selected_count(collection);
 
-  message = g_strdup_printf(ngettext("%d image of %d (#%d) in current collection is selected",
-                                     "%d images of %d in current collection are selected", cs),
-                            cs, c, selected);
+  if(cs == 1)
+  {
+    message = g_strdup_printf("%d image of %d (#%d) in current collection is selected", cs, c, selected);
+  }
+  else
+  {
+    message = g_strdup_printf("%d images of %d in current collection are selected", cs, c);
+  }
 
   g_idle_add(dt_collection_hint_message_internal, message);
 }
