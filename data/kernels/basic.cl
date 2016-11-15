@@ -2035,7 +2035,7 @@ rawoverexposed_falsecolor (
   float p[4];
   vstore4(pixel, 0, p);
   // falsecolor
-  p[c] = 0.0;
+  p[c] = 0.0f;
   pixel = vload4(0, p);
 
   write_imagef (out, (int2)(x, y), pixel);
