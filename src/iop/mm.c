@@ -148,15 +148,6 @@ static inline void process_apparent_grayscale(
   }
 }
 
-static inline void process_local_laplacian(
-    dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  dt_iop_bw_params_t *d = (dt_iop_bw_params_t *)piece->data;
-  local_laplacian((const float *const)i, (float *const)o,
-      roi_out->width, roi_out->height, 0.1, 1.0, 1.0, d->colorcontrast);
-}
-
 void process(
     struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     const void *const i, void *const o,
@@ -172,7 +163,8 @@ void process(
 
     case OPERATOR_APPARENT_GRAYSCALE:
       process_apparent_grayscale(piece, i, o, roi_in, roi_out);
-      process_local_laplacian(piece, o, o, roi_out, roi_out);
+      local_laplacian((const float *const)o, (float *const)o,
+          roi_out->width, roi_out->height, 0.1, 1.0, 1.0, d->colorcontrast);
       break;
   }
 }
