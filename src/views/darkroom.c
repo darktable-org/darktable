@@ -710,6 +710,9 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // release pixel pipe mutices
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
+
+  // update hint message
+  dt_collection_hint_message(darktable.collection);
 }
 
 static void film_strip_activated(const int imgid, void *data)
