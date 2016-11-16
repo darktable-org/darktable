@@ -75,7 +75,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
     else
     {
       dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
-      if(gui->border_selected)
+      if(gui->border_selected || (state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
         if(up && circle->border > 0.001f)
           circle->border *= 0.97f;

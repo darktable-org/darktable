@@ -1085,7 +1085,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     else
     {
       guint nb = g_list_length(form->points);
-      if(gui->border_selected)
+      if(gui->border_selected || (state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
         float amount = 1.03f;
         if(up) amount = 0.97f;
@@ -1094,7 +1094,6 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         {
           dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
           if(amount > 1.0f && (point->border[0] > 1.0f || point->border[1] > 1.0f)) return 1;
-          if(amount < 1.0f && (point->border[0] < 0.004f && point->border[1] < 0.004f)) return 1;
         }
         for(int k = 0; k < nb; k++)
         {
@@ -1112,7 +1111,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         {
           float masks_border = dt_conf_get_float("plugins/darkroom/masks/brush/border");
           masks_border = MAX(0.005f, MIN(masks_border * amount, 0.5f));
-          dt_conf_set_float("plugins/darkroom/masks/brush/border", masks_border * amount);
+          dt_conf_set_float("plugins/darkroom/masks/brush/border", masks_border);
         }
       }
       else
