@@ -23,6 +23,7 @@
 #include "common/history.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
+#include "common/ratings.h"
 #include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -949,21 +950,7 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
       int offset = 0;
       if(mouse_over_id == activated_image) offset = dt_collection_image_offset(mouse_over_id);
 
-      dt_image_t *image = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'w');
-      if(num == 666)
-        image->flags &= ~0xf;
-      else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1) && !dt_conf_get_bool("rating_one_double_tap"))
-      {
-        image->flags &= ~0x7;
-      }
-      else if(num == DT_VIEW_REJECT && ((image->flags & 0x7) == 6))
-        image->flags &= ~0x7;
-      else
-      {
-        image->flags &= ~0x7;
-        image->flags |= num;
-      }
-      dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+      dt_ratings_apply_to_image(mouse_over_id, num);
 
       dt_collection_hint_message(darktable.collection); // More than this, we need to redraw all
 
