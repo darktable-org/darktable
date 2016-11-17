@@ -953,7 +953,9 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
       if(num == 666)
         image->flags &= ~0xf;
       else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1) && !dt_conf_get_bool("rating_one_double_tap"))
+      {
         image->flags &= ~0x7;
+      }
       else if(num == DT_VIEW_REJECT && ((image->flags & 0x7) == 6))
         image->flags &= ~0x7;
       else

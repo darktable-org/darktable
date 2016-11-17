@@ -28,7 +28,11 @@ void dt_ratings_apply_to_image(int imgid, int rating)
 {
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
   // one star is a toggle, so you can easily reject images by removing the last star:
-  if(((image->flags & 0x7) == 1) && !dt_conf_get_bool("rating_one_double_tap") && (rating == 1)) rating = 0;
+  if(((image->flags & 0x7) == 1) && !dt_conf_get_bool("rating_one_double_tap") && (rating == 1))
+  {
+    rating = 0;
+  }
+
   image->flags = (image->flags & ~0x7) | (0x7 & rating);
   // synch through:
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
