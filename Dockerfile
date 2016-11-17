@@ -54,7 +54,7 @@ RUN echo 'APT::Get::Fix-Missing "true";' > /etc/apt/apt.conf.d/80fixmissin
 
 # pls keep sorted :)
 RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
-    apt-get install  appstream-util clang-3.8 cmake desktop-file-utils g++ \
+    apt-get install  appstream-util clang-3.9 cmake desktop-file-utils g++ \
     gcc gettext git intltool libatk1.0-dev libcairo2-dev libcolord-dev \
     libcolord-gtk-dev libcups2-dev libcurl4-gnutls-dev libexiv2-dev \
     libflickcurl-dev libgdk-pixbuf2.0-dev libglib2.0-dev libgphoto2-dev \
@@ -71,6 +71,12 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
 # than traditional ld.bfd; plus, at this time, ld.gold seems like the future.
 RUN dpkg-divert --add --rename --divert /usr/bin/ld.original /usr/bin/ld && \
     ln -s /usr/bin/ld.gold /usr/bin/ld
+
+# optional: opencl kernels test-compilation
+# pls keep sorted :)
+RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
+    apt-get install clang-3.9 libclang-common-3.9-dev llvm-3.9-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # optional: usermanual deps
 # pls keep sorted :)
