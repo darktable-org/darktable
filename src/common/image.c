@@ -102,7 +102,7 @@ const char *dt_image_film_roll_name(const char *path)
   if(numparts < 1) numparts = 1;
   while(folder > path)
   {
-    if(*folder == '/')
+    if(*folder == G_DIR_SEPARATOR)
       if(++count >= numparts)
       {
         ++folder;
