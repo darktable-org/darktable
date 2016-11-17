@@ -49,6 +49,7 @@ FILE(GLOB SOURCE_FILES
   "common/pdf.c"
   "common/styles.c"
   "common/selection.c"
+  "common/system_signal_handling.c"
   "common/tags.c"
   "common/utility.c"
   "common/variables.c"
