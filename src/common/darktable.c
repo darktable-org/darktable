@@ -35,6 +35,7 @@
 #include "common/fswatch.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/selection.h"
+#include "common/system_signal_handling.h"
 #ifdef HAVE_GPHOTO2
 #include "common/camera_control.h"
 #endif
@@ -74,30 +75,24 @@
 #include <sys/param.h>
 #include <sys/types.h>
 #include <unistd.h>
-#ifndef __WIN32__
-#include <sys/wait.h>
-#endif
 #include <locale.h>
+
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
+
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #endif
+
 #include "dbus.h"
 
 #if defined(__SUNOS__)
 #include <sys/varargs.h>
 #endif
+
 #ifdef _OPENMP
 #include <omp.h>
-#endif
-
-#ifdef __linux__
-#include <sys/prctl.h>
-#ifndef PR_SET_PTRACER
-#define PR_SET_PTRACER 0x59616d61
-#endif
 #endif
 
 #ifdef _WIN32
@@ -144,85 +139,6 @@ static int usage(const char *argv0)
   printf("\n");
   return 1;
 }
-
-#if !defined __APPLE__ && !defined __WIN32__
-typedef void(dt_signal_handler_t)(int);
-// static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
-static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
-#endif
-
-#if(defined(__FreeBSD_version) && (__FreeBSD_version < 800071)) || (defined(OpenBSD) && (OpenBSD < 201305))  \
-    || defined(__SUNOS__)
-static int dprintf(int fd, const char *fmt, ...) __attribute__((format(printf, 2, 3)))
-{
-  va_list ap;
-  FILE *f = fdopen(fd, "a");
-  va_start(ap, fmt);
-  int rc = vfprintf(f, fmt, ap);
-  fclose(f);
-  va_end(ap);
-  return rc;
-}
-#endif
-
-#if !defined __APPLE__ && !defined __WIN32__
-static void _dt_sigsegv_handler(int param)
-{
-  pid_t pid;
-  gchar *name_used;
-  int fout;
-  gboolean delete_file = FALSE;
-  char datadir[PATH_MAX] = { 0 };
-
-  if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
-    fout = STDOUT_FILENO; // just print everything to stdout
-
-  dprintf(fout, "this is %s reporting a segfault:\n\n", darktable_package_string);
-
-  if(fout != STDOUT_FILENO) close(fout);
-
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  gchar *pid_arg = g_strdup_printf("%d", (int)getpid());
-  gchar *comm_arg = g_strdup_printf("%s/gdb_commands", datadir);
-  gchar *log_arg = g_strdup_printf("set logging on %s", name_used);
-
-  if((pid = fork()) != -1)
-  {
-    if(pid)
-    {
-#ifdef __linux__
-      // Allow the child to ptrace us
-      prctl(PR_SET_PTRACER, pid, 0, 0, 0);
-#endif
-      waitpid(pid, NULL, 0);
-      g_printerr("backtrace written to %s\n", name_used);
-    }
-    else
-    {
-      if(execlp("gdb", "gdb", darktable.progname, pid_arg, "-batch", "-ex", log_arg, "-x", comm_arg, NULL))
-      {
-        delete_file = TRUE;
-        g_printerr("an error occurred while trying to execute gdb. please check if gdb is installed on your "
-                   "system.\n");
-      }
-    }
-  }
-  else
-  {
-    delete_file = TRUE;
-    g_printerr("an error occurred while trying to execute gdb.\n");
-  }
-
-  if(delete_file) g_unlink(name_used);
-  g_free(pid_arg);
-  g_free(comm_arg);
-  g_free(log_arg);
-  g_free(name_used);
-
-  /* pass it further to the old handler*/
-  _dt_sigsegv_old_handler(param);
-}
-#endif
 
 gboolean dt_supported_image(const gchar *filename)
 {
@@ -449,9 +365,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 #endif
 
-#if !defined __APPLE__ && !defined __WIN32__
-  _dt_sigsegv_old_handler = signal(SIGSEGV, &_dt_sigsegv_handler);
-#endif
+  dt_set_signal_handlers();
 
 #include "is_supported_platform.h"
 
@@ -582,6 +496,11 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
                "  debug build\n"
 #else
                "  normal build\n"
+#endif
+#if defined(__SSE2__) && defined(__SSE__)
+               "  SSE2 optimized codepath enabled\n"
+#else
+               "  SSE2 optimized codepath disabled\n"
 #endif
 #ifdef _OPENMP
                "  OpenMP support enabled\n"
@@ -956,6 +875,9 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #ifdef HAVE_GRAPHICSMAGICK
   /* GraphicsMagick init */
   InitializeMagick(darktable.progname);
+
+  // *SIGH*
+  dt_set_signal_handlers();
 #endif
 
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));

@@ -30,7 +30,7 @@
 #define RLIMIT_AS 6     /* limit on process total address space size */
 #define RLIMIT_VMEM RLIMIT_AS
 #define RLIM_NLIMITS 7
-
+#define RLIM_INFINITY (~0UL)
 
 /*
  * process resource limits definitions
