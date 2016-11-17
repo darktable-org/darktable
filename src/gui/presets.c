@@ -786,7 +786,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
                                 "?8 BETWEEN exposure_min AND exposure_max AND "
                                 "?9 BETWEEN aperture_min AND aperture_max AND "
                                 "?10 BETWEEN focal_length_min AND focal_length_max AND "
-                                "(format = 0 OR format&?9!=0)"
+                                "(format = 0 OR format&?11!=0)"
                                 " ) )"
                                 "ORDER BY writeprotect DESC, LOWER(name), rowid",
                                 -1, &stmt, NULL);
@@ -801,7 +801,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, image->exif_aperture);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, image->exif_focal_length);
     int ldr = dt_image_is_ldr(image) ? FOR_LDR : (dt_image_is_raw(image) ? FOR_RAW : FOR_HDR);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, ldr);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, ldr);
   }
   else
   {
