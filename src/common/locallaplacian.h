@@ -120,48 +120,6 @@ static inline void gauss_reduce(
   ll_fill_boundary1(coarse, cw, ch);
 }
 
-static inline void rgb_to_yuv(
-    const float *const rgb,
-    float *const yuv)
-{
-  const float M[] = {
-    0.299f, 0.587f, 0.114f,
-    -0.14713f, -0.28886f, 0.436f,
-    0.615f, -0.51499f, -0.10001f};
-  yuv[0] = yuv[1] = yuv[2] = 0.0f;
-  for(int i=0;i<3;i++)
-    for(int j=0;j<3;j++)
-      yuv[i] += M[3*i+j]*rgb[j];
-}
-
-static inline float rgb_to_y(
-    const float *const rgb)
-{
-  const float M[] = {
-    0.299f, 0.587f, 0.114f,
-    -0.14713f, -0.28886f, 0.436f,
-    0.615f, -0.51499f, -0.10001f};
-  float y = 0.0f;
-  for(int j=0;j<3;j++)
-    y += M[j]*rgb[j];
-  // XXX try shadow lifting: if(y < .5f) return .5f * powf(2.0f*y, 1./1.8);
-  return y;
-}
-
-static inline void yuv_to_rgb(
-    const float *const yuv,
-    float *const rgb)
-{
-  const float Mi[] = {
-    1.0f, 0.0f, 1.13983f,
-    1.0f, -0.39465f, -0.58060f,
-    1.0f, 2.03211f,  0.0f};
-  rgb[0] = rgb[1] = rgb[2] = 0.0f;
-  for(int i=0;i<3;i++)
-    for(int j=0;j<3;j++)
-      rgb[i] += Mi[3*i+j]*yuv[j];
-}
-
 // allocate output buffer with monochrome brightness channel from input, padded
 // up by max_supp on all four sides, dimensions written to wd2 ht2
 static inline float *ll_pad_input(
@@ -299,12 +257,8 @@ static inline void local_laplacian(
     gauss_reduce(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
   gauss_reduce(padded[num_levels-2], output[num_levels-1], dl(w,num_levels-2), dl(h,num_levels-2));
 
-  // XXX DEBUG show only detail coeffs
-  // memset(output[num_levels-1], 0, sizeof(float)*dl(w,num_levels-1)*dl(h,num_levels-1));
-  
   // evenly sample brightness [0,1]:
   float gamma[num_gamma] = {0.0f};
-  // for(int k=0;k<num_gamma;k++) gamma[k] = powf(k/(num_gamma-1.0f), 2.0); // XXX DEBUG
   for(int k=0;k<num_gamma;k++) gamma[k] = (k+.5f)/(float)num_gamma;
   // for(int k=0;k<num_gamma;k++) gamma[k] = k/(num_gamma-1.0f);
 
@@ -327,31 +281,10 @@ static inline void local_laplacian(
       gauss_reduce(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
   }
 
-  // assemple output pyramid coarse to fine
+  // assemble output pyramid coarse to fine
   for(int l=num_levels-2;l >= 0; l--)
   {
     const int pw = dl(w,l), ph = dl(h,l);
-
-    // XXX i don't think we should manipulate gaussians at all (=>halos) :(
-#if 0 // TODO: at a certain level, apply shadow/highlight compression!
-    if(l==3)
-    {
-      const int cw = dl(w,l+1), ch = dl(h,l+1);
-#pragma omp parallel for default(none) schedule(static) collapse(2) shared(w,h,output,l,gamma,padded)
-      for(int j=0;j<ch;j++) for(int i=0;i<cw;i++)
-      {
-        // FIXME: this remapping is rubbish
-        float x = output[l+1][j*cw+i];
-        // x = 0.5f + 0.2 * (x-0.5f);
-        // if(x < .5f) x = .5f * powf(MAX(2.0*x,0.0), 1./shadows);
-        // else x = .5f + .5f * powf(MAX(2.0*(x-.5f),0.0), highlights);
-        // if(x < .5f) x = .5f * (2.0f*x - powf(1.0-2.0f*x, 2*shadows+1));
-        if(x< .5f) x = (x - powf(1.-2.*x, 2*(int)shadows+1))/3.+1./3.;
-        // else x = .5f * (2.0f*x - powf(1.0-2.0f*x, 2*highlights+1));
-        output[l+1][j*cw+i] = x;
-      }
-    }
-#endif
 
     gauss_expand(output[l+1], output[l], pw, ph);
     // go through all coefficients in the upsampled gauss buffer:
@@ -377,12 +310,6 @@ static inline void local_laplacian(
 #pragma omp parallel for default(none) schedule(dynamic) collapse(2) shared(w,output,buf)
   for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
   {
-    // convert back from yuv:
-    // float yuv[3];
-    // rgb_to_yuv(input+3*(j*wd+i), yuv);
-    // yuv[0] = output[0][(j+max_supp)*w+max_supp+i];
-    // yuv_to_rgb(yuv, out+3*(j*wd+i));
-
     out[4*(j*wd+i)+0] = 100.0f * output[0][(j+max_supp)*w+max_supp+i]; // [0,1] -> L
     out[4*(j*wd+i)+1] = input[4*(j*wd+i)+1]; // copy original colour channels
     out[4*(j*wd+i)+2] = input[4*(j*wd+i)+2];
@@ -398,3 +325,92 @@ static inline void local_laplacian(
 #undef num_levels
 #undef num_gamma
 }
+
+#ifdef HAVE_OPENCL_TODO
+static inline void local_laplacian_cl(
+    cl_mem input,               // input buffer in some Labx or yuvx format
+    cl_mem out,                 // output buffer with colour
+    const int wd,               // width and
+    const int ht,               // height of the input buffer
+    const float sigma,          // user param: separate shadows/midtones/highlights
+    const float shadows,        // user param: lift shadows
+    const float highlights,     // user param: compress highlights
+    const float clarity)        // user param: increase clarity/local contrast
+{
+  // XXX TODO: the paper says level 5 is good enough, too? more does look significantly different.
+#define num_levels 10
+#define num_gamma 8
+  const int max_supp = 1<<(num_levels-1);
+  int w, h;
+
+  // TODO: CL allocate all these on device! (including padded[0])
+  // allocate pyramid pointers for padded input
+  for(int l=1;l<num_levels;l++)
+    padded[l] = (float *)malloc(sizeof(float)*dl(w,l)*dl(h,l));
+
+  // TODO: call ll_pad_input on device (dimensions: padded image):
+  float *padded[num_levels] = {0};
+  ll_pad_input(input, padded[0], wd, ht, max_supp, &w, &h);
+
+  // TODO: CL allocate these on device, too!
+  // allocate pyramid pointers for output
+  float *output[num_levels] = {0};
+  for(int l=0;l<num_levels;l++)
+    output[l] = (float *)malloc(sizeof(float)*dl(w,l)*dl(h,l));
+
+  // TODO: CL run gauss_reduce on the device! (dimensions: coarse buffer)
+  // create gauss pyramid of padded input, write coarse directly to output
+  for(int l=1;l<num_levels-1;l++)
+    gauss_reduce(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
+  gauss_reduce(padded[num_levels-2], output[num_levels-1], dl(w,num_levels-2), dl(h,num_levels-2));
+
+  // note that this is hardcoded in cl now:
+  // evenly sample brightness [0,1]:
+  float gamma[num_gamma] = {0.0f};
+  for(int k=0;k<num_gamma;k++) gamma[k] = (k+.5f)/(float)num_gamma;
+  // for(int k=0;k<num_gamma;k++) gamma[k] = k/(num_gamma-1.0f);
+
+  // TODO: CL allocate these buffers on the device!
+  // XXX FIXME: don't need to alloc all the memory at once!
+  // XXX FIXME: accumulate into output pyramid one by one? (would require more passes, potentially bad idea)
+  // allocate memory for intermediate laplacian pyramids
+  float *buf[num_gamma][num_levels] = {{0}};
+  for(int k=0;k<num_gamma;k++) for(int l=0;l<num_levels;l++)
+    buf[k][l] = (float *)malloc(sizeof(float)*dl(w,l)*dl(h,l));
+
+  // XXX TODO: the paper says remapping only level 3 not 0 does the trick, too:
+  for(int k=0;k<num_gamma;k++)
+  { // process images
+    // TODO: process image on device!
+    // TODO: run kernel process_curve on resolution of buffer (w,h)
+      buf[k][0][w*j+i] = ll_curve(padded[0][w*j+i], gamma[k], sigma, shadows, highlights, clarity);
+
+    for(int l=1;l<num_levels;l++)
+    // TODO: run gauss_reduce on device! (dimensions: coarse buffer)
+    // create gaussian pyramids
+      gauss_reduce(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
+  }
+
+  // assemble output pyramid coarse to fine
+  for(int l=num_levels-2;l >= 0; l--)
+  {
+    const int pw = dl(w,l), ph = dl(h,l);
+
+    // TODO: CL run on device (dimensions: pw, ph, fine buffer):
+    gauss_expand(output[l+1], output[l], pw, ph);
+    // TODO: this is laplacian_assemble() on device: (dimensions: fine buffer)
+    // go through all coefficients in the upsampled gauss buffer:
+    laplacian_assemble( pass all buffers buf[.][l, l+1])
+  }
+  // TODO: read back processed L chanel and copy colours:
+  write_back(
+      read_only  image2d_t input,
+      read_only  image2d_t processed,
+      write_only image2d_t output,
+      const int wd,
+      const int ht);
+  // TODO: free all buffers!
+#undef num_levels
+#undef num_gamma
+}
+#endif
