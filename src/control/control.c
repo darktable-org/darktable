@@ -49,11 +49,9 @@ int dt_control_load_config(dt_control_t *c)
   dt_conf_set_int("ui_last/view", DT_MODE_NONE);
   int width = dt_conf_get_int("ui_last/window_w");
   int height = dt_conf_get_int("ui_last/window_h");
-#ifndef __WIN32__
   gint x = dt_conf_get_int("ui_last/window_x");
   gint y = dt_conf_get_int("ui_last/window_y");
   gtk_window_move(GTK_WINDOW(widget), x, y);
-#endif
   gtk_window_resize(GTK_WINDOW(widget), width, height);
   int fullscreen = dt_conf_get_bool("ui_last/fullscreen");
   if(fullscreen)
