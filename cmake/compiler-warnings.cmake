@@ -47,10 +47,11 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wlarger-than=${MAX_MEANINGFUL_SIZE})
 math(EXPR WANTED_STACK_SIZE 64*4*1024)
 
 # minimal pthread stack/frame stack size. (musl)
-# should be fine with 64Kb+?
+# 256Kb seems to work.
+# 128Kb does NOT work, based on my testing. Roman.
 # MUST be a multiple of the system page size !!!
 # see  $ getconf PAGESIZE
-math(EXPR WANTED_THREADS_STACK_SIZE 16*4*1024)
+math(EXPR WANTED_THREADS_STACK_SIZE 64*4*1024)
 
 if(SOURCE_PACKAGE)
   add_definitions(-D_RELEASE)
