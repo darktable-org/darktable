@@ -20,40 +20,13 @@
 #include "config.h"
 #endif
 
-#include <assert.h>
-#include <errno.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
-#include <sys/resource.h>
 
 int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *arg)
 {
   int ret;
-
-  struct rlimit rlim = { 0 };
-
-  ret = getrlimit(RLIMIT_STACK, &rlim);
-
-  if(ret != 0)
-  {
-    const int errsv = errno;
-    fprintf(stderr, "[dt_pthread_create] error: getrlimit(RLIMIT_STACK) returned %i: %i (%s)\n", ret, errsv,
-            strerror(errsv));
-  }
-
-  assert((ret == 0 && WANTED_THREADS_STACK_SIZE <= rlim.rlim_max) || (ret != 0));
-
-  if(ret != 0 || rlim.rlim_cur < WANTED_THREADS_STACK_SIZE /*|| 1*/)
-  {
-    // looks like we need to bump/set it...
-
-    fprintf(stderr, "[dt_pthread_create] ERROR: RLIMIT_STACK rlim_cur is less than we thought it is: %ju < %i\n",
-            (uintmax_t)rlim.rlim_cur, WANTED_THREADS_STACK_SIZE);
-
-    rlim.rlim_cur = WANTED_THREADS_STACK_SIZE;
-  }
 
   pthread_attr_t attr;
 
@@ -73,14 +46,14 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
     fprintf(stderr, "[dt_pthread_create] error: pthread_attr_getstacksize() returned %i\n", ret);
   }
 
-  if(ret != 0 || stacksize < rlim.rlim_cur)
+  if(ret != 0 || stacksize < WANTED_THREADS_STACK_SIZE /*|| 1*/)
   {
     // looks like we need to bump/set it...
 
     fprintf(stderr, "[dt_pthread_create] info: bumping pthread's stacksize from %zu to %ju\n", stacksize,
-            (uintmax_t)rlim.rlim_cur);
+            (uintmax_t)WANTED_THREADS_STACK_SIZE);
 
-    ret = pthread_attr_setstacksize(&attr, rlim.rlim_cur);
+    ret = pthread_attr_setstacksize(&attr, WANTED_THREADS_STACK_SIZE);
     if(ret != 0)
     {
       fprintf(stderr, "[dt_pthread_create] error: pthread_attr_setstacksize() returned %i\n", ret);
