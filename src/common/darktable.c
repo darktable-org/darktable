@@ -348,7 +348,7 @@ static void dt_codepaths_init()
   }
 }
 
-int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
+int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
 {
 #ifndef __WIN32__
   if(getuid() == 0 || geteuid() == 0)
@@ -770,7 +770,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   darktable.color_profiles = dt_colorspaces_init();
 
   // initialize the database
-  darktable.db = dt_database_init(dbfilename_from_command);
+  darktable.db = dt_database_init(dbfilename_from_command, load_data);
   if(darktable.db == NULL)
   {
     printf("ERROR : cannot open database\n");
