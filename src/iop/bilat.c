@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2009--2016 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
+#include "common/locallaplacian.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"
@@ -32,28 +33,42 @@
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE_INTROSPECTION(1, dt_iop_bilat_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_bilat_params_t)
+
+typedef enum dt_iop_bilat_mode_t
+{
+  s_mode_bilateral = 0,
+  s_mode_local_laplacian = 1,
+}
+dt_iop_bilat_mode_t;
 
 typedef struct dt_iop_bilat_params_t
 {
+  uint32_t mode;
   float sigma_r;
   float sigma_s;
   float detail;
-} dt_iop_bilat_params_t;
+}
+dt_iop_bilat_params_t;
 
-typedef struct dt_iop_bilat_data_t
+typedef struct dt_iop_bilat_params_v1_t
 {
   float sigma_r;
   float sigma_s;
   float detail;
-} dt_iop_bilat_data_t;
+}
+dt_iop_bilat_params_v1_t;
+
+typedef dt_iop_bilat_params_t dt_iop_bilat_data_t;
 
 typedef struct dt_iop_bilat_gui_data_t
 {
   GtkWidget *spatial;
   GtkWidget *range;
   GtkWidget *detail;
-} dt_iop_bilat_gui_data_t;
+  GtkWidget *mode;
+}
+dt_iop_bilat_gui_data_t;
 
 // this returns a translatable name
 const char *name()
@@ -71,6 +86,23 @@ int flags()
 int groups()
 {
   return IOP_GROUP_TONE;
+}
+
+int legacy_params(
+    dt_iop_module_t *self, const void *const old_params, const int old_version,
+    void *new_params, const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    dt_iop_bilat_params_v1_t *p1 = (dt_iop_bilat_params_v1_t *)old_params;
+    dt_iop_bilat_params_t *p2 = (dt_iop_bilat_params_t *)new_params;
+    p2->detail  = p1->detail;
+    p2->sigma_r = p1->sigma_r;
+    p2->sigma_s = p1->sigma_s;
+    p2->mode    = s_mode_bilateral;
+    return 0;
+  }
+  return 1;
 }
 
 #ifdef HAVE_OPENCL
@@ -136,13 +168,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)p1;
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
-
-  d->sigma_r = p->sigma_r;
-  d->sigma_s = p->sigma_s;
-  d->detail = p->detail;
+  *d = *p;
 
 #ifdef HAVE_OPENCL
   piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+  // TODO: remove once local laplacians are cl-happy:
+  if(d->mode == s_mode_local_laplacian) piece->process_cl_ready = 0;
 #endif
 }
 
@@ -174,12 +205,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float sigma_r = d->sigma_r; // does not depend on scale
   const float sigma_s = d->sigma_s / scale;
 
-  // TODO: better memory management.
-  dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
-  dt_bilateral_splat(b, (float *)i);
-  dt_bilateral_blur(b);
-  dt_bilateral_slice(b, (float *)i, (float *)o, d->detail);
-  dt_bilateral_free(b);
+  if(d->mode == s_mode_bilateral)
+  {
+    dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
+    dt_bilateral_splat(b, (float *)i);
+    dt_bilateral_blur(b);
+    dt_bilateral_slice(b, (float *)i, (float *)o, d->detail);
+    dt_bilateral_free(b);
+  }
+  else // s_mode_local_laplacian
+  {
+    local_laplacian((const float *)i, (float *)o, roi_in->width, roi_in->height, 0.1f, 1.0f, 1.0f, d->detail);
+  }
 }
 
 /** init, cleanup, commit to pipeline */
@@ -195,7 +232,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_bilat_params_t);
   module->gui_data = NULL;
   // init defaults:
-  dt_iop_bilat_params_t tmp = (dt_iop_bilat_params_t){ 20, 50, 0.2 };
+  dt_iop_bilat_params_t tmp = (dt_iop_bilat_params_t){ s_mode_bilateral, 20, 50, 0.2 };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_bilat_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bilat_params_t));
@@ -228,6 +265,13 @@ static void detail_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
+  p->mode = dt_bauhaus_combobox_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 /** gui callbacks, these are needed. */
 void gui_update(dt_iop_module_t *self)
 {
@@ -237,6 +281,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->spatial, p->sigma_s);
   dt_bauhaus_slider_set(g->range, p->sigma_r);
   dt_bauhaus_slider_set(g->detail, p->detail);
+  dt_bauhaus_combobox_set(g->mode, p->mode);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -245,6 +290,12 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_bilat_gui_data_t));
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  g->mode = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
+  dt_bauhaus_combobox_add(g->mode, _("bilateral filter"));
+  dt_bauhaus_combobox_add(g->mode, _("local laplacian filter"));
 
   g->spatial = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
   dt_bauhaus_widget_set_label(g->spatial, NULL, _("coarseness"));
@@ -261,6 +312,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->spatial), "value-changed", G_CALLBACK(spatial_callback), self);
   g_signal_connect(G_OBJECT(g->range), "value-changed", G_CALLBACK(range_callback), self);
   g_signal_connect(G_OBJECT(g->detail), "value-changed", G_CALLBACK(detail_callback), self);
+  g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
