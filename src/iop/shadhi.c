@@ -23,6 +23,7 @@
 #include "common/bilateralcl.h"
 #include "common/debug.h"
 #include "common/gaussian.h"
+#include "common/locallaplacian.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -68,7 +69,8 @@ DT_MODULE_INTROSPECTION(5, dt_iop_shadhi_params_t)
 typedef enum dt_iop_shadhi_algo_t
 {
   SHADHI_ALGO_GAUSSIAN,
-  SHADHI_ALGO_BILATERAL
+  SHADHI_ALGO_BILATERAL,
+  SHADHI_ALGO_LAPLACIAN,
 } dt_iop_shadhi_algo_t;
 
 /* legacy version 1 params */
@@ -359,7 +361,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_gaussian_blur_4c(g, in, out);
     dt_gaussian_free(g);
   }
-  else
+  else if(data->shadhi_algo == SHADHI_ALGO_BILATERAL)
   {
     const float sigma_r = 100.0f; // d->sigma_r; // does not depend on scale
     const float sigma_s = sigma;
@@ -371,6 +373,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_bilateral_blur(b);
     dt_bilateral_slice(b, in, out, detail);
     dt_bilateral_free(b);
+  }
+  else // SHADHI_ALGO_LAPLACIAN
+  {
+    local_laplacian(in, out, roi_in->width, roi_in->height, 0.2, 1.0f, 1.0f, -1.0f);
   }
 
 // invert and desaturate
@@ -737,6 +743,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #ifdef HAVE_OPENCL
   if(d->shadhi_algo == SHADHI_ALGO_BILATERAL)
     piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+  // TODO: remove once the code is done
+  if(d->shadhi_algo == SHADHI_ALGO_LAPLACIAN) piece->process_cl_ready = 0;
 #endif
 }
 
@@ -822,6 +830,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->shadhi_algo, NULL, _("soften with"));
   dt_bauhaus_combobox_add(g->shadhi_algo, _("gaussian"));
   dt_bauhaus_combobox_add(g->shadhi_algo, _("bilateral filter"));
+  dt_bauhaus_combobox_add(g->shadhi_algo, _("local laplacian"));
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.1, 200.0, 2., p->radius, 2);
   g->compress = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->compress, 2);
   g->shadows_ccorrect = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->shadows_ccorrect, 2);
