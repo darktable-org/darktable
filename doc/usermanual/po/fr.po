@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2016-11-15 08:50+0100\n"
-"PO-Revision-Date: 2016-11-16 11:18+0100\n"
+"PO-Revision-Date: 2016-11-19 18:55+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -676,6 +676,11 @@ msgid ""
 "darktable finds an existing lock file for the library, it will terminate "
 "immediately."
 msgstr ""
+"Quand darktable démarre, il verrouille la bibliothèque de l'utilisateur "
+"courant. Il fait ceci en écrivant l'identificateur du processus courant "
+"(PID) dans un fichier de verrouillage <quote>&lt;library file&gt;.lock</"
+"quote> à côté de la bibliothèque spécifiée. Si darktable trouve un fichier "
+"de verrouillage de la bibliothèque il s'arrêtera immédiatement."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:429(term)
 msgid "--datadir &lt;data directory&gt;"
@@ -889,6 +894,8 @@ msgid ""
 "The name of the input file to export or the name of an folder containing "
 "input images which are to be exported."
 msgstr ""
+"Le nom du fichier en entrée à exporter ou le nom d'un dossier contenant les "
+"images en entrée qui doivent être exportées."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:599(term)
 msgid "&lt;xmp file&gt;"
@@ -917,6 +924,12 @@ msgid ""
 "\"export_selected\"/>). For obvious reasons this is mandatory if you use the "
 "program on an image folder containing multiple images."
 msgstr ""
+"Le nom du fichier de sortie. darktable fait dériver le format du fichier "
+"d'exportation de l'extension du fichier. Pour le nom de fichier de sortie, "
+"vous pouvez aussi utiliser toutes les variables disponibles dans le module "
+"exportation de darktable (voyez la <xref linkend=\"export_selected\"/>). "
+"Pour des raisons évidentes ceci est obligatoire si vous utilisez le "
+"programme pour un dossier contenant de nombreuses images. "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:625(term)
 msgid "--width &lt;max width&gt;"
@@ -1134,6 +1147,10 @@ msgid ""
 "such as RAW+JPEG with in-camera processing. Details about its usage can be "
 "found in <xref linkend=\"darktable_chart\"/>."
 msgstr ""
+"Cet exécutable est un utilitaire dédié à la création de styles à partir de "
+"paires d'images telles que RAW+JPEG fournies par le boîtier. Des détails de "
+"son utilisation peuvent être trouvés dans la <xref linkend=\"darktable_chart"
+"\"/>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:815(para)
 msgid ""
@@ -1148,6 +1165,8 @@ msgid ""
 "darktable-chart [--help] [&lt;input Lab pfm file&gt;] [&lt;cht file&gt;] "
 "[&lt;reference cgats/it8 or Lab pfm file&gt;]"
 msgstr ""
+"darktable-chart [--help] [&lt;input Lab pfm file&gt;] [&lt;cht file&gt;] "
+"[&lt;reference cgats/it8 or Lab pfm file&gt;]"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:835(term)
 msgid "--help"
@@ -1162,27 +1181,33 @@ msgid ""
 "Opens the utility with the given file as source image. The input file needs "
 "to be in Lab Portable Float Map format."
 msgstr ""
+"Ouvre l'utilitaire avec le fichier donné comme image source. Le fichier en "
+"entrée doit être au format Lab Portable Float Map."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:856(term)
 msgid "&lt;cht file&gt;"
 msgstr "&lt;cht file&gt;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:858(para)
-#, fuzzy
 msgid ""
 "Specifies a chart file describing the layout of the used color reference "
 "chart."
-msgstr "Cette section décrit l’organisation de l’interface utilisateur."
+msgstr ""
+"Spécifie un fichier décrivant la disposition du diagramme de référence des "
+"couleurs. "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:866(term)
 msgid "&lt;reference cgats/it8 or Lab pfm file&gt;"
-msgstr ""
+msgstr "&lt;reference cgats/it8 or Lab pfm file&gt;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:868(para)
 msgid ""
 "Specifies the reference values, either as measured values according to the "
 "CGATS standard, or as a reference image in Lab Portable Float Map format."
 msgstr ""
+"Spécifie les valeurs de référence, soit comme valeurs mesurées en fonction "
+"du standard CGATS, soit comme image de référence dans le format Lab Portable "
+"Float Map."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:826(para)
 msgid ""
@@ -1191,6 +1216,11 @@ msgid ""
 "\"none\">darktable-chart</filename> this way opens a special GUI (details "
 "can be found in <xref linkend=\"darktable_chart\"/>). <placeholder-1/>"
 msgstr ""
+"Tous les paramètres sont optionnels, cependant, si vous voulez fournir le "
+"deuxième nom de fichier vous devez aussi fournir le premier, etc. Démarrer "
+"<filename moreinfo=\"none\">darktable-chart</filename> de cette manière "
+"ouvre une interface graphique spéciale (des détails peuvent être trouvés "
+"dans la  <xref linkend=\"darktable_chart\"/>). <placeholder-1/>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:878(para)
 msgid ""
@@ -1198,12 +1228,17 @@ msgid ""
 "used as a command line program to generate darktable style files out of "
 "previously saved CSV files."
 msgstr ""
+"Alternativement <filename moreinfo=\"none\">darktable-chart</filename> peut "
+"être utilisé comme un programme en ligne de commande pour générer des "
+"fichiers de style à partir de fichiers CVS précédemment sauvegardés."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:883(synopsis)
 msgid ""
 "darktable-chart --csv &lt;csv file&gt; &lt;number patches&gt; &lt;output "
 "dtstyle file&gt;"
 msgstr ""
+"darktable-chart --csv &lt;csv file&gt; &lt;number patches&gt; &lt;output "
+"dtstyle file&gt;"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:895(term)
 msgid "&lt;csv file&gt;"
@@ -1226,6 +1261,8 @@ msgid ""
 "The number of color patches to be used in the <emphasis>color look up table</"
 "emphasis> settings of the created style."
 msgstr ""
+"Le nombre de pastilles de couleur à utiliser dans le paramétrage de la "
+"<emphasis>table correspondance couleurs</emphasis> du style créé. "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:916(term)
 msgid "&lt;output dtstyle file&gt;"
@@ -12125,7 +12162,6 @@ msgstr ""
 "canaux L, a et b."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10058(para)
-#, fuzzy
 msgid ""
 "In its default state, curves will be straight lines, defined by few anchor "
 "nodes. You can move the nodes to modify the curve. You can generate new "
@@ -12140,20 +12176,19 @@ msgid ""
 "input and output (see below) at the selected spot are shown on top left of "
 "the widget."
 msgstr ""
-"Dans son état par défaut, les courbes sont des lignes droites, définies par "
+"Dans leur état par défaut, les courbes sont des lignes droites, définies par "
 "quelques nœuds d’ancrage. Pour modifier une courbe vous pouvez déplacer ses "
-"nœuds à la souris. Vous pouvez aussi ajouter de nouveaux nœuds à une courbe "
-"en cliquant dessus. Avec un <emphasis>ctrl-clic</emphasis> vous générez un "
-"nouveau nœud ayant l'abscisse x du pointeur de la souris et l'ordonnée y du "
-"point correspondant de la courbe – ceci ajoute un nœud sans risque de "
+"nœuds. Vous pouvez aussi générer des nouveaux nœuds en <emphasis>cliquant</"
+"emphasis> sur la courbe. Avec un <emphasis>ctrl-clic</emphasis> vous générez "
+"un nouveau nœud ayant l'abscisse x du pointeur de la souris et l'ordonnée y "
+"du point correspondant de la courbe – ceci ajoute un nœud sans risque de "
 "modification accidentelle de la courbe. On peut définir jusqu'à 20 nœuds par "
-"courbe. Pour supprimer un nœud, déplacez-le hors de la zone de l’élément "
-"graphique. Une pipette à couleurs est activée en pressant <inlinegraphic "
-"fileref=\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%"
-"\" align=\"center\"/> et les valeurs sélectionnées sont affichées sur le "
-"graphique. Les valeurs numériques Lab de l’entrée et de la sortie (voyez ci-"
-"dessous) à l'endroit sélectionné sont affichées en haut et à gauche de "
-"l’élément graphique."
+"courbe. Pour supprimer un nœud, déplacez-le hors de la zone du widget. Une "
+"pipette à couleurs est activée en pressant <inlinegraphic fileref=\"images/"
+"darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
+"\"/> et les valeurs sélectionnées sont affichées sur le graphique. Les "
+"valeurs numériques Lab de l’entrée et de la sortie (voyez ci-dessous) du "
+"point sélectionné sont affichées en haut et à gauche du widget."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10072(title)
 msgid "L-channel curve"
@@ -13011,7 +13046,6 @@ msgstr ""
 "<xref linkend=\"rendering_intent\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11071(para)
-#, fuzzy
 msgid ""
 "Only rendering with LittleCMS2 gives you a choice of rendering intent. The "
 "option is hidden, if darktable's internal rendering routines are used. "
@@ -13019,7 +13053,9 @@ msgid ""
 "linkend=\"core_options\"/>)."
 msgstr ""
 "Seul le rendu avec LittleCMS2 vous donne le choix du mode de rendu. Cette "
-"option est masquée si on utilise le rendu interne de darktable."
+"option est masquée si on utilise les routines internes de rendu de "
+"darktable. Utiliser le rendu avec LittleCMS2 s'active dans la boîte de "
+"dialogue des préférences (voyez <xref linkend=\"core_options\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11079(title)
 msgid "output profile"
@@ -13123,15 +13159,14 @@ msgid "color board"
 msgstr "palette de couleurs"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11214(para)
-#, fuzzy
 msgid ""
 "For split toning move the white dot to the desired highlight tint and then "
 "select a tint for shadows with the dark spot. For a simple global tint set "
 "both spots to the same color."
 msgstr ""
 "Pour effectuer un virage partiel, glissez le point blanc sur la teinte "
-"désirée pour les hautes lumières et sélectionnez une teinte pour les ombres "
-"à l’aide du point noir. Pour obtenir une teinte globale simple, assignez la "
+"désirée des hautes lumières et sélectionnez une teinte pour les ombres à "
+"l’aide du point noir. Pour obtenir une teinte globale simple, assignez la "
 "même couleur aux deux points."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11223(para)
@@ -13139,15 +13174,13 @@ msgid "Use the saturation slider to correct the global saturation."
 msgstr "Utilisez le curseur de saturation pour corriger la saturation globale."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11234(title)
-#, fuzzy
 msgid "Color look up table"
-msgstr "Groupe des modules de couleur"
+msgstr "Table correspondance couleurs"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11238(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11242(primary)
-#, fuzzy
 msgid "color look up table"
-msgstr "labels de couleur ;"
+msgstr "table correspondance couleurs"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11255(entry)
 msgid ""
@@ -13158,6 +13191,14 @@ msgid ""
 "hald-cluts and RAW/JPEG with in-camera processing pairs). See <xref linkend="
 "\"darktable_chart\"/> for details."
 msgstr ""
+"Ce module implémente une table de correspondance couleurs générique dans "
+"l'espace colorimétrique Lab. L'entrée est une liste de sources et de cibles, "
+"la correspondance complète est obtenue par des interpolations à l'aide de "
+"splines. Les tables de correspondance couleurs résultantes sont éditables à "
+"la main et peuvent être créées en utilisant l'utilitaire <placeholder-1/> à "
+"partir de l'entrée donnée (such as hald-cluts and RAW/JPEG with in-camera "
+"processing pairs). Voyez <xref linkend=\"darktable_chart\"/> pour des "
+"détails."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11279(para)
 msgid ""
@@ -13168,7 +13209,6 @@ msgid ""
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11285(para)
-#, fuzzy
 msgid ""
 "The grid shows a list of colored patches. The colors of the patches are the "
 "source points. The target color of the selected patch is shown as offsets "
@@ -13176,18 +13216,12 @@ msgid ""
 "drawn around patches that have been altered, i.e. the source and target "
 "colors differ."
 msgstr ""
-"Quand vous sélectionnez le module en mode chambre noire, il devrait "
-"ressembler à l'image ci-dessus (les configurations avec plus de 24 pastilles "
-"sont présentées dans une grille 7x7). Par défaut, il chargera les 24 "
-"pastilles d'un damier de couleurs classique et initialisera la "
-"correspondance avec l'identité (pas de changement dans l'image). La grille "
-"montre une liste de pastilles de couleur. Les couleurs de ces pastilles sont "
-"les couleurs source. Dans l'interface utilisateur, la couleur cible de la "
-"pastille sélectionnée est affichée comme un décalage contrôlé par les "
-"curseurs situés sous la grille des pastilles. Un contour est tracé autour "
-"des pastilles qui ont été modifiées, c'est à dire que leurs couleurs source "
-"et cible diffèrent. La pastille sélectionnée est marquée par un carré blanc, "
-"et son numéro apparaît dans la zone de liste en dessous."
+"La grille montre un ensemble de pastilles de couleur. Ces couleurs sont les "
+"sources. La couleur cible de la pastille sélectionnée est affichée par des "
+"décalages contrôlés par des curseurs de l'interface graphique situé sous la "
+"grille des pastilles de couleur. Un contour est dessiné sur les pastilles "
+"qui ont été modifiées, i.e. les couleurs de la source et de la cible "
+"diffèrent."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11291(para)
 msgid ""
@@ -13195,6 +13229,9 @@ msgid ""
 "displayed in the combo box below. Select a patch by left clicking on it, or "
 "using the combo box, or using the color picker."
 msgstr ""
+"La pastille sélectionnée est marquée par un carré blanc et son numéro est "
+"affiché sous la grille. Sélectionnez une pastille par un clic gauche ou en "
+"utilisant la zone de liste déroulante ou en utilisant la pipette à couleurs. "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11299(title)
 msgid "interaction"
@@ -13241,7 +13278,6 @@ msgstr ""
 "peut être modifié."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11372(para)
-#, fuzzy
 msgid ""
 "A color picker is activated by pressing <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
@@ -13249,7 +13285,7 @@ msgid ""
 msgstr ""
 "Une pipette à couleurs est activée en pressant <inlinegraphic fileref="
 "\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align="
-"\"center\"/>, elle affichera sur le diagramme les valeurs prélevées."
+"\"center\"/>, elle fixera automatiquement la position et la taille du filtre."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11378(para)
 msgid ""
@@ -13363,7 +13399,6 @@ msgid "select by"
 msgstr "sélection par"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11475(para)
-#, fuzzy
 msgid ""
 "Defines the horizontal axis, i.e. the range of values you work on. You can "
 "choose between <quote>lightness</quote>, <quote>saturation</quote>, and "
@@ -13373,7 +13408,7 @@ msgstr ""
 "Définit l'axe horizontal, c'est à dire la plage des valeurs sur laquelle "
 "vous travaillez. Vous pouvez choisir entre <quote>clarté</quote>, "
 "<quote>saturation</quote> et <quote>teinte</quote> (valeur par défaut).  "
-"Changer ces paramètres réinitialise à une ligne droite chaque courbe définie."
+"Changer ce paramètre réinitialise à une ligne droite chaque courbe définie."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11484(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14952(title)
@@ -13843,7 +13878,6 @@ msgstr ""
 "fréquences."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12027(para)
-#, fuzzy
 msgid ""
 "Each frequency band can be tweaked independently. In particular, you can "
 "adjust contrast boost and denoise threshold splines for both lightness and "
@@ -13853,9 +13887,10 @@ msgid ""
 msgstr ""
 "Chaque bande de fréquences peut être modifiée indépendamment. En "
 "particulier, vous pouvez ajuster la spline servant à augmenter le contraste "
-"et la spline modifiant le seuil de réduction de bruit, à la fois, pour la "
-"clarté et pour la chromaticité, ainsi que l'acuité (<quote>contours</quote>) "
-"de la base d'ondelettes sur chaque échelle de fréquences."
+"et celle servant à modifier le seuil de réduction de bruit, à la fois, pour "
+"la clarté et pour la chromaticité (<quote>luma</quote> et <quote>chroma</"
+"quote>), ainsi que l'acuité (<quote>contours</quote>) de la base "
+"d'ondelettes à chaque échelle de fréquences."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12040(entry)
 msgid ""
@@ -13948,7 +13983,6 @@ msgstr ""
 "modifications seront consolidées dans les courbes splines."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12147(para)
-#, fuzzy
 msgid ""
 "Have a look at the presets where there are a broad variety of examples that "
 "will provide a good starting point to gain an intuitive understanding of the "
@@ -13957,7 +13991,7 @@ msgid ""
 msgstr ""
 "Regardez les préréglages, on y trouve une grande variété d’exemples qui vous "
 "donneront un bon point de départ pour acquérir une connaissance intuitive "
-"des contrôles. Entre autres, il y a deux préréglages pour améliorer la "
+"des contrôles. Entre autres, il y a un préréglage pour améliorer la "
 "<quote>clarté</quote> d’une image."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12159(title)
@@ -13990,7 +14024,6 @@ msgstr ""
 "profilés pour certains modèles d’appareils photos et leur réglage ISO."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12206(para)
-#, fuzzy
 msgid ""
 "The darktable team, with the help of many users, has measured noise profiles "
 "for various cameras. Differentiated by ISO settings we evaluated how the "
@@ -14002,7 +14035,7 @@ msgstr ""
 "profils de bruit de divers appareils photo. Nous avons évalué, en fonction "
 "des réglages ISO, la manière dont les statistiques de bruit évoluent avec la "
 "luminosité pour les trois canaux de couleur. Notre ensemble de profils "
-"couvre bien plus de 100 modèles d'appareils photo de tous les grands "
+"couvre bien plus de 200 modèles d'appareils photo de tous les grands "
 "fabricants."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12213(para)
@@ -14030,7 +14063,6 @@ msgstr ""
 "de bruit n'oubliez-pas de partager vos résultats avec l'équipe de darktable !"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12226(para)
-#, fuzzy
 msgid ""
 "Based on Exif data of your raw file, darktable will automatically determine "
 "the camera model and ISO setting. If found in its database, the "
@@ -14047,12 +14079,12 @@ msgstr ""
 "S’il le trouve dans la base de données, le profil de bruit correspondant "
 "sera utilisé. Si votre image a été prise avec une valeur d’ISO "
 "intermédiaire, les propriétés statistiques seront interpolées entre les deux "
-"jeux de valeurs les plus proches trouvées dans la base de données, et cette "
-"valeur d’interpolation sera affichée sur la première ligne de la zone de "
-"liste déroulante. Vous avez également la possibilité de remplacer "
-"manuellement cette sélection pour mieux répondre à vos préférences "
-"personnelles. L’entrée supérieure de la zone de liste déroulante vous permet "
-"de revenir au profil que darktable juge le mieux adapté."
+"jeux de valeurs les plus proches trouvées dans la base de données, et ce "
+"réglage interpolé apparaîtra en première ligne de la zone de liste "
+"déroulante. Vous avez également la possibilité de remplacer manuellement "
+"cette sélection pour mieux répondre à vos préférences personnelles. L’entrée "
+"supérieure de la zone de liste déroulante vous permet de revenir au profil "
+"que darktable juge le mieux adapté."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12239(para)
 msgid ""
@@ -14258,12 +14290,12 @@ msgstr "Intensité du flou pour le canal bleu."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12446(title)
 msgid "Liquify"
-msgstr ""
+msgstr "Liquéfier"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12450(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12454(primary)
 msgid "liquify"
-msgstr ""
+msgstr "liquéfier"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12467(entry)
 msgid ""
@@ -14271,6 +14303,10 @@ msgid ""
 "applying free style distortions to parts of the image. There are three tools "
 "to help doing that: points, lines, and curves."
 msgstr ""
+"Le module liquéfier offre un moyen polyvalent de déplacer des pixels en "
+"appliquant des distorsions de style libre à des parties de l'image. Il y a "
+"trois outils pour vous aider à faire ceci : les points, les lignes et les "
+"courbes."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12480(para)
 msgid ""
@@ -14302,7 +14338,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12523(title)
 msgid "warps and nodes count"
-msgstr ""
+msgstr "compteur de formes et de nœuds"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12524(para)
 msgid ""
@@ -14312,18 +14348,18 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12531(title)
 msgid "point tool"
-msgstr ""
+msgstr "outil point"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12532(para)
-#, fuzzy
 msgid ""
 "Click the <inlinegraphic fileref=\"images/darkroom_module_liquify_point.png"
 "\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to activate the point "
 "tool and left-click on the image to place it."
 msgstr ""
-"L’icône <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\" "
-"scalefit=\"1\" width=\"2%\" align=\"center\"/> est utilisée pour "
-"réinitialiser les paramètres d'un module à leurs valeurs par défaut."
+"Cliquez l'icône <inlinegraphic fileref=\"images/"
+"darkroom_module_liquify_point.png\" scalefit=\"1\" width=\"2%\" align="
+"\"center\"/> pour activer l'outil point et cliquez gauche sur l'image pour "
+"le placer."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12537(para)
 msgid ""
@@ -14378,7 +14414,6 @@ msgid "line tool"
 msgstr "outil ligne"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12633(para)
-#, fuzzy
 msgid ""
 "Click the <inlinegraphic fileref=\"images/darkroom_module_liquify_line.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to activate the line "
@@ -14386,11 +14421,12 @@ msgid ""
 "click to place another point and start forming the path. To end the line "
 "just right-click anywhere."
 msgstr ""
-"Cliquer l’icône <inlinegraphic fileref=\"images/darkroom_module_icon_presets."
-"png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> ouvre une zone de liste "
-"déroulante qui vous donne un accès rapide aux préréglages de vos modules "
-"favoris. Il suffit de cliquer sur le nom du préréglage pour l’appliquer à "
-"l’image."
+"Cliquez l'icône <inlinegraphic fileref=\"images/darkroom_module_liquify_line."
+"png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> pour activer l'outil "
+"ligne. Puis, cliquez gauche dans l'image pour placer le premier point, "
+"déplacer le curseur et cliquer gauche pour placer un autre point - "
+"commençant ainsi la formation du chemin. Pour terminer la ligne juste "
+"cliquez droit n’importe où."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12647(entry)
 msgid ""
@@ -14419,7 +14455,6 @@ msgid "curve tool"
 msgstr "outil courbe"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12673(para)
-#, fuzzy
 msgid ""
 "Click the <inlinegraphic fileref=\"images/darkroom_module_liquify_curve.png"
 "\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to activate the curve "
@@ -14427,11 +14462,12 @@ msgid ""
 "click to place another point and start forming the path. To end the line "
 "just right-click anywhere."
 msgstr ""
-"Cliquer l’icône <inlinegraphic fileref=\"images/darkroom_module_icon_presets."
-"png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> ouvre une zone de liste "
-"déroulante qui vous donne un accès rapide aux préréglages de vos modules "
-"favoris. Il suffit de cliquer sur le nom du préréglage pour l’appliquer à "
-"l’image."
+"Cliquez l'icône <inlinegraphic fileref=\"images/"
+"darkroom_module_liquify_curve.png\" scalefit=\"1\" width=\"2%\" align="
+"\"center\"/> pour activer l'outil courbe. Puis, cliquez gauche dans l'image "
+"pour placer le premier point, déplacer le curseur et cliquer gauche pour "
+"placer un autre point - commençant ainsi la formation du chemin. Pour "
+"terminer la courbe juste cliquez droit n’importe où."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12687(entry)
 msgid ""
