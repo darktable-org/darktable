@@ -98,10 +98,8 @@ static inline void process_apparent_grayscale(
   const int ch = piece->colors;
 
   // u' and v' of the white point, Luv color space.
-  const float uv_prime_c[2] = { (4.0f * d50[0]) / (d50[0] + 15.0f * d50[1] + 3.0f * d50[2]),
-                                (9.0f * d50[1]) / (d50[0] + 15.0f * d50[1] + 3.0f * d50[2]) };
-  //-> The denominator is the same for u and v. Is it faster to calculate once, store, and read, or
-  //-> to calculate twice?
+  const float den = d50[0] + 15.0f * d50[1] + 3.0f * d50[2];
+  const float uv_prime_c[2] = { (4.0f * d50[0]) / den, (9.0f * d50[1]) / den };
 
   const float adapting_luminance = 20.0f;
   // dependency of the adapting luminance onto the Helmholtz-Kohlrausch effect
@@ -130,17 +128,17 @@ static inline void process_apparent_grayscale(
       uv_prime[0] = (4.0f * XYZ[0]) / (XYZ[0] + 15.0f * XYZ[1] + 3.0f * XYZ[2] + 1e-5f);
       uv_prime[1] = (9.0f * XYZ[1]) / (XYZ[0] + 15.0f * XYZ[1] + 3.0f * XYZ[2] + 1e-5f);
 
-      // Calculate monochrome value.
-      s_uv = 13.0f * sqrtf(MAX(0.0f, powf(uv_prime[0] - uv_prime_c[0], 2) + powf(uv_prime[1] - uv_prime_c[1], 2)));
-      theta = atan2f(uv_prime[1] - uv_prime_c[1],
-                     uv_prime[0] - uv_prime_c[0]);
+      s_uv = 13.0f * sqrtf(MAX(0.0f,
+              (uv_prime[0] - uv_prime_c[0])*(uv_prime[0] - uv_prime_c[0])
+            + (uv_prime[1] - uv_prime_c[1])*(uv_prime[1] - uv_prime_c[1])));
+      theta = atan2f(uv_prime[1] - uv_prime_c[1], uv_prime[0] - uv_prime_c[0]);
       if(!(theta == theta)) theta = 0.0f;
 
       q = -0.01585f - 0.03016f * cosf(theta) - 0.04556f * cosf(2.0f * theta) - 0.02667f * cosf(3.0f * theta)
           - 0.00295 * cosf(4.0f * theta) + 0.14592f * sinf(theta) + 0.05084f * sinf(2.0f * theta)
           - 0.019f * sinf(3.0f * theta) - 0.00764f * sinf(4.0f * theta);
 
-      // L channel is the same in Luv and Lab. Thus, L as calculated in LUV can be used is Lab.
+      // L channel is the same in Luv and Lab. Thus, L as calculated in LUV can be used as Lab.
       out[0] = (1.0f + (0.0872f * k_br - 0.134f * q) * s_uv) * in[0];
       out[1] = 0;
       out[2] = 0;
