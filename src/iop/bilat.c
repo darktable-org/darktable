@@ -269,6 +269,17 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
   p->mode = dt_bauhaus_combobox_get(w);
+  dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
+  if(p->mode == s_mode_local_laplacian)
+  {
+    gtk_widget_set_visible(g->range, FALSE);
+    gtk_widget_set_visible(g->spatial, FALSE);
+  }
+  else
+  {
+    gtk_widget_set_visible(g->range, TRUE);
+    gtk_widget_set_visible(g->spatial, TRUE);
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -282,6 +293,16 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->range, p->sigma_r);
   dt_bauhaus_slider_set(g->detail, p->detail);
   dt_bauhaus_combobox_set(g->mode, p->mode);
+  if(p->mode == s_mode_local_laplacian)
+  {
+    gtk_widget_set_visible(g->range, FALSE);
+    gtk_widget_set_visible(g->spatial, FALSE);
+  }
+  else
+  {
+    gtk_widget_set_visible(g->range, TRUE);
+    gtk_widget_set_visible(g->spatial, TRUE);
+  }
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -294,8 +315,9 @@ void gui_init(dt_iop_module_t *self)
   g->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_add(g->mode, _("bilateral filter"));
+  dt_bauhaus_combobox_add(g->mode, _("bilateral grid"));
   dt_bauhaus_combobox_add(g->mode, _("local laplacian filter"));
+  gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));
 
   g->spatial = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
   dt_bauhaus_widget_set_label(g->spatial, NULL, _("coarseness"));
