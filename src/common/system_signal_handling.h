@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 johannes hanika.
+    copyright (c) 2016 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,18 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
-#include "common/opencl.h"
+#pragma once
 
-int main(int argc, char *arg[])
-{
-  // only used to force-init opencl, so we want these options:
-  char *m_arg[] = { "darktable-cltest", "-d", "opencl", "--library", ":memory:"};
-  const int m_argc = sizeof(m_arg) / sizeof(m_arg[0]);
-  if(dt_init(m_argc, m_arg, FALSE, FALSE, NULL)) exit(1);
-  dt_cleanup();
-  exit(0);
-}
+void dt_set_signal_handlers();
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
