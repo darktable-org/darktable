@@ -47,7 +47,7 @@ env:
     - CFLAGS=-pipe CXXFLAGS=-pipe
   matrix:
     - CC=gcc CXX=g++ TARGET=build
-    - CC=clang-3.8 CXX=clang++-3.8 TARGET=build
+    - CC=clang-3.9 CXX=clang++-3.9 TARGET=build
     - CC=gcc CXX=g++ TARGET=usermanual # EXTRA_TMPFS="--tmpfs /tmp"
 
 matrix:

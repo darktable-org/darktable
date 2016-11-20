@@ -36,7 +36,13 @@ public:
   virtual ~CameraMetaData(void);
   map<string,Camera*> cameras;
   map<uint32,Camera*> chdkCameras;
+
+  // searches for camera with given make + model + mode
   Camera* getCamera(string make, string model, string mode);
+
+  // searches for camera with given make + model, with ANY mode
+  Camera* getCamera(string make, string model);
+
   bool hasCamera(string make, string model, string mode);
   Camera* getChdkCamera(uint32 filesize);
   bool hasChdkCamera(uint32 filesize);

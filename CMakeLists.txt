@@ -77,6 +77,12 @@ option(BUILD_RS_IDENTIFY "Build the darktable-rs-identify debug aid" ON)
 option(BUILD_SSE2_CODEPATHS "(EXPERIMENTAL OPTION, DO NOT DISABLE) Building SSE2-optimized codepaths" ON)
 option(VALIDATE_APPDATA_FILE "Use appstream-util (if found) to validate the .appdata file" OFF)
 
+if(USE_OPENCL)
+  option(TESTBUILD_OPENCL_PROGRAMS "Test-compile opencl programs (needs llvm and clang 3.9+)" ON)
+else()
+  set(TESTBUILD_OPENCL_PROGRAMS OFF)
+endif()
+
 if(BUILD_SSE2_CODEPATHS)
   CHECK_C_COMPILER_FLAG("-msse2" _MSSE2)
   if(NOT _MSSE2)
@@ -310,6 +316,50 @@ if(VALIDATE_APPDATA_FILE)
     message(STATUS "Found appstream-util")
   endif(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
 endif(VALIDATE_APPDATA_FILE)
+
+if(TESTBUILD_OPENCL_PROGRAMS)
+  set(TESTBUILD_OPENCL_PROGRAMS OFF)
+
+  # 3.9 is the first version with which this works.
+  find_package(LLVM 3.9 CONFIG)
+  if (LLVM_FOUND)
+    message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+
+    find_program(CLANG_OPENCL_COMPILER
+      NAMES clang-${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR} clang-${LLVM_PACKAGE_VERSION}
+    )
+
+    if (NOT ${CLANG_OPENCL_COMPILER} STREQUAL "CLANG_OPENCL_COMPILER-NOTFOUND")
+      message(STATUS "Found clang compiler - ${CLANG_OPENCL_COMPILER}")
+
+      find_path(CLANG_OPENCL_INCLUDE_DIR opencl-c.h
+        HINTS ${LLVM_INSTALL_PREFIX}/lib/clang
+        PATH_SUFFIXES include ${LLVM_PACKAGE_VERSION}/include
+        NO_DEFAULT_PATH
+      )
+
+      if (NOT ${CLANG_OPENCL_INCLUDE_DIR} STREQUAL "CLANG_OPENCL_INCLUDE_DIR-NOTFOUND")
+        message(STATUS "Found clang opencl-c.h header in ${CLANG_OPENCL_INCLUDE_DIR}")
+        set(TESTBUILD_OPENCL_PROGRAMS ON)
+      else()
+        message(WARNING "Could not find clang opencl-c.h header include dir")
+        message(WARNING "Test-compilation of OpenCL programs can not be done.")
+      endif()
+    else()
+      message(WARNING "Could not find appropriate clang compiler")
+      message(WARNING "Test-compilation of OpenCL programs can not be done.")
+    endif()
+  else()
+    message(WARNING "Could not find LLVM 3.9+")
+    message(WARNING "Test-compilation of OpenCL programs can not be done.")
+  endif()
+endif()
+
+if(USE_OPENCL AND TESTBUILD_OPENCL_PROGRAMS)
+  message(STATUS "Will be able to test-compile OpenCL programs. Nice.")
+elseif(USE_OPENCL)
+  message(STATUS "Test-compilation of OpenCL programs is disabled.")
+endif()
 
 # we need jsonschema to check noiseprofiles.json
 find_program(jsonschema_BIN jsonschema)
