@@ -20,7 +20,7 @@
   You can compile this tool standalone.
   Dependencies: libX11, libXrandr, liblcms2, libglib and optionally libcolord
   Compile with something like this:
-    gcc -W -Wall `pkg-config --cflags --libs glib-2.0 lcms2 colord x11 xrandr` \
+    gcc -W -Wall -std=c99 `pkg-config --cflags --libs glib-2.0 lcms2 colord x11 xrandr` \
         -DHAVE_X11 -DHAVE_COLORD -Ddarktable_package_version=\"'standalone'\" main.c -o darktable-cmstest
 */
 
