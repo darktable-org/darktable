@@ -17,6 +17,8 @@ static inline int dl(int size, const int level)
 
 // needs a boundary of 2px around i,j or else it will crash.
 // (translates to a 1px boundary around the corresponding pixel in the coarse buffer)
+// the lower bound 0 would be fine with 1px boundary, but the
+// upper bound needs one more pixel for even widths/heights.
 static inline float ll_expand_gaussian(
     const float *const coarse,
     const int i,
@@ -28,11 +30,19 @@ static inline float ll_expand_gaussian(
   assert(i < wd-1);
   assert(j > 0);
   assert(j < ht-1);
+  assert(j/2 + 1 < (ht-1)/2+1);
+  assert(i/2 + 1 < (wd-1)/2+1);
   float c = 0.0f;
   const int cw = (wd-1)/2+1;
   const float a = 0.4f;
   const float w[5] = {1./4.-a/2., 1./4., a, 1./4., 1./4.-a/2.};
   const int ind = (j/2)*cw+i/2;
+  // case 0:     case 1:     case 2:     case 3:
+  //  x . x . x   x . x . x   x . x . x   x . x . x
+  //  . . . . .   . . . . .   . .[.]. .   .[.]. . .
+  //  x .[x]. x   x[.]x . x   x . x . x   x . x . x
+  //  . . . . .   . . . . .   . . . . .   . . . . .
+  //  x . x . x   x . x . x   x . x . x   x . x . x
   switch((i&1) + 2*(j&1))
   {
     case 0: // both are even, 3x3 stencil
