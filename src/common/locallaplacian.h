@@ -302,7 +302,6 @@ static inline void local_laplacian(
     for(int j=2;j<ph-2;j++) for(int i=2;i<pw-2;i++)
     {
       const float v = padded[l][j*pw+i];
-      // const float v = output[l][j*pw+i];
       int hi = 1;
       for(;hi<num_gamma-1 && gamma[hi] <= v;hi++);
       int lo = hi-1;
@@ -337,6 +336,154 @@ static inline void local_laplacian(
 }
 
 #ifdef HAVE_OPENCL_TODO
+typedef struct local_laplacian_cl_global_t
+{
+  int kernel_pad_input;
+  int kernel_gauss_expand;
+  int kernel_gauss_reduce;
+  int kernel_laplacian_assemble;
+  int kernel_process_curve;
+  int kernel_write_back;
+}
+local_laplacian_cl_global_t;
+
+typedef struct local_laplacian_cl_t
+{
+  // pyramid of padded monochrome input buffer
+  cl_mem *padded;
+  // pyramid of padded output buffer, monochrome, too:
+  cl_mem *output;
+  // one pyramid of padded monochrome buffers for every value
+  // of gamma (curve parameter) that we process:
+  cl_mem **processed;
+  int devid;
+}
+local_laplacian_cl_t;
+
+local_laplacian_cl_global_t *local_laplacian_init_cl_global()
+{
+  local_laplacian_cl_global_t *g = (local_laplacian_cl_global_t *)malloc(sizeof(local_laplacian_cl_global_t));
+
+  const int program = 19; // locallaplacian.cl, from programs.conf
+  g->kernel_pad_input          = dt_opencl_create_kernel(program, "pad_input");
+  g->kernel_gauss_expand       = dt_opencl_create_kernel(program, "gauss_expand");
+  g->kernel_gauss_reduce       = dt_opencl_create_kernel(program, "gauss_reduce");
+  g->kernel_laplacian_assemble = dt_opencl_create_kernel(program, "laplacian_assemble");
+  g->kernel_process_curve      = dt_opencl_create_kernel(program, "process_curve");
+  g->kernel_write_back         = dt_opencl_create_kernel(program, "write_back");
+  return g;
+}
+
+void local_laplacian_free_cl(local_laplacian_cl_t *g)
+{
+  if(!g) return;
+  // be sure we're done with the memory:
+  dt_opencl_finish(g->devid);
+
+  // free device mem
+  dt_opencl_release_mem_object(g->dev_temp1);
+  dt_opencl_release_mem_object(g->dev_temp2);
+  free(g);
+}
+
+local_laplacian_cl_t *local_laplacian_init_cl(
+    const int devid,
+    const int width,    // width of input image
+    const int height,   // height of input image
+    const int channels, // channels per pixel
+    const float *max,   // maximum allowed values per channel for clamping
+    const float *min,   // minimum allowed values per channel for clamping
+    const float sigma,  // gaussian sigma
+    const int order)    // order of gaussian blur
+{
+  assert(channels == 1 || channels == 4);
+
+  if(!(channels == 1 || channels == 4)) return NULL;
+
+  dt_gaussian_cl_t *g = (dt_gaussian_cl_t *)malloc(sizeof(dt_gaussian_cl_t));
+  if(!g) return NULL;
+
+  g->global = darktable.opencl->gaussian;
+  g->devid = devid;
+  g->width = width;
+  g->height = height;
+  g->channels = channels;
+  g->sigma = sigma;
+  g->order = order;
+  g->dev_temp1 = NULL;
+  g->dev_temp2 = NULL;
+  g->max = (float *)calloc(channels, sizeof(float));
+  g->min = (float *)calloc(channels, sizeof(float));
+
+  if(!g->min || !g->max) goto error;
+
+  for(int k = 0; k < channels; k++)
+  {
+    g->max[k] = max[k];
+    g->min[k] = min[k];
+  }
+
+  // check if we need to reduce blocksize
+  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
+  size_t workgroupsize = 0;       // the maximum number of items in a work group
+  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+
+  // make sure blocksize is not too large
+  int kernel_gaussian_transpose = (channels == 1) ? g->global->kernel_gaussian_transpose_1c
+                                                  : g->global->kernel_gaussian_transpose_4c;
+  size_t blocksize = 64;
+  int blockwd;
+  int blockht;
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
+     && dt_opencl_get_kernel_work_group_size(devid, kernel_gaussian_transpose, &kernelworkgroupsize)
+        == CL_SUCCESS)
+  {
+    // reduce blocksize step by step until it fits to limits
+    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize * blocksize > workgroupsize
+          || blocksize * (blocksize + 1) * channels * sizeof(float) > localmemsize)
+    {
+      if(blocksize == 1) break;
+      blocksize >>= 1;
+    }
+
+    blockwd = blockht = blocksize;
+
+    if(blockwd * blockht > kernelworkgroupsize) blockht = kernelworkgroupsize / blockwd;
+  }
+  else
+  {
+    blockwd = blockht = 1; // slow but safe
+  }
+
+  // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
+  const size_t bwidth = width % blockwd == 0 ? width : (width / blockwd + 1) * blockwd;
+  const size_t bheight = height % blockht == 0 ? height : (height / blockht + 1) * blockht;
+
+  g->blocksize = blocksize;
+  g->blockwd = blockwd;
+  g->blockht = blockht;
+  g->bwidth = bwidth;
+  g->bheight = bheight;
+
+  // get intermediate vector buffers with read-write access
+  g->dev_temp1 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth * bheight * channels * sizeof(float));
+  if(!g->dev_temp1) goto error;
+  g->dev_temp2 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth * bheight * channels * sizeof(float));
+  if(!g->dev_temp2) goto error;
+
+  return g;
+
+error:
+  free(g->min);
+  free(g->max);
+  dt_opencl_release_mem_object(g->dev_temp1);
+  dt_opencl_release_mem_object(g->dev_temp2);
+  g->dev_temp1 = g->dev_temp2 = NULL;
+  free(g);
+  return NULL;
+}
+
 static inline void local_laplacian_cl(
     cl_mem input,               // input buffer in some Labx or yuvx format
     cl_mem out,                 // output buffer with colour
