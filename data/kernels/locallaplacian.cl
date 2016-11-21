@@ -19,9 +19,9 @@
 #include "common.h"
 
 kernel void
-ll_pad_input(
+pad_input(
     read_only  image2d_t input,
-    write_only image2d_ padded,
+    write_only image2d_t padded,
     const int wd,                  // dimensions of input
     const int ht,
     const int max_supp,            // size of border
@@ -43,7 +43,7 @@ ll_pad_input(
   write_imagef (padded, (int2)(x, y), pixel.x);
 }
 
-float ll_expand_gaussian(
+float expand_gaussian(
     read_only image2d_t coarse,
     const int i,
     const int j,
@@ -108,7 +108,7 @@ gauss_expand(
   if(x <= 1) cx = 2;
   if(y <= 1) cy = 2;
 
-  pixel.x = ll_expand_gaussian(input, cx, cy, wd, ht);
+  pixel.x = expand_gaussian(coarse, cx, cy, wd, ht);
   write_imagef (fine, (int2)(x, y), pixel);
 }
 
@@ -144,7 +144,7 @@ gauss_reduce(
   write_imagef (coarse, (int2)(x, y), pixel);
 }
 
-float ll_laplacian(
+float laplacian(
     read_only image2d_t coarse, // coarse res gaussian
     read_only image2d_t fine,   // fine res gaussian
     const int i,                // fine index
@@ -152,7 +152,7 @@ float ll_laplacian(
     const int wd,               // fine width
     const int ht)               // fine height
 {
-  const float c = ll_expand_gaussian(coarse, i, j, wd, ht);
+  const float c = expand_gaussian(coarse, i, j, wd, ht);
   return read_imagef(fine, sampleri, (int2)(i, j)).x - c;
 }
 
@@ -192,7 +192,7 @@ laplacian_assemble(
   if(y <= 1) j = 2;
 
   float4 pixel;
-  pixel.x = ll_expand_gaussian(output1, i, j, pw, ph);
+  pixel.x = expand_gaussian(output1, i, j, pw, ph);
 
   const float num_gamma = 8.0f; // this sucks, have to hardcode for the lack of arrays
   const float v = read_imagef(input, sampleri, (int2)(i, j)).x;
@@ -201,45 +201,45 @@ laplacian_assemble(
   // for(;hi<num_gamma-1 && gamma[hi] <= v;hi++);
   for(;hi<num_gamma-1 && (hi+.5f)/(float)num_gamma <= v;hi++);
   int lo = hi-1;
-  // const float a = fminf(fmaxf((v - gamma[lo])/(gamma[hi]-gamma[lo]), 0.0f), 1.0f);
-  const float a = fminf(fmaxf((v*num_gamma - (lo+.5f), 0.0f), 1.0f);
+  // const float a = fmin(fmax((v - gamma[lo])/(gamma[hi]-gamma[lo]), 0.0f), 1.0f);
+  const float a = fmin(fmax(v*num_gamma - (lo+.5f), 0.0f), 1.0f);
   float l0, l1;
   switch(lo)
   { // oh man, this sucks:
     case 0:
-      l0 = ll_laplacian(buf_g0_l1, buf_g0_l0, i, j, pw, ph);
-      l1 = ll_laplacian(buf_g1_l1, buf_g1_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g0_l1, buf_g0_l0, i, j, pw, ph);
+      l1 = laplacian(buf_g1_l1, buf_g1_l0, i, j, pw, ph);
       break;
     case 1:
-      l0 = ll_laplacian(buf_g1_l1, buf_g1_l0, i, j, pw, ph);
-      l1 = ll_laplacian(buf_g2_l1, buf_g2_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g1_l1, buf_g1_l0, i, j, pw, ph);
+      l1 = laplacian(buf_g2_l1, buf_g2_l0, i, j, pw, ph);
       break;
     case 2:
-      l0 = ll_laplacian(buf_g2_l1, buf_g2_l0, i, j, pw, ph);
-      l1 = ll_laplacian(buf_g3_l1, buf_g3_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g2_l1, buf_g2_l0, i, j, pw, ph);
+      l1 = laplacian(buf_g3_l1, buf_g3_l0, i, j, pw, ph);
       break;
     case 3:
-      l0 = ll_laplacian(buf_g3_l1, buf_g3_l0, i, j, pw, ph);
-      l1 = ll_laplacian(buf_g4_l1, buf_g4_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g3_l1, buf_g3_l0, i, j, pw, ph);
+      l1 = laplacian(buf_g4_l1, buf_g4_l0, i, j, pw, ph);
       break;
     case 4:
-      l0 = ll_laplacian(buf_g4_l1, buf_g4_l0, i, j, pw, ph);
-      l1 = ll_laplacian(buf_g5_l1, buf_g5_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g4_l1, buf_g4_l0, i, j, pw, ph);
+      l1 = laplacian(buf_g5_l1, buf_g5_l0, i, j, pw, ph);
       break;
     case 5:
-      l0 = ll_laplacian(buf_g5_l1, buf_g5_l0, i, j, pw, ph);
-      l1 = ll_laplacian(buf_g6_l1, buf_g6_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g5_l1, buf_g5_l0, i, j, pw, ph);
+      l1 = laplacian(buf_g6_l1, buf_g6_l0, i, j, pw, ph);
       break;
     default: // case 6:
-      l0 = ll_laplacian(buf_g6_l1, buf_g6_l0, i, j, pw, ph);
-      l1 = ll_laplacian(buf_g7_l1, buf_g7_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g6_l1, buf_g6_l0, i, j, pw, ph);
+      l1 = laplacian(buf_g7_l1, buf_g7_l0, i, j, pw, ph);
       break;
   }
   pixel.x += l0 * (1.0f-a) + l1 * a;
   write_imagef (output0, (int2)(x, y), pixel);
 }
 
-float ll_curve(
+float curve(
     const float x,
     const float g,
     const float sigma,
@@ -247,7 +247,7 @@ float ll_curve(
     const float highlights,
     const float clarity)
 {
-  return g + (x-g) + clarity * (x - g) * native_expf(-(x-g)*(x-g)/(2.0f*sigma*sigma));
+  return g + (x-g) + clarity * (x - g) * native_exp(-(x-g)*(x-g)/(2.0f*sigma*sigma));
 }
 
 kernel void
@@ -267,7 +267,7 @@ process_curve(
   if(x >= wd || y >= ht) return;
 
   float4 pixel = read_imagef(input, sampleri, (int2)(x, y));
-  pixel.x = ll_curve(pixel.x, g, sigma, shadows, highlights, clarity);
+  pixel.x = curve(pixel.x, g, sigma, shadows, highlights, clarity);
   write_imagef (output, (int2)(x, y), pixel);
 }
 
