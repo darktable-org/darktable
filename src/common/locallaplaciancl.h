@@ -30,19 +30,34 @@ local_laplacian_cl_global_t;
 
 typedef struct local_laplacian_cl_t
 {
+  int devid;
+  dt_local_laplacian_cl_global_t *global;
+
+  uint64_t width;
+  uint64_t height;
+  float sigma, highlights, shadows, clarity;
+  int blocksize, blockwd, blockht;
+  size_t bwidth, bheight;
+
   // pyramid of padded monochrome input buffer
-  cl_mem *padded;
+  cl_mem *dev_padded;
   // pyramid of padded output buffer, monochrome, too:
-  cl_mem *output;
+  cl_mem *dev_output;
   // one pyramid of padded monochrome buffers for every value
   // of gamma (curve parameter) that we process:
-  cl_mem **processed;
-  int devid;
+  cl_mem **dev_processed;
 }
 local_laplacian_cl_t;
 
 local_laplacian_cl_global_t *local_laplacian_init_cl_global();
+local_laplacian_cl_t *local_laplacian_init_cl(
+    const int devid,
+    const int width,            // width of input image
+    const int height,           // height of input image
+    const float sigma,          // user param: separate shadows/midtones/highlights
+    const float shadows,        // user param: lift shadows
+    const float highlights,     // user param: compress highlights
+    const float clarity);       // user param: increase clarity/local contrast
 void local_laplacian_free_cl(local_laplacian_cl_t *g);
-void local_laplacian_free_cl(local_laplacian_cl_t *g);
-void local_laplacian_cl();
+void local_laplacian_cl(local_laplacian_cl_t *g, cl_mem input, cl_mem output);
 #endif
