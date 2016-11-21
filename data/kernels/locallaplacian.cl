@@ -117,7 +117,7 @@ kernel void
 gauss_reduce(
     read_only  image2d_t input,  // fine input buffer
     write_only image2d_t coarse, // coarse scale, blurred input buf
-    const int wd,                // fine res (but run this kernel on coarse res only)
+    const int wd,                // coarse res (also run this kernel on coarse res only)
     const int ht)
 {
   const int x = get_global_id(0);
@@ -133,8 +133,6 @@ gauss_reduce(
   if(y <= 0) cy = 1;
 
   // blur, store only coarse res
-  const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
-
   pixel.x = 0.0f;
   const float a = 0.4f;
   const float w[5] = {1./4.-a/2., 1./4., a, 1./4., 1./4.-a/2.};
@@ -276,6 +274,7 @@ write_back(
     read_only  image2d_t input,
     read_only  image2d_t processed,
     write_only image2d_t output,
+    const int max_supp,
     const int wd,
     const int ht)
 {
@@ -284,6 +283,6 @@ write_back(
   if(x >= wd || y >= ht) return;
 
   float4 pixel = read_imagef(input, sampleri, (int2)(x, y));
-  pixel.x = 100.0f*read_imagef(processed, sampleri, (int2)(x, y)).x;
+  pixel.x = 100.0f*read_imagef(processed, sampleri, (int2)(x+max_supp, y+max_supp)).x;
   write_imagef (output, (int2)(x, y), pixel);
 }
