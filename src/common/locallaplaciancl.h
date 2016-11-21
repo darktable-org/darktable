@@ -16,8 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef HAVE_OPENCL_TODO
-typedef struct local_laplacian_cl_global_t
+#ifdef HAVE_OPENCL
+typedef struct dt_local_laplacian_cl_global_t
 {
   int kernel_pad_input;
   int kernel_gauss_expand;
@@ -26,9 +26,9 @@ typedef struct local_laplacian_cl_global_t
   int kernel_process_curve;
   int kernel_write_back;
 }
-local_laplacian_cl_global_t;
+dt_local_laplacian_cl_global_t;
 
-typedef struct local_laplacian_cl_t
+typedef struct dt_local_laplacian_cl_t
 {
   int devid;
   dt_local_laplacian_cl_global_t *global;
@@ -47,10 +47,10 @@ typedef struct local_laplacian_cl_t
   // of gamma (curve parameter) that we process:
   cl_mem **dev_processed;
 }
-local_laplacian_cl_t;
+dt_local_laplacian_cl_t;
 
-local_laplacian_cl_global_t *local_laplacian_init_cl_global();
-local_laplacian_cl_t *local_laplacian_init_cl(
+dt_local_laplacian_cl_global_t *dt_local_laplacian_init_cl_global();
+dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
     const int devid,
     const int width,            // width of input image
     const int height,           // height of input image
@@ -58,6 +58,6 @@ local_laplacian_cl_t *local_laplacian_init_cl(
     const float shadows,        // user param: lift shadows
     const float highlights,     // user param: compress highlights
     const float clarity);       // user param: increase clarity/local contrast
-void local_laplacian_free_cl(local_laplacian_cl_t *g);
-void local_laplacian_cl(local_laplacian_cl_t *g, cl_mem input, cl_mem output);
+void dt_local_laplacian_free_cl(dt_local_laplacian_cl_t *g);
+cl_int dt_local_laplacian_cl(dt_local_laplacian_cl_t *g, cl_mem input, cl_mem output);
 #endif
