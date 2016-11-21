@@ -97,6 +97,7 @@ typedef struct dt_opencl_device_t
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
+struct dt_local_laplacian_cl_global_t;
 /**
  * main struct, stored in darktable.opencl.
  * holds pointers to all
@@ -133,6 +134,9 @@ typedef struct dt_opencl_t
 
   // global kernels for interpolation resampling.
   struct dt_interpolation_cl_global_t *interpolation;
+
+  // global kernels for local laplacian filter.
+  struct dt_local_laplacian_cl_global_t *local_laplacian;
 } dt_opencl_t;
 
 /** internally calls dt_clGetDeviceInfo, and takes care of memory allocation
