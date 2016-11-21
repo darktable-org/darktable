@@ -66,6 +66,7 @@ Some More Changes, Probably Not Complete:
 - Feathering size in some mask shapes can be set with shift+scroll
 - Many bugs got fixed and some memory leaks plugged
 - The usermanual was updated to reflect the changes in the 2.2 series
+- Tone curve: mode "automatic in XYZ" mode for "scale chroma"
 
 Changed Dependencies:
 
