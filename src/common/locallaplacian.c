@@ -16,7 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "locallaplacian.h"
+#include "common/darktable.h"
+#include "common/locallaplacian.h"
 
 #include <string.h>
 #include <stdint.h>

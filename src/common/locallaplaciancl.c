@@ -18,6 +18,17 @@
 */
 #include "locallaplaciancl.h"
 
+// XXX TODO: the paper says level 5 is good enough, too? more does look significantly different.
+#define num_levels 10
+#define num_gamma 8
+
+// downsample width/height to given level
+static inline uint64_t dl(uint64_t size, const int level)
+{
+  for(int l=0;l<level;l++)
+    size = (size-1)/2+1;
+  return size;
+}
 
 local_laplacian_cl_global_t *local_laplacian_init_cl_global()
 {
@@ -40,47 +51,50 @@ void local_laplacian_free_cl(local_laplacian_cl_t *g)
   dt_opencl_finish(g->devid);
 
   // free device mem
-  dt_opencl_release_mem_object(g->dev_temp1);
-  dt_opencl_release_mem_object(g->dev_temp2);
+  for(int l=0;l<num_levels;l++)
+  {
+    dt_opencl_release_mem_object(g->dev_padded[l]);
+    dt_opencl_release_mem_object(g->dev_output[l]);
+    for(int k=0;k<num_gamma;k++)
+      dt_opencl_release_mem_object(g->dev_processed[k][l]);
+  }
+  for(int k=0;k<num_gamma;k++) free(g->dev_processed[k]);
+  free(g->dev_padded);
+  free(g->dev_output);
+  free(g->dev_processed);
+  g->dev_padded = g->dev_output = g->dev_processed = 0;
   free(g);
 }
 
 local_laplacian_cl_t *local_laplacian_init_cl(
     const int devid,
-    const int width,    // width of input image
-    const int height,   // height of input image
-    const int channels, // channels per pixel
-    const float *max,   // maximum allowed values per channel for clamping
-    const float *min,   // minimum allowed values per channel for clamping
-    const float sigma,  // gaussian sigma
-    const int order)    // order of gaussian blur
+    const int width,            // width of input image
+    const int height,           // height of input image
+    const float sigma,          // user param: separate shadows/midtones/highlights
+    const float shadows,        // user param: lift shadows
+    const float highlights,     // user param: compress highlights
+    const float clarity)        // user param: increase clarity/local contrast
 {
-  assert(channels == 1 || channels == 4);
+  dt_local_laplacian_cl_t *g = (dt_local_laplacian_cl_t *)malloc(sizeof(dt_local_laplacian_cl_t));
+  if(!g) return 0;
 
-  if(!(channels == 1 || channels == 4)) return NULL;
-
-  dt_gaussian_cl_t *g = (dt_gaussian_cl_t *)malloc(sizeof(dt_gaussian_cl_t));
-  if(!g) return NULL;
-
-  g->global = darktable.opencl->gaussian;
+  g->global = darktable.opencl->local_laplacian;
   g->devid = devid;
   g->width = width;
   g->height = height;
-  g->channels = channels;
   g->sigma = sigma;
-  g->order = order;
-  g->dev_temp1 = NULL;
-  g->dev_temp2 = NULL;
-  g->max = (float *)calloc(channels, sizeof(float));
-  g->min = (float *)calloc(channels, sizeof(float));
+  g->shadows = shadows;
+  g->highlights = highlights;
+  g->clarity = clarity;
+  g->dev_padded = (cl_mem *)calloc(sizeof(cl_mem *)*num_levels);
+  g->dev_output = (cl_mem *)calloc(sizeof(cl_mem *)*num_levels);
+  g->dev_processed = (cl_mem **)calloc(sizeof(cl_mem **)*num_gamma);
+  for(int k=0;k<num_gamma;k++)
+    g->dev_processed = (cl_mem *)calloc(sizeof(cl_mem *)*num_levels);
 
-  if(!g->min || !g->max) goto error;
-
-  for(int k = 0; k < channels; k++)
-  {
-    g->max[k] = max[k];
-    g->min[k] = min[k];
-  }
+  const int max_supp = 1<<(num_levels-1);
+  const int paddwd = width  + 2*max_supp;
+  const int paddht = height + 2*max_supp;
 
   // check if we need to reduce blocksize
   size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
@@ -89,13 +103,12 @@ local_laplacian_cl_t *local_laplacian_init_cl(
   size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
 
   // make sure blocksize is not too large
-  int kernel_gaussian_transpose = (channels == 1) ? g->global->kernel_gaussian_transpose_1c
-                                                  : g->global->kernel_gaussian_transpose_4c;
+  int kernel_assemble = g->global->kernel_laplacian_assemble;
   size_t blocksize = 64;
   int blockwd;
   int blockht;
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, kernel_gaussian_transpose, &kernelworkgroupsize)
+     && dt_opencl_get_kernel_work_group_size(devid, kernel_assemble, &kernelworkgroupsize)
         == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
@@ -116,117 +129,140 @@ local_laplacian_cl_t *local_laplacian_init_cl(
   }
 
   // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
-  const size_t bwidth = width % blockwd == 0 ? width : (width / blockwd + 1) * blockwd;
-  const size_t bheight = height % blockht == 0 ? height : (height / blockht + 1) * blockht;
+  const size_t bwidth  = paddwd % blockwd == 0 ? paddwd : (paddwd / blockwd + 1) * blockwd;
+  const size_t bheight = pdddht % blockht == 0 ? paddht : (paddht / blockht + 1) * blockht;
 
   g->blocksize = blocksize;
   g->blockwd = blockwd;
   g->blockht = blockht;
-  g->bwidth = bwidth;
+  g->bwidth  = bwidth;
   g->bheight = bheight;
 
   // get intermediate vector buffers with read-write access
-  g->dev_temp1 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth * bheight * channels * sizeof(float));
-  if(!g->dev_temp1) goto error;
-  g->dev_temp2 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth * bheight * channels * sizeof(float));
-  if(!g->dev_temp2) goto error;
+  for(int l=0;l<num_levels;l++)
+  {
+    g->dev_padded[l] = dt_opencl_alloc_device_buffer(devid, (size_t)dl(bwidth, l) * dl(bheight, l) * sizeof(float));
+    g->dev_output[l] = dt_opencl_alloc_device_buffer(devid, (size_t)dl(bwidth, l) * dl(bheight, l) * sizeof(float));
+    for(int k=0;k<num_gamma;k++)
+      g->dev_processed[k][l] = dt_opencl_alloc_device_buffer(devid, (size_t)dl(bwidth, l) * dl(bheight, l) * sizeof(float));
+  }
 
   return g;
 
 error:
-  free(g->min);
-  free(g->max);
-  dt_opencl_release_mem_object(g->dev_temp1);
-  dt_opencl_release_mem_object(g->dev_temp2);
-  g->dev_temp1 = g->dev_temp2 = NULL;
-  free(g);
-  return NULL;
+  local_laplacian_free_cl(g);
+  return 0;
 }
 
-static inline void local_laplacian_cl(
-    cl_mem input,               // input buffer in some Labx or yuvx format
-    cl_mem out,                 // output buffer with colour
-    const int wd,               // width and
-    const int ht,               // height of the input buffer
-    const float sigma,          // user param: separate shadows/midtones/highlights
-    const float shadows,        // user param: lift shadows
-    const float highlights,     // user param: compress highlights
-    const float clarity)        // user param: increase clarity/local contrast
+cl_int local_laplacian_cl(
+    local_laplacian_cl_t *b, // opencl context with temp buffers
+    cl_mem input,            // input buffer in some Labx or yuvx format
+    cl_mem out)              // output buffer with colour
 {
-  // XXX TODO: the paper says level 5 is good enough, too? more does look significantly different.
-#define num_levels 10
-#define num_gamma 8
   const int max_supp = 1<<(num_levels-1);
-  int w, h;
+  const int wd2 = 2*max_supp + b->width;
+  const int ht2 = 2*max_supp + b->height;
+  cl_int err = -666;
 
-  // TODO: CL allocate all these on device! (including padded[0])
-  // allocate pyramid pointers for padded input
-  for(int l=1;l<num_levels;l++)
-    padded[l] = (float *)malloc(sizeof(float)*dl(w,l)*dl(h,l));
+  size_t sizes_pad[] = { ROUNDUPWD(wd2), ROUNDUPHT(ht2), 1 };
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 0, sizeof(cl_mem), (void *)&input);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 1, sizeof(cl_mem), (void *)&b->padded[0]);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 2, sizeof(int), (void *)&b->width);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 3, sizeof(int), (void *)&b->height);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 4, sizeof(int), (void *)&max_supp);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 5, sizeof(int), (void *)&wd2);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 6, sizeof(int), (void *)&ht2);
+  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_pad_input, sizes_pad);
+  if(err != CL_SUCCESS) return err;
 
-  // TODO: call ll_pad_input on device (dimensions: padded image):
-  float *padded[num_levels] = {0};
-  ll_pad_input(input, padded[0], wd, ht, max_supp, &w, &h);
-
-  // TODO: CL allocate these on device, too!
-  // allocate pyramid pointers for output
-  float *output[num_levels] = {0};
-  for(int l=0;l<num_levels;l++)
-    output[l] = (float *)malloc(sizeof(float)*dl(w,l)*dl(h,l));
-
-  // TODO: CL run gauss_reduce on the device! (dimensions: coarse buffer)
   // create gauss pyramid of padded input, write coarse directly to output
-  for(int l=1;l<num_levels-1;l++)
-    gauss_reduce(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
-  gauss_reduce(padded[num_levels-2], output[num_levels-1], dl(w,num_levels-2), dl(h,num_levels-2));
-
-  // note that this is hardcoded in cl now:
-  // evenly sample brightness [0,1]:
-  float gamma[num_gamma] = {0.0f};
-  for(int k=0;k<num_gamma;k++) gamma[k] = (k+.5f)/(float)num_gamma;
-  // for(int k=0;k<num_gamma;k++) gamma[k] = k/(num_gamma-1.0f);
-
-  // TODO: CL allocate these buffers on the device!
-  // XXX FIXME: don't need to alloc all the memory at once!
-  // XXX FIXME: accumulate into output pyramid one by one? (would require more passes, potentially bad idea)
-  // allocate memory for intermediate laplacian pyramids
-  float *buf[num_gamma][num_levels] = {{0}};
-  for(int k=0;k<num_gamma;k++) for(int l=0;l<num_levels;l++)
-    buf[k][l] = (float *)malloc(sizeof(float)*dl(w,l)*dl(h,l));
+  for(int l=1;l<num_levels;l++)
+  {
+    const int wd = dl(wd2, l-1), ht = dl(ht2, l-1);
+    size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 0, sizeof(cl_mem), (void *)&b->padded[l-1]);
+    if(l == num_levels-1)
+      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), (void *)&b->output[l]);
+    else
+      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), (void *)&b->padded[l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 2, sizeof(int), (void *)&wd);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 3, sizeof(int), (void *)&ht);
+    err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_gauss_reduce, sizes);
+    if(err != CL_SUCCESS) return err;
+  }
 
   // XXX TODO: the paper says remapping only level 3 not 0 does the trick, too:
   for(int k=0;k<num_gamma;k++)
   { // process images
-    // TODO: process image on device!
-    // TODO: run kernel process_curve on resolution of buffer (w,h)
-      buf[k][0][w*j+i] = ll_curve(padded[0][w*j+i], gamma[k], sigma, shadows, highlights, clarity);
+    const float g = (k+.5f)/(float)num_gamma;
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 0, sizeof(cl_mem), (void *)&b->padded[0]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 1, sizeof(cl_mem), (void *)&b->processed[k][0]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 2, sizeof(float), (void *)&g);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 3, sizeof(float), (void *)&b->sigma);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 4, sizeof(float), (void *)&b->shadows);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 5, sizeof(float), (void *)&b->highlights);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 6, sizeof(float), (void *)&b->clarity);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 7, sizeof(int), (void *)&wd2);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 8, sizeof(int), (void *)&ht2);
+    err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_process_curve, sizes_pad);
+    if(err != CL_SUCCESS) return err;
 
-    for(int l=1;l<num_levels;l++)
-    // TODO: run gauss_reduce on device! (dimensions: coarse buffer)
     // create gaussian pyramids
-      gauss_reduce(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
+    for(int l=1;l<num_levels;l++)
+    {
+      const int wd = dl(wd2, l-1), ht = dl(ht2, l-1);
+      size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
+      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 0, sizeof(cl_mem), (void *)&b->processed[k][l-1]);
+      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), (void *)&b->processed[k][l]);
+      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 2, sizeof(int), (void *)&wd);
+      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 3, sizeof(int), (void *)&ht);
+      err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_gauss_reduce, sizes);
+      if(err != CL_SUCCESS) return err;
+    }
   }
 
   // assemble output pyramid coarse to fine
   for(int l=num_levels-2;l >= 0; l--)
   {
-    const int pw = dl(w,l), ph = dl(h,l);
-
-    // TODO: CL run on device (dimensions: pw, ph, fine buffer):
-    gauss_expand(output[l+1], output[l], pw, ph);
-    // TODO: this is laplacian_assemble() on device: (dimensions: fine buffer)
-    // go through all coefficients in the upsampled gauss buffer:
-    laplacian_assemble( pass all buffers buf[.][l, l+1])
+    const int pw = dl(wd2,l), ph = dl(ht2,l);
+    size_t sizes[] = { ROUNDUPWD(pw), ROUNDUPHT(ph), 1 };
+    // this is so dumb:
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  0, sizeof(cl_mem), (void *)&b->padded[l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  1, sizeof(cl_mem), (void *)&b->output[l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  2, sizeof(cl_mem), (void *)&b->output[l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  3, sizeof(cl_mem), (void *)&b->processed[0][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  4, sizeof(cl_mem), (void *)&b->processed[0][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  5, sizeof(cl_mem), (void *)&b->processed[1][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  6, sizeof(cl_mem), (void *)&b->processed[1][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  7, sizeof(cl_mem), (void *)&b->processed[2][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  8, sizeof(cl_mem), (void *)&b->processed[2][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  9, sizeof(cl_mem), (void *)&b->processed[3][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 10, sizeof(cl_mem), (void *)&b->processed[3][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 11, sizeof(cl_mem), (void *)&b->processed[4][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 12, sizeof(cl_mem), (void *)&b->processed[4][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 13, sizeof(cl_mem), (void *)&b->processed[5][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 14, sizeof(cl_mem), (void *)&b->processed[5][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 15, sizeof(cl_mem), (void *)&b->processed[6][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 16, sizeof(cl_mem), (void *)&b->processed[6][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 17, sizeof(cl_mem), (void *)&b->processed[7][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 18, sizeof(cl_mem), (void *)&b->processed[7][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 19, sizeof(int), (void *)&pw);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 20, sizeof(int), (void *)&ph);
+    err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_laplacian_assemble, sizes);
+    if(err != CL_SUCCESS) return err;
   }
-  // TODO: read back processed L chanel and copy colours:
-  write_back(
-      read_only  image2d_t input,
-      read_only  image2d_t processed,
-      write_only image2d_t output,
-      const int wd,
-      const int ht);
-  // TODO: free all buffers!
+  // read back processed L channel and copy colours:
+  size_t sizes[] = { ROUNDUPWD(b->width), ROUNDUPHT(b->height), 1 };
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 0, sizeof(cl_mem), (void *)&input);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 1, sizeof(cl_mem), (void *)&output[0]);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 2, sizeof(int), (void *)&max_supp);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 3, sizeof(int), (void *)&b->width);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 4, sizeof(int), (void *)&b->height);
+  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_write_back, sizes);
+  if(err != CL_SUCCESS) return err;
+  return CL_SUCCESS;
+}
+
 #undef num_levels
 #undef num_gamma
-}
 #endif
