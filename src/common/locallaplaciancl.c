@@ -1,4 +1,4 @@
-#ifdef HAVE_OPENCL_TODO
+#ifdef HAVE_OPENCL
 /*
     This file is part of darktable,
     copyright (c) 2016 johannes hanika.
@@ -16,7 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "locallaplaciancl.h"
+#include "common/darktable.h"
+#include "common/opencl.h"
+#include "common/locallaplaciancl.h"
 
 // XXX TODO: the paper says level 5 is good enough, too? more does look significantly different.
 #define num_levels 10
@@ -30,9 +32,9 @@ static inline uint64_t dl(uint64_t size, const int level)
   return size;
 }
 
-local_laplacian_cl_global_t *local_laplacian_init_cl_global()
+dt_local_laplacian_cl_global_t *dt_local_laplacian_init_cl_global()
 {
-  local_laplacian_cl_global_t *g = (local_laplacian_cl_global_t *)malloc(sizeof(local_laplacian_cl_global_t));
+  dt_local_laplacian_cl_global_t *g = (dt_local_laplacian_cl_global_t *)malloc(sizeof(dt_local_laplacian_cl_global_t));
 
   const int program = 19; // locallaplacian.cl, from programs.conf
   g->kernel_pad_input          = dt_opencl_create_kernel(program, "pad_input");
@@ -44,7 +46,7 @@ local_laplacian_cl_global_t *local_laplacian_init_cl_global()
   return g;
 }
 
-void local_laplacian_free_cl(local_laplacian_cl_t *g)
+void dt_local_laplacian_free_cl(dt_local_laplacian_cl_t *g)
 {
   if(!g) return;
   // be sure we're done with the memory:
@@ -62,11 +64,12 @@ void local_laplacian_free_cl(local_laplacian_cl_t *g)
   free(g->dev_padded);
   free(g->dev_output);
   free(g->dev_processed);
-  g->dev_padded = g->dev_output = g->dev_processed = 0;
+  g->dev_padded = g->dev_output = 0;
+  g->dev_processed = 0;
   free(g);
 }
 
-local_laplacian_cl_t *local_laplacian_init_cl(
+dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
     const int devid,
     const int width,            // width of input image
     const int height,           // height of input image
@@ -86,11 +89,11 @@ local_laplacian_cl_t *local_laplacian_init_cl(
   g->shadows = shadows;
   g->highlights = highlights;
   g->clarity = clarity;
-  g->dev_padded = (cl_mem *)calloc(sizeof(cl_mem *)*num_levels);
-  g->dev_output = (cl_mem *)calloc(sizeof(cl_mem *)*num_levels);
-  g->dev_processed = (cl_mem **)calloc(sizeof(cl_mem **)*num_gamma);
+  g->dev_padded = (cl_mem *)calloc(num_levels, sizeof(cl_mem *));
+  g->dev_output = (cl_mem *)calloc(num_levels, sizeof(cl_mem *));
+  g->dev_processed = (cl_mem **)calloc(num_gamma, sizeof(cl_mem **));
   for(int k=0;k<num_gamma;k++)
-    g->dev_processed = (cl_mem *)calloc(sizeof(cl_mem *)*num_levels);
+    g->dev_processed[k] = (cl_mem *)calloc(num_levels, sizeof(cl_mem *));
 
   const int max_supp = 1<<(num_levels-1);
   const int paddwd = width  + 2*max_supp;
@@ -113,7 +116,7 @@ local_laplacian_cl_t *local_laplacian_init_cl(
   {
     // reduce blocksize step by step until it fits to limits
     while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize * blocksize > workgroupsize
-          || blocksize * (blocksize + 1) * channels * sizeof(float) > localmemsize)
+          || blocksize * (blocksize + 1) * sizeof(float) > localmemsize)
     {
       if(blocksize == 1) break;
       blocksize >>= 1;
@@ -130,7 +133,7 @@ local_laplacian_cl_t *local_laplacian_init_cl(
 
   // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
   const size_t bwidth  = paddwd % blockwd == 0 ? paddwd : (paddwd / blockwd + 1) * blockwd;
-  const size_t bheight = pdddht % blockht == 0 ? paddht : (paddht / blockht + 1) * blockht;
+  const size_t bheight = paddht % blockht == 0 ? paddht : (paddht / blockht + 1) * blockht;
 
   g->blocksize = blocksize;
   g->blockwd = blockwd;
@@ -142,22 +145,27 @@ local_laplacian_cl_t *local_laplacian_init_cl(
   for(int l=0;l<num_levels;l++)
   {
     g->dev_padded[l] = dt_opencl_alloc_device_buffer(devid, (size_t)dl(bwidth, l) * dl(bheight, l) * sizeof(float));
+    if(!g->dev_padded[l]) goto error;
     g->dev_output[l] = dt_opencl_alloc_device_buffer(devid, (size_t)dl(bwidth, l) * dl(bheight, l) * sizeof(float));
+    if(!g->dev_output[l]) goto error;
     for(int k=0;k<num_gamma;k++)
+    {
       g->dev_processed[k][l] = dt_opencl_alloc_device_buffer(devid, (size_t)dl(bwidth, l) * dl(bheight, l) * sizeof(float));
+      if(!g->dev_processed[k][l]) goto error;
+    }
   }
 
   return g;
 
 error:
-  local_laplacian_free_cl(g);
+  dt_local_laplacian_free_cl(g);
   return 0;
 }
 
-cl_int local_laplacian_cl(
-    local_laplacian_cl_t *b, // opencl context with temp buffers
-    cl_mem input,            // input buffer in some Labx or yuvx format
-    cl_mem out)              // output buffer with colour
+cl_int dt_local_laplacian_cl(
+    dt_local_laplacian_cl_t *b, // opencl context with temp buffers
+    cl_mem input,               // input buffer in some Labx or yuvx format
+    cl_mem output)              // output buffer with colour
 {
   const int max_supp = 1<<(num_levels-1);
   const int wd2 = 2*max_supp + b->width;
@@ -166,7 +174,7 @@ cl_int local_laplacian_cl(
 
   size_t sizes_pad[] = { ROUNDUPWD(wd2), ROUNDUPHT(ht2), 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 0, sizeof(cl_mem), (void *)&input);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 1, sizeof(cl_mem), (void *)&b->padded[0]);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 1, sizeof(cl_mem), (void *)&b->dev_padded[0]);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 2, sizeof(int), (void *)&b->width);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 3, sizeof(int), (void *)&b->height);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 4, sizeof(int), (void *)&max_supp);
@@ -180,11 +188,11 @@ cl_int local_laplacian_cl(
   {
     const int wd = dl(wd2, l-1), ht = dl(ht2, l-1);
     size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 0, sizeof(cl_mem), (void *)&b->padded[l-1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 0, sizeof(cl_mem), (void *)&b->dev_padded[l-1]);
     if(l == num_levels-1)
-      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), (void *)&b->output[l]);
+      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), (void *)&b->dev_output[l]);
     else
-      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), (void *)&b->padded[l]);
+      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), (void *)&b->dev_padded[l]);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 2, sizeof(int), (void *)&wd);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 3, sizeof(int), (void *)&ht);
     err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_gauss_reduce, sizes);
@@ -195,8 +203,8 @@ cl_int local_laplacian_cl(
   for(int k=0;k<num_gamma;k++)
   { // process images
     const float g = (k+.5f)/(float)num_gamma;
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 0, sizeof(cl_mem), (void *)&b->padded[0]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 1, sizeof(cl_mem), (void *)&b->processed[k][0]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 0, sizeof(cl_mem), (void *)&b->dev_padded[0]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 1, sizeof(cl_mem), (void *)&b->dev_processed[k][0]);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 2, sizeof(float), (void *)&g);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 3, sizeof(float), (void *)&b->sigma);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 4, sizeof(float), (void *)&b->shadows);
@@ -212,8 +220,8 @@ cl_int local_laplacian_cl(
     {
       const int wd = dl(wd2, l-1), ht = dl(ht2, l-1);
       size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
-      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 0, sizeof(cl_mem), (void *)&b->processed[k][l-1]);
-      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), (void *)&b->processed[k][l]);
+      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 0, sizeof(cl_mem), (void *)&b->dev_processed[k][l-1]);
+      dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), (void *)&b->dev_processed[k][l]);
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 2, sizeof(int), (void *)&wd);
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 3, sizeof(int), (void *)&ht);
       err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_gauss_reduce, sizes);
@@ -227,25 +235,25 @@ cl_int local_laplacian_cl(
     const int pw = dl(wd2,l), ph = dl(ht2,l);
     size_t sizes[] = { ROUNDUPWD(pw), ROUNDUPHT(ph), 1 };
     // this is so dumb:
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  0, sizeof(cl_mem), (void *)&b->padded[l]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  1, sizeof(cl_mem), (void *)&b->output[l+1]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  2, sizeof(cl_mem), (void *)&b->output[l]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  3, sizeof(cl_mem), (void *)&b->processed[0][l]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  4, sizeof(cl_mem), (void *)&b->processed[0][l+1]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  5, sizeof(cl_mem), (void *)&b->processed[1][l]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  6, sizeof(cl_mem), (void *)&b->processed[1][l+1]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  7, sizeof(cl_mem), (void *)&b->processed[2][l]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  8, sizeof(cl_mem), (void *)&b->processed[2][l+1]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  9, sizeof(cl_mem), (void *)&b->processed[3][l]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 10, sizeof(cl_mem), (void *)&b->processed[3][l+1]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 11, sizeof(cl_mem), (void *)&b->processed[4][l]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 12, sizeof(cl_mem), (void *)&b->processed[4][l+1]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 13, sizeof(cl_mem), (void *)&b->processed[5][l]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 14, sizeof(cl_mem), (void *)&b->processed[5][l+1]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 15, sizeof(cl_mem), (void *)&b->processed[6][l]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 16, sizeof(cl_mem), (void *)&b->processed[6][l+1]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 17, sizeof(cl_mem), (void *)&b->processed[7][l]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 18, sizeof(cl_mem), (void *)&b->processed[7][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  0, sizeof(cl_mem), (void *)&b->dev_padded[l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  1, sizeof(cl_mem), (void *)&b->dev_output[l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  2, sizeof(cl_mem), (void *)&b->dev_output[l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  3, sizeof(cl_mem), (void *)&b->dev_processed[0][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  4, sizeof(cl_mem), (void *)&b->dev_processed[0][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  5, sizeof(cl_mem), (void *)&b->dev_processed[1][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  6, sizeof(cl_mem), (void *)&b->dev_processed[1][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  7, sizeof(cl_mem), (void *)&b->dev_processed[2][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  8, sizeof(cl_mem), (void *)&b->dev_processed[2][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  9, sizeof(cl_mem), (void *)&b->dev_processed[3][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 10, sizeof(cl_mem), (void *)&b->dev_processed[3][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 11, sizeof(cl_mem), (void *)&b->dev_processed[4][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 12, sizeof(cl_mem), (void *)&b->dev_processed[4][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 13, sizeof(cl_mem), (void *)&b->dev_processed[5][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 14, sizeof(cl_mem), (void *)&b->dev_processed[5][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 15, sizeof(cl_mem), (void *)&b->dev_processed[6][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 16, sizeof(cl_mem), (void *)&b->dev_processed[6][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 17, sizeof(cl_mem), (void *)&b->dev_processed[7][l]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 18, sizeof(cl_mem), (void *)&b->dev_processed[7][l+1]);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 19, sizeof(int), (void *)&pw);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 20, sizeof(int), (void *)&ph);
     err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_laplacian_assemble, sizes);
@@ -254,10 +262,11 @@ cl_int local_laplacian_cl(
   // read back processed L channel and copy colours:
   size_t sizes[] = { ROUNDUPWD(b->width), ROUNDUPHT(b->height), 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 0, sizeof(cl_mem), (void *)&input);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 1, sizeof(cl_mem), (void *)&output[0]);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 2, sizeof(int), (void *)&max_supp);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 3, sizeof(int), (void *)&b->width);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 4, sizeof(int), (void *)&b->height);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 1, sizeof(cl_mem), (void *)&b->dev_output[0]);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 2, sizeof(cl_mem), (void *)&output);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 3, sizeof(int), (void *)&max_supp);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 4, sizeof(int), (void *)&b->width);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 5, sizeof(int), (void *)&b->height);
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_write_back, sizes);
   if(err != CL_SUCCESS) return err;
   return CL_SUCCESS;

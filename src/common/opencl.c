@@ -21,6 +21,7 @@
 
 #include "common/opencl.h"
 #include "common/bilateralcl.h"
+#include "common/locallaplaciancl.h"
 #include "common/darktable.h"
 #include "common/dlopencl.h"
 #include "common/gaussian.h"
@@ -695,6 +696,7 @@ finally:
     cl->bilateral = dt_bilateral_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
     cl->interpolation = dt_interpolation_init_cl_global();
+    cl->local_laplacian = dt_local_laplacian_init_cl_global();
 
     char checksum[64];
     snprintf(checksum, sizeof(checksum), "%u", cl->crc);
