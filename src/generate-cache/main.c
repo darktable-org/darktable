@@ -195,7 +195,7 @@ int main(int argc, char *arg[])
   m_arg[m_argc] = NULL;
 
   // init dt without gui:
-  if(dt_init(m_argc, m_arg, 0, NULL))
+  if(dt_init(m_argc, m_arg, FALSE, TRUE, NULL))
   {
     free(m_arg);
     exit(EXIT_FAILURE);
