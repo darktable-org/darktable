@@ -23,6 +23,7 @@
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
 #include "common/locallaplacian.h"
+#include "common/locallaplaciancl.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"
@@ -110,28 +111,44 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
-  // the total scale is composed of scale before input to the pipeline (iscale),
-  // and the scale of the roi.
-  const float scale = piece->iscale / roi_in->scale;
-  const float sigma_r = d->sigma_r; // does not depend on scale
-  const float sigma_s = d->sigma_s / scale;
-  cl_int err = -666;
 
-  dt_bilateral_cl_t *b
+  if(d->mode == s_mode_bilateral)
+  {
+    // the total scale is composed of scale before input to the pipeline (iscale),
+    // and the scale of the roi.
+    const float scale = piece->iscale / roi_in->scale;
+    const float sigma_r = d->sigma_r; // does not depend on scale
+    const float sigma_s = d->sigma_s / scale;
+    cl_int err = -666;
+
+    dt_bilateral_cl_t *b
       = dt_bilateral_init_cl(piece->pipe->devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
-  if(!b) goto error;
-  err = dt_bilateral_splat_cl(b, dev_in);
-  if(err != CL_SUCCESS) goto error;
-  err = dt_bilateral_blur_cl(b);
-  if(err != CL_SUCCESS) goto error;
-  err = dt_bilateral_slice_cl(b, dev_in, dev_out, d->detail);
-  if(err != CL_SUCCESS) goto error;
-  dt_bilateral_free_cl(b);
-  return TRUE;
+    if(!b) goto error;
+    err = dt_bilateral_splat_cl(b, dev_in);
+    if(err != CL_SUCCESS) goto error;
+    err = dt_bilateral_blur_cl(b);
+    if(err != CL_SUCCESS) goto error;
+    err = dt_bilateral_slice_cl(b, dev_in, dev_out, d->detail);
+    if(err != CL_SUCCESS) goto error;
+    dt_bilateral_free_cl(b);
+    return TRUE;
 error:
-  dt_bilateral_free_cl(b);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_bilateral] couldn't enqueue kernel! %d\n", err);
-  return FALSE;
+    dt_bilateral_free_cl(b);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_bilateral] couldn't enqueue kernel! %d\n", err);
+    return FALSE;
+  }
+  else // mode == s_mode_local_laplacian
+  {
+    dt_local_laplacian_cl_t *b = dt_local_laplacian_init_cl(piece->pipe->devid, roi_in->width, roi_in->height,
+        0.1, 1.0, 1.0, d->detail);
+    if(!b) goto error_ll;
+    if(dt_local_laplacian_cl(b, dev_in, dev_out) != CL_SUCCESS) goto error_ll;
+    dt_local_laplacian_free_cl(b);
+    return TRUE;
+error_ll:
+    dt_local_laplacian_free_cl(b);
+    return FALSE;
+  }
 }
 #endif
 
@@ -171,9 +188,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   *d = *p;
 
 #ifdef HAVE_OPENCL
-  piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
-  // TODO: remove once local laplacians are cl-happy:
-  if(d->mode == s_mode_local_laplacian) piece->process_cl_ready = 0;
+  if(d->mode == s_mode_bilateral)
+    piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
 #endif
 }
 
