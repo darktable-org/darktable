@@ -190,11 +190,13 @@
       </para>
 
       <para>
-        Click into the canvas to place the circle. Left-click and drag the circle to a different
-        position if needed. Use the scroll-wheel of your mouse while in the circle to change the
-        diameter; scroll within the circle border to adjust the width of the gradual decay. With
-        <emphasis>ctrl+scroll</emphasis> you can adjust the opacity of the circle&nbsp;&ndash;
-        this is best observed with the mask displayed by pressing the
+        <emphasis>Click</emphasis> into the canvas to place the circle.
+        <emphasis>Left-click</emphasis> and drag the circle to a different position if needed.
+        Use the scroll wheel of your mouse while in the circle to change the diameter;
+        <emphasis>scroll</emphasis> within the circle border to adjust the width of the gradual
+        decay or <emphasis>shift+scroll</emphasis> anywhere in the shape for the same effect.
+        With <emphasis>ctrl+scroll</emphasis> you can adjust the opacity of the
+        circle&nbsp;&ndash; this is best observed with the mask displayed by pressing the
         <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
         button.
       </para>
@@ -239,8 +241,10 @@
 
       <para>
         The general principle is the same as for the circle shape. In addition you get four
-        nodes on the ellipse line. Click on the nodes to adjust the ellipse's eccentricity.
-        <emphasis>ctrl-click</emphasis> on them to rotate the ellipse.
+        nodes on the ellipse line. <emphasis>Click</emphasis> on the nodes to adjust the
+        ellipse's eccentricity. <emphasis>Ctrl-click</emphasis> on them to rotate the ellipse.
+        <emphasis>Shift-click</emphasis> in the shape to toggle the gradual decay between
+        equidistant and proportional mode.
       </para>
 
       <informaltable frame="none">
@@ -282,10 +286,10 @@
       </para>
 
       <para>
-        Left-click into the canvas to define path nodes; terminate the path by
-        <emphasis>right-clicking</emphasis> after having set the last point. Per default nodes
-        are connected by smooth lines. If you want a node to define a sharp corner, you can do
-        so by creating it with <emphasis>ctrl-click</emphasis>.
+        <emphasis>Left-click</emphasis> into the canvas to define path nodes; terminate the path
+        by <emphasis>right-clicking</emphasis> after having set the last point. Per default
+        nodes are connected by smooth lines. If you want a node to define a sharp corner, you
+        can do so by creating it with <emphasis>ctrl-click</emphasis>.
       </para>
 
       <para>
@@ -298,13 +302,17 @@
       </para>
 
       <para>
-        The size of the complete shape can be modified by scrolling&nbsp;&ndash; analogous to
-        the circle shape. The same holds true for the width of the border, i.e. the area with a
-        gradual opacity decay. Single nodes as well as path segments can be moved by mouse
-        dragging. If a node is selected by clicking on it, a further control point
-        appears&nbsp;&ndash; you can move it around to modify the curvature of the line.
-        Dragging one of the control points on the border adjusts the border width just in that
-        part of the shape.
+        The size of the complete shape can be modified by
+        <emphasis>scrolling</emphasis>&nbsp;&ndash; analogous to the circle shape. The same
+        holds true for the width of the border, i.e. the area with a gradual opacity decay,
+        which can be changed by <emphasis>scrolling</emphasis> when it is highlighted or by
+        <emphasis>shift+scroll</emphasis> from anywhere within the shape. Single nodes as well
+        as path segments can be moved by mouse <emphasis>dragging</emphasis>. If a node is
+        selected by <emphasis>clicking</emphasis> on it, a further control point
+        appears&nbsp;&ndash; you can move it around to modify the curvature of the line and
+        reset to default by <emphasis>right-clicking</emphasis>. <emphasis>Dragging</emphasis>
+        one of the control points on the border adjusts the border width just in that part of
+        the shape.
       </para>
 
       <para>

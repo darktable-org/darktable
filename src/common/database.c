@@ -1423,7 +1423,7 @@ static gboolean _lock_databases(dt_database_t *db)
   return TRUE;
 }
 
-dt_database_t *dt_database_init(const char *alternative)
+dt_database_t *dt_database_init(const char *alternative, const gboolean load_data)
 {
 start:
   /* migrate default database location to new default */
@@ -1462,7 +1462,10 @@ start:
 
   /* we also need a 2nd db with permanent data like presets, styles and tags */
   char dbfilename_data[PATH_MAX] = { 0 };
-  snprintf(dbfilename_data, sizeof(dbfilename_data), "%s/data.db", datadir);
+  if(load_data)
+    snprintf(dbfilename_data, sizeof(dbfilename_data), "%s/data.db", datadir);
+  else
+    snprintf(dbfilename_data, sizeof(dbfilename_data), ":memory:");
 
   /* create database */
   dt_database_t *db = (dt_database_t *)g_malloc0(sizeof(dt_database_t));
@@ -1508,7 +1511,7 @@ start:
 
   // attach the data database which contains presets, styles, tags and similar things not tied to single images
   sqlite3_stmt *stmt;
-  gboolean have_data_db = g_file_test(dbfilename_data, G_FILE_TEST_EXISTS);
+  gboolean have_data_db = load_data && g_file_test(dbfilename_data, G_FILE_TEST_EXISTS);
   int rc = sqlite3_prepare_v2(db->handle, "ATTACH DATABASE ?1 AS data", -1, &stmt, NULL);
   sqlite3_bind_text(stmt, 1, dbfilename_data, -1, SQLITE_TRANSIENT);
   if(rc != SQLITE_OK || sqlite3_step(stmt) != SQLITE_DONE)
