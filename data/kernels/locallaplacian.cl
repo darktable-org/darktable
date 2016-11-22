@@ -156,7 +156,7 @@ float laplacian(
 
 kernel void
 laplacian_assemble(
-    read_only  image2d_t input,      // original input buffer, gauss at current pyramid level
+    read_only  image2d_t input,      // original input buffer, gauss at current fine pyramid level
     read_only  image2d_t output1,    // state of reconstruction, coarse output buffer
     write_only image2d_t output0,    // reconstruction, one level finer, run kernel on this dimension
     read_only  image2d_t buf_g0_l0,  // image2d_array_t only supported in ocl 2.0 :(

@@ -147,15 +147,16 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
 #endif
 
   // get intermediate vector buffers with read-write access
+  // TODO: is this rounding really required?
   for(int l=0;l<num_levels;l++)
   {
-    g->dev_padded[l] = dt_opencl_alloc_device(devid, dl(bwidth, l), dl(bheight, l), sizeof(float));
+    g->dev_padded[l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(bwidth, l)), ROUNDUPHT(dl(bheight, l)), sizeof(float));
     if(!g->dev_padded[l]) goto error;
-    g->dev_output[l] = dt_opencl_alloc_device(devid, dl(bwidth, l), dl(bheight, l), sizeof(float));
+    g->dev_output[l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(bwidth, l)), ROUNDUPHT(dl(bheight, l)), sizeof(float));
     if(!g->dev_output[l]) goto error;
     for(int k=0;k<num_gamma;k++)
     {
-      g->dev_processed[k][l] = dt_opencl_alloc_device(devid, dl(bwidth, l), dl(bheight, l), sizeof(float));
+      g->dev_processed[k][l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(bwidth, l)), ROUNDUPHT(dl(bheight, l)), sizeof(float));
       if(!g->dev_processed[k][l]) goto error;
     }
   }
@@ -190,8 +191,7 @@ cl_int dt_local_laplacian_cl(
   if(err != CL_SUCCESS) goto error;
 
   // create gauss pyramid of padded input, write coarse directly to output
-  // XXX for(int l=1;l<num_levels;l++)
-  for(int l=1;l<2;l++)
+  for(int l=1;l<num_levels;l++)
   {
     const int wd = dl(wd2, l), ht = dl(ht2, l);
     size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
