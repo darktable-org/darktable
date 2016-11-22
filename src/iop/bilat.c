@@ -43,6 +43,19 @@ typedef enum dt_iop_bilat_mode_t
 }
 dt_iop_bilat_mode_t;
 
+#if 0
+typedef struct dt_iop_bilat_params_t
+{
+  uint32_t mode;
+  float sigma_r;
+  float sigma_s;
+  float detail;
+  float shadows;
+  float highlights;
+}
+dt_iop_bilat_params_t;
+#endif
+
 typedef struct dt_iop_bilat_params_t
 {
   uint32_t mode;
@@ -64,6 +77,8 @@ typedef dt_iop_bilat_params_t dt_iop_bilat_data_t;
 
 typedef struct dt_iop_bilat_gui_data_t
 {
+  GtkWidget *highlights;
+  GtkWidget *shadows;
   GtkWidget *spatial;
   GtkWidget *range;
   GtkWidget *detail;
@@ -231,7 +246,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else // s_mode_local_laplacian
   {
-    local_laplacian((const float *)i, (float *)o, roi_in->width, roi_in->height, 0.1f, 1.0f, 1.0f, d->detail);
+    local_laplacian((const float *)i, (float *)o, roi_in->width, roi_in->height, 0.1f, d->sigma_s, d->sigma_r, d->detail);
   }
 }
 
@@ -274,6 +289,20 @@ static void range_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void highlights_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
+  p->sigma_r = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void shadows_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
+  p->sigma_s = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void detail_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
@@ -288,11 +317,15 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
   if(p->mode == s_mode_local_laplacian)
   {
+    gtk_widget_set_visible(g->highlights, TRUE);
+    gtk_widget_set_visible(g->shadows, TRUE);
     gtk_widget_set_visible(g->range, FALSE);
     gtk_widget_set_visible(g->spatial, FALSE);
   }
   else
   {
+    gtk_widget_set_visible(g->highlights, FALSE);
+    gtk_widget_set_visible(g->shadows, FALSE);
     gtk_widget_set_visible(g->range, TRUE);
     gtk_widget_set_visible(g->spatial, TRUE);
   }
@@ -305,19 +338,25 @@ void gui_update(dt_iop_module_t *self)
   // let gui slider match current parameters:
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  dt_bauhaus_slider_set(g->spatial, p->sigma_s);
-  dt_bauhaus_slider_set(g->range, p->sigma_r);
   dt_bauhaus_slider_set(g->detail, p->detail);
   dt_bauhaus_combobox_set(g->mode, p->mode);
   if(p->mode == s_mode_local_laplacian)
   {
+    dt_bauhaus_slider_set(g->shadows, p->sigma_s);
+    dt_bauhaus_slider_set(g->highlights, p->sigma_r);
     gtk_widget_set_visible(g->range, FALSE);
     gtk_widget_set_visible(g->spatial, FALSE);
+    gtk_widget_set_visible(g->highlights, TRUE);
+    gtk_widget_set_visible(g->shadows, TRUE);
   }
   else
   {
+    dt_bauhaus_slider_set(g->spatial, p->sigma_s);
+    dt_bauhaus_slider_set(g->range, p->sigma_r);
     gtk_widget_set_visible(g->range, TRUE);
     gtk_widget_set_visible(g->spatial, TRUE);
+    gtk_widget_set_visible(g->highlights, FALSE);
+    gtk_widget_set_visible(g->shadows, FALSE);
   }
 }
 
@@ -347,9 +386,20 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->detail, NULL, _("detail"));
 
+  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.1, 1.0, 3);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlight contrast"));
+
+  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.1, 1.0, 3);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->shadows, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->shadows, NULL, _("shadow contrast"));
+
+
   g_signal_connect(G_OBJECT(g->spatial), "value-changed", G_CALLBACK(spatial_callback), self);
   g_signal_connect(G_OBJECT(g->range), "value-changed", G_CALLBACK(range_callback), self);
   g_signal_connect(G_OBJECT(g->detail), "value-changed", G_CALLBACK(detail_callback), self);
+  g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);
+  g_signal_connect(G_OBJECT(g->shadows), "value-changed", G_CALLBACK(shadows_callback), self);
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
 }
 
