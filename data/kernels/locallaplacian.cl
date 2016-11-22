@@ -30,17 +30,17 @@ pad_input(
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  int cx = x, cy = y;
+  int cx = x - max_supp, cy = y - max_supp;
 
   if(x >= wd2 || y >= ht2) return;
   // fill boundary with max_supp px:
-  if(x >= wd+max_supp) cx = wd-1;
-  if(y >= ht+max_supp) cy = ht-1;
-  if(x < max_supp) cx = max_supp;
-  if(y < max_supp) cy = max_supp;
+  if(cx >= wd) cx = wd-1;
+  if(cy >= ht) cy = ht-1;
+  if(cx < 0) cx = 0;
+  if(cy < 0) cy = 0;
 
   float4 pixel = read_imagef(input, sampleri, (int2)(cx, cy));
-  write_imagef (padded, (int2)(x, y), pixel.x);
+  write_imagef (padded, (int2)(x, y), pixel.x*0.01f);
 }
 
 float expand_gaussian(

@@ -99,6 +99,7 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
   const int paddwd = width  + 2*max_supp;
   const int paddht = height + 2*max_supp;
 
+#if 0
   // check if we need to reduce blocksize
   size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
   size_t workgroupsize = 0;       // the maximum number of items in a work group
@@ -140,17 +141,21 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
   g->blockht = blockht;
   g->bwidth  = bwidth;
   g->bheight = bheight;
+#else
+  const size_t bwidth = ROUNDUPWD(paddwd);
+  const size_t bheight = ROUNDUPWD(paddht);
+#endif
 
   // get intermediate vector buffers with read-write access
   for(int l=0;l<num_levels;l++)
   {
-    g->dev_padded[l] = dt_opencl_alloc_device_buffer(devid, (size_t)dl(bwidth, l) * dl(bheight, l) * sizeof(float));
+    g->dev_padded[l] = dt_opencl_alloc_device(devid, dl(bwidth, l), dl(bheight, l), sizeof(float));
     if(!g->dev_padded[l]) goto error;
-    g->dev_output[l] = dt_opencl_alloc_device_buffer(devid, (size_t)dl(bwidth, l) * dl(bheight, l) * sizeof(float));
+    g->dev_output[l] = dt_opencl_alloc_device(devid, dl(bwidth, l), dl(bheight, l), sizeof(float));
     if(!g->dev_output[l]) goto error;
     for(int k=0;k<num_gamma;k++)
     {
-      g->dev_processed[k][l] = dt_opencl_alloc_device_buffer(devid, (size_t)dl(bwidth, l) * dl(bheight, l) * sizeof(float));
+      g->dev_processed[k][l] = dt_opencl_alloc_device(devid, dl(bwidth, l), dl(bheight, l), sizeof(float));
       if(!g->dev_processed[k][l]) goto error;
     }
   }
@@ -158,6 +163,7 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
   return g;
 
 error:
+  fprintf(stderr, "[local laplacian cl] could not allocate temporary buffers\n");
   dt_local_laplacian_free_cl(g);
   return 0;
 }
@@ -181,12 +187,13 @@ cl_int dt_local_laplacian_cl(
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 5, sizeof(int), (void *)&wd2);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 6, sizeof(int), (void *)&ht2);
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_pad_input, sizes_pad);
-  if(err != CL_SUCCESS) return err;
+  if(err != CL_SUCCESS) goto error;
 
   // create gauss pyramid of padded input, write coarse directly to output
-  for(int l=1;l<num_levels;l++)
+  // XXX for(int l=1;l<num_levels;l++)
+  for(int l=1;l<2;l++)
   {
-    const int wd = dl(wd2, l-1), ht = dl(ht2, l-1);
+    const int wd = dl(wd2, l), ht = dl(ht2, l);
     size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 0, sizeof(cl_mem), (void *)&b->dev_padded[l-1]);
     if(l == num_levels-1)
@@ -196,7 +203,7 @@ cl_int dt_local_laplacian_cl(
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 2, sizeof(int), (void *)&wd);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 3, sizeof(int), (void *)&ht);
     err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_gauss_reduce, sizes);
-    if(err != CL_SUCCESS) return err;
+    if(err != CL_SUCCESS) goto error;
   }
 
   // XXX TODO: the paper says remapping only level 3 not 0 does the trick, too:
@@ -213,19 +220,19 @@ cl_int dt_local_laplacian_cl(
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 7, sizeof(int), (void *)&wd2);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 8, sizeof(int), (void *)&ht2);
     err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_process_curve, sizes_pad);
-    if(err != CL_SUCCESS) return err;
+    if(err != CL_SUCCESS) goto error;
 
     // create gaussian pyramids
     for(int l=1;l<num_levels;l++)
     {
-      const int wd = dl(wd2, l-1), ht = dl(ht2, l-1);
+      const int wd = dl(wd2, l), ht = dl(ht2, l);
       size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 0, sizeof(cl_mem), (void *)&b->dev_processed[k][l-1]);
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), (void *)&b->dev_processed[k][l]);
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 2, sizeof(int), (void *)&wd);
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 3, sizeof(int), (void *)&ht);
       err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_gauss_reduce, sizes);
-      if(err != CL_SUCCESS) return err;
+      if(err != CL_SUCCESS) goto error;
     }
   }
 
@@ -257,8 +264,9 @@ cl_int dt_local_laplacian_cl(
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 19, sizeof(int), (void *)&pw);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 20, sizeof(int), (void *)&ph);
     err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_laplacian_assemble, sizes);
-    if(err != CL_SUCCESS) return err;
+    if(err != CL_SUCCESS) goto error;
   }
+
   // read back processed L channel and copy colours:
   size_t sizes[] = { ROUNDUPWD(b->width), ROUNDUPHT(b->height), 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 0, sizeof(cl_mem), (void *)&input);
@@ -268,8 +276,11 @@ cl_int dt_local_laplacian_cl(
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 4, sizeof(int), (void *)&b->width);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 5, sizeof(int), (void *)&b->height);
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_write_back, sizes);
-  if(err != CL_SUCCESS) return err;
+  if(err != CL_SUCCESS) goto error;
   return CL_SUCCESS;
+error:
+  fprintf(stderr, "[local laplacian cl] failed: %d\n", err);
+  return err;
 }
 
 #undef num_levels
