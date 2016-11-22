@@ -213,18 +213,20 @@ static inline float ll_curve(
   // also they add up the laplacian to the ones of the base image
   // return g + 0.7 *  (x-g) + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
 
+#if 0
   // XXX highlights does weird things, causing halos in dark regions
   // XXX shadows seems to compress highlight contrast (???)
   // XXX need to adjust this to bias shad/hi depending on g!
   // const float compress = .2;// + powf(g, .4);
-  // if(x > g+sigma)
-  //   // return g + highlights * (x-g) + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
+  if(x > g+sigma)
+    return g + shadows * (x-g);// + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
   //   return g+sigma + highlights * (x-g-sigma) + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
-  // else if(x < g-sigma)
-  //   // return g + shadows    * (x-g) + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
+  if(x < g-sigma)
+    return g + highlights * (x-g);// + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
   //   return g-sigma + shadows * (x-g+sigma) + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
   // else
     return g + (x-g) + clarity * (x - g) * dt_fast_expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
+#endif
 #if 0
   // XXX DEBUG: shad/hi curve needs to be something smart along these lines:
   // if(x < .5f)
@@ -235,15 +237,16 @@ static inline float ll_curve(
   //}
   // centered value
   const float c = x-g;
-  if(c >  sigma) return g + sigma + highlights * (c-sigma);
-  if(c < -sigma) return g - sigma + shadows    * (c+sigma);
+  if(c >  sigma) return g + sigma + shadows    * (c-sigma);
+  if(c < -sigma) return g - sigma + highlights * (c+sigma);
   // const float beta = 0.1;//(1.0-x)*(1.0-x);
   // if(c >  sigma) return g + sigma + beta * (c-sigma);
   // if(c < -sigma) return g - sigma + beta * (c+sigma);
 
   // TODO: paper says to blend this in to avoid boosting noise:
-  // t = smoothstep(x, 1%, 2%)
-  const float t = MIN(MAX(0.0f, (x-0.01)/(0.02-0.01)), 1.0f);
+  // t = smoothstep(x, 0.01, 0.02)
+  const float t0 = MIN(MAX(0.0f, (x-0.01)/(0.02-0.01)), 1.0f);
+  const float t = t0*t0*(3.0f-2.0f*t0);
   assert(t == t);
   const float delta = fabsf(c)/sigma;
   assert(delta == delta);
@@ -251,6 +254,42 @@ static inline float ll_curve(
   assert(f_d == f_d);
   assert(g + copysignf(sigma * f_d, c) == g + copysignf(sigma * f_d, c));
   return g + copysignf(sigma * f_d, c);
+#endif
+#if 0
+  const float c = x-g;
+  if(c >  sigma) return g + sigma + shadows    * (c-sigma);
+  if(c < -sigma) return g - sigma + highlights * (c+sigma);
+
+  const float norm = 1.0 + clarity * dt_fast_expf(-.5f);
+  // paper says to blend this in to avoid boosting noise:
+  // t = smoothstep(x, 0.01, 0.02)
+  const float t0 = fminf(fmaxf(0.0f, (x-0.01)/(0.02-0.01)), 1.0f);
+  const float t = t0*t0*(3.0f-2.0f*t0);
+  assert(t == t);
+  const float delta = fabsf(c)/sigma;
+  assert(delta == delta);
+  // const float enh = powf(delta, 1./clarity);
+  const float enh = (delta + clarity * delta * dt_fast_expf(-delta*delta/2.0))/norm;
+  const float f_d = t * enh + (1.0f-t)*delta;
+  assert(f_d == f_d);
+  assert(g + copysignf(sigma * f_d, c) == g + copysignf(sigma * f_d, c));
+  return g + copysignf(sigma * f_d, c);
+#endif
+#if 1
+  float val = g + (x-g) + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
+
+  float b0 = fmaxf(0.0f, fminf(1.0f, (x-g-2.0f*sigma)/sigma));
+  float lin0 = g + 2.0f*sigma + shadows * (x-g-2.0f*sigma);
+  val = val * (1.0f-b0) + b0 * lin0;
+
+  float b1 = fmaxf(0.0f, fminf(1.0f, -(x-g+2.0f*sigma)/sigma));
+  float lin1 = g - 2.0f*sigma + highlights * (x-g+2.0f*sigma);
+  val = val * (1.0f-b1) + b1 * lin1;
+
+  const float t0 = fminf(fmaxf(0.0f, (fabsf(x-g)-0.01)/(0.02-0.01)), 1.0f);
+  const float t = t0*t0*(3.0f-2.0f*t0);
+  val = val * t + x * (1.0f - t);
+  return val;
 #endif
 }
 
