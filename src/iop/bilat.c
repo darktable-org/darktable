@@ -155,7 +155,7 @@ error:
   else // mode == s_mode_local_laplacian
   {
     dt_local_laplacian_cl_t *b = dt_local_laplacian_init_cl(piece->pipe->devid, roi_in->width, roi_in->height,
-        0.1, 1.0, 1.0, d->detail);
+        0.1, d->sigma_s, d->sigma_r, d->detail);
     if(!b) goto error_ll;
     if(dt_local_laplacian_cl(b, dev_in, dev_out) != CL_SUCCESS) goto error_ll;
     dt_local_laplacian_free_cl(b);
