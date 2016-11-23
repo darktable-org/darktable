@@ -44,22 +44,32 @@
 #include <sys/wait.h> // for waitpid
 #endif
 
+#ifdef _WIN32
+#include <exchndl.h>
+#endif //_WIN32
+
 #if defined(__linux__) && !defined(PR_SET_PTRACER)
 #define PR_SET_PTRACER 0x59616d61
 #endif
 
-#if !defined(__APPLE__) && !defined(__WIN32__)
+#if !defined(__APPLE__)
 typedef void(dt_signal_handler_t)(int);
 // static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
-static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 
 // deer graphicsmagick, please stop messing with the stuff that you should not be touching at all.
 // based on GM's InitializeMagickSignalHandlers() and MagickSignalHandlerMessage()
+#if !defined(_WIN32)
+static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 static const int _signals_to_preserve[] = { SIGHUP,  SIGINT,  SIGQUIT, SIGILL,  SIGABRT, SIGBUS, SIGFPE,
                                             SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGXCPU, SIGXFSZ };
-static const int _num_signals_to_preserve = sizeof(_signals_to_preserve) / sizeof(_signals_to_preserve[0]);
 static dt_signal_handler_t *_orig_sig_handlers[_NSIG] = { NULL };
-#endif
+#else
+static const int _signals_to_preserve[] = { SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM };
+static dt_signal_handler_t *_orig_sig_handlers[NSIG] = { NULL };
+#endif //! defined (_WIN32)
+static const int _num_signals_to_preserve = sizeof(_signals_to_preserve) / sizeof(_signals_to_preserve[0]);
+
+#endif //! defined(__APPLE__)
 
 #if(defined(__FreeBSD_version) && (__FreeBSD_version < 800071)) || (defined(OpenBSD) && (OpenBSD < 201305))       \
     || defined(__SUNOS__)
@@ -139,7 +149,7 @@ void dt_set_signal_handlers()
 {
   _times_handlers_were_set++;
 
-#if !defined(__APPLE__) && !defined(__WIN32__)
+#if !defined(__APPLE__)
   dt_signal_handler_t *prev;
 
   if(1 == _times_handlers_were_set)
@@ -165,6 +175,7 @@ void dt_set_signal_handlers()
     (void)signal(signum, _orig_sig_handlers[signum]);
   }
 
+#if !defined(_WIN32)
   // now, set our SIGSEGV handler.
   // FIXME: what about SIGABRT?
   prev = signal(SIGSEGV, &_dt_sigsegv_handler);
@@ -180,7 +191,47 @@ void dt_set_signal_handlers()
     fprintf(stderr, "[dt_set_signal_handlers] error: signal(SIGSEGV) returned SIG_ERR: %i (%s)\n", errsv,
             strerror(errsv));
   }
-#endif
+#else
+  /*
+  Set up exception handler for backtrace on Windows
+  works when there is NO SIGSEGV handler installed
+
+  Must be set up _after_: InitializeMagick(),
+  as GraphicsMagick is overwriting SetUnhandledExceptionFilter
+  an all other signals in its init function
+  The first invokation of the dt_set_signal_handlers() is _before_ InitializeMagick(),
+  therefore no point to set up exception handler
+  It should be set up only at the second invokation of  dt_set_signal_handlers(),
+  as at that time InitializeMagick() is done, and exception handler will work
+  Eventually InitializeMagick() should be fixed upstream not to ignore existing exception handlers
+  */
+  if(_times_handlers_were_set > 1)
+  {
+    ExcHndlInit();
+
+    gchar *name_used;
+    int fout;
+    bool ok;
+
+    if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
+      fout = STDOUT_FILENO; // just print everything to stdout
+
+    if(fout != STDOUT_FILENO) close(fout);
+
+    // Set up logfile name
+    ok = ExcHndlSetLogFileNameA(name_used);
+    if(!ok)
+    {
+      g_printerr("backtrace logfile cannot be set to %s\n", name_used);
+    }
+
+    g_free(name_used);
+  }
+
+
+#endif //! defined(_WIN32)
+
+#endif //! defined(__APPLE__)
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
