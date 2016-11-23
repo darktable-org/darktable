@@ -144,6 +144,31 @@ static void _dt_sigsegv_handler(int param)
 }
 #endif
 
+#if defined(_WIN32)
+void dt_set_unhandled_exception_handler_win()
+{
+  ExcHndlInit();
+
+  gchar *name_used;
+  int fout;
+  BOOL ok;
+
+  if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
+    fout = STDOUT_FILENO; // just print everything to stdout
+
+  if(fout != STDOUT_FILENO) close(fout);
+
+  // Set up logfile name
+  ok = ExcHndlSetLogFileNameA(name_used);
+  if(!ok)
+  {
+    g_printerr("backtrace logfile cannot be set to %s\n", name_used);
+  }
+
+  g_free(name_used);
+}
+#endif // defined(_WIN32)
+
 static int _times_handlers_were_set = 0;
 void dt_set_signal_handlers()
 {
@@ -192,42 +217,28 @@ void dt_set_signal_handlers()
             strerror(errsv));
   }
 #else
-  /*
-  Set up exception handler for backtrace on Windows
-  works when there is NO SIGSEGV handler installed
+/*
+Set up exception handler for backtrace on Windows
+Works when there is NO SIGSEGV handler installed
 
-  Must be set up _after_: InitializeMagick(),
-  as GraphicsMagick is overwriting SetUnhandledExceptionFilter
-  an all other signals in its init function
-  The first invokation of the dt_set_signal_handlers() is _before_ InitializeMagick(),
-  therefore no point to set up exception handler
-  It should be set up only at the second invokation of  dt_set_signal_handlers(),
-  as at that time InitializeMagick() is done, and exception handler will work
-  Eventually InitializeMagick() should be fixed upstream not to ignore existing exception handlers
-  */
-  if(_times_handlers_were_set > 1)
-  {
-    ExcHndlInit();
+Must be set up _after_: InitializeMagick(),
+as GraphicsMagick is overwriting SetUnhandledExceptionFilter
+and all other signals in its init function.
+The first invokation of the dt_set_signal_handlers() is _before_ InitializeMagick(),
+therefore no point to set up exception handler
+It should be set up only at the second invocation of  dt_set_signal_handlers(),
+as at that time InitializeMagick() is done, and exception handler will work
+Eventually InitializeMagick() should be fixed upstream not to ignore existing exception handlers
+*/
 
-    gchar *name_used;
-    int fout;
-    bool ok;
-
-    if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
-      fout = STDOUT_FILENO; // just print everything to stdout
-
-    if(fout != STDOUT_FILENO) close(fout);
-
-    // Set up logfile name
-    ok = ExcHndlSetLogFileNameA(name_used);
-    if(!ok)
-    {
-      g_printerr("backtrace logfile cannot be set to %s\n", name_used);
-    }
-
-    g_free(name_used);
-  }
-
+#ifdef HAVE_GRAPHICSMAGICK
+  // If there IS GM, set up only at the second invocation of dt_set_signal_handlers()
+  // which happens after InitializeMagick()
+  if(2 == _times_handlers_were_set) dt_set_unhandled_exception_handler_win();
+#else
+  // If there is no GM, exception handler can be set up at the first invocation of dt_set_signal_handlers()
+  if(1 == _times_handlers_were_set) dt_set_unhandled_exception_handler_win();
+#endif // HAVE_GRAPHICSMAGICK
 
 #endif //! defined(_WIN32)
 
