@@ -245,7 +245,20 @@ float curve(
     const float highlights,
     const float clarity)
 {
-  return g + (x-g) + clarity * (x - g) * native_exp(-(x-g)*(x-g)/(2.0f*sigma*sigma));
+  // return g + (x-g) + clarity * (x - g) * native_exp(-(x-g)*(x-g)/(2.0f*sigma*sigma));
+  float val = g + (x-g) + clarity * (x - g) * native_exp(-(x-g)*(x-g)/(2.0*sigma*sigma));
+
+  float b0 = clamp((x-g-2.0f*sigma)/sigma, 0.0f, 1.0f);
+  float lin0 = g + 2.0f*sigma + shadows * (x-g-2.0f*sigma);
+  val = val * (1.0f-b0) + b0 * lin0;
+
+  float b1 = clamp(-(x-g+2.0f*sigma)/sigma, 0.0f, 1.0f);
+  float lin1 = g - 2.0f*sigma + highlights * (x-g+2.0f*sigma);
+  val = val * (1.0f-b1) + b1 * lin1;
+
+  const float t = smoothstep(0.01, 0.02, fabs(x-g));
+  val = val * t + x * (1.0f - t);
+  return val;
 }
 
 kernel void
