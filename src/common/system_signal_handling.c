@@ -66,6 +66,7 @@ static dt_signal_handler_t *_orig_sig_handlers[_NSIG] = { NULL };
 #else
 static const int _signals_to_preserve[] = { SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM };
 static dt_signal_handler_t *_orig_sig_handlers[NSIG] = { NULL };
+static LPTOP_LEVEL_EXCEPTION_FILTER _dt_exceptionfilter_old_handler = NULL;
 #endif //! defined (_WIN32)
 static const int _num_signals_to_preserve = sizeof(_signals_to_preserve) / sizeof(_signals_to_preserve[0]);
 
@@ -144,32 +145,37 @@ static void _dt_sigsegv_handler(int param)
 }
 #endif
 
+static int _times_handlers_were_set = 0;
+
 #if defined(_WIN32)
 void dt_set_unhandled_exception_handler_win()
 {
   ExcHndlInit();
 
-  gchar *name_used;
-  int fout;
-  BOOL ok;
-
-  if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
-    fout = STDOUT_FILENO; // just print everything to stdout
-
-  if(fout != STDOUT_FILENO) close(fout);
-
-  // Set up logfile name
-  ok = ExcHndlSetLogFileNameA(name_used);
-  if(!ok)
+  if(1 == _times_handlers_were_set)
   {
-    g_printerr("backtrace logfile cannot be set to %s\n", name_used);
-  }
+    gchar *name_used;
+    int fout;
+    BOOL ok;
 
-  g_free(name_used);
+    if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
+      fout = STDOUT_FILENO; // just print everything to stdout
+
+    if(fout != STDOUT_FILENO) close(fout);
+
+    // Set up logfile name
+    ok = ExcHndlSetLogFileNameA(name_used);
+    if(!ok)
+    {
+      g_printerr("backtrace logfile cannot be set to %s\n", name_used);
+    }
+
+    g_free(name_used);
+  }
 }
 #endif // defined(_WIN32)
 
-static int _times_handlers_were_set = 0;
+
 void dt_set_signal_handlers()
 {
   _times_handlers_were_set++;
@@ -217,28 +223,23 @@ void dt_set_signal_handlers()
             strerror(errsv));
   }
 #else
-/*
-Set up exception handler for backtrace on Windows
-Works when there is NO SIGSEGV handler installed
+  /*
+  Set up exception handler for backtrace on Windows
+  Works when there is NO SIGSEGV handler installed
 
-Must be set up _after_: InitializeMagick(),
-as GraphicsMagick is overwriting SetUnhandledExceptionFilter
-and all other signals in its init function.
-The first invokation of the dt_set_signal_handlers() is _before_ InitializeMagick(),
-therefore no point to set up exception handler
-It should be set up only at the second invocation of  dt_set_signal_handlers(),
-as at that time InitializeMagick() is done, and exception handler will work
-Eventually InitializeMagick() should be fixed upstream not to ignore existing exception handlers
-*/
+  SetUnhandledExceptionFilter handler must be saved on the first invokation
+  as GraphicsMagick is overwriting SetUnhandledExceptionFilter and all other signals in InitializeMagick()
+  Eventually InitializeMagick() should be fixed upstream not to ignore existing exception handlers
+  */
 
-#ifdef HAVE_GRAPHICSMAGICK
-  // If there IS GM, set up only at the second invocation of dt_set_signal_handlers()
-  // which happens after InitializeMagick()
-  if(2 == _times_handlers_were_set) dt_set_unhandled_exception_handler_win();
-#else
-  // If there is no GM, exception handler can be set up at the first invocation of dt_set_signal_handlers()
-  if(1 == _times_handlers_were_set) dt_set_unhandled_exception_handler_win();
-#endif // HAVE_GRAPHICSMAGICK
+  dt_set_unhandled_exception_handler_win();
+  if(1 == _times_handlers_were_set)
+  {
+    // Save UnhandledExceptionFilter handler which just has been set up
+    _dt_exceptionfilter_old_handler = SetUnhandledExceptionFilter(NULL);
+  }
+  // Restore original UnhandledExceptionFilter handler no matter what GM is doing
+  if(_dt_exceptionfilter_old_handler) SetUnhandledExceptionFilter(_dt_exceptionfilter_old_handler);
 
 #endif //! defined(_WIN32)
 
