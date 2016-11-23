@@ -55,6 +55,10 @@
 
     <title>Usage</title>
 
+    <indexterm>
+      <primary>color picker</primary>
+    </indexterm>
+
     <para>
       The levels tool offers two modes of operation: <quote>manual</quote> and
       <quote>automatic</quote>.
@@ -83,7 +87,9 @@
       There are three color pickers in black, gray, and white, available by pressing the
       respectively colored
       <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
-      icon. You can use them to sample the corresponding level directly from the image.
+      icon. You can use them to sample the corresponding level directly from the image. You can
+      switch between point and area sampling mode from within the global color picker panel (see
+      <xref linkend="global_color_picker"/>).
     </para>
 
     <para>

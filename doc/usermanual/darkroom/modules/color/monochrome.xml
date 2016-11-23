@@ -54,10 +54,16 @@
 
     <title>Usage</title>
 
+    <indexterm>
+      <primary>color picker</primary>
+    </indexterm>
+
     <para>
       A color picker is activated by pressing
       <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
-      and will automatically set the position and size of the filter.
+      and will automatically set the position and size of the filter. You can switch between
+      point and area sampling mode from within the global color picker panel (see
+      <xref linkend="global_color_picker"/>).
     </para>
 
     <para>
