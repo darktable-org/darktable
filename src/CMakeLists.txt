@@ -398,8 +398,8 @@ if(NOT HAVE_TLS)
 endif()
 
 if(NOT WIN32)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -fno-omit-frame-pointer")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fno-omit-frame-pointer")
 endif(NOT WIN32)
 
 if(WIN32)
@@ -412,6 +412,7 @@ if(WIN32)
   SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
 
   list(APPEND LIBS psapi) # Needed for GetProcessMemoryInfo()
+  list(APPEND LIBS exchndl) # Needed for exception handling and backtrace()
 endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
