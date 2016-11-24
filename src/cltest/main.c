@@ -24,7 +24,7 @@ int main(int argc, char *arg[])
   // only used to force-init opencl, so we want these options:
   char *m_arg[] = { "darktable-cltest", "-d", "opencl", "--library", ":memory:"};
   const int m_argc = sizeof(m_arg) / sizeof(m_arg[0]);
-  if(dt_init(m_argc, m_arg, 0, NULL)) exit(1);
+  if(dt_init(m_argc, m_arg, FALSE, FALSE, NULL)) exit(1);
   dt_cleanup();
   exit(0);
 }
