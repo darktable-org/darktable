@@ -45,6 +45,10 @@
 
     <title>Usage</title>
 
+    <indexterm>
+      <primary>color picker</primary>
+    </indexterm>
+
     <para>
       In its default state, curves will be straight lines, defined by few anchor nodes. You can
       move the nodes to modify the curve. You can generate new nodes by
@@ -52,10 +56,16 @@
       generate a new node at the x-location of the mouse pointer and the corresponding
       y-location of the current curve&nbsp;&ndash; this adds a node without risking to
       accidentally modify the curve. Up to 20 nodes per curve can be defined. To remove a node,
-      move it out of the widget area. A color picker is activated by pressing
+      move it out of the widget area.
+    </para>
+
+    <para>
+      A color picker is activated by pressing
       <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
-      and will show the picked values in the graph. Numerical Lab values of input and output
-      (see below) at the selected spot are shown on top left of the widget.
+      and will show the picked values in the graph. You can switch between point and area
+      sampling mode from within the global color picker panel (see
+      <xref linkend="global_color_picker"/>). Numerical Lab values of input and output (see
+      below) at the selected spot or area are shown on top left of the widget.
     </para>
 
     <sect5>
@@ -103,12 +113,16 @@
       <title>scale chroma</title>
       <para>
         darktable does an automatic adjustment of color saturation, if this combobox is set to
-        <quote>auto</quote>. The level of this adjustment depends on the pixel's color values
-        and its L-value modification by the L-channel tone curve. It is designed to give an
-        overall boost in color saturation, if the L-curve gives a contrast boost. Look at blend
-        mode <quote>coloradjustment</quote> to adjust the strength of this effect (see
-        <xref linkend="blending_operators"/>). If this combobox is set to <quote>manual</quote>,
-        you can modify color saturation using the curves in channels a and b.
+        <quote>automatic</quote>. The level of this adjustment depends on the pixel's color
+        values and its L-value modification by the L-channel tone curve. It is designed to give
+        an overall boost in color saturation, if the L-curve gives a contrast boost. The
+        <quote>automatic in XYZ</quote> mode offers an alternative for automatic saturation
+        adjustment. It works by applying the L-channel curve to all three channels in the XYZ
+        color space. This has the same effect on saturation as RGB curves would have. Look at
+        blend mode <quote>coloradjustment</quote> if you want to tune the strength of automatic
+        chroma scaling (see <xref linkend="blending_operators"/>). If this combobox is set to
+        <quote>manual</quote>, you can manually modify color saturation using the curves in
+        channels a and b.
       </para>
     </sect5>
 

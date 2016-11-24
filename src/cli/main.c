@@ -193,8 +193,8 @@ int main(int argc, char *arg[])
     fprintf(stderr, "%s\n", _("output file already exists, it will get renamed"));
   }
 
-  // init dt without gui:
-  if(dt_init(m_argc, m_arg, 0, NULL))
+  // init dt without gui and without data.db:
+  if(dt_init(m_argc, m_arg, FALSE, FALSE, NULL))
   {
     free(m_arg);
     exit(1);

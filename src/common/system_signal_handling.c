@@ -35,10 +35,11 @@
 #include <stddef.h>      // for NULL
 #include <stdio.h>       // for dprintf, fprintf, stderr
 #include <string.h>      // for strerror
-#ifndef _WIN32
-#include <sys/prctl.h>   // for PR_SET_PTRACER, prctl
-#endif
 #include <unistd.h>      // for STDOUT_FILENO, close, execlp, fork
+
+#ifdef __linux__
+#include <sys/prctl.h> // for PR_SET_PTRACER, prctl
+#endif
 
 #ifndef __WIN32__
 #include <sys/wait.h> // for waitpid

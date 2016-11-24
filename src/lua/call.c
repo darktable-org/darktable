@@ -557,7 +557,7 @@ void dt_lua_async_call_alien_internal(const char * call_function, int line,lua_C
 void dt_lua_async_call_string_internal(const char* function, int line,const char* lua_string,int nresults,dt_lua_finish_callback cb, void*cb_data)
 {
 #ifdef _DEBUG
-  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d\n",__FUNCTION__,function,line);
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d, string %s\n",__FUNCTION__,function,line,lua_string);
 #endif
   string_call_data*data = malloc(sizeof(string_call_data));
   data->function = strdup(lua_string);
