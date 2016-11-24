@@ -43,51 +43,6 @@
 #include <strings.h>
 
 
-int dt_control_load_config(dt_control_t *c)
-{
-  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-  dt_conf_set_int("ui_last/view", DT_MODE_NONE);
-  int width = dt_conf_get_int("ui_last/window_w");
-  int height = dt_conf_get_int("ui_last/window_h");
-  gint x = dt_conf_get_int("ui_last/window_x");
-  gint y = dt_conf_get_int("ui_last/window_y");
-  gtk_window_move(GTK_WINDOW(widget), x, y);
-  gtk_window_resize(GTK_WINDOW(widget), width, height);
-  int fullscreen = dt_conf_get_bool("ui_last/fullscreen");
-  if(fullscreen)
-    gtk_window_fullscreen(GTK_WINDOW(widget));
-  else
-  {
-    gtk_window_unfullscreen(GTK_WINDOW(widget));
-    int maximized = dt_conf_get_bool("ui_last/maximized");
-    if(maximized)
-      gtk_window_maximize(GTK_WINDOW(widget));
-    else
-      gtk_window_unmaximize(GTK_WINDOW(widget));
-  }
-  return 0;
-}
-
-int dt_control_write_config(dt_control_t *c)
-{
-  // TODO: move to gtk.c
-  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  gint x, y;
-  gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
-  dt_conf_set_int("ui_last/window_x", x);
-  dt_conf_set_int("ui_last/window_y", y);
-  dt_conf_set_int("ui_last/window_w", allocation.width);
-  dt_conf_set_int("ui_last/window_h", allocation.height);
-  dt_conf_set_bool("ui_last/maximized",
-                   (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_MAXIMIZED));
-  dt_conf_set_bool("ui_last/fullscreen",
-                   (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN));
-
-  return 0;
-}
-
 void dt_control_init(dt_control_t *s)
 {
   memset(s->vimkey, 0, sizeof(s->vimkey));
