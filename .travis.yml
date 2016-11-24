@@ -14,8 +14,6 @@
 #    You should have received a copy of the GNU General Public License
 #    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 
-sudo: required
-
 notifications:
   irc:
     channels:
@@ -32,12 +30,20 @@ notifications:
     on_success: always
     on_failure: always
 
+language: generic
+
+os:
+  - linux
+  - osx
+
+sudo: required
+
 services:
   - docker
 
 before_install:
-#  - docker build -t darktable/darktable .
-  - docker pull darktable/darktable
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker pull darktable/darktable; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update && brew tap Homebrew/bundle && brew bundle; fi
 
 env:
   global:
@@ -46,12 +52,31 @@ env:
     - INSTALL_PREFIX=/build/darktable-install
     - CFLAGS=-pipe CXXFLAGS=-pipe
   matrix:
-    - CC=gcc CXX=g++ TARGET=build
-    - CC=clang-3.9 CXX=clang++-3.9 TARGET=build
-    - CC=gcc CXX=g++ TARGET=usermanual # EXTRA_TMPFS="--tmpfs /tmp"
+    - CC=cc CXX=c++ TARGET=build # default system compiler, all platforms
 
 matrix:
   fast_finish: true
+  include:
+  - os: linux
+    sudo: required
+    services:
+      - docker
+    env: CC=clang-3.9 CXX=clang++-3.9 TARGET=build
+  - os: osx
+    env: CC=gcc-6 CXX=g++-6 TARGET=build
+  - os: linux
+    sudo: required
+    services:
+      - docker
+    env: CC=cc CXX=c++ TARGET=usermanual # EXTRA_TMPFS="--tmpfs /tmp"
 
 script:
-  - docker run --read-only --volume $TRAVIS_BUILD_DIR:$SRC_DIR:ro --tmpfs $BUILD_DIR --workdir $BUILD_DIR --tmpfs $INSTALL_PREFIX $EXTRA_TMPFS --env CC --env CXX --env CFLAGS --env CXXFLAGS --env SRC_DIR --env BUILD_DIR --env INSTALL_PREFIX --env TARGET darktable/darktable sh -c "$SRC_DIR/ci-script.sh"
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker run --read-only --volume $TRAVIS_BUILD_DIR:$SRC_DIR:ro --tmpfs $BUILD_DIR --workdir $BUILD_DIR --tmpfs $INSTALL_PREFIX $EXTRA_TMPFS --env CC --env CXX --env CFLAGS --env CXXFLAGS --env SRC_DIR --env BUILD_DIR --env INSTALL_PREFIX --env TARGET darktable/darktable sh -c "$SRC_DIR/ci-script.sh"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      export SRC_DIR="$TRAVIS_BUILD_DIR";
+      export BUILD_DIR="$SRC_DIR/build";
+      export INSTALL_PREFIX="$SRC_DIR/install";
+      mkdir "$BUILD_DIR";
+      mkdir "$INSTALL_PREFIX";
+      "$SRC_DIR/ci-script.sh";
+    fi
