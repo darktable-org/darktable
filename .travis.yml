@@ -63,7 +63,7 @@ matrix:
       - docker
     env: CC=clang-3.9 CXX=clang++-3.9 TARGET=build
   - os: osx
-    env: CC=gcc-6 CXX=g++-6 TARGET=build
+    env: CC=gcc-6 CXX=c++ TARGET=build # can't use CXX=g++-6 fails for osx.mm
   - os: linux
     sudo: required
     services:
