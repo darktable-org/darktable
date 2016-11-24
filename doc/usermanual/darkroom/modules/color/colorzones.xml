@@ -44,6 +44,10 @@
 
     <title>Usage</title>
 
+    <indexterm>
+      <primary>color picker</primary>
+    </indexterm>
+
     <para>
       The horizontal axis represents the range of values you can work on. The vertical axis
       shows the modifications you can apply by designing a curve. For both horizontal and
@@ -60,7 +64,9 @@
     <para>
       A color picker is activated by pressing
       <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
-      and will show the picked values in the diagram.
+      and will show the picked values in the diagram. You can switch between point and area
+      sampling mode from within the global color picker panel (see
+      <xref linkend="global_color_picker"/>).
     </para>
 
     <sect5>

@@ -234,7 +234,7 @@ typedef struct
 extern darktable_t darktable;
 extern const char dt_supported_extensions[];
 
-int dt_init(int argc, char *argv[], const int init_gui, lua_State *L);
+int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L);
 void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
