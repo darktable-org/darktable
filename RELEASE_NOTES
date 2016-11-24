@@ -22,19 +22,19 @@ The Big Ones:
 - Exposure fusion in the basecurve module to lower the dynamic range of images (https://www.darktable.org/2016/08/compressing-dynamic-range-with-exposure-fusion/)
 - Add new raw overexposure indication (https://www.darktable.org/2016/10/raw-overexposed/)
 - Darkroom: the preview (in top-left corner) is now no longer pre-demosaiced (but just downscaled without demosaicing it at the same time), thus the preview, color picker, histogram show the proper results, especially when there is highlight clipping.
-- Add undo/redo support for the darkroom
 
 Quite Interesting Changes:
 
 - Split the database into a library containing images and a general one with styles, presets and tags. That allows having access to those when for example running with a :memory: library
 - Support running on platforms other than x86 (64bit little-endian, currently ARM64 only) (https://www.darktable.org/2016/04/running-on-non-x86-platforms/)
-- darktable is now happy to use smaller stack sizes. That should allow using musl libc
+- darktable is now happy to use smaller stack sizes (no less than 256Kb). That should allow using musl libc
 - Allow darktable-cli to work on directories
 - Allow to import/export tags from Lightroom keyword files
 - Allow using modifier keys to modify the step for sliders and curves. Defaults: Ctrl - x0.1; Shift - x10
 - Allow using the [keyboard] cursor keys to interact with sliders, comboboxes and curves; modifiers apply too
 - Support presets in "more modules" so you can quickly switch between your favorite sets of modules shown in the GUI
 - Add range operator and date compare to the collection module
+- Add basic undo/redo support for the darkroom (masks are not accounted !)
 - Support the Exif date and time when importing photos from camera
 - Input color profile module, when profile is just matrix (and linear curve), is 1/3 faster now.
 - Rudimentary CYGM and RGBE color filter array support
@@ -63,8 +63,10 @@ Some More Changes, Probably Not Complete:
 - Attach Xmp data to EXR files
 - Several fixes for HighDPI displays
 - Use Pango for text layout, thus supporting RTL languages
+- Feathering size in some mask shapes can be set with shift+scroll
 - Many bugs got fixed and some memory leaks plugged
 - The usermanual was updated to reflect the changes in the 2.2 series
+- Tone curve: mode "automatic in XYZ" mode for "scale chroma"
 
 Changed Dependencies:
 
@@ -176,6 +178,9 @@ Base Support
 - Panasonic DMC-GX80 (4:3)
 - Panasonic DMC-GX85 (4:3)
 - Panasonic DMC-LX3 (1:1)
+- Panasonic DMC-LX10 (3:2)
+- Panasonic DMC-LX15 (3:2)
+- Panasonic DMC-LX9 (3:2)
 - Pentax K-1
 - Pentax K-70
 - Samsung GX20 (dng)
@@ -212,6 +217,7 @@ White Balance Presets
 - Canon EOS-1D X Mark II
 - Canon PowerShot G7 X Mark II
 - Fujifilm X-Pro2
+- Fujifilm X-T2
 - Fujifilm X-T10
 - Fujifilm X100T
 - Fujifilm X20
@@ -219,6 +225,7 @@ White Balance Presets
 - Nikon 1 V3
 - Nikon D5500
 - Olympus PEN-F
+- Pentax K-1
 - Pentax K-70
 - Pentax K-S1
 - Pentax K-S2
@@ -244,6 +251,7 @@ Noise Profiles
 - Panasonic DMC-GF7
 - Pentax K-S2
 - Ricoh GR
+- Sony DSLR-A900
 - Sony DSC-RX10
 - Sony SLT-A37
 
