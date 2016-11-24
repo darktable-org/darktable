@@ -152,26 +152,27 @@ void dt_set_unhandled_exception_handler_win()
 {
   ExcHndlInit();
 
-  if(1 == _times_handlers_were_set)
+  gchar *name_used;
+  int fout;
+  BOOL ok;
+
+  if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
+    fout = STDOUT_FILENO; // just print everything to stdout
+
+  if(fout != STDOUT_FILENO)
   {
-    gchar *name_used;
-    int fout;
-    BOOL ok;
+    close(fout);
+    unlink(name_used);
+  };
 
-    if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
-      fout = STDOUT_FILENO; // just print everything to stdout
-
-    if(fout != STDOUT_FILENO) close(fout);
-
-    // Set up logfile name
-    ok = ExcHndlSetLogFileNameA(name_used);
-    if(!ok)
-    {
-      g_printerr("backtrace logfile cannot be set to %s\n", name_used);
-    }
-
-    g_free(name_used);
+  // Set up logfile name
+  ok = ExcHndlSetLogFileNameA(name_used);
+  if(!ok)
+  {
+    g_printerr("backtrace logfile cannot be set to %s\n", name_used);
   }
+
+  g_free(name_used);
 }
 #endif // defined(_WIN32)
 
