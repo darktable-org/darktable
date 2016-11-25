@@ -45,6 +45,10 @@
 
     <title>Usage</title>
 
+    <indexterm>
+      <primary>color picker</primary>
+    </indexterm>
+
     <para>
       In its default state, curves will be straight lines, defined by few anchor nodes. You can
       move the nodes to modify the curve. You can generate new nodes by
@@ -52,10 +56,16 @@
       generate a new node at the x-location of the mouse pointer and the corresponding
       y-location of the current curve&nbsp;&ndash; this adds a node without risking to
       accidentally modify the curve. Up to 20 nodes per curve can be defined. To remove a node,
-      move it out of the widget area. A color picker is activated by pressing
+      move it out of the widget area.
+    </para>
+
+    <para>
+      A color picker is activated by pressing
       <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
-      and will show the picked values in the graph. Numerical Lab values of input and output
-      (see below) at the selected spot are shown on top left of the widget.
+      and will show the picked values in the graph. You can switch between point and area
+      sampling mode from within the global color picker panel (see
+      <xref linkend="global_color_picker"/>). Numerical Lab values of input and output (see
+      below) at the selected spot or area are shown on top left of the widget.
     </para>
 
     <sect5>
