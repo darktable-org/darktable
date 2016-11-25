@@ -3253,6 +3253,7 @@ void gui_update (dt_iop_module_t *module)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
   memcpy(&g->params, module->params, sizeof(dt_iop_liquify_params_t));
+  update_warp_count(g);
 }
 
 void gui_init (dt_iop_module_t *module)
