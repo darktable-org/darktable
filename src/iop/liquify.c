@@ -255,7 +255,6 @@ typedef struct {
 
   cairo_t *fake_cr;     ///< A fake cairo context for hit testing and coordinate transform.
 
-  gboolean mouse_pointer_in_widget;
   GtkLabel *label;
   GtkToggleButton *btn_point_tool, *btn_line_tool, *btn_curve_tool, *btn_node_tool;
 
@@ -2611,7 +2610,6 @@ void gui_post_expose (struct dt_iop_module_t *module,
 void gui_focus (struct dt_iop_module_t *module, gboolean in)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  g->mouse_pointer_in_widget = module->enabled && in;
 
   dt_control_hinter_message (darktable.control, "");
   gtk_toggle_button_set_active (g->btn_point_tool, FALSE);
@@ -3275,7 +3273,6 @@ void gui_init (dt_iop_module_t *module)
   g->last_mouse_pos =
   g->last_button1_pressed_pos = -1;
   g->last_hit = NOWHERE;
-  g->mouse_pointer_in_widget = 0;
   dt_pthread_mutex_init (&g->lock, NULL);
   g->node_index = 0;
 
