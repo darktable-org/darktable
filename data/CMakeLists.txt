@@ -108,7 +108,7 @@ install(FILES gdb_commands DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable)
 if(${VALIDATE_JSON})
   add_custom_target(
     validate_noiseprofiles_json ALL
-    COMMAND ${jsonschema_BIN} -i ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.json ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.schema
+    COMMAND ${CMAKE_COMMAND} -E env LANG=C.UTF-8 ${jsonschema_BIN} -i ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.json ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.schema
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.json ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.schema
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
     COMMENT "Checking validity of noiseprofiles.json"
