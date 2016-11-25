@@ -950,23 +950,39 @@ msgstr[0] "נבחרה תמונה %d מתוך %d באוסף הנוכחי"
 msgstr[1] "נבחרו %d תמונות מתוך %d באוסף הנוכחי"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
+<<<<<<< HEAD
 #: ../src/common/colorspaces.c:1035 ../src/iop/colorin.c:1947
+=======
+#: ../src/common/colorspaces.c:1035 ../src/iop/colorin.c:1945
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
 #: ../src/common/colorspaces.c:1036 ../src/common/colorspaces.c:1197
+<<<<<<< HEAD
 #: ../src/iop/colorin.c:1948 ../src/libs/print_settings.c:881
+=======
+#: ../src/iop/colorin.c:1946 ../src/libs/print_settings.c:881
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (תואם)"
 
 #: ../src/common/colorspaces.c:1037 ../src/common/colorspaces.c:1202
+<<<<<<< HEAD
 #: ../src/iop/colorin.c:1949
+=======
+#: ../src/iop/colorin.c:1947
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgid "linear Rec709 RGB"
 msgstr "linear Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1038 ../src/common/colorspaces.c:1207
+<<<<<<< HEAD
 #: ../src/iop/colorin.c:1950
+=======
+#: ../src/iop/colorin.c:1948
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgid "linear Rec2020 RGB"
 msgstr "linear Rec2020 RGB"
 
@@ -1113,7 +1129,11 @@ msgstr "דלוק"
 #: ../src/common/styles.c:725 ../src/develop/blend_gui.c:1600
 #: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1334
 #: ../src/imageio/format/exr.cc:359 ../src/imageio/format/j2k.c:663
+<<<<<<< HEAD
 #: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1946
+=======
+#: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1944
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 #: ../src/iop/demosaic.c:3857 ../src/iop/vignette.c:1140
 #: ../src/libs/history.c:168 ../src/libs/live_view.c:434
 msgid "off"
@@ -2305,12 +2325,17 @@ msgstr "קליק ימני לאתחל ערך נוצה"
 msgid "ctrl+click to add a node"
 msgstr "לחץ ctrl+click להוסיף צומת"
 
+<<<<<<< HEAD
 #: ../src/develop/masks/masks.c:53 ../src/develop/masks/masks.c:82
 #, fuzzy
 msgid "ctrl+scroll to set shape opacity, shift+scroll to set feather size"
 msgstr "לחץ ctrl+scroll לקבוע את אטימות הצורה "
 
 #: ../src/develop/masks/masks.c:58
+=======
+#: ../src/develop/masks/masks.c:53 ../src/develop/masks/masks.c:58
+#: ../src/develop/masks/masks.c:82
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgid "ctrl+scroll to set shape opacity"
 msgstr "לחץ ctrl+scroll לקבוע את אטימות הצורה "
 
@@ -2323,10 +2348,15 @@ msgid "ctrl+click to rotate"
 msgstr "לחץ ctrl+click לסובב"
 
 #: ../src/develop/masks/masks.c:67
+<<<<<<< HEAD
 msgid ""
 "shift+click to switch feathering mode, ctrl+scroll to set shape opacity, "
 "shift+scroll to set feather size"
 msgstr ""
+=======
+msgid "shift+click to switch feathering mode, ctrl+scroll to set shape opacity"
+msgstr "קליק+shift להחליף מצב רפרוף, ctrl+גלילה לקבוע אטימות צורה"
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 
 #: ../src/develop/masks/masks.c:72
 msgid ""
@@ -5365,22 +5395,38 @@ msgstr "יצירת פרופיל קלט נכשלה!"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "פרופיל קלט לא נתמך הוחלף ב Rec709 RGB לינארי!"
 
+<<<<<<< HEAD
 #: ../src/iop/colorin.c:1929 ../src/iop/denoiseprofile.c:2077
+=======
+#: ../src/iop/colorin.c:1927 ../src/iop/denoiseprofile.c:2077
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 #: ../src/libs/export.c:597 ../src/libs/print_settings.c:1008
 #: ../src/libs/print_settings.c:1224
 msgid "profile"
 msgstr "פרופיל"
 
+<<<<<<< HEAD
 #: ../src/iop/colorin.c:1938
+=======
+#: ../src/iop/colorin.c:1936
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 #, c-format
 msgid "ICC profiles in %s/color/in or %s/color/in"
 msgstr "פרופילי ICC ב %s/color/in או %s/color/in"
 
+<<<<<<< HEAD
 #: ../src/iop/colorin.c:1944
 msgid "gamut clipping"
 msgstr "חיתוך מכלול צבע"
 
 #: ../src/iop/colorin.c:1952
+=======
+#: ../src/iop/colorin.c:1942
+msgid "gamut clipping"
+msgstr "חיתוך מכלול צבע"
+
+#: ../src/iop/colorin.c:1950
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "תחום ערכי מעבדה למכלול צבע RGB"
 
@@ -6695,6 +6741,7 @@ msgstr "לבן"
 msgid "liquify"
 msgstr "נזל"
 
+<<<<<<< HEAD
 #: ../src/iop/liquify.c:3244
 msgid "click and drag to add point"
 msgstr "הקלק וגרור להוסיף נקודה"
@@ -6712,6 +6759,25 @@ msgid "click to edit nodes"
 msgstr "לחץ להוסיף צמתים"
 
 #: ../src/iop/liquify.c:3287
+=======
+#: ../src/iop/liquify.c:3243
+msgid "click and drag to add point"
+msgstr "הקלק וגרור להוסיף נקודה"
+
+#: ../src/iop/liquify.c:3245
+msgid "click to add line"
+msgstr "לחץ להוסיף שורה"
+
+#: ../src/iop/liquify.c:3247
+msgid "click to add curve"
+msgstr "לחץ להוסיף עקום"
+
+#: ../src/iop/liquify.c:3249
+msgid "click to edit nodes"
+msgstr "לחץ להוסיף צמתים"
+
+#: ../src/iop/liquify.c:3285
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
@@ -6719,6 +6785,7 @@ msgstr ""
 "השתמש בכלי להוסיף פיתולים.\n"
 "הקלק ימנית להסיר פיתול."
 
+<<<<<<< HEAD
 #: ../src/iop/liquify.c:3289
 msgid "warps|nodes count:"
 msgstr "ספירת פיתולים|צמתים:"
@@ -6740,6 +6807,29 @@ msgid "point tool: draw points"
 msgstr "מכחול נקודות: צייר נקודות"
 
 #: ../src/iop/liquify.c:3327
+=======
+#: ../src/iop/liquify.c:3287
+msgid "warps|nodes count:"
+msgstr "ספירת פיתולים|צמתים:"
+
+#: ../src/iop/liquify.c:3294
+msgid "node tool: edit, add and delete nodes"
+msgstr "מכחול צמתים: ערוך, הוסף ומחק צמתים"
+
+#: ../src/iop/liquify.c:3302
+msgid "curve tool: draw curves"
+msgstr "מכחול עקומות: צייר עקומות"
+
+#: ../src/iop/liquify.c:3310
+msgid "line tool: draw lines"
+msgstr "מכחול קווים: צייר קוים"
+
+#: ../src/iop/liquify.c:3318
+msgid "point tool: draw points"
+msgstr "מכחול נקודות: צייר נקודות"
+
+#: ../src/iop/liquify.c:3325
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgid ""
 "ctrl-click to add node\n"
 "right click to remove path"
@@ -6747,7 +6837,11 @@ msgstr ""
 "לחץ ctrl-click להוסיף צומת\n"
 "הקלק ימנית להסיר נתיב"
 
+<<<<<<< HEAD
 #: ../src/iop/liquify.c:3328
+=======
+#: ../src/iop/liquify.c:3326
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgid ""
 "click and drag to move - click : linear or feathered\n"
 "ctrl-click : autosmooth, cusp, smooth, symmetrical\n"
@@ -6757,6 +6851,7 @@ msgstr ""
 "קליק-ctrl: סימטרי, חלק, חרמש, החלקה אוטומטית\n"
 "קליק ימני להסרה"
 
+<<<<<<< HEAD
 #: ../src/iop/liquify.c:3331 ../src/iop/liquify.c:3332
 msgid "drag to change shape of path"
 msgstr "גרור לשינוי צורת הנתיב"
@@ -6774,6 +6869,25 @@ msgid "drag to adjust hardness (feather)"
 msgstr "גרור לכוונון קשיות (נוצה) "
 
 #: ../src/iop/liquify.c:3336
+=======
+#: ../src/iop/liquify.c:3329 ../src/iop/liquify.c:3330
+msgid "drag to change shape of path"
+msgstr "גרור לשינוי צורת הנתיב"
+
+#: ../src/iop/liquify.c:3331
+msgid "drag to adjust warp radius"
+msgstr "גרור לשינוי רדיוס הפיתול"
+
+#: ../src/iop/liquify.c:3332
+msgid "drag to adjust hardness (center)"
+msgstr "גרור לכוונון קשיות (מרכז) "
+
+#: ../src/iop/liquify.c:3333
+msgid "drag to adjust hardness (feather)"
+msgstr "גרור לכוונון קשיות (נוצה) "
+
+#: ../src/iop/liquify.c:3334
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl-click : linear, grow, and shrink"
@@ -6781,22 +6895,38 @@ msgstr ""
 "גרור לכוונון עצמת פיתול\n"
 "קליק-ctrl : לינארי, הרחב, וכווץ "
 
+<<<<<<< HEAD
 #: ../src/iop/liquify.c:3354
+=======
+#: ../src/iop/liquify.c:3352
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgctxt "accel"
 msgid "point tool"
 msgstr "מכחול נקודות"
 
+<<<<<<< HEAD
 #: ../src/iop/liquify.c:3355
+=======
+#: ../src/iop/liquify.c:3353
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgctxt "accel"
 msgid "line tool"
 msgstr "מכחול קווים"
 
+<<<<<<< HEAD
 #: ../src/iop/liquify.c:3356
+=======
+#: ../src/iop/liquify.c:3354
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgctxt "accel"
 msgid "curve tool"
 msgstr "מכחול עקומות"
 
+<<<<<<< HEAD
 #: ../src/iop/liquify.c:3357
+=======
+#: ../src/iop/liquify.c:3355
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgctxt "accel"
 msgid "node tool"
 msgstr "מכחול צמתים"
@@ -8152,6 +8282,11 @@ msgstr "בוחר צבע"
 msgctxt "accel"
 msgid "pick color"
 msgstr "בחר צבע ראשי"
+
+#: ../src/libs/colorpicker.c:78
+msgctxt "accel"
+msgid "pick color"
+msgstr "בחר צבע"
 
 #: ../src/libs/colorpicker.c:78
 msgctxt "accel"
@@ -10392,7 +10527,10 @@ msgstr "תמונה אחורה"
 
 #. toggle raw overexposure indication
 #: ../src/views/darkroom.c:2387
+<<<<<<< HEAD
 #, fuzzy
+=======
+>>>>>>> 80a59dd853c2af8f04bcbfb0934ed2b7e5f7ffac
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "קובץ ה raw בחשיפת יתר"
