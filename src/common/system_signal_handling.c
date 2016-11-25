@@ -2,7 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
     copyright (c) 2010--2012 henrik andersson.
-    copyright (c) 2010--2013 tobias ellinghaus.    
+    copyright (c) 2010--2013 tobias ellinghaus.
     copyright (c) 2012--2013 parafin
     copyright (c) 2014,2016 Roman Lebedev.
 
