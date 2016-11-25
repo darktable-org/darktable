@@ -65,6 +65,10 @@ if(sizeof(void *) < 8)
 #pragma message "Expect a LOT of functionality to be broken. You have been warned."
 #endif
 
+#if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ < 8
+#pragma message "Warning: 32-bit build."
+#endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
