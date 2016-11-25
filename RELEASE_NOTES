@@ -44,7 +44,7 @@ Quite Interesting Changes:
 - Filter-out some useless EXIF tags when exporting, helps keep EXIF size under ~64Kb
 - OpenCL: properly discard CPU-based OpenCL devices. Fixes crashes on startup with some partially-working OpenCL implementations like pocl.
 - darktable-cli: do not even try to open display, we don't need it.
-- Hotpixels iop: make it actually work for X-Trans
+- Hotpixels module: make it actually work for X-Trans
 
 Some More Changes, Probably Not Complete:
 
@@ -79,9 +79,8 @@ Changed Dependencies:
 - Port to OpenJPEG2
 - SDL is no longer needed.
 
-A special note to all the darktable Fedora users: Fedora-provided darktable packages are intentionally built with Lua disabled. Thus, Lua scripting will not work. This breaks e.g. darktable-gimp integration. Please bug Fedora. In the mean time you could fix that by self-compiling darktable (pass -DDONT_USE_INTERNAL_LUA=OFF to cmake in order to enable use of bundled Lua5.2.4).
-
 Base Support
+
 - Canon EOS-1D X Mark II
 - Canon EOS 5D Mark IV
 - Canon EOS 80D
@@ -197,6 +196,7 @@ If anyone reading this owns such a camera, please do consider providing samples.
 - Nikon D3X (12-bit)
 
 White Balance Presets
+
 - Canon EOS 1200D
 - Canon EOS Kiss X70
 - Canon EOS Rebel T5
@@ -233,6 +233,7 @@ White Balance Presets
 - Sony ILCE-6300
 
 Noise Profiles
+
 - Canon EOS 5DS R
 - Canon EOS 80D
 - Canon PowerShot G15
@@ -255,12 +256,13 @@ Noise Profiles
 - Sony DSC-RX10
 - Sony SLT-A37
 
-Translations
-  Added
+New Translations
+
   - Hebrew
   - Slovenian
 
-  Updated:
+Updated Translations
+
   - Catalan
   - Czech
   - Danish
