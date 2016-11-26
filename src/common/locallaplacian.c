@@ -323,6 +323,9 @@ void apply_curve(
   const __m128 const0 = _mm_set_ps1(0x3f800000u);
   const __m128 const1 = _mm_set_ps1(0x402DF854u); // for e^x
   const __m128 sign_mask = _mm_set1_ps(-0.f); // -0.f = 1 << 31
+
+  // TODO: this actually processes a lot of padding, too! this could be copied
+  // with boundary filling instead.
 #pragma omp parallel for default(none) schedule(dynamic)
   for(size_t j=0;j<(size_t)w*h;j+=4)
   {
