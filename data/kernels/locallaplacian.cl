@@ -246,7 +246,7 @@ float curve(
     const float clarity)
 {
   const float off = sigma; // where shad/hi bending starts (ends at this + sigma)
-  float val = g + (x-g) + clarity * (x - g) * native_exp(-(x-g)*(x-g)/(2.0*sigma*sigma));
+  float val = g + (x-g) + clarity * (x - g) * native_exp(-(x-g)*(x-g)/(2.0f*sigma*sigma));
 
   float b0 = clamp((x-g-off)/sigma, 0.0f, 1.0f);
   float lin0 = g + off + shadows * (x-g-off);
@@ -256,7 +256,7 @@ float curve(
   float lin1 = g - off + highlights * (x-g+off);
   val = val * (1.0f-b1) + b1 * lin1;
 
-  const float t = smoothstep(0.01, 0.02, fabs(x-g));
+  const float t = smoothstep(0.01f, 0.02f, fabs(x-g));
   val = val * t + x * (1.0f - t);
   return val;
 }
