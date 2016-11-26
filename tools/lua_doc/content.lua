@@ -68,7 +68,7 @@ remove_all_children(types.dt_lua_lib_t.views)
 --  TOPLEVEL        --
 ----------------------
 local prefix
-if real_darktable.configuration.api_version_suffix == "" then
+if real_darktable.configuration.api_version_suffix ~= "" then
   prefix = [[This documentation is for the *development* version of darktable. for the stable version, please visit the user manual]]..para()
 else
   prefix = ""
@@ -681,11 +681,11 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_imageio_module_format_data_webp.quality:set_text([[The quality to use at export time.]])
 	types.dt_imageio_module_format_data_webp.comp_type:set_text([[The overall quality to use; can be one of "webp_lossy" or "webp_lossless".]]):set_reported_type(types.comp_type_t);
 	types.dt_imageio_module_format_data_webp.hint:set_text([[A hint on the overall content of the image.]]):set_reported_type(types.hint_t)
-	--types.dt_imageio_module_format_data_j2k:set_text([[Type object describing parameters to export to jpeg2000.]])
-	--types.dt_imageio_module_format_data_j2k.quality:set_text([[The quality to use at export time.]])
-	--types.dt_imageio_module_format_data_j2k.bpp:set_text([[The bpp parameter to use when exporting.]])
-	--types.dt_imageio_module_format_data_j2k.format:set_text([[The format to use.]]):set_reported_type(types.dt_imageio_j2k_format_t)
-	--types.dt_imageio_module_format_data_j2k.preset:set_text([[The preset to use.]]):set_reported_type(types.dt_imageio_j2k_preset_t)
+	types.dt_imageio_module_format_data_j2k:set_text([[Type object describing parameters to export to jpeg2000.]])
+	types.dt_imageio_module_format_data_j2k.quality:set_text([[The quality to use at export time.]])
+	types.dt_imageio_module_format_data_j2k.bpp:set_text([[The bpp parameter to use when exporting.]])
+	types.dt_imageio_module_format_data_j2k.format:set_text([[The format to use.]]):set_reported_type(types.dt_imageio_j2k_format_t)
+	types.dt_imageio_module_format_data_j2k.preset:set_text([[The preset to use.]]):set_reported_type(types.dt_imageio_j2k_preset_t)
 
 
 	types.dt_imageio_module_format_data_pdf:set_text([[Type object describing parameters to export to pdf.]])
@@ -788,8 +788,8 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.hint_t:set_text([[a hint on the way to encode a webp image]])
 	types.dt_ui_container_t:set_text([[A place in the darktable UI where a lib can be placed]])
 	types.snapshot_direction_t:set_text([[Which part of the main window is occupied by a snapshot]])
-	--types.dt_imageio_j2k_format_t:set_text([[J2K format type]])
-	--types.dt_imageio_j2k_preset_t:set_text([[J2K preset type]])
+	types.dt_imageio_j2k_format_t:set_text([[J2K format type]])
+	types.dt_imageio_j2k_preset_t:set_text([[J2K preset type]])
 	types.comp_type_t:set_text([[Type of compression for webp]])
 	types.lua_pref_type:set_text([[The type of value to save in a preference]])
 
