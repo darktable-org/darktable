@@ -285,12 +285,13 @@ static inline float ll_curve(
 #if 1
   float val = g + (x-g) + clarity * (x - g) * dt_fast_expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
 
-  float b0 = CLAMPS((x-g-2.0f*sigma)/sigma, 0.0f, 1.0f);
-  float lin0 = g + 2.0f*sigma + shadows * (x-g-2.0f*sigma);
+  const float off = sigma; // 2.0f*sigma
+  float b0 = CLAMPS((x-g-off)/sigma, 0.0f, 1.0f);
+  float lin0 = g + off + shadows * (x-g-off);
   val = val * (1.0f-b0) + b0 * lin0;
 
-  float b1 = CLAMPS(-(x-g+2.0f*sigma)/sigma, 0.0f, 1.0f);
-  float lin1 = g - 2.0f*sigma + highlights * (x-g+2.0f*sigma);
+  float b1 = CLAMPS(-(x-g+off)/sigma, 0.0f, 1.0f);
+  float lin1 = g - off + highlights * (x-g+off);
   val = val * (1.0f-b1) + b1 * lin1;
 
   const float t0 = CLAMPS((fabsf(x-g)-0.01)/(0.02-0.01), 0.0f, 1.0f);
@@ -336,7 +337,8 @@ void apply_curve(
       const __m128 gauss = _mm_load_ps((float*)&ki);
       val = _mm_add_ps(g4, _mm_add_ps(c, _mm_mul_ps(cl4, _mm_mul_ps(c, gauss))));
     }
-    const __m128 twosig = _mm_mul_ps(_mm_set1_ps(2.0f), s4);
+    // const __m128 twosig = _mm_mul_ps(_mm_set1_ps(2.0f), s4);
+    const __m128 twosig = s4; // drag shad/hi earlier, more powerful
     { // shadows
       const __m128 f0 = _mm_sub_ps(c, twosig);
       const __m128 b0 = _mm_min_ps(_mm_set1_ps(1.0f), _mm_max_ps(_mm_setzero_ps(),
@@ -352,7 +354,7 @@ void apply_curve(
       const __m128 lin1 = _mm_add_ps(_mm_sub_ps(g4, twosig), _mm_mul_ps(hi4, f1));
       val = _mm_add_ps(_mm_mul_ps(val, _mm_sub_ps(_mm_set1_ps(1.0f), b1)), _mm_mul_ps(lin1, b1));
     }
-#if 1
+#if 1 // not sure this is actually needed/useful:
     { // noise
       const __m128 t0 = _mm_min_ps(_mm_set1_ps(1.0f), _mm_max_ps(_mm_setzero_ps(),
             _mm_div_ps(_mm_sub_ps(
