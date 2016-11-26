@@ -24,9 +24,9 @@
 #include "control/control.h"
 #include <gphoto2/gphoto2-file.h>
 
+#include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 /***/
 typedef enum _camctl_camera_job_type_t
@@ -901,7 +901,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
       CameraFile* camfile;
       int res = GP_OK;
       const uint8_t* data = NULL;
-      size_t size;
+      unsigned long int size;
 
       gp_file_new(&camfile);
       if ((res = gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, camfile, NULL)) < GP_OK) {

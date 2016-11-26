@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DTGTK_BUTTON_H
-#define DTGTK_BUTTON_H
+
+#pragma once
 
 #include "paint.h"
 #include <gtk/gtk.h>
@@ -57,7 +57,7 @@ void dtgtk_button_override_color(GtkDarktableButton *button, GdkRGBA *color);
 void dtgtk_button_override_background_color(GtkDarktableButton *button, GdkRGBA *color);
 
 G_END_DECLS
-#endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

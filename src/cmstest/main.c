@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2013 tobias ellinghaus.
+    copyright (c) 2013-2016 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,6 +14,14 @@
 
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
+  You can compile this tool standalone.
+  Dependencies: libX11, libXrandr, liblcms2, libglib and optionally libcolord
+  Compile with something like this:
+    gcc -W -Wall -std=c99 `pkg-config --cflags --libs glib-2.0 lcms2 colord x11 xrandr` \
+        -DHAVE_X11 -DHAVE_COLORD -Ddarktable_package_version=\"'standalone'\" main.c -o darktable-cmstest
 */
 
 #ifdef HAVE_CONFIG_H
@@ -134,11 +142,11 @@ int main(int argc, char *arg[])
     return EXIT_FAILURE;
   }
   int max_scr = ScreenCount(dpy);
+  int xid = 0;
   for(int scr = 0; scr < max_scr; ++scr)
   {
     Window root = RootWindow(dpy, scr);
     XRRScreenResources *rsrc = XRRGetScreenResources(dpy, root);
-    int xid = 0;
     for(int i = 0; i < rsrc->noutput; ++i)
     {
       XRROutputInfo *info = XRRGetOutputInfo(dpy, rsrc, rsrc->outputs[i]);

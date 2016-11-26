@@ -210,7 +210,7 @@ static GList *_duplicate_history(GList *hist)
   return result;
 }
 
-dt_iop_module_t *get_base_module(dt_develop_t *dev, char *op)
+static dt_iop_module_t *get_base_module(dt_develop_t *dev, char *op)
 {
   dt_iop_module_t *result = NULL;
 
@@ -383,7 +383,7 @@ static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module
   dt_lib_history_t *d = (dt_lib_history_t *)self->data;
   dt_dev_invalidate_history_module(d->prev.snapshot, module);
 
-  dt_undo_iterate (darktable.undo, DT_UNDO_HISTORY, &self, &_history_invalidate_cb);
+  dt_undo_iterate (darktable.undo, DT_UNDO_HISTORY, module, &_history_invalidate_cb);
 }
 
 static void _lib_history_change_callback(gpointer instance, gpointer user_data)

@@ -49,6 +49,7 @@ FILE(GLOB SOURCE_FILES
   "common/pdf.c"
   "common/styles.c"
   "common/selection.c"
+  "common/system_signal_handling.c"
   "common/tags.c"
   "common/utility.c"
   "common/variables.c"
@@ -122,6 +123,11 @@ if(NOT COMPILER_SUPPORTS_C99)
         message(FATAL_ERROR "The compiler ${CMAKE_C_COMPILER} has no C99 support. Please use a different C compiler.")
 endif()
 
+CHECK_C_COMPILER_FLAG("-std=c11" COMPILER_SUPPORTS_C11)
+if(NOT COMPILER_SUPPORTS_C11)
+  message(FATAL_ERROR "The compiler ${CMAKE_C_COMPILER} has no C11 support. Please use a different C compiler.")
+endif()
+
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 if(NOT COMPILER_SUPPORTS_CXX11)
         message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
@@ -129,9 +135,10 @@ endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-if(APPLE)
+
+if(APPLE AND (CMAKE_C_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-endif(APPLE)
+endif()
 
 # Check for openmp
 find_package(OpenMP)
@@ -228,18 +235,6 @@ find_package(Exiv2 0.24 REQUIRED)
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
-
-if(USE_NLS)
-  find_package(Gettext)
-  if(Gettext_FOUND)
-    include_directories(SYSTEM ${Gettext_INCLUDE_DIRS})
-    list(APPEND LIBS ${Gettext_LIBRARIES})
-    add_definitions("-DUSE_GETTEXT")
-    message(STATUS "Internationalization: Enabled")
-  else()
-    message(STATUS "Internationalization: Disabled (libintl not found)")
-  endif()
-endif(USE_NLS)
 
 if(USE_FLICKR)
   find_package(FLICKCURL)
@@ -633,7 +628,7 @@ if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-    COMMAND ${Xsltproc_BIN} --stringparam HAVE_OPENCL ${HAVE_OPENCL} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+    COMMAND ${Xsltproc_BIN} --nonet --stringparam HAVE_OPENCL ${HAVE_OPENCL} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
     COMMENT "Generating preferences"
   )
 else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
@@ -744,15 +739,6 @@ endif(BUILD_CMSTEST)
 
 # have a gui tool to create CLUTs from colour chart targets
 add_subdirectory(chart)
-
-# build opengl slideshow viewer?
-if(BUILD_SLIDESHOW)
-  find_package(SDL)
-  find_package(OpenGL)
-  if(SDL_FOUND AND OPENGL_FOUND)
-    add_subdirectory(dtview)
-  endif(SDL_FOUND AND OPENGL_FOUND)
-endif(BUILD_SLIDESHOW)
 
 #
 # build darktable executable

@@ -255,7 +255,6 @@ typedef struct {
 
   cairo_t *fake_cr;     ///< A fake cairo context for hit testing and coordinate transform.
 
-  gboolean mouse_pointer_in_widget;
   GtkLabel *label;
   GtkToggleButton *btn_point_tool, *btn_line_tool, *btn_curve_tool, *btn_node_tool;
 
@@ -1188,8 +1187,12 @@ void modify_roi_in (struct dt_iop_module_t *module,
 
   distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params);
 
-  cairo_rectangle_int_t pipe_rect
-      = { 0, 0, piece->buf_in.width * roi_in->scale, piece->buf_in.height * roi_in->scale };
+  cairo_rectangle_int_t pipe_rect = {
+    0,
+    0,
+    lroundf((double)piece->buf_in.width * roi_in->scale),
+    lroundf((double)piece->buf_in.height * roi_in->scale)
+  };
 
   cairo_rectangle_int_t roi_in_rect = {
     roi_in->x,
@@ -1531,7 +1534,7 @@ void init (dt_iop_module_t *module)
 {
   // module is disabled by default
   module->default_enabled = 0;
-  module->priority = 230; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 223; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_liquify_params_t);
   module->gui_data = NULL;
 
@@ -2607,7 +2610,15 @@ void gui_post_expose (struct dt_iop_module_t *module,
 void gui_focus (struct dt_iop_module_t *module, gboolean in)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  g->mouse_pointer_in_widget = module->enabled && in;
+
+  if (!in)
+  {
+    dt_control_hinter_message (darktable.control, "");
+    gtk_toggle_button_set_active (g->btn_point_tool, FALSE);
+    gtk_toggle_button_set_active (g->btn_line_tool,  FALSE);
+    gtk_toggle_button_set_active (g->btn_curve_tool, FALSE);
+    gtk_toggle_button_set_active (g->btn_node_tool,  FALSE);
+  }
 }
 
 static void sync_pipe (struct dt_iop_module_t *module, gboolean history)
@@ -3017,6 +3028,7 @@ int button_released (struct dt_iop_module_t *module,
   // right click == cancel or delete
   if (which == 3)
   {
+    dt_control_hinter_message (darktable.control, "");
     end_drag (g);
 
     // cancel line or curve creation
@@ -3238,12 +3250,14 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
       dt_control_hinter_message (darktable.control, _("click to edit nodes"));
   }
   sync_pipe (module, FALSE);
+  dt_iop_request_focus(module);
 }
 
 void gui_update (dt_iop_module_t *module)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
   memcpy(&g->params, module->params, sizeof(dt_iop_liquify_params_t));
+  update_warp_count(g);
 }
 
 void gui_init (dt_iop_module_t *module)
@@ -3264,7 +3278,6 @@ void gui_init (dt_iop_module_t *module)
   g->last_mouse_pos =
   g->last_button1_pressed_pos = -1;
   g->last_hit = NOWHERE;
-  g->mouse_pointer_in_widget = 0;
   dt_pthread_mutex_init (&g->lock, NULL);
   g->node_index = 0;
 

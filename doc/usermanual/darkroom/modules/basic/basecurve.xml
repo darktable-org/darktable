@@ -16,6 +16,10 @@
     <primary>base curve</primary>
   </indexterm>
 
+  <indexterm>
+    <primary>exposure fusion</primary>
+  </indexterm>
+
   <sect4>
 
     <title>Overview</title>
@@ -80,29 +84,31 @@
         fine-grained adjustment of the shadows.
       </para>
     </sect5>
-    
+
     <sect5>
       <title>fusion</title>
       <para>
-        This control triggers the <emphasis>exposure fusion</emphasis> feature. You can choose
-        to merge the image with one or two copies of itself after applying the current base curve, as well as
-        boosting the exposure by a couple of stops. The resulting image is thus a combination of two
-        or three different exposures of the same image. Use this to compress dynamic range for extremely
-        underexposed images and true HDR input. For best results, use the exposure module 
-        (see <xref linkend="exposure"/>) to expose the image for the highlights before toggling 
-        this feature on.
+        This control triggers the
+        <ulink url="https://en.wikipedia.org/wiki/Exposure_Fusion"><emphasis>exposure
+        fusion</emphasis></ulink> feature. You can choose to merge the image with one or two
+        copies of itself after applying the current base curve and boosting its exposure by a
+        selectable number of ev units. The resulting image is thus a combination of two or three
+        different exposures of the original image. Use this to compress dynamic range for
+        extremely underexposed images or for true HDR input. For best results, use the exposure
+        module (see <xref linkend="exposure"/>) to apply a suitable adjustment for correctly
+        exposed highlights.
       </para>
     </sect5>
 
     <sect5>
       <title>exposure shift</title>
       <para>
-        This slider is only visible if the <emphasis>exposure fusion</emphasis> feature is activated. It
-        allows you to set the exposure difference between the merged images in ev units (default 3).
+        This slider is only visible if the <emphasis>exposure fusion</emphasis> feature is
+        activated. It allows you to set the exposure difference between the merged images in ev
+        units (default 3).
       </para>
     </sect5>
 
-    
   </sect4>
 
 </sect3>

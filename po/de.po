@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-13 11:31+0200\n"
-"PO-Revision-Date: 2016-10-13 11:39+0200\n"
+"POT-Creation-Date: 2016-10-27 11:25+0200\n"
+"PO-Revision-Date: 2016-10-27 11:57+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 1.8.9\n"
+"X-Generator: Poedit 1.8.11\n"
 
 #: ../build/src/preferences_gen.h:1460
 msgid "GUI options"
@@ -844,7 +844,7 @@ msgstr "Graphik;Grafik;Photographie;Fotografie;Raw;"
 #: ../src/control/jobs/control_jobs.c:1505 ../src/gui/hist_dialog.c:137
 #: ../src/gui/preferences.c:1046 ../src/gui/preferences.c:1069
 #: ../src/gui/presets.c:382 ../src/gui/styles_dialog.c:283
-#: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:103
+#: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/latex.c:103 ../src/libs/collect.c:227
 #: ../src/libs/copy_history.c:72 ../src/libs/geotagging.c:454
 #: ../src/libs/import.c:774 ../src/libs/import.c:873 ../src/libs/lib.c:216
@@ -937,13 +937,13 @@ msgstr ""
 #: ../src/common/collection.c:845 ../src/develop/lightroom.c:919
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:448
 #: ../src/iop/channelmixer.c:459 ../src/iop/colorbalance.c:597
-#: ../src/iop/temperature.c:1286 ../src/libs/collect.c:954
+#: ../src/iop/temperature.c:1328 ../src/libs/collect.c:954
 #: ../src/libs/collect.c:955 ../src/libs/collect.c:956
 msgid "red"
 msgstr "Rot"
 
 #: ../src/common/collection.c:847 ../src/develop/lightroom.c:921
-#: ../src/iop/temperature.c:1277 ../src/libs/collect.c:958
+#: ../src/iop/temperature.c:1319 ../src/libs/collect.c:958
 #: ../src/libs/collect.c:959 ../src/libs/collect.c:960
 msgid "yellow"
 msgstr "Gelb"
@@ -951,7 +951,7 @@ msgstr "Gelb"
 #: ../src/common/collection.c:849 ../src/develop/lightroom.c:923
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:449
 #: ../src/iop/channelmixer.c:465 ../src/iop/colorbalance.c:604
-#: ../src/iop/temperature.c:1274 ../src/iop/temperature.c:1287
+#: ../src/iop/temperature.c:1316 ../src/iop/temperature.c:1329
 #: ../src/libs/collect.c:962 ../src/libs/collect.c:963
 #: ../src/libs/collect.c:964
 msgid "green"
@@ -960,7 +960,7 @@ msgstr "Grün"
 #: ../src/common/collection.c:851 ../src/develop/lightroom.c:925
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:450
 #: ../src/iop/channelmixer.c:471 ../src/iop/colorbalance.c:611
-#: ../src/iop/temperature.c:1288 ../src/libs/collect.c:966
+#: ../src/iop/temperature.c:1330 ../src/libs/collect.c:966
 #: ../src/libs/collect.c:967 ../src/libs/collect.c:968
 msgid "blue"
 msgstr "Blau"
@@ -1077,29 +1077,29 @@ msgstr "Fehler beim Drucken von Bild %d auf ‚%s‘"
 msgid "printing image %d on `%s'"
 msgstr "drucke Bild %d auf ‚%s‘"
 
-#: ../src/common/darktable.c:325
+#: ../src/common/darktable.c:327
 #, c-format
 msgid "found strange path `%s'"
 msgstr "Ungewöhnlicher Pfad ‚%s‘ gefunden"
 
-#: ../src/common/darktable.c:342
+#: ../src/common/darktable.c:344
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "Fehler beim Laden von Verzeichnis ‚%s‘"
 
-#: ../src/common/darktable.c:365
+#: ../src/common/darktable.c:367
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
 
-#: ../src/common/darktable.c:378 ../src/libs/import.c:838
+#: ../src/common/darktable.c:380 ../src/libs/import.c:838
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei ‚%s‘"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:1552 ../src/common/database.c:1628
+#: ../src/common/database.c:1574 ../src/common/database.c:1650
 #, c-format
 msgid ""
 "an error has occured while trying to open the database from\n"
@@ -1119,15 +1119,15 @@ msgstr ""
 "von einem Backup zurückgespielt werden kann, oder soll\n"
 "mit einer neuen Datei gestartet werden?"
 
-#: ../src/common/database.c:1562 ../src/common/database.c:1638
+#: ../src/common/database.c:1584 ../src/common/database.c:1660
 msgid "darktable - error opening database"
 msgstr "darktable - Fehler beim Öffnen der Datenbank"
 
-#: ../src/common/database.c:1563 ../src/common/database.c:1639
+#: ../src/common/database.c:1585 ../src/common/database.c:1661
 msgid "close darktable"
 msgstr "darktable schließen"
 
-#: ../src/common/database.c:1563 ../src/common/database.c:1639
+#: ../src/common/database.c:1585 ../src/common/database.c:1661
 msgid "delete database"
 msgstr "Datenbank löschen"
 
@@ -1158,7 +1158,7 @@ msgstr "ein"
 #: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1334
 #: ../src/imageio/format/exr.cc:359 ../src/imageio/format/j2k.c:663
 #: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1943
-#: ../src/iop/demosaic.c:3851 ../src/iop/vignette.c:1140
+#: ../src/iop/demosaic.c:3852 ../src/iop/vignette.c:1140
 #: ../src/libs/history.c:168 ../src/libs/live_view.c:434
 msgid "off"
 msgstr "aus"
@@ -1186,23 +1186,23 @@ msgstr ""
 msgid "orphaned image"
 msgstr "verwaistes Bild"
 
-#: ../src/common/image.c:1349
+#: ../src/common/image.c:1356
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "lokale Kopie kann nicht erzeugt werden, wenn die Originaldatei nicht "
 "zugänglich ist."
 
-#: ../src/common/image.c:1363
+#: ../src/common/image.c:1370
 msgid "cannot create local copy."
 msgstr "lokale Kopie kann nicht erzeugt werden."
 
-#: ../src/common/image.c:1429 ../src/control/jobs/control_jobs.c:636
+#: ../src/common/image.c:1436 ../src/control/jobs/control_jobs.c:636
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "lokale Kopie kann nicht entfernt werden, wenn die Originaldatei nicht "
 "zugänglich ist."
 
-#: ../src/common/image.c:1581
+#: ../src/common/image.c:1602
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1375,10 +1375,10 @@ msgstr "m"
 
 #: ../src/common/variables.c:254 ../src/common/variables.c:268
 #: ../src/common/variables.c:282 ../src/common/variables.c:296
-#: ../src/common/variables.c:310 ../src/iop/basecurve.c:1342
-#: ../src/iop/clipping.c:1548 ../src/iop/clipping.c:1838
-#: ../src/iop/clipping.c:1856 ../src/iop/clipping.c:1996
-#: ../src/iop/clipping.c:2023 ../src/iop/colorreconstruction.c:1378
+#: ../src/common/variables.c:310 ../src/iop/basecurve.c:1806
+#: ../src/iop/clipping.c:1556 ../src/iop/clipping.c:1846
+#: ../src/iop/clipping.c:1864 ../src/iop/clipping.c:2004
+#: ../src/iop/clipping.c:2031 ../src/iop/colorreconstruction.c:1378
 #: ../src/iop/lens.c:2034 ../src/libs/export.c:486 ../src/libs/live_view.c:348
 #: ../src/libs/live_view.c:373 ../src/libs/live_view.c:382
 #: ../src/libs/print_settings.c:1020 ../src/libs/print_settings.c:1289
@@ -1693,8 +1693,8 @@ msgstr "Bilder verschieben"
 
 #: ../src/control/jobs/control_jobs.c:1451
 #: ../src/control/jobs/control_jobs.c:1505 ../src/imageio/storage/disk.c:92
-#: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:103
-#: ../src/imageio/storage/gallery.c:164 ../src/imageio/storage/latex.c:103
+#: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:104
+#: ../src/imageio/storage/gallery.c:165 ../src/imageio/storage/latex.c:103
 #: ../src/imageio/storage/latex.c:164 ../src/libs/styles.c:209
 #: ../src/lua/preferences.c:592
 msgid "select directory"
@@ -2288,7 +2288,7 @@ msgstr "%s ist ausgeschaltet"
 #: ../src/gui/accelerators.c:719 ../src/gui/accelerators.c:884
 #: ../src/gui/accelerators.c:910 ../src/gui/presets.c:191
 #: ../src/gui/presets.c:298 ../src/gui/presets.c:640
-#: ../src/iop/temperature.c:1337 ../src/libs/import.c:555 ../src/libs/lib.c:308
+#: ../src/iop/temperature.c:1379 ../src/libs/import.c:555 ../src/libs/lib.c:308
 #: ../src/libs/lib.c:333 ../src/libs/lib.c:1151
 msgid "preset"
 msgstr "Voreinstellung"
@@ -3506,8 +3506,8 @@ msgstr "ungültige Randgröße wurde durch 0 ersetzt"
 
 #: ../src/imageio/format/pdf.c:255 ../src/imageio/storage/disk.c:293
 #: ../src/imageio/storage/email.c:133 ../src/imageio/storage/facebook.c:1294
-#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:337
-#: ../src/imageio/storage/gallery.c:357 ../src/imageio/storage/picasa.c:1446
+#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:328
+#: ../src/imageio/storage/gallery.c:362 ../src/imageio/storage/picasa.c:1446
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "Konnte nicht in Datei ‚%s‘ exportieren!"
@@ -3521,7 +3521,7 @@ msgstr "PDF"
 #. clang-format off
 #. xmp
 #: ../src/imageio/format/pdf.c:579 ../src/imageio/storage/facebook.c:1108
-#: ../src/imageio/storage/flickr.c:532 ../src/imageio/storage/gallery.c:170
+#: ../src/imageio/storage/flickr.c:532 ../src/imageio/storage/gallery.c:171
 #: ../src/imageio/storage/latex.c:171 ../src/imageio/storage/picasa.c:1299
 #: ../src/libs/collect.h:32 ../src/libs/metadata.c:334
 #: ../src/libs/metadata_view.c:115
@@ -3594,13 +3594,13 @@ msgid "rotate images"
 msgstr "Bilder drehen"
 
 #: ../src/imageio/format/pdf.c:665 ../src/imageio/format/pdf.c:690
-#: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1866
+#: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1874
 #: ../src/libs/export.c:585 ../src/libs/metadata_view.c:257
 msgid "no"
 msgstr "nein"
 
 #: ../src/imageio/format/pdf.c:666 ../src/imageio/format/pdf.c:691
-#: ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1867
+#: ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1875
 #: ../src/libs/export.c:586 ../src/libs/metadata_view.c:257
 msgid "yes"
 msgstr "ja"
@@ -3782,12 +3782,12 @@ msgstr "Grafik"
 msgid "file on disk"
 msgstr "Datei auf Festplatte"
 
-#: ../src/imageio/storage/disk.c:93 ../src/imageio/storage/gallery.c:104
+#: ../src/imageio/storage/disk.c:93 ../src/imageio/storage/gallery.c:105
 #: ../src/imageio/storage/latex.c:104
 msgid "_select as output destination"
 msgstr "als Ausgabeziel _wählen"
 
-#: ../src/imageio/storage/disk.c:145 ../src/imageio/storage/gallery.c:157
+#: ../src/imageio/storage/disk.c:145 ../src/imageio/storage/gallery.c:158
 #: ../src/imageio/storage/latex.c:157
 msgid ""
 "enter the path where to put exported images\n"
@@ -3808,7 +3808,7 @@ msgstr "umbenennen"
 msgid "overwrite"
 msgstr "überschreiben"
 
-#: ../src/imageio/storage/disk.c:251 ../src/imageio/storage/gallery.c:264
+#: ../src/imageio/storage/disk.c:251 ../src/imageio/storage/gallery.c:262
 #: ../src/imageio/storage/latex.c:259
 #, c-format
 msgid "could not create directory `%s'!"
@@ -3820,7 +3820,7 @@ msgid "could not write to directory `%s'!"
 msgstr "Konnte nicht in Verzeichnis ‚%s‘ schreiben!"
 
 #: ../src/imageio/storage/disk.c:300 ../src/imageio/storage/email.c:142
-#: ../src/imageio/storage/gallery.c:367 ../src/imageio/storage/latex.c:349
+#: ../src/imageio/storage/gallery.c:372 ../src/imageio/storage/latex.c:349
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgid_plural "%d/%d exported to `%s%s'"
@@ -4086,11 +4086,11 @@ msgid_plural "%d/%d exported to flickr webalbum"
 msgstr[0] "%d/%d ins Flickr-Webalbum exportiert"
 msgstr[1] "%d/%d ins Flickr-Webalbum exportiert"
 
-#: ../src/imageio/storage/gallery.c:67
+#: ../src/imageio/storage/gallery.c:68
 msgid "website gallery"
 msgstr "Webseiten-Galerie"
 
-#: ../src/imageio/storage/gallery.c:176
+#: ../src/imageio/storage/gallery.c:177
 msgid "enter the title of the website"
 msgstr "Titel für die Webseite eingeben"
 
@@ -4205,14 +4205,14 @@ msgid "lens shift (%s)"
 msgstr "Objektivverschiebung (%s)"
 
 #: ../src/iop/ashift.c:4173 ../src/iop/ashift.c:4174 ../src/iop/ashift.c:4273
-#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1550
-#: ../src/iop/clipping.c:1839 ../src/iop/clipping.c:1858
+#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1558
+#: ../src/iop/clipping.c:1847 ../src/iop/clipping.c:1866
 msgid "horizontal"
 msgstr "horizontal"
 
 #: ../src/iop/ashift.c:4173 ../src/iop/ashift.c:4174 ../src/iop/ashift.c:4273
-#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1549
-#: ../src/iop/clipping.c:1840 ../src/iop/clipping.c:1857
+#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1557
+#: ../src/iop/clipping.c:1848 ../src/iop/clipping.c:1865
 msgid "vertical"
 msgstr "vertikal"
 
@@ -4233,12 +4233,12 @@ msgstr "Objektivverschiebung (horizontal)"
 msgid "shear"
 msgstr "Scherung"
 
-#: ../src/iop/ashift.c:4395 ../src/iop/clipping.c:1989
+#: ../src/iop/ashift.c:4395 ../src/iop/clipping.c:1997
 #: ../src/libs/live_view.c:341
 msgid "guides"
 msgstr "Hilfslinien"
 
-#: ../src/iop/ashift.c:4401 ../src/iop/clipping.c:1865
+#: ../src/iop/ashift.c:4401 ../src/iop/clipping.c:1873
 msgid "automatic cropping"
 msgstr "automatisch Zuschneiden"
 
@@ -4299,7 +4299,7 @@ msgstr "Bild entlang einer Diagonalen scheren"
 msgid "display guide lines overlay"
 msgstr "Hilfslinien anzeigen"
 
-#: ../src/iop/ashift.c:4517 ../src/iop/clipping.c:1868
+#: ../src/iop/ashift.c:4517 ../src/iop/clipping.c:1876
 msgid "automatically crop to avoid black edges"
 msgstr "Automatisch zuschneiden um schwarze Ränder zu vermeiden"
 
@@ -4502,102 +4502,102 @@ msgstr "einblenden"
 msgid "make effect stronger or weaker"
 msgstr "mache den Effekt stärker oder schwächer"
 
-#: ../src/iop/basecurve.c:114
+#: ../src/iop/basecurve.c:115
 msgid "neutral"
 msgstr "neutral"
 
-#: ../src/iop/basecurve.c:115
+#: ../src/iop/basecurve.c:116
 msgid "canon eos like"
 msgstr "Canon EOS-artig"
 
-#: ../src/iop/basecurve.c:116
+#: ../src/iop/basecurve.c:117
 msgid "canon eos like alternate"
 msgstr "Canon EOS-artig, Alternative"
 
-#: ../src/iop/basecurve.c:117
+#: ../src/iop/basecurve.c:118
 msgid "nikon like"
 msgstr "Nikon-artig"
 
-#: ../src/iop/basecurve.c:118
+#: ../src/iop/basecurve.c:119
 msgid "nikon like alternate"
 msgstr "Nikon-artige Alternative"
 
-#: ../src/iop/basecurve.c:119
+#: ../src/iop/basecurve.c:120
 msgid "sony alpha like"
 msgstr "Sony Alpha-artig"
 
-#: ../src/iop/basecurve.c:120
+#: ../src/iop/basecurve.c:121
 msgid "pentax like"
 msgstr "Pentax-artig"
 
-#: ../src/iop/basecurve.c:121
+#: ../src/iop/basecurve.c:122
 msgid "ricoh like"
 msgstr "Ricoh-artig"
 
-#: ../src/iop/basecurve.c:122
+#: ../src/iop/basecurve.c:123
 msgid "olympus like"
 msgstr "Olympus-artig"
 
-#: ../src/iop/basecurve.c:123
+#: ../src/iop/basecurve.c:124
 msgid "olympus like alternate"
 msgstr "Olympus-artige Alternative"
 
-#: ../src/iop/basecurve.c:124
+#: ../src/iop/basecurve.c:125
 msgid "panasonic like"
 msgstr "Panasonic-artig"
 
-#: ../src/iop/basecurve.c:125
+#: ../src/iop/basecurve.c:126
 msgid "leica like"
 msgstr "Leica-artig"
 
-#: ../src/iop/basecurve.c:126
+#: ../src/iop/basecurve.c:127
 msgid "kodak easyshare like"
 msgstr "Kodak EasyShare-artig"
 
-#: ../src/iop/basecurve.c:127
+#: ../src/iop/basecurve.c:128
 msgid "konica minolta like"
 msgstr "Konica Minolta-artig"
 
-#: ../src/iop/basecurve.c:128
+#: ../src/iop/basecurve.c:129
 msgid "samsung like"
 msgstr "Samsung-artig"
 
-#: ../src/iop/basecurve.c:129
+#: ../src/iop/basecurve.c:130
 msgid "fujifilm like"
 msgstr "Fujifilm-artig"
 
-#: ../src/iop/basecurve.c:130
+#: ../src/iop/basecurve.c:131
 msgid "nokia like"
 msgstr "Nokia-artig"
 
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:178
+#: ../src/iop/basecurve.c:179
 msgid "cubic spline"
 msgstr "kubischer Spline"
 
-#: ../src/iop/basecurve.c:235
+#: ../src/iop/basecurve.c:250
 msgid "base curve"
 msgstr "Basiskurve"
 
-#: ../src/iop/basecurve.c:1327
+#: ../src/iop/basecurve.c:1791
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "x-Wert: Eingabe, y-Wert: Ausgabe. Arbeitet auf den RGB-Kanälen."
 
-#: ../src/iop/basecurve.c:1332 ../src/iop/lens.c:2174
+#: ../src/iop/basecurve.c:1796 ../src/iop/lens.c:2174
 #: ../src/iop/vignette.c:1146 ../src/iop/watermark.c:1349
 msgid "scale"
 msgstr "Skalierung"
 
-#: ../src/iop/basecurve.c:1333 ../src/iop/profile_gamma.c:321
+#: ../src/iop/basecurve.c:1797 ../src/iop/profile_gamma.c:321
 #: ../src/iop/tonecurve.c:435
 msgid "linear"
 msgstr "linear"
 
-#: ../src/iop/basecurve.c:1334
+#: ../src/iop/basecurve.c:1798
 msgid "logarithmic"
 msgstr "logarithmisch"
 
-#: ../src/iop/basecurve.c:1335
+#: ../src/iop/basecurve.c:1799
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -4605,19 +4605,19 @@ msgstr ""
 "Skala für den Graph. Logarithmisch erlaubt eine präzisere Kontrolle der "
 "Schatten"
 
-#: ../src/iop/basecurve.c:1341
+#: ../src/iop/basecurve.c:1805
 msgid "fusion"
 msgstr "Fusion"
 
-#: ../src/iop/basecurve.c:1343
-msgid "0ev, +3ev"
-msgstr "0EV, +3EV"
+#: ../src/iop/basecurve.c:1807
+msgid "two exposures"
+msgstr "zwei Belichtungen"
 
-#: ../src/iop/basecurve.c:1344
-msgid "0ev, +3ev, +6ev"
-msgstr "0EV, +3EV, +6EV"
+#: ../src/iop/basecurve.c:1808
+msgid "three exposures"
+msgstr "drei Belichtungen"
 
-#: ../src/iop/basecurve.c:1345
+#: ../src/iop/basecurve.c:1809
 msgid ""
 "fuse this image stopped up a couple of times with itself, to compress high "
 "dynamic range. expose for the highlights before use."
@@ -4625,12 +4625,12 @@ msgstr ""
 "Dieses Bild mehrfach mit einer überbelichteten Kopie verschmelzen um hohen "
 "Dynamikumfang zusammenzufassen. Vor Gebrauch für die Spitzlichter belichten."
 
-#: ../src/iop/basecurve.c:1350
+#: ../src/iop/basecurve.c:1814
 msgid "how many stops to shift the individual exposures apart"
 msgstr ""
 "wie viele Blendenstufen sollen die einzelnen Belichtungen auseinander liegen"
 
-#: ../src/iop/basecurve.c:1351
+#: ../src/iop/basecurve.c:1815
 msgid "exposure shift"
 msgstr "Belichtungsanpassung"
 
@@ -4661,19 +4661,19 @@ msgid "radius"
 msgstr "Radius"
 
 #: ../src/iop/bilateral.cc:85 ../src/iop/channelmixer.c:130
-#: ../src/iop/temperature.c:169
+#: ../src/iop/temperature.c:196
 msgctxt "accel"
 msgid "red"
 msgstr "Rot"
 
 #: ../src/iop/bilateral.cc:86 ../src/iop/channelmixer.c:131
-#: ../src/iop/temperature.c:170
+#: ../src/iop/temperature.c:197
 msgctxt "accel"
 msgid "green"
 msgstr "Grün"
 
 #: ../src/iop/bilateral.cc:87 ../src/iop/channelmixer.c:132
-#: ../src/iop/temperature.c:171
+#: ../src/iop/temperature.c:198
 msgctxt "accel"
 msgid "blue"
 msgstr "Blau"
@@ -4797,7 +4797,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:916 ../src/iop/clipping.c:1884
+#: ../src/iop/borders.c:916 ../src/iop/clipping.c:1892
 msgid "golden cut"
 msgstr "Goldener Schnitt"
 
@@ -4817,7 +4817,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:921 ../src/iop/clipping.c:1874
+#: ../src/iop/borders.c:921 ../src/iop/clipping.c:1882
 msgid "square"
 msgstr "quadratisch"
 
@@ -4853,7 +4853,7 @@ msgstr "Randgröße"
 msgid "size of the border in percent of the full image"
 msgstr "Größe des Randes in Prozent des ganzen Bildes"
 
-#: ../src/iop/borders.c:985 ../src/iop/clipping.c:1971
+#: ../src/iop/borders.c:985 ../src/iop/clipping.c:1979
 msgid "aspect"
 msgstr "Format"
 
@@ -5066,132 +5066,132 @@ msgstr "Stärke des Effekts"
 msgid "crop and rotate"
 msgstr "Zuschneiden und drehen"
 
-#: ../src/iop/clipping.c:1447
+#: ../src/iop/clipping.c:1455
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "Ungültiges Seitenverhältnis. Es sollte „Zahl:Zahl“ sein"
 
-#: ../src/iop/clipping.c:1551 ../src/iop/clipping.c:1859
+#: ../src/iop/clipping.c:1559 ../src/iop/clipping.c:1867
 msgid "full"
 msgstr "vollständig"
 
-#: ../src/iop/clipping.c:1552
+#: ../src/iop/clipping.c:1560
 msgid "old system"
 msgstr "altes System"
 
-#: ../src/iop/clipping.c:1553
+#: ../src/iop/clipping.c:1561
 msgid "correction applied"
 msgstr "Korrektur angewandt"
 
-#: ../src/iop/clipping.c:1837 ../src/libs/live_view.c:372
+#: ../src/iop/clipping.c:1845 ../src/libs/live_view.c:372
 msgid "flip"
 msgstr "spiegeln"
 
-#: ../src/iop/clipping.c:1841 ../src/iop/clipping.c:2026
+#: ../src/iop/clipping.c:1849 ../src/iop/clipping.c:2034
 #: ../src/libs/live_view.c:376
 msgid "both"
 msgstr "beides"
 
-#: ../src/iop/clipping.c:1843
+#: ../src/iop/clipping.c:1851
 msgid "mirror image horizontally and/or vertically"
 msgstr "Bild horizontal und/oder vertikal spiegeln"
 
-#: ../src/iop/clipping.c:1848
+#: ../src/iop/clipping.c:1856
 msgid "angle"
 msgstr "Winkel"
 
 # sehr unschön :-(
-#: ../src/iop/clipping.c:1851
+#: ../src/iop/clipping.c:1859
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "Mit rechter Maustaste ins Bild klicken und eine Linie ziehen, um eine gerade "
 "Kante zu markieren"
 
-#: ../src/iop/clipping.c:1855
+#: ../src/iop/clipping.c:1863
 msgid "keystone"
 msgstr "Trapezkorrektur"
 
-#: ../src/iop/clipping.c:1860
+#: ../src/iop/clipping.c:1868
 msgid "set perspective correction for your image"
 msgstr "Perspektivische Korrektur des Bildes festlegen"
 
-#: ../src/iop/clipping.c:1872
+#: ../src/iop/clipping.c:1880
 msgid "freehand"
 msgstr "frei"
 
-#: ../src/iop/clipping.c:1873
+#: ../src/iop/clipping.c:1881
 msgid "original image"
 msgstr "Original"
 
-#: ../src/iop/clipping.c:1875
+#: ../src/iop/clipping.c:1883
 msgid "10:8 in print"
 msgstr "10:8 für Druck"
 
-#: ../src/iop/clipping.c:1876
+#: ../src/iop/clipping.c:1884
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4×5, 8×10"
 
-#: ../src/iop/clipping.c:1877
+#: ../src/iop/clipping.c:1885
 msgid "11x14"
 msgstr "11×14"
 
-#: ../src/iop/clipping.c:1878
+#: ../src/iop/clipping.c:1886
 msgid "8.5x11, letter"
 msgstr "8,5×11, Letter"
 
-#: ../src/iop/clipping.c:1879
+#: ../src/iop/clipping.c:1887
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:1880
+#: ../src/iop/clipping.c:1888
 msgid "5x7"
 msgstr "5×7"
 
-#: ../src/iop/clipping.c:1881
+#: ../src/iop/clipping.c:1889
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:1882
+#: ../src/iop/clipping.c:1890
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4×6, 35mm"
 
-#: ../src/iop/clipping.c:1883
+#: ../src/iop/clipping.c:1891
 msgid "16:10, 8x5"
 msgstr "16:10, 8×5"
 
-#: ../src/iop/clipping.c:1885
+#: ../src/iop/clipping.c:1893
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:1886
+#: ../src/iop/clipping.c:1894
 msgid "widescreen"
 msgstr "Breitbild"
 
-#: ../src/iop/clipping.c:1887
+#: ../src/iop/clipping.c:1895
 msgid "2:1, univisium"
 msgstr "2:1, Univisium"
 
-#: ../src/iop/clipping.c:1888
+#: ../src/iop/clipping.c:1896
 msgid "cinemascope"
 msgstr "CinemaScope"
 
-#: ../src/iop/clipping.c:1889
+#: ../src/iop/clipping.c:1897
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:1890
+#: ../src/iop/clipping.c:1898
 msgid "anamorphic"
 msgstr "anamorph"
 
-#: ../src/iop/clipping.c:1891
+#: ../src/iop/clipping.c:1899
 msgid "3:1, panorama"
 msgstr "3:1, Panorama"
 
-#: ../src/iop/clipping.c:1923 ../src/iop/clipping.c:1935
+#: ../src/iop/clipping.c:1931 ../src/iop/clipping.c:1943
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "Ungültiges Seitenverhältnis für ‚%s‘. Es sollte „Zahl:Zahl“ sein"
 
-#: ../src/iop/clipping.c:1982
+#: ../src/iop/clipping.c:1990
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -5199,29 +5199,29 @@ msgstr ""
 "Seitenverhältnis\n"
 "die Liste ist nach absteigender Quadratigkeit sortiert"
 
-#: ../src/iop/clipping.c:2018 ../src/libs/live_view.c:368
+#: ../src/iop/clipping.c:2026 ../src/libs/live_view.c:368
 msgid "display guide lines to help compose your photograph"
 msgstr "Hilfslinien anzeigen, die beim Komponieren der Fotographie helfen."
 
-#: ../src/iop/clipping.c:2022 ../src/iop/clipping.c:2027
+#: ../src/iop/clipping.c:2030 ../src/iop/clipping.c:2035
 #: ../src/libs/live_view.c:377
 msgid "flip guides"
 msgstr "Hilfslinien spiegeln"
 
-#: ../src/iop/clipping.c:2024 ../src/libs/live_view.c:374
+#: ../src/iop/clipping.c:2032 ../src/libs/live_view.c:374
 msgid "horizontally"
 msgstr "horizontal"
 
-#: ../src/iop/clipping.c:2025 ../src/libs/live_view.c:375
+#: ../src/iop/clipping.c:2033 ../src/libs/live_view.c:375
 msgid "vertically"
 msgstr "vertikal"
 
-#: ../src/iop/clipping.c:3089
+#: ../src/iop/clipping.c:3097
 msgctxt "accel"
 msgid "commit"
 msgstr "Änderungen übernehmen"
 
-#: ../src/iop/clipping.c:3090
+#: ../src/iop/clipping.c:3098
 msgctxt "accel"
 msgid "angle"
 msgstr "Winkel"
@@ -5384,32 +5384,28 @@ msgid "color checker patch"
 msgstr "Farbfeld"
 
 #: ../src/iop/colorchecker.c:1054
-#, fuzzy
 msgid "lightness offset"
-msgstr "Helligkeit"
+msgstr "Änderung der Helligkeit"
 
 #: ../src/iop/colorchecker.c:1058
-#, fuzzy
 msgid "chroma offset green/red"
-msgstr "Chrominanz-Verschiebung Grün/Rot"
+msgstr "Änderung der Chrominanz Grün/Rot"
 
 #: ../src/iop/colorchecker.c:1059
 msgid "green/red"
 msgstr "Grün / Rot"
 
 #: ../src/iop/colorchecker.c:1065
-#, fuzzy
 msgid "chroma offset blue/yellow"
-msgstr "Chrominanz-Verschiebung Blau/Gelb"
+msgstr "Änderung der Chrominanz Blau/Gelb"
 
 #: ../src/iop/colorchecker.c:1066
 msgid "blue/yellow"
 msgstr "Blau / Gelb"
 
 #: ../src/iop/colorchecker.c:1072
-#, fuzzy
 msgid "saturation offset"
-msgstr "Sättigung"
+msgstr "Änderung der Sättigung"
 
 #: ../src/iop/colorcontrast.c:88
 msgid "color contrast"
@@ -5618,56 +5614,56 @@ msgstr "Grad der Histogramm-Angleichung"
 msgid "output color profile"
 msgstr "Ausgabefarbprofil"
 
-#: ../src/iop/colorout.c:653
+#: ../src/iop/colorout.c:658
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "fehlendes Ausgabeprofil wurde durch sRGB ersetzt!"
 
-#: ../src/iop/colorout.c:670
+#: ../src/iop/colorout.c:675
 msgid "missing softproof profile has been replaced by sRGB!"
 msgstr "fehlendes Softproof-Profil wurde durch sRGB ersetzt!"
 
-#: ../src/iop/colorout.c:713
+#: ../src/iop/colorout.c:718
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "nicht unterstütztes Ausgabeprofil wurde durch sRGB ersetzt!"
 
-#: ../src/iop/colorout.c:851
+#: ../src/iop/colorout.c:858
 msgid "output intent"
 msgstr "Ausgabevorsatz"
 
-#: ../src/iop/colorout.c:852 ../src/libs/export.c:617
+#: ../src/iop/colorout.c:859 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1063 ../src/libs/print_settings.c:1274
 #: ../src/views/darkroom.c:1724 ../src/views/lighttable.c:2431
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
-#: ../src/iop/colorout.c:853 ../src/libs/export.c:618
+#: ../src/iop/colorout.c:860 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1064 ../src/libs/print_settings.c:1275
 #: ../src/views/darkroom.c:1725 ../src/views/lighttable.c:2432
 msgid "relative colorimetric"
 msgstr "Kolorimetrisch (relativ)"
 
-#: ../src/iop/colorout.c:854 ../src/libs/export.c:619
+#: ../src/iop/colorout.c:861 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1065 ../src/libs/print_settings.c:1276
 #: ../src/views/darkroom.c:1726 ../src/views/lighttable.c:2433
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
 
-#: ../src/iop/colorout.c:855 ../src/libs/export.c:620
+#: ../src/iop/colorout.c:862 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1066 ../src/libs/print_settings.c:1277
 #: ../src/views/darkroom.c:1727 ../src/views/lighttable.c:2434
 msgid "absolute colorimetric"
 msgstr "Kolorimetrisch (absolut)"
 
-#: ../src/iop/colorout.c:864
+#: ../src/iop/colorout.c:871
 msgid "output profile"
 msgstr "Ausgabeprofil"
 
-#: ../src/iop/colorout.c:873
+#: ../src/iop/colorout.c:880
 msgid "rendering intent"
 msgstr "Wiedergabeabsicht"
 
-#: ../src/iop/colorout.c:874
+#: ../src/iop/colorout.c:881
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC-Profile in %s/color/out oder %s/color/out"
@@ -5875,50 +5871,50 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "Kantenschwellwert"
 
-#: ../src/iop/demosaic.c:3625
+#: ../src/iop/demosaic.c:3626
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "‚%s‘ Farbmatrix für 4-Bayer-Bild nicht gefunden!"
 
-#: ../src/iop/demosaic.c:3825 ../src/iop/demosaic.c:3834
+#: ../src/iop/demosaic.c:3826 ../src/iop/demosaic.c:3835
 #: ../src/iop/dither.c:792 ../src/iop/highlights.c:1065
 msgid "method"
 msgstr "Methode"
 
-#: ../src/iop/demosaic.c:3827
+#: ../src/iop/demosaic.c:3828
 msgid "PPG (fast)"
 msgstr "PPG (schnell)"
 
-#: ../src/iop/demosaic.c:3828
+#: ../src/iop/demosaic.c:3829
 msgid "AMaZE (slow)"
 msgstr "AMaZE (langsam)"
 
-#: ../src/iop/demosaic.c:3829
+#: ../src/iop/demosaic.c:3830
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:3830 ../src/iop/demosaic.c:3839
+#: ../src/iop/demosaic.c:3831 ../src/iop/demosaic.c:3840
 msgid "passthrough (monochrome) (experimental)"
 msgstr "durchschleifen (monochrom) (experimentell)"
 
-#: ../src/iop/demosaic.c:3831 ../src/iop/demosaic.c:3840
+#: ../src/iop/demosaic.c:3832 ../src/iop/demosaic.c:3841
 msgid "demosaicing raw data method"
 msgstr "Methode zum Entrastern der Rohdaten"
 
-#: ../src/iop/demosaic.c:3836
+#: ../src/iop/demosaic.c:3837
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:3837
+#: ../src/iop/demosaic.c:3838
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-mal"
 
-#: ../src/iop/demosaic.c:3838
+#: ../src/iop/demosaic.c:3839
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-mal (langsam)"
 
 # WTF? Wer bitte soll das verstehen?
-#: ../src/iop/demosaic.c:3843
+#: ../src/iop/demosaic.c:3844
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -5928,63 +5924,63 @@ msgstr ""
 "Auf 0.0 setzen zum Ausschalten.\n"
 "Auf 1.0 setzen um Kanten zu ignorieren."
 
-#: ../src/iop/demosaic.c:3845
+#: ../src/iop/demosaic.c:3846
 msgid "edge threshold"
 msgstr "Kantenschwellwert"
 
-#: ../src/iop/demosaic.c:3849
+#: ../src/iop/demosaic.c:3850
 msgid "color smoothing"
 msgstr "Farbglättung"
 
-#: ../src/iop/demosaic.c:3852
+#: ../src/iop/demosaic.c:3853
 msgid "one time"
 msgstr "einmal"
 
-#: ../src/iop/demosaic.c:3853
+#: ../src/iop/demosaic.c:3854
 msgid "two times"
 msgstr "zweimal"
 
-#: ../src/iop/demosaic.c:3854
+#: ../src/iop/demosaic.c:3855
 msgid "three times"
 msgstr "dreimal"
 
-#: ../src/iop/demosaic.c:3855
+#: ../src/iop/demosaic.c:3856
 msgid "four times"
 msgstr "viermal"
 
-#: ../src/iop/demosaic.c:3856
+#: ../src/iop/demosaic.c:3857
 msgid "five times"
 msgstr "fünfmal"
 
-#: ../src/iop/demosaic.c:3857
+#: ../src/iop/demosaic.c:3858
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "wie viele Median-Schritte zur Fabrglättung nach dem Entrastern"
 
-#: ../src/iop/demosaic.c:3861
+#: ../src/iop/demosaic.c:3862
 msgid "match greens"
 msgstr "Grün anpassen"
 
-#: ../src/iop/demosaic.c:3862
+#: ../src/iop/demosaic.c:3863
 msgid "disabled"
 msgstr "deaktiviert"
 
-#: ../src/iop/demosaic.c:3863
+#: ../src/iop/demosaic.c:3864
 msgid "local average"
 msgstr "lokales Mittel"
 
-#: ../src/iop/demosaic.c:3864
+#: ../src/iop/demosaic.c:3865
 msgid "full average"
 msgstr "volles Mittel"
 
-#: ../src/iop/demosaic.c:3865
+#: ../src/iop/demosaic.c:3866
 msgid "full and local average"
 msgstr "volles und lokales Mittel"
 
-#: ../src/iop/demosaic.c:3866
+#: ../src/iop/demosaic.c:3867
 msgid "green channels matching method"
 msgstr "Methode zum Abgleichen des Grünkanals"
 
-#: ../src/iop/demosaic.c:3878
+#: ../src/iop/demosaic.c:3879
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -7181,60 +7177,64 @@ msgstr ""
 msgid "raw overexposed"
 msgstr "Raw-Überbelichtet"
 
-#: ../src/iop/rawprepare.c:45
+#: ../src/iop/rawprepare.c:46
 msgid "crop x"
 msgstr "Zuschnitt x"
 
-#: ../src/iop/rawprepare.c:45
+#: ../src/iop/rawprepare.c:46
 msgid "crop from left border"
 msgstr "Zuschnitt vom linken Rand"
 
-#: ../src/iop/rawprepare.c:46
+#: ../src/iop/rawprepare.c:47
 msgid "crop y"
 msgstr "Zuschnitt y"
 
-#: ../src/iop/rawprepare.c:46
+#: ../src/iop/rawprepare.c:47
 msgid "crop from top"
 msgstr "Zuschnitt von Oben"
 
-#: ../src/iop/rawprepare.c:47
+#: ../src/iop/rawprepare.c:48
 msgid "crop width"
 msgstr "Zuschnitt Breite"
 
-#: ../src/iop/rawprepare.c:47
+#: ../src/iop/rawprepare.c:48
 msgid "crop from right border"
 msgstr "Zuschnitt vom rechten Rand"
 
-#: ../src/iop/rawprepare.c:48
+#: ../src/iop/rawprepare.c:49
 msgid "crop height"
 msgstr "Zuschnitt Höhe"
 
-#: ../src/iop/rawprepare.c:48
+#: ../src/iop/rawprepare.c:49
 msgid "crop from bottom"
 msgstr "Zuschnitt von Unten"
 
-#: ../src/iop/rawprepare.c:94
+#: ../src/iop/rawprepare.c:95
 msgctxt "modulename"
 msgid "raw black/white point"
 msgstr "Raw-Schwarz-/Weißpunkt"
 
-#: ../src/iop/rawprepare.c:116 ../src/iop/rawprepare.c:138
-#: ../src/iop/rawprepare.c:685
+#: ../src/iop/rawprepare.c:117
+msgid "passthrough"
+msgstr "durchschleifen"
+
+#: ../src/iop/rawprepare.c:133 ../src/iop/rawprepare.c:155
+#: ../src/iop/rawprepare.c:702
 #, c-format
 msgid "black level %i"
 msgstr "Schwarzwert %i"
 
-#: ../src/iop/rawprepare.c:129
+#: ../src/iop/rawprepare.c:146
 msgctxt "accel"
 msgid "white point"
 msgstr "Weißpunkt"
 
-#: ../src/iop/rawprepare.c:143 ../src/iop/rawprepare.c:699
-#: ../src/iop/rawprepare.c:700
+#: ../src/iop/rawprepare.c:160 ../src/iop/rawprepare.c:716
+#: ../src/iop/rawprepare.c:717
 msgid "white point"
 msgstr "Weißpunkt"
 
-#: ../src/iop/rawprepare.c:721
+#: ../src/iop/rawprepare.c:738
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
@@ -7546,76 +7546,91 @@ msgctxt "modulename"
 msgid "white balance"
 msgstr "Weißabgleich"
 
-#: ../src/iop/temperature.c:167
+#: ../src/iop/temperature.c:194
 msgctxt "accel"
 msgid "tint"
 msgstr "Farbton"
 
-#: ../src/iop/temperature.c:168
+#: ../src/iop/temperature.c:195
 msgctxt "accel"
 msgid "temperature"
 msgstr "Farbtemperatur"
 
-#: ../src/iop/temperature.c:695
+#: ../src/iop/temperature.c:200
+msgctxt "accel"
+msgid "preset/camera"
+msgstr "Voreinstellung/Kamera"
+
+#: ../src/iop/temperature.c:201
+msgctxt "accel"
+msgid "preset/camera neutral"
+msgstr "Voreinstellung/Neutral"
+
+#: ../src/iop/temperature.c:202
+msgctxt "accel"
+msgid "preset/spot"
+msgstr "Voreinstellung/Manuell setzen"
+
+#: ../src/iop/temperature.c:737
 msgctxt "white balance"
 msgid "camera"
 msgstr "Kamera"
 
-#: ../src/iop/temperature.c:696
+#: ../src/iop/temperature.c:738
 msgctxt "white balance"
 msgid "camera neutral"
 msgstr "neutral"
 
-#: ../src/iop/temperature.c:697
+#: ../src/iop/temperature.c:739
 msgctxt "white balance"
 msgid "spot"
 msgstr "manuell setzen"
 
-#: ../src/iop/temperature.c:872
+#: ../src/iop/temperature.c:914
 #, c-format
 msgid "`%s' color matrix not found for image"
 msgstr "‚%s‘ Farbmatrix für Bild nicht gefunden!"
 
-#: ../src/iop/temperature.c:916
+#: ../src/iop/temperature.c:958
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "Konnte Weißabgleichsdaten der Kamera nicht aus „%s“ lesen!"
 
-#: ../src/iop/temperature.c:1275
+#: ../src/iop/temperature.c:1317
 msgid "magenta"
 msgstr "Magenta"
 
-#: ../src/iop/temperature.c:1276
+#: ../src/iop/temperature.c:1318
 msgid "cyan"
 msgstr "Cyan"
 
 # https://de.wikipedia.org/wiki/Demosaicing übersetzt "emerald" mit "Cyan"
-#: ../src/iop/temperature.c:1289
+#: ../src/iop/temperature.c:1331
 msgid "emerald"
 msgstr "Cyan"
 
-#: ../src/iop/temperature.c:1322
+#: ../src/iop/temperature.c:1364
 msgid "tint"
 msgstr "Farbton"
 
-#: ../src/iop/temperature.c:1323
+#: ../src/iop/temperature.c:1365
 msgid "temperature"
 msgstr "Farbtemperatur"
 
-#: ../src/iop/temperature.c:1339
+#: ../src/iop/temperature.c:1381
 msgid "choose white balance preset from camera"
 msgstr "aus den Weißabgleichsvorgaben der Kamera wählen"
 
-#: ../src/iop/temperature.c:1342
+#: ../src/iop/temperature.c:1384
 msgid "finetune"
 msgstr "anpassen"
 
-#: ../src/iop/temperature.c:1343
+#: ../src/iop/temperature.c:1385
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f Mired"
 
-#: ../src/iop/temperature.c:1347
+#: ../src/iop/temperature.c:1389
 msgid "fine tune white balance preset"
 msgstr "Weißabgleichsvorgabe feinabstimmen"
 
@@ -10139,6 +10154,10 @@ msgstr "Organisiere und entwickle Bilder von Digitalkameras"
 msgid "* contributors *"
 msgstr "* Mitwirkende *"
 
+#: ../src/libs/tools/darktable.c:310
+msgid "And all those of you that made previous releases possible"
+msgstr "Und alle, die frühere Releases möglich gemacht haben"
+
 #: ../src/libs/tools/darktable.c:313
 msgid "translator-credits"
 msgstr "Tobias Ellinghaus"
@@ -10823,6 +10842,12 @@ msgstr ""
 "Andernfalls werden sie GARANTIERT Probleme haben, die nicht behoben werden "
 "können.\n"
 
+#~ msgid "0ev, +3ev"
+#~ msgstr "0EV, +3EV"
+
+#~ msgid "0ev, +3ev, +6ev"
+#~ msgstr "0EV, +3EV, +6EV"
+
 #, fuzzy
 #~ msgid "color checker lut"
 #~ msgstr "Pipette"
@@ -11228,9 +11253,6 @@ msgstr ""
 #~ msgid "rotate by 180"
 #~ msgstr "um 180° drehen"
 
-#~ msgid "passthrough"
-#~ msgstr "durchschleifen"
-
 #~ msgid "Beta RGB (compatible)"
 #~ msgstr "Beta RGB (kompatibel)"
 
@@ -11243,9 +11265,6 @@ msgstr ""
 
 #~ msgid "cache locally"
 #~ msgstr "lokal cachen"
-
-#~ msgid "reset cache"
-#~ msgstr "Cache zurücksetzen"
 
 #~ msgid "remove the local copy of the image"
 #~ msgstr "lokale Kopie des Bildes aus dem Cache entfernen"
@@ -12095,9 +12114,6 @@ msgstr ""
 #~ msgctxt "accel"
 #~ msgid "blend H"
 #~ msgstr "mische H"
-
-#~ msgid "And all those of you that made previous releases possible"
-#~ msgstr "Und alle, die frühere Releases möglich gemacht haben"
 
 #~ msgid "image cache file backup"
 #~ msgstr "Bilder-Cache-Backup"

@@ -27,6 +27,7 @@
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
@@ -107,6 +108,22 @@ int flags()
 int groups()
 {
   return IOP_GROUP_BASIC;
+}
+
+void init_presets(dt_iop_module_so_t *self)
+{
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+
+  dt_gui_presets_add_generic(_("passthrough"), self->op, self->version(),
+                             &(dt_iop_rawprepare_params_t){.crop.array = { 0, 0, 0, 0 },
+                                                           .raw_black_level_separate[0] = 0,
+                                                           .raw_black_level_separate[1] = 0,
+                                                           .raw_black_level_separate[2] = 0,
+                                                           .raw_black_level_separate[3] = 0,
+                                                           .raw_white_point = UINT16_MAX },
+                             sizeof(dt_iop_rawprepare_params_t), 1);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -591,7 +608,7 @@ void init(dt_iop_module_t *self)
   self->hide_enable_button = 1;
   self->default_enabled
       = dt_image_is_raw(image) && !(image->buf_dsc.channels == 1 && image->buf_dsc.datatype == TYPE_FLOAT);
-  self->priority = 10; // module order created by iop_dependencies.py, do not edit!
+  self->priority = 14; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_rawprepare_params_t);
   self->gui_data = NULL;
 }

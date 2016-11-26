@@ -14,27 +14,36 @@
 #    You should have received a copy of the GNU General Public License
 #    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 
-sudo: required
-
 notifications:
   irc:
-    channels: "chat.freenode.net#darktable"
+    channels:
+#     - "chat.freenode.net#darktable"
+      - secure: "fCQRwV2kMc5ycWjuuim0q+u9DS8D64oIWpfDipvrJDcIsS+MfkfkKrF68kDhNbDNtZHUfvP2Se/0hxUWw825VnyzNZZImrK+giOIGS588apxBPzNY3YMWMzwc4RaCKfyOWvFZDRGJwFzAwPWdSSQh7KMGJj7VibgoyhDTSSJYAk="
     skip_join: true
     template:
       - "%{repository}#%{build_number} (\x037%{branch}\x03 - \x02%{commit}\x02 : \x033%{author}\x03): \x1f\x02%{message}\x02\x1f"
       - "Build details : %{build_url}"
   email:
     recipients:
-      - darktable-ci@lists.darktable.org
+#     - darktable-ci@lists.darktable.org
+      - secure: "Fvo7jlL8jpV+asdCmHHeJUK4BYw1JQvAxFpKUPZ/FWjkBfZ3W6is8jRBJVGfnt9TTvD1W2vsaLqeClv1SUfYw0t0keRSP0+0TB5R9ULIfC6/3bFLmp2aDPhBHLRjH3byxiJ46PvADcZ7MC+6jtf0YEEqy6uLbjaX4PiIXINM7Bo="
     on_success: always
     on_failure: always
+
+language: generic
+
+os:
+  - linux
+  - osx
+
+sudo: required
 
 services:
   - docker
 
 before_install:
-#  - docker build -t darktable/darktable .
-  - docker pull darktable/darktable
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker pull darktable/darktable; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update && brew tap Homebrew/bundle && brew bundle; fi
 
 env:
   global:
@@ -43,8 +52,31 @@ env:
     - INSTALL_PREFIX=/build/darktable-install
     - CFLAGS=-pipe CXXFLAGS=-pipe
   matrix:
-    - CC=gcc CXX=g++
-    - CC=clang-3.8 CXX=clang++-3.8
+    - CC=cc CXX=c++ TARGET=build # default system compiler, all platforms
+
+matrix:
+  fast_finish: true
+  include:
+  - os: linux
+    sudo: required
+    services:
+      - docker
+    env: CC=clang-3.9 CXX=clang++-3.9 TARGET=build
+  - os: osx
+    env: CC=gcc-6 CXX=c++ TARGET=build # can't use CXX=g++-6 fails for osx.mm
+  - os: linux
+    sudo: required
+    services:
+      - docker
+    env: CC=cc CXX=c++ TARGET=usermanual # EXTRA_TMPFS="--tmpfs /tmp"
 
 script:
-  - docker run --read-only --volume $TRAVIS_BUILD_DIR:$SRC_DIR:ro --tmpfs $BUILD_DIR --workdir $BUILD_DIR --tmpfs $INSTALL_PREFIX --env CC --env CXX --env CFLAGS --env CXXFLAGS --env SRC_DIR --env BUILD_DIR --env INSTALL_PREFIX darktable/darktable sh -c "$SRC_DIR/ci-script.sh"
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker run --read-only --volume $TRAVIS_BUILD_DIR:$SRC_DIR:ro --tmpfs $BUILD_DIR --workdir $BUILD_DIR --tmpfs $INSTALL_PREFIX $EXTRA_TMPFS --env CC --env CXX --env CFLAGS --env CXXFLAGS --env SRC_DIR --env BUILD_DIR --env INSTALL_PREFIX --env TARGET darktable/darktable sh -c "$SRC_DIR/ci-script.sh"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      export SRC_DIR="$TRAVIS_BUILD_DIR";
+      export BUILD_DIR="$SRC_DIR/build";
+      export INSTALL_PREFIX="$SRC_DIR/install";
+      mkdir "$BUILD_DIR";
+      mkdir "$INSTALL_PREFIX";
+      "$SRC_DIR/ci-script.sh";
+    fi

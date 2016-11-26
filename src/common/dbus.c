@@ -103,7 +103,7 @@ static void _handle_method_call(GDBusConnection *connection, const gchar *sender
   {
     const gchar *command;
     g_variant_get(parameters, "(&s)", &command);
-    dt_lua_async_call_string(command, 0,dbus_lua_call_finished,invocation);
+    dt_lua_async_call_string(command, 1,dbus_lua_call_finished,invocation);
     // we don't finish the invocation, the async task will do this for us
   }
 #endif

@@ -21,7 +21,6 @@
 #include "bauhaus/bauhaus.h"
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
-#include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -1872,7 +1871,7 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
-  module->priority = 138; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 134; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_denoiseprofile_params_t);
   module->gui_data = NULL;
   module->data = NULL;

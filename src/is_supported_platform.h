@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 // WARNING: do not #include anything in here!
 
 #if !defined(__BYTE_ORDER__) || __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
@@ -61,6 +63,10 @@ if(sizeof(void *) < 8)
 #if !defined(__SSE2__) || !defined(__SSE__)
 #pragma message "Building without SSE2 is highly experimental."
 #pragma message "Expect a LOT of functionality to be broken. You have been warned."
+#endif
+
+#if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ < 8
+#pragma message "Warning: 32-bit build."
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

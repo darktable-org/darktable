@@ -17,8 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_IMAGEIO_FORMAT_API_H
-#define DT_IMAGEIO_FORMAT_API_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -89,8 +88,6 @@ int read_image(struct dt_imageio_module_data_t *data, uint8_t *out);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
