@@ -526,7 +526,7 @@ darktable.control.sleep:add_parameter("delay","int","The delay in millisecond to
 darktable.control.execute:set_text("Run a command in a shell while not blocking darktable")
 darktable.control.execute:add_parameter("command","string","The command to run, as in 'sh -c'")
 darktable.control.execute:add_return("int","The result of the system call")
-darktable.control.read:set_text("Block until a file is readable while not blocking darktable")
+darktable.control.read:set_text("Block until a file is readable while not blocking darktable"..para()..emphasis("This function is not available on Windows builds"))
 darktable.control.read:add_parameter("file","file","The file object to wait for")
 
 
