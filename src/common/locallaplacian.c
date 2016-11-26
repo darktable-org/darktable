@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <math.h>
+#include <xmmintrin.h>
 
 // downsample width/height to given level
 static inline int dl(int size, const int level)
@@ -139,10 +140,14 @@ static inline void gauss_reduce(
   // blur, store only coarse res
   const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
+  // TODO: this is the new hotspot after simd-fying the curve processing (14% this vs 7% curve)
   memset(coarse, 0, sizeof(float)*cw*ch);
   const float a = 0.4f;
   const float w[5] = {1./4.-a/2., 1./4., a, 1./4., 1./4.-a/2.};
   // direct 5x5 stencil only on required pixels:
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) collapse(2)
+#endif
   for(int j=1;j<ch-1;j++) for(int i=1;i<cw-1;i++)
     for(int jj=-2;jj<=2;jj++) for(int ii=-2;ii<=2;ii++)
       coarse[j*cw+i] += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
@@ -162,8 +167,7 @@ static inline float *ll_pad_input(
   const int stride = 4;
   *wd2 = 2*max_supp + wd;
   *ht2 = 2*max_supp + ht;
-  // float *out = (float *)dt_alloc_align(64, *wd2**ht2*sizeof(float));
-  float *out = (float *)malloc(*wd2**ht2*sizeof(float));
+  float *out = (float *)dt_alloc_align(16, *wd2**ht2*sizeof(float));
 
   for(int j=0;j<ht;j++)
   {
@@ -200,6 +204,9 @@ static inline float ll_laplacian(
   return fine[j*wd+i] - c;
 }
 
+#if 0
+// guess what, this does nothing:
+// #pragma omp declare simd notinbranch
 static inline float ll_curve(
     const float x,
     const float g,
@@ -276,21 +283,91 @@ static inline float ll_curve(
   return g + copysignf(sigma * f_d, c);
 #endif
 #if 1
-  float val = g + (x-g) + clarity * (x - g) * expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
+  float val = g + (x-g) + clarity * (x - g) * dt_fast_expf(-(x-g)*(x-g)/(2.0*sigma*sigma));
 
-  float b0 = fmaxf(0.0f, fminf(1.0f, (x-g-2.0f*sigma)/sigma));
+  float b0 = CLAMPS((x-g-2.0f*sigma)/sigma, 0.0f, 1.0f);
   float lin0 = g + 2.0f*sigma + shadows * (x-g-2.0f*sigma);
   val = val * (1.0f-b0) + b0 * lin0;
 
-  float b1 = fmaxf(0.0f, fminf(1.0f, -(x-g+2.0f*sigma)/sigma));
+  float b1 = CLAMPS(-(x-g+2.0f*sigma)/sigma, 0.0f, 1.0f);
   float lin1 = g - 2.0f*sigma + highlights * (x-g+2.0f*sigma);
   val = val * (1.0f-b1) + b1 * lin1;
 
-  const float t0 = fminf(fmaxf(0.0f, (fabsf(x-g)-0.01)/(0.02-0.01)), 1.0f);
+  const float t0 = CLAMPS((fabsf(x-g)-0.01)/(0.02-0.01), 0.0f, 1.0f);
   const float t = t0*t0*(3.0f-2.0f*t0);
   val = val * t + x * (1.0f - t);
   return val;
 #endif
+}
+#endif
+
+void apply_curve(
+    float *const out,
+    const float *const in,
+    const uint32_t w,
+    const uint32_t h,
+    const float gamma,
+    const float sigma,
+    const float shadows,
+    const float highlights,
+    const float clarity)
+{
+  // TODO: do all this in avx2 8-wide (should be straight forward):
+  const __m128 g4     = _mm_set_ps1(gamma);
+  const __m128 s4     = _mm_set_ps1(sigma);
+  const __m128 s22    = _mm_set_ps1(2.0f*sigma*sigma);
+  const __m128 sh4    = _mm_set_ps1(shadows);
+  const __m128 hi4    = _mm_set_ps1(highlights);
+  const __m128 cl4    = _mm_set_ps1(clarity);
+  const __m128 const0 = _mm_set_ps1(0x3f800000u);
+  const __m128 const1 = _mm_set_ps1(0x402DF854u); // for e^x
+  const __m128 sign_mask = _mm_set1_ps(-0.f); // -0.f = 1 << 31
+#pragma omp parallel for default(none) schedule(dynamic)
+  for(size_t j=0;j<(size_t)w*h;j+=4)
+  {
+    __m128 val;
+    const __m128 input = _mm_load_ps(in+j);
+    const __m128 c = _mm_sub_ps(input, g4); // centered value x - g
+    { // clarity
+      const __m128 arg = _mm_xor_ps(sign_mask, _mm_div_ps(_mm_mul_ps(c, c), s22));
+      const __m128 k0 = _mm_add_ps(const0, _mm_mul_ps(arg, _mm_sub_ps(const1, const0)));
+      const __m128 k = _mm_max_ps(k0, _mm_setzero_ps());
+      const __m128i ki = _mm_cvtps_epi32(k);
+      const __m128 gauss = _mm_load_ps((float*)&ki);
+      val = _mm_add_ps(g4, _mm_add_ps(c, _mm_mul_ps(cl4, _mm_mul_ps(c, gauss))));
+    }
+    const __m128 twosig = _mm_mul_ps(_mm_set1_ps(2.0f), s4);
+    { // shadows
+      const __m128 f0 = _mm_sub_ps(c, twosig);
+      const __m128 b0 = _mm_min_ps(_mm_set1_ps(1.0f), _mm_max_ps(_mm_setzero_ps(),
+            _mm_div_ps(f0, s4)));
+      const __m128 lin0 = _mm_add_ps(g4, _mm_add_ps(twosig, _mm_mul_ps(sh4, f0)));
+      val = _mm_add_ps(_mm_mul_ps(val, _mm_sub_ps(_mm_set1_ps(1.0f), b0)), _mm_mul_ps(lin0, b0));
+    }
+    { // highlights
+      const __m128 f1 = _mm_add_ps(c, twosig);
+      const __m128 b1 =  _mm_min_ps(_mm_set1_ps(1.0f), _mm_max_ps(_mm_setzero_ps(),
+            _mm_xor_ps(sign_mask, _mm_div_ps(f1, s4)) // *-1
+            ));
+      const __m128 lin1 = _mm_add_ps(_mm_sub_ps(g4, twosig), _mm_mul_ps(hi4, f1));
+      val = _mm_add_ps(_mm_mul_ps(val, _mm_sub_ps(_mm_set1_ps(1.0f), b1)), _mm_mul_ps(lin1, b1));
+    }
+#if 1
+    { // noise
+      const __m128 t0 = _mm_min_ps(_mm_set1_ps(1.0f), _mm_max_ps(_mm_setzero_ps(),
+            _mm_div_ps(_mm_sub_ps(
+                _mm_andnot_ps(sign_mask, c), // abs(c)
+                _mm_set1_ps(0.01f)),
+              _mm_sub_ps(_mm_set1_ps(0.02f), _mm_set1_ps(0.01f)))));
+      const __m128 t = _mm_mul_ps(_mm_mul_ps(t0, t0),
+          _mm_sub_ps(_mm_set1_ps(3.0f), _mm_mul_ps(_mm_set1_ps(2.0f), t0)));
+      val = _mm_add_ps(_mm_mul_ps(input, _mm_sub_ps(_mm_set1_ps(1.0f), t)), _mm_mul_ps(val, t));
+
+    }
+#endif
+    _mm_stream_ps(out + j, val);
+  }
+  // TODO: process last 0-3 elements if not divisible by simd width=4
 }
 
 void local_laplacian(
@@ -313,12 +390,12 @@ void local_laplacian(
 
   // allocate pyramid pointers for padded input
   for(int l=1;l<num_levels;l++)
-    padded[l] = (float *)malloc(sizeof(float)*dl(w,l)*dl(h,l));
+    padded[l] = (float *)dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
   // allocate pyramid pointers for output
   float *output[num_levels] = {0};
   for(int l=0;l<num_levels;l++)
-    output[l] = (float *)malloc(sizeof(float)*dl(w,l)*dl(h,l));
+    output[l] = (float *)dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
   // create gauss pyramid of padded input, write coarse directly to output
   for(int l=1;l<num_levels-1;l++)
@@ -335,14 +412,19 @@ void local_laplacian(
   // allocate memory for intermediate laplacian pyramids
   float *buf[num_gamma][num_levels] = {{0}};
   for(int k=0;k<num_gamma;k++) for(int l=0;l<num_levels;l++)
-    buf[k][l] = (float *)malloc(sizeof(float)*dl(w,l)*dl(h,l));
+    buf[k][l] = (float *)dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
   // XXX TODO: the paper says remapping only level 3 not 0 does the trick, too:
   for(int k=0;k<num_gamma;k++)
   { // process images
-#pragma omp parallel for default(none) schedule(dynamic) collapse(2) shared(w,h,k,buf,gamma,padded)
-    for(int j=0;j<h;j++) for(int i=0;i<w;i++)
-      buf[k][0][w*j+i] = ll_curve(padded[0][w*j+i], gamma[k], sigma, shadows, highlights, clarity);
+#if 0
+#pragma omp parallel for simd default(none) schedule(dynamic) shared(w,h,k,buf,gamma,padded)
+    for(size_t j=0;j<(size_t)w*h;j++)
+      buf[k][0][j] = ll_curve(padded[0][j], gamma[k], sigma, shadows, highlights, clarity);
+#else
+    apply_curve(
+        buf[k][0], padded[0], w, h, gamma[k], sigma, shadows, highlights, clarity);
+#endif
 
     // create gaussian pyramids
     for(int l=1;l<num_levels;l++)
