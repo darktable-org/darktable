@@ -42,6 +42,15 @@ dt_lua_widget_type_t widget_type = {
 };
 
 
+static void cleanup_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type,lua_widget widget);
+static void cleanup_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type,lua_widget widget) {
+  if(widget_type->parent) 
+    cleanup_widget_sub(L,widget_type->parent,widget);
+  if(widget_type->gui_cleanup) {
+    widget_type->gui_cleanup(L,widget);
+  }
+}
+
 static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type);
 static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type) {
   if(widget_type->parent) 
@@ -52,17 +61,6 @@ static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type) {
 
 static void on_destroy(GtkWidget *widget, gpointer user_data)
 {
-  lua_widget lwidget = (lua_widget)user_data;
-  dt_lua_lock_silent();
-  lua_State* L = darktable.lua_state.state;
-  if(lwidget->type->gui_cleanup) {
-    lwidget->type->gui_cleanup(L,lwidget);
-  }
-  dt_lua_widget_unbind(L,lwidget);
-  dt_lua_type_gpointer_drop(L,lwidget);
-  dt_lua_type_gpointer_drop(L,lwidget->widget);
-  free(lwidget);
-  dt_lua_unlock();
 }
 
 static gboolean on_destroy_wrapper(gpointer user_data)
@@ -77,9 +75,15 @@ static int widget_gc(lua_State *L)
   luaA_to(L,lua_widget,&lwidget,1);
   if(!lwidget) return 0; // object has been destroyed
   if(gtk_widget_get_parent(lwidget->widget)) {
-    luaL_error(L,"Destroying a widget which is still parented, this should never happen\n");
+    luaL_error(L,"Destroying a widget which is still parented, this should never happen (%s at %p)\n",lwidget->type->name,lwidget);
   }
+  cleanup_widget_sub(L,lwidget->type,lwidget);
+  dt_lua_widget_unbind(L,lwidget);
+  // no need to drop, the pointer table is weak and the widget is already being GC, so it's not in the table anymore
+  //dt_lua_type_gpointer_drop(L,lwidget);
+  //dt_lua_type_gpointer_drop(L,lwidget->widget);
   g_idle_add(on_destroy_wrapper,lwidget->widget);
+  free(lwidget);
   return 0;
 }
 
