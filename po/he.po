@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-11 15:05+0200\n"
-"PO-Revision-Date: 2016-11-11 15:12+0200\n"
+"POT-Creation-Date: 2016-11-26 11:18+0200\n"
+"PO-Revision-Date: 2016-11-26 11:28+0200\n"
 "Last-Translator: Shlomi Alon-Braitbart <sbraitbart@gmail.com>\n"
 "Language-Team: \n"
 "Language: he_IL\n"
@@ -950,23 +950,23 @@ msgstr[0] "נבחרה תמונה %d מתוך %d באוסף הנוכחי"
 msgstr[1] "נבחרו %d תמונות מתוך %d באוסף הנוכחי"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-#: ../src/common/colorspaces.c:1035 ../src/iop/colorin.c:1945
+#: ../src/common/colorspaces.c:1035 ../src/iop/colorin.c:1947
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
 #: ../src/common/colorspaces.c:1036 ../src/common/colorspaces.c:1197
-#: ../src/iop/colorin.c:1946 ../src/libs/print_settings.c:881
+#: ../src/iop/colorin.c:1948 ../src/libs/print_settings.c:881
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (תואם)"
 
 #: ../src/common/colorspaces.c:1037 ../src/common/colorspaces.c:1202
-#: ../src/iop/colorin.c:1947
+#: ../src/iop/colorin.c:1949
 msgid "linear Rec709 RGB"
 msgstr "linear Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1038 ../src/common/colorspaces.c:1207
-#: ../src/iop/colorin.c:1948
+#: ../src/iop/colorin.c:1950
 msgid "linear Rec2020 RGB"
 msgstr "linear Rec2020 RGB"
 
@@ -1038,29 +1038,29 @@ msgstr "שגיאה בהדפסת תמונה %d על '%s'"
 msgid "printing image %d on `%s'"
 msgstr "מדפיס תמונה %d על '%s'"
 
-#: ../src/common/darktable.c:327
+#: ../src/common/darktable.c:243
 #, c-format
 msgid "found strange path `%s'"
 msgstr "נמצא שם נתיב משונה '%s'"
 
-#: ../src/common/darktable.c:344
+#: ../src/common/darktable.c:260
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "שגיאה בהעלאת תיקיה '%s'"
 
-#: ../src/common/darktable.c:367
+#: ../src/common/darktable.c:283
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "לקובץ '%s' פורמט לא ידוע"
 
-#: ../src/common/darktable.c:380 ../src/libs/import.c:838
+#: ../src/common/darktable.c:296 ../src/libs/import.c:838
 #, c-format
 msgid "error loading file `%s'"
 msgstr "שגיאה בהעלאת קובץ '%s'"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:1574 ../src/common/database.c:1650
+#: ../src/common/database.c:1577 ../src/common/database.c:1653
 #, c-format
 msgid ""
 "an error has occured while trying to open the database from\n"
@@ -1079,15 +1079,15 @@ msgstr ""
 "האם ברצונך לסגור את darktable כעת על מנת לשחזר ידנית\n"
 "את מסד הנתונים מגיבוי או להתחיל עם מסד נתונים חדש?"
 
-#: ../src/common/database.c:1584 ../src/common/database.c:1660
+#: ../src/common/database.c:1587 ../src/common/database.c:1663
 msgid "darktable - error opening database"
 msgstr "שגיאה בפתיחת מסד נתונים - darktable"
 
-#: ../src/common/database.c:1585 ../src/common/database.c:1661
+#: ../src/common/database.c:1588 ../src/common/database.c:1664
 msgid "close darktable"
 msgstr "סגור את darktable"
 
-#: ../src/common/database.c:1585 ../src/common/database.c:1661
+#: ../src/common/database.c:1588 ../src/common/database.c:1664
 msgid "delete database"
 msgstr "מחק מסד נתונים"
 
@@ -1113,7 +1113,7 @@ msgstr "דלוק"
 #: ../src/common/styles.c:725 ../src/develop/blend_gui.c:1600
 #: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1334
 #: ../src/imageio/format/exr.cc:359 ../src/imageio/format/j2k.c:663
-#: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1944
+#: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1946
 #: ../src/iop/demosaic.c:3857 ../src/iop/vignette.c:1140
 #: ../src/libs/history.c:168 ../src/libs/live_view.c:434
 msgid "off"
@@ -2297,15 +2297,18 @@ msgid "ctrl+click to switch between smooth/sharp node"
 msgstr "לחץ ctrl+click לעבור בין הצמתים החלקה/חדות"
 
 #: ../src/develop/masks/masks.c:49
-msgid "right-click to reset feather value"
-msgstr "קליק ימני לאתחל ערך נוצה"
+msgid "right-click to reset curvature"
+msgstr "קליק ימני לאתחל עקמומיות"
 
 #: ../src/develop/masks/masks.c:51
 msgid "ctrl+click to add a node"
 msgstr "לחץ ctrl+click להוסיף צומת"
 
-#: ../src/develop/masks/masks.c:53 ../src/develop/masks/masks.c:58
-#: ../src/develop/masks/masks.c:82
+#: ../src/develop/masks/masks.c:53 ../src/develop/masks/masks.c:82
+msgid "ctrl+scroll to set shape opacity, shift+scroll to set feather size"
+msgstr "לחץ ctrl+scroll לקביעת את אטימות הצורה, shift+scroll לקביעת גודל נוצה "
+
+#: ../src/develop/masks/masks.c:58
 msgid "ctrl+scroll to set shape opacity"
 msgstr "לחץ ctrl+scroll לקבוע את אטימות הצורה "
 
@@ -2318,8 +2321,12 @@ msgid "ctrl+click to rotate"
 msgstr "לחץ ctrl+click לסובב"
 
 #: ../src/develop/masks/masks.c:67
-msgid "shift+click to switch feathering mode, ctrl+scroll to set shape opacity"
-msgstr "קליק+shift להחליף מצב רפרוף, ctrl+גלילה לקבוע אטימות צורה"
+msgid ""
+"shift+click to switch feathering mode, ctrl+scroll to set shape opacity, "
+"shift+scroll to set feather size"
+msgstr ""
+"קליק+shift להחליף מצב נגיעת נוצה, ctrl+גלילה לקבוע אטימות צורה, shift+גלילה "
+"לקביעת גודל נוצה"
 
 #: ../src/develop/masks/masks.c:72
 msgid ""
@@ -5345,35 +5352,35 @@ msgstr "קבע רוויה גלובלית"
 msgid "input color profile"
 msgstr "קלט פרופיל צבע"
 
-#: ../src/iop/colorin.c:1498
+#: ../src/iop/colorin.c:1500
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "מטריצת צבע `%s' לא נמצאה!"
 
-#: ../src/iop/colorin.c:1532
+#: ../src/iop/colorin.c:1534
 msgid "input profile could not be generated!"
 msgstr "יצירת פרופיל קלט נכשלה!"
 
-#: ../src/iop/colorin.c:1590
+#: ../src/iop/colorin.c:1592
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "פרופיל קלט לא נתמך הוחלף ב Rec709 RGB לינארי!"
 
-#: ../src/iop/colorin.c:1927 ../src/iop/denoiseprofile.c:2077
+#: ../src/iop/colorin.c:1929 ../src/iop/denoiseprofile.c:2077
 #: ../src/libs/export.c:597 ../src/libs/print_settings.c:1008
 #: ../src/libs/print_settings.c:1224
 msgid "profile"
 msgstr "פרופיל"
 
-#: ../src/iop/colorin.c:1936
+#: ../src/iop/colorin.c:1938
 #, c-format
 msgid "ICC profiles in %s/color/in or %s/color/in"
 msgstr "פרופילי ICC ב %s/color/in או %s/color/in"
 
-#: ../src/iop/colorin.c:1942
+#: ../src/iop/colorin.c:1944
 msgid "gamut clipping"
 msgstr "חיתוך מכלול צבע"
 
-#: ../src/iop/colorin.c:1950
+#: ../src/iop/colorin.c:1952
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "תחום ערכי מעבדה למכלול צבע RGB"
 
@@ -6684,27 +6691,27 @@ msgstr "אחוזון לבן"
 msgid "white"
 msgstr "לבן"
 
-#: ../src/iop/liquify.c:267
+#: ../src/iop/liquify.c:266
 msgid "liquify"
 msgstr "נזל"
 
-#: ../src/iop/liquify.c:3243
+#: ../src/iop/liquify.c:3244
 msgid "click and drag to add point"
 msgstr "הקלק וגרור להוסיף נקודה"
 
-#: ../src/iop/liquify.c:3245
+#: ../src/iop/liquify.c:3246
 msgid "click to add line"
 msgstr "לחץ להוסיף שורה"
 
-#: ../src/iop/liquify.c:3247
+#: ../src/iop/liquify.c:3248
 msgid "click to add curve"
 msgstr "לחץ להוסיף עקום"
 
-#: ../src/iop/liquify.c:3249
+#: ../src/iop/liquify.c:3250
 msgid "click to edit nodes"
 msgstr "לחץ להוסיף צמתים"
 
-#: ../src/iop/liquify.c:3285
+#: ../src/iop/liquify.c:3287
 msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
@@ -6712,27 +6719,27 @@ msgstr ""
 "השתמש בכלי להוסיף פיתולים.\n"
 "הקלק ימנית להסיר פיתול."
 
-#: ../src/iop/liquify.c:3287
+#: ../src/iop/liquify.c:3289
 msgid "warps|nodes count:"
 msgstr "ספירת פיתולים|צמתים:"
 
-#: ../src/iop/liquify.c:3294
+#: ../src/iop/liquify.c:3296
 msgid "node tool: edit, add and delete nodes"
 msgstr "מכחול צמתים: ערוך, הוסף ומחק צמתים"
 
-#: ../src/iop/liquify.c:3302
+#: ../src/iop/liquify.c:3304
 msgid "curve tool: draw curves"
 msgstr "מכחול עקומות: צייר עקומות"
 
-#: ../src/iop/liquify.c:3310
+#: ../src/iop/liquify.c:3312
 msgid "line tool: draw lines"
 msgstr "מכחול קווים: צייר קוים"
 
-#: ../src/iop/liquify.c:3318
+#: ../src/iop/liquify.c:3320
 msgid "point tool: draw points"
 msgstr "מכחול נקודות: צייר נקודות"
 
-#: ../src/iop/liquify.c:3325
+#: ../src/iop/liquify.c:3327
 msgid ""
 "ctrl-click to add node\n"
 "right click to remove path"
@@ -6740,7 +6747,7 @@ msgstr ""
 "לחץ ctrl-click להוסיף צומת\n"
 "הקלק ימנית להסיר נתיב"
 
-#: ../src/iop/liquify.c:3326
+#: ../src/iop/liquify.c:3328
 msgid ""
 "click and drag to move - click : linear or feathered\n"
 "ctrl-click : autosmooth, cusp, smooth, symmetrical\n"
@@ -6750,23 +6757,23 @@ msgstr ""
 "קליק-ctrl: סימטרי, חלק, חרמש, החלקה אוטומטית\n"
 "קליק ימני להסרה"
 
-#: ../src/iop/liquify.c:3329 ../src/iop/liquify.c:3330
+#: ../src/iop/liquify.c:3331 ../src/iop/liquify.c:3332
 msgid "drag to change shape of path"
 msgstr "גרור לשינוי צורת הנתיב"
 
-#: ../src/iop/liquify.c:3331
+#: ../src/iop/liquify.c:3333
 msgid "drag to adjust warp radius"
 msgstr "גרור לשינוי רדיוס הפיתול"
 
-#: ../src/iop/liquify.c:3332
+#: ../src/iop/liquify.c:3334
 msgid "drag to adjust hardness (center)"
 msgstr "גרור לכוונון קשיות (מרכז) "
 
-#: ../src/iop/liquify.c:3333
+#: ../src/iop/liquify.c:3335
 msgid "drag to adjust hardness (feather)"
 msgstr "גרור לכוונון קשיות (נוצה) "
 
-#: ../src/iop/liquify.c:3334
+#: ../src/iop/liquify.c:3336
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl-click : linear, grow, and shrink"
@@ -6774,22 +6781,22 @@ msgstr ""
 "גרור לכוונון עצמת פיתול\n"
 "קליק-ctrl : לינארי, הרחב, וכווץ "
 
-#: ../src/iop/liquify.c:3352
+#: ../src/iop/liquify.c:3354
 msgctxt "accel"
 msgid "point tool"
 msgstr "מכחול נקודות"
 
-#: ../src/iop/liquify.c:3353
+#: ../src/iop/liquify.c:3355
 msgctxt "accel"
 msgid "line tool"
 msgstr "מכחול קווים"
 
-#: ../src/iop/liquify.c:3354
+#: ../src/iop/liquify.c:3356
 msgctxt "accel"
 msgid "curve tool"
 msgstr "מכחול עקומות"
 
-#: ../src/iop/liquify.c:3355
+#: ../src/iop/liquify.c:3357
 msgctxt "accel"
 msgid "node tool"
 msgstr "מכחול צמתים"
@@ -9769,8 +9776,8 @@ msgstr "שגיאה בייבוא תמונה"
 
 #: ../src/libs/tagging.c:369
 #, c-format
-msgid "%ld tags imported"
-msgstr "יובאו תגיות %ld"
+msgid "%zd tags imported"
+msgstr "יובאו תגיות %zd"
 
 #: ../src/libs/tagging.c:390
 msgid "Select file to export to"
@@ -9786,8 +9793,8 @@ msgstr "שגיאה ביצוא תגיות"
 
 #: ../src/libs/tagging.c:407
 #, c-format
-msgid "%ld tags exported"
-msgstr "יוצאו תגיות %ld"
+msgid "%zd tags exported"
+msgstr "יוצאו תגיות %zd"
 
 #: ../src/libs/tagging.c:478
 msgid ""
