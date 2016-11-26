@@ -51,8 +51,7 @@ float expand_gaussian(
     const int ht)
 {
   float c = 0.0f;
-  const float a = 0.4f;
-  const float w[5] = {1./4.-a/2., 1./4., a, 1./4., 1./4.-a/2.};
+  const float w[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
   const int cx = i/2;
   const int cy = j/2;
   switch((i&1) + 2*(j&1))
@@ -134,8 +133,7 @@ gauss_reduce(
 
   // blur, store only coarse res
   pixel.x = 0.0f;
-  const float a = 0.4f;
-  const float w[5] = {1./4.-a/2., 1./4., a, 1./4., 1./4.-a/2.};
+  const float w[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
   // direct 5x5 stencil only on required pixels:
   for(int jj=-2;jj<=2;jj++) for(int ii=-2;ii<=2;ii++)
     pixel.x += read_imagef(input, sampleri, (int2)(2*cx+ii, 2*cy+jj)).x * w[ii+2] * w[jj+2];
