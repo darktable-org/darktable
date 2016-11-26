@@ -102,6 +102,7 @@ static inline void ll_fill_boundary1(
   memcpy(input+wd*(ht-1), input+wd*(ht-2), sizeof(float)*wd);
 }
 
+// XXX i believe this blurs in wrong values! the buffer padding needs to be fixed instead!
 // helper to fill in two pixels boundary by copying it
 static inline void ll_fill_boundary2(
     float *const input,
