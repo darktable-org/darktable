@@ -30,10 +30,12 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "iop/filtercoeff.h"
 
 #include <math.h>
 #include <memory.h>
 #include <stdlib.h>
+#include <string.h>
 #include <string.h>
 
 // we assume people have -msee support.
@@ -517,6 +519,8 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                                      { 0, 1, 0, -2, 1, 0, -2, 0, 1, 1, -2, -2, 1, -1, -1, 1 } },
                      dir[4] = { 1, TS, TS + 1, TS - 1 };
 
+  static const float directionality[8] = { 1.0f, 0.0f, 0.5f, 0.5f, 1.0f, 0.0f, 0.5f, 0.5f };
+
   short allhex[3][3][8];
   // sgrow/sgcol is the offset in the sensor matrix of the solitary
   // green pixels (initialized here only to avoid compiler warning)
@@ -526,7 +530,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
   const int height = roi_out->height;
   const int ndir = 4 << (passes > 1);
 
-  const size_t buffer_size = (size_t)TS * TS * (ndir * 4 + 3) * sizeof(float);
+  const size_t buffer_size = (size_t) TS * TS * (ndir * 4 + 4) * sizeof(float);  // 3 to 4 for keeping original to be filtered
   char *const all_buffers = (char *)dt_alloc_align(16, dt_get_num_threads() * buffer_size);
   if(!all_buffers)
   {
@@ -562,7 +566,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       }
 
   // extra passes propagates out errors at edges, hence need more padding
-  const int pad_tile = (passes == 1) ? 12 : 17;
+  const int pad_tile = (passes == 1) ? 13 : 17;  // 12 to 13 because of the 27x27 filter area
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out) schedule(dynamic)
 #endif
@@ -579,6 +583,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
     float (*const yuv)[TS][TS] = (float(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
     // drv points to ndir TSxTS tiles, each a single chanel of derivatives
     float (*const drv)[TS][TS] = (float(*)[TS][TS])(buffer + TS * TS * (ndir * 3 + 3) * sizeof(float));
+    // fdc_orig points to TSxTS tiles for storing the flat original to be filtered
+    // probably this is overkill because the values could be taken from rgb[0]
+    float (*const fdc_orig)[TS][TS] = (float (*)[TS][TS])(buffer + TS * TS * (ndir * 4 + 3) * sizeof(float));
     // gmin and gmax reuse memory which is used later by yuv buffer;
     // each points to a TSxTS tile of single channel data
     float (*const gmin)[TS] = (float(*)[TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
@@ -605,6 +612,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           {
             const int f = FCxtrans(row, col, roi_in, xtrans);
             for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
+            fdc_orig[0][row - top][col - left] = in[roi_in->width * row + col];
           }
           else
           {
@@ -618,7 +626,10 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 #define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 2) : abs(n))
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
                 if(c == FCxtrans(cy, cx, roi_in, xtrans))
+                {
                   pix[c] = in[roi_in->width * cy + cx];
+                  fdc_orig[0][row - top][col - left] = in[roi_in->width * cy + cx];
+                }
                 else
                 {
                   // interpolate if mirror pixel is a different color
@@ -636,6 +647,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                       }
                     }
                   pix[c] = sum / count;
+                  fdc_orig[0][row - top][col - left] = pix[c];
                 }
               }
           }
@@ -916,9 +928,23 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         }
 
       /* Average the most homogenous pixels for the final result:       */
+      float fdc_src[27][27];
+      int fdc_row, fdc_col;  //, myrow, mycol;
       for(int row = pad_tile; row < mrow - pad_tile; row++)
-        for(int col = pad_tile; col < mcol - pad_tile; col++)
+      {
+        int col = pad_tile;
+        // read initial block per line
+        for (fdc_row = -13; fdc_row < 14; fdc_row++)
+          for (fdc_col = -13; fdc_col < 13; fdc_col++)
+            fdc_src[fdc_row + 13][fdc_col + 14] = fdc_orig[0][row + fdc_row][col + fdc_col];
+        for(col = pad_tile; col < mcol - pad_tile; col++)
         {
+          // move buffer one element to the left
+          for (fdc_row = 0; fdc_row < 27; fdc_row++)
+            for (fdc_col = 0; fdc_col < 26; fdc_col++)
+              fdc_src[fdc_row][fdc_col] = fdc_src[fdc_row][fdc_col + 1];
+          for (fdc_row = -13; fdc_row < 14; fdc_row++)
+            fdc_src[fdc_row + 13][26] = fdc_orig[0][row + fdc_row][col + 13];
           uint8_t hm[8] = { 0 };
           uint8_t maxval = 0;
           for(int d = 0; d < ndir; d++)
@@ -933,16 +959,30 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             else if(hm[d] > hm[d + 4])
               hm[d + 4] = 0;
           float avg[4] = { 0.0f };
+          float dircount = 0;
+          float dirsum = 0.0f;
           for(int d = 0; d < ndir; d++)
             if(hm[d] >= maxval)
             {
               for(int c = 0; c < 3; c++) avg[c] += rgb[d][row][col][c];
               avg[3]++;
+              dircount++;
+              dirsum += directionality[d];
             }
-          for(int c = 0; c < 3; c++)
-            out[4 * (width * (row + top) + col + left) + c] =
-              avg[c]/avg[3];
+          float red = avg[0] / avg[3];
+          float green = avg[1] / avg[3];
+          float blue = avg[2] / avg[3];
+          float w = dirsum / (float)dircount;
+          red++;
+          green++;
+          blue++;
+          w++;
+
+//           for(int c = 0; c < 3; c++)
+//             out[4 * (width * (row + top) + col + left) + c] =
+//               avg[c]/avg[3];
         }
+      }
     }
   }
   free(all_buffers);
