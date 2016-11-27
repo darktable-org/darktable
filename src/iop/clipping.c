@@ -447,11 +447,14 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
     points[i + 1] = po[1] - (d->ciy - d->enlarge_y) / factor;
   }
 
-  // revert potential side-effects of the previous call to modify_roi_out
-  // TODO: this is just a quick hack. w need a major revamp of this module!
-  roi_in.width = piece->buf_in.width;
-  roi_in.height = piece->buf_in.height;
-  self->modify_roi_out(self, piece, &roi_out, &roi_in);
+  // revert side-effects of the previous call to modify_roi_out
+  // TODO: this is just a quick hack. we need a major revamp of this module!
+  if(factor != 1.0f)
+  {
+    roi_in.width = piece->buf_in.width;
+    roi_in.height = piece->buf_in.height;
+    self->modify_roi_out(self, piece, &roi_out, &roi_in);
+  }
 
   return 1;
 }
@@ -507,11 +510,14 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
     points[i + 1] = po[1];
   }
 
-  // revert potential side-effects of the previous call to modify_roi_out
-  // TODO: this is just a quick hack. w need a major revamp of this module!
-  roi_in.width = piece->buf_in.width;
-  roi_in.height = piece->buf_in.height;
-  self->modify_roi_out(self, piece, &roi_out, &roi_in);
+  // revert side-effects of the previous call to modify_roi_out
+  // TODO: this is just a quick hack. we need a major revamp of this module!
+  if(factor != 1.0f)
+  {
+    roi_in.width = piece->buf_in.width;
+    roi_in.height = piece->buf_in.height;
+    self->modify_roi_out(self, piece, &roi_out, &roi_in);
+  }
 
   return 1;
 }
