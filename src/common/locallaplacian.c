@@ -244,25 +244,28 @@ static inline float *ll_pad_input(
   const int stride = 4;
   *wd2 = 2*max_supp + wd;
   *ht2 = 2*max_supp + ht;
-  float *out = (float *)dt_alloc_align(16, *wd2**ht2*sizeof(float));
+  float *const out = dt_alloc_align(16, *wd2**ht2*sizeof(*out));
 
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2)
+#endif
   for(int j=0;j<ht;j++)
   {
     for(int i=0;i<max_supp;i++)
-      // out[(j+max_supp)**wd2+i] = powf(MAX(0.0f, input[stride*wd*j+0]), 1./2.2);
-      // out[(j+max_supp)**wd2+i] = rgb_to_y(input+stride*wd*j+0);
       out[(j+max_supp)**wd2+i] = input[stride*wd*j]* 0.01f; // L -> [0,1]
     for(int i=0;i<wd;i++)
-      // out[(j+max_supp)**wd2+i+max_supp] = powf(MAX(0.0f, input[stride*(wd*j+i)+0]), 1./2.2);
-      // out[(j+max_supp)**wd2+i+max_supp] = rgb_to_y(input+stride*(wd*j+i)+0);
       out[(j+max_supp)**wd2+i+max_supp] = input[stride*(wd*j+i)] * 0.01f; // L -> [0,1]
     for(int i=wd+max_supp;i<*wd2;i++)
-      // out[(j+max_supp)**wd2+i] = powf(MAX(0.0f, input[stride*(j*wd+wd-1)+0]), 1./2.2);
-      // out[(j+max_supp)**wd2+i] = rgb_to_y(input+stride*(j*wd+wd-1)+0);
       out[(j+max_supp)**wd2+i] = input[stride*(j*wd+wd-1)] * 0.01f; // L -> [0,1]
   }
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2)
+#endif
   for(int j=0;j<max_supp;j++)
     memcpy(out + *wd2*j, out+max_supp**wd2, sizeof(float)**wd2);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2)
+#endif
   for(int j=max_supp+ht;j<*ht2;j++)
     memcpy(out + *wd2*j, out + *wd2*(max_supp+ht-1), sizeof(float)**wd2);
 
