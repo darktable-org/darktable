@@ -78,5 +78,6 @@ script:
       export INSTALL_PREFIX="$SRC_DIR/install";
       mkdir "$BUILD_DIR";
       mkdir "$INSTALL_PREFIX";
+      touch /usr/local/Cellar/pugixml/1.8/lib/pugixml-1.8/libpugixml.a;
       "$SRC_DIR/ci-script.sh";
     fi
