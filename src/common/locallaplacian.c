@@ -52,10 +52,10 @@ static inline float ll_expand_gaussian(
   assert(j < ht-1);
   assert(j/2 + 1 < (ht-1)/2+1);
   assert(i/2 + 1 < (wd-1)/2+1);
-  float c = 0.0f;
+  // float c = 0.0f;
   const int cw = (wd-1)/2+1;
   // TODO: manually expand to sums:
-  const float w[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
+  // const float w[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
   const int ind = (j/2)*cw+i/2;
   // case 0:     case 1:     case 2:     case 3:
   //  x . x . x   x . x . x   x . x . x   x . x . x
@@ -66,28 +66,37 @@ static inline float ll_expand_gaussian(
   switch((i&1) + 2*(j&1))
   {
     case 0: // both are even, 3x3 stencil
-      for(int ii=-1;ii<=1;ii++)
-        for(int jj=-1;jj<=1;jj++)
-          c += coarse[ind+cw*jj+ii]*w[2*jj+2]*w[2*ii+2];
-      break;
+      return 4./256. * (
+          6.0f*(coarse[ind-cw] + coarse[ind-1] + 6.0f*coarse[ind] + coarse[ind+1] + coarse[ind+cw])
+          + coarse[ind-cw-1] + coarse[ind-cw+1] + coarse[ind+cw-1] + coarse[ind+cw+1]);
+      //for(int ii=-1;ii<=1;ii++)
+      //  for(int jj=-1;jj<=1;jj++)
+      //    c += coarse[ind+cw*jj+ii]*w[2*jj+2]*w[2*ii+2];
+      //break;
     case 1: // i is odd, 2x3 stencil
-      for(int ii=0;ii<=1;ii++)
-        for(int jj=-1;jj<=1;jj++)
-          c += coarse[ind+cw*jj+ii]*w[2*jj+2]*w[2*ii+1];
-      break;
+      return 4./256. * (
+          24.0*(coarse[ind] + coarse[ind+1]) +
+          4.0*(coarse[ind-cw] + coarse[ind-cw+1] + coarse[ind+cw] + coarse[ind+cw+1]));
+      // for(int ii=0;ii<=1;ii++)
+      //   for(int jj=-1;jj<=1;jj++)
+      //     c += coarse[ind+cw*jj+ii]*w[2*jj+2]*w[2*ii+1];
+      // break;
     case 2: // j is odd, 3x2 stencil
-      for(int ii=-1;ii<=1;ii++)
-        for(int jj=0;jj<=1;jj++)
-          c += coarse[ind+cw*jj+ii]*w[2*jj+1]*w[2*ii+2];
-      break;
+      return 4./256. * (
+          24.0*(coarse[ind] + coarse[ind+cw]) +
+          4.0*(coarse[ind-1] + coarse[ind+1] + coarse[ind+cw-1] + coarse[ind+cw+1]));
+      // for(int ii=-1;ii<=1;ii++)
+      //   for(int jj=0;jj<=1;jj++)
+      //     c += coarse[ind+cw*jj+ii]*w[2*jj+1]*w[2*ii+2];
+      // break;
     default: // case 3: // both are odd, 2x2 stencil
-      for(int ii=0;ii<=1;ii++)
-        for(int jj=0;jj<=1;jj++)
-          c += coarse[ind+cw*jj+ii]*w[2*jj+1]*w[2*ii+1];
-      break;
+      return .25f * (coarse[ind] + coarse[ind+1] + coarse[ind+cw] + coarse[ind+cw+1]);
+      // for(int ii=0;ii<=1;ii++)
+      //   for(int jj=0;jj<=1;jj++)
+      //     c += coarse[ind+cw*jj+ii]*w[2*jj+1]*w[2*ii+1];
+      // break;
   }
-  assert(c==c);
-  return 4.0f * c;
+  // return 4.0f * c;
 }
 
 // helper to fill in one pixel boundary by copying it
@@ -478,12 +487,12 @@ void local_laplacian(
 
   // allocate pyramid pointers for padded input
   for(int l=1;l<num_levels;l++)
-    padded[l] = (float *)dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
+    padded[l] = dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
   // allocate pyramid pointers for output
   float *output[num_levels] = {0};
   for(int l=0;l<num_levels;l++)
-    output[l] = (float *)dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
+    output[l] = dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
   // create gauss pyramid of padded input, write coarse directly to output
   for(int l=1;l<num_levels-1;l++)
@@ -500,7 +509,7 @@ void local_laplacian(
   // allocate memory for intermediate laplacian pyramids
   float *buf[num_gamma][num_levels] = {{0}};
   for(int k=0;k<num_gamma;k++) for(int l=0;l<num_levels;l++)
-    buf[k][l] = (float *)dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
+    buf[k][l] = dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
   // XXX TODO: the paper says remapping only level 3 not 0 does the trick, too:
   for(int k=0;k<num_gamma;k++)
@@ -533,12 +542,9 @@ void local_laplacian(
       int hi = 1;
       for(;hi<num_gamma-1 && gamma[hi] <= v;hi++);
       int lo = hi-1;
-      const float a = MIN(MAX((v - gamma[lo])/(gamma[hi]-gamma[lo]), 0.0f), 1.0f);
+      const float a = CLAMPS((v - gamma[lo])/(gamma[hi]-gamma[lo]), 0.0f, 1.0f);
       const float l0 = ll_laplacian(buf[lo][l+1], buf[lo][l], i, j, pw, ph);
       const float l1 = ll_laplacian(buf[hi][l+1], buf[hi][l], i, j, pw, ph);
-      assert(a == a);
-      assert(l0 == l0);
-      assert(l1 == l1);
       float laplace = l0 * (1.0f-a) + l1 * a;
       output[l][j*pw+i] += laplace;
     }
