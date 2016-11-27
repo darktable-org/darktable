@@ -452,67 +452,6 @@ void apply_curve(
 #pragma omp parallel for default(none) schedule(dynamic)
 #endif
   for(int j=h-padding;j<h;j++) memcpy(out + w*j, out+w*(h-padding-1), sizeof(float)*w);
-#if 0
-  const __m128 g4     = _mm_set_ps1(gamma);
-  const __m128 s4     = _mm_set_ps1(sigma);
-  const __m128 s22    = _mm_set_ps1(2.0f*sigma*sigma);
-  const __m128 sh4    = _mm_set_ps1(shadows);
-  const __m128 hi4    = _mm_set_ps1(highlights);
-  const __m128 cl4    = _mm_set_ps1(clarity);
-  const __m128 const0 = _mm_set_ps1(0x3f800000u);
-  const __m128 const1 = _mm_set_ps1(0x402DF854u); // for e^x
-  const __m128 sign_mask = _mm_set1_ps(-0.f); // -0.f = 1 << 31
-
-  // TODO: this actually processes a lot of padding, too! this could be copied
-  // with boundary filling instead.
-#pragma omp parallel for default(none) schedule(dynamic)
-  for(size_t j=0;j<(size_t)w*h;j+=4)
-  {
-    __m128 val;
-    const __m128 input = _mm_load_ps(in+j);
-    const __m128 c = _mm_sub_ps(input, g4); // centered value x - g
-    { // clarity
-      const __m128 arg = _mm_xor_ps(sign_mask, _mm_div_ps(_mm_mul_ps(c, c), s22));
-      const __m128 k0 = _mm_add_ps(const0, _mm_mul_ps(arg, _mm_sub_ps(const1, const0)));
-      const __m128 k = _mm_max_ps(k0, _mm_setzero_ps());
-      const __m128i ki = _mm_cvtps_epi32(k);
-      const __m128 gauss = _mm_load_ps((float*)&ki);
-      val = _mm_add_ps(g4, _mm_add_ps(c, _mm_mul_ps(cl4, _mm_mul_ps(c, gauss))));
-    }
-    // const __m128 twosig = _mm_mul_ps(_mm_set1_ps(2.0f), s4);
-    const __m128 twosig = s4; // drag shad/hi earlier, more powerful
-    { // shadows
-      const __m128 f0 = _mm_sub_ps(c, twosig);
-      const __m128 b0 = _mm_min_ps(_mm_set1_ps(1.0f), _mm_max_ps(_mm_setzero_ps(),
-            _mm_div_ps(f0, s4)));
-      const __m128 lin0 = _mm_add_ps(g4, _mm_add_ps(twosig, _mm_mul_ps(sh4, f0)));
-      val = _mm_add_ps(_mm_mul_ps(val, _mm_sub_ps(_mm_set1_ps(1.0f), b0)), _mm_mul_ps(lin0, b0));
-    }
-    { // highlights
-      const __m128 f1 = _mm_add_ps(c, twosig);
-      const __m128 b1 =  _mm_min_ps(_mm_set1_ps(1.0f), _mm_max_ps(_mm_setzero_ps(),
-            _mm_xor_ps(sign_mask, _mm_div_ps(f1, s4)) // *-1
-            ));
-      const __m128 lin1 = _mm_add_ps(_mm_sub_ps(g4, twosig), _mm_mul_ps(hi4, f1));
-      val = _mm_add_ps(_mm_mul_ps(val, _mm_sub_ps(_mm_set1_ps(1.0f), b1)), _mm_mul_ps(lin1, b1));
-    }
-#if 1 // not sure this is actually needed/useful:
-    { // noise
-      const __m128 t0 = _mm_min_ps(_mm_set1_ps(1.0f), _mm_max_ps(_mm_setzero_ps(),
-            _mm_div_ps(_mm_sub_ps(
-                _mm_andnot_ps(sign_mask, c), // abs(c)
-                _mm_set1_ps(0.01f)),
-              _mm_sub_ps(_mm_set1_ps(0.02f), _mm_set1_ps(0.01f)))));
-      const __m128 t = _mm_mul_ps(_mm_mul_ps(t0, t0),
-          _mm_sub_ps(_mm_set1_ps(3.0f), _mm_mul_ps(_mm_set1_ps(2.0f), t0)));
-      val = _mm_add_ps(_mm_mul_ps(input, _mm_sub_ps(_mm_set1_ps(1.0f), t)), _mm_mul_ps(val, t));
-
-    }
-#endif
-    _mm_stream_ps(out + j, val);
-  }
-  // TODO: process last 0-3 elements if not divisible by simd width=4
-#endif
 }
 #endif
 
