@@ -405,22 +405,6 @@ void apply_curve(
       const float x = *(in2++);
       const float c = x-g;
       float val;
-#if 0
-    if(c >  sigma) val = g + sigma + shadows    * (c-sigma);
-    else if(c < -sigma) val = g - sigma + highlights * (c+sigma);
-    else
-    {
-      val = x;
-      // const float norm = 1.0 + clarity * expf(-.5f);
-      // const float delta = fabsf(c)/sigma;
-      // // const float enh = powf(delta, 1./clarity);
-      // const float enh = (delta + clarity * delta * expf(-delta*delta/2.0))/norm;
-      // const float f_d = t * enh + (1.0f-t)*delta;
-      // val = g + t * copysignf(sigma * f_d, c) + (1.0f-t)*(x-g);
-    }
-    val += clarity * c * expf(-c*c/(2.0*sigma*sigma/4.0f));
-#endif
-#if 1
       // blend in via quadratic bezier
       if     (c >  2*sigma) val = g + sigma + shadows    * (c-sigma);
       else if(c < -2*sigma) val = g - sigma + highlights * (c+sigma);
@@ -440,15 +424,6 @@ void apply_curve(
       }
       // midtone local contrast
       val += clarity * c * dt_fast_expf(-c*c/(2.0*sigma*sigma/3.0f));
-#endif
-#if 0 // noise
-    // paper says to blend this in to avoid boosting noise.
-    // but it does cause some additional banding artifacts, let's leave this away.
-    // t = smoothstep(x, 0.01, 0.02)
-    const float t0 = CLAMPS((fabsf(c)-0.01f)/(0.02f-0.01f), 0.0f, 1.0f);
-    const float t = t0*t0*(3.0f-2.0f*t0);
-    val = t*val + (1.0f-t)*x;
-#endif
       *(out2++) = val;
     }
     out2 = out + j*w;
