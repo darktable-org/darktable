@@ -379,11 +379,99 @@ static inline float ll_curve(
 }
 #endif
 
+#if 1
+// scalar version
 void apply_curve(
     float *const out,
     const float *const in,
     const uint32_t w,
     const uint32_t h,
+    const uint32_t padding,
+    const float g,
+    const float sigma,
+    const float shadows,
+    const float highlights,
+    const float clarity)
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(dynamic)
+#endif
+  for(uint32_t j=padding;j<h-padding;j++)
+  {
+    const float *in2  = in  + j*w + padding;
+    float *out2 = out + j*w + padding;
+    for(uint32_t i=padding;i<w-padding;i++)
+    {
+      const float x = *(in2++);
+      const float c = x-g;
+      float val;
+#if 0
+    if(c >  sigma) val = g + sigma + shadows    * (c-sigma);
+    else if(c < -sigma) val = g - sigma + highlights * (c+sigma);
+    else
+    {
+      val = x;
+      // const float norm = 1.0 + clarity * expf(-.5f);
+      // const float delta = fabsf(c)/sigma;
+      // // const float enh = powf(delta, 1./clarity);
+      // const float enh = (delta + clarity * delta * expf(-delta*delta/2.0))/norm;
+      // const float f_d = t * enh + (1.0f-t)*delta;
+      // val = g + t * copysignf(sigma * f_d, c) + (1.0f-t)*(x-g);
+    }
+    val += clarity * c * expf(-c*c/(2.0*sigma*sigma/4.0f));
+#endif
+#if 1
+      // blend in via quadratic bezier
+      if     (c >  2*sigma) val = g + sigma + shadows    * (c-sigma);
+      else if(c < -2*sigma) val = g - sigma + highlights * (c+sigma);
+      else if(c > 0.0f)
+      { // shadow contrast
+        const float t = CLAMPS(c / (2.0f*sigma), 0.0f, 1.0f);
+        const float t2 = t * t;
+        const float mt = 1.0f-t;
+        val = g + sigma * 2.0f*mt*t + t2*(sigma + sigma*shadows);
+      }
+      else
+      { // highlight contrast
+        const float t = CLAMPS(-c / (2.0f*sigma), 0.0f, 1.0f);
+        const float t2 = t * t;
+        const float mt = 1.0f-t;
+        val = g - sigma * 2.0f*mt*t + t2*(- sigma - sigma*highlights);
+      }
+      // midtone local contrast
+      val += clarity * c * dt_fast_expf(-c*c/(2.0*sigma*sigma/3.0f));
+#endif
+#if 0 // noise
+    // paper says to blend this in to avoid boosting noise.
+    // but it does cause some additional banding artifacts, let's leave this away.
+    // t = smoothstep(x, 0.01, 0.02)
+    const float t0 = CLAMPS((fabsf(c)-0.01f)/(0.02f-0.01f), 0.0f, 1.0f);
+    const float t = t0*t0*(3.0f-2.0f*t0);
+    val = t*val + (1.0f-t)*x;
+#endif
+      *(out2++) = val;
+    }
+    out2 = out + j*w;
+    for(int i=0;i<padding;i++)   out2[i] = out2[padding];
+    for(int i=w-padding;i<w;i++) out2[i] = out2[w-padding-1];
+  }
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(dynamic)
+#endif
+  for(int j=0;j<padding;j++) memcpy(out + w*j, out+padding*w, sizeof(float)*w);
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(dynamic)
+#endif
+  for(int j=h-padding;j<h;j++) memcpy(out + w*j, out+w*(h-padding-1), sizeof(float)*w);
+}
+#else
+// sse (4-wide)
+void apply_curve(
+    float *const out,
+    const float *const in,
+    const uint32_t w,
+    const uint32_t h,
+    const uint32_t padding,
     const float gamma,
     const float sigma,
     const float shadows,
@@ -451,6 +539,7 @@ void apply_curve(
   }
   // TODO: process last 0-3 elements if not divisible by simd width=4
 }
+#endif
 
 void local_laplacian(
     const float *const input,   // input buffer in some Labx or yuvx format
@@ -505,7 +594,7 @@ void local_laplacian(
       buf[k][0][j] = ll_curve(padded[0][j], gamma[k], sigma, shadows, highlights, clarity);
 #else
     apply_curve(
-        buf[k][0], padded[0], w, h, gamma[k], sigma, shadows, highlights, clarity);
+        buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);
 #endif
 
     // create gaussian pyramids
