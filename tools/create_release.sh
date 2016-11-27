@@ -29,6 +29,10 @@ echo "* creating version header"
 echo "* removing usermanual"
 rm -rf darktable-$dt_decoration/doc/usermanual
 
+# drop regression_tests. for internal use, and need git anyway
+echo "* removing tools/regression_tests"
+rm -rf darktable-$dt_decoration/tools/regression_tests
+
 # ... and also remove RELEASE_NOTES. that file is just for internal use
 #echo "* removing RELEASE_NOTES"
 #rm -rf darktable-$dt_decoration/RELEASE_NOTES

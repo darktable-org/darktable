@@ -210,7 +210,7 @@ static GList *_duplicate_history(GList *hist)
   return result;
 }
 
-dt_iop_module_t *get_base_module(dt_develop_t *dev, char *op)
+static dt_iop_module_t *get_base_module(dt_develop_t *dev, char *op)
 {
   dt_iop_module_t *result = NULL;
 

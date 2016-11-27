@@ -464,7 +464,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
           "    <div class=\"page\">\n",
           title, title);
 
-  uint64_t count = 0;
+  size_t count = 0;
   GList *tmp = d->l;
   while(tmp)
   {
@@ -478,7 +478,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
              "    </div>\n"
              "    <div class=\"footer\">\n"
              "      <script language=\"JavaScript\" type=\"text/javascript\">\n"
-             "      document.write(\"download all: <em>curl -O#  \" + document.documentURI.replace( /\\\\/g, '/' ).replace( /\\/[^\\/]*$/, '' ) + \"/img_[0000-%04lu].jpg</em>\")\n"
+             "      document.write(\"download all: <em>curl -O#  \" + document.documentURI.replace( /\\\\/g, '/' ).replace( /\\/[^\\/]*$/, '' ) + \"/img_[0000-%04zu].jpg</em>\")\n"
              "      </script><br />\n"
              "      created with %s\n"
              "    </div>\n"
