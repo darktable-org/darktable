@@ -243,19 +243,20 @@ float curve(
     const float highlights,
     const float clarity)
 {
-  const float off = sigma; // where shad/hi bending starts (ends at this + sigma)
-  float val = g + (x-g) + clarity * (x - g) * native_exp(-(x-g)*(x-g)/(2.0f*sigma*sigma));
-
-  float b0 = clamp((x-g-off)/sigma, 0.0f, 1.0f);
-  float lin0 = g + off + shadows * (x-g-off);
-  val = val * (1.0f-b0) + b0 * lin0;
-
-  float b1 = clamp(-(x-g+off)/sigma, 0.0f, 1.0f);
-  float lin1 = g - off + highlights * (x-g+off);
-  val = val * (1.0f-b1) + b1 * lin1;
-
-  const float t = smoothstep(0.01f, 0.02f, fabs(x-g));
-  val = val * t + x * (1.0f - t);
+  const float c = x-g;
+  float val;
+  const float ssigma = c > 0.0f ? sigma : - sigma;
+  const float shadhi = c > 0.0f ? shadows : highlights;
+  if (fabs(c) > 2*sigma) val = g + ssigma + shadhi * (c-ssigma); // linear part
+  else
+  { // blend in via quadratic bezier
+    const float t = clamp(c / (2.0f*ssigma), 0.0f, 1.0f);
+    const float t2 = t * t;
+    const float mt = 1.0f-t;
+    val = g + ssigma * 2.0f*mt*t + t2*(ssigma + ssigma*shadhi);
+  }
+  // midtone local contrast
+  val += clarity * c * native_expf(-c*c/(2.0f*sigma*sigma/3.0f));
   return val;
 }
 
