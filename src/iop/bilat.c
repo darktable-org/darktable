@@ -155,7 +155,7 @@ error:
   else // mode == s_mode_local_laplacian
   {
     dt_local_laplacian_cl_t *b = dt_local_laplacian_init_cl(piece->pipe->devid, roi_in->width, roi_in->height,
-        0.1, d->sigma_s, d->sigma_r, d->detail);
+        0.2, d->sigma_s, d->sigma_r, d->detail);
     if(!b) goto error_ll;
     if(dt_local_laplacian_cl(b, dev_in, dev_out) != CL_SUCCESS) goto error_ll;
     dt_local_laplacian_free_cl(b);
@@ -246,7 +246,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else // s_mode_local_laplacian
   {
-    local_laplacian((const float *)i, (float *)o, roi_in->width, roi_in->height, 0.1f, d->sigma_s, d->sigma_r, d->detail);
+    local_laplacian(i, o, roi_in->width, roi_in->height, 0.2f, d->sigma_s, d->sigma_r, d->detail);
   }
 }
 
