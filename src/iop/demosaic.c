@@ -36,7 +36,7 @@
 #include <memory.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string.h>
+#include <complex.h>
 
 // we assume people have -msee support.
 #if defined(__SSE__)
@@ -44,6 +44,14 @@
 #endif
 
 DT_MODULE_INTROSPECTION(3, dt_iop_demosaic_params_t)
+
+
+const float complex Minv[3][18] = {
+  { 1.0f +0.00000000000000f * _Complex_I, -0.375000000000000f +0.649519052838328f * _Complex_I, -0.375000000000000f -0.649519052838329f * _Complex_I, 0.00000000000000f - 1.83697019872103e-16f * _Complex_I, 0.250000000000000f -0.433012701892219f * _Complex_I, -0.125000000000000f -0.216506350946110f * _Complex_I, -0.500000000000000f +1.56125112837913e-16f * _Complex_I, -6.24500451351650e-17f - 6.08852588898699e-19f * _Complex_I, 1.56125112837913e-17f + 9.36750677027475e-17f * _Complex_I, 0.375000000000000f -0.649519052838329f * _Complex_I, -0.125000000000000f -0.216506350946110f * _Complex_I, -0.125000000000000f +0.216506350946110f * _Complex_I, 1.56125112837913e-17f - 9.36750677027475e-17f * _Complex_I, -6.24500451351650e-17f + 6.08852588898699e-19f * _Complex_I, 0.375000000000000f +0.649519052838329f * _Complex_I, -0.500000000000000f -1.56125112837913e-16f * _Complex_I, -0.125000000000000f +0.216506350946110f * _Complex_I, 0.250000000000000f +0.433012701892219f * _Complex_I },
+  { 1.0f +0.00000000000000f * _Complex_I, 2.39167952270526e-17f - 5.80308223730460e-18f * _Complex_I, 3.25265923185419e-17f - 4.43189035813341e-17f * _Complex_I, -2.15704153771370e-32f + 1.83697019872103e-16f * _Complex_I, -0.200000000000000f +0.346410161513775f * _Complex_I, 0.0999999999999999f + 0.173205080756888f * _Complex_I, 0.400000000000000f -4.51028103753970e-17f * _Complex_I, -5.62050406216485e-17f + 1.49880108324396e-16f * _Complex_I, -2.49800180540660e-17f + 4.41653799494468e-17f * _Complex_I, -1.37426241103610e-17f + 7.14884045852542e-17f * _Complex_I, 0.0999999999999998f + 0.173205080756888f * _Complex_I, 0.0999999999999999f - 0.173205080756888f * _Complex_I, -2.49800180540660e-17f - 4.41653799494468e-17f * _Complex_I, -5.62050406216485e-17f - 1.49880108324396e-16f * _Complex_I, -6.09739023677825e-17f + 1.93270952776170e-16f * _Complex_I, 0.400000000000000f +1.24900090270330e-16f * _Complex_I, 0.100000000000000f -0.173205080756888f * _Complex_I, -0.200000000000000f -0.346410161513775f * _Complex_I },
+  { 1.0f - 2.22044604925031e-16f * _Complex_I, 0.375000000000000f -0.649519052838329f * _Complex_I, 0.375000000000000f +0.649519052838329f * _Complex_I, -2.46519032881566e-32f - 1.83697019872103e-16f * _Complex_I, 0.250000000000000f -0.433012701892219f * _Complex_I, -0.125000000000000f -0.216506350946110f * _Complex_I, -0.500000000000000f +1.66533453693773e-16f * _Complex_I, -6.24500451351650e-17f + 2.21435752336133e-16f * _Complex_I, -1.09287578986539e-16f + 3.12250225675825e-17f * _Complex_I, -0.375000000000000f +0.649519052838329f * _Complex_I, -0.125000000000000f -0.216506350946110f * _Complex_I, -0.125000000000000f +0.216506350946110f * _Complex_I, -1.09287578986539e-16f - 3.12250225675825e-17f * _Complex_I, -6.24500451351651e-17f - 2.21435752336133e-16f * _Complex_I, -0.375000000000000f -0.649519052838329f * _Complex_I, -0.500000000000000f +8.32667268468867e-17f * _Complex_I, -0.125000000000000f +0.216506350946110f * _Complex_I, 0.25000000000000f +0.433012701892219f * _Complex_I }
+};
+
 
 #define DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
 
@@ -929,7 +937,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
       /* Average the most homogenous pixels for the final result:       */
       float fdc_src[27][27];
-      int fdc_row, fdc_col;  //, myrow, mycol;
+      int fdc_row, fdc_col;
       for(int row = pad_tile; row < mrow - pad_tile; row++)
       {
         int col = pad_tile;
@@ -973,14 +981,73 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           float green = avg[1] / avg[3];
           float blue = avg[2] / avg[3];
           float w = dirsum / (float)dircount;
-          red++;
-          green++;
-          blue++;
-          w++;
-
-//           for(int c = 0; c < 3; c++)
-//             out[4 * (width * (row + top) + col + left) + c] =
-//               avg[c]/avg[3];
+          // preserve only luma component of Markesteijn for this pixel
+          float y  =  0.29900f * red + 0.58700f * green + 0.11400f * blue;
+#define CORR_FILT(VAR,FILT,XOFFS,YOFFS,XSIZE,YSIZE) \
+VAR = 0.0f + 0.0f * _Complex_I; \
+for (fdc_row=(YOFFS); fdc_row < (YSIZE); fdc_row++) \
+for (fdc_col=(XOFFS); fdc_col < (XSIZE); fdc_col++) \
+VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
+          // extract modulated chroma using filters
+          float complex C2m, C3m, C5m, C6m, C7m, C10m, C11m, C12m, C15m, C17m, C18m;
+          CORR_FILT(C2m,h2c,9,0,18,27)
+          CORR_FILT(C3m,h3c,9,0,18,27)
+          CORR_FILT(C5m,h5c,9,9,18,18)
+          CORR_FILT(C6m,h6c,9,0,18,27)
+          CORR_FILT(C7m,h7c,9,9,18,18)
+          CORR_FILT(C10m,h10c,0,9,27,18)
+          CORR_FILT(C11m,h11c,0,9,27,18)
+          CORR_FILT(C12m,h12c,0,9,27,18)
+          CORR_FILT(C15m,h15c,0,9,27,18)
+          CORR_FILT(C17m,h17c,9,0,18,27)
+          CORR_FILT(C18m,h18c,9,9,18,18)
+          // build the q vector components
+          float PI = acos(-1);
+          int myrow = row-1;
+          int mycol = col-1;
+          float complex modulator1 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.5f + (float)myrow * -0.16666666666667f));
+          float complex modulator2 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.16666666666667f + (float)myrow * -0.5f));
+          float complex q2_10 = (w * C10m * modulator1 - (1-w) * C2m * modulator2);
+          float complex modulator3 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.5f + (float)myrow * 0.16666666666667f));
+          float complex modulator4 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.16666666666667f + (float)myrow * -0.5f));
+          float complex q3_15 = (w * C15m * modulator3 - (1-w) * C3m * modulator4);
+          float complex modulator5 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.3333333333333333f ));
+          float complex modulator6 = cexpf(-2.0f * _Complex_I * PI * ( (float)myrow * -0.3333333333333333f ));
+          float complex q6_11 = (w * C11m * modulator5 + (1-w) * C6m * modulator6);
+          float complex q12_17 = (w * C12m * conjf(modulator5) + (1-w) * C17m * conjf(modulator6));
+          float complex modulator7 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.3333333333333333f + (float)myrow * -0.3333333333333333f ));
+          float complex q5 = C5m * modulator7 ;
+          float complex q7 = C7m * cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.3333333333333333f + (float)myrow * -0.3333333333333333f ));
+          float complex q18 = C18m * conjf(modulator7);
+          // get L
+          C2m = (q2_10 * conjf(modulator1) - q2_10 * conjf(modulator2));
+          C3m = (q3_15 * conjf(modulator3) - q3_15 * conjf(modulator4));
+          C6m = (q6_11 * conjf(modulator5) + q6_11 * conjf(modulator6));
+          C12m = (q12_17 * modulator5 + q12_17 * modulator6);
+          float complex L = fdc_src[13][13] - C2m - C3m - C5m - C6m - 2.0f*C7m - C12m - C18m;
+          // get the rgb components from fdc
+          red = crealf(Minv[0][0]*L + Minv[0][4]*q5 + 2.0f*Minv[0][5]*q6_11 + 2.0f*Minv[0][6]*q7 + 2.0f*Minv[0][9]*q2_10 + 2.0f*Minv[0][11]*q12_17 + 2.0f*Minv[0][14]*q3_15 + Minv[0][17]*q18);
+          green = crealf(Minv[1][0]*L + Minv[1][4]*q5 + 2.0f*Minv[1][5]*q6_11 + 2.0f*Minv[1][6]*q7 + 2.0f*Minv[1][9]*q2_10 + 2.0f*Minv[1][11]*q12_17 + 2.0f*Minv[1][14]*q3_15 + Minv[1][17]*q18);
+          blue = crealf(Minv[2][0]*L + Minv[2][4]*q5 + 2.0f*Minv[2][5]*q6_11 + 2.0f*Minv[2][6]*q7 + 2.0f*Minv[2][9]*q2_10 + 2.0f*Minv[2][11]*q12_17 + 2.0f*Minv[2][14]*q3_15 + Minv[2][17]*q18);
+#define LIM(x,min,max) MAX(min,MIN(x,max))
+          red = LIM(red, 0.0f, FLT_MAX);
+          green = LIM(green, 0.0f, FLT_MAX);
+          blue = LIM(blue, 0.0f, FLT_MAX);
+          // now separate luma and chroma for
+          // frequency domain chroma
+          // and take luma from MS and chroma from FDC
+          float cb = -0.16874f * red - 0.33126f * green + 0.50000f * blue;
+          float cr =  0.50000f * red - 0.41869f * green - 0.08131f * blue;
+          // now back to RGB
+          red   = y                 + 1.40200f * cr;
+          green = y - 0.34414f * cb - 0.71414f * cr;
+          blue  = y + 1.77200f * cb;
+          red = LIM(red, 0.0f, FLT_MAX);
+          green = LIM(green, 0.0f, FLT_MAX);
+          blue = LIM(blue, 0.0f, FLT_MAX);
+          out[4 * (width * (row + top) + col + left)    ] = red;
+          out[4 * (width * (row + top) + col + left) + 1] = green;
+          out[4 * (width * (row + top) + col + left) + 2] = blue;
         }
       }
     }
@@ -988,6 +1055,8 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
   free(all_buffers);
 }
 
+#undef CORR_FILT
+#undef LIM
 #undef TS
 
 /* taken from dcraw and demosaic_ppg below */
