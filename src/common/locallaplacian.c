@@ -269,7 +269,8 @@ static inline float ll_laplacian(
     const int wd,                // fine width
     const int ht)                // fine height
 {
-  const float c = ll_expand_gaussian(coarse, i, j, wd, ht);
+  const float c = ll_expand_gaussian(coarse,
+      CLAMPS(i, 2, wd-3), CLAMPS(j, 2, ht-3), wd, ht);
   return fine[j*wd+i] - c;
 }
 
@@ -516,7 +517,7 @@ void local_laplacian(
     gauss_expand(output[l+1], output[l], pw, ph);
     // go through all coefficients in the upsampled gauss buffer:
 #pragma omp parallel for default(none) schedule(static) collapse(2) shared(w,h,buf,output,l,gamma,padded)
-    for(int j=2;j<ph-2;j++) for(int i=2;i<pw-2;i++)
+    for(int j=0;j<ph;j++) for(int i=0;i<pw;i++)
     {
       const float v = padded[l][j*pw+i];
       int hi = 1;
@@ -528,7 +529,6 @@ void local_laplacian(
       float laplace = l0 * (1.0f-a) + l1 * a;
       output[l][j*pw+i] += laplace;
     }
-    ll_fill_boundary2(output[l], pw, ph);
   }
 #pragma omp parallel for default(none) schedule(dynamic) collapse(2) shared(w,output,buf)
   for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
