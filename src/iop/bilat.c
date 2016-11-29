@@ -292,21 +292,21 @@ static void range_callback(GtkWidget *w, dt_iop_module_t *self)
 static void highlights_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  p->sigma_r = dt_bauhaus_slider_get(w);
+  p->sigma_r = dt_bauhaus_slider_get(w)/100.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void shadows_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  p->sigma_s = dt_bauhaus_slider_get(w);
+  p->sigma_s = dt_bauhaus_slider_get(w)/100.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void detail_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  p->detail = dt_bauhaus_slider_get(w);
+  p->detail = (dt_bauhaus_slider_get(w)-100.0f)/100.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -321,8 +321,8 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
     gtk_widget_set_visible(g->shadows, TRUE);
     gtk_widget_set_visible(g->range, FALSE);
     gtk_widget_set_visible(g->spatial, FALSE);
-    dt_bauhaus_slider_set(g->highlights, 1.0f);
-    dt_bauhaus_slider_set(g->shadows, 1.0f);
+    dt_bauhaus_slider_set(g->highlights, 100.0f);
+    dt_bauhaus_slider_set(g->shadows, 100.0f);
   }
   else
   {
@@ -342,12 +342,12 @@ void gui_update(dt_iop_module_t *self)
   // let gui slider match current parameters:
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  dt_bauhaus_slider_set(g->detail, p->detail);
+  dt_bauhaus_slider_set(g->detail, 100.0f*p->detail+100.0f);
   dt_bauhaus_combobox_set(g->mode, p->mode);
   if(p->mode == s_mode_local_laplacian)
   {
-    dt_bauhaus_slider_set(g->shadows, p->sigma_s);
-    dt_bauhaus_slider_set(g->highlights, p->sigma_r);
+    dt_bauhaus_slider_set(g->shadows, p->sigma_s*100.0f);
+    dt_bauhaus_slider_set(g->highlights, p->sigma_r*100.0f);
     gtk_widget_set_visible(g->range, FALSE);
     gtk_widget_set_visible(g->spatial, FALSE);
     gtk_widget_set_visible(g->highlights, TRUE);
@@ -380,9 +380,10 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->mode, s_mode_local_laplacian);
   gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));
 
-  g->detail = dt_bauhaus_slider_new_with_range(self, -1.0, 2.0, 0.01, 0.0, 3);
+  g->detail = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 100.0, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->detail, NULL, _("detail"));
+  dt_bauhaus_slider_set_format(g->detail, "%.0f%%");
 
   g->spatial = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
   dt_bauhaus_widget_set_label(g->spatial, NULL, _("coarseness"));
@@ -392,13 +393,15 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->range, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->range, NULL, _("contrast"));
 
-  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.1, 1.0, 3);
+  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 100.0, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlight contrast"));
+  dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
+  dt_bauhaus_slider_set_format(g->highlights, "%.0f%%");
 
-  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.1, 1.0, 3);
+  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 100.0, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->shadows, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->shadows, NULL, _("shadow contrast"));
+  dt_bauhaus_widget_set_label(g->shadows, NULL, _("shadows"));
+  dt_bauhaus_slider_set_format(g->shadows, "%.0f%%");
 
 
   g_signal_connect(G_OBJECT(g->spatial), "value-changed", G_CALLBACK(spatial_callback), self);
