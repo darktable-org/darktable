@@ -95,7 +95,7 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
   for(int k=0;k<num_gamma;k++)
     g->dev_processed[k] = (cl_mem *)calloc(max_levels, sizeof(cl_mem *));
 
-  g->num_levels = 31-__builtin_clz(MIN(width,height));
+  g->num_levels = MIN(max_levels, 31-__builtin_clz(MIN(width,height)));
   const int max_supp = 1<<(g->num_levels-1);
   const int paddwd = width  + 2*max_supp;
   const int paddht = height + 2*max_supp;
