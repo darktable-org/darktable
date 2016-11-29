@@ -458,7 +458,6 @@ void local_laplacian(
     const float highlights,     // user param: compress highlights
     const float clarity)        // user param: increase clarity/local contrast
 {
-  // XXX TODO: the paper says level 5 is good enough, too? more does look significantly different.
 #define max_levels 7
 #define num_gamma 6
   // don't divide by 2 more often than we can:
@@ -497,14 +496,8 @@ void local_laplacian(
   // XXX TODO: the paper says remapping only level 3 not 0 does the trick, too:
   for(int k=0;k<num_gamma;k++)
   { // process images
-#if 0
-#pragma omp parallel for simd default(none) schedule(dynamic) shared(w,h,k,buf,gamma,padded)
-    for(size_t j=0;j<(size_t)w*h;j++)
-      buf[k][0][j] = ll_curve(padded[0][j], gamma[k], sigma, shadows, highlights, clarity);
-#else
     apply_curve(
         buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);
-#endif
 
     // create gaussian pyramids
     for(int l=1;l<num_levels;l++)
