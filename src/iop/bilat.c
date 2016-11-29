@@ -376,9 +376,11 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(g->mode, _("bilateral grid"));
   dt_bauhaus_combobox_add(g->mode, _("local laplacian filter"));
+  dt_bauhaus_combobox_set_default(g->mode, s_mode_local_laplacian);
+  dt_bauhaus_combobox_set(g->mode, s_mode_local_laplacian);
   gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));
 
-  g->detail = dt_bauhaus_slider_new_with_range(self, -1.0, 2.0, 0.01, 0.2, 3);
+  g->detail = dt_bauhaus_slider_new_with_range(self, -1.0, 2.0, 0.01, 0.0, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->detail, NULL, _("detail"));
 
