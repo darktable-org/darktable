@@ -35,10 +35,10 @@ static inline int dl(int size, const int level)
   return size;
 }
 
-// needs a boundary of 2px around i,j or else it will crash.
+// needs a boundary of 1 or 2px around i,j or else it will crash.
 // (translates to a 1px boundary around the corresponding pixel in the coarse buffer)
-// the lower bound 0 would be fine with 1px boundary, but the
-// upper bound needs one more pixel for even widths/heights.
+// more precisely, 1<=i<wd-1 for even wd and
+//                 1<=i<wd-2 for odd wd (j likewise with ht)
 static inline float ll_expand_gaussian(
     const float *const coarse,
     const int i,
@@ -98,12 +98,12 @@ static inline void ll_fill_boundary2(
     const int wd,
     const int ht)
 {
-  for(int j=1;j<ht-1;j++) input[j*wd] = input[j*wd+1] = input[j*wd+2];
-  for(int j=1;j<ht-1;j++) input[j*wd+wd-1] = input[j*wd+wd-2] = input[j*wd+wd-3];
-  memcpy(input,    input+2*wd, sizeof(float)*wd);
-  memcpy(input+wd, input+2*wd, sizeof(float)*wd);
-  memcpy(input+wd*(ht-1), input+wd*(ht-3), sizeof(float)*wd);
-  memcpy(input+wd*(ht-2), input+wd*(ht-3), sizeof(float)*wd);
+  for(int j=1;j<ht-1;j++) input[j*wd] = input[j*wd+1];
+  if(wd & 1) for(int j=1;j<ht-1;j++) input[j*wd+wd-1] = input[j*wd+wd-2];
+  else       for(int j=1;j<ht-1;j++) input[j*wd+wd-1] = input[j*wd+wd-2] = input[j*wd+wd-3];
+  memcpy(input, input+wd, sizeof(float)*wd);
+  if(!(ht & 1)) memcpy(input+wd*(ht-2), input+wd*(ht-3), sizeof(float)*wd);
+  memcpy(input+wd*(ht-1), input+wd*(ht-2), sizeof(float)*wd);
 }
 
 static inline void gauss_expand(
@@ -115,8 +115,8 @@ static inline void gauss_expand(
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) collapse(2)
 #endif
-  for(int j=2;j<ht-2;j++)
-    for(int i=2;i<wd-2;i++)
+  for(int j=1;j<((ht-1)&~1);j++)  // even ht: two px boundary. odd ht: one px.
+    for(int i=1;i<((wd-1)&~1);i++)
       fine[j*wd+i] = ll_expand_gaussian(input, i, j, wd, ht);
   ll_fill_boundary2(fine, wd, ht);
 }
@@ -270,7 +270,7 @@ static inline float ll_laplacian(
     const int ht)                // fine height
 {
   const float c = ll_expand_gaussian(coarse,
-      CLAMPS(i, 2, wd-3), CLAMPS(j, 2, ht-3), wd, ht);
+      CLAMPS(i, 1, ((wd-1)&~1)-1), CLAMPS(j, 1, ((ht-1)&~1)-1), wd, ht);
   return fine[j*wd+i] - c;
 }
 
