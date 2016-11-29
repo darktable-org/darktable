@@ -459,7 +459,7 @@ void local_laplacian(
     const float clarity)        // user param: increase clarity/local contrast
 {
   // XXX TODO: the paper says level 5 is good enough, too? more does look significantly different.
-#define max_levels 10
+#define max_levels 7
 #define num_gamma 8
   // don't divide by 2 more often than we can:
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(wd,ht)));
