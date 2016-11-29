@@ -20,7 +20,6 @@
 #include "common/opencl.h"
 #include "common/locallaplaciancl.h"
 
-// XXX TODO: the paper says level 5 is good enough, too? more does look significantly different.
 #define max_levels 7
 #define num_gamma 6
 
