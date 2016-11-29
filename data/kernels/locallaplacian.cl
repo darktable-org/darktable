@@ -101,11 +101,13 @@ gauss_expand(
 
   float4 pixel;
   if(x >= wd || y >= ht) return;
-  // fill boundary with 2 px:
-  if(x >= wd-2) cx = wd-3;
-  if(y >= ht-2) cy = ht-3;
-  if(x <= 1) cx = 2;
-  if(y <= 1) cy = 2;
+  // fill boundary with 1 or 2 px:
+  if(wd & 1) if(x >= wd-2) cx = wd-2;
+  else       if(x >= wd-2) cx = wd-3;
+  if(ht & 1) if(y >= ht-2) cy = ht-2;
+  else       if(y >= ht-2) cy = ht-3;
+  if(x <= 0) cx = 1;
+  if(y <= 0) cy = 1;
 
   pixel.x = expand_gaussian(coarse, cx, cy, wd, ht);
   write_imagef (fine, (int2)(x, y), pixel);
@@ -145,10 +147,12 @@ float laplacian(
     read_only image2d_t fine,   // fine res gaussian
     const int i,                // fine index
     const int j,
+    const int ci,               // clamped fine index
+    const int cj,
     const int wd,               // fine width
     const int ht)               // fine height
 {
-  const float c = expand_gaussian(coarse, clamp(i,2,wd-3), clamp(j,2,ht-3), wd, ht);
+  const float c = expand_gaussian(coarse, ci, cj, wd, ht);
   return read_imagef(fine, sampleri, (int2)(i, j)).x - c;
 }
 
@@ -181,11 +185,13 @@ laplacian_assemble(
   int i = x, j = y;
 
   if(x >= pw || y >= ph) return;
-  // fill boundary with 2 px:
-  if(x >= pw-2) i = pw-3;
-  if(y >= ph-2) j = ph-3;
-  if(x <= 1) i = 2;
-  if(y <= 1) j = 2;
+  // fill boundary with 1 or 2 px:
+  if(pw & 1) if(x >= pw-2) i = pw-2;
+  else       if(x >= pw-2) i = pw-3;
+  if(ph & 1) if(y >= ph-2) j = ph-2;
+  else       if(y >= ph-2) j = ph-3;
+  if(x <= 0) i = 1;
+  if(y <= 0) j = 1;
 
   float4 pixel;
   pixel.x = expand_gaussian(output1, i, j, pw, ph);
@@ -203,32 +209,32 @@ laplacian_assemble(
   switch(lo)
   { // oh man, this sucks:
     case 0:
-      l0 = laplacian(buf_g0_l1, buf_g0_l0, x, y, pw, ph);
-      l1 = laplacian(buf_g1_l1, buf_g1_l0, x, y, pw, ph);
+      l0 = laplacian(buf_g0_l1, buf_g0_l0, x, y, i, j, pw, ph);
+      l1 = laplacian(buf_g1_l1, buf_g1_l0, x, y, i, j, pw, ph);
       break;
     case 1:
-      l0 = laplacian(buf_g1_l1, buf_g1_l0, x, y, pw, ph);
-      l1 = laplacian(buf_g2_l1, buf_g2_l0, x, y, pw, ph);
+      l0 = laplacian(buf_g1_l1, buf_g1_l0, x, y, i, j, pw, ph);
+      l1 = laplacian(buf_g2_l1, buf_g2_l0, x, y, i, j, pw, ph);
       break;
     case 2:
-      l0 = laplacian(buf_g2_l1, buf_g2_l0, x, y, pw, ph);
-      l1 = laplacian(buf_g3_l1, buf_g3_l0, x, y, pw, ph);
+      l0 = laplacian(buf_g2_l1, buf_g2_l0, x, y, i, j, pw, ph);
+      l1 = laplacian(buf_g3_l1, buf_g3_l0, x, y, i, j, pw, ph);
       break;
     case 3:
-      l0 = laplacian(buf_g3_l1, buf_g3_l0, x, y, pw, ph);
-      l1 = laplacian(buf_g4_l1, buf_g4_l0, x, y, pw, ph);
+      l0 = laplacian(buf_g3_l1, buf_g3_l0, x, y, i, j, pw, ph);
+      l1 = laplacian(buf_g4_l1, buf_g4_l0, x, y, i, j, pw, ph);
       break;
     case 4:
-      l0 = laplacian(buf_g4_l1, buf_g4_l0, x, y, pw, ph);
-      l1 = laplacian(buf_g5_l1, buf_g5_l0, x, y, pw, ph);
+      l0 = laplacian(buf_g4_l1, buf_g4_l0, x, y, i, j, pw, ph);
+      l1 = laplacian(buf_g5_l1, buf_g5_l0, x, y, i, j, pw, ph);
       break;
     case 5:
-      l0 = laplacian(buf_g5_l1, buf_g5_l0, x, y, pw, ph);
-      l1 = laplacian(buf_g6_l1, buf_g6_l0, x, y, pw, ph);
+      l0 = laplacian(buf_g5_l1, buf_g5_l0, x, y, i, j, pw, ph);
+      l1 = laplacian(buf_g6_l1, buf_g6_l0, x, y, i, j, pw, ph);
       break;
     default: // case 6:
-      l0 = laplacian(buf_g6_l1, buf_g6_l0, x, y, pw, ph);
-      l1 = laplacian(buf_g7_l1, buf_g7_l0, x, y, pw, ph);
+      l0 = laplacian(buf_g6_l1, buf_g6_l0, x, y, i, j, pw, ph);
+      l1 = laplacian(buf_g7_l1, buf_g7_l0, x, y, i, j, pw, ph);
       break;
   }
   pixel.x += l0 * (1.0f-a) + l1 * a;
