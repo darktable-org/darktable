@@ -148,7 +148,7 @@ float laplacian(
     const int wd,               // fine width
     const int ht)               // fine height
 {
-  const float c = expand_gaussian(coarse, i, j, wd, ht);
+  const float c = expand_gaussian(coarse, clamp(i,2,wd-3), clamp(j,2,ht-3), wd, ht);
   return read_imagef(fine, sampleri, (int2)(i, j)).x - c;
 }
 
@@ -203,32 +203,32 @@ laplacian_assemble(
   switch(lo)
   { // oh man, this sucks:
     case 0:
-      l0 = laplacian(buf_g0_l1, buf_g0_l0, i, j, pw, ph);
-      l1 = laplacian(buf_g1_l1, buf_g1_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g0_l1, buf_g0_l0, x, y, pw, ph);
+      l1 = laplacian(buf_g1_l1, buf_g1_l0, x, y, pw, ph);
       break;
     case 1:
-      l0 = laplacian(buf_g1_l1, buf_g1_l0, i, j, pw, ph);
-      l1 = laplacian(buf_g2_l1, buf_g2_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g1_l1, buf_g1_l0, x, y, pw, ph);
+      l1 = laplacian(buf_g2_l1, buf_g2_l0, x, y, pw, ph);
       break;
     case 2:
-      l0 = laplacian(buf_g2_l1, buf_g2_l0, i, j, pw, ph);
-      l1 = laplacian(buf_g3_l1, buf_g3_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g2_l1, buf_g2_l0, x, y, pw, ph);
+      l1 = laplacian(buf_g3_l1, buf_g3_l0, x, y, pw, ph);
       break;
     case 3:
-      l0 = laplacian(buf_g3_l1, buf_g3_l0, i, j, pw, ph);
-      l1 = laplacian(buf_g4_l1, buf_g4_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g3_l1, buf_g3_l0, x, y, pw, ph);
+      l1 = laplacian(buf_g4_l1, buf_g4_l0, x, y, pw, ph);
       break;
     case 4:
-      l0 = laplacian(buf_g4_l1, buf_g4_l0, i, j, pw, ph);
-      l1 = laplacian(buf_g5_l1, buf_g5_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g4_l1, buf_g4_l0, x, y, pw, ph);
+      l1 = laplacian(buf_g5_l1, buf_g5_l0, x, y, pw, ph);
       break;
     case 5:
-      l0 = laplacian(buf_g5_l1, buf_g5_l0, i, j, pw, ph);
-      l1 = laplacian(buf_g6_l1, buf_g6_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g5_l1, buf_g5_l0, x, y, pw, ph);
+      l1 = laplacian(buf_g6_l1, buf_g6_l0, x, y, pw, ph);
       break;
     default: // case 6:
-      l0 = laplacian(buf_g6_l1, buf_g6_l0, i, j, pw, ph);
-      l1 = laplacian(buf_g7_l1, buf_g7_l0, i, j, pw, ph);
+      l0 = laplacian(buf_g6_l1, buf_g6_l0, x, y, pw, ph);
+      l1 = laplacian(buf_g7_l1, buf_g7_l0, x, y, pw, ph);
       break;
   }
   pixel.x += l0 * (1.0f-a) + l1 * a;
