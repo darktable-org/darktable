@@ -459,11 +459,13 @@ void local_laplacian(
     const float clarity)        // user param: increase clarity/local contrast
 {
   // XXX TODO: the paper says level 5 is good enough, too? more does look significantly different.
-#define num_levels 10
+#define max_levels 10
 #define num_gamma 8
+  // don't divide by 2 more often than we can:
+  const int num_levels = 31-__builtin_clz(MIN(wd,ht));
   const int max_supp = 1<<(num_levels-1);
   int w, h;
-  float *padded[num_levels] = {0};
+  float *padded[max_levels] = {0};
   padded[0] = ll_pad_input(input, wd, ht, max_supp, &w, &h);
 
   // allocate pyramid pointers for padded input
@@ -471,7 +473,7 @@ void local_laplacian(
     padded[l] = dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
   // allocate pyramid pointers for output
-  float *output[num_levels] = {0};
+  float *output[max_levels] = {0};
   for(int l=0;l<num_levels;l++)
     output[l] = dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
@@ -488,7 +490,7 @@ void local_laplacian(
   // XXX FIXME: don't need to alloc all the memory at once!
   // XXX FIXME: accumulate into output pyramid one by one?
   // allocate memory for intermediate laplacian pyramids
-  float *buf[num_gamma][num_levels] = {{0}};
+  float *buf[num_gamma][max_levels] = {{0}};
   for(int k=0;k<num_gamma;k++) for(int l=0;l<num_levels;l++)
     buf[k][l] = dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
@@ -538,7 +540,7 @@ void local_laplacian(
     out[4*(j*wd+i)+2] = input[4*(j*wd+i)+2];
   }
   // free all buffers!
-  for(int l=0;l<num_levels;l++)
+  for(int l=0;l<max_levels;l++)
   {
     free(padded[l]);
     free(output[l]);

@@ -21,7 +21,7 @@
 #include "common/locallaplaciancl.h"
 
 // XXX TODO: the paper says level 5 is good enough, too? more does look significantly different.
-#define num_levels 10
+#define max_levels 10
 #define num_gamma 8
 
 // downsample width/height to given level
@@ -53,7 +53,7 @@ void dt_local_laplacian_free_cl(dt_local_laplacian_cl_t *g)
   dt_opencl_finish(g->devid);
 
   // free device mem
-  for(int l=0;l<num_levels;l++)
+  for(int l=0;l<max_levels;l++)
   {
     dt_opencl_release_mem_object(g->dev_padded[l]);
     dt_opencl_release_mem_object(g->dev_output[l]);
@@ -89,13 +89,14 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
   g->shadows = shadows;
   g->highlights = highlights;
   g->clarity = clarity;
-  g->dev_padded = (cl_mem *)calloc(num_levels, sizeof(cl_mem *));
-  g->dev_output = (cl_mem *)calloc(num_levels, sizeof(cl_mem *));
+  g->dev_padded = (cl_mem *)calloc(max_levels, sizeof(cl_mem *));
+  g->dev_output = (cl_mem *)calloc(max_levels, sizeof(cl_mem *));
   g->dev_processed = (cl_mem **)calloc(num_gamma, sizeof(cl_mem **));
   for(int k=0;k<num_gamma;k++)
-    g->dev_processed[k] = (cl_mem *)calloc(num_levels, sizeof(cl_mem *));
+    g->dev_processed[k] = (cl_mem *)calloc(max_levels, sizeof(cl_mem *));
 
-  const int max_supp = 1<<(num_levels-1);
+  g->num_levels = 31-__builtin_clz(MIN(width,height));
+  const int max_supp = 1<<(g->num_levels-1);
   const int paddwd = width  + 2*max_supp;
   const int paddht = height + 2*max_supp;
 
@@ -148,7 +149,7 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
 
   // get intermediate vector buffers with read-write access
   // TODO: is this rounding really required?
-  for(int l=0;l<num_levels;l++)
+  for(int l=0;l<g->num_levels;l++)
   {
     g->dev_padded[l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(bwidth, l)), ROUNDUPHT(dl(bheight, l)), sizeof(float));
     if(!g->dev_padded[l]) goto error;
@@ -174,7 +175,7 @@ cl_int dt_local_laplacian_cl(
     cl_mem input,               // input buffer in some Labx or yuvx format
     cl_mem output)              // output buffer with colour
 {
-  const int max_supp = 1<<(num_levels-1);
+  const int max_supp = 1<<(b->num_levels-1);
   const int wd2 = 2*max_supp + b->width;
   const int ht2 = 2*max_supp + b->height;
   cl_int err = -666;
@@ -191,12 +192,12 @@ cl_int dt_local_laplacian_cl(
   if(err != CL_SUCCESS) goto error;
 
   // create gauss pyramid of padded input, write coarse directly to output
-  for(int l=1;l<num_levels;l++)
+  for(int l=1;l<b->num_levels;l++)
   {
     const int wd = dl(wd2, l), ht = dl(ht2, l);
     size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 0, sizeof(cl_mem), (void *)&b->dev_padded[l-1]);
-    if(l == num_levels-1)
+    if(l == b->num_levels-1)
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), (void *)&b->dev_output[l]);
     else
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), (void *)&b->dev_padded[l]);
@@ -223,7 +224,7 @@ cl_int dt_local_laplacian_cl(
     if(err != CL_SUCCESS) goto error;
 
     // create gaussian pyramids
-    for(int l=1;l<num_levels;l++)
+    for(int l=1;l<b->num_levels;l++)
     {
       const int wd = dl(wd2, l), ht = dl(ht2, l);
       size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
@@ -237,7 +238,7 @@ cl_int dt_local_laplacian_cl(
   }
 
   // assemble output pyramid coarse to fine
-  for(int l=num_levels-2;l >= 0; l--)
+  for(int l=b->num_levels-2;l >= 0; l--)
   {
     const int pw = dl(wd2,l), ph = dl(ht2,l);
     size_t sizes[] = { ROUNDUPWD(pw), ROUNDUPHT(ph), 1 };
@@ -283,6 +284,6 @@ error:
   return err;
 }
 
-#undef num_levels
+#undef max_levels
 #undef num_gamma
 #endif

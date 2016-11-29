@@ -34,6 +34,7 @@ typedef struct dt_local_laplacian_cl_t
   dt_local_laplacian_cl_global_t *global;
 
   int width, height;
+  int num_levels;
   float sigma, highlights, shadows, clarity;
   int blocksize, blockwd, blockht;
   size_t bwidth, bheight;
