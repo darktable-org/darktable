@@ -460,7 +460,7 @@ void local_laplacian(
 {
   // XXX TODO: the paper says level 5 is good enough, too? more does look significantly different.
 #define max_levels 7
-#define num_gamma 8
+#define num_gamma 6
   // don't divide by 2 more often than we can:
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(wd,ht)));
   const int max_supp = 1<<(num_levels-1);

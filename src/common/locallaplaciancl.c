@@ -22,7 +22,7 @@
 
 // XXX TODO: the paper says level 5 is good enough, too? more does look significantly different.
 #define max_levels 7
-#define num_gamma 8
+#define num_gamma 6
 
 // downsample width/height to given level
 static inline uint64_t dl(uint64_t size, const int level)
