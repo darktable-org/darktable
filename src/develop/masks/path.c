@@ -964,8 +964,6 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
     // we don't want a form with less than 3 points
     if(g_list_length(form->points) < 4)
     {
-      // we remove the form
-      dt_masks_free_form(form);
       dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
       dt_masks_iop_update(module);
       dt_control_queue_redraw_center();
