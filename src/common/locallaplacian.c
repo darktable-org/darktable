@@ -462,7 +462,7 @@ void local_laplacian(
 #define max_levels 10
 #define num_gamma 8
   // don't divide by 2 more often than we can:
-  const int num_levels = 31-__builtin_clz(MIN(wd,ht));
+  const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(wd,ht)));
   const int max_supp = 1<<(num_levels-1);
   int w, h;
   float *padded[max_levels] = {0};
