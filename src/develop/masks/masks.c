@@ -1179,7 +1179,6 @@ void dt_masks_free_form(dt_masks_form_t *form)
   g_list_free_full(form->points, free);
   form->points = NULL;
   free(form);
-  form = NULL;
 }
 
 int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double y, double pressure, int which)

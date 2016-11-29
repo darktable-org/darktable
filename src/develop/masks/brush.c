@@ -1599,14 +1599,16 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
     }
     else
     {
+      // unlikely case of button released but no points gathered -> no form
       dt_masks_dynbuf_free(gui->guipoints);
       dt_masks_dynbuf_free(gui->guipoints_payload);
       gui->guipoints = NULL;
       gui->guipoints_payload = NULL;
       gui->guipoints_count = 0;
 
-      // we remove the form
-      dt_masks_free_form(form);
+      dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+      dt_masks_iop_update(module);
+
       dt_masks_change_form_gui(NULL);
     }
 
