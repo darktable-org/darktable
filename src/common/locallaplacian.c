@@ -521,8 +521,12 @@ void local_laplacian(
       const float a = CLAMPS((v - gamma[lo])/(gamma[hi]-gamma[lo]), 0.0f, 1.0f);
       const float l0 = ll_laplacian(buf[lo][l+1], buf[lo][l], i, j, pw, ph);
       const float l1 = ll_laplacian(buf[hi][l+1], buf[hi][l], i, j, pw, ph);
-      float laplace = l0 * (1.0f-a) + l1 * a;
-      output[l][j*pw+i] += laplace;
+      output[l][j*pw+i] += l0 * (1.0f-a) + l1 * a;
+      // we could do this to save on memory (no need for finest buf[][]).
+      // unfortunately it results in a quite noticable loss of sharpness, i think
+      // the extra level is worth it.
+      // else if(l == 0) // use finest scale from input to not amplify noise (and use less memory)
+      //   output[l][j*pw+i] += ll_laplacian(padded[l+1], padded[l], i, j, pw, ph);
     }
   }
 #pragma omp parallel for default(none) schedule(dynamic) collapse(2) shared(w,output,buf)
