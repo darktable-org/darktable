@@ -819,12 +819,15 @@ int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_versio
 
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
 {
-  dt_masks_form_t *form = (dt_masks_form_t *)malloc(sizeof(dt_masks_form_t));
+  dt_masks_form_t *form = (dt_masks_form_t *)calloc(1, sizeof(dt_masks_form_t));
+  if(!form) return NULL;
+
   form->type = type;
   form->version = dt_masks_version();
   form->formid = time(NULL);
 
-  form->points = NULL;
+  // all forms created must be registered in darktable.develop->allforms for later cleanup
+  darktable.develop->allforms = g_list_append(darktable.develop->allforms, form);
 
   return form;
 }
@@ -844,18 +847,8 @@ dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id)
 
 void dt_masks_read_forms(dt_develop_t *dev)
 {
-  // first we have to remove all existing entries from the list
-  if(dev->forms)
-  {
-    GList *forms = g_list_first(dev->forms);
-    while(forms)
-    {
-      dt_masks_free_form((dt_masks_form_t *)forms->data);
-      forms = g_list_next(forms);
-    }
-    g_list_free(dev->forms);
-    dev->forms = NULL;
-  }
+  // first we have to reset the list
+  dev->forms = NULL;
 
   if(dev->image_storage.id <= 0) return;
 
@@ -872,9 +865,11 @@ void dt_masks_read_forms(dt_develop_t *dev)
     // 0-img, 1-formid, 2-form_type, 3-name, 4-version, 5-points, 6-points_count, 7-source
 
     // we get the values
-    dt_masks_form_t *form = (dt_masks_form_t *)malloc(sizeof(dt_masks_form_t));
-    form->formid = sqlite3_column_int(stmt, 1);
-    form->type = sqlite3_column_int(stmt, 2);
+
+    int formid = sqlite3_column_int(stmt, 1);
+    dt_masks_type_t type = sqlite3_column_int(stmt, 2);
+    dt_masks_form_t *form = dt_masks_create(type);
+    form->formid = formid;
     const char *name = (const char *)sqlite3_column_text(stmt, 3);
     snprintf(form->name, sizeof(form->name), "%s", name);
     form->version = sqlite3_column_int(stmt, 4);
@@ -946,8 +941,6 @@ void dt_masks_read_forms(dt_develop_t *dev)
                 "[dt_masks_read_forms] %s (imgid `%i'): mask version mismatch: history is %d, dt %d.\n",
                 fname, dev->image_storage.id, form->version, dt_masks_version());
         dt_control_log(_("%s: mask version mismatch: %d != %d"), fname, dt_masks_version(), form->version);
-
-        dt_masks_free_form(form);
 
         continue;
       }
@@ -1388,9 +1381,6 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
 void dt_masks_change_form_gui(dt_masks_form_t *newform)
 {
   dt_masks_clear_form_gui(darktable.develop);
-  // free the actual mask form if it's id is 0 (temp mask)
-  if(darktable.develop->form_visible && darktable.develop->form_visible->formid == 0)
-    dt_masks_free_form(darktable.develop->form_visible);
   darktable.develop->form_visible = newform;
 }
 
@@ -1883,7 +1873,6 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
     if(f->formid == id)
     {
       darktable.develop->forms = g_list_remove(darktable.develop->forms, f);
-      dt_masks_free_form(f);
       dt_masks_write_forms(darktable.develop);
       break;
     }
@@ -2224,7 +2213,6 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
     if(u == 0)
     {
       dev->forms = g_list_remove(dev->forms, f);
-      dt_masks_free_form(f);
     }
   }
 
