@@ -165,6 +165,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   free(dev->histogram_pre_tonecurve);
   free(dev->histogram_pre_levels);
 
+  g_list_free(dev->forms);
   g_list_free_full(dev->allforms, _free_form);
 
   g_list_free_full(dev->proxy.exposure, g_free);

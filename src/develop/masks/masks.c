@@ -848,6 +848,7 @@ dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id)
 void dt_masks_read_forms(dt_develop_t *dev)
 {
   // first we have to reset the list
+  g_list_free(dev->forms);
   dev->forms = NULL;
 
   if(dev->image_storage.id <= 0) return;
