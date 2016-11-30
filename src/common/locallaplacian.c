@@ -458,7 +458,7 @@ void local_laplacian(
     const float highlights,     // user param: compress highlights
     const float clarity)        // user param: increase clarity/local contrast
 {
-#define max_levels 7
+#define max_levels 9
 #define num_gamma 6
   // don't divide by 2 more often than we can:
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(wd,ht)));
