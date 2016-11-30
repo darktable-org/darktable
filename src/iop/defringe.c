@@ -173,7 +173,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
     fprintf(stderr, "Error allocating memory for gaussian blur in: defringe module\n");
     goto ERROR_EXIT;
   }
-  dt_gaussian_blur(gauss, in, out);
+  dt_gaussian_blur_4c(gauss, in, out);
   dt_gaussian_free(gauss);
 
   int samples_wish = radius * radius;
