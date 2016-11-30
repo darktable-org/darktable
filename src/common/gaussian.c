@@ -160,7 +160,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 
   const int width = g->width;
   const int height = g->height;
-  const int ch = g->channels;
+  const int ch = MIN(4, g->channels); // just to appease zealous compiler warnings about stack usage
 
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
 
@@ -178,15 +178,15 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 #endif
   for(int i = 0; i < width; i++)
   {
-    float xp[ch];
-    float yb[ch];
-    float yp[ch];
-    float xc[ch];
-    float yc[ch];
-    float xn[ch];
-    float xa[ch];
-    float yn[ch];
-    float ya[ch];
+    float xp[4] = {0.0f};
+    float yb[4] = {0.0f};
+    float yp[4] = {0.0f};
+    float xc[4] = {0.0f};
+    float yc[4] = {0.0f};
+    float xn[4] = {0.0f};
+    float xa[4] = {0.0f};
+    float yn[4] = {0.0f};
+    float ya[4] = {0.0f};
 
     // forward filter
     for(int k = 0; k < ch; k++)
@@ -250,15 +250,15 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 #endif
   for(int j = 0; j < height; j++)
   {
-    float xp[ch];
-    float yb[ch];
-    float yp[ch];
-    float xc[ch];
-    float yc[ch];
-    float xn[ch];
-    float xa[ch];
-    float yn[ch];
-    float ya[ch];
+    float xp[4] = {0.0f};
+    float yb[4] = {0.0f};
+    float yp[4] = {0.0f};
+    float xc[4] = {0.0f};
+    float yc[4] = {0.0f};
+    float xn[4] = {0.0f};
+    float xa[4] = {0.0f};
+    float yn[4] = {0.0f};
+    float ya[4] = {0.0f};
 
     // forward filter
     for(int k = 0; k < ch; k++)
