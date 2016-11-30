@@ -20,7 +20,7 @@
 #include "common/opencl.h"
 #include "common/locallaplaciancl.h"
 
-#define max_levels 7
+#define max_levels 9
 #define num_gamma 6
 
 // downsample width/height to given level
