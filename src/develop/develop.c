@@ -89,6 +89,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_type = DT_DEV_HISTOGRAM_WAVEFORM;
   g_free(mode);
 
+  dev->forms = NULL;
+  dev->form_visible = NULL;
+  dev->form_gui = NULL;
+  dev->allforms = NULL;
+
   if(dev->gui_attached)
   {
     dev->pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
@@ -119,6 +124,12 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->overexposed.colorscheme = dt_conf_get_int("darkroom/ui/overexposed/colorscheme");
   dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
   dev->overexposed.upper = dt_conf_get_float("darkroom/ui/overexposed/upper");
+}
+
+static void _free_form(void *data)
+{
+  dt_masks_form_t *form = (dt_masks_form_t *)data;
+  dt_masks_free_form(form);
 }
 
 void dt_dev_cleanup(dt_develop_t *dev)
@@ -153,6 +164,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
   free(dev->histogram);
   free(dev->histogram_pre_tonecurve);
   free(dev->histogram_pre_levels);
+
+  g_list_free_full(dev->allforms, _free_form);
 
   g_list_free_full(dev->proxy.exposure, g_free);
 
