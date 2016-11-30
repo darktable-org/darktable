@@ -167,7 +167,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   int height = roi_in->height;
 
   dt_gaussian_t *gauss = NULL;
-  gauss = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
+  gauss = dt_gaussian_init(width, height, 4, Labmax, Labmin, sigma, order);
   if(!gauss)
   {
     fprintf(stderr, "Error allocating memory for gaussian blur in: defringe module\n");
