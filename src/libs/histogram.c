@@ -376,7 +376,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     {
       // cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
       cairo_translate(cr, 0, height);
-      cairo_scale(cr, width / 63.0, -(height - 10) / hist_max);
+      cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
       // cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
       cairo_set_line_width(cr, 1.);
