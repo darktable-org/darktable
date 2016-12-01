@@ -150,7 +150,7 @@ Base Support
 - Nikon D3300 (12bit-compressed, 12bit-uncompressed)
 - Nikon D3400 (12bit-compressed)
 - Nikon D3S (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
-- Nikon D3X (14bit-compressed, 14bit-uncompressed)
+- Nikon D3X (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
 - Nikon D4 (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
 - Nikon D40 (12bit-compressed, 12bit-uncompressed)
 - Nikon D40X (12bit-compressed, 12bit-uncompressed)
@@ -205,7 +205,6 @@ We were unable to bring back these 3 cameras, because we have no samples.
 If anyone reading this owns such a camera, please do consider providing samples.
 - Nikon E8400
 - Nikon E8800
-- Nikon D3X (12-bit)
 
 White Balance Presets
 
