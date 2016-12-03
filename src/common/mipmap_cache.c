@@ -1021,7 +1021,8 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
   // now let's figure out the scaling...
 
   // MIP_F is 4 channels, and we do not demosaic here
-  const float coeff = (image->buf_dsc.filters) ? 2.0f : 1.0f;
+  // const float coeff = (image->buf_dsc.filters) ? 2.0f : 1.0f;
+  const float coeff = 1.0f;
 
   roi_out.scale = fminf((coeff * (float)wd) / (float)image->width, (coeff * (float)ht) / (float)image->height);
   roi_out.width = roi_out.scale * roi_in.width;
