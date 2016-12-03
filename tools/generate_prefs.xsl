@@ -130,6 +130,9 @@
 		<xsl:text>&#xA;    g_object_set(widget, "tooltip-text", _("</xsl:text><xsl:value-of select="longdescription"/><xsl:text>"), (gchar *)0);</xsl:text>
 	</xsl:if>
 	<xsl:if test="@capability">
+                <xsl:text>&#xA;    GtkWidget *notavailable = gtk_label_new(_("not available"));</xsl:text>
+                <xsl:text>&#xA;    gtk_widget_set_halign(notavailable, GTK_ALIGN_START);</xsl:text>
+                <xsl:text>&#xA;    widget = dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>") ? widget : notavailable;</xsl:text>
                 <xsl:text>&#xA;    gtk_widget_set_sensitive(labelev, dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"));</xsl:text>
                 <xsl:text>&#xA;    gtk_widget_set_sensitive(widget, dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"));</xsl:text>
                 <xsl:text>&#xA;    if(!dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"))</xsl:text>
