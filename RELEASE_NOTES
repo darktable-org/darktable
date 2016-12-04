@@ -72,16 +72,16 @@ Some More Changes, Probably Not Complete:
 - Tone curve: mode "automatic in XYZ" mode for "scale chroma"
 - Some compilation fixes
 
-Lua specific changes
+Lua specific changes:
 
 - All asynchronous calls have been rewritten
   - the darktable-specific implementation of yield was removed
-  - darktable.control.execute allows to execute some shell commands without blocking lua
-  - darktable.control.read allows to wait for a file to be readable without blocking lua
-  - darktable.control.sleep allows to pause the lua execution without blocking other lua threads
+  - darktable.control.execute allows to execute some shell commands without blocking Lua
+  - darktable.control.read allows to wait for a file to be readable without blocking Lua
+  - darktable.control.sleep allows to pause the Lua execution without blocking other Lua threads
 - darktable.gui.libs.metadata_view.register_info allows to add new field to the metadata widget in the darkroom view
-- The TextView widget can now be created in lua, allowing input of large chunks of text
-- It is now possible to use a custom widget in the lua preference window to configure a preference
+- The TextView widget can now be created in Lua, allowing input of large chunks of text
+- It is now possible to use a custom widget in the Lua preference window to configure a preference
 - It is now possible to set the precision and step on slider widgets
 
 Changed Dependencies:
@@ -95,7 +95,7 @@ Changed Dependencies:
 - Port to OpenJPEG2
 - SDL is no longer needed.
 
-Base Support
+Base Support:
 
 - Canon EOS-1D X Mark II
 - Canon EOS 5D Mark IV
@@ -205,12 +205,12 @@ Base Support
 - Sony ILCA-68
 - Sony ILCE-6300
 
-We were unable to bring back these 3 cameras, because we have no samples.
+We were unable to bring back these 2 cameras, because we have no samples.
 If anyone reading this owns such a camera, please do consider providing samples.
 - Nikon E8400
 - Nikon E8800
 
-White Balance Presets
+White Balance Presets:
 
 - Canon EOS 1200D
 - Canon EOS Kiss X70
@@ -247,7 +247,7 @@ White Balance Presets
 - Sony ILCA-68
 - Sony ILCE-6300
 
-Noise Profiles
+Noise Profiles:
 
 - Canon EOS 5DS R
 - Canon EOS 80D
@@ -277,12 +277,12 @@ Noise Profiles
 - Sony NEX-5
 - Sony SLT-A37
 
-New Translations
+New Translations:
 
   - Hebrew
   - Slovenian
 
-Updated Translations
+Updated Translations:
 
   - Catalan
   - Czech
