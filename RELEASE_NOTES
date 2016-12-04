@@ -45,6 +45,8 @@ Quite Interesting Changes:
 - OpenCL: properly discard CPU-based OpenCL devices. Fixes crashes on startup with some partially-working OpenCL implementations like pocl.
 - darktable-cli: do not even try to open display, we don't need it.
 - Hotpixels module: make it actually work for X-Trans
+- Cmstest tool should now produce correct output in more cases, especially in multi-monitor setups.
+- Darkroom histogram now uses more bins: use all 8-bit of the output, not just 6.
 
 Some More Changes, Probably Not Complete:
 
@@ -59,6 +61,7 @@ Some More Changes, Probably Not Complete:
 - Add geolocation to watermark variables
 - Fix some crashes with missing configured ICC profiles
 - Support greyscale color profiles
+- Make sure that proper signal handlers are still set after GM initialization...
 - OSX: add trash support (thanks to Michael Kefeder for initial patch)
 - Attach Xmp data to EXR files
 - Several fixes for HighDPI displays
@@ -67,6 +70,7 @@ Some More Changes, Probably Not Complete:
 - Many bugs got fixed and some memory leaks plugged
 - The usermanual was updated to reflect the changes in the 2.2 series
 - Tone curve: mode "automatic in XYZ" mode for "scale chroma"
+- Some compilation fixes
 
 Lua specific changes
 
@@ -249,6 +253,7 @@ Noise Profiles
 - Canon EOS 80D
 - Canon PowerShot G15
 - Canon PowerShot S100
+- Canon PowerShot SX100 IS
 - Canon PowerShot SX50 HS
 - Fujifilm X-T10
 - Fujifilm X-T2
@@ -256,15 +261,20 @@ Noise Profiles
 - Fujifilm X20
 - Fujifilm X70
 - Nikon 1 V3
+- Nikon D5
 - Nikon D5500
 - Olympus E-PL6
+- Olympus E-PM2
 - Olympus PEN-F
 - Panasonic DMC-FZ1000
 - Panasonic DMC-GF7
+- Pentax K-1
 - Pentax K-S2
 - Ricoh GR
 - Sony DSLR-A900
 - Sony DSC-RX10
+- Sony ILCE-6300
+- Sony NEX-5
 - Sony SLT-A37
 
 New Translations
@@ -281,6 +291,7 @@ Updated Translations
   - French
   - German
   - Hungarian
+  - Polish
   - Russian
   - Slovak
   - Spanish
