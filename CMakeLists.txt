@@ -199,7 +199,7 @@ else(DEFINED PROJECT_VERSION)
   if(NOT SOURCE_PACKAGE) # i.e., a git checkout
     # this part is setting the corresponding CMake variable which gets used for example when creating a source package
     execute_process(
-      COMMAND ${CMAKE_SOURCE_DIR}/tools/get_git_version_string.sh OUTPUT_STRIP_TRAILING_WHITESPACE
+      COMMAND bash ${CMAKE_SOURCE_DIR}/tools/get_git_version_string.sh OUTPUT_STRIP_TRAILING_WHITESPACE
       OUTPUT_VARIABLE PROJECT_VERSION
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     # FIXME: PROJECT_VERSION will not be updated automatically, until you rerun cmake
@@ -216,7 +216,7 @@ else(DEFINED PROJECT_VERSION)
     else(NOT EXISTS ${CMAKE_SOURCE_DIR}/src/version_gen.c)
       # no need to create version_gen.c if it's already shipped. that is for example the case with our release tarballs
       execute_process(
-        COMMAND ${CMAKE_SOURCE_DIR}/tools/parse_version_h.sh ${CMAKE_SOURCE_DIR}/src/version_gen.c OUTPUT_STRIP_TRAILING_WHITESPACE
+        COMMAND bash ${CMAKE_SOURCE_DIR}/tools/parse_version_h.sh ${CMAKE_SOURCE_DIR}/src/version_gen.c OUTPUT_STRIP_TRAILING_WHITESPACE
         OUTPUT_VARIABLE PROJECT_VERSION
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       )
