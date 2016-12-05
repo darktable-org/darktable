@@ -173,10 +173,10 @@ laplacian_assemble(
     read_only  image2d_t buf_g4_l1,
     read_only  image2d_t buf_g5_l0,
     read_only  image2d_t buf_g5_l1,
-    read_only  image2d_t buf_g6_l0,
-    read_only  image2d_t buf_g6_l1,
-    read_only  image2d_t buf_g7_l0,
-    read_only  image2d_t buf_g7_l1,
+    // read_only  image2d_t buf_g6_l0,
+    // read_only  image2d_t buf_g6_l1,
+    // read_only  image2d_t buf_g7_l0,
+    // read_only  image2d_t buf_g7_l1,
     const int  pw,                   // width and height of the fine buffers (l0)
     const int  ph)
 {
@@ -196,7 +196,7 @@ laplacian_assemble(
   float4 pixel;
   pixel.x = expand_gaussian(output1, i, j, pw, ph);
 
-  const float num_gamma = 8.0f; // this sucks, have to hardcode for the lack of arrays
+  const float num_gamma = 6.0f; // this sucks, have to hardcode for the lack of arrays
   const float v = read_imagef(input, sampleri, (int2)(i, j)).x;
   int hi = 1;
   // what we mean is this:
@@ -224,18 +224,18 @@ laplacian_assemble(
       l0 = laplacian(buf_g3_l1, buf_g3_l0, x, y, i, j, pw, ph);
       l1 = laplacian(buf_g4_l1, buf_g4_l0, x, y, i, j, pw, ph);
       break;
-    case 4:
+    default: //case 4:
       l0 = laplacian(buf_g4_l1, buf_g4_l0, x, y, i, j, pw, ph);
       l1 = laplacian(buf_g5_l1, buf_g5_l0, x, y, i, j, pw, ph);
       break;
-    case 5:
-      l0 = laplacian(buf_g5_l1, buf_g5_l0, x, y, i, j, pw, ph);
-      l1 = laplacian(buf_g6_l1, buf_g6_l0, x, y, i, j, pw, ph);
-      break;
-    default: // case 6:
-      l0 = laplacian(buf_g6_l1, buf_g6_l0, x, y, i, j, pw, ph);
-      l1 = laplacian(buf_g7_l1, buf_g7_l0, x, y, i, j, pw, ph);
-      break;
+    // case 5:
+    //   l0 = laplacian(buf_g5_l1, buf_g5_l0, x, y, i, j, pw, ph);
+    //   l1 = laplacian(buf_g6_l1, buf_g6_l0, x, y, i, j, pw, ph);
+    //   break;
+    // default: // case 6:
+    //   l0 = laplacian(buf_g6_l1, buf_g6_l0, x, y, i, j, pw, ph);
+    //   l1 = laplacian(buf_g7_l1, buf_g7_l0, x, y, i, j, pw, ph);
+    //   break;
   }
   pixel.x += l0 * (1.0f-a) + l1 * a;
   write_imagef (output0, (int2)(x, y), pixel);
