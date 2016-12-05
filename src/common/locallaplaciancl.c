@@ -257,12 +257,12 @@ cl_int dt_local_laplacian_cl(
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 12, sizeof(cl_mem), (void *)&b->dev_processed[4][l+1]);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 13, sizeof(cl_mem), (void *)&b->dev_processed[5][l]);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 14, sizeof(cl_mem), (void *)&b->dev_processed[5][l+1]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 15, sizeof(cl_mem), (void *)&b->dev_processed[6][l]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 16, sizeof(cl_mem), (void *)&b->dev_processed[6][l+1]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 17, sizeof(cl_mem), (void *)&b->dev_processed[7][l]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 18, sizeof(cl_mem), (void *)&b->dev_processed[7][l+1]);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 19, sizeof(int), (void *)&pw);
-    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 20, sizeof(int), (void *)&ph);
+    // dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 15, sizeof(cl_mem), (void *)&b->dev_processed[6][l]);
+    // dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 16, sizeof(cl_mem), (void *)&b->dev_processed[6][l+1]);
+    // dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 17, sizeof(cl_mem), (void *)&b->dev_processed[7][l]);
+    // dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 18, sizeof(cl_mem), (void *)&b->dev_processed[7][l+1]);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 15, sizeof(int), (void *)&pw);
+    dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 16, sizeof(int), (void *)&ph);
     err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_laplacian_assemble, sizes);
     if(err != CL_SUCCESS) goto error;
   }
