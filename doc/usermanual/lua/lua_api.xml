@@ -12,7 +12,7 @@
 <para><programlisting language="lua">darktable = require "darktable"</programlisting></para>
 
 <para>All functions and data are accessed through the darktable module.</para>
-<para>This documentation for API version 4.0.0-dev.</para>
+<para>This documentation for API version 4.0.0.</para>
 
 <section status="final" id="darktable">
 <title>darktable</title>
@@ -512,6 +512,7 @@
 <para>The type of format object to create, one of : <itemizedlist>
 <listitem><para>copy</para></listitem>
 <listitem><para>exr</para></listitem>
+<listitem><para>j2k</para></listitem>
 <listitem><para>jpeg</para></listitem>
 <listitem><para>pdf</para></listitem>
 <listitem><para>pfm</para></listitem>
@@ -4963,6 +4964,111 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="types_dt_imageio_module_format_data_j2k">
+<title>types.dt_imageio_module_format_data_j2k</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_format_data_j2k</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>Type object describing parameters to export to jpeg2000.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" id="types_dt_imageio_module_format_data_j2k_quality">
+<title>types.dt_imageio_module_format_data_j2k.quality</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>quality</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The quality to use at export time.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_module_format_data_j2k_bpp">
+<title>types.dt_imageio_module_format_data_j2k.bpp</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>bpp</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The bpp parameter to use when exporting.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_module_format_data_j2k_format">
+<title>types.dt_imageio_module_format_data_j2k.format</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>format</secondary>
+</indexterm>
+<synopsis><link linkend="types_dt_imageio_j2k_format_t">types.dt_imageio_j2k_format_t</link></synopsis>
+<para>The format to use.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_module_format_data_j2k_preset">
+<title>types.dt_imageio_module_format_data_j2k.preset</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>preset</secondary>
+</indexterm>
+<synopsis><link linkend="types_dt_imageio_j2k_preset_t">types.dt_imageio_j2k_preset_t</link></synopsis>
+<para>The preset to use.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+</section>
+
 <section status="final" id="types_dt_imageio_module_format_data_pdf">
 <title>types.dt_imageio_module_format_data_pdf</title>
 <indexterm>
@@ -6430,6 +6536,60 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
+<section status="final" id="types_dt_imageio_j2k_format_t">
+<title>types.dt_imageio_j2k_format_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_j2k_format_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>J2K format type</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>j2k</para></listitem>
+<listitem><para>jp2</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_j2k_preset_t">
+<title>types.dt_imageio_j2k_preset_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_j2k_preset_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>J2K preset type</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>off</para></listitem>
+<listitem><para>cinema2k_24</para></listitem>
+<listitem><para>cinema2k_48</para></listitem>
+<listitem><para>cinema4k_24</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 <section status="final" id="types_comp_type_t">
 <title>types.comp_type_t</title>
 <indexterm>
@@ -7359,17 +7519,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The widgets contained by the box</para>
 <para>You can append widgets by adding them at the end of the list</para>
 <para>You can remove widgets by setting them to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -7983,17 +8133,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The various menu entries.</para>
 <para>You can add new entries by writing to the first element beyond the end</para>
 <para>You can removes entries by setting them to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_lua_combobox_changed_callback">

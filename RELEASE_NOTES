@@ -44,7 +44,9 @@ Quite Interesting Changes:
 - Filter-out some useless EXIF tags when exporting, helps keep EXIF size under ~64Kb
 - OpenCL: properly discard CPU-based OpenCL devices. Fixes crashes on startup with some partially-working OpenCL implementations like pocl.
 - darktable-cli: do not even try to open display, we don't need it.
-- Hotpixels iop: make it actually work for X-Trans
+- Hotpixels module: make it actually work for X-Trans
+- Cmstest tool should now produce correct output in more cases, especially in multi-monitor setups.
+- Darkroom histogram now uses more bins: use all 8-bit of the output, not just 6.
 
 Some More Changes, Probably Not Complete:
 
@@ -59,6 +61,7 @@ Some More Changes, Probably Not Complete:
 - Add geolocation to watermark variables
 - Fix some crashes with missing configured ICC profiles
 - Support greyscale color profiles
+- Make sure that proper signal handlers are still set after GM initialization...
 - OSX: add trash support (thanks to Michael Kefeder for initial patch)
 - Attach Xmp data to EXR files
 - Several fixes for HighDPI displays
@@ -67,6 +70,19 @@ Some More Changes, Probably Not Complete:
 - Many bugs got fixed and some memory leaks plugged
 - The usermanual was updated to reflect the changes in the 2.2 series
 - Tone curve: mode "automatic in XYZ" mode for "scale chroma"
+- Some compilation fixes
+
+Lua specific changes:
+
+- All asynchronous calls have been rewritten
+  - the darktable-specific implementation of yield was removed
+  - darktable.control.execute allows to execute some shell commands without blocking Lua
+  - darktable.control.read allows to wait for a file to be readable without blocking Lua
+  - darktable.control.sleep allows to pause the Lua execution without blocking other Lua threads
+- darktable.gui.libs.metadata_view.register_info allows to add new field to the metadata widget in the darkroom view
+- The TextView widget can now be created in Lua, allowing input of large chunks of text
+- It is now possible to use a custom widget in the Lua preference window to configure a preference
+- It is now possible to set the precision and step on slider widgets
 
 Changed Dependencies:
 
@@ -79,9 +95,8 @@ Changed Dependencies:
 - Port to OpenJPEG2
 - SDL is no longer needed.
 
-A special note to all the darktable Fedora users: Fedora-provided darktable packages are intentionally built with Lua disabled. Thus, Lua scripting will not work. This breaks e.g. darktable-gimp integration. Please bug Fedora. In the mean time you could fix that by self-compiling darktable (pass -DDONT_USE_INTERNAL_LUA=OFF to cmake in order to enable use of bundled Lua5.2.4).
+Base Support:
 
-Base Support
 - Canon EOS-1D X Mark II
 - Canon EOS 5D Mark IV
 - Canon EOS 80D
@@ -139,7 +154,7 @@ Base Support
 - Nikon D3300 (12bit-compressed, 12bit-uncompressed)
 - Nikon D3400 (12bit-compressed)
 - Nikon D3S (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
-- Nikon D3X (14bit-compressed, 14bit-uncompressed)
+- Nikon D3X (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
 - Nikon D4 (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
 - Nikon D40 (12bit-compressed, 12bit-uncompressed)
 - Nikon D40X (12bit-compressed, 12bit-uncompressed)
@@ -190,13 +205,13 @@ Base Support
 - Sony ILCA-68
 - Sony ILCE-6300
 
-We were unable to bring back these 3 cameras, because we have no samples.
+We were unable to bring back these 2 cameras, because we have no samples.
 If anyone reading this owns such a camera, please do consider providing samples.
 - Nikon E8400
 - Nikon E8800
-- Nikon D3X (12-bit)
 
-White Balance Presets
+White Balance Presets:
+
 - Canon EOS 1200D
 - Canon EOS Kiss X70
 - Canon EOS Rebel T5
@@ -232,11 +247,13 @@ White Balance Presets
 - Sony ILCA-68
 - Sony ILCE-6300
 
-Noise Profiles
+Noise Profiles:
+
 - Canon EOS 5DS R
 - Canon EOS 80D
 - Canon PowerShot G15
 - Canon PowerShot S100
+- Canon PowerShot SX100 IS
 - Canon PowerShot SX50 HS
 - Fujifilm X-T10
 - Fujifilm X-T2
@@ -244,23 +261,29 @@ Noise Profiles
 - Fujifilm X20
 - Fujifilm X70
 - Nikon 1 V3
+- Nikon D5
 - Nikon D5500
 - Olympus E-PL6
+- Olympus E-PM2
 - Olympus PEN-F
 - Panasonic DMC-FZ1000
 - Panasonic DMC-GF7
+- Pentax K-1
 - Pentax K-S2
 - Ricoh GR
 - Sony DSLR-A900
 - Sony DSC-RX10
+- Sony ILCE-6300
+- Sony NEX-5
 - Sony SLT-A37
 
-Translations
-  Added
+New Translations:
+
   - Hebrew
   - Slovenian
 
-  Updated:
+Updated Translations:
+
   - Catalan
   - Czech
   - Danish
@@ -268,6 +291,7 @@ Translations
   - French
   - German
   - Hungarian
+  - Polish
   - Russian
   - Slovak
   - Spanish

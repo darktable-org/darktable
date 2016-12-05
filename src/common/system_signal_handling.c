@@ -2,7 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
     copyright (c) 2010--2012 henrik andersson.
-    copyright (c) 2010--2013 tobias ellinghaus.    
+    copyright (c) 2010--2013 tobias ellinghaus.
     copyright (c) 2012--2013 parafin
     copyright (c) 2014,2016 Roman Lebedev.
 
@@ -63,13 +63,13 @@ typedef void(dt_signal_handler_t)(int);
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 static const int _signals_to_preserve[] = { SIGHUP,  SIGINT,  SIGQUIT, SIGILL,  SIGABRT, SIGBUS, SIGFPE,
                                             SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGXCPU, SIGXFSZ };
-static dt_signal_handler_t *_orig_sig_handlers[_NSIG] = { NULL };
 #else
 static const int _signals_to_preserve[] = { SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM };
-static dt_signal_handler_t *_orig_sig_handlers[NSIG] = { NULL };
 static LPTOP_LEVEL_EXCEPTION_FILTER _dt_exceptionfilter_old_handler = NULL;
 #endif //! defined (_WIN32)
-static const int _num_signals_to_preserve = sizeof(_signals_to_preserve) / sizeof(_signals_to_preserve[0]);
+
+#define _NUM_SIGNALS_TO_PRESERVE (sizeof(_signals_to_preserve) / sizeof(_signals_to_preserve[0]))
+static dt_signal_handler_t *_orig_sig_handlers[_NUM_SIGNALS_TO_PRESERVE] = { NULL };
 
 #endif //! defined(__APPLE__)
 
@@ -188,7 +188,7 @@ void dt_set_signal_handlers()
   if(1 == _times_handlers_were_set)
   {
     // save original handlers
-    for(int i = 0; i < _num_signals_to_preserve; i++)
+    for(int i = 0; i < _NUM_SIGNALS_TO_PRESERVE; i++)
     {
       const int signum = _signals_to_preserve[i];
 
@@ -196,16 +196,16 @@ void dt_set_signal_handlers()
 
       if(SIG_ERR == prev) prev = SIG_DFL;
 
-      _orig_sig_handlers[signum] = prev;
+      _orig_sig_handlers[i] = prev;
     }
   }
 
   // restore handlers
-  for(int i = 0; i < _num_signals_to_preserve; i++)
+  for(int i = 0; i < _NUM_SIGNALS_TO_PRESERVE; i++)
   {
     const int signum = _signals_to_preserve[i];
 
-    (void)signal(signum, _orig_sig_handlers[signum]);
+    (void)signal(signum, _orig_sig_handlers[i]);
   }
 
 #if !defined(_WIN32)

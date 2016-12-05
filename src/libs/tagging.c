@@ -366,7 +366,7 @@ static void import_button_clicked(GtkButton *button, gpointer user_data)
     if(count < 0)
       dt_control_log(_("error importing tags"));
     else
-      dt_control_log(_("%ld tags imported"), count);
+      dt_control_log(_("%zd tags imported"), count);
     g_free(filename);
     g_free(dirname);
   }
@@ -404,7 +404,7 @@ static void export_button_clicked(GtkButton *button, gpointer user_data)
     if(count < 0)
       dt_control_log(_("error exporting tags"));
     else
-      dt_control_log(_("%ld tags exported"), count);
+      dt_control_log(_("%zd tags exported"), count);
     g_free(filename);
     g_free(dirname);
   }

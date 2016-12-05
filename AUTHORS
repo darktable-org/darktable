@@ -24,17 +24,19 @@ Richard Levitte,
 Josep V. Moragues,
 Báthory Péter,
 Matjaž Jeran,
+Novy Sawai,
 Pascal de Bruijn,
 Alberto Caso,
 Alexandre Prokoudine,
 Dušan Kazik,
 Milan Knížek,
+Tomasz Golinski,
 johannes hanika.
 
-* contributors (at least 5 commits):
+* contributors (at least 4 commits):
 Stefan Schöfegger,
-Ger Siemerink,
 Dan Torop,
+Ger Siemerink,
 Matthieu Volat,
 Michel Leblond,
 shlomi braitbart,
@@ -43,8 +45,10 @@ Bernd Steinhauser,
 tatica,
 Richard Levitte,
 Chris Hodapp,
+Matthieu Moy,
 Maurizio Paglia,
 Thomas Pryds,
-Alexander V. Smal.
+Alexander V. Smal,
+Josep V. Moragues.
 
 And all those of you that made previous releases possible
