@@ -1,44 +1,30 @@
-# - Find the native Pugixml includes and library
+# - Try to find Pugixml
+# Once done, this will define
+#
+#  Pugixml_FOUND - system has Pugixml
+#  Pugixml_INCLUDE_DIRS - the Pugixml include directories
+#  Pugixml_LIBRARIES - link these to use Pugixml
 
-find_path(Pugixml_INCLUDE_DIR 
-  NAMES
-    pugixml.hpp
-  PATHS
-    /usr/local/include
-    /usr/include
-  PATH_SUFFIXES
-    pugixml pugixml-1.7
+include(LibFindMacros)
+
+libfind_pkg_detect(Pugixml pugixml
+  FIND_PATH pugixml.hpp
+  FIND_LIBRARY pugixml
 )
 
-find_library(Pugixml_LIBRARY
-  NAMES
-    pugixml
-  PATHS
-    /usr/local/lib
-    /usr/lib
-    /lib
-  PATH_SUFFIXES
-    pugixml pugixml-1.7
-)
+if (Pugixml_PKGCONF_VERSION)
+  set(Pugixml_VERSION "${Pugixml_PKGCONF_VERSION}")
+elseif(Pugixml_INCLUDE_DIR)
+  # no .pc file, look for version manually.
+  # yes, libfind_version_header() does not work here.
 
-if (NOT Pugixml_INCLUDE_DIR OR NOT Pugixml_LIBRARY)
-  message(FATAL_ERROR "Couldn't find pugixml, you probably need libpugixml-dev or similar")
+  file(READ "${Pugixml_INCLUDE_DIR}/pugixml.hpp" Pugixml_VERSION_CONTENT)
+  string(REGEX MATCH "PUGIXML_VERSION *([0-9])([0-9][0-9])" _dummy "${Pugixml_VERSION_CONTENT}")
+  set(Pugixml_VERSION "${CMAKE_MATCH_1}.${CMAKE_MATCH_2}")
 endif()
 
-file(READ ${Pugixml_INCLUDE_DIR}/pugixml.hpp Pugixml_VERSION_CONTENT)
-string(REGEX MATCH "PUGIXML_VERSION *([0-9])([0-9][0-9])"  _dummy "${Pugixml_VERSION_CONTENT}")
-set(Pugixml_VERSION "${CMAKE_MATCH_1}.${CMAKE_MATCH_2}")
-
-if(Pugixml_VERSION VERSION_LESS Pugixml_FIND_VERSION)
-  message(FATAL_ERROR "pugixml version check failed.  Version ${Pugixml_VERSION} was found, at least version ${Pugixml_FIND_VERSION} is required")
-endif()
-
-SET(Pugixml_LIBRARIES ${Pugixml_LIBRARY})
-SET(Pugixml_INCLUDE_DIRS ${Pugixml_INCLUDE_DIR})
-
-include(FindPackageHandleStandardArgs)
-# handle the QUIETLY and REQUIRED arguments and set Pugixml_FOUND to TRUE
-# if all listed variables are TRUE
-find_package_handle_standard_args(Pugixml  DEFAULT_MSG
-                                  Pugixml_LIBRARY Pugixml_INCLUDE_DIR)
-mark_as_advanced(Pugixml_INCLUDE_DIR Pugixml_LIBRARY )
+# Set the include dir variables and the libraries and let libfind_process do the rest.
+# NOTE: Singular variables for this library, plural for libraries this this lib depends on.
+set(Pugixml_PROCESS_INCLUDES Pugixml_INCLUDE_DIR)
+set(Pugixml_PROCESS_LIBS Pugixml_LIBRARY)
+libfind_process(Pugixml)
