@@ -49,15 +49,18 @@ if(WIN32)
   set(CPACK_GENERATOR "NSIS")
   set(CPACK_PACKAGE_EXECUTABLES "darktable" "Darktable - Raw Editor")
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
-  # There is a bug in NSI that does not handle full unix paths properly. Make
+  # There is a bug in NSIS that does not handle full unix paths properly. Make
   # sure there is at least one set of four (4) backlasshes.
-  #SET(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/themes/default\\\\icon.bmp")
-  #SET(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/themes/default\\\\icon.ico")
+  #SET(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/data/pixmaps/256x256/darktable.png")
+  SET(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico")
+  SET(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico")
   SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\${CMAKE_PROJECT_NAME}.exe")
-  SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} Darktable")
-  SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\darktable.sourceforge.net")
-  SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\darktable.sourceforge.net")
+  SET(CPACK_NSIS_DISPLAY_NAME "Darktable")
+  SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.darktable.org")
+  SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.darktable.org")
   SET(CPACK_NSIS_MODIFY_PATH OFF)
+
+  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 
 endif(WIN32)
 
