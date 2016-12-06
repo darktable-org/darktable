@@ -43,8 +43,8 @@ static int32_t dt_film_import1_run(dt_job_t *job)
   }
 
   // notify the user via the window manager
-  if(darktable.gui && !gtk_window_is_active(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui))))
-    gtk_window_set_urgency_hint(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), TRUE);
+  if(darktable.gui)
+    dt_ui_notify_user(darktable.gui->ui);
 
   return 0;
 }

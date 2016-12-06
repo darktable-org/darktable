@@ -104,14 +104,6 @@ void dt_control_progress_destroy(dt_control_t *control, dt_progress_t *progress)
   }
 #endif
 
-#ifdef MAC_INTEGRATION
-#ifdef GTK_TYPE_OSX_APPLICATION
-  gtk_osxapplication_attention_request(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL), INFO_REQUEST);
-#else
-  gtkosx_application_attention_request(g_object_new(GTKOSX_TYPE_APPLICATION, NULL), INFO_REQUEST);
-#endif
-#endif
-
   // free the object
   dt_pthread_mutex_destroy(&progress->mutex);
   g_free(progress->message);

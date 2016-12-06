@@ -1261,8 +1261,8 @@ end:
   mformat->free_params(mformat, fdata);
 
   // notify the user via the window manager
-  if(darktable.gui && !gtk_window_is_active(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui))))
-    gtk_window_set_urgency_hint(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), TRUE);
+  if(darktable.gui)
+    dt_ui_notify_user(darktable.gui->ui);
 
   return 0;
 }
