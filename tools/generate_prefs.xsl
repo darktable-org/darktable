@@ -129,19 +129,31 @@
 	<xsl:if test="longdescription != ''">
 		<xsl:text>&#xA;    g_object_set(widget, "tooltip-text", _("</xsl:text><xsl:value-of select="longdescription"/><xsl:text>"), (gchar *)0);</xsl:text>
 	</xsl:if>
-	<xsl:if test="@capability">
-                <xsl:text>&#xA;    GtkWidget *notavailable = gtk_label_new(_("not available"));</xsl:text>
-                <xsl:text>&#xA;    gtk_widget_set_halign(notavailable, GTK_ALIGN_START);</xsl:text>
-                <xsl:text>&#xA;    widget = dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>") ? widget : notavailable;</xsl:text>
-                <xsl:text>&#xA;    gtk_widget_set_sensitive(labelev, dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"));</xsl:text>
-                <xsl:text>&#xA;    gtk_widget_set_sensitive(widget, dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"));</xsl:text>
-                <xsl:text>&#xA;    if(!dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"))</xsl:text>
-                <xsl:text>&#xA;      g_object_set(widget, "tooltip-text", _("not available on this system"), (gchar *)0);</xsl:text>
-	</xsl:if>
-	<xsl:text>
+        <xsl:choose>
+                <xsl:when test="@capability">
+                        <xsl:text>
+    GtkWidget *notavailable = gtk_label_new(_("not available"));
+    gtk_widget_set_halign(notavailable, GTK_ALIGN_START);
+    gtk_widget_set_sensitive(notavailable, FALSE);
+    g_object_set(notavailable, "tooltip-text", _("not available on this system"), (gchar *)0);
+    gtk_widget_set_sensitive(labelev, dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"));
+    gtk_widget_set_sensitive(widget, dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"));
+    if(!dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"))
+      g_object_set(labelev, "tooltip-text", _("not available on this system"), (gchar *)0);
+    gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>") ? widget : notavailable, labelev, GTK_POS_RIGHT, 1, 1);
+    g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), (gpointer)widget);
+</xsl:text>
+                </xsl:when>
+                <xsl:otherwise>
+                        <xsl:text>
     gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
     gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
     g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), (gpointer)widget);
+</xsl:text>
+                </xsl:otherwise>
+        </xsl:choose>
+	<xsl:text>
   }
 </xsl:text>
 </xsl:template>
