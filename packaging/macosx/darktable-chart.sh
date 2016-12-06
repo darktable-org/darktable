@@ -137,4 +137,4 @@ if expr "$1" : '^-psn_' > /dev/null; then
     shift 1
 fi
 
-exec $GTK_DEBUG_GDB "$bundle_contents"/MacOS/"$name"-bin --datadir "$bundle_data"/darktable --moduledir "$bundle_lib"/darktable --localedir "$bundle_data"/locale $EXTRA_ARGS "$@"
+exec $GTK_DEBUG_GDB "$bundle_contents"/MacOS/"$name"-bin $EXTRA_ARGS "$@"
