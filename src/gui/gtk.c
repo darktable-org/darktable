@@ -1303,6 +1303,21 @@ void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
   dt_conf_set_int(key, state);
 }
 
+void dt_ui_notify_user(struct dt_ui_t *ui)
+{
+  if(!gtk_window_is_active(GTK_WINDOW(dt_ui_main_window(ui))))
+  {
+    gtk_window_set_urgency_hint(GTK_WINDOW(dt_ui_main_window(ui)), TRUE);
+#ifdef MAC_INTEGRATION
+#ifdef GTK_TYPE_OSX_APPLICATION
+    gtk_osxapplication_attention_request(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL), INFO_REQUEST);
+#else
+    gtkosx_application_attention_request(g_object_new(GTKOSX_TYPE_APPLICATION, NULL), INFO_REQUEST);
+#endif
+#endif
+  }
+}
+
 void dt_ui_restore_panels(dt_ui_t *ui)
 {
   /* restore visible state of panels for current view */
