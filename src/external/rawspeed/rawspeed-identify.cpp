@@ -69,8 +69,18 @@ std::string find_cameras_xml(const char *argv0)
 
   if (stat(found_camfile.c_str(), &statbuf))
   {
+#ifndef __APPLE__
     fprintf(stderr, "ERROR: Couldn't find cameras.xml in '%s'\n", found_camfile.c_str());
     return NULL;
+#else
+    fprintf(stderr, "WARNING: Couldn't find cameras.xml in '%s'\n", found_camfile.c_str());
+    found_camfile = bindir + "/../Resources/share/darktable/rawspeed/cameras.xml";
+    if (stat(found_camfile.c_str(), &statbuf))
+    {
+      fprintf(stderr, "ERROR: Couldn't find cameras.xml in '%s'\n", found_camfile.c_str());
+      return NULL;
+    }
+#endif
   }
 
   return found_camfile;
