@@ -4,12 +4,12 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     They will need some tuning, so before you build anything add these lines to /opt/local/etc/macports/macports.conf:
      buildfromsource always
      macosx_deployment_target 10.7
-     cxx_stdlib libstdc++
+     cxx_stdlib libc++
     (practice showed that support for versions older than 10.7 isn't viable)
     and this line to /opt/local/etc/macports/variants.conf:
-     +llvm34 +ld64_xcode +no_gnome +no_x11 +quartz -x11 -gnome
+     +no_gnome +no_x11 +quartz -x11 -gnome +python27
     Install required dependencies:
-     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg15 lua webp libsecret pugixml osm-gps-map adwaita-icon-theme
+     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg lua52 webp libsecret pugixml osm-gps-map adwaita-icon-theme
     To have working OpenMP (at least partly, only for C source files) you will also need gcc5:
      $ sudo port install gcc5
     Clone darktable git repository (in this example into ~/src):
@@ -41,4 +41,4 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     You may have to provide more specific name for a certificate if you have several matching in your keychain.
 
 4). Assuming that darktable is the only program installed into /usr/local you should remove the install directory before doing next build:
-     $ rm -Rf /usr/local
+     $ sudo rm -Rf /usr/local
