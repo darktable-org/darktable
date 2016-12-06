@@ -160,35 +160,33 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 
   const int width = g->width;
   const int height = g->height;
-  const int ch = g->channels;
+  const int ch = MIN(4, g->channels); // just to appease zealous compiler warnings about stack usage
 
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
 
   compute_gauss_params(g->sigma, g->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
-  float *const temp = g->buf;
+  float *temp = g->buf;
 
-  float *const Labmax = g->max;
-  float *const Labmin = g->min;
-
-  float *const buf = malloc((size_t)9 * ch * dt_get_num_threads() * sizeof(float));
+  float *Labmax = g->max;
+  float *Labmin = g->min;
 
 // vertical blur column by column
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(a0, a1, a2, a3, b1, b2, coefp, coefn) schedule(static)
+#pragma omp parallel for default(none) shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,           \
+                                              coefn) schedule(static)
 #endif
   for(int i = 0; i < width; i++)
   {
-    const int threadnum = dt_get_thread_num();
-    float *xp = buf + (size_t)9 * ch * threadnum + 0;
-    float *yb = buf + (size_t)9 * ch * threadnum + 1;
-    float *yp = buf + (size_t)9 * ch * threadnum + 2;
-    float *xc = buf + (size_t)9 * ch * threadnum + 3;
-    float *yc = buf + (size_t)9 * ch * threadnum + 4;
-    float *xn = buf + (size_t)9 * ch * threadnum + 5;
-    float *xa = buf + (size_t)9 * ch * threadnum + 6;
-    float *yn = buf + (size_t)9 * ch * threadnum + 7;
-    float *ya = buf + (size_t)9 * ch * threadnum + 8;
+    float xp[4] = {0.0f};
+    float yb[4] = {0.0f};
+    float yp[4] = {0.0f};
+    float xc[4] = {0.0f};
+    float yc[4] = {0.0f};
+    float xn[4] = {0.0f};
+    float xa[4] = {0.0f};
+    float yn[4] = {0.0f};
+    float ya[4] = {0.0f};
 
     // forward filter
     for(int k = 0; k < ch; k++)
@@ -247,21 +245,20 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 
 // horizontal blur line by line
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(a0, a1, a2, a3, b1, b2, coefp, coefn) schedule(static)
+#pragma omp parallel for default(none) shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,           \
+                                              coefn) schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
-    const int threadnum = dt_get_thread_num();
-    float *xp = buf + (size_t)9 * ch * threadnum + 0;
-    float *yb = buf + (size_t)9 * ch * threadnum + 1;
-    float *yp = buf + (size_t)9 * ch * threadnum + 2;
-    float *xc = buf + (size_t)9 * ch * threadnum + 3;
-    float *yc = buf + (size_t)9 * ch * threadnum + 4;
-    float *xn = buf + (size_t)9 * ch * threadnum + 5;
-    float *xa = buf + (size_t)9 * ch * threadnum + 6;
-    float *yn = buf + (size_t)9 * ch * threadnum + 7;
-    float *ya = buf + (size_t)9 * ch * threadnum + 8;
-
+    float xp[4] = {0.0f};
+    float yb[4] = {0.0f};
+    float yp[4] = {0.0f};
+    float xc[4] = {0.0f};
+    float yc[4] = {0.0f};
+    float xn[4] = {0.0f};
+    float xa[4] = {0.0f};
+    float yn[4] = {0.0f};
+    float ya[4] = {0.0f};
 
     // forward filter
     for(int k = 0; k < ch; k++)
@@ -317,8 +314,6 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
       }
     }
   }
-
-  free(buf);
 }
 
 

@@ -290,12 +290,10 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
   {
     float tot = buffer[color];
     if(c != color) tot += (sum[c] - sum[color]) / num;
-    o[c] = clamp(tot, 0.0f, 1.0f);
+    o[c] = tot;
   }
   
-  float4 opixel = clamp((float4)(o[0], o[1], o[2], o[3]), (float4)0.0f, processed_maximum);
-  
-  write_imagef(out, (int2)(x, y), opixel);
+  write_imagef(out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
 }
 
 kernel void
