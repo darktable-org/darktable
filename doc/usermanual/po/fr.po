@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2016-11-24 10:27+0100\n"
-"PO-Revision-Date: 2016-12-03 09:20+0100\n"
+"PO-Revision-Date: 2016-12-06 18:13+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.8.9\n"
+"X-Generator: Poedit 1.8.11\n"
 "X-Poedit-Bookmarks: 2169,1480,-1,416,182,458,465,290,-1,1846\n"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
@@ -6108,11 +6108,11 @@ msgstr ""
 "graphique que d'un seul module à la fois. Si vous cliquez sur la barre "
 "d’expansion d’un autre module, l’interface précédente sera repliée. Si vous "
 "désirez que plus d'une interface graphique soit dépliée alors faites un "
-"<emphasis>Majuscule-clic</emphasis> sur les barres d’expansion d'autres "
-"modules – les interfaces graphiques précédemment dépliées le resteront. Le "
+"<emphasis>maj-clic</emphasis> sur les barres d’expansion d'autres modules –"
+" les interfaces graphiques précédemment dépliées le resteront. Le "
 "comportement de la barre d’expansion lors d’un <emphasis>clic</emphasis> et "
-"d'un <emphasis>Majuscule-clic</emphasis>, respectivement, est contrôlé par "
-"un paramètre de préférence dans les options de l’interface (voyez la <xref "
+"d'un <emphasis>maj-clic</emphasis>, respectivement, est contrôlé par un "
+"paramètre de préférence dans les options de l’interface (voyez la <xref "
 "linkend=\"gui_options\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4848(para)
@@ -6291,7 +6291,7 @@ msgid ""
 "\"linespecific\">darkroom/ui/scale_rough_step_multiplier=10.0 </"
 "programlisting>"
 msgstr ""
-"Vous pouvez maintenir pressée la touche <emphasis>majuscule</emphasis> pour "
+"Vous pouvez maintenir pressée la touche <emphasis>maj</emphasis> pour "
 "multiplier le pas d'un facteur 10. Vous pouvez changer ce multiplicateur : "
 "<programlisting format=\"linespecific\">darkroom/ui/"
 "scale_rough_step_multiplier=10.0 </programlisting>."
@@ -13405,7 +13405,7 @@ msgid ""
 "source color)."
 msgstr ""
 "Pour réinitialiser une pastille double-cliquez-la. Cliquer-droit une "
-"pastille pour la supprimer. Majuscule cliquez un emplacement vide pour "
+"pastille pour la supprimer. Faites un maj+clic sur un emplacement vide pour "
 "ajouter une nouvelle pastille (elle aura la couleur courante prélevée comme "
 "couleur source)."
 
@@ -14920,9 +14920,9 @@ msgstr ""
 "désélectionne (sa couleur devient rouge ou jaune). Maintenir le bouton de la "
 "souris enfoncé permet une action de balayage pour sélectionner / "
 "désélectionner plusieurs lignes d'une rangée. Maintenir enfoncée la touche "
-"<emphasis> majuscule </emphasis> et maintenir le bouton gauche ou droit de "
-"la souris enfoncé tout en faisant glisser sélectionne ou désélectionne "
-"toutes les lignes dans la zone rectangulaire choisie."
+"<emphasis> maj</emphasis> et maintenir le bouton gauche ou droit de la "
+"souris enfoncé tout en faisant glisser sélectionne ou désélectionne toutes "
+"les lignes dans la zone rectangulaire choisie."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12963(para)
 msgid ""
@@ -15984,7 +15984,6 @@ msgstr ""
 "filigranes disponibles."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14017(para)
-#, fuzzy
 msgid ""
 "Here follows a list of available variable strings that is supported for "
 "substitution within the svg document. <informaltable frame=\"none\" width="
@@ -16051,63 +16050,75 @@ msgid ""
 "$(GPS.LOCATION) </entry><entry> All three coordinates (latitude, longitude, "
 "elevation) </entry></row></tbody></tgroup></informaltable>"
 msgstr ""
-"Voici une liste des chaînes de caractères disponibles qui peuvent être "
-"substituées dans un document SVG. <informaltable frame=\"none\" width=\"80%"
-"\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><tbody><row><entry> "
-"$(DARKTABLE.NAME) </entry><entry> Nom de l'application </entry></"
-"row><row><entry> $(DARKTABLE.VERSION) </entry><entry> Version de darktable </"
-"entry></row><row><entry> $(WATERMARK_TEXT) </entry><entry> Court texte libre "
-"(max. 63 caractères) </entry></row><row><entry> $(WATERMARK_COLOR) </"
-"entry><entry> Couleur utilisée pour $WATERMARK_TEXT </entry></"
-"row><row><entry> $(WATERMARK_FONT_FAMILY) </entry><entry> Famille de police "
-"utilisée pour $WATERMARK_TEXT </entry></row><row><entry> "
-"$(WATERMARK_FONT_STYLE) </entry><entry> Style de la police (normal, oblique, "
-"italique) </entry></row><row><entry> $(WATERMARK_FONT_WEIGHT) </"
-"entry><entry> Graisse de la police (gras) </entry></row><row><entry> $(IMAGE."
-"ID) </entry><entry> Identifiant unique de l'image dans la bibliothèque "
-"courante </entry></row><row><entry> $(IMAGE.FILENAME) </entry><entry> Nom du "
-"fichier de l'image </entry></row><row><entry> $(IMAGE.EXIF) </entry><entry> "
-"Nom EXIF de l'image </entry></row><row><entry> $(EXIF.DATE) </entry><entry> "
-"Date EXIF </entry></row><row><entry> $(EXIF.DATE.SECOND) </entry><entry> "
-"Secondes de la date EXIF </entry></row><row><entry> $(EXIF.DATE.MINUTE) </"
-"entry><entry> Minutes de la date EXIF </entry></row><row><entry> $(EXIF.DATE."
-"HOUR) </entry><entry> Heures de la date EXIF (24h) </entry></"
-"row><row><entry> $(EXIF.DATE.HOUR_AMPM) </entry><entry> Heures de la date "
-"EXIF (12h, AM/PM) </entry></row><row><entry> $(EXIF.DATE.DAY) </"
-"entry><entry> Jour de la date EXIF (01 .. 31)</entry></row><row><entry> "
-"$(EXIF.DATE.MONTH) </entry><entry>Mois de la date EXIF (01 .. 12)</entry></"
-"row><row><entry> $(EXIF.DATE.SHORT_MONTH) </entry><entry>Mois de la date "
-"EXIF localisé (jan, fév, .., déc)</entry></row><row><entry> $(EXIF.DATE."
-"LONG_MONTH) </entry><entry>Mois de la date EXIF localisé (janvier, "
-"février, .. décembre)</entry></row><row><entry> $(EXIF.DATE.SHORT_YEAR) </"
-"entry><entry> Année abrégée de la date EXIF (2013 est \"13\") </entry></"
-"row><row><entry> $(EXIF.DATE.LONG_YEAR) </entry><entry> Année non abrégée de "
-"la date EXIF </entry></row><row><entry> $(DATE) </entry><entry> Date système "
-"courante </entry></row><row><entry> $(DATE.SECOND) </entry><entry> Secondes "
-"de la date système courante </entry></row><row><entry> $(DATE.MINUTE) </"
-"entry><entry> Minutes de la date système courante </entry></row><row><entry> "
-"$(DATE.HOUR) </entry><entry> Heures de la date système courante (24h) </"
-"entry></row><row><entry> $(DATE.HOUR_AMPM) </entry><entry> Heures de la date "
-"système courante (12, AP/PM) </entry></row><row><entry> $(DATE.DAY) </"
-"entry><entry> Jour de la date système courante (01 .. 31)</entry></"
-"row><row><entry> $(DATE.MONTH) </entry><entry> Mois de la date système "
-"courante (01 .. 12)</entry></row><row><entry> $(DATE.SHORT_MONTH) </"
-"entry><entry>Mois de la date système courante localisé (jan, fév, .., déc)</"
-"entry></row><row><entry> $(DATE.LONG_MONTH) </entry><entry>Mois de la date "
-"système courante localisé (janvier, février, ..., décembre)</entry></"
-"row><row><entry> $(DATE.SHORT_YEAR) </entry><entry> Année de la date système "
-"courante (abrégée) </entry></row><row><entry> $(DATE.LONG_YEAR) </"
-"entry><entry> Année de la date système courante </entry></row><row><entry> "
-"$(EXIF.MAKER) </entry><entry> Fabricant du modèle de boîtier </entry></"
-"row><row><entry> $(EXIF.MODEL) </entry><entry> Modèle de boîtier </entry></"
-"row><row><entry> $(EXIF.LENS) </entry><entry> Objectif spécifique utilisé </"
-"entry></row><row><entry> $(Xmp.dc.creator) </entry><entry> Nom du créateur </"
-"entry></row><row><entry> $(Xmp.dc.publisher) </entry><entry> Nom de "
-"l'éditeur </entry></row><row><entry> $(Xmp.dc.title) </entry><entry> Titre "
-"de l'image </entry></row><row><entry> $(Xmp.dc.description) </entry><entry> "
-"Description de l'image </entry></row><row><entry> $(Xmp.dc.rights) </"
-"entry><entry> Droits assignés à l'image </entry></row></tbody></tgroup></"
-"informaltable>"
+"Voici une liste des chaînes de caractères disponibles représentant des "
+"variables qui peuvent être substituées dans un document SVG. <informaltable "
+"frame=\"none\" width=\"80%\"><tgroup cols=\"2\" colsep=\"0\" rowsep="
+"\"0\"><tbody><row><entry> $(DARKTABLE.NAME) </entry><entry> Le nom de "
+"l'application </entry></row><row><entry> $(DARKTABLE.VERSION) </"
+"entry><entry> La version de darktable </entry></row><row><entry> "
+"$(WATERMARK_TEXT) </entry><entry> Un court texte libre (max. 63 caractères) "
+"</entry></row><row><entry> $(WATERMARK_COLOR) </entry><entry> La couleur à "
+"utiliser pour le $WATERMARK_TEXT </entry></row><row><entry> "
+"$(WATERMARK_FONT_FAMILY) </entry><entry> La famille de police à utiliser "
+"pour le $WATERMARK_TEXT </entry></row><row><entry> $(WATERMARK_FONT_STYLE) </"
+"entry><entry> Le style de la police (normal, oblique, italique) </entry></"
+"row><row><entry> $(WATERMARK_FONT_WEIGHT) </entry><entry> La graisse de la "
+"police </entry></row><row><entry> $(IMAGE.ID) </entry><entry> L'unique id de "
+"l'image dans la bibliothèque courante </entry></row><row><entry> $(IMAGE."
+"FILENAME) </entry><entry> Le nom de fichier de l'image </entry></"
+"row><row><entry> $(IMAGE.BASENAME) </entry><entry> Le nom de base du fichier "
+"image </entry></row><row><entry> $(IMAGE.EXIF) </entry><entry> La chaîne de "
+"caractères Exif de l'image </entry></row><row><entry> $(EXIF.DATE) </"
+"entry><entry> La date de l'image </entry></row><row><entry> $(EXIF.DATE."
+"SECOND) </entry><entry> Les secondes dans les données Exif de l'image </"
+"entry></row><row><entry> $(EXIF.DATE.MINUTE) </entry><entry> Les minutes "
+"dans les données Exif de l'image </entry></row><row><entry> $(EXIF.DATE."
+"HOUR) </entry><entry> Les heures dans les données Exif de l'image (24h) </"
+"entry></row><row><entry> $(EXIF.DATE.HOUR_AMPM) </entry><entry> Les heures "
+"dans les données Exif de l'image (12h, am/pm) </entry></row><row><entry> "
+"$(EXIF.DATE.DAY) </entry><entry> Le jour du mois dans les données Exif de "
+"l'image  (01 .. 31) </entry></row><row><entry> $(EXIF.DATE.MONTH) </"
+"entry><entry> Le mois dans les données Exif de l'image (01 .. 12) </entry></"
+"row><row><entry> $(EXIF.DATE.SHORT_MONTH) </entry><entry> Le mois abrévié "
+"dans les données Exif de l'image, localisé (JAN, FÉV, .. DÉC) </entry></"
+"row><row><entry> $(EXIF.DATE.LONG_MONTH) </entry><entry> Le mois dans les "
+"données Exif de l'image, localisé (janvier, février, .. décembre) </entry></"
+"row><row><entry> $(EXIF.DATE.SHORT_YEAR) </entry><entry> L'année abréviée "
+"dans les données Exif de l'image (2016 est \"16\") </entry></"
+"row><row><entry> $(EXIF.DATE.LONG_YEAR) </entry><entry> L'année dans les "
+"données Exif de l'image notation complète </entry></row><row><entry> $(DATE) "
+"</entry><entry> La date système courante </entry></row><row><entry> $(DATE."
+"SECOND) </entry><entry> Les secondes de l'heure système courante </entry></"
+"row><row><entry> $(DATE.MINUTE) </entry><entry> Les minutes de l'heure "
+"système courante </entry></row><row><entry> $(DATE.HOUR) </entry><entry> Les "
+"heures de l'heure système courante (24h) </entry></row><row><entry> $(DATE."
+"HOUR_AMPM) </entry><entry> Les heures de l'heure système courante (12h, am/"
+"pm) </entry></row><row><entry> $(DATE.DAY) </entry><entry> Le jour du mois "
+"de la date système courante  (01 .. 31) </entry></row><row><entry> $(DATE."
+"MONTH) </entry><entry> Le mois de la date système courante (01 .. 12) </"
+"entry></row><row><entry> $(DATE.SHORT_MONTH) </entry><entry> Le mois abrévié "
+"de la date système courante, localisé (JAN, FÉV, .. DÉC) </entry></"
+"row><row><entry> $(DATE.LONG_MONTH) </entry><entry> Le mois de la date "
+"système courante, localisé (janvier, février,  .. décembre) </entry></"
+"row><row><entry> $(DATE.SHORT_YEAR) </entry><entry> L'année de la date "
+"système courante (abréviée) </entry></row><row><entry> $(DATE.LONG_YEAR) </"
+"entry><entry> L'année de la date système courante, notation complète </"
+"entry></row><row><entry> $(EXIF.MAKER) </entry><entry> Le fabricant du "
+"boîtier </entry></row><row><entry> $(EXIF.MODEL) </entry><entry> Le modèle "
+"du boîtier </entry></row><row><entry> $(EXIF.LENS) </entry><entry> "
+"L'objectif spécifique utilisé </entry></row><row><entry> $(Xmp.dc.creator) </"
+"entry><entry> Le nom du créateur </entry></row><row><entry> $(Xmp.dc."
+"publisher) </entry><entry> Le nom de l'éditeur </entry></row><row><entry> "
+"$(Xmp.dc.title) </entry><entry> Le titre de l'image </entry></"
+"row><row><entry> $(Xmp.dc.description) </entry><entry> La description de "
+"l'image </entry></row><row><entry> $(Xmp.dc.rights) </entry><entry> Les "
+"droits assignés à l'image </entry></row><row><entry> $(GPS.LATITUDE) </"
+"entry><entry> La latitude de l'image (N/S 0 .. 90) </entry></"
+"row><row><entry> $(GPS.LONGITUDE) </entry><entry> La longitude de l'image (E/"
+"O 0 .. 180) </entry></row><row><entry> $(GPS.ELEVATION) </entry><entry> "
+"L'altitude de l'image (mètres) </entry></row><row><entry> $(GPS.LOCATION) </"
+"entry><entry> Les trois coordonnées (latitude, longitude, altitude) </"
+"entry></row></tbody></tgroup></informaltable>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14395(title)
 msgid "marker"
@@ -16141,7 +16152,6 @@ msgid "text color"
 msgstr "couleur de texte"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14412(para)
-#, fuzzy
 msgid ""
 "This field shows the text color. Clicking on the colored field will open a "
 "color selector dialog which offers you a choice of commonly used colors, or "
@@ -16149,8 +16159,8 @@ msgid ""
 msgstr ""
 "Ce champ montre la couleur du texte. Cliquer sur la pastille de couleur "
 "ouvre une boîte de dialogue qui vous offre un choix de couleurs couramment "
-"utilisées ou vous laisse ajouter votre propre choix de couleurs dans un "
-"sélecteur de couleurs HSV."
+"utilisées ou vous permet de définir votre couleur dans l'espace "
+"colorimétrique RGB."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14420(title)
 msgid "text font"
@@ -16350,17 +16360,16 @@ msgid "border color"
 msgstr "couleur de la bordure"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14591(para)
-#, fuzzy
 msgid ""
 "A color selector which allows to define a color for the border. Clicking on "
 "the colored field will open a color selector dialog which offers you a "
 "choice of commonly used colors, or allows to define a color in RGB color "
 "space."
 msgstr ""
-"Ce champ montre la couleur du texte. Cliquer sur la pastille de couleur "
-"ouvre une boîte de dialogue qui vous offre un choix de couleurs couramment "
-"utilisées ou vous laisse ajouter votre propre choix de couleurs dans un "
-"sélecteur de couleurs HSV."
+"Un sélecteur de couleur qui vous permet de définir la couleur de la bordure. "
+"Cliquer sur la pastille de couleur ouvre une boîte de dialogue qui vous "
+"offre un choix de couleurs couramment utilisées ou vous permet de définir "
+"une couleur dans l'espace colorimétrique RGB."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14596(para)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14612(para)
@@ -16385,17 +16394,16 @@ msgid "frame line color"
 msgstr "couleur du cadre interne"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14607(para)
-#, fuzzy
 msgid ""
 "A color selector which allows to define a color for the frame. Clicking on "
 "the colored field will open a color selector dialog which offers you a "
 "choice of commonly used colors, or allows to define a color in RGB color "
 "space."
 msgstr ""
-"Ce champ montre la couleur du texte. Cliquer sur la pastille de couleur "
-"ouvre une boîte de dialogue qui vous offre un choix de couleurs couramment "
-"utilisées ou vous laisse ajouter votre propre choix de couleurs dans un "
-"sélecteur de couleurs HSV."
+"Un sélecteur de couleur qui vous permet de définir la couleur du cadre. "
+"Cliquer sur la pastille de couleur ouvre une boîte de dialogue qui vous "
+"offre un choix de couleurs couramment utilisées ou vous permet de définir "
+"une couleur dans l'espace colorimétrique RGB."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14637(entry)
 msgid "Example image with a user defined frame."
@@ -16465,7 +16473,6 @@ msgid "shadows and highlights color"
 msgstr "couleur pour les ombres et les hautes lumières"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14712(para)
-#, fuzzy
 msgid ""
 "These controls are used to set the color of the splittoning effect, you "
 "select the desired color and saturation for both shadows and highlights. "
@@ -16475,8 +16482,10 @@ msgid ""
 msgstr ""
 "Ces paramètres sont utilisés pour définir les couleurs du virage partiel. "
 "Sélectionnez la teinte et la saturation désirées tant pour les ombres que "
-"pour les hautes lumières. Vous pouvez aussi cliquer sur la case d’aperçu de "
-"couleur, ce qui fera apparaître la boîte de sélection de couleur habituelle."
+"pour les hautes lumières. Cliquer sur l'une des pastilles de couleur ouvre "
+"une boîte de dialogue qui vous offre un choix de couleurs couramment "
+"utilisées ou vous permet de définir une couleur dans l'espace colorimétrique "
+"RGB."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14721(title)
 msgid "balance"
@@ -17040,16 +17049,16 @@ msgid "bloom"
 msgstr "lumière d'arrière-plan"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15503(entry)
-#, fuzzy
 msgid ""
 "This module takes highlights, blurs them and then blends (screen blend "
 "lightness) with the original to create a soft blooms over the image, hence "
 "the name of the effect. There are numerous ways to use this module depending "
 "on the image's actual scenery lighting."
 msgstr ""
-"Ce module renforce les hautes lumières et crée une douce lumière d'arrière-"
-"plan autour d’elles, d’où le nom de l’effet. Il existe de nombreuses "
-"manières d’utiliser ce module selon l’éclairage réel de la scène de l’image."
+"Ce module prend les hautes lumières, les floute puis les fusionne avec "
+"l'image originale pour créer une douce lumière d'arrière-plan autour "
+"d’elles, d’où le nom de l’effet. Il existe de nombreuses manières d’utiliser "
+"ce module selon l’éclairage réel de la scène de l’image."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15523(para)
 msgid ""
@@ -17571,29 +17580,25 @@ msgid "Use the bottom slider to set saturation to zero"
 msgstr "Utilisez le curseur du bas pour régler la saturation à zéro."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16209(title)
-#, fuzzy
 msgid "The LAB way: color contrast module"
-msgstr "La manière artistique : le module zones de couleurs"
+msgstr "La manière Lab : le module contraste de couleur"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16211(para)
-#, fuzzy
 msgid ""
 "To perform such conversion we use the <emphasis>color contrast</emphasis> "
 "module (<xref linkend=\"color_contrast\"/>)."
 msgstr ""
-"Pour effectuer une telle conversion, nous utilisons le module "
-"<emphasis>correction des couleurs</emphasis> (<xref linkend="
-"\"color_correction\"/>)."
+"Pour effectuer une telle conversion nous utilisons le module "
+"<emphasis>contraste de couleur</emphasis> (<xref linkend=\"color_contrast\"/"
+">)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16218(para)
-#, fuzzy
 msgid "Activate the color contrast module"
-msgstr "Activez le module zones de couleurs."
+msgstr "Activez le module contraste de couleur."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16222(para)
-#, fuzzy
 msgid "Set both steepness sliders to zero"
-msgstr "Mettez le seuil à zéro."
+msgstr "Mettez les deux curseurs à zéro."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16232(title)
 msgid "The artistic way: color zones module"
@@ -17694,15 +17699,14 @@ msgstr ""
 "ainsi qu'un contraste et une saturation augmentés."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16326(para)
-#, fuzzy
 msgid ""
 "The standard way for doing digital cross-processing is to use a channel "
 "curve tool but darktable lacks this tool for the moment and another way to "
 "accommodate the effect is used."
 msgstr ""
 "La manière standard de procéder à un traitement croisé en numérique est "
-"d’utiliser un outil de courbe de canal mais darktable ne dispose pas encore "
-"de cet outil et un autre moyen est utilisé pour réaliser cet effet."
+"d’utiliser un outil courbes mais darktable ne dispose pas encore de cet "
+"outil et un autre moyen est utilisé pour réaliser cet effet."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16336(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16464(title)
@@ -17947,7 +17951,6 @@ msgid "red-eye removal"
 msgstr "suppression des yeux rouges"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16585(para)
-#, fuzzy
 msgid ""
 "The red-eye effect in photography is the common appearance of red pupils in "
 "color photographs of eyes. It occurs when using a photographic flash very "
@@ -18600,7 +18603,6 @@ msgstr ""
 "besoin d’un GPS externe pour faire cela."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17261(para)
-#, fuzzy
 msgid ""
 "Even if your camera doesn't support this feature, there is an alternative "
 "method. darktable can match the Exif time and date data in your image(s) to "
@@ -18614,8 +18616,7 @@ msgstr ""
 "l’heure EXIF de votre image avec un fichier de trace GPX séparé, créé par un "
 "GPS qui enregistre vos mouvements. Ce peut être un appareil portable ou une "
 "application traceur GPS de votre smartphone. Tout ceci est fait sur la vue "
-"<emphasis>table lumineuse</emphasis> (voyez la <xref linkend=\"geotagging\"/"
-">)."
+"table lumineuse (voyez la <xref linkend=\"geotagging\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17271(title)
 msgid "Center map view"
@@ -18775,7 +18776,6 @@ msgstr ""
 "utiliser cette fonctionnalité."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17441(para)
-#, fuzzy
 msgid ""
 "To use, type in a place or address, press enter and a list of results will "
 "be shown. Click on one of the resulting items and the map will zoom to that "
@@ -18784,10 +18784,11 @@ msgid ""
 "the bottom of the screen to their location on the map. The GPS location will "
 "be embedded in the image."
 msgstr ""
-"Pour l’utiliser, entrez un emplacement ou une adresse, pressez "
-"<quote>Entrée</quote> et une liste de résultats sera affichée. Cliquez sur "
-"l’un d’entre-eux et un zoom sera effectué sur la carte vers cet endroit. "
-"Glissez maintenant des images depuis le bandeau en bas de l’écran vers leur "
+"Pour l’utiliser, entrez un emplacement ou une adresse, pressez Entrée et une "
+"liste de résultats sera affichée. Cliquez sur l’un d’entre-eux et un zoom "
+"sera effectué sur la carte vers cet endroit. De plus, un contour couvrant "
+"cet emplacement ou une épingle indiquant l'emplacement sera affiché. Glissez "
+"maintenant des images depuis le bandeau en bas de l’écran vers leur "
 "emplacement sur la carte. La localisation GPS sera incorporée à l’image."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17463(title)
@@ -18974,7 +18975,6 @@ msgstr ""
 "par l'image."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17693(para)
-#, fuzzy
 msgid ""
 "On the left side you find the <emphasis>collect images</emphasis> panel "
 "which is described in more detail in <xref linkend=\"collect_images\"/>. "
@@ -18987,10 +18987,10 @@ msgid ""
 "linkend=\"image_information\"/>)."
 msgstr ""
 "Dans la partie gauche vous trouvez le panneau des <emphasis>filtres de "
-"collections</emphasis> qui est décrit plus en détails dans la <xref linkend="
+"collection</emphasis> qui est décrit plus en détails dans la <xref linkend="
 "\"collect_images\"/>. Ce panneau vous laisse définir quelles images sont "
 "présentes dans le bandeau. La visibilité du bandeau  – situé dans le panneau "
-"du bas – est activée ou désactivée en tapant <emphasis>ctrl-f </"
+"du bas – est activée ou désactivée en pressant <emphasis>ctrl-f </"
 "emphasis>(voyez la <xref linkend=\"filmstrip_overview\"/>). Dans la partie "
 "gauche vous avez aussi un panneau des <emphasis> informations de l'image</"
 "emphasis> qui affiche des données EXIF utiles de l'image située dans la "
@@ -19102,7 +19102,6 @@ msgid "The size of the paper on which to print."
 msgstr "La taille du papier pour l'impression."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17795(para)
-#, fuzzy
 msgid ""
 "Portrait or landscape (note that darktable chooses by default the best fit)."
 msgstr ""
@@ -19310,14 +19309,12 @@ msgstr ""
 "réduits"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17949(para)
-#, fuzzy
 msgid ""
 "Check this option to not use the embedded JPEG from the raw file but process "
 "the raw data. This is slower. (default off)."
 msgstr ""
 "Cochez cette option pour ne pas utiliser le JPEG intégré dans le fichier RAW "
-"mais traiter les données RAW. Ceci est plus lent mais donne des miniatures "
-"couleur réussies (désactivé par défaut)."
+"mais traiter les données RAW. Ceci est plus lent. (désactivé par défaut)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17955(bridgehead)
 msgid "ask before removing images from database"
@@ -19390,7 +19387,6 @@ msgid "ignore JPEG images when importing film rolls"
 msgstr "ignorer les fichiers JPEG lors de l’importation d'un dossier"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17994(para)
-#, fuzzy
 msgid ""
 "When having RAW+JPEG images together in one directory it makes no sense to "
 "import both. With this flag one can ignore all JPEGs found (default off)."
@@ -19635,7 +19631,6 @@ msgid "expand a single lighttable module at a time"
 msgstr "déplier un seul module de la table lumineuse à la fois"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18135(para)
-#, fuzzy
 msgid ""
 "Controls how lighttable panels are expanded. If this option is enabled, "
 "expanding a panel by <emphasis>clicking</emphasis> collapses any currently "
@@ -19645,19 +19640,18 @@ msgid ""
 "emphasis> (default off)."
 msgstr ""
 "Contrôle la manière dont les panneaux de la table lumineuse sont dépliés. Si "
-"cette option est active, déplier un panneau par un  <emphasis>clic</"
-"emphasis> replie tout panneau actuellement déplié. Si vous désirez étendre "
-"un panneau sans replier les autres, vous pouvez le faire avec "
-"<emphasis>Majuscule+clic</emphasis>. Désactiver cette option inverse le "
-"comportement de <emphasis>clic</emphasis> et de <emphasis>Majuscule+clic</"
-"emphasis> (désactivé par défaut)."
+"cette option est active, déplier un panneau par un <emphasis>clic</emphasis> "
+"replie tout panneau actuellement déplié. Si vous désirez étendre un panneau "
+"sans replier les autres, vous pouvez le faire avec <emphasis>maj+clic</"
+"emphasis>. Désactiver cette option inverse le comportement de "
+"<emphasis>clic</emphasis> et de <emphasis>maj+clic</emphasis> (désactivé par "
+"défaut)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18143(bridgehead)
 msgid "expand a single darkroom module at a time"
 msgstr "déplier un seul module de la chambre noire à la fois"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18145(para)
-#, fuzzy
 msgid ""
 "Controls how darkroom modules are expanded. If this option is enabled, "
 "expanding a module by <emphasis>clicking</emphasis> collapses any currently "
@@ -19668,10 +19662,10 @@ msgid ""
 msgstr ""
 "Contrôle la manière dont les contrôles des modules de la chambre noire sont "
 "dépliés. Si cette option est activée, déplier un module par un "
-"<emphasis>clic</emphasis>  replie tout module actuellement déplié. Si vous "
+"<emphasis>clic</emphasis> replie tout module actuellement déplié. Si vous "
 "désirez déplier un module sans replier les autres, vous pouvez le faire avec "
-"un <emphasis>Majuscule+clic</emphasis>. Désactiver cette option inverse le "
-"comportement de <emphasis>clic</emphasis> et de <emphasis>Majuscule+clic</"
+"un <emphasis>maj+clic</emphasis>. Désactiver cette option inverse le "
+"comportement de <emphasis>clic</emphasis> et de <emphasis>maj+clic</"
 "emphasis> (actif par défaut)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18153(bridgehead)
@@ -19771,7 +19765,6 @@ msgid "memory in megabytes to use for thumbnail cache"
 msgstr "mémoire en mégaoctets à utiliser pour le cache des miniatures"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18212(para)
-#, fuzzy
 msgid ""
 "In order to speed-up display of film rolls, darktable stores thumbnails in a "
 "cache file on disk (primary cache) and loads it into memory at startup. This "
@@ -19781,7 +19774,7 @@ msgstr ""
 "De manière à accélérer l’affichage des pellicules, darktable enregistre les "
 "miniatures dans un cache sur le disque (le cache primaire) et les charge en "
 "mémoire au démarrage. Cette valeur contrôle la taille du cache en "
-"mégaoctets. Un redémarrage est nécessaire en cas de modification (512 Mo par "
+"mégaoctets. Un redémarrage est nécessaire en cas de modification (256 Mo par "
 "défaut)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18218(bridgehead)
@@ -19888,7 +19881,6 @@ msgid "write sidecar file for each image"
 msgstr "écrire un fichier XMP redondant pour chaque image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18267(para)
-#, fuzzy
 msgid ""
 "These redundant XMP files can later be re-imported into a different "
 "database, preserving your changes to the image. It's strongly recommended to "
@@ -20020,14 +20012,14 @@ msgid "password storage backend to use"
 msgstr "stockage à utiliser pour les mots de passe"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18331(para)
-#, fuzzy
 msgid ""
 "The storage backend for password storage. Options: <quote>auto</quote> "
 "(default), <quote>none</quote>, <quote>libsecret</quote>, <quote>kwallet</"
 "quote>."
 msgstr ""
-"Outil de sauvegarde des mots de passe. Options : <quote>aucun</quote>, "
-"<quote>kwallet</quote>, <quote>gnome-keyring</quote> (aucun par défaut)."
+"Outil de sauvegarde des mots de passe. Options: <quote>auto</quote> "
+"(default), <quote>aucun</quote>, <quote>libsecret</quote>, <quote>kwallet</"
+"quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18336(bridgehead)
 msgid "look for updated xmp files on startup"
@@ -20143,7 +20135,6 @@ msgid "$HOME/Desktop"
 msgstr "$HOME/Bureau"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18420(entry)
-#, fuzzy
 msgid "the desktop folder as defined by the system (usually <placeholder-1/>)"
 msgstr ""
 "le répertoire bureau défini par le système (usuellement  <placeholder-1/>)"
@@ -20209,43 +20200,36 @@ msgid "second at the time of import"
 msgstr "seconde de l’heure d’importation"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18524(entry)
-#, fuzzy
 msgid "year the photo was taken (from Exif data)"
-msgstr "année de prise de la photo (données EXIF)"
+msgstr "année de prise de la photo (à partie des données EXIF)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18532(entry)
-#, fuzzy
 msgid "month the photo was taken (from Exif data)"
-msgstr "mois de prise de la photo (données EXIF)"
+msgstr "mois de prise de la photo (à partir des données EXIF)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18540(entry)
-#, fuzzy
 msgid "day the photo was taken (from Exif data)"
-msgstr "jour de prise de la photo (données EXIF)"
+msgstr "jour de prise de la photo (à partir des données EXIF)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18548(entry)
-#, fuzzy
 msgid "hour the photo was taken (from Exif data)"
-msgstr "heure de prise de la photo (données EXIF)"
+msgstr "heure de prise de la photo (à partir des données EXIF)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18556(entry)
-#, fuzzy
 msgid "minute the photo was taken (from Exif data)"
-msgstr "minute de prise de la photo (données EXIF)"
+msgstr "minute de prise de la photo ( à partir des données EXIF)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18564(entry)
-#, fuzzy
 msgid "seconds the photo was taken (from Exif data)"
-msgstr "seconde de prise de la photo (données EXIF)"
+msgstr "seconde de prise de la photo ( à partir des données EXIF)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18569(entry)
 msgid "$(EXIF_ISO)"
 msgstr "$(EXIF_ISO)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18572(entry)
-#, fuzzy
 msgid "ISO value of the photo (from Exif data)"
-msgstr "sensibilité ISO de la photo (données EXIF)"
+msgstr "sensibilité ISO de la photo (à partir des données EXIF)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18580(bridgehead)
 msgid "base directory naming pattern"
@@ -21119,7 +21103,6 @@ msgid "auto apply this preset to matching images"
 msgstr "appliquer automatiquement ce préréglage aux images correspondantes"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19554(para)
-#, fuzzy
 msgid ""
 "activate this checkbutton to automatically apply the preset on newly "
 "imported images; a set of fields is displayed where you can define patterns "
@@ -21146,12 +21129,11 @@ msgid "model"
 msgstr "modèle"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19568(para)
-#, fuzzy
 msgid ""
 "a pattern to be matched against the Exif field that describes your camera "
 "model; use \"%\" as wildcard."
 msgstr ""
-"motif devant correspondre au champ EXIF qui décrit le modèle de votre "
+"un motif devant correspondre au champ EXIF qui décrit le modèle de votre "
 "appareil photo. Utilisez \"%\" comme joker."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19573(bridgehead)
@@ -21159,22 +21141,20 @@ msgid "maker"
 msgstr "fabricant"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19575(para)
-#, fuzzy
 msgid ""
 "a pattern to be matched against the Exif field that describes the maker of "
 "your camera; use \"%\" as wildcard."
 msgstr ""
-"motif devant correspondre au champ EXIF qui décrit le fabricant de votre "
-"appareil photo. Utilisez comme \"%\" joker."
+"un motif devant correspondre au champ EXIF qui décrit le fabricant de votre "
+"appareil photo. Utilisez \"%\" comme joker."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19582(para)
-#, fuzzy
 msgid ""
 "a pattern to be matched against the Exif field that describes your lens; use "
 "\"%\" as wildcard."
 msgstr ""
-"motif devant correspondre au champ EXIF qui décrit votre objectif. Utilisez "
-"\"%\" comme joker."
+"un motif devant correspondre au champ EXIF qui décrit votre objectif. "
+"Utilisez \"%\" comme joker."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19587(bridgehead)
 msgid "iso"
@@ -22237,7 +22217,6 @@ msgid "memory setup"
 msgstr "configuration de la mémoire"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20502(para)
-#, fuzzy
 msgid ""
 "darktable's memory requirements are high. A simple calculation makes this "
 "clear. If you have a 20MPix image, darktable for precision reasons will "
@@ -22255,21 +22234,22 @@ msgid ""
 "run happily."
 msgstr ""
 "Les exigences en mémoire de darktable sont élevées. Un simple calcul "
-"clarifie ceci. Si vous avez une image de 20 Mo, darktable, pour des besoins "
-"de précision, va l’enregistrer en interne en virgule flottante sous forme de "
-"cellules de 4 × 32-bits pour chaque pixel. Chaque image complète de cette "
-"dimension demande alors environ 300 Mo de mémoire. Comme nous désirons "
-"traiter cette image, il nous faudra au moins deux tampons pour chaque module "
-"- un pour l’entrée et un pour la sortie. Si nous avons un module plus "
-"complexe, son algorithme peut avoir besoin, en plus, de plusieurs tampons "
-"intermédiaires de la même dimension. Sans autre optimisation, nous aurons "
-"besoin entre 600 Mo et 3 Go de mémoire simplement pour enregistrer et "
-"traiter les données de l’image. Nous avons en plus le segment de code de "
-"darktable, le code et les données de toutes les bibliothèques système liées "
-"dynamiquement, et il ne faut pas oublier d’autres tampons où darktable "
-"enregistre les images intermédiaires afin d’y accéder rapidement lors du "
-"travail interactif (cache mip map). Dans l'ensemble darktable a besoin d’un "
-"minimum d’environ 4 Go de mémoire pour être exécuté avec succès."
+"clarifie ceci. Si vous avez une image de 20 M de pixels, darktable, pour des "
+"besoins de précision, va l’enregistrer en interne en virgule flottante en "
+"utilisant pour chaque pixel une cellule de 4 × 32-bits. Chaque image "
+"complète de cette dimension demande alors environ 300 Mo de mémoire. Comme "
+"nous désirons traiter cette image, il nous faudra au moins deux tampons pour "
+"chaque module - un pour l’entrée et un pour la sortie. Si nous avons un "
+"module plus complexe, son algorithme peut avoir besoin, en plus, de "
+"plusieurs tampons intermédiaires de la même dimension. Sans autre "
+"optimisation, nous aurons besoin entre 600 Mo et 3 Go de mémoire simplement "
+"pour enregistrer et traiter les données de l’image. Nous avons en plus le "
+"segment de code de darktable, le code et les données de toutes les "
+"bibliothèques système liées dynamiquement, et il ne faut pas oublier "
+"d’autres tampons où darktable enregistre les images intermédiaires afin d’y "
+"accéder rapidement lors du travail interactif (cache mip map). L'un dans "
+"l'autre, darktable a besoin d’un minimum d’environ 4 Go de mémoire pour être "
+"exécuté avec succès."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20518(title)
 msgid "Total system memory"
@@ -22351,7 +22331,6 @@ msgid "Memory fragmentation"
 msgstr "Fragmentation de la mémoire"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20563(para)
-#, fuzzy
 msgid ""
 "Unfortunately this is not the full story yet. There is an effect called "
 "memory fragmentation, which can and will hit software that needs to do "
@@ -22373,12 +22352,13 @@ msgstr ""
 "cette mémoire devrait ensuite être disponible pour une grosse allocation de "
 "1.5 Go. Cependant, ceci n'est pas souvent le cas. L’allocateur de mémoire du "
 "système ne voit plus cette zone comme un bloc contigu de 1.5 Go mais comme "
-"une suite de zones de 300 Mo. S’il ne reste plus d’autre zone libre de 1.5 "
+"une rangée de zones de 300 Mo. S’il ne reste plus d’autre zone libre de 1.5 "
 "Go disponible, il y aura un échec d’allocation. Au cours de l'exécution d’un "
-"programme, ce mécanisme va enlever de plus en plus des grands blocs de "
-"mémoire au lieu des plus petits. darktable 1.0 a introduit un mécanisme de "
-"cache afin de prendre en compte ce problème. Il préalloue des blocs de "
-"mémoire et les rend disponibles sur demande."
+"programme, ce mécanisme va prendre de plus en plus les plus grands blocs de "
+"mémoire au lieu des plus petits. Le cache mipmap de darktable 2.0 alloue "
+"plusieurs petits blocs de mémoire pour chaque miniature, donc ce problème "
+"est encore plus grand. Pour cette raison, à partir de darktable 2.0, le "
+"support du 32 bits est déconseillé."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20580(title)
 msgid "Further limitations"
@@ -22429,7 +22409,6 @@ msgid "tiling"
 msgstr "Tuilage"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20611(para)
-#, fuzzy
 msgid ""
 "As we've seen 32-bit systems are difficult environments for darktable. Still "
 "some users are running darktable on them, if the basic requirements in terms "
@@ -22437,10 +22416,10 @@ msgid ""
 "addressed properly."
 msgstr ""
 "Comme nous l'avons vu les systèmes 32-bits sont des environnements "
-"difficiles pour darktable. De nombreux utilisateurs continuent cependant à "
-"exécuter darktable avec succès sur de tels systèmes, si les exigences de "
-"base en termes de mémoire totale système et les éléments mentionnés dans les "
-"paragraphes ci-dessus sont traités correctement."
+"difficiles pour darktable. Cependant des utilisateurs continuent à exécuter "
+"darktable sur de tels systèmes. Ceci est possible si les exigences de base "
+"en termes de mémoire totale système et les éléments mentionnés dans les "
+"paragraphes ci-dessus ont été traités correctement."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20617(para)
 msgid ""
@@ -22479,7 +22458,6 @@ msgstr ""
 "darktablerc et les modifier à cet endroit."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20642(para)
-#, fuzzy
 msgid ""
 "This parameter defines the maximum number of threads that are allowed in "
 "parallel when importing film rolls or doing other background stuff. For "
@@ -22490,11 +22468,9 @@ msgstr ""
 "Ce paramètre définit le nombre maximum de processus qui seront alloués en "
 "parallèle lors de l’importation de pellicules ou lors de l’exécution "
 "d’autres tâches en arrière-plan. Pour des raisons évidentes sur les systèmes "
-"32 bits, vous ne pouvez avoir qu'un seul processus qui consomme des "
-"ressources à un instant donné. Vous devrez donc positionner ce paramètre à "
-"1 ; toute valeur supérieure vous créera des problèmes. Pour la même raison, "
-"vous devrez aussi fixer le nombre de processus en parallèle pour "
-"l’exportation à 1."
+"32 bits, vous ne pouvez avoir qu'un seul processus à la fois qui consomme "
+"des ressources. Vous devrez donc fixer ce paramètre à 1 ; toute valeur "
+"supérieure provoquera un plantage."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20655(para)
 msgid ""
@@ -22815,7 +22791,6 @@ msgid "How to activate OpenCL in darktable"
 msgstr "Comment activer OpenCL dans darktable"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20859(para)
-#, fuzzy
 msgid ""
 "Using OpenCL in darktable requires that your PC is equipped with a suitable "
 "graphics card and that it has the required libraries in place. Namely modern "
@@ -22826,16 +22801,15 @@ msgid ""
 "linker."
 msgstr ""
 "L’utilisation d’OpenCL dans darktable nécessite que votre PC soit équipé "
-"d’une carte graphique adaptée et que les bibliothèques nécessaires soient "
-"installées. Les cartes graphiques NVIDIA et ATI prennent en charge "
-"complètement OpenCL. Le compilateur OpenCL fait normalement partie du pilote "
-"graphique propriétaire ; il est utilisé sous la forme d'une bibliothèque "
-"dynamique appelée <quote>libOpenCL.so</quote>. Cette bibliothèque doit se "
-"trouver dans un répertoire qui puisse être trouvé par l’éditeur dynamique de "
-"liens de votre système."
+"d’une carte graphique adaptée et que les bibliothèques requises soient "
+"installées. Les cartes graphiques modernes de NVIDIA et d'ATI prennent en "
+"charge complètement OpenCL. Le compilateur OpenCL fait normalement partie du "
+"pilote graphique propriétaire ; il est utilisé sous la forme d'une "
+"bibliothèque dynamique appelée <quote>libOpenCL.so</quote>. Cette "
+"bibliothèque doit se trouver dans un répertoire qui puisse être trouvé par "
+"l’éditeur dynamique de liens de votre système."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20868(para)
-#, fuzzy
 msgid ""
 "When darktable starts, it will first try to find and load libOpenCL.so and – "
 "on success – check if the available graphics card comes with OpenCL support. "
@@ -22851,12 +22825,12 @@ msgstr ""
 "libOpenCL.so  et – en cas de succès – vérifier que la carte graphique "
 "disponible prend en charge OpenCL. Une quantité de mémoire graphique "
 "suffisante (1 Go+) doit être disponible afin de tirer parti du GPU. Si ceci "
-"est correct, darktable va essayer de configurer son environnement OpenCL : "
-"un contexte de traitement doit être initialisé, un pipeline de calcul doit "
-"être démarré. Les fichiers du code source d’OpenCL (dont l’extension est ."
-"cl) doivent être lus et compilés et les routines incluses (appelées noyaux "
-"d’OpenCL) doivent être préparées pour les modules de darktable. Une fois "
-"tout ceci effectué, la préparation est terminée."
+"est OK, darktable va essayer de configurer son environnement OpenCL : un "
+"contexte de traitement doit être initialisé, un pipeline de calcul doit être "
+"démarré. Les fichiers du code source d’OpenCL (d’extension .cl) doivent être "
+"lus et compilés et les routines incluses (appelées noyaux d’OpenCL) doivent "
+"être préparées pour les modules de darktable. Une fois tout ceci effectué, "
+"la préparation est terminée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20879(para)
 msgid ""
@@ -22964,13 +22938,12 @@ msgstr ""
 "module(s) -&gt; GPU"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20940(para)
-#, fuzzy
 msgid ""
 "darktable dynamically loads <filename moreinfo=\"none\">libOpenCL.so</"
 "filename>, a system library which must be accessible to the system's dynamic "
 "loader (<filename moreinfo=\"none\">ld.so</filename>)."
 msgstr ""
-"darktable lie dynamiquement <filename moreinfo=\"none\">libOpenCL.so</"
+"darktable charge dynamiquement <filename moreinfo=\"none\">libOpenCL.so</"
 "filename>, une bibliothèque système qui doit être accessible au chargeur "
 "dynamique du système (<filename moreinfo=\"none\">ld.so</filename>)."
 
@@ -23282,7 +23255,6 @@ msgstr ""
 "sauter l’ensemble de la phase d’initialisation d’OpenCL."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21146(para)
-#, fuzzy
 msgid ""
 "darktable might fail to compile its OpenCL source files at run-time. In that "
 "case you will get a number of error messages looking like typical compiler "
@@ -23297,11 +23269,11 @@ msgstr ""
 "l’exécution. Dans ce cas, vous obtiendrez de nombreux messages d’erreur "
 "semblables à des erreurs typiques de compilateur. Ceci peut indiquer une "
 "incompatibilité entre votre implémentation d’OpenCL et notre interprétation "
-"des normes. Dans ce cas, prenez contact avec nous à darktable-"
-"devel@sourceforge.net et signalez le problème. Il y a de bonnes chances que "
-"nous puissions vous aider. Veuillez aussi signaler si vous constatez des "
-"différences significatives entre le traitement CPU et le traitement GPU "
-"d’une image !"
+"des normes. Dans ce cas, prenez contact avec nous sur IRC dans #darktable on "
+"FreeNode ou sur la liste darktable-devel@sourceforge.net et signalez le "
+"problème. Il y a de bonnes chances que nous puissions vous aider. Veuillez "
+"aussi signaler si vous constatez des différences significatives entre le "
+"traitement CPU et le traitement GPU d’une image !"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21158(para)
 msgid ""
