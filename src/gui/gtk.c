@@ -1303,11 +1303,11 @@ void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
   dt_conf_set_int(key, state);
 }
 
-void dt_ui_notify_user(struct dt_ui_t *ui)
+void dt_ui_notify_user()
 {
-  if(!gtk_window_is_active(GTK_WINDOW(dt_ui_main_window(ui))))
+  if(darktable.gui && !gtk_window_is_active(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui))))
   {
-    gtk_window_set_urgency_hint(GTK_WINDOW(dt_ui_main_window(ui)), TRUE);
+    gtk_window_set_urgency_hint(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), TRUE);
 #ifdef MAC_INTEGRATION
 #ifdef GTK_TYPE_OSX_APPLICATION
     gtk_osxapplication_attention_request(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL), INFO_REQUEST);
