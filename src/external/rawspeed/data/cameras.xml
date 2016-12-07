@@ -6538,6 +6538,38 @@
 			<Alias>DMC-TZ70</Alias>
 		</Aliases>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-TZ100">
+		<ID make="Panasonic" model="DMC-TZ100">Panasonic DMC-ZS100</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="142" white="4095"/>
+		<Aliases>
+			<Alias>DMC-ZS110</Alias>
+			<Alias>DMC-TZ101</Alias>
+			<Alias>DMC-TZ110</Alias>
+		</Aliases>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-TZ100" mode="3:2">
+		<ID make="Panasonic" model="DMC-TZ100">Panasonic DMC-ZS100</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="142" white="4095"/>
+		<Aliases>
+			<Alias>DMC-ZS110</Alias>
+			<Alias>DMC-TZ101</Alias>
+			<Alias>DMC-TZ110</Alias>
+		</Aliases>
+	</Camera>
 	<Camera make="PENTAX Corporation" model="PENTAX K100D">
 		<ID make="Pentax" model="K100D">Pentax K100D</ID>
 		<CFA width="2" height="2">
