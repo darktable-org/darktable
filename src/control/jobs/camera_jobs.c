@@ -351,8 +351,7 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
   dt_camctl_unregister_listener(darktable.camctl, &listener);
 
   // notify the user via the window manager
-  if(darktable.gui)
-    dt_ui_notify_user(darktable.gui->ui);
+  dt_ui_notify_user();
 
   return 0;
 }

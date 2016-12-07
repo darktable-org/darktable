@@ -240,7 +240,7 @@ void dt_ui_restore_panels(struct dt_ui_t *ui);
 /** \brief toggle view of panels eg. collaps/expands to previous view state */
 void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui);
 /** \brief draw user's attention */
-void dt_ui_notify_user(struct dt_ui_t *ui);
+void dt_ui_notify_user();
 /** \brief get visible state of panel */
 gboolean dt_ui_panel_visible(struct dt_ui_t *ui, const dt_ui_panel_t);
 /** \brief get the center drawable widget */
