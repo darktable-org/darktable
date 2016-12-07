@@ -575,8 +575,29 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
   // extra passes propagates out errors at edges, hence need more padding
   const int pad_tile = (passes == 1) ? 13 : 17;  // 12 to 13 because of the 27x27 filter area
+
+  //calculate offsets for this roi
+  int rowoffset = 0;
+  int coloffset = 0;
+  for(int row = 0; row < 6; row++)
+  {
+    if (!((row - sgrow) % 3))
+    {
+      for(int col = 0; col < 6; col++)
+      {
+        if (!((col - sgcol) % 3) && (FCxtrans(row, col + 1, roi_in, xtrans) == 0))
+        {
+          rowoffset = 1 - row - pad_tile;
+          coloffset = 1 - col - pad_tile;
+          break;
+        }
+      }
+      break;
+    }
+  }
+
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out) schedule(dynamic)
+#pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out, rowoffset, coloffset) schedule(dynamic)
 #endif
   // step through TSxTS cells of image, each tile overlapping the
   // prior as interpolation needs a substantial border
@@ -1003,8 +1024,8 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
           CORR_FILT(C18m,h18c,9,9,18,18)
           // build the q vector components
           float PI = acos(-1);
-          int myrow = row-1;
-          int mycol = col-1;
+          int myrow = row + rowoffset;
+          int mycol = col + coloffset;
           float complex modulator1 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.5f + (float)myrow * -0.16666666666667f));
           float complex modulator2 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.16666666666667f + (float)myrow * -0.5f));
           float complex q2_10 = (w * C10m * modulator1 - (1-w) * C2m * modulator2);
