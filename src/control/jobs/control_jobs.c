@@ -1261,8 +1261,7 @@ end:
   mformat->free_params(mformat, fdata);
 
   // notify the user via the window manager
-  if(darktable.gui)
-    dt_ui_notify_user(darktable.gui->ui);
+  dt_ui_notify_user();
 
   return 0;
 }
