@@ -877,8 +877,8 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   for(int k = 1; k < num_tonecurve - 1; k++) cy[num_tonecurve - 1 - k] = target_L[N - num_tonecurve + 2 + k - 1];
   tonecurve_create(&tonecurve, cx, cy, num_tonecurve);
 
-  free(cy);
-  free(cx);
+  cy = NULL;
+  cx = NULL;
 
 #if 0 // quiet.
   for(int k = 0; k < num_tonecurve; k++)
@@ -923,6 +923,8 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   free(perm);
   self->tonecurve_encoded = encode_tonecurve(&tonecurve);
   self->colorchecker_encoded = encode_colorchecker(sp, colorchecker_Lab, target, cperm);
+
+  tonecurve_delete(&tonecurve);
 }
 
 static void process_button_clicked_callback(GtkButton *button, gpointer user_data)
