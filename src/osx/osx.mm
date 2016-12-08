@@ -27,21 +27,19 @@
 
 void dt_osx_autoset_dpi(GtkWidget *widget)
 {
-    GdkScreen *screen = gtk_widget_get_screen(widget);
-    if(screen == NULL) screen = gdk_screen_get_default();
-    int monitor = gdk_screen_get_primary_monitor(screen);
-    CGDirectDisplayID ids[monitor + 1];
-    uint32_t total_ids;
-    CGSize size_in_mm;
-    GdkRectangle size_in_px;
-    if(CGGetOnlineDisplayList(monitor + 1, &ids[0], &total_ids) == kCGErrorSuccess && total_ids == monitor + 1)
-    {
-      size_in_mm = CGDisplayScreenSize(ids[monitor]);
-      gdk_screen_get_monitor_geometry(screen, monitor, &size_in_px);
-      gdk_screen_set_resolution(
-          screen, 25.4 * sqrt(size_in_px.width * size_in_px.width + size_in_px.height * size_in_px.height)
-                  / sqrt(size_in_mm.width * size_in_mm.width + size_in_mm.height * size_in_mm.height));
-    }
+  GdkScreen *screen = gtk_widget_get_screen(widget);
+  if(!screen)
+    screen = gdk_screen_get_default();
+  if(!screen)
+    return;
+
+  CGDirectDisplayID id = CGMainDisplayID();
+  CGSize size_in_mm = CGDisplayScreenSize(id);
+  int width = CGDisplayPixelsWide(id);
+  int height = CGDisplayPixelsHigh(id);
+  gdk_screen_set_resolution(screen,
+      25.4 * sqrt(width * width + height * height)
+           / sqrt(size_in_mm.width * size_in_mm.width + size_in_mm.height * size_in_mm.height));
 }
 
 void dt_osx_allow_fullscreen(GtkWidget *widget)
@@ -77,3 +75,7 @@ gboolean dt_osx_file_trash(const char *filename, GError **error)
   }
   return TRUE;
 }
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
