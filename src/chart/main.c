@@ -1139,8 +1139,8 @@ static GtkWidget *create_notebook_page_process(dt_lut_t *self)
   gtk_grid_attach(GTK_GRID(page), gray_ramp, 1, line++, 1, 1);
 
   // TODO: it might make sense to limit this to a smaller range and/or use a slider
-  // 50 is the current max in the lut iop
-  GtkWidget *number_patches = gtk_spin_button_new_with_range(0, 50, 1);
+  // 49 is the current max in the lut iop
+  GtkWidget *number_patches = gtk_spin_button_new_with_range(0, 49, 1);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(number_patches), 24);
   gtk_grid_attach(GTK_GRID(page), gtk_label_new("number of final patches"), 0, line, 1, 1);
   gtk_grid_attach(GTK_GRID(page), number_patches, 1, line++, 1, 1);
