@@ -863,7 +863,7 @@
 			<Horizontal y="4" height="44"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias id="EOS Rebel T6">Canon EOS REBEL T6</Alias>
+			<Alias id="EOS Rebel T6">Canon EOS Rebel T6</Alias>
 			<Alias id="EOS Kiss X80">Canon EOS Kiss X80</Alias>
 		</Aliases>
 	</Camera>
