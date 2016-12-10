@@ -1595,7 +1595,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // half scale or third scale interpolation instead
   const int full_scale_demosaicing
       = (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT
-        || uhq_thumb || roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f)
+        || uhq_thumb
+        || ((roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f)) && (piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW))
         || (img->flags & DT_IMAGE_4BAYER); // half_size_f doesn't support 4bayer images
 
   // we check if we can stop at the linear interpolation step in VNG
