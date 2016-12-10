@@ -777,8 +777,8 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             float(*rfx)[3] = &rgb[0][row - top][col - left];
             int h = FCxtrans(row, col + 1, roi_in, xtrans);
             float diff[6] = { 0.0f };
-            // FIXME: why is color[3][8] if only up to color[3][6] is used?
-            float color[3][8];
+            // FIXME: only using color[0] and color[2], not color[0], so can get rid of that and make 12 element array (vs. 24 as it was before) though will that make offsets harder, better to keep 6 dummy elements?
+            float color[3][6];
             // six passes, alternating interpolating from x or y axis
             // (i), starting with R or B (h) depending on which is
             // closest pixel
