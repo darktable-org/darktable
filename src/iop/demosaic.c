@@ -777,20 +777,50 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             float(*rfx)[3] = &rgb[0][row - top][col - left];
             int h = FCxtrans(row, col + 1, roi_in, xtrans);
             float diff[6] = { 0.0f };
+            // FIXME: why is color[3][8] if only up to color[3][6] is used?
             float color[3][8];
+            // six passes, alternating interpolating from x or y axis
+            // (i), starting with R or B (h) depending on which is
+            // closest pixel
+            //
+            // pass   direction
+            // 0      x
+            // 1      y
+            // 2      x
+            // 3      y
+            // 4      x
+            // 5      y
+            //
+            // passes 0,1 produce output to rgb[0], rgb[1] respectively of interpolated hori/vert results
+            // pass 3,5 produces output to rgb[2], rgb[3] respectively of best of interpolated hori/vert results
+
+            // FIXME: each pass may use the prior pass data, but none before that, so could use a ring array with just x/y data instead of array of all 6 passes
+            // QUESTION: does pass 0/1, 2/3, and 4/5 produce the same color/diff results??? if not why not?
             for(int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2)
             {
               for(int c = 0; c < 2; c++, h ^= 2)
               {
+                // gradient between solitary green pixel and interpolated greens 1 or 2 pixels away
                 float g = 2 * rfx[0][1] - rfx[i << c][1] - rfx[-(i << c)][1];
+                // gradient plus mosaic values for red or blue at 1 or 2 pixels away
                 color[h][d] = g + rfx[i << c][h] + rfx[-(i << c)][h];
                 if(d > 1)
                   diff[d] += SQR(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h])
                              + SQR(g);
               }
-              if(d > 1 && (d & 1))
-                if(diff[d - 1] < diff[d])
-                  for(int c = 0; c < 2; c++) color[c * 2][d] = color[c * 2][d - 1];
+
+              // if on 2nd or 3rd pass of y direction, and the
+              // previously-calculated x-direction has a smaller diff,
+              // use that color interpolation instead
+              if((d > 1) && (d & 1) && (diff[d - 1] < diff[d]))
+              {
+                //for(int c = 0; c < 2; c++) color[c * 2][d] = color[c * 2][d - 1];
+                color[0][d] = color[0][d - 1];
+                color[2][d] = color[2][d - 1];
+              }
+
+              // output one pixel each for the 4 layers of rgb for
+              // pass 0, 1, 3, 5
               if(d < 2 || (d & 1))
               {
                 for(int c = 0; c < 2; c++) rfx[0][c * 2] = color[c * 2][d] / 2.f;
