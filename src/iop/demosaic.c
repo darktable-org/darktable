@@ -767,23 +767,45 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             float(*rfx)[3] = &rgb[0][row - top][col - left];
             int h = FCxtrans(row, col + 1, roi_in, xtrans);
             float diff[6] = { 0.0f };
-            float color[3][8];
+            // interplated color: first index is red/blue, second is
+            // pass, is double actual result
+            float color[2][6];
+            // Six passes, alternating hori/vert interp (i),
+            // starting with R or B (h) depending on which is closest.
+            // Passes 0,1 to rgb[0], rgb[1] of hori/vert interp. Pass
+            // 3,5 to rgb[2], rgb[3] of best of interp hori/vert
+            // results. Each pass which outputs moves on to the next
+            // rgb[] for input of interp greens.
             for(int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2)
             {
+              // look 1 and 2 pixels distance from solitary green to
+              // red then blue or blue then red
               for(int c = 0; c < 2; c++, h ^= 2)
               {
+                // rate of change in greens between current pixel and
+                // interpolated pixels 1 or 2 distant: a quick
+                // derivative which will be divided by two later to be
+                // rate of luminance change for red/blue between known
+                // red/blue neighbors and the current unknown pixel
                 float g = 2 * rfx[0][1] - rfx[i << c][1] - rfx[-(i << c)][1];
-                color[h][d] = g + rfx[i << c][h] + rfx[-(i << c)][h];
+                // color is halved before being stored in rgb, hence
+                // this becomes green rate of change plus the average
+                // of the near red or blue pixels on current axis
+                color[h != 0][d] = g + rfx[i << c][h] + rfx[-(i << c)][h];
+                // Note that diff will become the slope for both red
+                // and blue differentials in the current direction.
+                // For 2nd and 3rd hori+vert passes, create a sum of
+                // steepness for both cardinal directions.
                 if(d > 1)
                   diff[d] += SQR(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h])
                              + SQR(g);
               }
-              if(d > 1 && (d & 1))
-                if(diff[d - 1] < diff[d])
-                  for(int c = 0; c < 2; c++) color[c * 2][d] = color[c * 2][d - 1];
-              if(d < 2 || (d & 1))
-              {
-                for(int c = 0; c < 2; c++) rfx[0][c * 2] = color[c * 2][d] / 2.f;
+              if((d < 2) || (d & 1))
+              { // output for passes 0, 1, 3, 5
+                // for 0, 1 just use hori/vert, for 3, 5 use best of x/y dir
+                const int d_out = d - ((d > 1) && (diff[d-1] < diff[d]));
+                rfx[0][0] = color[0][d_out] / 2.f;
+                rfx[0][2] = color[1][d_out] / 2.f;
                 rfx += TS * TS;
               }
             }
