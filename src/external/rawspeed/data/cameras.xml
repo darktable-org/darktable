@@ -7241,6 +7241,17 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="800" white="16300"/>
 	</Camera>
+	<Camera make="SONY" model="DSC-RX100M5">
+		<ID make="Sony" model="DSC-RX100M5">Sony DSC-RX100M5</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-8" height="0"/>
+		<Sensor black="800" white="16300"/>
+	</Camera>
 	<Camera make="SONY" model="DSC-RX1R">
 		<ID make="Sony" model="DSC-RX1R">Sony DSC-RX1R</ID>
 		<CFA width="2" height="2">
