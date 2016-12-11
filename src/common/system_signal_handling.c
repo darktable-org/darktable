@@ -49,11 +49,16 @@
 #define PR_SET_PTRACER 0x59616d61
 #endif
 
-#if !defined(__APPLE__) && !defined(__WIN32__)
+#if !defined(__WIN32__)
 typedef void(dt_signal_handler_t)(int);
+#endif
+
+#if !defined(__APPLE__) && !defined(__WIN32__)
 // static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
+#endif
 
+#if !defined(__WIN32__)
 // deer graphicsmagick, please stop messing with the stuff that you should not be touching at all.
 // based on GM's InitializeMagickSignalHandlers() and MagickSignalHandlerMessage()
 static const int _signals_to_preserve[] = { SIGHUP,  SIGINT,  SIGQUIT, SIGILL,  SIGABRT, SIGBUS, SIGFPE,
@@ -140,7 +145,7 @@ void dt_set_signal_handlers()
 {
   _times_handlers_were_set++;
 
-#if !defined(__APPLE__) && !defined(__WIN32__)
+#if !defined(__WIN32__)
   dt_signal_handler_t *prev;
 
   if(1 == _times_handlers_were_set)
@@ -166,6 +171,7 @@ void dt_set_signal_handlers()
     (void)signal(signum, _orig_sig_handlers[i]);
   }
 
+#if !defined(__APPLE__)
   // now, set our SIGSEGV handler.
   // FIXME: what about SIGABRT?
   prev = signal(SIGSEGV, &_dt_sigsegv_handler);
@@ -181,6 +187,7 @@ void dt_set_signal_handlers()
     fprintf(stderr, "[dt_set_signal_handlers] error: signal(SIGSEGV) returned SIG_ERR: %i (%s)\n", errsv,
             strerror(errsv));
   }
+#endif
 #endif
 }
 
