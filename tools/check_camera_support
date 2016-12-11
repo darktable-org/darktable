@@ -279,8 +279,9 @@ class CameraSupportState
     def print_list(name, list)
       return if list.size == 0
       puts name
+      puts
       list.each do |item|
-        puts " - "+item
+        puts "- "+item
       end
       puts
     end
