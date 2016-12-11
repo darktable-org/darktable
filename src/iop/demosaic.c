@@ -1591,12 +1591,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
     uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
 
+  // If downscaling is such that one or more repetitition of the CFA
+  // pattern could be merged into a single pixel, it is possible to
+  // perform a quick downscale rather than a full demosaic. Note that
+  // even though the X-Trans CFA is 6x6, for this purposes we can see
+  // each 6x6 tile as four fairly similar 3x3 tiles
+  const int cfa_scale = roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f);
+
   // we check if we can avoid full scale demosaicing and chose simple
   // half scale or third scale interpolation instead
   const int full_scale_demosaicing
       = (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT
         || uhq_thumb
-        || ((roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f)) && (piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW))
+        || (cfa_scale && (piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW))
         || (img->flags & DT_IMAGE_4BAYER); // half_size_f doesn't support 4bayer images
 
   // we check if we can stop at the linear interpolation step in VNG
