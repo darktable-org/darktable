@@ -781,7 +781,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             // red/blue results for each pass, color[0][]=red,
             // color[1][]=blue, are double actual results, halved on
             // assignment
-            float color[3][6];
+            float color[2][6];
             // Six passes, alternating interpolating from x or y axis
             // (i), starting with R or B (h) depending on which is
             // closest pixel.  Passes 0,1 produce output to rgb[0],
@@ -805,7 +805,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                 // color is halved before being stored in rgb, hence
                 // this becomes green rate of change plus the average
                 // of the near red or blue pixels on current axis
-                color[h][d] = g + rfx[i << c][h] + rfx[-(i << c)][h];
+                color[h != 0][d] = g + rfx[i << c][h] + rfx[-(i << c)][h];
                 // Note that diff will become the slope for both red
                 // and blue differentals in the current direction.
                 // For 2nd and 3rd hori+vert passes, create a sum of
@@ -821,11 +821,11 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
               {
                 //for(int c = 0; c < 2; c++) color[c * 2][d] = color[c * 2][d - 1];
                 color[0][d] = color[0][d - 1];
-                color[2][d] = color[2][d - 1];
+                color[1][d] = color[1][d - 1];
               }
               if(d < 2 || (d & 1))
               {
-                for(int c = 0; c < 2; c++) rfx[0][c * 2] = color[c * 2][d] / 2.f;
+                for(int c = 0; c < 2; c++) rfx[0][c * 2] = color[c][d] / 2.f;
                 rfx += TS * TS;
               }
             }
