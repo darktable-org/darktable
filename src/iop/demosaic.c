@@ -1884,7 +1884,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
 
   if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT
-     || (uhq_thumb) || roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : .5f))
+     || (uhq_thumb) || ((piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) && (roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : .5f))))
   {
     // Full demosaic and then scaling if needed
     const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
@@ -2162,7 +2162,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   // half scale or third scale interpolation instead
   const int full_scale_demosaicing = (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0)
                                      || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT || uhq_thumb
-                                     || roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f);
+                                     || ((piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) && (roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f)));
 
   // check if we can stop at the linear interpolation step and
   // avoid full VNG
@@ -2588,7 +2588,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
   // half scale or third scale interpolation instead
   const int full_scale_demosaicing = (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0)
                                      || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT || uhq_thumb
-                                     || roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f);
+                                     || ((piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) && (roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f)));
 
   cl_mem dev_tmp = NULL;
   cl_mem dev_tmptmp = NULL;
@@ -3388,7 +3388,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   // half scale or third scale interpolation instead
   const int full_scale_demosaicing = (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0)
                                      || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT || uhq_thumb
-                                     || roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f);
+                                     || ((piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) && (roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f)));
 
   // we use full Markesteijn demosaicing on xtrans sensors only if
   // maximum quality is required
