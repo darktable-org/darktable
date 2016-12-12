@@ -1502,6 +1502,15 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   // this op is disabled for preview pipe/filters == 0
 
   *roi_in = *roi_out;
+
+  if (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    // this is a MIP_F, and was given a larger buffer as
+    // 1-channel, but shrink to proper size now that it is
+    // 4-channel
+    roi_in->scale /= 2.0f;
+  }
+
   // need 1:1, demosaic and then sub-sample. or directly sample half-size
   roi_in->x /= roi_out->scale;
   roi_in->y /= roi_out->scale;
@@ -1705,12 +1714,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
       dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f((float *)o, pixels, &roo, &roi, roo.width, roi.width);
     else // sample half-size raw (Bayer) or 1/3-size raw (X-Trans)
-        if(piece->pipe->dsc.filters == 9u)
-      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
-                                                        xtrans);
-    else
-      dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
-                                                piece->pipe->dsc.filters);
+      if(piece->pipe->dsc.filters == 9u)
+        dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, xtrans);
+      else
+        dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, piece->pipe->dsc.filters);
   }
   if(data->color_smoothing) color_smoothing(o, roi_out, data->color_smoothing);
 }
