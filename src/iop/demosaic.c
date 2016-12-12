@@ -1503,11 +1503,11 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
   *roi_in = *roi_out;
 
-  if (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if ((piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) &&
+      self->dev->image_storage.buf_dsc.filters)
   {
-    // this is a MIP_F, and was given a larger buffer as
-    // 1-channel, but shrink to proper size now that it is
-    // 4-channel
+    // This is a mosaiced MIP_F, and was given a larger buffer as
+    // 1-channel. Shrink to proper size now that it is 4-channel.
     roi_in->scale /= 2.0f;
   }
 
