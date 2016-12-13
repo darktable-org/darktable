@@ -877,8 +877,8 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   for(int k = 1; k < num_tonecurve - 1; k++) cy[num_tonecurve - 1 - k] = target_L[N - num_tonecurve + 2 + k - 1];
   tonecurve_create(&tonecurve, cx, cy, num_tonecurve);
 
-  free(cy);
-  free(cx);
+  cy = NULL;
+  cx = NULL;
 
 #if 0 // quiet.
   for(int k = 0; k < num_tonecurve; k++)
@@ -923,6 +923,8 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   free(perm);
   self->tonecurve_encoded = encode_tonecurve(&tonecurve);
   self->colorchecker_encoded = encode_colorchecker(sp, colorchecker_Lab, target, cperm);
+
+  tonecurve_delete(&tonecurve);
 }
 
 static void process_button_clicked_callback(GtkButton *button, gpointer user_data)
@@ -1139,8 +1141,8 @@ static GtkWidget *create_notebook_page_process(dt_lut_t *self)
   gtk_grid_attach(GTK_GRID(page), gray_ramp, 1, line++, 1, 1);
 
   // TODO: it might make sense to limit this to a smaller range and/or use a slider
-  // 50 is the current max in the lut iop
-  GtkWidget *number_patches = gtk_spin_button_new_with_range(0, 50, 1);
+  // 49 is the current max in the lut iop
+  GtkWidget *number_patches = gtk_spin_button_new_with_range(0, 49, 1);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(number_patches), 24);
   gtk_grid_attach(GTK_GRID(page), gtk_label_new("number of final patches"), 0, line, 1, 1);
   gtk_grid_attach(GTK_GRID(page), number_patches, 1, line++, 1, 1);

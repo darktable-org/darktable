@@ -20,18 +20,24 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 // apply and undo a tone curve (L channel only),
 // created from the 24 grey input patches from the it8.
 
-void tonecurve_create(tonecurve_t *c, const double *Lin, const double *Lout, const int32_t num)
+void tonecurve_create(tonecurve_t *c, double *Lin, double *Lout, const int32_t num)
 {
   c->num = num;
-  for(int i = 0; i < num; i++)
-  {
-    c->x[i] = Lin[i];
-    c->y[i] = Lout[i];
-  }
+  c->x = Lin;
+  c->y = Lout;
+}
+
+void tonecurve_delete(tonecurve_t *c)
+{
+  if(!c) return;
+
+  free(c->y);
+  free(c->x);
 }
 
 static inline double _tonecurve_apply(const double *x, const double *y, const int32_t num, const double L)

@@ -26,6 +26,7 @@
 #include "common/gaussian.h"
 #include "common/interpolation.h"
 #include "common/nvidia_gpus.h"
+#include "common/opencl_drivers_blacklist.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/pixelpipe.h"
@@ -227,6 +228,14 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   if(((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) && !dt_conf_get_bool("opencl_use_cpu_devices"))
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding CPU device %d `%s'.\n", k, infostr);
+    res = -1;
+    goto end;
+  }
+
+  if(dt_opencl_check_driver_blacklist(deviceversion) && !dt_conf_get_bool("opencl_disable_drivers_blacklist"))
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' because the driver `%s' is blacklisted.\n",
+             k, infostr, deviceversion);
     res = -1;
     goto end;
   }

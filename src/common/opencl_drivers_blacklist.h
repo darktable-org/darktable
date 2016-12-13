@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 johannes hanika.
+    copyright (c) 2016 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,25 +16,33 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
-#include "common/opencl.h"
+#pragma once
 
-int main(int argc, char *arg[])
+// FIXME: in the future, we may want to also take DRIVER_VERSION into account
+static const char *bad_opencl_drivers[] = {
+  // clang-format off
+
+  "beignet",
+  "pocl",
+  NULL
+
+  // clang-format on
+};
+
+// 0 - ok
+// else it is blacklisted
+int dt_opencl_check_driver_blacklist(const char *device_version)
 {
-  // only used to force-init opencl, so we want these options:
-  char *m_arg[] = { "-d", "opencl", "--library", ":memory:"};
-  const int m_argc = sizeof(m_arg) / sizeof(m_arg[0]);
-  char **argv = malloc(argc * sizeof(arg[0]) + sizeof(m_arg));
-  if(!argv) exit(1);
-  for(int i = 0; i < argc; i++)
-    argv[i] = arg[i];
-  for(int i = 0; i < m_argc; i++)
-    argv[argc + i] = m_arg[i];
-  argc += m_argc;
-  if(dt_init(argc, argv, FALSE, FALSE, NULL)) exit(1);
-  dt_cleanup();
-  free(argv);
-  exit(0);
+  for(int i = 0; bad_opencl_drivers[i]; i++)
+  {
+    if(0 != strcasecmp(device_version, bad_opencl_drivers[i])) continue;
+
+    // oops, found in black list
+    return 1;
+  }
+
+  // did not find in the black list, guess it's ok.
+  return 0;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

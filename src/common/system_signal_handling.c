@@ -53,25 +53,24 @@
 #define PR_SET_PTRACER 0x59616d61
 #endif
 
-#if !defined(__APPLE__)
 typedef void(dt_signal_handler_t)(int);
-// static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
+
+#if !defined(__APPLE__) && !defined(__WIN32__)
+static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
+#endif
 
 // deer graphicsmagick, please stop messing with the stuff that you should not be touching at all.
 // based on GM's InitializeMagickSignalHandlers() and MagickSignalHandlerMessage()
-#if !defined(_WIN32)
-static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
+#if !defined(__WIN32__)
 static const int _signals_to_preserve[] = { SIGHUP,  SIGINT,  SIGQUIT, SIGILL,  SIGABRT, SIGBUS, SIGFPE,
                                             SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGXCPU, SIGXFSZ };
 #else
 static const int _signals_to_preserve[] = { SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM };
 static LPTOP_LEVEL_EXCEPTION_FILTER _dt_exceptionfilter_old_handler = NULL;
-#endif //! defined (_WIN32)
+#endif //! defined (__WIN32__)
 
 #define _NUM_SIGNALS_TO_PRESERVE (sizeof(_signals_to_preserve) / sizeof(_signals_to_preserve[0]))
 static dt_signal_handler_t *_orig_sig_handlers[_NUM_SIGNALS_TO_PRESERVE] = { NULL };
-
-#endif //! defined(__APPLE__)
 
 #if(defined(__FreeBSD_version) && (__FreeBSD_version < 800071)) || (defined(OpenBSD) && (OpenBSD < 201305))       \
     || defined(__SUNOS__)
@@ -182,7 +181,6 @@ void dt_set_signal_handlers()
 {
   _times_handlers_were_set++;
 
-#if !defined(__APPLE__)
   dt_signal_handler_t *prev;
 
   if(1 == _times_handlers_were_set)
@@ -208,7 +206,7 @@ void dt_set_signal_handlers()
     (void)signal(signum, _orig_sig_handlers[i]);
   }
 
-#if !defined(_WIN32)
+#if !defined(__APPLE__) && !defined(_WIN32)
   // now, set our SIGSEGV handler.
   // FIXME: what about SIGABRT?
   prev = signal(SIGSEGV, &_dt_sigsegv_handler);
@@ -224,7 +222,7 @@ void dt_set_signal_handlers()
     fprintf(stderr, "[dt_set_signal_handlers] error: signal(SIGSEGV) returned SIG_ERR: %i (%s)\n", errsv,
             strerror(errsv));
   }
-#else
+#elif !defined(__APPLE__) 
   /*
   Set up exception handler for backtrace on Windows
   Works when there is NO SIGSEGV handler installed
@@ -243,9 +241,7 @@ void dt_set_signal_handlers()
   // Restore original UnhandledExceptionFilter handler no matter what GM is doing
   if(_dt_exceptionfilter_old_handler) SetUnhandledExceptionFilter(_dt_exceptionfilter_old_handler);
 
-#endif //! defined(_WIN32)
-
-#endif //! defined(__APPLE__)
+#endif //!defined(__APPLE__) && !defined(_WIN32)
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
