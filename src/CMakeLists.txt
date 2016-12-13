@@ -718,6 +718,32 @@ unset(LIBS)
 unset(STATIC_LIBS)
 unset(LIB_DEPS)
 
+#-------------------------------------------------------------------------------
+# _detach_debuginfo(<target>)
+#
+# Helper macro to detach the debug information from the target.
+#
+# The debug info of the given target are extracted and saved on a different file
+# with the extension '.dbg', that is installed alongside the target in the .debug folder.
+#-------------------------------------------------------------------------------
+macro(_detach_debuginfo target)
+    set (CMAKE_OBJCOPY, objcopy)
+
+    add_custom_command (TARGET ${target} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E make_directory .debug
+      COMMAND objcopy --only-keep-debug $<TARGET_FILE:${target}> $<TARGET_FILE_DIR:${target}>/$<TARGET_FILE_NAME:${target}>.dbg
+      COMMAND objcopy --strip-debug $<TARGET_FILE:${target}>
+      COMMAND objcopy --add-gnu-debuglink=$<TARGET_FILE_NAME:${target}>.dbg $<TARGET_FILE:${target}>
+      COMMENT "Detaching debug infos for ${target}."
+    )
+
+    # ensure that the debug file is installed on 'make install'...
+    install(FILES $<TARGET_FILE_DIR:${target}>/$<TARGET_FILE_NAME:${target}>.dbg DESTINATION bin/.debug)
+
+    # ... and removed on 'make clean'.
+    set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES $<TARGET_FILE_NAME:${target}>.dbg)
+endmacro()
+
 #
 # Install lib_darktable
 #
@@ -768,4 +794,10 @@ if(APPLE)
   set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon -framework AppKit")
 endif(APPLE)
 target_link_libraries(darktable lib_darktable)
+
+if (WIN32)
+  _detach_debuginfo (darktable)
+  _detach_debuginfo (lib_darktable)
+endif(WIN32)
+
 install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR})

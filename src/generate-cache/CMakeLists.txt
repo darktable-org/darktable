@@ -4,4 +4,9 @@ add_executable(darktable-generate-cache main.c)
 
 set_target_properties(darktable-generate-cache PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(darktable-generate-cache lib_darktable)
+
+if (WIN32)
+  _detach_debuginfo (darktable-generate-cache)
+endif(WIN32)
+
 install(TARGETS darktable-generate-cache DESTINATION ${CMAKE_INSTALL_BINDIR})
