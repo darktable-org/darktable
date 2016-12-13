@@ -13,4 +13,8 @@ target_link_libraries(darktable-chart lib_darktable)
 
 set_target_properties(darktable-chart PROPERTIES LINKER_LANGUAGE C)
 
+if (WIN32)
+  _detach_debuginfo (darktable-chart)
+endif(WIN32)
+
 install(TARGETS darktable-chart DESTINATION ${CMAKE_INSTALL_BINDIR})
