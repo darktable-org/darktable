@@ -7,14 +7,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Traduction des manpages de darktable\n"
 "POT-Creation-Date: 2016-11-08 08:46+0100\n"
-"PO-Revision-Date: 2015-12-08 12:07+0100\n"
+"PO-Revision-Date: 2016-12-13 10:03+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.10\n"
+"X-Generator: Poedit 1.8.11\n"
 
 #. type: =head1
 #: darktable.pod:2 darktable-cli.pod:2 darktable-generate-cache.pod:2
@@ -108,19 +108,14 @@ msgstr ""
 
 #. type: textblock
 #: darktable.pod:33
-#, fuzzy
-#| msgid ""
-#| "The application is designed to ease editing and consistent processing of "
-#| "large photo sessions and provides an easy to use digital light-table and "
-#| "a set of sophisticated post-processing tools."
 msgid ""
 "The application is designed to ease editing and consistent processing of "
 "large photo sessions and provides an easy to use digital lighttable and a "
 "set of sophisticated post-processing tools."
 msgstr ""
 "L'application est conçue pour faciliter l'édition et le traitement cohérent "
-"des grandes séances photo, fournit une table lumineuse numérique facile à "
-"utiliser et un ensemble d'outils sophistiqués de post-traitement."
+"des grandes séances photo. Elle fournit une table lumineuse numérique facile "
+"à utiliser et un ensemble d'outils sophistiqués de post-traitement."
 
 #. type: textblock
 #: darktable.pod:37
@@ -136,13 +131,6 @@ msgstr ""
 
 #. type: textblock
 #: darktable.pod:41
-#, fuzzy
-#| msgid ""
-#| "The application relies on a modern plug-in architecture thus making it "
-#| "easy for 3rd party developers to extend the existing capabilities of the "
-#| "application.  All lighttable and darkroom features are implemented as "
-#| "plug-ins, so you can create your plug-ins reusing existing code.  Most "
-#| "workflow specific things can also be scripted in B<Lua>."
 msgid ""
 "The application relies on a modern plugin architecture thus making it easy "
 "for 3rd party developers to extend the existing capabilities of the "
@@ -155,7 +143,7 @@ msgstr ""
 "tiers. Toutes les fonctionnalités de la table lumineuse et de la chambre "
 "noire sont implémentées sous forme de plugins. Vous pouvez ainsi créer vos "
 "plugins en réutilisant le code existant. La plupart des actions spécifiques "
-"du flux de travail peuvent être écrites dans un script B<Lua>."
+"du flux de travail peuvent aussi être écrites dans un script B<Lua>."
 
 #. type: =head1
 #: darktable.pod:47 darktable-cli.pod:27 darktable-generate-cache.pod:18
@@ -1308,17 +1296,15 @@ msgstr "B<< <fichier de sortie> >>"
 
 #. type: textblock
 #: darktable-cli.pod:47
-#, fuzzy
-#| msgid ""
-#| "The name of the output file.  darktable derives the export file format "
-#| "from the file extension."
 msgid ""
 "The name of the output file.  darktable derives the export file format from "
 "the file extension.  You can also use all the variables available in "
 "B<darktable>'s export module in the output filename."
 msgstr ""
 "Le nom du fichier de sortie. darktable déduit le format d'exportation à "
-"partir de l'extension du fichier."
+"partir de l'extension du fichier. Dans le nom de fichier de sortie vous "
+"pouvez aussi utiliser toutes les variables disponibles dans le module "
+"exportation de B<darktable>."
 
 #. type: =item
 #: darktable-cli.pod:51
@@ -1446,15 +1432,11 @@ msgstr "L<darktable(1)|darktable(1)>"
 
 #. type: textblock
 #: darktable-cli.pod:105
-#, fuzzy
-#| msgid ""
-#| "This man page was written by Richard Levitte E<lt>richard@levittr."
-#| "orgE<gt>.  Additions were made by Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
 msgid ""
 "This man page was written by Richard Levitte E<lt>richard@levitte.orgE<gt>.  "
 "Additions were made by Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
 msgstr ""
-"Ce manpage a été écrit par Richard Levitte E<lt>richard@levittr.orgE<gt>.  "
+"Ce manpage a été écrit par Richard Levitte E<lt>richard@levitte.orgE<gt>.  "
 "Des compléments ont été ajoutés par Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
 
 #. type: textblock
@@ -1515,10 +1497,9 @@ msgstr "Donne des informations de copyright et de version et se termine."
 
 #. type: =item
 #: darktable-generate-cache.pod:33
-#, fuzzy
 #| msgid "B<< -m, --max-mip <0-7> >>"
 msgid "B<< --min-mip <0-7> >>"
-msgstr "B<< -m, --max-mip <0-7> >>"
+msgstr "B<< --min-mip <0-7> >>"
 
 #. type: =item
 #: darktable-generate-cache.pod:35
@@ -1527,13 +1508,6 @@ msgstr "B<< -m, --max-mip <0-7> >>"
 
 #. type: textblock
 #: darktable-generate-cache.pod:37
-#, fuzzy
-#| msgid ""
-#| "B<darktable> can handle and store thumbnails with up to eight different "
-#| "resolution steps for each image.  This parameter defines which maximum "
-#| "resolution should be generated and defaults to B<2>.  There is normally "
-#| "no need to generate all possible resolutions here; missing ones will be "
-#| "automatically generated by darktable the moment they are needed."
 msgid ""
 "B<darktable> can handle and store thumbnails with up to eight different "
 "resolution steps for each image.  These parameters define which maximum "
@@ -1546,23 +1520,24 @@ msgstr ""
 "B<darktable> peut gérer et stocker, pour chaque image, des miniatures ayant "
 "jusqu'à huit niveaux différents de résolution. Ce paramètre définit le "
 "nombre maximum de résolutions qui doivent être générées, la valeur par "
-"défaut est B<2>. Il n'est normalement pas nécessaire de générer ici toutes "
+"défaut est B<0-2>. Il n'est normalement pas nécessaire de générer ici toutes "
 "les résolutions possibles ; celles qui manquent seront générées "
-"automatiquement par darktable au moment où elles seront nécessaires."
+"automatiquement par darktable au moment où elles seront nécessaires. Quand "
+"on demande la génération de multiple résolutions à la fois, les images de "
+"plus faible résolution sont rapidement générées par sous-échantillonnage de "
+"l'image ayant la plus forte résolution."
 
 #. type: =item
 #: darktable-generate-cache.pod:42
-#, fuzzy
 #| msgid "B<< -m, --max-mip <0-7> >>"
 msgid "B<< --min-imgid <N> >>"
-msgstr "B<< -m, --max-mip <0-7> >>"
+msgstr "B<< --min-imgid <N> >>"
 
 #. type: =item
 #: darktable-generate-cache.pod:44
-#, fuzzy
 #| msgid "B<< -m, --max-mip <0-7> >>"
 msgid "B<< --max-imgid <N> >>"
-msgstr "B<< -m, --max-mip <0-7> >>"
+msgstr "B<< --max-imgid <N> >>"
 
 #. type: textblock
 #: darktable-generate-cache.pod:46
@@ -1571,6 +1546,9 @@ msgid ""
 "no range is given, B<darktable-generate-cache> will process all images from "
 "the entire collection."
 msgstr ""
+"Spécifie la plage des IDS des images de la base de données sur laquelle il "
+"faut travailler. Si aucune plage n'est donnée, B<dartable-generate-cache> "
+"traitera toutes les images de la collection. "
 
 #. type: textblock
 #: darktable-generate-cache.pod:68 darktable-cltest.pod:29
@@ -1670,10 +1648,12 @@ msgstr ""
 #~ "plein écran les images de votre collection courante."
 
 #~ msgid ""
-#~ "    darktable-viewer [-h, --help; --version] [--random] [--repeat] [--core <darktable options>]\n"
+#~ "    darktable-viewer [-h, --help; --version] [--random] [--repeat] [--"
+#~ "core <darktable options>]\n"
 #~ "\n"
 #~ msgstr ""
-#~ "    darktable-viewer [-h, --help; --version] [--random] [--repeat] [--core <darktable options>]\n"
+#~ "    darktable-viewer [-h, --help; --version] [--random] [--repeat] [--"
+#~ "core <darktable options>]\n"
 #~ "\n"
 
 #~ msgid ""
