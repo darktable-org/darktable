@@ -25,7 +25,7 @@
   <translations name="darktable">${prefix:dt}/share/locale</translations>
   <data>${prefix:dt}/share/darktable</data>
   <data>${prefix}/share/glib-2.0/schemas/org.gtk.Settings.*.gschema.xml</data>
-  <data>${prefix}/share/lensfun</data>
+  <data dest="${bundle}/Contents/Resources/share/lensfun">${project}/lensfun/updates</data>
   <data>${prefix:dt}/share/icons</data>
   <data>${prefix}/share/mime</data>
   <data>${prefix}/share/curl/curl-ca-bundle.crt</data>
