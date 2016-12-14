@@ -195,7 +195,8 @@ protected:
   uint32 Pt;
   uint32 offX, offY;  // Offset into image where decoding should start
   uint32 skipX, skipY;   // Tile is larger than output, skip these border pixels
-  HuffmanTable huff[4]; 
+  // allocate large HuffmanTable struct on heap to make libmusl happy
+  vector<HuffmanTable> huff = vector<HuffmanTable>(4);
 };
 
 } // namespace RawSpeed
