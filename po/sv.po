@@ -28,7 +28,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-12-14 14:23+0100\n"
-"PO-Revision-Date: 2016-12-14 15:08+0100\n"
+"PO-Revision-Date: 2016-12-14 15:11+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -909,7 +909,7 @@ msgstr "fel: kan inte öppna fil %s"
 #: ../src/cli/main.c:242
 #, c-format
 msgid "no images to export, aborting\n"
-msgstr "inga bilder att exportera, ger upp"
+msgstr "inga bilder att exportera, ger upp\n"
 
 #: ../src/cli/main.c:268
 msgid "empty history stack"
