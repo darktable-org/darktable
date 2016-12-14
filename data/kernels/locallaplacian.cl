@@ -102,10 +102,10 @@ gauss_expand(
   float4 pixel;
   if(x >= wd || y >= ht) return;
   // fill boundary with 1 or 2 px:
-  if(wd & 1) if(x >= wd-2) cx = wd-2;
-  else       if(x >= wd-2) cx = wd-3;
-  if(ht & 1) if(y >= ht-2) cy = ht-2;
-  else       if(y >= ht-2) cy = ht-3;
+  if(wd & 1) if(x > wd-2) cx = wd-2;
+  else       if(x > wd-3) cx = wd-3;
+  if(ht & 1) if(y > ht-2) cy = ht-2;
+  else       if(y > ht-3) cy = ht-3;
   if(x <= 0) cx = 1;
   if(y <= 0) cy = 1;
 
@@ -186,10 +186,10 @@ laplacian_assemble(
 
   if(x >= pw || y >= ph) return;
   // fill boundary with 1 or 2 px:
-  if(pw & 1) if(x >= pw-2) i = pw-2;
-  else       if(x >= pw-2) i = pw-3;
-  if(ph & 1) if(y >= ph-2) j = ph-2;
-  else       if(y >= ph-2) j = ph-3;
+  if(pw & 1) if(x > pw-2) i = pw-2;
+  else       if(x > pw-3) i = pw-3;
+  if(ph & 1) if(y > ph-2) j = ph-2;
+  else       if(y > ph-3) j = ph-3;
   if(x <= 0) i = 1;
   if(y <= 0) j = 1;
 
