@@ -42,6 +42,11 @@
 
 #define GRAIN_SCALE_FACTOR 213.2
 
+#define GRAIN_LUT_SIZE 128
+#define GRAIN_LUT_DELTA_MAX 2.0
+#define GRAIN_LUT_DELTA_MIN 0.005
+#define GRAIN_LUT_PAPER_GAMMA 1.0
+
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 DT_MODULE_INTROSPECTION(1, dt_iop_grain_params_t)
 
@@ -59,13 +64,14 @@ typedef struct dt_iop_grain_params_t
   _dt_iop_grain_channel_t channel;
   float scale;
   float strength;
+  float midtones_bias;
 } dt_iop_grain_params_t;
 
 typedef struct dt_iop_grain_gui_data_t
 {
   GtkBox *vbox;
   GtkWidget *label1, *label2, *label3; // channel, scale, strength
-  GtkWidget *scale1, *scale2;          // scale, strength
+  GtkWidget *scale1, *scale2, *scale3; // scale, strength, midtones_bias
 } dt_iop_grain_gui_data_t;
 
 typedef struct dt_iop_grain_data_t
@@ -73,6 +79,8 @@ typedef struct dt_iop_grain_data_t
   _dt_iop_grain_channel_t channel;
   float scale;
   float strength;
+  float midtones_bias;
+  float grain_lut[GRAIN_LUT_SIZE * GRAIN_LUT_SIZE];
 } dt_iop_grain_data_t;
 
 
@@ -327,6 +335,58 @@ static double _simplex_2d_noise(double x, double y, uint32_t octaves, double per
   return total;
 }
 
+float paper_resp(float exposure, float mb, float gp)
+{
+  float density;
+  float delta = GRAIN_LUT_DELTA_MAX * exp(mb * log(GRAIN_LUT_DELTA_MIN));
+  density = (1 + 2 * delta) / (1 + exp( (4 * gp * (0.5 - exposure)) / (1 + 2 * delta) )) - delta;
+  return density;
+}
+
+float paper_resp_inverse(float density, float mb, float gp)
+{
+  float exposure;
+  float delta = GRAIN_LUT_DELTA_MAX * exp(mb * log(GRAIN_LUT_DELTA_MIN));
+  exposure = -log((1 + 2 * delta) / (density + delta) - 1) * (1 + 2 * delta) / (4 * gp) + 0.5;
+  return exposure;
+}
+
+static void evaluate_grain_lut(float * grain_lut, const float mb)
+{
+  for(int i = 0; i < GRAIN_LUT_SIZE; i++)
+  {
+    for(int j = 0; j < GRAIN_LUT_SIZE; j++)
+    {
+      float gu = (double)i / (GRAIN_LUT_SIZE - 1) - 0.5;
+      float l = (double)j / (GRAIN_LUT_SIZE - 1);
+      grain_lut[j * GRAIN_LUT_SIZE + i]= paper_resp(gu + paper_resp_inverse(l, mb, GRAIN_LUT_PAPER_GAMMA), mb, GRAIN_LUT_PAPER_GAMMA) - l;
+    }
+  }
+}
+
+float dt_lut_lookup_2d_1c(const float *grain_lut, const float x, const float y)
+{
+  const float _x = CLAMPS((x + 0.5) * (GRAIN_LUT_SIZE - 1), 0, GRAIN_LUT_SIZE - 1);
+  const float _y = CLAMPS(y * (GRAIN_LUT_SIZE - 1), 0, GRAIN_LUT_SIZE - 1);
+
+  const int _x0 = _x < GRAIN_LUT_SIZE - 2 ? _x : GRAIN_LUT_SIZE - 2;
+  const int _y0 = _y < GRAIN_LUT_SIZE - 2 ? _y : GRAIN_LUT_SIZE - 2;
+
+  const int _x1 = _x0 + 1;
+  const int _y1 = _y0 + 1;
+
+  const float x_diff = _x - _x0;
+  const float y_diff = _y - _y0;
+
+  const float l00 = grain_lut[_y0 * GRAIN_LUT_SIZE + _x0];
+  const float l01 = grain_lut[_y0 * GRAIN_LUT_SIZE + _x1];
+  const float l10 = grain_lut[_y1 * GRAIN_LUT_SIZE + _x0];
+  const float l11 = grain_lut[_y1 * GRAIN_LUT_SIZE + _x1];
+
+  const float xy0 = (1.0 - y_diff) * l00 + l10 * y_diff;
+  const float xy1 = (1.0 - y_diff) * l01 + l11 * y_diff;
+  return xy0 * (1.0f - x_diff) + xy1 * x_diff;
+}
 
 const char *name()
 {
@@ -423,7 +483,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         noise = _simplex_2d_noise(x + hash, y, octaves, 1.0, zoom);
       }
 
-      out[0] = in[0] + ((100.0 * (noise * (strength))) * GRAIN_LIGHTNESS_STRENGTH_SCALE);
+      out[0] = in[0] + 100 * dt_lut_lookup_2d_1c(data->grain_lut, noise * strength * GRAIN_LIGHTNESS_STRENGTH_SCALE, in[0] / 100);
       out[1] = in[1];
       out[2] = in[2];
       out[3] = in[3];
@@ -452,6 +512,14 @@ static void strength_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void midtones_bias_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
+  p->midtones_bias = dt_bauhaus_slider_get(slider) / 100;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -462,6 +530,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->channel = p->channel;
   d->scale = p->scale;
   d->strength = p->strength;
+  d->midtones_bias = p->midtones_bias;
+  
+  evaluate_grain_lut(d->grain_lut, d->midtones_bias);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -484,6 +555,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_slider_set(g->scale1, p->scale * GRAIN_SCALE_FACTOR);
   dt_bauhaus_slider_set(g->scale2, p->strength);
+  dt_bauhaus_slider_set(g->scale3, p->midtones_bias * 100.0);
 }
 
 void init(dt_iop_module_t *module)
@@ -496,7 +568,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_grain_params_t);
   module->gui_data = NULL;
   dt_iop_grain_params_t tmp
-      = (dt_iop_grain_params_t){ DT_GRAIN_CHANNEL_LIGHTNESS, 1600.0 / GRAIN_SCALE_FACTOR, 25.0 };
+      = (dt_iop_grain_params_t){ DT_GRAIN_CHANNEL_LIGHTNESS, 1600.0 / GRAIN_SCALE_FACTOR, 25.0, 0.0 };
   memcpy(module->params, &tmp, sizeof(dt_iop_grain_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_grain_params_t));
 }
@@ -530,6 +602,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->scale2, _("the strength of applied grain"));
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(strength_callback), self);
+
+  /* midtones bias */
+  g->scale3 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->midtones_bias * 100, 2);
+  dt_bauhaus_widget_set_label(g->scale3, NULL, _("midtones bias"));
+  dt_bauhaus_slider_set_format(g->scale3, "%.0f%%");
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->scale3, _("amount of midtones bias from the photographic paper response modeling"));
+  g_signal_connect(G_OBJECT(g->scale3), "value-changed", G_CALLBACK(midtones_bias_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
