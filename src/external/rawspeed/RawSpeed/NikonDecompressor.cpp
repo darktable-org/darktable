@@ -28,9 +28,6 @@ namespace RawSpeed {
 
 NikonDecompressor::NikonDecompressor(FileMap* file, RawImage img) :
     LJpegDecompressor(file, img) {
-  for (uint32 i = 0; i < 0x8000 ; i++) {
-    curve[i]  = i;
-  }
 }
 
 void NikonDecompressor::initTable(uint32 huffSelect) {
@@ -70,6 +67,10 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
   pUp2[0] = metadata->getShort();
   pUp2[1] = metadata->getShort();
 
+  vector<ushort16> curve(65536);
+  for (size_t i = 0; i < curve.size(); i++)
+    curve[i] = i;
+
   int _max = 1 << bitsPS & 0x7fff;
   uint32 step = 0;
   uint32 csize = metadata->getShort();
@@ -92,7 +93,7 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
   initTable(huffSelect);
 
   if (!uncorrectedRawValues) {
-    mRaw->setTable(curve, _max, true);
+    mRaw->setTable(&curve[0], _max, true);
   }
 
   uint32 x, y;
@@ -128,7 +129,7 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
   }
 
   if (uncorrectedRawValues) {
-    mRaw->setTable(curve, _max, false);
+    mRaw->setTable(&curve[0], _max, false);
   } else {
     mRaw->setTable(NULL);
   }
