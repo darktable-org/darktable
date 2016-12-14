@@ -19,6 +19,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/tags.h"
+#include "common/image.h"
 #include "lua/image.h"
 #include "lua/types.h"
 
