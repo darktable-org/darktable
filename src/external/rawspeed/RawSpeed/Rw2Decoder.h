@@ -35,7 +35,7 @@ class PanaBitpump {
   PanaBitpump(ByteStream* input);
   virtual ~PanaBitpump();
   ByteStream* input;
-  uchar8 buf[0x4000];
+  uchar8* buf;
   int vbits;
   uint32 load_flags;
   uint32 getBits(int nbits);

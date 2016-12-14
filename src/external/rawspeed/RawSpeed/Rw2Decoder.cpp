@@ -305,12 +305,14 @@ std::string Rw2Decoder::guessMode() {
 }
 
 PanaBitpump::PanaBitpump(ByteStream* _input) : input(_input), vbits(0) {
+  buf = new uchar8[0x4000];
 }
 
 PanaBitpump::~PanaBitpump() {
   if (input)
     delete input;
   input = 0;
+  delete [] buf;
 }
 
 void PanaBitpump::skipBytes(int bytes) {
