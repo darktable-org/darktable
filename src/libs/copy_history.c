@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "bauhaus/bauhaus.h"
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/history.h"
@@ -169,8 +170,35 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  dt_history_delete_on_selection();
-  dt_control_queue_redraw_center();
+  gint res = GTK_RESPONSE_YES;
+
+  if(dt_conf_get_bool("ask_before_delete"))
+  {
+    const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+    int number;
+    if (dt_view_get_image_to_act_on() != -1)
+      number = 1;
+    else
+      number = dt_collection_get_selected_count(darktable.collection);
+
+    if (number == 0) return;
+
+    GtkWidget *dialog = gtk_message_dialog_new(
+        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+        ngettext("do you really want to clear history of %d selected image?",
+                 "do you really want to clear history of %d selected images?", number), number);
+
+    gtk_window_set_title(GTK_WINDOW(dialog), _("delete images' history?"));
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+  }
+
+  if(res == GTK_RESPONSE_YES)
+  {
+    dt_history_delete_on_selection();
+    dt_control_queue_redraw_center();
+  }
 }
 
 static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
