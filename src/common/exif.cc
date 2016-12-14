@@ -2593,7 +2593,7 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
   try
   {
     char input_filename[PATH_MAX] = { 0 };
-    gboolean from_cache = FALSE;
+    gboolean from_cache = TRUE;
     dt_image_full_path(imgid, input_filename, sizeof(input_filename), &from_cache);
 
     std::unique_ptr<Exiv2::Image> img(Exiv2::ImageFactory::open(filename));
