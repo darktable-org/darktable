@@ -19,12 +19,18 @@
 #include "views/undo.h"
 #include <glib.h>    // for GList, gpointer, g_list_first, g_list_prepend
 #include <stdlib.h>  // for NULL, malloc, free
+#include <sys/time.h>
+
+#define SMOOTH_RECORD 500 // number of milliseconds between each undo records
+
+static unsigned long long _get_timestamp(void);
 
 typedef struct dt_undo_item_t
 {
   gpointer user_data;
   dt_undo_type_t type;
   dt_undo_data_t *data;
+  unsigned long long ts;
   void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data);
   void (*free_data)(gpointer data);
 } dt_undo_item_t;
@@ -36,6 +42,13 @@ dt_undo_t *dt_undo_init(void)
   udata->redo_list = NULL;
   dt_pthread_mutex_init(&udata->mutex, NULL);
   return udata;
+}
+
+static unsigned long long _get_timestamp(void)
+{
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (unsigned long long)(tv.tv_sec) * 1000 + (unsigned long long)(tv.tv_usec) / 1000;
 }
 
 void dt_undo_cleanup(dt_undo_t *self)
@@ -55,20 +68,32 @@ void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt
                     void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
                     void (*free_data)(gpointer data))
 {
-  dt_undo_item_t *item = malloc(sizeof(dt_undo_item_t));
-
-  item->user_data = user_data;
-  item->type      = type;
-  item->data      = data;
-  item->undo      = undo;
-  item->free_data = free_data;
+  const unsigned long long ts = _get_timestamp();
 
   dt_pthread_mutex_lock(&self->mutex);
-  self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
 
-  // recording an undo data invalidate all the redo
-  g_list_free_full(self->redo_list, _free_undo_data);
-  self->redo_list = NULL;
+  const GList *top = g_list_first(self->undo_list);
+  const dt_undo_item_t *top_item = top == NULL ? NULL : (dt_undo_item_t *)top->data;
+
+  //  record new item *only* if the previous record is older than SMOOTH_RECORD
+  if ((top_item == NULL) || ((ts - top_item->ts) > SMOOTH_RECORD))
+  {
+    dt_undo_item_t *item = malloc(sizeof(dt_undo_item_t));
+
+    item->user_data = user_data;
+    item->type      = type;
+    item->data      = data;
+    item->undo      = undo;
+    item->free_data = free_data;
+    item->ts        = ts;
+
+    self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
+
+    // recording an undo data invalidate all the redo
+    g_list_free_full(self->redo_list, _free_undo_data);
+    self->redo_list = NULL;
+  }
+
   dt_pthread_mutex_unlock(&self->mutex);
 }
 
