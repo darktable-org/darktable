@@ -175,11 +175,13 @@ static void _undo_iterate(GList *list, uint32_t filter, gpointer user_data,
   };
 }
 
-void dt_undo_iterate(dt_undo_t *self, uint32_t filter, gpointer user_data,
+void dt_undo_iterate(dt_undo_t *self, uint32_t filter, gpointer user_data, gboolean lock,
                      void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item))
 {
+  if (lock) dt_pthread_mutex_lock(&self->mutex);
   _undo_iterate(self->undo_list, filter, user_data, apply);
   _undo_iterate(self->redo_list, filter, user_data, apply);
+  if (lock) dt_pthread_mutex_unlock(&self->mutex);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

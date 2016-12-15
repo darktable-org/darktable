@@ -20,10 +20,11 @@
 #include "lua/widget/common.h"
 
 static void container_init(lua_State* L);
+static void container_cleanup(lua_State* L,lua_widget widget);
 dt_lua_widget_type_t container_type = {
   .name = "container",
   .gui_init = container_init,
-  .gui_cleanup = NULL,
+  .gui_cleanup = container_cleanup,
   .alloc_size = sizeof(dt_lua_container_t),
   .parent= &widget_type
 };
@@ -48,8 +49,6 @@ static int container_reset(lua_State* L)
   return 0;
 }
 
-
-
 static void on_child_added(GtkContainer *container,GtkWidget *child,lua_container user_data)
 {
   dt_lua_async_call_alien(dt_lua_widget_trigger_callback,
@@ -71,12 +70,25 @@ static void on_child_removed(GtkContainer *container,GtkWidget *child,lua_contai
 }
 
 
+static void container_cleanup(lua_State* L,lua_widget widget)
+{
+  GList * children = gtk_container_get_children(GTK_CONTAINER(widget->widget));
+  GList * cur_child = children;
+  g_signal_handlers_disconnect_by_func(widget->widget, G_CALLBACK(on_child_removed), widget);
+  while(cur_child) {
+    gtk_container_remove(GTK_CONTAINER(widget->widget),GTK_WIDGET(cur_child->data));
+    cur_child = g_list_next(cur_child);
+  }
+  g_list_free(children);
+}
+
+
 static int child_added(lua_State *L)
 {
   lua_widget widget;
   luaA_to(L, lua_widget,&widget,2);
   lua_getuservalue(L,1);
-  lua_pushlightuserdata(L,widget->widget);
+  luaA_push(L,lua_widget,&widget);
   lua_pushvalue(L,2);
   lua_settable(L,-3);
   return 0;
@@ -87,7 +99,7 @@ static int child_removed(lua_State *L)
   lua_widget widget;
   luaA_to(L, lua_widget,&widget,2),
   lua_getuservalue(L,1);
-  lua_pushlightuserdata(L,widget->widget);
+  luaA_push(L,lua_widget,&widget);
   lua_pushnil(L);
   lua_settable(L,-3);
   return 0;
@@ -127,13 +139,22 @@ static int container_numindex(lua_State*L)
     int length = g_list_length(children);
     if(!lua_isnil(L,3) &&  index == length) {
       lua_widget widget;
-      luaA_to(L, lua_widget,&widget,3),
+      luaA_to(L, lua_widget,&widget,3);
       gtk_container_add(GTK_CONTAINER(container->widget),widget->widget);
+      // the following lines add the widget to the container's user_value to guarentee it's referenced on the lua side
+      // they should be done by child_added, but 
+      // there can be a race with lua's GC, so do it now.
+      // child_added doing it a second time is harmless
+      lua_getuservalue(L,1);
+      luaA_push(L,lua_widget,&widget);
+      lua_pushvalue(L,3);
+      lua_settable(L,-3);
+      lua_pop(L,1);
     } else if(lua_isnil(L,3) && index < length) {
       GtkWidget *searched_widget = g_list_nth_data(children,index);
       gtk_container_remove(GTK_CONTAINER(container->widget),searched_widget);
     } else {
-      luaL_error(L,"Incorrect index or value when setting the child of a container");
+      luaL_error(L,"Incorrect index or value when setting the child of a container : you can only append, not change a child in the middle");
     }
     g_list_free(children);
     return 0;

@@ -22,12 +22,14 @@
 
 typedef struct tonecurve_t
 {
-  double x[100]; // input L positions, max 100, assumed to be strictly monotonic x[i+1] > x[i]
-  double y[100]; // output L values, max 100, assumed to be monotonic y[i+1] >= y[i]
-  int32_t num;   // number of values, max 100
+  double *x;   // input L positions, assumed to be strictly monotonic x[i+1] > x[i]
+  double *y;   // output L values, assumed to be monotonic y[i+1] >= y[i]
+  int32_t num; // number of values
 } tonecurve_t;
 
-void tonecurve_create(tonecurve_t *c, const double *Lin, const double *Lout, const int32_t num);
+void tonecurve_create(tonecurve_t *c, double *Lin, double *Lout, const int32_t num);
+
+void tonecurve_delete(tonecurve_t *c);
 
 double tonecurve_apply(const tonecurve_t *c, const double L);
 

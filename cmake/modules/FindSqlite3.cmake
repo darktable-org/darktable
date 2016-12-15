@@ -1,32 +1,23 @@
-# - Find the native sqlite3 includes and library
+# - Try to find Sqlite3
+# Once done, this will define
 #
-# This module defines
-#  SQLITE3_INCLUDE_DIR, where to find sqlite3.h, etc.
-#  SQLITE3_LIBRARIES, the libraries to link against to use sqlite3.
-#  SQLITE3_FOUND, If false, do not try to use sqlite3.
-# also defined, but not for general use are
-#  SQLITE3_LIBRARY, where to find the sqlite3 library.
+#  Sqlite3_FOUND - system has Sqlite3
+#  Sqlite3_INCLUDE_DIRS - the Sqlite3 include directories
+#  Sqlite3_LIBRARIES - link these to use Sqlite3
 
+include(LibFindMacros)
 
-#=============================================================================
-# Copyright 2010 henrik andersson
-#=============================================================================
+libfind_pkg_detect(Sqlite3 sqlite3
+  FIND_PATH sqlite3.h
+  FIND_LIBRARY sqlite3 libsqlite3
+)
 
-SET(SQLITE3_FIND_REQUIRED ${Sqlite3_FIND_REQUIRED})
+if (Sqlite3_PKGCONF_VERSION)
+  set(Sqlite3_VERSION "${Sqlite3_PKGCONF_VERSION}")
+endif()
 
-find_path(SQLITE3_INCLUDE_DIR sqlite3.h)
-mark_as_advanced(SQLITE3_INCLUDE_DIR)
-
-set(SQLITE3_NAMES ${SQLITE3_NAMES} sqlite3 libsqlite3)
-find_library(SQLITE3_LIBRARY NAMES ${SQLITE3_NAMES} )
-mark_as_advanced(SQLITE3_LIBRARY)
-
-# handle the QUIETLY and REQUIRED arguments and set SQLITE3_FOUND to TRUE if
-# all listed variables are TRUE
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(SQLITE3 DEFAULT_MSG SQLITE3_LIBRARY SQLITE3_INCLUDE_DIR)
-
-IF(SQLITE3_FOUND)
-  SET(Sqlite3_LIBRARIES ${SQLITE3_LIBRARY})
-  SET(Sqlite3_INCLUDE_DIRS ${SQLITE3_INCLUDE_DIR})
-ENDIF(SQLITE3_FOUND)
+# Set the include dir variables and the libraries and let libfind_process do the rest.
+# NOTE: Singular variables for this library, plural for libraries this this lib depends on.
+set(Sqlite3_PROCESS_INCLUDES Sqlite3_INCLUDE_DIR)
+set(Sqlite3_PROCESS_LIBS Sqlite3_LIBRARY)
+libfind_process(Sqlite3)
