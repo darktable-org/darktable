@@ -48,7 +48,7 @@
 #define GRAIN_LUT_PAPER_GAMMA 1.0
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-DT_MODULE_INTROSPECTION(1, dt_iop_grain_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_grain_params_t)
 
 
 typedef enum _dt_iop_grain_channel_t
@@ -82,6 +82,32 @@ typedef struct dt_iop_grain_data_t
   float midtones_bias;
   float grain_lut[GRAIN_LUT_SIZE * GRAIN_LUT_SIZE];
 } dt_iop_grain_data_t;
+
+
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
+                  const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_iop_grain_params_v1_t
+    {
+      _dt_iop_grain_channel_t channel;
+      float scale;
+      float strength;
+    } dt_iop_grain_params_v1_t;
+
+    const dt_iop_grain_params_v1_t *o = old_params;
+    dt_iop_grain_params_t *n = new_params;
+
+    n->channel = o->channel;
+    n->scale = o->scale;
+    n->strength = o->strength;
+    n->midtones_bias = 0.0; // it produces the same results as the old version
+
+    return 0;
+  }
+  return 1;
+}
 
 
 static int grad3[12][3] = { { 1, 1, 0 },
@@ -335,19 +361,19 @@ static double _simplex_2d_noise(double x, double y, uint32_t octaves, double per
   return total;
 }
 
-float paper_resp(float exposure, float mb, float gp)
+static float paper_resp(float exposure, float mb, float gp)
 {
   float density;
-  float delta = GRAIN_LUT_DELTA_MAX * exp(mb * log(GRAIN_LUT_DELTA_MIN));
-  density = (1 + 2 * delta) / (1 + exp( (4 * gp * (0.5 - exposure)) / (1 + 2 * delta) )) - delta;
+  float delta = GRAIN_LUT_DELTA_MAX * exp(mb * logf(GRAIN_LUT_DELTA_MIN));
+  density = (1.0f + 2.0f * delta) / (1.0f + exp( (4.0f * gp * (0.5f - exposure)) / (1.0f + 2.0f * delta) )) - delta;
   return density;
 }
 
-float paper_resp_inverse(float density, float mb, float gp)
+static float paper_resp_inverse(float density, float mb, float gp)
 {
   float exposure;
-  float delta = GRAIN_LUT_DELTA_MAX * exp(mb * log(GRAIN_LUT_DELTA_MIN));
-  exposure = -log((1 + 2 * delta) / (density + delta) - 1) * (1 + 2 * delta) / (4 * gp) + 0.5;
+  float delta = GRAIN_LUT_DELTA_MAX * exp(mb * logf(GRAIN_LUT_DELTA_MIN));
+  exposure = -logf((1.0f + 2.0f * delta) / (density + delta) - 1.0f) * (1.0f + 2.0f * delta) / (4.0f * gp) + 0.5f;
   return exposure;
 }
 
@@ -357,14 +383,14 @@ static void evaluate_grain_lut(float * grain_lut, const float mb)
   {
     for(int j = 0; j < GRAIN_LUT_SIZE; j++)
     {
-      float gu = (double)i / (GRAIN_LUT_SIZE - 1) - 0.5;
-      float l = (double)j / (GRAIN_LUT_SIZE - 1);
+      float gu = (float)i / (GRAIN_LUT_SIZE - 1) - 0.5;
+      float l = (float)j / (GRAIN_LUT_SIZE - 1);
       grain_lut[j * GRAIN_LUT_SIZE + i]= paper_resp(gu + paper_resp_inverse(l, mb, GRAIN_LUT_PAPER_GAMMA), mb, GRAIN_LUT_PAPER_GAMMA) - l;
     }
   }
 }
 
-float dt_lut_lookup_2d_1c(const float *grain_lut, const float x, const float y)
+static float dt_lut_lookup_2d_1c(const float *grain_lut, const float x, const float y)
 {
   const float _x = CLAMPS((x + 0.5) * (GRAIN_LUT_SIZE - 1), 0, GRAIN_LUT_SIZE - 1);
   const float _y = CLAMPS(y * (GRAIN_LUT_SIZE - 1), 0, GRAIN_LUT_SIZE - 1);
@@ -483,7 +509,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         noise = _simplex_2d_noise(x + hash, y, octaves, 1.0, zoom);
       }
 
-      out[0] = in[0] + 100 * dt_lut_lookup_2d_1c(data->grain_lut, noise * strength * GRAIN_LIGHTNESS_STRENGTH_SCALE, in[0] / 100);
+      out[0] = in[0] + (100.0 * dt_lut_lookup_2d_1c(data->grain_lut, (noise * strength) * GRAIN_LIGHTNESS_STRENGTH_SCALE, in[0] / 100.0));
       out[1] = in[1];
       out[2] = in[2];
       out[3] = in[3];
@@ -517,7 +543,7 @@ static void midtones_bias_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
-  p->midtones_bias = dt_bauhaus_slider_get(slider) / 100;
+  p->midtones_bias = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -530,7 +556,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->channel = p->channel;
   d->scale = p->scale;
   d->strength = p->strength;
-  d->midtones_bias = p->midtones_bias;
+  d->midtones_bias = p->midtones_bias / 100.0f;
   
   evaluate_grain_lut(d->grain_lut, d->midtones_bias);
 }
@@ -555,7 +581,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_slider_set(g->scale1, p->scale * GRAIN_SCALE_FACTOR);
   dt_bauhaus_slider_set(g->scale2, p->strength);
-  dt_bauhaus_slider_set(g->scale3, p->midtones_bias * 100.0);
+  dt_bauhaus_slider_set(g->scale3, p->midtones_bias);
 }
 
 void init(dt_iop_module_t *module)
@@ -568,7 +594,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_grain_params_t);
   module->gui_data = NULL;
   dt_iop_grain_params_t tmp
-      = (dt_iop_grain_params_t){ DT_GRAIN_CHANNEL_LIGHTNESS, 1600.0 / GRAIN_SCALE_FACTOR, 25.0, 0.0 };
+      = (dt_iop_grain_params_t){ DT_GRAIN_CHANNEL_LIGHTNESS, 1600.0 / GRAIN_SCALE_FACTOR, 25.0, 100.0 };
   memcpy(module->params, &tmp, sizeof(dt_iop_grain_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_grain_params_t));
 }
