@@ -5003,6 +5003,8 @@
 		<Sensor black="143" white="4095"/>
 		<Aliases>
 			<Alias>DMC-G80</Alias>
+			<Alias>DMC-G81</Alias>
+			<Alias>DMC-G85</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-G8" mode="4:3">
@@ -5017,6 +5019,8 @@
 		<Sensor black="143" white="4095"/>
 		<Aliases>
 			<Alias>DMC-G80</Alias>
+			<Alias>DMC-G81</Alias>
+			<Alias>DMC-G85</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Panasonic" model = "DMC-GF3">
@@ -7738,7 +7742,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="0" y="0" width="-10" height="0"/>
 		<Sensor black="520" white="16500"/>
 	</Camera>
 	<Camera make="SONY" model="SLT-A55">
