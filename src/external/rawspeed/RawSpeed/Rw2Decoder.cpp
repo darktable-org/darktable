@@ -220,6 +220,16 @@ void Rw2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
   }
 
   data = mRootIFD->getIFDsWithTag(PANASONIC_STRIPOFFSET);
+
+  // bool isOldPanasonic = FALSE;
+
+  if (data.empty()) {
+    if (!mRootIFD->hasEntryRecursive(STRIPOFFSETS))
+      ThrowRDE("RW2 Decoder: No image data found");
+    // isOldPanasonic = TRUE;
+    data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
+  }
+
   TiffIFD* raw = data[0];
 
   // Read blacklevels
