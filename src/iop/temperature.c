@@ -517,7 +517,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
 
       // process unaligned pixels
-      for(; i < alignment; i++, out++, in++) *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
+      for(; i < alignment && i < roi_out->width; i++, out++, in++)
+        *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
 
       const __m128 coeffs[3] = {
         _mm_set_ps(d->coeffs[FCxtrans(j, i + 3, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 2, roi_out, xtrans)],
@@ -557,7 +558,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
 
       // process unaligned pixels
-      for(; i < alignment; i++, out++, in++)
+      for(; i < alignment && i < roi_out->width; i++, out++, in++)
         *out = *in * d->coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
 
       const __m128 coeffs = _mm_set_ps(d->coeffs[FC(j + roi_out->y, roi_out->x + i + 3, filters)],
