@@ -61,6 +61,7 @@ Some More Changes, Probably Not Complete:
 - Add geolocation to watermark variables
 - Fix some crashes with missing configured ICC profiles
 - Support greyscale color profiles
+- Lens correction module: switched back to normal Lensfun search mode for lens lookups.
 - Make sure that proper signal handlers are still set after GM initialization...
 - OSX: add trash support (thanks to Michael Kefeder for initial patch)
 - Attach Xmp data to EXR files
@@ -94,6 +95,7 @@ Changed Dependencies:
 - Bump GLib requirement to glib-2.40.
 - Port to OpenJPEG2
 - SDL is no longer needed.
+- Remove gnome keyring password backend
 
 Base Support:
 
