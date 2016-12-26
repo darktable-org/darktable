@@ -128,6 +128,13 @@
     <longdescription>typically darktable's hand-optimized CPU code is much faster than any OpenCL-on-CPU code; therefore CPUs are excluded from being used as OpenCL devices by default. can be changed by setting this configuration option to TRUE (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>opencl_disable_drivers_blacklist</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to allow some partial opencl implementations to be used or not</shortdescription>
+    <longdescription>not all opencl implementations are fully-functional, there are at least two, which are not production-quality yet: pocl and beignet; therefore at this point in time, it is better to explicitly blacklist them by default. can be changed by setting this configuration option to TRUE (needs a restart).</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>opencl_checksum</name>
     <type>string</type>
     <default></default>
@@ -214,8 +221,8 @@
     <name>ask_before_delete</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>ask before erasing images from disk</shortdescription>
-    <longdescription>always ask the user before any image file is deleted.</longdescription>
+    <shortdescription>ask before erasing images from disk / discarding history stack</shortdescription>
+    <longdescription>always ask the user before any image file is deleted / history stack is discarded.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>send_to_trash</name>
@@ -1073,6 +1080,13 @@
     <default>false</default>
     <shortdescription>do high quality resampling during export</shortdescription>
     <longdescription>the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower.</longdescription>
+  </dtconfig>
+ <dtconfig prefs="gui">
+    <name>rating_one_double_tap</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>rating an image one star twice will not zero out the rating</shortdescription>
+    <longdescription>do not have the rating of one star behave as documented in the manual--an image rated one star twice will result in a zero star rating.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>darkroom/ui/rawoverexposed/mode</name>
