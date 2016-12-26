@@ -145,7 +145,6 @@ endif()
 
 # Check for base threading library
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 if(${CMAKE_THREAD_LIBS_INIT} MATCHES "-pthread")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_THREAD_LIBS_INIT}")
