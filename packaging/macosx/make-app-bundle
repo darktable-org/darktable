@@ -1,5 +1,8 @@
 #!/bin/bash
+lensfun-update-data
+cp -R ~/.local/share/lensfun .
 ~/.local/bin/gtk-mac-bundler darktable.bundle
+rm -Rf lensfun
 sed -i '' 's|/opt/local/share/locale||' package/darktable.app/Contents/Resources/etc/gtk-3.0/gtk.immodules
 glib-compile-schemas package/darktable.app/Contents/Resources/share/glib-2.0/schemas/
 sed -i '' 's|{VERSION}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f2|sed 's/^\([0-9]*\.[0-9]*\)$/\1.0/')'|' package/darktable.app/Contents/Info.plist

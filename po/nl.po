@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-09 18:30+0100\n"
-"PO-Revision-Date: 2016-11-09 18:35+0100\n"
+"POT-Creation-Date: 2016-12-14 11:15+0100\n"
+"PO-Revision-Date: 2016-12-14 11:33+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.8.7.1\n"
+"X-Generator: Poedit 1.8.9\n"
 
 #: ../build/src/preferences_gen.h:1460
 msgid "GUI options"
@@ -830,8 +830,8 @@ msgstr "virtuele bibliotheek  en donkere kamer"
 msgid "graphics;photography;raw;"
 msgstr "grafische vormgeving;fotografie;raw;"
 
-#: ../src/chart/main.c:461 ../src/control/jobs/control_jobs.c:1450
-#: ../src/control/jobs/control_jobs.c:1504 ../src/gui/hist_dialog.c:137
+#: ../src/chart/main.c:461 ../src/control/jobs/control_jobs.c:1449
+#: ../src/control/jobs/control_jobs.c:1503 ../src/gui/hist_dialog.c:137
 #: ../src/gui/preferences.c:1046 ../src/gui/preferences.c:1069
 #: ../src/gui/presets.c:382 ../src/gui/styles_dialog.c:283
 #: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
@@ -977,23 +977,23 @@ msgstr[0] " geselecteerd %d afbeelding uit %d "
 msgstr[1] "geselecteerd %d afbeeldingen uit %d "
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-#: ../src/common/colorspaces.c:1035 ../src/iop/colorin.c:1945
+#: ../src/common/colorspaces.c:1035 ../src/iop/colorin.c:1947
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
 #: ../src/common/colorspaces.c:1036 ../src/common/colorspaces.c:1197
-#: ../src/iop/colorin.c:1946 ../src/libs/print_settings.c:881
+#: ../src/iop/colorin.c:1948 ../src/libs/print_settings.c:881
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatibel)"
 
 #: ../src/common/colorspaces.c:1037 ../src/common/colorspaces.c:1202
-#: ../src/iop/colorin.c:1947
+#: ../src/iop/colorin.c:1949
 msgid "linear Rec709 RGB"
 msgstr "linear Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1038 ../src/common/colorspaces.c:1207
-#: ../src/iop/colorin.c:1948
+#: ../src/iop/colorin.c:1950
 msgid "linear Rec2020 RGB"
 msgstr "linear Rec2020 RGB"
 
@@ -1065,29 +1065,29 @@ msgstr "fout tijdens afdrukken afbeelding %d op `%s'"
 msgid "printing image %d on `%s'"
 msgstr "afdrukken afbeelding %d op `%s'"
 
-#: ../src/common/darktable.c:327
+#: ../src/common/darktable.c:243
 #, c-format
 msgid "found strange path `%s'"
 msgstr "onlogisch pad `%s'  gevonden "
 
-#: ../src/common/darktable.c:344
+#: ../src/common/darktable.c:260
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "fout bij het inladen van map `%s'"
 
-#: ../src/common/darktable.c:367
+#: ../src/common/darktable.c:283
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "bestand `%s' heeft een onbekend formaat!"
 
-#: ../src/common/darktable.c:380 ../src/libs/import.c:838
+#: ../src/common/darktable.c:296 ../src/libs/import.c:838
 #, c-format
 msgid "error loading file `%s'"
 msgstr "fout bij het inladen van bestand `%s'"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:1574 ../src/common/database.c:1650
+#: ../src/common/database.c:1577 ../src/common/database.c:1653
 #, c-format
 msgid ""
 "an error has occured while trying to open the database from\n"
@@ -1106,15 +1106,15 @@ msgstr ""
 "wilt u darktable sluiten voor een handmatig herstel vanuit\n"
 "een backup of moet gestart worden met een nieuwe exemplaar?"
 
-#: ../src/common/database.c:1584 ../src/common/database.c:1660
+#: ../src/common/database.c:1587 ../src/common/database.c:1663
 msgid "darktable - error opening database"
 msgstr "darktable - fout voor openen database"
 
-#: ../src/common/database.c:1585 ../src/common/database.c:1661
+#: ../src/common/database.c:1588 ../src/common/database.c:1664
 msgid "close darktable"
 msgstr "darktable afsluiten"
 
-#: ../src/common/database.c:1585 ../src/common/database.c:1661
+#: ../src/common/database.c:1588 ../src/common/database.c:1664
 msgid "delete database"
 msgstr "verwijder database"
 
@@ -1143,7 +1143,7 @@ msgstr "aan"
 #: ../src/common/styles.c:725 ../src/develop/blend_gui.c:1600
 #: ../src/develop/blend_gui.c:1815 ../src/develop/develop.c:1334
 #: ../src/imageio/format/exr.cc:359 ../src/imageio/format/j2k.c:663
-#: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1944
+#: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1946
 #: ../src/iop/demosaic.c:3857 ../src/iop/vignette.c:1140
 #: ../src/libs/history.c:168 ../src/libs/live_view.c:434
 msgid "off"
@@ -1237,7 +1237,7 @@ msgstr "generic poissonian"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "ruisprofiel bestand `%s' is ongeldig"
 
-#: ../src/common/opencl.c:726
+#: ../src/common/opencl.c:735
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr ""
@@ -1356,9 +1356,9 @@ msgstr "m"
 #: ../src/common/variables.c:254 ../src/common/variables.c:268
 #: ../src/common/variables.c:282 ../src/common/variables.c:296
 #: ../src/common/variables.c:310 ../src/iop/basecurve.c:1824
-#: ../src/iop/clipping.c:1556 ../src/iop/clipping.c:1846
-#: ../src/iop/clipping.c:1864 ../src/iop/clipping.c:2004
-#: ../src/iop/clipping.c:2031 ../src/iop/colorreconstruction.c:1378
+#: ../src/iop/clipping.c:1574 ../src/iop/clipping.c:1864
+#: ../src/iop/clipping.c:1882 ../src/iop/clipping.c:2022
+#: ../src/iop/clipping.c:2049 ../src/iop/colorreconstruction.c:1378
 #: ../src/iop/lens.c:2057 ../src/libs/export.c:486 ../src/libs/live_view.c:348
 #: ../src/libs/live_view.c:373 ../src/libs/live_view.c:382
 #: ../src/libs/print_settings.c:1019 ../src/libs/print_settings.c:1288
@@ -1438,7 +1438,7 @@ msgid_plural "importing %d images from camera"
 msgstr[0] "importeer %d afbeelding van de camera"
 msgstr[1] "importeren %d afbeeldingen vanaf de camera"
 
-#: ../src/control/jobs/camera_jobs.c:388 ../src/gui/camera_import_dialog.c:204
+#: ../src/control/jobs/camera_jobs.c:391 ../src/gui/camera_import_dialog.c:204
 msgid "import images from camera"
 msgstr "importeer afbeeldingen vanaf de camera"
 
@@ -1600,24 +1600,24 @@ msgstr[1] "exporteren %d afbeeldingen naar %s"
 msgid "image `%s' is currently unavailable"
 msgstr "afbeelding `%s' is op dit moment niet beschikbaar"
 
-#: ../src/control/jobs/control_jobs.c:1326
+#: ../src/control/jobs/control_jobs.c:1325
 msgid "merge hdr image"
 msgstr "samenvoegen hdr afbeelding"
 
-#: ../src/control/jobs/control_jobs.c:1340
+#: ../src/control/jobs/control_jobs.c:1339
 msgid "duplicate images"
 msgstr "kloon afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1347
+#: ../src/control/jobs/control_jobs.c:1346
 msgid "flip images"
 msgstr "afbeeldingen omkeren"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1354
+#: ../src/control/jobs/control_jobs.c:1353
 msgid "remove images"
 msgstr "verplaats afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1376
+#: ../src/control/jobs/control_jobs.c:1375
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1625,16 +1625,16 @@ msgid_plural ""
 msgstr[0] "Weet u zeker dat u %d geselecteerde afbeeldingen wilt uitschrijven?"
 msgstr[1] "Weet u zeker dat u %d geselecteerde afbeeldingen wilt uitschrijven?"
 
-#: ../src/control/jobs/control_jobs.c:1380
+#: ../src/control/jobs/control_jobs.c:1379
 msgid "remove images?"
 msgstr "afbeeldingen verplaatsen?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1395
+#: ../src/control/jobs/control_jobs.c:1394
 msgid "delete images"
 msgstr "verwijder afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1419
+#: ../src/control/jobs/control_jobs.c:1418
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
@@ -1642,7 +1642,7 @@ msgstr[0] "wilt u %d geselecteerde afbeelding verplaatsen naar de prullenbak?"
 msgstr[1] ""
 "wilt u %d geselecteerde afbeeldingen verplaatsen naar de prullenbak?"
 
-#: ../src/control/jobs/control_jobs.c:1421
+#: ../src/control/jobs/control_jobs.c:1420
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1652,20 +1652,20 @@ msgstr[0] ""
 msgstr[1] ""
 "wilt u echt  %d geselecteerde afbeeldingen fysiek van de schijf verwijderen?"
 
-#: ../src/control/jobs/control_jobs.c:1425
+#: ../src/control/jobs/control_jobs.c:1424
 msgid "trash images?"
 msgstr "afbeeldingen naar de prullenbak sturen?"
 
-#: ../src/control/jobs/control_jobs.c:1425
+#: ../src/control/jobs/control_jobs.c:1424
 msgid "delete images?"
 msgstr "afbeelding(en) verwijderen"
 
-#: ../src/control/jobs/control_jobs.c:1446
+#: ../src/control/jobs/control_jobs.c:1445
 msgid "move images"
 msgstr "verplaats afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1450
-#: ../src/control/jobs/control_jobs.c:1504 ../src/imageio/storage/disk.c:92
+#: ../src/control/jobs/control_jobs.c:1449
+#: ../src/control/jobs/control_jobs.c:1503 ../src/imageio/storage/disk.c:92
 #: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/gallery.c:165 ../src/imageio/storage/latex.c:103
 #: ../src/imageio/storage/latex.c:164 ../src/libs/styles.c:209
@@ -1673,12 +1673,12 @@ msgstr "verplaats afbeeldingen"
 msgid "select directory"
 msgstr "selecteer map"
 
-#: ../src/control/jobs/control_jobs.c:1451
-#: ../src/control/jobs/control_jobs.c:1505
+#: ../src/control/jobs/control_jobs.c:1450
+#: ../src/control/jobs/control_jobs.c:1504
 msgid "_select as destination"
 msgstr "_selecteer als bestemming"
 
-#: ../src/control/jobs/control_jobs.c:1469
+#: ../src/control/jobs/control_jobs.c:1468
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1693,76 +1693,76 @@ msgstr[1] ""
 "wilt u de %d geselecteerde afbeeldingen verplaatsen naar %s?\n"
 "(alle niet geselecteerde klonen worden verplaatst)"
 
-#: ../src/control/jobs/control_jobs.c:1475
+#: ../src/control/jobs/control_jobs.c:1474
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "afbeelding verplaatsen?"
 msgstr[1] "afbeeldingen verplaatsen?"
 
-#: ../src/control/jobs/control_jobs.c:1500
+#: ../src/control/jobs/control_jobs.c:1499
 msgid "copy images"
 msgstr "kopieer afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1523
+#: ../src/control/jobs/control_jobs.c:1522
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
 msgstr[0] "wilt u de %d geselecteerde afbeelding kopiëren naar %s?"
 msgstr[1] "wilt u de %d geselecteerde afbeeldingen kopiëren naar %s?"
 
-#: ../src/control/jobs/control_jobs.c:1526
+#: ../src/control/jobs/control_jobs.c:1525
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "kopieer afbeelding?"
 msgstr[1] "kopieer afbeeldingen?"
 
-#: ../src/control/jobs/control_jobs.c:1546
-#: ../src/control/jobs/control_jobs.c:1553
+#: ../src/control/jobs/control_jobs.c:1545
+#: ../src/control/jobs/control_jobs.c:1552
 msgid "local copy images"
 msgstr "lokale kopie afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1612
+#: ../src/control/jobs/control_jobs.c:1611
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "het opvragen van instellingen van de opslagmodule `%s' is mislukt, het "
 "exporteren is gestopt"
 
-#: ../src/control/jobs/control_jobs.c:1623
+#: ../src/control/jobs/control_jobs.c:1622
 msgid "export images"
 msgstr "exporteer afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1648
+#: ../src/control/jobs/control_jobs.c:1647
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "pas tijdsverschil toe op %d afbeelding"
 msgstr[1] "pas tijdsverschil toe op %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1663
+#: ../src/control/jobs/control_jobs.c:1662
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
 msgstr[0] "tijdsverschil toegepast op %d afbeelding"
 msgstr[1] "tijdsverschil toegepast op %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1702 ../src/libs/geotagging.c:607
+#: ../src/control/jobs/control_jobs.c:1701 ../src/libs/geotagging.c:607
 msgid "time offset"
 msgstr "tijdsverschil"
 
-#: ../src/control/jobs/control_jobs.c:1726 ../src/libs/copy_history.c:289
+#: ../src/control/jobs/control_jobs.c:1725 ../src/libs/copy_history.c:289
 msgid "write sidecar files"
 msgstr "schrijf xmp bestanden"
 
-#: ../src/control/jobs/film_jobs.c:72
+#: ../src/control/jobs/film_jobs.c:71
 msgid "import images"
 msgstr "importeer afbeeldingen"
 
-#: ../src/control/jobs/film_jobs.c:146
+#: ../src/control/jobs/film_jobs.c:145
 msgid "no supported images were found to be imported"
 msgstr "te importeren afbeeldingen zijn niet gevonden"
 
-#: ../src/control/jobs/film_jobs.c:200
+#: ../src/control/jobs/film_jobs.c:199
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
@@ -2345,15 +2345,20 @@ msgid "ctrl+click to switch between smooth/sharp node"
 msgstr "ctrl+klik schakelt tussen gladde/scherpe knooppunten"
 
 #: ../src/develop/masks/masks.c:49
-msgid "right-click to reset feather value"
-msgstr "klik rechtermuisknop om pen-waarde te resetten"
+msgid "right-click to reset curvature"
+msgstr "klik rechtermuisknop om kromming te resetten"
 
 #: ../src/develop/masks/masks.c:51
 msgid "ctrl+click to add a node"
 msgstr "ctrl+klik voegt een knooppunt toe "
 
-#: ../src/develop/masks/masks.c:53 ../src/develop/masks/masks.c:58
-#: ../src/develop/masks/masks.c:82
+#: ../src/develop/masks/masks.c:53 ../src/develop/masks/masks.c:82
+msgid "ctrl+scroll to set shape opacity, shift+scroll to set feather size"
+msgstr ""
+"ctrl+scroll voor het instellen van dekking door vorm, shift+scroll voor het "
+"instellen van feather afmeting"
+
+#: ../src/develop/masks/masks.c:58
 msgid "ctrl+scroll to set shape opacity"
 msgstr "ctrl+scroll: bepaalt dekking van vorm"
 
@@ -2366,9 +2371,12 @@ msgid "ctrl+click to rotate"
 msgstr "ctrl+klik om te draaien"
 
 #: ../src/develop/masks/masks.c:67
-msgid "shift+click to switch feathering mode, ctrl+scroll to set shape opacity"
+msgid ""
+"shift+click to switch feathering mode, ctrl+scroll to set shape opacity, "
+"shift+scroll to set feather size"
 msgstr ""
-"shift+klik activeert feather mode, ctrl+scroll bepaalt dekking door vorm"
+"shift+klik schakelt feathering mode, ctrl+scroll voor instellen dekking door "
+"vorm-, shift+scroll voor instellen feather afmeting"
 
 #: ../src/develop/masks/masks.c:72
 msgid ""
@@ -3473,7 +3481,7 @@ msgid "invalid border size, using 0"
 msgstr "ongeldige randdikte, gebruikt 0"
 
 #: ../src/imageio/format/pdf.c:255 ../src/imageio/storage/disk.c:293
-#: ../src/imageio/storage/email.c:133 ../src/imageio/storage/facebook.c:1294
+#: ../src/imageio/storage/email.c:133 ../src/imageio/storage/facebook.c:1298
 #: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:328
 #: ../src/imageio/storage/gallery.c:362 ../src/imageio/storage/picasa.c:1446
 #, c-format
@@ -3488,7 +3496,7 @@ msgstr "PDF"
 #. create labels
 #. clang-format off
 #. xmp
-#: ../src/imageio/format/pdf.c:579 ../src/imageio/storage/facebook.c:1108
+#: ../src/imageio/format/pdf.c:579 ../src/imageio/storage/facebook.c:1112
 #: ../src/imageio/storage/flickr.c:532 ../src/imageio/storage/gallery.c:171
 #: ../src/imageio/storage/latex.c:171 ../src/imageio/storage/picasa.c:1299
 #: ../src/libs/collect.h:34 ../src/libs/metadata.c:334
@@ -3562,13 +3570,13 @@ msgid "rotate images"
 msgstr "draai pixels"
 
 #: ../src/imageio/format/pdf.c:665 ../src/imageio/format/pdf.c:690
-#: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1874
+#: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1892
 #: ../src/libs/export.c:585 ../src/libs/metadata_view.c:257
 msgid "no"
 msgstr "nee"
 
 #: ../src/imageio/format/pdf.c:666 ../src/imageio/format/pdf.c:691
-#: ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1875
+#: ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1893
 #: ../src/libs/export.c:586 ../src/libs/metadata_view.c:257
 msgid "yes"
 msgstr "ja"
@@ -3814,7 +3822,7 @@ msgid "[facebook] unexpected URL format\n"
 msgstr "[facebook] onverwacht URL formaat\n"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/facebook.c:614
+#: ../src/imageio/storage/facebook.c:618
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your facebook account there and authorize darktable to "
@@ -3824,36 +3832,36 @@ msgstr ""
 "facebook account en autoriseer darktable voor het uploaden van foto's "
 "voordat u verder gaat"
 
-#: ../src/imageio/storage/facebook.c:617
+#: ../src/imageio/storage/facebook.c:621
 msgid ""
 "step 2: paste your browser URL and click the OK button once you are done."
 msgstr "stap 2: plak de webbrowser URL en klik op de oké button."
 
-#: ../src/imageio/storage/facebook.c:623 ../src/imageio/storage/facebook.c:712
+#: ../src/imageio/storage/facebook.c:627 ../src/imageio/storage/facebook.c:716
 msgid "facebook authentication"
 msgstr "aanmelden facebook"
 
-#: ../src/imageio/storage/facebook.c:628
+#: ../src/imageio/storage/facebook.c:632
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:650
+#: ../src/imageio/storage/facebook.c:654
 msgid "please enter the validation URL"
 msgstr "geef a.u.b. de bevestigings URL"
 
-#: ../src/imageio/storage/facebook.c:660
+#: ../src/imageio/storage/facebook.c:664
 msgid "the given URL is not valid, it should look like: "
 msgstr "de gegeven URL is niet goed, het moet eruit zien als:"
 
-#: ../src/imageio/storage/facebook.c:691
+#: ../src/imageio/storage/facebook.c:695
 msgid "authentication successful"
 msgstr "aanmelding gelukt"
 
-#: ../src/imageio/storage/facebook.c:695
+#: ../src/imageio/storage/facebook.c:699
 msgid "authentication failed"
 msgstr "aanmelding mislukt"
 
-#: ../src/imageio/storage/facebook.c:708
+#: ../src/imageio/storage/facebook.c:712
 msgid ""
 "a new window or tab of your browser should have been loaded. you have to "
 "login into your facebook account there and authorize darktable to upload "
@@ -3862,81 +3870,81 @@ msgstr ""
 "een nieuw browserscherm of tabblad  moet nu zijn geopend, log daar in op je "
 "facebook account en autoriseer darktable voor het uploaden van foto's"
 
-#: ../src/imageio/storage/facebook.c:839 ../src/imageio/storage/picasa.c:1007
+#: ../src/imageio/storage/facebook.c:843 ../src/imageio/storage/picasa.c:1007
 msgid "new account"
 msgstr "nieuw account"
 
-#: ../src/imageio/storage/facebook.c:844 ../src/imageio/storage/picasa.c:1012
+#: ../src/imageio/storage/facebook.c:848 ../src/imageio/storage/picasa.c:1012
 msgid "other account"
 msgstr "ander account"
 
-#: ../src/imageio/storage/facebook.c:873 ../src/imageio/storage/picasa.c:1040
+#: ../src/imageio/storage/facebook.c:877 ../src/imageio/storage/picasa.c:1040
 msgid "unable to retrieve the album list"
 msgstr "ophalen van  albumlijst lukt niet"
 
-#: ../src/imageio/storage/facebook.c:881 ../src/imageio/storage/flickr.c:386
+#: ../src/imageio/storage/facebook.c:885 ../src/imageio/storage/flickr.c:386
 #: ../src/imageio/storage/flickr.c:413 ../src/imageio/storage/picasa.c:1048
 msgid "create new album"
 msgstr "creëer nieuwe map"
 
-#: ../src/imageio/storage/facebook.c:953 ../src/imageio/storage/picasa.c:1096
+#: ../src/imageio/storage/facebook.c:957 ../src/imageio/storage/picasa.c:1096
 #: ../src/imageio/storage/picasa.c:1254
 msgid "logout"
 msgstr "uitloggen"
 
 #. Set default permission to private
-#: ../src/imageio/storage/facebook.c:959 ../src/imageio/storage/facebook.c:979
-#: ../src/imageio/storage/facebook.c:1026
-#: ../src/imageio/storage/facebook.c:1052
-#: ../src/imageio/storage/facebook.c:1171 ../src/imageio/storage/flickr.c:474
+#: ../src/imageio/storage/facebook.c:963 ../src/imageio/storage/facebook.c:983
+#: ../src/imageio/storage/facebook.c:1030
+#: ../src/imageio/storage/facebook.c:1056
+#: ../src/imageio/storage/facebook.c:1175 ../src/imageio/storage/flickr.c:474
 #: ../src/imageio/storage/picasa.c:1102 ../src/imageio/storage/picasa.c:1258
 #: ../src/imageio/storage/picasa.c:1271 ../src/imageio/storage/picasa.c:1342
 msgid "login"
 msgstr "inloggen"
 
-#: ../src/imageio/storage/facebook.c:1087
+#: ../src/imageio/storage/facebook.c:1091
 msgid "facebook webalbum"
 msgstr "facebook webalbum"
 
-#: ../src/imageio/storage/facebook.c:1109 ../src/imageio/storage/flickr.c:547
+#: ../src/imageio/storage/facebook.c:1113 ../src/imageio/storage/flickr.c:547
 #: ../src/imageio/storage/picasa.c:1300
 msgid "summary"
 msgstr "samenvatting"
 
-#: ../src/imageio/storage/facebook.c:1110
+#: ../src/imageio/storage/facebook.c:1114
 msgid "privacy"
 msgstr "privacy"
 
-#: ../src/imageio/storage/facebook.c:1156
+#: ../src/imageio/storage/facebook.c:1160
 msgid "only me"
 msgstr "alleen ik"
 
-#: ../src/imageio/storage/facebook.c:1159 ../src/imageio/storage/flickr.c:500
+#: ../src/imageio/storage/facebook.c:1163 ../src/imageio/storage/flickr.c:500
 msgid "friends"
 msgstr "vrienden"
 
-#: ../src/imageio/storage/facebook.c:1162
+#: ../src/imageio/storage/facebook.c:1166
 msgid "public"
 msgstr "publiek"
 
-#: ../src/imageio/storage/facebook.c:1165
+#: ../src/imageio/storage/facebook.c:1169
 msgid "friends of friends"
 msgstr "vrienden van vrienden"
 
-#: ../src/imageio/storage/facebook.c:1303 ../src/imageio/storage/picasa.c:1455
+#: ../src/imageio/storage/facebook.c:1307 ../src/imageio/storage/picasa.c:1455
 msgid "unable to create album, no title provided"
 msgstr "aanmaak album mislukt, geen titel opgegeven"
 
-#: ../src/imageio/storage/facebook.c:1312 ../src/imageio/storage/picasa.c:1463
+#: ../src/imageio/storage/facebook.c:1316 ../src/imageio/storage/picasa.c:1463
 msgid "unable to create album"
 msgstr "aanmaak album mislukt"
 
-#: ../src/imageio/storage/facebook.c:1322
+#: ../src/imageio/storage/facebook.c:1326
 msgid "unable to export photo to webalbum"
 msgstr "exporteren naar webalbum niet mogelijk"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/facebook.c:1334
+#: ../src/imageio/storage/facebook.c:1338
 #, c-format
 msgid "%d/%d exported to facebook webalbum"
 msgid_plural "%d/%d exported to facebook webalbum"
@@ -4168,14 +4176,14 @@ msgid "lens shift (%s)"
 msgstr "lensverschuiving (%s)"
 
 #: ../src/iop/ashift.c:4173 ../src/iop/ashift.c:4174 ../src/iop/ashift.c:4273
-#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1558
-#: ../src/iop/clipping.c:1847 ../src/iop/clipping.c:1866
+#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1576
+#: ../src/iop/clipping.c:1865 ../src/iop/clipping.c:1884
 msgid "horizontal"
 msgstr "horizontaal "
 
 #: ../src/iop/ashift.c:4173 ../src/iop/ashift.c:4174 ../src/iop/ashift.c:4273
-#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1557
-#: ../src/iop/clipping.c:1848 ../src/iop/clipping.c:1865
+#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1575
+#: ../src/iop/clipping.c:1866 ../src/iop/clipping.c:1883
 msgid "vertical"
 msgstr "verticaal"
 
@@ -4196,12 +4204,12 @@ msgstr "lensverschuiving (horizontaal)"
 msgid "shear"
 msgstr "plotten"
 
-#: ../src/iop/ashift.c:4395 ../src/iop/clipping.c:1997
+#: ../src/iop/ashift.c:4395 ../src/iop/clipping.c:2015
 #: ../src/libs/live_view.c:341
 msgid "guides"
 msgstr "hulplijnen"
 
-#: ../src/iop/ashift.c:4401 ../src/iop/clipping.c:1873
+#: ../src/iop/ashift.c:4401 ../src/iop/clipping.c:1891
 msgid "automatic cropping"
 msgstr "automatisch uitsnijden"
 
@@ -4262,7 +4270,7 @@ msgstr "plot de afbeelding langs een diagonaal"
 msgid "display guide lines overlay"
 msgstr "weergeven rasterlijnen"
 
-#: ../src/iop/ashift.c:4517 ../src/iop/clipping.c:1876
+#: ../src/iop/ashift.c:4517 ../src/iop/clipping.c:1894
 msgid "automatically crop to avoid black edges"
 msgstr "automatisch uitsnijden om zwarte randen te voorkomen"
 
@@ -4755,7 +4763,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:916 ../src/iop/clipping.c:1892
+#: ../src/iop/borders.c:916 ../src/iop/clipping.c:1910
 msgid "golden cut"
 msgstr "gulden snede"
 
@@ -4775,7 +4783,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:921 ../src/iop/clipping.c:1882
+#: ../src/iop/borders.c:921 ../src/iop/clipping.c:1900
 msgid "square"
 msgstr "vierkant"
 
@@ -4813,7 +4821,7 @@ msgstr ""
 "de afmeting van de rand\n"
 "als percentage van de volledige afbeelding"
 
-#: ../src/iop/borders.c:985 ../src/iop/clipping.c:1979
+#: ../src/iop/borders.c:985 ../src/iop/clipping.c:1997
 msgid "aspect"
 msgstr "verhouding"
 
@@ -5022,134 +5030,134 @@ msgstr "sterkte van het effect"
 msgid "crop and rotate"
 msgstr "uitsnijden en roteren"
 
-#: ../src/iop/clipping.c:1455
+#: ../src/iop/clipping.c:1473
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "ongeldige verhouding, dit moet zijn \"nummer:nummer\""
 
-#: ../src/iop/clipping.c:1559 ../src/iop/clipping.c:1867
+#: ../src/iop/clipping.c:1577 ../src/iop/clipping.c:1885
 msgid "full"
 msgstr "geheel"
 
-#: ../src/iop/clipping.c:1560
+#: ../src/iop/clipping.c:1578
 msgid "old system"
 msgstr "oud systeem"
 
-#: ../src/iop/clipping.c:1561
+#: ../src/iop/clipping.c:1579
 msgid "correction applied"
 msgstr "is gecorrigeerd"
 
-#: ../src/iop/clipping.c:1845 ../src/libs/live_view.c:372
+#: ../src/iop/clipping.c:1863 ../src/libs/live_view.c:372
 msgid "flip"
 msgstr "spiegelen"
 
-#: ../src/iop/clipping.c:1849 ../src/iop/clipping.c:2034
+#: ../src/iop/clipping.c:1867 ../src/iop/clipping.c:2052
 #: ../src/libs/live_view.c:376
 msgid "both"
 msgstr "beide"
 
-#: ../src/iop/clipping.c:1851
+#: ../src/iop/clipping.c:1869
 msgid "mirror image horizontally and/or vertically"
 msgstr "spiegel afbeelding horizontaal en/of verticaal"
 
-#: ../src/iop/clipping.c:1856
+#: ../src/iop/clipping.c:1874
 msgid "angle"
 msgstr "hoek"
 
-#: ../src/iop/clipping.c:1859
+#: ../src/iop/clipping.c:1877
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "NB: ook kan men een afbeelding recht zetten door\n"
 "de rechtermuisknop te activeren\n"
 "en gelijktijdig een lijn over de afbeelding te trekken"
 
-#: ../src/iop/clipping.c:1863
+#: ../src/iop/clipping.c:1881
 msgid "keystone"
 msgstr "keystone"
 
-#: ../src/iop/clipping.c:1868
+#: ../src/iop/clipping.c:1886
 msgid "set perspective correction for your image"
 msgstr "corrigeer het perspectief van de afbeelding"
 
-#: ../src/iop/clipping.c:1880
+#: ../src/iop/clipping.c:1898
 msgid "freehand"
 msgstr "vrije selectie"
 
-#: ../src/iop/clipping.c:1881
+#: ../src/iop/clipping.c:1899
 msgid "original image"
 msgstr "originele afbeeldingen"
 
-#: ../src/iop/clipping.c:1883
+#: ../src/iop/clipping.c:1901
 msgid "10:8 in print"
 msgstr "10:8 op papier"
 
-#: ../src/iop/clipping.c:1884
+#: ../src/iop/clipping.c:1902
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:1885
+#: ../src/iop/clipping.c:1903
 msgid "11x14"
 msgstr "11x14"
 
 # volgens mij is 'letter' een naam van een formaat voor papier, toch?
-#: ../src/iop/clipping.c:1886
+#: ../src/iop/clipping.c:1904
 msgid "8.5x11, letter"
 msgstr "8.5x11, letter"
 
-#: ../src/iop/clipping.c:1887
+#: ../src/iop/clipping.c:1905
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:1888
+#: ../src/iop/clipping.c:1906
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:1889
+#: ../src/iop/clipping.c:1907
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:1890
+#: ../src/iop/clipping.c:1908
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:1891
+#: ../src/iop/clipping.c:1909
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:1893
+#: ../src/iop/clipping.c:1911
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:1894
+#: ../src/iop/clipping.c:1912
 msgid "widescreen"
 msgstr "breedbeeld"
 
-#: ../src/iop/clipping.c:1895
+#: ../src/iop/clipping.c:1913
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:1896
+#: ../src/iop/clipping.c:1914
 msgid "cinemascope"
 msgstr "cinemascope"
 
-#: ../src/iop/clipping.c:1897
+#: ../src/iop/clipping.c:1915
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:1898
+#: ../src/iop/clipping.c:1916
 msgid "anamorphic"
 msgstr "anamorphic"
 
-#: ../src/iop/clipping.c:1899
+#: ../src/iop/clipping.c:1917
 msgid "3:1, panorama"
 msgstr "3:1, panorama"
 
-#: ../src/iop/clipping.c:1931 ../src/iop/clipping.c:1943
+#: ../src/iop/clipping.c:1949 ../src/iop/clipping.c:1961
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
 "formaat verhouding voor `%s' is verkeerd. dit moet zijn \"number:number\""
 
-#: ../src/iop/clipping.c:1990
+#: ../src/iop/clipping.c:2008
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -5157,29 +5165,29 @@ msgstr ""
 "bepaal de beeldverhouding\n"
 "de lijst is gesorteerd van meest naar minst vierkant"
 
-#: ../src/iop/clipping.c:2026 ../src/libs/live_view.c:368
+#: ../src/iop/clipping.c:2044 ../src/libs/live_view.c:368
 msgid "display guide lines to help compose your photograph"
 msgstr "inschakelen hulplijnen, vergemakkelijkt  compositie verbetering"
 
-#: ../src/iop/clipping.c:2030 ../src/iop/clipping.c:2035
+#: ../src/iop/clipping.c:2048 ../src/iop/clipping.c:2053
 #: ../src/libs/live_view.c:377
 msgid "flip guides"
 msgstr "verwissel hulplijnen"
 
-#: ../src/iop/clipping.c:2032 ../src/libs/live_view.c:374
+#: ../src/iop/clipping.c:2050 ../src/libs/live_view.c:374
 msgid "horizontally"
 msgstr "horizontaal"
 
-#: ../src/iop/clipping.c:2033 ../src/libs/live_view.c:375
+#: ../src/iop/clipping.c:2051 ../src/libs/live_view.c:375
 msgid "vertically"
 msgstr "verticaal"
 
-#: ../src/iop/clipping.c:3097
+#: ../src/iop/clipping.c:3115
 msgctxt "accel"
 msgid "commit"
 msgstr "goedkeuren"
 
-#: ../src/iop/clipping.c:3098
+#: ../src/iop/clipping.c:3116
 msgctxt "accel"
 msgid "angle"
 msgstr "hoek"
@@ -5426,36 +5434,36 @@ msgstr "kies globale verzadiging"
 msgid "input color profile"
 msgstr "ingaand kleurprofiel"
 
-#: ../src/iop/colorin.c:1498
+#: ../src/iop/colorin.c:1500
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "`%s' kleuren matrix is niet gevonden"
 
-#: ../src/iop/colorin.c:1532
+#: ../src/iop/colorin.c:1534
 msgid "input profile could not be generated!"
 msgstr "ingegeven profiel kan niet worden gemaakt!"
 
-#: ../src/iop/colorin.c:1590
+#: ../src/iop/colorin.c:1592
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
 "niet ondersteund ingegeven profiel is vervangen door lineair Rec709 RGB!"
 
-#: ../src/iop/colorin.c:1927 ../src/iop/denoiseprofile.c:2077
+#: ../src/iop/colorin.c:1929 ../src/iop/denoiseprofile.c:2077
 #: ../src/libs/export.c:597 ../src/libs/print_settings.c:1008
 #: ../src/libs/print_settings.c:1224
 msgid "profile"
 msgstr "profiel"
 
-#: ../src/iop/colorin.c:1936
+#: ../src/iop/colorin.c:1938
 #, c-format
 msgid "ICC profiles in %s/color/in or %s/color/in"
 msgstr "ICC profielen in %s/kleur/in van %s/kleur/in"
 
-#: ../src/iop/colorin.c:1942
+#: ../src/iop/colorin.c:1944
 msgid "gamut clipping"
 msgstr "gamma-clipping"
 
-#: ../src/iop/colorin.c:1950
+#: ../src/iop/colorin.c:1952
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "beperk Lab-waarden tot gamma van RGB kleurruimte"
 
@@ -6785,27 +6793,27 @@ msgstr "wit percentiel"
 msgid "white"
 msgstr "wit"
 
-#: ../src/iop/liquify.c:267
+#: ../src/iop/liquify.c:266
 msgid "liquify"
 msgstr "uitvloeien"
 
-#: ../src/iop/liquify.c:3243
+#: ../src/iop/liquify.c:3244
 msgid "click and drag to add point"
 msgstr "voeg een punt toe door te klikken en te slepen"
 
-#: ../src/iop/liquify.c:3245
+#: ../src/iop/liquify.c:3246
 msgid "click to add line"
 msgstr "voeg een lijn toe door te klikken"
 
-#: ../src/iop/liquify.c:3247
+#: ../src/iop/liquify.c:3248
 msgid "click to add curve"
 msgstr "voeg een curve toe door te klikken "
 
-#: ../src/iop/liquify.c:3249
+#: ../src/iop/liquify.c:3250
 msgid "click to edit nodes"
 msgstr "bewerk knooppunten door te klikken"
 
-#: ../src/iop/liquify.c:3285
+#: ../src/iop/liquify.c:3287
 msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
@@ -6813,27 +6821,27 @@ msgstr ""
 "voeg verdraaiingen toe met de gereedschappen\n"
 "verwijder een verdraaiing met de rechtermuisknop"
 
-#: ../src/iop/liquify.c:3287
+#: ../src/iop/liquify.c:3289
 msgid "warps|nodes count:"
 msgstr "verdraaiingen|knooppunten:"
 
-#: ../src/iop/liquify.c:3294
+#: ../src/iop/liquify.c:3296
 msgid "node tool: edit, add and delete nodes"
 msgstr "gereedschap knooppunt: bewerk, voeg toe en verwijder knooppunten"
 
-#: ../src/iop/liquify.c:3302
+#: ../src/iop/liquify.c:3304
 msgid "curve tool: draw curves"
 msgstr "gereedschap kromme: teken curven"
 
-#: ../src/iop/liquify.c:3310
+#: ../src/iop/liquify.c:3312
 msgid "line tool: draw lines"
 msgstr "gereedschap lijn: teken lijnen"
 
-#: ../src/iop/liquify.c:3318
+#: ../src/iop/liquify.c:3320
 msgid "point tool: draw points"
 msgstr "gereedschap punt: teken punten"
 
-#: ../src/iop/liquify.c:3325
+#: ../src/iop/liquify.c:3327
 msgid ""
 "ctrl-click to add node\n"
 "right click to remove path"
@@ -6841,7 +6849,7 @@ msgstr ""
 "ctrl+klik voegt een knooppunt toe\n"
 "verwijder pad met de rechtermuisknop"
 
-#: ../src/iop/liquify.c:3326
+#: ../src/iop/liquify.c:3328
 msgid ""
 "click and drag to move - click : linear or feathered\n"
 "ctrl-click : autosmooth, cusp, smooth, symmetrical\n"
@@ -6851,23 +6859,23 @@ msgstr ""
 "ctrl+klik: automatisch glad, cups, glad, symmetrisch\n"
 "verwijder met rechtermuisknop ]"
 
-#: ../src/iop/liquify.c:3329 ../src/iop/liquify.c:3330
+#: ../src/iop/liquify.c:3331 ../src/iop/liquify.c:3332
 msgid "drag to change shape of path"
 msgstr "wijzig vorm van een pad door slepen"
 
-#: ../src/iop/liquify.c:3331
+#: ../src/iop/liquify.c:3333
 msgid "drag to adjust warp radius"
 msgstr "wijzig radius verdraaiingen door slepen"
 
-#: ../src/iop/liquify.c:3332
+#: ../src/iop/liquify.c:3334
 msgid "drag to adjust hardness (center)"
 msgstr "wijzig hardheid door slepen (centrum)"
 
-#: ../src/iop/liquify.c:3333
+#: ../src/iop/liquify.c:3335
 msgid "drag to adjust hardness (feather)"
 msgstr "wijzig hardheid door slepen (feather)"
 
-#: ../src/iop/liquify.c:3334
+#: ../src/iop/liquify.c:3336
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl-click : linear, grow, and shrink"
@@ -6875,22 +6883,22 @@ msgstr ""
 "sleep om de kracht van verdraaiing te wijzigen\n"
 "ctrl+klik: lineair, groeien en krimpen"
 
-#: ../src/iop/liquify.c:3352
+#: ../src/iop/liquify.c:3354
 msgctxt "accel"
 msgid "point tool"
 msgstr "gereedschap punt"
 
-#: ../src/iop/liquify.c:3353
+#: ../src/iop/liquify.c:3355
 msgctxt "accel"
 msgid "line tool"
 msgstr "gereedschap lijn"
 
-#: ../src/iop/liquify.c:3354
+#: ../src/iop/liquify.c:3356
 msgctxt "accel"
 msgid "curve tool"
 msgstr "gereedschap curve"
 
-#: ../src/iop/liquify.c:3355
+#: ../src/iop/liquify.c:3357
 msgctxt "accel"
 msgid "node tool"
 msgstr "gereedschap knooppunt"
@@ -9903,8 +9911,8 @@ msgstr "fout bij het importeren van labels"
 
 #: ../src/libs/tagging.c:369
 #, c-format
-msgid "%ld tags imported"
-msgstr "%ld labels geïmporteerd"
+msgid "%zd tags imported"
+msgstr "%zd  labels geïmporteerd"
 
 #: ../src/libs/tagging.c:390
 msgid "Select file to export to"
@@ -9920,8 +9928,8 @@ msgstr "fout bij het exporteren van labels"
 
 #: ../src/libs/tagging.c:407
 #, c-format
-msgid "%ld tags exported"
-msgstr "%ld labels geëxporteerd"
+msgid "%zd tags exported"
+msgstr "%zd labels geëxporteerd"
 
 #: ../src/libs/tagging.c:478
 msgid ""
