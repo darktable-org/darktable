@@ -143,6 +143,12 @@ if(APPLE AND (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_
         list(REMOVE_DUPLICATES CMAKE_CXX_IMPLICIT_LINK_LIBRARIES)
 endif()
 
+# Check for base threading library
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
+list(APPEND LIBS ${CMAKE_THREAD_LIBS_INIT})
+
 # Check for openmp
 find_package(OpenMP)
 if(OpenMP_C_FLAGS AND USE_OPENMP)
@@ -374,11 +380,6 @@ int main(void)
 if(NOT HAVE_TLS)
   MESSAGE(FATAL_ERROR "The compiler does not support Thread-local storage.")
 endif()
-
-if(NOT WIN32)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-endif(NOT WIN32)
 
 if(WIN32)
   # get rid of the console window. do we need both?
