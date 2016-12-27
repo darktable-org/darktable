@@ -1257,7 +1257,7 @@ static int dt_collection_image_offset_with_collection(const dt_collection_t *col
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
 
     // was the limit portion of the query tacked on?
-    if(sqlite3_bind_parameter_count(stmt) == 2)
+    if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
     {
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
