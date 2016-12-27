@@ -936,6 +936,27 @@
 			<Hint name="wb_offset" value="142"/>
 		</Hints>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS M5">
+		<ID make="Canon" model="EOS M5">Canon EOS M5</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="266" y="38" width="0" height="0"/>
+		<Sensor black="2048" white="16000"/>
+		<Sensor black="512" white="16000" iso_list="100 125 200 250"/>
+		<Sensor black="512" white="13200" iso_list="160"/>
+		<Sensor black="2048" white="13200" iso_list="320 640 1250 2500 5000"/>
+		<BlackAreas>
+			<Vertical x="4" width="260"/>
+			<Horizontal y="4" height="30"/>
+		</BlackAreas>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS M10">
 		<ID make="Canon" model="EOS M10">Canon EOS M10</ID>
 		<CFA width="2" height="2">
