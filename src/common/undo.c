@@ -30,6 +30,7 @@ typedef struct dt_undo_item_t
   dt_undo_type_t type;
   dt_undo_data_t *data;
   double ts;
+  gboolean is_group;
   void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data);
   void (*free_data)(gpointer data);
 } dt_undo_item_t;
@@ -39,8 +40,15 @@ dt_undo_t *dt_undo_init(void)
   dt_undo_t *udata = malloc(sizeof(dt_undo_t));
   udata->undo_list = NULL;
   udata->redo_list = NULL;
+  udata->disable_next = FALSE;
   dt_pthread_mutex_init(&udata->mutex, NULL);
+  udata->group = 0;
   return udata;
+}
+
+void dt_undo_disable_next(dt_undo_t *self)
+{
+  self->disable_next = TRUE;
 }
 
 void dt_undo_cleanup(dt_undo_t *self)
@@ -56,28 +64,59 @@ static void _free_undo_data(void *p)
   free(item);
 }
 
+static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
+                         gboolean is_group,
+                         void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
+                         void (*free_data)(gpointer data))
+{
+  if(!self) return;
+
+  if(self->disable_next)
+  {
+    if(free_data) free_data(data);
+    self->disable_next = FALSE;
+  }
+  else
+  {
+    dt_pthread_mutex_lock(&self->mutex);
+
+    dt_undo_item_t *item = malloc(sizeof(dt_undo_item_t));
+
+    item->user_data = user_data;
+    item->type      = type;
+    item->data      = data;
+    item->undo      = undo;
+    item->free_data = free_data;
+    item->ts        = dt_get_wtime();
+    item->is_group  = is_group;
+
+    self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
+
+    // recording an undo data invalidate all the redo
+    g_list_free_full(self->redo_list, _free_undo_data);
+    self->redo_list = NULL;
+
+    dt_pthread_mutex_unlock(&self->mutex);
+  }
+}
+
+void dt_undo_start_group(dt_undo_t *self, dt_undo_type_t type)
+{
+  self->group = type;
+  _undo_record(self, NULL, type, NULL, TRUE, NULL, NULL);
+}
+
+void dt_undo_end_group(dt_undo_t *self)
+{
+  _undo_record(self, NULL, self->group, NULL, TRUE, NULL, NULL);
+  self->group = 0;
+}
+
 void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
                     void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
                     void (*free_data)(gpointer data))
 {
-  if(!self) return;
-
-  dt_undo_item_t *item = malloc(sizeof(dt_undo_item_t));
-
-  item->user_data = user_data;
-  item->type      = type;
-  item->data      = data;
-  item->undo      = undo;
-  item->free_data = free_data;
-  item->ts        = dt_get_wtime();
-
-  dt_pthread_mutex_lock(&self->mutex);
-  self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
-
-  // recording an undo data invalidate all the redo
-  g_list_free_full(self->redo_list, _free_undo_data);
-  self->redo_list = NULL;
-  dt_pthread_mutex_unlock(&self->mutex);
+  _undo_record(self, user_data, type, data, FALSE, undo, free_data);
 }
 
 void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
@@ -141,34 +180,62 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 
     if(item->type & filter)
     {
-      const double first_item_ts = item->ts;
-
       self->undo_list = g_list_remove(self->undo_list, item);
       self->redo_list = g_list_prepend(self->redo_list, item);
 
-      //  now record in the redo list also all items that are on the same time period
-
-      l = next;
-      while (l)
+      if(item->is_group)
       {
-        next = g_list_next(l);
-        item = (dt_undo_item_t *)l->data;
-        //  undo item
-        item->undo(item->user_data, item->type, item->data);
-
-        //  if we are on the same time frame, just continue
-        if (item->type & filter && (first_item_ts - item->ts < MAX_TIME_PERIOD))
+        l = next;
+        while (l)
         {
+          next = g_list_next(l);
+          item = (dt_undo_item_t *)l->data;
+
           self->undo_list = g_list_remove(self->undo_list, item);
           self->redo_list = g_list_prepend(self->redo_list, item);
+
+          //  undo item
+          if(item->is_group)
+            break;
+          else
+            item->undo(item->user_data, item->type, item->data);
+
           l = next;
         }
-        else
-          break;
-      };
+        break;
+      }
+      else
+      {
+        const double first_item_ts = item->ts;
 
+        //  now record in the redo list also all items that are on the same time period
+
+        l = next;
+        while (l)
+        {
+          next = g_list_next(l);
+          item = (dt_undo_item_t *)l->data;
+
+          //  if we have reached a group, stop
+          if(item->is_group) break;
+
+          //  undo item
+          item->undo(item->user_data, item->type, item->data);
+
+          //  if we are on the same time frame, just continue
+          if ((item->type & filter) && (first_item_ts - item->ts < MAX_TIME_PERIOD))
+          {
+            self->undo_list = g_list_remove(self->undo_list, item);
+            self->redo_list = g_list_prepend(self->redo_list, item);
+            l = next;
+          }
+          else
+            break;
+        };
+      }
       break;
     }
+
     l = next;
   }
 
@@ -204,6 +271,7 @@ void dt_undo_clear(dt_undo_t *self, uint32_t filter)
   _undo_clear_list(&self->redo_list, filter);
   self->undo_list = NULL;
   self->redo_list = NULL;
+  self->disable_next = FALSE;
   dt_pthread_mutex_unlock(&self->mutex);
 }
 
@@ -217,7 +285,7 @@ static void _undo_iterate(GList *list, uint32_t filter, gpointer user_data,
   while(l)
   {
     dt_undo_item_t *item = (dt_undo_item_t *)l->data;
-    if(item->type & filter)
+    if(!item->is_group && (item->type & filter))
     {
       apply(user_data, item->type, item->data);
     }
