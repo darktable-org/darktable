@@ -140,9 +140,7 @@ if (BUILD_RS_IDENTIFY)
       LINKER_LANGUAGE CXX)
 
   target_link_libraries(darktable-rs-identify rawspeed_static)
-  if(NOT ${CMAKE_THREAD_LIBS_INIT} MATCHES "-pthread")
-    target_link_libraries(darktable-rs-identify ${CMAKE_THREAD_LIBS_INIT})
-  endif()
+  target_link_libraries(darktable-rs-identify ${CMAKE_THREAD_LIBS_INIT})
 
   install(TARGETS darktable-rs-identify DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
