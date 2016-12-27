@@ -1904,6 +1904,9 @@ void enter(dt_view_t *self)
   dt_view_filmstrip_prefetch();
 
   dt_collection_hint_message(darktable.collection);
+
+  // clean the undo list
+  dt_undo_clear(darktable.undo, DT_UNDO_HISTORY);
 }
 
 void leave(dt_view_t *self)
