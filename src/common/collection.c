@@ -54,6 +54,8 @@ static uint32_t _dt_collection_compute_count(const dt_collection_t *collection);
 static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_data);
 static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpointer user_data);
 
+/* determine image offset of specified imgid for the given collection */
+static int dt_collection_image_offset_with_collection(const dt_collection_t *collection, int imgid);
 
 const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
 {
@@ -1211,30 +1213,55 @@ gboolean dt_collection_hint_message_internal(void *message)
 
 void dt_collection_hint_message(const dt_collection_t *collection)
 {
+  /* if relevant, determine offset of selection */
+  GList *selected_imgids = dt_collection_get_selected(collection, 1);
+  int selected = -1;
+
+  if(selected_imgids)
+  {
+    selected = GPOINTER_TO_INT(selected_imgids->data);
+    selected = dt_collection_image_offset_with_collection(collection, selected);
+    selected++;
+  }
   /* collection hinting */
   gchar *message;
 
   int c = dt_collection_get_count(collection);
   int cs = dt_collection_get_selected_count(collection);
 
-  message = g_strdup_printf(ngettext("%d image of %d in current collection is selected",
-                                     "%d images of %d in current collection are selected", cs),
-                            cs, c);
+  if(cs == 1)
+  {
+    message = g_strdup_printf("%d image of %d (#%d) in current collection is selected", cs, c, selected);
+  }
+  else
+  {
+    message = g_strdup_printf(
+      ngettext(
+        "%d image of %d in current collection is selected", 
+        "%d images of %d in current collection are selected", 
+        cs),
+      cs, c);
+  }
 
   g_idle_add(dt_collection_hint_message_internal, message);
 }
 
-int dt_collection_image_offset(int imgid)
+static int dt_collection_image_offset_with_collection(const dt_collection_t *collection, int imgid)
 {
-  const gchar *qin = dt_collection_get_query(darktable.collection);
+  const gchar *qin = dt_collection_get_query(collection);
   int offset = 0;
   sqlite3_stmt *stmt;
 
   if(qin)
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+
+    // was the limit portion of the query tacked on?
+    if(sqlite3_bind_parameter_count(stmt) == 2)
+    {
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+    }
 
     gboolean found = FALSE;
 
@@ -1254,6 +1281,11 @@ int dt_collection_image_offset(int imgid)
     sqlite3_finalize(stmt);
   }
   return offset;
+}
+
+int dt_collection_image_offset(int imgid)
+{
+  return dt_collection_image_offset_with_collection(darktable.collection, imgid);
 }
 
 static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_data)
