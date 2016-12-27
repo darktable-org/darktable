@@ -979,10 +979,11 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
                                                    const int32_t in_stride, const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
-  const int samples = round(px_footprint / 3);
-
-  // X-Trans RGB weighting for each 3x3 cell
-  static const int rgb_weights[3] = { 2, 5, 2 };
+  // we assume that are downscaling the image by at least 1/3, such
+  // that for each color in the mosaiced output image, there will be
+  // at least one pixel of the same color to interpolate from in the
+  // mosaiced input image
+  assert((px_footprint / 3.f) >= 1.f);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -991,34 +992,34 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
   {
     uint16_t *outc = out + out_stride * y;
 
-    int py = floorf((y + roi_out->y) * px_footprint);
-    py = MIN(roi_in->height - 4, py);
-    int maxj = MIN(roi_in->height - 3, py + 3 * samples);
+    const float fy = (y + roi_out->y) * px_footprint;
+    const int py = roundf(fy);
+    const int maxy = roundf(fy + px_footprint);
+    assert(maxy <= roi_in->height);
 
     float fx = roi_out->x * px_footprint;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      int px = floorf(fx);
-      px = MIN(roi_in->width - 4, px);
-      int maxi = MIN(roi_in->width - 3, px + 3 * samples);
+      const int px = roundf(fx);
+      const int maxx = roundf(fx + px_footprint);
+      assert(maxx <= roi_in->width);
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
       int num = 0;
       uint32_t col = 0;
 
-      for(int yy = py; yy <= maxj; yy += 3)
-        for(int xx = px; xx <= maxi; xx += 3)
+      for(int yy = py; yy < maxy; ++yy)
+        for(int xx = px; xx < maxx; ++xx)
         {
-          for(int j = 0; j < 3; ++j)
-            for(int i = 0; i < 3; ++i)
-            {
-              if(FCxtrans(yy + j, xx + i, roi_in, xtrans) != c) continue;
-              col += in[xx + i + in_stride * (yy + j)];
-            }
+          if(FCxtrans(yy, xx, roi_in, xtrans) != c) continue;
+
+          col += in[xx + in_stride * yy];
           num++;
         }
 
-      *outc = (uint16_t)((float)col / (float)(num * rgb_weights[c]));
+      assert(num > 0);
+
+      *outc = (uint16_t)((float)col / (float)num);
     }
   }
 }
