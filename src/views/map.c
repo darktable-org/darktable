@@ -1177,8 +1177,16 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
       sqlite3_stmt *stmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT imgid FROM main.selected_images",
                                   -1, &stmt, NULL);
+
+      // create an undo group for the set of change
+
+      dt_undo_start_group(darktable.undo, DT_UNDO_GEOTAG);
+
       while(sqlite3_step(stmt) == SQLITE_ROW)
         _view_map_add_image_to_map(self, sqlite3_column_int(stmt, 0), x, y);
+
+      dt_undo_end_group(darktable.undo);
+
       sqlite3_finalize(stmt);
       success = TRUE;
     }
