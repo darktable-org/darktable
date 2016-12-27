@@ -996,14 +996,14 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
     uint16_t *outc = out + out_stride * y;
 
     const float fy = (y + roi_out->y) * px_footprint;
-    const int py = MAX(0, (int) roundf(fy - px_antialias));
-    const int maxy = MIN(roi_in->height, (int) roundf(fy + px_footprint + px_antialias));
+    const int py = MAX(0, (int)roundf(fy - px_antialias));
+    const int maxy = MIN(roi_in->height, (int)roundf(fy + px_footprint + px_antialias));
 
     float fx = roi_out->x * px_footprint;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      const int px = MAX(0, (int) roundf(fx - px_antialias));
-      const int maxx = MIN(roi_in->width, (int) roundf(fx + px_footprint + px_antialias));
+      const int px = MAX(0, (int)roundf(fx - px_antialias));
+      const int maxx = MIN(roi_in->width, (int)roundf(fx + px_footprint + px_antialias));
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
       int num = 0;
@@ -1011,16 +1011,13 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
 
       for(int yy = py; yy < maxy; ++yy)
         for(int xx = px; xx < maxx; ++xx)
-        {
-          if(FCxtrans(yy, xx, roi_in, xtrans) != c) continue;
-
-          col += in[xx + in_stride * yy];
-          num++;
-        }
-
+          if(FCxtrans(yy, xx, roi_in, xtrans) == c)
+          {
+            col += in[xx + in_stride * yy];
+            num++;
+          }
       assert(num > 0);
-
-      *outc = (uint16_t)((float)col / (float)num);
+      *outc = col / num;
     }
   }
 }
