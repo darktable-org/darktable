@@ -151,7 +151,7 @@ if(NOT CMAKE_USE_PTHREADS_INIT)
   message(FATAL_ERROR "POSIX threads: not found")
 endif()
 # Append thread flags/libraries to LIBS
-list(APPEND LIBS "${MAKE_THREAD_LIBS_INIT}")
+list(APPEND LIBS "${CMAKE_THREAD_LIBS_INIT}")
 
 # Check for openmp
 find_package(OpenMP)
