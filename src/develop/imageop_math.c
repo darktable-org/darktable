@@ -984,6 +984,9 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
   // at least one pixel of the same color to interpolate from in the
   // mosaiced input image
   assert((px_footprint / 3.f) >= 1.f);
+  // a straight downscale results in colored fringes at edges, hence
+  // blur slightly
+  const float px_antialias = px_footprint * 2.f/3.f;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -993,16 +996,14 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
     uint16_t *outc = out + out_stride * y;
 
     const float fy = (y + roi_out->y) * px_footprint;
-    const int py = roundf(fy);
-    const int maxy = roundf(fy + px_footprint);
-    assert(maxy <= roi_in->height);
+    const int py = MAX(0, (int) roundf(fy - px_antialias));
+    const int maxy = MIN(roi_in->height, (int) roundf(fy + px_footprint + px_antialias));
 
     float fx = roi_out->x * px_footprint;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      const int px = roundf(fx);
-      const int maxx = roundf(fx + px_footprint);
-      assert(maxx <= roi_in->width);
+      const int px = MAX(0, (int) roundf(fx - px_antialias));
+      const int maxx = MIN(roi_in->width, (int) roundf(fx + px_footprint + px_antialias));
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
       int num = 0;
