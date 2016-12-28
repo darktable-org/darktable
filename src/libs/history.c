@@ -258,7 +258,7 @@ static void _undo_items_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data
   _reset_module_instance(hdata->snapshot, udata->module, udata->multi_priority);
 }
 
-static void pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 
@@ -387,6 +387,19 @@ static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module
   dt_undo_iterate (darktable.undo, DT_UNDO_HISTORY, module, TRUE, &_history_invalidate_cb);
 }
 
+static unsigned long long _get_timestamp(void)
+{
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (unsigned long long)(tv.tv_sec) * 1000 + (unsigned long long)(tv.tv_usec) / 1000;
+}
+
+static dt_undo_tag_t _get_tag(dt_iop_module_t *module)
+{
+  const unsigned long long ts = _get_timestamp() / 500;
+  return (dt_undo_tag_t)module + (dt_undo_tag_t)ts;
+}
+
 static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -410,7 +423,12 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
       dt_undo_history_t *hist = malloc(sizeof(dt_undo_history_t));
       hist->snapshot=d->prev.snapshot;
       hist->end=d->prev.end;
-      dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t *)hist, &pop_undo, _history_undo_data_free);
+
+      const GList *l = g_list_first(hist->snapshot);
+      const dt_dev_history_item_t *hitem = l == NULL ? NULL : (dt_dev_history_item_t *)l->data;
+
+      dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t *)hist,
+                     _get_tag(hitem->module), _pop_undo, _history_undo_data_free);
     }
 
     // record current history for next iteration, we duplicate the whole history

@@ -26,6 +26,7 @@ typedef struct dt_undo_item_t
   dt_undo_type_t type;
   dt_undo_data_t *data;
   gboolean is_group;
+  dt_undo_tag_t tag;
   void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data);
   void (*free_data)(gpointer data);
 } dt_undo_item_t;
@@ -54,45 +55,57 @@ static void _free_undo_data(void *p)
 }
 
 static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
-                         gboolean is_group,
+                         gboolean is_group, dt_undo_tag_t tag,
                          void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
                          void (*free_data)(gpointer data))
 {
-  dt_undo_item_t *item = malloc(sizeof(dt_undo_item_t));
+  const GList *top = g_list_first(self->undo_list);
+  const dt_undo_item_t *top_item = top == NULL ? NULL : (dt_undo_item_t *)top->data;
 
-  item->user_data = user_data;
-  item->type      = type;
-  item->data      = data;
-  item->undo      = undo;
-  item->free_data = free_data;
-  item->is_group  = is_group;
+  if (tag == 0 || !top_item || top_item->tag != tag)
+  {
+    dt_undo_item_t *item = malloc(sizeof(dt_undo_item_t));
 
-  dt_pthread_mutex_lock(&self->mutex);
-  self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
+    item->user_data = user_data;
+    item->type      = type;
+    item->data      = data;
+    item->undo      = undo;
+    item->free_data = free_data;
+    item->is_group  = is_group;
+    item->tag       = tag;
 
-  // recording an undo data invalidate all the redo
-  g_list_free_full(self->redo_list, _free_undo_data);
-  self->redo_list = NULL;
-  dt_pthread_mutex_unlock(&self->mutex);
+    dt_pthread_mutex_lock(&self->mutex);
+    self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
+
+    // recording an undo data invalidate all the redo
+    g_list_free_full(self->redo_list, _free_undo_data);
+    self->redo_list = NULL;
+    dt_pthread_mutex_unlock(&self->mutex);
+  }
+  else
+  {
+    // free the undo data as not used
+    free_data(data);
+  }
 }
 
 void dt_undo_start_group(dt_undo_t *self, dt_undo_type_t type)
 {
   self->group = type;
-  _undo_record(self, NULL, type, NULL, TRUE, NULL, NULL);
+  _undo_record(self, NULL, type, NULL, TRUE, 0, NULL, NULL);
 }
 
 void dt_undo_end_group(dt_undo_t *self)
 {
-  _undo_record(self, NULL, self->group, NULL, TRUE, NULL, NULL);
+  _undo_record(self, NULL, self->group, NULL, TRUE, 0, NULL, NULL);
   self->group = 0;
 }
 
-void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
+void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_tag_t tag,
                     void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
                     void (*free_data)(gpointer data))
 {
-  _undo_record(self, user_data, type, data, FALSE, undo, free_data);
+  _undo_record(self, user_data, type, data, FALSE, tag, undo, free_data);
 }
 
 void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
