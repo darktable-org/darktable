@@ -103,6 +103,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->record_undo = TRUE;
   d->prev.snapshot = NULL;
+  d->prev.end = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_name(self->widget, "history-ui");
