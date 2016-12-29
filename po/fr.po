@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-11-28 09:01+0100\n"
-"PO-Revision-Date: 2016-12-01 19:03+0100\n"
+"PO-Revision-Date: 2016-12-28 20:22+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -843,7 +843,7 @@ msgstr "graphisme;photographie;raw;"
 #: ../src/libs/styles.c:209 ../src/libs/styles.c:229 ../src/libs/tagging.c:355
 #: ../src/libs/tagging.c:392
 msgid "_cancel"
-msgstr "annuler"
+msgstr "_annuler"
 
 #: ../src/chart/main.c:461 ../src/gui/preferences.c:1046
 #: ../src/gui/styles_dialog.c:284 ../src/libs/styles.c:210
@@ -1401,7 +1401,7 @@ msgstr "versions modifiées de fichier xmp trouvées"
 
 #: ../src/control/crawler.c:362
 msgid "_close"
-msgstr "fermer"
+msgstr "_fermer"
 
 #: ../src/control/crawler.c:378 ../src/libs/select.c:100
 msgid "select all"
@@ -3051,12 +3051,12 @@ msgstr "tout"
 
 #: ../src/gui/hist_dialog.c:138
 msgid "select _none"
-msgstr "aucune"
+msgstr "aucu_ne"
 
 #: ../src/gui/hist_dialog.c:138 ../src/gui/preferences.c:1225
 #: ../src/gui/presets.c:381 ../src/libs/lib.c:215
 msgid "_ok"
-msgstr "ok"
+msgstr "_ok"
 
 #: ../src/gui/hist_dialog.c:160 ../src/gui/styles_dialog.c:333
 #: ../src/gui/styles_dialog.c:342
