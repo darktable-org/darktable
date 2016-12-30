@@ -111,6 +111,7 @@ void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt
 void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
 {
   dt_pthread_mutex_lock(&self->mutex);
+
   GList *l = g_list_first(self->redo_list);
   gboolean is_group = FALSE;
   int count=1;
@@ -151,11 +152,10 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
 void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 {
   dt_pthread_mutex_lock(&self->mutex);
-  GList *l = g_list_first(self->undo_list);
-  gboolean is_group = FALSE;
-  int count = 1;
 
-  // check for first item that is matching the given pattern
+  GList *l = g_list_first(self->undo_list);
+
+  // the first matching item (current state) is moved into the redo list
 
   while(l)
   {
@@ -164,20 +164,57 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 
     if(item->type & filter)
     {
+      self->undo_list = g_list_remove(self->undo_list, item);
+      self->redo_list = g_list_prepend(self->redo_list, item);
+
+      //  check if we are starting a group
+
+      if (item->is_group)
+      {
+        l = next;
+
+        // move whole goup into the redo list
+        while (l)
+        {
+          dt_undo_item_t *g_item = (dt_undo_item_t *)l->data;
+          GList *g_next = g_list_next(l);
+
+          self->undo_list = g_list_remove(self->undo_list, g_item);
+          self->redo_list = g_list_prepend(self->redo_list, g_item);
+
+          if (g_item->is_group)
+            break;
+
+          l = g_next;
+        }
+      }
+      break;
+    }
+    l = next;
+  }
+
+  // check for first item that is matching the given pattern, call undo
+
+  l = g_list_first(self->undo_list);
+  gboolean is_group = FALSE;
+  int count = 1;
+
+  while(l)
+  {
+    dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    GList *next = g_list_next(l);
+
+    // the second matching item (new state) is sent to callback
+
+    if(item->type & filter)
+    {
       //  check if the first item is a starting group
       if (item->is_group && count==1)
         is_group = TRUE;
 
-      //  first remove element from _undo_list
-      self->undo_list = g_list_remove(self->undo_list, item);
-
       //  callback with undo data (except for group tag)
       if (!item->is_group)
         item->undo(item->user_data, item->type, item->data);
-
-      //  add element into the redo list as filed with our previous position (before undo)
-
-      self->redo_list = g_list_prepend(self->redo_list, item);
 
       // exit if we are not in a group, or if we reached the end of the group
       if (!is_group || (item->is_group && count>1))

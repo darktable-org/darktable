@@ -1092,16 +1092,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
   if(type == DT_UNDO_GEOTAG)
   {
     dt_undo_geotag_t *geotag = (dt_undo_geotag_t *)data;
-    float longitude, latitude, elevation;
-
-    _get_image_location(self, geotag->imgid, &longitude, &latitude, &elevation);
     _set_image_location(self, geotag->imgid, geotag->longitude, geotag->latitude, geotag->elevation, TRUE, FALSE);
-
-    // give back out previous location
-    geotag->longitude = longitude;
-    geotag->latitude = latitude;
-    geotag->elevation = elevation;
-
     g_signal_emit_by_name(lib->map, "changed");
   }
 }
@@ -1127,16 +1118,34 @@ static void _get_image_location(dt_view_t *self, int imgid, float *longitude, fl
   dt_image_cache_read_release(darktable.image_cache, img);
 }
 
+static void _check_imgid(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item)
+{
+  dt_undo_geotag_t *geotag = (dt_undo_geotag_t *)item;
+  int *state = (int *)user_data;
+  if (geotag->imgid == state[0])
+    state[1] = 1;
+}
+
+static gboolean _in_undo(int imgid)
+{
+  int state[2];
+  state[0] = imgid;
+  state[1] = 0;
+  dt_undo_iterate(darktable.undo, DT_UNDO_GEOTAG, &state, FALSE, _check_imgid);
+  return state[1];
+}
+
 static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, float elevation,
                                 gboolean set_elevation, gboolean record_undo)
 {
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
-  if(record_undo) _push_position(self, imgid, img->longitude, img->latitude, img->elevation);
-
   img->longitude = longitude;
   img->latitude = latitude;
   if(set_elevation) img->elevation = elevation;
+
+  if(record_undo) _push_position(self, imgid, img->longitude, img->latitude, img->elevation);
+
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
@@ -1154,6 +1163,14 @@ static void _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint 
   _set_image_location(self, imgid, longitude, latitude, 0.0, FALSE, TRUE);
 }
 
+static void _view_map_record_current_location(dt_view_t *self, int imgid)
+{
+  float longitude, latitude, elevation;
+  _get_image_location(self, imgid, &longitude, &latitude, &elevation);
+  if (!_in_undo(imgid))
+    _push_position(self, imgid, longitude, latitude, elevation);
+}
+
 static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
                                    GtkSelectionData *selection_data, guint target_type, guint time,
                                    gpointer data)
@@ -1169,12 +1186,29 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
     int *imgid = (int *)gtk_selection_data_get_data(selection_data);
     if(*imgid > 0)
     {
+      _view_map_record_current_location(self, *imgid);
       _view_map_add_image_to_map(self, *imgid, x, y);
       success = TRUE;
     }
     else if(*imgid == -1) // everything which is selected
     {
       sqlite3_stmt *stmt;
+
+      // record initial image position for images not yet in the undo list
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT imgid FROM main.selected_images",
+                                  -1, &stmt, NULL);
+
+      // create an undo group for current image position
+
+      dt_undo_start_group(darktable.undo, DT_UNDO_GEOTAG);
+
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+        _view_map_record_current_location(self, sqlite3_column_int(stmt, 0));
+
+      dt_undo_end_group(darktable.undo);
+
+
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT imgid FROM main.selected_images",
                                   -1, &stmt, NULL);
 
