@@ -395,7 +395,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   piece->request_histogram |= (DT_REQUEST_ONLY_IN_GUI);
 
-  piece->histogram_params.bins_count = 64;
+  piece->histogram_params.bins_count = 256;
 
   if(p->mode == LEVELS_MODE_AUTOMATIC)
   {
