@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.0\n"
 "POT-Creation-Date: 2016-12-15 21:42+0100\n"
-"PO-Revision-Date: 2016-12-15 22:10+0100\n"
+"PO-Revision-Date: 2016-12-21 14:29+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
@@ -14826,7 +14826,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12995(title)
 msgid "shear"
-msgstr "cesoia"
+msgstr "sforzo di taglio"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12996(para)
 msgid ""
@@ -14909,7 +14909,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13048(title)
 msgid "aspect adjust"
-msgstr "regolazione dell'aspetto"
+msgstr "regolazione aspetto"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13049(para)
 msgid ""
@@ -14953,7 +14953,7 @@ msgstr ""
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13073(title)
 msgid "get structure"
-msgstr "analizza struttura"
+msgstr "ottieni struttura"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13074(para)
 msgid ""

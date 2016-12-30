@@ -1331,6 +1331,10 @@ static gboolean _synchronize_tags(dt_database_t *db)
 static gboolean _lock_single_database(const char *dbfilename, char **lockfile)
 {
   gboolean lock_acquired;
+  char *error_message;
+
+start:
+  error_message = NULL;
 
 #ifdef __WIN32__
 
@@ -1388,17 +1392,20 @@ lock_again:
               stderr,
               "[init] the database lock file contains a pid that seems to be alive in your system: %d\n",
               other_pid);
+            error_message = g_strdup_printf(_("the database lock file contains a pid that seems to be alive in your system: %d"), other_pid);
           }
         }
         else
         {
           fprintf(stderr, "[init] the database lock file seems to be empty\n");
+          error_message = g_strdup_printf(_("the database lock file seems to be empty"));
         }
         close(fd);
       }
       else
       {
         fprintf(stderr, "[init] error opening the database lock file for reading\n");
+        error_message = g_strdup_printf(_("error opening the database lock file for reading"));
       }
     }
   }
@@ -1406,6 +1413,31 @@ lock_again:
   g_free(pid);
 
 #endif
+
+  if(!lock_acquired)
+  {
+    char *label_text = g_markup_printf_escaped(_("an error has occured while trying to open the database from\n"
+                                                 "\n"
+                                                 "<span style=\"italic\">%s</span>\n"
+                                                 "\n"
+                                                 "%s\n"),
+                                               dbfilename, error_message ? error_message : "");
+
+    gboolean shall_we_try_again =
+        dt_gui_show_standalone_yes_no_dialog(_("darktable - error locking database"), label_text,
+                                             _("close darktable"), _("try again"));
+
+    g_free(label_text);
+
+    if(shall_we_try_again)
+    {
+      g_free(error_message);
+      error_message = NULL;
+      goto start;
+    }
+  }
+
+  g_free(error_message);
 
   return lock_acquired;
 }

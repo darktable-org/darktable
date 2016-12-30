@@ -710,6 +710,9 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // release pixel pipe mutices
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
+
+  // update hint message
+  dt_collection_hint_message(darktable.collection);
 }
 
 static void film_strip_activated(const int imgid, void *data)
@@ -1904,6 +1907,9 @@ void enter(dt_view_t *self)
   dt_view_filmstrip_prefetch();
 
   dt_collection_hint_message(darktable.collection);
+
+  // clean the undo list
+  dt_undo_clear(darktable.undo, DT_UNDO_HISTORY);
 }
 
 void leave(dt_view_t *self)
