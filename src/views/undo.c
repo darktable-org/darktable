@@ -75,6 +75,7 @@ void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt
 void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
 {
   dt_pthread_mutex_lock(&self->mutex);
+
   GList *l = g_list_first(self->redo_list);
 
   // check for first item that is matching the given pattern
@@ -102,24 +103,40 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
 void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 {
   dt_pthread_mutex_lock(&self->mutex);
+
   GList *l = g_list_first(self->undo_list);
 
-  // check for first item that is matching the given pattern
+  // the first matching item (current state) is moved into the redo list
 
   while(l)
   {
     dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    GList *next = g_list_next(l);
+
     if(item->type & filter)
     {
-      //  first remove element from _undo_list
       self->undo_list = g_list_remove(self->undo_list, item);
+      self->redo_list = g_list_prepend(self->redo_list, item);
+      break;
+    }
+    l = next;
+  }
 
+  // check for first item that is matching the given pattern, call undo
+
+  l = g_list_first(self->undo_list);
+
+  while(l)
+  {
+    dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+
+    // the second matching item (new state) is sent to callback
+
+    if(item->type & filter)
+    {
       //  callback with undo data
       item->undo(item->user_data, item->type, item->data);
 
-      //  add element into the redo list as filed with our previous position (before undo)
-
-      self->redo_list = g_list_prepend(self->redo_list, item);
       break;
     }
     l = g_list_next(l);
