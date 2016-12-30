@@ -723,7 +723,7 @@ static void film_strip_activated(const int imgid, void *data)
   const dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // clean the undo list
-  dt_undo_clear(darktable.undo, DT_UNDO_HISTORY);
+  dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
   dt_dev_change_image(dev, imgid);
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
   // record the imgid to display when going back to lighttable
@@ -1802,7 +1802,7 @@ void gui_init(dt_view_t *self)
 void enter(dt_view_t *self)
 {
   // clean the undo list
-  dt_undo_clear(darktable.undo, DT_UNDO_HISTORY);
+  dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
 
   /* connect to ui pipe finished signal for redraw */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
@@ -2426,14 +2426,14 @@ void init_key_accels(dt_view_t *self)
 static gboolean _darkroom_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                         GdkModifierType modifier, gpointer data)
 {
-  dt_undo_do_undo(darktable.undo, DT_UNDO_HISTORY);
+  dt_undo_do_undo(darktable.undo, DT_UNDO_DEVELOP);
   return TRUE;
 }
 
 static gboolean _darkroom_redo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                         GdkModifierType modifier, gpointer data)
 {
-  dt_undo_do_redo(darktable.undo, DT_UNDO_HISTORY);
+  dt_undo_do_redo(darktable.undo, DT_UNDO_DEVELOP);
   return TRUE;
 }
 
