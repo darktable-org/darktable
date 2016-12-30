@@ -1231,7 +1231,7 @@ void dt_collection_hint_message(const dt_collection_t *collection)
 
   if(cs == 1)
   {
-    message = g_strdup_printf("%d image of %d (#%d) in current collection is selected", cs, c, selected);
+    message = g_strdup_printf(_("%d image of %d (#%d) in current collection is selected"), cs, c, selected);
   }
   else
   {
