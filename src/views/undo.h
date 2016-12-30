@@ -27,7 +27,9 @@ typedef enum dt_undo_type_t
 {
   DT_UNDO_GEOTAG = 1 << 0,
   DT_UNDO_HISTORY = 1 << 1,
-  DT_UNDO_ALL = DT_UNDO_GEOTAG | DT_UNDO_HISTORY
+  DT_UNDO_MASK = 1 << 2,
+  DT_UNDO_DEVELOP = DT_UNDO_HISTORY | DT_UNDO_MASK,
+  DT_UNDO_ALL = DT_UNDO_GEOTAG | DT_UNDO_HISTORY | DT_UNDO_MASK
 } dt_undo_type_t;
 
 typedef void *dt_undo_data_t;

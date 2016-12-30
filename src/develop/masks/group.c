@@ -230,6 +230,7 @@ static void dt_group_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   {
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
+    if (!sel) return;
     if(sel->type & DT_MASKS_CIRCLE)
       dt_circle_events_post_expose(cr, zoom_scale, gui, pos);
     else if(sel->type & DT_MASKS_PATH)
