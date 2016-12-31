@@ -27,7 +27,7 @@
 
 namespace RawSpeed {
 
-void ThrowFIE(const char* fmt, ...) __attribute__ ((format (printf, 1, 2)));
+void ThrowFIE(const char* fmt, ...) __attribute__ ((format (gnu_printf, 1, 2)));
 
 class FileIOException: public RawDecoderException
 {
