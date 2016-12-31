@@ -1045,8 +1045,8 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const flo
       int num = 0;
       float col = 0;
 
-      for(int yy = miny; yy < maxy; ++yy)
-        for(int xx = minx; xx < maxx; ++xx)
+      for(int yy = miny; yy <= maxy; ++yy)
+        for(int xx = minx; xx <= maxx; ++xx)
           if(FCxtrans(yy, xx, roi_in, xtrans) == c)
           {
             col += in[xx + in_stride * yy];
