@@ -979,14 +979,8 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
                                                    const int32_t in_stride, const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
-  // we assume that are downscaling the image by at least 1/3, such
-  // that for each color in the mosaiced output image, there will be
-  // at least one pixel of the same color to interpolate from in the
-  // mosaiced input image
-  assert((px_footprint / 3.f) >= 1.f);
-  // a straight downscale results in colored fringes at edges, hence
-  // blur slightly
-  const float px_antialias = px_footprint * 2.f/3.f;
+  // 9x9 box filter to anti-alias
+  const int kern_width = 4;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -996,27 +990,27 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
     uint16_t *outc = out + out_stride * y;
 
     const float fy = (y + roi_out->y) * px_footprint;
-    const int py = MAX(0, (int)roundf(fy - px_antialias));
-    const int maxy = MIN(roi_in->height, (int)roundf(fy + px_footprint + px_antialias));
+    const int miny = MAX(0, (int)roundf(fy) - kern_width);
+    const int maxy = MIN(roi_in->height-1, (int)roundf(fy) + kern_width);
 
     float fx = roi_out->x * px_footprint;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      const int px = MAX(0, (int)roundf(fx - px_antialias));
-      const int maxx = MIN(roi_in->width, (int)roundf(fx + px_footprint + px_antialias));
+      const int minx = MAX(0, (int)roundf(fx) - kern_width);
+      const int maxx = MIN(roi_in->width-1, (int)roundf(fx) + kern_width);
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
       int num = 0;
       uint32_t col = 0;
 
-      for(int yy = py; yy < maxy; ++yy)
-        for(int xx = px; xx < maxx; ++xx)
+      // FIXME: could speed up with ring buffer or lookup of offsets/weight per CFA position
+      for(int yy = miny; yy <= maxy; ++yy)
+        for(int xx = minx; xx <= maxx; ++xx)
           if(FCxtrans(yy, xx, roi_in, xtrans) == c)
           {
             col += in[xx + in_stride * yy];
             num++;
           }
-      assert(num > 0);
       *outc = col / num;
     }
   }
@@ -1028,8 +1022,7 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const flo
                                                      const int32_t in_stride, const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
-  assert((px_footprint / 3.f) >= 1.f);
-  const float px_antialias = px_footprint * 2.f/3.f;
+  const int kern_width = 4;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -1039,27 +1032,26 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const flo
     float *outc = out + out_stride * y;
 
     const float fy = (y + roi_out->y) * px_footprint;
-    const int py = MAX(0, (int)roundf(fy - px_antialias));
-    const int maxy = MIN(roi_in->height, (int)roundf(fy + px_footprint + px_antialias));
+    const int miny = MAX(0, (int)roundf(fy) - kern_width);
+    const int maxy = MIN(roi_in->height-1, (int)roundf(fy) + kern_width);
 
     float fx = roi_out->x * px_footprint;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      const int px = MAX(0, (int)roundf(fx - px_antialias));
-      const int maxx = MIN(roi_in->width, (int)roundf(fx + px_footprint + px_antialias));
+      const int minx = MAX(0, (int)roundf(fx) - kern_width);
+      const int maxx = MIN(roi_in->width-1, (int)roundf(fx) + kern_width);
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
       int num = 0;
       float col = 0;
 
-      for(int yy = py; yy < maxy; ++yy)
-        for(int xx = px; xx < maxx; ++xx)
+      for(int yy = miny; yy < maxy; ++yy)
+        for(int xx = minx; xx < maxx; ++xx)
           if(FCxtrans(yy, xx, roi_in, xtrans) == c)
           {
             col += in[xx + in_stride * yy];
             num++;
           }
-      assert(num > 0);
       *outc = col / (float)num;
     }
   }
