@@ -6,7 +6,7 @@ set_target_properties(darktable-generate-cache PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(darktable-generate-cache lib_darktable)
 
 if (WIN32)
-  _detach_debuginfo (darktable-generate-cache)
+  _detach_debuginfo (darktable-generate-cache bin)
 endif(WIN32)
 
-install(TARGETS darktable-generate-cache DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS darktable-generate-cache DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)
