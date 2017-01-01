@@ -217,7 +217,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
       piece->enabled = module->enabled;
       piece->request_histogram = DT_REQUEST_ONLY_IN_GUI;
       piece->histogram_params.roi = NULL;
-      piece->histogram_params.bins_count = 64;
+      piece->histogram_params.bins_count = 256;
       piece->histogram_stats.bins_count = 0;
       piece->histogram_stats.pixels = 0;
       piece->colors
