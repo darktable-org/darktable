@@ -1,4 +1,4 @@
-To buidl darktable for Windows operating system you have two basic option:
+To build darktable for Windows operating system you have two basic option:
 A) Native compile using MSYS
 B) Cross compile on Linux
 
@@ -74,7 +74,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     export MAGICK_CONFIGURE_PATH="$PREFIX/etc/ImageMagick-7"
     export MAGICK_CODER_MODULE_PATH="$PREFIX/lib/ImageMagick-7.0.3/modules-Q16HDRI/coders"
 
-    execute the following command to actviate  profile changes 
+    execute the following command to actviate profile changes
     $ . .bash_profile
 
     Clone darktable git repository (in this example into ~/darktable):
@@ -115,10 +115,9 @@ ISSUES - FIXED
     * Added FLICKCURL
     * Got rid of all warnings
     * Switching UI language based on default locale
+    * Added modifications for crash reporting using DrMingW
 
 TODO LIST
-    Port lua select() in function read_cb: https://msdn.microsoft.com/en-us/library/aa363858(VS.85).aspx ?
-    FInd a way to replace COLORD
     Find a way to replace it CUPS
     lensfun database should be deployed to Appdata/local/lensfun (no version_1 subfolder), alternatively under darktable/share at install
     OpenCL64.dll or OpenCL.dll?

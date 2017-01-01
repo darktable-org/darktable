@@ -12,5 +12,6 @@ foreach(language ${LANGUAGES})
     add_custom_target(locale_${language} ALL DEPENDS ${mofile})  # Make sure the mofiles are always built
     install(FILES ${mofile}
             DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${language}/LC_MESSAGES
-            RENAME ${CMAKE_PROJECT_NAME}.mo)
+            RENAME ${CMAKE_PROJECT_NAME}.mo
+            COMPONENT DTDocuments)
 endforeach(language)

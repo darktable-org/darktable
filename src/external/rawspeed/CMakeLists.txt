@@ -21,7 +21,7 @@ if(USE_XMLLINT)
 	)
 endif(USE_XMLLINT)
 
-install(FILES data/cameras.xml data/showcameras.xsl DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/rawspeed)
+install(FILES data/cameras.xml data/showcameras.xsl DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/rawspeed COMPONENT DTApplication)
 
 FILE(GLOB RAWSPEED_SOURCES
         "RawSpeed/AriDecoder.cpp"
@@ -141,5 +141,9 @@ if (BUILD_RS_IDENTIFY)
 
   target_link_libraries(darktable-rs-identify rawspeed_static)
 
-  install(TARGETS darktable-rs-identify DESTINATION ${CMAKE_INSTALL_BINDIR})
+  if (WIN32)
+    _detach_debuginfo (darktable-rs-identify bin)
+  endif(WIN32)
+
+  install(TARGETS darktable-rs-identify DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)
 endif()

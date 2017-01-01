@@ -6,7 +6,7 @@ set_target_properties(darktable-cltest PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(darktable-cltest lib_darktable)
 
 if (WIN32)
-  _detach_debuginfo (darktable-cltest)
+  _detach_debuginfo (darktable-cltest bin)
 endif(WIN32)
 
-install(TARGETS darktable-cltest DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS darktable-cltest DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)

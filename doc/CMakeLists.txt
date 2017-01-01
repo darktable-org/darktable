@@ -2,7 +2,7 @@
 # Install Doc files
 #
 set(DOC_FILES README ../AUTHORS TRANSLATORS ../LICENSE)
-install(FILES ${DOC_FILES} DESTINATION ${CMAKE_INSTALL_DOCDIR})
+install(FILES ${DOC_FILES} DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT DTDocuments)
 
 # create config docs
 if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
@@ -28,7 +28,7 @@ if(USE_XMLLINT)
   add_dependencies(darktablerc.html_file validate_darktableconfig_xml)
 endif(USE_XMLLINT)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.html DESTINATION ${CMAKE_INSTALL_DOCDIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.html DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT DTDocuments)
 
 # we remove the usermanual from the release tarball as it adds an extra 77 MB which people don't need in general
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/usermanual)
