@@ -39,7 +39,7 @@ endif(COLORD_FOUND AND NOT ${COLORD_VERSION} VERSION_LESS "0.1.32")
 set_target_properties(darktable-cmstest PROPERTIES LINKER_LANGUAGE C)
 
 if (WIN32)
-  _detach_debuginfo (darktable-cmstest)
+  _detach_debuginfo (darktable-cmstest bin)
 endif(WIN32)
 
-install(TARGETS darktable-cmstest DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS darktable-cmstest DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)

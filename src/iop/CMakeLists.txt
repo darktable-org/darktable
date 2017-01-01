@@ -35,7 +35,12 @@ macro (add_iop _lib _src)
 
   add_library(${_lib} MODULE ${_output} ${OPT_SRC})
   target_link_libraries(${_lib} lib_darktable)
-  install(TARGETS  ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins)
+
+  if (WIN32)
+    _detach_debuginfo (${_lib} ${CMAKE_INSTALL_LIBDIR}/darktable/plugins)
+  endif(WIN32)
+
+  install(TARGETS  ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins COMPONENT DTApplication)
 
   list(APPEND _iop_list ${_lib})
 
