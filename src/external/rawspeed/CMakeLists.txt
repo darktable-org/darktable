@@ -140,6 +140,7 @@ if (BUILD_RS_IDENTIFY)
       LINKER_LANGUAGE CXX)
 
   target_link_libraries(darktable-rs-identify rawspeed_static)
+  target_link_libraries(darktable-rs-identify ${CMAKE_THREAD_LIBS_INIT})
 
   if (WIN32)
     _detach_debuginfo (darktable-rs-identify bin)
