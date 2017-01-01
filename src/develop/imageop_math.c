@@ -979,12 +979,9 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
                                                    const int32_t in_stride, const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
-  // Use box filter to anti-alias, each side (kern_width*2)+1,
-  // centered on current sample with edges rounded to nearest input
-  // pixel. This seems to be the smallest filter which produces smooth
-  // output in most cases.
-  const float kern_width = 3.5f;
-
+  // Use box filter of width px_footprint*2+1 centered on the current
+  // sample (rounded to nearest input pixel) to anti-alias. Higher MP
+  // images need larger filters to avoid artifacts.
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
@@ -993,14 +990,14 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
     uint16_t *outc = out + out_stride * y;
 
     const float fy = (y + roi_out->y) * px_footprint;
-    const int miny = MAX(0, (int)roundf(fy - kern_width));
-    const int maxy = MIN(roi_in->height-1, (int)roundf(fy + kern_width));
+    const int miny = MAX(0, (int)roundf(fy - px_footprint));
+    const int maxy = MIN(roi_in->height-1, (int)roundf(fy + px_footprint));
 
     float fx = roi_out->x * px_footprint;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      const int minx = MAX(0, (int)roundf(fx - kern_width));
-      const int maxx = MIN(roi_in->width-1, (int)roundf(fx + kern_width));
+      const int minx = MAX(0, (int)roundf(fx - px_footprint));
+      const int maxx = MIN(roi_in->width-1, (int)roundf(fx + px_footprint));
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
       int num = 0;
@@ -1024,8 +1021,6 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const flo
                                                      const int32_t in_stride, const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
-  const float kern_width = 3.5f;
-
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
@@ -1034,14 +1029,14 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const flo
     float *outc = out + out_stride * y;
 
     const float fy = (y + roi_out->y) * px_footprint;
-    const int miny = MAX(0, (int)roundf(fy - kern_width));
-    const int maxy = MIN(roi_in->height-1, (int)roundf(fy + kern_width));
+    const int miny = MAX(0, (int)roundf(fy - px_footprint));
+    const int maxy = MIN(roi_in->height-1, (int)roundf(fy + px_footprint));
 
     float fx = roi_out->x * px_footprint;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      const int minx = MAX(0, (int)roundf(fx - kern_width));
-      const int maxx = MIN(roi_in->width-1, (int)roundf(fx + kern_width));
+      const int minx = MAX(0, (int)roundf(fx - px_footprint));
+      const int maxx = MIN(roi_in->width-1, (int)roundf(fx + px_footprint));
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
       int num = 0;
