@@ -976,11 +976,14 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *cons
 void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const uint16_t *const in,
                                                    const dt_iop_roi_t *const roi_out,
                                                    const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                                   const int32_t in_stride, const uint8_t (*const xtrans)[6],
-                                                   const uint16_t whitelevel)
+                                                   const int32_t in_stride, const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
-  const int samples = round(px_footprint / 3);
+  // we assume that are downscaling the image by at least 1/3, such
+  // that for each color in the mosaiced output image, there will be
+  // at least one pixel of the same color to interpolate from in the
+  // mosaiced input image
+  assert((px_footprint / 3.f) >= 1.f);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -989,45 +992,34 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
   {
     uint16_t *outc = out + out_stride * y;
 
-    int py = floorf((y + roi_out->y) * px_footprint);
-    py = MIN(roi_in->height - 4, py);
-    int maxj = MIN(roi_in->height - 3, py + 3 * samples);
+    const float fy = (y + roi_out->y) * px_footprint;
+    const int py = roundf(fy);
+    const int maxy = roundf(fy + px_footprint);
+    assert(maxy <= roi_in->height);
 
     float fx = roi_out->x * px_footprint;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      int px = floorf(fx);
-      px = MIN(roi_in->width - 4, px);
-      int maxi = MIN(roi_in->width - 3, px + 3 * samples);
-
-      uint16_t pc = 0;
-      for(int ii = 0; ii < 3; ++ii)
-        for(int jj = 0; jj < 3; ++jj) pc = MAX(pc, in[px + ii + in_stride * (py + jj)]);
-
-      uint8_t num[3] = { 0 };
-      uint32_t sum[3] = { 0 };
-
-      for(int j = py; j <= maxj; j += 3)
-        for(int i = px; i <= maxi; i += 3)
-        {
-          uint16_t lcl_max = 0;
-          for(int ii = 0; ii < 3; ++ii)
-            for(int jj = 0; jj < 3; ++jj) lcl_max = MAX(lcl_max, in[i + ii + in_stride * (j + jj)]);
-
-          if(!((pc >= whitelevel) ^ (lcl_max >= whitelevel)))
-          {
-            for(int ii = 0; ii < 3; ++ii)
-              for(int jj = 0; jj < 3; ++jj)
-              {
-                const uint8_t c = FCxtrans(j + jj, i + ii, roi_in, xtrans);
-                sum[c] += in[i + ii + in_stride * (j + jj)];
-                num[c]++;
-              }
-          }
-        }
+      const int px = roundf(fx);
+      const int maxx = roundf(fx + px_footprint);
+      assert(maxx <= roi_in->width);
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
-      *outc = (uint16_t)((float)(sum[c]) / (float)(num[c]));
+      int num = 0;
+      uint32_t col = 0;
+
+      for(int yy = py; yy < maxy; ++yy)
+        for(int xx = px; xx < maxx; ++xx)
+        {
+          if(FCxtrans(yy, xx, roi_in, xtrans) != c) continue;
+
+          col += in[xx + in_stride * yy];
+          num++;
+        }
+
+      assert(num > 0);
+
+      *outc = (uint16_t)((float)col / (float)num);
     }
   }
 }
@@ -1042,7 +1034,7 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const flo
 
   // A slightly different algorithm than
   // dt_iop_clip_and_zoom_demosaic_half_size_f() which aligns to 2x2
-  // Bayer grid and hence most pull additional data from all edges
+  // Bayer grid and hence must pull additional data from all edges
   // which don't align with CFA. Instead align to a 3x3 pattern (which
   // is semi-regular in X-Trans CFA). If instead had aligned the
   // samples to the full 6x6 X-Trans CFA, wouldn't need to perform a

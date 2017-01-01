@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <string.h>
+
 // FIXME: in the future, we may want to also take DRIVER_VERSION into account
 static const char *bad_opencl_drivers[] = {
   // clang-format off
@@ -35,7 +37,8 @@ int dt_opencl_check_driver_blacklist(const char *device_version)
 {
   for(int i = 0; bad_opencl_drivers[i]; i++)
   {
-    if(0 != strcasecmp(device_version, bad_opencl_drivers[i])) continue;
+    // FIXME: cAsE?
+    if(!strstr(device_version, bad_opencl_drivers[i])) continue;
 
     // oops, found in black list
     return 1;
