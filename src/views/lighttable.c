@@ -739,8 +739,10 @@ end_query_cache:
           // this single image.
           dt_selection_select_single(darktable.selection, id);
         }
-        missing += dt_view_image_expose(&(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx,
-                             img_pointery, FALSE, FALSE);
+        missing += dt_view_image_expose(
+            &(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir,
+            pi == col && pj == row ? img_pointerx : -1,
+            pi == col && pj == row ? img_pointery : -1, FALSE, FALSE);
 
         cairo_restore(cr);
       }
