@@ -82,8 +82,8 @@ curves, or submit them for final inclusion by the darktable developers
 ### Applying the curves
 
 
-The following command will inject the computed curves in your library database.
-It is a highly recommended to first back it up (`$HOME/.config/darktable/library.db`)
+The following command will inject the computed curves in your database.
+It is a highly recommended to first back it up (`$HOME/.config/darktable/data.db`)
 
     $ sh ./mycameracurves.sh
 
@@ -188,9 +188,9 @@ gathered during step 1. See option _-n_. The tool does not accept more than
 
 Feeling adventurous ? Ready to try your curves ?
 
-First backup your dt library:
+First backup your darktable database:
 
-    $ cp "$HOME/.config/darktable/library.db" "$HOME/.config/darktable/library.db.bck"
+    $ cp "$HOME/.config/darktable/data.db" "$HOME/.config/darktable/data.db.bck"
 
 Then go on, import the curves:
 
