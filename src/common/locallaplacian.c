@@ -91,7 +91,6 @@ static inline void ll_fill_boundary1(
   memcpy(input+wd*(ht-1), input+wd*(ht-2), sizeof(float)*wd);
 }
 
-// XXX i believe this blurs in wrong values! the buffer padding needs to be fixed instead!
 // helper to fill in two pixels boundary by copying it
 static inline void ll_fill_boundary2(
     float *const input,
@@ -130,8 +129,7 @@ static inline void gauss_reduce(
   // blur, store only coarse res
   const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
-#if 0
-  // TODO: this is the new hotspot after simd-fying the curve processing (14% this vs 7% curve)
+#if 0 // this is the scalar (non-simd) code:
   const float a = 0.4f;
   const float w[5] = {1./4.-a/2., 1./4., a, 1./4., 1./4.-a/2.};
   memset(coarse, 0, sizeof(float)*cw*ch);
@@ -486,14 +484,14 @@ void local_laplacian(
   for(int k=0;k<num_gamma;k++) gamma[k] = (k+.5f)/(float)num_gamma;
   // for(int k=0;k<num_gamma;k++) gamma[k] = k/(num_gamma-1.0f);
 
-  // XXX FIXME: don't need to alloc all the memory at once!
-  // XXX FIXME: accumulate into output pyramid one by one?
   // allocate memory for intermediate laplacian pyramids
   float *buf[num_gamma][max_levels] = {{0}};
   for(int k=0;k<num_gamma;k++) for(int l=0;l<num_levels;l++)
     buf[k][l] = dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
-  // XXX TODO: the paper says remapping only level 3 not 0 does the trick, too:
+  // the paper says remapping only level 3 not 0 does the trick, too
+  // (but i really like the additional octave of sharpness we get,
+  // willing to pay the cost).
   for(int k=0;k<num_gamma;k++)
   { // process images
     apply_curve(

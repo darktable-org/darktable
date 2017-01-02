@@ -99,55 +99,10 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
   const int paddwd = width  + 2*max_supp;
   const int paddht = height + 2*max_supp;
 
-#if 0
-  // check if we need to reduce blocksize
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
-
-  // make sure blocksize is not too large
-  int kernel_assemble = g->global->kernel_laplacian_assemble;
-  size_t blocksize = 64;
-  int blockwd;
-  int blockht;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, kernel_assemble, &kernelworkgroupsize)
-        == CL_SUCCESS)
-  {
-    // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize * blocksize > workgroupsize
-          || blocksize * (blocksize + 1) * sizeof(float) > localmemsize)
-    {
-      if(blocksize == 1) break;
-      blocksize >>= 1;
-    }
-
-    blockwd = blockht = blocksize;
-
-    if(blockwd * blockht > kernelworkgroupsize) blockht = kernelworkgroupsize / blockwd;
-  }
-  else
-  {
-    blockwd = blockht = 1; // slow but safe
-  }
-
-  // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
-  const size_t bwidth  = paddwd % blockwd == 0 ? paddwd : (paddwd / blockwd + 1) * blockwd;
-  const size_t bheight = paddht % blockht == 0 ? paddht : (paddht / blockht + 1) * blockht;
-
-  g->blocksize = blocksize;
-  g->blockwd = blockwd;
-  g->blockht = blockht;
-  g->bwidth  = bwidth;
-  g->bheight = bheight;
-#else
   const size_t bwidth = ROUNDUPWD(paddwd);
   const size_t bheight = ROUNDUPWD(paddht);
-#endif
 
   // get intermediate vector buffers with read-write access
-  // TODO: is this rounding really required?
   for(int l=0;l<g->num_levels;l++)
   {
     g->dev_padded[l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(bwidth, l)), ROUNDUPHT(dl(bheight, l)), sizeof(float));
@@ -206,7 +161,6 @@ cl_int dt_local_laplacian_cl(
     if(err != CL_SUCCESS) goto error;
   }
 
-  // XXX TODO: the paper says remapping only level 3 not 0 does the trick, too:
   for(int k=0;k<num_gamma;k++)
   { // process images
     const float g = (k+.5f)/(float)num_gamma;
