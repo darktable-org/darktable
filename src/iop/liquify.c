@@ -3326,8 +3326,8 @@ void gui_init (dt_iop_module_t *module)
 
   dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl-click: add node - right click: remove path\n"
                                                               "ctrl-alt-click: toggle line/curve");
-  dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click : show/hide feathering controls\n"
-                                                              "ctrl-click : autosmooth, cusp, smooth, symmetrical"
+  dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click: show/hide feathering controls\n"
+                                                              "ctrl-click: autosmooth, cusp, smooth, symmetrical"
                                                               " - right click to remove");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT1].hint     = _("drag to change shape of path");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT2].hint     = _("drag to change shape of path");
@@ -3335,7 +3335,7 @@ void gui_init (dt_iop_module_t *module)
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT1].hint = _("drag to adjust hardness (center)");
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT2].hint = _("drag to adjust hardness (feather)");
   dt_liquify_layers[DT_LIQUIFY_LAYER_STRENGTHPOINT].hint  = _("drag to adjust warp strength\n"
-                                                              "ctrl-click : linear, grow, and shrink");
+                                                              "ctrl-click: linear, grow, and shrink");
 }
 
 void gui_cleanup (dt_iop_module_t *module)
