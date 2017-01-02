@@ -113,7 +113,6 @@ gauss_expand(
   write_imagef (fine, (int2)(x, y), pixel);
 }
 
-// TODO: maybe blur_h and blur_v would be faster on GPU? would require even more memory however
 kernel void
 gauss_reduce(
     read_only  image2d_t input,  // fine input buffer
