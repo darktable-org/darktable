@@ -120,7 +120,8 @@ static inline void gauss_expand(
   ll_fill_boundary2(fine, wd, ht);
 }
 
-static inline void gauss_reduce(
+#if defined(__SSE2__)
+static inline void gauss_reduce_sse2(
     const float *const input, // fine input buffer
     float *const coarse,      // coarse scale, blurred input buf
     const int wd,             // fine res
@@ -129,18 +130,6 @@ static inline void gauss_reduce(
   // blur, store only coarse res
   const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
-#if 0 // this is the scalar (non-simd) code:
-  const float a = 0.4f;
-  const float w[5] = {1./4.-a/2., 1./4., a, 1./4., 1./4.-a/2.};
-  memset(coarse, 0, sizeof(float)*cw*ch);
-  // direct 5x5 stencil only on required pixels:
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) collapse(2)
-#endif
-  for(int j=1;j<ch-1;j++) for(int i=1;i<cw-1;i++)
-    for(int jj=-2;jj<=2;jj++) for(int ii=-2;ii<=2;ii++)
-      coarse[j*cw+i] += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
-#else
   // this version is inspired by opencv's pyrDown_ :
   // - allocate 5 rows of ring buffer (aligned)
   // - for coarse res y
@@ -214,7 +203,30 @@ static inline void gauss_reduce(
       out[i] = (6*row2[i] + 4*(row1[i] + row3[i]) + row0[i] + row4[i])*(1.0f/256.0f);
   }
   free(ringbuf);
+  ll_fill_boundary1(coarse, cw, ch);
+}
 #endif
+
+static inline void gauss_reduce(
+    const float *const input, // fine input buffer
+    float *const coarse,      // coarse scale, blurred input buf
+    const int wd,             // fine res
+    const int ht)
+{
+  // blur, store only coarse res
+  const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
+
+  // this is the scalar (non-simd) code:
+  const float a = 0.4f;
+  const float w[5] = {1./4.-a/2., 1./4., a, 1./4., 1./4.-a/2.};
+  memset(coarse, 0, sizeof(float)*cw*ch);
+  // direct 5x5 stencil only on required pixels:
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) collapse(2)
+#endif
+  for(int j=1;j<ch-1;j++) for(int i=1;i<cw-1;i++)
+    for(int jj=-2;jj<=2;jj++) for(int ii=-2;ii<=2;ii++)
+      coarse[j*cw+i] += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
   ll_fill_boundary1(coarse, cw, ch);
 }
 
@@ -304,6 +316,7 @@ static inline float curve_scalar(
   return val;
 }
 
+#if defined(__SSE2__)
 static inline __m128 curve_vec4(
     const __m128 x,
     const __m128 g,
@@ -358,45 +371,8 @@ static inline __m128 curve_vec4(
   return _mm_add_ps(val, vcon);
 }
 
-#if 0
-// scalar version
-void apply_curve(
-    float *const out,
-    const float *const in,
-    const uint32_t w,
-    const uint32_t h,
-    const uint32_t padding,
-    const float g,
-    const float sigma,
-    const float shadows,
-    const float highlights,
-    const float clarity)
-{
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(dynamic)
-#endif
-  for(uint32_t j=padding;j<h-padding;j++)
-  {
-    const float *in2  = in  + j*w + padding;
-    float *out2 = out + j*w + padding;
-    for(uint32_t i=padding;i<w-padding;i++)
-      (*out2++) = curve_scalar(*(in2++), g, sigma, shadows, highlights, clarity);
-    out2 = out + j*w;
-    for(int i=0;i<padding;i++)   out2[i] = out2[padding];
-    for(int i=w-padding;i<w;i++) out2[i] = out2[w-padding-1];
-  }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(dynamic)
-#endif
-  for(int j=0;j<padding;j++) memcpy(out + w*j, out+padding*w, sizeof(float)*w);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(dynamic)
-#endif
-  for(int j=h-padding;j<h;j++) memcpy(out + w*j, out+w*(h-padding-1), sizeof(float)*w);
-}
-#else
 // sse (4-wide)
-void apply_curve(
+void apply_curve_sse2(
     float *const out,
     const float *const in,
     const uint32_t w,
@@ -446,7 +422,43 @@ void apply_curve(
 }
 #endif
 
-void local_laplacian(
+// scalar version
+void apply_curve(
+    float *const out,
+    const float *const in,
+    const uint32_t w,
+    const uint32_t h,
+    const uint32_t padding,
+    const float g,
+    const float sigma,
+    const float shadows,
+    const float highlights,
+    const float clarity)
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(dynamic)
+#endif
+  for(uint32_t j=padding;j<h-padding;j++)
+  {
+    const float *in2  = in  + j*w + padding;
+    float *out2 = out + j*w + padding;
+    for(uint32_t i=padding;i<w-padding;i++)
+      (*out2++) = curve_scalar(*(in2++), g, sigma, shadows, highlights, clarity);
+    out2 = out + j*w;
+    for(int i=0;i<padding;i++)   out2[i] = out2[padding];
+    for(int i=w-padding;i<w;i++) out2[i] = out2[w-padding-1];
+  }
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(dynamic)
+#endif
+  for(int j=0;j<padding;j++) memcpy(out + w*j, out+padding*w, sizeof(float)*w);
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(dynamic)
+#endif
+  for(int j=h-padding;j<h;j++) memcpy(out + w*j, out+w*(h-padding-1), sizeof(float)*w);
+}
+
+void local_laplacian_internal(
     const float *const input,   // input buffer in some Labx or yuvx format
     float *const out,           // output buffer with colour
     const int wd,               // width and
@@ -454,7 +466,8 @@ void local_laplacian(
     const float sigma,          // user param: separate shadows/midtones/highlights
     const float shadows,        // user param: lift shadows
     const float highlights,     // user param: compress highlights
-    const float clarity)        // user param: increase clarity/local contrast
+    const float clarity,        // user param: increase clarity/local contrast
+    const int use_sse2)         // flag whether to use SSE version
 {
 #define max_levels 30
 #define num_gamma 6
@@ -475,9 +488,20 @@ void local_laplacian(
     output[l] = dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
   // create gauss pyramid of padded input, write coarse directly to output
-  for(int l=1;l<num_levels-1;l++)
-    gauss_reduce(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
-  gauss_reduce(padded[num_levels-2], output[num_levels-1], dl(w,num_levels-2), dl(h,num_levels-2));
+#if defined(__SSE2__)
+  if(use_sse2)
+  {
+    for(int l=1;l<num_levels-1;l++)
+      gauss_reduce_sse2(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
+    gauss_reduce_sse2(padded[num_levels-2], output[num_levels-1], dl(w,num_levels-2), dl(h,num_levels-2));
+  }
+  else
+#endif
+  {
+    for(int l=1;l<num_levels-1;l++)
+      gauss_reduce(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
+    gauss_reduce(padded[num_levels-2], output[num_levels-1], dl(w,num_levels-2), dl(h,num_levels-2));
+  }
 
   // evenly sample brightness [0,1]:
   float gamma[num_gamma] = {0.0f};
@@ -494,12 +518,21 @@ void local_laplacian(
   // willing to pay the cost).
   for(int k=0;k<num_gamma;k++)
   { // process images
-    apply_curve(
-        buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);
+#if defined(__SSE2__)
+    if(use_sse2)
+      apply_curve_sse2(buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);
+    else // brackets in next line needed for silly gcc warning:
+#endif
+    {apply_curve(buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);}
 
     // create gaussian pyramids
     for(int l=1;l<num_levels;l++)
-      gauss_reduce(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
+#if defined(__SSE2__)
+      if(use_sse2)
+        gauss_reduce_sse2(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
+      else
+#endif
+        gauss_reduce(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
   }
 
   // assemble output pyramid coarse to fine

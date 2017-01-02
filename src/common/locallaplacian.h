@@ -17,6 +17,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+void local_laplacian_internal(
+    const float *const input,   // input buffer in some Labx or yuvx format
+    float *const out,           // output buffer with colour
+    const int wd,               // width and
+    const int ht,               // height of the input buffer
+    const float sigma,          // user param: separate shadows/midtones/highlights
+    const float shadows,        // user param: lift shadows
+    const float highlights,     // user param: compress highlights
+    const float clarity,        // user param: increase clarity/local contrast
+    const int use_sse2);        // switch on sse optimised version, if available
+
 void local_laplacian(
     const float *const input,   // input buffer in some Labx or yuvx format
     float *const out,           // output buffer with colour
@@ -25,4 +36,22 @@ void local_laplacian(
     const float sigma,          // user param: separate shadows/midtones/highlights
     const float shadows,        // user param: lift shadows
     const float highlights,     // user param: compress highlights
-    const float clarity);       // user param: increase clarity/local contrast
+    const float clarity)        // user param: increase clarity/local contrast
+{
+  local_laplacian_internal(input, out, wd, ht, sigma, shadows, highlights, clarity, 0);
+}
+
+#if defined(__SSE2__)
+void local_laplacian_sse2(
+    const float *const input,   // input buffer in some Labx or yuvx format
+    float *const out,           // output buffer with colour
+    const int wd,               // width and
+    const int ht,               // height of the input buffer
+    const float sigma,          // user param: separate shadows/midtones/highlights
+    const float shadows,        // user param: lift shadows
+    const float highlights,     // user param: compress highlights
+    const float clarity)        // user param: increase clarity/local contrast
+{
+  local_laplacian_internal(input, out, wd, ht, sigma, shadows, highlights, clarity, 1);
+}
+#endif
