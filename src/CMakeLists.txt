@@ -1,3 +1,5 @@
+add_subdirectory(external)
+
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
@@ -551,9 +553,8 @@ if(NOT SOURCE_PACKAGE AND NOT APPLE)
 endif()
 
 # compile rawspeed
-add_subdirectory(external/rawspeed)
 list(APPEND LIB_DEPS rawspeed)
-list(APPEND STATIC_LIBS rawspeed_static)
+list(APPEND STATIC_LIBS rawspeed_static_dt)
 
 # osm gps map library
 if(USE_MAP)
