@@ -3324,7 +3324,8 @@ void gui_init (dt_iop_module_t *module)
 
   gtk_box_pack_start(GTK_BOX(module->widget), hbox, TRUE, TRUE, 0);
 
-  dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl-click to add node\nright click to remove path");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl-click: add node - right click: remove path\n"
+                                                              "ctrl-alt-click: toggle line/curve");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click : show/hide feathering controls\n"
                                                               "ctrl-click : autosmooth, cusp, smooth, symmetrical"
                                                               " - right click to remove");
