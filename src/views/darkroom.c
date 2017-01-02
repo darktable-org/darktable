@@ -590,9 +590,11 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     {
       if(!dt_iop_is_hidden(module))
       {
+        gtk_widget_hide(module->expander);
         gtk_container_remove(
             GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
             module->expander);
+        gtk_widget_destroy(module->widget);
         dt_iop_gui_cleanup_module(module);
       }
 

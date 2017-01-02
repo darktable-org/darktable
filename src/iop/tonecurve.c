@@ -42,7 +42,7 @@
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 #define DT_GUI_CURVE_INFL .3f
 
-#define DT_IOP_TONECURVE_RES 64
+#define DT_IOP_TONECURVE_RES 256
 #define DT_IOP_TONECURVE_MAXNODES 20
 
 DT_MODULE_INTROSPECTION(4, dt_iop_tonecurve_params_t)
@@ -1139,7 +1139,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
-      cairo_scale(cr, width / 63.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
+      cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
       dt_draw_histogram_8(cr, hist, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw
                                                                                          // handle waveform
