@@ -5176,6 +5176,39 @@
 		<Crop x="0" y="0" width="-208" height="0"/>
 		<Sensor black="150" white="3956"/>
 	</Camera>
+	<Camera make="Panasonic" model = "DMC-GF6" mode= "16:9">
+		<ID make="Panasonic" model="DMC-GF6">Panasonic DMC-GF6</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-208" height="0"/>
+		<Sensor black="150" white="3956"/>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-GF6" mode= "3:2">
+		<ID make="Panasonic" model="DMC-GF6">Panasonic DMC-GF6</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-208" height="0"/>
+		<Sensor black="150" white="3956"/>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-GF6" mode= "1:1">
+		<ID make="Panasonic" model="DMC-GF6">Panasonic DMC-GF6</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-34" height="0"/>
+		<Sensor black="150" white="3956"/>
+	</Camera>
 	<Camera make="Panasonic" model="DMC-GF7">
 		<ID make="Panasonic" model="DMC-GF7">Panasonic DMC-GF7</ID>
 		<CFA width="2" height="2">
