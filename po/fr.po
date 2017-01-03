@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-03 09:53+0100\n"
-"PO-Revision-Date: 2017-01-03 09:58+0100\n"
+"POT-Creation-Date: 2017-01-03 18:29+0100\n"
+"PO-Revision-Date: 2017-01-03 18:51+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1319,7 +1319,7 @@ msgstr "distribution générique"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "le profil de gestion du bruit « %s » n'est pas valide"
 
-#: ../src/common/opencl.c:735
+#: ../src/common/opencl.c:737
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
@@ -4697,21 +4697,53 @@ msgstr "nombre de \"stop\" de décalage entre les différents expositions"
 msgid "exposure shift"
 msgstr "décalage exposition"
 
-#: ../src/iop/bilat.c:61 ../src/iop/clahe.c:64
+#: ../src/iop/bilat.c:92 ../src/iop/clahe.c:64
 msgid "local contrast"
 msgstr "contraste local"
 
-#: ../src/iop/bilat.c:250 ../src/iop/grain.c:520
+#: ../src/iop/bilat.c:402 ../src/iop/denoiseprofile.c:2078
+#: ../src/iop/exposure.c:849 ../src/iop/lens.c:2205 ../src/iop/levels.c:550
+#: ../src/libs/copy_history.c:303 ../src/libs/export.c:634
+#: ../src/libs/print_settings.c:1329 ../src/views/darkroom.c:1561
+msgid "mode"
+msgstr "mode"
+
+#: ../src/iop/bilat.c:404
+msgid "bilateral grid"
+msgstr "grille bilatéral"
+
+#: ../src/iop/bilat.c:405
+msgid "local laplacian filter"
+msgstr "filtre laplacien local"
+
+#: ../src/iop/bilat.c:408
+msgid ""
+"the filter used for local contrast enhancement. bilateral is faster but can "
+"lead to artifacts around edges for extreme settings."
+msgstr ""
+"le filtre utilisé pour l'amélioration du contraste local. bilatéral est plus "
+"rapide mais peut faire apparaître des artefacts au niveau des bords."
+
+#: ../src/iop/bilat.c:412 ../src/iop/globaltonemap.c:707
+msgid "detail"
+msgstr "détail"
+
+#: ../src/iop/bilat.c:416 ../src/iop/grain.c:520
 msgid "coarseness"
 msgstr "granularité"
 
-#: ../src/iop/bilat.c:255 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:674
+#: ../src/iop/bilat.c:421 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:674
 msgid "contrast"
 msgstr "contraste"
 
-#: ../src/iop/bilat.c:259 ../src/iop/globaltonemap.c:707
-msgid "detail"
-msgstr "détail"
+#: ../src/iop/bilat.c:425 ../src/iop/monochrome.c:605 ../src/iop/shadhi.c:830
+#: ../src/iop/splittoning.c:537
+msgid "highlights"
+msgstr "hautes lumières"
+
+#: ../src/iop/bilat.c:430 ../src/iop/shadhi.c:829 ../src/iop/splittoning.c:532
+msgid "shadows"
+msgstr "ombres"
 
 #: ../src/iop/bilateral.cc:69
 msgid "denoise (bilateral filter)"
@@ -5051,7 +5083,7 @@ msgstr "teinte"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:446 ../src/iop/colisa.c:366
-#: ../src/iop/colorchecker.c:1086 ../src/iop/colorcorrection.c:285
+#: ../src/iop/colorchecker.c:1101 ../src/iop/colorcorrection.c:285
 #: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:1071
 #: ../src/iop/colorzones.c:1105 ../src/iop/graduatednd.c:1182
 #: ../src/iop/lowpass.c:676 ../src/iop/soften.c:718
@@ -5059,7 +5091,7 @@ msgstr "teinte"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/channelmixer.c:447 ../src/iop/colorchecker.c:1068
+#: ../src/iop/channelmixer.c:447 ../src/iop/colorchecker.c:1083
 #: ../src/iop/colorize.c:451 ../src/iop/colorzones.c:1068
 #: ../src/iop/colorzones.c:1106
 msgid "lightness"
@@ -5409,20 +5441,24 @@ msgstr "facteur vert du gain"
 msgid "factor of blue for gain"
 msgstr "facteur bleu du gain"
 
-#: ../src/iop/colorchecker.c:111
+#: ../src/iop/colorchecker.c:112
 msgid "color look up table"
 msgstr "table correspondance couleurs"
 
-#: ../src/iop/colorchecker.c:262
+#: ../src/iop/colorchecker.c:263
 msgid "it8 skin tones"
 msgstr "it8 tons chairs"
 
-#: ../src/iop/colorchecker.c:635 ../src/iop/colorchecker.c:1060
+#: ../src/iop/colorchecker.c:276
+msgid "helmholtz/kohlrausch monochrome"
+msgstr "monochrome helmholtz/kohlrausch"
+
+#: ../src/iop/colorchecker.c:650 ../src/iop/colorchecker.c:1075
 #, c-format
 msgid "patch #%d"
 msgstr "patch #%d"
 
-#: ../src/iop/colorchecker.c:947
+#: ../src/iop/colorchecker.c:962
 #, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
@@ -5439,35 +5475,35 @@ msgstr ""
 "clic-droit pour supprimer un patch\n"
 "shift-clic avec la pipette pour remplacer un patch"
 
-#: ../src/iop/colorchecker.c:1055
+#: ../src/iop/colorchecker.c:1070
 msgid "patch"
 msgstr "patch"
 
-#: ../src/iop/colorchecker.c:1056
+#: ../src/iop/colorchecker.c:1071
 msgid "color checker patch"
 msgstr "patch color checker"
 
-#: ../src/iop/colorchecker.c:1067
+#: ../src/iop/colorchecker.c:1082
 msgid "lightness offset"
 msgstr "décalage clarté"
 
-#: ../src/iop/colorchecker.c:1071
+#: ../src/iop/colorchecker.c:1086
 msgid "chroma offset green/red"
 msgstr "décalage chromatique vert/rouge"
 
-#: ../src/iop/colorchecker.c:1072
+#: ../src/iop/colorchecker.c:1087
 msgid "green/red"
 msgstr "vert/rouge"
 
-#: ../src/iop/colorchecker.c:1078
+#: ../src/iop/colorchecker.c:1093
 msgid "chroma offset blue/yellow"
 msgstr "décalage chromatique bleu/jaune"
 
-#: ../src/iop/colorchecker.c:1079
+#: ../src/iop/colorchecker.c:1094
 msgid "blue/yellow"
 msgstr "bleu/jaune"
 
-#: ../src/iop/colorchecker.c:1085
+#: ../src/iop/colorchecker.c:1100
 msgid "saturation offset"
 msgstr "décalage saturation"
 
@@ -6067,13 +6103,6 @@ msgstr "profil pour ISO %d trouvé"
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
-
-#: ../src/iop/denoiseprofile.c:2078 ../src/iop/exposure.c:849
-#: ../src/iop/lens.c:2205 ../src/iop/levels.c:550
-#: ../src/libs/copy_history.c:303 ../src/libs/export.c:634
-#: ../src/libs/print_settings.c:1329 ../src/views/darkroom.c:1561
-msgid "mode"
-msgstr "mode"
 
 #: ../src/iop/denoiseprofile.c:2079 ../src/iop/nlmeans.c:853
 msgid "patch size"
@@ -6960,10 +6989,11 @@ msgstr ""
 
 #: ../src/iop/liquify.c:3328
 msgid ""
-"click and drag to move - click : linear or feathered\n"
+"click and drag to move - click : show/hide feathering controls\n"
 "ctrl-click : autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgstr ""
-"clic et déplacer pour positionner - clic : linéaire ou progressif\n"
+"clic et déplacer pour positionner - clic : montre/cache les contrôles de "
+"progressivité\n"
 "ctrl-clic : automatique, parabolique, lissé, symétrique - clic-droit pour "
 "supprimer"
 
@@ -7159,11 +7189,6 @@ msgstr ""
 #: ../src/iop/monochrome.c:604
 msgid "how much to keep highlights"
 msgstr "conserver les hautes lumières"
-
-#: ../src/iop/monochrome.c:605 ../src/iop/shadhi.c:830
-#: ../src/iop/splittoning.c:537
-msgid "highlights"
-msgstr "hautes lumières"
 
 #: ../src/iop/nlmeans.c:83
 msgid "denoise (non-local means)"
@@ -7416,10 +7441,6 @@ msgstr "saturation des ombres"
 msgctxt "accel"
 msgid "highlights color correction"
 msgstr "saturation des hautes lumières"
-
-#: ../src/iop/shadhi.c:829 ../src/iop/splittoning.c:532
-msgid "shadows"
-msgstr "ombres"
 
 #: ../src/iop/shadhi.c:831
 msgid "white point adjustment"
