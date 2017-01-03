@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-03 18:29+0100\n"
-"PO-Revision-Date: 2017-01-03 18:51+0100\n"
+"POT-Creation-Date: 2017-01-03 21:22+0100\n"
+"PO-Revision-Date: 2017-01-03 21:26+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6981,62 +6981,62 @@ msgstr "outil point: placer des points"
 
 #: ../src/iop/liquify.c:3327
 msgid ""
-"ctrl-click to add node\n"
-"right click to remove path"
+"ctrl-click: add node - right click: remove path\n"
+"ctrl-alt-click: toggle line/curve"
 msgstr ""
-"ctrl-clic pour ajouter un point\n"
-"clic-droit pour supprimer un chemin"
+"ctrl-clic: ajouter un point - clic-droit: supprimer un chemin\n"
+"ctrl-alt-clic: changer line/courbe"
 
-#: ../src/iop/liquify.c:3328
+#: ../src/iop/liquify.c:3329
 msgid ""
-"click and drag to move - click : show/hide feathering controls\n"
-"ctrl-click : autosmooth, cusp, smooth, symmetrical - right click to remove"
+"click and drag to move - click: show/hide feathering controls\n"
+"ctrl-click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgstr ""
-"clic et déplacer pour positionner - clic : montre/cache les contrôles de "
+"clic et déplacer pour positionner - clic: montre/cache les contrôles de "
 "progressivité\n"
-"ctrl-clic : automatique, parabolique, lissé, symétrique - clic-droit pour "
+"ctrl-clic: automatique, parabolique, lissé, symétrique - clic-droit pour "
 "supprimer"
 
-#: ../src/iop/liquify.c:3331 ../src/iop/liquify.c:3332
+#: ../src/iop/liquify.c:3332 ../src/iop/liquify.c:3333
 msgid "drag to change shape of path"
 msgstr "déplacer pour changer le chemin"
 
-#: ../src/iop/liquify.c:3333
+#: ../src/iop/liquify.c:3334
 msgid "drag to adjust warp radius"
 msgstr "déplacer pour ajuster le rayon"
 
-#: ../src/iop/liquify.c:3334
+#: ../src/iop/liquify.c:3335
 msgid "drag to adjust hardness (center)"
 msgstr "déplacer pour ajuster la dureté (centre)"
 
-#: ../src/iop/liquify.c:3335
+#: ../src/iop/liquify.c:3336
 msgid "drag to adjust hardness (feather)"
 msgstr "déplacer pour ajuster la dureté (progressif)"
 
-#: ../src/iop/liquify.c:3336
+#: ../src/iop/liquify.c:3337
 msgid ""
 "drag to adjust warp strength\n"
-"ctrl-click : linear, grow, and shrink"
+"ctrl-click: linear, grow, and shrink"
 msgstr ""
 "déplacer pour ajuster la force du point\n"
-"ctrl-clic : linéaire, augmente et diminue"
+"ctrl-clic: linéaire, augmente et diminue"
 
-#: ../src/iop/liquify.c:3354
+#: ../src/iop/liquify.c:3355
 msgctxt "accel"
 msgid "point tool"
 msgstr "outil point"
 
-#: ../src/iop/liquify.c:3355
+#: ../src/iop/liquify.c:3356
 msgctxt "accel"
 msgid "line tool"
 msgstr "outil ligne"
 
-#: ../src/iop/liquify.c:3356
+#: ../src/iop/liquify.c:3357
 msgctxt "accel"
 msgid "curve tool"
 msgstr "outil courbe"
 
-#: ../src/iop/liquify.c:3357
+#: ../src/iop/liquify.c:3358
 msgctxt "accel"
 msgid "node tool"
 msgstr "édition des chemins"
