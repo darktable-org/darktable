@@ -542,7 +542,9 @@ void local_laplacian_internal(
 
     gauss_expand(output[l+1], output[l], pw, ph);
     // go through all coefficients in the upsampled gauss buffer:
+#ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) collapse(2) shared(w,h,buf,output,l,gamma,padded)
+#endif
     for(int j=0;j<ph;j++) for(int i=0;i<pw;i++)
     {
       const float v = padded[l][j*pw+i];
@@ -560,7 +562,9 @@ void local_laplacian_internal(
       //   output[l][j*pw+i] += ll_laplacian(padded[l+1], padded[l], i, j, pw, ph);
     }
   }
+#ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(dynamic) collapse(2) shared(w,output,buf)
+#endif
   for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
   {
     out[4*(j*wd+i)+0] = 100.0f * output[0][(j+max_supp)*w+max_supp+i]; // [0,1] -> L
