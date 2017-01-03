@@ -997,7 +997,11 @@ static void configure_ppd_dpi(dt_gui_gtk_t *gui)
   }
   else
   {
+#ifndef GDK_WINDOWING_QUARTZ
     gui->ppd = gtk_widget_get_scale_factor(widget);
+#else
+    gui->ppd = dt_osx_get_ppd();
+#endif
     if(gui->ppd < 0.0)
     {
       gui->ppd = 1.0;
