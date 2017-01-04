@@ -411,23 +411,28 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->detail, NULL, _("detail"));
   dt_bauhaus_slider_set_format(g->detail, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->detail, _("changes the local contrast"));
 
   g->spatial = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
   dt_bauhaus_widget_set_label(g->spatial, NULL, _("coarseness"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->spatial, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->spatial, _("feature size of local details (spatial sigma of bilateral filter)"));
 
   g->range = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 20, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->range, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->range, NULL, _("contrast"));
+  gtk_widget_set_tooltip_text(g->range, _("L difference to detect edges (range sigma of bilateral filter)"));
 
   g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 100.0, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
   dt_bauhaus_slider_set_format(g->highlights, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->highlights, _("changes the local contrast of highlights"));
 
   g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 100.0, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->shadows, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->shadows, NULL, _("shadows"));
+  gtk_widget_set_tooltip_text(g->shadows, _("changes the local contrast of shadows"));
   dt_bauhaus_slider_set_format(g->shadows, "%.0f%%");
 
 
