@@ -8946,6 +8946,9 @@
 	<Camera make="Nokia" model="Lumia 1020" mode="dng">
 		<ID make="Nokia" model="Lumia 1020">Nokia Lumia 1020</ID>
 	</Camera>
+	<Camera make="PENTAX" model="PENTAX K-r" mode="dng">
+		<ID make="Pentax" model="K-r">PENTAX K-r</ID>
+	</Camera>
 	<!-- CHDK Cameras -->
 	<Camera make="AVT" model="F-080C" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
