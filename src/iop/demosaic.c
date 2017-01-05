@@ -1586,15 +1586,13 @@ static int demosaic_op_flags(const dt_dev_pixelpipe_iop_t *const piece,
       if (qual > 1) flags |= DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
       break;
     case DT_DEV_PIXELPIPE_EXPORT:
-      flags |= DEMOSAIC_FULL_SCALE;
-      flags |= DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+      flags |= DEMOSAIC_FULL_SCALE | DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
       // we check if we need ultra-high quality thumbnail for this size
       if (get_thumb_quality(roi_out->width, roi_out->height))
       {
-        flags |= DEMOSAIC_FULL_SCALE;
-        flags |= DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+        flags |= DEMOSAIC_FULL_SCALE | DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
       }
       break;
     default: // make C not complain about missing enum members
@@ -3390,8 +3388,6 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const int op_flags = demosaic_op_flags(piece, &self->dev->image_storage,
                                          roi_out, qual);
   const int full_scale_demosaicing = op_flags & DEMOSAIC_FULL_SCALE;
-  // FIXME: this uses slightly differnet logic them demosaic_op_flags(), kept here to make code match prior behavior
-  const int xtrans_full_markesteijn_demosaicing = (op_flags & DEMOSAIC_XTRANS_FULL_MARKESTEIJN) || roi_out->scale > 0.8f;
 
   // check if output buffer has same dimension as input buffer (thus avoiding one
   // additional temporary buffer)
@@ -3419,7 +3415,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   }
   else if(((demosaicing_method ==  DT_IOP_DEMOSAIC_MARKESTEIJN) ||
            (demosaicing_method ==  DT_IOP_DEMOSAIC_MARKESTEIJN_3)) &&
-           xtrans_full_markesteijn_demosaicing)
+          (op_flags & DEMOSAIC_XTRANS_FULL_MARKESTEIJN))
   {
     // X-Trans pattern full Markesteijn processing
     const int ndir = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 8 : 4;
