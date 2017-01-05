@@ -314,8 +314,7 @@ RawImage DngDecoder::decodeRawInternal() {
         mRaw->metadata.wbCoeffs[i] = 1.0f/as_shot_neutral->getFloat(i);
     }
   } else if (mRootIFD->hasEntryRecursive(ASSHOTWHITEXY)) {
-    // Commented out because I didn't have an example file to verify it's correct
-    /* TiffEntry *as_shot_white_xy = mRootIFD->getEntryRecursive(ASSHOTWHITEXY);
+    TiffEntry *as_shot_white_xy = mRootIFD->getEntryRecursive(ASSHOTWHITEXY);
     if (as_shot_white_xy->count == 2) {
       mRaw->metadata.wbCoeffs[0] = as_shot_white_xy->getFloat(0);
       mRaw->metadata.wbCoeffs[1] = as_shot_white_xy->getFloat(1);
@@ -324,7 +323,7 @@ RawImage DngDecoder::decodeRawInternal() {
       const float d65_white[3] = { 0.950456, 1, 1.088754 };
       for (uint32 i=0; i<3; i++)
           mRaw->metadata.wbCoeffs[i] /= d65_white[i];
-    } */
+    }
   }
 
   // Crop
