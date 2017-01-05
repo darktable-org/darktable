@@ -422,9 +422,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         }
 
         // convert from world space:
-        float rad10[2] = { circle->radius, circle->radius };
+        float radius10[2] = { circle->radius, circle->radius };
         float radf[2];
-        masks_point_denormalize(piece, roi_in, rad10, 1, radf);
+        masks_point_denormalize(piece, roi_in, radius10, 1, radf);
 
         const int rad = MIN(radf[0], radf[1]);
         const int posx = points[0] - rad;

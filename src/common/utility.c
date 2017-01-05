@@ -26,6 +26,9 @@
 #include <unistd.h>
 #endif
 
+#include <math.h>
+#include <glib/gi18n.h>
+
 #include <sys/stat.h>
 
 #ifdef HAVE_CONFIG_H
