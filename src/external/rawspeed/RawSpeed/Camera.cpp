@@ -372,6 +372,11 @@ void Camera::parseSensorInfo( xml_node &cur )
 
 const CameraSensorInfo* Camera::getSensorInfo( int iso )
 {
+  if (sensorInfo.empty())
+    ThrowCME(
+        "getSensorInfo(): Camera '%s' '%s', mode '%s' has no <Sensor> entries.",
+        make.c_str(), model.c_str(), mode.c_str());
+
   // If only one, just return that
   if (sensorInfo.size() == 1)
     return &sensorInfo[0];
