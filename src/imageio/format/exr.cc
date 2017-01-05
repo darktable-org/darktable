@@ -243,11 +243,11 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
   {
     enum dt_imageio_exr_pixeltype_t
     {
-      UINT = 0,      // unsigned int (32 bit)
-      HALF = 1,      // half (16 bit floating point)
-      FLOAT = 2,     // float (32 bit floating point)
-      NUM_PIXELTYPES // number of different pixel types
-    };               // copy of Imf::PixelType
+      EXR_PT_UINT = 0,  // unsigned int (32 bit)
+      EXR_PT_HALF = 1,  // half (16 bit floating point)
+      EXR_PT_FLOAT = 2, // float (32 bit floating point)
+      NUM_PIXELTYPES    // number of different pixel types
+    };                  // copy of Imf::PixelType
 
     struct dt_imageio_exr_v2_t
     {
