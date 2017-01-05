@@ -67,7 +67,12 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
   pUp2[0] = metadata->getShort();
   pUp2[1] = metadata->getShort();
 
-  vector<ushort16> curve(1 << bitsPS & 0x7fff);
+  // 'curve' will hold a peace wise linearly interpolated function.
+  // there are 'csize' segements, each is 'step' values long.
+  // the very last value is not part of the used table but necessary
+  // to linearly interpolate the last segment, therefor the '+1/-1'
+  // size adjustments of 'curve'.
+  vector<ushort16> curve((1 << bitsPS & 0x7fff)+1);
   for (size_t i = 0; i < curve.size(); i++)
     curve[i] = i;
 
@@ -78,7 +83,7 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
   if (v0 == 68 && v1 == 32 && step > 0) {
     for (uint32 i = 0; i < csize; i++)
       curve[i*step] = metadata->getShort();
-    for (size_t i = 0; i < curve.size(); i++)
+    for (size_t i = 0; i < curve.size()-1; i++)
       curve[i] = (curve[i-i%step] * (step - i % step) +
                   curve[i-i%step+step] * (i % step)) / step;
     metadata->setAbsoluteOffset(562);
@@ -92,7 +97,7 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
   initTable(huffSelect);
 
   if (!uncorrectedRawValues) {
-    mRaw->setTable(&curve[0], curve.size(), true);
+    mRaw->setTable(&curve[0], curve.size()-1, true);
   }
 
   uint32 x, y;
