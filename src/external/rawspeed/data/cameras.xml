@@ -6851,6 +6851,9 @@
 			<Vertical x="0" width="8"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="PENTAX" model="PENTAX K-5" mode="dng">
+		<ID make="Pentax" model="K-5">PENTAX K-5</ID>
+	</Camera>
 	<Camera make="PENTAX" model="PENTAX K-5 II" decoder_version="2">
 		<ID make="Pentax" model="K-5 II">PENTAX K-5 II</ID>
 		<CFA width="2" height="2">
