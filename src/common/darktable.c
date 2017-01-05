@@ -397,7 +397,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     {
       // check if DARKTABLE_SHAREDIR is already in there
       gboolean found = FALSE;
-      gchar **tokens = g_strsplit(xdg_data_dirs, ":", 0);
+      gchar **tokens = g_strsplit(xdg_data_dirs, G_SEARCHPATH_SEPARATOR_S, 0);
       // xdg_data_dirs is neither NULL nor empty => tokens != NULL
       for(char **iter = tokens; *iter != NULL; iter++)
         if(!strcmp(DARKTABLE_SHAREDIR, *iter))
@@ -409,7 +409,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       if(found)
         set_env = FALSE;
       else
-        new_xdg_data_dirs = g_strjoin(":", DARKTABLE_SHAREDIR, xdg_data_dirs, NULL);
+        new_xdg_data_dirs = g_strjoin(G_SEARCHPATH_SEPARATOR_S, DARKTABLE_SHAREDIR, xdg_data_dirs, NULL);
     }
     else
     {
@@ -756,10 +756,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   const gchar *lang = dt_conf_get_string("ui_last/gui_language");
   if(lang != NULL && lang[0] != '\0')
   {
-    setenv("LANGUAGE", lang, 1);
+    g_setenv("LANGUAGE", lang, 1);
     if(setlocale(LC_ALL, lang) != NULL) gtk_disable_setlocale();
     setlocale(LC_MESSAGES, lang);
-    setenv("LANG", lang, 1);
+    g_setenv("LANG", lang, 1);
   }
   g_free((gchar *)lang);
 
@@ -914,7 +914,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
 
-    dt_control_load_config(darktable.control);
+    dt_gui_gtk_load_config();
   }
 
   dt_control_gui_mode_t mode = DT_LIBRARY;
@@ -1020,7 +1020,6 @@ void dt_cleanup()
     dt_ctl_switch_mode_to(DT_MODE_NONE);
     dt_dbus_destroy(darktable.dbus);
 
-    dt_control_write_config(darktable.control);
     dt_control_shutdown(darktable.control);
 
     dt_lib_cleanup(darktable.lib);
