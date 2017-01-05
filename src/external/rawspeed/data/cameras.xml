@@ -8952,6 +8952,9 @@
 	<Camera make="PENTAX Corporation" model="PENTAX K10D" mode="dng">
 		<ID make="Pentax" model="K10D">PENTAX K10D</ID>
 	</Camera>
+	<Camera make="Nikon" model="LS-5000" mode="dng">
+		<ID make="Nikon" model="LS-5000">Nikon LS-5000</ID>
+	</Camera>
 	<!-- CHDK Cameras -->
 	<Camera make="AVT" model="F-080C" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
