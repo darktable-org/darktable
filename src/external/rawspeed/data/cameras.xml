@@ -8943,6 +8943,9 @@
 	<Camera make="SAMSUNG DIGITAL IMA" model="SAMSUNG GX20" mode="dng">
 		<ID make="Samsung" model="GX20">Samsung GX20</ID>
 	</Camera>
+	<Camera make="Nokia" model="Lumia 1020" mode="dng">
+		<ID make="Nokia" model="Lumia 1020">Nokia Lumia 1020</ID>
+	</Camera>
 	<!-- CHDK Cameras -->
 	<Camera make="AVT" model="F-080C" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">

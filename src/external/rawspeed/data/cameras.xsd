@@ -32,6 +32,7 @@
       <xs:enumeration value="Mamiya"/>
       <xs:enumeration value="Minolta"/>
       <xs:enumeration value="Nikon"/>
+      <xs:enumeration value="Nokia"/>
       <xs:enumeration value="Olympus"/>
       <xs:enumeration value="OnePlus"/>
       <xs:enumeration value="Panasonic"/>
@@ -367,6 +368,7 @@
       <xs:enumeration value="NIKON CORPORATION"/>
       <xs:enumeration value="NIKON"/>
       <xs:enumeration value="Nikon"/>
+      <xs:enumeration value="Nokia"/>
       <xs:enumeration value="OLYMPUS CORPORATION"/>
       <xs:enumeration value="OLYMPUS IMAGING CORP."/>
       <xs:enumeration value="OLYMPUS OPTICAL CO.,LTD"/>
