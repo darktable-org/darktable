@@ -232,6 +232,7 @@ RawImage Cr2Decoder::decodeRawInternal() {
       l.mUseBigtable = true;
       l.mCanonFlipDim = flipDims;
       l.mCanonDoubleHeight = doubleHeight;
+      l.mWrappedCr2Slices = wrappedCr2Slices;
       l.startDecoder(slice.offset, slice.count, 0, offY);
     } catch (RawDecoderException &e) {
       if (i == 0)
