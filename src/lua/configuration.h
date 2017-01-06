@@ -28,7 +28,6 @@
  *   => no need to increase API version with every commit,
  *   however, beware of stable releases and API changes
  */
-// LAST RELEASED VERSION : 1.4 was 1.0.0
 // 1.6 was 2.0.1
 // 1.6.1 was 2.0.2
 // 2.0.0 was 3.0.0
@@ -36,11 +35,11 @@
 /* incompatible API change */
 #define LUA_API_VERSION_MAJOR 4
 /* backward compatible API change */
-#define LUA_API_VERSION_MINOR 0
+#define LUA_API_VERSION_MINOR 1
 /* bugfixes that should not change anything to the API */
 #define LUA_API_VERSION_PATCH 0
 /* suffix for unstable version */
-#define LUA_API_VERSION_SUFFIX ""
+#define LUA_API_VERSION_SUFFIX "dev"
 
 /** initialize lua stuff at DT start time */
 int dt_lua_init_configuration(lua_State *L);
