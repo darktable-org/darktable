@@ -126,12 +126,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->overexposed.upper = dt_conf_get_float("darkroom/ui/overexposed/upper");
 }
 
-static void _free_form(void *data)
-{
-  dt_masks_form_t *form = (dt_masks_form_t *)data;
-  dt_masks_free_form(form);
-}
-
 void dt_dev_cleanup(dt_develop_t *dev)
 {
   if(!dev) return;
@@ -166,7 +160,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   free(dev->histogram_pre_levels);
 
   g_list_free(dev->forms);
-  g_list_free_full(dev->allforms, _free_form);
+  g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
 
   g_list_free_full(dev->proxy.exposure, g_free);
 
