@@ -1051,6 +1051,7 @@ local widget = dt.new_widget("button"){
 	events["global_toolbox-overlay_toggle"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
   events["mouse-over-image-changed"]:set_text([[This event is triggered whenever the image under the mouse changes]])
+	events["mouse-over-image-changed"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
   events["mouse-over-image-changed"].callback:add_parameter("image",types.dt_lua_image_t,[[The new image under the mouse, can be nil if there is no image under the mouse]])
 	events["mouse-over-image-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
   events["exit"]:set_text([[This event is triggered when darktable exits, it allows lua scripts to do cleanup jobs]])
