@@ -1010,18 +1010,13 @@ for (fdc_row=(YOFFS); fdc_row < (YSIZE); fdc_row++) \
 for (fdc_col=(XOFFS); fdc_col < (XSIZE); fdc_col++) \
 VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
           // extract modulated chroma using filters
-          float complex C2m, C3m, C5m, C6m, C7m, C10m, C11m, C12m, C15m, C17m, C18m;
-          CORR_FILT(C2m,h2c,9,0,18,27)
-          CORR_FILT(C3m,h3c,9,0,18,27)
-          CORR_FILT(C5m,h5c,9,9,18,18)
-          CORR_FILT(C6m,h6c,9,0,18,27)
-          CORR_FILT(C7m,h7c,9,9,18,18)
-          CORR_FILT(C10m,h10c,0,9,27,18)
-          CORR_FILT(C11m,h11c,0,9,27,18)
-          CORR_FILT(C12m,h12c,0,9,27,18)
-          CORR_FILT(C15m,h15c,0,9,27,18)
-          CORR_FILT(C17m,h17c,9,0,18,27)
-          CORR_FILT(C18m,h18c,9,9,18,18)
+          float complex C2m, C5m, C6m, C7m, C10m, C11m;
+          CORR_FILT(C2m,h2c,7,2,20,25)
+          CORR_FILT(C5m,h5c,3,3,24,24)
+          CORR_FILT(C6m,h6c,7,2,20,25)
+          CORR_FILT(C7m,h7c,3,3,24,24)
+          CORR_FILT(C10m,h10c,2,7,25,20)
+          CORR_FILT(C11m,h11c,2,7,25,20)
           // build the q vector components
           float PI = acos(-1);
           int myrow = row + rowoffset;
@@ -1031,20 +1026,21 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
           float complex q2_10 = (w * C10m * modulator1 - (1-w) * C2m * modulator2);
           float complex modulator3 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.5f + (float)myrow * 0.16666666666667f));
           float complex modulator4 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.16666666666667f + (float)myrow * -0.5f));
-          float complex q3_15 = (w * C15m * modulator3 - (1-w) * C3m * modulator4);
+          float complex q3_15 = conjf(q2_10);
           float complex modulator5 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.3333333333333333f ));
           float complex modulator6 = cexpf(-2.0f * _Complex_I * PI * ( (float)myrow * -0.3333333333333333f ));
           float complex q6_11 = (w * C11m * modulator5 + (1-w) * C6m * modulator6);
-          float complex q12_17 = (w * C12m * conjf(modulator5) + (1-w) * C17m * conjf(modulator6));
+          float complex q12_17 = conjf(q6_11);
           float complex modulator7 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.3333333333333333f + (float)myrow * -0.3333333333333333f ));
-          float complex q5 = C5m * modulator7 ;
+          float complex q5 = C5m * modulator7;
           float complex q7 = C7m * cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.3333333333333333f + (float)myrow * -0.3333333333333333f ));
-          float complex q18 = C18m * conjf(modulator7);
+          float complex q18 = conjf(q5);
           // get L
           C2m = (q2_10 * conjf(modulator1) - q2_10 * conjf(modulator2));
-          C3m = (q3_15 * conjf(modulator3) - q3_15 * conjf(modulator4));
+          float complex C3m = (q3_15 * conjf(modulator3) - q3_15 * conjf(modulator4));
           C6m = (q6_11 * conjf(modulator5) + q6_11 * conjf(modulator6));
-          C12m = (q12_17 * modulator5 + q12_17 * modulator6);
+          float complex C12m = (q12_17 * modulator5 + q12_17 * modulator6);
+          float complex C18m = q18 * modulator7;
           float complex L = fdc_src[13][13] - C2m - C3m - C5m - C6m - 2.0f*C7m - C12m - C18m;
           // get the rgb components from fdc
           red = crealf(Minv[0][0]*L + Minv[0][4]*q5 + 2.0f*Minv[0][5]*q6_11 + 2.0f*Minv[0][6]*q7 + 2.0f*Minv[0][9]*q2_10 + 2.0f*Minv[0][11]*q12_17 + 2.0f*Minv[0][14]*q3_15 + Minv[0][17]*q18);
