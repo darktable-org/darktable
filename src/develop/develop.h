@@ -144,6 +144,8 @@ typedef struct dt_develop_t
   GList *forms;
   struct dt_masks_form_t *form_visible;
   struct dt_masks_form_gui_t *form_gui;
+  // all forms to be linked here for cleanup:
+  GList *allforms;
 
   //full preview stuff
   int full_preview;

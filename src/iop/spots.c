@@ -568,13 +568,9 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
     else
     {
-      // lost focus, hide all shapes and free if some are in creation
+      // lost focus, hide all shapes
       if (darktable.develop->form_gui->creation && darktable.develop->form_gui->creation_module == self)
-      {
-        dt_masks_form_t *form = darktable.develop->form_visible;
-        if(form) dt_masks_free_form(form);
         dt_masks_change_form_gui(NULL);
-      }
       dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
