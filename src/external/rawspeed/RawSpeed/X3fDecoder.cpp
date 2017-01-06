@@ -114,7 +114,8 @@ bool X3fDecoder::readName() {
       // Skip jpeg header
       i.skipBytes(6);
       if (i.getInt() == 0x66697845) { // Match text 'Exif'
-        TiffParser t(new FileMap(mFile, cimg.dataOffset+12, i.getRemainSize()));
+        FileMap subMap(mFile, cimg.dataOffset+12, i.getRemainSize());
+        TiffParser t(&subMap);
         try {
           t.parseData();
         } catch (...) {
