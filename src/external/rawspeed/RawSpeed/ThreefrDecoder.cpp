@@ -33,6 +33,7 @@ ThreefrDecoder::ThreefrDecoder(TiffIFD *rootIFD, FileMap* file)  :
 }
 
 ThreefrDecoder::~ThreefrDecoder(void) {
+  delete mRootIFD;
 }
 
 RawImage ThreefrDecoder::decodeRawInternal() {

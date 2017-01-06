@@ -45,6 +45,7 @@ MosDecoder::MosDecoder(TiffIFD *rootIFD, FileMap* file)  :
 }
 
 MosDecoder::~MosDecoder(void) {
+  delete mRootIFD;
 }
 
 string MosDecoder::getXMPTag(string xmp, string tag) {

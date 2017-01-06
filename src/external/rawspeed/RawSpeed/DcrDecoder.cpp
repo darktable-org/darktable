@@ -32,6 +32,7 @@ DcrDecoder::DcrDecoder(TiffIFD *rootIFD, FileMap* file)  :
 }
 
 DcrDecoder::~DcrDecoder(void) {
+  delete mRootIFD;
 }
 
 RawImage DcrDecoder::decodeRawInternal() {
@@ -102,6 +103,7 @@ RawImage DcrDecoder::decodeRawInternal() {
     } else {
       mRaw->setTable(NULL);
     }
+    delete [] linearization_table;
 
     delete kodakifd;
   } else

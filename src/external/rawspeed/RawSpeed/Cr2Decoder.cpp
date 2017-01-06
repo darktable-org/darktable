@@ -116,6 +116,7 @@ RawImage Cr2Decoder::decodeRawInternal() {
           // We want uncorrected, but we store the table.
           mRaw->setTable(table, 4096, false);
         }
+        delete [] table;
       }
     }
 

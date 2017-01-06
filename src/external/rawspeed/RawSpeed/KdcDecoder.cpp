@@ -32,6 +32,7 @@ KdcDecoder::KdcDecoder(TiffIFD *rootIFD, FileMap* file)  :
 }
 
 KdcDecoder::~KdcDecoder(void) {
+  delete mRootIFD;
 }
 
 RawImage KdcDecoder::decodeRawInternal() {

@@ -31,6 +31,7 @@ MefDecoder::MefDecoder(TiffIFD *rootIFD, FileMap* file)  :
 }
 
 MefDecoder::~MefDecoder(void) {
+  delete mRootIFD;
 }
 
 RawImage MefDecoder::decodeRawInternal() {

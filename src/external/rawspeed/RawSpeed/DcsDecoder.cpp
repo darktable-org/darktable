@@ -32,6 +32,7 @@ DcsDecoder::DcsDecoder(TiffIFD *rootIFD, FileMap* file)  :
 }
 
 DcsDecoder::~DcsDecoder(void) {
+  delete mRootIFD;
 }
 
 RawImage DcsDecoder::decodeRawInternal() {
@@ -67,7 +68,7 @@ RawImage DcsDecoder::decodeRawInternal() {
   if (!linearization || linearization->count != 256 || linearization->type != TIFF_SHORT)
     ThrowRDE("DCS Decoder: Couldn't find the linearization table");
 
-  ushort16 *table = new ushort16[256];
+  ushort16 table[256];
   linearization->getShortArray(table, 256);
 
   if (!uncorrectedRawValues)

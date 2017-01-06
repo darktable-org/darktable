@@ -32,6 +32,7 @@ ErfDecoder::ErfDecoder(TiffIFD *rootIFD, FileMap* file)  :
 }
 
 ErfDecoder::~ErfDecoder(void) {
+  delete mRootIFD;
 }
 
 RawImage ErfDecoder::decodeRawInternal() {

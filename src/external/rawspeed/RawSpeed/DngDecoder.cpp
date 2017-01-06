@@ -401,6 +401,7 @@ RawImage DngDecoder::decodeRawInternal() {
       mRaw->sixteenBitLookup();
       mRaw->setTable(NULL);
     }
+    delete [] table;
 
     if (0) {
       // Test average for bias
