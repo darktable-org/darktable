@@ -302,8 +302,12 @@ std::string Rw2Decoder::guessMode() {
   return closest_match;
 }
 
+static const uint32 BufSize = 0x4000;
+
 PanaBitpump::PanaBitpump(ByteStream* _input) : input(_input), vbits(0) {
-  buf = new uchar8[0x4000];
+  // get one more byte, so the return statement of getBits does not have
+  // to special case for accessing the last byte
+  buf = new uchar8[BufSize + 1];
 }
 
 PanaBitpump::~PanaBitpump() {
@@ -314,7 +318,7 @@ PanaBitpump::~PanaBitpump() {
 }
 
 void PanaBitpump::skipBytes(int bytes) {
-  int blocks = (bytes / 0x4000) * 0x4000;
+  int blocks = (bytes / BufSize) * BufSize;
   input->skipBytes(blocks);
   for (int i = blocks; i < bytes; i++)
     getBits(8);
@@ -328,12 +332,12 @@ uint32 PanaBitpump::getBits(int nbits) {
     * part of the file. Since there is no chance of affecting output buffer
     * size we allow the decoder to decode this
     */
-    if (input->getRemainSize() < 0x4000 - load_flags) {
+    if (input->getRemainSize() < BufSize - load_flags) {
       memcpy(buf + load_flags, input->getData(), input->getRemainSize());
       input->skipBytes(input->getRemainSize());
     } else {
-      memcpy(buf + load_flags, input->getData(), 0x4000 - load_flags);
-      input->skipBytes(0x4000 - load_flags);
+      memcpy(buf + load_flags, input->getData(), BufSize - load_flags);
+      input->skipBytes(BufSize - load_flags);
       if (input->getRemainSize() < load_flags) {
         memcpy(buf, input->getData(), input->getRemainSize());
         input->skipBytes(input->getRemainSize());
