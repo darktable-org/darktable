@@ -89,7 +89,7 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
     metadata->setAbsoluteOffset(562);
     split = metadata->getShort();
   } else if (v0 != 70 && csize <= 0x4001) {
-    curve.resize(csize);
+    curve.resize(csize+1);
     for (uint32 i = 0; i < csize; i++) {
       curve[i] = metadata->getShort();
     }
