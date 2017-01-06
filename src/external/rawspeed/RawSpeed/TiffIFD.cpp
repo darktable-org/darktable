@@ -61,6 +61,11 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset, uint32 _depth) {
       t = new TiffEntry(f, entry_offset, offset);
     } catch (IOException) { // Ignore unparsable entry
       continue;
+    } catch (...) {
+      // make sure all already allocated mEntries are freed again
+      // will be gone after cleanup using unique_ptr containers
+      this->~TiffIFD();
+      throw;
     }
 
     switch (t->tag) {
@@ -109,6 +114,10 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset, uint32 _depth) {
 
         break;
       default:
+        // make sure we don't override an entry without deleting the old one first
+        // will be gone after cleanup using unique_ptr containers
+        if (mEntry.find(t->tag) != mEntry.end())
+          delete mEntry[t->tag];
         mEntry[t->tag] = t;
     }
   }

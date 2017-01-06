@@ -62,6 +62,7 @@ RawImage Cr2Decoder::decodeRawInternal() {
       b = new ByteStreamSwap(mFile, off+41);
     uint32 height = b->getShort();
     uint32 width = b->getShort();
+    delete b;
 
     // Every two lines can be encoded as a single line, probably to try and get
     // better compression by getting the same RGBG sequence in every line
