@@ -601,7 +601,7 @@ static int execute_cb(lua_State*L)
 
 static int sleep_cb(lua_State*L)
 {
-  const int delay = luaL_optint(L, 1, 0);
+  const int delay = luaL_optinteger(L, 1, 0);
   dt_lua_unlock();
   g_usleep(delay*1000);
   dt_lua_lock();

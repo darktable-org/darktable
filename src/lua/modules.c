@@ -59,7 +59,7 @@ void dt_lua_module_entry_new(lua_State *L, int index, const char *module_type_na
 
   lua_getmetatable(L, -1);
   lua_getfield(L, -1, "__luaA_Type");
-  luaA_Type table_type = luaL_checkint(L, -1);
+  luaA_Type table_type = luaL_checkinteger(L, -1);
   lua_pop(L, 3);
   lua_pushvalue(L, index);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
@@ -79,7 +79,7 @@ luaA_Type dt_lua_module_entry_get_type(lua_State *L, const char *module_type_nam
   dt_lua_module_entry_push(L, module_type_name, entry_name);
   lua_getmetatable(L, -1);
   lua_getfield(L, -1, "__luaA_Type");
-  luaA_Type entry_type = luaL_checkint(L, -1);
+  luaA_Type entry_type = luaL_checkinteger(L, -1);
   lua_pop(L, 3);
   return entry_type;
 }
@@ -100,7 +100,7 @@ luaA_Type dt_lua_module_get_preset_type(lua_State *L, const char *module_type_na
   dt_lua_module_entry_push(L, module_type_name, entry_name);
   lua_getmetatable(L, -1);
   lua_getfield(L, -1, "__preset_type");
-  luaA_Type entry_type = luaL_checkint(L, -1);
+  luaA_Type entry_type = luaL_checkinteger(L, -1);
   lua_pop(L, 3);
   return entry_type;
 }

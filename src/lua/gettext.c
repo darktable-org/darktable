@@ -38,7 +38,7 @@ static int lua_ngettext(lua_State*L)
 {
   const char* msgid = luaL_checkstring(L,1);
   const char* msgid_plural = luaL_checkstring(L,2);
-  int n = luaL_checkint(L,3);
+  int n = luaL_checkinteger(L,3);
   lua_pushstring(L,ngettext(msgid,msgid_plural,n));
   return 1;
 }
@@ -48,7 +48,7 @@ static int lua_dngettext(lua_State*L)
   const char* domainname = luaL_checkstring(L,1);
   const char* msgid = luaL_checkstring(L,2);
   const char* msgid_plural = luaL_checkstring(L,3);
-  int n = luaL_checkint(L,4);
+  int n = luaL_checkinteger(L,4);
   lua_pushstring(L,dngettext(domainname,msgid,msgid_plural,n));
   return 1;
 }
