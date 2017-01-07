@@ -197,15 +197,14 @@ static int style_table_index(lua_State *L)
     const char *name = (const char *)sqlite3_column_text(stmt, 0);
     dt_style_t *style = dt_styles_get_by_name(name);
     luaA_push(L, dt_style_t, style);
-    sqlite3_finalize(stmt);
     free(style);
-    return 1;
   }
   else
   {
-    sqlite3_finalize(stmt);
-    return luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
   }
+  sqlite3_finalize(stmt);
+  return 1;
 }
 
 static int style_table_len(lua_State *L)
