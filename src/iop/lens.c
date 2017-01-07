@@ -914,14 +914,20 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
         lf_modifier_apply_subpixel_geometry_distortion(modifier, xoff + (width - 1), yoff + j * ystep, 1, 1, buf + 6 * (2 * awidth + aheight + j));
 
 #ifdef _OPENMP
+#pragma omp barrier
+#endif
+
+#ifdef _OPENMP
 #pragma omp for schedule(static)
 #endif
       for(int k = 0; k < nbpoints; k++)
       {
-        xm = fminf(xm, buf[6 * k + 0]);
-        xM = fmaxf(xM, buf[6 * k + 0]);
-        ym = fminf(ym, buf[6 * k + 3]);
-        yM = fmaxf(yM, buf[6 * k + 3]);
+        const float x = buf[6 * k + 0];
+        const float y = buf[6 * k + 3];
+        xm = isnan(x) ? xm : MIN(xm, x);
+        xM = isnan(x) ? xM : MAX(xM, x);
+        ym = isnan(y) ? ym : MIN(ym, y);
+        yM = isnan(y) ? yM : MAX(yM, y);
       }
     }
 
