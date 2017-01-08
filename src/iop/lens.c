@@ -883,10 +883,10 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
     const size_t nbpoints = 2 * awidth + 2 * aheight;
 
-    float *buf = dt_alloc_align(16, nbpoints * 2 * 3 * sizeof(float));
+    float *const buf = dt_alloc_align(16, nbpoints * 2 * 3 * sizeof(float));
 
 #ifdef _OPENMP
-#pragma omp parallel default(none) shared(modifier, buf) reduction(min : xm, ym) reduction(max : xM, yM)
+#pragma omp parallel default(none) shared(modifier) reduction(min : xm, ym) reduction(max : xM, yM)
 #endif
     {
 #ifdef _OPENMP
