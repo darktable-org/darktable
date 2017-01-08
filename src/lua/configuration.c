@@ -32,12 +32,12 @@ static int check_version(lua_State *L)
   {
     lua_pushnumber(L, 1);
     lua_gettable(L, i);
-    int major = luaL_checkint(L, -1);
+    int major = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
     lua_pushnumber(L, 2);
     lua_gettable(L, i);
-    int minor = luaL_checkint(L, -1);
+    int minor = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
     /*
@@ -45,7 +45,7 @@ static int check_version(lua_State *L)
        but let's take the good habits
        lua_pushnumber(L,3);
        lua_gettable(L,i);
-       int patch= luaL_checkint(L,-1);
+       int patch= luaL_checkinteger(L,-1);
        lua_pop(L,1);
      */
     if(major == LUA_API_VERSION_MAJOR && minor <= LUA_API_VERSION_MINOR)

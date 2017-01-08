@@ -89,6 +89,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_type = DT_DEV_HISTOGRAM_WAVEFORM;
   g_free(mode);
 
+  dev->forms = NULL;
+  dev->form_visible = NULL;
+  dev->form_gui = NULL;
+  dev->allforms = NULL;
+
   if(dev->gui_attached)
   {
     dev->pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
@@ -153,6 +158,9 @@ void dt_dev_cleanup(dt_develop_t *dev)
   free(dev->histogram);
   free(dev->histogram_pre_tonecurve);
   free(dev->histogram_pre_levels);
+
+  g_list_free(dev->forms);
+  g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
 
   g_list_free_full(dev->proxy.exposure, g_free);
 

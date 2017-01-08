@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
 <HEAD>
-<TITLE>Lua 5.2 readme</TITLE>
+<TITLE>Lua 5.3 readme</TITLE>
 <LINK REL="stylesheet" TYPE="text/css" HREF="lua.css">
 <META HTTP-EQUIV="content-type" CONTENT="text/html; charset=iso-8859-1">
 <STYLE TYPE="text/css">
@@ -28,13 +28,12 @@ tt, kbd, code {
 
 <BODY>
 
-<HR>
 <H1>
-<A HREF="http://www.lua.org/"><IMG SRC="logo.gif" ALT="Lua" BORDER=0></A>
-Welcome to Lua 5.2
+<A HREF="http://www.lua.org/"><IMG SRC="logo.gif" ALT="Lua"></A>
+Welcome to Lua 5.3
 </H1>
 
-<P>
+<DIV CLASS="menubar">
 <A HREF="#about">about</A>
 &middot;
 <A HREF="#install">installation</A>
@@ -44,9 +43,9 @@ Welcome to Lua 5.2
 <A HREF="#license">license</A>
 &middot;
 <A HREF="contents.html">reference manual</A>
+</DIV>
 
 <H2><A NAME="about">About Lua</A></H2>
-
 <P>
 Lua is a powerful, fast, lightweight, embeddable scripting language
 developed by a
@@ -70,13 +69,12 @@ and
 updated
 <A HREF="http://www.lua.org/docs.html">documentation</A>,
 especially the
-<A HREF="http://www.lua.org/manual/5.2/">reference manual</A>,
+<A HREF="http://www.lua.org/manual/5.3/">reference manual</A>,
 which may differ slightly from the
 <A HREF="contents.html">local copy</A>
 distributed in this package.
 
 <H2><A NAME="install">Installing Lua</A></H2>
-
 <P>
 Lua is distributed in
 <A HREF="http://www.lua.org/ftp/">source</A>
@@ -102,7 +100,6 @@ Try also
 a multi-platform distribution of Lua that includes batteries.
 
 <H3>Building Lua</H3>
-
 <P>
 In most Unix-like platforms, simply do "<KBD>make</KBD>" with a suitable target.
 Here are the details.
@@ -110,7 +107,7 @@ Here are the details.
 <OL>
 <LI>
 Open a terminal window and move to
-the top-level directory, which is named <TT>lua-5.2.x</TT>.
+the top-level directory, which is named <TT>lua-5.3.x</TT>.
 The <TT>Makefile</TT> there controls both the build process and the installation process.
 <P>
 <LI>
@@ -118,14 +115,14 @@ The <TT>Makefile</TT> there controls both the build process and the installation
   The platforms currently supported are:
 <P>
 <P CLASS="display">
-   aix ansi bsd freebsd generic linux macosx mingw posix solaris
+   aix bsd c89 freebsd generic linux macosx mingw posix solaris
 </P>
 <P>
   If your platform is listed, just do "<KBD>make xxx</KBD>", where xxx
   is your platform name.
 <P>
   If your platform is not listed, try the closest one or posix, generic,
-  ansi, in this order.
+  c89, in this order.
 <P>
 <LI>
 The compilation takes only a few moments
@@ -215,13 +212,7 @@ then try "<KBD>make linux MYLIBS=-ltermcap</KBD>".
   it will be used by any Lua clients that you build, to ensure consistency.
   Further customization is available to experts by editing the Lua sources.
 
-<P>
-  We strongly recommend that you enable dynamic loading in <TT>src/luaconf.h</TT>.
-  This is done automatically for all platforms listed above that have
-  this feature and also for Windows.
-
 <H3><A NAME="other">Building Lua on other systems</A></H3>
-
 <P>
   If you're not using the usual Unix tools, then the instructions for
   building Lua depend on the compiler you use. You'll need to create
@@ -236,7 +227,7 @@ lapi.c lcode.c lctype.c ldebug.c ldo.c ldump.c lfunc.c lgc.c llex.c
 lmem.c lobject.c lopcodes.c lparser.c lstate.c lstring.c ltable.c
 ltm.c lundump.c lvm.c lzio.c
 lauxlib.c lbaselib.c lbitlib.c lcorolib.c ldblib.c liolib.c
-lmathlib.c loslib.c lstrlib.c ltablib.c loadlib.c linit.c
+lmathlib.c loslib.c lstrlib.c ltablib.c lutf8lib.c loadlib.c linit.c
 <DT>
 interpreter:
 <DD>
@@ -263,10 +254,9 @@ compiler:
   As mentioned above, you may edit <TT>src/luaconf.h</TT> to customize
   some features before building Lua.
 
-<H2><A NAME="changes">Changes since Lua 5.1</A></H2>
-
+<H2><A NAME="changes">Changes since Lua 5.2</A></H2>
 <P>
-Here are the main changes introduced in Lua 5.2.
+Here are the main changes introduced in Lua 5.3.
 The
 <A HREF="contents.html">reference manual</A>
 lists the
@@ -274,98 +264,57 @@ lists the
 
 <H3>Main changes</H3>
 <UL>
-<LI> yieldable pcall and metamethods
-<LI> new lexical scheme for globals
-<LI> ephemeron tables
-<LI> new library for bitwise operations
-<LI> light C functions
-<LI> emergency garbage collector
-<LI> <CODE>goto</CODE> statement
-<LI> finalizers for tables
+<LI> integers (64-bit by default)
+<LI> official support for 32-bit numbers
+<LI> bitwise operators
+<LI> basic utf-8 support
+<LI> functions for packing and unpacking values
+
 </UL>
 
-Here are the other changes introduced in Lua 5.2:
+Here are the other changes introduced in Lua 5.3:
 <H3>Language</H3>
 <UL>
-<LI> no more fenv for threads or functions
-<LI> tables honor the <CODE>__len</CODE> metamethod
-<LI> hex and <CODE>\z</CODE> escapes in strings
-<LI> support for hexadecimal floats
-<LI> order metamethods work for different types
-<LI> no more verification of opcode consistency
-<LI> hook event "tail return" replaced by "tail call"
-<LI> empty statement
-<LI> <CODE>break</CODE> statement may appear in the middle of a block
+<LI> userdata can have any Lua value as uservalue
+<LI> floor division
+<LI> more flexible rules for some metamethods
 </UL>
 
 <H3>Libraries</H3>
 <UL>
-<LI> arguments for function called through <CODE>xpcall</CODE>
-<LI> optional 'mode' argument to load and loadfile (to control binary x text)
-<LI> optional 'env' argument to load and loadfile (environment for loaded chunk)
-<LI> <CODE>loadlib</CODE> may load libraries with global names (RTLD_GLOBAL)
-<LI> new function <CODE>package.searchpath</CODE>
-<LI> modules receive their paths when loaded
-<LI> optional base in <CODE>math.log</CODE>
-<LI> optional separator in <CODE>string.rep</CODE>
-<LI> <CODE>file:write</CODE> returns <CODE>file</CODE>
-<LI> closing a pipe returns exit status
-<LI> <CODE>os.exit</CODE> may close state
-<LI> new metamethods <CODE>__pairs</CODE> and <CODE>__ipairs</CODE>
-<LI> new option 'isrunning' for <CODE>collectgarbage</CODE> and <CODE>lua_gc</CODE>
-<LI> frontier patterns
-<LI> <CODE>\0</CODE> in patterns
-<LI> new option <CODE>*L</CODE> for <CODE>io.read</CODE>
-<LI> options for <CODE>io.lines</CODE>
-<LI> <CODE>debug.getlocal</CODE> can access function varargs
+<LI> <CODE>ipairs</CODE> and the table library respect metamethods
+<LI> strip option in <CODE>string.dump</CODE>
+<LI> table library respects metamethods
+<LI> new function <CODE>table.move</CODE>
+<LI> new function <CODE>string.pack</CODE>
+<LI> new function <CODE>string.unpack</CODE>
+<LI> new function <CODE>string.packsize</CODE>
 </UL>
 
 <H3>C API</H3>
 <UL>
-<LI> main thread predefined in the registry
-<LI> new functions
-<CODE>lua_absindex</CODE>,
-<CODE>lua_arith</CODE>,
-<CODE>lua_compare</CODE>,
-<CODE>lua_copy</CODE>,
-<CODE>lua_len</CODE>,
-<CODE>lua_rawgetp</CODE>,
-<CODE>lua_rawsetp</CODE>,
-<CODE>lua_upvalueid</CODE>,
-<CODE>lua_upvaluejoin</CODE>,
-<CODE>lua_version</CODE>.
-<LI> new functions
-<CODE>luaL_checkversion</CODE>,
-<CODE>luaL_setmetatable</CODE>,
-<CODE>luaL_testudata</CODE>,
-<CODE>luaL_tolstring</CODE>.
-<LI> <CODE>lua_pushstring</CODE> and <CODE>pushlstring</CODE> return string
-<LI> <CODE>nparams</CODE> and <CODE>isvararg</CODE> available in debug API
-<LI> new <CODE>lua_Unsigned</CODE>
-</UL>
-
-<H3>Implementation</H3>
-<UL>
-<LI> max constants per function raised to 2<SUP>26</SUP>
-<LI> generational mode for garbage collection (experimental)
-<LI> NaN trick (experimental)
-<LI> internal (immutable) version of ctypes
-<LI> simpler implementation for string buffers
-<LI> parser uses much less C-stack space (no more auto arrays)
+<LI> simpler API for continuation functions in C
+<LI> <CODE>lua_gettable</CODE> and similar functions return type of resulted value
+<LI> strip option in <CODE>lua_dump</CODE>
+<LI> new function: <CODE>lua_geti</CODE>
+<LI> new function: <CODE>lua_seti</CODE>
+<LI> new function: <CODE>lua_isyieldable</CODE>
+<LI> new function: <CODE>lua_numbertointeger</CODE>
+<LI> new function: <CODE>lua_rotate</CODE>
+<LI> new function: <CODE>lua_stringtonumber</CODE>
 </UL>
 
 <H3>Lua standalone interpreter</H3>
 <UL>
-<LI> new <CODE>-E</CODE> option to avoid environment variables
-<LI> handling of non-string error messages
+<LI> can be used as calculator; no need to prefix with '='
+<LI> <CODE>arg</CODE> table available to all code
 </UL>
 
 <H2><A NAME="license">License</A></H2>
-<A HREF="http://www.opensource.org/docs/definition.php">
-<IMG SRC="osi-certified-72x60.png" ALIGN="right" BORDER="0" ALT="[osi certified]" STYLE="padding-left: 30px ;">
-</A>
-
 <P>
+<A HREF="http://www.opensource.org/docs/definition.php">
+<IMG SRC="osi-certified-72x60.png" ALIGN="right" ALT="[osi certified]" STYLE="padding-left: 30px ;">
+</A>
 Lua is free software distributed under the terms of the
 <A HREF="http://www.opensource.org/licenses/mit-license.html">MIT license</A>
 reproduced below;
@@ -379,7 +328,7 @@ For details, see
 <A HREF="http://www.lua.org/license.html">this</A>.
 
 <BLOCKQUOTE STYLE="padding-bottom: 0em">
-Copyright &copy; 1994&ndash;2015 Lua.org, PUC-Rio.
+Copyright &copy; 1994&ndash;2016 Lua.org, PUC-Rio.
 
 <P>
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -404,13 +353,12 @@ THE SOFTWARE.
 </BLOCKQUOTE>
 <P>
 
-<HR>
-<SMALL CLASS="footer">
+<P CLASS="footer">
 Last update:
-Mon Feb 23 22:25:08 BRT 2015
-</SMALL>
+Tue Feb  2 22:25:27 BRST 2016
+</P>
 <!--
-Last change: revised for Lua 5.2.4
+Last change: revised for Lua 5.3.3
 -->
 
 </BODY>

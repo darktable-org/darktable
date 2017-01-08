@@ -570,9 +570,12 @@ static int number_member(lua_State *L)
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   int index = luaL_checkinteger(L, 2);
-  if(index > d->num_snapshots || index < 1)
+  if( index < 1)
   {
     return luaL_error(L, "Accessing a non-existant snapshot");
+  }else if(index > d->num_snapshots ) {
+    lua_pushnil(L);
+    return 1;
   }
   index = index - 1;
   luaA_push(L, dt_lua_snapshot_t, &index);

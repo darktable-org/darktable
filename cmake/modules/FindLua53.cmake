@@ -1,0 +1,53 @@
+SET(LUA53_FIND_REQUIRED ${Lua53_FIND_REQUIRED})
+SET(LUA53_FIND_VERSION ${Lua53_FIND_VERSION})
+SET(LUA53_FIND_VERSION_EXACT ${Lua53_FIND_VERSION_EXACT})
+SET(LUA53_FIND_QUIETLY ${Lua53_FIND_QUIETLY})
+SET(LUA_VERSION_TOO_HIGH 5.4)
+
+include(Prebuilt)
+include(FindPkgConfig)
+
+pkg_search_module(LUA53 lua53 lua5.3 lua-5.3 lua)
+
+if(LUA53_FIND_VERSION)
+  cmake_minimum_required(VERSION 2.6.2)
+  set(LUA53_FAILED_VERSION_CHECK true)
+
+  if(LUA53_FIND_VERSION_EXACT)
+    if(LUA53_VERSION VERSION_EQUAL LUA53_FIND_VERSION)
+      set(LUA53_FAILED_VERSION_CHECK false)
+    endif()
+  else()
+    if(LUA53_VERSION VERSION_EQUAL   LUA53_FIND_VERSION OR
+       LUA53_VERSION VERSION_GREATER LUA53_FIND_VERSION AND
+       LUA53_VERSION VERSION_LESS LUA_VERSION_TOO_HIGH)
+      set(LUA53_FAILED_VERSION_CHECK false)
+    endif()
+  endif()
+
+  if(LUA53_FAILED_VERSION_CHECK)
+    if(LUA53_FIND_REQUIRED AND NOT LUA53_FIND_QUIETLY)
+        if(LUA53_FIND_VERSION_EXACT)
+            message(FATAL_ERROR "Lua5.3 version check failed.  Version ${LUA53_VERSION} was found, version ${LUA53_FIND_VERSION} is needed exactly.")
+        else(LUA53_FIND_VERSION_EXACT)
+            message(FATAL_ERROR "Lua5.3 version check failed.  Version ${LUA53_VERSION} was found, at least version ${LUA53_FIND_VERSION} is required")
+        endif(LUA53_FIND_VERSION_EXACT)
+    endif(LUA53_FIND_REQUIRED AND NOT LUA53_FIND_QUIETLY)
+
+  set(LUA53_FOUND false)
+  endif(LUA53_FAILED_VERSION_CHECK)
+
+endif(LUA53_FIND_VERSION)
+
+if (LUA53_FOUND)
+  set(LUA53 ON CACHE BOOL "Build with lua5.3 support.")
+  if(APPLE)
+    foreach(i ${LUA53_LIBRARIES})
+      find_library(_lua53_LIBRARY NAMES ${i} HINTS ${LUA53_LIBRARY_DIRS})
+      list(APPEND LUA53_LIBRARIES_FULL ${_lua53_LIBRARY})
+      unset(_lua53_LIBRARY CACHE)
+    endforeach(i)
+    set(LUA53_LIBRARIES ${LUA53_LIBRARIES_FULL})
+    unset(LUA53_LIBRARIES_FULL CACHE)
+  endif(APPLE)
+endif (LUA53_FOUND)

@@ -605,13 +605,14 @@ static int execute_cb(lua_State*L)
 
 static int sleep_cb(lua_State*L)
 {
-  const int delay = luaL_optint(L, 1, 0);
+  const int delay = luaL_optinteger(L, 1, 0);
   dt_lua_unlock();
   g_usleep(delay*1000);
   dt_lua_lock();
   return 0;
 }
 
+#if !defined (_WIN32)
 static int read_cb(lua_State*L)
 {
   luaL_checkudata(L,1,LUA_FILEHANDLE);
@@ -627,6 +628,7 @@ static int read_cb(lua_State*L)
   dt_lua_lock();
   return 0;
 }
+#endif
 
 typedef struct gtk_wrap_communication {
   GCond end_cond;
@@ -707,9 +709,11 @@ int dt_lua_init_call(lua_State *L)
   lua_pushcfunction(L,sleep_cb);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "sleep");
+#if !defined (_WIN32)
   lua_pushcfunction(L,read_cb);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "read");
+#endif
 
   lua_newtable(L);
   lua_setfield(L, LUA_REGISTRYINDEX, "dt_lua_bg_threads");
