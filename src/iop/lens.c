@@ -144,7 +144,7 @@ int operation_tags()
 
 int flags()
 {
-  return /* IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | */ IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -780,7 +780,6 @@ error:
 }
 #endif
 
-#if 0
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
@@ -793,7 +792,6 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->yalign = 1;
   return;
 }
-#endif
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
@@ -874,37 +872,62 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
-    // acquire temp memory for distorted pixel coords
-    const size_t bufsize = (size_t)roi_in->width * 2 * 3;
-    void *const buf = dt_alloc_align(16, bufsize * dt_get_num_threads() * sizeof(float));
+    const int xoff = roi_in->x;
+    const int yoff = roi_in->y;
+    const int width = roi_in->width;
+    const int height = roi_in->height;
+    const int awidth = abs(width);
+    const int aheight = abs(height);
+    const int xstep = (width < 0) ? -1 : 1;
+    const int ystep = (height < 0) ? -1 : 1;
+
+    const size_t nbpoints = 2 * awidth + 2 * aheight;
+
+    float *const buf = dt_alloc_align(16, nbpoints * 2 * 3 * sizeof(float));
 
 #ifdef _OPENMP
 #pragma omp parallel default(none) shared(modifier) reduction(min : xm, ym) reduction(max : xM, yM)
 #endif
     {
-      float *const bufptr = ((float *)buf) + (size_t)bufsize * dt_get_thread_num();
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+      for(int i = 0; i < awidth; i++)
+        lf_modifier_apply_subpixel_geometry_distortion(modifier, xoff + i * xstep, yoff, 1, 1, buf + 6 * i);
 
 #ifdef _OPENMP
 #pragma omp for schedule(static)
 #endif
-      for(int y = 0; y < roi_out->height; y++)
+      for(int i = 0; i < awidth; i++)
+        lf_modifier_apply_subpixel_geometry_distortion(modifier, xoff + i * xstep, yoff + (height - 1), 1, 1, buf + 6 * (awidth + i));
+
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+      for(int j = 0; j < aheight; j++)
+        lf_modifier_apply_subpixel_geometry_distortion(modifier, xoff, yoff + j * ystep, 1, 1, buf + 6 * (2 * awidth + j));
+
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+      for(int j = 0; j < aheight; j++)
+        lf_modifier_apply_subpixel_geometry_distortion(modifier, xoff + (width - 1), yoff + j * ystep, 1, 1, buf + 6 * (2 * awidth + aheight + j));
+
+#ifdef _OPENMP
+#pragma omp barrier
+#endif
+
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+      for(int k = 0; k < nbpoints; k++)
       {
-        lf_modifier_apply_subpixel_geometry_distortion(modifier, roi_out->x, roi_out->y + y, roi_out->width, 1,
-                                                       bufptr);
-
-        // reverse transform the global coords from lf to our buffer
-        for(int x = 0; x < roi_out->width; x++)
-        {
-          for(int c = 0; c < 3; c++)
-          {
-            const size_t k = (size_t)3 * c * x;
-
-            xm = MIN(xm, bufptr[k + 0]);
-            xM = MAX(xM, bufptr[k + 0]);
-            ym = MIN(ym, bufptr[k + 1]);
-            yM = MAX(yM, bufptr[k + 1]);
-          }
-        }
+        const float x = buf[6 * k + 0];
+        const float y = buf[6 * k + 3];
+        xm = isnan(x) ? xm : MIN(xm, x);
+        xM = isnan(x) ? xM : MAX(xM, x);
+        ym = isnan(y) ? ym : MIN(ym, y);
+        yM = isnan(y) ? yM : MAX(yM, y);
       }
     }
 
