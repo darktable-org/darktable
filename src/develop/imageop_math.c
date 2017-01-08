@@ -979,12 +979,9 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
                                                    const int32_t in_stride, const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
-  // we assume that are downscaling the image by at least 1/3, such
-  // that for each color in the mosaiced output image, there will be
-  // at least one pixel of the same color to interpolate from in the
-  // mosaiced input image
-  assert((px_footprint / 3.f) >= 1.f);
-
+  // Use box filter of width px_footprint*2+1 centered on the current
+  // sample (rounded to nearest input pixel) to anti-alias. Higher MP
+  // images need larger filters to avoid artifacts.
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
@@ -993,33 +990,27 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
     uint16_t *outc = out + out_stride * y;
 
     const float fy = (y + roi_out->y) * px_footprint;
-    const int py = roundf(fy);
-    const int maxy = roundf(fy + px_footprint);
-    assert(maxy <= roi_in->height);
+    const int miny = MAX(0, (int)roundf(fy - px_footprint));
+    const int maxy = MIN(roi_in->height-1, (int)roundf(fy + px_footprint));
 
     float fx = roi_out->x * px_footprint;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      const int px = roundf(fx);
-      const int maxx = roundf(fx + px_footprint);
-      assert(maxx <= roi_in->width);
+      const int minx = MAX(0, (int)roundf(fx - px_footprint));
+      const int maxx = MIN(roi_in->width-1, (int)roundf(fx + px_footprint));
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
       int num = 0;
       uint32_t col = 0;
 
-      for(int yy = py; yy < maxy; ++yy)
-        for(int xx = px; xx < maxx; ++xx)
-        {
-          if(FCxtrans(yy, xx, roi_in, xtrans) != c) continue;
-
-          col += in[xx + in_stride * yy];
-          num++;
-        }
-
-      assert(num > 0);
-
-      *outc = (uint16_t)((float)col / (float)num);
+      for(int yy = miny; yy <= maxy; ++yy)
+        for(int xx = minx; xx <= maxx; ++xx)
+          if(FCxtrans(yy, xx, roi_in, xtrans) == c)
+          {
+            col += in[xx + in_stride * yy];
+            num++;
+          }
+      *outc = col / num;
     }
   }
 }
@@ -1030,47 +1021,35 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const flo
                                                      const int32_t in_stride, const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
-  const int samples = MAX(1, (int)floorf(px_footprint / 3));
-
-  // A slightly different algorithm than
-  // dt_iop_clip_and_zoom_demosaic_half_size_f() which aligns to 2x2
-  // Bayer grid and hence must pull additional data from all edges
-  // which don't align with CFA. Instead align to a 3x3 pattern (which
-  // is semi-regular in X-Trans CFA). If instead had aligned the
-  // samples to the full 6x6 X-Trans CFA, wouldn't need to perform a
-  // CFA lookup, but then would only work at 1/6 scale or less. This
-  // code doesn't worry about fractional pixel offset of top/left of
-  // pattern nor oversampling by non-integer number of samples.
-
-  // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell
-  static const float div[3] = { 2.0, 5.0, 2.0 };
-
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
   for(int y = 0; y < roi_out->height; y++)
   {
     float *outc = out + out_stride * y;
-    const int py = CLAMPS((int)round((y + roi_out->y - 0.5f) * px_footprint), 0, roi_in->height - 3);
-    const int ymax = MIN(roi_in->height - 3, py + 3 * samples);
 
-    for(int x = 0; x < roi_out->width; x++, outc++)
+    const float fy = (y + roi_out->y) * px_footprint;
+    const int miny = MAX(0, (int)roundf(fy - px_footprint));
+    const int maxy = MIN(roi_in->height-1, (int)roundf(fy + px_footprint));
+
+    float fx = roi_out->x * px_footprint;
+    for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      float col[3] = { 0.0f };
-      int num = 0;
-      const int px = CLAMPS((int)round((x + roi_out->x - 0.5f) * px_footprint), 0, roi_in->width - 3);
-      const int xmax = MIN(roi_in->width - 3, px + 3 * samples);
-      for(int yy = py; yy <= ymax; yy += 3)
-        for(int xx = px; xx <= xmax; xx += 3)
-        {
-          for(int j = 0; j < 3; ++j)
-            for(int i = 0; i < 3; ++i)
-              col[FCxtrans(yy + j, xx + i, roi_in, xtrans)] += in[xx + i + in_stride * (yy + j)];
-          num++;
-        }
+      const int minx = MAX(0, (int)roundf(fx - px_footprint));
+      const int maxx = MIN(roi_in->width-1, (int)roundf(fx + px_footprint));
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
-      *outc = col[c] / ((float)num * div[c]);
+      int num = 0;
+      float col = 0.f;
+
+      for(int yy = miny; yy <= maxy; ++yy)
+        for(int xx = minx; xx <= maxx; ++xx)
+          if(FCxtrans(yy, xx, roi_in, xtrans) == c)
+          {
+            col += in[xx + in_stride * yy];
+            num++;
+          }
+      *outc = col / (float)num;
     }
   }
 }

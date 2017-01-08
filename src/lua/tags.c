@@ -125,8 +125,7 @@ static int tag_lib_index(lua_State *L)
   }
   else
   {
-    sqlite3_finalize(stmt);
-    luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
   }
   sqlite3_finalize(stmt);
   return 1;
