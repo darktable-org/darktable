@@ -84,7 +84,9 @@ darktable:set_text([[The darktable library is the main entry point for all acces
 darktable.print:set_text([[Will print a string to the darktable control log (the long overlayed window that appears over the main panel).]])
 darktable.print:add_parameter("message","string",[[The string to display which should be a single line.]])
 
-darktable.print_error:set_text([[This function will print its parameter if the Lua logdomain is activated. Start darktable with the "-d lua" command line option to enable the Lua logdomain.]])
+darktable.print_log:set_text([[This function will print its parameter if the Lua logdomain is activated. Start darktable with the "-d lua" command line option to enable the Lua logdomain.]])
+darktable.print_log:add_parameter("message","string",[[The string to display.]])
+darktable.print_error:set_text([[This function is similar to]]..my_tostring(darktable.print_log)..[[ but adds an ERROR prefix for clarity.)
 darktable.print_error:add_parameter("message","string",[[The string to display.]])
 
 darktable.register_event:set_text([[This function registers a callback to be called when a given event happens.]]..para()..
@@ -524,7 +526,7 @@ darktable.control.sleep:add_parameter("delay","int","The delay in millisecond to
 darktable.control.execute:set_text("Run a command in a shell while not blocking darktable")
 darktable.control.execute:add_parameter("command","string","The command to run, as in 'sh -c'")
 darktable.control.execute:add_return("int","The result of the system call")
-darktable.control.read:set_text("Block until a file is readable while not blocking darktable")
+darktable.control.read:set_text("Block until a file is readable while not blocking darktable"..para()..emphasis("This function is not available on Windows builds"))
 darktable.control.read:add_parameter("file","file","The file object to wait for")
 
 
@@ -1049,6 +1051,7 @@ local widget = dt.new_widget("button"){
 	events["global_toolbox-overlay_toggle"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
   events["mouse-over-image-changed"]:set_text([[This event is triggered whenever the image under the mouse changes]])
+	events["mouse-over-image-changed"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
   events["mouse-over-image-changed"].callback:add_parameter("image",types.dt_lua_image_t,[[The new image under the mouse, can be nil if there is no image under the mouse]])
 	events["mouse-over-image-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
   events["exit"]:set_text([[This event is triggered when darktable exits, it allows lua scripts to do cleanup jobs]])
@@ -1076,12 +1079,10 @@ local widget = dt.new_widget("button"){
 	invisible_attr(attributes.internal_attr)
 	invisible_attr(attributes.read)
 	invisible_attr(attributes.has_pairs)
-	invisible_attr(attributes.has_ipairs)
 	invisible_attr(attributes.is_self)
 	invisible_attr(attributes.has_length)
 	attributes.write:set_text([[This object is a variable that can be written to.]])
   --attributes.has_pairs:set_text([[This object can be used as an argument to the system function "pairs" and iterated upon.]])
-	--attributes.has_ipairs:set_text([[This object can be used as an argument to the system function "ipairs" and iterated upon.]])
 	--attributes.has_equal:set_text([[This object has a specific comparison function that will be used when comparing it to an object of the same type.]])
 	--attributes.has_length:set_text([[This object has a specific length function that will be used by the # operator.]])
 	attributes.has_tostring:set_text([[This object has a specific reimplementation of the "tostring" method that allows pretty-printing it.]])

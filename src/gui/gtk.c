@@ -1044,7 +1044,11 @@ static void configure_ppd_dpi(dt_gui_gtk_t *gui)
   }
   else
   {
+#ifndef GDK_WINDOWING_QUARTZ
     gui->ppd = gtk_widget_get_scale_factor(widget);
+#else
+    gui->ppd = dt_osx_get_ppd();
+#endif
     if(gui->ppd < 0.0)
     {
       gui->ppd = 1.0;
@@ -1732,13 +1736,21 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
 
   result_t result = {.result = RESULT_NONE, .window = window};
 
-  GtkWidget *button = gtk_button_new_with_label(no_text);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_no), &result);
-  gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+  GtkWidget *button;
 
-  button = gtk_button_new_with_label(yes_text);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_yes), &result);
-  gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+  if(no_text)
+  {
+    button = gtk_button_new_with_label(no_text);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_no), &result);
+    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+  }
+
+  if(yes_text)
+  {
+    button = gtk_button_new_with_label(yes_text);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_yes), &result);
+    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+  }
 
   gtk_widget_show_all(window);
   gtk_main();

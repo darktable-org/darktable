@@ -401,7 +401,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     {
       // check if DARKTABLE_SHAREDIR is already in there
       gboolean found = FALSE;
-      gchar **tokens = g_strsplit(xdg_data_dirs, ":", 0);
+      gchar **tokens = g_strsplit(xdg_data_dirs, G_SEARCHPATH_SEPARATOR_S, 0);
       // xdg_data_dirs is neither NULL nor empty => tokens != NULL
       for(char **iter = tokens; *iter != NULL; iter++)
         if(!strcmp(DARKTABLE_SHAREDIR, *iter))
@@ -413,7 +413,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       if(found)
         set_env = FALSE;
       else
-        new_xdg_data_dirs = g_strjoin(":", DARKTABLE_SHAREDIR, xdg_data_dirs, NULL);
+        new_xdg_data_dirs = g_strjoin(G_SEARCHPATH_SEPARATOR_S, DARKTABLE_SHAREDIR, xdg_data_dirs, NULL);
     }
     else
     {
@@ -801,6 +801,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
   else if(!dt_database_get_lock_acquired(darktable.db))
   {
+    gboolean image_loaded_elsewhere = FALSE;
 #ifndef MAC_INTEGRATION
     // send the images to the other instance via dbus
     fprintf(stderr, "trying to open the images in the running instance\n");
@@ -814,13 +815,16 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       if(filename == NULL) continue;
       if(!connection) connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
       // ... and send it to the running instance of darktable
-      g_dbus_connection_call_sync(connection, "org.darktable.service", "/darktable",
-                                  "org.darktable.service.Remote", "Open", g_variant_new("(s)", filename),
-                                  NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL);
+      image_loaded_elsewhere = g_dbus_connection_call_sync(connection, "org.darktable.service", "/darktable",
+                                                           "org.darktable.service.Remote", "Open",
+                                                           g_variant_new("(s)", filename), NULL,
+                                                           G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL) != NULL;
       g_free(filename);
     }
     if(connection) g_object_unref(connection);
 #endif
+
+    if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
 
     return 1;
   }

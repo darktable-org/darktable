@@ -234,7 +234,7 @@ static int zoom_member(lua_State *L)
     // lua can have temporarly false values but it will fix itself when entering map
     // unfortunately we can't get the min max when lib->map doesn't exist
     luaL_checktype(L, 3, LUA_TNUMBER);
-    int zoom = luaL_checkint(L, 3);
+    int zoom = luaL_checkinteger(L, 3);
     if(dt_view_manager_get_current_view(darktable.view_manager) != module)
     {
       dt_conf_set_int("plugins/map/zoom", zoom);

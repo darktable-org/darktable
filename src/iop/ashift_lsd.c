@@ -23,6 +23,8 @@
  *      make all interface functions static
  *      comment out unsused interface functions
  *      catch (unlikely) division by zero near line 2035
+ *      rename rad1 and rad2 to radius1 and radius2 in reduce_region_radius()
+ *        to avoid naming conflict in windows build
  *
  */
 

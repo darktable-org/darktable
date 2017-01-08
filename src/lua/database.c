@@ -179,7 +179,7 @@ static int database_numindex(lua_State *L)
   else
   {
     sqlite3_finalize(stmt);
-    return luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
   }
   return 1;
 }
@@ -198,11 +198,12 @@ static int collection_numindex(lua_State *L)
     return luaL_error(L, "incorrect index in database");
   }
   int imgid = dt_collection_get_nth(darktable.collection,index-1);
-  if (imgid <1)
+  if (imgid >0)
   {
-    return luaL_error(L, "incorrect index in database");
+    luaA_push(L, dt_lua_image_t, &imgid);
+  } else { 
+    lua_pushnil(L);
   }
-  luaA_push(L, dt_lua_image_t, &imgid);
   return 1;
 
 }

@@ -118,47 +118,6 @@ static void to_progress_double(lua_State *L, luaA_Type type_id, void *c_out, int
 /************************************/
 /* METATBLE CALLBACSK FOR AUTOTYPES */
 /************************************/
-static int autotype_inext(lua_State *L)
-{
-  luaL_getmetafield(L, 1, "__len");
-  lua_pushvalue(L, -3);
-  lua_call(L, 1, 1);
-  int length = lua_tonumber(L, -1);
-  lua_pop(L, 1);
-  int key = 0;
-  if(length == 0)
-  {
-    lua_pop(L, 1);
-    lua_pushnil(L);
-    return 1;
-  }
-  else if(lua_isnil(L, -1))
-  {
-    key = 1;
-    lua_pop(L, 1);
-    lua_pushnumber(L, key);
-    lua_pushnumber(L, key);
-    lua_gettable(L, -3);
-    return 2;
-  }
-  else if(luaL_checknumber(L, -1) < length)
-  {
-    key = lua_tonumber(L, -1) + 1;
-    lua_pop(L, 1);
-    lua_pushnumber(L, key);
-    lua_pushnumber(L, key);
-    lua_gettable(L, -3);
-    return 2;
-  }
-  else
-  {
-    // we reached the end of ipairs
-    lua_pop(L, 1);
-    lua_pushnil(L);
-    return 1;
-  }
-}
-
 static int autotype_next(lua_State *L)
 {
   /* CONVENTION
@@ -271,14 +230,6 @@ static int autotype_next(lua_State *L)
 }
 
 
-
-static int autotype_ipairs(lua_State *L)
-{
-  luaL_getmetafield(L, 1, "__inext");
-  lua_pushvalue(L, -2);
-  lua_pushinteger(L, 0); // index set to 0 for reset
-  return 3;
-}
 
 static int autotype_pairs(lua_State *L)
 {
@@ -542,12 +493,6 @@ void dt_lua_type_register_number_const_type(lua_State *L, luaA_Type type_id)
   {
     lua_pushvalue(L, -3);
     lua_setfield(L, -2, "__len");
-
-    lua_pushcfunction(L, autotype_ipairs);
-    lua_setfield(L, -2, "__ipairs");
-
-    lua_pushcfunction(L, autotype_inext);
-    lua_setfield(L, -2, "__inext");
   }
 
   lua_pop(L, 3);
@@ -566,12 +511,6 @@ void dt_lua_type_register_number_type(lua_State *L, luaA_Type type_id)
   {
     lua_pushvalue(L, -3);
     lua_setfield(L, -2, "__len");
-
-    lua_pushcfunction(L, autotype_ipairs);
-    lua_setfield(L, -2, "__ipairs");
-
-    lua_pushcfunction(L, autotype_inext);
-    lua_setfield(L, -2, "__inext");
   }
 
   lua_pop(L, 3);
@@ -581,7 +520,7 @@ int dt_lua_type_member_luaautoc(lua_State *L)
 {
   const char *member_name = luaL_checkstring(L, 2);
   luaL_getmetafield(L, 1, "__luaA_Type");
-  luaA_Type my_type = luaL_checkint(L, -1);
+  luaA_Type my_type = luaL_checkinteger(L, -1);
   lua_pop(L, 1);
   void *object = lua_touserdata(L, 1);
   if(lua_gettop(L) != 3)
@@ -798,10 +737,6 @@ static int wrapped_newindex(lua_State *L)
 {
   return luaL_error(L, "TBSL");
 }
-static int wrapped_ipairs(lua_State *L)
-{
-  return luaL_error(L, "TBSL");
-}
 static int wrapped_tostring(lua_State *L)
 {
   return luaL_error(L, "TBSL");
@@ -819,8 +754,6 @@ luaA_Type dt_lua_init_wrapped_singleton(lua_State *L, lua_CFunction pusher, lua_
   lua_setfield(L, -2, "__newindex");
   lua_pushcfunction(L, wrapped_pairs);
   lua_setfield(L, -2, "__pairs");
-  lua_pushcfunction(L, wrapped_ipairs);
-  lua_setfield(L, -2, "__ipairs");
   lua_pushcfunction(L, wrapped_tostring);
   lua_setfield(L, -2, "__tostring");
   lua_pushcfunction(L, pusher);
@@ -878,10 +811,6 @@ luaA_Type dt_lua_init_gpointer_type_type(lua_State *L, luaA_Type type_id)
   lua_getfield(L,-1,"__pairs");
   lua_pushcclosure(L, gpointer_wrapper,1);
   lua_setfield(L, -2, "__pairs");
-
-  lua_getfield(L,-1,"__ipairs");
-  lua_pushcclosure(L, gpointer_wrapper,1);
-  lua_setfield(L, -2, "__ipairs");
 
   lua_getfield(L,-1,"__tostring");
   lua_pushcclosure(L, gpointer_wrapper,1);
@@ -965,9 +894,7 @@ void dt_lua_type_setmetafield_type(lua_State*L,luaA_Type type_id,const char* met
       !strcmp(method_name,"__number_index") ||
       !strcmp(method_name,"__number_newindex") ||
       !strcmp(method_name,"__pairs") ||
-      !strcmp(method_name,"__ipairs") ||
       !strcmp(method_name,"__next") ||
-      !strcmp(method_name,"__inext") ||
       !strcmp(method_name,"__get") ||
       !strcmp(method_name,"__set") ||
       !strcmp(method_name,"__len") ||

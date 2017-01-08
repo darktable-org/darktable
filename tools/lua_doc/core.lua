@@ -140,6 +140,7 @@ local function document_type_sub(node,result,parent,prev_name)
 			or field == "__introspection_data_type"
 			or field == "__gtk_signals"
 			or field == "__tostring"
+			or field == "__name"
 			)	then
 			-- nothing
 		else
