@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-01-08 14:59+0100\n"
-"PO-Revision-Date: 2017-01-08 16:01+0100\n"
+"PO-Revision-Date: 2017-01-08 16:25+0100\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1360,8 +1360,8 @@ msgstr[1] "%d afbeeldingen afwijzen"
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
-msgstr[0] "geef classificatie %d ster aan %d afbeelding"
-msgstr[1] "geef classificatie %d sterren aan %d afbeeldingen"
+msgstr[0] "classificatie %d ster van %d afbeelding"
+msgstr[1] "classificatie %d sterren van %d afbeeldingen"
 
 #: ../src/common/ratings.c:75
 msgid "no images selected to apply rating"
@@ -2268,11 +2268,11 @@ msgstr "pas het masker in omgekeerde vorm toe"
 
 #: ../src/develop/blend_gui.c:1829
 msgid "mask blur"
-msgstr "doezelen"
+msgstr "masker vervagen"
 
 #: ../src/develop/blend_gui.c:1831
 msgid "radius for gaussian blur of blend mask"
-msgstr "de te gebruiken straal voor doezelen"
+msgstr "te gebruiken straal voor vervaging van het masker"
 
 #: ../src/develop/blend_gui.c:1837
 msgid "display mask"
@@ -2423,8 +2423,8 @@ msgstr "ctrl+klik voegt een knooppunt toe "
 #: ../src/develop/masks/masks.c:53 ../src/develop/masks/masks.c:82
 msgid "ctrl+scroll to set shape opacity, shift+scroll to set feather size"
 msgstr ""
-"ctrl+scroll voor het instellen van dekking door vorm, shift+scroll voor het "
-"instellen van feather afmeting"
+"ctrl+scroll voor instelling dekking door vorm, shift+scroll voor instelling "
+"afmeting doezelaar"
 
 #: ../src/develop/masks/masks.c:58
 msgid "ctrl+scroll to set shape opacity"
@@ -2443,7 +2443,7 @@ msgid ""
 "shift+click to switch feathering mode, ctrl+scroll to set shape opacity,\n"
 "shift+scroll to set feather size"
 msgstr ""
-"shift+klik schakelt feathering mode, ctrl+scroll om dekking door vorm in te "
+"shift+klik schakelt doezelaar, ctrl+scroll om dekking door vorm in te "
 "stellen,\n"
 "shift+scroll voor het instellen van feather afmeting"
 
@@ -6974,7 +6974,7 @@ msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl-click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgstr ""
-"klik en sleep om te verplaatsen - klik: toon/verberg feathering controle\n"
+"klik en sleep om te verplaatsen - klik: toon/verberg doezelaar controles\n"
 "ctrl+klik: automatisch glad maken, knobbel, glad, symmetrisch - verwijder "
 "met rechtermuisknop"
 
@@ -6992,7 +6992,7 @@ msgstr "wijzig hardheid door slepen (centrum)"
 
 #: ../src/iop/liquify.c:3336
 msgid "drag to adjust hardness (feather)"
-msgstr "wijzig hardheid door slepen (feather)"
+msgstr "wijzig hardheid door slepen (doezelaar)"
 
 #: ../src/iop/liquify.c:3337
 msgid ""
