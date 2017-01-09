@@ -72,7 +72,8 @@ typedef enum dt_iop_demosaic_qual_flags_t
   // or third scale interpolation instead
   DEMOSAIC_FULL_SCALE              = 1 << 0,
   DEMOSAIC_ONLY_VNG_LINEAR         = 1 << 1,
-  DEMOSAIC_XTRANS_FULL_MARKESTEIJN = 1 << 2
+  DEMOSAIC_XTRANS_FULL_MARKESTEIJN = 1 << 2,
+  DEMOSAIC_MEDIUM_QUAL             = 1 << 3
 } dt_iop_demosaic_qual_flags_t;
 
 typedef struct dt_iop_demosaic_params_t
@@ -1602,6 +1603,8 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
           const int qual = get_quality();
           if (qual > 0) flags |= DEMOSAIC_FULL_SCALE;
           if (qual > 1) flags |= DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+          if ((qual < 2) && (roi_out->scale <= .99999f))
+            flags |= DEMOSAIC_MEDIUM_QUAL;
         }
         break;
       case DT_DEV_PIXELPIPE_EXPORT:
@@ -1654,13 +1657,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
-  const int qual = get_quality();
+  const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
   int demosaicing_method = data->demosaicing_method;
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2 && roi_out->scale <= .99999f
+  if((qual_flags & DEMOSAIC_MEDIUM_QUAL)
      && // only overwrite setting if quality << requested and in dr mode
      (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)) // do not touch this special method
     demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
-  const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
 
   const float *const pixels = (float *)i;
 
