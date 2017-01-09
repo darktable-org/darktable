@@ -1904,12 +1904,8 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   const float threshold = 0.0001f * img->exif_iso;
   const int devid = piece->pipe->devid;
   const int qual = get_quality();
+  const int qual_flags = demosaic_qual_flags(piece, img, roi_out, qual);
   const int demosaicing_method = data->demosaicing_method;
-
-  // we check if we need ultra-high quality thumbnail for this size
-  int uhq_thumb = 0;
-  if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
-    uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
 
   cl_mem dev_aux = NULL;
   cl_mem dev_tmp = NULL;
@@ -1917,8 +1913,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   cl_int err = -999;
 
 
-  if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT
-     || (uhq_thumb) || ((piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) && (roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : .5f))))
+  if(qual_flags & DEMOSAIC_FULL_SCALE)
   {
     // Full demosaic and then scaling if needed
     const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
@@ -3333,19 +3328,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   const int demosaicing_method = data->demosaicing_method;
   const int qual = get_quality();
-
-  // we check if we need ultra-high quality thumbnail for this size
-  int uhq_thumb = 0;
-  if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
-    uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
-
-  // we use full Markesteijn demosaicing on xtrans sensors only if
-  // maximum quality is required
-  const int xtrans_full_markesteijn_demosaicing =
-      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 1) ||
-      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
-      uhq_thumb ||
-      roi_out->scale > 0.667f;
+  const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out, qual);
 
   if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME || demosaicing_method == DT_IOP_DEMOSAIC_PPG)
   {
@@ -3356,7 +3339,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     return process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
   }
   else if((demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) &&
-    !xtrans_full_markesteijn_demosaicing)
+    !(qual_flags & DEMOSAIC_XTRANS_FULL_MARKESTEIJN))
   {
     return process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
   }
