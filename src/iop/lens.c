@@ -863,9 +863,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return;
 
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
-  lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
 
-  float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
+  lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
 
   int modflags = lf_modifier_initialize(modifier, d->lens, LF_PF_F32, d->focal, d->aperture, d->distance,
                                         d->scale, d->target_geom, d->modify_flags, d->inverse);
@@ -881,6 +880,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     const int xstep = (width < 0) ? -1 : 1;
     const int ystep = (height < 0) ? -1 : 1;
 
+    float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
     const size_t nbpoints = 2 * awidth + 2 * aheight;
 
     float *const buf = dt_alloc_align(16, nbpoints * 2 * 3 * sizeof(float));
