@@ -1577,8 +1577,7 @@ static int get_thumb_quality(int width, int height)
 // method (e.g. config, scale, pixelpipe type)
 static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
                                const dt_image_t *const img,
-                               const dt_iop_roi_t *const roi_out,
-                               const int qual)
+                               const dt_iop_roi_t *const roi_out)
 {
   int flags = 0;
   // previews always go for a quick downscale, others may use higher
@@ -1599,8 +1598,11 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
     switch (piece->pipe->type)
     {
       case DT_DEV_PIXELPIPE_FULL:
-        if (qual > 0) flags |= DEMOSAIC_FULL_SCALE;
-        if (qual > 1) flags |= DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+        {
+          const int qual = get_quality();
+          if (qual > 0) flags |= DEMOSAIC_FULL_SCALE;
+          if (qual > 1) flags |= DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+        }
         break;
       case DT_DEV_PIXELPIPE_EXPORT:
         flags |= DEMOSAIC_FULL_SCALE | DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
@@ -1658,7 +1660,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
      && // only overwrite setting if quality << requested and in dr mode
      (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)) // do not touch this special method
     demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
-  const int qual_flags = demosaic_qual_flags(piece, img, roi_out, qual);
+  const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
 
   const float *const pixels = (float *)i;
 
@@ -1903,8 +1905,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   const float threshold = 0.0001f * img->exif_iso;
   const int devid = piece->pipe->devid;
-  const int qual = get_quality();
-  const int qual_flags = demosaic_qual_flags(piece, img, roi_out, qual);
+  const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
   const int demosaicing_method = data->demosaicing_method;
 
   cl_mem dev_aux = NULL;
@@ -2176,13 +2177,12 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   const int prow = (filters4 == 9u) ? 6 : 8;
   const int pcol = (filters4 == 9u) ? 6 : 2;
   const int devid = piece->pipe->devid;
-  const int qual = get_quality();
 
   const float processed_maximum[4]
       = { piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1],
           piece->pipe->dsc.processed_maximum[2], 1.0f };
 
-  const int qual_flags = demosaic_qual_flags(piece, img, roi_out, qual);
+  const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
 
   int *ips = NULL;
 
@@ -2587,15 +2587,13 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
 
   const int devid = piece->pipe->devid;
-  const int qual = get_quality();
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
   const float processed_maximum[4]
       = { piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1],
           piece->pipe->dsc.processed_maximum[2], 1.0f };
 
-  const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage,
-                                           roi_out, qual);
+  const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
 
   cl_mem dev_tmp = NULL;
   cl_mem dev_tmptmp = NULL;
@@ -3327,8 +3325,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   const int demosaicing_method = data->demosaicing_method;
-  const int qual = get_quality();
-  const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out, qual);
+  const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
 
   if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME || demosaicing_method == DT_IOP_DEMOSAIC_PPG)
   {
@@ -3368,15 +3365,13 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
-  const int qual = get_quality();
   const float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
   const float smooth = data->color_smoothing ? ioratio : 0.0f;
   const float greeneq
       = ((piece->pipe->dsc.filters != 9u) && (data->green_eq != DT_IOP_GREEN_EQ_NO)) ? 0.25f : 0.0f;
   const dt_iop_demosaic_method_t demosaicing_method = data->demosaicing_method;
 
-  const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage,
-                                           roi_out, qual);
+  const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
   const int full_scale_demosaicing = qual_flags & DEMOSAIC_FULL_SCALE;
 
   // check if output buffer has same dimension as input buffer (thus avoiding one
