@@ -48,9 +48,8 @@ typedef struct dt_lib_camera_t
   struct
   {
     GtkGrid *main_grid;
-    GtkWidget *label1, *label2, *label3, *label4, *label5; // Capture modes, delay, sequenced, brackets, steps
-    GtkDarktableToggleButton *tb1, *tb2, *tb3;             // Delayed capture, Sequenced capture, brackets
-    GtkWidget *sb1, *sb2, *sb3, *sb4;                      // delay, sequence, brackets, steps
+    GtkDarktableToggleButton *toggle_timer, *toggle_sequence, *toggle_bracket;
+    GtkWidget *timer, *count, *brackets, *steps;
     GtkWidget *button1;
 
     int rows; // the number of row in the grid
@@ -227,17 +226,17 @@ static void _capture_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const char *jobcode = NULL;
   dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
-  uint32_t delay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb1)) == TRUE
-                       ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb1))
+  uint32_t delay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_timer)) == TRUE
+                       ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.timer))
                        : 0;
-  uint32_t count = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb2)) == TRUE
-                       ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb2))
+  uint32_t count = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_sequence)) == TRUE
+                       ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.count))
                        : 1;
-  uint32_t brackets = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb3)) == TRUE
-                          ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb3))
+  uint32_t brackets = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket)) == TRUE
+                          ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.brackets))
                           : 0;
-  uint32_t steps = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb3)) == TRUE
-                       ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb4))
+  uint32_t steps = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket)) == TRUE
+                       ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.steps))
                        : 0;
 
   /* create a capture background job */
@@ -318,14 +317,14 @@ static void _toggle_capture_mode_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
   GtkWidget *w = NULL;
-  if(widget == GTK_WIDGET(lib->gui.tb1))
-    w = lib->gui.sb1;
-  else if(widget == GTK_WIDGET(lib->gui.tb2))
-    w = lib->gui.sb2;
-  else if(widget == GTK_WIDGET(lib->gui.tb3))
+  if(widget == GTK_WIDGET(lib->gui.toggle_timer))
+    w = lib->gui.timer;
+  else if(widget == GTK_WIDGET(lib->gui.toggle_sequence))
+    w = lib->gui.count;
+  else if(widget == GTK_WIDGET(lib->gui.toggle_bracket))
   {
-    gtk_widget_set_sensitive(lib->gui.sb3, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
-    gtk_widget_set_sensitive(lib->gui.sb4, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+    gtk_widget_set_sensitive(lib->gui.brackets, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+    gtk_widget_set_sensitive(lib->gui.steps, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
   }
 
   if(w) gtk_widget_set_sensitive(w, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
@@ -440,71 +439,77 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *label = dt_ui_section_label_new(_("camera control"));
   gtk_grid_attach(GTK_GRID(self->widget), label, lib->gui.rows++, 0, 2, 1);
 
-  lib->gui.label1 = gtk_label_new(_("modes"));
-  lib->gui.label2 = gtk_label_new(_("timer (s)"));
-  lib->gui.label3 = gtk_label_new(_("count"));
-  lib->gui.label4 = gtk_label_new(_("brackets"));
-  lib->gui.label5 = gtk_label_new(_("bkt. steps"));
-  gtk_widget_set_halign(GTK_WIDGET(lib->gui.label1), GTK_ALIGN_START);
-  gtk_widget_set_halign(GTK_WIDGET(lib->gui.label2), GTK_ALIGN_START);
-  gtk_widget_set_halign(GTK_WIDGET(lib->gui.label3), GTK_ALIGN_START);
-  gtk_widget_set_halign(GTK_WIDGET(lib->gui.label4), GTK_ALIGN_START);
-  gtk_widget_set_halign(GTK_WIDGET(lib->gui.label5), GTK_ALIGN_START);
+  GtkWidget *modes_label = gtk_label_new(_("modes"));
+  GtkWidget *timer_label = gtk_label_new(_("timer (s)"));
+  GtkWidget *count_label = gtk_label_new(_("count"));
+  GtkWidget *brackets_label = gtk_label_new(_("brackets"));
+  GtkWidget *steps_label = gtk_label_new(_("bkt. steps"));
+  gtk_widget_set_halign(GTK_WIDGET(modes_label), GTK_ALIGN_START);
+  gtk_widget_set_halign(GTK_WIDGET(timer_label), GTK_ALIGN_START);
+  gtk_widget_set_halign(GTK_WIDGET(count_label), GTK_ALIGN_START);
+  gtk_widget_set_halign(GTK_WIDGET(brackets_label), GTK_ALIGN_START);
+  gtk_widget_set_halign(GTK_WIDGET(steps_label), GTK_ALIGN_START);
 
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label1), 0, lib->gui.rows++, 1, 1);
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label2), 0, lib->gui.rows++, 1, 1);
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label3), 0, lib->gui.rows++, 1, 1);
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label4), 0, lib->gui.rows++, 1, 1);
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label5), 0, lib->gui.rows++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(modes_label), 0, lib->gui.rows++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(timer_label), 0, lib->gui.rows++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(count_label), 0, lib->gui.rows++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(brackets_label), 0, lib->gui.rows++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(steps_label), 0, lib->gui.rows++, 1, 1);
 
   // capture modes buttons
-  lib->gui.tb1 = DTGTK_TOGGLEBUTTON(
+  lib->gui.toggle_timer = DTGTK_TOGGLEBUTTON(
       dtgtk_togglebutton_new(dtgtk_cairo_paint_timer, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
-  lib->gui.tb2 = DTGTK_TOGGLEBUTTON(
+  lib->gui.toggle_sequence = DTGTK_TOGGLEBUTTON(
       dtgtk_togglebutton_new(dtgtk_cairo_paint_filmstrip, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
-  lib->gui.tb3 = DTGTK_TOGGLEBUTTON(
+  lib->gui.toggle_bracket = DTGTK_TOGGLEBUTTON(
       dtgtk_togglebutton_new(dtgtk_cairo_paint_bracket, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
 
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
-  gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.tb1), TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.tb2), TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.tb3), TRUE, TRUE, 0);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(hbox), GTK_WIDGET(lib->gui.label1), GTK_POS_RIGHT, 1, 1);
+  gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.toggle_timer), TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.toggle_sequence), TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.toggle_bracket), TRUE, TRUE, 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(hbox), GTK_WIDGET(modes_label), GTK_POS_RIGHT, 1, 1);
 
-  lib->gui.sb1 = gtk_spin_button_new_with_range(1, 60, 1);
-  lib->gui.sb2 = gtk_spin_button_new_with_range(1, 500, 1);
-  lib->gui.sb3 = gtk_spin_button_new_with_range(1, 5, 1);
-  lib->gui.sb4 = gtk_spin_button_new_with_range(1, 9, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.sb1), GTK_WIDGET(lib->gui.label2), GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.sb2), GTK_WIDGET(lib->gui.label3), GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.sb3), GTK_WIDGET(lib->gui.label4), GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.sb4), GTK_WIDGET(lib->gui.label5), GTK_POS_RIGHT, 1, 1);
+  lib->gui.timer = gtk_spin_button_new_with_range(1, 60, 1);
+  lib->gui.count = gtk_spin_button_new_with_range(1, 500, 1);
+  lib->gui.brackets = gtk_spin_button_new_with_range(1, 5, 1);
+  lib->gui.steps = gtk_spin_button_new_with_range(1, 9, 1);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.timer), GTK_WIDGET(timer_label), GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.count), GTK_WIDGET(count_label), GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.brackets), GTK_WIDGET(brackets_label), GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.steps), GTK_WIDGET(steps_label), GTK_POS_RIGHT, 1, 1);
 
   lib->gui.button1 = gtk_button_new_with_label(_("capture image(s)"));
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.button1), 0, lib->gui.rows++, 2, 1);
 
-  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.tb1), _("toggle delayed capture mode"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.tb2), _("toggle sequenced capture mode"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.tb3), _("toggle bracketed capture mode"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.sb1), _("the count of seconds before actually doing a capture"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.sb2),
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.toggle_timer), _("toggle delayed capture mode"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.toggle_sequence), _("toggle sequenced capture mode"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.toggle_bracket), _("toggle bracketed capture mode"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.timer), _("the count of seconds before actually doing a capture"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.count),
                _("the amount of images to capture in a sequence,\nyou can use this in conjunction with "
                  "delayed mode to create stop-motion sequences."));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.sb3),
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.brackets),
                _("the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.sb4),
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.steps),
                _("the amount of steps per bracket, steps is camera configurable and usually 3 steps per "
                  "stop\nwith other words, 3 steps is 1EV exposure step between brackets."));
 
-  g_signal_connect(G_OBJECT(lib->gui.tb1), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
-  g_signal_connect(G_OBJECT(lib->gui.tb2), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
-  g_signal_connect(G_OBJECT(lib->gui.tb3), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
+  g_signal_connect(G_OBJECT(lib->gui.toggle_timer), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
+  g_signal_connect(G_OBJECT(lib->gui.toggle_sequence), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
+  g_signal_connect(G_OBJECT(lib->gui.toggle_bracket), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.button1), "clicked", G_CALLBACK(_capture_button_clicked), lib);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.sb1), FALSE);
-  gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.sb2), FALSE);
-  gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.sb3), FALSE);
-  gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.sb4), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.timer), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.count), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.brackets), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.steps), FALSE);
+
+  dt_gui_key_accel_block_on_focus_connect(lib->gui.timer);
+  dt_gui_key_accel_block_on_focus_connect(lib->gui.count);
+  dt_gui_key_accel_block_on_focus_connect(lib->gui.brackets);
+  dt_gui_key_accel_block_on_focus_connect(lib->gui.steps);
+
 
   // Camera settings
   label = dt_ui_section_label_new(_("properties"));
