@@ -104,7 +104,8 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const i
       "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, "
       "focal_length_max, "
       "writeprotect, autoapply, filter, def, format) "
-      "VALUES (?1, '', ?2, ?3, ?4, ?5, ?6, ?7, 0, '', '%', '%', '%', 0, 51200, 0, 10000000, 0, 100000000, 0, "
+      "VALUES (?1, '', ?2, ?3, ?4, ?5, ?6, ?7, 0, '', '%', '%', '%', 0, 340282346638528859812000000000000000000, "
+      "0, 10000000, 0, 100000000, 0, "
       "1000, 1, 0, 0, 0, 0)",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
@@ -446,10 +447,10 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   // iso
   label = gtk_label_new(_("ISO"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  g->iso_min = gtk_spin_button_new_with_range(0, 51200, 100);
+  g->iso_min = gtk_spin_button_new_with_range(0, FLT_MAX, 100);
   gtk_widget_set_tooltip_text(g->iso_min, _("minimum ISO value"));
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->iso_min), 0);
-  g->iso_max = gtk_spin_button_new_with_range(0, 51200, 100);
+  g->iso_max = gtk_spin_button_new_with_range(0, FLT_MAX, 100);
   gtk_widget_set_tooltip_text(g->iso_max, _("maximum ISO value"));
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->iso_max), 0);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
@@ -564,7 +565,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
     gtk_entry_set_text(GTK_ENTRY(g->maker), "%");
     gtk_entry_set_text(GTK_ENTRY(g->lens), "%");
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_min), 0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_max), 51200);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_max), FLT_MAX);
 
     float val = 0;
     int k = 0;

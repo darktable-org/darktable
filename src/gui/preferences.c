@@ -339,8 +339,8 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
     gchar *model = (gchar *)sqlite3_column_text(stmt, 4);
     gchar *maker = (gchar *)sqlite3_column_text(stmt, 5);
     gchar *lens = (gchar *)sqlite3_column_text(stmt, 6);
-    int iso_min = sqlite3_column_double(stmt, 7);
-    int iso_max = sqlite3_column_double(stmt, 8);
+    float iso_min = sqlite3_column_double(stmt, 7);
+    float iso_max = sqlite3_column_double(stmt, 8);
     float exposure_min = sqlite3_column_double(stmt, 9);
     float exposure_max = sqlite3_column_double(stmt, 10);
     float aperture_min = sqlite3_column_double(stmt, 11);
@@ -356,10 +356,10 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
     if(module == NULL) module = g_strdup(dt_lib_get_localized_name(operation));
     if(module == NULL) module = g_strdup(operation);
 
-    if(iso_min == 0.0 && iso_max == 51200.0)
+    if(iso_min == 0.0 && iso_max == FLT_MAX)
       iso = g_strdup("%");
     else
-      iso = g_strdup_printf("%d – %d", iso_min, iso_max);
+      iso = g_strdup_printf("%zu – %zu", (size_t)iso_min, (size_t)iso_max);
 
     min = 0, max = 0;
     for(; min < dt_gui_presets_exposure_value_cnt && exposure_min > dt_gui_presets_exposure_value[min]; min++)
@@ -1290,10 +1290,10 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   // iso
   label = gtk_label_new(_("ISO"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
+  g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, FLT_MAX, 100));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->iso_min), _("minimum ISO value"));
   gtk_spin_button_set_digits(g->iso_min, 0);
-  g->iso_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
+  g->iso_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, FLT_MAX, 100));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->iso_max), _("maximum ISO value"));
   gtk_spin_button_set_digits(g->iso_max, 0);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
