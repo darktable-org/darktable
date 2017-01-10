@@ -1819,15 +1819,13 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *
   const float px_footprint = 1.f / roi_out->scale;
   const int samples = MAX(1, (int)floorf(px_footprint / 3));
 
-// A slightly different algorithm than
-// dt_iop_clip_and_zoom_demosaic_half_size_f() which aligns to 2x2
-// Bayer grid and hence most pull additional data from all edges
-// which don't align with CFA. Instead align to a 3x3 pattern (which
-// is semi-regular in X-Trans CFA). If instead had aligned the
-// samples to the full 6x6 X-Trans CFA, wouldn't need to perform a
-// CFA lookup, but then would only work at 1/6 scale or less. This
-// code doesn't worry about fractional pixel offset of top/left of
-// pattern nor oversampling by non-integer number of samples.
+  // A slightly different algorithm than
+  // dt_iop_clip_and_zoom_demosaic_half_size_f() which aligns to 2x2
+  // Bayer grid and hence most pull additional data from all edges
+  // which don't align with CFA. Instead align to a 3x3 pattern (which
+  // is semi-regular in X-Trans CFA). This code doesn't worry about
+  // fractional pixel offset of top/left of pattern nor oversampling
+  // by non-integer number of samples.
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(out) schedule(static)
