@@ -1581,47 +1581,40 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
                                const dt_iop_roi_t *const roi_out)
 {
   int flags = 0;
-  // previews always go for a quick downscale, others may use higher
-  // quality
-  if (piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
+  switch (piece->pipe->type)
   {
-    // For suficiently small scaling, one or more repetitition of the
-    // CFA pattern can be merged into a single pixel, hence it is
-    // possible to skip the full demosaic and perform a quick
-    // downscale.  Note even though the X-Trans CFA is 6x6, for this
-    // purposes we can see each 6x6 tile as four fairly similar 3x3
-    // tiles
-    if (roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f))
-    {
-      flags |= DEMOSAIC_FULL_SCALE;
-    }
-
-    switch (piece->pipe->type)
-    {
-      case DT_DEV_PIXELPIPE_FULL:
-        {
-          const int qual = get_quality();
-          if (qual > 0) flags |= DEMOSAIC_FULL_SCALE;
-          if (qual > 1) flags |= DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
-          if ((qual < 2) && (roi_out->scale <= .99999f))
-            flags |= DEMOSAIC_MEDIUM_QUAL;
-        }
-        break;
-      case DT_DEV_PIXELPIPE_EXPORT:
+    case DT_DEV_PIXELPIPE_FULL:
+      {
+        const int qual = get_quality();
+        if (qual > 0) flags |= DEMOSAIC_FULL_SCALE;
+        if (qual > 1) flags |= DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+        if ((qual < 2) && (roi_out->scale <= .99999f))
+          flags |= DEMOSAIC_MEDIUM_QUAL;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_EXPORT:
+      flags |= DEMOSAIC_FULL_SCALE | DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+      break;
+    case DT_DEV_PIXELPIPE_THUMBNAIL:
+      // we check if we need ultra-high quality thumbnail for this size
+      if (get_thumb_quality(roi_out->width, roi_out->height))
+      {
         flags |= DEMOSAIC_FULL_SCALE | DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
-        break;
-      case DT_DEV_PIXELPIPE_THUMBNAIL:
-        // we check if we need ultra-high quality thumbnail for this size
-        if (get_thumb_quality(roi_out->width, roi_out->height))
-        {
-          flags |= DEMOSAIC_FULL_SCALE | DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
-        }
-        break;
-      default: // make C not complain about missing enum members
-        break;
-    }
+      }
+      break;
+    default: // make C not complain about missing enum members
+      break;
   }
 
+  // For suficiently small scaling, one or more repetitition of the
+  // CFA pattern can be merged into a single pixel, hence it is
+  // possible to skip the full demosaic and perform a quick downscale.
+  // Note even though the X-Trans CFA is 6x6, for this purposes we can
+  // see each 6x6 tile as four fairly similar 3x3 tiles
+  if (roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f))
+  {
+    flags |= DEMOSAIC_FULL_SCALE;
+  }
   // half_size_f doesn't support 4bayer images
   if (img->flags & DT_IMAGE_4BAYER) flags |= DEMOSAIC_FULL_SCALE;
   // we use full Markesteijn demosaicing on xtrans sensors if maximum
