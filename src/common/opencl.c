@@ -1458,11 +1458,24 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   char linkedfile[PATH_MAX] = { 0 };
   ssize_t linkedfile_len = 0;
 
+#if defined(_WIN32)
+  // No symlinks on Windows
+  // Have to figure out the name using the filename + md5sum
+  char dup[PATH_MAX] = { 0 };
+  snprintf(dup, sizeof(dup), "%s.%s", binname, md5sum);
+  FILE *cached = fopen_stat(dup, &cachedstat);
+  g_strlcpy(linkedfile, md5sum, sizeof(linkedfile));
+  linkedfile_len = strlen(md5sum);
+#else
   FILE *cached = fopen_stat(binname, &cachedstat);
+#endif
+
   if(cached)
   {
-
-    if((linkedfile_len = readlink(binname, linkedfile, sizeof(linkedfile) - 1)) > 0)
+#if !defined(_WIN32)
+    linkedfile_len = readlink(binname, linkedfile, sizeof(linkedfile) - 1);
+#endif // !defined(_WIN32)
+    if(linkedfile_len > 0)
     {
       linkedfile[linkedfile_len] = '\0';
 
@@ -1642,7 +1655,15 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
           char dup[PATH_MAX] = { 0 };
           g_strlcpy(dup, binname, sizeof(dup));
           char *bname = basename(dup);
+#if defined(_WIN32)
+          //CreateSymbolicLink in Windows requires admin privileges, which we don't want/need
+          //store has using a simple filerename
+          char finalfilename[PATH_MAX] = { 0 };
+          snprintf(finalfilename, sizeof(finalfilename), "%s/%s.%s", cachedir, bname, md5sum);
+          rename(link_dest, finalfilename);
+#else
           if(symlink(md5sum, bname) != 0) goto ret;
+#endif //!defined(_WIN32)
           if(chdir(cwd) != 0) goto ret;
         }
 
