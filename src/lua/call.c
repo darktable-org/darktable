@@ -18,10 +18,14 @@
 #include "lua/call.h"
 #include "control/control.h"
 #include "lua/lua.h"
+#ifndef _WIN32
 #include <glib-unix.h>
+#endif
 #include <glib.h>
 #include <stdlib.h>
+#ifndef _WIN32
 #include <sys/select.h>
+#endif
 
 int dt_lua_check_print_error(lua_State* L, int result) 
 {
