@@ -143,6 +143,9 @@ if(APPLE AND (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_
         list(REMOVE_DUPLICATES CMAKE_CXX_IMPLICIT_LINK_LIBRARIES)
 endif()
 
+# Need to explicitly link against math library.
+list(APPEND LIBS "-lm")
+
 # Check for openmp
 find_package(OpenMP)
 if(OpenMP_C_FLAGS AND USE_OPENMP)
