@@ -157,6 +157,9 @@ endif()
 # Append thread flags/libraries to LIBS
 list(APPEND LIBS "${CMAKE_THREAD_LIBS_INIT}")
 
+# Need to explicitly link against math library.
+list(APPEND LIBS "-lm")
+
 # Check for openmp
 find_package(OpenMP)
 if(OpenMP_C_FLAGS AND USE_OPENMP)
