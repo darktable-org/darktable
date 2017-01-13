@@ -25,7 +25,9 @@
 #include <assert.h>
 #include <stdio.h>
 #include <math.h>
+#if defined(__SSE2__)
 #include <xmmintrin.h>
+#endif
 
 // downsample width/height to given level
 static inline int dl(int size, const int level)
