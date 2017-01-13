@@ -8976,6 +8976,9 @@
 	<Camera make="Leica Camera AG" model="LEICA M (Typ 240)" mode="dng">
 		<ID make="Leica" model="M (Typ 240)">LEICA M (Typ 240)</ID>
 	</Camera>
+	<Camera make="LEICA CAMERA AG" model="LEICA X2" mode="dng">
+		<ID make="Leica" model="X2">LEICA X2</ID>
+	</Camera>
 	<Camera make="RICOH IMAGING COMPANY, LTD." model="GR" mode="dng">
 		<ID make="Ricoh" model="GR">GR</ID>
 	</Camera>

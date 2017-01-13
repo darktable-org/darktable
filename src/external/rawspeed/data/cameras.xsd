@@ -359,6 +359,7 @@
       <xs:enumeration value="Konica Minolta Camera, Inc."/>
       <xs:enumeration value="LEICA"/>
       <xs:enumeration value="Leaf"/>
+      <xs:enumeration value="LEICA CAMERA AG"/>
       <xs:enumeration value="Leica Camera AG"/>
       <xs:enumeration value="Mamiya-OP Co.,Ltd."/>
       <xs:enumeration value="Matrix"/>
