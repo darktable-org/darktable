@@ -294,7 +294,7 @@ typedef unsigned int cl_GLenum;
 
 #if defined( __SSE__ )
     #if defined( __MINGW64__ )
-        #include <x86intrin.h>
+        #include <intrin.h>
     #else
         #include <xmmintrin.h>
     #endif
