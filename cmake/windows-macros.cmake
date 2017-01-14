@@ -85,6 +85,26 @@ if (WIN32)
   #SQLLITE3
     ${MINGW_PATH}/libsqlite3-0.dll
   #CURL
+    ${MINGW_PATH}/libcurl-4.dll
+  #C-ARES
+    ${MINGW_PATH}/libcares-2.dll
+  #LIBIDN
+    ${MINGW_PATH}/libidn-11.dll
+  #LIBMETALINK
+    ${MINGW_PATH}/libmetalink-3.dll
+  #LIBSSH2
+    ${MINGW_PATH}/libssh2-1.dll
+  #RTMPDUMP
+  #OPENSSL
+    ${MINGW_PATH}/libeay32.dll
+    ${MINGW_PATH}/ssleay32.dll
+  #NGHTTP2
+    ${MINGW_PATH}/libnghttp2-14.dll
+  #CA-CERTIFICATES
+  #JANSSON
+    ${MINGW_PATH}/libjansson-4.dll
+  #SPDYLAY
+    ${MINGW_PATH}/libspdylay-7.dll
   #PNG
     ${MINGW_PATH}/libpng16-16.dll
   #JPEG
@@ -179,7 +199,7 @@ if (WIN32)
     )
 
   install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin COMPONENT DTDependencies)
-  # TODO: Add auxilliary files for GraphicsMagick, libgphoto2, gdk-pixbuf, adwaita-icon-theme
+  # TODO: Add auxilliary files for GraphicsMagick, libgphoto2, gdk-pixbuf, adwaita-icon-theme, openssl
 
 endif(WIN32)
 
