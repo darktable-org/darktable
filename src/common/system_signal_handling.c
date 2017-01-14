@@ -222,7 +222,7 @@ void dt_set_signal_handlers()
     fprintf(stderr, "[dt_set_signal_handlers] error: signal(SIGSEGV) returned SIG_ERR: %i (%s)\n", errsv,
             strerror(errsv));
   }
-#elif !defined(__APPLE__) 
+#elif !defined(__APPLE__)
   /*
   Set up exception handler for backtrace on Windows
   Works when there is NO SIGSEGV handler installed
