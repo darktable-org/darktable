@@ -8,7 +8,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     
     Install x64 developer tools and x86_64 toolchain and git from the MSYS2 prompt:
     $ pacman -S base-devel
-    $ pacman -S mingw-w64-x86_64-{toolchain,cmake}
+    $ pacman -S mingw-w64-x86_64-{toolchain,cmake,nsis}
     $ pacman -S git
 
     Install required libraries and dependencies:
