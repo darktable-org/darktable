@@ -770,8 +770,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       langLocale = g_utf16_to_utf8(wcLocaleName, -1, NULL, NULL, NULL);
       if(langLocale != NULL)
       {
-        if(lang != NULL) g_free((gchar *)lang);
-        lang = g_strndup(langLocale, strlen(langLocale));
+        g_free((gchar *)lang);
+        lang = g_strdup(langLocale);
       }
     }
   }
