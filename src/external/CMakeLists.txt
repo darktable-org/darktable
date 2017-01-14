@@ -2,13 +2,14 @@ set(BUILD_TESTING_SAVE "${BUILD_TESTING}")
 
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 set(WITH_OPENMP ${USE_OPENMP} CACHE BOOL "" FORCE)
-add_subdirectory(rawspeed)
 
 set(RAWSPEED_PATH "${CMAKE_CURRENT_SOURCE_DIR}/rawspeed")
 
 if(NOT(EXISTS "${RAWSPEED_PATH}" AND IS_DIRECTORY "${RAWSPEED_PATH}" AND EXISTS "${RAWSPEED_PATH}/CMakeLists.txt"))
-  message(FATAL_ERROR "You may want to run:\n$ git submodule update\nor\n$ git submodule update -f")
+  message(FATAL_ERROR "RawSpeed submodule not found. You probably want to run:\n$ git submodule init\nand then\n$ git submodule update")
 endif()
+
+add_subdirectory(rawspeed)
 
 #
 # the rawspeed part is a bit of a hack:
