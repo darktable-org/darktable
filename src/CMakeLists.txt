@@ -792,9 +792,3 @@ InstallDependencyFiles()
 
 # Tell CPack about the components and group the data components together (CPACK_COMPONENT_${COMPONENT_NAME_ALL_CAPS}_GROUP).
 set(CPACK_COMPONENTS_ALL DTApplication DTDebugSymbols DTDocuments DTDependencies)
-
-# More descriptive names for each of the components, and component groups
-set(CPACK_COMPONENT_DTAPPLICATION_DISPLAY_NAME "Darktable main application")
-set(CPACK_COMPONENT_DTDEBUGSYMBOLS_DISPLAY_NAME "Debug symbols")
-set(CPACK_COMPONENT_DTDOCUMENTS_DISPLAY_NAME "Darktable documentation and help files")
-set(CPACK_COMPONENT_DTDEPENDENCIES_DISPLAY_NAME "Runtime dependencies")

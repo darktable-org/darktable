@@ -56,6 +56,10 @@ if (WIN32)
     ${MINGW_PATH}/libpangocairo-1.0-0.dll
     ${MINGW_PATH}/libpangoft2-1.0-0.dll
     ${MINGW_PATH}/libpangowin32-1.0-0.dll
+    ${MINGW_PATH}/libpixman-1-0.dll
+    ${MINGW_PATH}/gdk-pixbuf-query-loaders.exe
+    ${MINGW_PATH}/gtk-query-immodules-3.0.exe
+    ${MINGW_PATH}/gtk-update-icon-cache.exe
   #LIBXML
     ${MINGW_PATH}/libxml2-2.dll
   #LIBSOUP
@@ -86,7 +90,14 @@ if (WIN32)
   #JPEG
     ${MINGW_PATH}/libjpeg-8.dll
     ${MINGW_PATH}/libturbojpeg-0.dll
+  #ZLIB
+    ${MINGW_PATH}/zlib1.dll
+    ${MINGW_PATH}/libminizip-1.dll
+  #XZ
+    ${MINGW_PATH}/liblzma-5.dll
   #TIFF
+    ${MINGW_PATH}/libtiff-5.dll
+    ${MINGW_PATH}/libtiffxx-5.dll
   #LCMS2
     ${MINGW_PATH}/liblcms2-2.dll
   #EXIV2
@@ -109,7 +120,7 @@ if (WIN32)
     ${MINGW_PATH}/libGraphicsMagick-3.dll
     ${MINGW_PATH}/libGraphicsMagickWand-2.dll
   #LUA
-    ${MINGW_PATH}/lua52.dll
+    ${MINGW_PATH}/lua53.dll
   #PUGIXML
     ${MINGW_PATH}/libpugixml.dll
   #OSMGPSMAP
@@ -117,11 +128,55 @@ if (WIN32)
   #DRMINGW
     ${MINGW_PATH}/exchndl.dll
     ${MINGW_PATH}/mgwhelp.dll
+  #GETTEXT
+    ${MINGW_PATH}/libasprintf-0.dll
+    ${MINGW_PATH}/libgettextlib-0-19-7.dll
+    ${MINGW_PATH}/libgettextpo-0.dll
+    ${MINGW_PATH}/libgettextsrc-0-19-7.dll
+    ${MINGW_PATH}/libintl-8.dll
+  #FONTCONFIG
+    ${MINGW_PATH}/libfontconfig-1.dll
+    ${MINGW_PATH}/fc-cache.exe
+    ${MINGW_PATH}/fc-cat.exe
+    ${MINGW_PATH}/fc-list.exe
+    ${MINGW_PATH}/fc-match.exe
+    ${MINGW_PATH}/fc-pattern.exe
+    ${MINGW_PATH}/fc-query.exe
+    ${MINGW_PATH}/fc-scan.exe
+    ${MINGW_PATH}/fc-validate.exe
+  #EXPAT
+    ${MINGW_PATH}/libexpat-1.dll
+  #FREETYPE
+    ${MINGW_PATH}/libfreetype-6.dll
+  #HARFBUZZ
+    ${MINGW_PATH}/libharfbuzz-0.dll
+    ${MINGW_PATH}/libharfbuzz-gobject-0.dll
+    ${MINGW_PATH}/libharfbuzz-icu-0.dll
+  #GRAPHITE2
+    ${MINGW_PATH}/libgraphite2.dll
+  #BZIP2
+    ${MINGW_PATH}/libbz2-1.dll
+  #LIBICONV
+    ${MINGW_PATH}/libcharset-1.dll
+    ${MINGW_PATH}/libiconv-2.dll
+  #WINEDITLINE
+    ${MINGW_PATH}/edit.dll
+  #PCRE
+    ${MINGW_PATH}/libpcre-1.dll
+    ${MINGW_PATH}/libpcre16-0.dll
+    ${MINGW_PATH}/libpcre32-0.dll
+    ${MINGW_PATH}/libpcrecpp-0.dll
+    ${MINGW_PATH}/libpcreposix-0.dll
+  #LIBFFI
+    ${MINGW_PATH}/libffi-6.dll
+  #LIBCROCO
+    ${MINGW_PATH}/libcroco-0.6-3.dll
   #GCCRUNTIME
     ${MINGW_PATH}/libgomp-1.dll
+    ${MINGW_PATH}/libgcc_s_seh-1.dll
+    ${MINGW_PATH}/libwinpthread-1.dll
+    ${MINGW_PATH}/libstdc++-6.dll
     )
-
-  include(InstallRequiredSystemLibraries)
 
   install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin COMPONENT DTDependencies)
   # TODO: Add auxilliary files for GraphicsMagick, libgphoto2, gdk-pixbuf, adwaita-icon-theme
