@@ -8882,6 +8882,9 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
+	<Camera make="Eastman Kodak Company" model="Kodak Digital Science DC50 Zoom Camera" supported="no">
+		<ID make="Kodak" model="DC50">Kodak Digital Science DC50 Zoom Camera</ID>
+	</Camera>
 	<Camera make="EASTMAN KODAK COMPANY" model="KODAK EASYSHARE Z1015 IS DIGITAL CAMERA">
 		<ID make="Kodak" model="Z1015 IS">Kodak Z1015 IS</ID>
 		<CFA width="2" height="2">

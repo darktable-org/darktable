@@ -11,9 +11,9 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified">
   <xs:simpleType name="IDTypeType">
     <xs:restriction base="xs:string">
-      <xs:pattern value="[a-zA-Z0-9 \-*()]{2,28}"/>
+      <xs:pattern value="[a-zA-Z0-9 \-*()]{2,38}"/>
       <xs:minLength value="2"/>
-      <xs:maxLength value="28"/>
+      <xs:maxLength value="38"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="IDTypeMakeType">
@@ -348,6 +348,7 @@
       <xs:enumeration value="Creo/Leaf"/>
       <xs:enumeration value="DJI"/>
       <xs:enumeration value="EASTMAN KODAK COMPANY"/>
+      <xs:enumeration value="Eastman Kodak Company"/>
       <xs:enumeration value="FUJIFILM"/>
       <xs:enumeration value="Foculus"/>
       <xs:enumeration value="GITUP"/>
