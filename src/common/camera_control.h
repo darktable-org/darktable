@@ -23,9 +23,9 @@
 #include <glib.h>
 
 #if defined (_WIN32)
-#ifdef interface 
-#undef interface 
-#endif 
+#ifdef interface
+#undef interface
+#endif
 #endif //defined (_WIN32)
 #include <gphoto2/gphoto2.h>
 #include <gtk/gtk.h>

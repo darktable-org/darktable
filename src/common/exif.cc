@@ -2270,6 +2270,10 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     if(sqlite3_column_type(stmt, 5) == SQLITE_FLOAT) altitude = sqlite3_column_double(stmt, 5);
     history_end = sqlite3_column_int(stmt, 6);
   }
+
+  // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
+  Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
+  if(pos != xmpData.end()) xmpData.erase(pos);
   xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); // rejected image = -1, others = 0..5
 
   // The original file name

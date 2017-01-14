@@ -1,5 +1,19 @@
 #!/bin/sh
 
+version="$(sw_vers -productVersion)".
+major_v="${version%%.*}"
+minor_v="${version#*.}"
+minor_v="${minor_v%%.*}"
+if [ -z "$minor_v" ]
+then
+    minor_v=0
+fi
+if [ "$major_v" -lt 10 ] || ( [ "$major_v" -eq 10 ] && [ "$minor_v" -lt 7 ] )
+then
+    osascript -e 'tell app (path to frontmost application as text) to display dialog "darktable: unsupported macOS version (at least 10.7 is required)!" buttons {"Close"} with icon stop'
+    exit 1
+fi
+
 if test -n "$GTK_DEBUG_LAUNCHER"; then
     set -x
 fi

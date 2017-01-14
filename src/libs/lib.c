@@ -178,7 +178,8 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_pre
                                 "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
                                 "focal_length_min, focal_length_max, writeprotect, "
                                 "autoapply, filter, def, format) VALUES (?1, ?2, ?3, ?4, ?5, NULL, 0, 1, "
-                                "'%', '%', '%', 0, 51200, 0, 100000000, 0, 100000000, 0, 1000, 0, 0, 0, 0, "
+                                "'%', '%', '%', 0, 340282346638528859812000000000000000000, 0, 100000000, 0, "
+                                "100000000, 0, 1000, 0, 0, 0, 0, "
                                 "0)",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
@@ -289,14 +290,15 @@ static void menuitem_new_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *min
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO data.presets (name, description, operation, op_version, op_params, "
-                              "blendop_params, blendop_version, enabled, model, maker, lens, "
-                              "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-                              "focal_length_min, focal_length_max, writeprotect, "
-                              "autoapply, filter, def, format) VALUES (?1, '', ?2, ?3, ?4, NULL, 0, 1, '%', "
-                              "'%', '%', 0, 51200, 0, 100000000, 0, 100000000, 0, 1000, 0, 0, 0, 0, 0)",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "INSERT INTO data.presets (name, description, operation, op_version, op_params, "
+      "blendop_params, blendop_version, enabled, model, maker, lens, "
+      "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
+      "focal_length_min, focal_length_max, writeprotect, "
+      "autoapply, filter, def, format) VALUES (?1, '', ?2, ?3, ?4, NULL, 0, 1, '%', "
+      "'%', '%', 0, 340282346638528859812000000000000000000, 0, 100000000, 0, 100000000, 0, 1000, 0, 0, 0, 0, 0)",
+      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, _("new preset"), -1, SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
@@ -1112,14 +1114,15 @@ void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO data.presets (name, description, operation, op_version, op_params, "
-                              "blendop_params, blendop_version, enabled, model, maker, lens, "
-                              "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-                              "focal_length_min, focal_length_max, writeprotect, "
-                              "autoapply, filter, def, format) VALUES (?1, '', ?2, ?3, ?4, NULL, 0, 1, '%', "
-                              "'%', '%', 0, 51200, 0, 10000000, 0, 100000000, 0, 1000, 1, 0, 0, 0, 0)",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "INSERT INTO data.presets (name, description, operation, op_version, op_params, "
+      "blendop_params, blendop_version, enabled, model, maker, lens, "
+      "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
+      "focal_length_min, focal_length_max, writeprotect, "
+      "autoapply, filter, def, format) VALUES (?1, '', ?2, ?3, ?4, NULL, 0, 1, '%', "
+      "'%', '%', 0, 340282346638528859812000000000000000000, 0, 10000000, 0, 100000000, 0, 1000, 1, 0, 0, 0, 0)",
+      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
