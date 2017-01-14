@@ -45,6 +45,7 @@ if(UNIX)
 
 endif(UNIX)
 
+
 if(WIN32)
   set(CPACK_GENERATOR "NSIS")
   set(CPACK_PACKAGE_EXECUTABLES "darktable" "Darktable - Raw Editor")
@@ -55,9 +56,9 @@ if(WIN32)
   SET(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico")
   SET(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico")
   SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\${CMAKE_PROJECT_NAME}.exe")
-  SET(CPACK_NSIS_DISPLAY_NAME "Darktable")
-  SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.darktable.org")
-  SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.darktable.org")
+  SET(CPACK_NSIS_DISPLAY_NAME "darktable")
+  SET(CPACK_NSIS_HELP_LINK "https:\\\\\\\\www.darktable.org/")
+  SET(CPACK_NSIS_URL_INFO_ABOUT "https:\\\\\\\\www.darktable.org/")
   SET(CPACK_NSIS_MODIFY_PATH OFF)
 
   set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
@@ -65,6 +66,12 @@ if(WIN32)
 endif(WIN32)
 
 include(CPack)
+
+# More descriptive names for each of the components
+CPACK_ADD_COMPONENT(DTApplication DISPLAY_NAME "darktable main application" REQUIRED)
+CPACK_ADD_COMPONENT(DTDebugSymbols DISPLAY_NAME "Debug symbols" REQUIRED)
+CPACK_ADD_COMPONENT(DTDocuments DISPLAY_NAME "Documentation and help files")
+CPACK_ADD_COMPONENT(DTDependencies DISPLAY_NAME "Runtime dependencies" REQUIRED)
 
 ADD_CUSTOM_TARGET(pkgsrc
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/version_gen.c ${CMAKE_SOURCE_DIR}/src/version_gen.c
