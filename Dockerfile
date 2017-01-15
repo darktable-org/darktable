@@ -63,7 +63,7 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
     libosmgpsmap-1.0-dev libpango1.0-dev libpng-dev libpugixml-dev \
     librsvg2-dev libsaxon-java libsecret-1-dev libsoup2.4-dev \
     libsqlite3-dev libtiff5-dev libwebp-dev libx11-dev libxml2-dev \
-    libxml2-utils make ninja-build perl po4a python3-jsonschema xsltproc && \
+    libxml2-utils make ninja-build perl po4a python3-jsonschema xsltproc zlib1g-dev && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # i'd like to explicitly use ld.gold
