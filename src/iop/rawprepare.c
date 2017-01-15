@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2016 Roman Lebedev.
+    copyright (c) 2014-2017 Roman Lebedev.
 
     (based on code by johannes hanika)
 
@@ -87,6 +87,7 @@ typedef struct dt_iop_rawprepare_data_t
 typedef struct dt_iop_rawprepare_global_data_t
 {
   int kernel_rawprepare_1f;
+  int kernel_rawprepare_1f_unnormalized;
   int kernel_rawprepare_4f;
 } dt_iop_rawprepare_global_data_t;
 
@@ -272,10 +273,34 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float scale = roi_in->scale / piece->iscale;
   const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
 
-  if(piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_UINT16)
   { // raw mosaic
 
     const uint16_t *const in = (const uint16_t *const)ivoid;
+    float *const out = (float *const)ovoid;
+
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      for(int i = 0; i < roi_out->width; i++)
+      {
+        const size_t pin = (size_t)(roi_in->width * (j + csy) + csx) + i;
+        const size_t pout = (size_t)j * roi_out->width + i;
+
+        const int id = BL(roi_out, d, j, i);
+        out[pout] = (in[pin] - d->sub[id]) / d->div[id];
+      }
+    }
+
+    piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
+    adjust_xtrans_filters(piece->pipe, csx, csy);
+  }
+  else if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_FLOAT)
+  { // raw mosaic, fp, unnormalized
+
+    const float *const in = (const float *const)ivoid;
     float *const out = (float *const)ovoid;
 
 #ifdef _OPENMP
@@ -339,7 +364,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
   const float scale = roi_in->scale / piece->iscale;
   const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
 
-  if(piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_UINT16)
   { // raw mosaic
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -398,6 +423,55 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
     piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
     adjust_xtrans_filters(piece->pipe, csx, csy);
   }
+  else if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_FLOAT)
+  { // raw mosaic, fp, unnormalized
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      const float *in = ((float *)ivoid) + ((size_t)roi_in->width * (j + csy) + csx);
+      float *out = ((float *)ovoid) + (size_t)roi_out->width * j;
+
+      int i = 0;
+
+      // FIXME: figure alignment!  !!! replace with for !!!
+      while((!dt_is_aligned(in, 16) || !dt_is_aligned(out, 16)) && (i < roi_out->width))
+      {
+        const int id = BL(roi_out, d, j, i);
+        *out = (*in - d->sub[id]) / d->div[id];
+        i++;
+        in++;
+        out++;
+      }
+
+      const __m128 sub = _mm_set_ps(d->sub[BL(roi_out, d, j, i + 3)], d->sub[BL(roi_out, d, j, i + 2)],
+                                    d->sub[BL(roi_out, d, j, i + 1)], d->sub[BL(roi_out, d, j, i)]);
+
+      const __m128 div = _mm_set_ps(d->div[BL(roi_out, d, j, i + 3)], d->div[BL(roi_out, d, j, i + 2)],
+                                    d->div[BL(roi_out, d, j, i + 1)], d->div[BL(roi_out, d, j, i)]);
+
+      // process aligned pixels with SSE
+      for(; i < roi_out->width - (4 - 1); i += 4, in += 4, out += 4)
+      {
+        const __m128 input = _mm_load_ps(in);
+
+        const __m128 scaled = _mm_div_ps(_mm_sub_ps(input, sub), div);
+
+        _mm_stream_ps(out, scaled);
+      }
+
+      // process the rest
+      for(; i < roi_out->width; i++, in++, out++)
+      {
+        const int id = BL(roi_out, d, j, i);
+        *out = (*in - d->sub[id]) / d->div[id];
+      }
+    }
+
+    piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
+    adjust_xtrans_filters(piece->pipe, csx, csy);
+  }
   else
   { // pre-downsampled buffer that needs black/white scaling
 
@@ -443,9 +517,13 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   int kernel = -1;
 
-  if(piece->pipe->dsc.filters)
+  if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_UINT16)
   {
     kernel = gd->kernel_rawprepare_1f;
+  }
+  else if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_FLOAT)
+  {
+    kernel = gd->kernel_rawprepare_1f_unnormalized;
   }
   else
   {
@@ -499,6 +577,23 @@ error:
 }
 #endif
 
+static int image_is_normalized(const dt_image_t *const image)
+{
+  // if raw with floating-point data, if not special magic whitelevel, then it needs normalization
+  if((image->flags & DT_IMAGE_HDR) == DT_IMAGE_HDR)
+  {
+    // magic, see dt_imageio_dng_write_tiff_header()
+    const float normalized_float = 1.0f;
+    uint32_t normalized = *(uint32_t *)&normalized_float;
+
+    // dng spec is just broken here.
+    return image->raw_white_point == normalized;
+  }
+
+  // else, assume normalized
+  return image->buf_dsc.channels == 1 && image->buf_dsc.datatype == TYPE_FLOAT;
+}
+
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -545,9 +640,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->rawprepare.raw_black_level = (uint16_t)(black / 4.0f);
   d->rawprepare.raw_white_point = p->raw_white_point;
 
-  if(!dt_image_is_raw(&piece->pipe->image)
-     || (piece->pipe->image.buf_dsc.channels == 1 && piece->pipe->image.buf_dsc.datatype == TYPE_FLOAT))
-    piece->enabled = 0;
+  if(!dt_image_is_raw(&piece->pipe->image) || image_is_normalized(&piece->pipe->image)) piece->enabled = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -581,8 +674,7 @@ void reload_defaults(dt_iop_module_t *self)
                                      .raw_black_level_separate[3] = image->raw_black_level_separate[3],
                                      .raw_white_point = image->raw_white_point };
 
-  self->default_enabled
-      = dt_image_is_raw(image) && !(image->buf_dsc.channels == 1 && image->buf_dsc.datatype == TYPE_FLOAT);
+  self->default_enabled = dt_image_is_raw(image) && !image_is_normalized(image);
 
 end:
   memcpy(self->params, &tmp, sizeof(dt_iop_rawprepare_params_t));
@@ -596,6 +688,7 @@ void init_global(dt_iop_module_so_t *self)
 
   dt_iop_rawprepare_global_data_t *gd = self->data;
   gd->kernel_rawprepare_1f = dt_opencl_create_kernel(program, "rawprepare_1f");
+  gd->kernel_rawprepare_1f_unnormalized = dt_opencl_create_kernel(program, "rawprepare_1f_unnormalized");
   gd->kernel_rawprepare_4f = dt_opencl_create_kernel(program, "rawprepare_4f");
 }
 
@@ -606,8 +699,7 @@ void init(dt_iop_module_t *self)
   self->params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
   self->hide_enable_button = 1;
-  self->default_enabled
-      = dt_image_is_raw(image) && !(image->buf_dsc.channels == 1 && image->buf_dsc.datatype == TYPE_FLOAT);
+  self->default_enabled = dt_image_is_raw(image) && !image_is_normalized(image);
   self->priority = 14; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_rawprepare_params_t);
   self->gui_data = NULL;
@@ -623,6 +715,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 {
   dt_iop_rawprepare_global_data_t *gd = (dt_iop_rawprepare_global_data_t *)self->data;
   dt_opencl_free_kernel(gd->kernel_rawprepare_4f);
+  dt_opencl_free_kernel(gd->kernel_rawprepare_1f_unnormalized);
   dt_opencl_free_kernel(gd->kernel_rawprepare_1f);
   free(self->data);
   self->data = NULL;
