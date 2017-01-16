@@ -2663,8 +2663,28 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
   {
     Exiv2::XmpData xmpData;
     std::string xmpPacket;
+    char *checksum_old = NULL;
     if(g_file_test(filename, G_FILE_TEST_EXISTS))
     {
+      // we want to avoid writing the sidecar file if it didn't change to avoid issues when using the same images
+      // from different computers. sample use case: images on NAS, several computers using them NOT AT THE SAME TIME and
+      // the xmp crawler is used to find changed sidecars.
+      FILE *fd = fopen(filename, "rb");
+      if(fd)
+      {
+        fseek(fd, 0, SEEK_END);
+        size_t end = ftell(fd);
+        rewind(fd);
+        unsigned char *content = (unsigned char *)malloc(end * sizeof(char));
+        if(content)
+        {
+          if(fread(content, sizeof(unsigned char), end, fd) == end)
+            checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5, content, end);
+          free(content);
+        }
+        fclose(fd);
+      }
+
       Exiv2::DataBuf buf = Exiv2::readFile(filename);
       xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
       Exiv2::XmpParser::decode(xmpData, xmpPacket);
@@ -2682,13 +2702,35 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
     {
       throw Exiv2::Error(1, "[xmp_write] failed to serialize xmp data");
     }
-    std::ofstream fout(filename);
-    if(fout.is_open())
+
+    // hash the new data and compare it to the old hash (if applicable)
+    const char *xml_header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    gboolean write_sidecar = TRUE;
+    if(checksum_old)
     {
-      fout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"; // write XML header
-      fout << xmpPacket;
-      fout.close();
+      GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
+      if(checksum)
+      {
+        g_checksum_update(checksum, (unsigned char*)xml_header, -1);
+        g_checksum_update(checksum, (unsigned char*)xmpPacket.c_str(), -1);
+        const char *checksum_new = g_checksum_get_string(checksum);
+        write_sidecar = g_strcmp0(checksum_old, checksum_new) != 0;
+        g_checksum_free(checksum);
+      }
+      g_free(checksum_old);
     }
+
+    if(write_sidecar)
+    {
+      std::ofstream fout(filename);
+      if(fout.is_open())
+      {
+        fout << xml_header;
+        fout << xmpPacket;
+        fout.close();
+      }
+    }
+
     return 0;
   }
   catch(Exiv2::AnyError &e)
