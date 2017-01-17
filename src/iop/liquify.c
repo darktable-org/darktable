@@ -2373,76 +2373,31 @@ static void smooth_paths_linsys (dt_iop_liquify_params_t *params)
 
       // Program the linear system with equations:
       //
-      // 1: straight start  smooth end
-      // 2: smooth start    smooth end
-      // 3: smooth start    straight end
-      // 4: keep start      smooth end
-      // 5: keep start      keep end
-      // 6: smooth start    keep end
-      // 7: keep start      straight end
-      // 8: straight start  straight end   (== line)
-      // 9: straight start  keep end
+      //    START           END
+      //    --------------------------
+      // 1: straight        smooth
+      // 2: smooth          smooth
+      // 3: smooth          straight
+      // 4: keep            smooth
+      // 5: keep            keep
+      // 6: smooth          keep
+      // 7: keep            straight
+      // 8: straight        straight   (== line)
+      // 9: straight        keep
 
-      if (lineseg)
-      {
-        eqn[idx] = 5;
-        goto done;
-      }
-      if (!autosmooth && !next_autosmooth)
-      {
-        eqn[idx] = 5;
-        goto done;
-      }
+      if (lineseg)                                                    eqn[idx] = 5;
+      else if (!autosmooth && !next_autosmooth)                       eqn[idx] = 5;
+      else if (firstseg && lastseg && !autosmooth && next_autosmooth) eqn[idx] = 7;
+      else if (firstseg && lastseg && autosmooth && next_autosmooth)  eqn[idx] = 8;
+      else if (firstseg && lastseg && autosmooth && !next_autosmooth) eqn[idx] = 9;
+      else if (firstseg && autosmooth && !next_autosmooth)            eqn[idx] = 5;
+      else if (firstseg && autosmooth)                                eqn[idx] = 1;
+      else if (lastseg && autosmooth && next_autosmooth)              eqn[idx] = 3;
+      else if (lastseg && !autosmooth && next_autosmooth)             eqn[idx] = 7;
+      else if (autosmooth && !next_autosmooth)                        eqn[idx] = 6;
+      else if (!autosmooth && next_autosmooth)                        eqn[idx] = 4;
+      else                                                            eqn[idx] = 2;
 
-      if (firstseg && lastseg && !autosmooth && next_autosmooth)
-      {
-        eqn[idx] = 7;
-        goto done;
-      }
-      if (firstseg && lastseg && autosmooth && next_autosmooth)
-      {
-        eqn[idx] = 8;
-        goto done;
-      }
-      if (firstseg && lastseg && autosmooth && !next_autosmooth)
-      {
-        eqn[idx] = 9;
-        goto done;
-      }
-
-      if (firstseg && autosmooth && !next_autosmooth)
-      {
-        eqn[idx] = 5;
-        goto done;
-      }
-      if (firstseg && autosmooth)
-      {
-        eqn[idx] = 1;
-        goto done;
-      }
-      if (lastseg && autosmooth && next_autosmooth)
-      {
-        eqn[idx] = 3;
-        goto done;
-      }
-      if (lastseg && !autosmooth && next_autosmooth)
-      {
-        eqn[idx] = 7;
-        goto done;
-      }
-      if (autosmooth && !next_autosmooth)
-      {
-        eqn[idx] = 6;
-        goto done;
-      }
-      if (!autosmooth && next_autosmooth)
-      {
-        eqn[idx] = 4;
-        goto done;
-      }
-      eqn[idx] = 2; // default
-
-    done:
       ++idx;
       node = node_next (params, node);
     }
