@@ -25,6 +25,8 @@ typedef struct dt_undo_item_t
   gpointer user_data;
   dt_undo_type_t type;
   dt_undo_data_t *data;
+  gboolean is_group;
+  dt_undo_tag_t tag;
   void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data);
   void (*free_data)(gpointer data);
 } dt_undo_item_t;
@@ -35,6 +37,7 @@ dt_undo_t *dt_undo_init(void)
   udata->undo_list = NULL;
   udata->redo_list = NULL;
   dt_pthread_mutex_init(&udata->mutex, NULL);
+  udata->group = 0;
   return udata;
 }
 
@@ -51,50 +54,97 @@ static void _free_undo_data(void *p)
   free(item);
 }
 
-void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
+static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
+                         gboolean is_group, dt_undo_tag_t tag,
+                         void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
+                         void (*free_data)(gpointer data))
+{
+  const GList *top = g_list_first(self->undo_list);
+  const dt_undo_item_t *top_item = top == NULL ? NULL : (dt_undo_item_t *)top->data;
+
+  if (tag == 0 || !top_item || top_item->tag != tag)
+  {
+    dt_undo_item_t *item = malloc(sizeof(dt_undo_item_t));
+
+    item->user_data = user_data;
+    item->type      = type;
+    item->data      = data;
+    item->undo      = undo;
+    item->free_data = free_data;
+    item->is_group  = is_group;
+    item->tag       = tag;
+
+    dt_pthread_mutex_lock(&self->mutex);
+    self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
+
+    // recording an undo data invalidate all the redo
+    g_list_free_full(self->redo_list, _free_undo_data);
+    self->redo_list = NULL;
+    dt_pthread_mutex_unlock(&self->mutex);
+  }
+  else
+  {
+    // free the undo data as not used
+    free_data(data);
+  }
+}
+
+void dt_undo_start_group(dt_undo_t *self, dt_undo_type_t type)
+{
+  self->group = type;
+  _undo_record(self, NULL, type, NULL, TRUE, 0, NULL, NULL);
+}
+
+void dt_undo_end_group(dt_undo_t *self)
+{
+  _undo_record(self, NULL, self->group, NULL, TRUE, 0, NULL, NULL);
+  self->group = 0;
+}
+
+void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_tag_t tag,
                     void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
                     void (*free_data)(gpointer data))
 {
-  dt_undo_item_t *item = malloc(sizeof(dt_undo_item_t));
-
-  item->user_data = user_data;
-  item->type      = type;
-  item->data      = data;
-  item->undo      = undo;
-  item->free_data = free_data;
-
-  dt_pthread_mutex_lock(&self->mutex);
-  self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
-
-  // recording an undo data invalidate all the redo
-  g_list_free_full(self->redo_list, _free_undo_data);
-  self->redo_list = NULL;
-  dt_pthread_mutex_unlock(&self->mutex);
+  _undo_record(self, user_data, type, data, FALSE, tag, undo, free_data);
 }
 
 void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
 {
   dt_pthread_mutex_lock(&self->mutex);
+
   GList *l = g_list_first(self->redo_list);
+  gboolean is_group = FALSE;
+  int count=1;
 
   // check for first item that is matching the given pattern
 
   while(l)
   {
     dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    GList *next = g_list_next(l);
+
     if(item->type & filter)
     {
+      //  check if the first item is a starting group
+      if (item->is_group && count==1)
+        is_group = TRUE;
+
       //  first remove element from _redo_list
       self->redo_list = g_list_remove(self->redo_list, item);
 
-      //  callback with redo data
-      item->undo(item->user_data, item->type, item->data);
+      //  callback with redo data (except for group tag)
+      if (!item->is_group)
+        item->undo(item->user_data, item->type, item->data);
 
       //  add old position back into the undo list
       self->undo_list = g_list_prepend(self->undo_list, item);
-      break;
+
+      if (!is_group || (item->is_group && count>1))
+        break;
+
+      count++;
     }
-    l = g_list_next(l);
+    l = next;
   };
   dt_pthread_mutex_unlock(&self->mutex);
 }
@@ -102,27 +152,77 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
 void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 {
   dt_pthread_mutex_lock(&self->mutex);
+
   GList *l = g_list_first(self->undo_list);
 
-  // check for first item that is matching the given pattern
+  // the first matching item (current state) is moved into the redo list
 
   while(l)
   {
     dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    GList *next = g_list_next(l);
+
     if(item->type & filter)
     {
-      //  first remove element from _undo_list
       self->undo_list = g_list_remove(self->undo_list, item);
-
-      //  callback with undo data
-      item->undo(item->user_data, item->type, item->data);
-
-      //  add element into the redo list as filed with our previous position (before undo)
-
       self->redo_list = g_list_prepend(self->redo_list, item);
+
+      //  check if we are starting a group
+
+      if (item->is_group)
+      {
+        l = next;
+
+        // move whole goup into the redo list
+        while (l)
+        {
+          dt_undo_item_t *g_item = (dt_undo_item_t *)l->data;
+          GList *g_next = g_list_next(l);
+
+          self->undo_list = g_list_remove(self->undo_list, g_item);
+          self->redo_list = g_list_prepend(self->redo_list, g_item);
+
+          if (g_item->is_group)
+            break;
+
+          l = g_next;
+        }
+      }
       break;
     }
-    l = g_list_next(l);
+    l = next;
+  }
+
+  // check for first item that is matching the given pattern, call undo
+
+  l = g_list_first(self->undo_list);
+  gboolean is_group = FALSE;
+  int count = 1;
+
+  while(l)
+  {
+    dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    GList *next = g_list_next(l);
+
+    // the second matching item (new state) is sent to callback
+
+    if(item->type & filter)
+    {
+      //  check if the first item is a starting group
+      if (item->is_group && count==1)
+        is_group = TRUE;
+
+      //  callback with undo data (except for group tag)
+      if (!item->is_group)
+        item->undo(item->user_data, item->type, item->data);
+
+      // exit if we are not in a group, or if we reached the end of the group
+      if (!is_group || (item->is_group && count>1))
+        break;
+
+      count++;
+    }
+    l = next;
   };
   dt_pthread_mutex_unlock(&self->mutex);
 }
@@ -167,7 +267,7 @@ static void _undo_iterate(GList *list, uint32_t filter, gpointer user_data,
   while(l)
   {
     dt_undo_item_t *item = (dt_undo_item_t *)l->data;
-    if(item->type & filter)
+    if(!item->is_group && item->type & filter)
     {
       apply(user_data, item->type, item->data);
     }

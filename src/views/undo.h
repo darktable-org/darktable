@@ -27,22 +27,31 @@ typedef enum dt_undo_type_t
 {
   DT_UNDO_GEOTAG = 1 << 0,
   DT_UNDO_HISTORY = 1 << 1,
-  DT_UNDO_ALL = DT_UNDO_GEOTAG | DT_UNDO_HISTORY
+  DT_UNDO_MASK = 1 << 2,
+  DT_UNDO_DEVELOP = DT_UNDO_HISTORY | DT_UNDO_MASK,
+  DT_UNDO_ALL = DT_UNDO_GEOTAG | DT_UNDO_HISTORY | DT_UNDO_MASK
 } dt_undo_type_t;
 
 typedef void *dt_undo_data_t;
 
+typedef unsigned long long dt_undo_tag_t;
+
 typedef struct dt_undo_t
 {
   GList *undo_list, *redo_list;
+  dt_undo_type_t group;
   dt_pthread_mutex_t mutex;
 } dt_undo_t;
 
 dt_undo_t *dt_undo_init(void);
 void dt_undo_cleanup(dt_undo_t *self);
 
-// record a change that will be insered into the undo list
-void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
+// create a group of item to be handled together, a group
+void dt_undo_start_group(dt_undo_t *self, dt_undo_type_t type);
+void dt_undo_end_group(dt_undo_t *self);
+
+// record a change that will be insered into the undo list. if tag is identical to the top item nothing is recorded
+void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_tag_t tag,
                     void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
                     void (*free_data)(gpointer data));
 
