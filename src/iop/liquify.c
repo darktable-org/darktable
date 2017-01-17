@@ -2410,6 +2410,11 @@ static void smooth_paths_linsys (dt_iop_liquify_params_t *params)
         goto done;
       }
 
+      if (firstseg && autosmooth && !next_autosmooth)
+      {
+        eqn[idx] = 5;
+        goto done;
+      }
       if (firstseg && autosmooth)
       {
         eqn[idx] = 1;
