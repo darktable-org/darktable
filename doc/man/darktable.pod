@@ -10,7 +10,7 @@ darktable - a digital photography workflow application
 Options:
 
     -d {all,cache,camctl,camsupport,control,dev,fswatch,
-        input,lighttable,masks,memory,nan,opencl,
+        input,lighttable,lua,masks,memory,nan,opencl,
         perf,pwstorage,print,sql}
     --disable-opencl
     --library <library file>
