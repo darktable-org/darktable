@@ -205,7 +205,7 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
   while(1)
   {
     res = gtk_dialog_run(GTK_DIALOG(dialog));
-    if(res == GTK_RESPONSE_CANCEL || res == GTK_RESPONSE_OK) break;
+    if(res == GTK_RESPONSE_CANCEL || res == GTK_RESPONSE_DELETE_EVENT || res == GTK_RESPONSE_OK) break;
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
