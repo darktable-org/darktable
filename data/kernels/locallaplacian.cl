@@ -196,7 +196,7 @@ laplacian_assemble(
   pixel.x = expand_gaussian(output1, i, j, pw, ph);
 
   const float num_gamma = 6.0f; // this sucks, have to hardcode for the lack of arrays
-  const float v = read_imagef(input, sampleri, (int2)(i, j)).x;
+  const float v = read_imagef(input, sampleri, (int2)(x, y)).x;
   int hi = 1;
   // what we mean is this:
   // for(;hi<num_gamma-1 && gamma[hi] <= v;hi++);
