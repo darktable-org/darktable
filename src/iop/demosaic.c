@@ -819,13 +819,13 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
               // use that color interpolation instead
               if((d > 1) && (d & 1) && (diff[d - 1] < diff[d]))
               {
-                //for(int c = 0; c < 2; c++) color[c * 2][d] = color[c * 2][d - 1];
                 color[0][d] = color[0][d - 1];
                 color[1][d] = color[1][d - 1];
               }
               if(d < 2 || (d & 1))
               {
-                for(int c = 0; c < 2; c++) rfx[0][c * 2] = color[c][d] / 2.f;
+                rfx[0][0] = color[0][d] / 2.f;
+                rfx[0][2] = color[1][d] / 2.f;
                 rfx += TS * TS;
               }
             }
