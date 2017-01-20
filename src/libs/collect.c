@@ -223,18 +223,20 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
   gchar *tree_path = NULL;
   gchar *new_path = NULL;
 
-  filechooser = gtk_file_chooser_dialog_new(
-      _("search filmroll"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
-      GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
-
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-
   model = gtk_tree_view_get_model(treeview);
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
-  gtk_tree_selection_get_selected(selection, &model, &iter);
+  if (!gtk_tree_selection_get_selected(selection, &model, &iter))
+    return;
+
   child = iter;
   gtk_tree_model_iter_parent(model, &iter, &child);
   gtk_tree_model_get(model, &child, DT_LIB_COLLECT_COL_PATH, &tree_path, -1);
+
+  filechooser = gtk_file_chooser_dialog_new(
+    _("search filmroll"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
+    GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
   if(tree_path != NULL)
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), tree_path);
@@ -321,7 +323,7 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
   GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
 
   GtkTreeSelection *selection;
-  GtkTreeIter iter;
+  GtkTreeIter iter, model_iter;
   GtkTreeModel *model;
 
   gchar *filmroll_path = NULL;
@@ -330,18 +332,25 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
   /* Get info about the filmroll (or parent) selected */
   model = gtk_tree_view_get_model(treeview);
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
-  gtk_tree_selection_get_selected(selection, &model, &iter);
-  gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &filmroll_path, -1);
+  if (gtk_tree_selection_get_selected(selection, &model, &iter))
+  {
+    gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &filmroll_path, -1);
 
-  /* Clean selected images, and add to the table those which are going to be deleted */
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
+    /* Clean selected images, and add to the table those which are going to be deleted */
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
-  fullq = dt_util_dstrcat(fullq, "INSERT INTO main.selected_images SELECT id FROM main.images WHERE film_id IN "
-                                 "(SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
-                          filmroll_path);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
+    fullq = dt_util_dstrcat(fullq, "INSERT INTO main.selected_images SELECT id FROM main.images WHERE film_id IN "
+                                   "(SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
+                            filmroll_path);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
 
-  dt_control_remove_images();
+    if (dt_control_remove_images())
+    {
+      gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(model), &model_iter, &iter);
+      gtk_tree_store_remove(GTK_TREE_STORE(gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model))),
+                            &model_iter);
+    }
+  }
 }
 
 static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_collect_t *d)
@@ -708,7 +717,19 @@ static GtkTreeModel *_create_filtered_model(GtkTreeModel *model, dt_lib_collect_
       level++;
     }
 
-    if(level > 0) path = gtk_tree_model_get_path(model, &iter);
+    if(level > 0)
+    {
+      if(level > 0 &&
+         gtk_tree_model_iter_n_children(model, &iter) == 0 &&
+         gtk_tree_model_iter_parent(model, &child, &iter))
+      {
+        path = gtk_tree_model_get_path(model, &child);
+      }
+      else
+      {
+        path = gtk_tree_model_get_path(model, &iter);
+      }
+    }
   }
 
   // Create filter and set virtual root
@@ -1508,7 +1529,10 @@ static void filmrolls_removed(gpointer instance, gpointer self)
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
 
   // update tree
-  d->view_rule = -1;
+  if (d->view_rule != DT_COLLECTION_PROP_FOLDERS)
+  {
+    d->view_rule = -1;
+  }
   d->rule[d->active_rule].typing = FALSE;
   _lib_collect_gui_update(self);
 }
