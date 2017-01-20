@@ -55,7 +55,8 @@ typedef struct dt_gui_widgets_t
 } dt_gui_widgets_t;
 
 typedef enum dt_gui_color_t {
-  DT_GUI_COLOR_DARKROOM_BG = 0,
+  DT_GUI_COLOR_BG = 0,
+  DT_GUI_COLOR_DARKROOM_BG,
   DT_GUI_COLOR_DARKROOM_PREVIEW_BG,
   DT_GUI_COLOR_LIGHTTABLE_BG,
   DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG,
@@ -74,7 +75,6 @@ typedef struct dt_gui_gtk_t
   char *last_preset;
 
   int32_t reset;
-  float bgcolor[3];
   GdkRGBA colors[DT_GUI_COLOR_LAST];
 
   int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip

@@ -974,11 +974,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                           g_cclosure_new(G_CALLBACK(view_switch_key_accel_callback), NULL, NULL));
 
   darktable.gui->reset = 0;
-  for(int i = 0; i < 3; i++) darktable.gui->bgcolor[i] = 0.1333;
 
   GdkRGBA *c = darktable.gui->colors;
   GtkWidget *main_window = dt_ui_main_window(darktable.gui->ui);
   GtkStyleContext *ctx = gtk_widget_get_style_context(main_window);
+
+  c[DT_GUI_COLOR_BG] = (GdkRGBA){ 0.1333, 0.1333, 0.1333, 1.0 };
 
   c[DT_GUI_COLOR_DARKROOM_BG] = (GdkRGBA){ .2, .2, .2, 1.0 };
   gtk_style_context_lookup_color(ctx, "darkroom_bg_color", &c[DT_GUI_COLOR_DARKROOM_BG]);
