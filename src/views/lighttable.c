@@ -488,7 +488,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   int32_t mouse_over_id = dt_control_get_mouse_over_id(), mouse_over_group = -1;
 
   /* fill background */
-  cairo_set_source_rgb(cr, .2, .2, .2);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_paint(cr);
 
   offset_changed = lib->offset_changed;
@@ -979,7 +979,7 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   lib->images_in_row = zoom;
   lib->image_over = DT_VIEW_DESERT;
 
-  cairo_set_source_rgb(cr, .2, .2, .2);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_paint(cr);
 
   const float wd = width / zoom;
@@ -1291,7 +1291,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   }
 
   lib->image_over = DT_VIEW_DESERT;
-  cairo_set_source_rgb(cr, .1, .1, .1);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG);
   cairo_paint(cr);
 
   const int frows = 5, fcols = 5;
