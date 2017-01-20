@@ -77,5 +77,5 @@ B<darktable> is free software; you can redistribute it and/or modify it
 under the terms of the GPL v3 or (at your option) any later version.
 
 =for comment
-$Date: 2015-11-17$
+$Date: 2017-01-20$
 $Release: 2.3$
