@@ -469,7 +469,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:312(synopsis)
 msgid ""
-"darktable [-d {all,cache,camctl,control,dev,fswatch, input,lighttable,lua,masks,"
+"darktable [-d {all,cache,camctl,control,dev,fswatch, input,lighttable,masks,"
 "memory,nan,opencl, perf,pwstorage,sql}] [IMG_1234.{RAW,..}|image_folder/] [--"
 "version] [--disable-opencl] [--library &lt;library file&gt;] [--datadir &lt;"
 "data directory&gt;] [--moduledir &lt;module directory&gt;] [--tmpdir &lt;tmp "
