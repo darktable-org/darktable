@@ -778,20 +778,18 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             int h = FCxtrans(row, col + 1, roi_in, xtrans);
             float diff[6] = { 0.0f };
             // interplated color: first index is red/blue, second is
-            // pass, is double actual results, halved on assignment
+            // pass, is double actual result
             float color[2][6];
-            // Six passes, alternating interpolating from x or y axis
-            // (i), starting with R or B (h) depending on which is
-            // closest pixel.  Passes 0,1 produce output to rgb[0],
-            // rgb[1] respectively of interpolated hori/vert results.
-            // Pass 3,5 produces output to rgb[2], rgb[3] respectively
-            // of best of interpolated hori/vert results.  Each pass
-            // which outputs moves on to the next rgb[] for input of
-            // interpolated greens.
+            // Six passes, alternating hori/vert interp (i),
+            // starting with R or B (h) depending on which is closest.
+            // Passes 0,1 to rgb[0], rgb[1] of hori/vert interp. Pass
+            // 3,5 to rgb[2], rgb[3] of best of interp hori/vert
+            // results. Each pass which outputs moves on to the next
+            // rgb[] for input of interp greens.
             for(int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2)
             {
-              // look 1 and 2 pixels distance from solitary green, red
-              // then blue or blue then red
+              // look 1 and 2 pixels distance from solitary green to
+              // red then blue or blue then red
               for(int c = 0; c < 2; c++, h ^= 2)
               {
                 // rate of change in greens between current pixel and
