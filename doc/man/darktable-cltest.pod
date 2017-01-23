@@ -32,11 +32,11 @@ It was turned into a man page by Tobias Ellinghaus E<lt>me@houz.orgE<gt>.
 
 =head1 COPYRIGHT AND LICENSE
 
-B<Copyright (C)> 2009-2015 by Authors.
+B<Copyright (C)> 2009-2017 by Authors.
 
 B<darktable> is free software; you can redistribute it and/or modify it
 under the terms of the GPL v3 or (at your option) any later version.
 
 =for comment
-$Date: 2015-11-17$
-$Release: 2.0$
+$Date: 2017-01-20$
+$Release: 2.3$
