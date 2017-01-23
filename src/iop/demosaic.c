@@ -776,8 +776,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           {
             float(*rfx)[3] = &rgb[0][row - top][col - left];
             int h = FCxtrans(row, col + 1, roi_in, xtrans);
-            // most recent x/y differentials
-            float diff[2] = { 0.0f };
+            float diff[6] = { 0.0f };
             // interplated color: first index is red/blue, second is
             // x/y, is double actual results, halved on assignment
             float color[2][2];
@@ -810,17 +809,16 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                 // For 2nd and 3rd hori+vert passes, create a sum of
                 // steepness for both cardinal directions.
                 if(d > 1)
-                  diff[d & 1] += SQR(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h])
-                                 + SQR(g);
+                  diff[d] += SQR(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h])
+                             + SQR(g);
               }
               if((d < 2) || (d & 1))
               { // output for passes 0, 1, 3, 5
                 // for 0, 1 just use hori/vert, for 3, 5 use best of x/y dir
-                const int d_out = (d < 2) ? d : (diff[0] >= diff[1]);
+                const int d_out = (d < 2) ? d : (diff[d] < diff[d-1]);
                 rfx[0][0] = color[0][d_out] / 2.f;
                 rfx[0][2] = color[1][d_out] / 2.f;
                 rfx += TS * TS;
-                if (d == 3) diff[0] = diff[1] = 0.f;
               }
             }
           }
