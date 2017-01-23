@@ -181,7 +181,7 @@
       </para>
 
 <synopsis>darktable [-d {all,cache,camctl,camsupport,control,dev,
-               fswatch,input,lighttable,masks,memory,nan,
+               fswatch,input,lighttable,lua,masks,memory,nan,
                opencl,perf,pwstorage,print,sql}]
           [&lt;input file&gt;|&lt;image folder&gt;]
           [--version]
