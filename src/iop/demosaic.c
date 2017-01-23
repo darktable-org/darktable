@@ -776,20 +776,19 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           {
             float(*rfx)[3] = &rgb[0][row - top][col - left];
             int h = FCxtrans(row, col + 1, roi_in, xtrans);
-            // FIXME: could do diff[2], colors[2][2], as only need to remember current and prior pass results?
-            float diff[6] = { 0.0f };
-            // red/blue results for each pass, color[0][]=red,
-            // color[1][]=blue, are double actual results, halved on
-            // assignment
-            float color[2][6];
+            // most recent x/y differentials
+            float diff[2] = { 0.0f };
+            // interplated color: first index is red/blue, second is
+            // x/y, is double actual results, halved on assignment
+            float color[2][2];
             // Six passes, alternating interpolating from x or y axis
             // (i), starting with R or B (h) depending on which is
             // closest pixel.  Passes 0,1 produce output to rgb[0],
             // rgb[1] respectively of interpolated hori/vert results.
             // Pass 3,5 produces output to rgb[2], rgb[3] respectively
             // of best of interpolated hori/vert results.  Each pass
-            // which outputs to rgb then moves on to the next rgb[]
-            // for its input of interpolated greens.
+            // which outputs moves on to the next rgb[] for input of
+            // interpolated greens.
             for(int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2)
             {
               // look 1 and 2 pixels distance from solitary green, red
@@ -805,28 +804,23 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                 // color is halved before being stored in rgb, hence
                 // this becomes green rate of change plus the average
                 // of the near red or blue pixels on current axis
-                color[h != 0][d] = g + rfx[i << c][h] + rfx[-(i << c)][h];
+                color[h != 0][d & 1] = g + rfx[i << c][h] + rfx[-(i << c)][h];
                 // Note that diff will become the slope for both red
-                // and blue differentals in the current direction.
+                // and blue differentials in the current direction.
                 // For 2nd and 3rd hori+vert passes, create a sum of
                 // steepness for both cardinal directions.
                 if(d > 1)
-                  diff[d] += SQR(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h])
-                             + SQR(g);
+                  diff[d & 1] += SQR(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h])
+                                 + SQR(g);
               }
-              // if on 2nd or 3rd pass of y direction, and the
-              // previously-calculated x-direction has a smaller diff,
-              // use that color interpolation instead
-              if((d > 1) && (d & 1) && (diff[d - 1] < diff[d]))
-              {
-                color[0][d] = color[0][d - 1];
-                color[1][d] = color[1][d - 1];
-              }
-              if(d < 2 || (d & 1))
-              {
-                rfx[0][0] = color[0][d] / 2.f;
-                rfx[0][2] = color[1][d] / 2.f;
+              if((d < 2) || (d & 1))
+              { // output for passes 0, 1, 3, 5
+                // for 0, 1 just use hori/vert, for 3, 5 use best of x/y dir
+                const int d_out = (d < 2) ? d : (diff[0] >= diff[1]);
+                rfx[0][0] = color[0][d_out] / 2.f;
+                rfx[0][2] = color[1][d_out] / 2.f;
                 rfx += TS * TS;
+                if (d == 3) diff[0] = diff[1] = 0.f;
               }
             }
           }
