@@ -10,7 +10,7 @@ darktable - a digital photography workflow application
 Options:
 
     -d {all,cache,camctl,camsupport,control,dev,fswatch,
-        input,lighttable,masks,memory,nan,opencl,
+        input,lighttable,lua,masks,memory,nan,opencl,
         perf,pwstorage,print,sql}
     --disable-opencl
     --library <library file>
@@ -528,11 +528,11 @@ The project was started by Johannes Hanika in early 2009 to fill the gap
 
 =head1 COPYRIGHT AND LICENSE
 
-B<Copyright (C)> 2009-2015 by Authors.
+B<Copyright (C)> 2009-2017 by Authors.
 
 B<darktable> is free software; you can redistribute it and/or modify it
 under the terms of the GPL v3 or (at your option) any later version.
 
 =for comment
-$Date: 2015-11-08$
-$Release: 2.0$
+$Date: 2017-01-20$
+$Release: 2.3$
