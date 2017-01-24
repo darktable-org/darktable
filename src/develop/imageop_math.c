@@ -207,7 +207,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
       int num = 0;
       uint32_t col = 0;
 
-      // move to point to an rggb block:
+      // move to point to an rggb block
       int trggbx = 0, trggby = 0;
       if(FC(miny, minx + 1, filters) != 1) trggbx++;
       if(FC(miny, minx + trggbx, filters) != 0)
@@ -236,7 +236,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
             num++;
           }
         }
-      // FIXME: can calculate num by area
+      //const int num = ((1 + (maxy - (miny + trggby)) / 2) * (1 + (maxx - (minx + trggbx)) / 2)) << (c==1);
       *outc = col / num;
     }
   }
