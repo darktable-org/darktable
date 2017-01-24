@@ -9,7 +9,25 @@ if(NOT(EXISTS "${RAWSPEED_PATH}" AND IS_DIRECTORY "${RAWSPEED_PATH}" AND EXISTS 
   message(FATAL_ERROR "RawSpeed submodule not found. You probably want to run:\n$ git submodule init\nand then\n$ git submodule update")
 endif()
 
+set(CMAKE_C_FLAGS_SAVE "${CMAKE_C_FLAGS}")
+set(CMAKE_CXX_FLAGS_SAVE "${CMAKE_CXX_FLAGS}")
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
+
+set(CMAKE_CXX_CLANG_TIDY_SAVE "${CMAKE_CXX_CLANG_TIDY}")
+set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE_SAVE "${CMAKE_CXX_INCLUDE_WHAT_YOU_USE}")
+
+unset(CMAKE_CXX_CLANG_TIDY)
+unset(CMAKE_CXX_INCLUDE_WHAT_YOU_USE)
+
 add_subdirectory(rawspeed)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_SAVE}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_SAVE}")
+
+set(CMAKE_CXX_CLANG_TIDY "${CMAKE_CXX_CLANG_TIDY_SAVE}")
+set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${CMAKE_CXX_INCLUDE_WHAT_YOU_USE_SAVE}")
 
 #
 # the rawspeed part is a bit of a hack:
