@@ -215,31 +215,27 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
         trggbx = (trggbx + 1) & 1;
         trggby++;
       }
+      if(c == 2)
+      { // point to blue if that is what are sampling
+        trggby = (trggby + 1) & 1;
+        trggbx = (trggbx + 1) & 1;
+      }
 
-      if (c == 1)
-      {
-        for(int yy = miny + trggby; yy <= maxy; yy += 2)
-          for(int xx = minx + trggbx; xx <= maxx; xx += 2)
+      for(int yy = miny + trggby; yy <= maxy; yy += 2)
+        for(int xx = minx + trggbx; xx <= maxx; xx += 2)
+        {
+          if(c == 1)
           {
             col += in[xx + 1 + in_stride * yy];
             col += in[xx + in_stride * (yy + 1)];
             num += 2;
           }
-      }
-      else
-      {
-        if(c == 2)
-        {
-          trggby++;
-          trggbx++;
-        }
-        for(int yy = miny + trggby; yy <= maxy; yy += 2)
-          for(int xx = minx + trggbx; xx <= maxx; xx += 2)
+          else
           {
             col += in[xx + in_stride * yy];
             num++;
           }
-      }
+        }
       // FIXME: can calculate num by area
       *outc = col / num;
     }
