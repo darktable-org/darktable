@@ -34,7 +34,7 @@ void dt_control_write_sidecar_files();
 void dt_control_delete_images();
 void dt_control_duplicate_images();
 void dt_control_flip_images(const int32_t cw);
-void dt_control_remove_images();
+gboolean dt_control_remove_images();
 void dt_control_move_images();
 void dt_control_copy_images();
 void dt_control_set_local_copy_images();
