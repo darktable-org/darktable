@@ -185,18 +185,6 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
   const float px_footprint = 1.f / roi_out->scale;
-  // how many 2x2 blocks can be sampled inside that area
-  const int samples = round(px_footprint / 2);
-
-  // move p to point to an rggb block:
-  int trggbx = 0, trggby = 0;
-  if(FC(trggby, trggbx + 1, filters) != 1) trggbx++;
-  if(FC(trggby, trggbx, filters) != 0)
-  {
-    trggbx = (trggbx + 1) & 1;
-    trggby++;
-  }
-  const int rggbx = trggbx, rggby = trggby;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -205,160 +193,51 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
   {
     uint16_t *outc = out + out_stride * y;
 
-    float fy = (y + roi_out->y) * px_footprint;
-    int py = (int)fy & ~1;
-    const float dy = (fy - py) / 2;
-    py = MIN(((roi_in->height - 6) & ~1u), py) + rggby;
+    const float fy = (y + roi_out->y) * px_footprint;
+    const int miny = CLAMPS((int)floorf(fy - px_footprint), 0, roi_in->height-3);
+    const int maxy = MIN(roi_in->height-1, (int)ceilf(fy + px_footprint));
 
-    int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
-
-    for(int x = 0; x < roi_out->width; x++)
+    float fx = roi_out->x * px_footprint;
+    for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      float col[4] = { 0, 0, 0, 0 };
+      const int minx = CLAMPS((int)floorf(fx - px_footprint), 0, roi_in->width-3);
+      const int maxx = MIN(roi_in->width-1, (int)ceilf(fx + px_footprint));
 
-      float fx = (x + roi_out->x) * px_footprint;
-      int px = (int)fx & ~1;
-      const float dx = (fx - px) / 2;
-      px = MIN(((roi_in->width - 6) & ~1u), px) + rggbx;
+      const int c = FC(y, x, filters);
+      int num = 0;
+      uint32_t col = 0;
 
-      int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
-
-      float p[4];
-      float num = 0;
-
-      // upper left 2x2 block of sampling region
-      p[0] = in[px + in_stride * py];
-      p[1] = in[px + 1 + in_stride * py];
-      p[2] = in[px + in_stride * (py + 1)];
-      p[3] = in[px + 1 + in_stride * (py + 1)];
-      for(int c = 0; c < 4; c++) col[c] += ((1 - dx) * (1 - dy)) * p[c];
-
-      // left 2x2 block border of sampling region
-      for(int j = py + 2; j <= maxj; j += 2)
+      // move to point to an rggb block
+      int trggbx = 0, trggby = 0;
+      if(FC(miny, minx + 1, filters) != 1) trggbx++;
+      if(FC(miny, minx + trggbx, filters) != 0)
       {
-        p[0] = in[px + in_stride * j];
-        p[1] = in[px + 1 + in_stride * j];
-        p[2] = in[px + in_stride * (j + 1)];
-        p[3] = in[px + 1 + in_stride * (j + 1)];
-        for(int c = 0; c < 4; c++) col[c] += (1 - dx) * p[c];
+        trggbx = (trggbx + 1) & 1;
+        trggby++;
+      }
+      if(c == 2)
+      { // point to blue if that is what are sampling
+        trggby = (trggby + 1) & 1;
+        trggbx = (trggbx + 1) & 1;
       }
 
-      // upper 2x2 block border of sampling region
-      for(int i = px + 2; i <= maxi; i += 2)
-      {
-        p[0] = in[i + in_stride * py];
-        p[1] = in[i + 1 + in_stride * py];
-        p[2] = in[i + in_stride * (py + 1)];
-        p[3] = in[i + 1 + in_stride * (py + 1)];
-        for(int c = 0; c < 4; c++) col[c] += (1 - dy) * p[c];
-      }
-
-      // 2x2 blocks in the middle of sampling region
-      for(int j = py + 2; j <= maxj; j += 2)
-        for(int i = px + 2; i <= maxi; i += 2)
+      for(int yy = miny + trggby; yy <= maxy; yy += 2)
+        for(int xx = minx + trggbx; xx <= maxx; xx += 2)
         {
-          p[0] = in[i + in_stride * j];
-          p[1] = in[i + 1 + in_stride * j];
-          p[2] = in[i + in_stride * (j + 1)];
-          p[3] = in[i + 1 + in_stride * (j + 1)];
-          for(int c = 0; c < 4; c++) col[c] += p[c];
+          if(c == 1)
+          {
+            col += in[xx + 1 + in_stride * yy];
+            col += in[xx + in_stride * (yy + 1)];
+            num += 2;
+          }
+          else
+          {
+            col += in[xx + in_stride * yy];
+            num++;
+          }
         }
-
-      if(maxi == px + 2 * samples && maxj == py + 2 * samples)
-      {
-        // right border
-        for(int j = py + 2; j <= maxj; j += 2)
-        {
-          p[0] = in[maxi + 2 + in_stride * j];
-          p[1] = in[maxi + 3 + in_stride * j];
-          p[2] = in[maxi + 2 + in_stride * (j + 1)];
-          p[3] = in[maxi + 3 + in_stride * (j + 1)];
-          for(int c = 0; c < 4; c++) col[c] += dx * p[c];
-        }
-
-        // upper right
-        p[0] = in[maxi + 2 + in_stride * py];
-        p[1] = in[maxi + 3 + in_stride * py];
-        p[2] = in[maxi + 2 + in_stride * (py + 1)];
-        p[3] = in[maxi + 3 + in_stride * (py + 1)];
-        for(int c = 0; c < 4; c++) col[c] += (dx * (1 - dy)) * p[c];
-
-        // lower border
-        for(int i = px + 2; i <= maxi; i += 2)
-        {
-          p[0] = in[i + in_stride * (maxj + 2)];
-          p[1] = in[i + 1 + in_stride * (maxj + 2)];
-          p[2] = in[i + in_stride * (maxj + 3)];
-          p[3] = in[i + 1 + in_stride * (maxj + 3)];
-          for(int c = 0; c < 4; c++) col[c] += dy * p[c];
-        }
-
-        // lower left 2x2 block
-        p[0] = in[px + in_stride * (maxj + 2)];
-        p[1] = in[px + 1 + in_stride * (maxj + 2)];
-        p[2] = in[px + in_stride * (maxj + 3)];
-        p[3] = in[px + 1 + in_stride * (maxj + 3)];
-        for(int c = 0; c < 4; c++) col[c] += ((1 - dx) * dy) * p[c];
-
-        // lower right 2x2 block
-        p[0] = in[maxi + 2 + in_stride * (maxj + 2)];
-        p[1] = in[maxi + 3 + in_stride * (maxj + 2)];
-        p[2] = in[maxi + 2 + in_stride * (maxj + 3)];
-        p[3] = in[maxi + 3 + in_stride * (maxj + 3)];
-        for(int c = 0; c < 4; c++) col[c] += (dx * dy) * p[c];
-
-        num = (samples + 1) * (samples + 1);
-      }
-      else if(maxi == px + 2 * samples)
-      {
-        // right border
-        for(int j = py + 2; j <= maxj; j += 2)
-        {
-          p[0] = in[maxi + 2 + in_stride * j];
-          p[1] = in[maxi + 3 + in_stride * j];
-          p[2] = in[maxi + 2 + in_stride * (j + 1)];
-          p[3] = in[maxi + 3 + in_stride * (j + 1)];
-          for(int c = 0; c < 4; c++) col[c] += dx * p[c];
-        }
-
-        // upper right
-        p[0] = in[maxi + 2 + in_stride * py];
-        p[1] = in[maxi + 3 + in_stride * py];
-        p[2] = in[maxi + 2 + in_stride * (py + 1)];
-        p[3] = in[maxi + 3 + in_stride * (py + 1)];
-        for(int c = 0; c < 4; c++) col[c] += (dx * (1 - dy)) * p[c];
-
-        num = ((maxj - py) / 2 + 1 - dy) * (samples + 1);
-      }
-      else if(maxj == py + 2 * samples)
-      {
-        // lower border
-        for(int i = px + 2; i <= maxi; i += 2)
-        {
-          p[0] = in[i + in_stride * (maxj + 2)];
-          p[1] = in[i + 1 + in_stride * (maxj + 2)];
-          p[2] = in[i + in_stride * (maxj + 3)];
-          p[3] = in[i + 1 + in_stride * (maxj + 3)];
-          for(int c = 0; c < 4; c++) col[c] += dy * p[c];
-        }
-
-        // lower left 2x2 block
-        p[0] = in[px + in_stride * (maxj + 2)];
-        p[1] = in[px + 1 + in_stride * (maxj + 2)];
-        p[2] = in[px + in_stride * (maxj + 3)];
-        p[3] = in[px + 1 + in_stride * (maxj + 3)];
-        for(int c = 0; c < 4; c++) col[c] += ((1 - dx) * dy) * p[c];
-
-        num = ((maxi - px) / 2 + 1 - dx) * (samples + 1);
-      }
-      else
-      {
-        num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
-      }
-
-      const int c = (2 * ((y + rggby) % 2) + ((x + rggbx) % 2));
-      *outc = (uint16_t)(col[c] / num);
-      outc++;
+      //const int num = ((1 + (maxy - (miny + trggby)) / 2) * (1 + (maxx - (minx + trggbx)) / 2)) << (c==1);
+      *outc = col / num;
     }
   }
 }
@@ -563,7 +442,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out, const uint16_t *
                                            const int32_t out_stride, const int32_t in_stride,
                                            const uint32_t filters)
 {
-  if(darktable.codepath.OPENMP_SIMD)
+  if(1)//(darktable.codepath.OPENMP_SIMD)
     return dt_iop_clip_and_zoom_mosaic_half_size_plain(out, in, roi_out, roi_in, out_stride, in_stride, filters);
 #if defined(__SSE__)
   else if(darktable.codepath.SSE2)
