@@ -45,7 +45,7 @@
 #define MAXNODES 20
 
 
-DT_MODULE_INTROSPECTION(4, dt_iop_basecurve_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_basecurve_params_t)
 
 typedef struct dt_iop_basecurve_node_t
 {
@@ -62,10 +62,22 @@ typedef struct dt_iop_basecurve_params_t
   int basecurve_type[3];
   int exposure_fusion;    // number of exposure fusion steps
   float exposure_stops;   // number of stops between fusion images
+  float exposure_bias;    // whether to do exposure-fusion with over or under-exposure
 } dt_iop_basecurve_params_t;
 
+typedef struct dt_iop_basecurve_params3_t
+{
+  // three curves (c, ., .) with max number of nodes
+  // the other two are reserved, maybe we'll have cam rgb at some point.
+  dt_iop_basecurve_node_t basecurve[3][MAXNODES];
+  int basecurve_nodes[3];
+  int basecurve_type[3];
+  int exposure_fusion;  // number of exposure fusion steps
+  float exposure_stops; // number of stops between fusion images
+} dt_iop_basecurve_params3_t;
+
 // same but semantics/defaults changed
-typedef dt_iop_basecurve_params_t dt_iop_basecurve_params3_t;
+typedef dt_iop_basecurve_params3_t dt_iop_basecurve_params4_t;
 
 typedef struct dt_iop_basecurve_params2_t
 {
@@ -85,7 +97,7 @@ typedef struct dt_iop_basecurve_params1_t
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 5)
   {
     dt_iop_basecurve_params1_t *o = (dt_iop_basecurve_params1_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
@@ -103,23 +115,34 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->basecurve_type[0] = CUBIC_SPLINE;
     n->exposure_fusion = 0;
     n->exposure_stops = 1;
+    n->exposure_bias = 1.0;
     return 0;
   }
-  if(old_version == 2 && new_version == 4)
+  if(old_version == 2 && new_version == 5)
   {
     dt_iop_basecurve_params2_t *o = (dt_iop_basecurve_params2_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
     memcpy(n, o, sizeof(dt_iop_basecurve_params2_t));
     n->exposure_fusion = 0;
     n->exposure_stops = 1;
+    n->exposure_bias = 1.0;
     return 0;
   }
-  if(old_version == 3 && new_version == 4)
+  if(old_version == 3 && new_version == 5)
   {
     dt_iop_basecurve_params3_t *o = (dt_iop_basecurve_params3_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
     memcpy(n, o, sizeof(dt_iop_basecurve_params3_t));
     n->exposure_stops = (o->exposure_fusion == 0 && o->exposure_stops == 0) ? 1.0f : o->exposure_stops;
+    n->exposure_bias = 1.0;
+    return 0;
+  }
+  if(old_version == 4 && new_version == 5)
+  {
+    dt_iop_basecurve_params4_t *o = (dt_iop_basecurve_params4_t *)old_params;
+    dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
+    memcpy(n, o, sizeof(dt_iop_basecurve_params4_t));
+    n->exposure_bias = 1.0;
     return 0;
   }
   return 1;
@@ -222,7 +245,7 @@ typedef struct dt_iop_basecurve_gui_data_t
   int minmax_curve_type, minmax_curve_nodes;
   GtkBox *hbox;
   GtkDrawingArea *area;
-  GtkWidget *scale, *fusion, *exstep;
+  GtkWidget *scale, *fusion, *exstep, *exbias;
   double mouse_x, mouse_y;
   int selected;
   double selected_offset, selected_y, selected_min, selected_max;
@@ -241,6 +264,7 @@ typedef struct dt_iop_basecurve_data_t
   float unbounded_coeffs[3]; // approximation for extrapolation
   int exposure_fusion;
   float exposure_stops;
+  float exposure_bias;
 } dt_iop_basecurve_data_t;
 
 typedef struct dt_iop_basecurve_global_data_t
@@ -290,6 +314,7 @@ static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *pres
     {
       tmp.exposure_fusion = 0;
       tmp.exposure_stops = 1.0f;
+      tmp.exposure_bias = 1.0f;
     }
     // add the preset.
     dt_gui_presets_add_generic(_(presets[k].name), self->op, self->version(),
@@ -424,6 +449,13 @@ int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 }
 
 
+static float exposure_increment(float stops, int e, float fusion, float bias)
+{
+  float offset = (stops * fusion) * (bias - 1.0) / 2.0;
+  return powf(2.0f, stops * e + offset);
+}
+
+
 static
 int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                       const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -495,7 +527,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     // for every exposure fusion image: push by some ev, apply base curve and compute features
     do
     {
-      const float ev = powf(2.0f, d->exposure_stops * e);
+      const float ev = exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias);
 
       size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -979,10 +1011,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(int e=0;e<d->exposure_fusion+1;e++)
     { // for every exposure fusion image:
       // push by some ev, apply base curve:
-      apply_ev_and_curve(
-          in, col[0], wd, ht,
-          powf(2.0f, d->exposure_stops * e),
-          d->table, d->unbounded_coeffs);
+      apply_ev_and_curve(in, col[0], wd, ht,
+                         exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias), d->table,
+                         d->unbounded_coeffs);
 
       // compute features
       compute_features(col[0], wd, ht);
@@ -1128,6 +1159,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // TODO: implement opencl version:
   d->exposure_fusion = p->exposure_fusion;
   d->exposure_stops = p->exposure_stops;
+  d->exposure_bias = p->exposure_bias;
 
   const int ch = 0;
   // take care of possible change of curve type or number of nodes (not yet implemented in UI)
@@ -1184,10 +1216,17 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_bauhaus_combobox_set(g->fusion, p->exposure_fusion);
   if(p->exposure_fusion != 0)
+  {
     gtk_widget_set_visible(g->exstep, TRUE);
+    gtk_widget_set_visible(g->exbias, TRUE);
+  }
   if(p->exposure_fusion == 0)
+  {
     gtk_widget_set_visible(g->exstep, FALSE);
+    gtk_widget_set_visible(g->exbias, FALSE);
+  }
   dt_bauhaus_slider_set(g->exstep, p->exposure_stops);
+  dt_bauhaus_slider_set(g->exbias, p->exposure_bias);
   // gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -1209,7 +1248,7 @@ void init(dt_iop_module_t *module)
     },
     { 2, 0, 0 }, // number of nodes per curve
     { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
-    0, 1.0f,     // no exposure fusion, but if we would, add one stop
+    0, 1.0f, 1.0f // no exposure fusion, but if we would, add one stop
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_basecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_basecurve_params_t));
@@ -1767,9 +1806,15 @@ static void fusion_callback(GtkWidget *widget, gpointer user_data)
   int fuse = dt_bauhaus_combobox_get(widget);
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   if(p->exposure_fusion == 0 && fuse != 0)
+  {
     gtk_widget_set_visible(g->exstep, TRUE);
+    gtk_widget_set_visible(g->exbias, TRUE);
+  }
   if(p->exposure_fusion != 0 && fuse == 0)
+  {
     gtk_widget_set_visible(g->exstep, FALSE);
+    gtk_widget_set_visible(g->exbias, FALSE);
+  }
   p->exposure_fusion = fuse;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1780,6 +1825,15 @@ static void exstep_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   float stops = dt_bauhaus_slider_get(widget);
   p->exposure_stops = stops;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void exbias_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  float bias = dt_bauhaus_slider_get(widget);
+  p->exposure_bias = bias;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1829,7 +1883,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(c->fusion, _("none"));
   dt_bauhaus_combobox_add(c->fusion, _("two exposures"));
   dt_bauhaus_combobox_add(c->fusion, _("three exposures"));
-  gtk_widget_set_tooltip_text(c->fusion, _("fuse this image stopped up a couple of times with itself, to compress high dynamic range. expose for the highlights before use."));
+  gtk_widget_set_tooltip_text(c->fusion, _("fuse this image stopped up/down a couple of times with itself, to "
+                                           "compress high dynamic range. expose for the highlights before use."));
   gtk_box_pack_start(GTK_BOX(self->widget), c->fusion, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->fusion), "value-changed", G_CALLBACK(fusion_callback), self);
 
@@ -1838,6 +1893,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(c->exstep, NULL, _("exposure shift"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->exstep, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->exstep), "value-changed", G_CALLBACK(exstep_callback), self);
+
+  // initially set to 1 (consistency with previous versions), but double-click resets to 0
+  // to get a quick way to reach 0 with the mouse.
+  c->exbias = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.100, 0.0, 3);
+  gtk_widget_set_tooltip_text(c->exbias, _("whether to shift exposure up or down "
+                                           "(-1: reduce highlight, +1: reduce shadows)"));
+  dt_bauhaus_widget_set_label(c->exbias, NULL, _("exposure bias"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->exbias, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(c->exbias), "value-changed", G_CALLBACK(exbias_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
