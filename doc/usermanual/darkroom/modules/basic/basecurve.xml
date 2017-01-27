@@ -105,7 +105,7 @@
       <para>
         This slider is only visible if the <emphasis>exposure fusion</emphasis> feature is
         activated. It allows you to set the exposure difference between the merged images in ev
-        units (default 3).
+        units (default 1).
       </para>
     </sect5>
 
