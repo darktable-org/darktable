@@ -60,6 +60,8 @@ if (WIN32)
     ${MINGW_PATH}/gdk-pixbuf-query-loaders.exe
     ${MINGW_PATH}/gtk-query-immodules-3.0.exe
     ${MINGW_PATH}/gtk-update-icon-cache.exe
+  #LZO2
+    ${MINGW_PATH}/liblzo2-2.dll
   #LIBXML
     ${MINGW_PATH}/libxml2-2.dll
   #LIBSOUP
@@ -196,10 +198,74 @@ if (WIN32)
     ${MINGW_PATH}/libgcc_s_seh-1.dll
     ${MINGW_PATH}/libwinpthread-1.dll
     ${MINGW_PATH}/libstdc++-6.dll
+  #LIBWEBP
+    ${MINGW_PATH}/libwebp-6.dll
+    ${MINGW_PATH}/libwebpdecoder-2.dll
+    ${MINGW_PATH}/libwebpdemux-2.dll
+    ${MINGW_PATH}/libwebpextras-0.dll
+    ${MINGW_PATH}/libwebpmux-2.dll
+  #RTMPDUMP
+    ${MINGW_PATH}/librtmp-1.dll
+  #GNUTLS
+    ${MINGW_PATH}/libgnutls-30.dll
+    ${MINGW_PATH}/libgnutlsxx-28.dll
+  #GMP
+    ${MINGW_PATH}/libgmp-10.dll
+    ${MINGW_PATH}/libgmpxx-4.dll
+  #NETTLE
+    ${MINGW_PATH}/libhogweed-4.dll
+    ${MINGW_PATH}/libnettle-6.dll
+  #LIBIDN
+    ${MINGW_PATH}/libidn-11.dll
+  #P11-KIT
+    ${MINGW_PATH}/libp11-kit-0.dll
+  #LIBTASN1
+    ${MINGW_PATH}/libtasn1-6.dll
     )
 
   install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin COMPONENT DTDependencies)
-  # TODO: Add auxilliary files for GraphicsMagick, libgphoto2, gdk-pixbuf, adwaita-icon-theme, openssl
+
+  # TODO: Add auxilliary files for openssl?
+
+  # Add pixbuf loader libraries
+  # FILE(GLOB_RECURSE GDK_PIXBUF "${MINGW_PATH}/../lib/gdk-pixbuf-2.0/2.10.0/loaders/*.dll"  )
+  install(DIRECTORY
+      "${MINGW_PATH}/../lib/gdk-pixbuf-2.0"
+      DESTINATION lib/
+      COMPONENT DTDependencies
+      PATTERN "*.a" EXCLUDE)
+
+  # Add adwaita-icon-theme files
+  install(DIRECTORY
+      "${MINGW_PATH}/../share/icons/adwaita/"
+      DESTINATION share/icons/adwaita/
+      COMPONENT DTDependencies)
+
+  # Add libgphoto2 files
+  install(DIRECTORY
+      "${MINGW_PATH}/../lib/libgphoto2"
+      DESTINATION lib/
+      COMPONENT DTDependencies)
+
+  install(DIRECTORY
+      "${MINGW_PATH}/../lib/libgphoto2_port"
+      DESTINATION lib/
+      COMPONENT DTDependencies)
+
+  # Add GraphicsMagick libraries
+  install(DIRECTORY
+      "${MINGW_PATH}/../lib/GraphicsMagick-1.3.25/modules-Q8/coders"
+      DESTINATION lib/GraphicsMagick-1.3.25/modules-Q8/
+      COMPONENT DTDependencies
+      FILES_MATCHING PATTERN "*"
+      PATTERN "*.a" EXCLUDE
+      PATTERN "*.la" EXCLUDE)
+
+  # Add lensfun libraries
+  install(DIRECTORY
+      "${MINGW_PATH}/../share/lensfun/version_1"
+      DESTINATION share/lensfun/
+      COMPONENT DTDependencies)
 
 endif(WIN32)
 
