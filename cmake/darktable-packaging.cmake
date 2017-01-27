@@ -45,10 +45,10 @@ if(UNIX)
 
 endif(UNIX)
 
-
+# Set package peoperties for Windows
 if(WIN32)
   set(CPACK_GENERATOR "NSIS")
-  set(CPACK_PACKAGE_EXECUTABLES "darktable" "Darktable - Raw Editor")
+  set(CPACK_PACKAGE_EXECUTABLES "darktable" "darktable")
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
   # There is a bug in NSIS that does not handle full unix paths properly. Make
   # sure there is at least one set of four (4) backlasshes.

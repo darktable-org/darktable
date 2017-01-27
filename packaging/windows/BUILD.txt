@@ -94,7 +94,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     For building the usermanual
         Add -DBUILD_USERMANUAL=ON flag to the cmake command line
         
-    (TODO) Run install image creating script, it should create darktable-<VERSION>.msi in current (packaging/windows) directory:
+    (TODO) Run install image creating script, it should create darktable-<VERSION>.exe installer in current build directory:
         $ cmake --build . --target package
 
 ISSUES - FIXED
@@ -105,7 +105,7 @@ ISSUES - FIXED
     * Replacing OpenCL symlinks with a filename/MD5tag combination (symlinks require admin priviledges on windows)
     * Loading libraries / finding plugin library
     * Removing ws2_32 and msvcrt as not needed
-    * Added LUA (needed a special old, 5.2 version of the package)
+    * Added LUA
     * Added SLIDESHOW
     * Added OPENMAP Support
     * Added LIBGPHOTO (camera support)
