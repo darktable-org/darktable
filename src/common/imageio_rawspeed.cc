@@ -15,13 +15,14 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#include <memory>
+#include "RawSpeed-API.h"
 
-#include "rawspeed/RawSpeed/RawSpeed-API.h"
+#include <memory>
 
 #define __STDC_LIMIT_MACROS
 
@@ -118,31 +119,21 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 {
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
-#ifdef __WIN32__
-  const size_t len = mbstowcs(NULL, filename, 0) + 1;
-  wchar_t filen[MAX_PATH];
-  if(len > MAX_PATH) return DT_IMAGEIO_FILE_NOT_FOUND;
-  size_t convertedchars = 0;
-  convertedchars = mbstowcs(filen, filename, sizeof(filen) / sizeof(wchar_t));
-  if(convertedchars == (size_t)-1) return DT_IMAGEIO_FILE_NOT_FOUND;
-  FileReader f(filen);
-#else
   char filen[PATH_MAX] = { 0 };
   snprintf(filen, sizeof(filen), "%s", filename);
   FileReader f(filen);
-#endif
 
   std::unique_ptr<RawDecoder> d;
-  std::unique_ptr<FileMap> m;
+  std::unique_ptr<Buffer> m;
 
   try
   {
     dt_rawspeed_load_meta();
 
-    m = unique_ptr<FileMap>(f.readFile());
+    m = std::unique_ptr<Buffer>(f.readFile());
 
     RawParser t(m.get());
-    d = unique_ptr<RawDecoder>(t.getDecoder(meta));
+    d = std::unique_ptr<RawDecoder>(t.getDecoder(meta));
 
     if(!d.get()) return DT_IMAGEIO_FILE_CORRUPTED;
 
