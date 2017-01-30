@@ -255,6 +255,26 @@ static void adjust_xtrans_filters(dt_dev_pixelpipe_t *pipe,
   }
 }
 
+// value to round,   reference on how to round:
+//  if ref was even, returned value will be even
+//  if ref was odd,  returned value will be odd
+static int round_smart(float val, int ref)
+{
+  // first, just round it
+  int round = (int)roundf(val);
+
+  if((ref & 1) ^ (round & 1)) round++;
+
+  return round;
+}
+
+static int compute_proper_crop(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in, int value)
+{
+  const float scale = roi_in->scale / piece->iscale;
+
+  return round_smart((float)value * scale, value);
+}
+
 static int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t *const d, const int row,
               const int col)
 {
@@ -269,8 +289,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
   // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
 
-  const float scale = roi_in->scale / piece->iscale;
-  const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
+  const int csx = compute_proper_crop(piece, roi_in, d->x), csy = compute_proper_crop(piece, roi_in, d->y);
 
   if(piece->pipe->dsc.filters)
   { // raw mosaic
@@ -336,8 +355,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
   // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
   // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
 
-  const float scale = roi_in->scale / piece->iscale;
-  const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
+  const int csx = compute_proper_crop(piece, roi_in, d->x), csy = compute_proper_crop(piece, roi_in, d->y);
 
   if(piece->pipe->dsc.filters)
   { // raw mosaic
@@ -452,8 +470,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     kernel = gd->kernel_rawprepare_4f;
   }
 
-  const float scale = roi_in->scale / piece->iscale;
-  const int csx = (int)roundf((float)d->x * scale), csy = (int)roundf((float)d->y * scale);
+  const int csx = compute_proper_crop(piece, roi_in, d->x), csy = compute_proper_crop(piece, roi_in, d->y);
 
   dev_sub = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, d->sub);
   if(dev_sub == NULL) goto error;
