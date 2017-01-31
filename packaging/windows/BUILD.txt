@@ -94,7 +94,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     For building the usermanual
         Add -DBUILD_USERMANUAL=ON flag to the cmake command line
         
-    (TODO) Run install image creating script, it should create darktable-<VERSION>.exe installer in current build directory:
+    (TODO) Run install image creating script, it should create darktable-<VERSION>-win64.exe installer in current build directory:
         $ cmake --build . --target package
 
 ISSUES - FIXED
