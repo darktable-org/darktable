@@ -118,7 +118,7 @@ const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2
 static int usage(const char *argv0)
 {
   printf("usage: %s [-d "
-         "{all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,masks,memory,nan,opencl,perf,pwstorage,print,sql}]"
+         "{all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,lua,masks,memory,nan,opencl,perf,pwstorage,print,sql}]"
          " [IMG_1234.{RAW,..}|image_folder/]",
          argv0);
 #ifdef HAVE_OPENCL

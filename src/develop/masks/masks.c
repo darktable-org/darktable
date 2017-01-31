@@ -955,18 +955,11 @@ void dt_masks_read_forms(dt_develop_t *dev)
   dt_dev_masks_list_change(dev);
 }
 
-void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
+static void _write_form_db(dt_masks_form_t *form, dt_develop_t *dev)
 {
-  // we first erase all masks for the image present in the db
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM main.mask WHERE imgid = ?1 AND formid = ?2", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, form->formid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
 
-  // and we write the form
+  // write the form into the database
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO main.mask (imgid, formid, form, name, "
                                                              "version, points, points_count,source) VALUES "
                                                              "(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
@@ -1057,6 +1050,20 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
   }
 }
 
+void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
+{
+  // we first erase all masks for the image present in the db
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM main.mask WHERE imgid = ?1 AND formid = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, form->formid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  _write_form_db (form, dev);
+}
+
 void dt_masks_write_forms(dt_develop_t *dev)
 {
   // we first erase all masks for the image present in the db
@@ -1073,95 +1080,7 @@ void dt_masks_write_forms(dt_develop_t *dev)
   {
     dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO main.mask (imgid, formid, form, name, "
-                                                               "version, points, points_count,source) VALUES "
-                                                               "(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, form->formid);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, form->type);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, form->name, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, form->source, 2 * sizeof(float), SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, form->version);
-    if(form->type & DT_MASKS_CIRCLE)
-    {
-      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, circle, sizeof(dt_masks_point_circle_t), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-    }
-    else if(form->type & DT_MASKS_PATH)
-    {
-      guint nb = g_list_length(form->points);
-      dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)calloc(nb, sizeof(dt_masks_point_path_t));
-      GList *points = g_list_first(form->points);
-      int pos = 0;
-      while(points)
-      {
-        dt_masks_point_path_t *pt = (dt_masks_point_path_t *)points->data;
-        ptbuf[pos++] = *pt;
-        points = g_list_next(points);
-      }
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ptbuf, nb * sizeof(dt_masks_point_path_t), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-      free(ptbuf);
-    }
-    else if(form->type & DT_MASKS_GROUP)
-    {
-      guint nb = g_list_length(form->points);
-      dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)calloc(nb, sizeof(dt_masks_point_group_t));
-      GList *points = g_list_first(form->points);
-      int pos = 0;
-      while(points)
-      {
-        dt_masks_point_group_t *pt = (dt_masks_point_group_t *)points->data;
-        ptbuf[pos++] = *pt;
-        points = g_list_next(points);
-      }
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ptbuf, nb * sizeof(dt_masks_point_group_t), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-      free(ptbuf);
-    }
-    else if(form->type & DT_MASKS_GRADIENT)
-    {
-      dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, gradient, sizeof(dt_masks_point_gradient_t), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-    }
-    else if(form->type & DT_MASKS_ELLIPSE)
-    {
-      dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ellipse, sizeof(dt_masks_point_ellipse_t), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-    }
-    else if(form->type & DT_MASKS_BRUSH)
-    {
-      guint nb = g_list_length(form->points);
-      dt_masks_point_brush_t *ptbuf = (dt_masks_point_brush_t *)calloc(nb, sizeof(dt_masks_point_brush_t));
-      GList *points = g_list_first(form->points);
-      int pos = 0;
-      while(points)
-      {
-        dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)points->data;
-        ptbuf[pos++] = *pt;
-        points = g_list_next(points);
-      }
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ptbuf, nb * sizeof(dt_masks_point_brush_t), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-      free(ptbuf);
-    }
-
+    _write_form_db (form, dev);
 
     forms = g_list_next(forms);
   }

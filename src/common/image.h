@@ -171,7 +171,7 @@ typedef struct dt_image_t
   /* needed in exposure iop for Deflicker */
   uint16_t raw_black_level;
   uint16_t raw_black_level_separate[4];
-  uint16_t raw_white_point;
+  uint32_t raw_white_point;
 
   /* needed to fix some manufacturers madness */
   uint32_t fuji_rotation_pos;
