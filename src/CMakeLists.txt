@@ -147,7 +147,7 @@ set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
