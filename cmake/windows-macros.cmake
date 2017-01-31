@@ -152,9 +152,9 @@ if (WIN32)
     ${MINGW_PATH}/mgwhelp.dll
   #GETTEXT
     ${MINGW_PATH}/libasprintf-0.dll
-    ${MINGW_PATH}/libgettextlib-0-19-7.dll
+    ${MINGW_PATH}/libgettextlib-0-19-8-1.dll
     ${MINGW_PATH}/libgettextpo-0.dll
-    ${MINGW_PATH}/libgettextsrc-0-19-7.dll
+    ${MINGW_PATH}/libgettextsrc-0-19-8-1.dll
     ${MINGW_PATH}/libintl-8.dll
   #FONTCONFIG
     ${MINGW_PATH}/libfontconfig-1.dll
@@ -239,6 +239,12 @@ if (WIN32)
   install(DIRECTORY
       "${MINGW_PATH}/../share/icons/adwaita/"
       DESTINATION share/icons/adwaita/
+      COMPONENT DTDependencies)
+
+  # Add gtk schemas files
+  install(DIRECTORY
+      "${MINGW_PATH}/../share/glib-2.0/schemas/"
+      DESTINATION share/glib-2.0/schemas/
       COMPONENT DTDependencies)
 
   # Add libgphoto2 files
