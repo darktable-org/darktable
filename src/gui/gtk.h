@@ -54,6 +54,15 @@ typedef struct dt_gui_widgets_t
 
 } dt_gui_widgets_t;
 
+typedef enum dt_gui_color_t {
+  DT_GUI_COLOR_BG = 0,
+  DT_GUI_COLOR_DARKROOM_BG,
+  DT_GUI_COLOR_DARKROOM_PREVIEW_BG,
+  DT_GUI_COLOR_LIGHTTABLE_BG,
+  DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG,
+  DT_GUI_COLOR_LAST
+} dt_gui_color_t;
+
 typedef struct dt_gui_gtk_t
 {
 
@@ -66,7 +75,7 @@ typedef struct dt_gui_gtk_t
   char *last_preset;
 
   int32_t reset;
-  float bgcolor[3];
+  GdkRGBA colors[DT_GUI_COLOR_LAST];
 
   int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
 
@@ -137,6 +146,7 @@ void dt_gui_gtk_quit();
 void dt_gui_store_last_preset(const char *name);
 int dt_gui_gtk_load_config();
 int dt_gui_gtk_write_config();
+void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t);
 
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w);
