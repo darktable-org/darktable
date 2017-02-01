@@ -521,6 +521,12 @@ int dt_gui_gtk_write_config()
   return 0;
 }
 
+void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t color)
+{
+  GdkRGBA bc = darktable.gui->colors[color];
+  cairo_set_source_rgb(cr, bc.red, bc.green, bc.blue);
+}
+
 void dt_gui_gtk_quit()
 {
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
@@ -968,7 +974,24 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                           g_cclosure_new(G_CALLBACK(view_switch_key_accel_callback), NULL, NULL));
 
   darktable.gui->reset = 0;
-  for(int i = 0; i < 3; i++) darktable.gui->bgcolor[i] = 0.1333;
+
+  GdkRGBA *c = darktable.gui->colors;
+  GtkWidget *main_window = dt_ui_main_window(darktable.gui->ui);
+  GtkStyleContext *ctx = gtk_widget_get_style_context(main_window);
+
+  c[DT_GUI_COLOR_BG] = (GdkRGBA){ 0.1333, 0.1333, 0.1333, 1.0 };
+
+  c[DT_GUI_COLOR_DARKROOM_BG] = (GdkRGBA){ .2, .2, .2, 1.0 };
+  gtk_style_context_lookup_color(ctx, "darkroom_bg_color", &c[DT_GUI_COLOR_DARKROOM_BG]);
+
+  c[DT_GUI_COLOR_DARKROOM_PREVIEW_BG] = (GdkRGBA){ .1, .1, .1, 1.0 };
+  gtk_style_context_lookup_color(ctx, "darkroom_preview_bg_color", &c[DT_GUI_COLOR_DARKROOM_PREVIEW_BG]);
+
+  c[DT_GUI_COLOR_LIGHTTABLE_BG] = (GdkRGBA){ .2, .2, .2, 1.0 };
+  gtk_style_context_lookup_color(ctx, "lighttable_bg_color", &c[DT_GUI_COLOR_LIGHTTABLE_BG]);
+
+  c[DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG] = (GdkRGBA){ .1, .1, .1, 1.0 };
+  gtk_style_context_lookup_color(ctx, "lighttable_preview_bg_color", &c[DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG]);
 
   // let's try to support pressure sensitive input devices like tablets for mask drawing
   dt_print(DT_DEBUG_INPUT, "[input device] Input devices found:\n\n");
