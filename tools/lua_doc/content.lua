@@ -1006,6 +1006,10 @@ local widget = dt.new_widget("button"){
   types.lua_text_view.text:set_text("The text in the widget")
   types.lua_text_view.editable:set_text("False if the entry should be read-only")
 
+  types.lua_section_label:set_text("A section label");
+  types.lua_section_label.extra_registration_parameters:set_text("This widget has no extra registration parameters")
+  types.lua_section_label.label:set_text("The section name");
+
 	----------------------
 	--  EVENTS          --
 	----------------------

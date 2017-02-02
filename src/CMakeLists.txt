@@ -522,6 +522,7 @@ if(USE_LUA)
       "lua/widget/entry.c"
       "lua/widget/file_chooser.c"
       "lua/widget/label.c"
+      "lua/widget/section_label.c"
       "lua/widget/separator.c"
       "lua/widget/slider.c"
       "lua/widget/stack.c"
