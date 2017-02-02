@@ -60,6 +60,16 @@ local function is_type(node)
 	return has_entry and entry and not node.__singleton
 end
 
+local function is_widget_sub(node)
+end
+
+local function is_widget(node)
+  if(node.__name == "lua_widget") then return true end
+  if(not node.__luaA_ParentMetatable) then return false end
+  return is_widget(node.__luaA_ParentMetatable)
+end
+
+
 local function document_unknown(node,parent,prev_name)
 	local result = create_empty_node(node,"undocumented",parent,prev_name)
 	set_attribute(result,"reported_type","undocumented")
@@ -675,6 +685,10 @@ function M.all_children(node)
 	for k,v in pairs(debug.getregistry()) do
 		if is_type(v) then
 			toplevel.types[k] = create_node(v,toplevel.types,k);
+      if is_widget(v) then
+        toplevel.types[k].extra_registration_parameters = create_documentation_node(nil,toplevel.types[k],"extra_registration_parameters");
+        toplevel.types[k].extra_registration_parameters:set_real_name("extra registration parameters")
+      end
 		end
 	end
 
