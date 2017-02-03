@@ -98,6 +98,11 @@ if(can_build_usermanual)
         # all translated usermanuals should depend on the profiled xml file
 	#
 	string(REGEX REPLACE "/" "\\\\/" binary_path ${CMAKE_CURRENT_BINARY_DIR})
+	if (WIN32)
+		# On Windows/MINGW the path name works only with the preceding '/'
+		set (binary_path "\\/${binary_path}")
+	endif()
+
 	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable_profile.xml
 		COMMAND ${Xsltproc_BIN} --nonet --xinclude --output ${CMAKE_CURRENT_BINARY_DIR}/darktable_profile.xml xsl/darktable_profile.xsl darktable.xml

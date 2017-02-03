@@ -29,7 +29,15 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     
     For usermanual 
     $ pacman -S mingw-w64-x86_64-{perl,imagemagick,gnome-doc-utils}
-    Add and build/install the following perl modules with cpan: Module::Build, Locale:TextDomain, Locale::gettext, Text::WrapI18N, Term::ReadKey, Unicode::GCString, SGMSL
+    Add and build/install the following perl modules with cpan:
+	Module::Build
+	Locale:TextDomain
+	Locale::gettext
+	Term::ReadKey
+	SGMLS
+	Text:CharWidth (not working yet)
+	Text::WrapI18N (dependent on Text:CharWidth)
+
 
     Manually istall PO4A: https://alioth.debian.org/frs/?group_id=30267
     Extract and copy to ~/po4a
@@ -69,11 +77,6 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     # Update your PATH for fop
     PATH=$PATH:~/java/fop
 
-    #https://www.ict.griffith.edu.au/anthony/info/graphics/imagemagick.hints
-    export MAGICK_HOME="$PREFIX/bin"
-    export MAGICK_CONFIGURE_PATH="$PREFIX/etc/ImageMagick-7"
-    export MAGICK_CODER_MODULE_PATH="$PREFIX/lib/ImageMagick-7.0.3/modules-Q16HDRI/coders"
-
     execute the following command to actviate profile changes
     $ . .bash_profile
 
@@ -91,10 +94,10 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
 
         After this darktable will be installed in /opt/darktable directory and can be started by typing /opt/darktable/bin/darktable.exe in MSYS2 MINGW64 terminal.
 
-    For building the usermanual
-        Add -DBUILD_USERMANUAL=ON flag to the cmake command line
+    For building the usermanual either add -DBUILD_USERMANUAL=ON flag to the cmake command line, or if you want to build only the usermanual (and not the application) use:
+        $ cmake --build . -target usermanual
         
-    (TODO) Run install image creating script, it should create darktable-<VERSION>-win64.exe installer in current build directory:
+    For building the installer image, which will  create darktable-<VERSION>.exe installer in current build directory, use:
         $ cmake --build . --target package
 
 ISSUES - FIXED
