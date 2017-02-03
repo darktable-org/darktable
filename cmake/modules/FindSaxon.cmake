@@ -8,7 +8,7 @@
 # Xslt_SAXON_EXTENSIONS
 # Saxon_FOUND
 #
-find_package (Java)
+find_package (Java COMPONENTS Runtime)
 if (JAVA_RUNTIME)
   if (NOT JAVA_CLASSPATH)
     set (JAVA_CLASSPATH $ENV{CLASSPATH} CACHE STRING "java classpath")
@@ -55,6 +55,8 @@ if (JAVA_RUNTIME)
                   share/java/saxon
                   share/java/saxon6
                   share/saxon-6.5/lib
+                  java/saxon
+    PATHS ENV HOME
     DOC "location of saxon 6.5.x JAR file"
     CMAKE_FIND_ROOT_PATH_BOTH
   )
@@ -69,6 +71,8 @@ if (JAVA_RUNTIME)
                   share/java/saxon
                   share/java/docbook-xsl-saxon
                   share/saxon-6.5/lib
+                  java/docbook-xsl-saxon
+    PATHS ENV HOME
     DOC "location of saxon 6.5.x DocBook XSL extension JAR file"
     CMAKE_FIND_ROOT_PATH_BOTH
   )
