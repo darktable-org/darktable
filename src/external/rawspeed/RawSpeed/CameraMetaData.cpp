@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "CameraMetaData.h"
+#include <algorithm>
 /*
     RawSpeed - RAW file decoder.
 
@@ -50,47 +51,54 @@ CameraMetaData::CameraMetaData(const char *docname) {
 }
 
 CameraMetaData::~CameraMetaData(void) {
-  map<string, Camera*>::iterator i = cameras.begin();
+  std::map<CameraId, Camera*>::iterator i = cameras.begin();
   for (; i != cameras.end(); ++i) {
     delete((*i).second);
   }
 }
 
-static inline string getId(string make, string model, string mode)
-{
+static inline CameraId getId(string make, string model, string mode) {
   TrimSpaces(make);
   TrimSpaces(model);
   TrimSpaces(mode);
 
-  return string(make).append(model).append(mode);
+  CameraId id;
+  id.make = make;
+  id.model = model;
+  id.mode = mode;
+
+  return id;
 }
 
-static inline string getId(Camera* cam)
+static inline CameraId getId(Camera* cam)
 {
   return getId(cam->make, cam->model, cam->mode);
 }
 
 Camera* CameraMetaData::getCamera(string make, string model, string mode) {
-  string id = getId(make, model, mode);
-  if (cameras.end() == cameras.find(id))
-    return NULL;
-  return cameras[id];
+  auto camera =
+      cameras.find(getId(std::move(make), std::move(model), std::move(mode)));
+  return camera == cameras.end() ? nullptr : camera->second;
 }
 
 Camera* CameraMetaData::getCamera(string make, string model) {
-  string id = getId(make, model, "");
+  auto id = getId(std::move(make), std::move(model), "");
 
-  // do a prefix match, i.e. the make and model match, but not mode.
-  std::map<string,Camera*>::iterator iter = cameras.lower_bound(id);
+  auto iter = find_if(cameras.begin(), cameras.end(),
+                      [id](decltype(*cameras.begin())& i) -> bool {
+                        const auto cid = i.first;
+                        return tie(id.make, id.model) ==
+                               tie(cid.make, cid.model);
+                      });
 
-  if (iter == cameras.find(id))
-    return NULL;
+  if (iter == cameras.end())
+    return nullptr;
 
-  return cameras[iter->first];
+  return iter->second;
 }
 
 bool CameraMetaData::hasCamera(string make, string model, string mode) {
-  string id = getId(make, model, mode);
+  CameraId id = getId(make, model, mode);
   if (cameras.end() == cameras.find(id))
     return FALSE;
   return TRUE;
@@ -108,7 +116,7 @@ bool CameraMetaData::hasChdkCamera(uint32 filesize) {
 
 bool CameraMetaData::addCamera( Camera* cam )
 {
-  string id = getId(cam);
+  CameraId id = getId(cam);
   if (cameras.end() != cameras.find(id)) {
     writeLog(DEBUG_PRIO_WARNING, "CameraMetaData: Duplicate entry found for camera: %s %s, Skipping!\n", cam->make.c_str(), cam->model.c_str());
     delete(cam);
@@ -132,7 +140,7 @@ bool CameraMetaData::addCamera( Camera* cam )
 
 void CameraMetaData::disableMake( string make )
 {
-  map<string, Camera*>::iterator i = cameras.begin();
+  std::map<CameraId, Camera*>::iterator i = cameras.begin();
   for (; i != cameras.end(); ++i) {
     Camera* cam = (*i).second;
     if (0 == cam->make.compare(make)) {
@@ -143,7 +151,7 @@ void CameraMetaData::disableMake( string make )
 
 void CameraMetaData::disableCamera( string make, string model )
 {
-  map<string, Camera*>::iterator i = cameras.begin();
+  std::map<CameraId, Camera*>::iterator i = cameras.begin();
   for (; i != cameras.end(); ++i) {
     Camera* cam = (*i).second;
     if (0 == cam->make.compare(make) && 0 == cam->model.compare(model)) {
