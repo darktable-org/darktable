@@ -1156,7 +1156,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)p1;
 
-  // TODO: implement opencl version:
   d->exposure_fusion = p->exposure_fusion;
   d->exposure_stops = p->exposure_stops;
   d->exposure_bias = p->exposure_bias;
