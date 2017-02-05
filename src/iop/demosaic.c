@@ -1011,12 +1011,12 @@ for (fdc_col=(XOFFS); fdc_col < (XSIZE); fdc_col++) \
 VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
           // extract modulated chroma using filters
           float complex C2m, C5m, C6m, C7m, C10m, C11m;
-          CORR_FILT(C2m,h2c,7,2,20,25)
-          CORR_FILT(C5m,h5c,3,3,24,24)
-          CORR_FILT(C6m,h6c,7,2,20,25)
-          CORR_FILT(C7m,h7c,3,3,24,24)
-          CORR_FILT(C10m,h10c,2,7,25,20)
-          CORR_FILT(C11m,h11c,2,7,25,20)
+          CORR_FILT(C2m,h2,3,3,24,24)
+          CORR_FILT(C5m,h5,5,5,22,22)
+          CORR_FILT(C6m,h6,3,3,24,24)
+          CORR_FILT(C7m,h7,5,5,22,22)
+          CORR_FILT(C10m,h10,3,3,24,24)
+          CORR_FILT(C11m,h11,3,3,24,24)
           // build the q vector components
           float PI = acos(-1);
           int myrow = row + rowoffset;
