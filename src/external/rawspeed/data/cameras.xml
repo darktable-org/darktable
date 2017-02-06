@@ -3405,6 +3405,34 @@
 		<Crop x="0" y="0" width="-44" height="0"/>
 		<Sensor black="0" white="15892"/>
 	</Camera>
+	<Camera make="NIKON" model="COOLPIX B700">
+		<ID make="Nikon" model="COOLPIX B700">Nikon Coolpix B700</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="200" white="4000"/>
+		<Hints>
+			<Hint name="coolpixmangled" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="NIKON" model="COOLPIX B700" mode="12bit-uncompressed">
+		<ID make="Nikon" model="COOLPIX B700">Nikon Coolpix B700</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="200" white="4000"/>
+		<Hints>
+			<Hint name="coolpixmangled" value=""/>
+		</Hints>
+	</Camera>
 	<Camera make="NIKON" model="COOLPIX P6000" mode="12bit-uncompressed" decoder_version="1">
 		<ID make="Nikon" model="Coolpix P6000">Nikon Coolpix P6000</ID>
 		<CFA width="2" height="2">
