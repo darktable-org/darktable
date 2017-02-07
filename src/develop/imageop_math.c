@@ -201,7 +201,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
   // offsets from start of a 2x2 block at which to find that
   // color. First index is color, second is to the list of offsets,
   // preceded by the number of offsets.
-  int clut[4][3] = {0};
+  int clut[4][3] = {{0}};
   for(int y = 0; y < 2; ++y)
     for(int x = 0; x < 2; ++x)
     {
