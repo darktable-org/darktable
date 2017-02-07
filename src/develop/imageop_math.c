@@ -199,13 +199,14 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
 
   // Create a reverse lookup of FC(): for each CFA color, a list of
   // offsets from start of a 2x2 block at which to find that
-  // color. First index is color, second is a list of offsets, with
-  // the first entry of list giving its length (either 1 or 2).
+  // color. First index is color, second is to the list of offsets,
+  // preceded by the number of offsets.
   int clut[4][3] = {0};
   for(int y = 0; y < 2; ++y)
     for(int x = 0; x < 2; ++x)
     {
       const int c = FC(y + rggby, x + rggbx, filters);
+      assert(clut[c][0] < 2);
       clut[c][++clut[c][0]] = x + y * in_stride;
     }
 
@@ -232,11 +233,15 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
 
       for(int yy = miny; yy < maxy; yy += 2)
         for(int xx = minx; xx < maxx; xx += 2)
-          for(int pos=1; pos <= clut[c][0]; ++pos)
-          {
-            col += in[clut[c][pos] + xx + in_stride * yy];
+        {
+          col += in[clut[c][1] + xx + in_stride * yy];
+          num++;
+          if (clut[c][0] == 2)
+          { // G in RGGB CFA
+            col += in[clut[c][2] + xx + in_stride * yy];
             num++;
           }
+        }
       *outc = col / num;
     }
   }
