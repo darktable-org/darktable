@@ -39,59 +39,26 @@ typedef struct dt_variables_data_t
   guint sequence;
 } dt_variables_data_t;
 
-gchar *_string_get_first_variable(gchar *string, gchar *variable)
+gchar *_string_get_next_variable(gchar *string, gchar *variable, const size_t variable_size)
 {
-  if(g_strrstr(string, "$("))
+  // initiate empty output variable
+  *variable = '\0';
+  gchar *end = NULL;
+  gchar *start = g_strstr_len(string, -1, "$(");
+  if(start)
   {
-    gchar *pend = string + strlen(string);
-    gchar *p, *e;
-    p = e = string;
-    while(p < pend && e < pend)
+    end = g_strstr_len(start, variable_size, ")");
+    if(end)
     {
-      while(*p != '$' && *(p + 1) != '(' && p < pend) p++;
-      if(*p == '$' && *(p + 1) == '(')
-      {
-        e = p;
-        while(*e != ')' && e < pend) e++;
-        if(e < pend && *e == ')')
-        {
-          strncpy(variable, p, e - p + 1);
-          variable[e - p + 1] = '\0';
-          return p + 1;
-        }
-        else
-          return NULL;
-      }
-      p++;
-    }
-    return p + 1;
-  }
-  return NULL;
-}
-
-gchar *_string_get_next_variable(gchar *string, gchar *variable)
-{
-  gchar *pend = string + strlen(string);
-  gchar *p, *e;
-  p = e = string;
-  while(p < pend && e < pend)
-  {
-    while(!(*p == '$' && *(p + 1) == '(') && p <= pend) p++;
-    if(*p == '$' && *(p + 1) == '(')
-    {
-      e = p;
-      while(*e != ')' && e < pend) e++;
-      if(e < pend && *e == ')')
-      {
-        strncpy(variable, p, e - p + 1);
-        variable[e - p + 1] = '\0';
-        return p + 1;
-      }
-      else
-        return NULL;
+      // we want to include ')'
+      end++;
+      const int length = end - start + 1;
+      g_strlcpy(variable, start, MIN(length, variable_size));
     }
   }
-  return NULL;
+  // fprintf(stderr, "_string_get_next_variable: splitted %s in variable %s and remainder %s\n", string, variable,
+  // end);
+  return end;
 }
 
 gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gchar *value, size_t value_len)
@@ -110,6 +77,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gch
   else
     pictures_folder = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
 
+  // fprintf(stderr, "pictures_folder: %s\n", pictures_folder);
   if(params->filename)
   {
     file_ext = (g_strrstr(params->filename, ".") + 1);
@@ -351,38 +319,44 @@ gchar *dt_variables_get_result(dt_variables_params_t *params)
 
 gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate)
 {
-  gchar *variable = g_malloc(128);
+  static const size_t variable_size = 128;
+  gchar *variable = g_malloc(variable_size);
   gchar *value = g_malloc_n(1024, sizeof(gchar));
-  gchar *token = NULL;
 
   // Let's free previous expanded result if any...
   g_free(params->data->result);
 
   if(iterate) params->data->sequence++;
 
-  // Lets expand string
-  gchar *result = NULL;
+  // Lets expand the string
   params->data->result = params->data->source = string;
-  if((token = _string_get_first_variable(params->data->source, variable)) != NULL)
+
+  gchar *result = NULL;
+  gchar *remainingVariables = params->data->source;
+  gboolean success = FALSE;
+  while((remainingVariables = _string_get_next_variable(remainingVariables, variable, variable_size)))
   {
-    do
+    if(_variable_get_value(params, variable, value, 1024 * sizeof(gchar)))
     {
-      // fprintf(stderr,"var: %s\n",variable);
-      if(_variable_get_value(params, variable, value, 1024 * sizeof(gchar)))
+      // fprintf(stderr, "Substitute variable '%s' with value '%s'\n", variable, value);
+      result = dt_util_str_replace(params->data->result, variable, value);
+      if(result != params->data->result && result != params->data->source)
       {
-        // fprintf(stderr,"Substitute variable '%s' with value '%s'\n",variable,value);
-        if((result = dt_util_str_replace(params->data->result, variable, value)) != params->data->result
-           && result != params->data->source)
+        // we got a result
+        if(params->data->result != params->data->source)
         {
-          // we got a result
-          if(params->data->result != params->data->source) g_free(params->data->result);
-          params->data->result = result;
+          g_free(params->data->result);
         }
+        params->data->result = result;
+        success = TRUE;
       }
-    } while((token = _string_get_next_variable(token, variable)) != NULL);
+    }
   }
-  else
+
+  if(!success)
+  {
     params->data->result = g_strdup(string);
+  }
 
   g_free(variable);
   g_free(value);
