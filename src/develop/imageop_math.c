@@ -186,57 +186,62 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
   // pixel footprint on input buffer, radius:
   const float px_footprint = 1.f / roi_out->scale;
 
+  // move to origin point 01 of a 2x2 CFA block
+  // (RGGB=0112 or CYGM=0132)
+  int trggbx = 0, trggby = 0;
+  if(FC(trggby, trggbx + 1, filters) != 1) trggbx++;
+  if(FC(trggby, trggbx, filters) != 0)
+  {
+    trggbx = (trggbx + 1) & 1;
+    trggby++;
+  }
+  const int rggbx = trggbx, rggby = trggby;
+
+  // Create a reverse lookup of FC(): for each CFA color, a list of
+  // offsets from start of a 2x2 block at which to find that
+  // color. First index is color, second is to the list of offsets,
+  // preceded by the number of offsets.
+  int clut[4][3] = {{0}};
+  for(int y = 0; y < 2; ++y)
+    for(int x = 0; x < 2; ++x)
+    {
+      const int c = FC(y + rggby, x + rggbx, filters);
+      assert(clut[c][0] < 2);
+      clut[c][++clut[c][0]] = x + y * in_stride;
+    }
+
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) shared(clut) schedule(static)
 #endif
   for(int y = 0; y < roi_out->height; y++)
   {
     uint16_t *outc = out + out_stride * y;
 
     const float fy = (y + roi_out->y) * px_footprint;
-    const int miny = CLAMPS((int)floorf(fy - px_footprint), 0, roi_in->height-3);
-    const int maxy = MIN(roi_in->height-2, (int)ceilf(fy + px_footprint));
+    const int miny = (CLAMPS((int)floorf(fy - px_footprint), 0, roi_in->height-3) & ~1u) + rggby;
+    const int maxy = MIN(roi_in->height-1, (int)ceilf(fy + px_footprint));
 
     float fx = roi_out->x * px_footprint;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      const int minx = CLAMPS((int)floorf(fx - px_footprint), 0, roi_in->width-3);
-      const int maxx = MIN(roi_in->width-2, (int)ceilf(fx + px_footprint));
+      const int minx = (CLAMPS((int)floorf(fx - px_footprint), 0, roi_in->width-3) & ~1u) + rggbx;
+      const int maxx = MIN(roi_in->width-1, (int)ceilf(fx + px_footprint));
 
       const int c = FC(y, x, filters);
       int num = 0;
       uint32_t col = 0;
 
-      // move to point to an rggb block
-      int trggbx = 0, trggby = 0;
-      if(FC(miny, minx + 1, filters) != 1) trggbx++;
-      if(FC(miny, minx + trggbx, filters) != 0)
-      {
-        trggbx = (trggbx + 1) & 1;
-        trggby++;
-      }
-      if(c == 2)
-      { // point to blue if that is what are sampling
-        trggby = (trggby + 1) & 1;
-        trggbx = (trggbx + 1) & 1;
-      }
-
-      for(int yy = miny + trggby; yy <= maxy; yy += 2)
-        for(int xx = minx + trggbx; xx <= maxx; xx += 2)
+      for(int yy = miny; yy < maxy; yy += 2)
+        for(int xx = minx; xx < maxx; xx += 2)
         {
-          if(c == 1)
-          {
-            col += in[xx + 1 + in_stride * yy];
-            col += in[xx + in_stride * (yy + 1)];
-            num += 2;
-          }
-          else
-          {
-            col += in[xx + in_stride * yy];
+          col += in[clut[c][1] + xx + in_stride * yy];
+          num++;
+          if (clut[c][0] == 2)
+          { // G in RGGB CFA
+            col += in[clut[c][2] + xx + in_stride * yy];
             num++;
           }
         }
-      //const int num = ((1 + (maxy - (miny + trggby)) / 2) * (1 + (maxx - (minx + trggbx)) / 2)) << (c==1);
       *outc = col / num;
     }
   }
