@@ -64,6 +64,7 @@ build_darktable() {
     mkdir build && cd build
     cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/c/projects/darktable/artifacts ../.
     cmake --build . --target install
+    cmake --build . --target package
 }
 
 # Status functions
