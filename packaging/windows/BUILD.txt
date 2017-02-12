@@ -18,7 +18,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     $ pacman -S mingw-w64-x86_64-{osm-gps-map}
 
     For gphoto2:
-    $ pacman -S mingw-w64-x86_64-{popt,libusb-compat,libgphoto2}
+    $ pacman -S mingw-w64-x86_64-{libgphoto2}
     You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables  properly set for LIBGPHOTO are available. You can check them with:
     $ echo $CAMLIBS
     $ echo $IOLIBS
@@ -28,23 +28,8 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     When you run it, replace current Windows camera driver with WinUSB driver
     
     For usermanual 
-    $ pacman -S mingw-w64-x86_64-{perl,imagemagick,gnome-doc-utils}
-    Add and build/install the following perl modules with cpan:
-	Module::Build
-	Locale:TextDomain
-	Locale::gettext
-	Term::ReadKey
-	SGMLS
-	Text:CharWidth (not working yet)
-	Text::WrapI18N (dependent on Text:CharWidth)
-
-
-    Manually istall PO4A: https://alioth.debian.org/frs/?group_id=30267
-    Extract and copy to ~/po4a
-    $ cd ~/po4a
-    $ perl Build.PL
-    $ ./Build
-    $ ./Build install
+    $ pacman -S po4a
+    $ pacman -S mingw-w64-x86_64-{imagemagick,docbook-xsl,gnome-doc-utils}
 
     Manually Install JAVA runtime
     Manually install SAXON: https://sourceforge.net/projects/saxon/files/Saxon-HE/
