@@ -221,6 +221,8 @@ if (WIN32)
     ${MINGW_PATH}/libp11-kit-0.dll
   #LIBTASN1
     ${MINGW_PATH}/libtasn1-6.dll
+  #LIBUSB1
+    ${MINGW_PATH}/libusb-1.0.dll
     )
 
   install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin COMPONENT DTDependencies)
@@ -251,12 +253,15 @@ if (WIN32)
   install(DIRECTORY
       "${MINGW_PATH}/../lib/libgphoto2"
       DESTINATION lib/
-      COMPONENT DTDependencies)
+      COMPONENT DTDependencies
+      PATTERN "*.a" EXCLUDE)
 
   install(DIRECTORY
       "${MINGW_PATH}/../lib/libgphoto2_port"
       DESTINATION lib/
-      COMPONENT DTDependencies)
+      COMPONENT DTDependencies
+      PATTERN "*.a" EXCLUDE
+      PATTERN "usb.dll" EXCLUDE)
 
   # Add GraphicsMagick libraries
   install(DIRECTORY
