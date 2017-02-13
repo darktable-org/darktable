@@ -1003,65 +1003,67 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           float blue = avg[2] / avg[3];
           float w = dirsum / (float)dircount;
           // preserve only luma component of Markesteijn for this pixel
-          float y  =  0.29900f * red + 0.58700f * green + 0.11400f * blue;
+          if (passes == 1) {
+            float y  =  0.29900f * red + 0.58700f * green + 0.11400f * blue;
 #define CORR_FILT(VAR,FILT,XOFFS,YOFFS,XSIZE,YSIZE) \
 VAR = 0.0f + 0.0f * _Complex_I; \
 for (fdc_row=(YOFFS); fdc_row < (YSIZE); fdc_row++) \
 for (fdc_col=(XOFFS); fdc_col < (XSIZE); fdc_col++) \
 VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
-          // extract modulated chroma using filters
-          float complex C2m, C5m, C6m, C7m, C10m, C11m;
-          CORR_FILT(C2m,h2,3,3,24,24)
-          CORR_FILT(C5m,h5,5,5,22,22)
-          CORR_FILT(C6m,h6,3,3,24,24)
-          CORR_FILT(C7m,h7,5,5,22,22)
-          CORR_FILT(C10m,h10,3,3,24,24)
-          CORR_FILT(C11m,h11,3,3,24,24)
-          // build the q vector components
-          float PI = acos(-1);
-          int myrow = row + rowoffset;
-          int mycol = col + coloffset;
-          float complex modulator1 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.5f + (float)myrow * -0.16666666666667f));
-          float complex modulator2 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.16666666666667f + (float)myrow * -0.5f));
-          float complex q2_10 = (w * C10m * modulator1 - (1-w) * C2m * modulator2);
-          float complex modulator3 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.5f + (float)myrow * 0.16666666666667f));
-          float complex modulator4 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.16666666666667f + (float)myrow * -0.5f));
-          float complex q3_15 = conjf(q2_10);
-          float complex modulator5 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.3333333333333333f ));
-          float complex modulator6 = cexpf(-2.0f * _Complex_I * PI * ( (float)myrow * -0.3333333333333333f ));
-          float complex q6_11 = (w * C11m * modulator5 + (1-w) * C6m * modulator6);
-          float complex q12_17 = conjf(q6_11);
-          float complex modulator7 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.3333333333333333f + (float)myrow * -0.3333333333333333f ));
-          float complex q5 = C5m * modulator7;
-          float complex q7 = C7m * cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.3333333333333333f + (float)myrow * -0.3333333333333333f ));
-          float complex q18 = conjf(q5);
-          // get L
-          C2m = (q2_10 * conjf(modulator1) - q2_10 * conjf(modulator2));
-          float complex C3m = (q3_15 * conjf(modulator3) - q3_15 * conjf(modulator4));
-          C6m = (q6_11 * conjf(modulator5) + q6_11 * conjf(modulator6));
-          float complex C12m = (q12_17 * modulator5 + q12_17 * modulator6);
-          float complex C18m = q18 * modulator7;
-          float complex L = fdc_src[13][13] - C2m - C3m - C5m - C6m - 2.0f*C7m - C12m - C18m;
-          // get the rgb components from fdc
-          red = crealf(Minv[0][0]*L + Minv[0][4]*q5 + 2.0f*Minv[0][5]*q6_11 + 2.0f*Minv[0][6]*q7 + 2.0f*Minv[0][9]*q2_10 + 2.0f*Minv[0][11]*q12_17 + 2.0f*Minv[0][14]*q3_15 + Minv[0][17]*q18);
-          green = crealf(Minv[1][0]*L + Minv[1][4]*q5 + 2.0f*Minv[1][5]*q6_11 + 2.0f*Minv[1][6]*q7 + 2.0f*Minv[1][9]*q2_10 + 2.0f*Minv[1][11]*q12_17 + 2.0f*Minv[1][14]*q3_15 + Minv[1][17]*q18);
-          blue = crealf(Minv[2][0]*L + Minv[2][4]*q5 + 2.0f*Minv[2][5]*q6_11 + 2.0f*Minv[2][6]*q7 + 2.0f*Minv[2][9]*q2_10 + 2.0f*Minv[2][11]*q12_17 + 2.0f*Minv[2][14]*q3_15 + Minv[2][17]*q18);
+            // extract modulated chroma using filters
+            float complex C2m, C5m, C6m, C7m, C10m, C11m;
+            CORR_FILT(C2m,h2,3,3,24,24)
+            CORR_FILT(C5m,h5,3,3,24,24)
+            CORR_FILT(C6m,h6,3,3,24,24)
+            CORR_FILT(C7m,h7,3,3,24,24)
+            CORR_FILT(C10m,h10,3,3,24,24)
+            CORR_FILT(C11m,h11,3,3,24,24)
+            // build the q vector components
+            float PI = acos(-1);
+            int myrow = row + rowoffset;
+            int mycol = col + coloffset;
+            float complex modulator1 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.5f + (float)myrow * -0.16666666666667f));
+            float complex modulator2 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.16666666666667f + (float)myrow * -0.5f));
+            float complex q2_10 = (w * C10m * modulator1 - (1-w) * C2m * modulator2);
+            float complex modulator3 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.5f + (float)myrow * 0.16666666666667f));
+            float complex modulator4 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.16666666666667f + (float)myrow * -0.5f));
+            float complex q3_15 = conjf(q2_10);
+            float complex modulator5 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.3333333333333333f ));
+            float complex modulator6 = cexpf(-2.0f * _Complex_I * PI * ( (float)myrow * -0.3333333333333333f ));
+            float complex q6_11 = (w * C11m * modulator5 + (1-w) * C6m * modulator6);
+            float complex q12_17 = conjf(q6_11);
+            float complex modulator7 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.3333333333333333f + (float)myrow * -0.3333333333333333f ));
+            float complex q5 = C5m * modulator7;
+            float complex q7 = C7m * cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.3333333333333333f + (float)myrow * -0.3333333333333333f ));
+            float complex q18 = conjf(q5);
+            // get L
+            C2m = (q2_10 * conjf(modulator1) - q2_10 * conjf(modulator2));
+            float complex C3m = (q3_15 * conjf(modulator3) - q3_15 * conjf(modulator4));
+            C6m = (q6_11 * conjf(modulator5) + q6_11 * conjf(modulator6));
+            float complex C12m = (q12_17 * modulator5 + q12_17 * modulator6);
+            float complex C18m = q18 * modulator7;
+            float complex L = fdc_src[13][13] - C2m - C3m - C5m - C6m - 2.0f*C7m - C12m - C18m;
+            // get the rgb components from fdc
+            red = crealf(Minv[0][0]*L + Minv[0][4]*q5 + 2.0f*Minv[0][5]*q6_11 + 2.0f*Minv[0][6]*q7 + 2.0f*Minv[0][9]*q2_10 + 2.0f*Minv[0][11]*q12_17 + 2.0f*Minv[0][14]*q3_15 + Minv[0][17]*q18);
+            green = crealf(Minv[1][0]*L + Minv[1][4]*q5 + 2.0f*Minv[1][5]*q6_11 + 2.0f*Minv[1][6]*q7 + 2.0f*Minv[1][9]*q2_10 + 2.0f*Minv[1][11]*q12_17 + 2.0f*Minv[1][14]*q3_15 + Minv[1][17]*q18);
+            blue = crealf(Minv[2][0]*L + Minv[2][4]*q5 + 2.0f*Minv[2][5]*q6_11 + 2.0f*Minv[2][6]*q7 + 2.0f*Minv[2][9]*q2_10 + 2.0f*Minv[2][11]*q12_17 + 2.0f*Minv[2][14]*q3_15 + Minv[2][17]*q18);
 #define LIM(x,min,max) MAX(min,MIN(x,max))
-          red = LIM(red, 0.0f, FLT_MAX);
-          green = LIM(green, 0.0f, FLT_MAX);
-          blue = LIM(blue, 0.0f, FLT_MAX);
-          // now separate luma and chroma for
-          // frequency domain chroma
-          // and take luma from MS and chroma from FDC
-          float cb = -0.16874f * red - 0.33126f * green + 0.50000f * blue;
-          float cr =  0.50000f * red - 0.41869f * green - 0.08131f * blue;
-          // now back to RGB
-          red   = y                 + 1.40200f * cr;
-          green = y - 0.34414f * cb - 0.71414f * cr;
-          blue  = y + 1.77200f * cb;
-          red = LIM(red, 0.0f, FLT_MAX);
-          green = LIM(green, 0.0f, FLT_MAX);
-          blue = LIM(blue, 0.0f, FLT_MAX);
+            red = LIM(red, 0.0f, FLT_MAX);
+            green = LIM(green, 0.0f, FLT_MAX);
+            blue = LIM(blue, 0.0f, FLT_MAX);
+            // now separate luma and chroma for
+            // frequency domain chroma
+            // and take luma from MS and chroma from FDC
+            float cb = -0.16874f * red - 0.33126f * green + 0.50000f * blue;
+            float cr =  0.50000f * red - 0.41869f * green - 0.08131f * blue;
+            // now back to RGB
+            red   = y                 + 1.40200f * cr;
+            green = y - 0.34414f * cb - 0.71414f * cr;
+            blue  = y + 1.77200f * cb;
+            red = LIM(red, 0.0f, FLT_MAX);
+            green = LIM(green, 0.0f, FLT_MAX);
+            blue = LIM(blue, 0.0f, FLT_MAX);
+          }
           out[4 * (width * (row + top) + col + left)    ] = red;
           out[4 * (width * (row + top) + col + left) + 1] = green;
           out[4 * (width * (row + top) + col + left) + 2] = blue;
