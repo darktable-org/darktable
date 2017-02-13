@@ -94,6 +94,7 @@ typedef struct dt_iop_levels_gui_data_t
   GtkWidget *percentile_grey;
   GtkWidget *percentile_white;
   float auto_levels[3];
+  uint64_t hash;
   dt_pthread_mutex_t lock;
 } dt_iop_levels_gui_data_t;
 
@@ -242,12 +243,17 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   {
     if(g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
     {
+      uint64_t hash;
       dt_pthread_mutex_lock(&g->lock);
       d->levels[0] = g->auto_levels[0];
       d->levels[1] = g->auto_levels[1];
       d->levels[2] = g->auto_levels[2];
+      hash = g->hash;
       dt_pthread_mutex_unlock(&g->lock);
-
+      // note that the case 'hash == 0' on first invocation in a session implies that d->levels[]
+      // contains NANs which initiates special handling below to avoid inconsistent results
+      if(hash != 0 && hash != dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority))
+        dt_control_log(_("inconsistent result"));
       compute_lut(piece);
     }
 
@@ -260,10 +266,12 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
     if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && d->mode == LEVELS_MODE_AUTOMATIC)
     {
+      uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
       dt_pthread_mutex_lock(&g->lock);
       g->auto_levels[0] = d->levels[0];
       g->auto_levels[1] = d->levels[1];
       g->auto_levels[2] = d->levels[2];
+      g->hash = hash;
       dt_pthread_mutex_unlock(&g->lock);
     }
   }
@@ -474,6 +482,7 @@ void gui_update(dt_iop_module_t *self)
   g->auto_levels[0] = NAN;
   g->auto_levels[1] = NAN;
   g->auto_levels[2] = NAN;
+  g->hash = 0;
   dt_pthread_mutex_unlock(&g->lock);
 
   gtk_widget_queue_draw(self->widget);
@@ -533,6 +542,7 @@ void gui_init(dt_iop_module_t *self)
   c->auto_levels[0] = NAN;
   c->auto_levels[1] = NAN;
   c->auto_levels[2] = NAN;
+  c->hash = 0;
   dt_pthread_mutex_unlock(&c->lock);
 
   c->modes = NULL;
