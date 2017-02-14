@@ -60,6 +60,8 @@ typedef enum dt_gui_color_t {
   DT_GUI_COLOR_DARKROOM_PREVIEW_BG,
   DT_GUI_COLOR_LIGHTTABLE_BG,
   DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG,
+  DT_GUI_COLOR_BRUSH_CURSOR,
+  DT_GUI_COLOR_BRUSH_TRACE,
   DT_GUI_COLOR_LAST
 } dt_gui_color_t;
 
@@ -147,6 +149,7 @@ void dt_gui_store_last_preset(const char *name);
 int dt_gui_gtk_load_config();
 int dt_gui_gtk_write_config();
 void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t);
+void dt_gui_gtk_set_source_rgba(cairo_t *cr, dt_gui_color_t, float opacity_coef);
 
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w);
