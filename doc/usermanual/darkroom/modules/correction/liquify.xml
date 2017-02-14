@@ -175,7 +175,9 @@
                 </entry>
                 <entry>
                   Two control circles are displayed and can be modified independently to feather
-                  the strength of the effect.
+                  the strength of the effect. Note that clicking again
+                  the center of the circle only hides the feathering
+                  controls but does not return to the default.
                 </entry>
                 <entry>
                   <graphic fileref="darkroom/modules/images/liquify_ex2.png" scalefit="1" width="80%" align="center" />

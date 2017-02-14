@@ -106,12 +106,7 @@ uint32_t dt_rawspeed_crop_dcraw_filters(uint32_t filters, uint32_t crop_x, uint3
 {
   if(!filters || filters == 9u) return filters;
 
-  ColorFilterArray cfa(filters);
-
-  if(crop_x & 1) cfa.shiftLeft();
-  if(crop_y & 1) cfa.shiftDown();
-
-  return cfa.getDcrawFilter();
+  return ColorFilterArray::shiftDcrawFilter(filters, crop_x, crop_y);
 }
 
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
