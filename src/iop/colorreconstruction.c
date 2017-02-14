@@ -100,6 +100,7 @@ typedef struct dt_iop_colorreconstruct_gui_data_t
   GtkWidget *precedence;
   GtkWidget *hue;
   dt_iop_colorreconstruct_bilateral_frozen_t *can;
+  uint64_t hash;
   dt_pthread_mutex_t lock;
 } dt_iop_colorreconstruct_gui_data_t;
 
@@ -616,10 +617,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
     const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2.0 : 1.0, 0);
 
-    dt_pthread_mutex_lock(&g->lock);
     // if we are zoomed in more than just a little bit, we try to use the canned grid of the preview pipeline
-    can = (cur_scale > 1.05f * min_scale) ? g->can : NULL;
-    dt_pthread_mutex_unlock(&g->lock);
+    if(cur_scale > 1.05f * min_scale)
+    {
+      if(!dt_dev_wait_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+        dt_control_log(_("inconsistent result"));
+
+      dt_pthread_mutex_lock(&g->lock);
+      can = g->can;
+      dt_pthread_mutex_unlock(&g->lock);
+    }
   }
 
   if(can)
@@ -640,9 +647,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // here is where we generate the canned bilateral grid of the preview pipe for later use
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
+    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
     dt_pthread_mutex_lock(&g->lock);
     dt_iop_colorreconstruct_bilateral_dump(g->can);
     g->can = dt_iop_colorreconstruct_bilateral_freeze(b);
+    g->hash = hash;
     dt_pthread_mutex_unlock(&g->lock);
   }
 
@@ -1097,10 +1106,16 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
     const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2.0 : 1.0, 0);
 
-    dt_pthread_mutex_lock(&g->lock);
     // if we are zoomed in more than just a little bit, we try to use the canned grid of the preview pipeline
-    can = (cur_scale > 1.05f * min_scale) ? g->can : NULL;
-    dt_pthread_mutex_unlock(&g->lock);
+    if(cur_scale > 1.05f * min_scale)
+    {
+      if(!dt_dev_wait_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+        dt_control_log(_("inconsistent result"));
+
+      dt_pthread_mutex_lock(&g->lock);
+      can = g->can;
+      dt_pthread_mutex_unlock(&g->lock);
+    }
   }
 
   if(can)
@@ -1123,9 +1138,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
+    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
     dt_pthread_mutex_lock(&g->lock);
     dt_iop_colorreconstruct_bilateral_dump(g->can);
     g->can = dt_iop_colorreconstruct_bilateral_freeze_cl(b);
+    g->hash = hash;
     dt_pthread_mutex_unlock(&g->lock);
   }
 
@@ -1307,6 +1324,12 @@ void gui_update(struct dt_iop_module_t *self)
       gtk_widget_hide(g->hue);
       break;
   }
+
+  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_colorreconstruct_bilateral_dump(g->can);
+  g->can = NULL;
+  g->hash = 0;
+  dt_pthread_mutex_unlock(&g->lock);
 }
 
 void init(dt_iop_module_t *module)
@@ -1360,6 +1383,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_pthread_mutex_init(&g->lock, NULL);
   g->can = NULL;
+  g->hash = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
