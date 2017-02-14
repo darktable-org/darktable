@@ -54,6 +54,15 @@ typedef struct dt_gui_widgets_t
 
 } dt_gui_widgets_t;
 
+typedef enum dt_gui_color_t {
+  DT_GUI_COLOR_BG = 0,
+  DT_GUI_COLOR_DARKROOM_BG,
+  DT_GUI_COLOR_DARKROOM_PREVIEW_BG,
+  DT_GUI_COLOR_LIGHTTABLE_BG,
+  DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG,
+  DT_GUI_COLOR_LAST
+} dt_gui_color_t;
+
 typedef struct dt_gui_gtk_t
 {
 
@@ -66,7 +75,7 @@ typedef struct dt_gui_gtk_t
   char *last_preset;
 
   int32_t reset;
-  float bgcolor[3];
+  GdkRGBA colors[DT_GUI_COLOR_LAST];
 
   int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
 
@@ -137,6 +146,7 @@ void dt_gui_gtk_quit();
 void dt_gui_store_last_preset(const char *name);
 int dt_gui_gtk_load_config();
 int dt_gui_gtk_write_config();
+void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t);
 
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w);
@@ -255,15 +265,19 @@ GtkBox *dt_ui_get_container(struct dt_ui_t *ui, const dt_ui_container_t c);
 /*  activate ellipsization of the combox entries */
 void dt_ellipsize_combo(GtkComboBox *cbox);
 
-static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
+static inline void dt_ui_section_label_set(GtkWidget *label)
 {
-  GtkWidget *label = gtk_label_new(str);
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
   gtk_widget_set_hexpand(label, TRUE); // not really needed, but it makes sure that parent containers expand
   g_object_set(G_OBJECT(label), "xalign", 1.0, (gchar *)0);    // make the text right aligned
   gtk_widget_set_margin_bottom(label, DT_PIXEL_APPLY_DPI(10)); // gtk+ css doesn't support margins :(
   gtk_widget_set_margin_start(label, DT_PIXEL_APPLY_DPI(30)); // gtk+ css doesn't support margins :(
   gtk_widget_set_name(label, "section_label"); // make sure that we can style these easily
+}
+static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
+{
+  GtkWidget *label = gtk_label_new(str);
+  dt_ui_section_label_set(label);
   return label;
 };
 
