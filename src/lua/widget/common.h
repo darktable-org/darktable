@@ -23,6 +23,7 @@
 
 typedef dt_lua_widget_t* lua_separator;
 typedef dt_lua_widget_t* lua_label;
+typedef dt_lua_widget_t* lua_section_label;
 typedef dt_lua_widget_t* lua_file_chooser_button;
 typedef dt_lua_widget_t* lua_entry;
 typedef dt_lua_widget_t* lua_combobox;
@@ -44,6 +45,7 @@ int dt_lua_init_widget_box(lua_State* L);
 int dt_lua_init_widget_button(lua_State* L);
 int dt_lua_init_widget_check_button(lua_State* L);
 int dt_lua_init_widget_label(lua_State* L);
+int dt_lua_init_widget_section_label(lua_State* L);
 int dt_lua_init_widget_entry(lua_State* L);
 int dt_lua_init_widget_file_chooser_button(lua_State* L);
 int dt_lua_init_widget_separator(lua_State* L);

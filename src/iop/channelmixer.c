@@ -361,8 +361,11 @@ static void output_callback(GtkComboBox *combo, gpointer user_data)
   if(combo1_index >= 0)
   {
     dt_bauhaus_slider_set(g->scale1, p->red[combo1_index]);
+    dt_bauhaus_slider_set_default(g->scale1, combo1_index == CHANNEL_RED ? 1.0 : 0.0);
     dt_bauhaus_slider_set(g->scale2, p->green[combo1_index]);
+    dt_bauhaus_slider_set_default(g->scale2, combo1_index == CHANNEL_GREEN ? 1.0 : 0.0);
     dt_bauhaus_slider_set(g->scale3, p->blue[combo1_index]);
+    dt_bauhaus_slider_set_default(g->scale3, combo1_index == CHANNEL_BLUE ? 1.0 : 0.0);
   }
   // dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
