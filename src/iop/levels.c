@@ -243,17 +243,23 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   {
     if(g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
     {
-      uint64_t hash;
+      dt_pthread_mutex_lock(&g->lock);
+      const uint64_t hash = g->hash;
+      dt_pthread_mutex_unlock(&g->lock);
+
+      // note that the case 'hash == 0' on first invocation in a session implies that d->levels[]
+      // contains NANs which initiates special handling below to avoid inconsistent results. in all
+      // other cases we make sure that the preview pipe has left us with proper readings for
+      // g->auto_levels[]. if data are not yet there we need to wait (with timeout).
+      if(hash != 0 && !dt_dev_wait_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+        dt_control_log(_("inconsistent result"));
+
       dt_pthread_mutex_lock(&g->lock);
       d->levels[0] = g->auto_levels[0];
       d->levels[1] = g->auto_levels[1];
       d->levels[2] = g->auto_levels[2];
-      hash = g->hash;
       dt_pthread_mutex_unlock(&g->lock);
-      // note that the case 'hash == 0' on first invocation in a session implies that d->levels[]
-      // contains NANs which initiates special handling below to avoid inconsistent results
-      if(hash != 0 && hash != dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority))
-        dt_control_log(_("inconsistent result"));
+
       compute_lut(piece);
     }
 
