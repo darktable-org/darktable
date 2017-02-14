@@ -12,6 +12,8 @@
 @define-color darkroom_preview_bg_color shade(@darkroom_bg_color, .5);
 @define-color lighttable_bg_color @darkroom_bg_color;
 @define-color lighttable_preview_bg_color shade(@lighttable_bg_color, .5);
+@define-color brush_cursor alpha(white, .5);
+@define-color brush_trace alpha(black, .8);
 
 @define-color dark_bg_color #350000;
 
