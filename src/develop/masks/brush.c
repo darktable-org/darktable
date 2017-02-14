@@ -24,11 +24,6 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 
-#define CREATE_MAX_BRUSH_OPACITY 0.5f
-// the maximum opacity when drawing a mask, this is to let see through it for better control
-#define CREATE_MAX_TRACE_OPACITY 0.8f
-// like above but for the trace
-
 /** get squared distance of indexed point to line segment, taking weighted payload data into account */
 static float _brush_point_line_distance2(int index, int pointscount, const float *points, const float *payload)
 {
@@ -2094,7 +2089,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       }
 
       cairo_save(cr);
-      cairo_set_source_rgba(cr, .8, .8, .8, masks_density * CREATE_MAX_BRUSH_OPACITY);
+      dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, masks_density);
       cairo_arc(cr, xpos, ypos, radius1, 0, 2.0 * M_PI);
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, .8, .8, .8, .8);
@@ -2149,7 +2144,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       opacity = oldopacity = masks_density;
 
       cairo_set_line_width(cr, 2 * radius);
-      cairo_set_source_rgba(cr, .1, .1, .1, opacity * CREATE_MAX_TRACE_OPACITY);
+      dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_TRACE, opacity);
 
       cairo_move_to(cr, guipoints[0], guipoints[1]);
       for(int i = 1; i < gui->guipoints_count; i++)
@@ -2192,7 +2187,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
           cairo_stroke(cr);
           stroked = 1;
           cairo_set_line_width(cr, 2 * radius);
-          cairo_set_source_rgba(cr, .1, .1, .1, opacity * CREATE_MAX_TRACE_OPACITY);
+          dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_TRACE, opacity);
           oldradius = radius;
           oldopacity = opacity;
           cairo_move_to(cr, guipoints[i * 2], guipoints[i * 2 + 1]);
@@ -2201,7 +2196,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       if(!stroked) cairo_stroke(cr);
 
       cairo_set_line_width(cr, linewidth);
-      cairo_set_source_rgba(cr, .8, .8, .8, opacity * CREATE_MAX_BRUSH_OPACITY);
+      dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
       cairo_arc(cr, guipoints[2 * (gui->guipoints_count - 1)],
                 guipoints[2 * (gui->guipoints_count - 1) + 1], radius, 0, 2.0 * M_PI);
       cairo_fill_preserve(cr);
