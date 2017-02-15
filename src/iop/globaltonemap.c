@@ -85,6 +85,7 @@ typedef struct dt_iop_global_tonemap_gui_data_t
   } drago;
   GtkWidget *detail;
   float lwmax;
+  uint64_t hash;
   dt_pthread_mutex_t lock;
 } dt_iop_global_tonemap_gui_data_t;
 
@@ -171,6 +172,17 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
     dt_pthread_mutex_lock(&g->lock);
+    const uint64_t hash = g->hash;
+    dt_pthread_mutex_unlock(&g->lock);
+
+    // note that the case 'hash == 0' on first invocation in a session implies that g->lwmax
+    // is NAN which initiates special handling below to avoid inconsistent results. in all
+    // other cases we make sure that the preview pipe has left us with proper readings for
+    // lwmax. if data are not yet there we need to wait (with timeout).
+    if(hash != 0 && !dt_dev_wait_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+      dt_control_log(_("inconsistent result"));
+
+    dt_pthread_mutex_lock(&g->lock);
     tmp_lwmax = g->lwmax;
     dt_pthread_mutex_unlock(&g->lock);
   }
@@ -193,8 +205,10 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   // PREVIEW pixelpipe stores lwmax
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
+    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
     dt_pthread_mutex_lock(&g->lock);
     g->lwmax = lwmax;
+    g->hash = hash;
     dt_pthread_mutex_unlock(&g->lock);
   }
 
@@ -359,6 +373,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
     {
       dt_pthread_mutex_lock(&g->lock);
+      const uint64_t hash = g->hash;
+      dt_pthread_mutex_unlock(&g->lock);
+
+      if(hash != 0 && !dt_dev_wait_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+        dt_control_log(_("inconsistent result"));
+
+      dt_pthread_mutex_lock(&g->lock);
       tmp_lwmax = g->lwmax;
       dt_pthread_mutex_unlock(&g->lock);
     }
@@ -440,8 +461,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     {
+      uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
       dt_pthread_mutex_lock(&g->lock);
       g->lwmax = lwmax;
+      g->hash = hash;
       dt_pthread_mutex_unlock(&g->lock);
     }
   }
@@ -640,6 +663,12 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->drago.bias, p->drago.bias);
   dt_bauhaus_slider_set(g->drago.max_light, p->drago.max_light);
   dt_bauhaus_slider_set(g->detail, p->detail);
+
+  dt_pthread_mutex_lock(&g->lock);
+  g->lwmax = NAN;
+  g->hash = 0;
+  dt_pthread_mutex_unlock(&g->lock);
+
 }
 
 void init(dt_iop_module_t *module)
@@ -670,6 +699,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_pthread_mutex_init(&g->lock, NULL);
   g->lwmax = NAN;
+  g->hash = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
