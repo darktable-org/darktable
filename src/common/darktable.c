@@ -1162,7 +1162,15 @@ void dt_configure_defaults()
   const int bits = (sizeof(void *) == 4) ? 32 : 64;
   fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores (%d atom based)\n", bits,
           mem, threads, atom_cores);
-  if(mem > (2u << 20) && threads > 4)
+  if(mem >= (8u << 20) && threads > 4)
+  {
+    fprintf(stderr, "[defaults] setting very high quality defaults\n");
+    dt_conf_set_int("worker_threads", 8);
+    // if no less than 8Gb, half the total size
+    dt_conf_set_int("host_memory_limit", mem >> 11);
+    dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
+  }
+  else if(mem > (2u << 20) && threads > 4)
   {
     fprintf(stderr, "[defaults] setting high quality defaults\n");
     dt_conf_set_int("worker_threads", 8);
