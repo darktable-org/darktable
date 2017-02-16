@@ -999,7 +999,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   c[DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG] = (GdkRGBA){ .1, .1, .1, 1.0 };
   gtk_style_context_lookup_color(ctx, "lighttable_preview_bg_color", &c[DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG]);
 
-  c[DT_GUI_COLOR_BRUSH_CURSOR] = (GdkRGBA){ 1., 1., 1., 0.5 };
+  c[DT_GUI_COLOR_BRUSH_CURSOR] = (GdkRGBA){ 1., 1., 1., 0.9 };
   gtk_style_context_lookup_color(ctx, "brush_cursor", &c[DT_GUI_COLOR_BRUSH_CURSOR]);
 
   c[DT_GUI_COLOR_BRUSH_TRACE] = (GdkRGBA){ 0., 0., 0., 0.8 };
