@@ -973,21 +973,12 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  c->mouse_x = fabs(c->mouse_x);
-  c->mouse_y = fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
 
 static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  // weird sign dance for fluxbox:
-  c->mouse_x = -fabs(c->mouse_x);
-  c->mouse_y = -fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -1315,19 +1306,35 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-  c->mouse_x = CLAMP(event->x - inset, 0, width);
-  c->mouse_y = CLAMP(event->y - inset, 0, height);
+  int old_m_x = c->mouse_x;
+  int old_m_y = c->mouse_y;
+  c->mouse_x = event->x - inset;
+  c->mouse_y = event->y - inset;
 
-  const float mx = c->mouse_x / (float)width;
-  const float my = 1.0f - c->mouse_y / (float)height;
+  const float mx = CLAMP(c->mouse_x, 0, width) / (float)width;
+  const float my = 1.0f - CLAMP(c->mouse_y, 0, height) / (float)height;
+
+  float multiplier;
+  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  if((event->state & modifiers) == GDK_CONTROL_MASK)
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
+  }
+  else
+  {
+    multiplier = 1;
+  }
+
+  const float dx = (old_m_x - c->mouse_x) * multiplier / (float)width;
+  const float dy = (old_m_y - c->mouse_y) * multiplier / (float)height;
 
   if(event->state & GDK_BUTTON1_MASK)
   {
     // got a vertex selected:
     if(c->selected >= 0)
     {
-      tonecurve[c->selected].x = mx;
-      tonecurve[c->selected].y = my;
+      tonecurve[c->selected].x = CLAMP(tonecurve[c->selected].x - dx, 0, 1);
+      tonecurve[c->selected].y = CLAMP(tonecurve[c->selected].y + dy, 0, 1);
 
       dt_iop_tonecurve_sanity_check(self, widget);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1384,11 +1391,11 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       const int inset = DT_GUI_CURVE_EDITOR_INSET;
       GtkAllocation allocation;
       gtk_widget_get_allocation(widget, &allocation);
-      int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-      c->mouse_x = CLAMP(event->x - inset, 0, width);
-      c->mouse_y = CLAMP(event->y - inset, 0, height);
+      int width = allocation.width - 2 * inset;
+      c->mouse_x = event->x - inset;
+      c->mouse_y = event->y - inset;
 
-      const float mx = c->mouse_x / (float)width;
+      const float mx = CLAMP(c->mouse_x, 0, width) / (float)width;
 
       // don't add a node too close to others in x direction, it can crash dt
       int selected = -1;
