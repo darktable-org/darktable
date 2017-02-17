@@ -1474,6 +1474,28 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       return TRUE;
     }
   }
+  else if(event->button == 2 && c->selected >= 0)
+  {
+    if(c->selected == 0){
+      tonecurve[c->selected].y = tonecurve[c->selected].x = 0;
+      return TRUE;
+    }
+
+    if(c->selected == nodes -1){
+      tonecurve[c->selected].y = tonecurve[c->selected].x = 1;
+      return TRUE;
+    }
+
+    for(int k = c->selected; k < nodes - 1; k++)
+    {
+      tonecurve[k].x = tonecurve[k + 1].x;
+      tonecurve[k].y = tonecurve[k + 1].y;
+    }
+    c->selected = -2; // avoid re-insertion of that point immediately after this
+    p->tonecurve_nodes[ch]--;
+    gtk_widget_queue_draw(self->widget);
+    return TRUE;
+  }
   return FALSE;
 }
 
