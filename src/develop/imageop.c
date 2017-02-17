@@ -860,10 +860,20 @@ static void dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
   dt_iop_gui_duplicate(user_data, TRUE);
 }
 
-static void dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
+static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   if(module->flags() & IOP_FLAGS_ONE_INSTANCE) return;
+
+  if(event->button == 2)
+  {
+    dt_iop_gui_copy_callback(button, user_data);
+    return;
+  }
+  else if(event->button == 3)
+  {
+    return;
+  }
 
   GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
   GtkWidget *item;
@@ -1882,7 +1892,8 @@ got_image:
     hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     module->multimenu_button = GTK_WIDGET(hw[idx]);
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("multiple instances actions"));
-    g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(dt_iop_gui_multimenu_callback), module);
+    g_signal_connect(G_OBJECT(hw[idx]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback),
+                     module);
     gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
   }
 
