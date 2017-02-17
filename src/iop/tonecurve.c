@@ -1056,6 +1056,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_translate(cr, inset, inset);
   width -= 2 * inset;
   height -= 2 * inset;
+  char text[256];
 
 #if 0
   // draw shadow around
@@ -1126,7 +1127,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     float *raw_mean, *raw_min, *raw_max;
     float *raw_mean_output;
     float picker_mean[3], picker_min[3], picker_max[3];
-    char text[256];
 
     raw_mean = self->picked_color;
     raw_min = self->picked_color_min;
@@ -1212,6 +1212,28 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   if(c->selected >= 0)
   {
+    //draw information about current selected point
+    PangoLayout *layout;
+    PangoRectangle ink;
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_LIGHT);
+    pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(0.05) * height) * PANGO_SCALE);
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
+
+
+    snprintf(text, sizeof(text), "%.2f / %.2f ( %+.2f)", tonecurve[c->selected].x*100, tonecurve[c->selected].y*100, (tonecurve[c->selected].y-tonecurve[c->selected].x)*100);
+
+    cairo_set_source_rgb(cr, 0.15, 0.15, 0.15);
+    pango_layout_set_text(layout, text, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, 0.98f * width - ink.width - ink.x, -0.02 * height - ink.height - ink.y);
+    pango_cairo_show_layout(cr, layout);
+    cairo_stroke(cr);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
+
+    //enlarge selected point
     cairo_set_source_rgb(cr, .9, .9, .9);
     cairo_arc(cr, tonecurve[c->selected].x * width, -tonecurve[c->selected].y * height, DT_PIXEL_APPLY_DPI(4),
               0, 2. * M_PI);
