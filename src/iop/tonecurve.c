@@ -1476,13 +1476,11 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
   }
   else if(event->button == 2 && c->selected >= 0)
   {
-    if(c->selected == 0){
-      tonecurve[c->selected].y = tonecurve[c->selected].x = 0;
-      return TRUE;
-    }
-
-    if(c->selected == nodes -1){
-      tonecurve[c->selected].y = tonecurve[c->selected].x = 1;
+    if(c->selected == 0 || c->selected == nodes - 1 ){
+      float reset_value = c->selected == 0? 0: 1;
+      tonecurve[c->selected].y = tonecurve[c->selected].x = reset_value;
+      gtk_widget_queue_draw(self->widget);
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
       return TRUE;
     }
 
@@ -1494,6 +1492,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
     c->selected = -2; // avoid re-insertion of that point immediately after this
     p->tonecurve_nodes[ch]--;
     gtk_widget_queue_draw(self->widget);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
   }
   return FALSE;
