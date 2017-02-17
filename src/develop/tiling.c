@@ -731,8 +731,8 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
       size_t wd = tx * tile_wd + width > roi_in->width ? roi_in->width - tx * tile_wd : width;
       size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height - ty * tile_ht : height;
 
-      /* no need to process end-tiles that are smaller than overlap */
-      if((wd <= overlap && tx > 0) || (ht <= overlap && ty > 0)) continue;
+      /* no need to process end-tiles that are smaller than the total overlap area */
+      if((wd <= 2 * overlap && tx > 0) || (ht <= 2 * overlap && ty > 0)) continue;
 
       /* origin and region of effective part of tile, which we want to store later */
       size_t origin[] = { 0, 0, 0 };
@@ -1375,8 +1375,8 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       size_t wd = tx * tile_wd + width > roi_in->width ? roi_in->width - tx * tile_wd : width;
       size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height - ty * tile_ht : height;
 
-      /* no need to process (end)tiles that are smaller than overlap */
-      if((wd <= overlap && tx > 0) || (ht <= overlap && ty > 0)) continue;
+      /* no need to process (end)tiles that are smaller than the total overlap area */
+      if((wd <= 2 * overlap && tx > 0) || (ht <= 2 * overlap && ty > 0)) continue;
 
       /* origin and region of effective part of tile, which we want to store later */
       size_t origin[] = { 0, 0, 0 };
