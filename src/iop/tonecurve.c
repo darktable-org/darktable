@@ -1474,7 +1474,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       return TRUE;
     }
   }
-  else if(event->button == 2 && c->selected >= 0)
+  else if(event->button == 3 && c->selected >= 0)
   {
     if(c->selected == 0 || c->selected == nodes - 1)
     {
