@@ -55,7 +55,13 @@ static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossin
 static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 
 
-typedef enum tonecurve_channel_t { ch_L = 0, ch_a = 1, ch_b = 2, ch_max = 3 } tonecurve_channel_t;
+typedef enum tonecurve_channel_t
+{
+  ch_L = 0,
+  ch_a = 1,
+  ch_b = 2,
+  ch_max = 3
+} tonecurve_channel_t;
 
 typedef struct dt_iop_tonecurve_node_t
 {
@@ -63,13 +69,14 @@ typedef struct dt_iop_tonecurve_node_t
   float y;
 } dt_iop_tonecurve_node_t;
 
-typedef enum dt_iop_tonecurve_autoscale_t {
-  s_scale_manual = 0,        // user specified curves
-  s_scale_automatic = 1,     // automatically adjust saturation based on L_out/L_in
-  s_scale_automatic_xyz = 2, // automatically adjust saturation by
-                             // transforming the curve C to C' like:
-                             // L_out=C(L_in) -> Y_out=C'(Y_in) and applying C' to the X and Z
-                             // channels, too (and then transforming it back to Lab of course)
+typedef enum dt_iop_tonecurve_autoscale_t
+{
+  s_scale_manual = 0,           // user specified curves
+  s_scale_automatic = 1,        // automatically adjust saturation based on L_out/L_in
+  s_scale_automatic_xyz = 2,    // automatically adjust saturation by
+                                // transforming the curve C to C' like:
+                                // L_out=C(L_in) -> Y_out=C'(Y_in) and applying C' to the X and Z
+                                // channels, too (and then transforming it back to Lab of course)
 } dt_iop_tonecurve_autoscale_t;
 
 // parameter structure of tonecurve 1st version, needed for use in legacy_params()
@@ -154,8 +161,8 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
+                  void *new_params, const int new_version)
 {
   if(old_version == 1 && new_version == 4)
   {
@@ -320,12 +327,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         {
           // new style handling of a/b curves: lut lookup with two-sided extrapolation;
           // mind the x-axis reversal for the left-handed side
-          out[1] = (a_in > xm_ar) ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in)
-                                  : ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 3, 1.0f - a_in)
-                                                    : d->table[ch_a][CLAMP((int)(a_in * 0xfffful), 0, 0xffff)]);
-          out[2] = (b_in > xm_br) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 6, b_in)
-                                  : ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 9, 1.0f - b_in)
-                                                    : d->table[ch_b][CLAMP((int)(b_in * 0xfffful), 0, 0xffff)]);
+          out[1] = (a_in > xm_ar)
+                       ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in)
+                       : ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 3, 1.0f - a_in)
+                                         : d->table[ch_a][CLAMP((int)(a_in * 0xfffful), 0, 0xffff)]);
+          out[2] = (b_in > xm_br)
+                       ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 6, b_in)
+                       : ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 9, 1.0f - b_in)
+                                         : d->table[ch_b][CLAMP((int)(b_in * 0xfffful), 0, 0xffff)]);
         }
       }
       else if(autoscale_ab == s_scale_automatic)
@@ -346,7 +355,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       {
         float XYZ[3];
         dt_Lab_to_XYZ(in, XYZ);
-        for(int c = 0; c < 3; c++)
+        for(int c=0;c<3;c++)
           XYZ[c] = (XYZ[c] < xm_L) ? d->table[ch_L][CLAMP((int)(XYZ[c] * 0xfffful), 0, 0xffff)]
                                    : dt_iop_eval_exp(d->unbounded_coeffs_L, XYZ[c]);
         dt_XYZ_to_Lab(XYZ, out);
@@ -445,7 +454,7 @@ void init_presets(dt_iop_module_so_t *self)
   for(int k = 1; k < 5; k++) p.tonecurve[ch_L][k].y = powf(p.tonecurve[ch_L][k].y, 2.2f);
   dt_gui_presets_add_generic(_("high contrast"), self->op, self->version(), &p, sizeof(p), 1);
 
-  for(int k = 0; k < sizeof(preset_camera_curves) / sizeof(preset_camera_curves[0]); k++)
+  for (int k=0; k<sizeof(preset_camera_curves)/sizeof(preset_camera_curves[0]); k++)
   {
     // insert the preset
     dt_gui_presets_add_generic(preset_camera_curves[k].name, self->op, self->version(),
@@ -505,12 +514,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if(p->tonecurve_autoscale_ab == s_scale_automatic_xyz)
   {
     // derive curve for XYZ:
-    for(int k = 0; k < 0x10000; k++)
+    for(int k=0;k<0x10000;k++)
     {
-      float XYZ[3] = { k / (float)0x10000, k / (float)0x10000, k / (float)0x10000 };
-      float Lab[3] = { 0.0 };
+      float XYZ[3] = {k/(float)0x10000, k/(float)0x10000, k/(float)0x10000};
+      float Lab[3] = {0.0};
       dt_XYZ_to_Lab(XYZ, Lab);
-      Lab[0] = d->table[ch_L][CLAMP((int)(Lab[0] / 100.0f * 0x10000), 0, 0xffff)];
+      Lab[0] = d->table[ch_L][CLAMP((int)(Lab[0]/100.0f * 0x10000), 0, 0xffff)];
       dt_Lab_to_XYZ(Lab, XYZ);
       d->table[ch_L][k] = XYZ[1]; // now mapping Y_in to Y_out
     }
@@ -620,7 +629,8 @@ void init(dt_iop_module_t *module)
   dt_iop_tonecurve_params_t tmp = (dt_iop_tonecurve_params_t){
     { { // three curves (L, a, b) with a number of nodes
         { 0.0, 0.0 },
-        { 1.0, 1.0 } },
+        { 1.0, 1.0 }
+      },
       { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } },
       { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } } },
     { 2, 3, 3 }, // number of nodes per curve
@@ -883,21 +893,18 @@ void gui_init(struct dt_iop_module_t *self)
   // tabs
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("  L  ")));
-  gtk_widget_set_tooltip_text(
-      gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-      _("tonecurve for L channel"));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("  a  ")));
-  gtk_widget_set_tooltip_text(
-      gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-      _("tonecurve for a channel"));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("  b  ")));
-  gtk_widget_set_tooltip_text(
-      gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-      _("tonecurve for b channel"));
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
+                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("  L  ")));
+  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
+                              _("tonecurve for L channel"));
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
+                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("  a  ")));
+  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
+                              _("tonecurve for a channel"));
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
+                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("  b  ")));
+  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
+                              _("tonecurve for b channel"));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
@@ -991,9 +998,11 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_develop_t *dev = darktable.develop;
 
-  const float color_labels_left[3][3] = { { 0.3f, 0.3f, 0.3f }, { 0.0f, 0.34f, 0.27f }, { 0.0f, 0.27f, 0.58f } };
+  const float color_labels_left[3][3]
+      = { { 0.3f, 0.3f, 0.3f }, { 0.0f, 0.34f, 0.27f }, { 0.0f, 0.27f, 0.58f } };
 
-  const float color_labels_right[3][3] = { { 0.3f, 0.3f, 0.3f }, { 0.53f, 0.08f, 0.28f }, { 0.81f, 0.66f, 0.0f } };
+  const float color_labels_right[3][3]
+      = { { 0.3f, 0.3f, 0.3f }, { 0.53f, 0.08f, 0.28f }, { 0.81f, 0.66f, 0.0f } };
 
   int ch = c->channel;
   int nodes = p->tonecurve_nodes[ch];
@@ -1161,7 +1170,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         PangoRectangle ink;
         PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
         pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-        pango_font_description_set_absolute_size(desc, (DT_PIXEL_APPLY_DPI(0.06) * height) * PANGO_SCALE);
+        pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(0.06) * height) * PANGO_SCALE);
         layout = pango_cairo_create_layout(cr);
         pango_layout_set_font_description(layout, desc);
         picker_scale(raw_mean, picker_mean);
@@ -1194,15 +1203,14 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   if(c->selected >= 0)
   {
-    // draw information about current selected point
+    // draw information about current selected node
     PangoLayout *layout;
     PangoRectangle ink;
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
     pango_font_description_set_weight(desc, PANGO_WEIGHT_LIGHT);
-    pango_font_description_set_absolute_size(desc, (DT_PIXEL_APPLY_DPI(0.05) * height) * PANGO_SCALE);
+    pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(0.05) * height) * PANGO_SCALE);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
-
 
     snprintf(text, sizeof(text), "%.2f / %.2f ( %+.2f)", tonecurve[c->selected].x * 100,
              tonecurve[c->selected].y * 100, (tonecurve[c->selected].y - tonecurve[c->selected].x) * 100);
@@ -1216,10 +1224,10 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     pango_font_description_free(desc);
     g_object_unref(layout);
 
-    // enlarge selected point
+    // enlarge selected node
     cairo_set_source_rgb(cr, .9, .9, .9);
-    cairo_arc(cr, tonecurve[c->selected].x * width, -tonecurve[c->selected].y * height, DT_PIXEL_APPLY_DPI(4), 0,
-              2. * M_PI);
+    cairo_arc(cr, tonecurve[c->selected].x * width, -tonecurve[c->selected].y * height, DT_PIXEL_APPLY_DPI(4),
+              0, 2. * M_PI);
     cairo_stroke(cr);
   }
 
@@ -1346,7 +1354,8 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     int nearest = -1;
     for(int k = 0; k < nodes; k++)
     {
-      float dist = (my - tonecurve[k].y) * (my - tonecurve[k].y) + (mx - tonecurve[k].x) * (mx - tonecurve[k].x);
+      float dist = (my - tonecurve[k].y) * (my - tonecurve[k].y)
+                   + (mx - tonecurve[k].x) * (mx - tonecurve[k].x);
       if(dist < min)
       {
         min = dist;
@@ -1406,8 +1415,8 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       if(selected == -1) selected = nodes;
       // > 0 -> check distance to left neighbour
       // < nodes -> check distance to right neighbour
-      if(!((selected > 0 && mx - tonecurve[selected - 1].x <= 0.025)
-           || (selected < nodes && tonecurve[selected].x - mx <= 0.025)))
+      if(!((selected > 0 && mx - tonecurve[selected - 1].x <= 0.025) ||
+           (selected < nodes && tonecurve[selected].x - mx <= 0.025)))
       {
         // evaluate the curve at the current x position
         const float y = dt_draw_curve_calc_value(c->minmax_curve[ch], mx);
