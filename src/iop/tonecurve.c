@@ -1306,13 +1306,13 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-  int old_m_x = c->mouse_x;
-  int old_m_y = c->mouse_y;
+  double old_m_x = c->mouse_x;
+  double old_m_y = c->mouse_y;
   c->mouse_x = event->x - inset;
   c->mouse_y = event->y - inset;
 
-  const float mx = CLAMP(c->mouse_x, 0, width) / (float)width;
-  const float my = 1.0f - CLAMP(c->mouse_y, 0, height) / (float)height;
+  const float mx = CLAMP(c->mouse_x, 0, width) / width;
+  const float my = 1.0f - CLAMP(c->mouse_y, 0, height) / height;
 
   float multiplier;
   GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
@@ -1320,13 +1320,17 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   {
     multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
   }
+  else if((event->state & modifiers) == GDK_SHIFT_MASK)
+  {
+    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
+  }
   else
   {
     multiplier = 1;
   }
 
-  const float dx = (old_m_x - c->mouse_x) * multiplier / (float)width;
-  const float dy = (old_m_y - c->mouse_y) * multiplier / (float)height;
+  const double dx = (old_m_x - c->mouse_x) * multiplier / width;
+  const double dy = (old_m_y - c->mouse_y) * multiplier / height;
 
   if(event->state & GDK_BUTTON1_MASK)
   {
