@@ -75,7 +75,7 @@ void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
   int got_it_done = FALSE;
   try {
     dt_rawspeed_load_meta();
-    Camera *cam = meta->getCamera(maker, model, "");
+    const Camera *cam = meta->getCamera(maker, model, "");
     // Also look for dng cameras
     if (!cam)
       cam = meta->getCamera(maker, model, "dng");
@@ -139,7 +139,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     RawImage r = d->mRaw;
 
     for (uint32 i=0; i<r->errors.size(); i++)
-      fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, r->errors[i]);
+      fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, r->errors[i].c_str());
 
     g_strlcpy(img->camera_maker, r->metadata.canonical_make.c_str(), sizeof(img->camera_maker));
     g_strlcpy(img->camera_model, r->metadata.canonical_model.c_str(), sizeof(img->camera_model));
