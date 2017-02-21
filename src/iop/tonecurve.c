@@ -1314,34 +1314,15 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   const float mx = CLAMP(c->mouse_x, 0, width) / width;
   const float my = 1.0f - CLAMP(c->mouse_y, 0, height) / height;
 
-  float multiplier;
-  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-  if((event->state & modifiers) == GDK_CONTROL_MASK)
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
-  }
-  else if((event->state & modifiers) == GDK_SHIFT_MASK)
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
-  }
-  else
-  {
-    multiplier = 1;
-  }
-
-  const double dx = (old_m_x - c->mouse_x) * multiplier / width;
-  const double dy = (old_m_y - c->mouse_y) * multiplier / height;
+  const double dx = -(old_m_x - c->mouse_x) / width;
+  const double dy = (old_m_y - c->mouse_y) / height;
 
   if(event->state & GDK_BUTTON1_MASK)
   {
     // got a vertex selected:
     if(c->selected >= 0)
     {
-      tonecurve[c->selected].x = CLAMP(tonecurve[c->selected].x - dx, 0, 1);
-      tonecurve[c->selected].y = CLAMP(tonecurve[c->selected].y + dy, 0, 1);
-
-      dt_iop_tonecurve_sanity_check(self, widget);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      return _move_point_internal(self, widget, dx, dy, event->state);
     }
     else if(nodes < DT_IOP_TONECURVE_MAXNODES && c->selected >= -1)
     {
