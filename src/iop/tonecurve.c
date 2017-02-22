@@ -1212,8 +1212,13 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
 
-    snprintf(text, sizeof(text), "%.2f / %.2f ( %+.2f)", tonecurve[c->selected].x * 100,
-             tonecurve[c->selected].y * 100, (tonecurve[c->selected].y - tonecurve[c->selected].x) * 100);
+    const float min_scale_value = ch == ch_L ? 0.0f : -128.0f;
+    const float max_scale_value = ch == ch_L ? 100.0f : 128.0f;
+
+    const float x_node_value = tonecurve[c->selected].x * (max_scale_value - min_scale_value) + min_scale_value;
+    const float y_node_value = tonecurve[c->selected].y * (max_scale_value - min_scale_value) + min_scale_value;
+    const float d_node_value = y_node_value - x_node_value;
+    snprintf(text, sizeof(text), "%.2f / %.2f ( %+.2f)", x_node_value, y_node_value, d_node_value);
 
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
     pango_layout_set_text(layout, text, -1);
