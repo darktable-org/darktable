@@ -973,21 +973,12 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  c->mouse_x = fabs(c->mouse_x);
-  c->mouse_y = fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
 
 static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  // weird sign dance for fluxbox:
-  c->mouse_x = -fabs(c->mouse_x);
-  c->mouse_y = -fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -1056,6 +1047,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_translate(cr, inset, inset);
   width -= 2 * inset;
   height -= 2 * inset;
+  char text[256];
 
 #if 0
   // draw shadow around
@@ -1126,7 +1118,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     float *raw_mean, *raw_min, *raw_max;
     float *raw_mean_output;
     float picker_mean[3], picker_min[3], picker_max[3];
-    char text[256];
 
     raw_mean = self->picked_color;
     raw_min = self->picked_color_min;
@@ -1212,6 +1203,33 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   if(c->selected >= 0)
   {
+    // draw information about current selected node
+    PangoLayout *layout;
+    PangoRectangle ink;
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    pango_font_description_set_absolute_size(desc, (DT_PIXEL_APPLY_DPI(0.06) * height) * PANGO_SCALE);
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
+
+    const float min_scale_value = ch == ch_L ? 0.0f : -128.0f;
+    const float max_scale_value = ch == ch_L ? 100.0f : 128.0f;
+
+    const float x_node_value = tonecurve[c->selected].x * (max_scale_value - min_scale_value) + min_scale_value;
+    const float y_node_value = tonecurve[c->selected].y * (max_scale_value - min_scale_value) + min_scale_value;
+    const float d_node_value = y_node_value - x_node_value;
+    snprintf(text, sizeof(text), "%.2f / %.2f ( %+.2f)", x_node_value, y_node_value, d_node_value);
+
+    cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+    pango_layout_set_text(layout, text, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, 0.98f * width - ink.width - ink.x, -0.02 * height - ink.height - ink.y);
+    pango_cairo_show_layout(cr, layout);
+    cairo_stroke(cr);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
+
+    // enlarge selected node
     cairo_set_source_rgb(cr, .9, .9, .9);
     cairo_arc(cr, tonecurve[c->selected].x * width, -tonecurve[c->selected].y * height, DT_PIXEL_APPLY_DPI(4),
               0, 2. * M_PI);
@@ -1293,22 +1311,23 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-  c->mouse_x = CLAMP(event->x - inset, 0, width);
-  c->mouse_y = CLAMP(event->y - inset, 0, height);
+  double old_m_x = c->mouse_x;
+  double old_m_y = c->mouse_y;
+  c->mouse_x = event->x - inset;
+  c->mouse_y = event->y - inset;
 
-  const float mx = c->mouse_x / (float)width;
-  const float my = 1.0f - c->mouse_y / (float)height;
+  const float mx = CLAMP(c->mouse_x, 0, width) / width;
+  const float my = 1.0f - CLAMP(c->mouse_y, 0, height) / height;
+
+  const double dx = -(old_m_x - c->mouse_x) / width;
+  const double dy = (old_m_y - c->mouse_y) / height;
 
   if(event->state & GDK_BUTTON1_MASK)
   {
     // got a vertex selected:
     if(c->selected >= 0)
     {
-      tonecurve[c->selected].x = mx;
-      tonecurve[c->selected].y = my;
-
-      dt_iop_tonecurve_sanity_check(self, widget);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      return _move_point_internal(self, widget, dx, dy, event->state);
     }
     else if(nodes < DT_IOP_TONECURVE_MAXNODES && c->selected >= -1)
     {
@@ -1362,11 +1381,11 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       const int inset = DT_GUI_CURVE_EDITOR_INSET;
       GtkAllocation allocation;
       gtk_widget_get_allocation(widget, &allocation);
-      int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-      c->mouse_x = CLAMP(event->x - inset, 0, width);
-      c->mouse_y = CLAMP(event->y - inset, 0, height);
+      int width = allocation.width - 2 * inset;
+      c->mouse_x = event->x - inset;
+      c->mouse_y = event->y - inset;
 
-      const float mx = c->mouse_x / (float)width;
+      const float mx = CLAMP(c->mouse_x, 0, width) / (float)width;
 
       // don't add a node too close to others in x direction, it can crash dt
       int selected = -1;
@@ -1444,6 +1463,28 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       }
       return TRUE;
     }
+  }
+  else if(event->button == 3 && c->selected >= 0)
+  {
+    if(c->selected == 0 || c->selected == nodes - 1)
+    {
+      float reset_value = c->selected == 0 ? 0 : 1;
+      tonecurve[c->selected].y = tonecurve[c->selected].x = reset_value;
+      gtk_widget_queue_draw(self->widget);
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      return TRUE;
+    }
+
+    for(int k = c->selected; k < nodes - 1; k++)
+    {
+      tonecurve[k].x = tonecurve[k + 1].x;
+      tonecurve[k].y = tonecurve[k + 1].y;
+    }
+    c->selected = -2; // avoid re-insertion of that point immediately after this
+    p->tonecurve_nodes[ch]--;
+    gtk_widget_queue_draw(self->widget);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    return TRUE;
   }
   return FALSE;
 }
