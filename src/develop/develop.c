@@ -1812,6 +1812,28 @@ uint64_t dt_dev_hash_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, in
   return hash;
 }
 
+int dt_dev_wait_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                     const volatile uint64_t *const hash)
+{
+  int nloop = 100;
+  const int usec = 5000;
+
+  for( ; nloop > 0; nloop--)
+  {
+    if(lock) dt_pthread_mutex_lock(lock);
+    const uint64_t probehash = *hash;
+    if(lock) dt_pthread_mutex_unlock(lock);
+
+    if(probehash == dt_dev_hash_plus(dev, pipe, pmin, pmax))
+      break;
+
+    dt_iop_nap(usec);
+  }
+
+  return nloop > 0;
+}
+
+
 uint64_t dt_dev_hash_distort(dt_develop_t *dev)
 {
   return dt_dev_hash_distort_plus(dev, dev->preview_pipe, 0, 99999);
@@ -1842,6 +1864,27 @@ uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *
   }
   dt_pthread_mutex_unlock(&dev->history_mutex);
   return hash;
+}
+
+int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                     const volatile uint64_t *const hash)
+{
+  int nloop = 100;
+  const int usec = 5000;
+
+  for( ; nloop > 0; nloop--)
+  {
+    if(lock) dt_pthread_mutex_lock(lock);
+    const uint64_t probehash = *hash;
+    if(lock) dt_pthread_mutex_unlock(lock);
+
+    if(probehash == dt_dev_hash_distort_plus(dev, pipe, pmin, pmax))
+      break;
+
+    dt_iop_nap(usec);
+  }
+
+  return nloop > 0;
 }
 
 
