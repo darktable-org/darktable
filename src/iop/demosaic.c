@@ -538,7 +538,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
   const int height = roi_out->height;
   const int ndir = 4 << (passes > 1);
 
-  const size_t buffer_size = (size_t) TS * TS * (ndir * 4 + 4) * sizeof(float);  // 3 to 4 for keeping original to be filtered
+  const size_t buffer_size = (size_t) TS * TS * (ndir * 4 + 6) * sizeof(float);  // 3 to 4 for keeping original to be filtered; 6 for keeping two chromas
   char *const all_buffers = (char *)dt_alloc_align(16, dt_get_num_threads() * buffer_size);
   if(!all_buffers)
   {
@@ -574,7 +574,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       }
 
   // extra passes propagates out errors at edges, hence need more padding
-  const int pad_tile = (passes == 1) ? 13 : 17;  // 12 to 13 because of the 27x27 filter area
+  const int pad_tile = (passes == 1) ? 13 : 17;
 
   //calculate offsets for this roi
   int rowoffset = 0;
@@ -615,6 +615,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
     // fdc_orig points to TSxTS tiles for storing the flat original to be filtered
     // probably this is overkill because the values could be taken from rgb[0]
     float (*const fdc_orig)[TS][TS] = (float (*)[TS][TS])(buffer + TS * TS * (ndir * 4 + 3) * sizeof(float));
+    float (*const fdc_chroma)[TS][TS] = (float (*)[TS][TS])(buffer + TS * TS * (ndir * 4 + 4) * sizeof(float));
     // gmin and gmax reuse memory which is used later by yuv buffer;
     // each points to a TSxTS tile of single channel data
     float (*const gmin)[TS] = (float(*)[TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
@@ -956,55 +957,48 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
         }
 
-      /* Average the most homogenous pixels for the final result:       */
-      float fdc_src[27][27];
-      int fdc_row, fdc_col;
-      for(int row = pad_tile; row < mrow - pad_tile; row++)
+      /* Calculate chroma values in fdc:       */
+      if (passes == 1)
       {
-        int col = pad_tile;
-        // read initial block per line
-        for (fdc_row = -13; fdc_row < 14; fdc_row++)
-          for (fdc_col = -13; fdc_col < 13; fdc_col++)
-            fdc_src[fdc_row + 13][fdc_col + 14] = fdc_orig[0][row + fdc_row][col + fdc_col];
-        for(col = pad_tile; col < mcol - pad_tile; col++)
+        float fdc_src[11][11];
+        int fdc_row, fdc_col;
+        for(int row = 10; row < mrow - 10; row++) //10 as manual padding
         {
-          // move buffer one element to the left
-          for (fdc_row = 0; fdc_row < 27; fdc_row++)
-            for (fdc_col = 0; fdc_col < 26; fdc_col++)
-              fdc_src[fdc_row][fdc_col] = fdc_src[fdc_row][fdc_col + 1];
-          for (fdc_row = -13; fdc_row < 14; fdc_row++)
-            fdc_src[fdc_row + 13][26] = fdc_orig[0][row + fdc_row][col + 13];
-          uint8_t hm[8] = { 0 };
-          uint8_t maxval = 0;
-          for(int d = 0; d < ndir; d++)
+          int col = 10; //10 as manual padding
+          // read initial block per line
+          for (fdc_row = -5; fdc_row < 6; fdc_row++)
+            for (fdc_col = -5; fdc_col < 5; fdc_col++)
+              fdc_src[fdc_row + 5][fdc_col + 6] = fdc_orig[0][row + fdc_row][col + fdc_col];
+          for(col = 10; col < mcol - 10; col++) //10 as manual padding
           {
-            hm[d] = homosum[d][row][col];
-            maxval = (maxval < hm[d] ? hm[d] : maxval);
-          }
-          maxval -= maxval >> 3;
-          for(int d = 0; d < ndir - 4; d++)
-            if(hm[d] < hm[d + 4])
-              hm[d] = 0;
-            else if(hm[d] > hm[d + 4])
-              hm[d + 4] = 0;
-          float avg[4] = { 0.0f };
-          float dircount = 0;
-          float dirsum = 0.0f;
-          for(int d = 0; d < ndir; d++)
-            if(hm[d] >= maxval)
+            // move buffer one element to the left
+            for (fdc_row = 0; fdc_row < 11; fdc_row++)
+              for (fdc_col = 0; fdc_col < 10; fdc_col++)
+                fdc_src[fdc_row][fdc_col] = fdc_src[fdc_row][fdc_col + 1];
+            for (fdc_row = -5; fdc_row < 6; fdc_row++)
+              fdc_src[fdc_row + 5][10] = fdc_orig[0][row + fdc_row][col + 5];
+            uint8_t hm[8] = { 0 };
+            uint8_t maxval = 0;
+            for(int d = 0; d < ndir; d++)
             {
-              for(int c = 0; c < 3; c++) avg[c] += rgb[d][row][col][c];
-              avg[3]++;
-              dircount++;
-              dirsum += directionality[d];
+              hm[d] = homosum[d][row][col];
+              maxval = (maxval < hm[d] ? hm[d] : maxval);
             }
-          float red = avg[0] / avg[3];
-          float green = avg[1] / avg[3];
-          float blue = avg[2] / avg[3];
-          float w = dirsum / (float)dircount;
-          // preserve only luma component of Markesteijn for this pixel
-          if (passes == 1) {
-            float y  =  0.29900f * red + 0.58700f * green + 0.11400f * blue;
+            maxval -= maxval >> 3;
+            for(int d = 0; d < ndir - 4; d++)
+              if(hm[d] < hm[d + 4])
+                hm[d] = 0;
+              else if(hm[d] > hm[d + 4])
+                hm[d + 4] = 0;
+            float dircount = 0;
+            float dirsum = 0.0f;
+            for(int d = 0; d < ndir; d++)
+              if(hm[d] >= maxval)
+              {
+                dircount++;
+                dirsum += directionality[d];
+              }
+            float w = dirsum / (float)dircount;
 #define CORR_FILT(VAR,FILT,XOFFS,YOFFS,XSIZE,YSIZE) \
 VAR = 0.0f + 0.0f * _Complex_I; \
 for (fdc_row=(YOFFS); fdc_row < (YSIZE); fdc_row++) \
@@ -1012,12 +1006,13 @@ for (fdc_col=(XOFFS); fdc_col < (XSIZE); fdc_col++) \
 VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
             // extract modulated chroma using filters
             float complex C2m, C5m, C6m, C7m, C10m, C11m;
-            CORR_FILT(C2m,h2,3,3,24,24)
-            CORR_FILT(C5m,h5,3,3,24,24)
-            CORR_FILT(C6m,h6,3,3,24,24)
-            CORR_FILT(C7m,h7,3,3,24,24)
-            CORR_FILT(C10m,h10,3,3,24,24)
-            CORR_FILT(C11m,h11,3,3,24,24)
+            // for 11x11 filters, use 0,0,11,11 as filter region
+            CORR_FILT(C2m,h2,2,2,9,9)
+            CORR_FILT(C5m,h5,1,1,10,10)
+            CORR_FILT(C6m,h6,0,0,11,11)
+            CORR_FILT(C7m,h7,1,1,10,10)
+            CORR_FILT(C10m,h10,2,2,9,9)
+            CORR_FILT(C11m,h11,0,0,11,11)
             // build the q vector components
             float PI = acos(-1);
             int myrow = row + rowoffset;
@@ -1042,12 +1037,12 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
             C6m = (q6_11 * conjf(modulator5) + q6_11 * conjf(modulator6));
             float complex C12m = (q12_17 * modulator5 + q12_17 * modulator6);
             float complex C18m = q18 * modulator7;
-            float complex L = fdc_src[13][13] - C2m - C3m - C5m - C6m - 2.0f*C7m - C12m - C18m;
+            float complex L = fdc_src[5][5] - C2m - C3m - C5m - C6m - 2.0f*C7m - C12m - C18m;
             // get the rgb components from fdc
-            red = crealf(Minv[0][0]*L + Minv[0][4]*q5 + 2.0f*Minv[0][5]*q6_11 + 2.0f*Minv[0][6]*q7 + 2.0f*Minv[0][9]*q2_10 + 2.0f*Minv[0][11]*q12_17 + 2.0f*Minv[0][14]*q3_15 + Minv[0][17]*q18);
-            green = crealf(Minv[1][0]*L + Minv[1][4]*q5 + 2.0f*Minv[1][5]*q6_11 + 2.0f*Minv[1][6]*q7 + 2.0f*Minv[1][9]*q2_10 + 2.0f*Minv[1][11]*q12_17 + 2.0f*Minv[1][14]*q3_15 + Minv[1][17]*q18);
-            blue = crealf(Minv[2][0]*L + Minv[2][4]*q5 + 2.0f*Minv[2][5]*q6_11 + 2.0f*Minv[2][6]*q7 + 2.0f*Minv[2][9]*q2_10 + 2.0f*Minv[2][11]*q12_17 + 2.0f*Minv[2][14]*q3_15 + Minv[2][17]*q18);
-#define LIM(x,min,max) MAX(min,MIN(x,max))
+            float red = crealf(Minv[0][0]*L + Minv[0][4]*q5 + 2.0f*Minv[0][5]*q6_11 + 2.0f*Minv[0][6]*q7 + 2.0f*Minv[0][9]*q2_10 + 2.0f*Minv[0][11]*q12_17 + 2.0f*Minv[0][14]*q3_15 + Minv[0][17]*q18);
+            float green = crealf(Minv[1][0]*L + Minv[1][4]*q5 + 2.0f*Minv[1][5]*q6_11 + 2.0f*Minv[1][6]*q7 + 2.0f*Minv[1][9]*q2_10 + 2.0f*Minv[1][11]*q12_17 + 2.0f*Minv[1][14]*q3_15 + Minv[1][17]*q18);
+            float blue = crealf(Minv[2][0]*L + Minv[2][4]*q5 + 2.0f*Minv[2][5]*q6_11 + 2.0f*Minv[2][6]*q7 + 2.0f*Minv[2][9]*q2_10 + 2.0f*Minv[2][11]*q12_17 + 2.0f*Minv[2][14]*q3_15 + Minv[2][17]*q18);
+            #define LIM(x,min,max) MAX(min,MIN(x,max))
             red = LIM(red, 0.0f, FLT_MAX);
             green = LIM(green, 0.0f, FLT_MAX);
             blue = LIM(blue, 0.0f, FLT_MAX);
@@ -1056,7 +1051,258 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
             // and take luma from MS and chroma from FDC
             float cb = -0.16874f * red - 0.33126f * green + 0.50000f * blue;
             float cr =  0.50000f * red - 0.41869f * green - 0.08131f * blue;
+            fdc_chroma[0][row][col] = cb;
+            fdc_chroma[1][row][col] = cr;
+          }
+        }
+      }
+
+      /* Average the most homogenous pixels for the final result:       */
+      for(int row = pad_tile; row < mrow - pad_tile; row++)
+        for(int col = pad_tile; col < mcol - pad_tile; col++)
+        {
+          uint8_t hm[8] = { 0 };
+          uint8_t maxval = 0;
+          for(int d = 0; d < ndir; d++)
+          {
+            hm[d] = homosum[d][row][col];
+            maxval = (maxval < hm[d] ? hm[d] : maxval);
+          }
+          maxval -= maxval >> 3;
+          for(int d = 0; d < ndir - 4; d++)
+            if(hm[d] < hm[d + 4])
+              hm[d] = 0;
+            else if(hm[d] > hm[d + 4])
+              hm[d + 4] = 0;
+          float avg[4] = { 0.0f };
+          for(int d = 0; d < ndir; d++)
+            if(hm[d] >= maxval)
+            {
+              for(int c = 0; c < 3; c++) avg[c] += rgb[d][row][col][c];
+              avg[3]++;
+            }
+          float red = avg[0] / avg[3];
+          float green = avg[1] / avg[3];
+          float blue = avg[2] / avg[3];
+          // preserve only luma component of Markesteijn for this pixel
+          if (passes == 1) {
+            float cb, cr;
+            float y  =  0.29900f * red + 0.58700f * green + 0.11400f * blue;
             // now back to RGB
+            // instead of merely reding the values, perform median filter
+            for(int chrm = 0; chrm < 2; chrm++)
+            {
+              // Load the circular window
+              float temp;
+              float s0 = fdc_chroma[chrm][row-2][col-1];
+              float s1 = fdc_chroma[chrm][row-2][col];
+              float s2 = fdc_chroma[chrm][row-2][col+1];
+              float s3 = fdc_chroma[chrm][row-1][col-2];
+              float s4 = fdc_chroma[chrm][row-1][col-1];
+              float s5 = fdc_chroma[chrm][row-1][col];
+              float s6 = fdc_chroma[chrm][row-1][col+1];
+              float s7 = fdc_chroma[chrm][row-1][col+2];
+              float s8 = fdc_chroma[chrm][row][col-2];
+              float s9 = fdc_chroma[chrm][row][col-1];
+              float s10 = fdc_chroma[chrm][row][col];
+              float s11 = fdc_chroma[chrm][row][col+1];
+              float s12 = fdc_chroma[chrm][row][col+2];
+              float s13 = fdc_chroma[chrm][row+1][col-2];
+              float s14 = fdc_chroma[chrm][row+1][col-1];
+              float s15 = fdc_chroma[chrm][row+1][col];
+              float s16 = fdc_chroma[chrm][row+1][col+1];
+              float s17 = fdc_chroma[chrm][row+1][col+2];
+              float s18 = fdc_chroma[chrm][row+2][col-1];
+              float s19 = fdc_chroma[chrm][row+2][col];
+              float s20 = fdc_chroma[chrm][row+2][col+1];
+#define CAS1(a, b)  temp = a;\
+a = (a) < (b) ? (a) : (b);\
+b = (b) > temp ? (b) : temp
+              // Find the 11-th element
+              // phase 0, to continue to phase 10
+              CAS1(s0, s1);
+              CAS1(s1, s2);
+              CAS1(s2, s3);
+              CAS1(s3, s4);
+              CAS1(s4, s5);
+              CAS1(s5, s6);
+              CAS1(s6, s7);
+              CAS1(s7, s8);
+              CAS1(s8, s9);
+              CAS1(s9, s10);
+              CAS1(s10, s11);
+              CAS1(s11, s12);
+              CAS1(s12, s13);
+              CAS1(s13, s14);
+              CAS1(s14, s15);
+              CAS1(s15, s16);
+              CAS1(s16, s17);
+              CAS1(s17, s18);
+              CAS1(s18, s19);
+              CAS1(s19, s20);
+              // phase 1
+              CAS1(s0, s1);
+              CAS1(s1, s2);
+              CAS1(s2, s3);
+              CAS1(s3, s4);
+              CAS1(s4, s5);
+              CAS1(s5, s6);
+              CAS1(s6, s7);
+              CAS1(s7, s8);
+              CAS1(s8, s9);
+              CAS1(s9, s10);
+              CAS1(s10, s11);
+              CAS1(s11, s12);
+              CAS1(s12, s13);
+              CAS1(s13, s14);
+              CAS1(s14, s15);
+              CAS1(s15, s16);
+              CAS1(s16, s17);
+              CAS1(s17, s18);
+              CAS1(s18, s19);
+              // phase 2
+              CAS1(s0, s1);
+              CAS1(s1, s2);
+              CAS1(s2, s3);
+              CAS1(s3, s4);
+              CAS1(s4, s5);
+              CAS1(s5, s6);
+              CAS1(s6, s7);
+              CAS1(s7, s8);
+              CAS1(s8, s9);
+              CAS1(s9, s10);
+              CAS1(s10, s11);
+              CAS1(s11, s12);
+              CAS1(s12, s13);
+              CAS1(s13, s14);
+              CAS1(s14, s15);
+              CAS1(s15, s16);
+              CAS1(s16, s17);
+              CAS1(s17, s18);
+              // phase 3
+              CAS1(s0, s1);
+              CAS1(s1, s2);
+              CAS1(s2, s3);
+              CAS1(s3, s4);
+              CAS1(s4, s5);
+              CAS1(s5, s6);
+              CAS1(s6, s7);
+              CAS1(s7, s8);
+              CAS1(s8, s9);
+              CAS1(s9, s10);
+              CAS1(s10, s11);
+              CAS1(s11, s12);
+              CAS1(s12, s13);
+              CAS1(s13, s14);
+              CAS1(s14, s15);
+              CAS1(s15, s16);
+              CAS1(s16, s17);
+              // phase 4
+              CAS1(s0, s1);
+              CAS1(s1, s2);
+              CAS1(s2, s3);
+              CAS1(s3, s4);
+              CAS1(s4, s5);
+              CAS1(s5, s6);
+              CAS1(s6, s7);
+              CAS1(s7, s8);
+              CAS1(s8, s9);
+              CAS1(s9, s10);
+              CAS1(s10, s11);
+              CAS1(s11, s12);
+              CAS1(s12, s13);
+              CAS1(s13, s14);
+              CAS1(s14, s15);
+              CAS1(s15, s16);
+              // phase 5
+              CAS1(s0, s1);
+              CAS1(s1, s2);
+              CAS1(s2, s3);
+              CAS1(s3, s4);
+              CAS1(s4, s5);
+              CAS1(s5, s6);
+              CAS1(s6, s7);
+              CAS1(s7, s8);
+              CAS1(s8, s9);
+              CAS1(s9, s10);
+              CAS1(s10, s11);
+              CAS1(s11, s12);
+              CAS1(s12, s13);
+              CAS1(s13, s14);
+              CAS1(s14, s15);
+              // phase 6
+              CAS1(s0, s1);
+              CAS1(s1, s2);
+              CAS1(s2, s3);
+              CAS1(s3, s4);
+              CAS1(s4, s5);
+              CAS1(s5, s6);
+              CAS1(s6, s7);
+              CAS1(s7, s8);
+              CAS1(s8, s9);
+              CAS1(s9, s10);
+              CAS1(s10, s11);
+              CAS1(s11, s12);
+              CAS1(s12, s13);
+              CAS1(s13, s14);
+              // phase 7
+              CAS1(s0, s1);
+              CAS1(s1, s2);
+              CAS1(s2, s3);
+              CAS1(s3, s4);
+              CAS1(s4, s5);
+              CAS1(s5, s6);
+              CAS1(s6, s7);
+              CAS1(s7, s8);
+              CAS1(s8, s9);
+              CAS1(s9, s10);
+              CAS1(s10, s11);
+              CAS1(s11, s12);
+              CAS1(s12, s13);
+              // phase 8
+              CAS1(s0, s1);
+              CAS1(s1, s2);
+              CAS1(s2, s3);
+              CAS1(s3, s4);
+              CAS1(s4, s5);
+              CAS1(s5, s6);
+              CAS1(s6, s7);
+              CAS1(s7, s8);
+              CAS1(s8, s9);
+              CAS1(s9, s10);
+              CAS1(s10, s11);
+              CAS1(s11, s12);
+              // phase 9
+              CAS1(s0, s1);
+              CAS1(s1, s2);
+              CAS1(s2, s3);
+              CAS1(s3, s4);
+              CAS1(s4, s5);
+              CAS1(s5, s6);
+              CAS1(s6, s7);
+              CAS1(s7, s8);
+              CAS1(s8, s9);
+              CAS1(s9, s10);
+              CAS1(s10, s11);
+              // phase 10
+              CAS1(s0, s1);
+              CAS1(s1, s2);
+              CAS1(s2, s3);
+              CAS1(s3, s4);
+              CAS1(s4, s5);
+              CAS1(s5, s6);
+              CAS1(s6, s7);
+              CAS1(s7, s8);
+              CAS1(s8, s9);
+              CAS1(s9, s10);
+              // median is s10
+              if (chrm == 0)
+                cb = s10;
+              else
+                cr = s10;
+            }
+            // cb = fdc_chroma[0][row][col];
+            // cr = fdc_chroma[1][row][col];
             red   = y                 + 1.40200f * cr;
             green = y - 0.34414f * cb - 0.71414f * cr;
             blue  = y + 1.77200f * cb;
@@ -1068,12 +1314,12 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
           out[4 * (width * (row + top) + col + left) + 1] = green;
           out[4 * (width * (row + top) + col + left) + 2] = blue;
         }
-      }
     }
   }
   free(all_buffers);
 }
 
+#undef CAS1
 #undef CORR_FILT
 #undef LIM
 #undef TS
