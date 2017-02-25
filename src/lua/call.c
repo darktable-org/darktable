@@ -622,9 +622,7 @@ static int read_cb(lua_State*L)
   FD_ZERO(&fdset);
   FD_SET(myfileno, &fdset);
   dt_lua_unlock();
-  #if !defined(_WIN32)
   select(myfileno + 1, &fdset, NULL, NULL, 0);
-  #endif
   dt_lua_lock();
   return 0;
 }
