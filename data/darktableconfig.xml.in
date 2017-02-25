@@ -148,6 +148,13 @@
     <shortdescription>whether to process markesteijn demosaicing in the OpenCL codepath</shortdescription>
     <longdescription>markesteijn is a very demanding demosaicing method for x-trans sensors. the OpenCL codepath will only give advantage on very performant GPUs - else a slowdown is to be expected. users should benchmark their system and then decide if they switch this on or off.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>pixelpipe_synchronization_timeout</name>
+    <type min="0">int</type>
+    <default>200</default>
+    <shortdescription>timeout period of pixelpipe synchronization</shortdescription>
+    <longdescription>time period (in units of 5ms) after which synchronization of preview and full pixelpipe is assumed to have failed. set to zero to omit pixelpipe synchronization. defaults to 200.</longdescription>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>never_use_embedded_thumb</name>
     <type>bool</type>
