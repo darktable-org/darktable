@@ -1815,8 +1815,9 @@ uint64_t dt_dev_hash_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, in
 int dt_dev_wait_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
                      const volatile uint64_t *const hash)
 {
-  int nloop = 100;
   const int usec = 5000;
+  int nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+  if(nloop <= 0) return TRUE;  // non-positive values omit pixelpipe synchronization
 
   for( ; nloop > 0; nloop--)
   {
@@ -1869,8 +1870,9 @@ uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *
 int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
                      const volatile uint64_t *const hash)
 {
-  int nloop = 100;
   const int usec = 5000;
+  int nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+  if(nloop <= 0) return TRUE;  // non-positive values omit pixelpipe synchronization
 
   for( ; nloop > 0; nloop--)
   {
