@@ -15,5 +15,5 @@ foreach(language ${LANGUAGES})
     install(FILES ${mofile}
             DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${language}/LC_MESSAGES
             RENAME ${CMAKE_PROJECT_NAME}.mo
-            COMPONENT DTDocuments)
+            COMPONENT DTApplication)
 endforeach(language)
