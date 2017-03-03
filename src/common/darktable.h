@@ -135,7 +135,10 @@ static inline int dt_version()
 // NaN-safe clamping (NaN compares false, and will thus result in H)
 #define CLAMPS(A, L, H) ((A) > (L) ? ((A) < (H) ? (A) : (H)) : (L))
 
+#undef STR_HELPER
 #define STR_HELPER(x) #x
+
+#undef STR
 #define STR(x) STR_HELPER(x)
 
 struct dt_gui_gtk_t;
