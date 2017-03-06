@@ -1816,22 +1816,42 @@ int dt_dev_wait_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmi
                      const volatile uint64_t *const hash)
 {
   const int usec = 5000;
-  int nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+  const int nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
   if(nloop <= 0) return TRUE;  // non-positive values omit pixelpipe synchronization
 
-  for( ; nloop > 0; nloop--)
+  for(int n = 0; n < nloop; n++)
   {
     if(lock) dt_pthread_mutex_lock(lock);
     const uint64_t probehash = *hash;
     if(lock) dt_pthread_mutex_unlock(lock);
 
     if(probehash == dt_dev_hash_plus(dev, pipe, pmin, pmax))
-      break;
+      return TRUE;
 
     dt_iop_nap(usec);
   }
 
-  return nloop > 0;
+  return FALSE;
+}
+
+int dt_dev_sync_pixelpipe_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                               const volatile uint64_t *const hash)
+{
+  // first wait for matching hash values
+  if(dt_dev_wait_hash(dev, pipe, pmin, pmax, lock, hash))
+    return TRUE;
+
+  // timed out. let's see if history stack has changed
+  if(pipe->changed & (DT_DEV_PIPE_TOP_CHANGED | DT_DEV_PIPE_REMOVE | DT_DEV_PIPE_SYNCH))
+  {
+    // history stack has changed. let's trigger reprocessing
+    dt_control_queue_redraw_center();
+    // pretend that everything is fine
+    return TRUE;
+  }
+
+  // no way to get pixelpipes in sync
+  return FALSE;
 }
 
 
@@ -1871,22 +1891,42 @@ int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
                      const volatile uint64_t *const hash)
 {
   const int usec = 5000;
-  int nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+  const int nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
   if(nloop <= 0) return TRUE;  // non-positive values omit pixelpipe synchronization
 
-  for( ; nloop > 0; nloop--)
+  for(int n = 0; n < nloop; n++)
   {
     if(lock) dt_pthread_mutex_lock(lock);
     const uint64_t probehash = *hash;
     if(lock) dt_pthread_mutex_unlock(lock);
 
     if(probehash == dt_dev_hash_distort_plus(dev, pipe, pmin, pmax))
-      break;
+      return TRUE;
 
     dt_iop_nap(usec);
   }
 
-  return nloop > 0;
+  return FALSE;
+}
+
+int dt_dev_sync_pixelpipe_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                                       const volatile uint64_t *const hash)
+{
+  // first wait for matching hash values
+  if(dt_dev_wait_hash_distort(dev, pipe, pmin, pmax, lock, hash))
+    return TRUE;
+
+  // timed out. let's see if history stack has changed
+  if(pipe->changed & (DT_DEV_PIPE_TOP_CHANGED | DT_DEV_PIPE_REMOVE | DT_DEV_PIPE_SYNCH))
+  {
+    // history stack has changed. let's trigger reprocessing
+    dt_control_queue_redraw_center();
+    // pretend that everything is fine
+    return TRUE;
+  }
+
+  // no way to get pixelpipes in sync
+  return FALSE;
 }
 
 

@@ -251,8 +251,8 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
       // contains NANs which initiates special handling below to avoid inconsistent results. in all
       // other cases we make sure that the preview pipe has left us with proper readings for
       // g->auto_levels[]. if data are not yet there we need to wait (with timeout).
-      if(hash != 0 && !dt_dev_wait_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
-        dt_control_log(_("inconsistent result"));
+      if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+        dt_control_log(_("inconsistent output"));
 
       dt_pthread_mutex_lock(&g->lock);
       d->levels[0] = g->auto_levels[0];
