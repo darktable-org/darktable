@@ -404,6 +404,11 @@ static void reset_child(GtkWidget* child, gpointer user_data)
 }
 #endif
 
+static void _check_button_callback(GtkWidget *widget, gpointer data)
+{
+    dt_conf_set_bool("ui_last/import_ignore_jpegs",
+                     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+}
 
 static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_import_metadata_t *data, gboolean import_folder)
 {
@@ -450,6 +455,8 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ignore_jpeg),
                                  dt_conf_get_bool("ui_last/import_ignore_jpegs"));
     gtk_box_pack_start(GTK_BOX(extra), ignore_jpeg, FALSE, FALSE, 0);
+    g_signal_connect(G_OBJECT(ignore_jpeg), "clicked",
+                   G_CALLBACK(_check_button_callback), ignore_jpeg);
   }
 
   // default metadata
