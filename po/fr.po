@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-12 11:59+0100\n"
-"PO-Revision-Date: 2017-02-12 12:03+0100\n"
+"POT-Creation-Date: 2017-02-26 19:59+0100\n"
+"PO-Revision-Date: 2017-02-26 20:05+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -859,7 +859,7 @@ msgstr "graphisme;photographie;raw;"
 #: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/latex.c:103 ../src/libs/collect.c:236
 #: ../src/libs/copy_history.c:73 ../src/libs/geotagging.c:454
-#: ../src/libs/import.c:774 ../src/libs/import.c:873 ../src/libs/lib.c:217
+#: ../src/libs/import.c:781 ../src/libs/import.c:880 ../src/libs/lib.c:217
 #: ../src/libs/styles.c:209 ../src/libs/styles.c:229 ../src/libs/tagging.c:367
 #: ../src/libs/tagging.c:404
 msgid "_cancel"
@@ -1112,7 +1112,7 @@ msgstr "erreur de chargement du dossier « %s »"
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:296 ../src/libs/import.c:838
+#: ../src/common/darktable.c:296 ../src/libs/import.c:845
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
@@ -1434,7 +1434,7 @@ msgstr "m"
 #: ../src/common/variables.c:278 ../src/iop/basecurve.c:1882
 #: ../src/iop/clipping.c:1574 ../src/iop/clipping.c:1864
 #: ../src/iop/clipping.c:1882 ../src/iop/clipping.c:2022
-#: ../src/iop/clipping.c:2049 ../src/iop/colorreconstruction.c:1378
+#: ../src/iop/clipping.c:2049 ../src/iop/colorreconstruction.c:1402
 #: ../src/iop/lens.c:2080 ../src/libs/export.c:486 ../src/libs/live_view.c:348
 #: ../src/libs/live_view.c:373 ../src/libs/live_view.c:382
 #: ../src/libs/print_settings.c:1019 ../src/libs/print_settings.c:1288
@@ -1861,7 +1861,7 @@ msgstr[1] "importation de %d images"
 msgid "importing image %s"
 msgstr "importation de l'image %s"
 
-#: ../src/control/jobs/image_jobs.c:104 ../src/libs/import.c:774
+#: ../src/control/jobs/image_jobs.c:104 ../src/libs/import.c:781
 msgid "import image"
 msgstr "importer une image"
 
@@ -2309,84 +2309,88 @@ msgstr ""
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module « %s » version non cohérente: %d != %d"
 
-#: ../src/develop/imageop.c:871
+#: ../src/develop/imageop.c:881
 msgid "new instance"
 msgstr "nouvelle instance"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:876
+#: ../src/develop/imageop.c:886
 msgid "duplicate instance"
 msgstr "cloner l'instance"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:881 ../src/libs/masks.c:1154
+#: ../src/develop/imageop.c:891 ../src/libs/masks.c:1154
 msgid "move up"
 msgstr "monter"
 
-#: ../src/develop/imageop.c:887 ../src/libs/masks.c:1157
+#: ../src/develop/imageop.c:897 ../src/libs/masks.c:1157
 msgid "move down"
 msgstr "descendre"
 
 #. delete
-#: ../src/develop/imageop.c:893 ../src/libs/image.c:141
+#: ../src/develop/imageop.c:903 ../src/libs/image.c:141
 #: ../src/libs/styles.c:360 ../src/libs/tagging.c:555
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:922 ../src/develop/imageop.c:1913
+#: ../src/develop/imageop.c:932 ../src/develop/imageop.c:1925
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:922 ../src/develop/imageop.c:1913
+#: ../src/develop/imageop.c:932 ../src/develop/imageop.c:1925
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1244 ../src/gui/accelerators.c:634
+#: ../src/develop/imageop.c:1254 ../src/gui/accelerators.c:634
 #: ../src/gui/accelerators.c:719 ../src/gui/accelerators.c:884
 #: ../src/gui/accelerators.c:910 ../src/gui/presets.c:192
 #: ../src/gui/presets.c:299 ../src/gui/presets.c:641
-#: ../src/iop/temperature.c:1380 ../src/libs/import.c:555 ../src/libs/lib.c:310
+#: ../src/iop/temperature.c:1380 ../src/libs/import.c:562 ../src/libs/lib.c:310
 #: ../src/libs/lib.c:335 ../src/libs/lib.c:1182
 msgid "preset"
 msgstr "pré-réglage"
 
-#: ../src/develop/imageop.c:1288
+#: ../src/develop/imageop.c:1298
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusion"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1293
+#: ../src/develop/imageop.c:1303
 msgctxt "accel"
 msgid "show module"
 msgstr "afficher le module"
 
-#: ../src/develop/imageop.c:1294
+#: ../src/develop/imageop.c:1304
 msgctxt "accel"
 msgid "enable module"
 msgstr "activer le module"
 
-#: ../src/develop/imageop.c:1296 ../src/libs/lib.c:585
+#: ../src/develop/imageop.c:1306 ../src/libs/lib.c:585
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1297 ../src/libs/lib.c:589
+#: ../src/develop/imageop.c:1307 ../src/libs/lib.c:589
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:1884
-msgid "multiple instances actions"
-msgstr "instances multiples"
+#: ../src/develop/imageop.c:1895
+msgid ""
+"multiple instances actions\n"
+"middle-click creates new instance"
+msgstr ""
+"actions instances multiples\n"
+"clic-milieu créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:1892 ../src/libs/lib.c:1023
+#: ../src/develop/imageop.c:1904 ../src/libs/lib.c:1023
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1900 ../src/gui/preferences.c:443
+#: ../src/develop/imageop.c:1912 ../src/gui/preferences.c:443
 #: ../src/libs/lib.c:1035
 msgid "presets"
 msgstr "pré-réglages"
@@ -2401,7 +2405,7 @@ msgstr "impossible de trouver un XMP venant de Lightroom !"
 msgid "`%s' not a lightroom XMP!"
 msgstr "« %s » n'est pas un XMP de Lightroom !"
 
-#: ../src/develop/lightroom.c:1389 ../src/libs/import.c:575
+#: ../src/develop/lightroom.c:1389 ../src/libs/import.c:582
 msgid "tags"
 msgstr "mots-clés"
 
@@ -2819,11 +2823,11 @@ msgid "general"
 msgstr "général"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:447
+#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:452
 msgid "ignore JPEG files"
 msgstr "ignorer les fichiers JPEG"
 
-#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:448
+#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:453
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -2868,67 +2872,67 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "utiliser AAAA-MM-JJ pour la surcharge de date"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:923
+#: ../src/gui/gtk.c:929
 msgctxt "accel"
 msgid "tethering view"
 msgstr "capture"
 
-#: ../src/gui/gtk.c:924
+#: ../src/gui/gtk.c:930
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "table lumineuse"
 
-#: ../src/gui/gtk.c:925
+#: ../src/gui/gtk.c:931
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "chambre noire"
 
-#: ../src/gui/gtk.c:926
+#: ../src/gui/gtk.c:932
 msgctxt "accel"
 msgid "map view"
 msgstr "vue carte"
 
-#: ../src/gui/gtk.c:927
+#: ../src/gui/gtk.c:933
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "diaporama"
 
-#: ../src/gui/gtk.c:928
+#: ../src/gui/gtk.c:934
 msgctxt "accel"
 msgid "print view"
 msgstr "impression"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:951
+#: ../src/gui/gtk.c:957
 msgctxt "accel"
 msgid "quit"
 msgstr "quitter"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:956
+#: ../src/gui/gtk.c:962
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "activer/désactiver le plein écran"
 
-#: ../src/gui/gtk.c:957
+#: ../src/gui/gtk.c:963
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "quitter le mode plein écran"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:965
+#: ../src/gui/gtk.c:971
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "activer/désactiver les panneaux latéraux"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:968
+#: ../src/gui/gtk.c:974
 msgctxt "accel"
 msgid "toggle header"
 msgstr "activer/désactiver le panneau supérieur"
 
 #. View-switch
-#: ../src/gui/gtk.c:971
+#: ../src/gui/gtk.c:977
 msgctxt "accel"
 msgid "switch view"
 msgstr "changer de vue"
@@ -3215,7 +3219,7 @@ msgid "focal length"
 msgstr "focale"
 
 #: ../src/gui/preferences.c:494 ../src/iop/borders.c:993
-#: ../src/iop/levels.c:583
+#: ../src/iop/levels.c:599
 msgid "auto"
 msgstr "auto"
 
@@ -3276,7 +3280,7 @@ msgstr "sélectionne le fichier à importer"
 
 #: ../src/gui/preferences.c:1069 ../src/libs/collect.c:237
 #: ../src/libs/copy_history.c:74 ../src/libs/geotagging.c:455
-#: ../src/libs/import.c:775 ../src/libs/import.c:874 ../src/libs/styles.c:230
+#: ../src/libs/import.c:782 ../src/libs/import.c:881 ../src/libs/styles.c:230
 msgid "_open"
 msgstr "_ouvrir"
 
@@ -3574,7 +3578,7 @@ msgstr "taille des bords non valide, 0 est utilisé"
 #: ../src/imageio/format/pdf.c:255 ../src/imageio/storage/disk.c:293
 #: ../src/imageio/storage/email.c:133 ../src/imageio/storage/facebook.c:1298
 #: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:328
-#: ../src/imageio/storage/gallery.c:362 ../src/imageio/storage/picasa.c:1446
+#: ../src/imageio/storage/gallery.c:362 ../src/imageio/storage/picasa.c:1287
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "impossible d'exporter le fichier « %s » !"
@@ -3589,9 +3593,8 @@ msgstr "PDF"
 #. xmp
 #: ../src/imageio/format/pdf.c:579 ../src/imageio/storage/facebook.c:1112
 #: ../src/imageio/storage/flickr.c:532 ../src/imageio/storage/gallery.c:171
-#: ../src/imageio/storage/latex.c:171 ../src/imageio/storage/picasa.c:1299
-#: ../src/libs/collect.h:34 ../src/libs/metadata.c:334
-#: ../src/libs/metadata_view.c:115
+#: ../src/imageio/storage/latex.c:171 ../src/libs/collect.h:34
+#: ../src/libs/metadata.c:334 ../src/libs/metadata_view.c:115
 msgid "title"
 msgstr "titre"
 
@@ -3961,25 +3964,25 @@ msgstr ""
 "connectez-vous à votre compte facebook et autorisez darktable à charger des "
 "photos pour continuer."
 
-#: ../src/imageio/storage/facebook.c:843 ../src/imageio/storage/picasa.c:1007
+#: ../src/imageio/storage/facebook.c:843 ../src/imageio/storage/picasa.c:897
 msgid "new account"
 msgstr "nouveau compte"
 
-#: ../src/imageio/storage/facebook.c:848 ../src/imageio/storage/picasa.c:1012
+#: ../src/imageio/storage/facebook.c:848 ../src/imageio/storage/picasa.c:902
 msgid "other account"
 msgstr "autre compte"
 
-#: ../src/imageio/storage/facebook.c:877 ../src/imageio/storage/picasa.c:1040
+#: ../src/imageio/storage/facebook.c:877 ../src/imageio/storage/picasa.c:930
 msgid "unable to retrieve the album list"
 msgstr "impossible de rafraîchir la liste d'album"
 
 #: ../src/imageio/storage/facebook.c:885 ../src/imageio/storage/flickr.c:386
-#: ../src/imageio/storage/flickr.c:413 ../src/imageio/storage/picasa.c:1048
+#: ../src/imageio/storage/flickr.c:413
 msgid "create new album"
 msgstr "créer un nouvel album"
 
-#: ../src/imageio/storage/facebook.c:957 ../src/imageio/storage/picasa.c:1096
-#: ../src/imageio/storage/picasa.c:1254
+#: ../src/imageio/storage/facebook.c:957 ../src/imageio/storage/picasa.c:979
+#: ../src/imageio/storage/picasa.c:1123
 msgid "logout"
 msgstr "se déconnecter"
 
@@ -3988,8 +3991,8 @@ msgstr "se déconnecter"
 #: ../src/imageio/storage/facebook.c:1030
 #: ../src/imageio/storage/facebook.c:1056
 #: ../src/imageio/storage/facebook.c:1175 ../src/imageio/storage/flickr.c:474
-#: ../src/imageio/storage/picasa.c:1102 ../src/imageio/storage/picasa.c:1258
-#: ../src/imageio/storage/picasa.c:1271 ../src/imageio/storage/picasa.c:1342
+#: ../src/imageio/storage/picasa.c:985 ../src/imageio/storage/picasa.c:1127
+#: ../src/imageio/storage/picasa.c:1140 ../src/imageio/storage/picasa.c:1198
 msgid "login"
 msgstr "connexion"
 
@@ -3998,7 +4001,6 @@ msgid "facebook webalbum"
 msgstr "album web facebook"
 
 #: ../src/imageio/storage/facebook.c:1113 ../src/imageio/storage/flickr.c:547
-#: ../src/imageio/storage/picasa.c:1300
 msgid "summary"
 msgstr "résumé"
 
@@ -4022,11 +4024,11 @@ msgstr "public"
 msgid "friends of friends"
 msgstr "amis d'amis"
 
-#: ../src/imageio/storage/facebook.c:1307 ../src/imageio/storage/picasa.c:1455
+#: ../src/imageio/storage/facebook.c:1307
 msgid "unable to create album, no title provided"
 msgstr "impossible de créer un album, titre manquant"
 
-#: ../src/imageio/storage/facebook.c:1316 ../src/imageio/storage/picasa.c:1463
+#: ../src/imageio/storage/facebook.c:1316
 msgid "unable to create album"
 msgstr "impossible de créer un nouvel album"
 
@@ -4166,7 +4168,7 @@ msgid "enter the title of the book"
 msgstr "entrer le titre du livre"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/picasa.c:828
+#: ../src/imageio/storage/picasa.c:718
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your google+ account there and authorize darktable to "
@@ -4176,7 +4178,7 @@ msgstr ""
 "navigateur. connectez-vous à votre compte google+ et autorisez darktable à "
 "charger des fichiers pour continuer."
 
-#: ../src/imageio/storage/picasa.c:831
+#: ../src/imageio/storage/picasa.c:721
 msgid ""
 "step 2: paste the verification code shown to you in the browser and click "
 "the OK button once you are done."
@@ -4184,28 +4186,32 @@ msgstr ""
 "étape 2 : coller le code de vérification affiché par le navigateur et "
 "cliquer \"OK\""
 
-#: ../src/imageio/storage/picasa.c:837
+#: ../src/imageio/storage/picasa.c:727
 msgid "google+ authentication"
 msgstr "authentification google+"
 
-#: ../src/imageio/storage/picasa.c:842
+#: ../src/imageio/storage/picasa.c:732
 msgid "verification code:"
 msgstr "code de vérification"
 
-#: ../src/imageio/storage/picasa.c:865
+#: ../src/imageio/storage/picasa.c:755
 msgid "please enter the verification code"
 msgstr "merci d'entrer le code de vérification"
 
-#: ../src/imageio/storage/picasa.c:1286
+#: ../src/imageio/storage/picasa.c:938
+msgid "drop box"
+msgstr "drop box"
+
+#: ../src/imageio/storage/picasa.c:1155
 msgid "google+ photos"
 msgstr "photos google+"
 
-#: ../src/imageio/storage/picasa.c:1473
+#: ../src/imageio/storage/picasa.c:1295
 msgid "unable to export photo to google+ album"
 msgstr "impossible d'exporter les photos vers l'album google+"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1486
+#: ../src/imageio/storage/picasa.c:1308
 #, c-format
 msgid "%d/%d exported to google+ album"
 msgid_plural "%d/%d exported to google+ album"
@@ -4711,7 +4717,7 @@ msgid "local contrast"
 msgstr "contraste local"
 
 #: ../src/iop/bilat.c:402 ../src/iop/denoiseprofile.c:2078
-#: ../src/iop/exposure.c:849 ../src/iop/lens.c:2228 ../src/iop/levels.c:550
+#: ../src/iop/exposure.c:849 ../src/iop/lens.c:2228 ../src/iop/levels.c:566
 #: ../src/libs/copy_history.c:303 ../src/libs/export.c:634
 #: ../src/libs/print_settings.c:1329 ../src/views/darkroom.c:1561
 msgid "mode"
@@ -4733,7 +4739,7 @@ msgstr ""
 "le filtre utilisé pour l'amélioration du contraste local. bilatéral est plus "
 "rapide mais peut faire apparaître des artefacts au niveau des bords."
 
-#: ../src/iop/bilat.c:412 ../src/iop/globaltonemap.c:707
+#: ../src/iop/bilat.c:412 ../src/iop/globaltonemap.c:737
 msgid "detail"
 msgstr "détail"
 
@@ -4835,7 +4841,7 @@ msgctxt "accel"
 msgid "size"
 msgstr "taille"
 
-#: ../src/iop/bloom.c:96 ../src/iop/colorreconstruction.c:171
+#: ../src/iop/bloom.c:96 ../src/iop/colorreconstruction.c:172
 #: ../src/iop/hotpixels.c:85 ../src/iop/sharpen.c:104
 msgctxt "accel"
 msgid "threshold"
@@ -4854,7 +4860,7 @@ msgstr "taille"
 msgid "the size of bloom"
 msgstr "taille de la lumière d'arrière-plan"
 
-#: ../src/iop/bloom.c:523 ../src/iop/colorreconstruction.c:1372
+#: ../src/iop/bloom.c:523 ../src/iop/colorreconstruction.c:1396
 #: ../src/iop/defringe.c:461 ../src/iop/hotpixels.c:452
 #: ../src/iop/sharpen.c:773
 msgid "threshold"
@@ -4907,7 +4913,7 @@ msgid "15:10 postcard black"
 msgstr "15x10 noir"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:911 ../src/libs/import.c:984
+#: ../src/iop/borders.c:911 ../src/libs/import.c:991
 msgid "image"
 msgstr "image"
 
@@ -5105,7 +5111,7 @@ msgstr "canal de destination"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
 #: ../src/iop/channelmixer.c:448 ../src/iop/colorize.c:427
-#: ../src/iop/colorreconstruction.c:1375 ../src/iop/colorreconstruction.c:1380
+#: ../src/iop/colorreconstruction.c:1399 ../src/iop/colorreconstruction.c:1404
 #: ../src/iop/colorzones.c:1073 ../src/iop/colorzones.c:1104
 #: ../src/iop/graduatednd.c:1168 ../src/iop/splittoning.c:488
 msgid "hue"
@@ -5798,65 +5804,71 @@ msgstr ""
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "profils ICC dans %s/color/out ou %s/color/out"
 
-#: ../src/iop/colorreconstruction.c:126
+#: ../src/iop/colorreconstruction.c:127
 msgid "color reconstruction"
 msgstr "reconstruction des couleurs"
 
-#: ../src/iop/colorreconstruction.c:172 ../src/iop/tonemap.cc:90
+#: ../src/iop/colorreconstruction.c:173 ../src/iop/tonemap.cc:90
 msgctxt "accel"
 msgid "spatial extent"
 msgstr "étendue spatiale"
 
-#: ../src/iop/colorreconstruction.c:173
+#: ../src/iop/colorreconstruction.c:174
 msgctxt "accel"
 msgid "range extent"
 msgstr "étendue de clarté"
 
-#: ../src/iop/colorreconstruction.c:174
+#: ../src/iop/colorreconstruction.c:175
 msgctxt "accel"
 msgid "hue"
 msgstr "teinte"
 
-#: ../src/iop/colorreconstruction.c:653
+#: ../src/iop/colorreconstruction.c:624 ../src/iop/colorreconstruction.c:1113
+#: ../src/iop/globaltonemap.c:183 ../src/iop/globaltonemap.c:380
+#: ../src/iop/levels.c:255
+msgid "inconsistent result"
+msgstr " résultat incohérent"
+
+#: ../src/iop/colorreconstruction.c:662
 msgid "module `color reconstruction' failed"
 msgstr "échec du module  « correction de perspective »"
 
-#: ../src/iop/colorreconstruction.c:1373 ../src/iop/shadhi.c:856
+#: ../src/iop/colorreconstruction.c:1397 ../src/iop/shadhi.c:856
 #: ../src/iop/tonemap.cc:298
 msgid "spatial extent"
 msgstr "étendue spatiale"
 
-#: ../src/iop/colorreconstruction.c:1374
+#: ../src/iop/colorreconstruction.c:1398
 msgid "range extent"
 msgstr "étendue de clarté"
 
-#: ../src/iop/colorreconstruction.c:1377
+#: ../src/iop/colorreconstruction.c:1401
 msgid "precedence"
 msgstr "priorité"
 
-#: ../src/iop/colorreconstruction.c:1379
+#: ../src/iop/colorreconstruction.c:1403
 msgid "saturated colors"
 msgstr "couleurs saturées"
 
-#: ../src/iop/colorreconstruction.c:1409
+#: ../src/iop/colorreconstruction.c:1433
 msgid "pixels with lightness values above this threshold are corrected"
 msgstr "seuil de clarté au dessus duquel les pixels sont affectés"
 
-#: ../src/iop/colorreconstruction.c:1410
+#: ../src/iop/colorreconstruction.c:1434
 msgid "how far to look for replacement colors in spatial dimensions"
 msgstr "distance spatiale pour la recherche des couleurs de remplacement"
 
-#: ../src/iop/colorreconstruction.c:1411
+#: ../src/iop/colorreconstruction.c:1435
 msgid "how far to look for replacement colors in the luminance dimension"
 msgstr "distance de clarté pour la recherche des couleurs de remplacement"
 
-#: ../src/iop/colorreconstruction.c:1412
+#: ../src/iop/colorreconstruction.c:1436
 msgid "if and how to give precedence to specific replacement colors"
 msgstr ""
 "faut-il donner la priorité à une couleur de remplacement spécifique ? Si "
 "oui, comment le faire ?"
 
-#: ../src/iop/colorreconstruction.c:1413
+#: ../src/iop/colorreconstruction.c:1437
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "la teinte à laquelle on donne priorité sur les autres teintes"
 
@@ -6291,12 +6303,12 @@ msgstr "défauts de magic lantern"
 msgid "failed to get raw buffer from image `%s'"
 msgstr "échec de l'obtention du cache pour l'image « %s »"
 
-#: ../src/iop/exposure.c:851 ../src/iop/levels.c:552
+#: ../src/iop/exposure.c:851 ../src/iop/levels.c:568
 msgctxt "mode"
 msgid "manual"
 msgstr "manuel"
 
-#: ../src/iop/exposure.c:854 ../src/iop/levels.c:555 ../src/iop/tonecurve.c:946
+#: ../src/iop/exposure.c:854 ../src/iop/levels.c:571 ../src/iop/tonecurve.c:946
 #: ../src/iop/vignette.c:1137
 msgid "automatic"
 msgstr "automatique"
@@ -6305,7 +6317,7 @@ msgstr "automatique"
 msgid "adjust the black level"
 msgstr "ajuste les niveaux de noir"
 
-#: ../src/iop/exposure.c:865 ../src/iop/levels.c:618
+#: ../src/iop/exposure.c:865 ../src/iop/levels.c:634
 msgid "black"
 msgstr "noir"
 
@@ -6421,23 +6433,23 @@ msgctxt "modulename"
 msgid "gamma"
 msgstr "gamma"
 
-#: ../src/iop/globaltonemap.c:102
+#: ../src/iop/globaltonemap.c:103
 msgid "global tonemap"
 msgstr "mappage global tonalités"
 
-#: ../src/iop/globaltonemap.c:678
+#: ../src/iop/globaltonemap.c:708
 msgid "operator"
 msgstr "opérateur"
 
-#: ../src/iop/globaltonemap.c:684
+#: ../src/iop/globaltonemap.c:714
 msgid "the global tonemap operator"
 msgstr "opérateur de mappage global des tonalités"
 
-#: ../src/iop/globaltonemap.c:690
+#: ../src/iop/globaltonemap.c:720
 msgid "bias"
 msgstr "biais"
 
-#: ../src/iop/globaltonemap.c:691
+#: ../src/iop/globaltonemap.c:721
 msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
 "in blacks"
@@ -6445,11 +6457,11 @@ msgstr ""
 "contrôle la linéarité, plus le biais est élevé plus les détails sont "
 "importants dans les ombres"
 
-#: ../src/iop/globaltonemap.c:699
+#: ../src/iop/globaltonemap.c:729
 msgid "target"
 msgstr "cible"
 
-#: ../src/iop/globaltonemap.c:700
+#: ../src/iop/globaltonemap.c:730
 msgid "the target light for tonemapper specified as cd/m2"
 msgstr "cible de luminosité spécifiée en cd/m2"
 
@@ -6928,50 +6940,50 @@ msgstr "corrections effectuées :"
 msgid "which corrections have actually been done"
 msgstr "corrections réellement effectuées"
 
-#: ../src/iop/levels.c:116
+#: ../src/iop/levels.c:117
 msgid "levels"
 msgstr "niveaux"
 
-#: ../src/iop/levels.c:570
+#: ../src/iop/levels.c:586
 msgid ""
 "drag handles to set black, gray, and white points. operates on L channel."
 msgstr ""
 "déplacer les barres pour régler les points noir, gris et blanc. agit sur le "
 "canal L."
 
-#: ../src/iop/levels.c:584
+#: ../src/iop/levels.c:600
 msgid "apply auto levels"
 msgstr "niveaux automatiques"
 
-#: ../src/iop/levels.c:588
+#: ../src/iop/levels.c:604
 msgid "pick black point from image"
 msgstr "choisir le point noir dans l'image"
 
-#: ../src/iop/levels.c:591
+#: ../src/iop/levels.c:607
 msgid "pick medium gray point from image"
 msgstr "choisir le point gris dans l'image"
 
-#: ../src/iop/levels.c:594
+#: ../src/iop/levels.c:610
 msgid "pick white point from image"
 msgstr "choisir le point blanc dans l'image"
 
-#: ../src/iop/levels.c:616
+#: ../src/iop/levels.c:632
 msgid "black percentile"
 msgstr "centile des noirs"
 
-#: ../src/iop/levels.c:621
+#: ../src/iop/levels.c:637
 msgid "gray percentile"
 msgstr "centile des gris"
 
-#: ../src/iop/levels.c:623
+#: ../src/iop/levels.c:639
 msgid "gray"
 msgstr "gris"
 
-#: ../src/iop/levels.c:626
+#: ../src/iop/levels.c:642
 msgid "white percentile"
 msgstr "centile des blancs"
 
-#: ../src/iop/levels.c:628
+#: ../src/iop/levels.c:644
 msgid "white"
 msgstr "blanc"
 
@@ -8418,16 +8430,16 @@ msgstr "historique"
 msgid "description"
 msgstr "description"
 
-#: ../src/libs/collect.h:35 ../src/libs/import.c:560 ../src/libs/metadata.c:336
+#: ../src/libs/collect.h:35 ../src/libs/import.c:567 ../src/libs/metadata.c:336
 #: ../src/libs/metadata_view.c:116
 msgid "creator"
 msgstr "auteur"
 
-#: ../src/libs/collect.h:35 ../src/libs/import.c:565 ../src/libs/metadata.c:337
+#: ../src/libs/collect.h:35 ../src/libs/import.c:572 ../src/libs/metadata.c:337
 msgid "publisher"
 msgstr "diffuseur"
 
-#: ../src/libs/collect.h:36 ../src/libs/import.c:570 ../src/libs/metadata.c:338
+#: ../src/libs/collect.h:36 ../src/libs/import.c:577 ../src/libs/metadata.c:338
 msgid "rights"
 msgstr "droits"
 
@@ -8515,7 +8527,7 @@ msgid "XMP sidecar files"
 msgstr "fichiers XMP"
 
 #: ../src/libs/copy_history.c:85 ../src/libs/geotagging.c:473
-#: ../src/libs/import.c:803 ../src/libs/styles.c:244
+#: ../src/libs/import.c:810 ../src/libs/styles.c:244
 msgid "all files"
 msgstr "tous les fichiers"
 
@@ -9109,65 +9121,65 @@ msgid "no supported devices found"
 msgstr "aucun appareil supporté n'a été détecté"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:411
+#: ../src/libs/import.c:416
 msgid "import options"
 msgstr "options d'importation"
 
 #. recursive opening.
-#: ../src/libs/import.c:440
+#: ../src/libs/import.c:445
 msgid "import directories recursively"
 msgstr "importer les dossiers récursivement"
 
-#: ../src/libs/import.c:442
+#: ../src/libs/import.c:447
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr "importe les dossiers de manière récursive"
 
-#: ../src/libs/import.c:458
+#: ../src/libs/import.c:465
 msgid "apply metadata on import"
 msgstr "appliquer des métadonnées lors de l'importation"
 
-#: ../src/libs/import.c:459
+#: ../src/libs/import.c:466
 msgid "apply some metadata to all newly imported images."
 msgstr ""
 "appliquer des métadonnées\n"
 "à toutes les images nouvellement importées"
 
-#: ../src/libs/import.c:505
+#: ../src/libs/import.c:512
 msgid "comma separated list of tags"
 msgstr "liste de mots-clés séparés par une virgule"
 
-#: ../src/libs/import.c:798
+#: ../src/libs/import.c:805
 msgid "supported images"
 msgstr "images supportées"
 
-#: ../src/libs/import.c:854
+#: ../src/libs/import.c:861
 msgid "file has unknown format!"
 msgstr "le fichier possède un format inconnu !"
 
-#: ../src/libs/import.c:873
+#: ../src/libs/import.c:880
 msgid "import film"
 msgstr "importer un dossier"
 
-#: ../src/libs/import.c:987
+#: ../src/libs/import.c:994
 msgid "select one or more images to import"
 msgstr "sélectionner une ou plusieurs images à importer"
 
 #. adding the import folder button
-#: ../src/libs/import.c:994
+#: ../src/libs/import.c:1001
 msgid "folder"
 msgstr "dossier"
 
-#: ../src/libs/import.c:997
+#: ../src/libs/import.c:1004
 msgid "select a folder to import as film roll"
 msgstr "sélectionner un dossier à importer"
 
 #. add the rescan button
-#: ../src/libs/import.c:1005
+#: ../src/libs/import.c:1012
 msgid "scan for devices"
 msgstr "rechercher un appareil"
 
-#: ../src/libs/import.c:1008
+#: ../src/libs/import.c:1015
 msgid "scan for newly attached devices"
 msgstr "recherche des appareils branchés récemment"
 
