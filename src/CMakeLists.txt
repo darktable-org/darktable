@@ -113,6 +113,36 @@ if(APPLE)
   set_source_files_properties(osx/osx.mm PROPERTIES LANGUAGE CXX)
 endif(APPLE)
 
+if(WIN32)
+  list(APPEND SOURCE_FILES "win/strptime.c")
+  list(APPEND HEADER_FILES "win/strptime.h")
+  list(APPEND SOURCE_FILES "win/statvfs.c")
+  list(APPEND HEADER_FILES "win/statvfs.h")
+
+  list(APPEND SOURCE_FILES "win/getrusage.c")
+  list(APPEND HEADER_FILES "win/getrusage.h")
+
+  list(APPEND SOURCE_FILES "win/rlimit.c")
+  list(APPEND HEADER_FILES "win/rlimit.h")
+
+  list(APPEND SOURCE_FILES "win/getdelim.c")
+  list(APPEND HEADER_FILES "win/getdelim.h")
+
+  list(APPEND SOURCE_FILES "win/dtwin.c")
+  list(APPEND HEADER_FILES "win/dtwin.h")
+
+  # Use mingw's sprintf instead of windows's
+  ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
+
+  # add it to have proper time.h functions available
+  ADD_DEFINITIONS(-D_POSIX_THREAD_SAFE_FUNCTIONS)
+
+  # add icon resource for Windows executable
+  SET(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
+  set(RESOURCE_OBJECT win/darktable.rc)
+
+endif(WIN32)
+
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 
@@ -392,24 +422,21 @@ if(NOT HAVE_TLS)
   MESSAGE(FATAL_ERROR "The compiler does not support Thread-local storage.")
 endif()
 
+
 if(WIN32)
-  # get rid of the console window. do we need both?
-#   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -Wl,-subsystem,windows")
-#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows -Wl,-subsystem,windows")
+  #TODO: Review these
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -Wl,-subsystem,windows")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows -Wl,-subsystem,windows")
 
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
   set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
 
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mms-bitfields")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mms-bitfields")
+  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
+  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
 
-  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
-  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
-
-  list(APPEND LIBS ws2_32)
-  list(APPEND LIBS msvcrt) # Needed for _aligned_alloc()
-  list(APPEND SOURCES "win/getrusage.c")
+  list(APPEND LIBS psapi) # Needed for GetProcessMemoryInfo()
+  list(APPEND LIBS exchndl) # Needed for exception handling and backtrace()
 endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
@@ -719,7 +746,7 @@ unset(LIB_DEPS)
 #
 if(WIN32)
   # Windows needs its DLLs in the same directory as the executable to find them.
-  install(TARGETS lib_darktable DESTINATION bin)
+  install(TARGETS lib_darktable DESTINATION bin COMPONENT DTApplication)
 else(WIN32)
   install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable)
 endif(WIN32)
@@ -764,4 +791,15 @@ if(APPLE)
   set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon -framework AppKit")
 endif(APPLE)
 target_link_libraries(darktable lib_darktable)
-install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+if (WIN32)
+  _detach_debuginfo (darktable bin)
+  _detach_debuginfo (lib_darktable bin)
+endif(WIN32)
+
+install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)
+
+InstallDependencyFiles()
+
+# Tell CPack about the components and group the data components together (CPACK_COMPONENT_${COMPONENT_NAME_ALL_CAPS}_GROUP).
+set(CPACK_COMPONENTS_ALL DTApplication DTDebugSymbols DTDocuments DTDependencies)

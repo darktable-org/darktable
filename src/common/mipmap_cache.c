@@ -42,7 +42,13 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
+
+#if !defined(_WIN32)
 #include <sys/statvfs.h>
+#else 
+//statvfs does not exist in Windows, providing implementation
+#include "win/statvfs.h"
+#endif
 
 #define DT_MIPMAP_CACHE_FILE_MAGIC 0xD71337
 #define DT_MIPMAP_CACHE_FILE_VERSION 23

@@ -30,6 +30,10 @@
 
 #include <time.h>
 
+#ifdef _WIN32
+//MSVCRT does not have strptime implemented
+#include "win/strptime.h"
+#endif
 /*
 
   g_object_ref(model); // Make sure the model stays with us after the tree view unrefs it

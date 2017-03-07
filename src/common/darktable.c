@@ -95,6 +95,10 @@
 #include <omp.h>
 #endif
 
+#ifdef _WIN32
+#include "win/dtwin.h"
+#endif //_WIN32
+
 #ifdef USE_LUA
 #include "lua/configuration.h"
 #endif
@@ -754,6 +758,25 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // set the interface language
   const gchar *lang = dt_conf_get_string("ui_last/gui_language");
+#if defined(_WIN32)
+  // get the default locale if no language preference was specified in the config file
+  if(lang == NULL || lang[0] == '\0')
+  {
+    const wchar_t *wcLocaleName = NULL;
+    wcLocaleName = dtwin_get_locale();
+    if(wcLocaleName != NULL)
+    {
+      gchar *langLocale;
+      langLocale = g_utf16_to_utf8(wcLocaleName, -1, NULL, NULL, NULL);
+      if(langLocale != NULL)
+      {
+        g_free((gchar *)lang);
+        lang = g_strdup(langLocale);
+      }
+    }
+  }
+#endif // defined (_WIN32)
+
   if(lang != NULL && lang[0] != '\0')
   {
     g_setenv("LANGUAGE", lang, 1);
