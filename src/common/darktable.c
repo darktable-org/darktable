@@ -721,7 +721,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // we need this REALLY early so that error messages can be shown
   if(init_gui)
+  {
+#ifdef GDK_WINDOWING_WAYLAND
+    // There are currently bad interactions with Wayland (drop-downs
+    // are very narrow, scroll events lost). Until this is fixed, give
+    // priority to the XWayland backend for Wayland users.
+    gdk_set_allowed_backends("x11,*");
+#endif
     gtk_init(&argc, &argv);
+  }
 
 #ifdef _OPENMP
   omp_set_num_threads(darktable.num_openmp_threads);
