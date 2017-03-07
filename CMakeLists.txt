@@ -155,7 +155,11 @@ include(compiler-versions)
 
 if(WIN32)
   message("-- Win32 build detected, setting default features")
-  set(USE_CAMERA_SUPPORT OFF)
+  set(USE_COLORD OFF)
+  set(USE_KWALLET OFF)
+  set(BUILD_CMSTEST OFF)
+  set(BUILD_PRINT OFF)
+  set(TESTBUILD_OPENCL_PROGRAMS OFF)
 endif(WIN32)
 
 
@@ -255,6 +259,7 @@ if(CMAKE_BUILD_TYPE MATCHES "^[Dd][Ee][Bb][Uu][Gg]$" AND SOURCE_PACKAGE)
 endif()
 
 include(compiler-warnings)
+include(windows-macros)
 
 # Setting the runtime path works differently on OSX than on Linux or BSD.
 # Hence use a variable that maps those in the correct way for each OS.

@@ -33,5 +33,9 @@ foreach(module ${MODULES})
 endforeach(module)
 
 foreach(module ${MODULES})
-    install(TARGETS  ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/views)
+    if (WIN32)
+      _detach_debuginfo (${module} ${CMAKE_INSTALL_LIBDIR}/darktable/views)
+    endif(WIN32)
+
+    install(TARGETS  ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/views COMPONENT DTApplication)
 endforeach(module)

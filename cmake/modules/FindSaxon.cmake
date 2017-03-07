@@ -8,7 +8,7 @@
 # Xslt_SAXON_EXTENSIONS
 # Saxon_FOUND
 #
-find_package (Java)
+find_package (Java COMPONENTS Runtime)
 if (JAVA_RUNTIME)
   if (NOT JAVA_CLASSPATH)
     set (JAVA_CLASSPATH $ENV{CLASSPATH} CACHE STRING "java classpath")
