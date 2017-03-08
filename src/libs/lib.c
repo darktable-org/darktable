@@ -810,6 +810,7 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
     fprintf(stderr, "something went wrong: &params=%p, size=%i\n", &params, size);
   }
   dt_lib_presets_popup_menu_show(&mi);
+  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
 #if GTK_CHECK_VERSION(3, 22, 0)
   int c = module->container(module);
@@ -838,7 +839,6 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
                  gtk_get_current_event_time());
 #endif
 
-  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
 }
 
