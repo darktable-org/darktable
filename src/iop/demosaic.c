@@ -960,23 +960,23 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       /* Calculate chroma values in fdc:       */
       if (passes == 1)
       {
-        float fdc_src[11][11];
+        float fdc_src[13][13];
         int fdc_row, fdc_col;
         for(int row = 10; row < mrow - 10; row++) //10 as manual padding
         {
           int col = 10; //10 as manual padding
           // read initial block per line
-          for (fdc_row = -5; fdc_row < 6; fdc_row++)
-            for (fdc_col = -5; fdc_col < 5; fdc_col++)
-              fdc_src[fdc_row + 5][fdc_col + 6] = fdc_orig[0][row + fdc_row][col + fdc_col];
+          for (fdc_row = -6; fdc_row < 7; fdc_row++)
+            for (fdc_col = -6; fdc_col < 6; fdc_col++)
+              fdc_src[fdc_row + 6][fdc_col + 7] = fdc_orig[0][row + fdc_row][col + fdc_col];
           for(col = 10; col < mcol - 10; col++) //10 as manual padding
           {
             // move buffer one element to the left
-            for (fdc_row = 0; fdc_row < 11; fdc_row++)
-              for (fdc_col = 0; fdc_col < 10; fdc_col++)
+            for (fdc_row = 0; fdc_row < 13; fdc_row++)
+              for (fdc_col = 0; fdc_col < 12; fdc_col++)
                 fdc_src[fdc_row][fdc_col] = fdc_src[fdc_row][fdc_col + 1];
-            for (fdc_row = -5; fdc_row < 6; fdc_row++)
-              fdc_src[fdc_row + 5][10] = fdc_orig[0][row + fdc_row][col + 5];
+            for (fdc_row = -6; fdc_row < 7; fdc_row++)
+              fdc_src[fdc_row + 6][12] = fdc_orig[0][row + fdc_row][col + 6];
             uint8_t hm[8] = { 0 };
             uint8_t maxval = 0;
             for(int d = 0; d < ndir; d++)
@@ -1007,12 +1007,12 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
             // extract modulated chroma using filters
             float complex C2m, C5m, C6m, C7m, C10m, C11m;
             // for 11x11 filters, use 0,0,11,11 as filter region
-            CORR_FILT(C2m,h2,2,2,9,9)
-            CORR_FILT(C5m,h5,1,1,10,10)
-            CORR_FILT(C6m,h6,0,0,11,11)
-            CORR_FILT(C7m,h7,1,1,10,10)
-            CORR_FILT(C10m,h10,2,2,9,9)
-            CORR_FILT(C11m,h11,0,0,11,11)
+            CORR_FILT(C2m,h2,0,0,13,13)
+            CORR_FILT(C5m,h5,0,0,13,13)
+            CORR_FILT(C6m,h6,0,0,13,13)
+            CORR_FILT(C7m,h7,0,0,13,13)
+            CORR_FILT(C10m,h10,0,0,13,13)
+            CORR_FILT(C11m,h11,0,0,13,13)
             // build the q vector components
             float PI = acos(-1);
             int myrow = row + rowoffset;
@@ -1037,7 +1037,7 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
             C6m = (q6_11 * conjf(modulator5) + q6_11 * conjf(modulator6));
             float complex C12m = (q12_17 * modulator5 + q12_17 * modulator6);
             float complex C18m = q18 * modulator7;
-            float complex L = fdc_src[5][5] - C2m - C3m - C5m - C6m - 2.0f*C7m - C12m - C18m;
+            float complex L = fdc_src[6][6] - C2m - C3m - C5m - C6m - 2.0f*C7m - C12m - C18m;
             // get the rgb components from fdc
             float red = crealf(Minv[0][0]*L + Minv[0][4]*q5 + 2.0f*Minv[0][5]*q6_11 + 2.0f*Minv[0][6]*q7 + 2.0f*Minv[0][9]*q2_10 + 2.0f*Minv[0][11]*q12_17 + 2.0f*Minv[0][14]*q3_15 + Minv[0][17]*q18);
             float green = crealf(Minv[1][0]*L + Minv[1][4]*q5 + 2.0f*Minv[1][5]*q6_11 + 2.0f*Minv[1][6]*q7 + 2.0f*Minv[1][9]*q2_10 + 2.0f*Minv[1][11]*q12_17 + 2.0f*Minv[1][14]*q3_15 + Minv[1][17]*q18);
