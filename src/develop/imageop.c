@@ -1542,9 +1542,8 @@ static void popup_callback(GtkButton *button, dt_iop_module_t *module)
 #else
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_position, button, 0,
                  gtk_get_current_event_time());
-#endif
-
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
+#endif
 }
 
 void dt_iop_request_focus(dt_iop_module_t *module)

@@ -837,9 +837,8 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
 #else
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_posistion, button, 0,
                  gtk_get_current_event_time());
-#endif
-
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
+#endif
 }
 
 void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
