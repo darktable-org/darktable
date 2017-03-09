@@ -56,13 +56,8 @@ execute(){
 build_darktable() {
     cd "$(dirname "$0")"
 
-    # for RawSpeed submodule
-    git submodule init
-    git submodule update
-
-    mkdir artifacts
     mkdir build && cd build
-    cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/c/projects/darktable/artifacts ../.
+    cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/c/projects/darktable/build ../.
     cmake --build . --target install
     cmake --build . --target package
 }
