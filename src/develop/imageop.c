@@ -1533,6 +1533,7 @@ static void _preset_popup_position(GtkMenu *menu, gint *x, gint *y, gboolean *pu
 static void popup_callback(GtkButton *button, dt_iop_module_t *module)
 {
   dt_gui_presets_popup_menu_show_for_module(module);
+  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
 #if GTK_CHECK_VERSION(3, 22, 0)
   gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu,
@@ -1541,10 +1542,8 @@ static void popup_callback(GtkButton *button, dt_iop_module_t *module)
 #else
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_position, button, 0,
                  gtk_get_current_event_time());
-#endif
-
-  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
+#endif
 }
 
 void dt_iop_request_focus(dt_iop_module_t *module)
@@ -1731,6 +1730,7 @@ static gboolean _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, g
   else if(e->button == 3)
   {
     dt_gui_presets_popup_menu_show_for_module(module);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
 #if GTK_CHECK_VERSION(3, 22, 0)
     gtk_menu_popup_at_pointer(darktable.gui->presets_popup_menu, (GdkEvent *)e);
@@ -1738,7 +1738,6 @@ static gboolean _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, g
     gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
 #endif
 
-    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
     return TRUE;
   }
   return FALSE;
@@ -1764,14 +1763,13 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
   else if(e->button == 3)
   {
     dt_gui_presets_popup_menu_show_for_module(module);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
 #if GTK_CHECK_VERSION(3, 22, 0)
     gtk_menu_popup_at_pointer(darktable.gui->presets_popup_menu, (GdkEvent *)e);
 #else
     gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
 #endif
-
-    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
     return TRUE;
   }
