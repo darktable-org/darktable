@@ -1306,21 +1306,12 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 static gboolean dt_iop_basecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  c->mouse_x = fabs(c->mouse_x);
-  c->mouse_y = fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
 
 static gboolean dt_iop_basecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  // sign swapping for fluxbox
-  c->mouse_x = -fabs(c->mouse_x);
-  c->mouse_y = -fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -1412,6 +1403,33 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_fill(cr);
 
   cairo_translate(cr, 0, height);
+  if(c->selected >= 0)
+  {
+
+    char text[30];
+    // draw information about current selected node
+    PangoLayout *layout;
+    PangoRectangle ink;
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    pango_font_description_set_absolute_size(desc, (DT_PIXEL_APPLY_DPI(0.06) * height) * PANGO_SCALE);
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
+
+    const float x_node_value = basecurve[c->selected].x * 100;
+    const float y_node_value = basecurve[c->selected].y * 100;
+    const float d_node_value = y_node_value - x_node_value;
+    snprintf(text, sizeof(text), "%.2f / %.2f ( %+.2f)", x_node_value, y_node_value, d_node_value);
+
+    cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+    pango_layout_set_text(layout, text, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, 0.98f * width - ink.width - ink.x, -0.02 * height - ink.height - ink.y);
+    pango_cairo_show_layout(cr, layout);
+    cairo_stroke(cr);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
+  }
   cairo_scale(cr, 1.0f, -1.0f);
 
   // draw grid
@@ -1532,6 +1550,8 @@ static void dt_iop_basecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widg
   }
 }
 
+static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state);
+
 static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1545,11 +1565,13 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   gtk_widget_get_allocation(widget, &allocation);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-  c->mouse_x = CLAMP(event->x - inset, 0, width);
-  c->mouse_y = CLAMP(event->y - inset, 0, height);
+  const double old_m_x = c->mouse_x;
+  const double old_m_y = c->mouse_y;
+  c->mouse_x = event->x - inset;
+  c->mouse_y = event->y - inset;
 
-  const float mx = c->mouse_x / (float)width;
-  const float my = 1.0f - c->mouse_y / (float)height;
+  const float mx = CLAMP(c->mouse_x, 0, width) / (float)width;
+  const float my = 1.0f - CLAMP(c->mouse_y, 0, height) / (float)height;
   const float linx = to_lin(mx, c->loglogscale), liny = to_lin(my, c->loglogscale);
 
   if(event->state & GDK_BUTTON1_MASK)
@@ -1557,11 +1579,16 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     // got a vertex selected:
     if(c->selected >= 0)
     {
-      basecurve[c->selected].x = linx;
-      basecurve[c->selected].y = liny;
+      // this is used to translate mause position in loglogscale to make this behavior unified with linear scale.
+      const float translate_mouse_x = old_m_x / width - to_log(basecurve[c->selected].x, c->loglogscale);
+      const float translate_mouse_y = 1 - old_m_y / height - to_log(basecurve[c->selected].y, c->loglogscale);
+      // dx & dy are in linear coordinates
+      const float dx = to_lin(c->mouse_x / width - translate_mouse_x, c->loglogscale)
+                       - to_lin(old_m_x / width - translate_mouse_x, c->loglogscale);
+      const float dy = to_lin(1 - c->mouse_y / height - translate_mouse_y, c->loglogscale)
+                       - to_lin(1 - old_m_y / height - translate_mouse_y, c->loglogscale);
 
-      dt_iop_basecurve_sanity_check(self, widget);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      return _move_point_internal(self, widget, dx, dy, event->state);
     }
     else if(nodes < MAXNODES && c->selected >= -1)
     {
@@ -1614,11 +1641,11 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
       const int inset = DT_GUI_CURVE_EDITOR_INSET;
       GtkAllocation allocation;
       gtk_widget_get_allocation(widget, &allocation);
-      int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-      c->mouse_x = CLAMP(event->x - inset, 0, width);
-      c->mouse_y = CLAMP(event->y - inset, 0, height);
+      int width = allocation.width - 2 * inset;
+      c->mouse_x = event->x - inset;
+      c->mouse_y = event->y - inset;
 
-      const float mx = c->mouse_x / (float)width;
+      const float mx = CLAMP(c->mouse_x, 0, width) / (float)width;
       const float linx = to_lin(mx, c->loglogscale);
 
       // don't add a node too close to others in x direction, it can crash dt
@@ -1681,6 +1708,28 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
       gtk_widget_queue_draw(self->widget);
       return TRUE;
     }
+  }
+  else if(event->button == 3 && c->selected >= 0)
+  {
+    if(c->selected == 0 || c->selected == nodes - 1)
+    {
+      float reset_value = c->selected == 0 ? 0 : 1;
+      basecurve[c->selected].y = basecurve[c->selected].x = reset_value;
+      gtk_widget_queue_draw(self->widget);
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      return TRUE;
+    }
+
+    for(int k = c->selected; k < nodes - 1; k++)
+    {
+      basecurve[k].x = basecurve[k + 1].x;
+      basecurve[k].y = basecurve[k + 1].y;
+    }
+    c->selected = -2; // avoid re-insertion of that point immediately after this
+    p->basecurve_nodes[ch]--;
+    gtk_widget_queue_draw(self->widget);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    return TRUE;
   }
   return FALSE;
 }
