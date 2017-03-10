@@ -810,6 +810,7 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
     fprintf(stderr, "something went wrong: &params=%p, size=%i\n", &params, size);
   }
   dt_lib_presets_popup_menu_show(&mi);
+
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
 #if GTK_CHECK_VERSION(3, 22, 0)
@@ -820,9 +821,8 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
   if((c == DT_UI_CONTAINER_PANEL_LEFT_TOP) || (c == DT_UI_CONTAINER_PANEL_LEFT_CENTER)
      || (c == DT_UI_CONTAINER_PANEL_LEFT_BOTTOM))
   {
-    // FIXME: these should be _EAST, but then it goes out of the sidepanel...
-    widget_gravity = GDK_GRAVITY_SOUTH;
-    menu_gravity = GDK_GRAVITY_NORTH;
+    widget_gravity = GDK_GRAVITY_SOUTH_EAST;
+    menu_gravity = GDK_GRAVITY_NORTH_EAST;
   }
   else
   {
@@ -833,7 +833,6 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
   gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu,
                            dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander)), widget_gravity,
                            menu_gravity, NULL);
-
 #else
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_posistion, button, 0,
                  gtk_get_current_event_time());
