@@ -831,7 +831,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
-      query = dt_util_dstrcat(query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%'))",
+      query = dt_util_dstrcat(query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s'))",
                               escaped_text);
       break;
 
