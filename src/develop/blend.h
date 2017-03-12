@@ -58,7 +58,13 @@ typedef enum dt_develop_blend_mode_t
   DEVELOP_BLEND_LAB_LIGHTNESS = 0x1A,
   DEVELOP_BLEND_LAB_COLOR = 0x1B,
   DEVELOP_BLEND_HSV_LIGHTNESS = 0x1C,
-  DEVELOP_BLEND_HSV_COLOR = 0x1D
+  DEVELOP_BLEND_HSV_COLOR = 0x1D,
+  DEVELOP_BLEND_LAB_L = 0x1E,
+  DEVELOP_BLEND_LAB_A = 0x1F,
+  DEVELOP_BLEND_LAB_B = 0x20,
+  DEVELOP_BLEND_RGB_R = 0x21,
+  DEVELOP_BLEND_RGB_G = 0x22,
+  DEVELOP_BLEND_RGB_B = 0x23
 } dt_develop_blend_mode_t;
 
 typedef enum dt_develop_mask_mode_t

@@ -1580,9 +1580,21 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "Lab lightness"),
                          DEVELOP_BLEND_LAB_LIGHTNESS);
     _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "Lab color"), DEVELOP_BLEND_LAB_COLOR);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "Lab L-channel"),
+                         DEVELOP_BLEND_LAB_L);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "Lab a-channel"),
+                         DEVELOP_BLEND_LAB_A);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "Lab b-channel"),
+                         DEVELOP_BLEND_LAB_B);
     _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "HSV lightness"),
                          DEVELOP_BLEND_HSV_LIGHTNESS);
     _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "HSV color"), DEVELOP_BLEND_HSV_COLOR);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "RGB R-channel"),
+                         DEVELOP_BLEND_RGB_R);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "RGB G-channel"),
+                         DEVELOP_BLEND_RGB_G);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "RGB B-channel"),
+                         DEVELOP_BLEND_RGB_B);
 
     /** deprecated blend modes: make them available as legacy history stacks might want them */
     _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "difference (deprecated)"),
@@ -1675,6 +1687,10 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_LAB_LIGHTNESS);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_LAB_A);
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_LAB_B);
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_LAB_COLOR);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_LIGHTNESS);
@@ -1725,6 +1741,12 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                              DEVELOP_BLEND_HSV_LIGHTNESS);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_HSV_COLOR);
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_RGB_R);
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_RGB_G);
+        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
+                             DEVELOP_BLEND_RGB_B);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_LIGHTNESS);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,

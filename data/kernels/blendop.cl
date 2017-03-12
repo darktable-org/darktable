@@ -20,37 +20,44 @@
 #include "colorspace.cl"
 
 
-#define DEVELOP_BLEND_MASK_FLAG				0x80
-#define DEVELOP_BLEND_DISABLED				0x00
-#define DEVELOP_BLEND_NORMAL				0x01
-#define DEVELOP_BLEND_LIGHTEN				0x02
-#define DEVELOP_BLEND_DARKEN				0x03
-#define DEVELOP_BLEND_MULTIPLY				0x04
-#define DEVELOP_BLEND_AVERAGE				0x05
-#define DEVELOP_BLEND_ADD				0x06
-#define DEVELOP_BLEND_SUBSTRACT				0x07
-#define DEVELOP_BLEND_DIFFERENCE			0x08
-#define DEVELOP_BLEND_SCREEN				0x09
-#define DEVELOP_BLEND_OVERLAY				0x0A
-#define DEVELOP_BLEND_SOFTLIGHT				0x0B
-#define DEVELOP_BLEND_HARDLIGHT				0x0C
-#define DEVELOP_BLEND_VIVIDLIGHT			0x0D
-#define DEVELOP_BLEND_LINEARLIGHT			0x0E
-#define DEVELOP_BLEND_PINLIGHT				0x0F
-#define DEVELOP_BLEND_LIGHTNESS				0x10
-#define DEVELOP_BLEND_CHROMA				0x11
-#define DEVELOP_BLEND_HUE				0x12
-#define DEVELOP_BLEND_COLOR				0x13
-#define DEVELOP_BLEND_INVERSE				0x14
-#define DEVELOP_BLEND_UNBOUNDED                         0x15
-#define DEVELOP_BLEND_COLORADJUST                       0x16
-#define DEVELOP_BLEND_DIFFERENCE2                       0x17
-#define DEVELOP_BLEND_NORMAL2                           0x18
-#define DEVELOP_BLEND_BOUNDED                           0x19
-#define DEVELOP_BLEND_LAB_LIGHTNESS                     0x1A
-#define DEVELOP_BLEND_LAB_COLOR                         0x1B
-#define DEVELOP_BLEND_HSV_LIGHTNESS                     0x1C
-#define DEVELOP_BLEND_HSV_COLOR                         0x1D
+#define DEVELOP_BLEND_MASK_FLAG             0x80
+#define DEVELOP_BLEND_DISABLED              0x00
+#define DEVELOP_BLEND_NORMAL                0x01
+#define DEVELOP_BLEND_LIGHTEN               0x02
+#define DEVELOP_BLEND_DARKEN                0x03
+#define DEVELOP_BLEND_MULTIPLY              0x04
+#define DEVELOP_BLEND_AVERAGE               0x05
+#define DEVELOP_BLEND_ADD                   0x06
+#define DEVELOP_BLEND_SUBSTRACT             0x07
+#define DEVELOP_BLEND_DIFFERENCE            0x08
+#define DEVELOP_BLEND_SCREEN                0x09
+#define DEVELOP_BLEND_OVERLAY               0x0A
+#define DEVELOP_BLEND_SOFTLIGHT             0x0B
+#define DEVELOP_BLEND_HARDLIGHT             0x0C
+#define DEVELOP_BLEND_VIVIDLIGHT            0x0D
+#define DEVELOP_BLEND_LINEARLIGHT           0x0E
+#define DEVELOP_BLEND_PINLIGHT              0x0F
+#define DEVELOP_BLEND_LIGHTNESS             0x10
+#define DEVELOP_BLEND_CHROMA                0x11
+#define DEVELOP_BLEND_HUE                   0x12
+#define DEVELOP_BLEND_COLOR                 0x13
+#define DEVELOP_BLEND_INVERSE               0x14
+#define DEVELOP_BLEND_UNBOUNDED             0x15
+#define DEVELOP_BLEND_COLORADJUST           0x16
+#define DEVELOP_BLEND_DIFFERENCE2           0x17
+#define DEVELOP_BLEND_NORMAL2               0x18
+#define DEVELOP_BLEND_BOUNDED               0x19
+#define DEVELOP_BLEND_LAB_LIGHTNESS         0x1A
+#define DEVELOP_BLEND_LAB_COLOR             0x1B
+#define DEVELOP_BLEND_HSV_LIGHTNESS         0x1C
+#define DEVELOP_BLEND_HSV_COLOR             0x1D
+#define DEVELOP_BLEND_LAB_L                 0x1E
+#define DEVELOP_BLEND_LAB_A                 0x1F
+#define DEVELOP_BLEND_LAB_B                 0x20
+#define DEVELOP_BLEND_RGB_R                 0x21
+#define DEVELOP_BLEND_RGB_G                 0x22
+#define DEVELOP_BLEND_RGB_B                 0x23
+
 
 
 #define DEVELOP_MASK_DISABLED       0x00
@@ -557,9 +564,22 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       break;
 
     case DEVELOP_BLEND_LAB_LIGHTNESS:
+    case DEVELOP_BLEND_LAB_L:
       o.x = (a.x * (1.0f - opacity)) + (b.x * opacity);
       o.y = a.y;
       o.z = a.z;
+      break;
+
+    case DEVELOP_BLEND_LAB_A:
+      o.x = a.x;
+      o.y = (a.y * (1.0f - opacity)) + (b.y * opacity);
+      o.z = a.z;
+      break;
+
+    case DEVELOP_BLEND_LAB_B:
+      o.x = a.x;
+      o.y = a.y;
+      o.z = (a.z * (1.0f - opacity)) + (b.z * opacity);
       break;
 
     case DEVELOP_BLEND_LAB_COLOR:
@@ -567,9 +587,12 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o.y = (a.y * (1.0f - opacity)) + (b.y * opacity);
       o.z = (a.z * (1.0f - opacity)) + (b.z * opacity);
       break;
-
+      
     case DEVELOP_BLEND_HSV_LIGHTNESS:
     case DEVELOP_BLEND_HSV_COLOR:
+    case DEVELOP_BLEND_RGB_R:
+    case DEVELOP_BLEND_RGB_G:
+    case DEVELOP_BLEND_RGB_B:
       o = a;                            // Noop for Lab (without clamping)
       break;
 
@@ -718,11 +741,17 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
     case DEVELOP_BLEND_LAB_LIGHTNESS:
     case DEVELOP_BLEND_LAB_COLOR:
+    case DEVELOP_BLEND_LAB_L:
+    case DEVELOP_BLEND_LAB_A:
+    case DEVELOP_BLEND_LAB_B:
       o = a;                            // Noop for Raw (without clamping)
       break;
 
     case DEVELOP_BLEND_HSV_LIGHTNESS:
     case DEVELOP_BLEND_HSV_COLOR:
+    case DEVELOP_BLEND_RGB_R:
+    case DEVELOP_BLEND_RGB_G:
+    case DEVELOP_BLEND_RGB_B:
       o = a;                            // Noop for Raw (without clamping)
       break;
 
@@ -890,6 +919,9 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
     case DEVELOP_BLEND_LAB_LIGHTNESS:
     case DEVELOP_BLEND_LAB_COLOR:
+    case DEVELOP_BLEND_LAB_L:
+    case DEVELOP_BLEND_LAB_A:
+    case DEVELOP_BLEND_LAB_B:
       o = a;                            // Noop for RGB (without clamping)
       break;
 
@@ -913,6 +945,25 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       to.z = ta.z;
       o = HSV_2_RGB(to);
       break;
+      
+    case DEVELOP_BLEND_RGB_R:
+      o.x = (a.x * (1.0f - opacity)) + (b.x * opacity);
+      o.y = a.y;
+      o.z = a.z;
+      break;
+
+    case DEVELOP_BLEND_RGB_G:
+      o.x = a.x;
+      o.y = (a.y * (1.0f - opacity)) + (b.y * opacity);
+      o.z = a.z;
+      break;
+
+    case DEVELOP_BLEND_RGB_B:
+      o.x = a.x;
+      o.y = a.y;
+      o.z = (a.z * (1.0f - opacity)) + (b.z * opacity);
+      break;
+
 
     /* fallback to normal blend */
     case DEVELOP_BLEND_UNBOUNDED:
