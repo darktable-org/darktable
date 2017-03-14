@@ -56,7 +56,7 @@ if (JAVA_RUNTIME)
                   share/java/saxon6
                   share/saxon-6.5/lib
                   java/saxon
-    PATHS ENV HOME
+    HINTS ENV SAXON_INSTALL_DIR
     DOC "location of saxon 6.5.x JAR file"
     CMAKE_FIND_ROOT_PATH_BOTH
   )
@@ -72,7 +72,7 @@ if (JAVA_RUNTIME)
                   share/java/docbook-xsl-saxon
                   share/saxon-6.5/lib
                   java/docbook-xsl-saxon
-    PATHS ENV HOME
+    HINTS ENV SAXON_INSTALL_DIR
     DOC "location of saxon 6.5.x DocBook XSL extension JAR file"
     CMAKE_FIND_ROOT_PATH_BOTH
   )
