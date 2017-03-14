@@ -2275,9 +2275,6 @@ static gboolean _profile_quickbutton_pressed(GtkWidget *widget, GdkEvent *event,
 {
   dt_library_t *lib = (dt_library_t *)user_data;
 
-  // set opacity before showing the widget, as GtkPopover sets opacity
-  // 1 when closing the widget
-  gtk_widget_set_opacity(lib->profile_floating_window, 0.9);
   gtk_widget_show_all(lib->profile_floating_window);
   return TRUE;
 }
@@ -2371,20 +2368,13 @@ void gui_init(dt_view_t *self)
   g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
 #endif
 
-  GtkWidget *frame = gtk_frame_new(NULL);
-  GtkWidget *event_box = gtk_event_box_new();
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
 
-  gtk_widget_set_state_flags(frame, GTK_STATE_FLAG_SELECTED, TRUE);
-  gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
-
-  gtk_container_add(GTK_CONTAINER(lib->profile_floating_window), frame);
-  gtk_container_add(GTK_CONTAINER(frame), event_box);
-  gtk_container_add(GTK_CONTAINER(event_box), vbox);
+  gtk_container_add(GTK_CONTAINER(lib->profile_floating_window), vbox);
 
   /** let's fill the encapsulating widgets */
   char datadir[PATH_MAX] = { 0 };
