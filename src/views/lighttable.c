@@ -2271,14 +2271,6 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "realign images to grid", closure);
 }
 
-static gboolean _profile_popover_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
-{
-  // hack to draw popover children but not the popover widget's outline/tail
-  // FIXME: could make popover not point to anything via gtk_popover_set_relative_to(), but then need to give it another owner so it doesn't get destroyed
-  gtk_container_propagate_draw(GTK_CONTAINER(widget), gtk_bin_get_child(GTK_BIN(widget)), cr);
-  return TRUE;
-}
-
 static gboolean _profile_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_library_t *lib = (dt_library_t *)user_data;
@@ -2287,7 +2279,6 @@ static gboolean _profile_quickbutton_pressed(GtkWidget *widget, GdkEvent *event,
   // 1 when closing the widget
   gtk_widget_set_opacity(lib->profile_floating_window, 0.9);
   gtk_widget_show_all(lib->profile_floating_window);
-  g_signal_connect(lib->profile_floating_window, "draw", G_CALLBACK(_profile_popover_draw), user_data);
   return TRUE;
 }
 
@@ -2373,18 +2364,12 @@ void gui_init(dt_view_t *self)
   dt_view_manager_module_toolbox_add(darktable.view_manager, profile_button, DT_VIEW_LIGHTTABLE);
 
   // and the popup window
-  // FIXME: if have to roll it by hand based on gtkpopover then move popover setup code to src/dtgtk, as it gets used a few times in darkroom mode as well
   const int panel_width = dt_conf_get_int("panel_width");
-
   lib->profile_floating_window = gtk_popover_new(profile_button);
   gtk_widget_set_size_request(GTK_WIDGET(lib->profile_floating_window), panel_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
   g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
 #endif
-  // FIXME: this is a hack to make the popover SE corner be near the button, but it's unclear if it'll work in general
-  // y is based on TAIL_HEIGHT from gtkpopover.c
-  const GdkRectangle r = { .x = DT_PIXEL_APPLY_DPI(19)-panel_width/2, .y = DT_PIXEL_APPLY_DPI(9), .width = 0, .height = 0 };
-  gtk_popover_set_pointing_to(GTK_POPOVER(lib->profile_floating_window), &r);
 
   GtkWidget *frame = gtk_frame_new(NULL);
   GtkWidget *event_box = gtk_event_box_new();
