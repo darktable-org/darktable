@@ -1589,11 +1589,11 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "HSV lightness"),
                          DEVELOP_BLEND_HSV_LIGHTNESS);
     _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "HSV color"), DEVELOP_BLEND_HSV_COLOR);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "RGB R-channel"),
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "RGB red channel"),
                          DEVELOP_BLEND_RGB_R);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "RGB G-channel"),
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "RGB green channel"),
                          DEVELOP_BLEND_RGB_G);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "RGB B-channel"),
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "RGB blue channel"),
                          DEVELOP_BLEND_RGB_B);
 
     /** deprecated blend modes: make them available as legacy history stacks might want them */
