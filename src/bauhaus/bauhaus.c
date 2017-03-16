@@ -1900,6 +1900,11 @@ static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *even
     handled = 1;
     delta = -d->scale / 5.0f;
   }
+  else if(event->direction == GDK_SCROLL_SMOOTH)
+  {
+    handled = 1;
+    delta = -event->delta_y * d->scale / 5.0f;
+  }
 
   if(!handled) return FALSE;
 
