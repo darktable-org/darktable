@@ -2271,14 +2271,6 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "realign images to grid", closure);
 }
 
-static gboolean _profile_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_library_t *lib = (dt_library_t *)user_data;
-
-  gtk_widget_show_all(lib->profile_floating_window);
-  return TRUE;
-}
-
 static void display_intent_callback(GtkWidget *combo, gpointer user_data)
 {
   const int pos = dt_bauhaus_combobox_get(combo);
@@ -2357,7 +2349,6 @@ void gui_init(dt_view_t *self)
   // create display profile button
   GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_tooltip_text(profile_button, _("set display profile"));
-  g_signal_connect(G_OBJECT(profile_button), "button-press-event", G_CALLBACK(_profile_quickbutton_pressed), lib);
   dt_view_manager_module_toolbox_add(darktable.view_manager, profile_button, DT_VIEW_LIGHTTABLE);
 
   // and the popup window
@@ -2367,6 +2358,7 @@ void gui_init(dt_view_t *self)
 #if GTK_CHECK_VERSION(3, 16, 0)
   g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
 #endif
+  g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event", G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
