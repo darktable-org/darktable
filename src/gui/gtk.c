@@ -462,9 +462,39 @@ static gboolean draw(GtkWidget *da, cairo_t *cr, gpointer user_data)
 
 static gboolean scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  dt_view_manager_scrolled(darktable.view_manager, event->x, event->y, event->direction == GDK_SCROLL_UP,
-                           event->state & 0xf);
-  gtk_widget_queue_draw(widget);
+  static double acc = 0.0;
+  int amt = 0;
+
+  switch(event->direction)
+  {
+    case GDK_SCROLL_SMOOTH:
+      acc += event->delta_y;
+      if(fabs(acc) >= 1.0)
+      {
+        amt = trunc(acc);
+        acc -= amt;
+      }
+#if GTK_CHECK_VERSION(3, 20, 0)
+      if(gdk_event_is_scroll_stop_event((GdkEvent*)event)) acc = 0.0;
+#endif
+      break;
+    case GDK_SCROLL_UP:
+      amt = -1;
+      break;
+    case GDK_SCROLL_DOWN:
+      amt = 1;
+      break;
+    default:
+      break;
+  }
+
+  if(amt)
+  {
+    dt_view_manager_scrolled(darktable.view_manager, event->x, event->y, amt == -1,
+                             event->state & 0xf);
+    gtk_widget_queue_draw(widget);
+  }
+
   return TRUE;
 }
 
@@ -885,7 +915,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_signal_connect(G_OBJECT(widget), "enter-notify-event", G_CALLBACK(center_enter), NULL);
   g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(button_pressed), NULL);
   g_signal_connect(G_OBJECT(widget), "button-release-event", G_CALLBACK(button_released), NULL);
-  g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(scrolled), NULL);
+  g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(scrolled),
+                   darktable.gui->ui);
   // TODO: left, right, top, bottom:
   // leave-notify-event
 
@@ -1282,7 +1313,7 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_app_paintable(cda, TRUE);
   gtk_widget_set_events(cda, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
                              | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                             | GDK_SCROLL_MASK);
+                             | GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
   gtk_widget_set_can_focus(cda, TRUE);
   gtk_widget_set_visible(cda, TRUE);
 
