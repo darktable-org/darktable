@@ -199,11 +199,11 @@ if (WIN32)
     ${MINGW_PATH}/libwinpthread-1.dll
     ${MINGW_PATH}/libstdc++-6.dll
   #LIBWEBP
-    ${MINGW_PATH}/libwebp-6.dll
-    ${MINGW_PATH}/libwebpdecoder-2.dll
+    ${MINGW_PATH}/libwebp-7.dll
+    ${MINGW_PATH}/libwebpdecoder-3.dll
     ${MINGW_PATH}/libwebpdemux-2.dll
-    ${MINGW_PATH}/libwebpextras-0.dll
-    ${MINGW_PATH}/libwebpmux-2.dll
+    #${MINGW_PATH}/libwebpextras-0.dll
+    ${MINGW_PATH}/libwebpmux-3.dll
   #RTMPDUMP
     ${MINGW_PATH}/librtmp-1.dll
   #GNUTLS
