@@ -808,21 +808,37 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   if(c->selected < 0) return TRUE;
 
   int handled = 0;
-  float dy = 0.0f;
-  if(event->direction == GDK_SCROLL_UP)
+  float dx = 0.0f, dy = 0.0f;
+  switch(event->direction)
   {
-    handled = 1;
-    dy = TONECURVE_DEFAULT_STEP;
-  }
-  if(event->direction == GDK_SCROLL_DOWN)
-  {
-    handled = 1;
-    dy = -TONECURVE_DEFAULT_STEP;
+    case GDK_SCROLL_UP:
+      handled = 1;
+      dy = -TONECURVE_DEFAULT_STEP;
+      break;
+    case GDK_SCROLL_DOWN:
+      handled = 1;
+      dy = TONECURVE_DEFAULT_STEP;
+      break;
+    case GDK_SCROLL_LEFT:
+      handled = 1;
+      dx = TONECURVE_DEFAULT_STEP;
+      break;
+    case GDK_SCROLL_RIGHT:
+      handled = 1;
+      dx = -TONECURVE_DEFAULT_STEP;
+      break;
+    case GDK_SCROLL_SMOOTH:
+      handled = 1;
+      dx = -TONECURVE_DEFAULT_STEP * event->delta_x;
+      dy = TONECURVE_DEFAULT_STEP * event->delta_y;
+      break;
+    default:
+      break;
   }
 
   if(!handled) return TRUE;
 
-  return _move_point_internal(self, widget, 0.0, dy, event->state);
+  return _move_point_internal(self, widget, dx, dy, event->state);
 }
 
 static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
@@ -929,7 +945,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK | GDK_KEY_PRESS_MASK);
+                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                                 | GDK_SMOOTH_SCROLL_MASK | GDK_KEY_PRESS_MASK);
   gtk_widget_set_can_focus(GTK_WIDGET(c->area), TRUE);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_tonecurve_button_press), self);
