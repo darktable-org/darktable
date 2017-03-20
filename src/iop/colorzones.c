@@ -978,9 +978,23 @@ static gboolean colorzones_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  if(event->direction == GDK_SCROLL_UP && c->mouse_radius > 0.2 / DT_IOP_COLORZONES_BANDS)
-    c->mouse_radius *= 0.9; // 0.7;
-  if(event->direction == GDK_SCROLL_DOWN && c->mouse_radius < 1.0) c->mouse_radius *= (1.0 / 0.9); // 1.42;
+  switch(event->direction)
+  {
+    case GDK_SCROLL_UP:
+      if(c->mouse_radius > 0.2 / DT_IOP_COLORZONES_BANDS) c->mouse_radius *= 0.9; // 0.7;
+      break;
+    case GDK_SCROLL_DOWN:
+      if(c->mouse_radius < 1.0) c->mouse_radius *= (1.0 / 0.9); // 1.42;
+      break;
+    case GDK_SCROLL_SMOOTH:
+      if((event->delta_y < 0) && (c->mouse_radius > 0.2 / DT_IOP_COLORZONES_BANDS))
+        c->mouse_radius *= 1.0 + 0.1 * event->delta_y;
+      else if((event->delta_y > 0) && (c->mouse_radius < 1.0))
+        c->mouse_radius *= 1.0 + (0.1 / 0.9) * event->delta_y;
+      break;
+    default:
+      break;
+  }
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -1110,7 +1124,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                             | GDK_SMOOTH_SCROLL_MASK);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(colorzones_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(colorzones_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(colorzones_button_release), self);
