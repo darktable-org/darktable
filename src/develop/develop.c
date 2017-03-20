@@ -1821,6 +1821,9 @@ int dt_dev_wait_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmi
 
   for(int n = 0; n < nloop; n++)
   {
+    if(pipe->shutdown)
+      return TRUE;  // stop waiting if pipe shuts down
+
     if(lock) dt_pthread_mutex_lock(lock);
     const uint64_t probehash = *hash;
     if(lock) dt_pthread_mutex_unlock(lock);
@@ -1896,6 +1899,9 @@ int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
 
   for(int n = 0; n < nloop; n++)
   {
+    if(pipe->shutdown)
+      return TRUE;  // stop waiting if pipe shuts down
+
     if(lock) dt_pthread_mutex_lock(lock);
     const uint64_t probehash = *hash;
     if(lock) dt_pthread_mutex_unlock(lock);

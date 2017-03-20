@@ -233,7 +233,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     if(!f) return;
     while(!feof(f))
     {
-      read = fscanf(f, "%" STR(LINE_SIZE) "[^\n]\n", line);
+      read = fscanf(f, "%" STR(LINE_SIZE) "[^\r\n]\r\n", line);
       if(read > 0)
       {
         char *c = line;
