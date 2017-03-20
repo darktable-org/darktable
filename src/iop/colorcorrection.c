@@ -267,7 +267,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK | GDK_KEY_PRESS_MASK);
+                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                                 | GDK_SMOOTH_SCROLL_MASK | GDK_KEY_PRESS_MASK);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_colorcorrection_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_colorcorrection_button_press),
@@ -474,8 +475,23 @@ static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScrol
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
-  if(event->direction == GDK_SCROLL_UP && p->saturation > -3.0) p->saturation += 0.1;
-  if(event->direction == GDK_SCROLL_DOWN && p->saturation < 3.0) p->saturation -= 0.1;
+
+  float s = p->saturation;
+  switch(event->direction)
+  {
+    case GDK_SCROLL_UP:
+      s += 0.1;
+      break;
+    case GDK_SCROLL_DOWN:
+      s -= 0.1;
+      break;
+    case GDK_SCROLL_SMOOTH:
+      s -= 0.1 * event->delta_y;
+      break;
+    default:
+      break;
+  }
+  p->saturation = CLAMP(s, -3.0, 3.0);
   dt_bauhaus_slider_set(g->slider, p->saturation);
   gtk_widget_queue_draw(widget);
   return TRUE;
