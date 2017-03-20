@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-26 19:59+0100\n"
-"PO-Revision-Date: 2017-02-26 20:05+0100\n"
+"POT-Creation-Date: 2017-03-14 21:20+0100\n"
+"PO-Revision-Date: 2017-03-14 21:20+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -950,7 +950,7 @@ msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
 "abandonnée..."
 
-#: ../src/common/collection.c:847 ../src/develop/lightroom.c:919
+#: ../src/common/collection.c:853 ../src/develop/lightroom.c:919
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:451
 #: ../src/iop/channelmixer.c:462 ../src/iop/colorbalance.c:597
 #: ../src/iop/temperature.c:1329 ../src/libs/collect.c:979
@@ -958,13 +958,13 @@ msgstr ""
 msgid "red"
 msgstr "rouge"
 
-#: ../src/common/collection.c:849 ../src/develop/lightroom.c:921
+#: ../src/common/collection.c:855 ../src/develop/lightroom.c:921
 #: ../src/iop/temperature.c:1320 ../src/libs/collect.c:983
 #: ../src/libs/collect.c:984 ../src/libs/collect.c:985
 msgid "yellow"
 msgstr "jaune"
 
-#: ../src/common/collection.c:851 ../src/develop/lightroom.c:923
+#: ../src/common/collection.c:857 ../src/develop/lightroom.c:923
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:452
 #: ../src/iop/channelmixer.c:468 ../src/iop/colorbalance.c:604
 #: ../src/iop/temperature.c:1317 ../src/iop/temperature.c:1330
@@ -973,7 +973,7 @@ msgstr "jaune"
 msgid "green"
 msgstr "vert"
 
-#: ../src/common/collection.c:853 ../src/develop/lightroom.c:925
+#: ../src/common/collection.c:859 ../src/develop/lightroom.c:925
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
 #: ../src/iop/channelmixer.c:474 ../src/iop/colorbalance.c:611
 #: ../src/iop/temperature.c:1331 ../src/libs/collect.c:991
@@ -981,27 +981,27 @@ msgstr "vert"
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:855 ../src/libs/collect.c:995
+#: ../src/common/collection.c:861 ../src/libs/collect.c:995
 #: ../src/libs/collect.c:996 ../src/libs/collect.c:997
 msgid "purple"
 msgstr "violet"
 
-#: ../src/common/collection.c:864 ../src/libs/collect.c:957
+#: ../src/common/collection.c:870 ../src/libs/collect.c:957
 #: ../src/libs/collect.c:958 ../src/libs/collect.c:959
 msgid "altered"
 msgstr "développées"
 
-#: ../src/common/collection.c:870 ../src/libs/collect.c:968
+#: ../src/common/collection.c:876 ../src/libs/collect.c:968
 #: ../src/libs/collect.c:969 ../src/libs/collect.c:970
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:1234
+#: ../src/common/collection.c:1240
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "« %d » image sur « %d » (#%d) sélectionnée dans la collection courante"
 
-#: ../src/common/collection.c:1240
+#: ../src/common/collection.c:1246
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -1097,22 +1097,22 @@ msgstr "erreur pendant l'impression de l'image %d sur « %s »"
 msgid "printing image %d on `%s'"
 msgstr "impression de l'image %d sur « %s »"
 
-#: ../src/common/darktable.c:243
+#: ../src/common/darktable.c:247
 #, c-format
 msgid "found strange path `%s'"
 msgstr "chemin étrange « %s »"
 
-#: ../src/common/darktable.c:260
+#: ../src/common/darktable.c:264
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erreur de chargement du dossier « %s »"
 
-#: ../src/common/darktable.c:283
+#: ../src/common/darktable.c:287
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:296 ../src/libs/import.c:845
+#: ../src/common/darktable.c:300 ../src/libs/import.c:845
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
@@ -1268,7 +1268,7 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/imageio.c:567 ../src/common/mipmap_cache.c:1032
+#: ../src/common/imageio.c:567 ../src/common/mipmap_cache.c:1038
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image « %s » non disponible!"
@@ -1315,7 +1315,7 @@ msgstr "distribution générique"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "le profil de gestion du bruit « %s » n'est pas valide"
 
-#: ../src/common/opencl.c:737
+#: ../src/common/opencl.c:736
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
@@ -1431,7 +1431,7 @@ msgstr "m"
 
 #: ../src/common/variables.c:222 ../src/common/variables.c:236
 #: ../src/common/variables.c:250 ../src/common/variables.c:264
-#: ../src/common/variables.c:278 ../src/iop/basecurve.c:1882
+#: ../src/common/variables.c:278 ../src/iop/basecurve.c:1931
 #: ../src/iop/clipping.c:1574 ../src/iop/clipping.c:1864
 #: ../src/iop/clipping.c:1882 ../src/iop/clipping.c:2022
 #: ../src/iop/clipping.c:2049 ../src/iop/colorreconstruction.c:1402
@@ -1514,7 +1514,7 @@ msgid_plural "importing %d images from camera"
 msgstr[0] "importation de %d image depuis l'appareil photo"
 msgstr[1] "importation de %d images depuis l'appareil photo"
 
-#: ../src/control/jobs/camera_jobs.c:391 ../src/gui/camera_import_dialog.c:204
+#: ../src/control/jobs/camera_jobs.c:391 ../src/gui/camera_import_dialog.c:208
 msgid "import images from camera"
 msgstr "importer des images depuis le boîtier"
 
@@ -2333,12 +2333,12 @@ msgstr "descendre"
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:932 ../src/develop/imageop.c:1925
+#: ../src/develop/imageop.c:932 ../src/develop/imageop.c:1923
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:932 ../src/develop/imageop.c:1925
+#: ../src/develop/imageop.c:932 ../src/develop/imageop.c:1923
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
@@ -2348,7 +2348,7 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:910 ../src/gui/presets.c:192
 #: ../src/gui/presets.c:299 ../src/gui/presets.c:641
 #: ../src/iop/temperature.c:1380 ../src/libs/import.c:562 ../src/libs/lib.c:310
-#: ../src/libs/lib.c:335 ../src/libs/lib.c:1182
+#: ../src/libs/lib.c:335 ../src/libs/lib.c:1180
 msgid "preset"
 msgstr "pré-réglage"
 
@@ -2378,7 +2378,7 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:1895
+#: ../src/develop/imageop.c:1893
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -2386,12 +2386,12 @@ msgstr ""
 "actions instances multiples\n"
 "clic-milieu créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:1904 ../src/libs/lib.c:1023
+#: ../src/develop/imageop.c:1902 ../src/libs/lib.c:1021
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1912 ../src/gui/preferences.c:443
-#: ../src/libs/lib.c:1035
+#: ../src/develop/imageop.c:1910 ../src/gui/preferences.c:443
+#: ../src/libs/lib.c:1033
 msgid "presets"
 msgstr "pré-réglages"
 
@@ -2782,52 +2782,52 @@ msgstr "lua"
 msgid "deleting preset for obsolete module"
 msgstr "suppression du pré-réglages pour le module obsolète"
 
-#: ../src/gui/camera_import_dialog.c:175
+#: ../src/gui/camera_import_dialog.c:179
 msgid "store value as default"
 msgstr "enregistrer la valeur en tant que défaut"
 
-#: ../src/gui/camera_import_dialog.c:181
+#: ../src/gui/camera_import_dialog.c:185
 msgid "reset value to default"
 msgstr "réinitialiser à la valeur par défaut"
 
-#: ../src/gui/camera_import_dialog.c:205 ../src/libs/geotagging.c:400
+#: ../src/gui/camera_import_dialog.c:209 ../src/libs/geotagging.c:400
 msgid "cancel"
 msgstr "annuler"
 
-#: ../src/gui/camera_import_dialog.c:205
+#: ../src/gui/camera_import_dialog.c:209
 msgctxt "camera import"
 msgid "import"
 msgstr "importation"
 
 #. Top info
-#: ../src/gui/camera_import_dialog.c:219
+#: ../src/gui/camera_import_dialog.c:223
 msgid "please wait while prefetching thumbnails of images from camera..."
 msgstr ""
 "merci de patienter pendant la récupération des miniatures de votre boîtier..."
 
-#: ../src/gui/camera_import_dialog.c:226 ../src/libs/session.c:98
+#: ../src/gui/camera_import_dialog.c:230 ../src/libs/session.c:98
 msgid "jobcode"
 msgstr "code projet"
 
-#: ../src/gui/camera_import_dialog.c:240
+#: ../src/gui/camera_import_dialog.c:244
 msgid "thumbnail"
 msgstr "aperçu"
 
-#: ../src/gui/camera_import_dialog.c:244
+#: ../src/gui/camera_import_dialog.c:248
 msgid "storage file"
 msgstr "fichier de stockage"
 
 #. general settings
-#: ../src/gui/camera_import_dialog.c:263
+#: ../src/gui/camera_import_dialog.c:267
 msgid "general"
 msgstr "général"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:452
+#: ../src/gui/camera_import_dialog.c:270 ../src/libs/import.c:452
 msgid "ignore JPEG files"
 msgstr "ignorer les fichiers JPEG"
 
-#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:453
+#: ../src/gui/camera_import_dialog.c:272 ../src/libs/import.c:453
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -2835,11 +2835,11 @@ msgstr ""
 "les fichiers possédant une extension .jpg ou .jpeg ne sont pas importés. "
 "cela peut être utile lorsqu'un dossier possède des fichiers raw+JPEG."
 
-#: ../src/gui/camera_import_dialog.c:277
+#: ../src/gui/camera_import_dialog.c:281
 msgid "override today's date"
 msgstr "surcharger la date actuelle"
 
-#: ../src/gui/camera_import_dialog.c:280
+#: ../src/gui/camera_import_dialog.c:284
 msgid ""
 "check this, if you want to override the timestamp used when expanding "
 "variables:\n"
@@ -2851,15 +2851,15 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 
-#: ../src/gui/camera_import_dialog.c:296
+#: ../src/gui/camera_import_dialog.c:300
 msgid "images"
 msgstr "images"
 
-#: ../src/gui/camera_import_dialog.c:297
+#: ../src/gui/camera_import_dialog.c:301
 msgid "settings"
 msgstr "paramètres"
 
-#: ../src/gui/camera_import_dialog.c:491
+#: ../src/gui/camera_import_dialog.c:495
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
@@ -2867,7 +2867,7 @@ msgstr ""
 "sélectionner les images de la liste ci-dessous que vous souhaitez importer "
 "dans une nouvelle pellicule"
 
-#: ../src/gui/camera_import_dialog.c:542
+#: ../src/gui/camera_import_dialog.c:546
 msgid "please use YYYY-MM-DD format for date override"
 msgstr "utiliser AAAA-MM-JJ pour la surcharge de date"
 
@@ -4645,25 +4645,25 @@ msgstr "spline cubique"
 msgid "base curve"
 msgstr "courbe de base"
 
-#: ../src/iop/basecurve.c:1867
+#: ../src/iop/basecurve.c:1916
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
 
-#: ../src/iop/basecurve.c:1872 ../src/iop/lens.c:2220
+#: ../src/iop/basecurve.c:1921 ../src/iop/lens.c:2220
 #: ../src/iop/vignette.c:1146 ../src/iop/watermark.c:1349
 msgid "scale"
 msgstr "échelle"
 
-#: ../src/iop/basecurve.c:1873 ../src/iop/profile_gamma.c:321
+#: ../src/iop/basecurve.c:1922 ../src/iop/profile_gamma.c:321
 #: ../src/iop/tonecurve.c:435
 msgid "linear"
 msgstr "linéaire"
 
-#: ../src/iop/basecurve.c:1874
+#: ../src/iop/basecurve.c:1923
 msgid "logarithmic"
 msgstr "logarithmique"
 
-#: ../src/iop/basecurve.c:1875
+#: ../src/iop/basecurve.c:1924
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -4671,19 +4671,19 @@ msgstr ""
 "échelle pour le graphe, utilisez une échelle logarithmique pour une "
 "meilleure précision près des noirs"
 
-#: ../src/iop/basecurve.c:1881
+#: ../src/iop/basecurve.c:1930
 msgid "fusion"
 msgstr "fusion"
 
-#: ../src/iop/basecurve.c:1883
+#: ../src/iop/basecurve.c:1932
 msgid "two exposures"
 msgstr "deux expositions"
 
-#: ../src/iop/basecurve.c:1884
+#: ../src/iop/basecurve.c:1933
 msgid "three exposures"
 msgstr "trois expositions"
 
-#: ../src/iop/basecurve.c:1885
+#: ../src/iop/basecurve.c:1934
 msgid ""
 "fuse this image stopped up/down a couple of times with itself, to compress "
 "high dynamic range. expose for the highlights before use."
@@ -4692,15 +4692,15 @@ msgstr ""
 "d'exposition pour compresser l'étendue dynamique. exposer pour les hautes "
 "lumières avant utilisation."
 
-#: ../src/iop/basecurve.c:1891
+#: ../src/iop/basecurve.c:1940
 msgid "how many stops to shift the individual exposures apart"
 msgstr "nombre de \"stop\" de décalage entre les différents expositions"
 
-#: ../src/iop/basecurve.c:1892
+#: ../src/iop/basecurve.c:1941
 msgid "exposure shift"
 msgstr "décalage exposition"
 
-#: ../src/iop/basecurve.c:1899
+#: ../src/iop/basecurve.c:1948
 msgid ""
 "whether to shift exposure up or down (-1: reduce highlight, +1: reduce "
 "shadows)"
@@ -4708,7 +4708,7 @@ msgstr ""
 "pour décaler l'exposition positivement ou négativement (-1 : réduire les "
 "hautes lumières, +1 réduire les ombres)"
 
-#: ../src/iop/basecurve.c:1901
+#: ../src/iop/basecurve.c:1950
 msgid "exposure bias"
 msgstr "bias d'exposition"
 
@@ -5689,45 +5689,45 @@ msgctxt "accel"
 msgid "acquire as target"
 msgstr "acquérir cible"
 
-#: ../src/iop/colormapping.c:1088
+#: ../src/iop/colormapping.c:1095
 msgid "source clusters:"
 msgstr "groupes sources:"
 
-#: ../src/iop/colormapping.c:1097
+#: ../src/iop/colormapping.c:1104
 msgid "target clusters:"
 msgstr "groupes cibles:"
 
-#: ../src/iop/colormapping.c:1110
+#: ../src/iop/colormapping.c:1117
 msgid "acquire as source"
 msgstr "acquérir source"
 
-#: ../src/iop/colormapping.c:1112
+#: ../src/iop/colormapping.c:1119
 msgid "analyze this image as a source image"
 msgstr "analyser cette image comme source"
 
-#: ../src/iop/colormapping.c:1116
+#: ../src/iop/colormapping.c:1123
 msgid "acquire as target"
 msgstr "acquérir cible"
 
-#: ../src/iop/colormapping.c:1118
+#: ../src/iop/colormapping.c:1125
 msgid "analyze this image as a target image"
 msgstr "analyser cette image comme cible"
 
-#: ../src/iop/colormapping.c:1123
+#: ../src/iop/colormapping.c:1130
 msgid "number of clusters"
 msgstr "nombre de groupes"
 
-#: ../src/iop/colormapping.c:1125
+#: ../src/iop/colormapping.c:1132
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
 "nombre de groupes à trouver dans cette image.\n"
 "réinitialise tous les groupes lors de changement de valeur"
 
-#: ../src/iop/colormapping.c:1130
+#: ../src/iop/colormapping.c:1137
 msgid "color dominance"
 msgstr "dominante couleur"
 
-#: ../src/iop/colormapping.c:1131
+#: ../src/iop/colormapping.c:1138
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
@@ -5735,11 +5735,11 @@ msgstr ""
 "mappage des groupes. faible valeur: fonction de la proximité des couleurs, "
 "haute valeur: fonction de la dominante des couleurs"
 
-#: ../src/iop/colormapping.c:1138
+#: ../src/iop/colormapping.c:1145
 msgid "histogram equalization"
 msgstr "égalisation d'histogramme"
 
-#: ../src/iop/colormapping.c:1139
+#: ../src/iop/colormapping.c:1146
 msgid "level of histogram equalization"
 msgstr "niveau d'égalisation de l'histogramme"
 
@@ -5826,8 +5826,8 @@ msgstr "teinte"
 #: ../src/iop/colorreconstruction.c:624 ../src/iop/colorreconstruction.c:1113
 #: ../src/iop/globaltonemap.c:183 ../src/iop/globaltonemap.c:380
 #: ../src/iop/levels.c:255
-msgid "inconsistent result"
-msgstr " résultat incohérent"
+msgid "inconsistent output"
+msgstr "résultat incohérent"
 
 #: ../src/iop/colorreconstruction.c:662
 msgid "module `color reconstruction' failed"
