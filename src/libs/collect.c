@@ -367,7 +367,7 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_c
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   g_signal_connect(menuitem, "activate", (GCallback)view_popup_menu_onRemove, treeview);
 
-  gtk_widget_show_all(menu);
+  gtk_widget_show_all(GTK_WIDGET(menu));
 
 #if GTK_CHECK_VERSION(3, 22, 0)
   gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
@@ -1638,13 +1638,13 @@ static gboolean popup_button_callback(GtkWidget *widget, GdkEventButton *event, 
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_change_and_not), d);
   }
 
+  gtk_widget_show_all(GTK_WIDGET(menu));
+
 #if GTK_CHECK_VERSION(3, 22, 0)
   gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
 #else
   gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event->button, event->time);
 #endif
-
-  gtk_widget_show_all(menu);
 
   return TRUE;
 }
