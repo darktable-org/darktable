@@ -196,7 +196,7 @@ static int read_pref(lua_State *L)
       lua_pushboolean(L, dt_conf_get_bool(pref_name));
       break;
     case pref_int:
-      lua_pushnumber(L, dt_conf_get_int(pref_name));
+      lua_pushinteger(L, dt_conf_get_int(pref_name));
       break;
     case pref_float:
       lua_pushnumber(L, dt_conf_get_float(pref_name));

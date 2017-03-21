@@ -527,7 +527,7 @@ static int max_snapshot_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  lua_pushnumber(L, d->size);
+  lua_pushinteger(L, d->size);
   return 1;
 }
 
@@ -561,7 +561,7 @@ static int snapshots_length(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  lua_pushnumber(L, d->num_snapshots);
+  lua_pushinteger(L, d->num_snapshots);
   return 1;
 }
 
