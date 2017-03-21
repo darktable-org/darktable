@@ -128,7 +128,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(self->widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
                                       | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
                                       //                         GDK_STRUCTURE_MASK |
-                                      GDK_SCROLL | GDK_SCROLL_MASK);
+                                      GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
 
   /* connect callbacks */
   gtk_widget_set_tooltip_text(self->widget, _("drag to change exposure,\ndoubleclick resets"));
@@ -606,17 +606,33 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
   float ce = dt_dev_exposure_get_exposure(darktable.develop);
   float cb = dt_dev_exposure_get_black(darktable.develop);
 
-  if(event->direction == GDK_SCROLL_UP && d->highlight == 2)
-    dt_dev_exposure_set_exposure(darktable.develop, ce + 0.15);
+  int handled = FALSE;
+  double delta = 0.0;
+  switch(event->direction)
+  {
+    case GDK_SCROLL_UP:
+      delta = -1.0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_DOWN:
+      delta = 1.0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_SMOOTH:
+      delta = event->delta_y;
+      handled = TRUE;
+      break;
+    default:
+      break;
+  }
 
-  if(event->direction == GDK_SCROLL_DOWN && d->highlight == 2)
-    dt_dev_exposure_set_exposure(darktable.develop, ce - 0.15);
-
-  if(event->direction == GDK_SCROLL_UP && d->highlight == 1)
-    dt_dev_exposure_set_black(darktable.develop, cb - 0.001);
-
-  if(event->direction == GDK_SCROLL_DOWN && d->highlight == 1)
-    dt_dev_exposure_set_black(darktable.develop, cb + 0.001);
+  if(handled)
+  {
+    if(d->highlight == 2)
+      dt_dev_exposure_set_exposure(darktable.develop, ce - 0.15 * delta);
+    else if(d->highlight == 1)
+      dt_dev_exposure_set_black(darktable.develop, cb + 0.001 * delta);
+  }
 
   return TRUE;
 }
