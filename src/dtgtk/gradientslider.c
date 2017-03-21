@@ -295,7 +295,7 @@ static gboolean _gradient_slider_button_release(GtkWidget *widget, GdkEventButto
   return TRUE;
 }
 
-static gboolean _gradient_slider_add_delta_internal(GtkWidget *widget, float delta, guint state)
+static gboolean _gradient_slider_add_delta_internal(GtkWidget *widget, gdouble delta, guint state)
 {
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
 
@@ -336,17 +336,24 @@ static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll 
   if(gslider->selected == -1) return TRUE;
 
   int handled = 0;
-  float delta = 0.0f;
+  gdouble delta = 0.0;
 
-  if(event->direction == GDK_SCROLL_UP)
+  switch(event->direction)
   {
-    handled = 1;
-    delta = gslider->increment;
-  }
-  else if(event->direction == GDK_SCROLL_DOWN)
-  {
-    handled = 1;
-    delta = -gslider->increment;
+    case GDK_SCROLL_UP:
+      handled = 1;
+      delta = gslider->increment;
+      break;
+    case GDK_SCROLL_DOWN:
+      handled = 1;
+      delta = -gslider->increment;
+      break;
+    case GDK_SCROLL_SMOOTH:
+      handled = 1;
+      delta = -event->delta_y * gslider->increment;
+      break;
+    default:
+      break;
   }
 
   if(!handled) return TRUE;
@@ -429,7 +436,8 @@ static void _gradient_slider_realize(GtkWidget *widget)
   attributes.wclass = GDK_INPUT_OUTPUT;
   attributes.event_mask = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK
                           | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                          | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK;
+                          | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_POINTER_MOTION_MASK
+                          | GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK;
   attributes_mask = GDK_WA_X | GDK_WA_Y;
 
   gtk_widget_set_can_focus(GTK_WIDGET(widget), TRUE);
