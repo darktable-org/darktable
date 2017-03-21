@@ -151,9 +151,9 @@ static int database_len(lua_State *L)
   sqlite3_stmt *stmt = NULL;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM main.images ", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
-    lua_pushnumber(L, sqlite3_column_int(stmt, 0));
+    lua_pushinteger(L, sqlite3_column_int(stmt, 0));
   else
-    lua_pushnumber(L, 0);
+    lua_pushinteger(L, 0);
   sqlite3_finalize(stmt);
   return 1;
 }
@@ -186,7 +186,7 @@ static int database_numindex(lua_State *L)
 
 static int collection_len(lua_State *L)
 {
-  lua_pushnumber(L, dt_collection_get_count(darktable.collection));
+  lua_pushinteger(L, dt_collection_get_count(darktable.collection));
   return 1;
 }
 

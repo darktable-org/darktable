@@ -116,7 +116,7 @@ static void to_progress_double(lua_State *L, luaA_Type type_id, void *c_out, int
 }
 
 /************************************/
-/* METATBLE CALLBACSK FOR AUTOTYPES */
+/* METATBLE CALLBACKS FOR AUTOTYPES */
 /************************************/
 static int autotype_next(lua_State *L)
 {
@@ -154,8 +154,8 @@ static int autotype_next(lua_State *L)
     if(key)
     {
       lua_pop(L, 1);
-      lua_pushnumber(L, key);
-      lua_pushnumber(L, key);
+      lua_pushinteger(L, key);
+      lua_pushinteger(L, key);
       lua_gettable(L, -3);
       return 2;
     }
@@ -355,7 +355,7 @@ static int int_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
   luaL_getmetatable(L, luaA_typename(L, type_id));
   luaL_getsubtable(L, -1, "__values");
   int singleton = *(int *)cin;
-  lua_pushnumber(L, singleton);
+  lua_pushinteger(L, singleton);
   lua_gettable(L, -2);
   if(lua_isnoneornil(L, -1))
   {
@@ -630,7 +630,7 @@ static void init_metatable(lua_State *L, luaA_Type type_id)
   lua_pushstring(L, luaA_typename(L, type_id));
   lua_setfield(L, -2, "__luaA_TypeName");
 
-  lua_pushnumber(L, type_id);
+  lua_pushinteger(L, type_id);
   lua_setfield(L, -2, "__luaA_Type");
 
   lua_pushvalue(L, -1);
