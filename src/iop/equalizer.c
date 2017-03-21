@@ -674,24 +674,33 @@ static gboolean dt_iop_equalizer_scrolled(GtkWidget *widget, GdkEventScroll *eve
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
+
+  int handled = FALSE;
+  double delta = 0.0;
   switch(event->direction)
   {
     case GDK_SCROLL_UP:
-      if(c->mouse_radius > 0.25 / DT_IOP_EQUALIZER_BANDS) c->mouse_radius *= 0.9; // 0.7;
+      delta = -1.0;
+      handled = TRUE;
+      break;
       break;
     case GDK_SCROLL_DOWN:
-      if(c->mouse_radius < 1.0) c->mouse_radius *= (1.0 / 0.9); // 1.42;
+      delta = 1.0;
+      handled = TRUE;
       break;
     case GDK_SCROLL_SMOOTH:
-      if((event->delta_y < 0) && (c->mouse_radius > 0.25 / DT_IOP_EQUALIZER_BANDS))
-        c->mouse_radius *= 1.0 + 0.1 * event->delta_y;
-      else if((event->delta_y > 0) && (c->mouse_radius < 1.0))
-        c->mouse_radius *= 1.0 + (0.1 / 0.9) * event->delta_y;
+      delta = event->delta_y;
+      handled = TRUE;
       break;
     default:
       break;
   }
-  gtk_widget_queue_draw(widget);
+
+  if(handled)
+  {
+    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta), 0.25 / DT_IOP_EQUALIZER_BANDS, 1.0);
+    gtk_widget_queue_draw(widget);
+  }
   return TRUE;
 }
 
