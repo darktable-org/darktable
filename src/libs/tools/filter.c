@@ -302,27 +302,9 @@ static void _lib_filter_compare_button_changed(GtkDarktableToggleButton *widget,
 
 static gboolean _comparator_scolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  static double acc = 0.0;
-  switch(event->direction)
-  {
-    case GDK_SCROLL_UP:
-      _change_comparator(GTK_WIDGET(widget), user_data, -1);
-      break;
-    case GDK_SCROLL_DOWN:
-      _change_comparator(GTK_WIDGET(widget), user_data, 1);
-      break;
-    case GDK_SCROLL_SMOOTH:
-      acc += event->delta_y;
-      if(fabs(acc) >= 1.0)
-      {
-        int change = trunc(acc);
-        acc -= change;
-        _change_comparator(GTK_WIDGET(widget), user_data, change);
-      }
-      break;
-    default:
-      break;
-  }
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+    _change_comparator(GTK_WIDGET(widget), user_data, delta_y);
   return TRUE;
 }
 

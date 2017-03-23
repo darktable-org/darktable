@@ -486,37 +486,14 @@ static gboolean _lib_filmstrip_motion_notify_callback(GtkWidget *w, GdkEventMoti
 
 static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, gpointer user_data)
 {
-  static double acc = 0.0;
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
   /* change the offset */
-  int delta = 0;
-  switch(e->direction)
+  int delta_x, delta_y;
+  if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
   {
-    case GDK_SCROLL_UP:
-    case GDK_SCROLL_LEFT:
-      delta = -1;
-      break;
-    case GDK_SCROLL_DOWN:
-    case GDK_SCROLL_RIGHT:
-      delta = 1;
-      break;
-    case GDK_SCROLL_SMOOTH:
-      acc += e->delta_y + e->delta_x;
-      delta = trunc(acc);
-      acc -= delta;
-#if GTK_CHECK_VERSION(3, 20, 0)
-      if(gdk_event_is_scroll_stop_event((GdkEvent*)e)) acc = 0.0;
-#endif
-      break;
-    default:
-      break;
-  }
-
-  if(delta)
-  {
-    strip->offset = CLAMP(strip->offset + delta, 0, strip->collection_count-1);
+    strip->offset = CLAMP(strip->offset + delta_x + delta_y, 0, strip->collection_count-1);
     gtk_widget_queue_draw(self->widget);
   }
 

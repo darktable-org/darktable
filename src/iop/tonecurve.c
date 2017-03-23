@@ -807,38 +807,15 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
 
   if(c->selected < 0) return TRUE;
 
-  int handled = 0;
-  float dx = 0.0f, dy = 0.0f;
-  switch(event->direction)
+  gdouble delta_x, delta_y;
+  if(dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
   {
-    case GDK_SCROLL_UP:
-      handled = 1;
-      dy = -TONECURVE_DEFAULT_STEP;
-      break;
-    case GDK_SCROLL_DOWN:
-      handled = 1;
-      dy = TONECURVE_DEFAULT_STEP;
-      break;
-    case GDK_SCROLL_LEFT:
-      handled = 1;
-      dx = TONECURVE_DEFAULT_STEP;
-      break;
-    case GDK_SCROLL_RIGHT:
-      handled = 1;
-      dx = -TONECURVE_DEFAULT_STEP;
-      break;
-    case GDK_SCROLL_SMOOTH:
-      handled = 1;
-      dx = -TONECURVE_DEFAULT_STEP * event->delta_x;
-      dy = TONECURVE_DEFAULT_STEP * event->delta_y;
-      break;
-    default:
-      break;
+    delta_x *= -TONECURVE_DEFAULT_STEP;
+    delta_y *= TONECURVE_DEFAULT_STEP;
+    return _move_point_internal(self, widget, delta_x, delta_y, event->state);
   }
 
-  if(!handled) return TRUE;
-
-  return _move_point_internal(self, widget, dx, dy, event->state);
+  return TRUE;
 }
 
 static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)

@@ -335,30 +335,14 @@ static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll 
 
   if(gslider->selected == -1) return TRUE;
 
-  int handled = 0;
-  gdouble delta = 0.0;
-
-  switch(event->direction)
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
-    case GDK_SCROLL_UP:
-      handled = 1;
-      delta = gslider->increment;
-      break;
-    case GDK_SCROLL_DOWN:
-      handled = 1;
-      delta = -gslider->increment;
-      break;
-    case GDK_SCROLL_SMOOTH:
-      handled = 1;
-      delta = -event->delta_y * gslider->increment;
-      break;
-    default:
-      break;
+    delta_y *= -gslider->increment;
+    return _gradient_slider_add_delta_internal(widget, delta_y, event->state);
   }
 
-  if(!handled) return TRUE;
-
-  return _gradient_slider_add_delta_internal(widget, delta, event->state);
+  return TRUE;
 }
 
 static gboolean _gradient_slider_key_press_event(GtkWidget *widget, GdkEventKey *event)

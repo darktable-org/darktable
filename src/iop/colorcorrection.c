@@ -476,24 +476,14 @@ static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScrol
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
 
-  float s = p->saturation;
-  switch(event->direction)
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
-    case GDK_SCROLL_UP:
-      s += 0.1;
-      break;
-    case GDK_SCROLL_DOWN:
-      s -= 0.1;
-      break;
-    case GDK_SCROLL_SMOOTH:
-      s -= 0.1 * event->delta_y;
-      break;
-    default:
-      break;
+     p->saturation = CLAMP(p->saturation - 0.1 * delta_y, -3.0, 3.0);
+     dt_bauhaus_slider_set(g->slider, p->saturation);
+     gtk_widget_queue_draw(widget);
   }
-  p->saturation = CLAMP(s, -3.0, 3.0);
-  dt_bauhaus_slider_set(g->slider, p->saturation);
-  gtk_widget_queue_draw(widget);
+
   return TRUE;
 }
 

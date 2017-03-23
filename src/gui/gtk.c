@@ -256,6 +256,110 @@ static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpoi
   return TRUE;
 }
 
+gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x, gdouble *delta_y)
+{
+  gboolean handled = FALSE;
+  switch(event->direction)
+  {
+    // is one-unit cardinal, e.g. from a mouse scroll wheel
+    case GDK_SCROLL_LEFT:
+      if(delta_x) *delta_x = -1.0;
+      if(delta_y) *delta_y = 0.0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_RIGHT:
+      if(delta_x) *delta_x = 1.0;
+      if(delta_y) *delta_y = 0.0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_UP:
+      if(delta_x) *delta_x = 0.0;
+      if(delta_y) *delta_y = -1.0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_DOWN:
+      if(delta_x) *delta_x = 0.0;
+      if(delta_y) *delta_y = 1.0;
+      handled = TRUE;
+      break;
+    // is trackpad (or touch) scroll
+    case GDK_SCROLL_SMOOTH:
+      if(delta_x) *delta_x = event->delta_x;
+      if(delta_y) *delta_y = event->delta_y;
+      handled = TRUE;
+    default:
+      break;
+    }
+  return handled;
+}
+
+gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y)
+{
+  // accumulates scrolling regardless of source or the widget being scrolled
+  static gdouble acc_x = 0.0, acc_y = 0.0;
+  gboolean handled = FALSE;
+
+  switch(event->direction)
+  {
+    // is one-unit cardinal, e.g. from a mouse scroll wheel
+    case GDK_SCROLL_LEFT:
+      if(delta_x) *delta_x = -1;
+      if(delta_y) *delta_y = 0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_RIGHT:
+      if(delta_x) *delta_x = 1;
+      if(delta_y) *delta_y = 0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_UP:
+      if(delta_x) *delta_x = 0;
+      if(delta_y) *delta_y = -1;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_DOWN:
+      if(delta_x) *delta_x = 0;
+      if(delta_y) *delta_y = 1;
+      handled = TRUE;
+      break;
+    // is trackpad (or touch) scroll
+    case GDK_SCROLL_SMOOTH:
+#if GTK_CHECK_VERSION(3, 20, 0)
+      // stop events reset accumulated delta
+      if(event->is_stop)
+      {
+        acc_x = acc_y = 0.0;
+        break;
+      }
+#endif
+      // accumulate trackpad/touch scrolls until they make a unit
+      // scroll, and only then tell caller that there is a scroll to
+      // handle
+      acc_x += event->delta_x;
+      acc_y += event->delta_y;
+      if(fabs(acc_x) >= 1.0)
+      {
+        gdouble amt = trunc(acc_x);
+        acc_x -= amt;
+        if(delta_x) *delta_x = (int)amt;
+        if(delta_y) *delta_y = 0;
+        handled = TRUE;
+      }
+      if(fabs(acc_y) >= 1.0)
+      {
+        gdouble amt = trunc(acc_y);
+        acc_y -= amt;
+        if(delta_x && !handled) *delta_x = 0;
+        if(delta_y) *delta_y = (int)amt;
+        handled = TRUE;
+      }
+      break;
+    default:
+      break;
+  }
+  return handled;
+}
+
 static gboolean _widget_focus_in_block_key_accelerators(GtkWidget *widget, GdkEventFocus *event, gpointer data)
 {
   dt_control_key_accelerators_off(darktable.control);
@@ -462,35 +566,11 @@ static gboolean draw(GtkWidget *da, cairo_t *cr, gpointer user_data)
 
 static gboolean scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  static double acc = 0.0;
-  int amt = 0;
-
-  switch(event->direction)
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    case GDK_SCROLL_SMOOTH:
-      acc += event->delta_y;
-      if(fabs(acc) >= 1.0)
-      {
-        amt = trunc(acc);
-        acc -= amt;
-      }
-#if GTK_CHECK_VERSION(3, 20, 0)
-      if(gdk_event_is_scroll_stop_event((GdkEvent*)event)) acc = 0.0;
-#endif
-      break;
-    case GDK_SCROLL_UP:
-      amt = -1;
-      break;
-    case GDK_SCROLL_DOWN:
-      amt = 1;
-      break;
-    default:
-      break;
-  }
-
-  if(amt)
-  {
-    dt_view_manager_scrolled(darktable.view_manager, event->x, event->y, amt == -1,
+    dt_view_manager_scrolled(darktable.view_manager, event->x, event->y,
+                             delta_y < 0,
                              event->state & 0xf);
     gtk_widget_queue_draw(widget);
   }
@@ -915,8 +995,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_signal_connect(G_OBJECT(widget), "enter-notify-event", G_CALLBACK(center_enter), NULL);
   g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(button_pressed), NULL);
   g_signal_connect(G_OBJECT(widget), "button-release-event", G_CALLBACK(button_released), NULL);
-  g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(scrolled),
-                   darktable.gui->ui);
+  g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(scrolled), NULL);
   // TODO: left, right, top, bottom:
   // leave-notify-event
 
