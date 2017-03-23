@@ -1030,35 +1030,16 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, g
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
-  const float interval = 0.002; // Distance moved for each scroll event
-  gboolean updated = FALSE;
-  float new_position = 0;
-
   if(c->dragging)
   {
     return FALSE;
   }
 
-  switch(event->direction)
+  const float interval = 0.002; // Distance moved for each scroll event
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
-    case GDK_SCROLL_UP:
-      new_position = p->levels[c->handle_move] + interval;
-      updated = TRUE;
-      break;
-    case GDK_SCROLL_DOWN:
-      new_position = p->levels[c->handle_move] - interval;
-      updated = TRUE;
-      break;
-    case GDK_SCROLL_SMOOTH:
-      new_position = p->levels[c->handle_move] - interval * event->delta_y;
-      updated = TRUE;
-      break;
-    default:
-      break;
-  }
-
-  if(updated)
-  {
+    float new_position = p->levels[c->handle_move] - interval * delta_y;
     dt_iop_levels_move_handle(self, c->handle_move, new_position, p->levels, c->drag_start_percentage);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;

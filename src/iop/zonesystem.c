@@ -773,34 +773,10 @@ static gboolean dt_iop_zonesystem_bar_scrolled(GtkWidget *widget, GdkEventScroll
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
   int cs = CLAMP(p->size, 4, MAX_ZONE_SYSTEM_SIZE);
 
-  static double acc = 0.0;
-  int delta = 0;
-  switch(event->direction)
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    case GDK_SCROLL_UP:
-      delta = 1;
-      break;
-    case GDK_SCROLL_DOWN:
-      delta = -1;
-      break;
-    case GDK_SCROLL_SMOOTH:
-      acc += event->delta_y;
-      if(fabs(acc) >= 1.0)
-      {
-        delta = -trunc(acc);
-        acc -= trunc(acc);
-      }
-#if GTK_CHECK_VERSION(3, 20, 0)
-      if(gdk_event_is_scroll_stop_event((GdkEvent*)event)) acc = 0.0;
-#endif
-      break;
-    default:
-      break;
-  }
-
-  if(delta)
-  {
-    p->size = CLAMP(p->size + delta, 4, MAX_ZONE_SYSTEM_SIZE);
+    p->size = CLAMP(p->size - delta_y, 4, MAX_ZONE_SYSTEM_SIZE);
     p->zone[cs] = -1;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(widget);

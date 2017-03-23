@@ -606,32 +606,16 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
   float ce = dt_dev_exposure_get_exposure(darktable.develop);
   float cb = dt_dev_exposure_get_black(darktable.develop);
 
-  int handled = FALSE;
-  double delta = 0.0;
-  switch(event->direction)
-  {
-    case GDK_SCROLL_UP:
-      delta = -1.0;
-      handled = TRUE;
-      break;
-    case GDK_SCROLL_DOWN:
-      delta = 1.0;
-      handled = TRUE;
-      break;
-    case GDK_SCROLL_SMOOTH:
-      delta = event->delta_y;
-      handled = TRUE;
-      break;
-    default:
-      break;
-  }
-
-  if(handled)
+  int delta_y;
+  // note are using unit rather than smooth scroll events, as
+  // exposure changes can get laggy if handling a multitude of smooth
+  // scroll events
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
     if(d->highlight == 2)
-      dt_dev_exposure_set_exposure(darktable.develop, ce - 0.15 * delta);
+      dt_dev_exposure_set_exposure(darktable.develop, ce - 0.15f * delta_y);
     else if(d->highlight == 1)
-      dt_dev_exposure_set_black(darktable.develop, cb + 0.001 * delta);
+      dt_dev_exposure_set_black(darktable.develop, cb + 0.001f * delta_y);
   }
 
   return TRUE;

@@ -100,7 +100,6 @@ typedef struct dt_bauhaus_combobox_data_t
   int active;        // currently active element
   int defpos;        // default position
   int editable;      // 1 if arbitrary text may be typed
-  gdouble scrollacc; // for smooth scrolling
   char text[180];    // roughly as much as a slider
   GList *labels;     // list of elements
   GList *alignments; // alignments of the labels. we keep this extra to make it easy to pass the labels around
