@@ -535,32 +535,14 @@ static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *ev
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
-  int handled = FALSE;
-  float delta = 0.0;
-  switch(event->direction)
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
-    case GDK_SCROLL_UP:
-      delta = -0.1f;
-      handled = TRUE;
-      break;
-    case GDK_SCROLL_DOWN:
-      delta = 0.1f;
-      handled = TRUE;
-      break;
-    case GDK_SCROLL_SMOOTH:
-      delta = 0.1f * event->delta_y;
-      handled = TRUE;
-      break;
-    default:
-      break;
-  }
-
-  if(handled)
-  {
-    p->size = CLAMP(p->size + delta, 0.5f, 3.0f);
+    p->size = CLAMP(p->size + delta_y * 0.1, 0.5f, 3.0f);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(widget);
   }
+
   return TRUE;
 }
 

@@ -313,29 +313,12 @@ static void combobox_popup_scroll(int amt)
 
 static gboolean dt_bauhaus_popup_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  gtk_widget_queue_draw(darktable.bauhaus->popup_area);
-  dt_bauhaus_widget_t *w = darktable.bauhaus->current;
-  switch(w->type)
+  int delta_y;
+  switch(darktable.bauhaus->current->type)
   {
     case DT_BAUHAUS_COMBOBOX:
-      if(event->direction == GDK_SCROLL_SMOOTH)
-      {
-        dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-        d->scrollacc += event->delta_y;
-        if(fabs(d->scrollacc) >= 1.0)
-        {
-          int scroll_amt = trunc(d->scrollacc);
-          d->scrollacc -= scroll_amt;
-          combobox_popup_scroll(scroll_amt);
-        }
-#if GTK_CHECK_VERSION(3, 20, 0)
-        if(gdk_event_is_scroll_stop_event((GdkEvent*)event)) d->scrollacc = 0.0;
-#endif
-      }
-      else
-      {
-        combobox_popup_scroll((event->direction == GDK_SCROLL_UP) ? -1 : 1);
-      }
+      if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+         combobox_popup_scroll(delta_y);
       break;
     case DT_BAUHAUS_SLIDER:
       break;
@@ -1006,7 +989,6 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   d->defpos = 0;
   d->active = d->defpos;
   d->editable = 0;
-  d->scrollacc = 0.0;
   memset(d->text, 0, sizeof(d->text));
 
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_PRESS_MASK);
@@ -1884,31 +1866,17 @@ static gboolean dt_bauhaus_slider_add_delta_internal(GtkWidget *widget, float de
 
 static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
+  gdouble delta_y;
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_SLIDER) return FALSE;
-  dt_bauhaus_slider_data_t *d = &w->data.slider;
 
-  int handled = 0;
-  float delta = 0.0f;
-  if(event->direction == GDK_SCROLL_UP)
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
-    handled = 1;
-    delta = d->scale / 5.0f;
-  }
-  else if(event->direction == GDK_SCROLL_DOWN)
-  {
-    handled = 1;
-    delta = -d->scale / 5.0f;
-  }
-  else if(event->direction == GDK_SCROLL_SMOOTH)
-  {
-    handled = 1;
-    delta = -event->delta_y * d->scale / 5.0f;
+    delta_y *= -w->data.slider.scale / 5.0;
+    return dt_bauhaus_slider_add_delta_internal(widget, delta_y, event->state);
   }
 
-  if(!handled) return FALSE;
-
-  return dt_bauhaus_slider_add_delta_internal(widget, delta, event->state);
+  return FALSE;
 }
 
 static gboolean dt_bauhaus_slider_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
@@ -1940,36 +1908,18 @@ static gboolean dt_bauhaus_slider_key_press(GtkWidget *widget, GdkEventKey *even
 
 static gboolean dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
+  int delta_y;
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-  if(event->direction == GDK_SCROLL_UP)
+
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
     if(w->module) dt_iop_request_focus(w->module);
-    dt_bauhaus_combobox_set(widget, CLAMP(d->active - 1, 0, d->num_labels - 1));
+    dt_bauhaus_combobox_set(widget, CLAMP(d->active + delta_y, 0, d->num_labels - 1));
     return TRUE;
   }
-  else if(event->direction == GDK_SCROLL_DOWN)
-  {
-    if(w->module) dt_iop_request_focus(w->module);
-    dt_bauhaus_combobox_set(widget, CLAMP(d->active + 1, 0, d->num_labels - 1));
-    return TRUE;
-  }
-  else if(event->direction == GDK_SCROLL_SMOOTH)
-  {
-    if(w->module) dt_iop_request_focus(w->module);
-    d->scrollacc += event->delta_y;
-    if(fabs(d->scrollacc) >= 1.0)
-    {
-      int scroll_amt = trunc(d->scrollacc);
-      d->scrollacc -= scroll_amt;
-      dt_bauhaus_combobox_set(widget, CLAMP(d->active + scroll_amt, 0, d->num_labels - 1));
-    }
-#if GTK_CHECK_VERSION(3, 20, 0)
-    if(gdk_event_is_scroll_stop_event((GdkEvent*)event)) d->scrollacc = 0.0;
-#endif
-    return TRUE;
-  }
+
   return FALSE;
 }
 

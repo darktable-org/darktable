@@ -151,6 +151,17 @@ int dt_gui_gtk_write_config();
 void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t);
 void dt_gui_gtk_set_source_rgba(cairo_t *cr, dt_gui_color_t, float opacity_coef);
 
+/* Return requested scroll delta(s) from event. If delta_x or delta_y
+ * is NULL, do not return that delta. Return TRUE if requested deltas
+ * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
+ * GDK_SCROLL_SMOOTH style scroll events. */
+gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x, gdouble *delta_y);
+/* Same as above, except accumulate smooth scrolls deltas of < 1 and
+ * only set deltas and return TRUE once scrolls accumulate to >= 1.
+ * Effectively makes smooth scroll events act like old-style unit
+ * scroll events. */
+gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y);
+
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w);
 /** clean up connected signal handlers before destroying your widget: */
