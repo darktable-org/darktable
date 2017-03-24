@@ -48,7 +48,7 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
 static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, const int count, const float sigma);
 static char *_ascii_str_canonical(const char *in, char *out, int maxlen);
 /** parse a single token of priority string and store priorities in priority_list */
-static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *priority_list);
+static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *priority_list, int *mandatory);
 /** parse a complete priority string */
 static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr);
 
@@ -533,7 +533,8 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   str = dt_conf_get_string("opencl_device_priority");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", str);
   g_free(str);
-
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_mandatory_timeout: %d\n",
+           dt_conf_get_int("opencl_mandatory_timeout"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_size_roundup: %d\n",
            dt_conf_get_int("opencl_size_roundup"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_async_pixelpipe: %d\n",
@@ -664,6 +665,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     cl->num_devs = dev;
     cl->inited = 1;
     cl->enabled = dt_conf_get_bool("opencl");
+    memset(cl->mandatory, 0, sizeof(cl->mandatory));
     cl->dev_priority_image = (int *)malloc(sizeof(int) * (dev + 1));
     cl->dev_priority_preview = (int *)malloc(sizeof(int) * (dev + 1));
     cl->dev_priority_export = (int *)malloc(sizeof(int) * (dev + 1));
@@ -690,6 +692,10 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     for(int i = 0; i < dev; i++)
       dt_print(DT_DEBUG_OPENCL, "[opencl_init]\t\t%d\t%d\t%d\t%d\n", cl->dev_priority_image[i],
                cl->dev_priority_preview[i], cl->dev_priority_export[i], cl->dev_priority_thumbnail[i]);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] show if opencl use is mandatory for a given pixelpipe:\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] \t\timage\tpreview\texport\tthumbnail\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init]\t\t%d\t%d\t%d\t%d\n", cl->mandatory[0],
+               cl->mandatory[1], cl->mandatory[2], cl->mandatory[3]);
   }
   else
   {
@@ -1151,18 +1157,27 @@ static char *_strsep(char **stringp, const char *delim)
 
 
 // parse a single token of priority string and store priorities in priority_list
-static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *priority_list)
+static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *priority_list, int *mandatory)
 {
   int devs = cl->num_devs;
   int count = 0;
   int *full = malloc((size_t)(devs + 1) * sizeof(int));
+  int mnd = 0;
 
   // NULL or empty configstring?
   if(configstr == NULL || *configstr == '\0')
   {
     priority_list[0] = -1;
+    *mandatory = 0;
     free(full);
     return;
+  }
+
+  // check if user wants us to force-use opencl device(s)
+  if(configstr[0] == '+')
+  {
+    mnd = 1;
+    configstr++;
   }
 
   // first start with a full list of devices to take from
@@ -1230,6 +1245,9 @@ static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *prio
   // terminate priority list with -1
   while(count < devs + 1) priority_list[count++] = -1;
 
+  // opencl use can only be mandatory if at least one opencl device is given
+  *mandatory = (priority_list[0] != -1) ? mnd : 0;
+
   free(full);
 }
 
@@ -1242,7 +1260,7 @@ static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr)
   // first get rid of all invalid characters
   while(*configstr != '\0' && len < sizeof(tmp) - 1)
   {
-    int n = strcspn(configstr, "/!,*0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    int n = strcspn(configstr, "/!,*+0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
     configstr += n;
     if(n != 0) continue;
     tmp[len] = *configstr;
@@ -1255,16 +1273,16 @@ static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr)
 
   // now split config string into tokens, separated by '/' and parse them one after the other
   char *prio = _strsep(&str, "/");
-  dt_opencl_priority_parse(cl, prio, cl->dev_priority_image);
+  dt_opencl_priority_parse(cl, prio, cl->dev_priority_image, &cl->mandatory[0]);
 
   prio = _strsep(&str, "/");
-  dt_opencl_priority_parse(cl, prio, cl->dev_priority_preview);
+  dt_opencl_priority_parse(cl, prio, cl->dev_priority_preview, &cl->mandatory[1]);
 
   prio = _strsep(&str, "/");
-  dt_opencl_priority_parse(cl, prio, cl->dev_priority_export);
+  dt_opencl_priority_parse(cl, prio, cl->dev_priority_export, &cl->mandatory[2]);
 
   prio = _strsep(&str, "/");
-  dt_opencl_priority_parse(cl, prio, cl->dev_priority_thumbnail);
+  dt_opencl_priority_parse(cl, prio, cl->dev_priority_thumbnail, &cl->mandatory[3]);
 }
 
 
@@ -1274,31 +1292,50 @@ int dt_opencl_lock_device(const int pipetype)
   if(!cl->inited) return -1;
 
   const int *priority;
+  int mandatory;
 
   switch(pipetype)
   {
     case DT_DEV_PIXELPIPE_FULL:
       priority = cl->dev_priority_image;
+      mandatory = cl->mandatory[0];
       break;
     case DT_DEV_PIXELPIPE_PREVIEW:
       priority = cl->dev_priority_preview;
+      mandatory = cl->mandatory[1];
       break;
     case DT_DEV_PIXELPIPE_EXPORT:
       priority = cl->dev_priority_export;
+      mandatory = cl->mandatory[2];
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
       priority = cl->dev_priority_thumbnail;
+      mandatory = cl->mandatory[3];
       break;
     default:
       priority = NULL;
+      mandatory = 0;
   }
 
   if(priority)
   {
-    while(*priority != -1)
+    const int usec = 5000;
+    const int nloop = MAX(0, dt_conf_get_int("opencl_mandatory_timeout"));
+
+    // check for free opencl device repeatedly if mandatory is TRUE, else give up after first try
+    for(int n = 0; n < nloop; n++)
     {
-      if(!dt_pthread_mutex_trylock(&cl->dev[*priority].lock)) return *priority;
-      priority++;
+      const int *prio = priority;
+
+      while(*prio != -1)
+      {
+        if(!dt_pthread_mutex_trylock(&cl->dev[*prio].lock)) return *prio;
+        prio++;
+      }
+
+      if(!mandatory) return -1;
+
+      dt_iop_nap(usec);
     }
   }
   else
