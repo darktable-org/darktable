@@ -126,6 +126,7 @@ typedef struct dt_opencl_t
   int num_devs;
   int error_count;
   uint32_t crc;
+  int mandatory[4];
   int *dev_priority_image;
   int *dev_priority_preview;
   int *dev_priority_export;

@@ -114,6 +114,13 @@
     <longdescription>defines priorities on how (multiple) OpenCL devices are allocated to the different types of pixelpipe (full, preview, export, thumbnail). for more details visit our usermanual (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>opencl_mandatory_timeout</name>
+    <type min="0">int</type>
+    <default>200</default>
+    <shortdescription>timeout period for locking mandatory opencl device</shortdescription>
+    <longdescription>time period (in units of 5ms) after which we give up try-locking an opencl device for mandatory use. defaults to 200.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>opencl_use_pinned_memory</name>
     <type>bool</type>
     <default>false</default>
