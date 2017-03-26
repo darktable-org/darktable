@@ -2238,11 +2238,11 @@ static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event
       }
       else if(event->keyval == GDK_KEY_Up)
       {
-        combobox_popup_scroll(1);
+        combobox_popup_scroll(-1);
       }
       else if(event->keyval == GDK_KEY_Down)
       {
-        combobox_popup_scroll(-1);
+        combobox_popup_scroll(1);
       }
       else if(event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
       {
