@@ -811,7 +811,21 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   if(dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
   {
     delta_x *= -TONECURVE_DEFAULT_STEP;
-    delta_y *= TONECURVE_DEFAULT_STEP;
+    delta_y *= -TONECURVE_DEFAULT_STEP;
+
+    GdkDevice *source_device = gdk_event_get_source_device((GdkEvent*)event);
+    GdkInputSource source = gdk_device_get_source(source_device);
+    // For touch and trackpoint events, move the pointer in the
+    // direction of the scroll if the event type is available. Never
+    // flip mousewheel deltas. Note that GDK's Wayland backend
+    // identifies touchpad/trackpoint events, but under XWayland, the
+    // Wayland backend reports touchpad/trackpoint events as
+    // GDK_SOURCE_MOUSE. GDK's X11 backend identifies trackpoint
+    // events but reports touchpad events as being GDK_SOURCE_MOUSE.
+    if((source == GDK_SOURCE_TOUCHPAD) || (source == GDK_SOURCE_TRACKPOINT) ||
+       (source == GDK_SOURCE_TOUCHSCREEN))
+      delta_y = -delta_y;
+
     return _move_point_internal(self, widget, delta_x, delta_y, event->state);
   }
 
