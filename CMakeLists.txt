@@ -523,10 +523,19 @@ if(NOT WIN32)
   endif(CMAKE_SYSTEM MATCHES "SunOS.*")
 endif(NOT WIN32)
 
+# Set default component name - that way external modules like RawSpeed will install their
+# materials under the default component and not under 'Unspecified'
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME DTApplication)
+
 # lets continue into build directories
 add_subdirectory(src)
 add_subdirectory(data)
 add_subdirectory(doc)
+
+# This contains fixup_bundle
+# And adding a separate subderectory as a last one will make sure
+# that fixup_bundle will run _after_ all files has been installed
+add_subdirectory(packaging)
 
 include(cmake/darktable-packaging.cmake)
 

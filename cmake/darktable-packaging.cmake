@@ -71,7 +71,6 @@ include(CPack)
 CPACK_ADD_COMPONENT(DTApplication DISPLAY_NAME "darktable main application" REQUIRED)
 CPACK_ADD_COMPONENT(DTDebugSymbols DISPLAY_NAME "Debug symbols" REQUIRED)
 CPACK_ADD_COMPONENT(DTDocuments DISPLAY_NAME "Documentation and help files")
-CPACK_ADD_COMPONENT(DTDependencies DISPLAY_NAME "Runtime dependencies" REQUIRED)
 
 ADD_CUSTOM_TARGET(pkgsrc
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/version_gen.c ${CMAKE_SOURCE_DIR}/src/version_gen.c
