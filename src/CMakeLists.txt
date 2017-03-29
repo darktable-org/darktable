@@ -802,4 +802,4 @@ install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplic
 InstallDependencyFiles()
 
 # Tell CPack about the components and group the data components together (CPACK_COMPONENT_${COMPONENT_NAME_ALL_CAPS}_GROUP).
-set(CPACK_COMPONENTS_ALL DTApplication DTDebugSymbols DTDocuments DTDependencies)
+set(CPACK_COMPONENTS_ALL DTApplication DTDebugSymbols DTDocuments)
