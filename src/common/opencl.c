@@ -497,6 +497,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   cl->synch_cache = dt_conf_get_bool("opencl_synch_cache");
   cl->micro_nap = dt_conf_get_int("opencl_micro_nap");
   cl->enable_markesteijn = dt_conf_get_bool("opencl_enable_markesteijn");
+  cl->opencl_synchronization_timeout = dt_conf_get_int("pixelpipe_synchronization_timeout");
   cl->crc = 0;
   cl->dlocl = NULL;
   cl->dev_priority_image = NULL;

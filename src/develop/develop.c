@@ -29,6 +29,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/mipmap_cache.h"
+#include "common/opencl.h"
 #include "common/tags.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -1816,7 +1817,17 @@ int dt_dev_wait_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmi
                      const volatile uint64_t *const hash)
 {
   const int usec = 5000;
-  const int nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+  int nloop;
+
+#ifdef HAVE_OPENCL
+  if(pipe->devid >= 0)
+    nloop = darktable.opencl->opencl_synchronization_timeout;
+  else
+    nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+#else
+  nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+#endif
+
   if(nloop <= 0) return TRUE;  // non-positive values omit pixelpipe synchronization
 
   for(int n = 0; n < nloop; n++)
@@ -1894,7 +1905,17 @@ int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
                      const volatile uint64_t *const hash)
 {
   const int usec = 5000;
-  const int nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+  int nloop;
+
+#ifdef HAVE_OPENCL
+  if(pipe->devid >= 0)
+    nloop = darktable.opencl->opencl_synchronization_timeout;
+  else
+    nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+#else
+  nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+#endif
+
   if(nloop <= 0) return TRUE;  // non-positive values omit pixelpipe synchronization
 
   for(int n = 0; n < nloop; n++)
