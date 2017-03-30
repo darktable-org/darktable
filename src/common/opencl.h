@@ -125,6 +125,7 @@ typedef struct dt_opencl_t
   int stopped;
   int num_devs;
   int error_count;
+  int opencl_synchronization_timeout;
   uint32_t crc;
   int mandatory[4];
   int *dev_priority_image;
