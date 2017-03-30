@@ -157,7 +157,7 @@
   </dtconfig>
   <dtconfig>
     <name>pixelpipe_synchronization_timeout</name>
-    <type min="0">int</type>
+    <type>int</type>
     <default>200</default>
     <shortdescription>timeout period of pixelpipe synchronization</shortdescription>
     <longdescription>time period (in units of 5ms) after which synchronization of preview and full pixelpipe is assumed to have failed. set to zero to omit pixelpipe synchronization. defaults to 200.</longdescription>
