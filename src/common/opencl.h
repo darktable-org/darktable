@@ -53,6 +53,13 @@ typedef enum dt_opencl_memory_t
   OPENCL_MEMORY_SUB
 } dt_opencl_memory_t;
 
+typedef enum dt_opencl_scheduling_profile_t
+{
+  OPENCL_PROFILE_DEFAULT,
+  OPENCL_PROFILE_MULTIPLE_GPUS,
+  OPENCL_PROFILE_VERYFAST_GPU
+} dt_opencl_scheduling_profile_t;
+
 /**
  * Accounting information used for OpenCL events.
  */
@@ -126,6 +133,7 @@ typedef struct dt_opencl_t
   int num_devs;
   int error_count;
   int opencl_synchronization_timeout;
+  dt_opencl_scheduling_profile_t scheduling_profile;
   uint32_t crc;
   int mandatory[4];
   int *dev_priority_image;
@@ -219,8 +227,8 @@ int dt_opencl_is_enabled(void);
 /** disable opencl */
 void dt_opencl_disable(void);
 
-/** update enabled flag with value from preferences */
-int dt_opencl_update_enabled(void);
+/** update enabled flag and profile with value from preferences, returns enabled flag */
+int dt_opencl_update_settings(void);
 
 /** HAVE_OPENCL mode only: copy and alloc buffers. */
 int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width,
@@ -423,7 +431,7 @@ static inline int dt_opencl_is_enabled(void)
 static inline void dt_opencl_disable(void)
 {
 }
-static inline int dt_opencl_update_enabled(void)
+static inline int dt_opencl_update_settings(void)
 {
   return 0;
 }
