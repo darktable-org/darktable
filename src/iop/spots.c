@@ -640,8 +640,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
   g->label = GTK_LABEL(gtk_label_new("-1"));
   gtk_widget_set_tooltip_text(hbox, _("click on a shape and drag on canvas.\nuse the mouse wheel "
-                                      "to adjust size.\nright click to remove a shape."
-                                      "\nmiddle click on image to show/hide masks"));
+                                      "to adjust size.\nright click to remove a shape."));
 
   g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(_add_path), self);
@@ -729,22 +728,6 @@ static gboolean _show_hide_key_accel(GtkAccelGroup *accel_group, GObject *accele
   dt_iop_module_t *module = (dt_iop_module_t *)data;
   dt_masks_set_edit_mode(module, module->dev->form_gui->edit_mode == DT_MASKS_EDIT_FULL ? DT_MASKS_EDIT_OFF : DT_MASKS_EDIT_FULL);
   return TRUE;
-}
-
-int button_pressed (struct dt_iop_module_t *self,
-                    double x,
-                    double y,
-                    double pressure,
-                    int which,
-                    int type,
-                    uint32_t state)
-{
-  if (which == 2)
-  {
-    dt_masks_set_edit_mode(self, self->dev->form_gui->edit_mode == DT_MASKS_EDIT_FULL ? DT_MASKS_EDIT_OFF : DT_MASKS_EDIT_FULL);
-    return 1;
-  }
-  return 0;
 }
 
 void connect_key_accels (dt_iop_module_t *module)
