@@ -656,7 +656,7 @@ void gui_init(dt_lib_module_t *self)
 
   // Export button
 
-  GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
+  GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(C_("export", "export")));
   d->export_button = button;
   gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("export with current settings"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), FALSE, TRUE, 0);
