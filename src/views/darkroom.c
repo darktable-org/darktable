@@ -1927,8 +1927,14 @@ void leave(dt_view_t *self)
   dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(darktable.develop));
 
   // store last active plugin:
-  if(darktable.develop->gui_module)
+  if(darktable.develop->gui_module){
     dt_conf_set_string("plugins/darkroom/active", darktable.develop->gui_module->op);
+#if WGWG
+    //trigger update for all active gui_focus enabled mods (example:crop and rotate) when leaving darkroom directly 
+    if(darktable.develop->gui_module->gui_focus)
+      darktable.develop->gui_module->gui_focus(darktable.develop->gui_module,FALSE);
+#endif
+  }
   else
     dt_conf_set_string("plugins/darkroom/active", "");
 
