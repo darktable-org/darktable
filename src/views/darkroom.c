@@ -702,6 +702,9 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // make signals work again, but only after focus event,
   // to avoid crop/rotate for example to add another history item.
   darktable.gui->reset = 0;
+  
+  int32_t mouse_over_id = dev->image_storage.id;
+  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
 
   // Signal develop initialize
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
