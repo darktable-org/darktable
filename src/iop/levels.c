@@ -588,7 +588,8 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                             | GDK_SMOOTH_SCROLL_MASK);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_levels_area_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_levels_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(dt_iop_levels_button_release), self);
@@ -1029,28 +1030,16 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, g
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
-  const float interval = 0.002; // Distance moved for each scroll event
-  gboolean updated = FALSE;
-  float new_position = 0;
-
   if(c->dragging)
   {
     return FALSE;
   }
 
-  if(event->direction == GDK_SCROLL_UP)
+  const float interval = 0.002; // Distance moved for each scroll event
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
-    new_position = p->levels[c->handle_move] + interval;
-    updated = TRUE;
-  }
-  else if(event->direction == GDK_SCROLL_DOWN)
-  {
-    new_position = p->levels[c->handle_move] - interval;
-    updated = TRUE;
-  }
-
-  if(updated)
-  {
+    float new_position = p->levels[c->handle_move] - interval * delta_y;
     dt_iop_levels_move_handle(self, c->handle_move, new_position, p->levels, c->drag_start_percentage);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
