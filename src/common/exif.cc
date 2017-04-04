@@ -1729,12 +1729,12 @@ static void free_entry(gpointer data)
 // we have to use pugixml as the old format could contain empty rdf:li elements in the multi_name array
 // which causes problems when accessing it with libexiv2 :(
 // superold is a flag indicating that data is wrapped in <rdf:Bag> instead of <rdf:Seq>.
-static GList *read_history_v1(const char *filename, const int superold)
+static GList *read_history_v1(const std::string &xmpPacket, const char *filename, const int superold)
 {
   GList *history_entries = NULL;
 
   pugi::xml_document doc;
-  pugi::xml_parse_result result = doc.load_file(filename);
+  pugi::xml_parse_result result = doc.load_string(xmpPacket.c_str());
 
   if(!result)
   {
@@ -2110,9 +2110,10 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
     if(version < 2)
     {
-      history_entries = read_history_v1(filename, 0);
+      std::string &xmpPacket = image->xmpPacket();
+      history_entries = read_history_v1(xmpPacket, filename, 0);
       if(!history_entries) // didn't work? try super old version with rdf:Bag
-        history_entries = read_history_v1(filename, 1);
+        history_entries = read_history_v1(xmpPacket, filename, 1);
     }
     else if(version == 2)
       history_entries = read_history_v2(xmpData, filename);
