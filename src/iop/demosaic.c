@@ -65,7 +65,8 @@ typedef enum dt_iop_demosaic_method_t
   // methods for x-trans images
   DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 0,
   DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,
-  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2
+  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2,
+  DT_IOP_DEMOSAIC_FDC = DEMOSAIC_XTRANS | 4
 } dt_iop_demosaic_method_t;
 
 typedef enum dt_iop_demosaic_greeneq_t
@@ -218,6 +219,9 @@ static const char* method2string(dt_iop_demosaic_method_t method)
       break;
     case DT_IOP_DEMOSAIC_MARKESTEIJN_3:
       string = "Markesteijn-3 (xtrans)";
+      break;
+    case DT_IOP_DEMOSAIC_FDC:
+      string = "Frequency Domain Chroma (xtrans)";
       break;
     default:
       string = "(unknown method)";
@@ -527,6 +531,450 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                                      { 0, 1, 0, -2, 1, 0, -2, 0, 1, 1, -2, -2, 1, -1, -1, 1 } },
                      dir[4] = { 1, TS, TS + 1, TS - 1 };
 
+  short allhex[3][3][8];
+  // sgrow/sgcol is the offset in the sensor matrix of the solitary
+  // green pixels (initialized here only to avoid compiler warning)
+  unsigned short sgrow = 0, sgcol = 0;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  const int ndir = 4 << (passes > 1);
+
+  const size_t buffer_size = (size_t)TS * TS * (ndir * 4 + 3) * sizeof(float);
+  char *const all_buffers = (char *)dt_alloc_align(16, dt_get_num_threads() * buffer_size);
+  if(!all_buffers)
+  {
+    printf("[demosaic] not able to allocate Markesteijn buffers\n");
+    return;
+  }
+
+  /* Map a green hexagon around each non-green pixel and vice versa:    */
+  for(int row = 0; row < 3; row++)
+    for(int col = 0; col < 3; col++)
+      for(int ng = 0, d = 0; d < 10; d += 2)
+      {
+        int g = FCxtrans(row, col, NULL, xtrans) == 1;
+        if(FCxtrans(row + orth[d], col + orth[d + 2], NULL, xtrans) == 1)
+          ng = 0;
+        else
+          ng++;
+        // if there are four non-green pixels adjacent in cardinal
+        // directions, this is the solitary green pixel
+        if(ng == 4)
+        {
+          sgrow = row;
+          sgcol = col;
+        }
+        if(ng == g + 1)
+          for(int c = 0; c < 8; c++)
+          {
+            int v = orth[d] * patt[g][c * 2] + orth[d + 1] * patt[g][c * 2 + 1];
+            int h = orth[d + 2] * patt[g][c * 2] + orth[d + 3] * patt[g][c * 2 + 1];
+            // offset within TSxTS buffer
+            allhex[row][col][c ^ (g * 2 & d)] = h + v * TS;
+          }
+      }
+
+  // extra passes propagates out errors at edges, hence need more padding
+  const int pad_tile = (passes == 1) ? 12 : 17;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out) schedule(dynamic)
+#endif
+  // step through TSxTS cells of image, each tile overlapping the
+  // prior as interpolation needs a substantial border
+  for(int top = -pad_tile; top < height - pad_tile; top += TS - (pad_tile*2))
+  {
+    char *const buffer = all_buffers + dt_get_thread_num() * buffer_size;
+    // rgb points to ndir TSxTS tiles of 3 channels (R, G, and B)
+    float(*rgb)[TS][TS][3] = (float(*)[TS][TS][3])buffer;
+    // yuv points to 3 channel (Y, u, and v) TSxTS tiles
+    // note that channels come before tiles to allow for a
+    // vectorization optimization when building drv[] from yuv[]
+    float (*const yuv)[TS][TS] = (float(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
+    // drv points to ndir TSxTS tiles, each a single chanel of derivatives
+    float (*const drv)[TS][TS] = (float(*)[TS][TS])(buffer + TS * TS * (ndir * 3 + 3) * sizeof(float));
+    // gmin and gmax reuse memory which is used later by yuv buffer;
+    // each points to a TSxTS tile of single channel data
+    float (*const gmin)[TS] = (float(*)[TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
+    float (*const gmax)[TS] = (float(*)[TS])(buffer + TS * TS * (ndir * 3 + 1) * sizeof(float));
+    // homo and homosum reuse memory which is used earlier in the
+    // loop; each points to ndir single-channel TSxTS tiles
+    uint8_t (*const homo)[TS][TS] = (uint8_t(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
+    uint8_t (*const homosum)[TS][TS] = (uint8_t(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float)
+                                                            + TS * TS * ndir * sizeof(uint8_t));
+
+    for(int left = -pad_tile; left < width - pad_tile; left += TS - (pad_tile*2))
+    {
+      int mrow = MIN(top + TS, height + pad_tile);
+      int mcol = MIN(left + TS, width + pad_tile);
+
+      // Copy current tile from in to image buffer. If border goes
+      // beyond edges of image, fill with mirrored/interpolated edges.
+      // The extra border avoids discontinuities at image edges.
+      for(int row = top; row < mrow; row++)
+        for(int col = left; col < mcol; col++)
+        {
+          float(*const pix) = rgb[0][row - top][col - left];
+          if((col >= 0) && (row >= 0) && (col < width) && (row < height))
+          {
+            const int f = FCxtrans(row, col, roi_in, xtrans);
+            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
+          }
+          else
+          {
+            // mirror a border pixel if beyond image edge
+            const int c = FCxtrans(row, col, roi_in, xtrans);
+            for(int cc = 0; cc < 3; cc++)
+              if(cc != c)
+                pix[cc] = 0.0f;
+              else
+              {
+#define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 2) : abs(n))
+                const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
+                if(c == FCxtrans(cy, cx, roi_in, xtrans))
+                  pix[c] = in[roi_in->width * cy + cx];
+                else
+                {
+                  // interpolate if mirror pixel is a different color
+                  float sum = 0.0f;
+                  uint8_t count = 0;
+                  for(int y = row - 1; y <= row + 1; y++)
+                    for(int x = col - 1; x <= col + 1; x++)
+                    {
+                      const int yy = TRANSLATE(y, height), xx = TRANSLATE(x, width);
+                      const int ff = FCxtrans(yy, xx, roi_in, xtrans);
+                      if(ff == c)
+                      {
+                        sum += in[roi_in->width * yy + xx];
+                        count++;
+                      }
+                    }
+                  pix[c] = sum / count;
+                }
+              }
+          }
+        }
+
+      // duplicate rgb[0] to rgb[1], rgb[2], and rgb[3]
+      for(int c = 1; c <= 3; c++) memcpy(rgb[c], rgb[0], sizeof(*rgb));
+
+      // note that successive calculations are inset within the tile
+      // so as to give enough border data, and there needs to be a 6
+      // pixel border initially to allow allhex to find neighboring
+      // pixels
+
+      /* Set green1 and green3 to the minimum and maximum allowed values:   */
+      // Run through each red/blue or blue/red pair, setting their g1
+      // and g3 values to the min/max of green pixels surrounding the
+      // pair. Use a 3 pixel border as gmin/gmax is used by
+      // interpolate green which has a 3 pixel border.
+      const int pad_g1_g3 = 3;
+      for(int row = top + pad_g1_g3; row < mrow - pad_g1_g3; row++)
+      {
+        // setting max to 0.0f signifies that this is a new pair, which
+        // requires a new min/max calculation of its neighboring greens
+        float min = FLT_MAX, max = 0.0f;
+        for(int col = left + pad_g1_g3; col < mcol - pad_g1_g3; col++)
+        {
+          // if in row of horizontal red & blue pairs (or processing
+          // vertical red & blue pairs near image bottom), reset min/max
+          // between each pair
+          if(FCxtrans(row, col, roi_in, xtrans) == 1)
+          {
+            min = FLT_MAX, max = 0.0f;
+            continue;
+          }
+          // if at start of red & blue pair, calculate min/max of green
+          // pixels surrounding it; note that while normally using == to
+          // compare floats is suspect, here the check is if 0.0f has
+          // explicitly been assigned to max (which signifies a new
+          // red/blue pair)
+          if(max == 0.0f)
+          {
+            float (*const pix)[3] = &rgb[0][row - top][col - left];
+            const short *const hex = hexmap(row,col,allhex);
+            for(int c = 0; c < 6; c++)
+            {
+              const float val = pix[hex[c]][1];
+              if(min > val) min = val;
+              if(max < val) max = val;
+            }
+          }
+          gmin[row - top][col - left] = min;
+          gmax[row - top][col - left] = max;
+          // handle vertical red/blue pairs
+          switch((row - sgrow) % 3)
+          {
+            // hop down a row to second pixel in vertical pair
+            case 1:
+              if(row < mrow - 4) row++, col--;
+              break;
+            // then if not done with the row hop up and right to next
+            // vertical red/blue pair, resetting min/max
+            case 2:
+              min = FLT_MAX, max = 0.0f;
+              if((col += 2) < mcol - 4 && row > top + 3) row--;
+          }
+        }
+      }
+
+      /* Interpolate green horizontally, vertically, and along both diagonals: */
+      // need a 3 pixel border here as 3*hex[] can have a 3 unit offset
+      const int pad_g_interp = 3;
+      for(int row = top + pad_g_interp; row < mrow - pad_g_interp; row++)
+        for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
+        {
+          float color[8];
+          int f = FCxtrans(row, col, roi_in, xtrans);
+          if(f == 1) continue;
+          float (*const pix)[3] = &rgb[0][row - top][col - left];
+          const short *const hex = hexmap(row,col,allhex);
+          // TODO: these constants come from integer math constants in
+          // dcraw -- calculate them instead from interpolation math
+          color[0] = 0.6796875f * (pix[hex[1]][1] + pix[hex[0]][1])
+                     - 0.1796875f * (pix[2 * hex[1]][1] + pix[2 * hex[0]][1]);
+          color[1] = 0.87109375f * pix[hex[3]][1] + pix[hex[2]][1] * 0.13f
+                     + 0.359375f * (pix[0][f] - pix[-hex[2]][f]);
+          for(int c = 0; c < 2; c++)
+            color[2 + c] = 0.640625f * pix[hex[4 + c]][1] + 0.359375f * pix[-2 * hex[4 + c]][1]
+                           + 0.12890625f * (2 * pix[0][f] - pix[3 * hex[4 + c]][f] - pix[-3 * hex[4 + c]][f]);
+          for(int c = 0; c < 4; c++)
+            rgb[c ^ !((row - sgrow) % 3)][row - top][col - left][1]
+                = CLAMPS(color[c], gmin[row - top][col - left], gmax[row - top][col - left]);
+        }
+
+      for(int pass = 0; pass < passes; pass++)
+      {
+        if(pass == 1)
+        {
+          // if on second pass, copy rgb[0] to [3] into rgb[4] to [7],
+          // and process that second set of buffers
+          memcpy(rgb + 4, rgb, (size_t)4 * sizeof(*rgb));
+          rgb += 4;
+        }
+
+        /* Recalculate green from interpolated values of closer pixels: */
+        if(pass)
+        {
+          const int pad_g_recalc = 6;
+          for(int row = top + pad_g_recalc; row < mrow - pad_g_recalc; row++)
+            for(int col = left + pad_g_recalc; col < mcol - pad_g_recalc; col++)
+            {
+              int f = FCxtrans(row, col, roi_in, xtrans);
+              if(f == 1) continue;
+              const short *const hex = hexmap(row,col,allhex);
+              for(int d = 3; d < 6; d++)
+              {
+                float(*rfx)[3] = &rgb[(d - 2) ^ !((row - sgrow) % 3)][row - top][col - left];
+                float val = rfx[-2 * hex[d]][1] + 2 * rfx[hex[d]][1] - rfx[-2 * hex[d]][f]
+                            - 2 * rfx[hex[d]][f] + 3 * rfx[0][f];
+                rfx[0][1] = CLAMPS(val / 3.0f, gmin[row - top][col - left], gmax[row - top][col - left]);
+              }
+            }
+        }
+
+        /* Interpolate red and blue values for solitary green pixels:   */
+        const int pad_rb_g = (passes == 1) ? 6 : 5;
+        for(int row = (top - sgrow + pad_rb_g + 2) / 3 * 3 + sgrow; row < mrow - pad_rb_g; row += 3)
+          for(int col = (left - sgcol + pad_rb_g + 2) / 3 * 3 + sgcol; col < mcol - pad_rb_g; col += 3)
+          {
+            float(*rfx)[3] = &rgb[0][row - top][col - left];
+            int h = FCxtrans(row, col + 1, roi_in, xtrans);
+            float diff[6] = { 0.0f };
+            float color[3][8];
+            for(int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2)
+            {
+              for(int c = 0; c < 2; c++, h ^= 2)
+              {
+                float g = 2 * rfx[0][1] - rfx[i << c][1] - rfx[-(i << c)][1];
+                color[h][d] = g + rfx[i << c][h] + rfx[-(i << c)][h];
+                if(d > 1)
+                  diff[d] += SQR(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h])
+                             + SQR(g);
+              }
+              if(d > 1 && (d & 1))
+                if(diff[d - 1] < diff[d])
+                  for(int c = 0; c < 2; c++) color[c * 2][d] = color[c * 2][d - 1];
+              if(d < 2 || (d & 1))
+              {
+                for(int c = 0; c < 2; c++) rfx[0][c * 2] = color[c * 2][d] / 2.f;
+                rfx += TS * TS;
+              }
+            }
+          }
+
+        /* Interpolate red for blue pixels and vice versa:              */
+        const int pad_rb_br = (passes == 1) ? 6 : 5;
+        for(int row = top + pad_rb_br; row < mrow - pad_rb_br; row++)
+          for(int col = left + pad_rb_br; col < mcol - pad_rb_br; col++)
+          {
+            int f = 2 - FCxtrans(row, col, roi_in, xtrans);
+            if(f == 1) continue;
+            float(*rfx)[3] = &rgb[0][row - top][col - left];
+            int c = (row - sgrow) % 3 ? TS : 1;
+            int h = 3 * (c ^ TS ^ 1);
+            for(int d = 0; d < 4; d++, rfx += TS * TS)
+            {
+              int i = d > 1 || ((d ^ c) & 1) ||
+                ((fabsf(rfx[0][1]-rfx[c][1]) + fabsf(rfx[0][1]-rfx[-c][1])) <
+                 2.f*(fabsf(rfx[0][1]-rfx[h][1]) + fabsf(rfx[0][1]-rfx[-h][1]))) ? c:h;
+              rfx[0][f] = (rfx[i][f] + rfx[-i][f] + 2.f * rfx[0][1] - rfx[i][1] - rfx[-i][1]) / 2.f;
+            }
+          }
+
+        /* Fill in red and blue for 2x2 blocks of green:                */
+        const int pad_g22 = (passes == 1) ? 8 : 4;
+        for(int row = top + pad_g22; row < mrow - pad_g22; row++)
+          if((row - sgrow) % 3)
+            for(int col = left + pad_g22; col < mcol - pad_g22; col++)
+              if((col - sgcol) % 3)
+              {
+                float(*rfx)[3] = &rgb[0][row - top][col - left];
+                const short *const hex = hexmap(row,col,allhex);
+                for(int d = 0; d < ndir; d += 2, rfx += TS * TS)
+                  if(hex[d] + hex[d + 1])
+                  {
+                    float g = 3.f * rfx[0][1] - 2.f * rfx[hex[d]][1] - rfx[hex[d + 1]][1];
+                    for(int c = 0; c < 4; c += 2)
+                      rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 3.f;
+                  }
+                  else
+                  {
+                    float g = 2.f * rfx[0][1] - rfx[hex[d]][1] - rfx[hex[d + 1]][1];
+                    for(int c = 0; c < 4; c += 2)
+                      rfx[0][c] = (g + rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 2.f;
+                  }
+              }
+      } // end of multipass loop
+
+      // jump back to the first set of rgb buffers (this is a nop
+      // unless on the second pass)
+      rgb = (float(*)[TS][TS][3])buffer;
+      // from here on out, mainly are working within the current tile
+      // rather than in reference to the image, so don't offset
+      // mrow/mcol by top/left of tile
+      mrow -= top;
+      mcol -= left;
+
+      /* Convert to perceptual colorspace and differentiate in all directions:  */
+      // Original dcraw algorithm uses CIELab as perceptual space
+      // (presumably coming from original AHD) and converts taking
+      // camera matrix into account. Now use YPbPr which requires much
+      // less code and is nearly indistinguishable. It assumes the
+      // camera RGB is roughly linear.
+      for(int d = 0; d < ndir; d++)
+      {
+        const int pad_yuv = (passes == 1) ? 8 : 13;
+        for(int row = pad_yuv; row < mrow - pad_yuv; row++)
+          for(int col = pad_yuv; col < mcol - pad_yuv; col++)
+          {
+            float *rx = rgb[d][row][col];
+            // use ITU-R BT.2020 YPbPr, which is great, but could use
+            // a better/simpler choice? note that imageop.h provides
+            // dt_iop_RGB_to_YCbCr which uses Rec. 601 conversion,
+            // which appears less good with specular highlights
+            float y = 0.2627f * rx[0] + 0.6780f * rx[1] + 0.0593f * rx[2];
+            yuv[0][row][col] = y;
+            yuv[1][row][col] = (rx[2] - y) * 0.56433f;
+            yuv[2][row][col] = (rx[0] - y) * 0.67815f;
+          }
+        // Note that f can offset by a column (-1 or +1) and by a row
+        // (-TS or TS). The row-wise offsets cause the undefined
+        // behavior sanitizer to warn of an out of bounds index, but
+        // as yfx is multi-dimensional and there is sufficient
+        // padding, that is not actually so.
+        const int f = dir[d & 3];
+        const int pad_drv = (passes == 1) ? 9 : 14;
+        for(int row = pad_drv; row < mrow - pad_drv; row++)
+          for(int col = pad_drv; col < mcol - pad_drv; col++)
+          {
+            float(*yfx)[TS][TS] = (float(*)[TS][TS]) & yuv[0][row][col];
+            drv[d][row][col] = SQR(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
+                               + SQR(2 * yfx[1][0][0] - yfx[1][0][f] - yfx[1][0][-f])
+                               + SQR(2 * yfx[2][0][0] - yfx[2][0][f] - yfx[2][0][-f]);
+          }
+      }
+
+      /* Build homogeneity maps from the derivatives:                   */
+      memset(homo, 0, (size_t)ndir * TS * TS * sizeof(uint8_t));
+      const int pad_homo = (passes == 1) ? 10 : 15;
+      for(int row = pad_homo; row < mrow - pad_homo; row++)
+        for(int col = pad_homo; col < mcol - pad_homo; col++)
+        {
+          float tr = FLT_MAX;
+          for(int d = 0; d < ndir; d++)
+            if(tr > drv[d][row][col]) tr = drv[d][row][col];
+          tr *= 8;
+          for(int d = 0; d < ndir; d++)
+            for(int v = -1; v <= 1; v++)
+              for(int h = -1; h <= 1; h++) homo[d][row][col] += ((drv[d][row + v][col + h] <= tr) ? 1 : 0);
+        }
+
+      /* Build 5x5 sum of homogeneity maps for each pixel & direction */
+      for(int d = 0; d < ndir; d++)
+        for(int row = pad_tile; row < mrow - pad_tile; row++)
+        {
+          // start before first column where homo[d][row][col+2] != 0,
+          // so can know v5sum and homosum[d][row][col] will be 0
+          int col = pad_tile-5;
+          uint8_t v5sum[5] = { 0 };
+          homosum[d][row][col] = 0;
+          // calculate by rolling through column sums
+          for(col++; col < mcol - pad_tile; col++)
+          {
+            uint8_t colsum = 0;
+            for(int v = -2; v <= 2; v++) colsum += homo[d][row + v][col + 2];
+            homosum[d][row][col] = homosum[d][row][col - 1] - v5sum[col % 5] + colsum;
+            v5sum[col % 5] = colsum;
+          }
+        }
+
+      /* Average the most homogenous pixels for the final result:       */
+      for(int row = pad_tile; row < mrow - pad_tile; row++)
+        for(int col = pad_tile; col < mcol - pad_tile; col++)
+        {
+          uint8_t hm[8] = { 0 };
+          uint8_t maxval = 0;
+          for(int d = 0; d < ndir; d++)
+          {
+            hm[d] = homosum[d][row][col];
+            maxval = (maxval < hm[d] ? hm[d] : maxval);
+          }
+          maxval -= maxval >> 3;
+          for(int d = 0; d < ndir - 4; d++)
+            if(hm[d] < hm[d + 4])
+              hm[d] = 0;
+            else if(hm[d] > hm[d + 4])
+              hm[d + 4] = 0;
+          float avg[4] = { 0.0f };
+          for(int d = 0; d < ndir; d++)
+            if(hm[d] >= maxval)
+            {
+              for(int c = 0; c < 3; c++) avg[c] += rgb[d][row][col][c];
+              avg[3]++;
+            }
+          for(int c = 0; c < 3; c++)
+            out[4 * (width * (row + top) + col + left) + c] =
+              avg[c]/avg[3];
+        }
+    }
+  }
+  free(all_buffers);
+}
+
+/*
+  Ingo Liebhardt 's  frequency domain chroma approach for Fuji X-Trans sensors
+ */
+static void xtrans_fdc_interpolate(float *out, const float *const in,
+                                           const dt_iop_roi_t *const roi_out,
+                                           const dt_iop_roi_t *const roi_in,
+                                           const uint8_t (*const xtrans)[6])
+{
+  static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
+                     patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
+                                     { 0, 1, 0, -2, 1, 0, -2, 0, 1, 1, -2, -2, 1, -1, -1, 1 } },
+                     dir[4] = { 1, TS, TS + 1, TS - 1 };
+
   static const float directionality[8] = { 1.0f, 0.0f, 0.5f, 0.5f, 1.0f, 0.0f, 0.5f, 0.5f };
 
   short allhex[3][3][8];
@@ -534,6 +982,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
   // green pixels (initialized here only to avoid compiler warning)
   unsigned short sgrow = 0, sgcol = 0;
 
+  const int passes = 1;
   const int width = roi_out->width;
   const int height = roi_out->height;
   const int ndir = 4 << (passes > 1);
@@ -1958,7 +2407,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2 && roi_out->scale <= .99999f
      && // only overwrite setting if quality << requested and in dr mode
      (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)) // do not touch this special method
-    demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
+    demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_FDC;
 
   // we check if we need ultra-high quality thumbnail for this size
   int uhq_thumb = 0;
@@ -2009,7 +2458,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else if(piece->pipe->dsc.filters == 9u)
     {
-      if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && xtrans_full_markesteijn_demosaicing)
+      if(demosaicing_method == DT_IOP_DEMOSAIC_FDC && xtrans_full_markesteijn_demosaicing)
+        xtrans_fdc_interpolate(tmp, pixels, &roo, &roi, xtrans);
+      else if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && xtrans_full_markesteijn_demosaicing)
         xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans,
                                        1 + (demosaicing_method - DT_IOP_DEMOSAIC_MARKESTEIJN) * 2);
       else
@@ -3782,7 +4233,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->overlap = 5; // take care of border handling
   }
   else if(((demosaicing_method ==  DT_IOP_DEMOSAIC_MARKESTEIJN) ||
-           (demosaicing_method ==  DT_IOP_DEMOSAIC_MARKESTEIJN_3)) &&
+           (demosaicing_method ==  DT_IOP_DEMOSAIC_MARKESTEIJN_3) ||
+           (demosaicing_method ==  DT_IOP_DEMOSAIC_FDC)) &&
            xtrans_full_markesteijn_demosaicing)
   {
     // X-Trans pattern full Markesteijn processing
@@ -3985,6 +4437,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     case DT_IOP_DEMOSAIC_MARKESTEIJN_3:
       piece->process_cl_ready = 1;
       break;
+    case DT_IOP_DEMOSAIC_FDC:
+      piece->process_cl_ready = 0;
+      break;
     default:
       piece->process_cl_ready = 0;
   }
@@ -4087,7 +4542,7 @@ void reload_defaults(dt_iop_module_t *module)
   else
     module->default_enabled = 0;
 
-  if(module->dev->image_storage.buf_dsc.filters == 9u) tmp.demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+  if(module->dev->image_storage.buf_dsc.filters == 9u) tmp.demosaicing_method = DT_IOP_DEMOSAIC_FDC;
 
 end:
   memcpy(module->params, &tmp, sizeof(dt_iop_demosaic_params_t));
@@ -4187,7 +4642,7 @@ static void demosaic_method_xtrans_callback(GtkWidget *combo, dt_iop_module_t *s
   p->demosaicing_method = dt_bauhaus_combobox_get(combo) | DEMOSAIC_XTRANS;
   if((p->demosaicing_method > (DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME | DEMOSAIC_XTRANS))
      || (p->demosaicing_method < DT_IOP_DEMOSAIC_VNG))
-    p->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+    p->demosaicing_method = DT_IOP_DEMOSAIC_FDC;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -4217,6 +4672,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slow)"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("passthrough (monochrome) (experimental)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Frequency Domain Chroma"));
   gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("demosaicing raw data method"));
 
   g->median_thrs = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
