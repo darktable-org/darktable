@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
-    copyright (c) 2011--2013 Ulrich Pegelow.
+    copyright (c) 2011--2017 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1326,31 +1326,38 @@ int dt_opencl_lock_device(const int pipetype)
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return -1;
 
-  const int *priority;
+
+  dt_pthread_mutex_lock(&cl->lock);
+
+  size_t prio_size = sizeof(int) * (cl->num_devs + 1);
+  int *priority = (int *)malloc(prio_size);
   int mandatory;
 
   switch(pipetype)
   {
     case DT_DEV_PIXELPIPE_FULL:
-      priority = cl->dev_priority_image;
+      memcpy(priority, cl->dev_priority_image, prio_size);
       mandatory = cl->mandatory[0];
       break;
     case DT_DEV_PIXELPIPE_PREVIEW:
-      priority = cl->dev_priority_preview;
+      memcpy(priority, cl->dev_priority_preview, prio_size);
       mandatory = cl->mandatory[1];
       break;
     case DT_DEV_PIXELPIPE_EXPORT:
-      priority = cl->dev_priority_export;
+      memcpy(priority, cl->dev_priority_export, prio_size);
       mandatory = cl->mandatory[2];
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
-      priority = cl->dev_priority_thumbnail;
+      memcpy(priority, cl->dev_priority_thumbnail, prio_size);
       mandatory = cl->mandatory[3];
       break;
     default:
+      free(priority);
       priority = NULL;
       mandatory = 0;
   }
+
+  dt_pthread_mutex_unlock(&cl->lock);
 
   if(priority)
   {
@@ -1364,11 +1371,20 @@ int dt_opencl_lock_device(const int pipetype)
 
       while(*prio != -1)
       {
-        if(!dt_pthread_mutex_trylock(&cl->dev[*prio].lock)) return *prio;
+        if(!dt_pthread_mutex_trylock(&cl->dev[*prio].lock))
+        {
+          int devid = *prio;
+          free(priority);
+          return devid;
+        }
         prio++;
       }
 
-      if(!mandatory) return -1;
+      if(!mandatory)
+      {
+        free(priority);
+        return -1;
+      }
 
       dt_iop_nap(usec);
     }
@@ -1382,6 +1398,8 @@ int dt_opencl_lock_device(const int pipetype)
       if(!dt_pthread_mutex_trylock(&cl->dev[try_dev].lock)) return try_dev;
     }
   }
+
+  free(priority);
 
   // no free GPU :(
   // use CPU processing, if no free device:
@@ -2431,6 +2449,7 @@ static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t pr
 {
   char *str;
 
+  dt_pthread_mutex_lock(&darktable.opencl->lock);
   darktable.opencl->scheduling_profile = profile;
 
   switch(profile)
@@ -2440,7 +2459,7 @@ static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t pr
       dt_opencl_set_synchronization_timeout(20);
       break;
     case OPENCL_PROFILE_VERYFAST_GPU:
-      dt_opencl_update_priorities("+*/+*/*/*");
+      dt_opencl_update_priorities("+*/+*/+*/+*");
       dt_opencl_set_synchronization_timeout(0);
       break;
     case OPENCL_PROFILE_DEFAULT:
@@ -2451,6 +2470,7 @@ static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t pr
       dt_opencl_set_synchronization_timeout(dt_conf_get_int("pixelpipe_synchronization_timeout"));
       break;
   }
+  dt_pthread_mutex_unlock(&darktable.opencl->lock);
 }
 
 /** get global memory of device */
