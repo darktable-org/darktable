@@ -225,6 +225,9 @@ def add_edges(gr):
   gr.add_edge(('colisa', 'colorreconstruction'))
   gr.add_edge(('defringe', 'colorreconstruction'))
 
+  # we want haze removal in RGB space before color reconstruction
+  gr.add_edge(('colorin', 'hazeremoval'))
+  gr.add_edge(('hazeremoval', 'profile_gamma'))
 
   # spot removal works on demosaiced data
   # and needs to be before geometric distortions:
@@ -516,6 +519,7 @@ gr.add_nodes([
 'highlights',
 'highpass',
 'invert',
+'hazeremoval',
 'hotpixels',
 'lens',
 'levels',
