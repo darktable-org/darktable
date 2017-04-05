@@ -42,7 +42,13 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
+
+#if !defined(_WIN32)
 #include <sys/statvfs.h>
+#else 
+//statvfs does not exist in Windows, providing implementation
+#include "win/statvfs.h"
+#endif
 
 #define DT_MIPMAP_CACHE_FILE_MAGIC 0xD71337
 #define DT_MIPMAP_CACHE_FILE_VERSION 23
@@ -1055,8 +1061,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
     else if(image->buf_dsc.filters == 9u && image->buf_dsc.datatype == TYPE_UINT16)
     {
       dt_iop_clip_and_zoom_mosaic_third_size_xtrans((uint16_t * const)out, (const uint16_t *)buf.buf, &roi_out,
-                                                    &roi_in, roi_out.width, roi_in.width, image->buf_dsc.xtrans,
-                                                    image->raw_white_point);
+                                                    &roi_in, roi_out.width, roi_in.width, image->buf_dsc.xtrans);
     }
     else if(image->buf_dsc.filters == 9u && image->buf_dsc.datatype == TYPE_FLOAT)
     {

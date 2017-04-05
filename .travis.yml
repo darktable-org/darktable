@@ -22,7 +22,7 @@ notifications:
     skip_join: true
     template:
       - "%{repository}#%{build_number} (\x037%{branch}\x03 - \x02%{commit}\x02 : \x033%{author}\x03): \x1f\x02%{message}\x02\x1f"
-      - "Build details : %{build_url}"
+      - "Build details : <%{build_url}>"
   email:
     recipients:
 #     - darktable-ci@lists.darktable.org
@@ -43,7 +43,7 @@ services:
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker pull darktable/darktable; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update && brew tap Homebrew/bundle && brew bundle; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update && brew tap Homebrew/bundle && brew bundle --verbose; fi
 
 env:
   global:

@@ -155,7 +155,11 @@ include(compiler-versions)
 
 if(WIN32)
   message("-- Win32 build detected, setting default features")
-  set(USE_CAMERA_SUPPORT OFF)
+  set(USE_COLORD OFF)
+  set(USE_KWALLET OFF)
+  set(BUILD_CMSTEST OFF)
+  set(BUILD_PRINT OFF)
+  set(TESTBUILD_OPENCL_PROGRAMS OFF)
 endif(WIN32)
 
 
@@ -212,7 +216,7 @@ else(DEFINED PROJECT_VERSION)
     else(NOT EXISTS ${CMAKE_SOURCE_DIR}/src/version_gen.c)
       # no need to create version_gen.c if it's already shipped. that is for example the case with our release tarballs
       execute_process(
-        COMMAND ${CMAKE_SOURCE_DIR}/tools/parse_version_h.sh ${CMAKE_SOURCE_DIR}/src/version_gen.c OUTPUT_STRIP_TRAILING_WHITESPACE
+        COMMAND ${CMAKE_SOURCE_DIR}/tools/parse_version_c.sh ${CMAKE_SOURCE_DIR}/src/version_gen.c OUTPUT_STRIP_TRAILING_WHITESPACE
         OUTPUT_VARIABLE PROJECT_VERSION
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       )
@@ -255,6 +259,7 @@ if(CMAKE_BUILD_TYPE MATCHES "^[Dd][Ee][Bb][Uu][Gg]$" AND SOURCE_PACKAGE)
 endif()
 
 include(compiler-warnings)
+include(windows-macros)
 
 # Setting the runtime path works differently on OSX than on Linux or BSD.
 # Hence use a variable that maps those in the correct way for each OS.
@@ -326,7 +331,7 @@ if(TESTBUILD_OPENCL_PROGRAMS)
     message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 
     find_program(CLANG_OPENCL_COMPILER
-      NAMES clang-${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR} clang-${LLVM_PACKAGE_VERSION}
+      NAMES clang-${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR} clang-${LLVM_PACKAGE_VERSION} clang${LLVM_VERSION_MAJOR}${LLVM_VERSION_MINOR}
     )
 
     if (NOT ${CLANG_OPENCL_COMPILER} STREQUAL "CLANG_OPENCL_COMPILER-NOTFOUND")

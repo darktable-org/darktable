@@ -279,16 +279,17 @@ class CameraSupportState
     def print_list(name, list)
       return if list.size == 0
       puts name
+      puts
       list.each do |item|
-        puts " - "+item
+        puts "- "+item
       end
       puts
     end
 
-    print_list "Base Support", new_basics
-    print_list "White Balance Presets", new_presets
-    print_list "Noise Profiles", new_profiles
-    print_list "Custom Color matrices", new_matrices
+    print_list "Base Support:", new_basics
+    print_list "White Balance Presets:", new_presets
+    print_list "Noise Profiles:", new_profiles
+    print_list "Custom Color matrices:", new_matrices
   end
 end #class CameraSupportState
 

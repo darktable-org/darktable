@@ -1,6 +1,7 @@
 build*/
 *~
 *.pot
+*.mo
 doc/usermanual/darktable-usermanual*.pdf
 doc/api/
 tools/iop_deps.pdf
@@ -8,4 +9,5 @@ tools/iop_deps.pdf
 .DS_Store
 cscope.out
 .*.swp
+.vscode/
 

@@ -171,7 +171,7 @@ typedef struct dt_image_t
   /* needed in exposure iop for Deflicker */
   uint16_t raw_black_level;
   uint16_t raw_black_level_separate[4];
-  uint16_t raw_white_point;
+  uint32_t raw_white_point;
 
   /* needed to fix some manufacturers madness */
   uint32_t fuji_rotation_pos;
@@ -247,11 +247,11 @@ static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int
     case 1:
       return ORIENTATION_NONE;
     case 2:
-      return ORIENTATION_FLIP_VERTICALLY;
+      return ORIENTATION_FLIP_HORIZONTALLY;
     case 3:
       return ORIENTATION_ROTATE_180_DEG;
     case 4:
-      return ORIENTATION_FLIP_HORIZONTALLY;
+      return ORIENTATION_FLIP_VERTICALLY;
     case 5:
       return ORIENTATION_400; // ???
     case 6:

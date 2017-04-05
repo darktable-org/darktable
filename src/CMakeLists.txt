@@ -1,3 +1,5 @@
+add_subdirectory(external)
+
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
@@ -43,6 +45,8 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_rawspeed.cc"
   "common/import_session.c"
   "common/interpolation.c"
+  "common/locallaplacian.c"
+  "common/locallaplaciancl.c"
   "common/metadata.c"
   "common/mipmap_cache.c"
   "common/noiseprofiles.c"
@@ -109,11 +113,41 @@ if(APPLE)
   set_source_files_properties(osx/osx.mm PROPERTIES LANGUAGE CXX)
 endif(APPLE)
 
+if(WIN32)
+  list(APPEND SOURCE_FILES "win/strptime.c")
+  list(APPEND HEADER_FILES "win/strptime.h")
+  list(APPEND SOURCE_FILES "win/statvfs.c")
+  list(APPEND HEADER_FILES "win/statvfs.h")
+
+  list(APPEND SOURCE_FILES "win/getrusage.c")
+  list(APPEND HEADER_FILES "win/getrusage.h")
+
+  list(APPEND SOURCE_FILES "win/rlimit.c")
+  list(APPEND HEADER_FILES "win/rlimit.h")
+
+  list(APPEND SOURCE_FILES "win/getdelim.c")
+  list(APPEND HEADER_FILES "win/getdelim.h")
+
+  list(APPEND SOURCE_FILES "win/dtwin.c")
+  list(APPEND HEADER_FILES "win/dtwin.h")
+
+  # Use mingw's sprintf instead of windows's
+  ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
+
+  # add it to have proper time.h functions available
+  ADD_DEFINITIONS(-D_POSIX_THREAD_SAFE_FUNCTIONS)
+
+  # add icon resource for Windows executable
+  SET(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
+  set(RESOURCE_OBJECT win/darktable.rc)
+
+endif(WIN32)
+
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
@@ -136,9 +170,25 @@ endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-if(APPLE AND (CMAKE_C_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
+if(APPLE AND (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES stdc++)
+        list(APPEND CMAKE_CXX_IMPLICIT_LINK_LIBRARIES c++)
+        list(REMOVE_DUPLICATES CMAKE_CXX_IMPLICIT_LINK_LIBRARIES)
 endif()
+
+# Check for base threading library
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+find_package(Threads REQUIRED)
+# Fail if returned library is not pthread
+if(NOT CMAKE_USE_PTHREADS_INIT)
+  message(FATAL_ERROR "POSIX threads: not found")
+endif()
+# Append thread flags/libraries to LIBS
+list(APPEND LIBS "${CMAKE_THREAD_LIBS_INIT}")
+
+# Need to explicitly link against math library.
+list(APPEND LIBS "-lm")
 
 # Check for openmp
 find_package(OpenMP)
@@ -223,7 +273,7 @@ if(USE_WEBP)
   else(USE_WEBP)
 endif(USE_WEBP)
 
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo PThread Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -372,29 +422,21 @@ if(NOT HAVE_TLS)
   MESSAGE(FATAL_ERROR "The compiler does not support Thread-local storage.")
 endif()
 
-if(NOT WIN32)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-endif(NOT WIN32)
 
 if(WIN32)
-  # get rid of the console window. do we need both?
-#   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -Wl,-subsystem,windows")
-#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows -Wl,-subsystem,windows")
+  #TODO: Review these
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -Wl,-subsystem,windows")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows -Wl,-subsystem,windows")
 
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
   set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
 
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mms-bitfields")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mms-bitfields")
+  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
+  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
 
-  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
-  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
-
-  list(APPEND LIBS ws2_32)
-  list(APPEND LIBS msvcrt) # Needed for _aligned_alloc()
-  list(APPEND SOURCES "win/getrusage.c")
+  list(APPEND LIBS psapi) # Needed for GetProcessMemoryInfo()
+  list(APPEND LIBS exchndl) # Needed for exception handling and backtrace()
 endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
@@ -453,14 +495,14 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 # Build external deps
 #
 if(USE_LUA)
-  find_package(Lua52 5.2)
-  if(LUA52_FOUND)
+  find_package(Lua53 5.3)
+  if(LUA53_FOUND)
     message(STATUS "Lua support: Enabled")
-    include_directories(SYSTEM ${LUA52_INCLUDE_DIRS})
-    list(APPEND LIBS ${LUA52_LDFLAGS})
+    include_directories(SYSTEM ${LUA53_INCLUDE_DIRS})
+    list(APPEND LIBS ${LUA53_LDFLAGS})
   else()
     if(DONT_USE_INTERNAL_LUA)
-      message(STATUS "Lua support: System library for lua 5.2 not found (to use darktable's version use -DDONT_USE_INTERNAL_LUA=Off)")
+      message(STATUS "Lua support: System library for lua 5.3 not found (to use darktable's version use -DDONT_USE_INTERNAL_LUA=Off)")
       set(USE_LUA OFF)
     else(DONT_USE_INTERNAL_LUA)
       message(STATUS "Lua support: System library not found (using darktable's version)")
@@ -468,7 +510,7 @@ if(USE_LUA)
       add_subdirectory(external/lua)
       list(APPEND LIBS lua)
     endif(DONT_USE_INTERNAL_LUA)
-  endif(LUA52_FOUND)
+  endif(LUA53_FOUND)
 
   if(USE_LUA)
     add_definitions("-DUSE_LUA")
@@ -507,6 +549,7 @@ if(USE_LUA)
       "lua/widget/entry.c"
       "lua/widget/file_chooser.c"
       "lua/widget/label.c"
+      "lua/widget/section_label.c"
       "lua/widget/separator.c"
       "lua/widget/slider.c"
       "lua/widget/stack.c"
@@ -519,9 +562,9 @@ else(USE_LUA)
 endif(USE_LUA)
 
 if(USE_LUA)
-  if(NOT LUA52_FOUND)
+  if(NOT LUA53_FOUND)
     list(APPEND LIB_DEPS lua) # 2nd half of the uglyness :/
-  endif(NOT LUA52_FOUND)
+  endif(NOT LUA53_FOUND)
   # liblautoc for lua automated interface generation
   add_library(lautoc_static STATIC IMPORTED)
   set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a POSITION_INDEPENDENT_CODE True)
@@ -541,9 +584,8 @@ if(NOT SOURCE_PACKAGE AND NOT APPLE)
 endif()
 
 # compile rawspeed
-add_subdirectory(external/rawspeed)
 list(APPEND LIB_DEPS rawspeed)
-list(APPEND STATIC_LIBS rawspeed_static)
+list(APPEND STATIC_LIBS rawspeed_static_dt)
 
 # osm gps map library
 if(USE_MAP)
@@ -704,7 +746,7 @@ unset(LIB_DEPS)
 #
 if(WIN32)
   # Windows needs its DLLs in the same directory as the executable to find them.
-  install(TARGETS lib_darktable DESTINATION bin)
+  install(TARGETS lib_darktable DESTINATION bin COMPONENT DTApplication)
 else(WIN32)
   install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable)
 endif(WIN32)
@@ -749,4 +791,15 @@ if(APPLE)
   set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon -framework AppKit")
 endif(APPLE)
 target_link_libraries(darktable lib_darktable)
-install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+if (WIN32)
+  _detach_debuginfo (darktable bin)
+  _detach_debuginfo (lib_darktable bin)
+endif(WIN32)
+
+install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)
+
+InstallDependencyFiles()
+
+# Tell CPack about the components and group the data components together (CPACK_COMPONENT_${COMPONENT_NAME_ALL_CAPS}_GROUP).
+set(CPACK_COMPONENTS_ALL DTApplication DTDebugSymbols DTDocuments DTDependencies)

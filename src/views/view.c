@@ -497,7 +497,7 @@ void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, i
 {
   if(vm->current_view < 0)
   {
-    cairo_set_source_rgb(cr, darktable.gui->bgcolor[0], darktable.gui->bgcolor[1], darktable.gui->bgcolor[2]);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_BG);
     cairo_paint(cr);
     return;
   }
@@ -565,8 +565,6 @@ void dt_view_manager_mouse_enter(dt_view_manager_t *vm)
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->mouse_enter) v->mouse_enter(v);
-  /* raise widget */
-  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 }
 
 void dt_view_manager_mouse_moved(dt_view_manager_t *vm, double x, double y, double pressure, int which)

@@ -47,6 +47,11 @@
 #define ROUNDUPWD(a) dt_opencl_roundup(a)
 #define ROUNDUPHT(a) dt_opencl_roundup(a)
 
+typedef enum dt_opencl_memory_t
+{
+  OPENCL_MEMORY_ADD,
+  OPENCL_MEMORY_SUB
+} dt_opencl_memory_t;
 
 /**
  * Accounting information used for OpenCL events.
@@ -94,9 +99,12 @@ typedef struct dt_opencl_device_t
   const char *options;
   cl_int summary;
   float benchmark;
+  size_t memory_in_use;
+  size_t peak_memory;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
+struct dt_local_laplacian_cl_global_t;
 /**
  * main struct, stored in darktable.opencl.
  * holds pointers to all
@@ -133,6 +141,9 @@ typedef struct dt_opencl_t
 
   // global kernels for interpolation resampling.
   struct dt_interpolation_cl_global_t *interpolation;
+
+  // global kernels for local laplacian filter.
+  struct dt_local_laplacian_cl_global_t *local_laplacian;
 } dt_opencl_t;
 
 /** internally calls dt_clGetDeviceInfo, and takes care of memory allocation
@@ -286,6 +297,12 @@ void *dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, c
                            size_t size);
 
 int dt_opencl_unmap_mem_object(const int devid, cl_mem mem_object, void *mapped_ptr);
+
+size_t dt_opencl_get_mem_object_size(cl_mem mem);
+
+int dt_opencl_get_mem_context_id(cl_mem mem);
+
+void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action);
 
 /** check if image size fit into limits given by OpenCL runtime */
 int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
