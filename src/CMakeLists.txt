@@ -29,6 +29,7 @@ FILE(GLOB SOURCE_FILES
   "common/fswatch.c"
   "common/gaussian.c"
   "common/grouping.c"
+  "common/guided_filter.c"
   "common/history.c"
   "common/gpx.c"
   "common/image.c"
