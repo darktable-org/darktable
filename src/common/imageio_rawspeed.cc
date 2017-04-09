@@ -46,7 +46,7 @@ int rawspeed_get_number_of_processor_cores()
 #endif
 }
 
-using namespace RawSpeed;
+using namespace rawspeed;
 
 static dt_imageio_retval_t dt_imageio_open_rawspeed_sraw (dt_image_t *img, RawImage r, dt_mipmap_buffer_t *buf);
 static CameraMetaData *meta = NULL;
