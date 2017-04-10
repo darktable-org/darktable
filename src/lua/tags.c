@@ -61,7 +61,7 @@ static int tag_length(lua_State *L)
     return luaL_error(L, "unknown SQL error");
   }
   count = sqlite3_column_int(stmt, 0);
-  lua_pushnumber(L, count);
+  lua_pushinteger(L, count);
   sqlite3_finalize(stmt);
   return 1;
 }
@@ -108,7 +108,7 @@ static int tag_lib_length(lua_State *L)
     return luaL_error(L, "unknown SQL error");
   }
   count = sqlite3_column_int(stmt, 0);
-  lua_pushnumber(L, count);
+  lua_pushinteger(L, count);
   sqlite3_finalize(stmt);
   return 1;
 }

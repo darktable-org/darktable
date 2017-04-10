@@ -689,6 +689,7 @@ void init_key_accels (dt_iop_module_so_t *module)
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot circle tool"),   0, 0);
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot elipse tool"),   0, 0);
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot path tool"),     0, 0);
+  dt_accel_register_iop (module, TRUE, NC_("accel", "spot show or hide"),  0, 0);
 }
 
 static gboolean _add_circle_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -721,6 +722,14 @@ static gboolean _add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceler
   return TRUE;
 }
 
+static gboolean _show_hide_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                     GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)data;
+  dt_masks_set_edit_mode(module, module->dev->form_gui->edit_mode == DT_MASKS_EDIT_FULL ? DT_MASKS_EDIT_OFF : DT_MASKS_EDIT_FULL);
+  return TRUE;
+}
+
 void connect_key_accels (dt_iop_module_t *module)
 {
   GClosure *closure;
@@ -733,6 +742,9 @@ void connect_key_accels (dt_iop_module_t *module)
 
   closure = g_cclosure_new(G_CALLBACK(_add_path_key_accel), (gpointer)module, NULL);
   dt_accel_connect_iop (module, "spot path tool", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(_show_hide_key_accel), (gpointer)module, NULL);
+  dt_accel_connect_iop (module, "spot show or hide", closure);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

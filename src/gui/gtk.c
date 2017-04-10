@@ -256,6 +256,110 @@ static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpoi
   return TRUE;
 }
 
+gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x, gdouble *delta_y)
+{
+  gboolean handled = FALSE;
+  switch(event->direction)
+  {
+    // is one-unit cardinal, e.g. from a mouse scroll wheel
+    case GDK_SCROLL_LEFT:
+      if(delta_x) *delta_x = -1.0;
+      if(delta_y) *delta_y = 0.0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_RIGHT:
+      if(delta_x) *delta_x = 1.0;
+      if(delta_y) *delta_y = 0.0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_UP:
+      if(delta_x) *delta_x = 0.0;
+      if(delta_y) *delta_y = -1.0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_DOWN:
+      if(delta_x) *delta_x = 0.0;
+      if(delta_y) *delta_y = 1.0;
+      handled = TRUE;
+      break;
+    // is trackpad (or touch) scroll
+    case GDK_SCROLL_SMOOTH:
+      if(delta_x) *delta_x = event->delta_x;
+      if(delta_y) *delta_y = event->delta_y;
+      handled = TRUE;
+    default:
+      break;
+    }
+  return handled;
+}
+
+gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y)
+{
+  // accumulates scrolling regardless of source or the widget being scrolled
+  static gdouble acc_x = 0.0, acc_y = 0.0;
+  gboolean handled = FALSE;
+
+  switch(event->direction)
+  {
+    // is one-unit cardinal, e.g. from a mouse scroll wheel
+    case GDK_SCROLL_LEFT:
+      if(delta_x) *delta_x = -1;
+      if(delta_y) *delta_y = 0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_RIGHT:
+      if(delta_x) *delta_x = 1;
+      if(delta_y) *delta_y = 0;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_UP:
+      if(delta_x) *delta_x = 0;
+      if(delta_y) *delta_y = -1;
+      handled = TRUE;
+      break;
+    case GDK_SCROLL_DOWN:
+      if(delta_x) *delta_x = 0;
+      if(delta_y) *delta_y = 1;
+      handled = TRUE;
+      break;
+    // is trackpad (or touch) scroll
+    case GDK_SCROLL_SMOOTH:
+#if GTK_CHECK_VERSION(3, 20, 0)
+      // stop events reset accumulated delta
+      if(event->is_stop)
+      {
+        acc_x = acc_y = 0.0;
+        break;
+      }
+#endif
+      // accumulate trackpad/touch scrolls until they make a unit
+      // scroll, and only then tell caller that there is a scroll to
+      // handle
+      acc_x += event->delta_x;
+      acc_y += event->delta_y;
+      if(fabs(acc_x) >= 1.0)
+      {
+        gdouble amt = trunc(acc_x);
+        acc_x -= amt;
+        if(delta_x) *delta_x = (int)amt;
+        if(delta_y) *delta_y = 0;
+        handled = TRUE;
+      }
+      if(fabs(acc_y) >= 1.0)
+      {
+        gdouble amt = trunc(acc_y);
+        acc_y -= amt;
+        if(delta_x && !handled) *delta_x = 0;
+        if(delta_y) *delta_y = (int)amt;
+        handled = TRUE;
+      }
+      break;
+    default:
+      break;
+  }
+  return handled;
+}
+
 static gboolean _widget_focus_in_block_key_accelerators(GtkWidget *widget, GdkEventFocus *event, gpointer data)
 {
   dt_control_key_accelerators_off(darktable.control);
@@ -462,9 +566,15 @@ static gboolean draw(GtkWidget *da, cairo_t *cr, gpointer user_data)
 
 static gboolean scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  dt_view_manager_scrolled(darktable.view_manager, event->x, event->y, event->direction == GDK_SCROLL_UP,
-                           event->state & 0xf);
-  gtk_widget_queue_draw(widget);
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  {
+    dt_view_manager_scrolled(darktable.view_manager, event->x, event->y,
+                             delta_y < 0,
+                             event->state & 0xf);
+    gtk_widget_queue_draw(widget);
+  }
+
   return TRUE;
 }
 
@@ -1282,7 +1392,7 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_app_paintable(cda, TRUE);
   gtk_widget_set_events(cda, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
                              | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                             | GDK_SCROLL_MASK);
+                             | GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
   gtk_widget_set_can_focus(cda, TRUE);
   gtk_widget_set_visible(cda, TRUE);
 

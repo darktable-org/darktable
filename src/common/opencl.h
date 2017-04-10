@@ -47,6 +47,18 @@
 #define ROUNDUPWD(a) dt_opencl_roundup(a)
 #define ROUNDUPHT(a) dt_opencl_roundup(a)
 
+typedef enum dt_opencl_memory_t
+{
+  OPENCL_MEMORY_ADD,
+  OPENCL_MEMORY_SUB
+} dt_opencl_memory_t;
+
+typedef enum dt_opencl_scheduling_profile_t
+{
+  OPENCL_PROFILE_DEFAULT,
+  OPENCL_PROFILE_MULTIPLE_GPUS,
+  OPENCL_PROFILE_VERYFAST_GPU
+} dt_opencl_scheduling_profile_t;
 
 /**
  * Accounting information used for OpenCL events.
@@ -94,6 +106,8 @@ typedef struct dt_opencl_device_t
   const char *options;
   cl_int summary;
   float benchmark;
+  size_t memory_in_use;
+  size_t peak_memory;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -118,7 +132,10 @@ typedef struct dt_opencl_t
   int stopped;
   int num_devs;
   int error_count;
+  int opencl_synchronization_timeout;
+  dt_opencl_scheduling_profile_t scheduling_profile;
   uint32_t crc;
+  int mandatory[4];
   int *dev_priority_image;
   int *dev_priority_preview;
   int *dev_priority_export;
@@ -210,8 +227,8 @@ int dt_opencl_is_enabled(void);
 /** disable opencl */
 void dt_opencl_disable(void);
 
-/** update enabled flag with value from preferences */
-int dt_opencl_update_enabled(void);
+/** update enabled flag and profile with value from preferences, returns enabled flag */
+int dt_opencl_update_settings(void);
 
 /** HAVE_OPENCL mode only: copy and alloc buffers. */
 int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width,
@@ -290,6 +307,12 @@ void *dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, c
                            size_t size);
 
 int dt_opencl_unmap_mem_object(const int devid, cl_mem mem_object, void *mapped_ptr);
+
+size_t dt_opencl_get_mem_object_size(cl_mem mem);
+
+int dt_opencl_get_mem_context_id(cl_mem mem);
+
+void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action);
 
 /** check if image size fit into limits given by OpenCL runtime */
 int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
@@ -408,7 +431,7 @@ static inline int dt_opencl_is_enabled(void)
 static inline void dt_opencl_disable(void)
 {
 }
-static inline int dt_opencl_update_enabled(void)
+static inline int dt_opencl_update_settings(void)
 {
   return 0;
 }
