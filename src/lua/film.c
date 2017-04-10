@@ -104,11 +104,11 @@ static int film_len(lua_State *L)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    lua_pushnumber(L, sqlite3_column_int(stmt, 0));
+    lua_pushinteger(L, sqlite3_column_int(stmt, 0));
   }
   else
   {
-    lua_pushnumber(L, 0);
+    lua_pushinteger(L, 0);
   }
   sqlite3_finalize(stmt);
   return 1;
@@ -149,11 +149,11 @@ static int films_len(lua_State *L)
                               NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    lua_pushnumber(L, sqlite3_column_int(stmt, 0));
+    lua_pushinteger(L, sqlite3_column_int(stmt, 0));
   }
   else
   {
-    lua_pushnumber(L, 0);
+    lua_pushinteger(L, 0);
   }
   sqlite3_finalize(stmt);
   return 1;

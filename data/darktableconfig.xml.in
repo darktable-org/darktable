@@ -114,6 +114,13 @@
     <longdescription>defines priorities on how (multiple) OpenCL devices are allocated to the different types of pixelpipe (full, preview, export, thumbnail). for more details visit our usermanual (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>opencl_mandatory_timeout</name>
+    <type min="0">int</type>
+    <default>200</default>
+    <shortdescription>timeout period for locking mandatory opencl device</shortdescription>
+    <longdescription>time period (in units of 5ms) after which we give up try-locking an opencl device for mandatory use. defaults to 200.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>opencl_use_pinned_memory</name>
     <type>bool</type>
     <default>false</default>
@@ -150,7 +157,7 @@
   </dtconfig>
   <dtconfig>
     <name>pixelpipe_synchronization_timeout</name>
-    <type min="0">int</type>
+    <type>int</type>
     <default>200</default>
     <shortdescription>timeout period of pixelpipe synchronization</shortdescription>
     <longdescription>time period (in units of 5ms) after which synchronization of preview and full pixelpipe is assumed to have failed. set to zero to omit pixelpipe synchronization. defaults to 200.</longdescription>
@@ -188,6 +195,19 @@
     <default>${DEFCONFIG_OPENCL}</default>
     <shortdescription>activate OpenCL support</shortdescription>
     <longdescription>if found, use OpenCL runtime on your system for improved processing speed. can be switched on and off at any time.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="core" capability="opencl">
+    <name>opencl_scheduling_profile</name>
+    <type>
+      <enum>
+        <option>default</option>
+        <option>multiple GPUs</option>
+        <option>very fast GPU</option>
+      </enum>
+    </type>
+    <default>default</default>
+    <shortdescription>OpenCL scheduling profile</shortdescription>
+    <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems. default - GPU processes full and CPU processes preview pipe (adaptable by config parameters); multiple GPUs - process both pixelpipes in parallel on two different GPUs; very fast GPU - process both pixelipes sequentially on the GPU.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_library</name>

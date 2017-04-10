@@ -224,7 +224,7 @@ static int zoom_member(lua_State *L)
     {
       int value;
       g_object_get(G_OBJECT(lib->map), "zoom", &value, NULL);
-      lua_pushinteger(L, value);
+      lua_pushnumber(L, value);
     }
     return 1;
   }

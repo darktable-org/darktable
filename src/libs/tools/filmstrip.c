@@ -310,7 +310,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->filmstrip, "drag-data-get", G_CALLBACK(_lib_filmstrip_dnd_get_callback), self);
 
   gtk_widget_add_events(d->filmstrip, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
-                                      | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_SCROLL_MASK
+                                      | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                      | GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK
                                       | GDK_LEAVE_NOTIFY_MASK);
 
   /* connect callbacks */
@@ -489,15 +490,13 @@ static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, 
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
   /* change the offset */
-  if(strip->offset > 0 && (e->direction == GDK_SCROLL_UP || e->direction == GDK_SCROLL_LEFT))
-    strip->offset--;
-  else if(strip->offset < strip->collection_count - 1
-          && (e->direction == GDK_SCROLL_DOWN || e->direction == GDK_SCROLL_RIGHT))
-    strip->offset++;
-  else
-    return TRUE;
+  int delta_x, delta_y;
+  if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
+  {
+    strip->offset = CLAMP(strip->offset + delta_x + delta_y, 0, strip->collection_count-1);
+    gtk_widget_queue_draw(self->widget);
+  }
 
-  gtk_widget_queue_draw(self->widget);
   return TRUE;
 }
 

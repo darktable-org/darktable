@@ -200,12 +200,11 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
+    // caching this allows to add "$(FILE_NAME)" to the end of the original string without caring
+    // about a potentially added "_$(SEQUENCE)"
+    char *original_filename = g_strdup(d->filename);
 
-    // if filenamepattern is a directory just let att ${FILE_NAME} as default..
-    if(g_file_test(d->filename, G_FILE_TEST_IS_DIR)
-       || ((d->filename + strlen(d->filename))[0] == '/' || (d->filename + strlen(d->filename))[0] == '\\'))
-      snprintf(d->filename + strlen(d->filename), sizeof(d->filename) - strlen(d->filename), "$(FILE_NAME)");
-
+try_again:
     // avoid braindead export which is bound to overwrite at random:
     if(total > 1 && !g_strrstr(d->filename, "$"))
     {
@@ -225,6 +224,16 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     gchar *result_filename = dt_variables_get_result(d->vp);
     g_strlcpy(filename, result_filename, sizeof(filename));
     g_free(result_filename);
+
+    // if filenamepattern is a directory just add ${FILE_NAME} as default..
+    char last_char = *(filename + strlen(filename) - 1);
+    if(g_file_test(filename, G_FILE_TEST_IS_DIR) && (last_char == '/' || last_char == '\\'))
+    {
+      snprintf(d->filename, sizeof(d->filename), "%s/$(FILE_NAME)", original_filename);
+      goto try_again;
+    }
+
+    g_free(original_filename);
 
     g_strlcpy(dirname, filename, sizeof(dirname));
 

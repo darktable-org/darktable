@@ -1598,9 +1598,13 @@ static gboolean area_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(event->direction == GDK_SCROLL_UP && c->mouse_radius > 0.25 / BANDS) c->mouse_radius *= 0.9; // 0.7;
-  if(event->direction == GDK_SCROLL_DOWN && c->mouse_radius < 1.0) c->mouse_radius *= (1.0 / 0.9); // 1.42;
-  gtk_widget_queue_draw(widget);
+
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  {
+    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.25 / BANDS, 1.0);
+    gtk_widget_queue_draw(widget);
+  }
   return TRUE;
 }
 
@@ -1680,7 +1684,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                             | GDK_SMOOTH_SCROLL_MASK);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(area_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(area_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(area_button_release), self);

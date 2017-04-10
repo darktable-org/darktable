@@ -113,7 +113,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(_lib_filter_compare_button_changed),
                    (gpointer)self);
-  gtk_widget_add_events(widget, GDK_SCROLL_MASK);
+  gtk_widget_add_events(widget, GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
   g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(_comparator_scolled), self);
 
   /* create the filter combobox */
@@ -302,16 +302,9 @@ static void _lib_filter_compare_button_changed(GtkDarktableToggleButton *widget,
 
 static gboolean _comparator_scolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  if(event->direction == 0)
-  {
-    // scrollled up
-    _change_comparator(GTK_WIDGET(widget), user_data, -1);
-  }
-  else
-  {
-    // scrolled down
-    _change_comparator(GTK_WIDGET(widget), user_data, 1);
-  }
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+    _change_comparator(GTK_WIDGET(widget), user_data, delta_y);
   return TRUE;
 }
 
