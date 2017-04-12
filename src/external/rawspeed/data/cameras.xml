@@ -6792,6 +6792,28 @@
 			<Alias>DMC-TZ110</Alias>
 		</Aliases>
 	</Camera>
+	<Camera make="Panasonic" model="DC-GH5">
+		<ID make="Panasonic" model="DC-GH5">Panasonic DC-GH5</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-56" height="0"/>
+		<Sensor black="143" white="4095"/>
+	</Camera>
+	<Camera make="Panasonic" model="DC-GH5" mode="4:3">
+		<ID make="Panasonic" model="DC-GH5">Panasonic DC-GH5</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-56" height="0"/>
+		<Sensor black="143" white="4095"/>
+	</Camera>
 	<Camera make="PENTAX Corporation" model="PENTAX K100D">
 		<ID make="Pentax" model="K100D">Pentax K100D</ID>
 		<CFA width="2" height="2">
