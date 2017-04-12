@@ -348,6 +348,12 @@ void init_presets(dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
+static float exposure_increment(float stops, int e, float fusion, float bias)
+{
+  float offset = (stops * fusion) * (bias - 1.0) / 2.0;
+  return powf(2.0f, stops * e + offset);
+}
+
 #ifdef HAVE_OPENCL
 static
 int gauss_blur_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
@@ -447,14 +453,6 @@ int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
   return TRUE;
 }
-
-
-static float exposure_increment(float stops, int e, float fusion, float bias)
-{
-  float offset = (stops * fusion) * (bias - 1.0) / 2.0;
-  return powf(2.0f, stops * e + offset);
-}
-
 
 static
 int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
