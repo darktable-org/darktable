@@ -967,6 +967,14 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
 /** toolbar buttons */
 
+static gboolean _toolbar_show_popup(gpointer user_data)
+{
+  gtk_widget_show_all(GTK_WIDGET(user_data));
+
+  // cancel glib timeout if invoked by long button press
+  return FALSE;
+}
+
 /* overexposed */
 static void _overexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
@@ -976,26 +984,18 @@ static void _overexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_dev_reprocess_all(d);
 }
 
-static gboolean _overexposed_show_popup(gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  gtk_widget_show_all(d->overexposed.floating_window);
-
-  return FALSE;
-}
-
 static gboolean _overexposed_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   const GdkEventButton *e = (GdkEventButton *)event;
   if(e->button == 3)
   {
-    _overexposed_show_popup(user_data);
+    _toolbar_show_popup(d->overexposed.floating_window);
     return TRUE;
   }
   else
   {
-    d->overexposed.timeout = g_timeout_add_seconds(1, _overexposed_show_popup, user_data);
+    d->overexposed.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->overexposed.floating_window);
     return FALSE;
   }
 }
@@ -1050,26 +1050,18 @@ static void _rawoverexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data
   dt_dev_reprocess_all(d);
 }
 
-static gboolean _rawoverexposed_show_popup(gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  gtk_widget_show_all(d->rawoverexposed.floating_window);
-
-  return FALSE;
-}
-
 static gboolean _rawoverexposed_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   const GdkEventButton *e = (GdkEventButton *)event;
   if(e->button == 3)
   {
-    _rawoverexposed_show_popup(user_data);
+    _toolbar_show_popup(d->rawoverexposed.floating_window);
     return TRUE;
   }
   else
   {
-    d->rawoverexposed.timeout = g_timeout_add_seconds(1, _rawoverexposed_show_popup, user_data);
+    d->rawoverexposed.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->rawoverexposed.floating_window);
     return FALSE;
   }
 }
@@ -1136,27 +1128,21 @@ static void _softproof_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_dev_reprocess_all(d);
 }
 
-static gboolean _softproof_show_popup(gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  gtk_popover_set_relative_to(GTK_POPOVER(d->profile.floating_window), d->profile.softproof_button);
-  gtk_widget_show_all(d->profile.floating_window);
-
-  return FALSE;
-}
-
 static gboolean _softproof_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   GdkEventButton *e = (GdkEventButton *)event;
+
+  gtk_popover_set_relative_to(GTK_POPOVER(d->profile.floating_window), d->profile.softproof_button);
+
   if(e->button == 3)
   {
-    _softproof_show_popup(user_data);
+    _toolbar_show_popup(d->profile.floating_window);
     return TRUE;
   }
   else
   {
-    d->profile.timeout = g_timeout_add_seconds(1, _softproof_show_popup, user_data);
+    d->profile.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->profile.floating_window);
     return FALSE;
   }
 }
@@ -1183,27 +1169,21 @@ static void _gamut_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_dev_reprocess_all(d);
 }
 
-static gboolean _gamut_show_popup(gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  gtk_popover_set_relative_to(GTK_POPOVER(d->profile.floating_window), d->profile.gamut_button);
-  gtk_widget_show_all(d->profile.floating_window);
-
-  return FALSE;
-}
-
 static gboolean _gamut_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   GdkEventButton *e = (GdkEventButton *)event;
+
+  gtk_popover_set_relative_to(GTK_POPOVER(d->profile.floating_window), d->profile.gamut_button);
+
   if(e->button == 3)
   {
-    _gamut_show_popup(user_data);
+    _toolbar_show_popup(d->profile.floating_window);
     return TRUE;
   }
   else
   {
-    d->profile.timeout = g_timeout_add_seconds(1, _gamut_show_popup, user_data);
+    d->profile.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->profile.floating_window);
     return FALSE;
   }
 }
@@ -1577,9 +1557,8 @@ void gui_init(dt_view_t *self)
                      G_CALLBACK(_profile_quickbutton_released), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->profile.gamut_button, DT_VIEW_DARKROOM);
 
-    // and the popup window, which is shared between the profile two buttons
-    // FIXME: can set this to NULL as relative-to is determined later?
-    dev->profile.floating_window = gtk_popover_new(dev->profile.softproof_button);
+    // and the popup window, which is shared between the two profile buttons
+    dev->profile.floating_window = gtk_popover_new(NULL);
     gtk_widget_set_size_request(GTK_WIDGET(dev->profile.floating_window), panel_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
     g_object_set(G_OBJECT(dev->profile.floating_window), "transitions-enabled", FALSE, NULL);
