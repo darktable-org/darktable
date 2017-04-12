@@ -1734,7 +1734,11 @@ static GList *read_history_v1(const std::string &xmpPacket, const char *filename
   GList *history_entries = NULL;
 
   pugi::xml_document doc;
+#if defined(PUGIXML_VERSION) && PUGIXML_VERSION >= 150
   pugi::xml_parse_result result = doc.load_string(xmpPacket.c_str());
+#else
+  pugi::xml_parse_result result = doc.load(xmpPacket.c_str());
+#endif
 
   if(!result)
   {
