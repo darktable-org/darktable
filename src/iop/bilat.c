@@ -34,7 +34,7 @@
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE_INTROSPECTION(2, dt_iop_bilat_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_bilat_params_t)
 
 typedef enum dt_iop_bilat_mode_t
 {
@@ -43,27 +43,24 @@ typedef enum dt_iop_bilat_mode_t
 }
 dt_iop_bilat_mode_t;
 
-#if 0
 typedef struct dt_iop_bilat_params_t
 {
   uint32_t mode;
   float sigma_r;
   float sigma_s;
   float detail;
-  float shadows;
-  float highlights;
+  float midtone;
 }
 dt_iop_bilat_params_t;
-#endif
 
-typedef struct dt_iop_bilat_params_t
+typedef struct dt_iop_bilat_params_v2_t
 {
   uint32_t mode;
   float sigma_r;
   float sigma_s;
   float detail;
 }
-dt_iop_bilat_params_t;
+dt_iop_bilat_params_v2_t;
 
 typedef struct dt_iop_bilat_params_v1_t
 {
@@ -79,6 +76,7 @@ typedef struct dt_iop_bilat_gui_data_t
 {
   GtkWidget *highlights;
   GtkWidget *shadows;
+  GtkWidget *midtone;
   GtkWidget *spatial;
   GtkWidget *range;
   GtkWidget *detail;
@@ -108,14 +106,26 @@ int legacy_params(
     dt_iop_module_t *self, const void *const old_params, const int old_version,
     void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 2 && new_version == 3)
   {
-    dt_iop_bilat_params_v1_t *p1 = (dt_iop_bilat_params_v1_t *)old_params;
-    dt_iop_bilat_params_t *p2 = (dt_iop_bilat_params_t *)new_params;
-    p2->detail  = p1->detail;
-    p2->sigma_r = p1->sigma_r;
-    p2->sigma_s = p1->sigma_s;
-    p2->mode    = s_mode_bilateral;
+    const dt_iop_bilat_params_v2_t *p2 = old_params;
+    dt_iop_bilat_params_t *p = new_params;
+    p->detail  = p2->detail;
+    p->sigma_r = p2->sigma_r;
+    p->sigma_s = p2->sigma_s;
+    p->midtone = 0.2f;
+    p->mode    = p2->mode;
+    return 0;
+  }
+  else if(old_version == 1 && new_version == 3)
+  {
+    const dt_iop_bilat_params_v1_t *p1 = old_params;
+    dt_iop_bilat_params_t *p = new_params;
+    p->detail  = p1->detail;
+    p->sigma_r = p1->sigma_r;
+    p->sigma_s = p1->sigma_s;
+    p->midtone = 0.2f;
+    p->mode    = s_mode_bilateral;
     return 0;
   }
   return 1;
@@ -155,7 +165,7 @@ error:
   else // mode == s_mode_local_laplacian
   {
     dt_local_laplacian_cl_t *b = dt_local_laplacian_init_cl(piece->pipe->devid, roi_in->width, roi_in->height,
-        0.2, d->sigma_s, d->sigma_r, d->detail);
+        d->midtone, d->sigma_s, d->sigma_r, d->detail);
     if(!b) goto error_ll;
     if(dt_local_laplacian_cl(b, dev_in, dev_out) != CL_SUCCESS) goto error_ll;
     dt_local_laplacian_free_cl(b);
@@ -246,7 +256,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   }
   else // s_mode_local_laplacian
   {
-    local_laplacian_sse2(i, o, roi_in->width, roi_in->height, 0.2f, d->sigma_s, d->sigma_r, d->detail);
+    local_laplacian_sse2(i, o, roi_in->width, roi_in->height, d->midtone, d->sigma_s, d->sigma_r, d->detail);
   }
 }
 #endif
@@ -273,7 +283,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else // s_mode_local_laplacian
   {
-    local_laplacian(i, o, roi_in->width, roi_in->height, 0.2f, d->sigma_s, d->sigma_r, d->detail);
+    local_laplacian(i, o, roi_in->width, roi_in->height, d->midtone, d->sigma_s, d->sigma_r, d->detail);
   }
 }
 
@@ -290,7 +300,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_bilat_params_t);
   module->gui_data = NULL;
   // init defaults:
-  dt_iop_bilat_params_t tmp = (dt_iop_bilat_params_t){ s_mode_local_laplacian, 1.0, 1.0, 0.2 };
+  dt_iop_bilat_params_t tmp = (dt_iop_bilat_params_t){ s_mode_local_laplacian, 1.0, 1.0, 0.2, 0.2 };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_bilat_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bilat_params_t));
@@ -330,6 +340,13 @@ static void shadows_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void midtone_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_bilat_params_t *p = self->params;
+  p->midtone = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void detail_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
@@ -346,6 +363,7 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
   {
     gtk_widget_set_visible(g->highlights, TRUE);
     gtk_widget_set_visible(g->shadows, TRUE);
+    gtk_widget_set_visible(g->midtone, TRUE);
     gtk_widget_set_visible(g->range, FALSE);
     gtk_widget_set_visible(g->spatial, FALSE);
     dt_bauhaus_slider_set(g->highlights, 100.0f);
@@ -355,6 +373,7 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
   {
     gtk_widget_set_visible(g->highlights, FALSE);
     gtk_widget_set_visible(g->shadows, FALSE);
+    gtk_widget_set_visible(g->midtone, FALSE);
     gtk_widget_set_visible(g->range, TRUE);
     gtk_widget_set_visible(g->spatial, TRUE);
     dt_bauhaus_slider_set(g->range, 20.0f);
@@ -375,6 +394,7 @@ void gui_update(dt_iop_module_t *self)
   {
     dt_bauhaus_slider_set(g->shadows, p->sigma_s*100.0f);
     dt_bauhaus_slider_set(g->highlights, p->sigma_r*100.0f);
+    dt_bauhaus_slider_set(g->midtone, p->midtone);
     gtk_widget_set_visible(g->range, FALSE);
     gtk_widget_set_visible(g->spatial, FALSE);
     gtk_widget_set_visible(g->highlights, TRUE);
@@ -388,6 +408,7 @@ void gui_update(dt_iop_module_t *self)
     gtk_widget_set_visible(g->spatial, TRUE);
     gtk_widget_set_visible(g->highlights, FALSE);
     gtk_widget_set_visible(g->shadows, FALSE);
+    gtk_widget_set_visible(g->midtone, FALSE);
   }
 }
 
@@ -435,12 +456,17 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->shadows, _("changes the local contrast of shadows"));
   dt_bauhaus_slider_set_format(g->shadows, "%.0f%%");
 
+  g->midtone = dt_bauhaus_slider_new_with_range(self, 0.001, 1.0, 0.001, 0.2, 3);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->midtone, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->midtone, NULL, _("midtone range"));
+  gtk_widget_set_tooltip_text(g->midtone, _("defines what counts as midtones. lower for better dynamic range compression (reduce shadow and highlight contrast), increase for more powerful local contrast"));
 
   g_signal_connect(G_OBJECT(g->spatial), "value-changed", G_CALLBACK(spatial_callback), self);
   g_signal_connect(G_OBJECT(g->range), "value-changed", G_CALLBACK(range_callback), self);
   g_signal_connect(G_OBJECT(g->detail), "value-changed", G_CALLBACK(detail_callback), self);
   g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);
   g_signal_connect(G_OBJECT(g->shadows), "value-changed", G_CALLBACK(shadows_callback), self);
+  g_signal_connect(G_OBJECT(g->midtone), "value-changed", G_CALLBACK(midtone_callback), self);
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
 }
 
