@@ -141,6 +141,10 @@ if(APPLE AND (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_
         list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES stdc++)
         list(APPEND CMAKE_CXX_IMPLICIT_LINK_LIBRARIES c++)
         list(REMOVE_DUPLICATES CMAKE_CXX_IMPLICIT_LINK_LIBRARIES)
+        # Also remove incorrectly parsed -lto_library flag
+        # It wasn't present with Xcode 7.2 and appeared before 8.3 release
+        # cmake 3.7.2 doesn't understand this flag and thinks it's a library
+        list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES to_library)
 endif()
 
 # Need to explicitly link against math library.
