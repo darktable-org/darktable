@@ -1410,23 +1410,23 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
       /* Calculate chroma values in fdc:       */
       if (passes == 1)
       {
-        float fdc_src[13][13];
+        float fdc_src[11][11];
         int fdc_row, fdc_col;
         for(int row = 6; row < mrow - 6; row++) //6 as manual padding
         {
           int col = 6; //6 as manual padding
           // read initial block per line
-          for (fdc_row = -6; fdc_row < 7; fdc_row++)
-            for (fdc_col = -6; fdc_col < 6; fdc_col++)
-              fdc_src[fdc_row + 6][fdc_col + 7] = fdc_orig[0][row + fdc_row][col + fdc_col];
+          for (fdc_row = -5; fdc_row < 6; fdc_row++)
+            for (fdc_col = -5; fdc_col < 5; fdc_col++)
+              fdc_src[fdc_row + 5][fdc_col + 6] = fdc_orig[0][row + fdc_row][col + fdc_col];
           for(col = 6; col < mcol - 6; col++) //6 as manual padding
           {
             // move buffer one element to the left
-            for (fdc_row = 0; fdc_row < 13; fdc_row++)
-              for (fdc_col = 0; fdc_col < 12; fdc_col++)
+            for (fdc_row = 0; fdc_row < 11; fdc_row++)
+              for (fdc_col = 0; fdc_col < 10; fdc_col++)
                 fdc_src[fdc_row][fdc_col] = fdc_src[fdc_row][fdc_col + 1];
-            for (fdc_row = -6; fdc_row < 7; fdc_row++)
-              fdc_src[fdc_row + 6][12] = fdc_orig[0][row + fdc_row][col + 6];
+            for (fdc_row = -5; fdc_row < 6; fdc_row++)
+              fdc_src[fdc_row + 5][10] = fdc_orig[0][row + fdc_row][col + 5];
             uint8_t hm[8] = { 0 };
             uint8_t maxval = 0;
             for(int d = 0; d < ndir; d++)
@@ -1457,12 +1457,12 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
             // extract modulated chroma using filters
             float complex C2m, C5m, C6m, C7m, C10m, C11m;
             // for 11x11 filters, use 0,0,11,11 as filter region
-            CORR_FILT(C2m,h2,0,0,13,13)
-            CORR_FILT(C5m,h5,0,0,13,13)
-            CORR_FILT(C6m,h6,0,0,13,13)
-            CORR_FILT(C7m,h7,0,0,13,13)
-            CORR_FILT(C10m,h10,0,0,13,13)
-            CORR_FILT(C11m,h11,0,0,13,13)
+            CORR_FILT(C2m,h2,1,1,10,10)
+            CORR_FILT(C5m,h5,0,0,11,11)
+            CORR_FILT(C6m,h6,0,0,11,11)
+            CORR_FILT(C7m,h7,0,0,11,11)
+            CORR_FILT(C10m,h10,1,1,10,10)
+            CORR_FILT(C11m,h11,0,0,11,11)
             // build the q vector components
             int myrow = row + rowoffset;
             int mycol = col + coloffset;
