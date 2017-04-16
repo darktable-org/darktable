@@ -994,6 +994,39 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
   free(all_buffers);
 }
 
+/* Return the k-th smallest item in array x of length len */
+double quick_select(int k, float *x, int len)
+{
+   inline void swap(int a, int b)
+   {
+      float t = x[a];
+      x[a] = x[b], x[b] = t;
+   }
+
+   int left = 0, right = len - 1;
+   int pos, i;
+   float pivot;
+
+   while (left < right)
+   {
+      pivot = x[k];
+      swap(k, right);
+      for (i = pos = left; i < right; i++)
+      {
+         if (x[i] < pivot)
+         {
+            swap(i, pos);
+            pos++;
+         }
+      }
+      swap(right, pos);
+      if (pos == k) break;
+      if (pos < k) left = pos + 1;
+      else right = pos - 1;
+   }
+   return x[k];
+}
+
 /*
   Ingo Liebhardt 's  frequency domain chroma approach for Fuji X-Trans sensors
  */
@@ -1545,210 +1578,30 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
           for(int chrm = 0; chrm < 2; chrm++)
           {
             // Load the circular window
-            float temp;
-            float s0 = fdc_chroma[chrm][row-2][col-1];
-            float s1 = fdc_chroma[chrm][row-2][col];
-            float s2 = fdc_chroma[chrm][row-2][col+1];
-            float s3 = fdc_chroma[chrm][row-1][col-2];
-            float s4 = fdc_chroma[chrm][row-1][col-1];
-            float s5 = fdc_chroma[chrm][row-1][col];
-            float s6 = fdc_chroma[chrm][row-1][col+1];
-            float s7 = fdc_chroma[chrm][row-1][col+2];
-            float s8 = fdc_chroma[chrm][row][col-2];
-            float s9 = fdc_chroma[chrm][row][col-1];
-            float s10 = fdc_chroma[chrm][row][col];
-            float s11 = fdc_chroma[chrm][row][col+1];
-            float s12 = fdc_chroma[chrm][row][col+2];
-            float s13 = fdc_chroma[chrm][row+1][col-2];
-            float s14 = fdc_chroma[chrm][row+1][col-1];
-            float s15 = fdc_chroma[chrm][row+1][col];
-            float s16 = fdc_chroma[chrm][row+1][col+1];
-            float s17 = fdc_chroma[chrm][row+1][col+2];
-            float s18 = fdc_chroma[chrm][row+2][col-1];
-            float s19 = fdc_chroma[chrm][row+2][col];
-            float s20 = fdc_chroma[chrm][row+2][col+1];
-#define CAS1(a, b)  temp = a;\
-a = (a) < (b) ? (a) : (b);\
-b = (b) > temp ? (b) : temp
-            // Find the 11-th element
-            // phase 0, to continue to phase 10
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            CAS1(s14, s15);
-            CAS1(s15, s16);
-            CAS1(s16, s17);
-            CAS1(s17, s18);
-            CAS1(s18, s19);
-            CAS1(s19, s20);
-            // phase 1
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            CAS1(s14, s15);
-            CAS1(s15, s16);
-            CAS1(s16, s17);
-            CAS1(s17, s18);
-            CAS1(s18, s19);
-            // phase 2
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            CAS1(s14, s15);
-            CAS1(s15, s16);
-            CAS1(s16, s17);
-            CAS1(s17, s18);
-            // phase 3
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            CAS1(s14, s15);
-            CAS1(s15, s16);
-            CAS1(s16, s17);
-            // phase 4
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            CAS1(s14, s15);
-            CAS1(s15, s16);
-            // phase 5
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            CAS1(s14, s15);
-            // phase 6
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            // phase 7
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            // phase 8
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            // phase 9
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            // phase 10
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            // median is s10
-            fdc_chroma[chrm+2][row][col] = s10;
+            float temp [21] = {
+              fdc_chroma[chrm][row-2][col-1],
+              fdc_chroma[chrm][row-2][col],
+              fdc_chroma[chrm][row-2][col+1],
+              fdc_chroma[chrm][row-1][col-2],
+              fdc_chroma[chrm][row-1][col-1],
+              fdc_chroma[chrm][row-1][col],
+              fdc_chroma[chrm][row-1][col+1],
+              fdc_chroma[chrm][row-1][col+2],
+              fdc_chroma[chrm][row][col-2],
+              fdc_chroma[chrm][row][col-1],
+              fdc_chroma[chrm][row][col],
+              fdc_chroma[chrm][row][col+1],
+              fdc_chroma[chrm][row][col+2],
+              fdc_chroma[chrm][row+1][col-2],
+              fdc_chroma[chrm][row+1][col-1],
+              fdc_chroma[chrm][row+1][col],
+              fdc_chroma[chrm][row+1][col+1],
+              fdc_chroma[chrm][row+1][col+2],
+              fdc_chroma[chrm][row+2][col-1],
+              fdc_chroma[chrm][row+2][col],
+              fdc_chroma[chrm][row+2][col+1]
+            };
+            fdc_chroma[chrm+2][row][col] = quick_select(10, temp, 21);
           }
         }
 
@@ -1759,207 +1612,30 @@ b = (b) > temp ? (b) : temp
           for(int chrm = 2; chrm < 4; chrm++)
           {
             // Load the circular window
-            float temp;
-            float s0 = fdc_chroma[chrm][row-2][col-1];
-            float s1 = fdc_chroma[chrm][row-2][col];
-            float s2 = fdc_chroma[chrm][row-2][col+1];
-            float s3 = fdc_chroma[chrm][row-1][col-2];
-            float s4 = fdc_chroma[chrm][row-1][col-1];
-            float s5 = fdc_chroma[chrm][row-1][col];
-            float s6 = fdc_chroma[chrm][row-1][col+1];
-            float s7 = fdc_chroma[chrm][row-1][col+2];
-            float s8 = fdc_chroma[chrm][row][col-2];
-            float s9 = fdc_chroma[chrm][row][col-1];
-            float s10 = fdc_chroma[chrm][row][col];
-            float s11 = fdc_chroma[chrm][row][col+1];
-            float s12 = fdc_chroma[chrm][row][col+2];
-            float s13 = fdc_chroma[chrm][row+1][col-2];
-            float s14 = fdc_chroma[chrm][row+1][col-1];
-            float s15 = fdc_chroma[chrm][row+1][col];
-            float s16 = fdc_chroma[chrm][row+1][col+1];
-            float s17 = fdc_chroma[chrm][row+1][col+2];
-            float s18 = fdc_chroma[chrm][row+2][col-1];
-            float s19 = fdc_chroma[chrm][row+2][col];
-            float s20 = fdc_chroma[chrm][row+2][col+1];
-            // Find the 11-th element
-            // phase 0, to continue to phase 10
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            CAS1(s14, s15);
-            CAS1(s15, s16);
-            CAS1(s16, s17);
-            CAS1(s17, s18);
-            CAS1(s18, s19);
-            CAS1(s19, s20);
-            // phase 1
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            CAS1(s14, s15);
-            CAS1(s15, s16);
-            CAS1(s16, s17);
-            CAS1(s17, s18);
-            CAS1(s18, s19);
-            // phase 2
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            CAS1(s14, s15);
-            CAS1(s15, s16);
-            CAS1(s16, s17);
-            CAS1(s17, s18);
-            // phase 3
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            CAS1(s14, s15);
-            CAS1(s15, s16);
-            CAS1(s16, s17);
-            // phase 4
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            CAS1(s14, s15);
-            CAS1(s15, s16);
-            // phase 5
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            CAS1(s14, s15);
-            // phase 6
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            CAS1(s13, s14);
-            // phase 7
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            CAS1(s12, s13);
-            // phase 8
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            CAS1(s11, s12);
-            // phase 9
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            CAS1(s10, s11);
-            // phase 10
-            CAS1(s0, s1);
-            CAS1(s1, s2);
-            CAS1(s2, s3);
-            CAS1(s3, s4);
-            CAS1(s4, s5);
-            CAS1(s5, s6);
-            CAS1(s6, s7);
-            CAS1(s7, s8);
-            CAS1(s8, s9);
-            CAS1(s9, s10);
-            // median is s10
-            fdc_chroma[chrm-2][row][col] = s10;
+            float temp [21] = {
+              fdc_chroma[chrm][row-2][col-1],
+              fdc_chroma[chrm][row-2][col],
+              fdc_chroma[chrm][row-2][col+1],
+              fdc_chroma[chrm][row-1][col-2],
+              fdc_chroma[chrm][row-1][col-1],
+              fdc_chroma[chrm][row-1][col],
+              fdc_chroma[chrm][row-1][col+1],
+              fdc_chroma[chrm][row-1][col+2],
+              fdc_chroma[chrm][row][col-2],
+              fdc_chroma[chrm][row][col-1],
+              fdc_chroma[chrm][row][col],
+              fdc_chroma[chrm][row][col+1],
+              fdc_chroma[chrm][row][col+2],
+              fdc_chroma[chrm][row+1][col-2],
+              fdc_chroma[chrm][row+1][col-1],
+              fdc_chroma[chrm][row+1][col],
+              fdc_chroma[chrm][row+1][col+1],
+              fdc_chroma[chrm][row+1][col+2],
+              fdc_chroma[chrm][row+2][col-1],
+              fdc_chroma[chrm][row+2][col],
+              fdc_chroma[chrm][row+2][col+1]
+            };
+            fdc_chroma[chrm-2][row][col] = quick_select(10, temp, 21);
           }
         }
 
@@ -1999,210 +1675,33 @@ b = (b) > temp ? (b) : temp
             for(int chrm = 0; chrm < 2; chrm++)
             {
               // Load the circular window
-              float temp;
-              float s0 = fdc_chroma[chrm][row-2][col-1];
-              float s1 = fdc_chroma[chrm][row-2][col];
-              float s2 = fdc_chroma[chrm][row-2][col+1];
-              float s3 = fdc_chroma[chrm][row-1][col-2];
-              float s4 = fdc_chroma[chrm][row-1][col-1];
-              float s5 = fdc_chroma[chrm][row-1][col];
-              float s6 = fdc_chroma[chrm][row-1][col+1];
-              float s7 = fdc_chroma[chrm][row-1][col+2];
-              float s8 = fdc_chroma[chrm][row][col-2];
-              float s9 = fdc_chroma[chrm][row][col-1];
-              float s10 = fdc_chroma[chrm][row][col];
-              float s11 = fdc_chroma[chrm][row][col+1];
-              float s12 = fdc_chroma[chrm][row][col+2];
-              float s13 = fdc_chroma[chrm][row+1][col-2];
-              float s14 = fdc_chroma[chrm][row+1][col-1];
-              float s15 = fdc_chroma[chrm][row+1][col];
-              float s16 = fdc_chroma[chrm][row+1][col+1];
-              float s17 = fdc_chroma[chrm][row+1][col+2];
-              float s18 = fdc_chroma[chrm][row+2][col-1];
-              float s19 = fdc_chroma[chrm][row+2][col];
-              float s20 = fdc_chroma[chrm][row+2][col+1];
-              // Find the 11-th element
-              // phase 0, to continue to phase 10
-              CAS1(s0, s1);
-              CAS1(s1, s2);
-              CAS1(s2, s3);
-              CAS1(s3, s4);
-              CAS1(s4, s5);
-              CAS1(s5, s6);
-              CAS1(s6, s7);
-              CAS1(s7, s8);
-              CAS1(s8, s9);
-              CAS1(s9, s10);
-              CAS1(s10, s11);
-              CAS1(s11, s12);
-              CAS1(s12, s13);
-              CAS1(s13, s14);
-              CAS1(s14, s15);
-              CAS1(s15, s16);
-              CAS1(s16, s17);
-              CAS1(s17, s18);
-              CAS1(s18, s19);
-              CAS1(s19, s20);
-              // phase 1
-              CAS1(s0, s1);
-              CAS1(s1, s2);
-              CAS1(s2, s3);
-              CAS1(s3, s4);
-              CAS1(s4, s5);
-              CAS1(s5, s6);
-              CAS1(s6, s7);
-              CAS1(s7, s8);
-              CAS1(s8, s9);
-              CAS1(s9, s10);
-              CAS1(s10, s11);
-              CAS1(s11, s12);
-              CAS1(s12, s13);
-              CAS1(s13, s14);
-              CAS1(s14, s15);
-              CAS1(s15, s16);
-              CAS1(s16, s17);
-              CAS1(s17, s18);
-              CAS1(s18, s19);
-              // phase 2
-              CAS1(s0, s1);
-              CAS1(s1, s2);
-              CAS1(s2, s3);
-              CAS1(s3, s4);
-              CAS1(s4, s5);
-              CAS1(s5, s6);
-              CAS1(s6, s7);
-              CAS1(s7, s8);
-              CAS1(s8, s9);
-              CAS1(s9, s10);
-              CAS1(s10, s11);
-              CAS1(s11, s12);
-              CAS1(s12, s13);
-              CAS1(s13, s14);
-              CAS1(s14, s15);
-              CAS1(s15, s16);
-              CAS1(s16, s17);
-              CAS1(s17, s18);
-              // phase 3
-              CAS1(s0, s1);
-              CAS1(s1, s2);
-              CAS1(s2, s3);
-              CAS1(s3, s4);
-              CAS1(s4, s5);
-              CAS1(s5, s6);
-              CAS1(s6, s7);
-              CAS1(s7, s8);
-              CAS1(s8, s9);
-              CAS1(s9, s10);
-              CAS1(s10, s11);
-              CAS1(s11, s12);
-              CAS1(s12, s13);
-              CAS1(s13, s14);
-              CAS1(s14, s15);
-              CAS1(s15, s16);
-              CAS1(s16, s17);
-              // phase 4
-              CAS1(s0, s1);
-              CAS1(s1, s2);
-              CAS1(s2, s3);
-              CAS1(s3, s4);
-              CAS1(s4, s5);
-              CAS1(s5, s6);
-              CAS1(s6, s7);
-              CAS1(s7, s8);
-              CAS1(s8, s9);
-              CAS1(s9, s10);
-              CAS1(s10, s11);
-              CAS1(s11, s12);
-              CAS1(s12, s13);
-              CAS1(s13, s14);
-              CAS1(s14, s15);
-              CAS1(s15, s16);
-              // phase 5
-              CAS1(s0, s1);
-              CAS1(s1, s2);
-              CAS1(s2, s3);
-              CAS1(s3, s4);
-              CAS1(s4, s5);
-              CAS1(s5, s6);
-              CAS1(s6, s7);
-              CAS1(s7, s8);
-              CAS1(s8, s9);
-              CAS1(s9, s10);
-              CAS1(s10, s11);
-              CAS1(s11, s12);
-              CAS1(s12, s13);
-              CAS1(s13, s14);
-              CAS1(s14, s15);
-              // phase 6
-              CAS1(s0, s1);
-              CAS1(s1, s2);
-              CAS1(s2, s3);
-              CAS1(s3, s4);
-              CAS1(s4, s5);
-              CAS1(s5, s6);
-              CAS1(s6, s7);
-              CAS1(s7, s8);
-              CAS1(s8, s9);
-              CAS1(s9, s10);
-              CAS1(s10, s11);
-              CAS1(s11, s12);
-              CAS1(s12, s13);
-              CAS1(s13, s14);
-              // phase 7
-              CAS1(s0, s1);
-              CAS1(s1, s2);
-              CAS1(s2, s3);
-              CAS1(s3, s4);
-              CAS1(s4, s5);
-              CAS1(s5, s6);
-              CAS1(s6, s7);
-              CAS1(s7, s8);
-              CAS1(s8, s9);
-              CAS1(s9, s10);
-              CAS1(s10, s11);
-              CAS1(s11, s12);
-              CAS1(s12, s13);
-              // phase 8
-              CAS1(s0, s1);
-              CAS1(s1, s2);
-              CAS1(s2, s3);
-              CAS1(s3, s4);
-              CAS1(s4, s5);
-              CAS1(s5, s6);
-              CAS1(s6, s7);
-              CAS1(s7, s8);
-              CAS1(s8, s9);
-              CAS1(s9, s10);
-              CAS1(s10, s11);
-              CAS1(s11, s12);
-              // phase 9
-              CAS1(s0, s1);
-              CAS1(s1, s2);
-              CAS1(s2, s3);
-              CAS1(s3, s4);
-              CAS1(s4, s5);
-              CAS1(s5, s6);
-              CAS1(s6, s7);
-              CAS1(s7, s8);
-              CAS1(s8, s9);
-              CAS1(s9, s10);
-              CAS1(s10, s11);
-              // phase 10
-              CAS1(s0, s1);
-              CAS1(s1, s2);
-              CAS1(s2, s3);
-              CAS1(s3, s4);
-              CAS1(s4, s5);
-              CAS1(s5, s6);
-              CAS1(s6, s7);
-              CAS1(s7, s8);
-              CAS1(s8, s9);
-              CAS1(s9, s10);
-              // median is s10
+              float temp [21] = {
+                fdc_chroma[chrm][row-2][col-1],
+                fdc_chroma[chrm][row-2][col],
+                fdc_chroma[chrm][row-2][col+1],
+                fdc_chroma[chrm][row-1][col-2],
+                fdc_chroma[chrm][row-1][col-1],
+                fdc_chroma[chrm][row-1][col],
+                fdc_chroma[chrm][row-1][col+1],
+                fdc_chroma[chrm][row-1][col+2],
+                fdc_chroma[chrm][row][col-2],
+                fdc_chroma[chrm][row][col-1],
+                fdc_chroma[chrm][row][col],
+                fdc_chroma[chrm][row][col+1],
+                fdc_chroma[chrm][row][col+2],
+                fdc_chroma[chrm][row+1][col-2],
+                fdc_chroma[chrm][row+1][col-1],
+                fdc_chroma[chrm][row+1][col],
+                fdc_chroma[chrm][row+1][col+1],
+                fdc_chroma[chrm][row+1][col+2],
+                fdc_chroma[chrm][row+2][col-1],
+                fdc_chroma[chrm][row+2][col],
+                fdc_chroma[chrm][row+2][col+1]
+              };
               if (chrm == 0)
-                cb = s10;
+                cb = quick_select(10, temp, 21);
               else
-                cr = s10;
+                cr = quick_select(10, temp, 21);
             }
             // cb = fdc_chroma[0][row][col];
             // cr = fdc_chroma[1][row][col];
@@ -2222,7 +1721,6 @@ b = (b) > temp ? (b) : temp
   free(all_buffers);
 }
 
-#undef CAS1
 #undef CORR_FILT
 #undef LIM
 #undef TS
