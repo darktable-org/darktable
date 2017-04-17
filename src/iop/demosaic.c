@@ -962,38 +962,6 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
   free(all_buffers);
 }
 
-/* Return the k-th smallest item in array x of length len */
-double quick_select(int k, float *x, int len)
-{
-   inline void swap(int a, int b)
-   {
-      float t = x[a];
-      x[a] = x[b], x[b] = t;
-   }
-
-   int left = 0, right = len - 1;
-   int pos, i;
-   float pivot;
-
-   while (left < right)
-   {
-      pivot = x[k];
-      swap(k, right);
-      for (i = pos = left; i < right; i++)
-      {
-         if (x[i] < pivot)
-         {
-            swap(i, pos);
-            pos++;
-         }
-      }
-      swap(right, pos);
-      if (pos == k) break;
-      if (pos < k) left = pos + 1;
-      else right = pos - 1;
-   }
-   return x[k];
-}
 
 /*
   Ingo Liebhardt 's  frequency domain chroma approach for Fuji X-Trans sensors
@@ -1539,12 +1507,40 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
         }
       }
 
+#define SWAP(ARR,A,B)\
+qstfloat = ARR[A];\
+ARR[A] = ARR[B];\
+ARR[B] = qstfloat;
+
+#define QUICKSELECT(X)\
+while (qsleft < qsright)\
+{\
+qspivot = X[10];\
+SWAP(X,10,qsright)\
+for (qsi = qspos = qsleft; qsi < qsright; qsi++)\
+{\
+if (X[qsi] < qspivot)\
+{\
+SWAP(X,qsi,qspos)\
+qspos++;\
+}\
+}\
+SWAP(X,qsright,qspos)\
+if (qspos == 10) break;\
+if (qspos < 10) qsleft = qspos + 1;\
+else qsright = qspos - 1;\
+}\
+
       /* One intermediary round of median filtering of chroma       */
       for(int row = 8; row < mrow - 8; row++)   //10 as manual padding
         for(int col = 8; col < mcol - 8; col++)
         {
           for(int chrm = 0; chrm < 2; chrm++)
           {
+            int qsleft = 0, qsright = 20;
+            int qspos, qsi;
+            float qspivot, qstfloat;
+
             // Load the circular window
             float temp [21] = {
               fdc_chroma[chrm][row-2][col-1],
@@ -1569,7 +1565,8 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
               fdc_chroma[chrm][row+2][col],
               fdc_chroma[chrm][row+2][col+1]
             };
-            fdc_chroma[chrm+2][row][col] = quick_select(10, temp, 21);
+            QUICKSELECT(temp)
+            fdc_chroma[chrm+2][row][col] = temp[10];
           }
         }
 
@@ -1579,6 +1576,10 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
         {
           for(int chrm = 2; chrm < 4; chrm++)
           {
+            int qsleft = 0, qsright = 20;
+            int qspos, qsi;
+            float qspivot, qstfloat;
+
             // Load the circular window
             float temp [21] = {
               fdc_chroma[chrm][row-2][col-1],
@@ -1603,7 +1604,8 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
               fdc_chroma[chrm][row+2][col],
               fdc_chroma[chrm][row+2][col+1]
             };
-            fdc_chroma[chrm-2][row][col] = quick_select(10, temp, 21);
+            QUICKSELECT(temp)
+            fdc_chroma[chrm-2][row][col] = temp[10];
           }
         }
 
@@ -1636,12 +1638,17 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
           float blue = avg[2] / avg[3];
           // preserve only luma component of Markesteijn for this pixel
           if (passes == 1) {
-            float cb, cr;
+            float cb = 0.0f;
+            float cr = 0.0f;
             float y  =  0.29900f * red + 0.58700f * green + 0.11400f * blue;
             // now back to RGB
             // instead of merely reding the values, perform median filter
             for(int chrm = 0; chrm < 2; chrm++)
             {
+              int qsleft = 0, qsright = 20;
+              int qspos, qsi;
+              float qspivot, qstfloat;
+
               // Load the circular window
               float temp [21] = {
                 fdc_chroma[chrm][row-2][col-1],
@@ -1666,10 +1673,11 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
                 fdc_chroma[chrm][row+2][col],
                 fdc_chroma[chrm][row+2][col+1]
               };
+              QUICKSELECT(temp);
               if (chrm == 0)
-                cb = quick_select(10, temp, 21);
+                cb = temp[10];
               else
-                cr = quick_select(10, temp, 21);
+                cr = temp[10];
             }
             // cb = fdc_chroma[0][row][col];
             // cr = fdc_chroma[1][row][col];
@@ -1689,6 +1697,8 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
   free(all_buffers);
 }
 
+#undef SWAP
+#undef QUICKSELECT
 #undef CORR_FILT
 #undef LIM
 #undef TS
