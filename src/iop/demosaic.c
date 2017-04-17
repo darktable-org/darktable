@@ -1409,101 +1409,98 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
         }
 
       /* Calculate chroma values in fdc:       */
-      if (passes == 1)
+      float fdc_src[11][11];
+      int fdc_row, fdc_col;
+      for(int row = 6; row < mrow - 6; row++) //6 as manual padding
       {
-        float fdc_src[11][11];
-        int fdc_row, fdc_col;
-        for(int row = 6; row < mrow - 6; row++) //6 as manual padding
+        int col = 6; //6 as manual padding
+        // read initial block per line
+        for (fdc_row = -5; fdc_row < 6; fdc_row++)
+          for (fdc_col = -5; fdc_col < 5; fdc_col++)
+            fdc_src[fdc_row + 5][fdc_col + 6] = fdc_orig[0][row + fdc_row][col + fdc_col];
+        for(col = 6; col < mcol - 6; col++) //6 as manual padding
         {
-          int col = 6; //6 as manual padding
-          // read initial block per line
+          // move buffer one element to the left
+          for (fdc_row = 0; fdc_row < 11; fdc_row++)
+            for (fdc_col = 0; fdc_col < 10; fdc_col++)
+              fdc_src[fdc_row][fdc_col] = fdc_src[fdc_row][fdc_col + 1];
           for (fdc_row = -5; fdc_row < 6; fdc_row++)
-            for (fdc_col = -5; fdc_col < 5; fdc_col++)
-              fdc_src[fdc_row + 5][fdc_col + 6] = fdc_orig[0][row + fdc_row][col + fdc_col];
-          for(col = 6; col < mcol - 6; col++) //6 as manual padding
+            fdc_src[fdc_row + 5][10] = fdc_orig[0][row + fdc_row][col + 5];
+          uint8_t hm[8] = { 0 };
+          uint8_t maxval = 0;
+          for(int d = 0; d < ndir; d++)
           {
-            // move buffer one element to the left
-            for (fdc_row = 0; fdc_row < 11; fdc_row++)
-              for (fdc_col = 0; fdc_col < 10; fdc_col++)
-                fdc_src[fdc_row][fdc_col] = fdc_src[fdc_row][fdc_col + 1];
-            for (fdc_row = -5; fdc_row < 6; fdc_row++)
-              fdc_src[fdc_row + 5][10] = fdc_orig[0][row + fdc_row][col + 5];
-            uint8_t hm[8] = { 0 };
-            uint8_t maxval = 0;
-            for(int d = 0; d < ndir; d++)
+            hm[d] = homosum[d][row][col];
+            maxval = (maxval < hm[d] ? hm[d] : maxval);
+          }
+          maxval -= maxval >> 3;
+          for(int d = 0; d < ndir - 4; d++)
+            if(hm[d] < hm[d + 4])
+              hm[d] = 0;
+            else if(hm[d] > hm[d + 4])
+              hm[d + 4] = 0;
+          float dircount = 0;
+          float dirsum = 0.0f;
+          for(int d = 0; d < ndir; d++)
+            if(hm[d] >= maxval)
             {
-              hm[d] = homosum[d][row][col];
-              maxval = (maxval < hm[d] ? hm[d] : maxval);
+              dircount++;
+              dirsum += directionality[d];
             }
-            maxval -= maxval >> 3;
-            for(int d = 0; d < ndir - 4; d++)
-              if(hm[d] < hm[d + 4])
-                hm[d] = 0;
-              else if(hm[d] > hm[d + 4])
-                hm[d + 4] = 0;
-            float dircount = 0;
-            float dirsum = 0.0f;
-            for(int d = 0; d < ndir; d++)
-              if(hm[d] >= maxval)
-              {
-                dircount++;
-                dirsum += directionality[d];
-              }
-            float w = dirsum / (float)dircount;
+          float w = dirsum / (float)dircount;
 #define CORR_FILT(VAR,FILT,XOFFS,YOFFS,XSIZE,YSIZE) \
 VAR = 0.0f + 0.0f * _Complex_I; \
 for (fdc_row=(YOFFS); fdc_row < (YSIZE); fdc_row++) \
 for (fdc_col=(XOFFS); fdc_col < (XSIZE); fdc_col++) \
 VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_src[fdc_row][fdc_col];
-            // extract modulated chroma using filters
-            float complex C2m, C5m, C6m, C7m, C10m, C11m;
-            // for 11x11 filters, use 0,0,11,11 as filter region
-            CORR_FILT(C2m,h2,1,1,10,10)
-            CORR_FILT(C5m,h5,0,0,11,11)
-            CORR_FILT(C6m,h6,0,0,11,11)
-            CORR_FILT(C7m,h7,0,0,11,11)
-            CORR_FILT(C10m,h10,1,1,10,10)
-            CORR_FILT(C11m,h11,0,0,11,11)
-            // build the q vector components
-            int myrow = row + rowoffset;
-            int mycol = col + coloffset;
-            float complex modulator1 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.5f + (float)myrow * -0.16666666666667f));
-            float complex modulator2 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.16666666666667f + (float)myrow * -0.5f));
-            float complex q2_10 = (w * C10m * modulator1 - (1-w) * C2m * modulator2);
-            float complex modulator3 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.5f + (float)myrow * 0.16666666666667f));
-            float complex modulator4 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.16666666666667f + (float)myrow * -0.5f));
-            float complex q3_15 = conjf(q2_10);
-            float complex modulator5 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.3333333333333333f ));
-            float complex modulator6 = cexpf(-2.0f * _Complex_I * PI * ( (float)myrow * -0.3333333333333333f ));
-            float complex q6_11 = (w * C11m * modulator5 + (1-w) * C6m * modulator6);
-            float complex q12_17 = conjf(q6_11);
-            float complex modulator7 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.3333333333333333f + (float)myrow * -0.3333333333333333f ));
-            float complex q5 = C5m * modulator7;
-            float complex q7 = C7m * cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.3333333333333333f + (float)myrow * -0.3333333333333333f ));
-            float complex q18 = conjf(q5);
-            // get L
-            C2m = (q2_10 * conjf(modulator1) - q2_10 * conjf(modulator2));
-            float complex C3m = (q3_15 * conjf(modulator3) - q3_15 * conjf(modulator4));
-            C6m = (q6_11 * conjf(modulator5) + q6_11 * conjf(modulator6));
-            float complex C12m = (q12_17 * modulator5 + q12_17 * modulator6);
-            float complex C18m = q18 * modulator7;
-            float complex L = fdc_src[5][5] - C2m - C3m - C5m - C6m - 2.0f*C7m - C12m - C18m;
-            // get the rgb components from fdc
-            float red = crealf(Minv[0][0]*L + Minv[0][4]*q5 + 2.0f*Minv[0][5]*q6_11 + 2.0f*Minv[0][6]*q7 + 2.0f*Minv[0][9]*q2_10 + 2.0f*Minv[0][11]*q12_17 + 2.0f*Minv[0][14]*q3_15 + Minv[0][17]*q18);
-            float green = crealf(Minv[1][0]*L + Minv[1][4]*q5 + 2.0f*Minv[1][5]*q6_11 + 2.0f*Minv[1][6]*q7 + 2.0f*Minv[1][9]*q2_10 + 2.0f*Minv[1][11]*q12_17 + 2.0f*Minv[1][14]*q3_15 + Minv[1][17]*q18);
-            float blue = crealf(Minv[2][0]*L + Minv[2][4]*q5 + 2.0f*Minv[2][5]*q6_11 + 2.0f*Minv[2][6]*q7 + 2.0f*Minv[2][9]*q2_10 + 2.0f*Minv[2][11]*q12_17 + 2.0f*Minv[2][14]*q3_15 + Minv[2][17]*q18);
-            #define LIM(x,min,max) MAX(min,MIN(x,max))
-            red = LIM(red, 0.0f, FLT_MAX);
-            green = LIM(green, 0.0f, FLT_MAX);
-            blue = LIM(blue, 0.0f, FLT_MAX);
-            // now separate luma and chroma for
-            // frequency domain chroma
-            // and take luma from MS and chroma from FDC
-            float cb = -0.16874f * red - 0.33126f * green + 0.50000f * blue;
-            float cr =  0.50000f * red - 0.41869f * green - 0.08131f * blue;
-            fdc_chroma[0][row][col] = cb;
-            fdc_chroma[1][row][col] = cr;
-          }
+          // extract modulated chroma using filters
+          float complex C2m, C5m, C6m, C7m, C10m, C11m;
+          // for 11x11 filters, use 0,0,11,11 as filter region
+          CORR_FILT(C2m,h2,1,1,10,10)
+          CORR_FILT(C5m,h5,0,0,11,11)
+          CORR_FILT(C6m,h6,0,0,11,11)
+          CORR_FILT(C7m,h7,0,0,11,11)
+          CORR_FILT(C10m,h10,1,1,10,10)
+          CORR_FILT(C11m,h11,0,0,11,11)
+          // build the q vector components
+          int myrow = row + rowoffset;
+          int mycol = col + coloffset;
+          float complex modulator1 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.5f + (float)myrow * -0.16666666666667f));
+          float complex modulator2 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.16666666666667f + (float)myrow * -0.5f));
+          float complex q2_10 = (w * C10m * modulator1 - (1-w) * C2m * modulator2);
+          float complex modulator3 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.5f + (float)myrow * 0.16666666666667f));
+          float complex modulator4 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.16666666666667f + (float)myrow * -0.5f));
+          float complex q3_15 = conjf(q2_10);
+          float complex modulator5 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.3333333333333333f ));
+          float complex modulator6 = cexpf(-2.0f * _Complex_I * PI * ( (float)myrow * -0.3333333333333333f ));
+          float complex q6_11 = (w * C11m * modulator5 + (1-w) * C6m * modulator6);
+          float complex q12_17 = conjf(q6_11);
+          float complex modulator7 = cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * -0.3333333333333333f + (float)myrow * -0.3333333333333333f ));
+          float complex q5 = C5m * modulator7;
+          float complex q7 = C7m * cexpf(-2.0f * _Complex_I * PI * ( (float)mycol * 0.3333333333333333f + (float)myrow * -0.3333333333333333f ));
+          float complex q18 = conjf(q5);
+          // get L
+          C2m = (q2_10 * conjf(modulator1) - q2_10 * conjf(modulator2));
+          float complex C3m = (q3_15 * conjf(modulator3) - q3_15 * conjf(modulator4));
+          C6m = (q6_11 * conjf(modulator5) + q6_11 * conjf(modulator6));
+          float complex C12m = (q12_17 * modulator5 + q12_17 * modulator6);
+          float complex C18m = q18 * modulator7;
+          float complex L = fdc_src[5][5] - C2m - C3m - C5m - C6m - 2.0f*C7m - C12m - C18m;
+          // get the rgb components from fdc
+          float red = crealf(Minv[0][0]*L + Minv[0][4]*q5 + 2.0f*Minv[0][5]*q6_11 + 2.0f*Minv[0][6]*q7 + 2.0f*Minv[0][9]*q2_10 + 2.0f*Minv[0][11]*q12_17 + 2.0f*Minv[0][14]*q3_15 + Minv[0][17]*q18);
+          float green = crealf(Minv[1][0]*L + Minv[1][4]*q5 + 2.0f*Minv[1][5]*q6_11 + 2.0f*Minv[1][6]*q7 + 2.0f*Minv[1][9]*q2_10 + 2.0f*Minv[1][11]*q12_17 + 2.0f*Minv[1][14]*q3_15 + Minv[1][17]*q18);
+          float blue = crealf(Minv[2][0]*L + Minv[2][4]*q5 + 2.0f*Minv[2][5]*q6_11 + 2.0f*Minv[2][6]*q7 + 2.0f*Minv[2][9]*q2_10 + 2.0f*Minv[2][11]*q12_17 + 2.0f*Minv[2][14]*q3_15 + Minv[2][17]*q18);
+#define LIM(x,min,max) MAX(min,MIN(x,max))
+          red = LIM(red, 0.0f, FLT_MAX);
+          green = LIM(green, 0.0f, FLT_MAX);
+          blue = LIM(blue, 0.0f, FLT_MAX);
+          // now separate luma and chroma for
+          // frequency domain chroma
+          // and take luma from MS and chroma from FDC
+          float cb = -0.16874f * red - 0.33126f * green + 0.50000f * blue;
+          float cr =  0.50000f * red - 0.41869f * green - 0.08131f * blue;
+          fdc_chroma[0][row][col] = cb;
+          fdc_chroma[1][row][col] = cr;
         }
       }
 
@@ -1532,7 +1529,7 @@ else qsright = qspos - 1;\
 }\
 
       /* One intermediary round of median filtering of chroma       */
-      for(int row = 8; row < mrow - 8; row++)   //10 as manual padding
+      for(int row = 8; row < mrow - 8; row++)   //8 as manual padding
         for(int col = 8; col < mcol - 8; col++)
         {
           for(int chrm = 0; chrm < 2; chrm++)
@@ -1540,7 +1537,6 @@ else qsright = qspos - 1;\
             int qsleft = 0, qsright = 20;
             int qspos, qsi;
             float qspivot, qstfloat;
-
             // Load the circular window
             float temp [21] = {
               fdc_chroma[chrm][row-2][col-1],
@@ -1579,7 +1575,6 @@ else qsright = qspos - 1;\
             int qsleft = 0, qsright = 20;
             int qspos, qsi;
             float qspivot, qstfloat;
-
             // Load the circular window
             float temp [21] = {
               fdc_chroma[chrm][row-2][col-1],
@@ -1637,57 +1632,48 @@ else qsright = qspos - 1;\
           float green = avg[1] / avg[3];
           float blue = avg[2] / avg[3];
           // preserve only luma component of Markesteijn for this pixel
-          if (passes == 1) {
-            float cb = 0.0f;
-            float cr = 0.0f;
-            float y  =  0.29900f * red + 0.58700f * green + 0.11400f * blue;
-            // now back to RGB
-            // instead of merely reding the values, perform median filter
-            for(int chrm = 0; chrm < 2; chrm++)
-            {
-              int qsleft = 0, qsright = 20;
-              int qspos, qsi;
-              float qspivot, qstfloat;
-
-              // Load the circular window
-              float temp [21] = {
-                fdc_chroma[chrm][row-2][col-1],
-                fdc_chroma[chrm][row-2][col],
-                fdc_chroma[chrm][row-2][col+1],
-                fdc_chroma[chrm][row-1][col-2],
-                fdc_chroma[chrm][row-1][col-1],
-                fdc_chroma[chrm][row-1][col],
-                fdc_chroma[chrm][row-1][col+1],
-                fdc_chroma[chrm][row-1][col+2],
-                fdc_chroma[chrm][row][col-2],
-                fdc_chroma[chrm][row][col-1],
-                fdc_chroma[chrm][row][col],
-                fdc_chroma[chrm][row][col+1],
-                fdc_chroma[chrm][row][col+2],
-                fdc_chroma[chrm][row+1][col-2],
-                fdc_chroma[chrm][row+1][col-1],
-                fdc_chroma[chrm][row+1][col],
-                fdc_chroma[chrm][row+1][col+1],
-                fdc_chroma[chrm][row+1][col+2],
-                fdc_chroma[chrm][row+2][col-1],
-                fdc_chroma[chrm][row+2][col],
-                fdc_chroma[chrm][row+2][col+1]
-              };
-              QUICKSELECT(temp);
-              if (chrm == 0)
-                cb = temp[10];
-              else
-                cr = temp[10];
-            }
-            // cb = fdc_chroma[0][row][col];
-            // cr = fdc_chroma[1][row][col];
-            red   = y                 + 1.40200f * cr;
-            green = y - 0.34414f * cb - 0.71414f * cr;
-            blue  = y + 1.77200f * cb;
-            red = LIM(red, 0.0f, FLT_MAX);
-            green = LIM(green, 0.0f, FLT_MAX);
-            blue = LIM(blue, 0.0f, FLT_MAX);
+          float cbcr[2] = { 0.0f, 0.0f };
+          float y  =  0.29900f * red + 0.58700f * green + 0.11400f * blue;
+          // now back to RGB
+          // instead of merely reding the values, perform median filter
+          for(int chrm = 0; chrm < 2; chrm++)
+          {
+            int qsleft = 0, qsright = 20;
+            int qspos, qsi;
+            float qspivot, qstfloat;
+            // Load the circular window
+            float temp [21] = {
+              fdc_chroma[chrm][row-2][col-1],
+              fdc_chroma[chrm][row-2][col],
+              fdc_chroma[chrm][row-2][col+1],
+              fdc_chroma[chrm][row-1][col-2],
+              fdc_chroma[chrm][row-1][col-1],
+              fdc_chroma[chrm][row-1][col],
+              fdc_chroma[chrm][row-1][col+1],
+              fdc_chroma[chrm][row-1][col+2],
+              fdc_chroma[chrm][row][col-2],
+              fdc_chroma[chrm][row][col-1],
+              fdc_chroma[chrm][row][col],
+              fdc_chroma[chrm][row][col+1],
+              fdc_chroma[chrm][row][col+2],
+              fdc_chroma[chrm][row+1][col-2],
+              fdc_chroma[chrm][row+1][col-1],
+              fdc_chroma[chrm][row+1][col],
+              fdc_chroma[chrm][row+1][col+1],
+              fdc_chroma[chrm][row+1][col+2],
+              fdc_chroma[chrm][row+2][col-1],
+              fdc_chroma[chrm][row+2][col],
+              fdc_chroma[chrm][row+2][col+1]
+            };
+            QUICKSELECT(temp);
+            cbcr[chrm] = temp[10];
           }
+          red   = y                      + 1.40200f * cbcr[1];
+          green = y - 0.34414f * cbcr[0] - 0.71414f * cbcr[1];
+          blue  = y + 1.77200f * cbcr[0];
+          red = LIM(red, 0.0f, FLT_MAX);
+          green = LIM(green, 0.0f, FLT_MAX);
+          blue = LIM(blue, 0.0f, FLT_MAX);
           out[4 * (width * (row + top) + col + left)    ] = red;
           out[4 * (width * (row + top) + col + left) + 1] = green;
           out[4 * (width * (row + top) + col + left) + 2] = blue;
