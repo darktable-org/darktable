@@ -790,7 +790,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
   {
     const int n = width*height;
-    FILE *f = fopen("/tmp/transformed.pfm", "wb");
+    FILE *f = g_fopen("/tmp/transformed.pfm", "wb");
     fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
     for(int k=0; k<n; k++)
       fwrite(((float*)ovoid)+4*k, sizeof(float), 3, f);
@@ -814,13 +814,13 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     {
       char filename[512];
       snprintf(filename, sizeof(filename), "/tmp/coarse_%d.pfm", scale);
-      FILE *f = fopen(filename, "wb");
+      FILE *f = g_fopen(filename, "wb");
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
       for(size_t k = 0; k < npixels; k++)
         fwrite(buf2+4*k, sizeof(float), 3, f);
       fclose(f);
       snprintf(filename, sizeof(filename), "/tmp/detail_%d.pfm", scale);
-      f = fopen(filename, "wb");
+      f = g_fopen(filename, "wb");
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
       for(size_t k = 0; k < npixels; k++)
         fwrite(buf[scale]+4*k, sizeof(float), 3, f);

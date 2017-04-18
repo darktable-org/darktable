@@ -2674,7 +2674,7 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       // we want to avoid writing the sidecar file if it didn't change to avoid issues when using the same images
       // from different computers. sample use case: images on NAS, several computers using them NOT AT THE SAME TIME and
       // the xmp crawler is used to find changed sidecars.
-      FILE *fd = fopen(filename, "rb");
+      FILE *fd = g_fopen(filename, "rb");
       if(fd)
       {
         fseek(fd, 0, SEEK_END);

@@ -112,7 +112,7 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
                 int exif_len, int imgid, int num, int total)
 {
   dt_imageio_webp_t *webp_data = (dt_imageio_webp_t *)webp;
-  FILE *out = fopen(filename, "wb");
+  FILE *out = g_fopen(filename, "wb");
 
   // Create, configure and validate a WebPConfig instance
   WebPConfig config;

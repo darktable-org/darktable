@@ -554,7 +554,7 @@ uint32_t dt_tag_get_recent_used(GList **result)
 */
 ssize_t dt_tag_import(const char *filename)
 {
-  FILE *fd = fopen(filename, "r");
+  FILE *fd = g_fopen(filename, "r");
 
   if(!fd) return -1;
 
@@ -647,7 +647,7 @@ ssize_t dt_tag_import(const char *filename)
 */
 ssize_t dt_tag_export(const char *filename)
 {
-  FILE *fd = fopen(filename, "w");
+  FILE *fd = g_fopen(filename, "w");
 
   if(!fd) return -1;
 

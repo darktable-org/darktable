@@ -554,7 +554,7 @@ static GList *_lib_geotagging_get_timezones(void)
   }
 
   // parse zone.tab and put all time zone descriptions into tz
-  fp = fopen(zone_tab, "r");
+  fp = g_fopen(zone_tab, "r");
   g_free(zone_tab);
 
   if(!fp) return NULL;

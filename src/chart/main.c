@@ -559,7 +559,7 @@ static void export_style(dt_lut_t *self, const char *filename, const char *name,
 {
   int num = 0;
 
-  FILE *fd = fopen(filename, "w");
+  FILE *fd = g_fopen(filename, "w");
   if(!fd) return;
 
   fprintf(fd, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -594,7 +594,7 @@ static void export_raw(dt_lut_t *self, char *filename, char *name, char *descrip
   GHashTableIter table_iter;
   gpointer key, value;
 
-  FILE *fd = fopen(filename, "w");
+  FILE *fd = g_fopen(filename, "w");
   if(!fd) return;
 
   GList *patch_names = NULL;
@@ -1609,7 +1609,7 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   *name = NULL;
   *description = NULL;
 
-  FILE *f = fopen(filename, "rb");
+  FILE *f = g_fopen(filename, "rb");
   if(!f) return 0;
   int N = 0;
   int r = 0;
