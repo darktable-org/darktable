@@ -285,7 +285,7 @@ static void _lib_darktable_show_about_dialog()
   GtkWidget *dialog = gtk_about_dialog_new();
   gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), darktable_package_version);
-  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), _("copyright (c) the authors 2009-2016"));
+  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), _("copyright (c) the authors 2009-2017"));
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog),
                                 _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://www.darktable.org/");
