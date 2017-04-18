@@ -44,6 +44,7 @@
 #include <sys/resource.h>
 #endif
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <glib/gi18n.h>
 #include <inttypes.h>
 #include <json-glib/json-glib.h>
@@ -336,7 +337,7 @@ static inline void dt_print_mem_usage()
   char pidstatus[128];
   snprintf(pidstatus, sizeof(pidstatus), "/proc/%u/status", (uint32_t)getpid());
 
-  f = fopen(pidstatus, "r");
+  f = g_fopen(pidstatus, "r");
   if(!f) return;
 
   /* read memory size data from /proc/pid/status */
@@ -413,7 +414,7 @@ static inline int dt_get_num_atom_cores()
 #if defined(__linux__)
   int count = 0;
   char line[256];
-  FILE *f = fopen("/proc/cpuinfo", "r");
+  FILE *f = g_fopen("/proc/cpuinfo", "r");
   if(f)
   {
     while(!feof(f))
@@ -494,7 +495,7 @@ static inline int dt_get_num_atom_cores()
 static inline size_t dt_get_total_memory()
 {
 #if defined(__linux__)
-  FILE *f = fopen("/proc/meminfo", "rb");
+  FILE *f = g_fopen("/proc/meminfo", "rb");
   if(!f) return 0;
   size_t mem = 0;
   char *line = NULL;

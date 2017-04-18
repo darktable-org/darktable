@@ -27,6 +27,7 @@
 #include "common/file_location.h"
 
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <glib/gprintf.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -215,7 +216,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     if(!i)
     {
       snprintf(darktable.conf->filename, sizeof(darktable.conf->filename), "%s", filename);
-      f = fopen(filename, "rb");
+      f = g_fopen(filename, "rb");
       if(!f)
       {
         // remember we init to default rc and try again
@@ -228,7 +229,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
       char buf[PATH_MAX] = { 0 }, defaultrc[PATH_MAX] = { 0 };
       dt_loc_get_datadir(buf, sizeof(buf));
       snprintf(defaultrc, sizeof(defaultrc), "%s/darktablerc", buf);
-      f = fopen(defaultrc, "rb");
+      f = g_fopen(defaultrc, "rb");
     }
     if(!f) return;
     while(!feof(f))
@@ -274,7 +275,7 @@ static void dt_conf_print(const gchar *key, const gchar *val, FILE *f)
 
 static inline void dt_conf_cleanup(dt_conf_t *cf)
 {
-  FILE *f = fopen(cf->filename, "wb");
+  FILE *f = g_fopen(cf->filename, "wb");
   if(f)
   {
     GList *keys = g_hash_table_get_keys(cf->table);

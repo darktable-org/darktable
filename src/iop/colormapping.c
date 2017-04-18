@@ -1056,7 +1056,7 @@ static void process_clusters(gpointer instance, gpointer user_data)
     memcpy(g->flowback.weight, p->source_weight, sizeof(float) * MAXN);
     g->flowback.n = p->n;
     g->flowback_set = 1;
-    FILE *f = fopen("/tmp/dt_colormapping_loaded", "wb");
+    FILE *f = g_fopen("/tmp/dt_colormapping_loaded", "wb");
     if(f)
     {
       if(fwrite(&g->flowback, sizeof(g->flowback), 1, f) < 1)
@@ -1153,7 +1153,7 @@ void gui_init(struct dt_iop_module_t *self)
                             G_CALLBACK(process_clusters), self);
 
 
-  FILE *f = fopen("/tmp/dt_colormapping_loaded", "rb");
+  FILE *f = g_fopen("/tmp/dt_colormapping_loaded", "rb");
   if(f)
   {
     if(fread(&g->flowback, sizeof(g->flowback), 1, f) > 0) g->flowback_set = 1;

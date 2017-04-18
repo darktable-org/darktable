@@ -164,7 +164,7 @@ gboolean dt_supported_image(const gchar *filename)
 static void strip_semicolons_from_keymap(const char *path)
 {
   char pathtmp[PATH_MAX] = { 0 };
-  FILE *fin = fopen(path, "rb");
+  FILE *fin = g_fopen(path, "rb");
   FILE *fout;
   int i;
   int c = '\0';
@@ -172,7 +172,7 @@ static void strip_semicolons_from_keymap(const char *path)
   if(!fin) return;
 
   snprintf(pathtmp, sizeof(pathtmp), "%s_tmp", path);
-  fout = fopen(pathtmp, "wb");
+  fout = g_fopen(pathtmp, "wb");
 
   if(!fout)
   {
