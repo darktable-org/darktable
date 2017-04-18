@@ -1378,7 +1378,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     char *path = dt_image_get_text_path(img->id);
     if(path)
     {
-      FILE *f = fopen(path, "rb");
+      FILE *f = g_fopen(path, "rb");
       if(f)
       {
         char line[2048];

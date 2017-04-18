@@ -357,8 +357,8 @@ static void copy_res(const char *src, const char *dst)
   dt_loc_get_datadir(share, sizeof(share));
   gchar *sourcefile = g_build_filename(share, src, NULL);
   char *content = NULL;
-  FILE *fin = fopen(sourcefile, "rb");
-  FILE *fout = fopen(dst, "wb");
+  FILE *fin = g_fopen(sourcefile, "rb");
+  FILE *fout = g_fopen(dst, "wb");
 
   if(fin && fout)
   {
@@ -393,7 +393,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
 
   const char *title = d->title;
 
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   if(!f) return;
   fprintf(f, "\\newcommand{\\dttitle}{%s}\n"
              "\\newcommand{\\dtauthor}{the author}\n"

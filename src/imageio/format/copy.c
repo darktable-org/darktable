@@ -58,8 +58,8 @@ int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void 
 
   if(!strcmp(sourcefile, targetfile)) goto END;
 
-  fin = fopen(sourcefile, "rb");
-  fout = fopen(targetfile, "wb");
+  fin = g_fopen(sourcefile, "rb");
+  fout = g_fopen(targetfile, "wb");
   if(fin == NULL || fout == NULL) goto END;
 
   fseek(fin, 0, SEEK_END);

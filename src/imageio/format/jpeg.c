@@ -328,7 +328,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     return 1;
   }
   jpeg_create_compress(&(jpg->cinfo));
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   if(!f) return 1;
   jpeg_stdio_dest(&(jpg->cinfo), f);
 
@@ -404,7 +404,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
 
 static int __attribute__((__unused__)) read_header(const char *filename, dt_imageio_jpeg_t *jpg)
 {
-  jpg->f = fopen(filename, "rb");
+  jpg->f = g_fopen(filename, "rb");
   if(!jpg->f) return 1;
 
   struct dt_imageio_jpeg_error_mgr jerr;
