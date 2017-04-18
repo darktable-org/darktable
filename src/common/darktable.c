@@ -169,14 +169,22 @@ static void strip_semicolons_from_keymap(const char *path)
   int i;
   int c = '\0';
 
+  if(!fin) return;
+
   snprintf(pathtmp, sizeof(pathtmp), "%s_tmp", path);
   fout = fopen(pathtmp, "wb");
+
+  if(!fout)
+  {
+    fclose(fin);
+    return;
+  }
 
   // First ignoring the first three lines
   for(i = 0; i < 3; i++)
   {
-    c = fgetc(fin);
-    while(c != '\n') c = fgetc(fin);
+    while(c != '\n' && c != '\r' && c != EOF) c = fgetc(fin);
+    while(c == '\n' || c == '\r') c = fgetc(fin);
   }
 
   // Then ignore the first two characters of each line, copying the rest out
@@ -187,7 +195,7 @@ static void strip_semicolons_from_keymap(const char *path)
     {
       c = fgetc(fin);
       if(c != EOF) fputc(c, fout);
-    } while(c != '\n' && c != EOF);
+    } while(c != '\n' && c != '\r' && c != EOF);
   }
 
   fclose(fin);
