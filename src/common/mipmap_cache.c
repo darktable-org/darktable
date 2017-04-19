@@ -51,7 +51,7 @@
 #endif
 
 #define DT_MIPMAP_CACHE_FILE_MAGIC 0xD71337
-#define DT_MIPMAP_CACHE_FILE_VERSION 23
+#define DT_MIPMAP_CACHE_FILE_VERSION 24
 #define DT_MIPMAP_CACHE_DEFAULT_FILE_NAME "mipmaps"
 
 typedef enum dt_mipmap_buffer_dsc_flags
