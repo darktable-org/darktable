@@ -61,7 +61,7 @@ void InitializeRlimits()
   //
   for(i = 0; i < RLIM_NLIMITS; i++)
   {
-    rlimits[i].rlim_cur = 0;
+    rlimits[i].rlim_cur = RLIM_INFINITY;
     rlimits[i].rlim_max = 0xffffffff;
   }
   rInitialized = TRUE;
