@@ -102,15 +102,21 @@ else()
 	MESSAGE(STATUS "Found little endian system. Good.")
 endif(${BIGENDIAN})
 
+set(CMAKE_REQUIRED_INCLUDES_OLD "${CMAKE_REQUIRED_INCLUDES}")
+list(APPEND CMAKE_REQUIRED_INCLUDES "${CMAKE_SOURCE_DIR}")
+
 check_c_source_compiles("
 #include <stdio.h>
 int main() {
-#include \"${CMAKE_SOURCE_DIR}/src/is_supported_platform.h\"
+#include \"src/is_supported_platform.h\"
 }" IS_SUPPORTED_PLATFORM)
 if(NOT IS_SUPPORTED_PLATFORM)
   MESSAGE(FATAL_ERROR "The target platform is not supported!")
 endif(NOT IS_SUPPORTED_PLATFORM)
 MESSAGE(STATUS "Is the target platform supported: ${IS_SUPPORTED_PLATFORM}")
+
+set(CMAKE_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES_OLD}")
+unset(CMAKE_REQUIRED_INCLUDES_OLD)
 
 if(APPLE)
 	option(USE_MAC_INTEGRATION "Enable OS X integration" ON)
