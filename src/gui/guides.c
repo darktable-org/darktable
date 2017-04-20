@@ -268,6 +268,47 @@ static void dt_guides_draw_golden_mean(cairo_t *cr, dt_QRect_t *R1, dt_QRect_t *
 }
 #undef RADIANS
 
+// defaults conforming to ICAO 9303 and ISO 19794-5
+#define PROP_WIDTH 36
+#define PROP_HEIGHT 47
+#define MARGIN_TOP 4
+#define MARGIN_BOT 7
+#define SPACING_Y 2
+#define VERTBAR_X 16.5
+#define LONGBAR_X 6
+#define SHORTBAR_X 9
+static void dt_guides_draw_passport(cairo_t *cr, const float left, const float top,
+                                           const float width, const float height)
+{
+  const float right = left + width, bot = top + height;
+  const float px = width / PROP_WIDTH, py = height / PROP_HEIGHT;
+
+  // Two vertical lines
+  dt_draw_line(cr,  left + VERTBAR_X * px,    top + (MARGIN_TOP + 2 * SPACING_Y) * py,
+                    left + VERTBAR_X * px,    bot - (MARGIN_BOT + 2 * SPACING_Y) * py);
+  dt_draw_line(cr,  right - VERTBAR_X * px,   top + (MARGIN_TOP + 2 * SPACING_Y) * py,
+                    right - VERTBAR_X * px,   bot - (MARGIN_BOT + 2 * SPACING_Y) * py);
+
+  // Long horisontal lines
+  dt_draw_line(cr,  left + LONGBAR_X * px,    top + MARGIN_TOP * py,
+                    right - LONGBAR_X * px,   top + MARGIN_TOP * py);
+  dt_draw_line(cr,  left + LONGBAR_X * px,    bot - MARGIN_BOT * py,
+                    right - LONGBAR_X * px,   bot - MARGIN_BOT * py);
+
+  // Shorter horisontal lines
+  dt_draw_line(cr,  left + SHORTBAR_X * px,   top + (MARGIN_TOP + SPACING_Y) * py,
+                    right - SHORTBAR_X * px,  top + (MARGIN_TOP + SPACING_Y) * py);
+  dt_draw_line(cr,  left + SHORTBAR_X * px,   bot - (MARGIN_BOT + SPACING_Y) * py,
+                    right - SHORTBAR_X * px,  bot - (MARGIN_BOT + SPACING_Y) * py);
+}
+#undef PROP_WIDTH
+#undef PROP_HEIGHT
+#undef MARGIN_TOP
+#undef MARGIN_BOT 
+#undef SPACING_Y
+#undef VERTBAR_X
+#undef LONGBAR_X
+#undef SHORTBAR_X
 
 ///////// wrappers for the guides system
 
@@ -378,6 +419,12 @@ static GtkWidget *_guides_gui_golden_mean(dt_iop_module_t *self, void *user_data
 
   return golden_extras;
 }
+static void _guides_draw_passport(cairo_t *cr, const float x, const float y,
+                                         const float w, const float h,
+                                         const float zoom_scale, void *user_data)
+{
+  dt_guides_draw_passport(cr, x, y, w, h);
+}
 
 
 static void _guides_add_guide(GList **list, const char *name,
@@ -415,6 +462,7 @@ GList *dt_guides_init()
     _golden_mean_set_data(user_data, dt_conf_get_int("plugins/darkroom/clipping/golden_extras"));
     _guides_add_guide(&guides, _("golden mean"), _guides_draw_golden_mean, _guides_gui_golden_mean, user_data, free);
   }
+  _guides_add_guide(&guides, _("passport"), _guides_draw_passport, NULL, NULL, NULL);
 
   return guides;
 }
