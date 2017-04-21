@@ -369,7 +369,7 @@ static int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t 
   module->histogram = NULL;
   module->histogram_max[0] = module->histogram_max[1] = module->histogram_max[2] = module->histogram_max[3]
       = 0;
-  module->request_mask_display = 0;
+  module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   module->suppress_mask = 0;
   module->enabled = module->default_enabled = 0; // all modules disabled by default.
   g_strlcpy(module->op, so->op, 20);

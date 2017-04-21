@@ -65,7 +65,30 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
   const int ch = piece->colors;
 
-  if(piece->pipe->mask_display)
+  const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
+
+  if(mask_display & (DT_DEV_PIXELPIPE_DISPLAY_CHANNEL & DT_DEV_PIXELPIPE_DISPLAY_ANY))
+  {
+    const float yellow[3] = { 1.0f, 1.0f, 0.0f };
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(d) schedule(static)
+#endif
+    for(int k = 0; k < roi_out->height; k++)
+    {
+      const float *in = ((float *)i) + (size_t)ch * k * roi_out->width;
+      uint8_t *out = ((uint8_t *)o) + (size_t)ch * k * roi_out->width;
+      for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
+      {
+        float alpha = (mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) ? in[3] : 0.0f;
+        for(int c = 0; c < 3; c++)
+        {
+          float value = in[1] * (1.0f - alpha) + yellow[c] * alpha;
+          out[2 - c] = d->table[(uint16_t)CLAMP((int)(0xfffful * value), 0, 0xffff)];
+        }
+      }
+    }
+  }
+  else if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
   {
     const float yellow[3] = { 1.0f, 1.0f, 0.0f };
 #ifdef _OPENMP
