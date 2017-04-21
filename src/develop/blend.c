@@ -2618,6 +2618,215 @@ static void _blend_RGB_B(const _blend_buffer_desc_t *bd, const float *a, float *
 }
 
 
+static void display_channel(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask,
+                            dt_dev_pixelpipe_display_mask_t channel)
+{
+
+  switch(channel & DT_DEV_PIXELPIPE_DISPLAY_ANY)
+  {
+    case DT_DEV_PIXELPIPE_DISPLAY_L:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(a[j] / 100.0f, 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_L | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(b[j] / 100.0f, 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_a:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE((a[j + 1] + 128.0f) / 256.0f, 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_a | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE((b[j + 1] + 128.0f) / 256.0f, 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_b:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE((a[j + 2] + 128.0f) / 256.0f, 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_b | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE((b[j + 2] + 128.0f) / 256.0f, 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_R:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(a[j], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_R | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(b[j], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_G:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(a[j + 1], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_G | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(b[j + 1], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_B:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(a[j + 2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_B | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(b[j + 2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_GRAY:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(0.3f * a[j] + 0.59f * a[j + 1] + 0.11f * a[j + 2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_GRAY | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(0.3f * b[j] + 0.59f * b[j + 1] + 0.11f * b[j + 2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float LCH[3];
+        _Lab_2_LCH(a + j, LCH);
+        const float c = CLAMP_RANGE(LCH[1] / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_LCH_C | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float LCH[3];
+        _Lab_2_LCH(b + j, LCH);
+        const float c = CLAMP_RANGE(LCH[1] / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_LCH_h:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float LCH[3];
+        _Lab_2_LCH(a + j, LCH);
+        const float c = CLAMP_RANGE(LCH[2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_LCH_h | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float LCH[3];
+        _Lab_2_LCH(b + j, LCH);
+        const float c = CLAMP_RANGE(LCH[2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_H:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float HSL[3];
+        _RGB_2_HSL(a + j, HSL);
+        const float c = CLAMP_RANGE(HSL[0], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_H | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float HSL[3];
+        _RGB_2_HSL(b + j, HSL);
+        const float c = CLAMP_RANGE(HSL[0], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_S:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float HSL[3];
+        _RGB_2_HSL(a + j, HSL);
+        const float c = CLAMP_RANGE(HSL[1], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_S | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float HSL[3];
+        _RGB_2_HSL(b + j, HSL);
+        const float c = CLAMP_RANGE(HSL[1], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_l:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float HSL[3];
+        _RGB_2_HSL(a + j, HSL);
+        const float c = CLAMP_RANGE(HSL[2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_l | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float HSL[3];
+        _RGB_2_HSL(b + j, HSL);
+        const float c = CLAMP_RANGE(HSL[2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    default:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        for(int k = 0; k < bd->bch; k++) b[j + k] = 0.0f;
+      }
+      break;
+  }
+
+  if(bd->cst != iop_cs_rgb)
+  {
+    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      b[j + 3] = mask[i];
+  }
+}
+
 
 _blend_row_func *dt_develop_choose_blend_func(const unsigned int blend_mode)
 {
@@ -2774,8 +2983,13 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   /* get the clipped opacity value  0 - 1 */
   const float opacity = fmin(fmax(0, (d->opacity / 100.0f)), 1.0f);
 
-  /* only true if mask_display was set by an _earlier_ module */
-  const int mask_display = piece->pipe->mask_display;
+  /* only non-zero if mask_display was set by an _earlier_ module */
+  const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
+
+  /* does user want us to display a specific channel? */
+  const dt_dev_pixelpipe_display_mask_t request_mask_display =
+    (self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH)) ?
+      self->request_mask_display : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   /* check if we only should blend lightness channel. will affect only Lab space
    */
@@ -2916,17 +3130,20 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     float *in = (float *)ivoid + iindex;
     float *out = (float *)ovoid + oindex;
     float *m = (float *)mask + y * roi_out->width;
-    blend(&bd, in, out, m, blendflag);
 
-    if(mask_display && cst != iop_cs_RAW)
+    if(request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
+      display_channel(&bd, in, out, m, request_mask_display);
+    else
+      blend(&bd, in, out, m, blendflag);
+
+    if((mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) && cst != iop_cs_RAW)
       for(size_t j = 0; j < bd.stride; j += 4) out[j + 3] = in[j + 3];
   }
 
-  /* check if _this_ module should expose mask. */
-  if(self->request_mask_display && self->dev->gui_attached && (self == self->dev->gui_module)
-     && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH))
+  /* register if _this_ module should expose mask or display channel */
+  if(request_mask_display & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
   {
-    piece->pipe->mask_display = 1;
+    piece->pipe->mask_display = request_mask_display;
   }
 
   dt_free_align(_mask);
@@ -2975,24 +3192,25 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
   int kernel_mask;
   int kernel;
-  int kernel_set_mask = darktable.blendop->kernel_blendop_set_mask;
+  int kernel_set_mask = darktable.opencl->blendop->kernel_blendop_set_mask;
+  int kernel_display_channel = darktable.opencl->blendop->kernel_blendop_display_channel;
 
   switch(cst)
   {
     case iop_cs_RAW:
-      kernel = darktable.blendop->kernel_blendop_RAW;
-      kernel_mask = darktable.blendop->kernel_blendop_mask_RAW;
+      kernel = darktable.opencl->blendop->kernel_blendop_RAW;
+      kernel_mask = darktable.opencl->blendop->kernel_blendop_mask_RAW;
       break;
 
     case iop_cs_rgb:
-      kernel = darktable.blendop->kernel_blendop_rgb;
-      kernel_mask = darktable.blendop->kernel_blendop_mask_rgb;
+      kernel = darktable.opencl->blendop->kernel_blendop_rgb;
+      kernel_mask = darktable.opencl->blendop->kernel_blendop_mask_rgb;
       break;
 
     case iop_cs_Lab:
     default:
-      kernel = darktable.blendop->kernel_blendop_Lab;
-      kernel_mask = darktable.blendop->kernel_blendop_mask_Lab;
+      kernel = darktable.opencl->blendop->kernel_blendop_Lab;
+      kernel_mask = darktable.opencl->blendop->kernel_blendop_mask_Lab;
       break;
   }
 
@@ -3006,7 +3224,15 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   const int gaussian = d->radius > 0.0f ? 1 : 0;
   const float radius = fabs(d->radius);
   const unsigned int mask_combine = d->mask_combine;
-  const int mask_display = piece->pipe->mask_display; /* we will transfer alpha channel of input if mask_display was activated by any _earlier_ module */
+
+  /* we will transfer alpha channel of input if mask_display was activated by any _earlier_ module */
+  const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
+
+  /* does user want us to display a specific channel? */
+  const dt_dev_pixelpipe_display_mask_t request_mask_display =
+    (self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH)) ?
+      self->request_mask_display : DT_DEV_PIXELPIPE_DISPLAY_NONE;
+
   const int offs[2] = { xoffs, yoffs };
   const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
@@ -3159,25 +3385,41 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
   if(err != CL_SUCCESS) goto error;
 
-  /* now apply blending with per-pixel opacity value as defined in dev_mask */
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_tmp);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(unsigned), (void *)&blend_mode);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), (void *)&blendflag);
-  dt_opencl_set_kernel_arg(devid, kernel, 8, 2 * sizeof(int), (void *)&offs);
-  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(int), (void *)&mask_display);
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  /* check if _this_ module should expose mask. */
-  if(self->request_mask_display && self->dev->gui_attached && self == self->dev->gui_module
-     && piece->pipe == self->dev->pipe && (mask_mode & DEVELOP_MASK_BOTH))
+  if(request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
   {
-    piece->pipe->mask_display = 1;
+    /* let us display a specific channel */
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 1, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 2, sizeof(cl_mem), (void *)&dev_mask);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 3, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 4, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 5, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 6, 2 * sizeof(int), (void *)&offs);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 7, sizeof(int), (void *)&request_mask_display);
+    err = dt_opencl_enqueue_kernel_2d(devid, kernel_display_channel, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+  else
+  {
+    /* apply blending with per-pixel opacity value as defined in dev_mask */
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask);
+    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(unsigned), (void *)&blend_mode);
+    dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), (void *)&blendflag);
+    dt_opencl_set_kernel_arg(devid, kernel, 8, 2 * sizeof(int), (void *)&offs);
+    dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(int), (void *)&mask_display);
+    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  /* register if _this_ module should expose mask or display channel */
+  if(request_mask_display & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
+  {
+    piece->pipe->mask_display = request_mask_display;
   }
 
   dt_free_align(_mask);
@@ -3198,21 +3440,42 @@ error:
 #endif
 
 /** global init of blendops */
-void dt_develop_blend_init(dt_blendop_t *gd)
+dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
 {
 #ifdef HAVE_OPENCL
+  dt_blendop_cl_global_t *b = (dt_blendop_cl_global_t *)calloc(1, sizeof(dt_blendop_cl_global_t));
+
   const int program = 3; // blendop.cl, from programs.conf
-  gd->kernel_blendop_mask_Lab = dt_opencl_create_kernel(program, "blendop_mask_Lab");
-  gd->kernel_blendop_mask_RAW = dt_opencl_create_kernel(program, "blendop_mask_RAW");
-  gd->kernel_blendop_mask_rgb = dt_opencl_create_kernel(program, "blendop_mask_rgb");
-  gd->kernel_blendop_Lab = dt_opencl_create_kernel(program, "blendop_Lab");
-  gd->kernel_blendop_RAW = dt_opencl_create_kernel(program, "blendop_RAW");
-  gd->kernel_blendop_rgb = dt_opencl_create_kernel(program, "blendop_rgb");
-  gd->kernel_blendop_set_mask = dt_opencl_create_kernel(program, "blendop_set_mask");
+  b->kernel_blendop_mask_Lab = dt_opencl_create_kernel(program, "blendop_mask_Lab");
+  b->kernel_blendop_mask_RAW = dt_opencl_create_kernel(program, "blendop_mask_RAW");
+  b->kernel_blendop_mask_rgb = dt_opencl_create_kernel(program, "blendop_mask_rgb");
+  b->kernel_blendop_Lab = dt_opencl_create_kernel(program, "blendop_Lab");
+  b->kernel_blendop_RAW = dt_opencl_create_kernel(program, "blendop_RAW");
+  b->kernel_blendop_rgb = dt_opencl_create_kernel(program, "blendop_rgb");
+  b->kernel_blendop_set_mask = dt_opencl_create_kernel(program, "blendop_set_mask");
+  b->kernel_blendop_display_channel = dt_opencl_create_kernel(program, "blendop_display_channel");
+  return b;
 #else
-  gd->kernel_blendop_Lab = gd->kernel_blendop_RAW = gd->kernel_blendop_rgb = -1;
-  gd->kernel_blendop_mask_Lab = gd->kernel_blendop_mask_RAW = gd->kernel_blendop_mask_rgb
-      = gd->kernel_blendop_set_mask = -1;
+  return NULL;
+#endif
+}
+
+/** global cleanup of blendops */
+void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b)
+{
+#ifdef HAVE_OPENCL
+  if(!b) return;
+
+  dt_opencl_free_kernel(b->kernel_blendop_mask_Lab);
+  dt_opencl_free_kernel(b->kernel_blendop_mask_RAW);
+  dt_opencl_free_kernel(b->kernel_blendop_mask_rgb);
+  dt_opencl_free_kernel(b->kernel_blendop_Lab);
+  dt_opencl_free_kernel(b->kernel_blendop_RAW);
+  dt_opencl_free_kernel(b->kernel_blendop_rgb);
+  dt_opencl_free_kernel(b->kernel_blendop_set_mask);
+  dt_opencl_free_kernel(b->kernel_blendop_display_channel);
+
+  free(b);
 #endif
 }
 
