@@ -133,6 +133,28 @@ typedef enum dt_develop_blendif_channels_t
 dt_develop_blendif_channels_t;
 
 
+typedef enum dt_dev_pixelpipe_display_mask_t
+{
+  DT_DEV_PIXELPIPE_DISPLAY_NONE = 0,
+  DT_DEV_PIXELPIPE_DISPLAY_MASK = 1 << 0,
+  DT_DEV_PIXELPIPE_DISPLAY_CHANNEL = 1 << 1,
+  DT_DEV_PIXELPIPE_DISPLAY_OUTPUT = 1 << 2,
+  DT_DEV_PIXELPIPE_DISPLAY_L = 1 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_a = 2 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_b = 3 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_R = 4 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_G = 5 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_B = 6 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_GRAY = 7 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_LCH_C = 8 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_LCH_h = 9 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_ANY = (~0) << 2
+}
+dt_dev_pixelpipe_display_mask_t;
+
 
 float
 blendif_factor_Lab(const float4 input, const float4 output, const unsigned int blendif, global const float *parameters, const unsigned int mask_mode, const unsigned int mask_combine)
@@ -992,4 +1014,117 @@ blendop_set_mask (__write_only image2d_t mask, const int width, const int height
 }
 
 
+__kernel void
+blendop_display_channel (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
+                         const int2 offs, const int mask_display)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
+  float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
+
+  float c;
+  float4 LCH;
+  float4 HSL;
+
+  dt_dev_pixelpipe_display_mask_t channel = (dt_dev_pixelpipe_display_mask_t)mask_display;
+  
+  switch(channel & DT_DEV_PIXELPIPE_DISPLAY_ANY)
+  {
+    case DT_DEV_PIXELPIPE_DISPLAY_L:
+      c = clamp(a.x / 100.0f, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_L | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp(b.x / 100.0f, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_a:
+      c = clamp((a.y + 128.0f) / 256.0f, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_a | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp((b.y + 128.0f) / 256.0f, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_b:
+      c = clamp((a.z + 128.0f) / 256.0f, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_b | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp((b.z + 128.0f) / 256.0f, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_R:
+      c = clamp(a.x, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_R | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp(b.x, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_G:
+      c = clamp(a.y, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_G | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp(b.y, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_B:
+      c = clamp(a.z, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_B | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp(b.z, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_GRAY:
+      c = clamp(0.3f * a.x + 0.59f * a.y + 0.11f * a.z, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_GRAY | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp(0.3f * b.x + 0.59f * b.y + 0.11f * b.z, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
+      LCH = Lab_2_LCH(a);
+      c = clamp(LCH.y / (128.0f * sqrt(2.0f)), 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_LCH_C | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      LCH = Lab_2_LCH(b);
+      c = clamp(LCH.y / (128.0f * sqrt(2.0f)), 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_LCH_h:
+      LCH = Lab_2_LCH(a);
+      c = clamp(LCH.z, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_LCH_h | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      LCH = Lab_2_LCH(b);
+      c = clamp(LCH.z, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_H:
+      HSL = RGB_2_HSL(a);
+      c = clamp(HSL.x, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_H | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      HSL = RGB_2_HSL(b);
+      c = clamp(HSL.x, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_S:
+      HSL = RGB_2_HSL(a);
+      c = clamp(HSL.y, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_S | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      HSL = RGB_2_HSL(b);
+      c = clamp(HSL.y, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_l:
+      HSL = RGB_2_HSL(a);
+      c = clamp(HSL.z, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_l | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      HSL = RGB_2_HSL(b);
+      c = clamp(HSL.z, 0.0f, 1.0f);
+      break;
+    default:
+      c = 0.0f;
+      break;
+  }
+
+  a.x = a.y = a.z = c;
+  a.w = opacity;
+
+  write_imagef(out, (int2)(x, y), a);
+}
 

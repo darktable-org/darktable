@@ -135,24 +135,6 @@ typedef enum dt_develop_blendif_channels_t
 } dt_develop_blendif_channels_t;
 
 
-typedef enum dt_develop_blendop_display_mask_t
-{
-  DEVELOP_DISPLAY_NONE = 0,
-  DEVELOP_DISPLAY_MASK = 1,
-  DEVELOP_DISPLAY_L = 2,
-  DEVELOP_DISPLAY_a = 3,
-  DEVELOP_DISPLAY_b = 4,
-  DEVELOP_DISPLAY_R = 5,
-  DEVELOP_DISPLAY_G = 6,
-  DEVELOP_DISPLAY_B = 7,
-  DEVELOP_DISPLAY_GRAY = 8,
-  DEVELOP_DISPLAY_LCH_C = 9,
-  DEVELOP_DISPLAY_LCH_h = 10,
-  DEVELOP_DISPLAY_HSL_H = 11,
-  DEVELOP_DISPLAY_HSL_S = 12,
-} dt_develop_blendop_display_mask_t;
-
-
 /** blend legacy parameters version 1 */
 typedef struct dt_develop_blend_params1_t
 {
@@ -279,7 +261,7 @@ typedef struct dt_develop_blend_params_t
 
 
 
-typedef struct dt_blendop_t
+typedef struct dt_blendop_cl_global_t
 {
   int kernel_blendop_mask_Lab;
   int kernel_blendop_mask_RAW;
@@ -288,7 +270,8 @@ typedef struct dt_blendop_t
   int kernel_blendop_RAW;
   int kernel_blendop_rgb;
   int kernel_blendop_set_mask;
-} dt_blendop_t;
+  int kernel_blendop_display_channel;
+} dt_blendop_cl_global_t;
 
 
 typedef struct dt_iop_gui_blendif_colorstop_t
@@ -345,6 +328,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *radius_slider;
   int tab;
   int channels[8][2];
+  dt_dev_pixelpipe_display_mask_t display_channel[8][2];
   GtkNotebook *channel_tabs;
   int numberstops[8];
   const dt_iop_gui_blendif_colorstop_t *colorstops[8];
@@ -368,7 +352,9 @@ typedef struct dt_iop_gui_blend_data_t
 //#define DT_DEVELOP_BLEND_WITH_MASK(p) ((p->mode&DEVELOP_BLEND_MASK_FLAG)?1:0)
 
 /** global init of blendops */
-void dt_develop_blend_init(dt_blendop_t *gd);
+dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void);
+/** global cleanup of blendops */
+void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b);
 
 /** apply blend */
 void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,

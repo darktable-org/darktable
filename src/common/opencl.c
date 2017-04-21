@@ -30,6 +30,7 @@
 #include "common/opencl_drivers_blacklist.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "develop/blend.h"
 #include "develop/pixelpipe.h"
 
 #include <assert.h>
@@ -704,6 +705,7 @@ finally:
   if(cl->inited)
   {
     dt_capabilities_add("opencl");
+    cl->blendop = dt_develop_blend_init_cl_global();
     cl->bilateral = dt_bilateral_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
     cl->interpolation = dt_interpolation_init_cl_global();
@@ -805,6 +807,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
 {
   if(cl->inited)
   {
+    dt_develop_blend_free_cl_global(cl->blendop);
     dt_bilateral_free_cl_global(cl->bilateral);
     dt_gaussian_free_cl_global(cl->gaussian);
     dt_interpolation_free_cl_global(cl->interpolation);
