@@ -432,6 +432,36 @@ void dt_XYZ_to_sRGB(const float * const XYZ, float *sRGB)
 #undef CLIP
 }
 
+void dt_Lab_to_prophotorgb(const float *const Lab, float *rgb)
+{
+  const float xyz_to_rgb[3][3] = { // prophoto rgb d50
+    { 1.3459433, -0.2556075, -0.0511118},
+    {-0.5445989,  1.5081673,  0.0205351},
+    { 0.0000000,  0.0000000,  1.2118128},
+  };
+
+  float XYZ[3];
+  dt_Lab_to_XYZ(Lab, XYZ);
+  rgb[0] = rgb[1] = rgb[2] = 0.0f;
+  for(int r = 0; r < 3; r++)
+    for(int c = 0; c < 3; c++)
+      rgb[r] += xyz_to_rgb[r][c] * XYZ[c];
+}
+
+void dt_prophotorgb_to_Lab(const float *const rgb, float *Lab)
+{
+  const float rgb_to_xyz[3][3] = { // prophoto rgb
+    {0.7976749, 0.1351917, 0.0313534},
+    {0.2880402, 0.7118741, 0.0000857},
+    {0.0000000, 0.0000000, 0.8252100},
+  };
+  float XYZ[3] = {0.0f};
+  for(int r = 0; r < 3; r++)
+    for(int c = 0; c < 3; c++)
+      XYZ[r] += rgb_to_xyz[r][c] * rgb[c];
+  dt_XYZ_to_Lab(XYZ, Lab);
+}
+
 int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
 {
   dt_profiled_colormatrix_t *preset = NULL;

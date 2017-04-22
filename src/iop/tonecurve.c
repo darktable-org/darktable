@@ -77,6 +77,7 @@ typedef enum dt_iop_tonecurve_autoscale_t
                                 // transforming the curve C to C' like:
                                 // L_out=C(L_in) -> Y_out=C'(Y_in) and applying C' to the X and Z
                                 // channels, too (and then transforming it back to Lab of course)
+  s_scale_automatic_rgb = 3,    // similar to above but use an rgb working space
 } dt_iop_tonecurve_autoscale_t;
 
 // parameter structure of tonecurve 1st version, needed for use in legacy_params()
@@ -360,6 +361,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                    : dt_iop_eval_exp(d->unbounded_coeffs_L, XYZ[c]);
         dt_XYZ_to_Lab(XYZ, out);
       }
+      else if(autoscale_ab == s_scale_automatic_rgb)
+      {
+        float rgb[3] = {0, 0, 0};
+        dt_Lab_to_prophotorgb(in, rgb);
+        for(int c=0;c<3;c++)
+          rgb[c] = (rgb[c] < xm_L) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0xfffful), 0, 0xffff)]
+                                   : dt_iop_eval_exp(d->unbounded_coeffs_L, rgb[c]);
+        dt_prophotorgb_to_Lab(rgb, out);
+      }
 
       out[3] = in[3];
     }
@@ -524,6 +534,19 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       d->table[ch_L][k] = XYZ[1]; // now mapping Y_in to Y_out
     }
   }
+  else if(p->tonecurve_autoscale_ab == s_scale_automatic_rgb)
+  {
+    // derive curve for rgb:
+    for(int k=0;k<0x10000;k++)
+    {
+      float rgb[3] = {k/(float)0x10000, k/(float)0x10000, k/(float)0x10000};
+      float Lab[3] = {0.0};
+      dt_prophotorgb_to_Lab(rgb, Lab);
+      Lab[0] = d->table[ch_L][CLAMP((int)(Lab[0]/100.0f * 0x10000), 0, 0xffff)];
+      dt_Lab_to_prophotorgb(Lab, rgb);
+      d->table[ch_L][k] = rgb[1]; // now mapping G_in to G_out
+    }
+  }
 
   d->autoscale_ab = p->tonecurve_autoscale_ab;
   d->unbound_ab = p->tonecurve_unbound_ab;
@@ -612,6 +635,7 @@ void gui_update(struct dt_iop_module_t *self)
   if(p->tonecurve_autoscale_ab == 0) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic);
   if(p->tonecurve_autoscale_ab == 1) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_manual);
   if(p->tonecurve_autoscale_ab == 2) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic_xyz);
+  if(p->tonecurve_autoscale_ab == 3) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic_rgb);
   // that's all, gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -677,6 +701,7 @@ static void autoscale_ab_callback(GtkWidget *widget, dt_iop_module_t *self)
   if(combo == 0) p->tonecurve_autoscale_ab = s_scale_automatic;
   if(combo == 1) p->tonecurve_autoscale_ab = s_scale_manual;
   if(combo == 2) p->tonecurve_autoscale_ab = s_scale_automatic_xyz;
+  if(combo == 3) p->tonecurve_autoscale_ab = s_scale_automatic_rgb;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -939,6 +964,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic"));
   dt_bauhaus_combobox_add(c->autoscale_ab, C_("scale", "manual"));
   dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic in XYZ"));
+  dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic in RGB"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(c->autoscale_ab, _("if set to auto, a and b curves have no effect and are "
                                                  "not displayed. chroma values (a and b) of each pixel are "
@@ -1464,6 +1490,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
           if(p->tonecurve_autoscale_ab == 0) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_automatic);
           if(p->tonecurve_autoscale_ab == 1) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_manual);
           if(p->tonecurve_autoscale_ab == 2) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_automatic_xyz);
+          if(p->tonecurve_autoscale_ab == 3) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_automatic_rgb);
           dt_dev_add_history_item(darktable.develop, self, TRUE);
           gtk_widget_queue_draw(self->widget);
         }
