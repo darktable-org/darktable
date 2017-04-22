@@ -315,6 +315,7 @@ static void _blendop_masks_mode_callback(GtkWidget *combo, dt_iop_gui_blend_data
     if(dt_iop_module_colorspace(data->module) == iop_cs_RAW)
     {
       data->module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+      dtgtk_button_set_paint(DTGTK_BUTTON(data->showmask), dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
       gtk_widget_hide(GTK_WIDGET(data->showmask));
     }
     else
@@ -327,6 +328,7 @@ static void _blendop_masks_mode_callback(GtkWidget *combo, dt_iop_gui_blend_data
   else
   {
     data->module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+    dtgtk_button_set_paint(DTGTK_BUTTON(data->showmask), dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     data->module->suppress_mask = 0;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->suppress), 0);
 
@@ -556,6 +558,12 @@ static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton 
       module->request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_MASK;
     else
       module->request_mask_display |= (has_mask_display ? 0 : DT_DEV_PIXELPIPE_DISPLAY_MASK);
+
+    if(module->request_mask_display & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
+      dtgtk_button_set_paint(DTGTK_BUTTON(button), dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_ACTIVE);
+    else
+      dtgtk_button_set_paint(DTGTK_BUTTON(button), dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+
 
     if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
 
@@ -1521,6 +1529,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     if(dt_iop_module_colorspace(module) == iop_cs_RAW)
     {
       module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+      dtgtk_button_set_paint(DTGTK_BUTTON(bd->showmask), dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
       gtk_widget_hide(GTK_WIDGET(bd->showmask));
     }
     else
@@ -1533,6 +1542,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   else
   {
     module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+    dtgtk_button_set_paint(DTGTK_BUTTON(bd->showmask), dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     module->suppress_mask = 0;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), 0);
 
