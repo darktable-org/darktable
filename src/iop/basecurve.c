@@ -1403,20 +1403,26 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_translate(cr, 0, height);
   if(c->selected >= 0)
   {
-
     char text[30];
     // draw information about current selected node
     PangoLayout *layout;
     PangoRectangle ink;
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-    pango_font_description_set_absolute_size(desc, (DT_PIXEL_APPLY_DPI(0.06) * height) * PANGO_SCALE);
+    pango_font_description_set_absolute_size(desc, PANGO_SCALE);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
 
     const float x_node_value = basecurve[c->selected].x * 100;
     const float y_node_value = basecurve[c->selected].y * 100;
     const float d_node_value = y_node_value - x_node_value;
+    // scale conservatively to 100% of width:
+    snprintf(text, sizeof(text), "100.00 / 100.00 ( +100.00)");
+    pango_layout_set_text(layout, text, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    pango_font_description_set_absolute_size(desc, width*1.0/ink.width * PANGO_SCALE);
+    pango_layout_set_font_description(layout, desc);
+
     snprintf(text, sizeof(text), "%.2f / %.2f ( %+.2f)", x_node_value, y_node_value, d_node_value);
 
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
