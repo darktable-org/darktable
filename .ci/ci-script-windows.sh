@@ -57,7 +57,7 @@ build_darktable() {
     cd $(cygpath ${APPVEYOR_BUILD_FOLDER})
 
     mkdir build && cd build
-    cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(cygpath ${APPVEYOR_BUILD_FOLDER})/build ../.
+    cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(cygpath ${APPVEYOR_BUILD_FOLDER})/build $(cygpath ${APPVEYOR_BUILD_FOLDER})
     cmake --build .
     cmake --build . --target package
 }
