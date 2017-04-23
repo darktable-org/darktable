@@ -214,10 +214,15 @@ static gchar *dt_make_path_absolute(const gchar *input)
 {
   gchar *filename = NULL;
 
-  if(g_str_has_prefix(input, "file://")) // in this case we should take care of %XX encodings in the string
-                                         // (for example %20 = ' ')
+#if defined(_WIN32)
+  gchar filename_prefix[] = "file:///";
+#else
+  gchar filename_prefix[] = "file://";
+#endif                                         // defined (_WIN32)
+  if(g_str_has_prefix(input, filename_prefix)) // in this case we should take care of %XX encodings in the string
+                                               // (for example %20 = ' ')
   {
-    input += strlen("file://");
+    input += strlen(filename_prefix);
     filename = g_uri_unescape_string(input, NULL);
   }
   else
