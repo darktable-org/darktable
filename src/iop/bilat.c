@@ -399,6 +399,7 @@ void gui_update(dt_iop_module_t *self)
     gtk_widget_set_visible(g->spatial, FALSE);
     gtk_widget_set_visible(g->highlights, TRUE);
     gtk_widget_set_visible(g->shadows, TRUE);
+    gtk_widget_set_visible(g->midtone, TRUE);
   }
   else
   {
@@ -460,6 +461,13 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->midtone, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->midtone, NULL, _("midtone range"));
   gtk_widget_set_tooltip_text(g->midtone, _("defines what counts as midtones. lower for better dynamic range compression (reduce shadow and highlight contrast), increase for more powerful local contrast"));
+
+  // work around multi-instance issue which calls show all a fair bit:
+  g_object_set(G_OBJECT(g->highlights), "no-show-all", TRUE, NULL);
+  g_object_set(G_OBJECT(g->shadows), "no-show-all", TRUE, NULL);
+  g_object_set(G_OBJECT(g->midtone), "no-show-all", TRUE, NULL);
+  g_object_set(G_OBJECT(g->range), "no-show-all", TRUE, NULL);
+  g_object_set(G_OBJECT(g->spatial), "no-show-all", TRUE, NULL);
 
   g_signal_connect(G_OBJECT(g->spatial), "value-changed", G_CALLBACK(spatial_callback), self);
   g_signal_connect(G_OBJECT(g->range), "value-changed", G_CALLBACK(range_callback), self);
