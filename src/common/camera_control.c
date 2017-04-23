@@ -355,6 +355,15 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
           {
             dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
             if(cam->live_view_pixbuf != NULL) g_object_unref(cam->live_view_pixbuf);
+            // Calling gdk_pixbuf_loader_close forces the data to be parsed by the
+            // loader.  We must do this before calling gdk_pixbuf_loader_get_pixbuf.
+            gdk_pixbuf_loader_close(loader, &error);
+            if(error)
+            {
+              dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to close image loader: %s\n",
+                       error->message);
+              g_error_free(error);
+            }
             cam->live_view_pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
             dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
           }
