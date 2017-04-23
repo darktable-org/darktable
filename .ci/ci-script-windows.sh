@@ -54,10 +54,10 @@ execute(){
 
 # Build
 build_darktable() {
-    cd "$(dirname "$0")"
+    cd $(cygpath ${APPVEYOR_BUILD_FOLDER})
 
     mkdir build && cd build
-    cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/c/projects/darktable/build ../.
+    cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(cygpath ${APPVEYOR_BUILD_FOLDER})/build ../.
     cmake --build .
     cmake --build . --target package
 }
