@@ -214,14 +214,19 @@ static gchar *dt_make_path_absolute(const gchar *input)
 {
   gchar *filename = NULL;
 
-  if(g_str_has_prefix(input, "file://")) // in this case we should take care of %XX encodings in the string
-                                         // (for example %20 = ' ')
+  filename = g_filename_from_uri(input, NULL, NULL);
+
+  if(!filename)
   {
-    input += strlen("file://");
-    filename = g_uri_unescape_string(input, NULL);
+    if(g_str_has_prefix(input, "file://")) // in this case we should take care of %XX encodings in the string
+                                          // (for example %20 = ' ')
+    {
+      input += strlen("file://");
+      filename = g_uri_unescape_string(input, NULL);
+    }
+    else
+      filename = g_strdup(input);
   }
-  else
-    filename = g_strdup(input);
 
   if(g_path_is_absolute(filename) == FALSE)
   {
