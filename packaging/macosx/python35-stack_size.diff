@@ -1,0 +1,11 @@
+--- configure~	2016-12-13 13:07:45.000000000 +0300
++++ configure	2016-12-13 13:08:32.000000000 +0300
+@@ -9270,7 +9270,7 @@
+ 		# Issue #18075: the default maximum stack size (8MBytes) is too
+ 		# small for the default recursion limit. Increase the stack size
+ 		# to ensure that tests don't crash
+-		LINKFORSHARED="-Wl,-stack_size,1000000 $LINKFORSHARED"
++		#LINKFORSHARED="-Wl,-stack_size,1000000 $LINKFORSHARED"
+ 
+ 		if test "$enable_framework"
+ 		then
