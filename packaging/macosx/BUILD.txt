@@ -11,11 +11,11 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     You will also need to add several patches:
      $ mkdir -p ~/ports/lang/python34/files ~/ports/lang/python35/files ~/ports/graphics/GraphicsMagick/files
      $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/lang/python34 ~/ports/lang
-     $ curl -o ~/ports/lang/python34/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python34-stack_size.diff
+     $ curl -Lo ~/ports/lang/python34/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python34-stack_size.diff
      $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/lang/python35 ~/ports/lang
-     $ curl -o ~/ports/lang/python35/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python35-stack_size.diff
+     $ curl -Lo ~/ports/lang/python35/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python35-stack_size.diff
      $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/graphics/GraphicsMagick ~/ports/graphics
-     $ curl -o ~/ports/graphics/GraphicsMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gm-deployment_target.diff
+     $ curl -Lo ~/ports/graphics/GraphicsMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gm-deployment_target.diff
     then add this line:
      patchfiles-append patch.diff
     to ~/ports/*/*/Portfile files you just copied and run
