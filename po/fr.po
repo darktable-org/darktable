@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-04-08 15:00+0200\n"
-"PO-Revision-Date: 2017-04-08 15:14+0200\n"
+"POT-Creation-Date: 2017-04-24 19:57+0200\n"
+"PO-Revision-Date: 2017-04-24 20:01+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -908,7 +908,7 @@ msgid "_save"
 msgstr "_enregistrer"
 
 #. TODO: is the rank interesting, too?
-#: ../src/chart/main.c:902
+#: ../src/chart/main.c:938
 #, c-format
 msgid ""
 "average dE: %.02f\n"
@@ -1046,76 +1046,76 @@ msgstr[0] "%d image sur %d sélectionnée"
 msgstr[1] "%d images sur %d sélectionnées"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-#: ../src/common/colorspaces.c:1035 ../src/iop/colorin.c:1947
+#: ../src/common/colorspaces.c:1065 ../src/iop/colorin.c:1947
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
-#: ../src/common/colorspaces.c:1036 ../src/common/colorspaces.c:1197
+#: ../src/common/colorspaces.c:1066 ../src/common/colorspaces.c:1227
 #: ../src/iop/colorin.c:1948 ../src/libs/print_settings.c:881
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
-#: ../src/common/colorspaces.c:1037 ../src/common/colorspaces.c:1202
+#: ../src/common/colorspaces.c:1067 ../src/common/colorspaces.c:1232
 #: ../src/iop/colorin.c:1949
 msgid "linear Rec709 RGB"
 msgstr "RGB Rec709 linéaire"
 
-#: ../src/common/colorspaces.c:1038 ../src/common/colorspaces.c:1207
+#: ../src/common/colorspaces.c:1068 ../src/common/colorspaces.c:1237
 #: ../src/iop/colorin.c:1950
 msgid "linear Rec2020 RGB"
 msgstr "RGB Rec2020 linéaire"
 
-#: ../src/common/colorspaces.c:1039 ../src/common/colorspaces.c:1212
+#: ../src/common/colorspaces.c:1069 ../src/common/colorspaces.c:1242
 msgid "linear XYZ"
 msgstr "linéaire XYZ"
 
-#: ../src/common/colorspaces.c:1040 ../src/common/colorspaces.c:1218
+#: ../src/common/colorspaces.c:1070 ../src/common/colorspaces.c:1248
 #: ../src/libs/colorpicker.c:543 ../src/libs/colorpicker.c:581
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1041 ../src/common/colorspaces.c:1224
+#: ../src/common/colorspaces.c:1071 ../src/common/colorspaces.c:1254
 msgid "linear infrared BGR"
 msgstr "infrarouge linéaire BGR"
 
-#: ../src/common/colorspaces.c:1042 ../src/common/colorspaces.c:1181
+#: ../src/common/colorspaces.c:1072 ../src/common/colorspaces.c:1211
 msgid "system display profile"
 msgstr "système"
 
-#: ../src/common/colorspaces.c:1043
+#: ../src/common/colorspaces.c:1073
 msgid "embedded ICC profile"
 msgstr "profil ICC intégré"
 
-#: ../src/common/colorspaces.c:1044
+#: ../src/common/colorspaces.c:1074
 msgid "embedded matrix"
 msgstr "matrice intégrée"
 
-#: ../src/common/colorspaces.c:1045
+#: ../src/common/colorspaces.c:1075
 msgid "standard color matrix"
 msgstr "matrice standard"
 
-#: ../src/common/colorspaces.c:1046
+#: ../src/common/colorspaces.c:1076
 msgid "enhanced color matrix"
 msgstr "matrice améliorée"
 
-#: ../src/common/colorspaces.c:1047
+#: ../src/common/colorspaces.c:1077
 msgid "vendor color matrix"
 msgstr "matrice de couleur du vendeur"
 
-#: ../src/common/colorspaces.c:1048
+#: ../src/common/colorspaces.c:1078
 msgid "alternate color matrix"
 msgstr "alternative à la matrice de couleur"
 
-#: ../src/common/colorspaces.c:1187
+#: ../src/common/colorspaces.c:1217
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (ex: JPG)"
 
-#: ../src/common/colorspaces.c:1192 ../src/libs/print_settings.c:874
+#: ../src/common/colorspaces.c:1222 ../src/libs/print_settings.c:874
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web)"
 
-#: ../src/common/colorspaces.c:1229
+#: ../src/common/colorspaces.c:1259
 msgid "BRG (for testing)"
 msgstr "BRG (pour test)"
 
@@ -1134,22 +1134,22 @@ msgstr "erreur pendant l'impression de l'image %d sur « %s »"
 msgid "printing image %d on `%s'"
 msgstr "impression de l'image %d sur « %s »"
 
-#: ../src/common/darktable.c:247
+#: ../src/common/darktable.c:260
 #, c-format
 msgid "found strange path `%s'"
 msgstr "chemin étrange « %s »"
 
-#: ../src/common/darktable.c:264
+#: ../src/common/darktable.c:277
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erreur de chargement du dossier « %s »"
 
-#: ../src/common/darktable.c:287
+#: ../src/common/darktable.c:300
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:300 ../src/libs/import.c:845
+#: ../src/common/darktable.c:313 ../src/libs/import.c:845
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
@@ -1486,7 +1486,7 @@ msgstr "m"
 
 #: ../src/common/variables.c:222 ../src/common/variables.c:236
 #: ../src/common/variables.c:250 ../src/common/variables.c:264
-#: ../src/common/variables.c:278 ../src/iop/basecurve.c:1923
+#: ../src/common/variables.c:278 ../src/iop/basecurve.c:1927
 #: ../src/iop/clipping.c:1574 ../src/iop/clipping.c:1864
 #: ../src/iop/clipping.c:1882 ../src/iop/clipping.c:2022
 #: ../src/iop/clipping.c:2049 ../src/iop/colorreconstruction.c:1402
@@ -1888,7 +1888,7 @@ msgid_plural "added time offset to %d images"
 msgstr[0] "décalage horaire ajouté à %d image"
 msgstr[1] "décalage horaire ajouté à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1702 ../src/libs/geotagging.c:607
+#: ../src/control/jobs/control_jobs.c:1702 ../src/libs/geotagging.c:614
 msgid "time offset"
 msgstr "décalage"
 
@@ -2040,7 +2040,7 @@ msgstr ""
 "* intervalle entre 2 marqueurs adjacents interne/externe : fusion progressive"
 
 #: ../src/develop/blend_gui.c:1085 ../src/iop/colorzones.c:1085
-#: ../src/iop/tonecurve.c:906
+#: ../src/iop/tonecurve.c:931
 msgid "pick GUI color from image"
 msgstr "choisit une couleur dans l'image"
 
@@ -2751,7 +2751,7 @@ msgstr "impossible de créer le dossier « %s » !\n"
 #: ../src/generate-cache/main.c:74
 #, c-format
 msgid "warning: no images are matching the requested image id range\n"
-msgstr "attention: aucune image sélectionnée pour l'étendu spécifiée\n"
+msgstr "attention: aucune image sélectionnée pour l'étendue spécifiée\n"
 
 #: ../src/generate-cache/main.c:77
 #, c-format
@@ -4694,25 +4694,25 @@ msgstr "spline cubique"
 msgid "base curve"
 msgstr "courbe de base"
 
-#: ../src/iop/basecurve.c:1908
+#: ../src/iop/basecurve.c:1912
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
 
-#: ../src/iop/basecurve.c:1913 ../src/iop/lens.c:2220
+#: ../src/iop/basecurve.c:1917 ../src/iop/lens.c:2220
 #: ../src/iop/vignette.c:1146 ../src/iop/watermark.c:1349
 msgid "scale"
 msgstr "échelle"
 
-#: ../src/iop/basecurve.c:1914 ../src/iop/profile_gamma.c:321
-#: ../src/iop/tonecurve.c:435
+#: ../src/iop/basecurve.c:1918 ../src/iop/profile_gamma.c:321
+#: ../src/iop/tonecurve.c:445
 msgid "linear"
 msgstr "linéaire"
 
-#: ../src/iop/basecurve.c:1915
+#: ../src/iop/basecurve.c:1919
 msgid "logarithmic"
 msgstr "logarithmique"
 
-#: ../src/iop/basecurve.c:1916
+#: ../src/iop/basecurve.c:1920
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -4720,19 +4720,19 @@ msgstr ""
 "échelle pour le graphe, utilisez une échelle logarithmique pour une "
 "meilleure précision près des noirs"
 
-#: ../src/iop/basecurve.c:1922
+#: ../src/iop/basecurve.c:1926
 msgid "fusion"
 msgstr "fusion"
 
-#: ../src/iop/basecurve.c:1924
+#: ../src/iop/basecurve.c:1928
 msgid "two exposures"
 msgstr "deux expositions"
 
-#: ../src/iop/basecurve.c:1925
+#: ../src/iop/basecurve.c:1929
 msgid "three exposures"
 msgstr "trois expositions"
 
-#: ../src/iop/basecurve.c:1926
+#: ../src/iop/basecurve.c:1930
 msgid ""
 "fuse this image stopped up/down a couple of times with itself, to compress "
 "high dynamic range. expose for the highlights before use."
@@ -4741,15 +4741,15 @@ msgstr ""
 "d'exposition pour compresser l'étendue dynamique. exposer pour les hautes "
 "lumières avant utilisation."
 
-#: ../src/iop/basecurve.c:1932
+#: ../src/iop/basecurve.c:1936
 msgid "how many stops to shift the individual exposures apart"
 msgstr "nombre de \"stop\" de décalage entre les différents expositions"
 
-#: ../src/iop/basecurve.c:1933
+#: ../src/iop/basecurve.c:1937
 msgid "exposure shift"
 msgstr "décalage exposition"
 
-#: ../src/iop/basecurve.c:1940
+#: ../src/iop/basecurve.c:1944
 msgid ""
 "whether to shift exposure up or down (-1: reduce highlight, +1: reduce "
 "shadows)"
@@ -4757,30 +4757,30 @@ msgstr ""
 "pour décaler l'exposition positivement ou négativement (-1 : réduire les "
 "hautes lumières, +1 réduire les ombres)"
 
-#: ../src/iop/basecurve.c:1942
+#: ../src/iop/basecurve.c:1946
 msgid "exposure bias"
 msgstr "bias d'exposition"
 
-#: ../src/iop/bilat.c:92 ../src/iop/clahe.c:64
+#: ../src/iop/bilat.c:90 ../src/iop/clahe.c:64
 msgid "local contrast"
 msgstr "contraste local"
 
-#: ../src/iop/bilat.c:402 ../src/iop/denoiseprofile.c:2078
+#: ../src/iop/bilat.c:424 ../src/iop/denoiseprofile.c:2078
 #: ../src/iop/exposure.c:849 ../src/iop/lens.c:2228 ../src/iop/levels.c:566
 #: ../src/libs/copy_history.c:303 ../src/libs/export.c:634
 #: ../src/libs/print_settings.c:1329 ../src/views/darkroom.c:1561
 msgid "mode"
 msgstr "mode"
 
-#: ../src/iop/bilat.c:404
+#: ../src/iop/bilat.c:426
 msgid "bilateral grid"
 msgstr "grille bilatéral"
 
-#: ../src/iop/bilat.c:405
+#: ../src/iop/bilat.c:427
 msgid "local laplacian filter"
 msgstr "filtre laplacien local"
 
-#: ../src/iop/bilat.c:408
+#: ../src/iop/bilat.c:430
 msgid ""
 "the filter used for local contrast enhancement. bilateral is faster but can "
 "lead to artifacts around edges for extreme settings."
@@ -4788,47 +4788,61 @@ msgstr ""
 "le filtre utilisé pour l'amélioration du contraste local. bilatéral est plus "
 "rapide mais peut faire apparaître des artefacts au niveau des bords."
 
-#: ../src/iop/bilat.c:412 ../src/iop/globaltonemap.c:737
+#: ../src/iop/bilat.c:434 ../src/iop/globaltonemap.c:737
 msgid "detail"
 msgstr "détail"
 
-#: ../src/iop/bilat.c:414
+#: ../src/iop/bilat.c:436
 msgid "changes the local contrast"
 msgstr "change le contraste local"
 
-#: ../src/iop/bilat.c:417 ../src/iop/grain.c:618
+#: ../src/iop/bilat.c:439 ../src/iop/grain.c:618
 msgid "coarseness"
 msgstr "granularité"
 
-#: ../src/iop/bilat.c:419
+#: ../src/iop/bilat.c:441
 msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr "taille des détails locaux (sigma spatial du filtre bilatéral)"
 
-#: ../src/iop/bilat.c:423 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:674
+#: ../src/iop/bilat.c:445 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:674
 msgid "contrast"
 msgstr "contraste"
 
-#: ../src/iop/bilat.c:424
+#: ../src/iop/bilat.c:446
 msgid "L difference to detect edges (range sigma of bilateral filter)"
 msgstr ""
-"différence L pour la détection des bords (étendu sigma du filtre bilatéral)"
+"différence L pour la détection des bords (étendue sigma du filtre bilatéral)"
 
-#: ../src/iop/bilat.c:428 ../src/iop/monochrome.c:611 ../src/iop/shadhi.c:830
+#: ../src/iop/bilat.c:450 ../src/iop/monochrome.c:611 ../src/iop/shadhi.c:830
 #: ../src/iop/splittoning.c:537
 msgid "highlights"
 msgstr "hautes lumières"
 
-#: ../src/iop/bilat.c:430
+#: ../src/iop/bilat.c:452
 msgid "changes the local contrast of highlights"
 msgstr "change le contraste local des hautes lumières"
 
-#: ../src/iop/bilat.c:434 ../src/iop/shadhi.c:829 ../src/iop/splittoning.c:532
+#: ../src/iop/bilat.c:456 ../src/iop/shadhi.c:829 ../src/iop/splittoning.c:532
 msgid "shadows"
 msgstr "ombres"
 
-#: ../src/iop/bilat.c:435
+#: ../src/iop/bilat.c:457
 msgid "changes the local contrast of shadows"
 msgstr "change le contraste local des ombres"
+
+#: ../src/iop/bilat.c:462
+msgid "midtone range"
+msgstr "étendue tons-moyens"
+
+#: ../src/iop/bilat.c:463
+msgid ""
+"defines what counts as midtones. lower for better dynamic range compression "
+"(reduce shadow and highlight contrast), increase for more powerful local "
+"contrast"
+msgstr ""
+"défini ce qui est compté comme tons-moyens. diminuer pour une meilleure "
+"compression dynamique (réduit le contraste des ombres et hautes lumières), "
+"augmenter pour une contraste local plus puissant."
 
 #: ../src/iop/bilateral.cc:69
 msgid "denoise (bilateral filter)"
@@ -5814,26 +5828,26 @@ msgstr "rendu (sortie)"
 
 #: ../src/iop/colorout.c:859 ../src/libs/export.c:617
 #: ../src/libs/print_settings.c:1062 ../src/libs/print_settings.c:1273
-#: ../src/views/darkroom.c:1738 ../src/views/lighttable.c:2431
+#: ../src/views/darkroom.c:1738 ../src/views/lighttable.c:2434
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:860 ../src/libs/export.c:618
 #: ../src/libs/print_settings.c:1063 ../src/libs/print_settings.c:1274
-#: ../src/views/darkroom.c:1739 ../src/views/lighttable.c:2432
+#: ../src/views/darkroom.c:1739 ../src/views/lighttable.c:2435
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:861 ../src/libs/export.c:619
 #: ../src/libs/print_settings.c:1064 ../src/libs/print_settings.c:1275
-#: ../src/views/darkroom.c:1740 ../src/views/lighttable.c:2433
+#: ../src/views/darkroom.c:1740 ../src/views/lighttable.c:2436
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
 #: ../src/iop/colorout.c:862 ../src/libs/export.c:620
 #: ../src/libs/print_settings.c:1065 ../src/libs/print_settings.c:1276
-#: ../src/views/darkroom.c:1741 ../src/views/lighttable.c:2434
+#: ../src/views/darkroom.c:1741 ../src/views/lighttable.c:2437
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -6357,7 +6371,7 @@ msgctxt "mode"
 msgid "manual"
 msgstr "manuel"
 
-#: ../src/iop/exposure.c:854 ../src/iop/levels.c:571 ../src/iop/tonecurve.c:939
+#: ../src/iop/exposure.c:854 ../src/iop/levels.c:571 ../src/iop/tonecurve.c:964
 #: ../src/iop/vignette.c:1137
 msgid "automatic"
 msgstr "automatique"
@@ -7831,64 +7845,68 @@ msgstr "%.0f mired"
 msgid "fine tune white balance preset"
 msgstr "ajustement de balance des blancs"
 
-#: ../src/iop/tonecurve.c:150
+#: ../src/iop/tonecurve.c:151
 msgid "tone curve"
 msgstr "courbe des tonalités"
 
-#: ../src/iop/tonecurve.c:431
+#: ../src/iop/tonecurve.c:441
 msgid "low contrast"
 msgstr "contraste faible"
 
-#: ../src/iop/tonecurve.c:445
+#: ../src/iop/tonecurve.c:455
 msgid "med contrast"
 msgstr "contraste moyen"
 
-#: ../src/iop/tonecurve.c:455
+#: ../src/iop/tonecurve.c:465
 msgid "high contrast"
 msgstr "contraste fort "
 
-#: ../src/iop/tonecurve.c:889
+#: ../src/iop/tonecurve.c:914
 msgid "  L  "
 msgstr "  L"
 
-#: ../src/iop/tonecurve.c:891
+#: ../src/iop/tonecurve.c:916
 msgid "tonecurve for L channel"
 msgstr "courbe des tonalités pour le canal L"
 
-#: ../src/iop/tonecurve.c:893
+#: ../src/iop/tonecurve.c:918
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:895
+#: ../src/iop/tonecurve.c:920
 msgid "tonecurve for a channel"
 msgstr "courbe des tonalités pour le canal a"
 
-#: ../src/iop/tonecurve.c:897
+#: ../src/iop/tonecurve.c:922
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:899
+#: ../src/iop/tonecurve.c:924
 msgid "tonecurve for b channel"
 msgstr "courbe des tonalités pour le canal b"
 
-#: ../src/iop/tonecurve.c:920
+#: ../src/iop/tonecurve.c:945
 msgid "double click to reset curve"
 msgstr "double-cliquer pour réinitialiser"
 
-#: ../src/iop/tonecurve.c:938
+#: ../src/iop/tonecurve.c:963
 msgid "scale chroma"
 msgstr "échelle des canaux a et b"
 
-#: ../src/iop/tonecurve.c:940
+#: ../src/iop/tonecurve.c:965
 msgctxt "scale"
 msgid "manual"
 msgstr "manuelle"
 
-#: ../src/iop/tonecurve.c:941
+#: ../src/iop/tonecurve.c:966
 msgid "automatic in XYZ"
 msgstr "automatique XYZ"
 
-#: ../src/iop/tonecurve.c:943
+#: ../src/iop/tonecurve.c:967
+msgid "automatic in RGB"
+msgstr "automatique RGB"
+
+#: ../src/iop/tonecurve.c:969
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data. auto "
@@ -8858,7 +8876,7 @@ msgstr ""
 "données EXIF. en donnant le fuseau horaire correct, les données GPX pourront "
 "être recalées."
 
-#: ../src/libs/geotagging.c:618
+#: ../src/libs/geotagging.c:625
 msgid ""
 "time offset\n"
 "format: [+-]?[[hh:]mm:]ss"
@@ -8866,20 +8884,20 @@ msgstr ""
 "décalage horaire\n"
 "format : [+-]?[[hh:]mm:]ss"
 
-#: ../src/libs/geotagging.c:628
+#: ../src/libs/geotagging.c:635
 msgid "calculate the time offset from an image"
 msgstr "calcule le décalage horaire d'une image"
 
-#: ../src/libs/geotagging.c:633
+#: ../src/libs/geotagging.c:640
 msgid "apply time offset to selected images"
 msgstr "applique le décalage horaire aux images sélectionnées"
 
 #. gpx
-#: ../src/libs/geotagging.c:641
+#: ../src/libs/geotagging.c:648
 msgid "apply GPX track file"
 msgstr "applique un ficher GPX"
 
-#: ../src/libs/geotagging.c:642
+#: ../src/libs/geotagging.c:649
 msgid "parses a GPX file and updates location of selected images"
 msgstr ""
 "lit un fichier GPX et met à jour la localisation des images sélectionnées"
@@ -10394,8 +10412,8 @@ msgid "darktable"
 msgstr "darktable"
 
 #: ../src/libs/tools/darktable.c:288
-msgid "copyright (c) the authors 2009-2016"
-msgstr "copyright (c) les auteurs 2009-2016"
+msgid "copyright (c) the authors 2009-2017"
+msgstr "copyright (c) les auteurs 2009-2017"
 
 #: ../src/libs/tools/darktable.c:290
 msgid "organize and develop images from digital cameras"
@@ -10418,37 +10436,37 @@ msgstr "bandeau"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2208
+#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2211
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 étoile"
 
-#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2209
+#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2212
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 étoile"
 
-#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2210
+#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2213
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2211
+#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2214
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2212
+#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2215
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:174 ../src/views/lighttable.c:2213
+#: ../src/libs/tools/filmstrip.c:174 ../src/views/lighttable.c:2216
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:175 ../src/views/lighttable.c:2214
+#: ../src/libs/tools/filmstrip.c:175 ../src/views/lighttable.c:2217
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rejeter"
@@ -10777,7 +10795,7 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "click droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1736 ../src/views/lighttable.c:2429
+#: ../src/views/darkroom.c:1736 ../src/views/lighttable.c:2432
 msgid "display intent"
 msgstr "rendu (écran)"
 
@@ -10785,11 +10803,11 @@ msgstr "rendu (écran)"
 msgid "softproof profile"
 msgstr "épreuvage écran"
 
-#: ../src/views/darkroom.c:1752 ../src/views/lighttable.c:2437
+#: ../src/views/darkroom.c:1752 ../src/views/lighttable.c:2440
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:1783 ../src/views/lighttable.c:2456
+#: ../src/views/darkroom.c:1783 ../src/views/lighttable.c:2459
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "profils ICC d'affichage dans %s/color/out ou %s/color/out"
@@ -10936,94 +10954,94 @@ msgstr ""
 "ou modifier les filtres de collection dans le menu de collection à gauche."
 
 #. Navigation keys
-#: ../src/views/lighttable.c:2217
+#: ../src/views/lighttable.c:2220
 msgctxt "accel"
 msgid "navigate up"
 msgstr "aller en haut"
 
-#: ../src/views/lighttable.c:2218
+#: ../src/views/lighttable.c:2221
 msgctxt "accel"
 msgid "navigate down"
 msgstr "aller en bas"
 
-#: ../src/views/lighttable.c:2219
+#: ../src/views/lighttable.c:2222
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "défiler par page vers le haut"
 
-#: ../src/views/lighttable.c:2220
+#: ../src/views/lighttable.c:2223
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "défiler par page vers le bas"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2223
+#: ../src/views/lighttable.c:2226
 msgctxt "accel"
 msgid "scroll up"
 msgstr "défiler en arrière"
 
-#: ../src/views/lighttable.c:2224
+#: ../src/views/lighttable.c:2227
 msgctxt "accel"
 msgid "scroll down"
 msgstr "défiler en avant"
 
-#: ../src/views/lighttable.c:2225
+#: ../src/views/lighttable.c:2228
 msgctxt "accel"
 msgid "scroll left"
 msgstr "défiler vers la gauche"
 
-#: ../src/views/lighttable.c:2226
+#: ../src/views/lighttable.c:2229
 msgctxt "accel"
 msgid "scroll right"
 msgstr "défiler vers la droite "
 
-#: ../src/views/lighttable.c:2227
+#: ../src/views/lighttable.c:2230
 msgctxt "accel"
 msgid "scroll center"
 msgstr "défiler vers le centre"
 
-#: ../src/views/lighttable.c:2228
+#: ../src/views/lighttable.c:2231
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "aligner les images sur la grille"
 
-#: ../src/views/lighttable.c:2229
+#: ../src/views/lighttable.c:2232
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "inverse sélection de l'image"
 
-#: ../src/views/lighttable.c:2230
+#: ../src/views/lighttable.c:2233
 msgctxt "accel"
 msgid "select single image"
 msgstr "sélectionne image unique"
 
 #. Preview key
-#: ../src/views/lighttable.c:2233
+#: ../src/views/lighttable.c:2236
 msgctxt "accel"
 msgid "preview"
 msgstr "aperçu"
 
-#: ../src/views/lighttable.c:2234
+#: ../src/views/lighttable.c:2237
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "aperçu avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:2235
+#: ../src/views/lighttable.c:2238
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "aperçu persistant"
 
-#: ../src/views/lighttable.c:2236
+#: ../src/views/lighttable.c:2239
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "aperçu persistant avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:2237
+#: ../src/views/lighttable.c:2240
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "sortir du mode aperçu persistant"
 
-#: ../src/views/lighttable.c:2390
+#: ../src/views/lighttable.c:2393
 msgid "set display profile"
 msgstr "profil (écran)"
 
