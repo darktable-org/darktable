@@ -962,6 +962,38 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
   free(all_buffers);
 }
 
+/* Return the k-th smallest item in array x of length len */
+float quick_select(int k, float *x, int len)
+{
+  inline void swap(int a, int b)
+  {
+    float t = x[a];
+    x[a] = x[b], x[b] = t;
+  }
+
+  int left = 0, right = len - 1;
+  int pos, i;
+  float pivot;
+
+  while (left < right)
+  {
+    pivot = x[k];
+    swap(k, right);
+    for (i = pos = left; i < right; i++)
+    {
+      if (x[i] < pivot)
+      {
+        swap(i, pos);
+        pos++;
+      }
+    }
+    swap(right, pos);
+    if (pos == k) break;
+    if (pos < k) left = pos + 1;
+    else right = pos - 1;
+  }
+  return x[k];
+}
 
 /*
   Ingo Liebhardt 's  frequency domain chroma approach for Fuji X-Trans sensors
@@ -1491,39 +1523,12 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_orig[0][myrow][mycol];
           fdc_chroma[1][row][col] = cr;
         }
 
-#define SWAP(ARR,A,B)\
-qstfloat = ARR[A];\
-ARR[A] = ARR[B];\
-ARR[B] = qstfloat;
-
-#define QUICKSELECT(X)\
-while (qsleft < qsright)\
-{\
-qspivot = X[10];\
-SWAP(X,10,qsright)\
-for (qsi = qspos = qsleft; qsi < qsright; qsi++)\
-{\
-if (X[qsi] < qspivot)\
-{\
-SWAP(X,qsi,qspos)\
-qspos++;\
-}\
-}\
-SWAP(X,qsright,qspos)\
-if (qspos == 10) break;\
-if (qspos < 10) qsleft = qspos + 1;\
-else qsright = qspos - 1;\
-}\
-
       /* One intermediary round of median filtering of chroma       */
       for(int row = 8; row < mrow - 8; row++)   //8 as manual padding
         for(int col = 8; col < mcol - 8; col++)
         {
           for(int chrm = 0; chrm < 2; chrm++)
           {
-            int qsleft = 0, qsright = 20;
-            int qspos, qsi;
-            float qspivot, qstfloat;
             // Load the circular window
             float temp [21] = {
               fdc_chroma[chrm][row-2][col-1],
@@ -1548,8 +1553,7 @@ else qsright = qspos - 1;\
               fdc_chroma[chrm][row+2][col],
               fdc_chroma[chrm][row+2][col+1]
             };
-            QUICKSELECT(temp)
-            fdc_chroma[chrm+2][row][col] = temp[10];
+            fdc_chroma[chrm+2][row][col] = quick_select(10, temp, 21);
           }
         }
 
@@ -1559,9 +1563,6 @@ else qsright = qspos - 1;\
         {
           for(int chrm = 2; chrm < 4; chrm++)
           {
-            int qsleft = 0, qsright = 20;
-            int qspos, qsi;
-            float qspivot, qstfloat;
             // Load the circular window
             float temp [21] = {
               fdc_chroma[chrm][row-2][col-1],
@@ -1586,8 +1587,7 @@ else qsright = qspos - 1;\
               fdc_chroma[chrm][row+2][col],
               fdc_chroma[chrm][row+2][col+1]
             };
-            QUICKSELECT(temp)
-            fdc_chroma[chrm-2][row][col] = temp[10];
+            fdc_chroma[chrm-2][row][col] = quick_select(10, temp, 21);
           }
         }
 
@@ -1625,9 +1625,6 @@ else qsright = qspos - 1;\
           // instead of merely reding the values, perform median filter
           for(int chrm = 0; chrm < 2; chrm++)
           {
-            int qsleft = 0, qsright = 20;
-            int qspos, qsi;
-            float qspivot, qstfloat;
             // Load the circular window
             float temp [21] = {
               fdc_chroma[chrm][row-2][col-1],
@@ -1652,8 +1649,7 @@ else qsright = qspos - 1;\
               fdc_chroma[chrm][row+2][col],
               fdc_chroma[chrm][row+2][col+1]
             };
-            QUICKSELECT(temp);
-            cbcr[chrm] = temp[10];
+            cbcr[chrm] = quick_select(10, temp, 21);
           }
           red   = y                      + 1.40200f * cbcr[1];
           green = y - 0.34414f * cbcr[0] - 0.71414f * cbcr[1];
