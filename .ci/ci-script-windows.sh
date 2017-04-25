@@ -54,16 +54,11 @@ execute(){
 
 # Build
 build_darktable() {
-    cd "$(dirname "$0")"
+    cd $(cygpath ${APPVEYOR_BUILD_FOLDER})
 
-    # for RawSpeed submodule
-    git submodule init
-    git submodule update
-
-    mkdir artifacts
     mkdir build && cd build
-    cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/c/projects/darktable/artifacts ../.
-    cmake --build . --target install
+    cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(cygpath ${APPVEYOR_BUILD_FOLDER})/build $(cygpath ${APPVEYOR_BUILD_FOLDER})
+    cmake --build .
     cmake --build . --target package
 }
 

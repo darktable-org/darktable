@@ -164,19 +164,27 @@ gboolean dt_supported_image(const gchar *filename)
 static void strip_semicolons_from_keymap(const char *path)
 {
   char pathtmp[PATH_MAX] = { 0 };
-  FILE *fin = fopen(path, "rb");
+  FILE *fin = g_fopen(path, "rb");
   FILE *fout;
   int i;
   int c = '\0';
 
+  if(!fin) return;
+
   snprintf(pathtmp, sizeof(pathtmp), "%s_tmp", path);
-  fout = fopen(pathtmp, "wb");
+  fout = g_fopen(pathtmp, "wb");
+
+  if(!fout)
+  {
+    fclose(fin);
+    return;
+  }
 
   // First ignoring the first three lines
   for(i = 0; i < 3; i++)
   {
-    c = fgetc(fin);
-    while(c != '\n') c = fgetc(fin);
+    while(c != '\n' && c != '\r' && c != EOF) c = fgetc(fin);
+    while(c == '\n' || c == '\r') c = fgetc(fin);
   }
 
   // Then ignore the first two characters of each line, copying the rest out
@@ -187,7 +195,7 @@ static void strip_semicolons_from_keymap(const char *path)
     {
       c = fgetc(fin);
       if(c != EOF) fputc(c, fout);
-    } while(c != '\n' && c != EOF);
+    } while(c != '\n' && c != '\r' && c != EOF);
   }
 
   fclose(fin);
@@ -206,14 +214,19 @@ static gchar *dt_make_path_absolute(const gchar *input)
 {
   gchar *filename = NULL;
 
-  if(g_str_has_prefix(input, "file://")) // in this case we should take care of %XX encodings in the string
-                                         // (for example %20 = ' ')
+  filename = g_filename_from_uri(input, NULL, NULL);
+
+  if(!filename)
   {
-    input += strlen("file://");
-    filename = g_uri_unescape_string(input, NULL);
+    if(g_str_has_prefix(input, "file://")) // in this case we should take care of %XX encodings in the string
+                                          // (for example %20 = ' ')
+    {
+      input += strlen("file://");
+      filename = g_uri_unescape_string(input, NULL);
+    }
+    else
+      filename = g_strdup(input);
   }
-  else
-    filename = g_strdup(input);
 
   if(g_path_is_absolute(filename) == FALSE)
   {
@@ -490,7 +503,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                                       STR(LUA_API_VERSION_MINOR) "."
                                       STR(LUA_API_VERSION_PATCH);
 #endif
-        printf("this is %s\ncopyright (c) 2009-2016 johannes hanika\n" PACKAGE_BUGREPORT "\n\ncompile options:\n"
+        printf("this is %s\ncopyright (c) 2009-2017 johannes hanika\n" PACKAGE_BUGREPORT "\n\ncompile options:\n"
                "  bit depth is %s\n"
 #ifdef _DEBUG
                "  debug build\n"
@@ -723,18 +736,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_print_mem_usage();
   }
 
-  // we need this REALLY early so that error messages can be shown
-  if(init_gui)
-  {
-#ifdef GDK_WINDOWING_WAYLAND
-    // There are currently bad interactions with Wayland (drop-downs
-    // are very narrow, scroll events lost). Until this is fixed, give
-    // priority to the XWayland backend for Wayland users.
-    gdk_set_allowed_backends("x11,*");
-#endif
-    gtk_init(&argc, &argv);
-  }
-
 #ifdef _OPENMP
   omp_set_num_threads(darktable.num_openmp_threads);
 #endif
@@ -793,6 +794,18 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     g_setenv("LANG", lang, 1);
   }
   g_free((gchar *)lang);
+
+  // we need this REALLY early so that error messages can be shown, however after gtk_disable_setlocale
+  if(init_gui)
+  {
+#ifdef GDK_WINDOWING_WAYLAND
+    // There are currently bad interactions with Wayland (drop-downs
+    // are very narrow, scroll events lost). Until this is fixed, give
+    // priority to the XWayland backend for Wayland users.
+    gdk_set_allowed_backends("x11,*");
+#endif
+    gtk_init(&argc, &argv);
+  }
 
   // detect cpu features and decide which codepaths to enable
   dt_codepaths_init();

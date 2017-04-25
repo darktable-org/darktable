@@ -19,6 +19,7 @@
 #pragma GCC poison strcat  // use g_strncat
 #pragma GCC poison strncat // use g_strncat
 #pragma GCC poison pthread_create // use dt_pthread_create, musl issues
+#pragma GCC poison fopen // use g_fopen
 
 #endif
 

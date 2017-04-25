@@ -102,15 +102,21 @@ else()
 	MESSAGE(STATUS "Found little endian system. Good.")
 endif(${BIGENDIAN})
 
+set(CMAKE_REQUIRED_INCLUDES_OLD "${CMAKE_REQUIRED_INCLUDES}")
+list(APPEND CMAKE_REQUIRED_INCLUDES "${CMAKE_SOURCE_DIR}")
+
 check_c_source_compiles("
 #include <stdio.h>
 int main() {
-#include \"${CMAKE_SOURCE_DIR}/src/is_supported_platform.h\"
+#include \"src/is_supported_platform.h\"
 }" IS_SUPPORTED_PLATFORM)
 if(NOT IS_SUPPORTED_PLATFORM)
   MESSAGE(FATAL_ERROR "The target platform is not supported!")
 endif(NOT IS_SUPPORTED_PLATFORM)
 MESSAGE(STATUS "Is the target platform supported: ${IS_SUPPORTED_PLATFORM}")
+
+set(CMAKE_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES_OLD}")
+unset(CMAKE_REQUIRED_INCLUDES_OLD)
 
 if(APPLE)
 	option(USE_MAC_INTEGRATION "Enable OS X integration" ON)
@@ -199,7 +205,7 @@ else(DEFINED PROJECT_VERSION)
   if(NOT SOURCE_PACKAGE) # i.e., a git checkout
     # this part is setting the corresponding CMake variable which gets used for example when creating a source package
     execute_process(
-      COMMAND ${CMAKE_SOURCE_DIR}/tools/get_git_version_string.sh OUTPUT_STRIP_TRAILING_WHITESPACE
+      COMMAND sh ${CMAKE_SOURCE_DIR}/tools/get_git_version_string.sh OUTPUT_STRIP_TRAILING_WHITESPACE
       OUTPUT_VARIABLE PROJECT_VERSION
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     # FIXME: PROJECT_VERSION will not be updated automatically, until you rerun cmake
@@ -216,7 +222,7 @@ else(DEFINED PROJECT_VERSION)
     else(NOT EXISTS ${CMAKE_SOURCE_DIR}/src/version_gen.c)
       # no need to create version_gen.c if it's already shipped. that is for example the case with our release tarballs
       execute_process(
-        COMMAND ${CMAKE_SOURCE_DIR}/tools/parse_version_c.sh ${CMAKE_SOURCE_DIR}/src/version_gen.c OUTPUT_STRIP_TRAILING_WHITESPACE
+        COMMAND sh ${CMAKE_SOURCE_DIR}/tools/parse_version_c.sh ${CMAKE_SOURCE_DIR}/src/version_gen.c OUTPUT_STRIP_TRAILING_WHITESPACE
         OUTPUT_VARIABLE PROJECT_VERSION
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       )
@@ -523,10 +529,19 @@ if(NOT WIN32)
   endif(CMAKE_SYSTEM MATCHES "SunOS.*")
 endif(NOT WIN32)
 
+# Set default component name - that way external modules like RawSpeed will install their
+# materials under the default component and not under 'Unspecified'
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME DTApplication)
+
 # lets continue into build directories
 add_subdirectory(src)
 add_subdirectory(data)
 add_subdirectory(doc)
+
+# This contains fixup_bundle
+# And adding a separate subderectory as a last one will make sure
+# that fixup_bundle will run _after_ all files has been installed
+add_subdirectory(packaging)
 
 include(cmake/darktable-packaging.cmake)
 

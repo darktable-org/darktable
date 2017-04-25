@@ -547,14 +547,21 @@ static GList *_lib_geotagging_get_timezones(void)
       if(!g_file_test(zone_tab, G_FILE_TEST_IS_REGULAR))
       {
         g_free(zone_tab);
-        // TODO: Solaris test
-        return NULL;
+        char datadir[PATH_MAX] = { 0 };
+        dt_loc_get_datadir(datadir, sizeof(datadir));
+        zone_tab = g_build_filename(datadir, "zone.tab", NULL);
+        if(!g_file_test(zone_tab, G_FILE_TEST_IS_REGULAR))
+        {
+          g_free(zone_tab);
+          // TODO: Solaris test
+          return NULL;
+        }
       }
     }
   }
 
   // parse zone.tab and put all time zone descriptions into tz
-  fp = fopen(zone_tab, "r");
+  fp = g_fopen(zone_tab, "r");
   g_free(zone_tab);
 
   if(!fp) return NULL;

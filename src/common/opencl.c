@@ -389,7 +389,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   // now load all darktable cl kernels.
   // TODO: compile as a job?
   tstart = dt_get_wtime();
-  FILE *f = fopen(filename, "rb");
+  FILE *f = g_fopen(filename, "rb");
   if(f)
   {
 
@@ -1416,7 +1416,7 @@ void dt_opencl_unlock_device(const int dev)
 
 static FILE *fopen_stat(const char *filename, struct stat *st)
 {
-  FILE *f = fopen(filename, "rb");
+  FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_fopen_stat] could not open file `%s'!\n", filename);
@@ -1743,7 +1743,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
           // save opencl compiled binary as md5sum-named file
           char link_dest[PATH_MAX] = { 0 };
           snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, md5sum);
-          FILE *f = fopen(link_dest, "w+");
+          FILE *f = g_fopen(link_dest, "w+");
           if(!f) goto ret;
           size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
           if(bytes_written != binary_sizes[i]) goto ret;
