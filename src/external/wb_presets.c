@@ -5302,6 +5302,17 @@ const wb_data wb_preset[] =
   { "Pentax", "K-3", WarmWhiteFluorescent, 0,	{ 1.74609, 1, 2.53125, 0 } },
   { "Pentax", "K-3", Flash, 0,			{ 2.56641, 1, 1.31641, 0 } },
 
+  /* RICOH IMAGING COMPANY, LTD. PENTAX K-3 II Firmware Version 1.10 */
+  { "Pentax", "K-3 II", Daylight, 0,             { 2.1875, 1, 1.578125, 0 } },
+  { "Pentax", "K-3 II", Shade, 0,                { 2.703125, 1, 1.16015625, 0 } },
+  { "Pentax", "K-3 II", Cloudy, 0,               { 2.41796875, 1, 1.33984375, 0 } },
+  { "Pentax", "K-3 II", DaylightFluorescent, 0,  { 2.62890625, 1, 1.51171875, 0 } },
+  { "Pentax", "K-3 II", DayWhiteFluorescent, 0,  { 2.23828125, 1, 1.6953125, 0 } },
+  { "Pentax", "K-3 II", WhiteFluorescent, 0,     { 2.01171875, 1, 2.0234375, 0 } },
+  { "Pentax", "K-3 II", WarmWhiteFluorescent, 0, { 1.6953125, 1, 2.515625, 0 } },
+  { "Pentax", "K-3 II", Tungsten, 0,             { 1.3203125, 1, 2.7265625, 0 } },
+  { "Pentax", "K-3 II", Flash, 0,                { 2.48828125, 1, 1.30859375, 0 } },
+
   { "Pentax", "K-5", Daylight, 0,		{ 2.1211, 1, 1.5781, 0 } },
   { "Pentax", "K-5", Shade, 0,			{ 2.5312, 1, 1.1758, 0 } },
   { "Pentax", "K-5", Cloudy, 0,			{ 2.2852, 1, 1.3477, 0 } },
