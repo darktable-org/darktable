@@ -137,10 +137,10 @@ if(WIN32)
   # add it to have proper time.h functions available
   ADD_DEFINITIONS(-D_POSIX_THREAD_SAFE_FUNCTIONS)
 
-  # add icon resource for Windows executable
+  # add icon, version, ... resources for Windows executable
   SET(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
-  set(RESOURCE_OBJECT win/darktable.rc)
-
+  set(RESOURCE_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.rc")
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/win/darktable.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.rc")
 endif(WIN32)
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
