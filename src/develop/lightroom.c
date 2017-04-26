@@ -1288,7 +1288,8 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
      (curve_kind != linear
       || ptc_value[0] != 0 || ptc_value[1] != 0 || ptc_value[2] != 0 || ptc_value[3] != 0))
   {
-    ptc.tonecurve_nodes[ch_L] = 6;
+    const int total_pts = (curve_kind == custom) ? n_pts : 6;
+    ptc.tonecurve_nodes[ch_L] = total_pts;
     ptc.tonecurve_nodes[ch_a] = 7;
     ptc.tonecurve_nodes[ch_b] = 7;
     ptc.tonecurve_type[ch_L] = CUBIC_SPLINE;
@@ -1324,7 +1325,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     }
     else
     {
-      for(int k = 0; k < 6; k++)
+      for(int k = 0; k < total_pts; k++)
       {
         ptc.tonecurve[ch_L][k].x = curve_pts[k][0] / 255.0;
         ptc.tonecurve[ch_L][k].y = curve_pts[k][1] / 255.0;

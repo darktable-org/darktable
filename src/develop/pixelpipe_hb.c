@@ -217,7 +217,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
       piece->enabled = module->enabled;
       piece->request_histogram = DT_REQUEST_ONLY_IN_GUI;
       piece->histogram_params.roi = NULL;
-      piece->histogram_params.bins_count = 64;
+      piece->histogram_params.bins_count = 256;
       piece->histogram_stats.bins_count = 0;
       piece->histogram_stats.pixels = 0;
       piece->colors
@@ -2018,7 +2018,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         box[3] = roi_out->height - 1;
       }
       dev->histogram_max = 0;
-      memset(dev->histogram, 0, sizeof(uint32_t) * 4 * 64);
+      memset(dev->histogram, 0, sizeof(uint32_t) * 4 * 256);
 
       {
         uint8_t *pixel = (uint8_t *)*output;
@@ -2026,7 +2026,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           for(int i = box[0]; i <= box[2]; i += 4)
           {
             uint8_t rgb[3];
-            for(int k = 0; k < 3; k++) rgb[k] = pixel[4 * j * roi_out->width + 4 * i + 2 - k] >> 2;
+            for(int k = 0; k < 3; k++) rgb[k] = pixel[4 * j * roi_out->width + 4 * i + 2 - k];
 
             for(int k = 0; k < 3; k++) dev->histogram[4 * rgb[k] + k]++;
             uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
@@ -2035,7 +2035,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       }
 
       // don't count <= 0 pixels
-      for(int k = 19; k < 4 * 64; k += 4)
+      for(int k = 19; k < 4 * 256; k += 4)
         dev->histogram_max = dev->histogram_max > dev->histogram[k] ? dev->histogram_max : dev->histogram[k];
 
       // calculate the waveform histogram. since this is drawn pixel by pixel we have to do it in the correct
@@ -2229,7 +2229,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
                              float scale)
 {
   pipe->processing = 1;
-  pipe->opencl_enabled = dt_opencl_update_enabled(); // update enabled flag from preferences
+  pipe->opencl_enabled = dt_opencl_update_settings(); // update enabled flag and profile from preferences
   pipe->devid = (pipe->opencl_enabled) ? dt_opencl_lock_device(pipe->type)
                                        : -1; // try to get/lock opencl resource
 

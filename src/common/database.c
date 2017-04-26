@@ -52,6 +52,8 @@ typedef struct dt_database_t
 
   /* ondisk DB */
   sqlite3 *handle;
+
+  gchar *error_message, *error_dbfilename;
 } dt_database_t;
 
 
@@ -1328,7 +1330,30 @@ static gboolean _synchronize_tags(dt_database_t *db)
 #undef TRY_PREPARE
 #undef FINALIZE
 
-static gboolean _lock_single_database(const char *dbfilename, char **lockfile)
+void dt_database_show_error(const dt_database_t *db)
+{
+  if(!db->lock_acquired)
+  {
+    char *label_text = g_markup_printf_escaped(_("an error has occured while trying to open the database from\n"
+                                                  "\n"
+                                                  "<span style=\"italic\">%s</span>\n"
+                                                  "\n"
+                                                  "%s\n"),
+                                                db->error_dbfilename, db->error_message ? db->error_message : "");
+
+    dt_gui_show_standalone_yes_no_dialog(_("darktable - error locking database"), label_text, _("close darktable"),
+                                         /*_("try again")*/NULL);
+
+    g_free(label_text);
+  }
+
+  g_free(db->error_message);
+  g_free(db->error_dbfilename);
+  ((dt_database_t *)db)->error_message = NULL;
+  ((dt_database_t *)db)->error_dbfilename = NULL;
+}
+
+static gboolean _lock_single_database(dt_database_t *db, const char *dbfilename, char **lockfile)
 {
   gboolean lock_acquired;
 
@@ -1388,17 +1413,20 @@ lock_again:
               stderr,
               "[init] the database lock file contains a pid that seems to be alive in your system: %d\n",
               other_pid);
+            db->error_message = g_strdup_printf(_("the database lock file contains a pid that seems to be alive in your system: %d"), other_pid);
           }
         }
         else
         {
           fprintf(stderr, "[init] the database lock file seems to be empty\n");
+          db->error_message = g_strdup_printf(_("the database lock file seems to be empty"));
         }
         close(fd);
       }
       else
       {
         fprintf(stderr, "[init] error opening the database lock file for reading\n");
+        db->error_message = g_strdup_printf(_("error opening the database lock file for reading"));
       }
     }
   }
@@ -1407,14 +1435,17 @@ lock_again:
 
 #endif
 
+  if(db->error_message)
+    db->error_dbfilename = g_strdup(dbfilename);
+
   return lock_acquired;
 }
 
 static gboolean _lock_databases(dt_database_t *db)
 {
-  if(!_lock_single_database(db->dbfilename_data, &db->lockfile_data))
+  if(!_lock_single_database(db, db->dbfilename_data, &db->lockfile_data))
     return FALSE;
-  if(!_lock_single_database(db->dbfilename_library, &db->lockfile_library))
+  if(!_lock_single_database(db, db->dbfilename_library, &db->lockfile_library))
   {
     // unlock data.db to not leave a stale lock file around
     g_unlink(db->lockfile_data);

@@ -151,9 +151,9 @@ static int database_len(lua_State *L)
   sqlite3_stmt *stmt = NULL;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM main.images ", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
-    lua_pushnumber(L, sqlite3_column_int(stmt, 0));
+    lua_pushinteger(L, sqlite3_column_int(stmt, 0));
   else
-    lua_pushnumber(L, 0);
+    lua_pushinteger(L, 0);
   sqlite3_finalize(stmt);
   return 1;
 }
@@ -179,14 +179,14 @@ static int database_numindex(lua_State *L)
   else
   {
     sqlite3_finalize(stmt);
-    return luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
   }
   return 1;
 }
 
 static int collection_len(lua_State *L)
 {
-  lua_pushnumber(L, dt_collection_get_count(darktable.collection));
+  lua_pushinteger(L, dt_collection_get_count(darktable.collection));
   return 1;
 }
 
@@ -198,11 +198,12 @@ static int collection_numindex(lua_State *L)
     return luaL_error(L, "incorrect index in database");
   }
   int imgid = dt_collection_get_nth(darktable.collection,index-1);
-  if (imgid <1)
+  if (imgid >0)
   {
-    return luaL_error(L, "incorrect index in database");
+    luaA_push(L, dt_lua_image_t, &imgid);
+  } else { 
+    lua_pushnil(L);
   }
-  luaA_push(L, dt_lua_image_t, &imgid);
   return 1;
 
 }

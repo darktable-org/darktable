@@ -519,18 +519,22 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   dt_iop_gui_set_expanded(next, TRUE, FALSE);
   gtk_widget_grab_focus(next->expander);
 
+  darktable.gui->reset = 1;
+
   // we remove the plugin effectively
   if(!dt_iop_is_hidden(module))
   {
     // we just hide the module to avoid lots of gtk critical warnings
     gtk_widget_hide(module->expander);
+
     // we move the module far away, to avoid problems when reordering instance after that
+    // FIXME: ?????
     gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
                           module->expander, -1);
+
+    gtk_widget_destroy(module->widget);
+    dt_iop_gui_cleanup_module(module);
   }
-  darktable.gui->reset = 1;
-  // we cleanup the widget
-  if(!dt_iop_is_hidden(module)) dt_iop_gui_cleanup_module(module);
 
   // we remove all references in the history stack and dev->iop
   dt_dev_module_remove(dev, module);
@@ -856,10 +860,20 @@ static void dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
   dt_iop_gui_duplicate(user_data, TRUE);
 }
 
-static void dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
+static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   if(module->flags() & IOP_FLAGS_ONE_INSTANCE) return;
+
+  if(event->button == 2)
+  {
+    dt_iop_gui_copy_callback(button, user_data);
+    return;
+  }
+  else if(event->button == 3)
+  {
+    return;
+  }
 
   GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
   GtkWidget *item;
@@ -1519,6 +1533,7 @@ static void _preset_popup_position(GtkMenu *menu, gint *x, gint *y, gboolean *pu
 static void popup_callback(GtkButton *button, dt_iop_module_t *module)
 {
   dt_gui_presets_popup_menu_show_for_module(module);
+  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
 #if GTK_CHECK_VERSION(3, 22, 0)
   gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu,
@@ -1527,10 +1542,8 @@ static void popup_callback(GtkButton *button, dt_iop_module_t *module)
 #else
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_position, button, 0,
                  gtk_get_current_event_time());
-#endif
-
-  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
+#endif
 }
 
 void dt_iop_request_focus(dt_iop_module_t *module)
@@ -1717,6 +1730,7 @@ static gboolean _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, g
   else if(e->button == 3)
   {
     dt_gui_presets_popup_menu_show_for_module(module);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
 #if GTK_CHECK_VERSION(3, 22, 0)
     gtk_menu_popup_at_pointer(darktable.gui->presets_popup_menu, (GdkEvent *)e);
@@ -1724,7 +1738,6 @@ static gboolean _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, g
     gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
 #endif
 
-    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
     return TRUE;
   }
   return FALSE;
@@ -1750,14 +1763,13 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
   else if(e->button == 3)
   {
     dt_gui_presets_popup_menu_show_for_module(module);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
 #if GTK_CHECK_VERSION(3, 22, 0)
     gtk_menu_popup_at_pointer(darktable.gui->presets_popup_menu, (GdkEvent *)e);
 #else
     gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
 #endif
-
-    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
     return TRUE;
   }
@@ -1877,8 +1889,10 @@ got_image:
   {
     hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     module->multimenu_button = GTK_WIDGET(hw[idx]);
-    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("multiple instances actions"));
-    g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(dt_iop_gui_multimenu_callback), module);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]),
+                                _("multiple instances actions\nmiddle-click creates new instance"));
+    g_signal_connect(G_OBJECT(hw[idx]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback),
+                     module);
     gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
   }
 

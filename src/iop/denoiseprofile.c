@@ -790,7 +790,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
   {
     const int n = width*height;
-    FILE *f = fopen("/tmp/transformed.pfm", "wb");
+    FILE *f = g_fopen("/tmp/transformed.pfm", "wb");
     fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
     for(int k=0; k<n; k++)
       fwrite(((float*)ovoid)+4*k, sizeof(float), 3, f);
@@ -814,13 +814,13 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     {
       char filename[512];
       snprintf(filename, sizeof(filename), "/tmp/coarse_%d.pfm", scale);
-      FILE *f = fopen(filename, "wb");
+      FILE *f = g_fopen(filename, "wb");
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
       for(size_t k = 0; k < npixels; k++)
         fwrite(buf2+4*k, sizeof(float), 3, f);
       fclose(f);
       snprintf(filename, sizeof(filename), "/tmp/detail_%d.pfm", scale);
-      f = fopen(filename, "wb");
+      f = g_fopen(filename, "wb");
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
       for(size_t k = 0; k < npixels; k++)
         fwrite(buf[scale]+4*k, sizeof(float), 3, f);
@@ -1273,7 +1273,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
-                            (bb[2] / aa[1]) * (bb[2] / aa[1]), 0.0f };
+                            (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
   if(dev_tmp == NULL) goto error;
@@ -1560,7 +1560,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
-                            (bb[2] / aa[1]) * (bb[2] / aa[1]), 0.0f };
+                            (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
@@ -1616,7 +1616,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     const float sigma = 1.0f;
     // it is then transformed by wavelet scales via the 5 tap a-trous filter:
     const float varf = sqrtf(2.0f + 2.0f * 4.0f * 4.0f + 6.0f * 6.0f) / 16.0f; // about 0.5
-    const float sigma_band = powf(varf, scale) * sigma;
+    const float sigma_band = powf(varf, s) * sigma;
 
     // determine thrs as bayesshrink
     float sum_y2[3] = { 0.0f };

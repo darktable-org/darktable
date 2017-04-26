@@ -77,6 +77,16 @@ typedef enum dt_iop_demosaic_greeneq_t
   DT_IOP_GREEN_EQ_BOTH = 3
 } dt_iop_demosaic_greeneq_t;
 
+typedef enum dt_iop_demosaic_qual_flags_t
+{
+  // either perform full scale demosaicing or choose simple half scale
+  // or third scale interpolation instead
+  DEMOSAIC_FULL_SCALE              = 1 << 0,
+  DEMOSAIC_ONLY_VNG_LINEAR         = 1 << 1,
+  DEMOSAIC_XTRANS_FULL_MARKESTEIJN = 1 << 2,
+  DEMOSAIC_MEDIUM_QUAL             = 1 << 3
+} dt_iop_demosaic_qual_flags_t;
+
 typedef struct dt_iop_demosaic_params_t
 {
   dt_iop_demosaic_greeneq_t green_eq;
@@ -781,23 +791,45 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             float(*rfx)[3] = &rgb[0][row - top][col - left];
             int h = FCxtrans(row, col + 1, roi_in, xtrans);
             float diff[6] = { 0.0f };
-            float color[3][8];
+            // interplated color: first index is red/blue, second is
+            // pass, is double actual result
+            float color[2][6];
+            // Six passes, alternating hori/vert interp (i),
+            // starting with R or B (h) depending on which is closest.
+            // Passes 0,1 to rgb[0], rgb[1] of hori/vert interp. Pass
+            // 3,5 to rgb[2], rgb[3] of best of interp hori/vert
+            // results. Each pass which outputs moves on to the next
+            // rgb[] for input of interp greens.
             for(int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2)
             {
+              // look 1 and 2 pixels distance from solitary green to
+              // red then blue or blue then red
               for(int c = 0; c < 2; c++, h ^= 2)
               {
+                // rate of change in greens between current pixel and
+                // interpolated pixels 1 or 2 distant: a quick
+                // derivative which will be divided by two later to be
+                // rate of luminance change for red/blue between known
+                // red/blue neighbors and the current unknown pixel
                 float g = 2 * rfx[0][1] - rfx[i << c][1] - rfx[-(i << c)][1];
-                color[h][d] = g + rfx[i << c][h] + rfx[-(i << c)][h];
+                // color is halved before being stored in rgb, hence
+                // this becomes green rate of change plus the average
+                // of the near red or blue pixels on current axis
+                color[h != 0][d] = g + rfx[i << c][h] + rfx[-(i << c)][h];
+                // Note that diff will become the slope for both red
+                // and blue differentials in the current direction.
+                // For 2nd and 3rd hori+vert passes, create a sum of
+                // steepness for both cardinal directions.
                 if(d > 1)
                   diff[d] += SQR(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h])
                              + SQR(g);
               }
-              if(d > 1 && (d & 1))
-                if(diff[d - 1] < diff[d])
-                  for(int c = 0; c < 2; c++) color[c * 2][d] = color[c * 2][d - 1];
-              if(d < 2 || (d & 1))
-              {
-                for(int c = 0; c < 2; c++) rfx[0][c * 2] = color[c * 2][d] / 2.f;
+              if((d < 2) || (d & 1))
+              { // output for passes 0, 1, 3, 5
+                // for 0, 1 just use hori/vert, for 3, 5 use best of x/y dir
+                const int d_out = d - ((d > 1) && (diff[d-1] < diff[d]));
+                rfx[0][0] = color[0][d_out] / 2.f;
+                rfx[0][2] = color[1][d_out] / 2.f;
                 rfx += TS * TS;
               }
             }
@@ -2286,6 +2318,67 @@ static int get_thumb_quality(int width, int height)
   return res;
 }
 
+// set flags for demosaic quality based on factors besides demosaic
+// method (e.g. config, scale, pixelpipe type)
+static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
+                               const dt_image_t *const img,
+                               const dt_iop_roi_t *const roi_out)
+{
+  int flags = 0;
+  switch (piece->pipe->type)
+  {
+    case DT_DEV_PIXELPIPE_FULL:
+      {
+        const int qual = get_quality();
+        if (qual > 0) flags |= DEMOSAIC_FULL_SCALE;
+        if (qual > 1) flags |= DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+        if ((qual < 2) && (roi_out->scale <= .99999f))
+          flags |= DEMOSAIC_MEDIUM_QUAL;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_EXPORT:
+      flags |= DEMOSAIC_FULL_SCALE | DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+      break;
+    case DT_DEV_PIXELPIPE_THUMBNAIL:
+      // we check if we need ultra-high quality thumbnail for this size
+      if (get_thumb_quality(roi_out->width, roi_out->height))
+      {
+        flags |= DEMOSAIC_FULL_SCALE | DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+      }
+      break;
+    default: // make C not complain about missing enum members
+      break;
+  }
+
+  // For suficiently small scaling, one or more repetitition of the
+  // CFA pattern can be merged into a single pixel, hence it is
+  // possible to skip the full demosaic and perform a quick downscale.
+  // Note even though the X-Trans CFA is 6x6, for this purposes we can
+  // see each 6x6 tile as four fairly similar 3x3 tiles
+  if (roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f))
+  {
+    flags |= DEMOSAIC_FULL_SCALE;
+  }
+  // half_size_f doesn't support 4bayer images
+  if (img->flags & DT_IMAGE_4BAYER) flags |= DEMOSAIC_FULL_SCALE;
+  // we use full Markesteijn demosaicing on xtrans sensors if maximum
+  // quality is required
+  if (roi_out->scale > 0.667f)
+  {
+    flags |= DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+  }
+
+  // we check if we can stop at the linear interpolation step in VNG
+  // instead of going the full way
+  if ((flags & DEMOSAIC_FULL_SCALE) &&
+      (roi_out->scale < (piece->pipe->dsc.filters == 9u ? 0.5f : 0.667f)))
+  {
+    flags |= DEMOSAIC_ONLY_VNG_LINEAR;
+  }
+
+  return flags;
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -2301,41 +2394,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
-  const int qual = get_quality();
+  const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
   int demosaicing_method = data->demosaicing_method;
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2 && roi_out->scale <= .99999f
+  if((qual_flags & DEMOSAIC_MEDIUM_QUAL)
      && // only overwrite setting if quality << requested and in dr mode
      (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)) // do not touch this special method
     demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_FDC;
 
-  // we check if we need ultra-high quality thumbnail for this size
-  int uhq_thumb = 0;
-  if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
-    uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
-
-  // we check if we can avoid full scale demosaicing and chose simple
-  // half scale or third scale interpolation instead
-  const int full_scale_demosaicing
-      = (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT
-        || uhq_thumb || roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f)
-        || (img->flags & DT_IMAGE_4BAYER); // half_size_f doesn't support 4bayer images
-
-  // we check if we can stop at the linear interpolation step in VNG
-  // instead of going the full way
-  const int only_vng_linear
-      = full_scale_demosaicing && roi_out->scale < (piece->pipe->dsc.filters == 9u ? 0.5f : 0.667f);
-
-  // we use full Markesteijn demosaicing on xtrans sensors only if
-  // maximum quality is required
-  const int xtrans_full_markesteijn_demosaicing =
-      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 1) ||
-      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
-      uhq_thumb ||
-      roi_out->scale > 0.667f;
-
   const float *const pixels = (float *)i;
 
-  if(full_scale_demosaicing)
+  if(qual_flags & DEMOSAIC_FULL_SCALE)
   {
     // Full demosaic and then scaling if needed
     const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
@@ -2357,13 +2425,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else if(piece->pipe->dsc.filters == 9u)
     {
-      if(demosaicing_method == DT_IOP_DEMOSAIC_FDC && xtrans_full_markesteijn_demosaicing)
+      if(demosaicing_method == DT_IOP_DEMOSAIC_FDC && (qual_flags & DEMOSAIC_XTRANS_FULL_MARKESTEIJN))
         xtrans_fdc_interpolate(tmp, pixels, &roo, &roi, xtrans);
-      else if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && xtrans_full_markesteijn_demosaicing)
+      else if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && (qual_flags & DEMOSAIC_XTRANS_FULL_MARKESTEIJN))
         xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans,
                                        1 + (demosaicing_method - DT_IOP_DEMOSAIC_MARKESTEIJN) * 2);
       else
-        vng_interpolate(tmp, pixels, &roo, &roi, piece->pipe->dsc.filters, xtrans, only_vng_linear);
+        vng_interpolate(tmp, pixels, &roo, &roi, piece->pipe->dsc.filters, xtrans, qual_flags & DEMOSAIC_ONLY_VNG_LINEAR);
     }
     else
     {
@@ -2393,7 +2461,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || (img->flags & DT_IMAGE_4BAYER))
       {
-        vng_interpolate(tmp, in, &roo, &roi, piece->pipe->dsc.filters, xtrans, only_vng_linear);
+        vng_interpolate(tmp, in, &roo, &roi, piece->pipe->dsc.filters, xtrans, qual_flags & DEMOSAIC_ONLY_VNG_LINEAR);
         if (img->flags & DT_IMAGE_4BAYER)
         {
           dt_colorspaces_cygm_to_rgb(tmp, roo.width*roo.height, data->CAM_to_RGB);
@@ -2578,13 +2646,8 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   const float threshold = 0.0001f * img->exif_iso;
   const int devid = piece->pipe->devid;
-  const int qual = get_quality();
+  const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
   const int demosaicing_method = data->demosaicing_method;
-
-  // we check if we need ultra-high quality thumbnail for this size
-  int uhq_thumb = 0;
-  if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
-    uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
 
   cl_mem dev_aux = NULL;
   cl_mem dev_tmp = NULL;
@@ -2592,8 +2655,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   cl_int err = -999;
 
 
-  if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT
-     || (uhq_thumb) || roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : .5f))
+  if(qual_flags & DEMOSAIC_FULL_SCALE)
   {
     // Full demosaic and then scaling if needed
     const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
@@ -2856,27 +2918,12 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   const int prow = (filters4 == 9u) ? 6 : 8;
   const int pcol = (filters4 == 9u) ? 6 : 2;
   const int devid = piece->pipe->devid;
-  const int qual = get_quality();
 
   const float processed_maximum[4]
       = { piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1],
           piece->pipe->dsc.processed_maximum[2], 1.0f };
 
-  // we check if we need ultra-high quality thumbnail for this size
-  int uhq_thumb = 0;
-  if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
-    uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
-
-  // check if we can avoid full scale demosaicing and chose simple
-  // half scale or third scale interpolation instead
-  const int full_scale_demosaicing = (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0)
-                                     || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT || uhq_thumb
-                                     || roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f);
-
-  // check if we can stop at the linear interpolation step and
-  // avoid full VNG
-  const int only_vng_linear
-      = full_scale_demosaicing && roi_out->scale < (piece->pipe->dsc.filters == 9u ? 0.5f : 0.667f);
+  const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
 
   int *ips = NULL;
 
@@ -2898,7 +2945,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     if(dev_xtrans == NULL) goto error;
   }
 
-  if(full_scale_demosaicing)
+  if(qual_flags & DEMOSAIC_FULL_SCALE)
   {
     // Full demosaic and then scaling if needed
     const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
@@ -3077,6 +3124,25 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
 
     do
     {
+      // manage borders for linear interpolation part
+      const int border = 1;
+
+      size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 0, sizeof(cl_mem), (void *)&dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 1, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 4, sizeof(int), (void *)&border);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 5, sizeof(int), (void *)&roi_in->x);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 6, sizeof(int), (void *)&roi_in->y);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 7, sizeof(uint32_t), (void *)&filters4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 8, sizeof(cl_mem), (void *)&dev_xtrans);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_border_interpolate, sizes);
+      if(err != CL_SUCCESS) goto error;
+    } while(0);
+
+    do
+    {
       // do linear interpolation
       dt_iop_demosaic_cl_buffer_t locopt
         = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
@@ -3101,7 +3167,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     } while(0);
 
 
-    if(only_vng_linear)
+    if(qual_flags & DEMOSAIC_ONLY_VNG_LINEAR)
     {
       // leave it at linear interpolation and skip VNG
       size_t origin[] = { 0, 0, 0 };
@@ -3141,15 +3207,18 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     do
     {
       // manage borders
+      const int border = 2;
+
       size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 0, sizeof(cl_mem), (void *)&dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 1, sizeof(cl_mem), (void *)&dev_aux);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 2, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 4, sizeof(int), (void *)&roi_in->x);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 5, sizeof(int), (void *)&roi_in->y);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 6, sizeof(uint32_t), (void *)&filters4);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 7, sizeof(cl_mem), (void *)&dev_xtrans);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 4, sizeof(int), (void *)&border);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 5, sizeof(int), (void *)&roi_in->x);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 6, sizeof(int), (void *)&roi_in->y);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 7, sizeof(uint32_t), (void *)&filters4);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 8, sizeof(cl_mem), (void *)&dev_xtrans);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_border_interpolate, sizes);
       if(err != CL_SUCCESS) goto error;
     } while(0);
@@ -3281,23 +3350,13 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
 
   const int devid = piece->pipe->devid;
-  const int qual = get_quality();
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
   const float processed_maximum[4]
       = { piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1],
           piece->pipe->dsc.processed_maximum[2], 1.0f };
 
-  // we check if we need ultra-high quality thumbnail for this size
-  int uhq_thumb = 0;
-  if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
-    uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
-
-  // check if we can avoid full scale demosaicing and chose simple
-  // half scale or third scale interpolation instead
-  const int full_scale_demosaicing = (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0)
-                                     || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT || uhq_thumb
-                                     || roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f);
+  const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
 
   cl_mem dev_tmp = NULL;
   cl_mem dev_tmptmp = NULL;
@@ -3320,7 +3379,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
   if(dev_xtrans == NULL) goto error;
 
-  if(full_scale_demosaicing)
+  if(qual_flags & DEMOSAIC_FULL_SCALE)
   {
     // Full demosaic and then scaling if needed
     const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
@@ -4029,20 +4088,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   const int demosaicing_method = data->demosaicing_method;
-  const int qual = get_quality();
-
-  // we check if we need ultra-high quality thumbnail for this size
-  int uhq_thumb = 0;
-  if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
-    uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
-
-  // we use full Markesteijn demosaicing on xtrans sensors only if
-  // maximum quality is required
-  const int xtrans_full_markesteijn_demosaicing =
-      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 1) ||
-      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
-      uhq_thumb ||
-      roi_out->scale > 0.667f;
+  const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
 
   if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME || demosaicing_method == DT_IOP_DEMOSAIC_PPG)
   {
@@ -4053,7 +4099,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     return process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
   }
   else if((demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) &&
-    !xtrans_full_markesteijn_demosaicing)
+    !(qual_flags & DEMOSAIC_XTRANS_FULL_MARKESTEIJN))
   {
     return process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
   }
@@ -4082,30 +4128,14 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
-  const int qual = get_quality();
   const float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
   const float smooth = data->color_smoothing ? ioratio : 0.0f;
   const float greeneq
       = ((piece->pipe->dsc.filters != 9u) && (data->green_eq != DT_IOP_GREEN_EQ_NO)) ? 0.25f : 0.0f;
   const dt_iop_demosaic_method_t demosaicing_method = data->demosaicing_method;
 
-  // we check if we need ultra-high quality thumbnail for this size
-  const int uhq_thumb = (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL) ?
-                          get_thumb_quality(roi_out->width, roi_out->height) : 0;
-
-  // check if we will do full scale demosaicing or chose simple
-  // half scale or third scale interpolation instead
-  const int full_scale_demosaicing = (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0)
-                                     || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT || uhq_thumb
-                                     || roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f);
-
-  // we use full Markesteijn demosaicing on xtrans sensors only if
-  // maximum quality is required
-  const int xtrans_full_markesteijn_demosaicing =
-      (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 1) ||
-      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
-      uhq_thumb ||
-      roi_out->scale > 0.8f;
+  const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
+  const int full_scale_demosaicing = qual_flags & DEMOSAIC_FULL_SCALE;
 
   // check if output buffer has same dimension as input buffer (thus avoiding one
   // additional temporary buffer)
@@ -4134,7 +4164,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   else if(((demosaicing_method ==  DT_IOP_DEMOSAIC_MARKESTEIJN) ||
            (demosaicing_method ==  DT_IOP_DEMOSAIC_MARKESTEIJN_3) ||
            (demosaicing_method ==  DT_IOP_DEMOSAIC_FDC)) &&
-           xtrans_full_markesteijn_demosaicing)
+          (qual_flags & DEMOSAIC_XTRANS_FULL_MARKESTEIJN))
   {
     // X-Trans pattern full Markesteijn processing
     const int ndir = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 8 : 4;

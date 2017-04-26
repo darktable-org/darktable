@@ -929,8 +929,6 @@ markesteijn_final(read_only image2d_t in, write_only image2d_t out, const int wi
   pixel = (pixel.w > 0.0f) ? pixel/pixel.w : (float4)0.0f;
   pixel.w = 0.0f;
   
-  pixel = clamp(pixel, (float4)0.0f, processed_maximum);
-  
   write_imagef(out, (int2)(x, y), pixel); 
 }
 

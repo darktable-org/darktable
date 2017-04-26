@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
-    copyright (c) 2011--2013 Ulrich Pegelow.
+    copyright (c) 2011--2017 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,11 +21,13 @@
 
 #include "common/opencl.h"
 #include "common/bilateralcl.h"
+#include "common/locallaplaciancl.h"
 #include "common/darktable.h"
 #include "common/dlopencl.h"
 #include "common/gaussian.h"
 #include "common/interpolation.h"
 #include "common/nvidia_gpus.h"
+#include "common/opencl_drivers_blacklist.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/pixelpipe.h"
@@ -46,9 +48,18 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
 static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, const int count, const float sigma);
 static char *_ascii_str_canonical(const char *in, char *out, int maxlen);
 /** parse a single token of priority string and store priorities in priority_list */
-static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *priority_list);
+static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *priority_list, int *mandatory);
 /** parse a complete priority string */
 static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr);
+/** set device priorities according to config string */
+static void dt_opencl_update_priorities(const char *configstr);
+/** read scheduling profile for config variables */
+static dt_opencl_scheduling_profile_t dt_opencl_get_scheduling_profile(void);
+/** adjust opencl subsystem according to scheduling profile */
+static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t profile);
+/** set opencl specific synchronization timeout */
+static void dt_opencl_set_synchronization_timeout(int value);
+
 
 int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_info param_name, void **param_value,
                               size_t *param_value_size)
@@ -140,6 +151,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].name = NULL;
   cl->dev[dev].cname = NULL;
   cl->dev[dev].options = NULL;
+  cl->dev[dev].memory_in_use = 0;
+  cl->dev[dev].peak_memory = 0;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *infostr = NULL;
@@ -227,6 +240,14 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   if(((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) && !dt_conf_get_bool("opencl_use_cpu_devices"))
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding CPU device %d `%s'.\n", k, infostr);
+    res = -1;
+    goto end;
+  }
+
+  if(dt_opencl_check_driver_blacklist(deviceversion) && !dt_conf_get_bool("opencl_disable_drivers_blacklist"))
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' because the driver `%s' is blacklisted.\n",
+             k, infostr, deviceversion);
     res = -1;
     goto end;
   }
@@ -368,7 +389,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   // now load all darktable cl kernels.
   // TODO: compile as a job?
   tstart = dt_get_wtime();
-  FILE *f = fopen(filename, "rb");
+  FILE *f = g_fopen(filename, "rb");
   if(f)
   {
 
@@ -485,7 +506,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   cl->synch_cache = dt_conf_get_bool("opencl_synch_cache");
   cl->micro_nap = dt_conf_get_int("opencl_micro_nap");
   cl->enable_markesteijn = dt_conf_get_bool("opencl_enable_markesteijn");
-  cl->crc = 0;
+  cl->crc = 5781;
   cl->dlocl = NULL;
   cl->dev_priority_image = NULL;
   cl->dev_priority_preview = NULL;
@@ -521,7 +542,8 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   str = dt_conf_get_string("opencl_device_priority");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", str);
   g_free(str);
-
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_mandatory_timeout: %d\n",
+           dt_conf_get_int("opencl_mandatory_timeout"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_size_roundup: %d\n",
            dt_conf_get_int("opencl_size_roundup"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_async_pixelpipe: %d\n",
@@ -652,6 +674,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     cl->num_devs = dev;
     cl->inited = 1;
     cl->enabled = dt_conf_get_bool("opencl");
+    memset(cl->mandatory, 0, sizeof(cl->mandatory));
     cl->dev_priority_image = (int *)malloc(sizeof(int) * (dev + 1));
     cl->dev_priority_preview = (int *)malloc(sizeof(int) * (dev + 1));
     cl->dev_priority_export = (int *)malloc(sizeof(int) * (dev + 1));
@@ -662,22 +685,11 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     assert(cl->dev_priority_image != NULL && cl->dev_priority_preview != NULL
            && cl->dev_priority_export != NULL && cl->dev_priority_thumbnail != NULL);
 
-    // apply config settings for device priority
-    str = dt_conf_get_string("opencl_device_priority");
-    dt_opencl_priorities_parse(cl, str);
-    g_free(str);
-
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] OpenCL successfully initialized.\n");
     dt_print(
         DT_DEBUG_OPENCL,
         "[opencl_init] here are the internal numbers and names of OpenCL devices available to darktable:\n");
     for(int i = 0; i < dev; i++) dt_print(DT_DEBUG_OPENCL, "[opencl_init]\t\t%d\t'%s'\n", i, cl->dev[i].name);
-
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] these are your device priorities:\n");
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] \t\timage\tpreview\texport\tthumbnail\n");
-    for(int i = 0; i < dev; i++)
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init]\t\t%d\t%d\t%d\t%d\n", cl->dev_priority_image[i],
-               cl->dev_priority_preview[i], cl->dev_priority_export[i], cl->dev_priority_thumbnail[i]);
   }
   else
   {
@@ -695,6 +707,7 @@ finally:
     cl->bilateral = dt_bilateral_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
     cl->interpolation = dt_interpolation_init_cl_global();
+    cl->local_laplacian = dt_local_laplacian_init_cl_global();
 
     char checksum[64];
     snprintf(checksum, sizeof(checksum), "%u", cl->crc);
@@ -717,16 +730,41 @@ finally:
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] benchmarking results: %f seconds for fastest GPU versus %f seconds for CPU.\n",
            tgpumin, tcpu);
 
-      // de-activate opencl for darktable in case of too slow GPU(s). user can always manually overrule this later.
       if(tcpu <= 1.5f * tgpumin)
       {
+        // de-activate opencl for darktable in case of too slow GPU(s). user can always manually overrule this later.
         cl->enabled = FALSE;
         dt_conf_set_bool("opencl", FALSE);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] due to a slow GPU the opencl flag has been set to OFF.\n");
         dt_control_log(_("due to a slow GPU hardware acceleration via opencl has been de-activated."));
       }
+      else if(cl->num_devs >= 2)
+      {
+        // set scheduling profile to "multiple GPUs" if more than one device has been found
+        dt_conf_set_string("opencl_scheduling_profile", "multiple GPUs");
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for multipe GPUs.\n");
+        dt_control_log(_("multiple GPUs detected - opencl scheduling profile has been set accordingly."));
+      }
+      else if(tcpu >= 6.0f * tgpumin)
+      {
+        // set scheduling profile to "very fast GPU" if CPU is way too slow
+        dt_conf_set_string("opencl_scheduling_profile", "very fast GPU");
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for very fast GPU.\n");
+        dt_control_log(_("very fast GPU detected - opencl scheduling profile has been set accordingly."));
+      }
+      else
+      {
+        // set scheduling profile to "default"
+        dt_conf_set_string("opencl_scheduling_profile", "default");
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile to default.\n");
+        dt_control_log(_("opencl scheduling profile set to default."));
+      }
     }
     g_free(oldchecksum);
+
+    // apply config settings for scheduling profile: sets device priorities and pixelpipe synchronization timeout
+    dt_opencl_scheduling_profile_t profile = dt_opencl_get_scheduling_profile();
+    dt_opencl_apply_scheduling_profile(profile);
   }
   else // initialization failed
   {
@@ -779,20 +817,28 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         if(cl->dev[i].program_used[k]) (cl->dlocl->symbols->dt_clReleaseProgram)(cl->dev[i].program[k]);
       (cl->dlocl->symbols->dt_clReleaseCommandQueue)(cl->dev[i].cmd_queue);
       (cl->dlocl->symbols->dt_clReleaseContext)(cl->dev[i].context);
+
+      if(cl->print_statistics && (darktable.unmuted & DT_DEBUG_MEMORY))
+      {
+        dt_print(DT_DEBUG_OPENCL, "[opencl_summary_statistics] device '%s' (%d): peak memory usage %zu bytes\n",
+                   cl->dev[i].name, i, cl->dev[i].peak_memory);
+      }
+
       if(cl->print_statistics && cl->use_events)
       {
         if(cl->dev[i].totalevents)
         {
-          dt_print(DT_DEBUG_OPENCL, "[opencl_summary_statistics] device '%s': %d out of %d events were "
+          dt_print(DT_DEBUG_OPENCL, "[opencl_summary_statistics] device '%s' (%d): %d out of %d events were "
                                     "successful and %d events lost\n",
-                   cl->dev[i].name, cl->dev[i].totalsuccess, cl->dev[i].totalevents, cl->dev[i].totallost);
+                   cl->dev[i].name, i, cl->dev[i].totalsuccess, cl->dev[i].totalevents, cl->dev[i].totallost);
         }
         else
         {
-          dt_print(DT_DEBUG_OPENCL, "[opencl_summary_statistics] device '%s': NOT utilized\n",
-                   cl->dev[i].name);
+          dt_print(DT_DEBUG_OPENCL, "[opencl_summary_statistics] device '%s' (%d): NOT utilized\n",
+                   cl->dev[i].name, i);
         }
       }
+
       if(cl->use_events)
       {
         dt_opencl_events_reset(i);
@@ -800,6 +846,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         free(cl->dev[i].eventlist);
         free(cl->dev[i].eventtags);
       }
+
       free((void *)(cl->dev[i].vendor));
       free((void *)(cl->dev[i].name));
       free((void *)(cl->dev[i].cname));
@@ -1129,18 +1176,27 @@ static char *_strsep(char **stringp, const char *delim)
 
 
 // parse a single token of priority string and store priorities in priority_list
-static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *priority_list)
+static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *priority_list, int *mandatory)
 {
   int devs = cl->num_devs;
   int count = 0;
   int *full = malloc((size_t)(devs + 1) * sizeof(int));
+  int mnd = 0;
 
   // NULL or empty configstring?
   if(configstr == NULL || *configstr == '\0')
   {
     priority_list[0] = -1;
+    *mandatory = 0;
     free(full);
     return;
+  }
+
+  // check if user wants us to force-use opencl device(s)
+  if(configstr[0] == '+')
+  {
+    mnd = 1;
+    configstr++;
   }
 
   // first start with a full list of devices to take from
@@ -1208,6 +1264,9 @@ static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *prio
   // terminate priority list with -1
   while(count < devs + 1) priority_list[count++] = -1;
 
+  // opencl use can only be mandatory if at least one opencl device is given
+  *mandatory = (priority_list[0] != -1) ? mnd : 0;
+
   free(full);
 }
 
@@ -1220,7 +1279,7 @@ static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr)
   // first get rid of all invalid characters
   while(*configstr != '\0' && len < sizeof(tmp) - 1)
   {
-    int n = strcspn(configstr, "/!,*0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    int n = strcspn(configstr, "/!,*+0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
     configstr += n;
     if(n != 0) continue;
     tmp[len] = *configstr;
@@ -1233,50 +1292,101 @@ static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr)
 
   // now split config string into tokens, separated by '/' and parse them one after the other
   char *prio = _strsep(&str, "/");
-  dt_opencl_priority_parse(cl, prio, cl->dev_priority_image);
+  dt_opencl_priority_parse(cl, prio, cl->dev_priority_image, &cl->mandatory[0]);
 
   prio = _strsep(&str, "/");
-  dt_opencl_priority_parse(cl, prio, cl->dev_priority_preview);
+  dt_opencl_priority_parse(cl, prio, cl->dev_priority_preview, &cl->mandatory[1]);
 
   prio = _strsep(&str, "/");
-  dt_opencl_priority_parse(cl, prio, cl->dev_priority_export);
+  dt_opencl_priority_parse(cl, prio, cl->dev_priority_export, &cl->mandatory[2]);
 
   prio = _strsep(&str, "/");
-  dt_opencl_priority_parse(cl, prio, cl->dev_priority_thumbnail);
+  dt_opencl_priority_parse(cl, prio, cl->dev_priority_thumbnail, &cl->mandatory[3]);
 }
 
+// set device priorities according to config string
+static void dt_opencl_update_priorities(const char *configstr)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  dt_opencl_priorities_parse(cl, configstr);
+
+  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] these are your device priorities:\n");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] \t\timage\tpreview\texport\tthumbnail\n");
+  for(int i = 0; i < cl->num_devs; i++)
+    dt_print(DT_DEBUG_OPENCL, "[opencl_priorities]\t\t%d\t%d\t%d\t%d\n", cl->dev_priority_image[i],
+             cl->dev_priority_preview[i], cl->dev_priority_export[i], cl->dev_priority_thumbnail[i]);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] show if opencl use is mandatory for a given pixelpipe:\n");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] \t\timage\tpreview\texport\tthumbnail\n");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities]\t\t%d\t%d\t%d\t%d\n", cl->mandatory[0],
+             cl->mandatory[1], cl->mandatory[2], cl->mandatory[3]);
+}
 
 int dt_opencl_lock_device(const int pipetype)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return -1;
 
-  const int *priority;
+
+  dt_pthread_mutex_lock(&cl->lock);
+
+  size_t prio_size = sizeof(int) * (cl->num_devs + 1);
+  int *priority = (int *)malloc(prio_size);
+  int mandatory;
 
   switch(pipetype)
   {
     case DT_DEV_PIXELPIPE_FULL:
-      priority = cl->dev_priority_image;
+      memcpy(priority, cl->dev_priority_image, prio_size);
+      mandatory = cl->mandatory[0];
       break;
     case DT_DEV_PIXELPIPE_PREVIEW:
-      priority = cl->dev_priority_preview;
+      memcpy(priority, cl->dev_priority_preview, prio_size);
+      mandatory = cl->mandatory[1];
       break;
     case DT_DEV_PIXELPIPE_EXPORT:
-      priority = cl->dev_priority_export;
+      memcpy(priority, cl->dev_priority_export, prio_size);
+      mandatory = cl->mandatory[2];
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
-      priority = cl->dev_priority_thumbnail;
+      memcpy(priority, cl->dev_priority_thumbnail, prio_size);
+      mandatory = cl->mandatory[3];
       break;
     default:
+      free(priority);
       priority = NULL;
+      mandatory = 0;
   }
+
+  dt_pthread_mutex_unlock(&cl->lock);
 
   if(priority)
   {
-    while(*priority != -1)
+    const int usec = 5000;
+    const int nloop = MAX(0, dt_conf_get_int("opencl_mandatory_timeout"));
+
+    // check for free opencl device repeatedly if mandatory is TRUE, else give up after first try
+    for(int n = 0; n < nloop; n++)
     {
-      if(!dt_pthread_mutex_trylock(&cl->dev[*priority].lock)) return *priority;
-      priority++;
+      const int *prio = priority;
+
+      while(*prio != -1)
+      {
+        if(!dt_pthread_mutex_trylock(&cl->dev[*prio].lock))
+        {
+          int devid = *prio;
+          free(priority);
+          return devid;
+        }
+        prio++;
+      }
+
+      if(!mandatory)
+      {
+        free(priority);
+        return -1;
+      }
+
+      dt_iop_nap(usec);
     }
   }
   else
@@ -1288,6 +1398,8 @@ int dt_opencl_lock_device(const int pipetype)
       if(!dt_pthread_mutex_trylock(&cl->dev[try_dev].lock)) return try_dev;
     }
   }
+
+  free(priority);
 
   // no free GPU :(
   // use CPU processing, if no free device:
@@ -1304,7 +1416,7 @@ void dt_opencl_unlock_device(const int dev)
 
 static FILE *fopen_stat(const char *filename, struct stat *st)
 {
-  FILE *f = fopen(filename, "rb");
+  FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_fopen_stat] could not open file `%s'!\n", filename);
@@ -1447,11 +1559,24 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   char linkedfile[PATH_MAX] = { 0 };
   ssize_t linkedfile_len = 0;
 
+#if defined(_WIN32)
+  // No symlinks on Windows
+  // Have to figure out the name using the filename + md5sum
+  char dup[PATH_MAX] = { 0 };
+  snprintf(dup, sizeof(dup), "%s.%s", binname, md5sum);
+  FILE *cached = fopen_stat(dup, &cachedstat);
+  g_strlcpy(linkedfile, md5sum, sizeof(linkedfile));
+  linkedfile_len = strlen(md5sum);
+#else
   FILE *cached = fopen_stat(binname, &cachedstat);
+#endif
+
   if(cached)
   {
-
-    if((linkedfile_len = readlink(binname, linkedfile, sizeof(linkedfile) - 1)) > 0)
+#if !defined(_WIN32)
+    linkedfile_len = readlink(binname, linkedfile, sizeof(linkedfile) - 1);
+#endif // !defined(_WIN32)
+    if(linkedfile_len > 0)
     {
       linkedfile[linkedfile_len] = '\0';
 
@@ -1618,7 +1743,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
           // save opencl compiled binary as md5sum-named file
           char link_dest[PATH_MAX] = { 0 };
           snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, md5sum);
-          FILE *f = fopen(link_dest, "w+");
+          FILE *f = g_fopen(link_dest, "w+");
           if(!f) goto ret;
           size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
           if(bytes_written != binary_sizes[i]) goto ret;
@@ -1631,7 +1756,15 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
           char dup[PATH_MAX] = { 0 };
           g_strlcpy(dup, binname, sizeof(dup));
           char *bname = basename(dup);
+#if defined(_WIN32)
+          //CreateSymbolicLink in Windows requires admin privileges, which we don't want/need
+          //store has using a simple filerename
+          char finalfilename[PATH_MAX] = { 0 };
+          snprintf(finalfilename, sizeof(finalfilename), "%s/%s.%s", cachedir, bname, md5sum);
+          rename(link_dest, finalfilename);
+#else
           if(symlink(md5sum, bname) != 0) goto ret;
+#endif //!defined(_WIN32)
           if(chdir(cwd) != 0) goto ret;
         }
 
@@ -1959,6 +2092,9 @@ void *dt_opencl_copy_host_to_device_constant(const int devid, const size_t size,
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl copy_host_to_device_constant] could not alloc buffer on device %d: %d\n", devid, err);
+
+  dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
+
   return dev;
 }
 
@@ -1991,6 +2127,9 @@ void *dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl copy_host_to_device] could not alloc/copy img buffer on device %d: %d\n", devid, err);
+
+  dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
+
   return dev;
 }
 
@@ -2002,6 +2141,8 @@ void dt_opencl_release_mem_object(cl_mem mem)
   // the OpenCL specs are not absolutely clear if clReleaseMemObject(NULL) is a no-op. we take care of the
   // case in a centralized way at this place
   if(mem == NULL) return;
+
+  dt_opencl_memory_statistics(-1, mem, OPENCL_MEMORY_SUB);
 
   (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(mem);
 }
@@ -2051,6 +2192,9 @@ void *dt_opencl_alloc_device(const int devid, const int width, const int height,
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid,
              err);
+
+  dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
+
   return dev;
 }
 
@@ -2079,6 +2223,9 @@ void *dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, 
     dt_print(DT_DEBUG_OPENCL,
              "[opencl alloc_device_use_host_pointer] could not alloc img buffer on device %d: %d\n", devid,
              err);
+
+  dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
+
   return dev;
 }
 
@@ -2093,6 +2240,9 @@ void *dt_opencl_alloc_device_buffer(const int devid, const size_t size)
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid,
              err);
+
+  dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
+
   return buf;
 }
 
@@ -2106,9 +2256,62 @@ void *dt_opencl_alloc_device_buffer_with_flags(const int devid, const size_t siz
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid,
              err);
+
+  dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
+
   return buf;
 }
 
+size_t dt_opencl_get_mem_object_size(cl_mem mem)
+{
+  cl_int err;
+  size_t size;
+  if(mem == NULL) return 0;
+
+  err = (darktable.opencl->dlocl->symbols->dt_clGetMemObjectInfo)(mem, CL_MEM_SIZE, sizeof(size), &size, NULL);
+
+  return (err == CL_SUCCESS) ? size : 0;
+}
+
+int dt_opencl_get_mem_context_id(cl_mem mem)
+{
+  cl_int err;
+  cl_context context;
+  if(mem == NULL) return -1;
+
+  err = (darktable.opencl->dlocl->symbols->dt_clGetMemObjectInfo)(mem, CL_MEM_CONTEXT, sizeof(context), &context, NULL);
+  if(err != CL_SUCCESS)
+    return -1;
+
+  for(int devid = 0; devid < darktable.opencl->num_devs; devid++)
+  {
+    if(darktable.opencl->dev[devid].context == context)
+      return devid;
+  }
+
+  return -1;
+}
+
+void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action)
+{
+  if(devid < 0)
+    devid = dt_opencl_get_mem_context_id(mem);
+
+  if(devid < 0)
+    return;
+
+  if(action == OPENCL_MEMORY_ADD)
+    darktable.opencl->dev[devid].memory_in_use += dt_opencl_get_mem_object_size(mem);
+  else
+    darktable.opencl->dev[devid].memory_in_use -= dt_opencl_get_mem_object_size(mem);
+
+  darktable.opencl->dev[devid].peak_memory = MAX(darktable.opencl->dev[devid].peak_memory,
+                                                 darktable.opencl->dev[devid].memory_in_use);
+
+  if(darktable.unmuted & DT_DEBUG_MEMORY)
+    dt_print(DT_DEBUG_OPENCL,
+              "[opencl memory] device %d: %zu bytes in use\n", devid, darktable.opencl->dev[devid].memory_in_use);
+}
 
 /** check if image size fit into limits given by OpenCL runtime */
 int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
@@ -2189,8 +2392,8 @@ void dt_opencl_disable(void)
 }
 
 
-/** update enabled flag with value from preferences */
-int dt_opencl_update_enabled(void)
+/** update enabled flag and profile with value from preferences, returns enabled flag */
+int dt_opencl_update_settings(void)
 {
   if(!darktable.opencl->inited) return FALSE;
   const int prefs = dt_conf_get_bool("opencl");
@@ -2203,7 +2406,71 @@ int dt_opencl_update_enabled(void)
     dt_print(DT_DEBUG_OPENCL, "[opencl_update_enabled] enabled flag set to %s\n", prefs ? "ON" : "OFF");
   }
 
+  dt_opencl_scheduling_profile_t profile = dt_opencl_get_scheduling_profile();
+
+  if(darktable.opencl->scheduling_profile != profile)
+  {
+    char *pstr = dt_conf_get_string("opencl_scheduling_profile");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_update_scheduling_profile] scheduling profile set to %s\n", pstr);
+    g_free(pstr);
+    dt_opencl_apply_scheduling_profile(profile);
+  }
+
   return (darktable.opencl->enabled && !darktable.opencl->stopped);
+}
+
+/** read scheduling profile for config variables */
+static dt_opencl_scheduling_profile_t dt_opencl_get_scheduling_profile(void)
+{
+  char *pstr = dt_conf_get_string("opencl_scheduling_profile");
+  if(!pstr) return OPENCL_PROFILE_DEFAULT;
+
+  dt_opencl_scheduling_profile_t profile = OPENCL_PROFILE_DEFAULT;
+
+  if(!strcmp(pstr, "multiple GPUs"))
+    profile = OPENCL_PROFILE_MULTIPLE_GPUS;
+  else if(!strcmp(pstr, "very fast GPU"))
+    profile = OPENCL_PROFILE_VERYFAST_GPU;
+
+  g_free(pstr);
+
+  return profile;
+}
+
+/** set opencl specific synchronization timeout */
+static void dt_opencl_set_synchronization_timeout(int value)
+{
+  darktable.opencl->opencl_synchronization_timeout = value;
+  dt_print(DT_DEBUG_OPENCL, "[opencl_synchronization_timeout] synchronization timout set to %d\n", value);
+}
+
+/** adjust opencl subsystem according to scheduling profile */
+static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t profile)
+{
+  char *str;
+
+  dt_pthread_mutex_lock(&darktable.opencl->lock);
+  darktable.opencl->scheduling_profile = profile;
+
+  switch(profile)
+  {
+    case OPENCL_PROFILE_MULTIPLE_GPUS:
+      dt_opencl_update_priorities("*/*/*/*");
+      dt_opencl_set_synchronization_timeout(20);
+      break;
+    case OPENCL_PROFILE_VERYFAST_GPU:
+      dt_opencl_update_priorities("+*/+*/+*/+*");
+      dt_opencl_set_synchronization_timeout(0);
+      break;
+    case OPENCL_PROFILE_DEFAULT:
+    default:
+      str = dt_conf_get_string("opencl_device_priority");
+      dt_opencl_update_priorities(str);
+      g_free(str);
+      dt_opencl_set_synchronization_timeout(dt_conf_get_int("pixelpipe_synchronization_timeout"));
+      break;
+  }
+  dt_pthread_mutex_unlock(&darktable.opencl->lock);
 }
 
 /** get global memory of device */

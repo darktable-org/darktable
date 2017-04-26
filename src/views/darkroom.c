@@ -195,9 +195,9 @@ void expose(
     wd /= darktable.gui->ppd;
     ht /= darktable.gui->ppd;
     if(dev->full_preview)
-      cairo_set_source_rgb(cr, .1, .1, .1);
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_PREVIEW_BG);
     else
-      cairo_set_source_rgb(cr, .2, .2, .2);
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
     cairo_paint(cr);
     cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));
     if(closeup)
@@ -226,7 +226,7 @@ void expose(
     const float wd = dev->preview_pipe->backbuf_width;
     const float ht = dev->preview_pipe->backbuf_height;
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
-    cairo_set_source_rgb(cr, .2, .2, .2);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
     cairo_paint(cr);
     cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
     cairo_clip(cr);
@@ -590,9 +590,11 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     {
       if(!dt_iop_is_hidden(module))
       {
+        gtk_widget_hide(module->expander);
         gtk_container_remove(
             GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
             module->expander);
+        gtk_widget_destroy(module->widget);
         dt_iop_gui_cleanup_module(module);
       }
 
@@ -710,6 +712,9 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // release pixel pipe mutices
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
+
+  // update hint message
+  dt_collection_hint_message(darktable.collection);
 }
 
 static void film_strip_activated(const int imgid, void *data)
@@ -717,14 +722,14 @@ static void film_strip_activated(const int imgid, void *data)
   // switch images in darkroom mode:
   const dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
+  // clean the undo list
+  dt_undo_clear(darktable.undo, DT_UNDO_HISTORY);
   dt_dev_change_image(dev, imgid);
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
   // record the imgid to display when going back to lighttable
   dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
   // force redraw
   dt_control_queue_redraw();
-  // clean the undo list
-  dt_undo_clear(darktable.undo, DT_UNDO_HISTORY);
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, gpointer user_data)
@@ -1796,6 +1801,8 @@ void gui_init(dt_view_t *self)
 
 void enter(dt_view_t *self)
 {
+  // clean the undo list
+  dt_undo_clear(darktable.undo, DT_UNDO_HISTORY);
 
   /* connect to ui pipe finished signal for redraw */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,

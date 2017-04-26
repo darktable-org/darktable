@@ -125,7 +125,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
 {
   dt_imageio_png_t *p = (dt_imageio_png_t *)p_tmp;
   const int width = p->width, height = p->height;
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   if(!f) return 1;
 
   png_structp png_ptr;
@@ -230,7 +230,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
 static int __attribute__((__unused__)) read_header(const char *filename, dt_imageio_module_data_t *p_tmp)
 {
   dt_imageio_png_t *png = (dt_imageio_png_t *)p_tmp;
-  png->f = fopen(filename, "rb");
+  png->f = g_fopen(filename, "rb");
 
   if(!png->f) return 1;
 

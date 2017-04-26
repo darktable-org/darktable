@@ -185,10 +185,9 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
   const float px_footprint = 1.f / roi_out->scale;
-  // how many 2x2 blocks can be sampled inside that area
-  const int samples = round(px_footprint / 2);
 
-  // move p to point to an rggb block:
+  // move to origin point 01 of a 2x2 CFA block
+  // (RGGB=0112 or CYGM=0132)
   int trggbx = 0, trggby = 0;
   if(FC(trggby, trggbx + 1, filters) != 1) trggbx++;
   if(FC(trggby, trggbx, filters) != 0)
@@ -198,167 +197,52 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
   }
   const int rggbx = trggbx, rggby = trggby;
 
+  // Create a reverse lookup of FC(): for each CFA color, a list of
+  // offsets from start of a 2x2 block at which to find that
+  // color. First index is color, second is to the list of offsets,
+  // preceded by the number of offsets.
+  int clut[4][3] = {{0}};
+  for(int y = 0; y < 2; ++y)
+    for(int x = 0; x < 2; ++x)
+    {
+      const int c = FC(y + rggby, x + rggbx, filters);
+      assert(clut[c][0] < 2);
+      clut[c][++clut[c][0]] = x + y * in_stride;
+    }
+
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) shared(clut) schedule(static)
 #endif
   for(int y = 0; y < roi_out->height; y++)
   {
     uint16_t *outc = out + out_stride * y;
 
-    float fy = (y + roi_out->y) * px_footprint;
-    int py = (int)fy & ~1;
-    const float dy = (fy - py) / 2;
-    py = MIN(((roi_in->height - 6) & ~1u), py) + rggby;
+    const float fy = (y + roi_out->y) * px_footprint;
+    const int miny = (CLAMPS((int)floorf(fy - px_footprint), 0, roi_in->height-3) & ~1u) + rggby;
+    const int maxy = MIN(roi_in->height-1, (int)ceilf(fy + px_footprint));
 
-    int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
-
-    for(int x = 0; x < roi_out->width; x++)
+    float fx = roi_out->x * px_footprint;
+    for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      float col[4] = { 0, 0, 0, 0 };
+      const int minx = (CLAMPS((int)floorf(fx - px_footprint), 0, roi_in->width-3) & ~1u) + rggbx;
+      const int maxx = MIN(roi_in->width-1, (int)ceilf(fx + px_footprint));
 
-      float fx = (x + roi_out->x) * px_footprint;
-      int px = (int)fx & ~1;
-      const float dx = (fx - px) / 2;
-      px = MIN(((roi_in->width - 6) & ~1u), px) + rggbx;
+      const int c = FC(y, x, filters);
+      int num = 0;
+      uint32_t col = 0;
 
-      int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
-
-      float p[4];
-      float num = 0;
-
-      // upper left 2x2 block of sampling region
-      p[0] = in[px + in_stride * py];
-      p[1] = in[px + 1 + in_stride * py];
-      p[2] = in[px + in_stride * (py + 1)];
-      p[3] = in[px + 1 + in_stride * (py + 1)];
-      for(int c = 0; c < 4; c++) col[c] += ((1 - dx) * (1 - dy)) * p[c];
-
-      // left 2x2 block border of sampling region
-      for(int j = py + 2; j <= maxj; j += 2)
-      {
-        p[0] = in[px + in_stride * j];
-        p[1] = in[px + 1 + in_stride * j];
-        p[2] = in[px + in_stride * (j + 1)];
-        p[3] = in[px + 1 + in_stride * (j + 1)];
-        for(int c = 0; c < 4; c++) col[c] += (1 - dx) * p[c];
-      }
-
-      // upper 2x2 block border of sampling region
-      for(int i = px + 2; i <= maxi; i += 2)
-      {
-        p[0] = in[i + in_stride * py];
-        p[1] = in[i + 1 + in_stride * py];
-        p[2] = in[i + in_stride * (py + 1)];
-        p[3] = in[i + 1 + in_stride * (py + 1)];
-        for(int c = 0; c < 4; c++) col[c] += (1 - dy) * p[c];
-      }
-
-      // 2x2 blocks in the middle of sampling region
-      for(int j = py + 2; j <= maxj; j += 2)
-        for(int i = px + 2; i <= maxi; i += 2)
+      for(int yy = miny; yy < maxy; yy += 2)
+        for(int xx = minx; xx < maxx; xx += 2)
         {
-          p[0] = in[i + in_stride * j];
-          p[1] = in[i + 1 + in_stride * j];
-          p[2] = in[i + in_stride * (j + 1)];
-          p[3] = in[i + 1 + in_stride * (j + 1)];
-          for(int c = 0; c < 4; c++) col[c] += p[c];
+          col += in[clut[c][1] + xx + in_stride * yy];
+          num++;
+          if (clut[c][0] == 2)
+          { // G in RGGB CFA
+            col += in[clut[c][2] + xx + in_stride * yy];
+            num++;
+          }
         }
-
-      if(maxi == px + 2 * samples && maxj == py + 2 * samples)
-      {
-        // right border
-        for(int j = py + 2; j <= maxj; j += 2)
-        {
-          p[0] = in[maxi + 2 + in_stride * j];
-          p[1] = in[maxi + 3 + in_stride * j];
-          p[2] = in[maxi + 2 + in_stride * (j + 1)];
-          p[3] = in[maxi + 3 + in_stride * (j + 1)];
-          for(int c = 0; c < 4; c++) col[c] += dx * p[c];
-        }
-
-        // upper right
-        p[0] = in[maxi + 2 + in_stride * py];
-        p[1] = in[maxi + 3 + in_stride * py];
-        p[2] = in[maxi + 2 + in_stride * (py + 1)];
-        p[3] = in[maxi + 3 + in_stride * (py + 1)];
-        for(int c = 0; c < 4; c++) col[c] += (dx * (1 - dy)) * p[c];
-
-        // lower border
-        for(int i = px + 2; i <= maxi; i += 2)
-        {
-          p[0] = in[i + in_stride * (maxj + 2)];
-          p[1] = in[i + 1 + in_stride * (maxj + 2)];
-          p[2] = in[i + in_stride * (maxj + 3)];
-          p[3] = in[i + 1 + in_stride * (maxj + 3)];
-          for(int c = 0; c < 4; c++) col[c] += dy * p[c];
-        }
-
-        // lower left 2x2 block
-        p[0] = in[px + in_stride * (maxj + 2)];
-        p[1] = in[px + 1 + in_stride * (maxj + 2)];
-        p[2] = in[px + in_stride * (maxj + 3)];
-        p[3] = in[px + 1 + in_stride * (maxj + 3)];
-        for(int c = 0; c < 4; c++) col[c] += ((1 - dx) * dy) * p[c];
-
-        // lower right 2x2 block
-        p[0] = in[maxi + 2 + in_stride * (maxj + 2)];
-        p[1] = in[maxi + 3 + in_stride * (maxj + 2)];
-        p[2] = in[maxi + 2 + in_stride * (maxj + 3)];
-        p[3] = in[maxi + 3 + in_stride * (maxj + 3)];
-        for(int c = 0; c < 4; c++) col[c] += (dx * dy) * p[c];
-
-        num = (samples + 1) * (samples + 1);
-      }
-      else if(maxi == px + 2 * samples)
-      {
-        // right border
-        for(int j = py + 2; j <= maxj; j += 2)
-        {
-          p[0] = in[maxi + 2 + in_stride * j];
-          p[1] = in[maxi + 3 + in_stride * j];
-          p[2] = in[maxi + 2 + in_stride * (j + 1)];
-          p[3] = in[maxi + 3 + in_stride * (j + 1)];
-          for(int c = 0; c < 4; c++) col[c] += dx * p[c];
-        }
-
-        // upper right
-        p[0] = in[maxi + 2 + in_stride * py];
-        p[1] = in[maxi + 3 + in_stride * py];
-        p[2] = in[maxi + 2 + in_stride * (py + 1)];
-        p[3] = in[maxi + 3 + in_stride * (py + 1)];
-        for(int c = 0; c < 4; c++) col[c] += (dx * (1 - dy)) * p[c];
-
-        num = ((maxj - py) / 2 + 1 - dy) * (samples + 1);
-      }
-      else if(maxj == py + 2 * samples)
-      {
-        // lower border
-        for(int i = px + 2; i <= maxi; i += 2)
-        {
-          p[0] = in[i + in_stride * (maxj + 2)];
-          p[1] = in[i + 1 + in_stride * (maxj + 2)];
-          p[2] = in[i + in_stride * (maxj + 3)];
-          p[3] = in[i + 1 + in_stride * (maxj + 3)];
-          for(int c = 0; c < 4; c++) col[c] += dy * p[c];
-        }
-
-        // lower left 2x2 block
-        p[0] = in[px + in_stride * (maxj + 2)];
-        p[1] = in[px + 1 + in_stride * (maxj + 2)];
-        p[2] = in[px + in_stride * (maxj + 3)];
-        p[3] = in[px + 1 + in_stride * (maxj + 3)];
-        for(int c = 0; c < 4; c++) col[c] += ((1 - dx) * dy) * p[c];
-
-        num = ((maxi - px) / 2 + 1 - dx) * (samples + 1);
-      }
-      else
-      {
-        num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
-      }
-
-      const int c = (2 * ((y + rggby) % 2) + ((x + rggbx) % 2));
-      *outc = (uint16_t)(col[c] / num);
-      outc++;
+      *outc = col / num;
     }
   }
 }
@@ -563,7 +447,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out, const uint16_t *
                                            const int32_t out_stride, const int32_t in_stride,
                                            const uint32_t filters)
 {
-  if(darktable.codepath.OPENMP_SIMD)
+  if(1)//(darktable.codepath.OPENMP_SIMD)
     return dt_iop_clip_and_zoom_mosaic_half_size_plain(out, in, roi_out, roi_in, out_stride, in_stride, filters);
 #if defined(__SSE__)
   else if(darktable.codepath.SSE2)
@@ -976,12 +860,12 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *cons
 void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const uint16_t *const in,
                                                    const dt_iop_roi_t *const roi_out,
                                                    const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                                   const int32_t in_stride, const uint8_t (*const xtrans)[6],
-                                                   const uint16_t whitelevel)
+                                                   const int32_t in_stride, const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
-  const int samples = round(px_footprint / 3);
-
+  // Use box filter of width px_footprint*2+1 centered on the current
+  // sample (rounded to nearest input pixel) to anti-alias. Higher MP
+  // images need larger filters to avoid artifacts.
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
@@ -989,45 +873,28 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
   {
     uint16_t *outc = out + out_stride * y;
 
-    int py = floorf((y + roi_out->y) * px_footprint);
-    py = MIN(roi_in->height - 4, py);
-    int maxj = MIN(roi_in->height - 3, py + 3 * samples);
+    const float fy = (y + roi_out->y) * px_footprint;
+    const int miny = MAX(0, (int)roundf(fy - px_footprint));
+    const int maxy = MIN(roi_in->height-1, (int)roundf(fy + px_footprint));
 
     float fx = roi_out->x * px_footprint;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      int px = floorf(fx);
-      px = MIN(roi_in->width - 4, px);
-      int maxi = MIN(roi_in->width - 3, px + 3 * samples);
-
-      uint16_t pc = 0;
-      for(int ii = 0; ii < 3; ++ii)
-        for(int jj = 0; jj < 3; ++jj) pc = MAX(pc, in[px + ii + in_stride * (py + jj)]);
-
-      uint8_t num[3] = { 0 };
-      uint32_t sum[3] = { 0 };
-
-      for(int j = py; j <= maxj; j += 3)
-        for(int i = px; i <= maxi; i += 3)
-        {
-          uint16_t lcl_max = 0;
-          for(int ii = 0; ii < 3; ++ii)
-            for(int jj = 0; jj < 3; ++jj) lcl_max = MAX(lcl_max, in[i + ii + in_stride * (j + jj)]);
-
-          if(!((pc >= whitelevel) ^ (lcl_max >= whitelevel)))
-          {
-            for(int ii = 0; ii < 3; ++ii)
-              for(int jj = 0; jj < 3; ++jj)
-              {
-                const uint8_t c = FCxtrans(j + jj, i + ii, roi_in, xtrans);
-                sum[c] += in[i + ii + in_stride * (j + jj)];
-                num[c]++;
-              }
-          }
-        }
+      const int minx = MAX(0, (int)roundf(fx - px_footprint));
+      const int maxx = MIN(roi_in->width-1, (int)roundf(fx + px_footprint));
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
-      *outc = (uint16_t)((float)(sum[c]) / (float)(num[c]));
+      int num = 0;
+      uint32_t col = 0;
+
+      for(int yy = miny; yy <= maxy; ++yy)
+        for(int xx = minx; xx <= maxx; ++xx)
+          if(FCxtrans(yy, xx, roi_in, xtrans) == c)
+          {
+            col += in[xx + in_stride * yy];
+            num++;
+          }
+      *outc = col / num;
     }
   }
 }
@@ -1038,47 +905,35 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const flo
                                                      const int32_t in_stride, const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
-  const int samples = MAX(1, (int)floorf(px_footprint / 3));
-
-  // A slightly different algorithm than
-  // dt_iop_clip_and_zoom_demosaic_half_size_f() which aligns to 2x2
-  // Bayer grid and hence most pull additional data from all edges
-  // which don't align with CFA. Instead align to a 3x3 pattern (which
-  // is semi-regular in X-Trans CFA). If instead had aligned the
-  // samples to the full 6x6 X-Trans CFA, wouldn't need to perform a
-  // CFA lookup, but then would only work at 1/6 scale or less. This
-  // code doesn't worry about fractional pixel offset of top/left of
-  // pattern nor oversampling by non-integer number of samples.
-
-  // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell
-  static const float div[3] = { 2.0, 5.0, 2.0 };
-
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
   for(int y = 0; y < roi_out->height; y++)
   {
     float *outc = out + out_stride * y;
-    const int py = CLAMPS((int)round((y + roi_out->y - 0.5f) * px_footprint), 0, roi_in->height - 3);
-    const int ymax = MIN(roi_in->height - 3, py + 3 * samples);
 
-    for(int x = 0; x < roi_out->width; x++, outc++)
+    const float fy = (y + roi_out->y) * px_footprint;
+    const int miny = MAX(0, (int)roundf(fy - px_footprint));
+    const int maxy = MIN(roi_in->height-1, (int)roundf(fy + px_footprint));
+
+    float fx = roi_out->x * px_footprint;
+    for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      float col[3] = { 0.0f };
-      int num = 0;
-      const int px = CLAMPS((int)round((x + roi_out->x - 0.5f) * px_footprint), 0, roi_in->width - 3);
-      const int xmax = MIN(roi_in->width - 3, px + 3 * samples);
-      for(int yy = py; yy <= ymax; yy += 3)
-        for(int xx = px; xx <= xmax; xx += 3)
-        {
-          for(int j = 0; j < 3; ++j)
-            for(int i = 0; i < 3; ++i)
-              col[FCxtrans(yy + j, xx + i, roi_in, xtrans)] += in[xx + i + in_stride * (yy + j)];
-          num++;
-        }
+      const int minx = MAX(0, (int)roundf(fx - px_footprint));
+      const int maxx = MIN(roi_in->width-1, (int)roundf(fx + px_footprint));
 
       const int c = FCxtrans(y, x, roi_out, xtrans);
-      *outc = col[c] / ((float)num * div[c]);
+      int num = 0;
+      float col = 0.f;
+
+      for(int yy = miny; yy <= maxy; ++yy)
+        for(int xx = minx; xx <= maxx; ++xx)
+          if(FCxtrans(yy, xx, roi_in, xtrans) == c)
+          {
+            col += in[xx + in_stride * yy];
+            num++;
+          }
+      *outc = col / (float)num;
     }
   }
 }
@@ -1848,15 +1703,13 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *
   const float px_footprint = 1.f / roi_out->scale;
   const int samples = MAX(1, (int)floorf(px_footprint / 3));
 
-// A slightly different algorithm than
-// dt_iop_clip_and_zoom_demosaic_half_size_f() which aligns to 2x2
-// Bayer grid and hence most pull additional data from all edges
-// which don't align with CFA. Instead align to a 3x3 pattern (which
-// is semi-regular in X-Trans CFA). If instead had aligned the
-// samples to the full 6x6 X-Trans CFA, wouldn't need to perform a
-// CFA lookup, but then would only work at 1/6 scale or less. This
-// code doesn't worry about fractional pixel offset of top/left of
-// pattern nor oversampling by non-integer number of samples.
+  // A slightly different algorithm than
+  // dt_iop_clip_and_zoom_demosaic_half_size_f() which aligns to 2x2
+  // Bayer grid and hence most pull additional data from all edges
+  // which don't align with CFA. Instead align to a 3x3 pattern (which
+  // is semi-regular in X-Trans CFA). This code doesn't worry about
+  // fractional pixel offset of top/left of pattern nor oversampling
+  // by non-integer number of samples.
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(out) schedule(static)

@@ -16,7 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "common/tags.h"
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -24,6 +23,9 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include <glib.h>
+#if defined (_WIN32)
+#include "win/getdelim.h"
+#endif // defined (_WIN32)
 
 gboolean dt_tag_new(const char *name, guint *tagid)
 {
@@ -408,6 +410,38 @@ GList *dt_tag_get_hierarchical(gint imgid)
   return tags;
 }
 
+GList *dt_tag_get_images_from_selection(gint imgid, gint tagid)
+{
+  GList *result = NULL;
+  sqlite3_stmt *stmt;
+
+  if(imgid > 0)
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.tagged_images WHERE "
+                                "imgid = ?1 AND tagid = ?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, tagid);
+  }
+  else
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.tagged_images WHERE "
+                                "tagid = ?1 AND imgid IN (SELECT imgid FROM main.selected_images)", -1, &stmt,
+                                NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+  }
+
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int id = sqlite3_column_int(stmt, 0);
+    result = g_list_append(result, GINT_TO_POINTER(id));
+  }
+
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
 uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
 {
   sqlite3_stmt *stmt;
@@ -520,7 +554,7 @@ uint32_t dt_tag_get_recent_used(GList **result)
 */
 ssize_t dt_tag_import(const char *filename)
 {
-  FILE *fd = fopen(filename, "r");
+  FILE *fd = g_fopen(filename, "r");
 
   if(!fd) return -1;
 
@@ -613,7 +647,7 @@ ssize_t dt_tag_import(const char *filename)
 */
 ssize_t dt_tag_export(const char *filename)
 {
-  FILE *fd = fopen(filename, "w");
+  FILE *fd = g_fopen(filename, "w");
 
   if(!fd) return -1;
 

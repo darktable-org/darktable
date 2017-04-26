@@ -686,6 +686,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_bilateral_free_cl(b);
       b = NULL; // make sure we don't clean it up twice
     }
+    else
+    {
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { width, height, 1 };
+      err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
+      if(err != CL_SUCCESS) goto error;
+    }
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 1, sizeof(cl_mem), (void *)&dev_tmp);
@@ -1049,7 +1056,7 @@ static void process_clusters(gpointer instance, gpointer user_data)
     memcpy(g->flowback.weight, p->source_weight, sizeof(float) * MAXN);
     g->flowback.n = p->n;
     g->flowback_set = 1;
-    FILE *f = fopen("/tmp/dt_colormapping_loaded", "wb");
+    FILE *f = g_fopen("/tmp/dt_colormapping_loaded", "wb");
     if(f)
     {
       if(fwrite(&g->flowback, sizeof(g->flowback), 1, f) < 1)
@@ -1146,7 +1153,7 @@ void gui_init(struct dt_iop_module_t *self)
                             G_CALLBACK(process_clusters), self);
 
 
-  FILE *f = fopen("/tmp/dt_colormapping_loaded", "rb");
+  FILE *f = g_fopen("/tmp/dt_colormapping_loaded", "rb");
   if(f)
   {
     if(fread(&g->flowback, sizeof(g->flowback), 1, f) > 0) g->flowback_set = 1;
