@@ -652,6 +652,14 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
     xyz.z = lookup_unbounded(table_L, xyz.z, coeffs_L);
     pixel.xyz = XYZ_to_Lab(xyz).xyz;
   }
+  else if(autoscale_ab == 3)
+  {
+    float4 rgb = Lab_to_prophotorgb(pixel);
+    rgb.x = lookup_unbounded(table_L, rgb.x, coeffs_L);
+    rgb.y = lookup_unbounded(table_L, rgb.y, coeffs_L);
+    rgb.z = lookup_unbounded(table_L, rgb.z, coeffs_L);
+    pixel.xyz = prophotorgb_to_Lab(rgb).xyz;
+  }
 
   write_imagef (out, (int2)(x, y), pixel);
 }
