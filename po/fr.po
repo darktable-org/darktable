@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-04-24 19:57+0200\n"
-"PO-Revision-Date: 2017-04-24 20:01+0200\n"
+"POT-Creation-Date: 2017-04-26 22:43+0200\n"
+"PO-Revision-Date: 2017-04-26 22:47+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2040,7 +2040,7 @@ msgstr ""
 "* intervalle entre 2 marqueurs adjacents interne/externe : fusion progressive"
 
 #: ../src/develop/blend_gui.c:1085 ../src/iop/colorzones.c:1085
-#: ../src/iop/tonecurve.c:931
+#: ../src/iop/tonecurve.c:932
 msgid "pick GUI color from image"
 msgstr "choisit une couleur dans l'image"
 
@@ -5182,7 +5182,7 @@ msgstr "teinte"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:449 ../src/iop/colisa.c:366
-#: ../src/iop/colorchecker.c:1101 ../src/iop/colorcorrection.c:286
+#: ../src/iop/colorchecker.c:1171 ../src/iop/colorcorrection.c:286
 #: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:1075
 #: ../src/iop/colorzones.c:1109 ../src/iop/graduatednd.c:1182
 #: ../src/iop/lowpass.c:676 ../src/iop/soften.c:718
@@ -5190,7 +5190,7 @@ msgstr "teinte"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/channelmixer.c:450 ../src/iop/colorchecker.c:1083
+#: ../src/iop/channelmixer.c:450 ../src/iop/colorchecker.c:1153
 #: ../src/iop/colorize.c:451 ../src/iop/colorzones.c:1072
 #: ../src/iop/colorzones.c:1110
 msgid "lightness"
@@ -5540,24 +5540,24 @@ msgstr "facteur vert du gain"
 msgid "factor of blue for gain"
 msgstr "facteur bleu du gain"
 
-#: ../src/iop/colorchecker.c:112
+#: ../src/iop/colorchecker.c:113
 msgid "color look up table"
 msgstr "table correspondance couleurs"
 
-#: ../src/iop/colorchecker.c:263
+#: ../src/iop/colorchecker.c:264
 msgid "it8 skin tones"
 msgstr "it8 tons chairs"
 
-#: ../src/iop/colorchecker.c:276
+#: ../src/iop/colorchecker.c:277
 msgid "helmholtz/kohlrausch monochrome"
 msgstr "monochrome helmholtz/kohlrausch"
 
-#: ../src/iop/colorchecker.c:650 ../src/iop/colorchecker.c:1075
+#: ../src/iop/colorchecker.c:651 ../src/iop/colorchecker.c:1145
 #, c-format
 msgid "patch #%d"
 msgstr "patch #%d"
 
-#: ../src/iop/colorchecker.c:962
+#: ../src/iop/colorchecker.c:1032
 #, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
@@ -5574,37 +5574,57 @@ msgstr ""
 "clic-droit pour supprimer un patch\n"
 "shift-clic avec la pipette pour remplacer un patch"
 
-#: ../src/iop/colorchecker.c:1070
+#: ../src/iop/colorchecker.c:1140
 msgid "patch"
 msgstr "patch"
 
-#: ../src/iop/colorchecker.c:1071
+#: ../src/iop/colorchecker.c:1141
 msgid "color checker patch"
 msgstr "patch color checker"
 
-#: ../src/iop/colorchecker.c:1082
+#: ../src/iop/colorchecker.c:1152
 msgid "lightness offset"
 msgstr "décalage clarté"
 
-#: ../src/iop/colorchecker.c:1086
+#: ../src/iop/colorchecker.c:1156
 msgid "chroma offset green/red"
 msgstr "décalage chromatique vert/rouge"
 
-#: ../src/iop/colorchecker.c:1087
+#: ../src/iop/colorchecker.c:1157
 msgid "green/red"
 msgstr "vert/rouge"
 
-#: ../src/iop/colorchecker.c:1093
+#: ../src/iop/colorchecker.c:1163
 msgid "chroma offset blue/yellow"
 msgstr "décalage chromatique bleu/jaune"
 
-#: ../src/iop/colorchecker.c:1094
+#: ../src/iop/colorchecker.c:1164
 msgid "blue/yellow"
 msgstr "bleu/jaune"
 
-#: ../src/iop/colorchecker.c:1100
+#: ../src/iop/colorchecker.c:1170
 msgid "saturation offset"
 msgstr "décalage saturation"
+
+#: ../src/iop/colorchecker.c:1175
+msgid "target color"
+msgstr "couleur cible"
+
+#: ../src/iop/colorchecker.c:1176
+msgid ""
+"control target color of the patches via relative offsets or via absolute Lab "
+"values"
+msgstr ""
+"la couleur cible des patchs est donnée via un décalage relatif ou les "
+"valeurs Lab absolues"
+
+#: ../src/iop/colorchecker.c:1177
+msgid "relative"
+msgstr "relative"
+
+#: ../src/iop/colorchecker.c:1178
+msgid "absolute"
+msgstr "absolue"
 
 #: ../src/iop/colorcontrast.c:88
 msgid "color contrast"
@@ -6371,7 +6391,7 @@ msgctxt "mode"
 msgid "manual"
 msgstr "manuel"
 
-#: ../src/iop/exposure.c:854 ../src/iop/levels.c:571 ../src/iop/tonecurve.c:964
+#: ../src/iop/exposure.c:854 ../src/iop/levels.c:571 ../src/iop/tonecurve.c:965
 #: ../src/iop/vignette.c:1137
 msgid "automatic"
 msgstr "automatique"
@@ -7861,52 +7881,52 @@ msgstr "contraste moyen"
 msgid "high contrast"
 msgstr "contraste fort "
 
-#: ../src/iop/tonecurve.c:914
+#: ../src/iop/tonecurve.c:915
 msgid "  L  "
 msgstr "  L"
 
-#: ../src/iop/tonecurve.c:916
+#: ../src/iop/tonecurve.c:917
 msgid "tonecurve for L channel"
 msgstr "courbe des tonalités pour le canal L"
 
-#: ../src/iop/tonecurve.c:918
+#: ../src/iop/tonecurve.c:919
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:920
+#: ../src/iop/tonecurve.c:921
 msgid "tonecurve for a channel"
 msgstr "courbe des tonalités pour le canal a"
 
-#: ../src/iop/tonecurve.c:922
+#: ../src/iop/tonecurve.c:923
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:924
+#: ../src/iop/tonecurve.c:925
 msgid "tonecurve for b channel"
 msgstr "courbe des tonalités pour le canal b"
 
-#: ../src/iop/tonecurve.c:945
+#: ../src/iop/tonecurve.c:946
 msgid "double click to reset curve"
 msgstr "double-cliquer pour réinitialiser"
 
-#: ../src/iop/tonecurve.c:963
+#: ../src/iop/tonecurve.c:964
 msgid "scale chroma"
 msgstr "échelle des canaux a et b"
 
-#: ../src/iop/tonecurve.c:965
+#: ../src/iop/tonecurve.c:966
 msgctxt "scale"
 msgid "manual"
 msgstr "manuelle"
 
-#: ../src/iop/tonecurve.c:966
+#: ../src/iop/tonecurve.c:967
 msgid "automatic in XYZ"
 msgstr "automatique XYZ"
 
-#: ../src/iop/tonecurve.c:967
+#: ../src/iop/tonecurve.c:968
 msgid "automatic in RGB"
 msgstr "automatique RGB"
 
-#: ../src/iop/tonecurve.c:969
+#: ../src/iop/tonecurve.c:970
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data. auto "
@@ -11229,9 +11249,6 @@ msgstr ""
 #~ msgid "analyse line structure in image"
 #~ msgstr "analyser les lignes de structure dans l'image"
 
-#~ msgid "text color"
-#~ msgstr "couleur du texte"
-
 #~ msgid "select text color"
 #~ msgstr "sélectionner la couleur du texte"
 
@@ -12627,9 +12644,6 @@ msgstr ""
 
 #~ msgid "favorites"
 #~ msgstr "favoris"
-
-#~ msgid "active"
-#~ msgstr "actifs"
 
 #~ msgid "basic"
 #~ msgstr "basique"
