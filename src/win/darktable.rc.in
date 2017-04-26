@@ -1,0 +1,37 @@
+#include <winver.h>
+#define RC_BUILD
+#include "${CMAKE_BINARY_DIR}/src/version_gen.c"
+
+#define DT_VERSION  DT_MAJOR,DT_MINOR,DT_PATCH,0
+
+
+IDI_ICON1               ICON    DISCARDABLE     "${CMAKE_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico"
+
+VS_VERSION_INFO VERSIONINFO
+  FILEVERSION DT_VERSION
+  PRODUCTVERSION DT_VERSION
+  FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+  FILEFLAGS VS_FF_PRERELEASE
+  FILEOS VOS_UNKNOWN
+  FILETYPE VFT_APP
+  FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904b0"
+    BEGIN
+      VALUE "CompanyName",      "The darktable team"
+      VALUE "FileDescription",  "darktable main program"
+      VALUE "FileVersion",      "${PROJECT_VERSION}"
+      VALUE "InternalName",     "darktable"
+      VALUE "LegalCopyright",   "darktable is released under GPLv3 or later"
+      VALUE "OriginalFilename", "darktable.exe"
+      VALUE "ProductName",      "darktable"
+      VALUE "ProductVersion",   "${PROJECT_VERSION}"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x0409,1200
+  END
+END
