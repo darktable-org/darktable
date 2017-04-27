@@ -107,6 +107,7 @@ src/iop/gamma.c
 src/iop/globaltonemap.c
 src/iop/graduatednd.c
 src/iop/grain.c
+src/iop/hazeremoval.c
 src/iop/highlights.c
 src/iop/highpass.c
 src/iop/hotpixels.c
