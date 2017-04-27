@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-04-24 19:57+0200\n"
-"PO-Revision-Date: 2017-04-24 20:01+0200\n"
+"POT-Creation-Date: 2017-04-27 19:19+0200\n"
+"PO-Revision-Date: 2017-04-27 19:22+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -4934,8 +4934,8 @@ msgid "the threshold of light"
 msgstr "seuil de lumière"
 
 #: ../src/iop/bloom.c:529 ../src/iop/denoiseprofile.c:2081
-#: ../src/iop/grain.c:626 ../src/iop/hotpixels.c:460 ../src/iop/nlmeans.c:855
-#: ../src/iop/velvia.c:378
+#: ../src/iop/grain.c:626 ../src/iop/hazeremoval.c:185
+#: ../src/iop/hotpixels.c:460 ../src/iop/nlmeans.c:855 ../src/iop/velvia.c:378
 msgid "strength"
 msgstr "force"
 
@@ -5182,7 +5182,7 @@ msgstr "teinte"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:449 ../src/iop/colisa.c:366
-#: ../src/iop/colorchecker.c:1101 ../src/iop/colorcorrection.c:286
+#: ../src/iop/colorchecker.c:1171 ../src/iop/colorcorrection.c:286
 #: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:1075
 #: ../src/iop/colorzones.c:1109 ../src/iop/graduatednd.c:1182
 #: ../src/iop/lowpass.c:676 ../src/iop/soften.c:718
@@ -5190,7 +5190,7 @@ msgstr "teinte"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/channelmixer.c:450 ../src/iop/colorchecker.c:1083
+#: ../src/iop/channelmixer.c:450 ../src/iop/colorchecker.c:1153
 #: ../src/iop/colorize.c:451 ../src/iop/colorzones.c:1072
 #: ../src/iop/colorzones.c:1110
 msgid "lightness"
@@ -5540,24 +5540,24 @@ msgstr "facteur vert du gain"
 msgid "factor of blue for gain"
 msgstr "facteur bleu du gain"
 
-#: ../src/iop/colorchecker.c:112
+#: ../src/iop/colorchecker.c:113
 msgid "color look up table"
 msgstr "table correspondance couleurs"
 
-#: ../src/iop/colorchecker.c:263
+#: ../src/iop/colorchecker.c:264
 msgid "it8 skin tones"
 msgstr "it8 tons chairs"
 
-#: ../src/iop/colorchecker.c:276
+#: ../src/iop/colorchecker.c:277
 msgid "helmholtz/kohlrausch monochrome"
 msgstr "monochrome helmholtz/kohlrausch"
 
-#: ../src/iop/colorchecker.c:650 ../src/iop/colorchecker.c:1075
+#: ../src/iop/colorchecker.c:651 ../src/iop/colorchecker.c:1145
 #, c-format
 msgid "patch #%d"
 msgstr "patch #%d"
 
-#: ../src/iop/colorchecker.c:962
+#: ../src/iop/colorchecker.c:1032
 #, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
@@ -5574,37 +5574,57 @@ msgstr ""
 "clic-droit pour supprimer un patch\n"
 "shift-clic avec la pipette pour remplacer un patch"
 
-#: ../src/iop/colorchecker.c:1070
+#: ../src/iop/colorchecker.c:1140
 msgid "patch"
 msgstr "patch"
 
-#: ../src/iop/colorchecker.c:1071
+#: ../src/iop/colorchecker.c:1141
 msgid "color checker patch"
 msgstr "patch color checker"
 
-#: ../src/iop/colorchecker.c:1082
+#: ../src/iop/colorchecker.c:1152
 msgid "lightness offset"
 msgstr "décalage clarté"
 
-#: ../src/iop/colorchecker.c:1086
+#: ../src/iop/colorchecker.c:1156
 msgid "chroma offset green/red"
 msgstr "décalage chromatique vert/rouge"
 
-#: ../src/iop/colorchecker.c:1087
+#: ../src/iop/colorchecker.c:1157
 msgid "green/red"
 msgstr "vert/rouge"
 
-#: ../src/iop/colorchecker.c:1093
+#: ../src/iop/colorchecker.c:1163
 msgid "chroma offset blue/yellow"
 msgstr "décalage chromatique bleu/jaune"
 
-#: ../src/iop/colorchecker.c:1094
+#: ../src/iop/colorchecker.c:1164
 msgid "blue/yellow"
 msgstr "bleu/jaune"
 
-#: ../src/iop/colorchecker.c:1100
+#: ../src/iop/colorchecker.c:1170
 msgid "saturation offset"
 msgstr "décalage saturation"
+
+#: ../src/iop/colorchecker.c:1175
+msgid "target color"
+msgstr "couleur cible"
+
+#: ../src/iop/colorchecker.c:1176
+msgid ""
+"control target color of the patches via relative offsets or via absolute Lab "
+"values"
+msgstr ""
+"la couleur cible des patchs est donnée via un décalage relatif ou les "
+"valeurs Lab absolues"
+
+#: ../src/iop/colorchecker.c:1177
+msgid "relative"
+msgstr "relative"
+
+#: ../src/iop/colorchecker.c:1178
+msgid "absolute"
+msgstr "absolue"
 
 #: ../src/iop/colorcontrast.c:88
 msgid "color contrast"
@@ -5888,7 +5908,7 @@ msgstr "teinte"
 
 #: ../src/iop/colorreconstruction.c:624 ../src/iop/colorreconstruction.c:1113
 #: ../src/iop/globaltonemap.c:183 ../src/iop/globaltonemap.c:380
-#: ../src/iop/levels.c:255
+#: ../src/iop/hazeremoval.c:841 ../src/iop/levels.c:255
 msgid "inconsistent output"
 msgstr "résultat incohérent"
 
@@ -6653,6 +6673,14 @@ msgstr ""
 "quantité du biais des tons-moyens du modèle de réponse du papier "
 "photographique. plus le biais est grand, plus prononcée est la diminution du "
 "grain dans les ombres et les hautes-lumières."
+
+#: ../src/iop/hazeremoval.c:84
+msgid "haze removal"
+msgstr "suppression de la brume"
+
+#: ../src/iop/hazeremoval.c:190
+msgid "distance"
+msgstr "distance"
 
 #: ../src/iop/highlights.c:77
 msgid "highlight reconstruction"
@@ -11229,9 +11257,6 @@ msgstr ""
 #~ msgid "analyse line structure in image"
 #~ msgstr "analyser les lignes de structure dans l'image"
 
-#~ msgid "text color"
-#~ msgstr "couleur du texte"
-
 #~ msgid "select text color"
 #~ msgstr "sélectionner la couleur du texte"
 
@@ -12627,9 +12652,6 @@ msgstr ""
 
 #~ msgid "favorites"
 #~ msgstr "favoris"
-
-#~ msgid "active"
-#~ msgstr "actifs"
 
 #~ msgid "basic"
 #~ msgstr "basique"

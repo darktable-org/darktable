@@ -76,6 +76,46 @@ float4 Lab_to_XYZ(float4 Lab)
   return XYZ;
 }
 
+float4 Lab_to_prophotorgb(float4 Lab)
+{
+  const float xyz_to_rgb[3][3] = { // prophoto rgb d50
+    { 1.3459433f, -0.2556075f, -0.0511118f},
+    {-0.5445989f,  1.5081673f,  0.0205351f},
+    { 0.0000000f,  0.0000000f,  1.2118128f},
+  };
+  float4 XYZ = Lab_to_XYZ(Lab);
+  float4 rgb = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+  rgb.x += xyz_to_rgb[0][0] * XYZ.x;
+  rgb.x += xyz_to_rgb[0][1] * XYZ.y;
+  rgb.x += xyz_to_rgb[0][2] * XYZ.z;
+  rgb.y += xyz_to_rgb[1][0] * XYZ.x;
+  rgb.y += xyz_to_rgb[1][1] * XYZ.y;
+  rgb.y += xyz_to_rgb[1][2] * XYZ.z;
+  rgb.z += xyz_to_rgb[2][0] * XYZ.x;
+  rgb.z += xyz_to_rgb[2][1] * XYZ.y;
+  rgb.z += xyz_to_rgb[2][2] * XYZ.z;
+  return rgb;
+}
+
+float4 prophotorgb_to_Lab(float4 rgb)
+{
+  const float rgb_to_xyz[3][3] = { // prophoto rgb
+    {0.7976749f, 0.1351917f, 0.0313534f},
+    {0.2880402f, 0.7118741f, 0.0000857f},
+    {0.0000000f, 0.0000000f, 0.8252100f},
+  };
+  float4 XYZ = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+  XYZ.x += rgb_to_xyz[0][0] * rgb.x;
+  XYZ.x += rgb_to_xyz[0][1] * rgb.y;
+  XYZ.x += rgb_to_xyz[0][2] * rgb.z;
+  XYZ.y += rgb_to_xyz[1][0] * rgb.x;
+  XYZ.y += rgb_to_xyz[1][1] * rgb.y;
+  XYZ.y += rgb_to_xyz[1][2] * rgb.z;
+  XYZ.z += rgb_to_xyz[2][0] * rgb.x;
+  XYZ.z += rgb_to_xyz[2][1] * rgb.y;
+  XYZ.z += rgb_to_xyz[2][2] * rgb.z;
+  return XYZ_to_Lab(XYZ);
+}
 
 float4 RGB_2_HSL(const float4 RGB)
 {
