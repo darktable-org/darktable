@@ -536,7 +536,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
   else if(p->tonecurve_autoscale_ab == s_scale_automatic_rgb)
   {
-    piece->process_cl_ready = 0;
     // derive curve for rgb:
     for(int k=0;k<0x10000;k++)
     {
