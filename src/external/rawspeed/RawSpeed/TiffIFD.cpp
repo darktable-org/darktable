@@ -64,7 +64,7 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset, uint32 _depth) {
     } catch (...) {
       // make sure all already allocated mEntries are freed again
       // will be gone after cleanup using unique_ptr containers
-      this->~TiffIFD();
+      // this->~TiffIFD();
       throw;
     }
 
