@@ -543,18 +543,16 @@ static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton 
 
   if(event->button == 1)
   {
-    const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
-    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
-
     const int has_mask_display = module->request_mask_display & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
 
     module->request_mask_display &= ~(DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL | DT_DEV_PIXELPIPE_DISPLAY_ANY);
 
-    if(control && shift)
+    GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+    if((event->state & modifiers) == (GDK_CONTROL_MASK | GDK_CONTROL_MASK))
       module->request_mask_display |= (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
-    else if(shift)
+    else if((event->state & modifiers) == GDK_CONTROL_MASK)
       module->request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_CHANNEL;
-    else if(control)
+    else if((event->state & modifiers) == GDK_CONTROL_MASK)
       module->request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_MASK;
     else
       module->request_mask_display |= (has_mask_display ? 0 : DT_DEV_PIXELPIPE_DISPLAY_MASK);
@@ -868,32 +866,97 @@ static gboolean _blendop_blendif_draw(GtkWidget *widget, cairo_t *cr, dt_iop_mod
   return FALSE;
 }
 
+// magic mode: if mouse curser enters a gradient slider with shift and/or control pressed we
+// enter channel display and/or mask display mode
 static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return FALSE;
-
-  if(!(module->request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)) return TRUE;
-
   dt_iop_gui_blend_data_t *data = module->blend_data;
-  int tab = data->tab;
-  int inout = (widget == GTK_WIDGET(data->lower_slider)) ? 0 : 1;
-  dt_dev_pixelpipe_display_mask_t channel = data->display_channel[tab][inout];
 
-  module->request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
-  module->request_mask_display |= channel;
+  if(data->timeout_handle)
+  {
+    // purge any remaining timeout handlers
+    g_source_remove(data->timeout_handle);
+    data->timeout_handle = 0;
+  }
+  else
+  {
+    // save request_mask_display to restore later
+    data->save_for_leave = module->request_mask_display;
+  }
 
-  dt_dev_reprocess_all(module->dev);
+  dt_dev_pixelpipe_display_mask_t new_request_mask_display = module->request_mask_display;
+
+  // depending on shift modifiers we activate channel and/or mask display
+  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  if((event->state & modifiers) == (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+  {
+    new_request_mask_display |= (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
+  }
+  else if((event->state & modifiers) == GDK_SHIFT_MASK)
+  {
+    new_request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_CHANNEL;
+  }
+  else if((event->state & modifiers) == GDK_CONTROL_MASK)
+  {
+    new_request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_MASK;
+  }
+
+  // in case user requests channel display: get the cannel
+  if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
+  {
+    int tab = data->tab;
+    int inout = (widget == GTK_WIDGET(data->lower_slider)) ? 0 : 1;
+    dt_dev_pixelpipe_display_mask_t channel = data->display_channel[tab][inout];
+
+    new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
+    new_request_mask_display |= channel;
+  }
+
+  // only if something has changed: reprocess center view
+  if(new_request_mask_display != module->request_mask_display)
+  {
+    module->request_mask_display = new_request_mask_display;
+    dt_dev_reprocess_all(module->dev);
+  }
+
   return TRUE;
 }
 
+// handler for delayed mask/channel display mode switch-off
+static gboolean _blendop_blendif_leave_delayed(gpointer data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)data;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+
+  // restore saved request_mask_display and reprocess image
+  if(module->request_mask_display != bd->save_for_leave)
+  {
+    module->request_mask_display = bd->save_for_leave;
+    dt_dev_reprocess_all(module->dev);
+  }
+
+  bd->timeout_handle = 0;
+
+  // return FALSE and thereby terminate the handler
+  return FALSE;
+}
+
+// de-activate magic mode when leaving the gradient slider
 static gboolean _blendop_blendif_leave(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return FALSE;
+  dt_iop_gui_blend_data_t *data = module->blend_data;
 
-  if(!(module->request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)) return TRUE;
-  module->request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
+  if((module->request_mask_display & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)) &&
+     (module->request_mask_display != data->save_for_leave))
+  {
+    // do not immediately switch-off mask/channel display in case user leaves gradient only briefly.
+    // instead we activate a handler function that gets triggered after some timeout
+    if(!data->timeout_handle)
+      data->timeout_handle = g_timeout_add(1000, _blendop_blendif_leave_delayed, module);
+  }
 
-  dt_dev_reprocess_all(module->dev);
   return TRUE;
 }
 
@@ -1638,6 +1701,9 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->masks_combine = NULL;
     bd->masks_invert = NULL;
     bd->blend_modes_all = NULL;
+
+    bd->timeout_handle = 0;
+    bd->save_for_leave = 0;
 
     /** generate a list of all available blend modes */
     _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "normal"), DEVELOP_BLEND_NORMAL2);
