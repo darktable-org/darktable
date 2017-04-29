@@ -125,14 +125,20 @@ static inline void false_color(float val, dt_dev_pixelpipe_display_mask_t channe
 
   switch((channel & DT_DEV_PIXELPIPE_DISPLAY_ANY) & ~DT_DEV_PIXELPIPE_DISPLAY_OUTPUT)
   {
+    case DT_DEV_PIXELPIPE_DISPLAY_L:
+      in[0] = val * 100.0f;
+      in[1] = 0.0f;
+      in[2] = 0.0f;
+      Lab_2_RGB(in, out);
+      break;
     case DT_DEV_PIXELPIPE_DISPLAY_a:
-      in[0] = 50.0f;
+      in[0] = 80.0f;
       in[1] = val * 256.0f - 128.0f;
       in[2] = 0.0f;
       Lab_2_RGB(in, out);
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_b:
-      in[0] = 50.0f;
+      in[0] = 80.0f;
       in[1] = 0.0f;
       in[2] = val * 256.0f - 128.0f;
       Lab_2_RGB(in, out);
@@ -150,7 +156,7 @@ static inline void false_color(float val, dt_dev_pixelpipe_display_mask_t channe
       out[0] = out[1] = 0.0f;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
-      in[0] = 50.0f;
+      in[0] = 80.0f;
       in[1] = val * 128.0f * sqrtf(2.0f);
       in[2] = 0.9111f;
       LCH_2_RGB(in, out);
@@ -173,9 +179,13 @@ static inline void false_color(float val, dt_dev_pixelpipe_display_mask_t channe
       in[2] = 0.5f;
       HSL_2_RGB(in, out);
       break;
-    case DT_DEV_PIXELPIPE_DISPLAY_L:
-    case DT_DEV_PIXELPIPE_DISPLAY_GRAY:
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_l:
+      in[0] = 0.0f;
+      in[1] = 0.0f;
+      in[2] = val;
+      HSL_2_RGB(in, out);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_GRAY:
     default:
       out[0] = out[1] = out[2] = val;
       break;
