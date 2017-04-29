@@ -969,6 +969,13 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
 
   if(!data || !data->blendif_support || !data->blendif_inited) return;
 
+  if(data->timeout_handle)
+  {
+    g_source_remove(data->timeout_handle);
+    data->timeout_handle = 0;
+    _blendop_blendif_leave_delayed(module);
+  }
+
   int tab = data->tab;
   int in_ch = data->channels[tab][0];
   int out_ch = data->channels[tab][1];
@@ -1483,6 +1490,9 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
 {
   if(!module->blend_data) return;
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+
+  if(bd->timeout_handle)
+    g_source_remove(bd->timeout_handle);
 
   g_list_free(bd->blend_modes);
   g_list_free(bd->masks_modes);
