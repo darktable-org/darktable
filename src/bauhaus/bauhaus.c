@@ -2104,6 +2104,7 @@ void dt_bauhaus_slider_set_soft(GtkWidget *widget, float pos)
   float rpos = CLAMP(rawval, d->hard_min, d->hard_max);
   d->min = MIN(d->min, rpos);
   d->max = MAX(d->max, rpos);
+  d->scale = 5.0f * d->step / (d->max - d->min);
   rpos = (rpos - d->min) / (d->max - d->min);
   dt_bauhaus_slider_set_normalized(w, rpos);
 }
