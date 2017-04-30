@@ -767,6 +767,17 @@ static void target_a_callback(GtkWidget *slider, gpointer user_data)
   if(g->patch >= p->num_patches || g->patch < 0) return;
   if(g->absolute_target)
   {
+    p->target_a[g->patch] = CLAMP(dt_bauhaus_slider_get(slider), -128.0, 128.0);
+    const float Cout = sqrtf(
+        p->target_a[g->patch]*p->target_a[g->patch]+
+        p->target_b[g->patch]*p->target_b[g->patch]);
+    const int reset = darktable.gui->reset;
+    darktable.gui->reset = 1; // avoid history item
+    dt_bauhaus_slider_set(g->scale_C, Cout);
+    darktable.gui->reset = reset;
+  }
+  else
+  {
     p->target_a[g->patch] = CLAMP(p->source_a[g->patch] + dt_bauhaus_slider_get(slider), -128.0, 128.0);
     const float Cin = sqrtf(
         p->source_a[g->patch]*p->source_a[g->patch] +
@@ -777,17 +788,6 @@ static void target_a_callback(GtkWidget *slider, gpointer user_data)
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1; // avoid history item
     dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
-    darktable.gui->reset = reset;
-  }
-  else
-  {
-    p->target_a[g->patch] = CLAMP(dt_bauhaus_slider_get(slider), -128.0, 128.0);
-    const float Cout = sqrtf(
-        p->target_a[g->patch]*p->target_a[g->patch]+
-        p->target_b[g->patch]*p->target_b[g->patch]);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1; // avoid history item
-    dt_bauhaus_slider_set(g->scale_C, Cout);
     darktable.gui->reset = reset;
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
