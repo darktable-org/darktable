@@ -272,7 +272,7 @@ static void _lib_geotagging_calculate_offset_callback(GtkWidget *widget, dt_lib_
   if(gps_time)
   {
     gchar **tokens = g_strsplit(gps_time, ":", 0);
-    if(tokens[0] != '\0' && tokens[1] != '\0' && tokens[2] != '\0')
+    if(tokens[0] != NULL && tokens[1] != NULL && tokens[2] != NULL)
     {
       if(g_ascii_isdigit(tokens[0][0]) && g_ascii_isdigit(tokens[0][1]) && tokens[0][2] == '\0'
          && g_ascii_isdigit(tokens[1][0]) && g_ascii_isdigit(tokens[1][1]) && tokens[1][2] == '\0'
