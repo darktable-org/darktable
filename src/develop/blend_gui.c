@@ -873,6 +873,7 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *even
   if(darktable.gui->reset) return FALSE;
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
+  dt_pthread_mutex_lock(&data->lock);
   if(data->timeout_handle)
   {
     // purge any remaining timeout handlers
@@ -884,6 +885,7 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *even
     // save request_mask_display to restore later
     data->save_for_leave = module->request_mask_display;
   }
+  dt_pthread_mutex_unlock(&data->lock);
 
   dt_dev_pixelpipe_display_mask_t new_request_mask_display = module->request_mask_display;
 
@@ -929,14 +931,16 @@ static gboolean _blendop_blendif_leave_delayed(gpointer data)
   dt_iop_module_t *module = (dt_iop_module_t *)data;
   dt_iop_gui_blend_data_t *bd = module->blend_data;
 
+  dt_pthread_mutex_lock(&bd->lock);
   // restore saved request_mask_display and reprocess image
-  if(module->request_mask_display != bd->save_for_leave)
+  if(bd->timeout_handle && (module->request_mask_display != bd->save_for_leave))
   {
     module->request_mask_display = bd->save_for_leave;
     dt_dev_reprocess_all(module->dev);
   }
 
   bd->timeout_handle = 0;
+  dt_pthread_mutex_unlock(&bd->lock);
 
   // return FALSE and thereby terminate the handler
   return FALSE;
@@ -948,13 +952,14 @@ static gboolean _blendop_blendif_leave(GtkWidget *widget, GdkEventCrossing *even
   if(darktable.gui->reset) return FALSE;
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
-  if((module->request_mask_display & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)) &&
-     (module->request_mask_display != data->save_for_leave))
+  if(module->request_mask_display & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
   {
     // do not immediately switch-off mask/channel display in case user leaves gradient only briefly.
     // instead we activate a handler function that gets triggered after some timeout
-    if(!data->timeout_handle)
+    dt_pthread_mutex_lock(&data->lock);
+    if(!data->timeout_handle && (module->request_mask_display != data->save_for_leave))
       data->timeout_handle = g_timeout_add(1000, _blendop_blendif_leave_delayed, module);
+    dt_pthread_mutex_unlock(&data->lock);
   }
 
   return TRUE;
@@ -969,12 +974,18 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
 
   if(!data || !data->blendif_support || !data->blendif_inited) return;
 
+  dt_pthread_mutex_lock(&data->lock);
   if(data->timeout_handle)
   {
     g_source_remove(data->timeout_handle);
     data->timeout_handle = 0;
-    _blendop_blendif_leave_delayed(module);
+    if(module->request_mask_display != data->save_for_leave)
+    {
+      module->request_mask_display = data->save_for_leave;
+      dt_dev_reprocess_all(module->dev);
+    }
   }
+  dt_pthread_mutex_unlock(&data->lock);
 
   int tab = data->tab;
   int in_ch = data->channels[tab][0];
@@ -1491,6 +1502,7 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
   if(!module->blend_data) return;
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
+  dt_pthread_mutex_lock(&bd->lock);
   if(bd->timeout_handle)
     g_source_remove(bd->timeout_handle);
 
@@ -1500,6 +1512,8 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
   g_list_free(bd->masks_invert);
   g_list_free_full(bd->blend_modes_all, g_free);
   free(bd->masks_combo_ids);
+  dt_pthread_mutex_unlock(&bd->lock);
+  dt_pthread_mutex_destroy(&bd->lock);
 
   memset(module->blend_data, 0, sizeof(dt_iop_gui_blend_data_t));
 
@@ -1712,8 +1726,12 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->masks_invert = NULL;
     bd->blend_modes_all = NULL;
 
+    dt_pthread_mutex_init(&bd->lock, NULL);
+    dt_pthread_mutex_lock(&bd->lock);
     bd->timeout_handle = 0;
     bd->save_for_leave = 0;
+    dt_pthread_mutex_unlock(&bd->lock);
+
 
     /** generate a list of all available blend modes */
     _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "normal"), DEVELOP_BLEND_NORMAL2);
