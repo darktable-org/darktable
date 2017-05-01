@@ -18,6 +18,7 @@
 */
 #include "libs/lib.h"
 #include "common/debug.h"
+#include "common/module.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -49,6 +50,22 @@ typedef struct dt_lib_presets_edit_dialog_t
   gint old_id;
 } dt_lib_presets_edit_dialog_t;
 
+gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module, const dt_view_t *view)
+{
+  if(!module->views)
+  {
+    fprintf(stderr, "module %s doesn't have views flags\n", module->name(module));
+    return FALSE;
+  }
+
+  const char **views = module->views(module);
+  for(const char **iter = views; *iter; iter++)
+  {
+    if(!strcmp(*iter, "*") || !strcmp(*iter, view->module_name)) return TRUE;
+  }
+  return FALSE;
+}
+
 static gchar *get_preset_name(GtkMenuItem *menuitem)
 {
   const gchar *name = gtk_label_get_label(GTK_LABEL(gtk_bin_get_child(GTK_BIN(menuitem))));
@@ -73,6 +90,9 @@ static gchar *get_preset_name(GtkMenuItem *menuitem)
   if(c2 && c2 > pn) *(c2 - 1) = '\0';
   return pn;
 }
+
+/** calls module->cleanup and closes the dl connection. */
+static void dt_lib_unload_module(dt_lib_module_t *module);
 
 static gchar *get_active_preset_name(dt_lib_module_info_t *minfo)
 {
@@ -508,9 +528,9 @@ static int _lib_default_expandable()
   return 1;
 }
 
-static int dt_lib_load_module(dt_lib_module_t *module, const char *libname, const char *plugin_name)
+static int dt_lib_load_module(void *m, const char *libname, const char *plugin_name)
 {
-  //  char name[1024];
+  dt_lib_module_t *module = (dt_lib_module_t *)m;
   module->dt = &darktable;
   module->widget = NULL;
   module->expander = NULL;
@@ -705,53 +725,18 @@ void dt_lib_init_presets(dt_lib_module_t *module)
   if(module->init_presets) module->init_presets(module);
 }
 
-int dt_lib_load_modules()
+static void dt_lib_init_module(void *m)
 {
-  darktable.lib->plugins = NULL;
-  GList *res = NULL;
-  dt_lib_module_t *module;
-  char plugindir[PATH_MAX] = { 0 }, plugin_name[256];
-  const gchar *d_name;
-  dt_loc_get_plugindir(plugindir, sizeof(plugindir));
-  g_strlcat(plugindir, "/plugins/lighttable", sizeof(plugindir));
-  GDir *dir = g_dir_open(plugindir, 0, NULL);
-  if(!dir) return 1;
-  const int name_offset = strlen(SHARED_MODULE_PREFIX),
-            name_end = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
-  while((d_name = g_dir_read_name(dir)))
+  dt_lib_module_t *module = (dt_lib_module_t *)m;
+  dt_lib_init_presets(module);
+  // Calling the keyboard shortcut initialization callback if present
+  // do not init accelerators if there is no gui
+  if(darktable.gui)
   {
-    // get lib*.(so|dll)
-    if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
-    if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
-    strncpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end);
-    plugin_name[strlen(d_name) - name_end] = '\0';
-    module = (dt_lib_module_t *)malloc(sizeof(dt_lib_module_t));
-    gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
-
-    if(dt_lib_load_module(module, libname, plugin_name))
-    {
-      free(module);
-      continue;
-    }
-    // TODO: init presets
-    g_free(libname);
-    res = g_list_insert_sorted(res, module, dt_lib_sort_plugins);
-
-    dt_lib_init_presets(module);
-    // Calling the keyboard shortcut initialization callback if present
-    // do not init accelerators if there is no gui
-    if(darktable.gui)
-    {
-     if(module->init_key_accels) module->init_key_accels(module);
-     module->gui_init(module);
-     g_object_ref_sink(module->widget);
-    }
+    if(module->init_key_accels) module->init_key_accels(module);
+    module->gui_init(module);
+    g_object_ref_sink(module->widget);
   }
-  g_dir_close(dir);
-
-  darktable.lib->plugins = res;
-
-  return 0;
 }
 
 void dt_lib_unload_module(dt_lib_module_t *module)
@@ -941,7 +926,7 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
       {
         dt_lib_module_t *m = (dt_lib_module_t *)it->data;
 
-        if(m != module && container == m->container(module) && m->expandable(module) && (m->views(module) & v->view(v)))
+        if(m != module && container == m->container(module) && m->expandable(module) && dt_lib_is_visible_in_view(m, v))
         {
           all_other_closed = all_other_closed && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(m->expander));
           dt_lib_gui_set_expanded(m, FALSE);
@@ -1078,7 +1063,8 @@ void dt_lib_init(dt_lib_t *lib)
 {
   // Setting everything to null initially
   memset(lib, 0, sizeof(dt_lib_t));
-  (void)dt_lib_load_modules();
+  darktable.lib->plugins = dt_module_load_modules("/plugins/lighttable", sizeof(dt_lib_module_t),
+                                                  dt_lib_load_module, dt_lib_init_module, dt_lib_sort_plugins);
 }
 
 void dt_lib_cleanup(dt_lib_t *lib)

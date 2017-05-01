@@ -104,9 +104,10 @@ const char *name(dt_lib_module_t *self)
 }
 
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE;
+  static const char *v[] = {"lighttable", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -175,7 +176,7 @@ static void _lib_import_tethered_callback(GtkToggleButton *button, gpointer data
 {
   /* select camera to work with before switching mode */
   dt_camctl_select_camera(darktable.camctl, (dt_camera_t *)data);
-  dt_ctl_switch_mode_to(DT_CAPTURE);
+  dt_ctl_switch_mode_to("tethering");
 }
 
 
@@ -863,7 +864,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
       else
       {
         dt_control_set_mouse_over_id(id);
-        dt_ctl_switch_mode_to(DT_DEVELOP);
+        dt_ctl_switch_mode_to("darkroom");
       }
     }
   }

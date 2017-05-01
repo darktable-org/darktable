@@ -1333,7 +1333,7 @@ static void _expose_intro(dt_knight_t *d, cairo_t *cr, int32_t w, int32_t h)
       cairo_rectangle(cr, 0, 0, wipe_progress * w, h);
       cairo_fill(cr);
     }
-    if(d->animation_loop > wipe_start + wipe_duration * 2) dt_ctl_switch_mode_to(DT_LIBRARY);
+    if(d->animation_loop > wipe_start + wipe_duration * 2) dt_ctl_switch_mode_to("lighttable");
   }
   else if(d->game_state == WIN)
   {
@@ -1353,7 +1353,7 @@ static void _expose_intro(dt_knight_t *d, cairo_t *cr, int32_t w, int32_t h)
       cairo_rectangle(cr, 0, 0, wipe_progress * w, h);
       cairo_fill(cr);
     }
-    if(d->animation_loop > wipe_start + wipe_duration * 2) dt_ctl_switch_mode_to(DT_LIBRARY);
+    if(d->animation_loop > wipe_start + wipe_duration * 2) dt_ctl_switch_mode_to("lighttable");
   }
 }
 

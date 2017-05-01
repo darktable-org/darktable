@@ -24,6 +24,7 @@
 #include "common/dtpthread.h"
 #include "common/imageio_rawspeed.h"
 #include "common/interpolation.h"
+#include "common/module.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -204,8 +205,9 @@ static dt_introspection_field_t *default_get_f(const char *name)
   return NULL;
 }
 
-int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const char *op)
+int dt_iop_load_module_so(void *m, const char *libname, const char *op)
 {
+  dt_iop_module_so_t *module = (dt_iop_module_so_t *)m;
   g_strlcpy(module->op, op, 20);
   module->data = NULL;
   dt_print(DT_DEBUG_CONTROL, "[iop_load_module] loading iop `%s' from %s\n", op, libname);
@@ -1257,59 +1259,38 @@ static void init_key_accels(dt_iop_module_so_t *module)
   sqlite3_finalize(stmt);
 }
 
-void dt_iop_load_modules_so()
+static void dt_iop_init_module_so(void *m)
 {
-  GList *res = NULL;
-  dt_iop_module_so_t *module;
-  darktable.iop = NULL;
-  char plugindir[PATH_MAX] = { 0 }, op[20];
-  const gchar *d_name;
-  dt_loc_get_plugindir(plugindir, sizeof(plugindir));
-  g_strlcat(plugindir, "/plugins", sizeof(plugindir));
-  GDir *dir = g_dir_open(plugindir, 0, NULL);
-  if(!dir) return;
-  const int name_offset = strlen(SHARED_MODULE_PREFIX),
-            name_end = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
-  while((d_name = g_dir_read_name(dir)))
+  dt_iop_module_so_t *module = (dt_iop_module_so_t *)m;
+
+  init_presets(module);
+
+  // do not init accelerators if there is no gui
+  if(darktable.gui)
   {
-    // get lib*.so
-    if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
-    if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
-    g_strlcpy(op, d_name + name_offset, MIN(sizeof(op), strlen(d_name) - name_end + 1));
-    module = (dt_iop_module_so_t *)calloc(1, sizeof(dt_iop_module_so_t));
-    gchar *libname = g_module_build_path(plugindir, (const gchar *)op);
-    if(dt_iop_load_module_so(module, libname, op))
+    // Calling the accelerator initialization callback, if present
+    init_key_accels(module);
+
+    if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
-      free(module);
-      continue;
+      dt_accel_register_slider_iop(module, FALSE, NC_("accel", "fusion"));
     }
-    g_free(libname);
-    res = g_list_append(res, module);
-    init_presets(module);
-
-    // do not init accelerators if there is no gui
-    if(darktable.gui)
+    if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
-      // Calling the accelerator initialization callback, if present
-      init_key_accels(module);
+      // Adding the optional show accelerator to the table (blank)
+      dt_accel_register_iop(module, FALSE, NC_("accel", "show module"), 0, 0);
+      dt_accel_register_iop(module, FALSE, NC_("accel", "enable module"), 0, 0);
 
-      if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-      {
-        dt_accel_register_slider_iop(module, FALSE, NC_("accel", "fusion"));
-      }
-      if(!(module->flags() & IOP_FLAGS_DEPRECATED))
-      {
-        // Adding the optional show accelerator to the table (blank)
-        dt_accel_register_iop(module, FALSE, NC_("accel", "show module"), 0, 0);
-        dt_accel_register_iop(module, FALSE, NC_("accel", "enable module"), 0, 0);
-
-        dt_accel_register_iop(module, FALSE, NC_("accel", "reset module parameters"), 0, 0);
-        dt_accel_register_iop(module, FALSE, NC_("accel", "show preset menu"), 0, 0);
-      }
+      dt_accel_register_iop(module, FALSE, NC_("accel", "reset module parameters"), 0, 0);
+      dt_accel_register_iop(module, FALSE, NC_("accel", "show preset menu"), 0, 0);
     }
   }
-  g_dir_close(dir);
-  darktable.iop = res;
+}
+
+void dt_iop_load_modules_so()
+{
+  darktable.iop = dt_module_load_modules("/plugins", sizeof(dt_iop_module_so_t), dt_iop_load_module_so,
+                                         dt_iop_init_module_so, NULL);
 }
 
 int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, dt_develop_t *dev)

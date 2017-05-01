@@ -270,7 +270,7 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
     if(id)
     {
       dt_film_open(id);
-      dt_ctl_switch_mode_to(DT_LIBRARY);
+      dt_ctl_switch_mode_to("lighttable");
     }
     else
     {
@@ -304,7 +304,7 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
         if(open_image_in_dr)
         {
           dt_control_set_mouse_over_id(id);
-          dt_ctl_switch_mode_to(DT_DEVELOP);
+          dt_ctl_switch_mode_to("darkroom");
         }
       }
     }
@@ -965,13 +965,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_gui_gtk_load_config();
   }
 
-  dt_control_gui_mode_t mode = DT_LIBRARY;
+  const char *mode = "lighttable";
   // april 1st: you have to earn using dt first! or know that you can switch views with keyboard shortcuts
   time_t now;
   time(&now);
   struct tm lt;
   localtime_r(&now, &lt);
-  if(lt.tm_mon == 3 && lt.tm_mday == 1) mode = DT_KNIGHT;
+  if(lt.tm_mon == 3 && lt.tm_mday == 1) mode = "knight";
   if(init_gui)
   {
     // init the gui part of views
@@ -1022,7 +1022,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(loaded_images == 1 && only_single_images)
     {
       dt_control_set_mouse_over_id(last_id);
-      mode = DT_DEVELOP;
+      mode = "darkroom";
     }
 #endif
   }
@@ -1065,7 +1065,7 @@ void dt_cleanup()
 #endif
   if(init_gui)
   {
-    dt_ctl_switch_mode_to(DT_MODE_NONE);
+    dt_ctl_switch_mode_to("");
     dt_dbus_destroy(darktable.dbus);
 
     dt_control_shutdown(darktable.control);

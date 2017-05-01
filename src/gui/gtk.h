@@ -29,16 +29,6 @@
  * DPI */
 #define DT_PIXEL_APPLY_DPI(value) ((value) * darktable.gui->dpi_factor)
 
-typedef enum dt_gui_view_switch_t
-{
-  DT_GUI_VIEW_SWITCH_TO_TETHERING = 1,
-  DT_GUI_VIEW_SWITCH_TO_LIBRARY,
-  DT_GUI_VIEW_SWITCH_TO_DARKROOM,
-  DT_GUI_VIEW_SWITCH_TO_MAP,
-  DT_GUI_VIEW_SWITCH_TO_SLIDESHOW,
-  DT_GUI_VIEW_SWITCH_TO_PRINT
-} dt_gui_view_switch_to_t;
-
 typedef struct dt_gui_widgets_t
 {
 

@@ -49,6 +49,7 @@ FILE(GLOB SOURCE_FILES
   "common/locallaplaciancl.c"
   "common/metadata.c"
   "common/mipmap_cache.c"
+  "common/module.c"
   "common/noiseprofiles.c"
   "common/pdf.c"
   "common/styles.c"

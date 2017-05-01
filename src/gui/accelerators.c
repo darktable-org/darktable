@@ -118,7 +118,6 @@ void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierTyp
   g_strlcpy(accel->translated_path, accel_path, sizeof(accel->translated_path));
 
   *(accel->module) = '\0';
-  accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
   accel->local = FALSE;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
@@ -136,7 +135,6 @@ void dt_accel_register_view(dt_view_t *self, const gchar *path, guint accel_key,
   g_strlcpy(accel->translated_path, accel_path, sizeof(accel->translated_path));
 
   g_strlcpy(accel->module, self->module_name, sizeof(accel->module));
-  accel->views = self->view(self);
   accel->local = FALSE;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
@@ -156,7 +154,6 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
 
   g_strlcpy(accel->module, so->op, sizeof(accel->module));
   accel->local = local;
-  accel->views = DT_VIEW_DARKROOM;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
@@ -173,7 +170,6 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
 
   g_strlcpy(accel->module, self->plugin_name, sizeof(accel->module));
   accel->local = FALSE;
-  accel->views = self->views(self);
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
@@ -206,7 +202,6 @@ void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const 
     g_strlcpy(accel->translated_path, paths_trans[i], sizeof(accel->translated_path));
     g_strlcpy(accel->module, so->op, sizeof(accel->module));
     accel->local = local;
-    accel->views = DT_VIEW_DARKROOM;
 
     darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
   }
@@ -225,7 +220,6 @@ void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType m
   g_strlcpy(accel->translated_path, accel_path, sizeof(accel->translated_path));
 
   *(accel->module) = '\0';
-  accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
   accel->local = FALSE;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }

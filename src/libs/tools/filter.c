@@ -68,7 +68,7 @@ const char *name(dt_lib_module_t *self)
   return _("filter");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
   /* for now, show in all view due this affects filmroll too
 
@@ -76,7 +76,8 @@ uint32_t views(dt_lib_module_t *self)
            unloading/loading a module while switching views.
 
    */
-  return DT_VIEW_ALL;
+  static const char *v[] = {"*", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)

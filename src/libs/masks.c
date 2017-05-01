@@ -56,9 +56,10 @@ const char *name(dt_lib_module_t *self)
   return _("mask manager");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_DARKROOM;
+  static const char *v[] = {"darkroom", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)

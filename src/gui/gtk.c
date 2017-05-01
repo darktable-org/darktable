@@ -60,6 +60,16 @@
 
 #define DT_UI_PANEL_MODULE_SPACING 3
 
+typedef enum dt_gui_view_switch_t
+{
+  DT_GUI_VIEW_SWITCH_TO_TETHERING = 1,
+  DT_GUI_VIEW_SWITCH_TO_LIGHTTABLE,
+  DT_GUI_VIEW_SWITCH_TO_DARKROOM,
+  DT_GUI_VIEW_SWITCH_TO_MAP,
+  DT_GUI_VIEW_SWITCH_TO_SLIDESHOW,
+  DT_GUI_VIEW_SWITCH_TO_PRINT
+} dt_gui_view_switch_to_t;
+
 const char *_ui_panel_config_names[]
     = { "header", "toolbar_top", "toolbar_bottom", "left", "right", "bottom" };
 
@@ -416,9 +426,7 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data
   cairo_paint(cr);
 
   // draw scrollbar indicators
-  int v = darktable.view_manager->current_view;
-  dt_view_t *view = NULL;
-  if(v >= 0 && v < darktable.view_manager->num_views) view = darktable.view_manager->view + v;
+  const dt_view_t *view = dt_view_manager_get_current_view(darktable.view_manager);
   color_found = gtk_style_context_lookup_color (context, "bg_color", &color);
   if(!color_found)
   {
@@ -590,7 +598,6 @@ static gboolean borders_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoin
 int dt_gui_gtk_load_config()
 {
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-  dt_conf_set_int("ui_last/view", DT_MODE_NONE);
   int width = dt_conf_get_int("ui_last/window_w");
   int height = dt_conf_get_int("ui_last/window_h");
   gint x = MAX(0, dt_conf_get_int("ui_last/window_x"));
@@ -678,41 +685,37 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group, 
                                                     guint keyval, GdkModifierType modifier, gpointer p)
 {
   int view = GPOINTER_TO_INT(p);
-  dt_control_gui_mode_t mode = DT_MODE_NONE;
+  const char *mode = "";
   /* do some setup before switch view*/
   switch(view)
   {
-#ifdef HAVE_GPHOTO2
     case DT_GUI_VIEW_SWITCH_TO_TETHERING:
-      mode = DT_CAPTURE;
+      mode = "tethering";
       break;
-#endif
 
     case DT_GUI_VIEW_SWITCH_TO_DARKROOM:
-      mode = DT_DEVELOP;
+      mode = "darkroom";
       break;
 
-    case DT_GUI_VIEW_SWITCH_TO_LIBRARY:
-      mode = DT_LIBRARY;
+    case DT_GUI_VIEW_SWITCH_TO_LIGHTTABLE:
+      mode = "lighttable";
       break;
 
-#ifdef HAVE_MAP
     case DT_GUI_VIEW_SWITCH_TO_MAP:
-      mode = DT_MAP;
+      mode = "map";
       break;
-#endif
+
     case DT_GUI_VIEW_SWITCH_TO_SLIDESHOW:
-      mode = DT_SLIDESHOW;
+      mode = "slideshow";
       break;
-#ifdef HAVE_PRINT
+
     case DT_GUI_VIEW_SWITCH_TO_PRINT:
-      mode = DT_PRINT;
+      mode = "print";
       break;
-#endif
   }
 
   /* try switch to mode */
-  if(mode != DT_MODE_NONE) dt_ctl_switch_mode_to(mode);
+  if(*mode) dt_ctl_switch_mode_to(mode);
   return TRUE;
 }
 
@@ -1048,7 +1051,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                                          GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_TETHERING), NULL));
   dt_accel_connect_global("lighttable view",
                           g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
-                                         GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_LIBRARY), NULL));
+                                         GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_LIGHTTABLE), NULL));
   dt_accel_connect_global("darkroom view",
                           g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                                          GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_DARKROOM), NULL));
