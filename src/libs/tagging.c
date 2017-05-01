@@ -63,11 +63,15 @@ const char *name(dt_lib_module_t *self)
   return _("tagging");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  uint32_t v = DT_VIEW_LIGHTTABLE | DT_VIEW_MAP | DT_VIEW_TETHERING;
-  if(dt_conf_get_bool("plugins/darkroom/tagging/visible")) v |= DT_VIEW_DARKROOM;
-  return v;
+  static const char *v1[] = {"lighttable", "darkroom", "map", "tethering", NULL};
+  static const char *v2[] = {"lighttable", "map", "tethering", NULL};
+
+  if(dt_conf_get_bool("plugins/darkroom/tagging/visible"))
+    return v1;
+  else
+    return v2;
 }
 
 uint32_t container(dt_lib_module_t *self)
