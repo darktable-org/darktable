@@ -51,16 +51,17 @@ static GtkWidget *_lib_viewswitcher_create_label(dt_view_t *view);
 /* callback when view changed signal happens */
 static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t *old_view,
                                                     dt_view_t *new_view, gpointer user_data);
-static void _switch_view(int which);
+static void _switch_view(const dt_view_t *view);
 
 const char *name(dt_lib_module_t *self)
 {
   return _("viewswitcher");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_ALL;
+  static const char *v[] = {"*", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -85,7 +86,7 @@ static void _dropdown_changed(GtkComboBox *widget, gpointer user_data)
   GtkTreeIter iter;
   if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(d->dropdown), &iter))
   {
-    int view;
+    const dt_view_t *view;
     GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(d->dropdown));
     gtk_tree_model_get(model, &iter, VIEW_COLUMN, &view, -1);
     _switch_view(view);
@@ -100,60 +101,57 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
   d->dropdown = NULL;
-  GtkTreeIter iter;
+  GtkTreeIter tree_iter;
   GtkListStore *model = NULL;
 
-  for(int k = 0; k < darktable.view_manager->num_views; k++)
+  for(GList *view_iter = darktable.view_manager->views; view_iter; view_iter = g_list_next(view_iter))
   {
-    if(darktable.view_manager->view[k].module)
+    dt_view_t *view = (dt_view_t *)view_iter->data;
+    // lighttable and darkroom are shown in the top level, the rest in a dropdown
+    /* create view label */
+
+    // skip hidden views
+    if(view->flags() & VIEW_FLAGS_HIDDEN) continue;
+
+    if(!g_strcmp0(view->module_name, "lighttable") || !g_strcmp0(view->module_name, "darkroom"))
     {
-      // lighttable and darkroom are shown in the top level, the rest in a dropdown
-      /* create view label */
-      dt_view_t *v = &darktable.view_manager->view[k];
+      GtkWidget *w = _lib_viewswitcher_create_label(view);
+      gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, 0);
+      d->labels = g_list_append(d->labels, gtk_bin_get_child(GTK_BIN(w)));
 
-      // skip hidden views
-      if(v->flags() & VIEW_FLAGS_HIDDEN) continue;
-
-      if(!g_strcmp0(v->module_name, "lighttable") || !g_strcmp0(v->module_name, "darkroom"))
+      /* create space if more views */
+      if(view_iter->next != NULL)
       {
-        GtkWidget *w = _lib_viewswitcher_create_label(v);
-        gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, 0);
-        d->labels = g_list_append(d->labels, gtk_bin_get_child(GTK_BIN(w)));
-
-        /* create space if more views */
-        if(k < darktable.view_manager->num_views - 1)
-        {
-          GtkWidget *sep = gtk_label_new("|");
-          gtk_widget_set_halign(sep, GTK_ALIGN_START);
-          gtk_widget_set_name(sep, "view_label");
-          gtk_box_pack_start(GTK_BOX(self->widget), sep, FALSE, FALSE, DT_PIXEL_APPLY_DPI(5));
-        }
+        GtkWidget *sep = gtk_label_new("|");
+        gtk_widget_set_halign(sep, GTK_ALIGN_START);
+        gtk_widget_set_name(sep, "view_label");
+        gtk_box_pack_start(GTK_BOX(self->widget), sep, FALSE, FALSE, DT_PIXEL_APPLY_DPI(5));
       }
-      else
+    }
+    else
+    {
+      // only create the dropdown when needed, in case someone runs dt with just lt + dr
+      if(!d->dropdown)
       {
-        // only create the dropdown when needed, in case someone runs dt with just lt + dr
-        if(!d->dropdown)
-        {
-          model = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN);
-          d->dropdown = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
-          gtk_widget_set_name(d->dropdown, "view_dropdown");
-          GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-          gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(d->dropdown), renderer, FALSE);
-          gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(d->dropdown), renderer, "markup", TEXT_COLUMN,
-                                         "sensitive", SENSITIVE_COLUMN, NULL);
+        model = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_BOOLEAN);
+        d->dropdown = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
+        gtk_widget_set_name(d->dropdown, "view_dropdown");
+        GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+        gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(d->dropdown), renderer, FALSE);
+        gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(d->dropdown), renderer, "markup", TEXT_COLUMN,
+                                        "sensitive", SENSITIVE_COLUMN, NULL);
 
-          gtk_list_store_append(model, &iter);
-//           char *italic = g_strdup_printf("<i>%s</i>", _("other"));
-          gtk_list_store_set(model, &iter, TEXT_COLUMN, /*italic*/ _("other"), VIEW_COLUMN, 0, SENSITIVE_COLUMN, 0, -1);
-//           g_free(italic);
+        gtk_list_store_append(model, &tree_iter);
+//         char *italic = g_strdup_printf("<i>%s</i>", _("other"));
+        gtk_list_store_set(model, &tree_iter, TEXT_COLUMN, /*italic*/ _("other"), VIEW_COLUMN, NULL, SENSITIVE_COLUMN, 0, -1);
+//         g_free(italic);
 
-          gtk_box_pack_start(GTK_BOX(self->widget), d->dropdown, FALSE, FALSE, 0);
-          g_signal_connect(G_OBJECT(d->dropdown), "changed", G_CALLBACK(_dropdown_changed), d);
-        }
-
-        gtk_list_store_append(model, &iter);
-        gtk_list_store_set(model, &iter, TEXT_COLUMN, v->name(v), VIEW_COLUMN, v->view(v), SENSITIVE_COLUMN, 1, -1);
+        gtk_box_pack_start(GTK_BOX(self->widget), d->dropdown, FALSE, FALSE, 0);
+        g_signal_connect(G_OBJECT(d->dropdown), "changed", G_CALLBACK(_dropdown_changed), d);
       }
+
+      gtk_list_store_append(model, &tree_iter);
+      gtk_list_store_set(model, &tree_iter, TEXT_COLUMN, view->name(view), VIEW_COLUMN, view, SENSITIVE_COLUMN, 1, -1);
     }
   }
 
@@ -244,21 +242,20 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t
   g_signal_handlers_unblock_by_func(d->dropdown, _dropdown_changed, d);
 }
 
-static GtkWidget *_lib_viewswitcher_create_label(dt_view_t *v)
+static GtkWidget *_lib_viewswitcher_create_label(dt_view_t *view)
 {
   GtkWidget *eb = gtk_event_box_new();
-  GtkWidget *b = gtk_label_new(v->name(v));
+  GtkWidget *b = gtk_label_new(view->name(view));
   gtk_container_add(GTK_CONTAINER(eb), b);
   /*setup label*/
   gtk_widget_set_halign(b, GTK_ALIGN_START);
-  g_object_set_data(G_OBJECT(b), "view-label", (gchar *)v->name(v));
-  g_object_set_data(G_OBJECT(eb), "view-label", (gchar *)v->name(v));
+  g_object_set_data(G_OBJECT(b), "view-label", (gchar *)view->name(view));
+  g_object_set_data(G_OBJECT(eb), "view-label", (gchar *)view->name(view));
   gtk_widget_set_name(b, "view_label");
   gtk_widget_set_state_flags(b, GTK_STATE_FLAG_NORMAL, TRUE);
 
   /* connect button press handler */
-  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_lib_viewswitcher_button_press_callback),
-                   GINT_TO_POINTER(v->view(v)));
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_lib_viewswitcher_button_press_callback), view);
 
   /* set enter/leave notify events and connect signals */
   gtk_widget_add_events(GTK_WIDGET(eb), GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -269,35 +266,17 @@ static GtkWidget *_lib_viewswitcher_create_label(dt_view_t *v)
   return eb;
 }
 
-static void _switch_view(int which)
+static void _switch_view(const dt_view_t *view)
 {
-  /* FIXME: get rid of these mappings and old DT_xxx */
-  if(which == DT_VIEW_LIGHTTABLE)
-    dt_ctl_switch_mode_to(DT_LIBRARY);
-  else if(which == DT_VIEW_DARKROOM)
-    dt_ctl_switch_mode_to(DT_DEVELOP);
-#ifdef HAVE_GPHOTO2
-  else if(which == DT_VIEW_TETHERING)
-    dt_ctl_switch_mode_to(DT_CAPTURE);
-#endif
-#ifdef HAVE_MAP
-  else if(which == DT_VIEW_MAP)
-    dt_ctl_switch_mode_to(DT_MAP);
-#endif
-  else if(which == DT_VIEW_SLIDESHOW)
-    dt_ctl_switch_mode_to(DT_SLIDESHOW);
-#ifdef HAVE_PRINT
-  else if(which == DT_VIEW_PRINT)
-    dt_ctl_switch_mode_to(DT_PRINT);
-#endif
+  dt_ctl_switch_mode_to_by_view(view);
 }
 
 static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w, GdkEventButton *ev, gpointer user_data)
 {
   if(ev->button == 1)
   {
-    int which = GPOINTER_TO_INT(user_data);
-    _switch_view(which);
+    const dt_view_t *view = (const dt_view_t *)user_data;
+    _switch_view(view);
     return TRUE;
   }
   return FALSE;
