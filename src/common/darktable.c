@@ -503,7 +503,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                                       STR(LUA_API_VERSION_MINOR) "."
                                       STR(LUA_API_VERSION_PATCH);
 #endif
-        printf("this is %s\ncopyright (c) 2009-2017 johannes hanika\n" PACKAGE_BUGREPORT "\n\ncompile options:\n"
+        printf("this is %s\ncopyright (c) 2009-%s johannes hanika\n" PACKAGE_BUGREPORT "\n\ncompile options:\n"
                "  bit depth is %s\n"
 #ifdef _DEBUG
                "  debug build\n"
@@ -558,6 +558,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
                ,
                darktable_package_string,
+               darktable_last_commit_year,
                (sizeof(void *) == 8 ? "64 bit" : sizeof(void *) == 4 ? "32 bit" : "unknown")
 #if USE_LUA
                    ,

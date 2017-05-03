@@ -12,7 +12,7 @@ VS_VERSION_INFO VERSIONINFO
   PRODUCTVERSION DT_VERSION
   FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
   FILEFLAGS VS_FF_PRERELEASE
-  FILEOS VOS_UNKNOWN
+  FILEOS VOS__WINDOWS32
   FILETYPE VFT_APP
   FILESUBTYPE VFT2_UNKNOWN
 BEGIN
@@ -24,7 +24,7 @@ BEGIN
       VALUE "FileDescription",  "darktable main program"
       VALUE "FileVersion",      "${PROJECT_VERSION}"
       VALUE "InternalName",     "darktable"
-      VALUE "LegalCopyright",   "darktable is released under GPLv3 or later"
+      VALUE "LegalCopyright",   "Copyright \xa9 2009-" LAST_COMMIT_YEAR
       VALUE "OriginalFilename", "darktable.exe"
       VALUE "ProductName",      "darktable"
       VALUE "ProductVersion",   "${PROJECT_VERSION}"
