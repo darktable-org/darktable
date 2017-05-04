@@ -37,6 +37,7 @@ fi
 LAST_COMMIT_YEAR=`${DT_SRC_DIR}/tools/get_last_commit_year.sh`
 
 if [ $VERSION_C_NEEDS_UPDATE -eq 1 ]; then
+# when changing format, you must also update tools/get_git_version_string.sh !!!
   echo "#ifndef RC_BUILD" > "$C_FILE"
   echo "  #ifdef HAVE_CONFIG_H" >> "$C_FILE"
   echo "    #include \"config.h\"" >> "$C_FILE"
