@@ -162,7 +162,7 @@ void dt_set_unhandled_exception_handler_win()
   if(fout != STDOUT_FILENO)
   {
     close(fout);
-    unlink(name_used);
+    g_unlink(name_used);
   };
 
   // Set up logfile name

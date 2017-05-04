@@ -294,7 +294,7 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
 
         char *output = g_build_filename(output_path, fname, (char *)NULL);
 
-        int handle = open(output, O_CREAT | O_WRONLY, 0666);
+        int handle = g_open(output, O_CREAT | O_WRONLY, 0666);
         if(handle != -1)
         {
           gp_file_new_from_fd(&destination, handle);
@@ -933,7 +933,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
 
       char *output = g_build_filename(output_path, fname, (char *)NULL);
 
-      int handle = open(output, O_CREAT | O_WRONLY, 0666);
+      int handle = g_open(output, O_CREAT | O_WRONLY, 0666);
       if (handle > 0) {
         if (write(handle, data, size) > 0) {
           _dispatch_camera_image_downloaded(c, cam, output);
@@ -1443,7 +1443,7 @@ void _camera_poll_events(const dt_camctl_t *c, const dt_camera_t *cam)
 
         char *output = g_build_filename(output_path, fname, (char *)NULL);
 
-        int handle = open(output, O_CREAT | O_WRONLY, 0666);
+        int handle = g_open(output, O_CREAT | O_WRONLY, 0666);
         if(handle != -1)
         {
           gp_file_new_from_fd(&destination, handle);

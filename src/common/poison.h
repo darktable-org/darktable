@@ -20,6 +20,8 @@
 #pragma GCC poison strncat // use g_strncat
 #pragma GCC poison pthread_create // use dt_pthread_create, musl issues
 #pragma GCC poison fopen // use g_fopen
+// #pragma GCC poison open // use g_open -- this one doesn't work
+#pragma GCC poison unlink // use g_unlink
 
 #endif
 

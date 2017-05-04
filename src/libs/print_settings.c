@@ -352,7 +352,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   dt_print_file (imgid, filename, &ps->prt);
 
-  unlink(filename);
+  g_unlink(filename);
 
   // add tag for this image
 

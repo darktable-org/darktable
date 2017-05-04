@@ -1623,9 +1623,9 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
     {
       char link_dest[PATH_MAX] = { 0 };
       snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, linkedfile);
-      unlink(link_dest);
+      g_unlink(link_dest);
     }
-    unlink(binname);
+    g_unlink(binname);
 
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_load_program] could not load cached binary program, trying to compile source\n");
