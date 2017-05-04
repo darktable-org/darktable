@@ -34,13 +34,7 @@ if echo "$NEW_VERSION" | grep -q "^[0-9]\+\.[0-9]\+\.[0-9]\+"; then
   PATCH_VERSION=`echo "$NEW_VERSION" | sed "s/^\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\).*/\3/"`
 fi
 
-LAST_COMMIT_YEAR=`git --git-dir="${DT_SRC_DIR}/.git" log -n1 --pretty=%ci`
-if [ $? -eq 0 ] ;
-then
-  LAST_COMMIT_YEAR=`echo "${LAST_COMMIT_YEAR}" | cut -b 1-4`
-else
-  LAST_COMMIT_YEAR=`date -u "+%Y"`
-fi
+LAST_COMMIT_YEAR=`${DT_SRC_DIR}/tools/get_last_commit_year.sh`
 
 if [ $VERSION_C_NEEDS_UPDATE -eq 1 ]; then
   echo "#ifndef RC_BUILD" > "$C_FILE"
