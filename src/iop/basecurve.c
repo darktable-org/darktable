@@ -918,7 +918,7 @@ static inline void gauss_blur(
       for(int jj=-2;jj<=2;jj++)
         output[4*(j*wd+i)+c] += tmp[4*(MIN(j+jj, ht-(j+jj-ht+1))*wd+i)+c] * w[jj+2];
   }
-  free(tmp);
+  dt_free_align(tmp);
 }
 
 static inline void gauss_expand(
@@ -960,7 +960,7 @@ static inline void gauss_reduce(
   gauss_blur(input, blurred, wd, ht);
   for(size_t j=0;j<ch;j++) for(size_t i=0;i<cw;i++)
     for(int c=0;c<4;c++) coarse[4*(j*cw+i)+c] = blurred[4*(2*j*wd+2*i)+c];
-  free(blurred);
+  dt_free_align(blurred);
 
   if(detail)
   {
@@ -1119,8 +1119,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // free temp buffers
     for(int k=0;k<num_levels;k++)
     {
-      free(col[k]);
-      free(comb[k]);
+      dt_free_align(col[k]);
+      dt_free_align(comb[k]);
     }
     free(col);
     free(comb);
