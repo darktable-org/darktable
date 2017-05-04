@@ -926,7 +926,7 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
       {
         dt_lib_module_t *m = (dt_lib_module_t *)it->data;
 
-        if(m != module && container == m->container(module) && m->expandable(module) && dt_lib_is_visible_in_view(m, v))
+        if(m != module && container == m->container(m) && m->expandable(m) && dt_lib_is_visible_in_view(m, v))
         {
           all_other_closed = all_other_closed && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(m->expander));
           dt_lib_gui_set_expanded(m, FALSE);
