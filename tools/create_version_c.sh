@@ -2,6 +2,9 @@
 
 set -e
 
+DT_SRC_DIR=$(dirname "$0")
+DT_SRC_DIR=$(cd "$DT_SRC_DIR/../" && pwd -P)
+
 C_FILE="$1"
 NEW_VERSION="$2"
 
@@ -31,6 +34,8 @@ if echo "$NEW_VERSION" | grep -q "^[0-9]\+\.[0-9]\+\.[0-9]\+"; then
   PATCH_VERSION=`echo "$NEW_VERSION" | sed "s/^\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\).*/\3/"`
 fi
 
+LAST_COMMIT_YEAR=`${DT_SRC_DIR}/tools/get_last_commit_year.sh`
+
 if [ $VERSION_C_NEEDS_UPDATE -eq 1 ]; then
   echo "#ifndef RC_BUILD" > "$C_FILE"
   echo "  #ifdef HAVE_CONFIG_H" >> "$C_FILE"
@@ -39,14 +44,14 @@ if [ $VERSION_C_NEEDS_UPDATE -eq 1 ]; then
 
   echo "  const char darktable_package_version[] = \"${NEW_VERSION}\";" >> "$C_FILE"
   echo "  const char darktable_package_string[] = PACKAGE_NAME \" ${NEW_VERSION}\";" >> "$C_FILE"
+  echo "  const char darktable_last_commit_year[] = \"${LAST_COMMIT_YEAR}\";" >> "$C_FILE"
   echo "#else" >> "$C_FILE"
   echo "  #define DT_MAJOR ${MAJOR_VERSION}" >> "$C_FILE"
   echo "  #define DT_MINOR ${MINOR_VERSION}" >> "$C_FILE"
   echo "  #define DT_PATCH ${PATCH_VERSION}" >> "$C_FILE"
+  echo "  #define LAST_COMMIT_YEAR \"${LAST_COMMIT_YEAR}\"" >> "$C_FILE"
   echo "#endif" >> "$C_FILE"
+
 fi
 
 echo "Version string: ${NEW_VERSION}"
-echo "  Major: ${MAJOR_VERSION}"
-echo "  Minor: ${MINOR_VERSION}"
-echo "  Patch: ${PATCH_VERSION}"
