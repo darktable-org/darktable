@@ -1,0 +1,29 @@
+
+Rating, color labels, geo-tagging and selected status on Lightroom are only
+on the SQLite database and not exported into the XMP sidecar.
+
+To synchronize those settings from Lightroom into darktable here are two
+helper scripts.
+
+1. get_lr_data.sh
+
+   To be run once, the parameter is the SQLite Lightroom catalog.
+
+   This script will create $HOME/.config/darktable/lr.db
+
+2. sync_dt.sh
+
+   Do not take any parameter, this script will synchronize the rating,
+   color labels and selected status from lr.db to darktable's library.db.
+
+   It must be run after importing some images that have been edited with
+   Lightroom. It will get the data for the new images.
+
+   Note that you'll probably need to edit this script to add the proper
+   color label name for your country. Currently only English and French
+   are supported. Feel free to contribute patches.
+
+   To get all the names, run the following on the console (after
+   get_lr_data.sh has been runned):
+
+   echo "SELECT DISTINCT (colorLabels) from data;" | sqlite3 ~/.config/darktable/lr.db
