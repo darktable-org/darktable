@@ -72,7 +72,7 @@ float *read_pfm(const char *filename, int *wd, int *ht)
     if(ret != width * height)
     {
       fprintf(stderr, "error reading PFM\n");
-      free(image);
+      dt_free_align(image);
       fclose(f);
       return NULL;
     }
@@ -103,7 +103,7 @@ float *read_pfm(const char *filename, int *wd, int *ht)
         if(ret != 1)
         {
           fprintf(stderr, "error reading PFM\n");
-          free(image);
+          dt_free_align(image);
           fclose(f);
           return NULL;
         }
