@@ -205,14 +205,6 @@ if(USE_CAMERA_SUPPORT)
   add_definitions(${Gphoto2_DEFINITIONS})
 endif(USE_CAMERA_SUPPORT)
 
-# # INotify isn't used anymore as it seems
-# find_package(INotify)
-# if(INOTIFY_FOUND)
-#   include_directories(SYSTEM ${INOTIFY_INCLUDE_DIRS})
-#   list(APPEND LIBS ${INOTIFY_LIBRARIES})
-#   add_definitions(${INOTIFY_DEFINITIONS})
-# endif(INOTIFY_FOUND)
-
 if(USE_OPENEXR)
   find_package(OpenEXR)
   if(OPENEXR_FOUND)
@@ -322,9 +314,6 @@ endif(USE_GRAPHICSMAGICK)
 #
 # Add HAVE_xxx defines used by darktable
 #
-# if(INOTIFY_FOUND)
-#   add_definitions("-DHAVE_INOTIFY")
-# endif(INOTIFY_FOUND)
 
 if(LENSFUN_FOUND)
   add_definitions("-DHAVE_LENSFUN")
