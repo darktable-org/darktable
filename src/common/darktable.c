@@ -32,7 +32,6 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/fswatch.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/selection.h"
 #include "common/system_signal_handling.h"
@@ -118,7 +117,7 @@ const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2
 static int usage(const char *argv0)
 {
   printf("usage: %s [-d "
-         "{all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,lua,masks,memory,nan,opencl,perf,pwstorage,print,sql}]"
+         "{all,cache,camctl,camsupport,control,dev,input,lighttable,lua,masks,memory,nan,opencl,perf,pwstorage,print,sql}]"
          " [IMG_1234.{RAW,..}|image_folder/]",
          argv0);
 #ifdef HAVE_OPENCL
@@ -619,8 +618,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
         else if(!strcmp(argv[k + 1], "dev"))
           darktable.unmuted |= DT_DEBUG_DEV; // develop module
-        else if(!strcmp(argv[k + 1], "fswatch"))
-          darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
         else if(!strcmp(argv[k + 1], "input"))
           darktable.unmuted |= DT_DEBUG_INPUT; // input devices
         else if(!strcmp(argv[k + 1], "camctl"))
@@ -854,7 +851,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
-  // Make sure that the database and xmp files are in sync before starting the fswatch.
+  // Make sure that the database and xmp files are in sync
   // We need conf and db to be up and running for that which is the case here.
   // FIXME: is this also useful in non-gui mode?
   GList *changed_xmp_files = NULL;
@@ -862,9 +859,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     changed_xmp_files = dt_control_crawler_run();
   }
-
-  // Initialize the filesystem watcher
-  darktable.fswatch = dt_fswatch_new();
 
   // FIXME: move there into dt_database_t
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
@@ -1107,7 +1101,6 @@ void dt_cleanup()
   dt_camctl_destroy((dt_camctl_t *)darktable.camctl);
 #endif
   dt_pwstorage_destroy(darktable.pwstorage);
-  dt_fswatch_destroy(darktable.fswatch);
 
 #ifdef HAVE_GRAPHICSMAGICK
   DestroyMagick();
