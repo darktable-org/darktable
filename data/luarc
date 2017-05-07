@@ -19,4 +19,6 @@ ipairs = function(t)
   end
   end
 
+require "script_manager"
+
 -- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
