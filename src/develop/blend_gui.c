@@ -548,7 +548,7 @@ static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton 
     module->request_mask_display &= ~(DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL | DT_DEV_PIXELPIPE_DISPLAY_ANY);
 
     GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-    if((event->state & modifiers) == (GDK_CONTROL_MASK | GDK_CONTROL_MASK))
+    if((event->state & modifiers) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
       module->request_mask_display |= (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
     else if((event->state & modifiers) == GDK_SHIFT_MASK)
       module->request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_CHANNEL;

@@ -2961,8 +2961,13 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   /* check if blend is disabled */
   if(!(mask_mode & DEVELOP_MASK_ENABLED)) return;
 
-  /* we can only handle blending if roi_out and roi_in have the same scale and
-     if roi_out fits into the area given by roi_in */
+  /* In most cases of blending-enabled modules input and output of the module have
+   * the exact same dimensions. Only in very special cases we allow a module's input
+   * to exceed its output. This is namely the case for the spot removal module where
+   * the source of a patch might lie outside the roi of the output image. Therefore:
+   * We can only handle blending if roi_out and roi_in have the same scale and
+   * if roi_out fits into the area given by roi_in. xoffs and yoffs describe the relative
+   * offset of the input image to the output image. */
   if(roi_out->scale != roi_in->scale || xoffs < 0 || yoffs < 0
      || ((xoffs > 0 || yoffs > 0)
          && (roi_out->width + xoffs > roi_in->width || roi_out->height + yoffs > roi_in->height)))
@@ -3172,8 +3177,13 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   /* check if blend is disabled: just return, output is already in dev_out */
   if(!(mask_mode & DEVELOP_MASK_ENABLED)) return TRUE;
 
-  /* we can only handle blending if roi_out and roi_in have the same scale and
-     if roi_out fits into the area given by roi_in */
+  /* In most cases of blending-enabled modules input and output of the module have
+   * the exact same dimensions. Only in very special cases we allow a module's input
+   * to exceed its output. This is namely the case for the spot removal module where
+   * the source of a patch might lie outside the roi of the output image. Therefore:
+   * We can only handle blending if roi_out and roi_in have the same scale and
+   * if roi_out fits into the area given by roi_in. xoffs and yoffs describe the relative
+   * offset of the input image to the output image. */
   if(roi_out->scale != roi_in->scale || xoffs < 0 || yoffs < 0
      || ((xoffs > 0 || yoffs > 0)
          && (roi_out->width + xoffs > roi_in->width || roi_out->height + yoffs > roi_in->height)))

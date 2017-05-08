@@ -304,7 +304,7 @@ blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 
   if(x >= width || y >= height) return;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
 
@@ -340,7 +340,7 @@ blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 
   if(x >= width || y >= height) return;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
 
@@ -365,7 +365,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
   float4 ta, tb, to;
   float d, s;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
 
@@ -661,7 +661,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
   float o;
 
-  float a = read_imagef(in_a, sampleri, (int2)(x, y) + offs).x;
+  float a = read_imagef(in_a, sampleri, (int2)(x, y) + offs).x; // see comment in blend.c:dt_develop_blend_process_cl()
   float b = read_imagef(in_b, sampleri, (int2)(x, y)).x;
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
 
@@ -808,7 +808,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
   float4 ta, tb, to;
   float d, s;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
 
@@ -1028,7 +1028,7 @@ blendop_display_channel (__read_only image2d_t in_a, __read_only image2d_t in_b,
 
   if(x >= width || y >= height) return;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
 
