@@ -25,6 +25,7 @@
 #include "common/locallaplacian.h"
 #include "common/locallaplaciancl.h"
 #include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -258,6 +259,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   {
     local_laplacian_sse2(i, o, roi_in->width, roi_in->height, d->midtone, d->sigma_s, d->sigma_r, d->detail);
   }
+
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, roi_in->width, roi_in->height);
 }
 #endif
 
@@ -285,6 +288,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     local_laplacian(i, o, roi_in->width, roi_in->height, d->midtone, d->sigma_s, d->sigma_r, d->detail);
   }
+
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, roi_in->width, roi_in->height);
 }
 
 /** init, cleanup, commit to pipeline */
