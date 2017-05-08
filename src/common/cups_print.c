@@ -99,7 +99,7 @@ dt_printer_info_t *dt_get_printer_info(const char *printer_name)
         result->resolution /= 2.0;
 
       ppdClose(ppd);
-      unlink(PPDFile);
+      g_unlink(PPDFile);
     }
   }
 
@@ -306,7 +306,7 @@ GList *dt_get_papers(const char *printer_name)
     }
 
     ppdClose(ppd);
-    unlink(PPDFile);
+    g_unlink(PPDFile);
   }
 
   result = g_list_sort_with_data (result, (GCompareDataFunc)sort_papers, NULL);

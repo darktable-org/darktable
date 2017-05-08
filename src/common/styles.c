@@ -803,7 +803,7 @@ void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolea
   {
     if(overwrite)
     {
-      if(unlink(stylename))
+      if(g_unlink(stylename))
       {
         dt_control_log(_("failed to overwrite style file for %s"), style_name);
         return;

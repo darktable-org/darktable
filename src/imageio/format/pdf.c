@@ -811,7 +811,7 @@ void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *par
 
   if(d->actual_filename)
   {
-    unlink(d->actual_filename); // no need to leave broken files on disk
+    g_unlink(d->actual_filename); // no need to leave broken files on disk
     g_free(d->actual_filename);
   }
 

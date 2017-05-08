@@ -33,7 +33,10 @@ macro (add_iop _lib _src)
   set(OPT_SRC "${ARGN}")
   list(REMOVE_ITEM OPT_SRC "DEFAULT_VISIBLE")
 
-  add_library(${_lib} MODULE ${_output} ${OPT_SRC})
+  set_source_files_properties(${_input} PROPERTIES LANGUAGE "")
+  # yes, input is added as part of the library. since we just set it's LANGUAGE
+  # to "", no compilation will happen. this is needed for proper IDE support.
+  add_library(${_lib} MODULE ${_output} ${OPT_SRC} ${_input})
   target_link_libraries(${_lib} lib_darktable)
 
   if (WIN32)
