@@ -971,7 +971,7 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_preview_flags
     for(int i = 0; i < gp_list_count(files); i++)
     {
       gp_list_get_name(files, i, &filename);
-      char *file = g_strconcat(path, "/", filename, NULL);
+      char *file = g_build_filename(path, filename, NULL);
 
       // Lets check the type of file...
       CameraFileInfo cfi;
