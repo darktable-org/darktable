@@ -2607,13 +2607,20 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
     // img->clearXmpPacket();
     img->readMetadata();
 
-    // initialize XMP and IPTC data with the one from the original file
-    std::unique_ptr<Exiv2::Image> input_image(Exiv2::ImageFactory::open(input_filename));
-    if(input_image.get() != 0)
+    try
     {
-      input_image->readMetadata();
-      img->setIptcData(input_image->iptcData());
-      img->setXmpData(input_image->xmpData());
+      // initialize XMP and IPTC data with the one from the original file
+      std::unique_ptr<Exiv2::Image> input_image(Exiv2::ImageFactory::open(input_filename));
+      if(input_image.get() != 0)
+      {
+        input_image->readMetadata();
+        img->setIptcData(input_image->iptcData());
+        img->setXmpData(input_image->xmpData());
+      }
+    }
+    catch(Exiv2::AnyError &e)
+    {
+      std::cerr << "[xmp_attach] " << input_filename << ": caught exiv2 exception '" << e << "'\n";
     }
 
     Exiv2::XmpData &xmpData = img->xmpData();
