@@ -47,6 +47,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 DT_MODULE(1)
 
@@ -108,6 +112,14 @@ void cleanup(dt_view_t *self)
   free(dev);
 }
 
+static cairo_status_t write_snapshot_data(void *closure, const unsigned char *data, unsigned int length)
+{
+  int fd = GPOINTER_TO_INT(closure);
+  ssize_t res = write(fd, data, length);
+  if(res != length)
+    return CAIRO_STATUS_WRITE_ERROR;
+  return CAIRO_STATUS_SUCCESS;
+}
 
 void expose(
     dt_view_t *self,
@@ -269,7 +281,9 @@ void expose(
     /* Store current image surface to snapshot file.
        FIXME: add checks so that we dont make snapshots of preview pipe image surface.
     */
-    cairo_surface_write_to_png(image_surface, darktable.develop->proxy.snapshot.filename);
+    int fd = g_open(darktable.develop->proxy.snapshot.filename, O_CREAT | O_WRONLY, 0600);
+    cairo_surface_write_to_png_stream(image_surface, write_snapshot_data, GINT_TO_POINTER(fd));
+    close(fd);
   }
 
   // Displaying sample areas if enabled
