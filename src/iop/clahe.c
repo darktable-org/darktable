@@ -196,7 +196,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       } while(ce != ceb);
 
       /* build cdf of clipped histogram */
-      int hMin = BINS;
+      unsigned int hMin = BINS;
       for(int b = 0; b < hMin; b++)
         if(clippedhist[b] != 0) hMin = b;
 
