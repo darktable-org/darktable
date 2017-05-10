@@ -26,6 +26,10 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wold-style-declaration)
 # may be our bug :(
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-error=varargs)
 
+# need proper gcc7 to try to fix all the warnings.
+# so just disable for now.
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-format-truncation)
+
 # clang-4.0 bug https://llvm.org/bugs/show_bug.cgi?id=28115#c7
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-error=address-of-packed-member)
 
