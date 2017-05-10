@@ -4,7 +4,7 @@ VERSION="$(git describe --tags --dirty)"
 
 if [ $? -eq 0 ] ;
 then
-  echo $VERSION | sed 's,^release-,,;s,-,+,;s,-,~,;'
+  echo "$VERSION" | sed 's,^release-,,;s,-,+,;s,-,~,;'
   exit 0
 fi
 
@@ -16,7 +16,7 @@ fi
 VERSION="$(git describe --always --dirty)"
 if [ $? -eq 0 ] ;
 then
-  echo $VERSION
+  echo "$VERSION"
   exit 0
 fi
 
