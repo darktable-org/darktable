@@ -323,6 +323,11 @@ get_image_iso() {
 				iso=$(get_exif_key "$file" Exif.NikonIi.ISO)
 			fi
 			;;
+    [Cc][Aa][Nn][Oo][Nn]*)
+			if [ -z "$iso" -o "$iso" = "0" ]; then
+				iso=$(get_exif_key "$file" Exif.CanonSi.ISOSpeed)
+			fi
+      ;;
 		esac
 	fi
 
