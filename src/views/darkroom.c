@@ -47,6 +47,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 DT_MODULE(1)
 
@@ -108,6 +112,14 @@ void cleanup(dt_view_t *self)
   free(dev);
 }
 
+static cairo_status_t write_snapshot_data(void *closure, const unsigned char *data, unsigned int length)
+{
+  int fd = GPOINTER_TO_INT(closure);
+  ssize_t res = write(fd, data, length);
+  if(res != length)
+    return CAIRO_STATUS_WRITE_ERROR;
+  return CAIRO_STATUS_SUCCESS;
+}
 
 void expose(
     dt_view_t *self,
@@ -269,7 +281,9 @@ void expose(
     /* Store current image surface to snapshot file.
        FIXME: add checks so that we dont make snapshots of preview pipe image surface.
     */
-    cairo_surface_write_to_png(image_surface, darktable.develop->proxy.snapshot.filename);
+    int fd = g_open(darktable.develop->proxy.snapshot.filename, O_CREAT | O_WRONLY, 0600);
+    cairo_surface_write_to_png_stream(image_surface, write_snapshot_data, GINT_TO_POINTER(fd));
+    close(fd);
   }
 
   // Displaying sample areas if enabled
@@ -967,6 +981,14 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
 /** toolbar buttons */
 
+static gboolean _toolbar_show_popup(gpointer user_data)
+{
+  gtk_widget_show_all(GTK_WIDGET(user_data));
+
+  // cancel glib timeout if invoked by long button press
+  return FALSE;
+}
+
 /* overexposed */
 static void _overexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
@@ -976,52 +998,18 @@ static void _overexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_dev_reprocess_all(d);
 }
 
-static gboolean _overexposed_close_popup(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  if(!gtk_widget_is_visible(darktable.bauhaus->popup_window))
-    gtk_widget_hide(d->overexposed.floating_window);
-  return FALSE;
-}
-
-static gboolean _overexposed_show_popup(gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  /** finally move the window next to the button */
-  gint x, y, wx, wy;
-  gint px, py, window_w, window_h;
-  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  gtk_widget_show_all(d->overexposed.floating_window);
-  gdk_window_get_origin(gtk_widget_get_window(d->overexposed.button), &px, &py);
-
-  window_w = gdk_window_get_width(gtk_widget_get_window(d->overexposed.floating_window));
-  window_h = gdk_window_get_height(gtk_widget_get_window(d->overexposed.floating_window));
-
-  gtk_widget_translate_coordinates(d->overexposed.button, window, 0, 0, &wx, &wy);
-  x = px + wx - window_w + DT_PIXEL_APPLY_DPI(5);
-  y = py + wy - window_h - DT_PIXEL_APPLY_DPI(5);
-  gtk_window_move(GTK_WINDOW(d->overexposed.floating_window), x, y);
-
-  gtk_window_present(GTK_WINDOW(d->overexposed.floating_window));
-
-  // when the mouse moves back over the main window we close the popup.
-  g_signal_connect(d->overexposed.floating_window, "focus-out-event", G_CALLBACK(_overexposed_close_popup), user_data);
-
-  return FALSE;
-}
-
 static gboolean _overexposed_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   const GdkEventButton *e = (GdkEventButton *)event;
   if(e->button == 3)
   {
-    _overexposed_show_popup(user_data);
+    _toolbar_show_popup(d->overexposed.floating_window);
     return TRUE;
   }
   else
   {
-    d->overexposed.timeout = g_timeout_add_seconds(1, _overexposed_show_popup, user_data);
+    d->overexposed.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->overexposed.floating_window);
     return FALSE;
   }
 }
@@ -1076,52 +1064,18 @@ static void _rawoverexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data
   dt_dev_reprocess_all(d);
 }
 
-static gboolean _rawoverexposed_close_popup(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  if(!gtk_widget_is_visible(darktable.bauhaus->popup_window)) gtk_widget_hide(d->rawoverexposed.floating_window);
-  return FALSE;
-}
-
-static gboolean _rawoverexposed_show_popup(gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  /** finally move the window next to the button */
-  gint x, y, wx, wy;
-  gint px, py, window_w, window_h;
-  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  gtk_widget_show_all(d->rawoverexposed.floating_window);
-  gdk_window_get_origin(gtk_widget_get_window(d->rawoverexposed.button), &px, &py);
-
-  window_w = gdk_window_get_width(gtk_widget_get_window(d->rawoverexposed.floating_window));
-  window_h = gdk_window_get_height(gtk_widget_get_window(d->rawoverexposed.floating_window));
-
-  gtk_widget_translate_coordinates(d->rawoverexposed.button, window, 0, 0, &wx, &wy);
-  x = px + wx - window_w + DT_PIXEL_APPLY_DPI(5);
-  y = py + wy - window_h - DT_PIXEL_APPLY_DPI(5);
-  gtk_window_move(GTK_WINDOW(d->rawoverexposed.floating_window), x, y);
-
-  gtk_window_present(GTK_WINDOW(d->rawoverexposed.floating_window));
-
-  // when the mouse moves back over the main window we close the popup.
-  g_signal_connect(d->rawoverexposed.floating_window, "focus-out-event", G_CALLBACK(_rawoverexposed_close_popup),
-                   user_data);
-
-  return FALSE;
-}
-
 static gboolean _rawoverexposed_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   const GdkEventButton *e = (GdkEventButton *)event;
   if(e->button == 3)
   {
-    _rawoverexposed_show_popup(user_data);
+    _toolbar_show_popup(d->rawoverexposed.floating_window);
     return TRUE;
   }
   else
   {
-    d->rawoverexposed.timeout = g_timeout_add_seconds(1, _rawoverexposed_show_popup, user_data);
+    d->rawoverexposed.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->rawoverexposed.floating_window);
     return FALSE;
   }
 }
@@ -1188,52 +1142,21 @@ static void _softproof_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_dev_reprocess_all(d);
 }
 
-static gboolean _profile_close_popup(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  if(!gtk_widget_is_visible(darktable.bauhaus->popup_window))
-    gtk_widget_hide(d->profile.floating_window);
-  return FALSE;
-}
-
-static gboolean _softproof_show_popup(gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  /** finally move the window next to the button */
-  gint x, y, wx, wy;
-  gint px, py, window_w, window_h;
-  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  gtk_widget_show_all(d->profile.floating_window);
-  gdk_window_get_origin(gtk_widget_get_window(d->profile.softproof_button), &px, &py);
-
-  window_w = gdk_window_get_width(gtk_widget_get_window(d->profile.floating_window));
-  window_h = gdk_window_get_height(gtk_widget_get_window(d->profile.floating_window));
-
-  gtk_widget_translate_coordinates(d->profile.softproof_button, window, 0, 0, &wx, &wy);
-  x = px + wx - window_w + DT_PIXEL_APPLY_DPI(5);
-  y = py + wy - window_h - DT_PIXEL_APPLY_DPI(5);
-  gtk_window_move(GTK_WINDOW(d->profile.floating_window), x, y);
-
-  gtk_window_present(GTK_WINDOW(d->profile.floating_window));
-
-  // when the mouse moves back over the main window we close the popup.
-  g_signal_connect(d->profile.floating_window, "focus-out-event", G_CALLBACK(_profile_close_popup), user_data);
-
-  return FALSE;
-}
-
 static gboolean _softproof_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   GdkEventButton *e = (GdkEventButton *)event;
+
+  gtk_popover_set_relative_to(GTK_POPOVER(d->profile.floating_window), d->profile.softproof_button);
+
   if(e->button == 3)
   {
-    _softproof_show_popup(user_data);
+    _toolbar_show_popup(d->profile.floating_window);
     return TRUE;
   }
   else
   {
-    d->profile.timeout = g_timeout_add_seconds(1, _softproof_show_popup, user_data);
+    d->profile.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->profile.floating_window);
     return FALSE;
   }
 }
@@ -1260,44 +1183,21 @@ static void _gamut_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_dev_reprocess_all(d);
 }
 
-static gboolean _gamut_show_popup(gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  /** finally move the window next to the button */
-  gint x, y, wx, wy;
-  gint px, py, window_w, window_h;
-  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  gtk_widget_show_all(d->profile.floating_window);
-  gdk_window_get_origin(gtk_widget_get_window(d->profile.gamut_button), &px, &py);
-
-  window_w = gdk_window_get_width(gtk_widget_get_window(d->profile.floating_window));
-  window_h = gdk_window_get_height(gtk_widget_get_window(d->profile.floating_window));
-
-  gtk_widget_translate_coordinates(d->profile.gamut_button, window, 0, 0, &wx, &wy);
-  x = px + wx - window_w + DT_PIXEL_APPLY_DPI(5);
-  y = py + wy - window_h - DT_PIXEL_APPLY_DPI(5);
-  gtk_window_move(GTK_WINDOW(d->profile.floating_window), x, y);
-
-  gtk_window_present(GTK_WINDOW(d->profile.floating_window));
-
-  // when the mouse moves back over the main window we close the popup.
-  g_signal_connect(d->profile.floating_window, "focus-out-event", G_CALLBACK(_profile_close_popup), user_data);
-
-  return FALSE;
-}
-
 static gboolean _gamut_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   GdkEventButton *e = (GdkEventButton *)event;
+
+  gtk_popover_set_relative_to(GTK_POPOVER(d->profile.floating_window), d->profile.gamut_button);
+
   if(e->button == 3)
   {
-    _gamut_show_popup(user_data);
+    _toolbar_show_popup(d->profile.floating_window);
     return TRUE;
   }
   else
   {
-    d->profile.timeout = g_timeout_add_seconds(1, _gamut_show_popup, user_data);
+    d->profile.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->profile.floating_window);
     return FALSE;
   }
 }
@@ -1511,6 +1411,8 @@ void gui_init(dt_view_t *self)
   gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
 
+  const int panel_width = dt_conf_get_int("panel_width");
+
   /* create rawoverexposed popup tool */
   {
     // the button
@@ -1527,33 +1429,19 @@ void gui_init(dt_view_t *self)
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->rawoverexposed.button, DT_VIEW_DARKROOM);
 
     // and the popup window
-    const int panel_width = dt_conf_get_int("panel_width");
+    dev->rawoverexposed.floating_window = gtk_popover_new(dev->rawoverexposed.button);
+    gtk_widget_set_size_request(GTK_WIDGET(dev->rawoverexposed.floating_window), panel_width, -1);
+#if GTK_CHECK_VERSION(3, 16, 0)
+    g_object_set(G_OBJECT(dev->rawoverexposed.floating_window), "transitions-enabled", FALSE, NULL);
+#endif
 
-    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-
-    dev->rawoverexposed.floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(dev->rawoverexposed.floating_window), panel_width, -1);
-    GtkWidget *frame = gtk_frame_new(NULL);
-    GtkWidget *event_box = gtk_event_box_new();
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
     gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
     gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
     gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
 
-    gtk_widget_set_can_focus(dev->rawoverexposed.floating_window, TRUE);
-    gtk_window_set_decorated(GTK_WINDOW(dev->rawoverexposed.floating_window), FALSE);
-    gtk_window_set_type_hint(GTK_WINDOW(dev->rawoverexposed.floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
-    gtk_window_set_transient_for(GTK_WINDOW(dev->rawoverexposed.floating_window), GTK_WINDOW(window));
-    gtk_widget_set_opacity(dev->rawoverexposed.floating_window, 0.9);
-
-    gtk_widget_set_state_flags(frame, GTK_STATE_FLAG_SELECTED, TRUE);
-    gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
-
-
-    gtk_container_add(GTK_CONTAINER(dev->rawoverexposed.floating_window), frame);
-    gtk_container_add(GTK_CONTAINER(frame), event_box);
-    gtk_container_add(GTK_CONTAINER(event_box), vbox);
+    gtk_container_add(GTK_CONTAINER(dev->rawoverexposed.floating_window), vbox);
 
     /** let's fill the encapsulating widgets */
     /* mode of operation */
@@ -1609,33 +1497,19 @@ void gui_init(dt_view_t *self)
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overexposed.button, DT_VIEW_DARKROOM);
 
     // and the popup window
-    const int panel_width = dt_conf_get_int("panel_width");
+    dev->overexposed.floating_window = gtk_popover_new(dev->overexposed.button);
+    gtk_widget_set_size_request(GTK_WIDGET(dev->overexposed.floating_window), panel_width, -1);
+#if GTK_CHECK_VERSION(3, 16, 0)
+    g_object_set(G_OBJECT(dev->overexposed.floating_window), "transitions-enabled", FALSE, NULL);
+#endif
 
-    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-
-    dev->overexposed.floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(dev->overexposed.floating_window), panel_width, -1);
-    GtkWidget *frame = gtk_frame_new(NULL);
-    GtkWidget *event_box = gtk_event_box_new();
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
     gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
     gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
     gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
 
-    gtk_widget_set_can_focus(dev->overexposed.floating_window, TRUE);
-    gtk_window_set_decorated(GTK_WINDOW(dev->overexposed.floating_window), FALSE);
-    gtk_window_set_type_hint(GTK_WINDOW(dev->overexposed.floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
-    gtk_window_set_transient_for(GTK_WINDOW(dev->overexposed.floating_window), GTK_WINDOW(window));
-    gtk_widget_set_opacity(dev->overexposed.floating_window, 0.9);
-
-    gtk_widget_set_state_flags(frame, GTK_STATE_FLAG_SELECTED, TRUE);
-    gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
-
-
-    gtk_container_add(GTK_CONTAINER(dev->overexposed.floating_window), frame);
-    gtk_container_add(GTK_CONTAINER(frame), event_box);
-    gtk_container_add(GTK_CONTAINER(event_box), vbox);
+    gtk_container_add(GTK_CONTAINER(dev->overexposed.floating_window), vbox);
 
     /** let's fill the encapsulating widgets */
     /* color scheme */
@@ -1697,33 +1571,20 @@ void gui_init(dt_view_t *self)
                      G_CALLBACK(_profile_quickbutton_released), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->profile.gamut_button, DT_VIEW_DARKROOM);
 
-    // and the popup window
-    const int panel_width = dt_conf_get_int("panel_width");
+    // and the popup window, which is shared between the two profile buttons
+    dev->profile.floating_window = gtk_popover_new(NULL);
+    gtk_widget_set_size_request(GTK_WIDGET(dev->profile.floating_window), panel_width, -1);
+#if GTK_CHECK_VERSION(3, 16, 0)
+    g_object_set(G_OBJECT(dev->profile.floating_window), "transitions-enabled", FALSE, NULL);
+#endif
 
-    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-
-    dev->profile.floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(dev->profile.floating_window), panel_width, -1);
-    GtkWidget *frame = gtk_frame_new(NULL);
-    GtkWidget *event_box = gtk_event_box_new();
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
     gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
     gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
     gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
 
-    gtk_widget_set_can_focus(dev->profile.floating_window, TRUE);
-    gtk_window_set_decorated(GTK_WINDOW(dev->profile.floating_window), FALSE);
-    gtk_window_set_type_hint(GTK_WINDOW(dev->profile.floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
-    gtk_window_set_transient_for(GTK_WINDOW(dev->profile.floating_window), GTK_WINDOW(window));
-    gtk_widget_set_opacity(dev->profile.floating_window, 0.9);
-
-    gtk_widget_set_state_flags(frame, GTK_STATE_FLAG_SELECTED, TRUE);
-    gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
-
-    gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), frame);
-    gtk_container_add(GTK_CONTAINER(frame), event_box);
-    gtk_container_add(GTK_CONTAINER(event_box), vbox);
+    gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
 
     /** let's fill the encapsulating widgets */
     char datadir[PATH_MAX] = { 0 };
