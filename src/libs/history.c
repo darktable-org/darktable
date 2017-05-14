@@ -332,7 +332,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
 
           // and do that also in the undo/redo lists
           struct _cb_data udata = { module, hitem->multi_priority };
-          dt_undo_iterate (darktable.undo, DT_UNDO_HISTORY, &udata, FALSE, &_undo_items_cb);
+          dt_undo_iterate_internal(darktable.undo, DT_UNDO_HISTORY, &udata, &_undo_items_cb);
           done = TRUE;
         }
 
@@ -369,7 +369,7 @@ static void _history_invalidate_cb(gpointer user_data, dt_undo_type_t type, dt_u
 
 static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module_t *module, gpointer user_data)
 {
-  dt_undo_iterate (darktable.undo, DT_UNDO_HISTORY, module, TRUE, &_history_invalidate_cb);
+  dt_undo_iterate(darktable.undo, DT_UNDO_HISTORY, module, &_history_invalidate_cb);
 }
 
 static void _lib_history_change_callback(gpointer instance, gpointer user_data)
