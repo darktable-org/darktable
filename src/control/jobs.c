@@ -176,10 +176,16 @@ void dt_control_job_wait(_dt_job_t *job)
   if(!job) return;
   dt_job_state_t state = dt_control_job_get_state(job);
 
-  /* if job execution is not finished let's wait for signal */
+  // NOTE: could also use signals.
+
+  /* if job execution is not finished let's wait for it */
   if(state == DT_JOB_STATE_RUNNING || state == DT_JOB_STATE_CANCELLED)
   {
+    // once the job finishes, it unlocks the mutex
+    // so by locking the mutex here, we will only get the lock once the job
+    // has finished and unlocked it.
     dt_pthread_mutex_lock(&job->wait_mutex);
+    // yay, the job finished, we got the lock. nothing more to do.
     dt_pthread_mutex_unlock(&job->wait_mutex);
   }
 }
