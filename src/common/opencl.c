@@ -1411,7 +1411,7 @@ void dt_opencl_unlock_device(const int dev)
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return;
   if(dev < 0 || dev >= cl->num_devs) return;
-  dt_pthread_mutex_unlock(&cl->dev[dev].lock);
+  dt_pthread_mutex_BAD_unlock(&cl->dev[dev].lock);
 }
 
 static FILE *fopen_stat(const char *filename, struct stat *st)
