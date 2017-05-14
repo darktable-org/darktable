@@ -1131,7 +1131,7 @@ static gboolean _in_undo(int imgid)
   int state[2];
   state[0] = imgid;
   state[1] = 0;
-  dt_undo_iterate(darktable.undo, DT_UNDO_GEOTAG, &state, FALSE, _check_imgid);
+  dt_undo_iterate_internal(darktable.undo, DT_UNDO_GEOTAG, &state, _check_imgid);
   return state[1];
 }
 

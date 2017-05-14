@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "ThreadSafetyAnalysis.h"
 #include <assert.h>
 #include <errno.h>
 #include <float.h>
@@ -290,13 +291,41 @@ static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *r
 #undef TOPN
 #else
 
-#define dt_pthread_mutex_t pthread_mutex_t
-#define dt_pthread_mutex_destroy pthread_mutex_destroy
-#define dt_pthread_mutex_init pthread_mutex_init
-#define dt_pthread_mutex_lock pthread_mutex_lock
-#define dt_pthread_mutex_trylock pthread_mutex_trylock
-#define dt_pthread_mutex_unlock pthread_mutex_unlock
-#define dt_pthread_cond_wait pthread_cond_wait
+typedef struct CAPABILITY("mutex") dt_pthread_mutex_t
+{
+  pthread_mutex_t mutex;
+} CAPABILITY("mutex") dt_pthread_mutex_t;
+
+// *please* do use these;
+inline int dt_pthread_mutex_init(dt_pthread_mutex_t *mutex, const pthread_mutexattr_t *mutexattr)
+{
+  return pthread_mutex_init(&mutex->mutex, mutexattr);
+};
+
+inline int dt_pthread_mutex_lock(dt_pthread_mutex_t *mutex) ACQUIRE(mutex) NO_THREAD_SAFETY_ANALYSIS
+{
+  return pthread_mutex_lock(&mutex->mutex);
+};
+
+inline int dt_pthread_mutex_trylock(dt_pthread_mutex_t *mutex) TRY_ACQUIRE(0, mutex)
+{
+  return pthread_mutex_trylock(&mutex->mutex);
+};
+
+inline int dt_pthread_mutex_unlock(dt_pthread_mutex_t *mutex) RELEASE(mutex) NO_THREAD_SAFETY_ANALYSIS
+{
+  return pthread_mutex_unlock(&mutex->mutex);
+};
+
+inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
+{
+  return pthread_mutex_destroy(&mutex->mutex);
+};
+
+inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t *mutex)
+{
+  return pthread_cond_wait(cond, &mutex->mutex);
+};
 
 #define dt_pthread_rwlock_t pthread_rwlock_t
 #define dt_pthread_rwlock_init pthread_rwlock_init
@@ -313,6 +342,22 @@ static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *r
 #define dt_pthread_rwlock_trywrlock_with_caller(A,B,C) pthread_rwlock_trywrlock(A)
 
 #endif
+
+// if at all possible, do NOT use.
+inline int dt_pthread_mutex_BAD_lock(dt_pthread_mutex_t *mutex)
+{
+  return pthread_mutex_lock(&mutex->mutex);
+};
+
+inline int dt_pthread_mutex_BAD_trylock(dt_pthread_mutex_t *mutex)
+{
+  return pthread_mutex_trylock(&mutex->mutex);
+};
+
+inline int dt_pthread_mutex_BAD_unlock(dt_pthread_mutex_t *mutex)
+{
+  return pthread_mutex_unlock(&mutex->mutex);
+};
 
 int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *arg);
 

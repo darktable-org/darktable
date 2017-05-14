@@ -371,7 +371,7 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
         gdk_pixbuf_loader_close(loader, NULL);
       }
       if(fp) gp_file_free(fp);
-      dt_pthread_mutex_unlock(&cam->live_view_synch);
+      dt_pthread_mutex_BAD_unlock(&cam->live_view_synch);
       dt_control_queue_redraw_center();
     }
     break;
@@ -488,7 +488,7 @@ static void *dt_camctl_camera_get_live_view(void *data)
 
   while(cam->is_live_viewing == TRUE)
   {
-    dt_pthread_mutex_lock(&cam->live_view_synch);
+    dt_pthread_mutex_BAD_lock(&cam->live_view_synch);
 
     // calculate FPS
     double current_time = dt_get_wtime();
@@ -560,7 +560,7 @@ void dt_camctl_camera_stop_live_view(const dt_camctl_t *c)
 void _camctl_lock(const dt_camctl_t *c, const dt_camera_t *cam)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  dt_pthread_mutex_lock(&camctl->lock);
+  dt_pthread_mutex_BAD_lock(&camctl->lock);
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control locked for camera %p\n", cam);
   camctl->active_camera = cam;
   _dispatch_control_status(c, CAMERA_CONTROL_BUSY);
@@ -571,7 +571,7 @@ void _camctl_unlock(const dt_camctl_t *c)
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   const dt_camera_t *cam = camctl->active_camera;
   camctl->active_camera = NULL;
-  dt_pthread_mutex_unlock(&camctl->lock);
+  dt_pthread_mutex_BAD_unlock(&camctl->lock);
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control un-locked for camera %p\n", cam);
   _dispatch_control_status(c, CAMERA_CONTROL_AVAILABLE);
 }

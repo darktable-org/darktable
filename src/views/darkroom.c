@@ -523,10 +523,10 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // which in turn try to acquire the gdk lock.
   //
   // worst case, it'll drop some change image events. sorry.
-  if(dt_pthread_mutex_trylock(&dev->preview_pipe_mutex)) return;
-  if(dt_pthread_mutex_trylock(&dev->pipe_mutex))
+  if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe_mutex)) return;
+  if(dt_pthread_mutex_BAD_trylock(&dev->pipe_mutex))
   {
-    dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+    dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
     return;
   }
 
@@ -724,8 +724,8 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_view_filmstrip_prefetch();
 
   // release pixel pipe mutices
-  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-  dt_pthread_mutex_unlock(&dev->pipe_mutex);
+  dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
+  dt_pthread_mutex_BAD_unlock(&dev->pipe_mutex);
 
   // update hint message
   dt_collection_hint_message(darktable.collection);

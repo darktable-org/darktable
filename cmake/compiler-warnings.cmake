@@ -30,6 +30,8 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wvla)
 
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wold-style-declaration)
 
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wthread-safety)
+
 # may be our bug :(
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-error=varargs)
 
