@@ -138,8 +138,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     d->decodeMetaData(meta);
     RawImage r = d->mRaw;
 
-    for (uint32 i=0; i<r->errors.size(); i++)
-      fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, r->errors[i].c_str());
+    const auto errors = r->getErrors();
+    for(const auto &error : errors) fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
 
     g_strlcpy(img->camera_maker, r->metadata.canonical_make.c_str(), sizeof(img->camera_maker));
     g_strlcpy(img->camera_model, r->metadata.canonical_model.c_str(), sizeof(img->camera_model));
