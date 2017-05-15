@@ -685,9 +685,6 @@ cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel)
 static cmsHPROFILE dt_colorspaces_create_xyz_profile(void)
 {
   cmsHPROFILE hXYZ = cmsCreateXYZProfile();
-  // revert some settings which prevent us from using XYZ as output profile:
-  cmsSetDeviceClass(hXYZ, cmsSigDisplayClass);
-  cmsSetColorSpace(hXYZ, cmsSigRgbData);
   cmsSetPCS(hXYZ, cmsSigXYZData);
   cmsSetHeaderRenderingIntent(hXYZ, INTENT_PERCEPTUAL);
 
