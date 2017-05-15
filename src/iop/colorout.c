@@ -642,6 +642,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
   // and the subsequent error messages
+  d->type = out_type;
   if(out_type == DT_COLORSPACE_LAB)
     goto end;
 
