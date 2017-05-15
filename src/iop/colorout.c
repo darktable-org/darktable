@@ -39,6 +39,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+// this was removed from lcms2 in 2.4
+#ifndef TYPE_XYZA_FLT
+  #define TYPE_XYZA_FLT         (FLOAT_SH(1)|COLORSPACE_SH(PT_XYZ)|EXTRA_SH(1)|CHANNELS_SH(3)|BYTES_SH(4))
+#endif
+
 // max iccprofile file name length
 #define DT_IOP_COLOR_ICC_LEN 100
 #define LUT_SAMPLES 0x10000
@@ -592,6 +597,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   cmsHPROFILE output = NULL;
   cmsHPROFILE softproof = NULL;
+  cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
   d->mode = pipe->type == DT_DEV_PIXELPIPE_FULL ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
 
@@ -650,7 +656,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   const dt_colorspaces_color_profile_t *out_profile
         = dt_colorspaces_get_profile(out_type, out_filename, DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
   if(out_profile)
+  {
     output = out_profile->profile;
+    if(out_type == DT_COLORSPACE_XYZ) output_format = TYPE_XYZA_FLT;
+  }
   else
   {
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "",
@@ -708,7 +717,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   {
     d->cmatrix[0] = NAN;
     piece->process_cl_ready = 0;
-    d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, TYPE_RGBA_FLT, softproof,
+    d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
                                           out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
   }
 
@@ -725,7 +734,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       d->cmatrix[0] = NAN;
       piece->process_cl_ready = 0;
 
-      d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, TYPE_RGBA_FLT, softproof,
+      d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
                                             out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
     }
   }
