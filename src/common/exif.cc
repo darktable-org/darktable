@@ -77,7 +77,8 @@ const char *dt_xmp_keys[]
         "Xmp.darktable.xmp_version", "Xmp.darktable.raw_params", "Xmp.darktable.auto_presets_applied",
         "Xmp.darktable.mask_id", "Xmp.darktable.mask_type", "Xmp.darktable.mask_name",
         "Xmp.darktable.mask_version", "Xmp.darktable.mask", "Xmp.darktable.mask_nb", "Xmp.darktable.mask_src",
-        "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights" };
+        "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights",
+        "Xmp.xmpMM.DerivedFrom" };
 
 static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys); // the number of XmpBag XmpSeq keys that dt uses
 
@@ -2634,7 +2635,6 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
     }
 
     dt_remove_known_keys(xmpData); // is this needed?
-
     // last but not least attach what we have in DB to the XMP. in theory that should be
     // the same as what we just copied over from the sidecar file, but you never know ...
     dt_exif_xmp_read_data(xmpData, imgid);
