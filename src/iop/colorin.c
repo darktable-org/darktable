@@ -1536,6 +1536,26 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     return;
   }
 
+  cmsColorSpaceSignature input_color_space = cmsGetColorSpace(d->input);
+  cmsUInt32Number input_format;
+  switch(input_color_space)
+  {
+    case cmsSigRgbData:
+      input_format = TYPE_RGBA_FLT;
+      break;
+    case cmsSigXYZData:
+      input_format = TYPE_XYZA_FLT;
+      break;
+    default:
+      // fprintf("%.*s", 4, input_color_space) doesn't work, it prints the string backwards :(
+      fprintf(stderr, "[colorin] input profile color space `%c%c%c%c' not supported\n",
+              (char)(input_color_space>>24),
+              (char)(input_color_space>>16),
+              (char)(input_color_space>>8),
+              (char)(input_color_space));
+      input_format = TYPE_RGBA_FLT; // this will fail later, triggering the linear rec709 fallback
+  }
+
   // prepare transformation matrix or lcms2 transforms as fallback
   if(d->nrgb)
   {
@@ -1545,8 +1565,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = NAN;
-      d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, Lab, TYPE_LabA_FLT, p->intent, 0);
-      d->xform_cam_nrgb = cmsCreateTransform(d->input, TYPE_RGBA_FLT, d->nrgb, TYPE_RGBA_FLT, p->intent, 0);
+      d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab, TYPE_LabA_FLT, p->intent, 0);
+      d->xform_cam_nrgb = cmsCreateTransform(d->input, input_format, d->nrgb, TYPE_RGBA_FLT, p->intent, 0);
       d->xform_nrgb_Lab = cmsCreateTransform(d->nrgb, TYPE_RGBA_FLT, Lab, TYPE_LabA_FLT, p->intent, 0);
     }
     else
@@ -1566,7 +1586,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = NAN;
-      d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, Lab, TYPE_LabA_FLT, p->intent, 0);
+      d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab, TYPE_LabA_FLT, p->intent, 0);
     }
   }
 
