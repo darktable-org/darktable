@@ -33,68 +33,68 @@ CONTRIBUTOR_THRESHOLD = 4
 
 # these will not be shown in contributors section.
 ALL_DEVELOPERS = [
-    "Aldric Renaudin",
-    "Alexandre Prokoudine",
-    "Christian Tellefsen",
-    "Edouard Gomez",
-    "Henrik Andersson",
-    "James C. McPherson",
-    "José Carlos García Sogo",
-    "Jérémy Rosen",
-    "Pascal Obry",
-    "Pascal de Bruijn",
-    "Pedro Côrte-Real",
-    "Roman Lebedev",
-    "Simon Spannagel",
-    "Tobias Ellinghaus",
-    "Ulrich Pegelow",
-    "johannes hanika",
-    "parafin"
-  ]
+  'Aldric Renaudin',
+  'Alexandre Prokoudine',
+  'Christian Tellefsen',
+  'Edouard Gomez',
+  'Henrik Andersson',
+  'James C. McPherson',
+  'José Carlos García Sogo',
+  'Jérémy Rosen',
+  'Pascal Obry',
+  'Pascal de Bruijn',
+  'Pedro Côrte-Real',
+  'Roman Lebedev',
+  'Simon Spannagel',
+  'Tobias Ellinghaus',
+  'Ulrich Pegelow',
+  'johannes hanika',
+  'parafin'
+].freeze
 
 VERSIONS = ARGV[0]
 
-def get_shortlog(path="")
+def get_shortlog(path = '')
   hash = {}
 
   IO.popen("git shortlog -sn #{VERSIONS} -- #{path}").each do |line|
-    parts = line.strip().split("\t")
+    parts = line.strip.split("\t")
     hash[parts[1].to_s] = parts[0].to_i
   end
 
-  return hash
+  hash
 end
 
-Dir.chdir(File.dirname(__FILE__)+"/../")
+Dir.chdir(File.dirname(__FILE__) + '/../')
 
-SHORTLOG = get_shortlog().keep_if{ |authorname, count| count >= SHORTLOG_THRESHOLD }
+SHORTLOG = get_shortlog.keep_if { |_authorname, count| count >= SHORTLOG_THRESHOLD }
 
 # all developers, that made any changes in selected timeframe
-DEVELOPERS = SHORTLOG.select{ |authorname, count| ALL_DEVELOPERS.include?(authorname) }
+DEVELOPERS = SHORTLOG.select { |authorname, _count| ALL_DEVELOPERS.include?(authorname) }
 
 # all the people that changed PO files
-TRANSLATORS = get_shortlog("./po/*.po ./doc/man/po/*.po") \
-# and keep only the ones with at least this much commits
-  .keep_if { |authorname, count| count >= TRANSLATOR_THRESHOLD }
+TRANSLATORS = get_shortlog('./po/*.po ./doc/man/po/*.po') \
+              # and keep only the ones with at least this much commits
+              .keep_if { |_authorname, count| count >= TRANSLATOR_THRESHOLD }
 
 # all contributors (except those in dev list, but including translators)
-CONTRIBUTORS = SHORTLOG.reject{ |authorname, count| ALL_DEVELOPERS.include?(authorname) } \
-# and keep only the ones with at least this much commits
-  .keep_if{ |authorname, count| count >= CONTRIBUTOR_THRESHOLD }
+CONTRIBUTORS = SHORTLOG.reject { |authorname, _count| ALL_DEVELOPERS.include?(authorname) } \
+                       # and keep only the ones with at least this much commits
+                       .keep_if { |_authorname, count| count >= CONTRIBUTOR_THRESHOLD }
 
-puts "* developers:"
-puts DEVELOPERS.keys.join(",\n") + "."
+puts '* developers:'
+puts DEVELOPERS.keys.join(",\n") + '.'
 puts
 
-puts "* translators:"
-puts TRANSLATORS.keys.join(",\n") + "."
+puts '* translators:'
+puts TRANSLATORS.keys.join(",\n") + '.'
 puts
 
 puts "* contributors (at least #{CONTRIBUTORS.values.min} commits):"
-puts CONTRIBUTORS.keys.join(",\n") + "."
+puts CONTRIBUTORS.keys.join(",\n") + '.'
 puts
 
-puts "And all those of you that made previous releases possible"
+puts 'And all those of you that made previous releases possible'
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 # kate: tab-width: 2; replace-tabs on; indent-width 2; tab-indents: off;
