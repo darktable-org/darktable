@@ -4,23 +4,23 @@ require 'nokogiri'
 require 'json'
 
 class CameraSupportState
-  SOURCE_FILES={
-    :cameras => "src/external/rawspeed/data/cameras.xml",
-    :coeffs => "src/external/adobe_coeff.c",
-    :wbpresets => "src/external/wb_presets.c",
-    :colormatrices => "src/common/colormatrices.c",
-    :noiseprofiles => "data/noiseprofiles.json",
-  }
-  PANASONIC_NEEDED_FORMATS=["4:3", "3:2", "16:9", "1:1"]
+  SOURCE_FILES = {
+    :cameras => 'src/external/rawspeed/data/cameras.xml',
+    :coeffs => 'src/external/adobe_coeff.c',
+    :wbpresets => 'src/external/wb_presets.c',
+    :colormatrices => 'src/common/colormatrices.c',
+    :noiseprofiles => 'data/noiseprofiles.json'
+  }.freeze
+  PANASONIC_NEEDED_FORMATS = ['4:3', '3:2', '16:9', '1:1'].freeze
 
-  def initialize(opts={})
+  def initialize(opts = {})
     @samplesdir = opts[:samplesdir]
     @sources = Hash[
       SOURCE_FILES.map do |name, file|
         if opts[:ref]
           [name, IO.popen("git show #{opts[:ref]}:#{file}")]
         else
-          [name, File.open(File.expand_path("../"+file, File.dirname(__FILE__)))]
+          [name, File.open(File.expand_path('../' + file, File.dirname(__FILE__)))]
         end
       end
     ]
@@ -29,26 +29,26 @@ class CameraSupportState
 
   def get_maker_model(file)
     def get_exif_key(key, file)
-      IO.popen("exiv2 -g \"#{key}\" -Pt \"#{file}\" 2>/dev/null","r").read
+      IO.popen("exiv2 -g \"#{key}\" -Pt \"#{file}\" 2>/dev/null", 'r').read
     end
 
-    maker = get_exif_key("Exif.Image.Make", file)
-    maker = maker[0..6] == "SAMSUNG" ? "SAMSUNG" : maker.strip
-    model = get_exif_key("Exif.Image.Model", file)
-    model = model[0..5] == "NX2000" ? "NX2000" : model.strip
+    maker = get_exif_key('Exif.Image.Make', file)
+    maker = maker[0..6] == 'SAMSUNG' ? 'SAMSUNG' : maker.strip
+    model = get_exif_key('Exif.Image.Model', file)
+    model = model[0..5] == 'NX2000' ? 'NX2000' : model.strip
 
-    if (maker == "" || model == "") # Try with rawspeed instead
-      IO.popen("darktable-rs-identify \"#{file}\"","r").each do |line|
-        parts = line.split(":")
+    if maker == '' || model == '' # Try with rawspeed instead
+      IO.popen("darktable-rs-identify \"#{file}\"", 'r').each do |line|
+        parts = line.split(':')
         case parts[0].strip
-        when "make"
-          maker = parts[1..-1].join(":").strip
-        when "model"
-          model = parts[1..-1].join(":").strip
+        when 'make'
+          maker = parts[1..-1].join(':').strip
+        when 'model'
+          model = parts[1..-1].join(':').strip
         end
       end
     end
-    return [maker,model]
+    [maker, model]
   end
 
   def process_files
@@ -59,45 +59,44 @@ class CameraSupportState
     @rawspeed_modes = {}
     @exif_name_map = {}
     @exif_alias_map = {}
-    xml_doc  = Nokogiri::XML(@sources[:cameras])
-    xml_doc.css("Camera").each do |c|
-      maker = exif_maker = c.attribute("make").value
-      model = c.attribute("model").value
+    xml_doc = Nokogiri::XML(@sources[:cameras])
+    xml_doc.css('Camera').each do |c|
+      maker = exif_maker = c.attribute('make').value
+      model = c.attribute('model').value
       exif_id = "#{maker} #{model}"
-      if c.css("ID")[0]
-        maker = c.css("ID")[0].attribute("make").value
-        model = c.css("ID")[0].attribute("model").value
+      if c.css('ID')[0]
+        maker = c.css('ID')[0].attribute('make').value
+        model = c.css('ID')[0].attribute('model').value
       end
       id = "#{maker} #{model}"
-      supported = !c.attribute("supported") || c.attribute("supported").value == "yes"
-      if supported
-        @rawspeed_cameras[id] = 0
-        @rawspeed_aliases[id] = [id]
+      supported = !c.attribute('supported') || c.attribute('supported').value == 'yes'
+      next unless supported
+      @rawspeed_cameras[id] = 0
+      @rawspeed_aliases[id] = [id]
+      @exif_name_map[exif_id] = id
+      @exif_alias_map[exif_id] = id
+      mode = ''
+      mode = c.attribute('mode').value if c.attribute('mode')
+      if mode != ''
+        @rawspeed_modes[id] ||= []
+        @rawspeed_modes[id] <<= mode
+      end
+      @rawspeed_dngs[id] = true if mode == 'dng'
+      if PANASONIC_NEEDED_FORMATS.include?(mode)
+        @rawspeed_panasonic_formats[id] ||= []
+        @rawspeed_panasonic_formats[id] << mode
+      end
+      c.css('Alias').each do |a|
+        exif_model = model = a.content
+        exif_id = "#{exif_maker} #{exif_model}"
+        model = a.attribute('id').value if a.attribute('id')
+        aliasid = "#{maker} #{model}"
+        @rawspeed_aliases[id] << aliasid if aliasid != id
         @exif_name_map[exif_id] = id
-        @exif_alias_map[exif_id] = id
-        mode = ""
-        mode = c.attribute("mode").value if c.attribute("mode")
-        if mode != ""
-          @rawspeed_modes[id] ||= []
-          @rawspeed_modes[id] <<= mode
-        end
-        @rawspeed_dngs[id] = true if mode == "dng"
-        if PANASONIC_NEEDED_FORMATS.include?(mode)
-          @rawspeed_panasonic_formats[id] ||= []
-          @rawspeed_panasonic_formats[id] << mode
-        end
-        c.css("Alias").each do |a|
-          exif_model = model = a.content
-          exif_id = "#{exif_maker} #{exif_model}"
-          model = a.attribute("id").value if a.attribute("id")
-          aliasid = "#{maker} #{model}"
-          @rawspeed_aliases[id] << aliasid if aliasid != id
-          @exif_name_map[exif_id] = id
-          @exif_alias_map[exif_id] = aliasid
-          if mode != ""
-            @rawspeed_modes[aliasid] ||= []
-            @rawspeed_modes[aliasid] <<= mode
-          end
+        @exif_alias_map[exif_id] = aliasid
+        if mode != ''
+          @rawspeed_modes[aliasid] ||= []
+          @rawspeed_modes[aliasid] <<= mode
         end
       end
     end
@@ -105,14 +104,12 @@ class CameraSupportState
 
     @coeffs_cameras = {}
     @sources[:coeffs].each do |line|
-      if line[0..4] == "    {"
-        @coeffs_cameras[line.split('"')[1]] = 0
-      end
+      @coeffs_cameras[line.split('"')[1]] = 0 if line[0..4] == '    {'
     end
 
     @presets_cameras = {}
     @sources[:wbpresets].each do |line|
-      if line[0..2] == "  {"
+      if line[0..2] == '  {'
         lineparts = line.split('"')
         @presets_cameras["#{lineparts[1]} #{lineparts[3]}"] = 0
       end
@@ -120,9 +117,7 @@ class CameraSupportState
 
     @colormatrices_cameras = {}
     @sources[:colormatrices].each do |line|
-      if line[0..2] == "  {"
-        @colormatrices_cameras[line.split('"')[1]] = 0
-      end
+      @colormatrices_cameras[line.split('"')[1]] = 0 if line[0..2] == '  {'
     end
 
     @noiseprofiles_cameras = {}
@@ -138,16 +133,14 @@ class CameraSupportState
     @samples_alias_cameras = {}
     if @samplesdir
       Dir["#{@samplesdir}/**/**/*"].each do |file|
-        if (File.file?(file))
-          maker, model = get_maker_model(file)
-          if (maker != "" && model != "")
-            id = name = alias_name = "#{maker} #{model}"
-            name = @exif_name_map[id] if @exif_name_map[id]
-            alias_name = @exif_alias_map[id] if @exif_alias_map[id]
-            @samples_cameras[name] = 0
-            @samples_alias_cameras[alias_name] = 0
-          end
-        end
+        next unless File.file?(file)
+        maker, model = get_maker_model(file)
+        next unless maker != '' && model != ''
+        id = name = alias_name = "#{maker} #{model}"
+        name = @exif_name_map[id] if @exif_name_map[id]
+        alias_name = @exif_alias_map[id] if @exif_alias_map[id]
+        @samples_cameras[name] = 0
+        @samples_alias_cameras[alias_name] = 0
       end
     end
   end
@@ -164,62 +157,60 @@ class CameraSupportState
 
     miss_db = []
     db.each do |c, num|
-      if num == 0
-        miss_db << c
-      end
+      miss_db << c if num == 0
     end
 
     puts "For #{name} found #{miss_cams.size} cameras missing and #{miss_db.size} entries for no cam"
-    miss_cams.each {|c| puts "  MISS: #{c}"} if verbose_miss
-    miss_db.each {|c| puts "  NOMATCH: #{c}"} if verbose_nomatch
+    miss_cams.each { |c| puts "  MISS: #{c}" } if verbose_miss
+    miss_db.each { |c| puts "  NOMATCH: #{c}" } if verbose_nomatch
   end
 
   def default_listing(verbose_mode, quiet_mode)
     puts "Found #{@rawspeed_cameras.size} cameras #{@coeffs_cameras.size} adobe_coeffs #{@presets_cameras.size} wb_coeffs #{@colormatrices_cameras.size} colormatrices #{@noiseprofiles_cameras.size} noise profiles #{@samples_cameras.size} samples"
-    rawspeed_coeffs_cameras = @rawspeed_cameras.select{|id| !@rawspeed_dngs[id]}
-    compare_lists("adobe_coeffs", @rawspeed_cameras, @coeffs_cameras, !quiet_mode, verbose_mode)
-    compare_lists("wb_presets", @rawspeed_cameras, @presets_cameras, verbose_mode, !quiet_mode)
-    compare_lists("colormatrices", @rawspeed_cameras, @colormatrices_cameras, verbose_mode, !quiet_mode)
-    compare_lists("noiseprofiles", @rawspeed_cameras, @noiseprofiles_cameras, verbose_mode, !quiet_mode)
-    compare_lists("samples", @rawspeed_cameras, @samples_cameras, verbose_mode, !quiet_mode) if @samplesdir
+    rawspeed_coeffs_cameras = @rawspeed_cameras.reject { |id| @rawspeed_dngs[id] }
+    compare_lists('adobe_coeffs', @rawspeed_cameras, @coeffs_cameras, !quiet_mode, verbose_mode)
+    compare_lists('wb_presets', @rawspeed_cameras, @presets_cameras, verbose_mode, !quiet_mode)
+    compare_lists('colormatrices', @rawspeed_cameras, @colormatrices_cameras, verbose_mode, !quiet_mode)
+    compare_lists('noiseprofiles', @rawspeed_cameras, @noiseprofiles_cameras, verbose_mode, !quiet_mode)
+    compare_lists('samples', @rawspeed_cameras, @samples_cameras, verbose_mode, !quiet_mode) if @samplesdir
     @rawspeed_panasonic_formats.each do |camera, formats|
       if formats.size != 4
-        missing_formats = PANASONIC_NEEDED_FORMATS.select{|f| !formats.include?(f)}
+        missing_formats = PANASONIC_NEEDED_FORMATS.reject { |f| formats.include?(f) }
         puts "Missing formats for '#{camera}' #{missing_formats.join(' ')}"
       end
     end
   end
 
   def matrix_listing
-    puts "<table><tbody>"
+    puts '<table><tbody>'
 
     counts = [0, 0, 0, 0, 0]
-    clist = ""
+    clist = ''
     i = 1
     camera_list.each do |camera, al|
       counts[0] += 1
       i += 1
-      line_class = i%2 == 0 ? "even" : "odd"
+      line_class = i.even? ? 'even' : 'odd'
       clist << "  <tr class=\"#{line_class}\">"
       clist << "<td>#{al}</td>"
       [@samples_alias_cameras[al], @presets_cameras[camera],
        @noiseprofiles_cameras[camera], @colormatrices_cameras[camera]].each_with_index do |value, num|
-        counts[num+1] += 1 if value
-        value = value ? "Yes" : "<strong>NO</strong>"
+        counts[num + 1] += 1 if value
+        value = value ? 'Yes' : '<strong>NO</strong>'
         clist << "<td>#{value}</td>"
       end
       clist << "</tr>\n"
     end
 
-    puts "  <tr class=\"odd\">"
-    ["Camera", "Raw Sample", "WB Presets", "Noise Profile", "Custom Matrix"].each_with_index do |name, i|
+    puts '  <tr class="odd">'
+    ['Camera', 'Raw Sample', 'WB Presets', 'Noise Profile', 'Custom Matrix'].each_with_index do |name, i|
       $stdout.write "    <th><strong>#{name}</strong><br/>"
-      $stdout.write "#{counts[i]} (#{(counts[i].to_f/counts[0].to_f*100).to_i}%)"
+      $stdout.write "#{counts[i]} (#{(counts[i].to_f / counts[0].to_f * 100).to_i}%)"
       $stdout.write "</th>\n"
     end
-    puts "  </tr>"
+    puts '  </tr>'
     $stdout.write clist
-    puts "</tbody></table>"
+    puts '</tbody></table>'
   end
 
   def camera_list
@@ -244,7 +235,7 @@ class CameraSupportState
     new_profiles = []
     new_matrices = []
 
-    from_cameras = Hash[from.camera_list.map{|camera, al| [al, true]}]
+    from_cameras = Hash[from.camera_list.map { |_camera, al| [al, true] }]
 
     # Create a reverse map between alias and possible EXIF names
     alias_exif_map = {}
@@ -254,21 +245,21 @@ class CameraSupportState
     end
 
     camera_list.each do |camera, al|
-      fromals = alias_exif_map[al].map{|exif| from.exif_alias_map[exif]}
+      fromals = alias_exif_map[al].map { |exif| from.exif_alias_map[exif] }
       fromals.delete nil
       if (!from_cameras[al] && # Camera was not listed before
-         fromals.size == 0) || # And it wasn't just an ID rename
+         fromals.empty?) || # And it wasn't just an ID rename
          from.rawspeed_modes[al] != @rawspeed_modes[al] # Or it has new modes
-        modes = (@rawspeed_modes[al]||[]).dup
-        (from.rawspeed_modes[al]||[]).each {|m| modes.delete m}
-        new_basics << al+(modes.size>0 ? " ("+modes.join(", ")+")" : "")
+        modes = (@rawspeed_modes[al] || []).dup
+        (from.rawspeed_modes[al] || []).each { |m| modes.delete m }
+        new_basics << al + (!modes.empty? ? ' (' + modes.join(', ') + ')' : '')
       end
 
       def test_camera(to_cameras, cam, from_cameras, fromals)
-        return false if !to_cameras[cam] # It doesn't exist in the new version
+        return false unless to_cameras[cam] # It doesn't exist in the new version
         return false if from_cameras[cam] # It already existed in the old version
-        fromals.each{|fromal| return false if from_cameras[fromal]} # It wasn't just an ID rename
-        return true
+        fromals.each { |fromal| return false if from_cameras[fromal] } # It wasn't just an ID rename
+        true
       end
 
       new_presets << al  if test_camera(@presets_cameras, camera, from.presets_cameras, fromals)
@@ -277,25 +268,25 @@ class CameraSupportState
     end
 
     def print_list(name, list)
-      return if list.size == 0
+      return if list.empty?
       puts name
       puts
       list.each do |item|
-        puts "- "+item
+        puts '- ' + item
       end
       puts
     end
 
-    print_list "Base Support:", new_basics
-    print_list "White Balance Presets:", new_presets
-    print_list "Noise Profiles:", new_profiles
-    print_list "Custom Color matrices:", new_matrices
+    print_list 'Base Support:', new_basics
+    print_list 'White Balance Presets:', new_presets
+    print_list 'Noise Profiles:', new_profiles
+    print_list 'Custom Color matrices:', new_matrices
   end
-end #class CameraSupportState
+end # class CameraSupportState
 
-if ARGV[0] == "--compare" && ARGV.size == 3
-  from = CameraSupportState.new(:ref=>ARGV[1])
-  to = CameraSupportState.new(:ref=>ARGV[2])
+if ARGV[0] == '--compare' && ARGV.size == 3
+  from = CameraSupportState.new(:ref => ARGV[1])
+  to = CameraSupportState.new(:ref => ARGV[2])
   to.diff_listing(from)
 else
   matrix_mode = nil
@@ -304,17 +295,17 @@ else
   samplesdir = nil
 
   ARGV.each do |arg|
-    if arg == "--matrix"
+    if arg == '--matrix'
       matrix_mode = true
-    elsif arg == "--verbose"
+    elsif arg == '--verbose'
       verbose_mode = true
-    elsif arg == "--quiet"
+    elsif arg == '--quiet'
       quiet_mode = true
-    elsif samplesdir == nil && File.exists?(arg)
+    elsif samplesdir.nil? && File.exist?(arg)
       samplesdir = arg
     else
-      $stderr.puts "Usage: check_camera_support [--verbose] [--matrix] <samples dir>"
-      $stderr.puts "       check_camera_support --compare <from git> <to git>"
+      $stderr.puts 'Usage: check_camera_support [--verbose] [--matrix] <samples dir>'
+      $stderr.puts '       check_camera_support --compare <from git> <to git>'
       exit 2
     end
   end

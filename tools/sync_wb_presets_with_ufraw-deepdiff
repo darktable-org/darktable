@@ -6,19 +6,19 @@ require './wb_presets_common.rb'
 require 'net/http'
 require 'deep_merge'
 
-UFRAWPRESETS=URI('http://ufraw.cvs.sourceforge.net/viewvc/ufraw/ufraw/wb_presets.c?content-type=text%2Fplain')
-#UFRAWPRESETS=File.expand_path("/tmp/wb_presets.c")
+UFRAWPRESETS = URI('http://ufraw.cvs.sourceforge.net/viewvc/ufraw/ufraw/wb_presets.c?content-type=text%2Fplain')
+# UFRAWPRESETS=File.expand_path("/tmp/wb_presets.c")
 
-puts "Fetching ufraw presets from their CVS, may take a moment..."
+puts 'Fetching ufraw presets from their CVS, may take a moment...'
 ufraw_presets = {}
 Net::HTTP.get(UFRAWPRESETS).each_line do |line|
-#File.open(UFRAWPRESETS).each do |line|
+  # File.open(UFRAWPRESETS).each do |line|
   WbPresetsCommon.parse_preset(ufraw_presets, line, true)
 end
 
 dt_presets = WbPresetsCommon.dt_presets()
 
-forward_hash, backward_hash = RawSpeedCommon.generate_hashes()
+forward_hash, backward_hash = RawSpeedCommon.generate_hashes
 
 ufraw_merged = {}
 backward_hash.each do |clean_name, exif_names|
@@ -33,55 +33,52 @@ backward_hash.each do |clean_name, exif_names|
   end
 end
 
-#output_presets(ufraw_merged)
-#exit
+# output_presets(ufraw_merged)
+# exit
 
 grab_from_ufraw = {}
-forward_hash.each do |exif_name, clean_name|
-  if(ufraw_merged.key?(clean_name) && !dt_presets.key?(clean_name))
+forward_hash.each do |_exif_name, clean_name|
+  if ufraw_merged.key?(clean_name) && !dt_presets.key?(clean_name)
     grab_from_ufraw[clean_name] = ufraw_merged[clean_name]
   end
-  if(ufraw_merged.key?(clean_name) && dt_presets.key?(clean_name))
-    ufraw_merged[clean_name].each do |preset, hash|
-      # different names for some Fluorescent, Tungsten, and Shade presets...
-      # if(ufraw_merged[clean_name].key?(preset) && !dt_presets[clean_name].key?(preset))
-      #   grab_from_ufraw[clean_name] = Hash.new if not grab_from_ufraw.key?(clean_name)
-      #   grab_from_ufraw[clean_name][preset] = hash
-      # end
+  next unless ufraw_merged.key?(clean_name) && dt_presets.key?(clean_name)
+  ufraw_merged[clean_name].each do |preset, hash|
+    # different names for some Fluorescent, Tungsten, and Shade presets...
+    # if(ufraw_merged[clean_name].key?(preset) && !dt_presets[clean_name].key?(preset))
+    #   grab_from_ufraw[clean_name] = Hash.new if not grab_from_ufraw.key?(clean_name)
+    #   grab_from_ufraw[clean_name][preset] = hash
+    # end
 
-      if((ufraw_merged[clean_name].length > dt_presets[clean_name].length) &&
-         (ufraw_merged[clean_name].key?(preset) && !dt_presets[clean_name].key?(preset)))
-        grab_from_ufraw[clean_name] = Hash.new if not grab_from_ufraw.key?(clean_name)
-        grab_from_ufraw[clean_name][preset] = hash
+    if (ufraw_merged[clean_name].length > dt_presets[clean_name].length) &&
+       (ufraw_merged[clean_name].key?(preset) && !dt_presets[clean_name].key?(preset))
+      grab_from_ufraw[clean_name] = {} unless grab_from_ufraw.key?(clean_name)
+      grab_from_ufraw[clean_name][preset] = hash
+    end
+
+    next unless ufraw_merged[clean_name].key?(preset) && dt_presets[clean_name].key?(preset)
+    hash.each do |tune, values|
+      if ufraw_merged[clean_name][preset].key?(tune) && !dt_presets[clean_name][preset].key?(tune)
+        grab_from_ufraw[clean_name] = {} unless grab_from_ufraw.key?(clean_name)
+        grab_from_ufraw[clean_name][preset] = {} unless grab_from_ufraw[clean_name].key?(preset)
+        grab_from_ufraw[clean_name][preset][tune] = values
       end
 
-      if(ufraw_merged[clean_name].key?(preset) && dt_presets[clean_name].key?(preset))
-        hash.each do |tune, values|
-          if(ufraw_merged[clean_name][preset].key?(tune) && !dt_presets[clean_name][preset].key?(tune))
-            grab_from_ufraw[clean_name] = Hash.new if not grab_from_ufraw.key?(clean_name)
-            grab_from_ufraw[clean_name][preset] = Hash.new if not grab_from_ufraw[clean_name].key?(preset)
-            grab_from_ufraw[clean_name][preset][tune] = values
-          end
+      if ufraw_merged[clean_name][preset].key?(tune) && dt_presets[clean_name][preset].key?(tune) &&
+         (
+          (ufraw_merged[clean_name][preset][tune].join(',').length > dt_presets[clean_name][preset][tune].join(',').length) ||
+          (
+           ((ufraw_merged[clean_name][preset][tune][0] - dt_presets[clean_name][preset][tune][0]).abs > 1.0e-6) &&
+           ufraw_merged[clean_name][preset][tune][0].to_s.length >= dt_presets[clean_name][preset][tune][0].to_s.length
+          ) ||
+          (
+           ((ufraw_merged[clean_name][preset][tune][2] - dt_presets[clean_name][preset][tune][2]).abs > 1.0e-6) &&
+           ufraw_merged[clean_name][preset][tune][0].to_s.length >= dt_presets[clean_name][preset][tune][0].to_s.length
+          )
+         )
 
-          if(ufraw_merged[clean_name][preset].key?(tune) && dt_presets[clean_name][preset].key?(tune) &&
-             (
-              (ufraw_merged[clean_name][preset][tune].join(',').length > dt_presets[clean_name][preset][tune].join(',').length) ||
-              (
-               ((ufraw_merged[clean_name][preset][tune][0] - dt_presets[clean_name][preset][tune][0]).abs > 1.0e-6) &&
-               ufraw_merged[clean_name][preset][tune][0].to_s.length >= dt_presets[clean_name][preset][tune][0].to_s.length
-              ) ||
-              (
-               ((ufraw_merged[clean_name][preset][tune][2] - dt_presets[clean_name][preset][tune][2]).abs > 1.0e-6) &&
-               ufraw_merged[clean_name][preset][tune][0].to_s.length >= dt_presets[clean_name][preset][tune][0].to_s.length
-              )
-             )
-            )
-
-            grab_from_ufraw[clean_name] = Hash.new if not grab_from_ufraw.key?(clean_name)
-            grab_from_ufraw[clean_name][preset] = Hash.new if not grab_from_ufraw[clean_name].key?(preset)
-            grab_from_ufraw[clean_name][preset][tune] = values
-          end
-        end
+        grab_from_ufraw[clean_name] = {} unless grab_from_ufraw.key?(clean_name)
+        grab_from_ufraw[clean_name][preset] = {} unless grab_from_ufraw[clean_name].key?(preset)
+        grab_from_ufraw[clean_name][preset][tune] = values
       end
     end
   end
