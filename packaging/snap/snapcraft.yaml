@@ -1,0 +1,42 @@
+name: darktable
+grade: devel
+version: "2.0.6"
+summary: photo worklow software
+description: |
+  darktable is an open source photography workflow application
+  and RAW developer
+
+confinement: devmode
+
+apps:
+    darktable:
+        command: desktop-launch darktable --moduledir $SNAP/lib/darktable --datadir $SNAP/share/darktable --localedir $SNAP/share/locale --configdir $SNAP_USER_DATA
+        plugs: [home, unity7, x11, gsettings]
+
+parts:
+    darktable:
+        source: git://github.com/darktable-org/darktable.git
+        source-type: git
+        source-tag: release-2.0.6
+        plugin: cmake
+        configflags:
+            - -DCMAKE_BUILD_TYPE=Release
+        build-packages:
+            - intltool
+            - libcurl4-gnutls-dev
+            - libexiv2-dev
+            - libgphoto2-dev
+            - libgtk-3-dev
+            - libjpeg-dev
+            - libjson-glib-dev
+            - liblcms2-dev
+            - liblensfun-dev
+            - libpugixml-dev
+            - librsvg2-dev
+            - libsqlite3-dev
+            - libtiff5-dev
+            - libwebp-dev
+            - libxml2-dev
+            - libxml2-utils
+            - xsltproc
+        after: [desktop-gtk3]
