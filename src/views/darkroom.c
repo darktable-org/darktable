@@ -43,14 +43,16 @@
 #include "views/view.h"
 #include "views/view_api.h"
 
+#include <fcntl.h>
 #include <gdk/gdkkeysyms.h>
+#include <glib.h>
+#include <glib/gstdio.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 DT_MODULE(1)
 
