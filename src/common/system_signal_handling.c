@@ -37,6 +37,10 @@
 #include <string.h>      // for strerror
 #include <unistd.h>      // for STDOUT_FILENO, close, execlp, fork
 
+#if !defined(_NSIG) && defined(NSIG)
+# define _NSIG NSIG
+#endif
+
 #ifdef __linux__
 #include <sys/prctl.h> // for PR_SET_PTRACER, prctl
 #endif
