@@ -2674,6 +2674,50 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="600" white="15892"/>
 	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D5600" mode="12bit-compressed">
+		<ID make="Nikon" model="D5600">Nikon D5600</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="150" white="3972"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D5600" mode="12bit-uncompressed">
+		<ID make="Nikon" model="D5600">Nikon D5600</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="150" white="3972"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D5600" mode="14bit-compressed">
+		<ID make="Nikon" model="D5600">Nikon D5600</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="600" white="15892"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D5600" mode="14bit-uncompressed">
+		<ID make="Nikon" model="D5600">Nikon D5600</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="600" white="15892"/>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D60" mode="12bit-compressed">
 		<ID make="Nikon" model="D60">Nikon D60</ID>
 		<CFA width="2" height="2">
