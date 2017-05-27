@@ -737,7 +737,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   for(int k = 0; k < max_scale; k++) dt_free_align(detail[k]);
   dt_free_align(tmp);
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, width, height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, width, height);
 
   return;
 
