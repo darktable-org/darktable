@@ -395,7 +395,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
                                                      roi_in->height, ch, ch_width);
           }
 
-          if(mask_display)
+          if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
           {
             if(d->do_nan_checks && (!isfinite(bufptr[2]) || !isfinite(bufptr[3])))
             {
@@ -489,7 +489,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
                                                      roi_in->height, ch, ch_width);
           }
 
-          if(mask_display)
+          if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
           {
             if(d->do_nan_checks && (!isfinite(buf2ptr[2]) || !isfinite(buf2ptr[3])))
             {

@@ -905,9 +905,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 #endif
 
-  darktable.blendop = (dt_blendop_t *)calloc(1, sizeof(dt_blendop_t));
-  dt_develop_blend_init(darktable.blendop);
-
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
 

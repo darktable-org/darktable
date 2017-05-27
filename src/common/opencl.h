@@ -143,6 +143,9 @@ typedef struct dt_opencl_t
   dt_opencl_device_t *dev;
   dt_dlopencl_t *dlocl;
 
+  // global kernels for blending operations.
+  struct dt_blendop_cl_global_t *blendop;
+
   // global kernels for bilateral filtering, to be reused by a few plugins.
   struct dt_bilateral_cl_global_t *bilateral;
 

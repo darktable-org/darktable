@@ -593,6 +593,18 @@
     <shortdescription>smoothing of brush strokes</shortdescription>
     <longdescription>sets level for smoothing of brush strokes. stronger smoothing leads to less nodes and easier editing but with lower control of accuracy.</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>channel_display</name>
+    <type>
+      <enum>
+        <option>false color</option>
+        <option>grey scale</option>
+      </enum>
+    </type>
+    <default>false color</default>
+    <shortdescription>display of individual color channels</shortdescription>
+    <longdescription>defines how color channels are displayed when activated in the parametric masks feature.</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
     <type>int</type>

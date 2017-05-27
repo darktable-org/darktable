@@ -144,7 +144,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->shutdown = 0;
   pipe->opencl_error = 0;
   pipe->tiling = 0;
-  pipe->mask_display = 0;
+  pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   pipe->input_timestamp = 0;
   pipe->levels = IMAGEIO_RGB | IMAGEIO_INT8;
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
@@ -710,6 +710,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     **out_format = pipe->dsc = piece->dsc_out;
 
+    const size_t out_bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
 
     // reserve new cache line: output
     dt_pthread_mutex_lock(&pipe->busy_mutex);
@@ -729,47 +730,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %p\n", module->op, pipe ==
 // dev->preview_pipe ? "[preview]" : "", hash, *output);
 
-#if 0
-    // tonecurve/levels histogram (collect luminance only):
-    dt_pthread_mutex_lock(&pipe->busy_mutex);
-    if(pipe->shutdown)
-    {
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      return 1;
-    }
-    if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0 || strcmp(module->op, "levels") == 0))
-    {
-      float *pixel = (float *)input;
-      float *histogram_pre = NULL;
-      float *histogram_pre_max = NULL;
-
-      if(!strcmp(module->op, "tonecurve"))
-      {
-        histogram_pre = dev->histogram_pre_tonecurve;
-        histogram_pre_max = &(dev->histogram_pre_tonecurve_max);
-      }
-      else
-      {
-        histogram_pre = dev->histogram_pre_levels;
-        histogram_pre_max = &(dev->histogram_pre_levels_max);
-      }
-
-      *histogram_pre_max = 0;
-      memset (histogram_pre, 0, sizeof(float)*4*64);
-      for(int j=0; j<roi_in.height; j+=4) for(int i=0; i<roi_in.width; i+=4)
-        {
-          uint8_t L = CLAMP(63/100.0*(pixel[4*j*roi_in.width+4*i]), 0, 63);
-          histogram_pre[4*L+3] ++;
-        }
-      // don't count <= 0 pixels
-      for(int k=19; k<4*64; k+=4) *histogram_pre_max = *histogram_pre_max > histogram_pre[k] ? *histogram_pre_max : histogram_pre[k];
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      if(module->widget) dt_control_queue_redraw_widget(module->widget);
-    }
-    else dt_pthread_mutex_unlock(&pipe->busy_mutex);
-#endif
-
-
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown)
     {
@@ -781,6 +741,42 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     dt_get_times(&start);
 
     dt_pixelpipe_flow_t pixelpipe_flow = (PIXELPIPE_FLOW_NONE | PIXELPIPE_FLOW_HISTOGRAM_NONE);
+
+    // special case: user requests to see channel data in the parametric mask of a module. In that case
+    // we skip all modules manipulating pixel content and only process image distorting modules. Finally
+    // "gamma" is responsible to display channel data accordingly.
+    if(strcmp(module->op, "gamma") && (pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY) && !(module->operation_tags() & IOP_TAG_DISTORT) &&
+      (in_bpp == out_bpp) && !memcmp(&roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
+    {
+#ifdef HAVE_OPENCL
+      if(dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0 && (cl_mem_input != NULL))
+      {
+        *cl_mem_output = cl_mem_input;
+      }
+      else
+      {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(roi_out, roi_in, output, input)
+#endif
+        for(int j = 0; j < roi_out->height; j++)
+            memcpy(((char *)*output) + (size_t)out_bpp * j * roi_out->width,
+                   ((char *)input) + (size_t)in_bpp * j * roi_in.width,
+                   (size_t)in_bpp * roi_in.width);
+      }
+#else // don't HAVE_OPENCL
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(roi_out, roi_in, output, input)
+#endif
+      for(int j = 0; j < roi_out->height; j++)
+            memcpy(((char *)*output) + (size_t)out_bpp * j * roi_out->width,
+                   ((char *)input) + (size_t)in_bpp * j * roi_in.width,
+                   (size_t)in_bpp * roi_in.width);
+#endif
+
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 0;
+    }
+
 
     /* get tiling requirement of module */
     dt_develop_tiling_t tiling = { 0 };
@@ -2261,7 +2257,7 @@ restart:
   pipe->cache_obsolete = 0;
 
   // mask display off as a starting point
-  pipe->mask_display = 0;
+  pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   void *buf = NULL;
   void *cl_mem_out = NULL;
