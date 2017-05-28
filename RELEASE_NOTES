@@ -13,7 +13,7 @@ and the changelog as compared to 2.2.4 can be found below.
 
 ## New features:
 
-- When exporting image, when appending EXIF data, do not fail if reading of EXIF from the original file fails
+- When appending EXIF data to an exported image, do not fail if reading of EXIF from the original file fails
 - Support XYZ as proofing profile
 - Clear DerivedFrom from XMP before writing it
 - bauhaus: when using soft bounds, keep slider step constant
