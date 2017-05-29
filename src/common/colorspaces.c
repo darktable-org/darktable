@@ -1180,6 +1180,61 @@ static gint _sort_profiles(gconstpointer a, gconstpointer b)
   return result;
 }
 
+static GList *load_profile_from_dir(const char *subdir)
+{
+  GList *temp_profiles = NULL;
+  cmsHPROFILE tmpprof;
+  const gchar *d_name;
+  char datadir[PATH_MAX] = { 0 };
+  char confdir[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  char *lang = getenv("LANG");
+  if(!lang) lang = "en_US";
+
+  char *dirname = g_build_filename(confdir, "color", subdir, NULL);
+  if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
+  {
+    g_free(dirname);
+    dirname = g_build_filename(datadir, "color", subdir, NULL);
+  }
+  GDir *dir = g_dir_open(dirname, 0, NULL);
+  if(dir)
+  {
+    while((d_name = g_dir_read_name(dir)))
+    {
+      char *filename = g_build_filename(dirname, d_name, NULL);
+      const char *cc = filename + strlen(filename);
+      for(; *cc != '.' && cc > filename; cc--)
+        ;
+      if(!g_ascii_strcasecmp(cc, ".icc") || !g_ascii_strcasecmp(cc, ".icm"))
+      {
+        // TODO: add support for grayscale profiles, then remove _ensure_rgb_profile() from here
+        tmpprof = _ensure_rgb_profile(cmsOpenProfileFromFile(filename, "r"));
+        if(tmpprof)
+        {
+          dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+          dt_colorspaces_get_profile_name(tmpprof, lang, lang + 3, prof->name, sizeof(prof->name));
+
+          g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
+          prof->type = DT_COLORSPACE_FILE;
+          prof->profile = tmpprof;
+          // these will be set after sorting!
+          prof->in_pos = -1;
+          prof->out_pos = -1;
+          prof->display_pos = -1;
+          temp_profiles = g_list_append(temp_profiles, prof);
+        }
+      }
+      g_free(filename);
+    }
+    g_dir_close(dir);
+    temp_profiles = g_list_sort(temp_profiles, _sort_profiles);
+  }
+  g_free(dirname);
+  return temp_profiles;
+}
+
 dt_colorspaces_t *dt_colorspaces_init()
 {
   cmsSetLogErrorHandler(cms_error_handler);
@@ -1191,17 +1246,6 @@ dt_colorspaces_t *dt_colorspaces_init()
   int in_pos = -1,
       out_pos = -1,
       display_pos = -1;
-  cmsHPROFILE tmpprof;
-  const gchar *d_name;
-  char datadir[PATH_MAX] = { 0 };
-  char confdir[PATH_MAX] = { 0 };
-  char dirname[PATH_MAX] = { 0 };
-  char filename[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  GDir *dir;
-  char *lang = getenv("LANG");
-  if(!lang) lang = "en_US";
 
   // init the display profile with srgb so some stupid code that runs before the real profile could be fetched has something to work with
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_DISPLAY, dt_colorspaces_create_srgb_profile(),
@@ -1257,39 +1301,10 @@ dt_colorspaces_t *dt_colorspaces_init()
                                                                ++in_pos, ++out_pos, ++display_pos));
 
   // temporary list of profiles to be added, we keep this separate to be able to sort it before adding
-  GList *temp_profiles = NULL;
+  GList *temp_profiles;
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
-  snprintf(dirname, sizeof(dirname), "%s/color/in", confdir);
-  if(!g_file_test(dirname, G_FILE_TEST_IS_DIR)) snprintf(dirname, sizeof(dirname), "%s/color/in", datadir);
-  dir = g_dir_open(dirname, 0, NULL);
-  if(dir)
-  {
-    while((d_name = g_dir_read_name(dir)))
-    {
-      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
-      const char *cc = filename + strlen(filename);
-      for(; *cc != '.' && cc > filename; cc--)
-        ;
-      if(g_ascii_strcasecmp(cc, ".icc") && g_ascii_strcasecmp(cc, ".icm")) continue;
-      tmpprof = _ensure_rgb_profile(cmsOpenProfileFromFile(filename, "r"));
-      if(tmpprof)
-      {
-        dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
-        dt_colorspaces_get_profile_name(tmpprof, lang, lang + 3, prof->name, sizeof(prof->name));
-
-        g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
-        prof->type = DT_COLORSPACE_FILE;
-        prof->profile = tmpprof;
-        prof->in_pos = -1; // will be set after sorting!
-        prof->out_pos = -1;
-        prof->display_pos = -1;
-        temp_profiles = g_list_append(temp_profiles, prof);
-      }
-    }
-    g_dir_close(dir);
-  }
-  temp_profiles = g_list_sort(temp_profiles, _sort_profiles);
+  temp_profiles = load_profile_from_dir("in");
   for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
   {
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
@@ -1297,40 +1312,8 @@ dt_colorspaces_t *dt_colorspaces_init()
   }
   res->profiles = g_list_concat(res->profiles, temp_profiles);
 
-  temp_profiles = NULL;
-
   // read {conf,data}dir/color/out/*.icc
-  snprintf(dirname, sizeof(dirname), "%s/color/out", confdir);
-  if(!g_file_test(dirname, G_FILE_TEST_IS_DIR)) snprintf(dirname, sizeof(dirname), "%s/color/out", datadir);
-  dir = g_dir_open(dirname, 0, NULL);
-  if(dir)
-  {
-    while((d_name = g_dir_read_name(dir)))
-    {
-      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
-      const char *cc = filename + strlen(filename);
-      for(; *cc != '.' && cc > filename; cc--)
-        ;
-      if(g_ascii_strcasecmp(cc, ".icc") && g_ascii_strcasecmp(cc, ".icm")) continue;
-      // TODO: add support for grayscale output, then remove _ensure_rgb_profile() from here
-      tmpprof = _ensure_rgb_profile(cmsOpenProfileFromFile(filename, "r"));
-      if(tmpprof)
-      {
-        dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
-        dt_colorspaces_get_profile_name(tmpprof, lang, lang + 3, prof->name, sizeof(prof->name));
-
-        g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
-        prof->type = DT_COLORSPACE_FILE;
-        prof->profile = tmpprof;
-        prof->in_pos = -1;
-        prof->out_pos = -1; // will be set after sorting!
-        prof->display_pos = -1;  // will be set after sorting!
-        temp_profiles = g_list_append(temp_profiles, prof);
-      }
-    }
-    g_dir_close(dir);
-  }
-  temp_profiles = g_list_sort(temp_profiles, _sort_profiles);
+  temp_profiles = load_profile_from_dir("out");
   for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
   {
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
