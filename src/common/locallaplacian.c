@@ -584,3 +584,38 @@ void local_laplacian_internal(
 #undef num_gamma
 }
 
+
+size_t local_laplacian_memory_use(const int width,     // width of input image
+                                  const int height)    // height of input image
+{
+#define max_levels 30
+#define num_gamma 6
+  const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(width,height)));
+  const int max_supp = 1<<(num_levels-1);
+  const int paddwd = width  + 2*max_supp;
+  const int paddht = height + 2*max_supp;
+
+  size_t memory_use = 0;
+
+  for(int l=0;l<num_levels;l++)
+    memory_use += (size_t)(2 + num_gamma) * dl(paddwd, l) * dl(paddht, l) * sizeof(float);
+
+  return memory_use;
+#undef num_levels
+#undef num_gamma
+}
+
+size_t local_laplacian_singlebuffer_size(const int width,     // width of input image
+                                         const int height)    // height of input image
+{
+#define max_levels 30
+#define num_gamma 6
+  const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(width,height)));
+  const int max_supp = 1<<(num_levels-1);
+  const int paddwd = width  + 2*max_supp;
+  const int paddht = height + 2*max_supp;
+
+  return (size_t)dl(paddwd, 0) * dl(paddht, 0) * sizeof(float);
+#undef num_levels
+#undef num_gamma
+}

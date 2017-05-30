@@ -236,7 +236,6 @@ error:
   fprintf(stderr, "[local laplacian cl] failed: %d\n", err);
   return err;
 }
-
 #undef max_levels
 #undef num_gamma
 #endif
