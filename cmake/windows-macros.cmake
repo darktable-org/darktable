@@ -45,6 +45,8 @@ if (WIN32)
     ${MINGW_PATH}/gdk-pixbuf-query-loaders.exe
     ${MINGW_PATH}/gtk-query-immodules*.exe
     ${MINGW_PATH}/gtk-update-icon-cache.exe
+    ${MINGW_PATH}/gspawn-win64-helper.exe
+    ${MINGW_PATH}/gspawn-win64-helper-console.exe
   #LZO2
     ${MINGW_PATH}/liblzo*.dll
   #OPENEXR
