@@ -132,6 +132,12 @@ if (WIN32)
       DESTINATION share/icons/adwaita/
       COMPONENT DTApplication)
 
+  # fixup hicolor theme
+  install(FILES
+      "${MINGW_PATH}/../share/icons/hicolor/index.theme"
+      DESTINATION share/icons/hicolor/
+      COMPONENT DTApplication)
+
   # Add gtk schemas files
   install(DIRECTORY
       "${MINGW_PATH}/../share/glib-2.0/schemas/"
