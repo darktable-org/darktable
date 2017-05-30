@@ -41,6 +41,14 @@ void local_laplacian(
   local_laplacian_internal(input, out, wd, ht, sigma, shadows, highlights, clarity, 0);
 }
 
+size_t local_laplacian_memory_use(const int width,      // width of input image
+                                  const int height);    // height of input image
+
+
+size_t local_laplacian_singlebuffer_size(const int width,       // width of input image
+                                         const int height);     // height of input image
+
+
 #if defined(__SSE2__)
 void local_laplacian_sse2(
     const float *const input,   // input buffer in some Labx or yuvx format
