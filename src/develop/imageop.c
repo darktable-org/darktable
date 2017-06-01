@@ -1398,6 +1398,10 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
 
     // assume process_cl is ready, commit_params can overwrite this.
     if(module->process_cl) piece->process_cl_ready = 1;
+
+    // register if module allows tiling, commit_params can overwrite this.
+    if(module->flags() & IOP_FLAGS_ALLOW_TILING) piece->process_tiling_ready = 1;
+
     module->commit_params(module, params, pipe, piece);
     for(int i = 0; i < length; i++) hash = ((hash << 5) + hash) ^ str[i];
     piece->hash = hash;
