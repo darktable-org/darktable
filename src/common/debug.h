@@ -48,6 +48,17 @@
     assert(x == SQLITE_OK);                                                                                       \
     _Pragma("GCC diagnostic pop")                                                                                 \
   }
+#define __DT_DEBUG_ASSERT_WITH_QUERY__(xin, query)                                                                \
+  {                                                                                                               \
+    _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wshadow\"") const int x = xin;              \
+    if(x != SQLITE_OK)                                                                                            \
+    {                                                                                                             \
+      fprintf(stderr, "sqlite3 error: %s:%d, function %s(), query \"%s\": %s\n", __FILE__, __LINE__, __FUNCTION__,\
+              (query), sqlite3_errmsg(dt_database_get(darktable.db)));                                            \
+    }                                                                                                             \
+    assert(x == SQLITE_OK);                                                                                       \
+    _Pragma("GCC diagnostic pop")                                                                                 \
+  }
 #else
 #define __DT_DEBUG_ASSERT__(xin)                                                                                  \
   {                                                                                                               \
@@ -59,6 +70,16 @@
     }                                                                                                             \
     _Pragma("GCC diagnostic pop")                                                                                 \
   }
+#define __DT_DEBUG_ASSERT_WITH_QUERY__(xin, query)                                                                \
+  {                                                                                                               \
+    _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wshadow\"") const int x = xin;              \
+    if(x != SQLITE_OK)                                                                                            \
+    {                                                                                                             \
+      fprintf(stderr, "sqlite3 error: %s:%d, function %s(), query \"%s\": %s\n", __FILE__, __LINE__, __FUNCTION__,\
+              (query), sqlite3_errmsg(dt_database_get(darktable.db)));                                            \
+    }                                                                                                             \
+    _Pragma("GCC diagnostic pop")                                                                                 \
+  }
 
 #endif
 
@@ -66,7 +87,7 @@
   do                                                                                                              \
   {                                                                                                               \
     dt_print(DT_DEBUG_SQL, "[sql] %s:%d, function %s(): exec \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, (b));   \
-    __DT_DEBUG_ASSERT__(sqlite3_exec(a, b, c, d, e));                                                             \
+    __DT_DEBUG_ASSERT_WITH_QUERY__(sqlite3_exec(a, b, c, d, e), (b));                                             \
     __DT_DEBUG_SQL_QUERY__(b)                                                                                     \
   } while(0)
 
@@ -74,7 +95,7 @@
   do                                                                                                              \
   {                                                                                                               \
     dt_print(DT_DEBUG_SQL, "[sql] %s:%d, function %s(): prepare \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, (b));\
-    __DT_DEBUG_ASSERT__(sqlite3_prepare_v2(a, b, c, d, e));                                                       \
+    __DT_DEBUG_ASSERT_WITH_QUERY__(sqlite3_prepare_v2(a, b, c, d, e), (b));                                       \
     __DT_DEBUG_SQL_QUERY__(b)                                                                                     \
   } while(0)
 
