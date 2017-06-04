@@ -1055,7 +1055,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         }
     }
   }
-  free(all_buffers);
+  dt_free_align(all_buffers);
 }
 
 /* Return the k-th smallest item in array x of length len */
@@ -2046,7 +2046,7 @@ static void vng_interpolate(float *out, const float *const in,
   // copy the final two rows to the image
   memcpy(out + (4 * ((height - 4) * width + 2)), brow[0] + 2, (size_t)(width - 4) * 4 * sizeof(*out));
   memcpy(out + (4 * ((height - 3) * width + 2)), brow[1] + 2, (size_t)(width - 4) * 4 * sizeof(*out));
-  free(buffer);
+  dt_free_align(buffer);
 
   if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
 // for Bayer mix the two greens to make VNG4
@@ -4281,7 +4281,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_demosaic_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 119; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 117; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;

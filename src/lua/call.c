@@ -657,7 +657,8 @@ static int gtk_wrap(lua_State*L)
     return lua_gettop(L);
   } else {
 #ifdef _DEBUG
-  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %ld\n",__FUNCTION__,lua_tostring(L,lua_upvalueindex(2)), lua_tointeger(L,lua_upvalueindex(3)));
+    dt_print(DT_DEBUG_LUA, "LUA DEBUG : %s called from %s %llu\n", __FUNCTION__,
+             lua_tostring(L, lua_upvalueindex(2)), lua_tointeger(L, lua_upvalueindex(3)));
 #endif
     dt_lua_unlock();
     gtk_wrap_communication communication;
@@ -671,7 +672,8 @@ static int gtk_wrap(lua_State*L)
     g_mutex_clear(&communication.end_mutex);
     dt_lua_lock();
 #ifdef _DEBUG
-  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s return for call from from %s %ld\n",__FUNCTION__,lua_tostring(L,lua_upvalueindex(2)), lua_tointeger(L,lua_upvalueindex(3)));
+    dt_print(DT_DEBUG_LUA, "LUA DEBUG : %s return for call from from %s %llu\n", __FUNCTION__,
+             lua_tostring(L, lua_upvalueindex(2)), lua_tointeger(L, lua_upvalueindex(3)));
 #endif
     if(communication.retval == LUA_OK) {
       return lua_gettop(L);

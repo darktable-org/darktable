@@ -209,12 +209,22 @@ table
   background-color: transparent;
 }
 
+popover {
+  opacity: 0.9;
+  border: 0;
+  border-radius: 0;
+  box-shadow: 0 0 0 2pt #111111;
+  background-color: @selected_bg_color;
+  padding: 1pt;
+}
+
 frame {
   border: 1pt solid #111111;
   background-color: @selected_bg_color;
   color: @selected_fg_color;
 }
 
+popover *,
 frame * {
   background-color: transparent;
   color: @selected_fg_color;

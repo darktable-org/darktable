@@ -37,8 +37,6 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *cr, gpointer u
 static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w);
 static void dt_bauhaus_widget_reject(dt_bauhaus_widget_t *w);
-static gboolean dt_bauhaus_root_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
-static gboolean dt_bauhaus_root_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 
 
 static int get_line_space()
@@ -232,46 +230,38 @@ static void draw_slider_line(cairo_t *cr, float pos, float off, float scale, con
 }
 // -------------------------------
 
-// handlers on the root window, to close popup:
-static gboolean dt_bauhaus_root_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+// handlers on the popup window, to close popup:
+static gboolean dt_bauhaus_window_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
-  if(darktable.bauhaus->current)
+  const float tol = 50;
+  gint wx, wy;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  gdk_window_get_origin(gtk_widget_get_window(widget), &wx, &wy);
+  if(event->x_root > wx + allocation.width + tol || event->y_root > wy + allocation.height + tol
+     || event->x_root < (int)wx - tol || event->y_root < (int)wy - tol)
   {
-    const float tol = 50;
-    gint wx, wy;
-    widget = darktable.bauhaus->popup_window;
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
-    gdk_window_get_origin(gtk_widget_get_window(widget), &wx, &wy);
-    if(event->x_root > wx + allocation.width + tol || event->y_root > wy + allocation.height + tol
-       || event->x_root < (int)wx - tol || event->y_root < (int)wy - tol)
-    {
-      dt_bauhaus_widget_reject(darktable.bauhaus->current);
-      dt_bauhaus_hide_popup();
-    }
+    dt_bauhaus_widget_reject(darktable.bauhaus->current);
+    dt_bauhaus_hide_popup();
     return TRUE;
   }
   // make sure to propagate the event further
   return FALSE;
 }
 
-static gboolean dt_bauhaus_root_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean dt_bauhaus_window_button_press(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
-  if(darktable.bauhaus->current)
+  const float tol = 0;
+  gint wx, wy;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  gdk_window_get_origin(gtk_widget_get_window(widget), &wx, &wy);
+  if((event->x_root > wx + allocation.width + tol || event->y_root > wy + allocation.height + tol
+      || event->x_root < (int)wx - tol || event->y_root < (int)wy - tol))
   {
-    const float tol = 0;
-    gint wx, wy;
-    widget = darktable.bauhaus->popup_window;
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
-    gdk_window_get_origin(gtk_widget_get_window(widget), &wx, &wy);
-    if((event->x_root > wx + allocation.width + tol || event->y_root > wy + allocation.height + tol
-        || event->x_root < (int)wx - tol || event->y_root < (int)wy - tol))
-    {
-      dt_bauhaus_widget_reject(darktable.bauhaus->current);
-      dt_bauhaus_hide_popup();
-      return TRUE;
-    }
+    dt_bauhaus_widget_reject(darktable.bauhaus->current);
+    dt_bauhaus_hide_popup();
+    return TRUE;
   }
   // make sure to propagate the event further
   return FALSE;
@@ -451,30 +441,14 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
   return TRUE;
 }
 
-static void window_show(GtkWidget *w, gpointer user_data)
+static void dt_bauhaus_window_show(GtkWidget *w, gpointer user_data)
 {
-#if GTK_CHECK_VERSION(3, 20, 0)
-  gdk_seat_grab (
-      gdk_display_get_default_seat(gtk_widget_get_display(w)),
-      gtk_widget_get_window(w),
-      GDK_SEAT_CAPABILITY_KEYBOARD, FALSE, 0,0,0,0);
-#else
-  GdkDisplay *display = gtk_widget_get_display(w);
-  GdkDeviceManager *mgr = gdk_display_get_device_manager(display);
-  GList *devices = gdk_device_manager_list_devices(mgr, GDK_DEVICE_TYPE_MASTER);
-  GList *tmp = devices;
-  while(tmp)
-  {
-    GdkDevice *dev = tmp->data;
-    if(gdk_device_get_source(dev) == GDK_SOURCE_KEYBOARD)
-    {
-      gdk_device_grab(dev, gtk_widget_get_window(w), GDK_OWNERSHIP_NONE, FALSE,
-                      GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK, NULL, GDK_CURRENT_TIME);
-    }
-    tmp = tmp->next;
-  }
-  g_list_free(devices);
-#endif
+  // Could grab the popup_area rather than popup_window, but if so
+  // then popup_area would get all motion events including those
+  // outside of the popup. This way the popup_area gets motion events
+  // related to updating the popup, and popup_window gets all others
+  // which would be the ones telling it to close the popup.
+  gtk_grab_add(w);
 }
 
 static void dt_bh_init(DtBauhausWidget *class)
@@ -505,13 +479,6 @@ void dt_bauhaus_init()
   darktable.bauhaus->current = NULL;
   darktable.bauhaus->popup_area = gtk_drawing_area_new();
 
-  // connect signal to eventually clean up our popup if we go too far away and such:
-  GtkWidget *root_window = dt_ui_main_window(darktable.gui->ui);
-  g_signal_connect(G_OBJECT(root_window), "motion-notify-event", G_CALLBACK(dt_bauhaus_root_motion_notify),
-                   (gpointer)NULL);
-  g_signal_connect(G_OBJECT(root_window), "button-press-event", G_CALLBACK(dt_bauhaus_root_button_press),
-                   (gpointer)NULL);
-
   darktable.bauhaus->line_space = 2;
   darktable.bauhaus->line_height = 11;
   darktable.bauhaus->marker_size = 0.3f;
@@ -526,6 +493,7 @@ void dt_bauhaus_init()
   darktable.bauhaus->indicator = .6f;
   darktable.bauhaus->insensitive = 0.2f;
 
+  GtkWidget *root_window = dt_ui_main_window(darktable.gui->ui);
   GtkStyleContext *ctx = gtk_style_context_new();
   GtkWidgetPath *path;
   path = gtk_widget_path_new ();
@@ -611,8 +579,12 @@ void dt_bauhaus_init()
                                                        | GDK_KEY_PRESS_MASK | GDK_LEAVE_NOTIFY_MASK
                                                        | GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
 
-  g_signal_connect(G_OBJECT(darktable.bauhaus->popup_window), "show", G_CALLBACK(window_show), (gpointer)NULL);
+  g_signal_connect(G_OBJECT(darktable.bauhaus->popup_window), "show", G_CALLBACK(dt_bauhaus_window_show), (gpointer)NULL);
   g_signal_connect(G_OBJECT(darktable.bauhaus->popup_area), "draw", G_CALLBACK(dt_bauhaus_popup_draw),
+                   (gpointer)NULL);
+  g_signal_connect(G_OBJECT(darktable.bauhaus->popup_window), "motion-notify-event",
+                   G_CALLBACK(dt_bauhaus_window_motion_notify), (gpointer)NULL);
+  g_signal_connect(G_OBJECT(darktable.bauhaus->popup_window), "button-press-event", G_CALLBACK(dt_bauhaus_window_button_press),
                    (gpointer)NULL);
   g_signal_connect(G_OBJECT(darktable.bauhaus->popup_area), "motion-notify-event",
                    G_CALLBACK(dt_bauhaus_popup_motion_notify), (gpointer)NULL);
@@ -1741,25 +1713,7 @@ void dt_bauhaus_hide_popup()
 {
   if(darktable.bauhaus->current)
   {
-#if GTK_CHECK_VERSION(3, 20, 0)
-    gdk_seat_ungrab(
-      gdk_display_get_default_seat(gtk_widget_get_display(GTK_WIDGET(darktable.bauhaus->current))));
-#else
-    GdkDisplay *display = gdk_display_get_default();
-    GdkDeviceManager *mgr = gdk_display_get_device_manager(display);
-    GList *devices = gdk_device_manager_list_devices(mgr, GDK_DEVICE_TYPE_MASTER);
-    GList *tmp = devices;
-    while(tmp)
-    {
-      GdkDevice *dev = tmp->data;
-      if(gdk_device_get_source(dev) == GDK_SOURCE_KEYBOARD)
-      {
-        gdk_device_ungrab(dev, GDK_CURRENT_TIME);
-      }
-      tmp = tmp->next;
-    }
-    g_list_free(devices);
-#endif
+    gtk_grab_remove(darktable.bauhaus->popup_window);
     gtk_widget_hide(darktable.bauhaus->popup_window);
     darktable.bauhaus->current = NULL;
     // TODO: give focus to center view? do in accept() as well?
@@ -2104,6 +2058,7 @@ void dt_bauhaus_slider_set_soft(GtkWidget *widget, float pos)
   float rpos = CLAMP(rawval, d->hard_min, d->hard_max);
   d->min = MIN(d->min, rpos);
   d->max = MAX(d->max, rpos);
+  d->scale = 5.0f * d->step / (d->max - d->min);
   rpos = (rpos - d->min) / (d->max - d->min);
   dt_bauhaus_slider_set_normalized(w, rpos);
 }

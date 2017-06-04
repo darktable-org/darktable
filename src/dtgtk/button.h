@@ -51,6 +51,8 @@ GType dtgtk_button_get_type(void);
 GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags);
 /** set the paint function for a button */
 void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc paint, gint paintflags);
+/** set the active state of the button icon */
+void dtgtk_button_set_active(GtkDarktableButton *button, gboolean active);
 /** overwrite the foreground color, or NULL to reset it */
 void dtgtk_button_override_color(GtkDarktableButton *button, GdkRGBA *color);
 /** overwrite the background color, or NULL to reset it */

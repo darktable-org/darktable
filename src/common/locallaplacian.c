@@ -204,7 +204,7 @@ static inline void gauss_reduce_sse2(
     for(int i=cw&~7;i<cw-1;i++)
       out[i] = (6*row2[i] + 4*(row1[i] + row3[i]) + row0[i] + row4[i])*(1.0f/256.0f);
   }
-  free(ringbuf);
+  dt_free_align(ringbuf);
   ll_fill_boundary1(coarse, cw, ch);
 }
 #endif
@@ -576,12 +576,46 @@ void local_laplacian_internal(
   // free all buffers!
   for(int l=0;l<max_levels;l++)
   {
-    free(padded[l]);
-    free(output[l]);
-    for(int k=0;k<num_gamma;k++)
-      free(buf[k][l]);
+    dt_free_align(padded[l]);
+    dt_free_align(output[l]);
+    for(int k = 0; k < num_gamma; k++) dt_free_align(buf[k][l]);
   }
 #undef num_levels
 #undef num_gamma
 }
 
+
+size_t local_laplacian_memory_use(const int width,     // width of input image
+                                  const int height)    // height of input image
+{
+#define max_levels 30
+#define num_gamma 6
+  const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(width,height)));
+  const int max_supp = 1<<(num_levels-1);
+  const int paddwd = width  + 2*max_supp;
+  const int paddht = height + 2*max_supp;
+
+  size_t memory_use = 0;
+
+  for(int l=0;l<num_levels;l++)
+    memory_use += (size_t)(2 + num_gamma) * dl(paddwd, l) * dl(paddht, l) * sizeof(float);
+
+  return memory_use;
+#undef num_levels
+#undef num_gamma
+}
+
+size_t local_laplacian_singlebuffer_size(const int width,     // width of input image
+                                         const int height)    // height of input image
+{
+#define max_levels 30
+#define num_gamma 6
+  const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(width,height)));
+  const int max_supp = 1<<(num_levels-1);
+  const int paddwd = width  + 2*max_supp;
+  const int paddht = height + 2*max_supp;
+
+  return (size_t)dl(paddwd, 0) * dl(paddht, 0) * sizeof(float);
+#undef num_levels
+#undef num_gamma
+}

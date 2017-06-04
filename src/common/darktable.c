@@ -32,7 +32,6 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/fswatch.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/selection.h"
 #include "common/system_signal_handling.h"
@@ -118,7 +117,7 @@ const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2
 static int usage(const char *argv0)
 {
   printf("usage: %s [-d "
-         "{all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,lua,masks,memory,nan,opencl,perf,pwstorage,print,sql}]"
+         "{all,cache,camctl,camsupport,control,dev,input,lighttable,lua,masks,memory,nan,opencl,perf,pwstorage,print,sql}]"
          " [IMG_1234.{RAW,..}|image_folder/]",
          argv0);
 #ifdef HAVE_OPENCL
@@ -270,7 +269,7 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
     if(id)
     {
       dt_film_open(id);
-      dt_ctl_switch_mode_to(DT_LIBRARY);
+      dt_ctl_switch_mode_to("lighttable");
     }
     else
     {
@@ -304,7 +303,7 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
         if(open_image_in_dr)
         {
           dt_control_set_mouse_over_id(id);
-          dt_ctl_switch_mode_to(DT_DEVELOP);
+          dt_ctl_switch_mode_to("darkroom");
         }
       }
     }
@@ -503,7 +502,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                                       STR(LUA_API_VERSION_MINOR) "."
                                       STR(LUA_API_VERSION_PATCH);
 #endif
-        printf("this is %s\ncopyright (c) 2009-2017 johannes hanika\n" PACKAGE_BUGREPORT "\n\ncompile options:\n"
+        printf("this is %s\ncopyright (c) 2009-%s johannes hanika\n" PACKAGE_BUGREPORT "\n\ncompile options:\n"
                "  bit depth is %s\n"
 #ifdef _DEBUG
                "  debug build\n"
@@ -558,6 +557,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
                ,
                darktable_package_string,
+               darktable_last_commit_year,
                (sizeof(void *) == 8 ? "64 bit" : sizeof(void *) == 4 ? "32 bit" : "unknown")
 #if USE_LUA
                    ,
@@ -618,8 +618,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
         else if(!strcmp(argv[k + 1], "dev"))
           darktable.unmuted |= DT_DEBUG_DEV; // develop module
-        else if(!strcmp(argv[k + 1], "fswatch"))
-          darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
         else if(!strcmp(argv[k + 1], "input"))
           darktable.unmuted |= DT_DEBUG_INPUT; // input devices
         else if(!strcmp(argv[k + 1], "camctl"))
@@ -853,7 +851,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
-  // Make sure that the database and xmp files are in sync before starting the fswatch.
+  // Make sure that the database and xmp files are in sync
   // We need conf and db to be up and running for that which is the case here.
   // FIXME: is this also useful in non-gui mode?
   GList *changed_xmp_files = NULL;
@@ -861,9 +859,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     changed_xmp_files = dt_control_crawler_run();
   }
-
-  // Initialize the filesystem watcher
-  darktable.fswatch = dt_fswatch_new();
 
   // FIXME: move there into dt_database_t
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
@@ -909,9 +904,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifdef HAVE_OPENCL
   dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 #endif
-
-  darktable.blendop = (dt_blendop_t *)calloc(1, sizeof(dt_blendop_t));
-  dt_develop_blend_init(darktable.blendop);
 
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
@@ -965,13 +957,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_gui_gtk_load_config();
   }
 
-  dt_control_gui_mode_t mode = DT_LIBRARY;
+  const char *mode = "lighttable";
   // april 1st: you have to earn using dt first! or know that you can switch views with keyboard shortcuts
   time_t now;
   time(&now);
   struct tm lt;
   localtime_r(&now, &lt);
-  if(lt.tm_mon == 3 && lt.tm_mday == 1) mode = DT_KNIGHT;
+  if(lt.tm_mon == 3 && lt.tm_mday == 1) mode = "knight";
   if(init_gui)
   {
     // init the gui part of views
@@ -1022,7 +1014,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(loaded_images == 1 && only_single_images)
     {
       dt_control_set_mouse_over_id(last_id);
-      mode = DT_DEVELOP;
+      mode = "darkroom";
     }
 #endif
   }
@@ -1065,7 +1057,7 @@ void dt_cleanup()
 #endif
   if(init_gui)
   {
-    dt_ctl_switch_mode_to(DT_MODE_NONE);
+    dt_ctl_switch_mode_to("");
     dt_dbus_destroy(darktable.dbus);
 
     dt_control_shutdown(darktable.control);
@@ -1106,7 +1098,6 @@ void dt_cleanup()
   dt_camctl_destroy((dt_camctl_t *)darktable.camctl);
 #endif
   dt_pwstorage_destroy(darktable.pwstorage);
-  dt_fswatch_destroy(darktable.fswatch);
 
 #ifdef HAVE_GRAPHICSMAGICK
   DestroyMagick();

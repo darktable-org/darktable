@@ -785,7 +785,6 @@ static void delete_matching_accels(gpointer current, gpointer mapped)
 
   if(current_key.accel_key == mapped_key.accel_key                 // Key code matches
      && current_key.accel_mods == mapped_key.accel_mods            // Key state matches
-     && current_accel->views & mapped_accel->views                 // Conflicting views
      && !(current_accel->local && mapped_accel->local              // Not both local to
           && strcmp(current_accel->module, mapped_accel->module))) // diff mods
     gtk_accel_map_change_entry(current_accel->path, 0, 0, TRUE);

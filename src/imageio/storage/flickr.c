@@ -707,7 +707,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 cleanup:
 
   // And remove from filesystem..
-  unlink(fname);
+  g_unlink(fname);
   g_free(caption);
   if(desc) g_list_free_full(desc, &g_free);
 
