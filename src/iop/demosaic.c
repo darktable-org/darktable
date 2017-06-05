@@ -47,9 +47,9 @@ DT_MODULE_INTROSPECTION(3, dt_iop_demosaic_params_t)
 
 
 const float complex Minv[3][18] = {
-  { 1.0f +0.00000000000000f * _Complex_I, -0.375000000000000f +0.649519052838328f * _Complex_I, -0.375000000000000f -0.649519052838329f * _Complex_I, 0.00000000000000f - 1.83697019872103e-16f * _Complex_I, 0.250000000000000f -0.433012701892219f * _Complex_I, -0.125000000000000f -0.216506350946110f * _Complex_I, -0.500000000000000f +1.56125112837913e-16f * _Complex_I, -6.24500451351650e-17f - 6.08852588898699e-19f * _Complex_I, 1.56125112837913e-17f + 9.36750677027475e-17f * _Complex_I, 0.375000000000000f -0.649519052838329f * _Complex_I, -0.125000000000000f -0.216506350946110f * _Complex_I, -0.125000000000000f +0.216506350946110f * _Complex_I, 1.56125112837913e-17f - 9.36750677027475e-17f * _Complex_I, -6.24500451351650e-17f + 6.08852588898699e-19f * _Complex_I, 0.375000000000000f +0.649519052838329f * _Complex_I, -0.500000000000000f -1.56125112837913e-16f * _Complex_I, -0.125000000000000f +0.216506350946110f * _Complex_I, 0.250000000000000f +0.433012701892219f * _Complex_I },
-  { 1.0f +0.00000000000000f * _Complex_I, 2.39167952270526e-17f - 5.80308223730460e-18f * _Complex_I, 3.25265923185419e-17f - 4.43189035813341e-17f * _Complex_I, -2.15704153771370e-32f + 1.83697019872103e-16f * _Complex_I, -0.200000000000000f +0.346410161513775f * _Complex_I, 0.0999999999999999f + 0.173205080756888f * _Complex_I, 0.400000000000000f -4.51028103753970e-17f * _Complex_I, -5.62050406216485e-17f + 1.49880108324396e-16f * _Complex_I, -2.49800180540660e-17f + 4.41653799494468e-17f * _Complex_I, -1.37426241103610e-17f + 7.14884045852542e-17f * _Complex_I, 0.0999999999999998f + 0.173205080756888f * _Complex_I, 0.0999999999999999f - 0.173205080756888f * _Complex_I, -2.49800180540660e-17f - 4.41653799494468e-17f * _Complex_I, -5.62050406216485e-17f - 1.49880108324396e-16f * _Complex_I, -6.09739023677825e-17f + 1.93270952776170e-16f * _Complex_I, 0.400000000000000f +1.24900090270330e-16f * _Complex_I, 0.100000000000000f -0.173205080756888f * _Complex_I, -0.200000000000000f -0.346410161513775f * _Complex_I },
-  { 1.0f - 2.22044604925031e-16f * _Complex_I, 0.375000000000000f -0.649519052838329f * _Complex_I, 0.375000000000000f +0.649519052838329f * _Complex_I, -2.46519032881566e-32f - 1.83697019872103e-16f * _Complex_I, 0.250000000000000f -0.433012701892219f * _Complex_I, -0.125000000000000f -0.216506350946110f * _Complex_I, -0.500000000000000f +1.66533453693773e-16f * _Complex_I, -6.24500451351650e-17f + 2.21435752336133e-16f * _Complex_I, -1.09287578986539e-16f + 3.12250225675825e-17f * _Complex_I, -0.375000000000000f +0.649519052838329f * _Complex_I, -0.125000000000000f -0.216506350946110f * _Complex_I, -0.125000000000000f +0.216506350946110f * _Complex_I, -1.09287578986539e-16f - 3.12250225675825e-17f * _Complex_I, -6.24500451351651e-17f - 2.21435752336133e-16f * _Complex_I, -0.375000000000000f -0.649519052838329f * _Complex_I, -0.500000000000000f +8.32667268468867e-17f * _Complex_I, -0.125000000000000f +0.216506350946110f * _Complex_I, 0.25000000000000f +0.433012701892219f * _Complex_I }
+  { 1.0f , -0.375000000000000f +0.649519052838328f * _Complex_I, -0.375000000000000f -0.649519052838329f * _Complex_I, 0.00000000000000f - 1.83697019872103e-16f * _Complex_I, 0.250000000000000f -0.433012701892219f * _Complex_I, -0.125000000000000f -0.216506350946110f * _Complex_I, -0.500000000000000f , -6.24500451351650e-17f - 6.08852588898699e-19f * _Complex_I, 1.56125112837913e-17f + 9.36750677027475e-17f * _Complex_I, 0.375000000000000f -0.649519052838329f * _Complex_I, -0.125000000000000f -0.216506350946110f * _Complex_I, -0.125000000000000f +0.216506350946110f * _Complex_I, 1.56125112837913e-17f - 9.36750677027475e-17f * _Complex_I, -6.24500451351650e-17f + 6.08852588898699e-19f * _Complex_I, 0.375000000000000f +0.649519052838329f * _Complex_I, -0.500000000000000f -1.56125112837913e-16f * _Complex_I, -0.125000000000000f +0.216506350946110f * _Complex_I, 0.250000000000000f +0.433012701892219f * _Complex_I },
+  { 1.0f , 2.39167952270526e-17f - 5.80308223730460e-18f * _Complex_I, 3.25265923185419e-17f - 4.43189035813341e-17f * _Complex_I, -2.15704153771370e-32f + 1.83697019872103e-16f * _Complex_I, -0.200000000000000f +0.346410161513775f * _Complex_I, 0.0999999999999999f + 0.173205080756888f * _Complex_I, 0.400000000000000f , -5.62050406216485e-17f + 1.49880108324396e-16f * _Complex_I, -2.49800180540660e-17f + 4.41653799494468e-17f * _Complex_I, -1.37426241103610e-17f + 7.14884045852542e-17f * _Complex_I, 0.0999999999999998f + 0.173205080756888f * _Complex_I, 0.0999999999999999f - 0.173205080756888f * _Complex_I, -2.49800180540660e-17f - 4.41653799494468e-17f * _Complex_I, -5.62050406216485e-17f - 1.49880108324396e-16f * _Complex_I, -6.09739023677825e-17f + 1.93270952776170e-16f * _Complex_I, 0.400000000000000f +1.24900090270330e-16f * _Complex_I, 0.100000000000000f -0.173205080756888f * _Complex_I, -0.200000000000000f -0.346410161513775f * _Complex_I },
+  { 1.0f , 0.375000000000000f -0.649519052838329f * _Complex_I, 0.375000000000000f +0.649519052838329f * _Complex_I, -2.46519032881566e-32f - 1.83697019872103e-16f * _Complex_I, 0.250000000000000f -0.433012701892219f * _Complex_I, -0.125000000000000f -0.216506350946110f * _Complex_I, -0.500000000000000f , -6.24500451351650e-17f + 2.21435752336133e-16f * _Complex_I, -1.09287578986539e-16f + 3.12250225675825e-17f * _Complex_I, -0.375000000000000f +0.649519052838329f * _Complex_I, -0.125000000000000f -0.216506350946110f * _Complex_I, -0.125000000000000f +0.216506350946110f * _Complex_I, -1.09287578986539e-16f - 3.12250225675825e-17f * _Complex_I, -6.24500451351651e-17f - 2.21435752336133e-16f * _Complex_I, -0.375000000000000f -0.649519052838329f * _Complex_I, -0.500000000000000f +8.32667268468867e-17f * _Complex_I, -0.125000000000000f +0.216506350946110f * _Complex_I, 0.25000000000000f +0.433012701892219f * _Complex_I }
 };
 
 const float complex m1arr[ 6][ 6] = {
@@ -1058,8 +1058,8 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
   free(all_buffers);
 }
 
-/* Return the k-th smallest item in array x of length len */
-float quick_select(int k, float *x, int len)
+/* Return the 10th smallest item in array x of length 21 */
+inline float quick_select(float *x)
 {
   inline void swap(int a, int b)
   {
@@ -1067,14 +1067,14 @@ float quick_select(int k, float *x, int len)
     x[a] = x[b], x[b] = t;
   }
 
-  int left = 0, right = len - 1;
+  int left = 0, right = 20;
   int pos, i;
   float pivot;
 
   while (left < right)
   {
-    pivot = x[k];
-    swap(k, right);
+    pivot = x[10];
+    swap(10, right);
     for (i = pos = left; i < right; i++)
     {
       if (x[i] < pivot)
@@ -1084,11 +1084,11 @@ float quick_select(int k, float *x, int len)
       }
     }
     swap(right, pos);
-    if (pos == k) break;
-    if (pos < k) left = pos + 1;
+    if (pos == 10) break;
+    if (pos < 10) left = pos + 1;
     else right = pos - 1;
   }
-  return x[k];
+  return x[10];
 }
 
 /*
@@ -1565,18 +1565,18 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
           float w = dirsum / (float)dircount;
 #define CORR_FILT(VAR,FILT,XOFFS,YOFFS,XSIZE,YSIZE) \
 VAR = 0.0f + 0.0f * _Complex_I; \
-for (fdc_row=(YOFFS), myrow=row-5+(YOFFS); fdc_row < (YSIZE); fdc_row++, myrow++) \
-for (fdc_col=(XOFFS), mycol=col-5+(XOFFS); fdc_col < (XSIZE); fdc_col++, mycol++) \
+for (fdc_row=(YOFFS), myrow=row-6+(YOFFS); fdc_row < (YSIZE); fdc_row++, myrow++) \
+for (fdc_col=(XOFFS), mycol=col-6+(XOFFS); fdc_col < (XSIZE); fdc_col++, mycol++) \
 VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_orig[0][myrow][mycol];
           // extract modulated chroma using filters
           float complex C2m, C5m, C6m, C7m, C10m, C11m;
           // for 11x11 filters, use 0,0,11,11 as filter region
-          CORR_FILT(C2m,h2,1,1,10,10)
-          CORR_FILT(C5m,h5,0,0,11,11)
-          CORR_FILT(C6m,h6,0,0,11,11)
-          CORR_FILT(C7m,h7,0,0,11,11)
-          CORR_FILT(C10m,h10,1,1,10,10)
-          CORR_FILT(C11m,h11,0,0,11,11)
+          CORR_FILT(C2m,h2,0,0,13,13)
+          CORR_FILT(C5m,h5,0,0,13,13)
+          CORR_FILT(C6m,h6,0,0,13,13)
+          CORR_FILT(C7m,h7,0,0,13,13)
+          CORR_FILT(C10m,h10,0,0,13,13)
+          CORR_FILT(C11m,h11,0,0,13,13)
           // build the q vector components
           myrow = (row + rowoffset) % 6;
           mycol = (col + coloffset) % 6;
@@ -1588,9 +1588,9 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_orig[0][myrow][mycol];
           float complex modulator6 = m6arr[myrow][mycol];
           float complex modulator7 = m7arr[myrow][mycol];
           float complex modulator8 = m8arr[myrow][mycol];
-          float complex q2_10 = w * C10m * modulator1 - (1-w) * C2m * modulator2;
+          float complex q2_10 = w * C10m * modulator1 - (1.0f-w) * C2m * modulator2;
           float complex q3_15 = conjf(q2_10);
-          float complex q6_11 = w * C11m * modulator5 + (1-w) * C6m * modulator6;
+          float complex q6_11 = w * C11m * modulator5 + (1.0f-w) * C6m * modulator6;
           float complex q12_17 = conjf(q6_11);
           float complex q5 = C5m * modulator7;
           float complex q7 = C7m * modulator8;
@@ -1604,7 +1604,7 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_orig[0][myrow][mycol];
           float complex L = fdc_orig[0][row][col] - C2m - C3m - C5m - C6m - 2.0f*C7m - C12m - C18m;
           // get the rgb components from fdc
           float red = crealf(Minv[0][0]*L + Minv[0][4]*q5 + 2.0f*Minv[0][5]*q6_11 + 2.0f*Minv[0][6]*q7 + 2.0f*Minv[0][9]*q2_10 + 2.0f*Minv[0][11]*q12_17 + 2.0f*Minv[0][14]*q3_15 + Minv[0][17]*q18);
-          float green = crealf(Minv[1][0]*L + Minv[1][4]*q5 + 2.0f*Minv[1][5]*q6_11 + 2.0f*Minv[1][6]*q7 + 2.0f*Minv[1][9]*q2_10 + 2.0f*Minv[1][11]*q12_17 + 2.0f*Minv[1][14]*q3_15 + Minv[1][17]*q18);
+          float green = crealf(Minv[1][0]*L + Minv[1][4]*q5 + 2.0f*Minv[1][5]*q6_11 + 2.0f*Minv[1][6]*q7  /* zero component */  + 2.0f*Minv[1][11]*q12_17  /* zero component */  + Minv[1][17]*q18);
           float blue = crealf(Minv[2][0]*L + Minv[2][4]*q5 + 2.0f*Minv[2][5]*q6_11 + 2.0f*Minv[2][6]*q7 + 2.0f*Minv[2][9]*q2_10 + 2.0f*Minv[2][11]*q12_17 + 2.0f*Minv[2][14]*q3_15 + Minv[2][17]*q18);
 #define LIM(x,min,max) MAX(min,MIN(x,max))
           red = LIM(red, 0.0f, FLT_MAX);
@@ -1649,41 +1649,7 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_orig[0][myrow][mycol];
               fdc_chroma[chrm][row+2][col],
               fdc_chroma[chrm][row+2][col+1]
             };
-            fdc_chroma[chrm+2][row][col] = quick_select(10, temp, 21);
-          }
-        }
-
-      /* Second intermediary round of median filtering of chroma       */
-      for(int row = 10; row < mrow - 10; row++)   //10 as manual padding
-        for(int col = 10; col < mcol - 10; col++)
-        {
-          for(int chrm = 2; chrm < 4; chrm++)
-          {
-            // Load the circular window
-            float temp [21] = {
-              fdc_chroma[chrm][row-2][col-1],
-              fdc_chroma[chrm][row-2][col],
-              fdc_chroma[chrm][row-2][col+1],
-              fdc_chroma[chrm][row-1][col-2],
-              fdc_chroma[chrm][row-1][col-1],
-              fdc_chroma[chrm][row-1][col],
-              fdc_chroma[chrm][row-1][col+1],
-              fdc_chroma[chrm][row-1][col+2],
-              fdc_chroma[chrm][row][col-2],
-              fdc_chroma[chrm][row][col-1],
-              fdc_chroma[chrm][row][col],
-              fdc_chroma[chrm][row][col+1],
-              fdc_chroma[chrm][row][col+2],
-              fdc_chroma[chrm][row+1][col-2],
-              fdc_chroma[chrm][row+1][col-1],
-              fdc_chroma[chrm][row+1][col],
-              fdc_chroma[chrm][row+1][col+1],
-              fdc_chroma[chrm][row+1][col+2],
-              fdc_chroma[chrm][row+2][col-1],
-              fdc_chroma[chrm][row+2][col],
-              fdc_chroma[chrm][row+2][col+1]
-            };
-            fdc_chroma[chrm-2][row][col] = quick_select(10, temp, 21);
+            fdc_chroma[chrm+2][row][col] = quick_select(temp);
           }
         }
 
@@ -1719,7 +1685,7 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_orig[0][myrow][mycol];
           float y  =  0.29900f * red + 0.58700f * green + 0.11400f * blue;
           // now back to RGB
           // instead of merely reding the values, perform median filter
-          for(int chrm = 0; chrm < 2; chrm++)
+          for(int chrm = 2; chrm < 4; chrm++)
           {
             // Load the circular window
             float temp [21] = {
@@ -1745,7 +1711,7 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_orig[0][myrow][mycol];
               fdc_chroma[chrm][row+2][col],
               fdc_chroma[chrm][row+2][col+1]
             };
-            cbcr[chrm] = quick_select(10, temp, 21);
+            cbcr[chrm-2] = quick_select(temp);
           }
           red   = y                      + 1.40200f * cbcr[1];
           green = y - 0.34414f * cbcr[0] - 0.71414f * cbcr[1];
