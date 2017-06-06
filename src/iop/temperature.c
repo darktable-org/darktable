@@ -113,6 +113,18 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+static int is_leica_monochrom(dt_image_t *img)
+{
+  if(strncmp(img->exif_maker, "Leica Camera AG", 15) != 0) return 0;
+
+  gchar *tmp_model = g_ascii_strdown(img->exif_model, -1);
+
+  const int res = strstr(tmp_model, "monochrom") != NULL;
+  g_free(tmp_model);
+
+  return res;
+}
+
 static int ignore_missing_wb(dt_image_t *img)
 {
   // Ignore files that end with "-hdr.dng" since these are broken files we
@@ -951,8 +963,7 @@ void reload_defaults(dt_iop_module_t *module)
     }
     else
     {
-      if(!(!strncmp(module->dev->image_storage.exif_maker, "Leica Camera AG", 15)
-           && !strncmp(module->dev->image_storage.exif_model, "M9 monochrom", 12)))
+      if(!is_leica_monochrom(&(module->dev->image_storage)))
       {
         if(!ignore_missing_wb(&(module->dev->image_storage)))
         {
