@@ -292,7 +292,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_bilateral_free(b);
   }
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #ifdef HAVE_OPENCL
@@ -303,11 +303,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)self->data;
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
   dt_bilateral_cl_t *b = NULL;
-
-  // check if we are in a tiling context and want OPERATOR_DRAGO. This does not work as drago
-  // needs the maximum L-value of the whole image. Let's return FALSE, which will then fall back
-  // to cpu processing
-  if(piece->pipe->tiling && d->operator== OPERATOR_DRAGO) return FALSE;
 
   cl_int err = -999;
   cl_mem dev_m = NULL;
@@ -519,11 +514,14 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
+  dt_iop_global_tonemap_data_t *d = (dt_iop_global_tonemap_data_t *)piece->data;
+
   const float scale = piece->iscale / roi_in->scale;
   const float iw = piece->buf_in.width / scale;
   const float ih = piece->buf_in.height / scale;
   const float sigma_s = fminf(iw, ih) * 0.03f;
   const float sigma_r = 8.0f;
+  const int detail = (d->detail != 0.0f);
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -531,11 +529,11 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
   const size_t basebuffer = width * height * channels * sizeof(float);
 
-  tiling->factor = 2.0f + (float)dt_bilateral_memory_use2(width, height, sigma_s, sigma_r) / basebuffer;
+  tiling->factor = 2.0f + (detail ? (float)dt_bilateral_memory_use2(width, height, sigma_s, sigma_r) / basebuffer : 0.0f);
   tiling->maxbuf
-      = fmax(1.0f, (float)dt_bilateral_singlebuffer_size2(width, height, sigma_s, sigma_r) / basebuffer);
+      = (detail ? MAX(1.0f, (float)dt_bilateral_singlebuffer_size2(width, height, sigma_s, sigma_r) / basebuffer) : 1.0f);
   tiling->overhead = 0;
-  tiling->overlap = ceilf(4 * sigma_s);
+  tiling->overlap = (detail ? ceilf(4 * sigma_s) : 0);
   tiling->xalign = 1;
   tiling->yalign = 1;
   return;
@@ -551,6 +549,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->drago.bias = p->drago.bias;
   d->drago.max_light = p->drago.max_light;
   d->detail = p->detail;
+
+  // drago needs the maximum L-value of the whole image so it must not use tiling
+  if(d->operator == OPERATOR_DRAGO) piece->process_tiling_ready = 0;
 
 #ifdef HAVE_OPENCL
   if(d->detail != 0.0f)

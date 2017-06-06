@@ -259,7 +259,7 @@ typedef struct dt_iop_module_t
   /** (bitwise) set if you want an histogram generated during next eval */
   dt_dev_request_flags_t request_histogram;
   /** set to 1 if you want the mask to be transferred into alpha channel during next eval. gui mode only. */
-  int32_t request_mask_display;
+  int request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
   int32_t suppress_mask;
   /** bounding box in which the mean color is requested. */

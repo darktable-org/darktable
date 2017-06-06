@@ -1835,9 +1835,16 @@ int dt_dev_wait_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmi
     if(pipe->shutdown)
       return TRUE;  // stop waiting if pipe shuts down
 
-    if(lock) dt_pthread_mutex_lock(lock);
-    const uint64_t probehash = *hash;
-    if(lock) dt_pthread_mutex_unlock(lock);
+    uint64_t probehash;
+
+    if(lock)
+    {
+      dt_pthread_mutex_lock(lock);
+      probehash = *hash;
+      dt_pthread_mutex_unlock(lock);
+    }
+    else
+      probehash = *hash;
 
     if(probehash == dt_dev_hash_plus(dev, pipe, pmin, pmax))
       return TRUE;
@@ -1923,9 +1930,16 @@ int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
     if(pipe->shutdown)
       return TRUE;  // stop waiting if pipe shuts down
 
-    if(lock) dt_pthread_mutex_lock(lock);
-    const uint64_t probehash = *hash;
-    if(lock) dt_pthread_mutex_unlock(lock);
+    uint64_t probehash;
+
+    if(lock)
+    {
+      dt_pthread_mutex_lock(lock);
+      probehash = *hash;
+      dt_pthread_mutex_unlock(lock);
+    }
+    else
+      probehash = *hash;
 
     if(probehash == dt_dev_hash_distort_plus(dev, pipe, pmin, pmax))
       return TRUE;

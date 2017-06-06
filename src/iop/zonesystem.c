@@ -203,7 +203,7 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
   const int ch = piece->colors;
   const int size = d->params.size;
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, width, height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 
   /* if gui and have buffer lets gaussblur and fill buffer with zone indexes */
   if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && g && g->in_preview_buffer
