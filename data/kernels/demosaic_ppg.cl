@@ -35,9 +35,9 @@ backtransformf (float2 p, const int r_x, const int r_y, const int r_wd, const in
   return (float2)((p.x + r_x)/r_scale, (p.y + r_y)/r_scale);
 }
 
-__kernel void
-green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const unsigned int filters, 
-                    const float thr, local float *buffer)
+kernel void
+green_equilibration_lavg(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const unsigned int filters, 
+                         const int r_x, const int r_y, const float thr, local float *buffer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -79,11 +79,11 @@ green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const 
 
   if(x >= width || y >= height) return;
 
-  const int c = FC(y, x, filters);
+  const int c = FC(y + r_y, x + r_x, filters);
   const float maximum = 1.0f;
-  const float o = buffer[0];
+  float o = buffer[0];
   
-  if(c == 1 && (y & 1))
+  if(c == 1 && ((y + r_y) & 1))
   {
     const float o1_1 = buffer[-1 * stride - 1];
     const float o1_2 = buffer[-1 * stride + 1];
@@ -97,22 +97,121 @@ green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const 
     const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
     const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
     
-    if (m2 > 0.0f && m1/m2<maximum*2.0f)
+    if (m2 > 0.0f && m1 / m2 < maximum * 2.0f)
     {
-      const float c1 = (fabs(o1_1-o1_2)+fabs(o1_1-o1_3)+fabs(o1_1-o1_4)+fabs(o1_2-o1_3)+fabs(o1_3-o1_4)+fabs(o1_2-o1_4))/6.0f;
-      const float c2 = (fabs(o2_1-o2_2)+fabs(o2_1-o2_3)+fabs(o2_1-o2_4)+fabs(o2_2-o2_3)+fabs(o2_3-o2_4)+fabs(o2_2-o2_4))/6.0f;
+      const float c1 = (fabs(o1_1 - o1_2) + fabs(o1_1 - o1_3) + fabs(o1_1 - o1_4) + fabs(o1_2 - o1_3) + fabs(o1_3 - o1_4) + fabs(o1_2 - o1_4)) / 6.0f;
+      const float c2 = (fabs(o2_1 - o2_2) + fabs(o2_1 - o2_3) + fabs(o2_1 - o2_4) + fabs(o2_2 - o2_3) + fabs(o2_3 - o2_4) + fabs(o2_2 - o2_4)) / 6.0f;
       
-      if((o<maximum*0.95f)&&(c1<maximum*thr)&&(c2<maximum*thr))
-      {
-        write_imagef (out, (int2)(x, y), o * m1/m2);
-      }
-      else write_imagef (out, (int2)(x, y), o);
+      if((o < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
+        o *= m1/m2;
     }
-    else write_imagef (out, (int2)(x, y), o);
   }
-  else write_imagef (out, (int2)(x, y), o);
+  
+  write_imagef (out, (int2)(x, y), o);
 }
 
+
+kernel void
+green_equilibration_favg_reduce_first(read_only image2d_t in, const int width, const int height, 
+                                      global float2 *accu, const unsigned int filters, const int r_x, const int r_y, local float2 *buffer)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int xlsz = get_local_size(0);
+  const int ylsz = get_local_size(1);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+
+  const int l = mad24(ylid, xlsz, xlid);
+
+  const int c = FC(y + r_y, x + r_x, filters);
+  
+  const int isinimage = (x < 2 * (width / 2) && y < 2 * (height / 2));
+  const int isgreen1 = (c == 1 && !((y + r_y) & 1));
+  const int isgreen2 = (c == 1 && ((y + r_y) & 1));
+  
+  float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
+
+  buffer[l].x = isinimage && isgreen1 ? pixel : 0.0f;
+  buffer[l].y = isinimage && isgreen2 ? pixel : 0.0f;
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  const int lsz = mul24(xlsz, ylsz);
+
+  for(int offset = lsz / 2; offset > 0; offset = offset / 2)
+  {
+    if(l < offset)
+    {
+      buffer[l] += buffer[l + offset];
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+  }
+
+  const int xgid = get_group_id(0);
+  const int ygid = get_group_id(1);
+  const int xgsz = get_num_groups(0);
+
+  const int m = mad24(ygid, xgsz, xgid);
+  accu[m]   = buffer[0];
+}
+
+
+kernel void 
+green_equilibration_favg_reduce_second(const global float2* input, global float2 *result, const int length, local float2 *buffer)
+{
+  int x = get_global_id(0);
+  float2 sum = (float2)0.0f;
+
+  while(x < length)
+  {
+    sum += input[x];
+
+    x += get_global_size(0);
+  }
+  
+  int lid = get_local_id(0);
+  buffer[lid] = sum;
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  for(int offset = get_local_size(0) / 2; offset > 0; offset = offset / 2)
+  {
+    if(lid < offset)
+    {
+      buffer[lid] += buffer[lid + offset];
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+  }
+
+  if(lid == 0)
+  {
+    const int gid = get_group_id(0);
+
+    result[gid]   = buffer[0];
+  }
+}
+
+
+kernel void
+green_equilibration_favg_apply(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const unsigned int filters, 
+                               const int r_x, const int r_y, const float gr_ratio)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
+
+  const int c = FC(y + r_y, x + r_x, filters);
+  
+  const int isgreen1 = (c == 1 && !((y + r_y) & 1));
+  
+  pixel *= (isgreen1 ? gr_ratio : 1.0f);
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
 
 #define SWAP(a, b)                \
   {                               \
@@ -123,8 +222,8 @@ green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const 
 
 constant int glim[5] = { 0, 1, 2, 1, 0 };
   
-__kernel void
-pre_median(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, 
+kernel void
+pre_median(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
            const unsigned int filters, const float threshold, local float *buffer)
 {
   const int x = get_global_id(0);
@@ -212,8 +311,8 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const int width
 
 // 3x3 median filter
 // uses a sorting network to sort entirely in registers with no branches
-__kernel void
-color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, local float4 *buffer)
+kernel void
+color_smoothing(read_only image2d_t in, write_only image2d_t out, const int width, const int height, local float4 *buffer)
 {
   const int lxid = get_local_id(0);
   const int lyid = get_local_id(1);
@@ -330,8 +429,8 @@ color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int 
  * output will be linear in memory.
  * operates on float4 -> float4 textures.
  */
-__kernel void
-clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height,
+kernel void
+clip_and_zoom(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
               const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale)
 {
   // global id is pixel in output image (float4)
@@ -425,8 +524,8 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
  * fill greens pass of pattern pixel grouping.
  * in (float) or (float4).x -> out (float4)
  */
-__kernel void
-ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height,
+kernel void
+ppg_demosaic_green (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                     const unsigned int filters, local float *buffer)
 {
   const int x = get_global_id(0);
@@ -530,8 +629,8 @@ ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const 
  * fills the reds and blues in the gaps (done after ppg_demosaic_green).
  * in (float4) -> out (float4)
  */
-__kernel void
-ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height,
+kernel void
+ppg_demosaic_redblue (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                       const unsigned int filters, local float4 *buffer)
 {
   // image in contains full green and sparse r b
@@ -633,8 +732,8 @@ ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, cons
 /**
  * Demosaic image border
  */
-__kernel void
-border_interpolate(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const unsigned int filters)
+kernel void
+border_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const unsigned int filters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
