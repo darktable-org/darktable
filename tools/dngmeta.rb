@@ -22,24 +22,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if ARGV.size < 1
-  $stderr.puts "Usage: dngmeta.rb <file1> [file2] ..."
+if ARGV.empty?
+  $stderr.puts 'Usage: dngmeta.rb <file1> [file2] ...'
   exit 2
 end
 
 def is_iso_ok(exifhash, tag)
-  if not exifhash[tag] or exifhash[tag] == "0" or exifhash[tag] == "65535"
-    return false
+  if !(exifhash[tag]) || exifhash[tag] == '0' || exifhash[tag] == '65535'
+    false
   else
-    return exifhash[tag]
+    exifhash[tag]
   end
 end
 
 def get_iso(exifhash)
   isokeys = [
-    "Exif.Photo.ISOSpeedRatings", "Exif.Photo.RecommendedExposureIndex",
-    "Exif.Photo.StandardOutputSensitivity", "Exif.Nikon3.ISOSpeed",
-    "Exif.Nikon3.ISOSettings", "Exif.NikonIi.ISO"
+    'Exif.Photo.ISOSpeedRatings', 'Exif.Photo.RecommendedExposureIndex',
+    'Exif.Photo.StandardOutputSensitivity', 'Exif.Nikon3.ISOSpeed',
+    'Exif.Nikon3.ISOSettings', 'Exif.NikonIi.ISO'
   ]
 
   iso = nil
@@ -49,62 +49,62 @@ def get_iso(exifhash)
     return value if value
   end
 
-  return iso
+  iso
 end
 
 def get_exif(filename)
   exifhash = {}
 
   IO.popen("exiv2 -q -Qm -Pkt \"#{filename}\" 2> /dev/null") do |io|
-    while !io.eof?
-      lineparts = io.readline.split(" ", 2).map(&:strip)
+    until io.eof?
+      lineparts = io.readline.split(' ', 2).map(&:strip)
 
-      next if not lineparts.size == 2
+      next if lineparts.size != 2
 
-      lineparts.each_slice(2) { |k,v| exifhash[k] = v }
-   end
+      lineparts.each_slice(2) { |k, v| exifhash[k] = v }
+    end
   end
 
-  return exifhash
+  exifhash
 end
 
 BLACKDIFF_MAX = 4
 
 class Array
   def handle_data_dups
-    iso = self.first
-    return [iso, self.last.first] if self.last.size == 1
+    iso = first
+    return [iso, last.first] if last.size == 1
 
-    whitelevels = self.last.map { |black, white| white }.uniq
+    whitelevels = last.map { |_black, white| white }.uniq
 
     if whitelevels.size != 1
-      $stderr.puts "ISO #{iso} has multiple variants with different white levels: #{self.last}"
+      $stderr.puts "ISO #{iso} has multiple variants with different white levels: #{last}"
       return [iso, [-1, -1]]
     end
 
     whitelevel = whitelevels[0]
 
-    blacklevels = self.last.map { |black, white| black }.uniq
+    blacklevels = last.map { |black, _white| black }.uniq
 
     if (blacklevels.max - blacklevels.min) > BLACKDIFF_MAX
-      $stderr.puts "ISO #{iso} has multiple variants with too different black levels: #{self.last}"
+      $stderr.puts "ISO #{iso} has multiple variants with too different black levels: #{last}"
       return [iso, [-1, -1]]
     end
 
     blacklevel = blacklevels.max
 
-    return [iso, [blacklevel, whitelevel]]
+    [iso, [blacklevel, whitelevel]]
   end
 end
 
 def print_sensor(black, white, iso = false)
-  if iso
-    isolist = " iso_list=\"#{iso.join(" ")}\""
-  else
-    isolist = ""
-  end
+  isolist = if iso
+              " iso_list=\"#{iso.join(' ')}\""
+            else
+              ''
+            end
 
-  return "\t\t<Sensor black=\"#{black}\" white=\"#{white}\"#{isolist}/>"
+  "\t\t<Sensor black=\"#{black}\" white=\"#{white}\"#{isolist}/>"
 end
 
 make = model = uniquecameramodel = nil
@@ -112,22 +112,22 @@ sensors = {}
 ARGV.each do |filename|
   exifhash = get_exif(filename)
 
-  if (make and make != exifhash["Exif.Image.Make"]) or
-      # (model and model != exifhash["Exif.Image.Model"]) or
-      (uniquecameramodel and uniquecameramodel != exifhash["Exif.Image.UniqueCameraModel"])
+  if (make && make != (exifhash['Exif.Image.Make'])) ||
+     # (model and model != exifhash["Exif.Image.Model"]) or
+     (uniquecameramodel && uniquecameramodel != (exifhash['Exif.Image.UniqueCameraModel']))
     $stderr.puts "WARNING: #{filename} - " \
-                 "all files must be from the same camera maker and model!"
+                 'all files must be from the same camera maker and model!'
     next
   end
 
-  make = exifhash["Exif.Image.Make"]
-  model = exifhash["Exif.Image.Model"]
-  uniquecameramodel = exifhash["Exif.Image.UniqueCameraModel"]
+  make = exifhash['Exif.Image.Make']
+  model = exifhash['Exif.Image.Model']
+  uniquecameramodel = exifhash['Exif.Image.UniqueCameraModel']
 
   iso = get_iso(exifhash).to_i
-  white = exifhash["Exif.SubImage1.WhiteLevel"].to_i
+  white = exifhash['Exif.SubImage1.WhiteLevel'].to_i
 
-  blacks = exifhash["Exif.SubImage1.BlackLevel"].split().map(&:strip)
+  blacks = exifhash['Exif.SubImage1.BlackLevel'].split.map(&:strip)
 
   blacks = blacks.map(&:to_r)
 
@@ -137,7 +137,7 @@ ARGV.each do |filename|
 
   dsc = [black, white]
 
-  sensors[iso] = [] if not sensors[iso]
+  sensors[iso] = [] unless sensors[iso]
   sensors[iso] << dsc
 end
 
@@ -153,10 +153,10 @@ sensors.map!(&:handle_data_dups)
 
 invsensors = {}
 
-if make == "Canon"
+if make == 'Canon'
   isohash = {}
   sensors.each do |iso, dsc|
-    isohash[dsc] = [] if not isohash[dsc]
+    isohash[dsc] = [] unless isohash[dsc]
     isohash[dsc] << iso
   end
 
@@ -179,7 +179,7 @@ if make == "Canon"
       isos += isos2
     end
 
-    tmp[dsc] = [] if not tmp[dsc]
+    tmp[dsc] = [] unless tmp[dsc]
     tmp[dsc] = (tmp[dsc] + isos).uniq.sort
   end
 
@@ -187,7 +187,7 @@ if make == "Canon"
 else
   invsensors = {}
   sensors.each do |iso, dsc|
-    invsensors[dsc] = [] if not invsensors[dsc]
+    invsensors[dsc] = [] unless invsensors[dsc]
     invsensors[dsc] << iso
   end
 end
@@ -198,7 +198,7 @@ if true
 end
 
 # so, which [black, white] is the most common ?
-mostfrequent = invsensors.sort{ |x,y| y[1].flatten.size <=> x[1].flatten.size }.first
+mostfrequent = invsensors.sort { |x, y| y[1].flatten.size <=> x[1].flatten.size }.first
 invsensors.delete(mostfrequent.first)
 
 if true
