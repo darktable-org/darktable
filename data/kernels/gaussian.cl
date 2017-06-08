@@ -215,7 +215,7 @@ lookup_unbounded(read_only image2d_t lut, const float x, global float *a)
   {
     if(x < 1.0f/a[0])
     {
-      const int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
+      const int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
       const int2 p = (int2)((xi & 0xff), (xi >> 8));
       return read_imagef(lut, sampleri, p).x;
     }
