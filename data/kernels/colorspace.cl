@@ -39,7 +39,7 @@ float4 LCH_2_Lab(float4 LCH)
   return (float4)(L, a, b, LCH.w);
 }
 
-static float cbrt_5f(float f)
+float cbrt_5f(float f)
 {
   union { float f; unsigned int i; } p;
   p.f = f;
