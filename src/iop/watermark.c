@@ -1007,41 +1007,48 @@ static void refresh_watermarks(dt_iop_module_t *self)
   dt_bauhaus_combobox_clear(g->watermarks);
 
   // check watermarkdir and update combo with entries...
-  int count = 0;
-  const gchar *d_name = NULL;
   gchar configdir[PATH_MAX] = { 0 };
   gchar datadir[PATH_MAX] = { 0 };
-  gchar filename[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
-  g_strlcat(datadir, "/watermarks", sizeof(datadir));
-  g_strlcat(configdir, "/watermarks", sizeof(configdir));
+  char *datadir_watermarks = g_build_filename(datadir, "watermarks", NULL);
+  char *configdir_watermarks = g_build_filename(configdir, "watermarks", NULL);
 
   /* read watermarks from datadir */
-  GDir *dir = g_dir_open(datadir, 0, NULL);
+  GList *files = NULL;
+  GDir *dir = g_dir_open(datadir_watermarks, 0, NULL);
   if(dir)
   {
+    const gchar *d_name;
     while((d_name = g_dir_read_name(dir)))
-    {
-      snprintf(filename, sizeof(filename), "%s/%s", datadir, d_name);
-      dt_bauhaus_combobox_add(g->watermarks, d_name);
-      count++;
-    }
+      files = g_list_append(files, g_strdup(d_name));
     g_dir_close(dir);
   }
 
+  files = g_list_sort(files, (GCompareFunc)g_strcmp0);
+  for(GList *iter = files; iter; iter = g_list_next(iter))
+    dt_bauhaus_combobox_add(g->watermarks, iter->data);
+
+  g_list_free_full(files, g_free);
+  files = NULL;
+
   /* read watermarks from user config dir*/
-  dir = g_dir_open(configdir, 0, NULL);
+  dir = g_dir_open(configdir_watermarks, 0, NULL);
   if(dir)
   {
+    const gchar *d_name;
     while((d_name = g_dir_read_name(dir)))
-    {
-      snprintf(filename, sizeof(filename), "%s/%s", configdir, d_name);
-      dt_bauhaus_combobox_add(g->watermarks, d_name);
-      count++;
-    }
+      files = g_list_append(files, g_strdup(d_name));
     g_dir_close(dir);
   }
+
+  files = g_list_sort(files, (GCompareFunc)g_strcmp0);
+  for(GList *iter = files; iter; iter = g_list_next(iter))
+    dt_bauhaus_combobox_add(g->watermarks, iter->data);
+
+  g_list_free_full(files, g_free);
+  g_free(datadir_watermarks);
+  g_free(configdir_watermarks);
 
   _combo_box_set_active_text(g->watermarks, p->filename);
 
