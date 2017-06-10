@@ -221,7 +221,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           const float value = colors[c] * (1.0f - alpha) + yellow[c] * alpha;
-          out[2 - c] = d->table[(uint16_t)CLAMP((int)(0xfffful * value), 0, 0xffff)];
+          out[2 - c] = d->table[(uint16_t)CLAMP((int)(0x10000ul * value), 0, 0xffff)];
         }
       }
     }
@@ -242,7 +242,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           const float value = in[1] * (1.0f - alpha) + yellow[c] * alpha;
-          out[2 - c] = d->table[(uint16_t)CLAMP((int)(0xfffful * value), 0, 0xffff)];
+          out[2 - c] = d->table[(uint16_t)CLAMP((int)(0x10000ul * value), 0, 0xffff)];
         }
       }
     }
@@ -264,7 +264,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           const float value = gray * (1.0f - alpha) + yellow[c] * alpha;
-          out[2 - c] = d->table[(uint16_t)CLAMP((int)(0xfffful * value), 0, 0xffff)];
+          out[2 - c] = d->table[(uint16_t)CLAMP((int)(0x10000ul * value), 0, 0xffff)];
         }
       }
     }
@@ -280,7 +280,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       uint8_t *out = ((uint8_t *)o) + (size_t)ch * k * roi_out->width;
       for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
       {
-        for(int c = 0; c < 3; c++) out[2 - c] = d->table[(uint16_t)CLAMP((int)(0xfffful * in[c]), 0, 0xffff)];
+        for(int c = 0; c < 3; c++) out[2 - c] = d->table[(uint16_t)CLAMP((int)(0x10000ul * in[c]), 0, 0xffff)];
       }
     }
   }

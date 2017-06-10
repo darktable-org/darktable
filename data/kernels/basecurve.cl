@@ -26,7 +26,7 @@ lookup_unbounded(read_only image2d_t lut, const float x, global const float *a)
   // path to linear unbounded (does not clip x at 1)
   if(a[0] >= 0.0f)
   {
-    if(x < 1.0f/a[0])
+    if(x < 1.0f)
     {
       const int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
       const int2 p = (int2)((xi & 0xff), (xi >> 8));

@@ -229,7 +229,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
   const int autoscale_ab = d->autoscale_ab;
   const int unbound_ab = d->unbound_ab;
-  const float low_approximation = d->table[0][(int)(0.01f * 0xfffful)];
+  const float low_approximation = d->table[0][(int)(0.01f * 0x10000ul)];
 
   dev_L = dt_opencl_copy_host_to_device(devid, d->table[ch_L], 256, 256, sizeof(float));
   if(dev_L == NULL) goto error;
@@ -291,7 +291,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float xm_al = 1.0f - 1.0f / d->unbounded_coeffs_ab[3];
   const float xm_br = 1.0f / d->unbounded_coeffs_ab[6];
   const float xm_bl = 1.0f - 1.0f / d->unbounded_coeffs_ab[9];
-  const float low_approximation = d->table[0][(int)(0.01f * 0xfffful)];
+  const float low_approximation = d->table[0][(int)(0.01f * 0x10000ul)];
 
   const int width = roi_out->width;
   const int height = roi_out->height;
@@ -310,7 +310,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       const float L_in = in[0] / 100.0f;
 
-      out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in * 0xfffful), 0, 0xffff)]
+      out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)]
                              : dt_iop_eval_exp(d->unbounded_coeffs_L, L_in);
 
       if(autoscale_ab == s_scale_manual)
@@ -321,8 +321,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         if(unbound_ab == 0)
         {
           // old style handling of a/b curves: only lut lookup with clamping
-          out[1] = d->table[ch_a][CLAMP((int)(a_in * 0xfffful), 0, 0xffff)];
-          out[2] = d->table[ch_b][CLAMP((int)(b_in * 0xfffful), 0, 0xffff)];
+          out[1] = d->table[ch_a][CLAMP((int)(a_in * 0x10000ul), 0, 0xffff)];
+          out[2] = d->table[ch_b][CLAMP((int)(b_in * 0x10000ul), 0, 0xffff)];
         }
         else
         {
@@ -331,11 +331,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           out[1] = (a_in > xm_ar)
                        ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in)
                        : ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 3, 1.0f - a_in)
-                                         : d->table[ch_a][CLAMP((int)(a_in * 0xfffful), 0, 0xffff)]);
+                                         : d->table[ch_a][CLAMP((int)(a_in * 0x10000ul), 0, 0xffff)]);
           out[2] = (b_in > xm_br)
                        ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 6, b_in)
                        : ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 9, 1.0f - b_in)
-                                         : d->table[ch_b][CLAMP((int)(b_in * 0xfffful), 0, 0xffff)]);
+                                         : d->table[ch_b][CLAMP((int)(b_in * 0x10000ul), 0, 0xffff)]);
         }
       }
       else if(autoscale_ab == s_scale_automatic)
@@ -357,7 +357,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         float XYZ[3];
         dt_Lab_to_XYZ(in, XYZ);
         for(int c=0;c<3;c++)
-          XYZ[c] = (XYZ[c] < xm_L) ? d->table[ch_L][CLAMP((int)(XYZ[c] * 0xfffful), 0, 0xffff)]
+          XYZ[c] = (XYZ[c] < xm_L) ? d->table[ch_L][CLAMP((int)(XYZ[c] * 0x10000ul), 0, 0xffff)]
                                    : dt_iop_eval_exp(d->unbounded_coeffs_L, XYZ[c]);
         dt_XYZ_to_Lab(XYZ, out);
       }
@@ -366,7 +366,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         float rgb[3] = {0, 0, 0};
         dt_Lab_to_prophotorgb(in, rgb);
         for(int c=0;c<3;c++)
-          rgb[c] = (rgb[c] < xm_L) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0xfffful), 0, 0xffff)]
+          rgb[c] = (rgb[c] < xm_L) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
                                    : dt_iop_eval_exp(d->unbounded_coeffs_L, rgb[c]);
         dt_prophotorgb_to_Lab(rgb, out);
       }
