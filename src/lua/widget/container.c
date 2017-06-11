@@ -161,9 +161,7 @@ static int container_numindex(lua_State*L)
   } else {
     GtkWidget *searched_widget = g_list_nth_data(children,index);
     g_list_free(children);
-    lua_getuservalue(L,1);
-    lua_pushlightuserdata(L,searched_widget);
-    lua_gettable(L,-2);
+    luaA_push(L, lua_widget, &searched_widget);
     return 1;
   }
 }
