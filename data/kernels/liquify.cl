@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common.h"
+
 typedef struct dt_iop_roi_t {
   int x, y, width, height;
   float scale;
@@ -31,7 +33,6 @@ typedef struct {
   int resolution;
 } dt_liquify_kernel_descriptor_t;
 
-const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 
 float kmix (global const float *k,
 	    global const dt_liquify_kernel_descriptor_t* kdesc,
@@ -122,7 +123,7 @@ warp_kernel (read_only image2d_t in,
   // loop over support region (eg. 6x6 pixels for lanczos3)
   for (sample_pos.y = 1 - a; sample_pos.y <= a; ++sample_pos.y)
     for (sample_pos.x = 1 - a; sample_pos.x <= a; ++sample_pos.x)
-      Sxy += (read_imagef (in, sampler, in_pos + convert_float2 (sample_pos))
+      Sxy += (read_imagef (in, sampleri, in_pos + convert_float2 (sample_pos))
 	      * lk[sample_pos.x].x * lk[sample_pos.y].y);
 
   Sxy = Sxy / (norm.x * norm.y);

@@ -469,7 +469,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #if defined(__SSE__)
@@ -548,7 +548,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     _mm_sfence();
   }
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
 
@@ -592,6 +592,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   cmsHPROFILE output = NULL;
   cmsHPROFILE softproof = NULL;
+  cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
   d->mode = pipe->type == DT_DEV_PIXELPIPE_FULL ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
 
@@ -636,6 +637,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
   // and the subsequent error messages
+  d->type = out_type;
   if(out_type == DT_COLORSPACE_LAB)
     goto end;
 
@@ -650,7 +652,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   const dt_colorspaces_color_profile_t *out_profile
         = dt_colorspaces_get_profile(out_type, out_filename, DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
   if(out_profile)
+  {
     output = out_profile->profile;
+    if(out_type == DT_COLORSPACE_XYZ) output_format = TYPE_XYZA_FLT;
+  }
   else
   {
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "",
@@ -708,7 +713,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   {
     d->cmatrix[0] = NAN;
     piece->process_cl_ready = 0;
-    d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, TYPE_RGBA_FLT, softproof,
+    d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
                                           out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
   }
 
@@ -725,7 +730,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       d->cmatrix[0] = NAN;
       piece->process_cl_ready = 0;
 
-      d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, TYPE_RGBA_FLT, softproof,
+      d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
                                             out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
     }
   }
@@ -806,7 +811,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_colorout_params_t));
   module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
-  module->priority = 805; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 808; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
   dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){ DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL};

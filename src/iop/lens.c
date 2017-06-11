@@ -395,7 +395,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
                                                      roi_in->height, ch, ch_width);
           }
 
-          if(mask_display)
+          if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
           {
             if(d->do_nan_checks && (!isfinite(bufptr[2]) || !isfinite(bufptr[3])))
             {
@@ -489,7 +489,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
                                                      roi_in->height, ch, ch_width);
           }
 
-          if(mask_display)
+          if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
           {
             if(d->do_nan_checks && (!isfinite(buf2ptr[2]) || !isfinite(buf2ptr[3])))
             {
@@ -1082,19 +1082,18 @@ void init_global(dt_iop_module_so_t *module)
     char path[PATH_MAX] = { 0 };
     dt_loc_get_datadir(path, sizeof(path));
     char *c = path + strlen(path);
-    for(; c > path && *c != '/'; c--)
+    for(; c > path && *c != G_DIR_SEPARATOR; c--)
       ;
+    *c = '\0';
 #ifdef LF_MAX_DATABASE_VERSION
-    snprintf(c, PATH_MAX - (c - path), "/lensfun/version_%d", LF_MAX_DATABASE_VERSION);
     g_free(dt_iop_lensfun_db->HomeDataDir);
-    dt_iop_lensfun_db->HomeDataDir = g_strdup(path);
+    dt_iop_lensfun_db->HomeDataDir = g_build_filename(path, "lensfun", "version_" STR(LF_MAX_DATABASE_VERSION), NULL);
     if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
     {
       fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", path);
 #endif
-      snprintf(c, PATH_MAX - (c - path), "/lensfun");
       g_free(dt_iop_lensfun_db->HomeDataDir);
-      dt_iop_lensfun_db->HomeDataDir = g_strdup(path);
+      dt_iop_lensfun_db->HomeDataDir = g_build_filename(path, "lensfun", NULL);
       if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
         fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", path);
 #ifdef LF_MAX_DATABASE_VERSION
@@ -1236,7 +1235,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_lensfun_params_t);
   module->gui_data = NULL;
-  module->priority = 194; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 191; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)

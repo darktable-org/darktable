@@ -427,16 +427,6 @@ if(USE_NLS)
     endif()
 endif(USE_NLS)
 
-#find a temporary directory
-if(NOT TMP_DIR)
-	SET(TMP_DIR "~/.local/tmp")
-endif(NOT TMP_DIR)
-
-#find a cache directory
-if(NOT CACHE_DIR)
-	SET(CACHE_DIR "~/.cache/darktable")
-endif(NOT CACHE_DIR)
-
 # needed to generate file "preferences_gen.h" accordingly
 if(USE_OPENCL)
 	SET(HAVE_OPENCL 1)

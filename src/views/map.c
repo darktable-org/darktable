@@ -754,7 +754,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
       {
         // open the image in darkroom
         dt_control_set_mouse_over_id(lib->selected_image);
-        dt_ctl_switch_mode_to(DT_DEVELOP);
+        dt_ctl_switch_mode_to("darkroom");
         return TRUE;
       }
       else
@@ -1131,7 +1131,7 @@ static gboolean _in_undo(int imgid)
   int state[2];
   state[0] = imgid;
   state[1] = 0;
-  dt_undo_iterate(darktable.undo, DT_UNDO_GEOTAG, &state, FALSE, _check_imgid);
+  dt_undo_iterate_internal(darktable.undo, DT_UNDO_GEOTAG, &state, _check_imgid);
   return state[1];
 }
 

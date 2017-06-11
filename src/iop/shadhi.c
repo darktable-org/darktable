@@ -480,7 +480,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     _Lab_rescale(ta, &out[j]);
   }
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 
@@ -772,7 +772,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_shadhi_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_shadhi_params_t));
   module->default_enabled = 0;
-  module->priority = 552; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 558; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_shadhi_params_t);
   module->gui_data = NULL;
   dt_iop_shadhi_params_t tmp

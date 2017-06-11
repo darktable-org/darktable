@@ -78,9 +78,10 @@ const char *name(dt_lib_module_t *self)
   return _("camera settings");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_TETHERING;
+  static const char *v[] = {"tethering", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -210,7 +211,7 @@ static gboolean _bailout_of_tethering(gpointer user_data)
   dt_camctl_unregister_listener(darktable.camctl, lib->data.listener);
 
   /* switch back to library mode */
-  dt_ctl_switch_mode_to(DT_LIBRARY);
+  dt_ctl_switch_mode_to("lighttable");
 
   return FALSE;
 }

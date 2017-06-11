@@ -678,9 +678,10 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
     if(handle != INVALID_HANDLE_VALUE)
     {
       do
-        files = g_list_append(files, g_strdup(data.cFileName));
+        files = g_list_append(files, g_build_filename(imgpath, data.cFileName, NULL));
       while(FindNextFile(handle, &data));
     }
+    FindClose(handle);
 #else
     glob_t globbuf;
     if(!glob(pattern, 0, NULL, &globbuf))

@@ -737,7 +737,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   for(int k = 0; k < max_scale; k++) dt_free_align(detail[k]);
   dt_free_align(tmp);
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, width, height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, width, height);
 
   return;
 
@@ -929,7 +929,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_atrous_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
-  module->priority = 567; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 573; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;

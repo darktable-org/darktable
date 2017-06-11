@@ -30,6 +30,7 @@
 #include "common/opencl_drivers_blacklist.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "develop/blend.h"
 #include "develop/pixelpipe.h"
 
 #include <assert.h>
@@ -704,6 +705,7 @@ finally:
   if(cl->inited)
   {
     dt_capabilities_add("opencl");
+    cl->blendop = dt_develop_blend_init_cl_global();
     cl->bilateral = dt_bilateral_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
     cl->interpolation = dt_interpolation_init_cl_global();
@@ -805,6 +807,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
 {
   if(cl->inited)
   {
+    dt_develop_blend_free_cl_global(cl->blendop);
     dt_bilateral_free_cl_global(cl->bilateral);
     dt_gaussian_free_cl_global(cl->gaussian);
     dt_interpolation_free_cl_global(cl->interpolation);
@@ -1411,7 +1414,7 @@ void dt_opencl_unlock_device(const int dev)
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return;
   if(dev < 0 || dev >= cl->num_devs) return;
-  dt_pthread_mutex_unlock(&cl->dev[dev].lock);
+  dt_pthread_mutex_BAD_unlock(&cl->dev[dev].lock);
 }
 
 static FILE *fopen_stat(const char *filename, struct stat *st)
@@ -1623,9 +1626,9 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
     {
       char link_dest[PATH_MAX] = { 0 };
       snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, linkedfile);
-      unlink(link_dest);
+      g_unlink(link_dest);
     }
-    unlink(binname);
+    g_unlink(binname);
 
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_load_program] could not load cached binary program, trying to compile source\n");
@@ -1743,7 +1746,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
           // save opencl compiled binary as md5sum-named file
           char link_dest[PATH_MAX] = { 0 };
           snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, md5sum);
-          FILE *f = g_fopen(link_dest, "w+");
+          FILE *f = g_fopen(link_dest, "w");
           if(!f) goto ret;
           size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
           if(bytes_written != binary_sizes[i]) goto ret;

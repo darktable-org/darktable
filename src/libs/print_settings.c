@@ -43,9 +43,10 @@ const char *name(dt_lib_module_t *self)
   return _("print settings");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_PRINT;
+  static const char *v[] = {"print", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -351,7 +352,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   dt_print_file (imgid, filename, &ps->prt);
 
-  unlink(filename);
+  g_unlink(filename);
 
   // add tag for this image
 

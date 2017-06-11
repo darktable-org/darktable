@@ -82,7 +82,7 @@ typedef unsigned int u_int;
 #include "common/poison.h"
 #endif
 
-#define DT_MODULE_VERSION 16 // version of dt's module interface
+#define DT_MODULE_VERSION 17 // version of dt's module interface
 
 // every module has to define this:
 #ifdef _DEBUG
@@ -161,7 +161,6 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_CACHE = 1 << 0,
   DT_DEBUG_CONTROL = 1 << 1,
   DT_DEBUG_DEV = 1 << 2,
-  DT_DEBUG_FSWATCH = 1 << 3,
   DT_DEBUG_PERF = 1 << 4,
   DT_DEBUG_CAMCTL = 1 << 5,
   DT_DEBUG_PWSTORAGE = 1 << 6,
@@ -204,7 +203,6 @@ typedef struct darktable_t
   struct dt_image_cache_t *image_cache;
   struct dt_bauhaus_t *bauhaus;
   const struct dt_database_t *db;
-  const struct dt_fswatch_t *fswatch;
   const struct dt_pwstorage_t *pwstorage;
   const struct dt_camctl_t *camctl;
   const struct dt_collection_t *collection;
@@ -212,7 +210,6 @@ typedef struct darktable_t
   struct dt_points_t *points;
   struct dt_imageio_t *imageio;
   struct dt_opencl_t *opencl;
-  struct dt_blendop_t *blendop;
   struct dt_dbus_t *dbus;
   struct dt_undo_t *undo;
   struct dt_colorspaces_t *color_profiles;

@@ -1353,17 +1353,32 @@ void dt_database_show_error(const dt_database_t *db)
   ((dt_database_t *)db)->error_dbfilename = NULL;
 }
 
-static gboolean _lock_single_database(dt_database_t *db, const char *dbfilename, char **lockfile)
+static gboolean pid_is_alive(int pid)
 {
-  gboolean lock_acquired;
+  gboolean pid_is_alive;
 
 #ifdef __WIN32__
-
-  lock_acquired = TRUE;
-
+  pid_is_alive = FALSE;
+  HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+  if(h)
+  {
+    char filename[MAX_PATH];
+    long unsigned int n_filename = sizeof(filename);
+    int ret = QueryFullProcessImageName(h, 0, filename, &n_filename);
+    if(ret && n_filename > 0 && g_str_has_suffix(filename, "darktable.exe"))
+      pid_is_alive = TRUE;
+    CloseHandle(h);
+  }
 #else
+  pid_is_alive = !((kill(pid, 0) == -1) && errno == ESRCH);
+#endif
 
-  lock_acquired = FALSE;
+  return pid_is_alive;
+}
+
+static gboolean _lock_single_database(dt_database_t *db, const char *dbfilename, char **lockfile)
+{
+  gboolean lock_acquired = FALSE;
   mode_t old_mode;
   int fd = 0, lock_tries = 0;
   gchar *pid = g_strdup_printf("%d", getpid());
@@ -1378,7 +1393,7 @@ static gboolean _lock_single_database(dt_database_t *db, const char *dbfilename,
 lock_again:
     lock_tries++;
     old_mode = umask(0);
-    fd = open(*lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
+    fd = g_open(*lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
     umask(old_mode);
 
     if(fd != -1) // the lockfile was successfully created - write our PID into it
@@ -1390,17 +1405,17 @@ lock_again:
     {
       char buf[64];
       memset(buf, 0, sizeof(buf));
-      fd = open(*lockfile, O_RDWR | O_CREAT, 0666);
+      fd = g_open(*lockfile, O_RDWR | O_CREAT, 0666);
       if(fd != -1)
       {
         int foo;
         if((foo = read(fd, buf, sizeof(buf) - 1)) > 0)
         {
           int other_pid = atoi(buf);
-          if((kill(other_pid, 0) == -1) && errno == ESRCH)
+          if(!pid_is_alive(other_pid))
           {
             // the other process seems to no longer exist. unlink the .lock file and try again
-            unlink(*lockfile);
+            g_unlink(*lockfile);
             if(lock_tries < 5)
             {
               close(fd);
@@ -1425,15 +1440,14 @@ lock_again:
       }
       else
       {
-        fprintf(stderr, "[init] error opening the database lock file for reading\n");
-        db->error_message = g_strdup_printf(_("error opening the database lock file for reading"));
+        int err = errno;
+        fprintf(stderr, "[init] error opening the database lock file for reading: %s\n", strerror(err));
+        db->error_message = g_strdup_printf(_("error opening the database lock file for reading: %s"), strerror(err));
       }
     }
   }
 
   g_free(pid);
-
-#endif
 
   if(db->error_message)
     db->error_dbfilename = g_strdup(dbfilename);
@@ -1787,12 +1801,12 @@ void dt_database_destroy(const dt_database_t *db)
   sqlite3_close(db->handle);
   if (db->lockfile_data)
   {
-    unlink(db->lockfile_data);
+    g_unlink(db->lockfile_data);
     g_free(db->lockfile_data);
   }
   if (db->lockfile_library)
   {
-    unlink(db->lockfile_library);
+    g_unlink(db->lockfile_library);
     g_free(db->lockfile_library);
   }
   g_free(db->dbfilename_data);
@@ -1852,11 +1866,11 @@ static void _database_delete_mipmaps_files()
   if(access(mipmapfilename, F_OK) != -1)
   {
     fprintf(stderr, "[mipmap_cache] dropping old version file: %s\n", mipmapfilename);
-    unlink(mipmapfilename);
+    g_unlink(mipmapfilename);
 
     snprintf(mipmapfilename, sizeof(mipmapfilename), "%s/mipmaps.fallback", cachedir);
 
-    if(access(mipmapfilename, F_OK) != -1) unlink(mipmapfilename);
+    if(access(mipmapfilename, F_OK) != -1) g_unlink(mipmapfilename);
   }
 }
 

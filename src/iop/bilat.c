@@ -25,6 +25,7 @@
 #include "common/locallaplacian.h"
 #include "common/locallaplaciancl.h"
 #include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -185,24 +186,44 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
-  const float scale = piece->iscale / roi_in->scale;
-  const float sigma_r = d->sigma_r;
-  const float sigma_s = d->sigma_s / scale;
 
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-  const int channels = piece->colors;
+  if(d->mode == s_mode_bilateral)
+  {
+    const float scale = piece->iscale / roi_in->scale;
+    const float sigma_r = d->sigma_r;
+    const float sigma_s = d->sigma_s / scale;
 
-  const size_t basebuffer = width * height * channels * sizeof(float);
+    const int width = roi_in->width;
+    const int height = roi_in->height;
+    const int channels = piece->colors;
 
-  tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
-  tiling->maxbuf
-      = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r) / basebuffer);
-  tiling->overhead = 0;
-  tiling->overlap = ceilf(4 * sigma_s);
-  tiling->xalign = 1;
-  tiling->yalign = 1;
-  return;
+    const size_t basebuffer = width * height * channels * sizeof(float);
+
+    tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
+    tiling->maxbuf
+        = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r) / basebuffer);
+    tiling->overhead = 0;
+    tiling->overlap = ceilf(4 * sigma_s);
+    tiling->xalign = 1;
+    tiling->yalign = 1;
+  }
+  else  // mode == s_mode_local_laplacian
+  {
+    const int width = roi_in->width;
+    const int height = roi_in->height;
+    const int channels = piece->colors;
+
+    const size_t basebuffer = width * height * channels * sizeof(float);
+    const int rad = MIN(roi_in->width, ceilf(256 * roi_in->scale / piece->iscale));
+
+    tiling->factor = 2.0f + (float)local_laplacian_memory_use(width, height) / basebuffer;
+    tiling->maxbuf
+        = fmax(1.0f, (float)local_laplacian_singlebuffer_size(width, height) / basebuffer);
+    tiling->overhead = 0;
+    tiling->overlap = rad;
+    tiling->xalign = 1;
+    tiling->yalign = 1;
+  }
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -258,6 +279,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   {
     local_laplacian_sse2(i, o, roi_in->width, roi_in->height, d->midtone, d->sigma_s, d->sigma_r, d->detail);
   }
+
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_in->width, roi_in->height);
 }
 #endif
 
@@ -285,6 +308,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     local_laplacian(i, o, roi_in->width, roi_in->height, d->midtone, d->sigma_s, d->sigma_r, d->detail);
   }
+
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_in->width, roi_in->height);
 }
 
 /** init, cleanup, commit to pipeline */
@@ -296,7 +321,7 @@ void init(dt_iop_module_t *module)
   // by default:
   module->default_enabled = 0;
   // order has to be changed by editing the dependencies in tools/iop_dependencies.py
-  module->priority = 582; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 588; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_bilat_params_t);
   module->gui_data = NULL;
   // init defaults:

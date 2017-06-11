@@ -148,21 +148,21 @@ static void _dt_sigsegv_handler(int param)
 static int _times_handlers_were_set = 0;
 
 #if defined(_WIN32)
-void dt_set_unhandled_exception_handler_win()
-{
-  ExcHndlInit();
 
+static LONG WINAPI dt_toplevel_exception_handler(PEXCEPTION_POINTERS pExceptionInfo)
+{
   gchar *name_used;
   int fout;
   BOOL ok;
 
+  // Find a filename for the backtrace file
   if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
     fout = STDOUT_FILENO; // just print everything to stdout
 
   if(fout != STDOUT_FILENO)
   {
     close(fout);
-    unlink(name_used);
+    g_unlink(name_used);
   };
 
   // Set up logfile name
@@ -171,8 +171,26 @@ void dt_set_unhandled_exception_handler_win()
   {
     g_printerr("backtrace logfile cannot be set to %s\n", name_used);
   }
+  else
+  {
+    gchar *exception_message = g_strdup_printf("An unhandled exception occured.\nBacktrace will be written to: %s "
+                                               "after you click on the OK button.\nIf you report this issue, "
+                                               "please share this backtrace with the developers.\n",
+                                               name_used);
+    MessageBox(0, exception_message, "Error!", MB_OK);
+    g_free(exception_message);
+  }
 
   g_free(name_used);
+
+  // finally call the original exception handler (which should be drmingw's exception handler)
+  return _dt_exceptionfilter_old_handler(pExceptionInfo);
+}
+
+void dt_set_unhandled_exception_handler_win()
+{
+  // Set up drming's exception handler
+  ExcHndlInit();
 }
 #endif // defined(_WIN32)
 
@@ -236,10 +254,11 @@ void dt_set_signal_handlers()
   if(1 == _times_handlers_were_set)
   {
     // Save UnhandledExceptionFilter handler which just has been set up
-    _dt_exceptionfilter_old_handler = SetUnhandledExceptionFilter(NULL);
+    // This should be drmingw's exception handler
+    _dt_exceptionfilter_old_handler = SetUnhandledExceptionFilter(dt_toplevel_exception_handler);
   }
-  // Restore original UnhandledExceptionFilter handler no matter what GM is doing
-  if(_dt_exceptionfilter_old_handler) SetUnhandledExceptionFilter(_dt_exceptionfilter_old_handler);
+  // Restore our UnhandledExceptionFilter handler no matter what GM is doing
+  SetUnhandledExceptionFilter(dt_toplevel_exception_handler);
 
 #endif //!defined(__APPLE__) && !defined(_WIN32)
 }

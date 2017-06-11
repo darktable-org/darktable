@@ -49,6 +49,7 @@ FILE(GLOB SOURCE_FILES
   "common/locallaplaciancl.c"
   "common/metadata.c"
   "common/mipmap_cache.c"
+  "common/module.c"
   "common/noiseprofiles.c"
   "common/pdf.c"
   "common/styles.c"
@@ -137,10 +138,10 @@ if(WIN32)
   # add it to have proper time.h functions available
   ADD_DEFINITIONS(-D_POSIX_THREAD_SAFE_FUNCTIONS)
 
-  # add icon resource for Windows executable
+  # add icon, version, ... resources for Windows executable
   SET(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
-  set(RESOURCE_OBJECT win/darktable.rc)
-
+  set(RESOURCE_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.rc")
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/win/darktable.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.rc")
 endif(WIN32)
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
@@ -248,14 +249,6 @@ if(USE_CAMERA_SUPPORT)
   list(APPEND LIBS ${Gphoto2_LIBRARIES})
   add_definitions(${Gphoto2_DEFINITIONS})
 endif(USE_CAMERA_SUPPORT)
-
-# # INotify isn't used anymore as it seems
-# find_package(INotify)
-# if(INOTIFY_FOUND)
-#   include_directories(SYSTEM ${INOTIFY_INCLUDE_DIRS})
-#   list(APPEND LIBS ${INOTIFY_LIBRARIES})
-#   add_definitions(${INOTIFY_DEFINITIONS})
-# endif(INOTIFY_FOUND)
 
 if(USE_OPENEXR)
   find_package(OpenEXR)
@@ -366,9 +359,6 @@ endif(USE_GRAPHICSMAGICK)
 #
 # Add HAVE_xxx defines used by darktable
 #
-# if(INOTIFY_FOUND)
-#   add_definitions("-DHAVE_INOTIFY")
-# endif(INOTIFY_FOUND)
 
 if(LENSFUN_FOUND)
   add_definitions("-DHAVE_LENSFUN")

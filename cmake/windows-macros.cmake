@@ -45,6 +45,8 @@ if (WIN32)
     ${MINGW_PATH}/gdk-pixbuf-query-loaders.exe
     ${MINGW_PATH}/gtk-query-immodules*.exe
     ${MINGW_PATH}/gtk-update-icon-cache.exe
+    ${MINGW_PATH}/gspawn-win64-helper.exe
+    ${MINGW_PATH}/gspawn-win64-helper-console.exe
   #LZO2
     ${MINGW_PATH}/liblzo*.dll
   #OPENEXR
@@ -128,6 +130,12 @@ if (WIN32)
   install(DIRECTORY
       "${MINGW_PATH}/../share/icons/adwaita/"
       DESTINATION share/icons/adwaita/
+      COMPONENT DTApplication)
+
+  # fixup hicolor theme
+  install(FILES
+      "${MINGW_PATH}/../share/icons/hicolor/index.theme"
+      DESTINATION share/icons/hicolor/
       COMPONENT DTApplication)
 
   # Add gtk schemas files
