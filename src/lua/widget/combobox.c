@@ -67,9 +67,8 @@ static int combobox_numindex(lua_State*L)
     }
     return 0;
   }
-  if(key <= 0 || key > length) {
-    return luaL_error(L,"Invalid index for combo box : %d\n",key);
-  } else if (key > length) {
+  if(key <= 0 || key > length)
+  {
     lua_pushnil(L);
     return 1;
   }
