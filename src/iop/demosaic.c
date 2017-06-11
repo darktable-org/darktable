@@ -1569,14 +1569,11 @@ for (fdc_row=(YOFFS), myrow=row-6+(YOFFS); fdc_row < (YSIZE); fdc_row++, myrow++
 for (fdc_col=(XOFFS), mycol=col-6+(XOFFS); fdc_col < (XSIZE); fdc_col++, mycol++) \
 VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_orig[0][myrow][mycol];
           // extract modulated chroma using filters
-          float complex C2m, C5m, C6m, C7m, C10m, C11m;
-          // for 11x11 filters, use 0,0,11,11 as filter region
+          float complex C2m, C5m, C6m, C7m, C10m;
           CORR_FILT(C2m,h2,0,0,13,13)
           CORR_FILT(C5m,h5,0,0,13,13)
-          CORR_FILT(C6m,h6,0,0,13,13)
           CORR_FILT(C7m,h7,0,0,13,13)
           CORR_FILT(C10m,h10,0,0,13,13)
-          CORR_FILT(C11m,h11,0,0,13,13)
           // build the q vector components
           myrow = (row + rowoffset) % 6;
           mycol = (col + coloffset) % 6;
@@ -1590,9 +1587,9 @@ VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_orig[0][myrow][mycol];
           float complex modulator8 = m8arr[myrow][mycol];
           float complex q2_10 = w * C10m * modulator1 - (1.0f-w) * C2m * modulator2;
           float complex q3_15 = conjf(q2_10);
-          float complex q6_11 = w * C11m * modulator5 + (1.0f-w) * C6m * modulator6;
-          float complex q12_17 = conjf(q6_11);
           float complex q5 = C5m * modulator7;
+          float complex q6_11 = conjf(-0.5f * q5);
+          float complex q12_17 = conjf(q6_11);
           float complex q7 = C7m * modulator8;
           float complex q18 = conjf(q5);
           // get L
