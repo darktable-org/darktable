@@ -2128,8 +2128,6 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
   }
   else if(state == dt_iop_state_FAVORITE)
   {
-    dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
-
     mods = g_list_first(darktable.develop->iop);
     while(mods)
     {
