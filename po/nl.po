@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-12 19:27+0200\n"
+"POT-Creation-Date: 2017-06-12 19:39+0200\n"
 "PO-Revision-Date: 2017-06-12 19:36+0200\n"
 "Last-Translator: G.G. Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
@@ -1271,7 +1271,7 @@ msgstr "aan"
 #: ../src/develop/blend_gui.c:2016 ../src/develop/develop.c:1343
 #: ../src/imageio/format/exr.cc:359 ../src/imageio/format/j2k.c:663
 #: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1979
-#: ../src/iop/demosaic.c:4036 ../src/iop/vignette.c:1140
+#: ../src/iop/demosaic.c:4037 ../src/iop/vignette.c:1140
 #: ../src/libs/history.c:163 ../src/libs/live_view.c:435
 msgid "off"
 msgstr "uit"
@@ -6125,49 +6125,49 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "randdrempelwaarde"
 
-#: ../src/iop/demosaic.c:3810
+#: ../src/iop/demosaic.c:3811
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' kleuren matrix voor 4bayer afbeelding is niet gevonden!"
 
-#: ../src/iop/demosaic.c:4010 ../src/iop/demosaic.c:4019
+#: ../src/iop/demosaic.c:4011 ../src/iop/demosaic.c:4020
 #: ../src/iop/dither.c:792 ../src/iop/highlights.c:1065
 msgid "method"
 msgstr "methode"
 
-#: ../src/iop/demosaic.c:4012
+#: ../src/iop/demosaic.c:4013
 msgid "PPG (fast)"
 msgstr "PPG (snel)"
 
-#: ../src/iop/demosaic.c:4013
+#: ../src/iop/demosaic.c:4014
 msgid "AMaZE (slow)"
 msgstr "AMaZE (langzaam)"
 
-#: ../src/iop/demosaic.c:4014
+#: ../src/iop/demosaic.c:4015
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:4015 ../src/iop/demosaic.c:4024
+#: ../src/iop/demosaic.c:4016 ../src/iop/demosaic.c:4025
 msgid "passthrough (monochrome) (experimental)"
 msgstr "passthrough (monochroom) (experimenteel)"
 
-#: ../src/iop/demosaic.c:4016 ../src/iop/demosaic.c:4025
+#: ../src/iop/demosaic.c:4017 ../src/iop/demosaic.c:4026
 msgid "demosaicing raw data method"
 msgstr "demosaicing ruwe data-methode"
 
-#: ../src/iop/demosaic.c:4021
+#: ../src/iop/demosaic.c:4022
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:4022
+#: ../src/iop/demosaic.c:4023
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-pass"
 
-#: ../src/iop/demosaic.c:4023
+#: ../src/iop/demosaic.c:4024
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-pass (langzaam)"
 
-#: ../src/iop/demosaic.c:4028
+#: ../src/iop/demosaic.c:4029
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -6177,63 +6177,63 @@ msgstr ""
 "schakel uit met 0.0\n"
 "kies 1.0 om de randen te negeren"
 
-#: ../src/iop/demosaic.c:4030
+#: ../src/iop/demosaic.c:4031
 msgid "edge threshold"
 msgstr "randdrempelwaarde"
 
-#: ../src/iop/demosaic.c:4034
+#: ../src/iop/demosaic.c:4035
 msgid "color smoothing"
 msgstr "kleuren vervagen"
 
-#: ../src/iop/demosaic.c:4037
+#: ../src/iop/demosaic.c:4038
 msgid "one time"
 msgstr "een keer"
 
-#: ../src/iop/demosaic.c:4038
+#: ../src/iop/demosaic.c:4039
 msgid "two times"
 msgstr "twee keer"
 
-#: ../src/iop/demosaic.c:4039
+#: ../src/iop/demosaic.c:4040
 msgid "three times"
 msgstr "drie keer"
 
-#: ../src/iop/demosaic.c:4040
+#: ../src/iop/demosaic.c:4041
 msgid "four times"
 msgstr "vier keer"
 
-#: ../src/iop/demosaic.c:4041
+#: ../src/iop/demosaic.c:4042
 msgid "five times"
 msgstr "vijf keer"
 
-#: ../src/iop/demosaic.c:4042
+#: ../src/iop/demosaic.c:4043
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "aantal stappen mediaan kleurvervaging na demosaicing"
 
-#: ../src/iop/demosaic.c:4046
+#: ../src/iop/demosaic.c:4047
 msgid "match greens"
 msgstr "groen matchen"
 
-#: ../src/iop/demosaic.c:4047
+#: ../src/iop/demosaic.c:4048
 msgid "disabled"
 msgstr "uitgeschakeld"
 
-#: ../src/iop/demosaic.c:4048
+#: ../src/iop/demosaic.c:4049
 msgid "local average"
 msgstr "lokaal gemiddelde"
 
-#: ../src/iop/demosaic.c:4049
+#: ../src/iop/demosaic.c:4050
 msgid "full average"
 msgstr "volledig gemiddelde"
 
-#: ../src/iop/demosaic.c:4050
+#: ../src/iop/demosaic.c:4051
 msgid "full and local average"
 msgstr "volledig en lokaal gemiddelde"
 
-#: ../src/iop/demosaic.c:4051
+#: ../src/iop/demosaic.c:4052
 msgid "green channels matching method"
 msgstr "methode voor matchen groene kanalen"
 
-#: ../src/iop/demosaic.c:4063
+#: ../src/iop/demosaic.c:4064
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
