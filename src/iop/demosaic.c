@@ -1968,36 +1968,24 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
   if(data->green_eq == DT_IOP_GREEN_EQ_FULL || data->green_eq == DT_IOP_GREEN_EQ_BOTH)
   {
-    size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-    size_t workgroupsize = 0;       // the maximum number of items in a work group
-    unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-
-    if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) != CL_SUCCESS)
-      goto error;
-
-    dt_iop_demosaic_cl_buffer_t locopt
+    dt_iop_demosaic_cl_buffer_t flocopt
       = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
                                        .cellsize = 2 * sizeof(float), .overhead = 0,
-                                       .sizex = 1 << 8, .sizey = 1 << 8 };
+                                       .sizex = 1 << 4, .sizey = 1 << 4 };
 
-    if(!blocksizeopt(devid, gd->kernel_green_eq_favg_reduce_first, &locopt))
+    if(!blocksizeopt(devid, gd->kernel_green_eq_favg_reduce_first, &flocopt))
       goto error;
 
-    const size_t bwidth = ROUNDUP(width, locopt.sizex);
-    const size_t bheight = ROUNDUP(height, locopt.sizey);
+    const size_t bwidth = ROUNDUP(width, flocopt.sizex);
+    const size_t bheight = ROUNDUP(height, flocopt.sizey);
 
-    const int bufsize = (bwidth / locopt.sizex) * (bheight / locopt.sizey);
-    const int lsize = maxsizes[0];
-    const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, lsize) / lsize);
+    const int bufsize = (bwidth / flocopt.sizex) * (bheight / flocopt.sizey);
 
     dev_m = dt_opencl_alloc_device_buffer(devid, (size_t)bufsize * 2 * sizeof(float));
     if(dev_m == NULL) goto error;
 
-    dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * 2 * sizeof(float));
-    if(dev_r == NULL) goto error;
-
     size_t fsizes[3] = { bwidth, bheight, 1 };
-    size_t flocal[3] = { locopt.sizex, locopt.sizey, 1 };
+    size_t flocal[3] = { flocopt.sizex, flocopt.sizey, 1 };
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_first, 0, sizeof(cl_mem), &dev_in1);
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_first, 1, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_first, 2, sizeof(int), &height);
@@ -2006,17 +1994,30 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_first, 5, sizeof(int), &roi_in->x);
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_first, 6, sizeof(int), &roi_in->y);
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_first, 7,
-                             locopt.sizex * locopt.sizey * 2 * sizeof(float), NULL);
+                             flocopt.sizex * flocopt.sizey * 2 * sizeof(float), NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_favg_reduce_first, fsizes,
                                                  flocal);
     if(err != CL_SUCCESS) goto error;
 
-    size_t ssizes[3] = { reducesize * lsize, 1, 1 };
-    size_t slocal[3] = { lsize, 1, 1 };
+    dt_iop_demosaic_cl_buffer_t slocopt
+      = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                       .cellsize = 2 * sizeof(float), .overhead = 0,
+                                       .sizex = 1 << 16, .sizey = 1 };
+
+    if(!blocksizeopt(devid, gd->kernel_green_eq_favg_reduce_second, &slocopt))
+      goto error;
+
+    const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
+
+    dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * 2 * sizeof(float));
+    if(dev_r == NULL) goto error;
+
+    size_t ssizes[3] = { reducesize * slocopt.sizex, 1, 1 };
+    size_t slocal[3] = { slocopt.sizex, 1, 1 };
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_second, 0, sizeof(cl_mem), &dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_second, 1, sizeof(cl_mem), &dev_r);
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_second, 2, sizeof(int), &bufsize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_second, 3, lsize * 2 * sizeof(float), NULL);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_second, 3, slocopt.sizex * 2 * sizeof(float), NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_favg_reduce_second, ssizes,
                                                  slocal);
     if(err != CL_SUCCESS) goto error;
