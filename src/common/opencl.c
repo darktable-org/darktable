@@ -506,7 +506,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   cl->async_pixelpipe = dt_conf_get_bool("opencl_async_pixelpipe");
   cl->synch_cache = dt_conf_get_bool("opencl_synch_cache");
   cl->micro_nap = dt_conf_get_int("opencl_micro_nap");
-  cl->enable_markesteijn = dt_conf_get_bool("opencl_enable_markesteijn");
   cl->crc = 5781;
   cl->dlocl = NULL;
   cl->dev_priority_image = NULL;
@@ -560,8 +559,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_avoid_atomics: %d\n",
            dt_conf_get_bool("opencl_avoid_atomics"));
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_enable_markesteijn: %d\n",
-           dt_conf_get_bool("opencl_enable_markesteijn"));
 
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
