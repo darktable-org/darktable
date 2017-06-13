@@ -1782,75 +1782,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #ifdef HAVE_OPENCL
-typedef struct dt_iop_demosaic_cl_buffer_t
-{
-  // description of memory requirements of local buffer
-  // local buffer size will be calculated as:
-  // (xoffset + xfactor * x) * (yoffset + yfactor * y) * cellsize + overhead;
-  const int xoffset;
-  const int xfactor;
-  const int yoffset;
-  const int yfactor;
-  const size_t cellsize;
-  const size_t overhead;
-  int sizex;  // initial value and final values after optimization
-  int sizey;  // initial value and final values after optimization
-} dt_iop_demosaic_cl_buffer_t;
-
-
-static int
-nextpow2(int n)
-{
-  int k = 1;
-  while (k < n)
-    k <<= 1;
-  return k;
-}
-
-// utility function to calculate optimal work group dimensions for a given kernel
-// taking device specific restrictions and local memory limitations into account
-static int
-blocksizeopt(const int devid, const int kernel, dt_iop_demosaic_cl_buffer_t *factors)
-{
-   size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-   size_t workgroupsize = 0;       // the maximum number of items in a work group
-   unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-   size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
-
-   int *blocksizex = &factors->sizex;
-   int *blocksizey = &factors->sizey;
-
-   // initial values must be supplied in sizex and sizey.
-   // we make sure that these are a power of 2 and lie within reasonable limits.
-   *blocksizex = CLAMP(nextpow2(*blocksizex), 2, 2 << 8);
-   *blocksizey = CLAMP(nextpow2(*blocksizey), 2, 2 << 8);
-
-   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-      && dt_opencl_get_kernel_work_group_size(devid, kernel, &kernelworkgroupsize) == CL_SUCCESS)
-      {
-        while(maxsizes[0] < *blocksizex || maxsizes[1] < *blocksizey
-              || localmemsize < ((factors->xfactor * (*blocksizex) + factors->xoffset) *
-                                (factors->yfactor * (*blocksizey) + factors->yoffset)) * factors->cellsize + factors->overhead
-              || workgroupsize < (*blocksizex) * (*blocksizey) || kernelworkgroupsize < (*blocksizex) * (*blocksizey))
-        {
-          if(*blocksizex == 1 && *blocksizey == 1) break;
-
-          if(*blocksizex > *blocksizey)
-            *blocksizex >>= 1;
-          else
-            *blocksizey >>= 1;
-        }
-      }
-      else
-      {
-        dt_print(DT_DEBUG_OPENCL,
-             "[opencl_demosaic] can not identify resource limits for device %d\n", devid);
-        return FALSE;
-      }
-
-  return TRUE;
-}
-
 // color smoothing step by multiple passes of median filtering
 static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
                               cl_mem dev_out, const dt_iop_roi_t *const roi_out)
@@ -1867,12 +1798,12 @@ static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
   if(dev_tmp == NULL) goto error;
 
-  dt_iop_demosaic_cl_buffer_t locopt
-    = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
-                                     .cellsize = 4 * sizeof(float), .overhead = 0,
-                                     .sizex = 1 << 8, .sizey = 1 << 8 };
+  dt_opencl_local_buffer_t locopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
+                                  .cellsize = 4 * sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 8, .sizey = 1 << 8 };
 
-  if(!blocksizeopt(devid, gd->kernel_color_smoothing, &locopt))
+  if(!dt_opencl_local_buffer_opt(devid, gd->kernel_color_smoothing, &locopt))
     goto error;
 
   // two buffer references for our ping-pong
@@ -1968,12 +1899,12 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
   if(data->green_eq == DT_IOP_GREEN_EQ_FULL || data->green_eq == DT_IOP_GREEN_EQ_BOTH)
   {
-    dt_iop_demosaic_cl_buffer_t flocopt
-      = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
-                                       .cellsize = 2 * sizeof(float), .overhead = 0,
-                                       .sizex = 1 << 4, .sizey = 1 << 4 };
+    dt_opencl_local_buffer_t flocopt
+      = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                    .cellsize = 2 * sizeof(float), .overhead = 0,
+                                    .sizex = 1 << 4, .sizey = 1 << 4 };
 
-    if(!blocksizeopt(devid, gd->kernel_green_eq_favg_reduce_first, &flocopt))
+    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_favg_reduce_first, &flocopt))
       goto error;
 
     const size_t bwidth = ROUNDUP(width, flocopt.sizex);
@@ -1999,12 +1930,12 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
                                                  flocal);
     if(err != CL_SUCCESS) goto error;
 
-    dt_iop_demosaic_cl_buffer_t slocopt
-      = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
-                                       .cellsize = 2 * sizeof(float), .overhead = 0,
-                                       .sizex = 1 << 16, .sizey = 1 };
+    dt_opencl_local_buffer_t slocopt
+      = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                    .cellsize = 2 * sizeof(float), .overhead = 0,
+                                    .sizex = 1 << 16, .sizey = 1 };
 
-    if(!blocksizeopt(devid, gd->kernel_green_eq_favg_reduce_second, &slocopt))
+    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_favg_reduce_second, &slocopt))
       goto error;
 
     const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
@@ -2055,12 +1986,12 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     const dt_image_t *img = &self->dev->image_storage;
     const float threshold = 0.0001f * img->exif_iso;
 
-    dt_iop_demosaic_cl_buffer_t locopt
-      = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
-                                       .cellsize = 1 * sizeof(float), .overhead = 0,
-                                       .sizex = 1 << 8, .sizey = 1 << 8 };
+    dt_opencl_local_buffer_t locopt
+      = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
+                                    .cellsize = 1 * sizeof(float), .overhead = 0,
+                                    .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!blocksizeopt(devid, gd->kernel_green_eq_lavg, &locopt))
+    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_lavg, &locopt))
       goto error;
 
     size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
@@ -2158,12 +2089,12 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     {
       if(data->median_thrs > 0.0f)
       {
-        dt_iop_demosaic_cl_buffer_t locopt
-          = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
-                                           .cellsize = 1 * sizeof(float), .overhead = 0,
-                                           .sizex = 1 << 8, .sizey = 1 << 8 };
+        dt_opencl_local_buffer_t locopt
+          = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
+                                        .cellsize = 1 * sizeof(float), .overhead = 0,
+                                        .sizex = 1 << 8, .sizey = 1 << 8 };
 
-        if(!blocksizeopt(devid, gd->kernel_pre_median, &locopt))
+        if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pre_median, &locopt))
         goto error;
 
         size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
@@ -2187,12 +2118,12 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
       do
       {
-        dt_iop_demosaic_cl_buffer_t locopt
-          = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*3, .xfactor = 1, .yoffset = 2*3, .yfactor = 1,
-                                           .cellsize = 1 * sizeof(float), .overhead = 0,
-                                           .sizex = 1 << 8, .sizey = 1 << 8 };
+        dt_opencl_local_buffer_t locopt
+          = (dt_opencl_local_buffer_t){ .xoffset = 2*3, .xfactor = 1, .yoffset = 2*3, .yfactor = 1,
+                                        .cellsize = 1 * sizeof(float), .overhead = 0,
+                                        .sizex = 1 << 8, .sizey = 1 << 8 };
 
-        if(!blocksizeopt(devid, gd->kernel_ppg_green, &locopt))
+        if(!dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_green, &locopt))
         goto error;
 
         size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
@@ -2213,12 +2144,12 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
       do
       {
-        dt_iop_demosaic_cl_buffer_t locopt
-          = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
-                                           .cellsize = 4 * sizeof(float), .overhead = 0,
-                                           .sizex = 1 << 8, .sizey = 1 << 8 };
+        dt_opencl_local_buffer_t locopt
+          = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
+                                        .cellsize = 4 * sizeof(float), .overhead = 0,
+                                        .sizex = 1 << 8, .sizey = 1 << 8 };
 
-        if(!blocksizeopt(devid, gd->kernel_ppg_redblue, &locopt))
+        if(!dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_redblue, &locopt))
         goto error;
 
         size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
@@ -2564,12 +2495,12 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     do
     {
       // do linear interpolation
-      dt_iop_demosaic_cl_buffer_t locopt
-        = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
-                                         .cellsize = 1 * sizeof(float), .overhead = 0,
-                                         .sizex = 1 << 8, .sizey = 1 << 8 };
+      dt_opencl_local_buffer_t locopt
+        = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
+                                      .cellsize = 1 * sizeof(float), .overhead = 0,
+                                      .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      if(!blocksizeopt(devid, gd->kernel_vng_lin_interpolate, &locopt))
+      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_lin_interpolate, &locopt))
         goto error;
 
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
@@ -2598,12 +2529,12 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     else
     {
       // do full VNG interpolation
-      dt_iop_demosaic_cl_buffer_t locopt
-        = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
-                                         .cellsize = 4 * sizeof(float), .overhead = 0,
-                                         .sizex = 1 << 8, .sizey = 1 << 8 };
+      dt_opencl_local_buffer_t locopt
+        = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
+                                      .cellsize = 4 * sizeof(float), .overhead = 0,
+                                      .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      if(!blocksizeopt(devid, gd->kernel_vng_interpolate, &locopt))
+      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_interpolate, &locopt))
         goto error;
 
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
@@ -2902,12 +2833,12 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
     // find minimum and maximum allowed green values of red/blue pixel pairs
     const int pad_g1_g3 = 3;
-    dt_iop_demosaic_cl_buffer_t locopt_g1_g3
-      = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*3, .xfactor = 1, .yoffset = 2*3, .yfactor = 1,
-                                       .cellsize = 1 * sizeof(float), .overhead = 0,
-                                       .sizex = 1 << 8, .sizey = 1 << 8 };
+    dt_opencl_local_buffer_t locopt_g1_g3
+      = (dt_opencl_local_buffer_t){ .xoffset = 2*3, .xfactor = 1, .yoffset = 2*3, .yfactor = 1,
+                                    .cellsize = 1 * sizeof(float), .overhead = 0,
+                                    .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!blocksizeopt(devid, gd->kernel_markesteijn_green_minmax, &locopt_g1_g3))
+    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_green_minmax, &locopt_g1_g3))
       goto error;
 
     do
@@ -2932,12 +2863,12 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
     // interpolate green horizontally, vertically, and along both diagonals
     const int pad_g_interp = 3;
-    dt_iop_demosaic_cl_buffer_t locopt_g_interp
-      = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*6, .xfactor = 1, .yoffset = 2*6, .yfactor = 1,
-                                       .cellsize = 4 * sizeof(float), .overhead = 0,
-                                       .sizex = 1 << 8, .sizey = 1 << 8 };
+    dt_opencl_local_buffer_t locopt_g_interp
+      = (dt_opencl_local_buffer_t){ .xoffset = 2*6, .xfactor = 1, .yoffset = 2*6, .yfactor = 1,
+                                    .cellsize = 4 * sizeof(float), .overhead = 0,
+                                    .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!blocksizeopt(devid, gd->kernel_markesteijn_interpolate_green, &locopt_g_interp))
+    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_interpolate_green, &locopt_g_interp))
       goto error;
 
     do
@@ -3005,12 +2936,12 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
       // interpolate red and blue values for solitary green pixels
       const int pad_rb_g = (passes == 1) ? 6 : 5;
-      dt_iop_demosaic_cl_buffer_t locopt_rb_g
-        = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
-                                         .cellsize = 4 * sizeof(float), .overhead = 0,
-                                         .sizex = 1 << 8, .sizey = 1 << 8 };
+      dt_opencl_local_buffer_t locopt_rb_g
+        = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
+                                      .cellsize = 4 * sizeof(float), .overhead = 0,
+                                      .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      if(!blocksizeopt(devid, gd->kernel_markesteijn_solitary_green, &locopt_rb_g))
+      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_solitary_green, &locopt_rb_g))
       goto error;
 
       cl_mem *dev_trgb = dev_rgb;
@@ -3043,12 +2974,12 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
       // interpolate red for blue pixels and vice versa
       const int pad_rb_br = (passes == 1) ? 6 : 5;
-      dt_iop_demosaic_cl_buffer_t locopt_rb_br
-        = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*3, .xfactor = 1, .yoffset = 2*3, .yfactor = 1,
-                                         .cellsize = 4 * sizeof(float), .overhead = 0,
-                                         .sizex = 1 << 8, .sizey = 1 << 8 };
+      dt_opencl_local_buffer_t locopt_rb_br
+        = (dt_opencl_local_buffer_t){ .xoffset = 2*3, .xfactor = 1, .yoffset = 2*3, .yfactor = 1,
+                                      .cellsize = 4 * sizeof(float), .overhead = 0,
+                                      .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      if(!blocksizeopt(devid, gd->kernel_markesteijn_red_and_blue, &locopt_rb_br))
+      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_red_and_blue, &locopt_rb_br))
       goto error;
 
       for(int d = 0; d < 4; d++)
@@ -3072,12 +3003,12 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
       // interpolate red and blue for 2x2 blocks of green
       const int pad_g22 = (passes == 1) ? 8 : 4;
-      dt_iop_demosaic_cl_buffer_t locopt_g22
-        = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
-                                         .cellsize = 4 * sizeof(float), .overhead = 0,
-                                         .sizex = 1 << 8, .sizey = 1 << 8 };
+      dt_opencl_local_buffer_t locopt_g22
+        = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
+                                      .cellsize = 4 * sizeof(float), .overhead = 0,
+                                      .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      if(!blocksizeopt(devid, gd->kernel_markesteijn_interpolate_twoxtwo, &locopt_g22))
+      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_interpolate_twoxtwo, &locopt_g22))
       goto error;
 
       for(int d = 0, n = 0; d < ndir; d += 2, n++)
@@ -3118,12 +3049,12 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
     // convert to perceptual colorspace and differentiate in all directions
     const int pad_yuv = (passes == 1) ? 8 : 13;
-    dt_iop_demosaic_cl_buffer_t locopt_diff
-      = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
-                                       .cellsize = 4 * sizeof(float), .overhead = 0,
-                                       .sizex = 1 << 8, .sizey = 1 << 8 };
+    dt_opencl_local_buffer_t locopt_diff
+      = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
+                                    .cellsize = 4 * sizeof(float), .overhead = 0,
+                                    .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!blocksizeopt(devid, gd->kernel_markesteijn_differentiate, &locopt_diff))
+    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_differentiate, &locopt_diff))
     goto error;
 
     for(int d = 0; d < ndir; d++)
@@ -3181,12 +3112,12 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
     // set homogeneity maps
     const int pad_homo = (passes == 1) ? 10 : 15;
-    dt_iop_demosaic_cl_buffer_t locopt_homo
-      = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
-                                       .cellsize = 1 * sizeof(float), .overhead = 0,
-                                       .sizex = 1 << 8, .sizey = 1 << 8 };
+    dt_opencl_local_buffer_t locopt_homo
+      = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
+                                    .cellsize = 1 * sizeof(float), .overhead = 0,
+                                    .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!blocksizeopt(devid, gd->kernel_markesteijn_homo_set, &locopt_homo))
+    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_homo_set, &locopt_homo))
     goto error;
 
     for(int d = 0; d < ndir; d++)
@@ -3213,12 +3144,12 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     }
 
     // build 5x5 sum of homogeneity maps for each pixel and direction
-    dt_iop_demosaic_cl_buffer_t locopt_homo_sum
-      = (dt_iop_demosaic_cl_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
-                                       .cellsize = 1 * sizeof(float), .overhead = 0,
-                                       .sizex = 1 << 8, .sizey = 1 << 8 };
+    dt_opencl_local_buffer_t locopt_homo_sum
+      = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
+                                    .cellsize = 1 * sizeof(float), .overhead = 0,
+                                    .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    if(!blocksizeopt(devid, gd->kernel_markesteijn_homo_sum, &locopt_homo_sum))
+    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_homo_sum, &locopt_homo_sum))
     goto error;
 
     for(int d = 0; d < ndir; d++)

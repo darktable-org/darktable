@@ -158,6 +158,21 @@ typedef struct dt_opencl_t
   struct dt_local_laplacian_cl_global_t *local_laplacian;
 } dt_opencl_t;
 
+/** description of memory requirements of local buffer
+  * local buffer size will be calculated as:
+  * (xoffset + xfactor * x) * (yoffset + yfactor * y) * cellsize + overhead; */
+typedef struct dt_opencl_local_buffer_t
+{
+  const int xoffset;
+  const int xfactor;
+  const int yoffset;
+  const int yfactor;
+  const size_t cellsize;
+  const size_t overhead;
+  int sizex;  // initial value and final values after optimization
+  int sizey;  // initial value and final values after optimization
+} dt_opencl_local_buffer_t;
+
 /** internally calls dt_clGetDeviceInfo, and takes care of memory allocation
  * afterwards, *param_value will point to memory block of size at least *param_value
  * which needs to be free()'d manually */
@@ -342,6 +357,9 @@ cl_int dt_opencl_events_flush(const int devid, const int reset);
 
 /** display OpenCL profiling information. If summary is not 0, try to generate summarized info for kernels */
 void dt_opencl_events_profiling(const int devid, const int aggregated);
+
+/** utility function to calculate optimal work group dimensions for a given kernel */
+int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_local_buffer_t *factors);
 
 #else
 #include "control/conf.h"
