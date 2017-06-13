@@ -126,7 +126,6 @@ typedef struct dt_opencl_t
   int number_event_handles;
   int print_statistics;
   int synch_cache;
-  int enable_markesteijn;
   int micro_nap;
   int enabled;
   int stopped;
