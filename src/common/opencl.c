@@ -506,7 +506,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   cl->async_pixelpipe = dt_conf_get_bool("opencl_async_pixelpipe");
   cl->synch_cache = dt_conf_get_bool("opencl_synch_cache");
   cl->micro_nap = dt_conf_get_int("opencl_micro_nap");
-  cl->enable_markesteijn = dt_conf_get_bool("opencl_enable_markesteijn");
   cl->crc = 5781;
   cl->dlocl = NULL;
   cl->dev_priority_image = NULL;
@@ -560,8 +559,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_avoid_atomics: %d\n",
            dt_conf_get_bool("opencl_avoid_atomics"));
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_enable_markesteijn: %d\n",
-           dt_conf_get_bool("opencl_enable_markesteijn"));
 
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
@@ -2836,6 +2833,61 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
 
   return;
 }
+
+static int nextpow2(int n)
+{
+  int k = 1;
+  while (k < n)
+    k <<= 1;
+  return k;
+}
+
+// utility function to calculate optimal work group dimensions for a given kernel
+// taking device specific restrictions and local memory limitations into account
+int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_local_buffer_t *factors)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited || devid < 0) return FALSE;
+
+  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
+  size_t workgroupsize = 0;       // the maximum number of items in a work group
+  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+
+  int *blocksizex = &factors->sizex;
+  int *blocksizey = &factors->sizey;
+
+  // initial values must be supplied in sizex and sizey.
+  // we make sure that these are a power of 2 and lie within reasonable limits.
+  *blocksizex = CLAMP(nextpow2(*blocksizex), 1, 1 << 16);
+  *blocksizey = CLAMP(nextpow2(*blocksizey), 1, 1 << 16);
+
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
+     && dt_opencl_get_kernel_work_group_size(devid, kernel, &kernelworkgroupsize) == CL_SUCCESS)
+  {
+    while(maxsizes[0] < *blocksizex || maxsizes[1] < *blocksizey
+       || localmemsize < ((factors->xfactor * (*blocksizex) + factors->xoffset) *
+                          (factors->yfactor * (*blocksizey) + factors->yoffset)) * factors->cellsize + factors->overhead
+       || workgroupsize < (*blocksizex) * (*blocksizey) || kernelworkgroupsize < (*blocksizex) * (*blocksizey))
+    {
+      if(*blocksizex == 1 && *blocksizey == 1) return FALSE;
+
+      if(*blocksizex > *blocksizey)
+        *blocksizex >>= 1;
+      else
+        *blocksizey >>= 1;
+    }
+  }
+  else
+  {
+    dt_print(DT_DEBUG_OPENCL,
+         "[opencl_demosaic] can not identify resource limits for device %d\n", devid);
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
 
 #endif
 
