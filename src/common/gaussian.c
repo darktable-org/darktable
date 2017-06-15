@@ -560,46 +560,25 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
     g->min[k] = min[k];
   }
 
-  // check if we need to reduce blocksize
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
-
-  // make sure blocksize is not too large
   int kernel_gaussian_transpose = (channels == 1) ? g->global->kernel_gaussian_transpose_1c
                                                   : g->global->kernel_gaussian_transpose_4c;
-  size_t blocksize = 64;
-  int blockwd;
-  int blockht;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, kernel_gaussian_transpose, &kernelworkgroupsize)
-        == CL_SUCCESS)
-  {
-    // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize * blocksize > workgroupsize
-          || blocksize * (blocksize + 1) * channels * sizeof(float) > localmemsize)
-    {
-      if(blocksize == 1) break;
-      blocksize >>= 1;
-    }
+  int blocksize;
 
-    blockwd = blockht = blocksize;
+  dt_opencl_local_buffer_t locopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 1, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = channels * sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 6, .sizey = 1 << 6 };
 
-    if(blockwd * blockht > kernelworkgroupsize) blockht = kernelworkgroupsize / blockwd;
-  }
+  if(dt_opencl_local_buffer_opt(devid, kernel_gaussian_transpose, &locopt))
+    blocksize = MIN(locopt.sizex, locopt.sizey);
   else
-  {
-    blockwd = blockht = 1; // slow but safe
-  }
+    blocksize = 1;
 
-  // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
-  const size_t bwidth = width % blockwd == 0 ? width : (width / blockwd + 1) * blockwd;
-  const size_t bheight = height % blockht == 0 ? height : (height / blockht + 1) * blockht;
+  // width and height of intermediate buffers. Need to be multiples of blocksize
+  const size_t bwidth = ROUNDUP(width, blocksize);
+  const size_t bheight = ROUNDUP(height, blocksize);
 
   g->blocksize = blocksize;
-  g->blockwd = blockwd;
-  g->blockht = blockht;
   g->bwidth = bwidth;
   g->bheight = bheight;
 
@@ -635,8 +614,6 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   cl_mem dev_temp2 = g->dev_temp2;
 
   const int blocksize = g->blocksize;
-  const int blockwd = g->blockwd;
-  const int blockht = g->blockht;
   const int bwidth = g->bwidth;
   const int bheight = g->bheight;
 
@@ -667,7 +644,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
 
   size_t origin[] = { 0, 0, 0 };
   size_t region[] = { width, height, 1 };
-  size_t local[] = { blockwd, blockht, 1 };
+  size_t local[] = { blocksize, blocksize, 1 };
   size_t sizes[3];
 
   // compute gaussian parameters
