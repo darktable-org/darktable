@@ -111,48 +111,25 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
                                         const float sigma_s, // spatial sigma (blur pixel coords)
                                         const float sigma_r) // range sigma (blur luma values)
 {
-  // check if our device offers enough room for local buffers
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+  dt_opencl_local_buffer_t locopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = 8 * sizeof(float) + sizeof(int), .overhead = 0,
+                                  .sizex = 1 << 6, .sizey = 1 << 6 };
 
-
-  int blocksizex = 64;
-  int blocksizey = 64;
-
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, darktable.opencl->bilateral->kernel_splat,
-                                             &kernelworkgroupsize)
-            == CL_SUCCESS)
-  {
-    while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey
-          || localmemsize < blocksizex * blocksizey * (8 * sizeof(float) + sizeof(int))
-          || workgroupsize < blocksizex * blocksizey || kernelworkgroupsize < blocksizex * blocksizey)
-    {
-      if(blocksizex == 1 || blocksizey == 1) break;
-
-      if(blocksizex > blocksizey)
-        blocksizex >>= 1;
-      else
-        blocksizey >>= 1;
-    }
-  }
-  else
+  if(!dt_opencl_local_buffer_opt(devid, darktable.opencl->bilateral->kernel_splat, &locopt))
   {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_bilateral] can not identify resource limits for device %d in bilateral grid\n", devid);
     return NULL;
   }
 
-  if(blocksizex * blocksizey < 16 * 16)
+  if(locopt.sizex * locopt.sizey < 16 * 16)
   {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_bilateral] device %d does not offer sufficient resources to run bilateral grid\n",
              devid);
     return NULL;
   }
-
 
   dt_bilateral_cl_t *b = (dt_bilateral_cl_t *)malloc(sizeof(dt_bilateral_cl_t));
   if(!b) return NULL;
@@ -166,8 +143,8 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
   b->size_z = CLAMPS((int)_z, 4, 50) + 1;
   b->width = width;
   b->height = height;
-  b->blocksizex = blocksizex;
-  b->blocksizey = blocksizey;
+  b->blocksizex = locopt.sizex;
+  b->blocksizey = locopt.sizey;
   b->sigma_s = MAX(height / (b->size_y - 1.0f), width / (b->size_x - 1.0f));
   b->sigma_r = 100.0f / (b->size_z - 1.0f);
   b->devid = devid;
