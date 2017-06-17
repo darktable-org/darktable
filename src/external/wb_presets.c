@@ -2260,6 +2260,13 @@ const wb_data wb_preset[] =
   { "Nikon", "1 J5", Cloudy, 0, { 2.4609375, 1, 1.2578125, 0 } },
   { "Nikon", "1 J5", Shade, 0, { 2.78515625, 1, 1.125, 0 } },
 
+  { "Nikon", "Coolpix A", DirectSunlight      , 0, { 2.02734375, 1, 1.390625, 0 } },
+  { "Nikon", "Coolpix A", Shade               , 0, { 2.4921875, 1, 1.13671875, 0 } },
+  { "Nikon", "Coolpix A", Cloudy              , 0, { 2.16796875, 1, 1.265625, 0 } },
+  { "Nikon", "Coolpix A", Incandescent        , 0, { 1.3046875, 1, 2.21484375, 0 } },
+  { "Nikon", "Coolpix A", CoolWhiteFluorescent, 0, { 1.83203125, 1, 2.02734375, 0 } },
+  { "Nikon", "Coolpix A", Flash               , 0, { 2.39453125, 1, 1.25, 0 } },
+
   // Nikon CoolPix P330 firmware 1.0
   { "Nikon", "Coolpix P330", DirectSunlight, 0,	{ 1.792969, 1, 1.65625, 0 }},
   { "Nikon", "Coolpix P330", Incandescent, 0,	{ 1.171875, 1, 2.730469, 0 }},
