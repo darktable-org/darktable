@@ -1183,7 +1183,6 @@ static gint _sort_profiles(gconstpointer a, gconstpointer b)
 static GList *load_profile_from_dir(const char *subdir)
 {
   GList *temp_profiles = NULL;
-  cmsHPROFILE tmpprof;
   const gchar *d_name;
   char datadir[PATH_MAX] = { 0 };
   char confdir[PATH_MAX] = { 0 };
@@ -1210,7 +1209,21 @@ static GList *load_profile_from_dir(const char *subdir)
       if(!g_ascii_strcasecmp(cc, ".icc") || !g_ascii_strcasecmp(cc, ".icm"))
       {
         // TODO: add support for grayscale profiles, then remove _ensure_rgb_profile() from here
-        tmpprof = _ensure_rgb_profile(cmsOpenProfileFromFile(filename, "r"));
+        char *icc_content = NULL;
+        cmsHPROFILE tmpprof;
+
+        FILE *fd = g_fopen(filename, "rb");
+        if(!fd) goto icc_loading_done;
+
+        fseek(fd, 0, SEEK_END);
+        size_t end = ftell(fd);
+        rewind(fd);
+
+        icc_content = (char *)malloc(end * sizeof(char));
+        if(!icc_content) goto icc_loading_done;
+        if(fread(icc_content, sizeof(char), end, fd) != end) goto icc_loading_done;
+
+        tmpprof = _ensure_rgb_profile(cmsOpenProfileFromMem(icc_content, end * sizeof(char)));
         if(tmpprof)
         {
           dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
@@ -1225,6 +1238,10 @@ static GList *load_profile_from_dir(const char *subdir)
           prof->display_pos = -1;
           temp_profiles = g_list_append(temp_profiles, prof);
         }
+
+icc_loading_done:
+        if(fd) fclose(fd);
+        free(icc_content);
       }
       g_free(filename);
     }
