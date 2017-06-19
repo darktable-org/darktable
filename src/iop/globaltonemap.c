@@ -307,44 +307,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_int err = -999;
   cl_mem dev_m = NULL;
   cl_mem dev_r = NULL;
+  float *maximum = NULL;
   const int devid = piece->pipe->devid;
   int gtkernel = -1;
 
   const int width = roi_out->width;
   const int height = roi_out->height;
   float parameters[4] = { 0.0f };
-
-  // prepare local work group
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
-
-  // make sure blocksize is not too large
-  int blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_pixelmax_first, &kernelworkgroupsize)
-        == CL_SUCCESS)
-  {
-    // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize * blocksize > kernelworkgroupsize
-          || blocksize * blocksize > workgroupsize || blocksize * blocksize * sizeof(float) > localmemsize)
-    {
-      if(blocksize == 1) break;
-      blocksize >>= 1;
-    }
-  }
-  else
-  {
-    blocksize = 1; // slow but safe
-  }
-
-  if(blocksize < 2)
-  {
-    // very small blocksize. this is really unlikely to happen, but let's be prepared: give up on opencl in
-    // that case
-    return FALSE;
-  }
 
   switch(d->operator)
   {
@@ -381,15 +350,31 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     if(isnan(tmp_lwmax))
     {
+      dt_opencl_local_buffer_t flocopt
+        = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                      .cellsize = sizeof(float), .overhead = 0,
+                                      .sizex = 1 << 4, .sizey = 1 << 4 };
+
+      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_first, &flocopt))
+        goto error;
+
+      const size_t bwidth = ROUNDUP(width, flocopt.sizex);
+      const size_t bheight = ROUNDUP(height, flocopt.sizey);
+
+      const int bufsize = (bwidth / flocopt.sizex) * (bheight / flocopt.sizey);
+
+      dt_opencl_local_buffer_t slocopt
+        = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                      .cellsize = sizeof(float), .overhead = 0,
+                                      .sizex = 1 << 16, .sizey = 1 };
+
+      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_second, &slocopt))
+        goto error;
+
+      const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
+
       size_t sizes[3];
       size_t local[3];
-
-      const int bwidth = ROUNDUP(width, blocksize);
-      const int bheight = ROUNDUP(height, blocksize);
-
-      const int bufsize = (bwidth / blocksize) * (bheight / blocksize);
-      const int groupsize = maxsizes[0];
-      const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, groupsize) / groupsize);
 
       dev_m = dt_opencl_alloc_device_buffer(devid, (size_t)bufsize * sizeof(float));
       if(dev_m == NULL) goto error;
@@ -400,31 +385,31 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       sizes[0] = bwidth;
       sizes[1] = bheight;
       sizes[2] = 1;
-      local[0] = blocksize;
-      local[1] = blocksize;
+      local[0] = flocopt.sizex;
+      local[1] = flocopt.sizey;
       local[2] = 1;
       dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 1, sizeof(int), &width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 2, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 3, sizeof(cl_mem), &dev_m);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 4, blocksize * blocksize * sizeof(float), NULL);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 4, flocopt.sizex * flocopt.sizey * sizeof(float), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_first, sizes, local);
       if(err != CL_SUCCESS) goto error;
 
-      sizes[0] = reducesize * groupsize;
+      sizes[0] = reducesize * slocopt.sizex;
       sizes[1] = 1;
       sizes[2] = 1;
-      local[0] = groupsize;
+      local[0] = slocopt.sizex;
       local[1] = 1;
       local[2] = 1;
       dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 0, sizeof(cl_mem), &dev_m);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 1, sizeof(cl_mem), &dev_r);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 2, sizeof(int), &bufsize);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 3, groupsize * sizeof(float), NULL);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 3, slocopt.sizex * sizeof(float), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_second, sizes, local);
       if(err != CL_SUCCESS) goto error;
 
-      float *maximum = malloc(reducesize * sizeof(float));
+      maximum = dt_alloc_align(16, reducesize * sizeof(float));
       err = dt_opencl_read_buffer_from_device(devid, (void *)maximum, dev_r, 0,
                                             (size_t)reducesize * sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
@@ -442,7 +427,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
       tmp_lwmax = MAX(eps, (maximum[0] * 0.01f));
 
-      free(maximum);
+      dt_free_align(maximum);
+      maximum = NULL;
     }
 
     const float lwmax = tmp_lwmax;
@@ -504,6 +490,7 @@ error:
   if(b) dt_bilateral_free_cl(b);
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);
+  dt_free_align(maximum);
   dt_print(DT_DEBUG_OPENCL, "[opencl_global_tonemap] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
