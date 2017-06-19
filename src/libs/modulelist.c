@@ -28,6 +28,7 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "libs/modulegroups.h"
 
 DT_MODULE(1)
 
@@ -295,6 +296,8 @@ static void _lib_modulelist_row_changed_callback(GtkTreeView *treeview, gpointer
     gtk_tree_model_get(model, &iter, COL_MODULE, &module, -1);
 
     dt_iop_so_gui_set_state(module, (module->state + 1) % dt_iop_state_LAST);
+    if(module->state == dt_iop_state_FAVORITE)
+      dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
   }
 }
 

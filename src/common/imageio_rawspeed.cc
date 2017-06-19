@@ -119,16 +119,16 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   FileReader f(filen);
 
   std::unique_ptr<RawDecoder> d;
-  std::unique_ptr<Buffer> m;
+  std::unique_ptr<const Buffer> m;
 
   try
   {
     dt_rawspeed_load_meta();
 
-    m = std::unique_ptr<Buffer>(f.readFile());
+    m = f.readFile();
 
     RawParser t(m.get());
-    d = std::unique_ptr<RawDecoder>(t.getDecoder(meta));
+    d = t.getDecoder(meta);
 
     if(!d.get()) return DT_IMAGEIO_FILE_CORRUPTED;
 
