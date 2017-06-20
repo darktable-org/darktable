@@ -5521,6 +5521,17 @@ const wb_data wb_preset[] =
   { "Ricoh", "GR", WarmWhiteFluorescent, 0,	{ 2.240000, 1, 2.160000, 0 } },
   { "Ricoh", "GR", "5000K", 0,			{ 2.890000, 1, 1.520000, 0 } },
 
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", Daylight, 0,		{ 3.062000, 1, 1.545000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", Shade, 0,			{ 3.319000, 1, 1.385000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", Cloudy, 0,			{ 3.058000, 1, 1.538000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", Incandescent, 0,		{ 1.944000, 1, 2.384000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", IncandescentWarm, 0,	{ 2.276000, 1, 2.052000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", DaylightFluorescent, 0,	{ 3.062000, 1, 1.545000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", WhiteFluorescent, 0,	{ 2.837000, 1, 1.698000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", CoolWhiteFluorescent, 0,	{ 2.642000, 1, 2.125000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", WarmWhiteFluorescent, 0,	{ 2.354000, 1, 2.027000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", "5000K", 0,			{ 2.867000, 1, 1.662000, 0 } },
+
   { "Samsung", "EX1", Daylight, 0,		{ 1.8711, 1, 2.0039, 0 } },
   { "Samsung", "EX1", Cloudy, 0,		{ 2.3672, 1, 1.6797, 0 } },
   { "Samsung", "EX1", DaylightFluorescent, 0,	{ 1.9492, 1, 2.0586, 0 } },
