@@ -60,9 +60,6 @@
 #define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 #define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))
 
-#define BLOCKSIZE 64 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed  \
-                        */
-
 DT_MODULE_INTROSPECTION(5, dt_iop_shadhi_params_t)
 
 typedef enum dt_iop_shadhi_algo_t

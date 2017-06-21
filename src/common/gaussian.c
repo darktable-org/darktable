@@ -31,7 +31,7 @@
 #define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
 #endif
 
-#define BLOCKSIZE 32
+#define BLOCKSIZE 64
 
 static void compute_gauss_params(const float sigma, dt_gaussian_order_t order, float *a0, float *a1,
                                  float *a2, float *a3, float *b1, float *b2, float *coefp, float *coefn)

@@ -38,8 +38,6 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#define BLOCKSIZE                                                                                            \
-  2048 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 #define REDUCESIZE 64
 
 // NaN-safe clip: NaN compares false and will result in 0.0
