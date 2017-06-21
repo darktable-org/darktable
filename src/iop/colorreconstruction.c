@@ -697,38 +697,20 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
                                         const float sigma_s,     // spatial sigma (blur pixel coords)
                                         const float sigma_r)     // range sigma (blur luma values)
 {
-  // check if our device offers enough room for local buffers
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+  int blocksizex, blocksizey;
 
+  dt_opencl_local_buffer_t locopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = 4 * sizeof(float) + sizeof(int), .overhead = 0,
+                                  .sizex = 1 << 6, .sizey = 1 << 6 };
 
-  int blocksizex = 64;
-  int blocksizey = 64;
-
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, global->kernel_colorreconstruct_splat,
-                                             &kernelworkgroupsize) == CL_SUCCESS)
+  if(dt_opencl_local_buffer_opt(devid, global->kernel_colorreconstruct_splat, &locopt))
   {
-    while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey
-          || localmemsize < blocksizex * blocksizey * (4 * sizeof(float) + sizeof(int))
-          || workgroupsize < blocksizex * blocksizey || kernelworkgroupsize < blocksizex * blocksizey)
-    {
-      if(blocksizex == 1 || blocksizey == 1) break;
-
-      if(blocksizex > blocksizey)
-        blocksizex >>= 1;
-      else
-        blocksizey >>= 1;
-    }
+    blocksizex = locopt.sizex;
+    blocksizey = locopt.sizey;
   }
   else
-  {
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_colorreconstruction] can not identify resource limits for device %d in bilateral grid\n", devid);
-    return NULL;
-  }
+    blocksizex = blocksizey = 1;
 
   if(blocksizex * blocksizey < 16 * 16)
   {
@@ -859,38 +841,20 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
 {
   if(!bf || !bf->buf) return NULL;
 
-  // check if our device offers enough room for local buffers
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+  int blocksizex, blocksizey;
 
+  dt_opencl_local_buffer_t locopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = 4 * sizeof(float) + sizeof(int), .overhead = 0,
+                                  .sizex = 1 << 6, .sizey = 1 << 6 };
 
-  int blocksizex = 64;
-  int blocksizey = 64;
-
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, global->kernel_colorreconstruct_splat,
-                                             &kernelworkgroupsize) == CL_SUCCESS)
+  if(dt_opencl_local_buffer_opt(devid, global->kernel_colorreconstruct_splat, &locopt))
   {
-    while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey
-          || localmemsize < blocksizex * blocksizey * (4 * sizeof(float) + sizeof(int))
-          || workgroupsize < blocksizex * blocksizey || kernelworkgroupsize < blocksizex * blocksizey)
-    {
-      if(blocksizex == 1 || blocksizey == 1) break;
-
-      if(blocksizex > blocksizey)
-        blocksizex >>= 1;
-      else
-        blocksizey >>= 1;
-    }
+    blocksizex = locopt.sizex;
+    blocksizey = locopt.sizey;
   }
   else
-  {
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_colorreconstruction] can not identify resource limits for device %d in bilateral grid\n", devid);
-    return NULL;
-  }
+    blocksizex = blocksizey = 1;
 
   if(blocksizex * blocksizey < 16 * 16)
   {
