@@ -31,7 +31,7 @@
 #define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
 #endif
 
-#define BLOCKSIZE 64
+#define BLOCKSIZE (1 << 6)
 
 static void compute_gauss_params(const float sigma, dt_gaussian_order_t order, float *a0, float *a1,
                                  float *a2, float *a3, float *b1, float *b2, float *coefp, float *coefn)
@@ -567,7 +567,7 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
   dt_opencl_local_buffer_t locopt
     = (dt_opencl_local_buffer_t){ .xoffset = 1, .xfactor = 1, .yoffset = 0, .yfactor = 1,
                                   .cellsize = channels * sizeof(float), .overhead = 0,
-                                  .sizex = 1 << 6, .sizey = 1 << 6 };
+                                  .sizex = BLOCKSIZE, .sizey = BLOCKSIZE };
 
   if(dt_opencl_local_buffer_opt(devid, kernel_gaussian_transpose, &locopt))
     blocksize = MIN(locopt.sizex, locopt.sizey);
