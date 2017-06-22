@@ -1566,17 +1566,17 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
               dirsum += directionality[d];
             }
           float w = dirsum / (float)dircount;
-#define CORR_FILT(VAR,FILT,XOFFS,YOFFS,XSIZE,YSIZE) \
+#define CONV_FILT(VAR,FILT) \
 VAR = 0.0f + 0.0f * _Complex_I; \
-for (fdc_row=(YOFFS), myrow=row-6+(YOFFS); fdc_row < (YSIZE); fdc_row++, myrow++) \
-for (fdc_col=(XOFFS), mycol=col-6+(XOFFS); fdc_col < (XSIZE); fdc_col++, mycol++) \
-VAR += FILT[fdc_row-(YOFFS)][fdc_col-(XOFFS)] * fdc_orig[0][myrow][mycol];
+for (fdc_row=0, myrow=row-6; fdc_row < 13; fdc_row++, myrow++) \
+for (fdc_col=0, mycol=col-6; fdc_col < 13; fdc_col++, mycol++) \
+VAR += FILT[12-fdc_row][12-fdc_col] * fdc_orig[0][myrow][mycol];
           // extract modulated chroma using filters
           float complex C2m, C5m, C6m, C7m, C10m;
-          CORR_FILT(C2m,h2,0,0,13,13)
-          CORR_FILT(C5m,h5,0,0,13,13)
-          CORR_FILT(C7m,h7,0,0,13,13)
-          CORR_FILT(C10m,h10,0,0,13,13)
+          CONV_FILT(C2m,h2)
+          CONV_FILT(C5m,h5)
+          CONV_FILT(C7m,h7)
+          CONV_FILT(C10m,h10)
           // build the q vector components
           myrow = (row + rowoffset) % 6;
           mycol = (col + coloffset) % 6;
