@@ -19,12 +19,23 @@
 #include "views/undo.h"
 #include <glib.h>    // for GList, gpointer, g_list_first, g_list_prepend
 #include <stdlib.h>  // for NULL, malloc, free
+#include <sys/time.h>
+
+const unsigned long long MAX_TIME_PERIOD = 500; // 500ms
+
+static unsigned long long _get_timestamp(void)
+{
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (unsigned long long)(tv.tv_sec) * 1000 + (unsigned long long)(tv.tv_usec) / 1000;
+}
 
 typedef struct dt_undo_item_t
 {
   gpointer user_data;
   dt_undo_type_t type;
   dt_undo_data_t *data;
+  unsigned long long ts;
   void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data);
   void (*free_data)(gpointer data);
 } dt_undo_item_t;
@@ -62,6 +73,7 @@ void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt
   item->data      = data;
   item->undo      = undo;
   item->free_data = free_data;
+  item->ts        = _get_timestamp();
 
   dt_pthread_mutex_lock(&self->mutex);
   self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
@@ -83,16 +95,30 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
   while(l)
   {
     dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+
     if(item->type & filter)
     {
-      //  first remove element from _redo_list
-      self->redo_list = g_list_remove(self->redo_list, item);
+      const unsigned long long first_item_ts = item->ts;
 
-      //  callback with redo data
-      item->undo(item->user_data, item->type, item->data);
+      //  when found, redo all items of the same type and in the same time period
 
-      //  add old position back into the undo list
-      self->undo_list = g_list_prepend(self->undo_list, item);
+      do
+      {
+        GList *next = g_list_next(l);
+
+        //  first remove element from _redo_list
+        self->redo_list = g_list_remove(self->redo_list, item);
+
+        //  callback with redo data
+        item->undo(item->user_data, item->type, item->data);
+
+        //  add old position back into the undo list
+        self->undo_list = g_list_prepend(self->undo_list, item);
+
+        l = next;
+        if (l) item = (dt_undo_item_t *)l->data;
+      } while (l && (item->type & filter) && (item->ts - first_item_ts < MAX_TIME_PERIOD));
+
       break;
     }
     l = g_list_next(l);
@@ -115,32 +141,37 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 
     if(item->type & filter)
     {
+      const unsigned long long first_item_ts = item->ts;
+
       self->undo_list = g_list_remove(self->undo_list, item);
       self->redo_list = g_list_prepend(self->redo_list, item);
+
+      //  now record in the redo list also all items that are on the same time period
+
+      l = next;
+      while (l)
+      {
+        next = g_list_next(l);
+        item = (dt_undo_item_t *)l->data;
+        //  undo item
+        item->undo(item->user_data, item->type, item->data);
+
+        //  if we are on the same time frame, just continue
+        if (item->type & filter && (first_item_ts - item->ts < MAX_TIME_PERIOD))
+        {
+          self->undo_list = g_list_remove(self->undo_list, item);
+          self->redo_list = g_list_prepend(self->redo_list, item);
+          l = next;
+        }
+        else
+          break;
+      };
+
       break;
     }
     l = next;
   }
 
-  // check for first item that is matching the given pattern, call undo
-
-  l = g_list_first(self->undo_list);
-
-  while(l)
-  {
-    dt_undo_item_t *item = (dt_undo_item_t *)l->data;
-
-    // the second matching item (new state) is sent to callback
-
-    if(item->type & filter)
-    {
-      //  callback with undo data
-      item->undo(item->user_data, item->type, item->data);
-
-      break;
-    }
-    l = g_list_next(l);
-  };
   dt_pthread_mutex_unlock(&self->mutex);
 }
 
