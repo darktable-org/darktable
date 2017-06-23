@@ -2223,6 +2223,15 @@ const wb_data wb_preset[] =
   { "Minolta", "Dynax 7D", "5500K", 0,		{ 1.710938, 1, 1.601562, 0 } },
   { "Minolta", "Dynax 7D", "6500K", 0,		{ 1.875000, 1, 1.421875, 0 } },
 
+  // Firmware  A: 1.11 / B:1.11 / L:1.00
+  { "Nikon", "1 AW1", Incandescent, 0,		{ 1.484375, 1, 2.281250, 0 } },
+  { "Nikon", "1 AW1", CoolWhiteFluorescent, 0,	{ 2.003906, 1, 2.132813, 0 } },
+  { "Nikon", "1 AW1", DirectSunlight, 0,	{ 2.269531, 1, 1.601563, 0 } },
+  { "Nikon", "1 AW1", Flash, 0,			{ 2.546875, 1, 1.433594, 0 } },
+  { "Nikon", "1 AW1", Cloudy, 0,		{ 2.394531, 1, 1.500000, 0 } },
+  { "Nikon", "1 AW1", Shade, 0,			{ 2.718750, 1, 1.367188, 0 } },
+  { "Nikon", "1 AW1", Underwater, 0,		{ 2.152344, 1, 1.644531, 0 } },
+
   // copied from Nikon 1 V1
   { "Nikon", "1 J1", Incandescent, 0,		{ 1.210938, 1, 2.308594, 0 } },
   { "Nikon", "1 J1", CoolWhiteFluorescent, 0,	{ 1.687500, 1, 2.199219, 0 } },
