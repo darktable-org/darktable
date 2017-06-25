@@ -2285,14 +2285,14 @@ const wb_data wb_preset[] =
   { "Nikon", "Coolpix A", CoolWhiteFluorescent, 0, { 1.83203125, 1, 2.02734375, 0 } },
   { "Nikon", "Coolpix A", Flash               , 0, { 2.39453125, 1, 1.25, 0 } },
 
-  // Nikon CoolPix P330 firmware 1.0
-  { "Nikon", "Coolpix P330", DirectSunlight, 0,	{ 1.792969, 1, 1.65625, 0 }},
-  { "Nikon", "Coolpix P330", Incandescent, 0,	{ 1.171875, 1, 2.730469, 0 }},
-  { "Nikon", "Coolpix P330", WhiteFluorescent, 0, { 1.867188, 1, 2.421875, 0 }},
-  { "Nikon", "Coolpix P330", DayWhiteFluorescent, 0, { 1.8125, 1, 1.742188, 0 }},
-  { "Nikon", "Coolpix P330", DaylightFluorescent, 0, { 2.046875, 1, 1.390625, 0}},
-  { "Nikon", "Coolpix P330", Cloudy, 0,		{ 1.929688, 1, 1.480469, 0 }},
-  { "Nikon", "Coolpix P330", Flash, 0,		{ 2.039063, 1, 1.578125, 0 }},
+  // Nikon CoolPix P330 firmware 1.1
+  { "Nikon", "Coolpix P330", DirectSunlight      , 0, { 1.789063, 1, 1.660156, 0 } },
+  { "Nikon", "Coolpix P330", Cloudy              , 0, { 1.921875, 1, 1.484375, 0 } },
+  { "Nikon", "Coolpix P330", Incandescent        , 0, { 1.164063, 1, 2.738281, 0 } },
+  { "Nikon", "Coolpix P330", CoolWhiteFluorescent, 0, { 1.859375, 1, 2.429688, 0 } },
+  { "Nikon", "Coolpix P330", DayWhiteFluorescent , 0, { 1.808594, 1, 1.750000, 0 } },
+  { "Nikon", "Coolpix P330", DaylightFluorescent , 0, { 2.039063, 1, 1.398438, 0 } },
+  { "Nikon", "Coolpix P330", Flash               , 0, { 2.031250, 1, 1.582031, 0 } },
 
   { "Nikon", "Coolpix P340", DirectSunlight, 0,		{ 1.835938, 1, 1.632813, 0 } },
   { "Nikon", "Coolpix P340", Incandescent, 0,		{ 1.199219, 1, 2.691406, 0 } },
