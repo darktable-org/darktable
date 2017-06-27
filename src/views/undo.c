@@ -16,26 +16,20 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/darktable.h"
 #include "views/undo.h"
 #include <glib.h>    // for GList, gpointer, g_list_first, g_list_prepend
 #include <stdlib.h>  // for NULL, malloc, free
 #include <sys/time.h>
 
-const unsigned long long MAX_TIME_PERIOD = 500; // 500ms
-
-static unsigned long long _get_timestamp(void)
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return (unsigned long long)(tv.tv_sec) * 1000 + (unsigned long long)(tv.tv_usec) / 1000;
-}
+const double MAX_TIME_PERIOD = 0.5; // in second
 
 typedef struct dt_undo_item_t
 {
   gpointer user_data;
   dt_undo_type_t type;
   dt_undo_data_t *data;
-  unsigned long long ts;
+  double ts;
   void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data);
   void (*free_data)(gpointer data);
 } dt_undo_item_t;
@@ -73,7 +67,7 @@ void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt
   item->data      = data;
   item->undo      = undo;
   item->free_data = free_data;
-  item->ts        = _get_timestamp();
+  item->ts        = dt_get_wtime();
 
   dt_pthread_mutex_lock(&self->mutex);
   self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
@@ -98,7 +92,7 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
 
     if(item->type & filter)
     {
-      const unsigned long long first_item_ts = item->ts;
+      const double first_item_ts = item->ts;
 
       //  when found, redo all items of the same type and in the same time period
 
@@ -141,7 +135,7 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 
     if(item->type & filter)
     {
-      const unsigned long long first_item_ts = item->ts;
+      const double first_item_ts = item->ts;
 
       self->undo_list = g_list_remove(self->undo_list, item);
       self->redo_list = g_list_prepend(self->redo_list, item);
