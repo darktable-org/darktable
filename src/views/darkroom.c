@@ -27,6 +27,7 @@
 #include "common/imageio_module.h"
 #include "common/styles.h"
 #include "common/tags.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -39,7 +40,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "libs/colorpicker.h"
-#include "views/undo.h"
 #include "views/view.h"
 #include "views/view_api.h"
 

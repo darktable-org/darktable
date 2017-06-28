@@ -31,6 +31,7 @@
 #include "common/mipmap_cache.h"
 #include "common/opencl.h"
 #include "common/tags.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -41,7 +42,6 @@
 #include "develop/masks.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "views/undo.h"
 
 #define DT_DEV_AVERAGE_DELAY_START 250
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50

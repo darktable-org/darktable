@@ -19,6 +19,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/styles.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -27,7 +28,6 @@
 #include "gui/styles.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
-#include "views/undo.h"
 
 DT_MODULE(1)
 
