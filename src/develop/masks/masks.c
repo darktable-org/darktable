@@ -21,9 +21,9 @@
 #include "common/mipmap_cache.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "common/undo.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
-#include "views/undo.h"
 
 #pragma GCC diagnostic ignored "-Wshadow"
 

@@ -17,7 +17,7 @@
 */
 
 #include "common/darktable.h"
-#include "views/undo.h"
+#include "common/undo.h"
 #include <glib.h>    // for GList, gpointer, g_list_first, g_list_prepend
 #include <stdlib.h>  // for NULL, malloc, free
 #include <sys/time.h>
