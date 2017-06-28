@@ -27,6 +27,7 @@
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/module.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -34,7 +35,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
-#include "views/undo.h"
 
 #include <glib.h>
 #include <math.h>
@@ -230,13 +230,13 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
   gtk_container_remove(GTK_CONTAINER(data), widget);
 }
 
-/* 
+/*
    When expanders get destoyed, they destroy the child
    so remove the child before that
    */
 static void _remove_child(GtkWidget *child,GtkContainer *container)
 {
-    if(DTGTK_IS_EXPANDER(child)) 
+    if(DTGTK_IS_EXPANDER(child))
     {
       GtkWidget * evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(child));
       gtk_container_remove(GTK_CONTAINER(evb),dtgtk_expander_get_body(DTGTK_EXPANDER(child)));

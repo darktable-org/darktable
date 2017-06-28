@@ -66,6 +66,7 @@ FILE(GLOB SOURCE_FILES
   "common/ratings.c"
   "common/resource_limits.c"
   "common/histogram.c"
+  "common/undo.c"
   "control/control.c"
   "control/crawler.c"
   "control/jobs.c"
@@ -104,7 +105,6 @@ FILE(GLOB SOURCE_FILES
   "gui/styles_dialog.c"
   "libs/lib.c"
   "views/view.c"
-  "views/undo.c"
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
 
