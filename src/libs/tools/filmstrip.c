@@ -503,22 +503,11 @@ static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, 
 
 static gboolean _lib_filmstrip_imgid_in_collection(const dt_collection_t *collection, const int imgid)
 {
-  sqlite3_stmt *stmt = NULL;
-  uint32_t count = 1;
-  const gchar *query = dt_collection_get_query(collection);
-  gchar *count_query = NULL;
+  sqlite3_stmt *stmt;
+  gboolean image_in_collection = TRUE;
+  const char *query = dt_collection_get_query(collection);
 
-  // gchar *fq = g_strstr_len(query, strlen(query), "FROM");
-  gchar *fw = g_strstr_len(query, strlen(query), "WHERE") + 6;
-
-  gchar *qq = NULL;
-  qq = dt_util_dstrcat(qq, "id=?3 AND %s", fw);
-
-  if((collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
-    count_query
-        = dt_util_dstrcat(NULL, "SELECT COUNT(*) FROM main.images %s AND id=?3", collection->where_ext);
-  else
-    count_query = dt_util_dstrcat(count_query, "SELECT COUNT(*) FROM main.images WHERE %s", qq);
+  char *count_query = g_strdup_printf("SELECT count(id) FROM (%s) WHERE id = ?3", query);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
   if((collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
@@ -529,10 +518,11 @@ static gboolean _lib_filmstrip_imgid_in_collection(const dt_collection_t *collec
   }
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
 
-  if(sqlite3_step(stmt) == SQLITE_ROW) count = sqlite3_column_int(stmt, 0);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    image_in_collection = (sqlite3_column_int(stmt, 0) > 0);
   sqlite3_finalize(stmt);
   g_free(count_query);
-  return count;
+  return image_in_collection;
 }
 
 static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)

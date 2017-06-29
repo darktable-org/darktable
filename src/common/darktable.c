@@ -50,6 +50,7 @@
 #include "common/opencl.h"
 #include "common/points.h"
 #include "common/resource_limits.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"
@@ -62,7 +63,6 @@
 #include "gui/presets.h"
 #include "libs/lib.h"
 #include "lua/init.h"
-#include "views/undo.h"
 #include "views/view.h"
 #include <errno.h>
 #include <glib.h>

@@ -4381,7 +4381,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_v, -LENSSHIFT_RANGE_SOFT, LENSSHIFT_RANGE_SOFT);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_v, TRUE, TRUE, 0);
 
-  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, 0.01*LENSSHIFT_RANGE, p->lensshift_v, 3);
+  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, 0.01*LENSSHIFT_RANGE, p->lensshift_h, 3);
   dt_bauhaus_widget_set_label(g->lensshift_h, NULL, _("lens shift (horizontal)"));
   dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_h, -LENSSHIFT_RANGE_SOFT, LENSSHIFT_RANGE_SOFT);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);

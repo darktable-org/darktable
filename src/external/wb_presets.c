@@ -1983,6 +1983,15 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X-T10", Incandescent, 0,	{ 1.211921, 1, 2.321192, 0 } },
   { "Fujifilm", "X-T10", Underwater, 0,		{ 1.990066, 1, 1.440397, 0 } },
 
+  { "Fujifilm", "X-T20", Daylight           , 0, { 1.880794701986755, 1, 1.8741721854304636, 0 } },
+  // The manual calls it "Shade", but exiftool shows it as "Cloudy".
+  { "Fujifilm", "X-T20", Shade              , 0, { 2.089403973509934, 1, 1.6026490066225165, 0 } },
+  { "Fujifilm", "X-T20", Incandescent       , 0, { 1.2152317880794703, 1, 2.857615894039735, 0 } },
+  { "Fujifilm", "X-T20", DayWhiteFluorescent, 0, { 1.9834437086092715, 1, 1.966887417218543, 0 } },
+  { "Fujifilm", "X-T20", DaylightFluorescent, 0, { 2.3675496688741724, 1, 1.576158940397351, 0 } },
+  { "Fujifilm", "X-T20", WhiteFluorescent   , 0, { 1.9072847682119205, 1, 2.5794701986754967, 0 } },
+  { "Fujifilm", "X-T20", Underwater         , 0, { 1.880794701986755, 1, 1.8741721854304636, 0 } },
+
   /* Fujifilm X-Pro1 Firmware Version v3.30 */
   // The manual calls it "Fine".
   { "Fujifilm", "X-Pro1", Daylight, 0,		{ 1.860927, 1, 1.708609, 0 } },
@@ -2223,6 +2232,15 @@ const wb_data wb_preset[] =
   { "Minolta", "Dynax 7D", "5500K", 0,		{ 1.710938, 1, 1.601562, 0 } },
   { "Minolta", "Dynax 7D", "6500K", 0,		{ 1.875000, 1, 1.421875, 0 } },
 
+  // Firmware  A: 1.11 / B:1.11 / L:1.00
+  { "Nikon", "1 AW1", Incandescent, 0,		{ 1.484375, 1, 2.281250, 0 } },
+  { "Nikon", "1 AW1", CoolWhiteFluorescent, 0,	{ 2.003906, 1, 2.132813, 0 } },
+  { "Nikon", "1 AW1", DirectSunlight, 0,	{ 2.269531, 1, 1.601563, 0 } },
+  { "Nikon", "1 AW1", Flash, 0,			{ 2.546875, 1, 1.433594, 0 } },
+  { "Nikon", "1 AW1", Cloudy, 0,		{ 2.394531, 1, 1.500000, 0 } },
+  { "Nikon", "1 AW1", Shade, 0,			{ 2.718750, 1, 1.367188, 0 } },
+  { "Nikon", "1 AW1", Underwater, 0,		{ 2.152344, 1, 1.644531, 0 } },
+
   // copied from Nikon 1 V1
   { "Nikon", "1 J1", Incandescent, 0,		{ 1.210938, 1, 2.308594, 0 } },
   { "Nikon", "1 J1", CoolWhiteFluorescent, 0,	{ 1.687500, 1, 2.199219, 0 } },
@@ -2260,14 +2278,21 @@ const wb_data wb_preset[] =
   { "Nikon", "1 J5", Cloudy, 0, { 2.4609375, 1, 1.2578125, 0 } },
   { "Nikon", "1 J5", Shade, 0, { 2.78515625, 1, 1.125, 0 } },
 
-  // Nikon CoolPix P330 firmware 1.0
-  { "Nikon", "Coolpix P330", DirectSunlight, 0,	{ 1.792969, 1, 1.65625, 0 }},
-  { "Nikon", "Coolpix P330", Incandescent, 0,	{ 1.171875, 1, 2.730469, 0 }},
-  { "Nikon", "Coolpix P330", WhiteFluorescent, 0, { 1.867188, 1, 2.421875, 0 }},
-  { "Nikon", "Coolpix P330", DayWhiteFluorescent, 0, { 1.8125, 1, 1.742188, 0 }},
-  { "Nikon", "Coolpix P330", DaylightFluorescent, 0, { 2.046875, 1, 1.390625, 0}},
-  { "Nikon", "Coolpix P330", Cloudy, 0,		{ 1.929688, 1, 1.480469, 0 }},
-  { "Nikon", "Coolpix P330", Flash, 0,		{ 2.039063, 1, 1.578125, 0 }},
+  { "Nikon", "Coolpix A", DirectSunlight      , 0, { 2.02734375, 1, 1.390625, 0 } },
+  { "Nikon", "Coolpix A", Shade               , 0, { 2.4921875, 1, 1.13671875, 0 } },
+  { "Nikon", "Coolpix A", Cloudy              , 0, { 2.16796875, 1, 1.265625, 0 } },
+  { "Nikon", "Coolpix A", Incandescent        , 0, { 1.3046875, 1, 2.21484375, 0 } },
+  { "Nikon", "Coolpix A", CoolWhiteFluorescent, 0, { 1.83203125, 1, 2.02734375, 0 } },
+  { "Nikon", "Coolpix A", Flash               , 0, { 2.39453125, 1, 1.25, 0 } },
+
+  // Nikon CoolPix P330 firmware 1.1
+  { "Nikon", "Coolpix P330", DirectSunlight      , 0, { 1.789063, 1, 1.660156, 0 } },
+  { "Nikon", "Coolpix P330", Cloudy              , 0, { 1.921875, 1, 1.484375, 0 } },
+  { "Nikon", "Coolpix P330", Incandescent        , 0, { 1.164063, 1, 2.738281, 0 } },
+  { "Nikon", "Coolpix P330", CoolWhiteFluorescent, 0, { 1.859375, 1, 2.429688, 0 } },
+  { "Nikon", "Coolpix P330", DayWhiteFluorescent , 0, { 1.808594, 1, 1.750000, 0 } },
+  { "Nikon", "Coolpix P330", DaylightFluorescent , 0, { 2.039063, 1, 1.398438, 0 } },
+  { "Nikon", "Coolpix P330", Flash               , 0, { 2.031250, 1, 1.582031, 0 } },
 
   { "Nikon", "Coolpix P340", DirectSunlight, 0,		{ 1.835938, 1, 1.632813, 0 } },
   { "Nikon", "Coolpix P340", Incandescent, 0,		{ 1.199219, 1, 2.691406, 0 } },
@@ -5513,6 +5538,17 @@ const wb_data wb_preset[] =
   { "Ricoh", "GR", CoolWhiteFluorescent, 0,	{ 2.610000, 1, 2.080000, 0 } },
   { "Ricoh", "GR", WarmWhiteFluorescent, 0,	{ 2.240000, 1, 2.160000, 0 } },
   { "Ricoh", "GR", "5000K", 0,			{ 2.890000, 1, 1.520000, 0 } },
+
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", Daylight, 0,		{ 3.062000, 1, 1.545000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", Shade, 0,			{ 3.319000, 1, 1.385000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", Cloudy, 0,			{ 3.058000, 1, 1.538000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", Incandescent, 0,		{ 1.944000, 1, 2.384000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", IncandescentWarm, 0,	{ 2.276000, 1, 2.052000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", DaylightFluorescent, 0,	{ 3.062000, 1, 1.545000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", WhiteFluorescent, 0,	{ 2.837000, 1, 1.698000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", CoolWhiteFluorescent, 0,	{ 2.642000, 1, 2.125000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", WarmWhiteFluorescent, 0,	{ 2.354000, 1, 2.027000, 0 } },
+  { "RICOH IMAGING COMPANY, LTD.", "GR II", "5000K", 0,			{ 2.867000, 1, 1.662000, 0 } },
 
   { "Samsung", "EX1", Daylight, 0,		{ 1.8711, 1, 2.0039, 0 } },
   { "Samsung", "EX1", Cloudy, 0,		{ 2.3672, 1, 1.6797, 0 } },

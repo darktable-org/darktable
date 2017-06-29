@@ -1371,6 +1371,28 @@ static gboolean pid_is_alive(int pid)
   }
 #else
   pid_is_alive = !((kill(pid, 0) == -1) && errno == ESRCH);
+
+#ifdef __linux__
+  // If this is Linux, we can query /proc to see if the pid is
+  // actually a darktable instance.
+  if(pid_is_alive)
+  {
+    gchar *contents;
+    gsize length;
+    gchar filename[64];
+    snprintf(filename, sizeof(filename), "/proc/%d/cmdline", pid);
+
+    if(g_file_get_contents("", &contents, &length, NULL))
+    {
+      if(strstr(contents, "darktable") == NULL)
+      {
+        pid_is_alive = FALSE;
+      }
+      g_free(contents);
+    }
+  }
+#endif
+
 #endif
 
   return pid_is_alive;
