@@ -1073,6 +1073,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
     printf("[demosaic] not able to allocate FDC buffers\n");
     return;
   }
+  memset(all_buffers, 0, dt_get_num_threads() * buffer_size);
 
   /* Preparations for fftw */
   fftwf_complex *in_src, *out_src, *out_kernel, *in_kernel, *Cm = NULL;
