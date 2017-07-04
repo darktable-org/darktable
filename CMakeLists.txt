@@ -524,8 +524,8 @@ endif(NOT WIN32)
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME DTApplication)
 
 # lets continue into build directories
-add_subdirectory(src)
 add_subdirectory(data)
+add_subdirectory(src) # src/ needs to be after data/ as the latter inits the list of file extensions!
 add_subdirectory(doc)
 
 # This contains fixup_bundle
