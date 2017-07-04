@@ -1047,7 +1047,8 @@ inline float quick_select(float *x)
 static void xtrans_fdc_interpolate(float *out, const float *const in,
                                            const dt_iop_roi_t *const roi_out,
                                            const dt_iop_roi_t *const roi_in,
-                                           const uint8_t (*const xtrans)[6])
+                                           const uint8_t (*const xtrans)[6],
+                                           dt_pthread_mutex_t * fftw_lock)
 {
   static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
                      patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
@@ -1075,6 +1076,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
   memset(all_buffers, 0, dt_get_num_threads() * buffer_size);
 
   /* Preparations for fftw */
+  dt_pthread_mutex_lock(fftw_lock);
   fftwf_complex *in_src, *out_src, *out_kernel, *in_kernel, *Cm = NULL;
 //  float *orig_ptr = NULL;
   // Initialization of the plans
@@ -1082,6 +1084,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
   fftwf_plan p_forw_kernel = fftwf_plan_dft_2d(TS, TS, in_kernel, out_kernel, FFTW_FORWARD, FFTW_ESTIMATE);
   // The backward FFT takes out_kernel as input !!
   fftwf_plan p_back = fftwf_plan_dft_2d(TS, TS, out_kernel, Cm, FFTW_BACKWARD, FFTW_ESTIMATE);
+  dt_pthread_mutex_unlock(fftw_lock);
 
   /* Map a green hexagon around each non-green pixel and vice versa:    */
   for(int row = 0; row < 3; row++)
@@ -1675,9 +1678,11 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
         }
     }
   }
+  dt_pthread_mutex_lock(fftw_lock);
   fftwf_destroy_plan(p_forw_src);
   fftwf_destroy_plan(p_forw_kernel);
   fftwf_destroy_plan(p_back);
+  dt_pthread_mutex_unlock(fftw_lock);
   dt_free_align(all_buffers);
 }
 
@@ -2408,7 +2413,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     else if(piece->pipe->dsc.filters == 9u)
     {
       if(demosaicing_method == DT_IOP_DEMOSAIC_FDC && (qual_flags & DEMOSAIC_XTRANS_FULL_MARKESTEIJN))
-        xtrans_fdc_interpolate(tmp, pixels, &roo, &roi, xtrans);
+        xtrans_fdc_interpolate(tmp, pixels, &roo, &roi, xtrans, &self->dev->fftw_lock);
       else if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && (qual_flags & DEMOSAIC_XTRANS_FULL_MARKESTEIJN))
         xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans,
                                        1 + (demosaicing_method - DT_IOP_DEMOSAIC_MARKESTEIJN) * 2);
