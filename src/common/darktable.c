@@ -103,16 +103,6 @@
 #endif
 
 darktable_t darktable;
-const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,dng,erf,exr,fff,hdr,ia,iiq,"
-                                       "jpeg,jpg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pfm,pxn,qtk,raf,"
-                                       "raw,rdc,rw2,rwl,sr2,srf,srw,sti,tif,tiff,x3f,png,ari"
-#ifdef HAVE_OPENJPEG
-                                       ",j2c,j2k,jp2,jpc"
-#endif
-#ifdef HAVE_GRAPHICSMAGICK
-                                       ",gif,jpc,jp2,bmp,dcm,jng,miff,mng,pbm,pnm,ppm,pgm"
-#endif
-    ;
 
 static int usage(const char *argv0)
 {
@@ -142,21 +132,16 @@ static int usage(const char *argv0)
 gboolean dt_supported_image(const gchar *filename)
 {
   gboolean supported = FALSE;
-  char **extensions = g_strsplit(dt_supported_extensions, ",", 100);
   char *ext = g_strrstr(filename, ".");
   if(!ext)
-  {
-    g_strfreev(extensions);
     return FALSE;
-  }
   ext++;
-  for(char **i = extensions; *i != NULL; i++)
+  for(const char **i = dt_supported_extensions; *i != NULL; i++)
     if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
     {
       supported = TRUE;
       break;
     }
-  g_strfreev(extensions);
   return supported;
 }
 

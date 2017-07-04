@@ -233,7 +233,6 @@ typedef struct
 } dt_times_t;
 
 extern darktable_t darktable;
-extern const char dt_supported_extensions[];
 
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L);
 void dt_cleanup();

@@ -759,14 +759,12 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
     return 0;
   }
   int supported = 0;
-  char **extensions = g_strsplit(dt_supported_extensions, ",", 100);
-  for(char **i = extensions; *i != NULL; i++)
+  for(const char **i = dt_supported_extensions; *i != NULL; i++)
     if(!strcmp(ext, *i))
     {
       supported = 1;
       break;
     }
-  g_strfreev(extensions);
   if(!supported)
   {
     g_free(ext);
