@@ -63,7 +63,30 @@ if(WIN32)
   SET(CPACK_NSIS_MODIFY_PATH OFF)
 
   set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+ 
+  # register dt in the Windows registry. this is needed for GIMP to find dt.
+  SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
+      WriteRegStr HKLM 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\darktable.exe' '' '$INSTDIR\\\\bin\\\\darktable.exe'
+      WriteRegStr HKLM 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\darktable-cli.exe' '' '$INSTDIR\\\\bin\\\\darktable-cli.exe'
+      WriteRegStr HKLM 'SOFTWARE\\\\Classes\\\\Applications\\\\darktable.exe\\\\shell\\\\open\\\\command' '' '\\\"$INSTDIR\\\\bin\\\\darktable.exe\\\" \\\"%1\\\"'
+   ")
+  SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
+      DeleteRegKey HKLM 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\darktable.exe'
+      DeleteRegKey HKLM 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\darktable-cli.exe'
+      DeleteRegKey HKLM 'SOFTWARE\\\\Classes\\\\Applications\\\\darktable.exe'
+  ")
 
+  # also associate dt with all the supported image file types
+  foreach(EXTENSION ${DT_SUPPORTED_EXTENSIONS})
+    message("XXXXXXXXXXXXX ${EXTENSION}")
+    SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}
+      WriteRegStr HKLM 'SOFTWARE\\\\Classes\\\\.${EXTENSION}\\\\OpenWithList\\\\darktable.exe' '' ''
+    ")
+    SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}
+      DeleteRegKey HKLM 'SOFTWARE\\\\Classes\\\\.${EXTENSION}\\\\OpenWithList\\\\darktable.exe'
+    ")
+  endforeach(EXTENSION)
+  
 endif(WIN32)
 
 include(CPack)
