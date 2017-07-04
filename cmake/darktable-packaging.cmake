@@ -78,7 +78,6 @@ if(WIN32)
 
   # also associate dt with all the supported image file types
   foreach(EXTENSION ${DT_SUPPORTED_EXTENSIONS})
-    message("XXXXXXXXXXXXX ${EXTENSION}")
     SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}
       WriteRegStr HKLM 'SOFTWARE\\\\Classes\\\\.${EXTENSION}\\\\OpenWithList\\\\darktable.exe' '' ''
     ")
