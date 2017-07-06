@@ -524,8 +524,9 @@ endif(NOT WIN32)
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME DTApplication)
 
 # lets continue into build directories
+include(data/supported_extensions.cmake) # this file needs to be included first as it gets ammended in src/
+add_subdirectory(src) # src/ needs to be before data/ so that the correct CSS file gets installed
 add_subdirectory(data)
-add_subdirectory(src) # src/ needs to be after data/ as the latter inits the list of file extensions!
 add_subdirectory(doc)
 
 # This contains fixup_bundle
