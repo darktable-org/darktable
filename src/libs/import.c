@@ -642,16 +642,16 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   preview = GTK_WIDGET(data);
   filename = gtk_file_chooser_get_preview_filename(file_chooser);
 
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-  {
-    no_preview_fallback = TRUE;
-  }
-  else
+  if(filename && g_file_test(filename, G_FILE_TEST_IS_REGULAR))
   {
     // don't create dng thumbnails to avoid crashes in libtiff when these are hdr:
     char *c = filename + strlen(filename);
     while(c > filename && *c != '.') c--;
     if(!strcasecmp(c, ".dng")) no_preview_fallback = TRUE;
+  }
+  else
+  {
+    no_preview_fallback = TRUE;
   }
 
   // unfortunately we can not use following, because frequently it uses wrong orientation
