@@ -1,5 +1,3 @@
-include(supported_extensions.cmake)
-
 add_subdirectory(pixmaps)
 
 if(USE_OPENCL)
