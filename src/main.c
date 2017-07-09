@@ -27,40 +27,52 @@ int main(int argc, char *argv[])
   char datetime[20];
   dt_gettime(datetime, sizeof(datetime));
 
-  // something like C:\Users\username\AppData\Local\Microsoft\Windows\Temporary Internet Files\darktable\darktable-log.txt
-  char *logdir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
-  char *logfile = g_build_filename(logdir, "darktable-log.txt", NULL);
+  // make sure to not redirect output when the output is already being redirected, either to a file or a pipe.
+  int out_type = GetFileType(GetStdHandle(STD_OUTPUT_HANDLE));
+  int err_type = GetFileType(GetStdHandle(STD_ERROR_HANDLE));
+  gboolean redirect_output = ((out_type != FILE_TYPE_DISK && out_type != FILE_TYPE_PIPE) &&
+                              (err_type != FILE_TYPE_DISK && err_type != FILE_TYPE_PIPE));
 
-  g_mkdir_with_parents(logdir, 0700);
+  if(redirect_output)
+  {
+    // something like C:\Users\username\AppData\Local\Microsoft\Windows\Temporary Internet Files\darktable\darktable-log.txt
+    char *logdir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
+    char *logfile = g_build_filename(logdir, "darktable-log.txt", NULL);
 
-  g_freopen(logfile, "a", stdout);
-  dup2(fileno(stdout), fileno(stderr));
+    g_mkdir_with_parents(logdir, 0700);
 
-  g_free(logdir);
-  g_free(logfile);
+    g_freopen(logfile, "a", stdout);
+    dup2(fileno(stdout), fileno(stderr));
 
-  // don't buffer stdout/stderr. we have basically two options: unbuffered or line buffered.
-  // unbuffered keeps the order in which things are printed but concurrent threads printing can lead to intermangled output. ugly.
-  // line buffered should keep lines together but in my tests the order of things no longer matches. ugly and potentially confusing.
-  // thus we are doing the thing that is just ugly (in rare cases) but at least not confusing.
-  setvbuf(stdout, NULL, _IONBF, 0);
-  setvbuf(stderr, NULL, _IONBF, 0);
+    g_free(logdir);
+    g_free(logfile);
 
-  printf("========================================\n");
-  printf("version: %s\n", darktable_package_string);
-  printf("start: %s\n", datetime);
-  printf("\n");
+    // don't buffer stdout/stderr. we have basically two options: unbuffered or line buffered.
+    // unbuffered keeps the order in which things are printed but concurrent threads printing can lead to intermangled output. ugly.
+    // line buffered should keep lines together but in my tests the order of things no longer matches. ugly and potentially confusing.
+    // thus we are doing the thing that is just ugly (in rare cases) but at least not confusing.
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
+
+    printf("========================================\n");
+    printf("version: %s\n", darktable_package_string);
+    printf("start: %s\n", datetime);
+    printf("\n");
+  }
 #endif
 
   if(dt_init(argc, argv, TRUE, TRUE, NULL)) exit(1);
   dt_gui_gtk_run(darktable.gui);
 
 #ifdef _WIN32
-  dt_gettime(datetime, sizeof(datetime));
-  printf("\n");
-  printf("end:   %s\n", datetime);
-  printf("========================================\n");
-  printf("\n");
+  if(redirect_output)
+  {
+    dt_gettime(datetime, sizeof(datetime));
+    printf("\n");
+    printf("end:   %s\n", datetime);
+    printf("========================================\n");
+    printf("\n");
+  }
 #endif
 
   exit(0);

@@ -351,6 +351,7 @@ if(USE_GRAPHICSMAGICK)
   find_package(GraphicsMagick)
   if(GraphicsMagick_FOUND)
     add_definitions(-DHAVE_GRAPHICSMAGICK)
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} gif jpc jp2 bmp dcm jng miff mng pbm pnm ppm pgm CACHE INTERNAL "")
     include_directories(SYSTEM ${GraphicsMagick_INCLUDE_DIRS})
     list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
   endif(GraphicsMagick_FOUND)
@@ -366,6 +367,7 @@ endif(LENSFUN_FOUND)
 
 if(OPENEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")
+  set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} j2c j2k jp2 jpc CACHE INTERNAL "")
 endif(OPENEXR_FOUND)
 
 if(USE_OPENCL)
@@ -480,6 +482,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 #
 # Generate config.h
 #
+string(REPLACE ";" "\", \"" DT_SUPPORTED_EXTENSIONS_STRING "${DT_SUPPORTED_EXTENSIONS}")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")

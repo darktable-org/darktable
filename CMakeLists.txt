@@ -524,7 +524,8 @@ endif(NOT WIN32)
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME DTApplication)
 
 # lets continue into build directories
-add_subdirectory(src)
+include(data/supported_extensions.cmake) # this file needs to be included first as it gets ammended in src/
+add_subdirectory(src) # src/ needs to be before data/ so that the correct CSS file gets installed
 add_subdirectory(data)
 add_subdirectory(doc)
 
