@@ -1624,7 +1624,6 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
             memcpy(&temp[8], fdc_chroma + chrm*TS*TS + row*TS + (col-2), 5*sizeof(float));
             memcpy(&temp[13], fdc_chroma + chrm*TS*TS + (row+1)*TS + (col-2), 5*sizeof(float));
             memcpy(&temp[18], fdc_chroma + chrm*TS*TS + (row+2)*TS + (col-1), 3*sizeof(float));
-            };
             cbcr[chrm] = quick_select(temp);
           }
           rgbpix[0] = y                      + 1.40200f * cbcr[1];
