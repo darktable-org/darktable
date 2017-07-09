@@ -1040,7 +1040,7 @@ inline float quick_select(float *x)
   return x[10];
 }
 
-#define TS 80
+#define TS 122
 /*
   Ingo Liebhardt 's  frequency domain chroma approach for Fuji X-Trans sensors
  */
@@ -1066,23 +1066,30 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
   const int height = roi_out->height;
   const int ndir = 4;
 
-  const size_t buffer_size = (size_t) TS * TS * (ndir * 4 + 20) * sizeof(float);
+  const size_t buffer_size = (size_t) TS * TS * (ndir * 4 + 3) * sizeof(float);
   char *const all_buffers = (char *)dt_alloc_align(16, dt_get_num_threads() * buffer_size);
   if(!all_buffers)
   {
-    printf("[demosaic] not able to allocate FDC buffers\n");
+    printf("[demosaic] not able to allocate FDC base buffers\n");
     return;
   }
   memset(all_buffers, 0, dt_get_num_threads() * buffer_size);
 
+  const size_t fdc_buffer_size = (size_t) TS * TS * 7 * sizeof(complex float);
+  char *const all_fdc_buffers = (char *)dt_alloc_align(16, dt_get_num_threads() * fdc_buffer_size);
+  if(!all_fdc_buffers)
+  {
+    printf("[demosaic] not able to allocate FDC buffers\n");
+    return;
+  }
+  memset(all_fdc_buffers, 0, dt_get_num_threads() * fdc_buffer_size);
+
   /* Preparations for fftw */
   dt_pthread_mutex_lock(fftw_lock);
-  fftwf_complex *in_src, *out_src, *out_kernel, *in_kernel, *Cm = NULL;
-//  float *orig_ptr = NULL;
+  fftwf_complex *in_src = NULL, *out_src = NULL, *out_kernel = NULL, *in_kernel = NULL, *Cm = NULL;
   // Initialization of the plans
   fftwf_plan p_forw_src = fftwf_plan_dft_2d(TS, TS, in_src, out_src, FFTW_FORWARD, FFTW_ESTIMATE);  // real to complex
   fftwf_plan p_forw_kernel = fftwf_plan_dft_2d(TS, TS, in_kernel, out_kernel, FFTW_FORWARD, FFTW_ESTIMATE);
-  // The backward FFT takes out_kernel as input !!
   fftwf_plan p_back = fftwf_plan_dft_2d(TS, TS, out_kernel, Cm, FFTW_BACKWARD, FFTW_ESTIMATE);
   dt_pthread_mutex_unlock(fftw_lock);
 
@@ -1137,7 +1144,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out, rowoffset, coloffset, in_src, out_src, in_kernel, out_kernel, p_forw_src, p_forw_kernel, p_back) schedule(dynamic)
+#pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out, rowoffset, coloffset, p_forw_src, p_forw_kernel, p_back) schedule(dynamic)
 #endif
   // step through TSxTS cells of image, each tile overlapping the
   // prior as interpolation needs a substantial border
@@ -1152,15 +1159,6 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
     float (*const yuv)[TS][TS] = (float(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
     // drv points to ndir TSxTS tiles, each a single chanel of derivatives
     float (*const drv)[TS][TS] = (float(*)[TS][TS])(buffer + TS * TS * (ndir * 3 + 3) * sizeof(float));
-    float (*const fdc_chroma)[TS][TS] = (float (*)[TS][TS])(buffer + TS * TS * (ndir * 4 ) * sizeof(float));
-    float complex(*const i_src)[TS][TS] = (float complex(*)[TS][TS])(buffer + TS * TS * (ndir * 4 + 4) * sizeof(float));
-    float complex(*const o_src)[TS][TS] = (float complex(*)[TS][TS])(buffer + TS * TS * (ndir * 4 + 6) * sizeof(float));
-    float complex(*const i_kernel)[TS][TS] = (float complex(*)[TS][TS])(buffer + TS * TS * (ndir * 4 + 8) * sizeof(float));
-    float complex(*const o_kernel)[TS][TS] = (float complex(*)[TS][TS])(buffer + TS * TS * (ndir * 4 + 10) * sizeof(float));
-    float complex(*const C2mbuff)[TS][TS] = (float complex(*)[TS][TS])(buffer + TS * TS * (ndir * 4 + 12) * sizeof(float));
-    float complex(*const C5mbuff)[TS][TS] = (float complex(*)[TS][TS])(buffer + TS * TS * (ndir * 4 + 14) * sizeof(float));
-    float complex(*const C7mbuff)[TS][TS] = (float complex(*)[TS][TS])(buffer + TS * TS * (ndir * 4 + 16) * sizeof(float));
-    float complex(*const C10mbuff)[TS][TS] = (float complex(*)[TS][TS])(buffer + TS * TS * (ndir * 4 + 18) * sizeof(float));
     // gmin and gmax reuse memory which is used later by yuv buffer;
     // each points to a TSxTS tile of single channel data
     float (*const gmin)[TS] = (float(*)[TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
@@ -1170,6 +1168,19 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
     uint8_t (*const homo)[TS][TS] = (uint8_t(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
     uint8_t (*const homosum)[TS][TS] = (uint8_t(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float)
                                                             + TS * TS * ndir * sizeof(uint8_t));
+
+    char *const fdc_buffer = all_fdc_buffers + dt_get_thread_num() * fdc_buffer_size;
+    float complex(*const i_src) = (float complex*)fdc_buffer;
+    float complex(*const o_src) = (float complex*)(fdc_buffer + TS * TS * sizeof(complex float));
+    float complex(*const i_kernel) = (float complex*)(fdc_buffer + TS * TS * 2 * sizeof(complex float));
+    float complex(*const o_kernel) = (float complex*)(fdc_buffer + TS * TS * 3 * sizeof(complex float));
+    float complex(*const C2mbuff) = (float complex*)(fdc_buffer + TS * TS * 4 * sizeof(complex float));
+    float complex(*const C5mbuff) = (float complex*)(fdc_buffer + TS * TS * 5 * sizeof(complex float));
+    float complex(*const C7mbuff) = (float complex*)(fdc_buffer + TS * TS * 6 * sizeof(complex float));
+    // C10m are the last modulated coefficinets. By the time they are calculated, i_kernel becomes irrelevant.
+    float complex(*const C10mbuff) = (float complex*)(fdc_buffer + TS * TS * 3 * sizeof(complex float));
+    // by the time the chroma values are calculated, o_src can be overwritten.
+    float (*const fdc_chroma) = (float*)(fdc_buffer + TS * TS * sizeof(complex float));
 
     for(int left = -pad_tile; left < width - pad_tile; left += TS - (pad_tile*2))
     {
@@ -1187,7 +1198,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
           {
             const int f = FCxtrans(row, col, roi_in, xtrans);
             for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
-            i_src[0][row - top][col - left] = in[roi_in->width * row + col] + 0.0f * _Complex_I;
+            *(i_src + TS*(row - top) + (col - left)) = in[roi_in->width * row + col] + 0.0f * _Complex_I;
           }
           else
           {
@@ -1203,7 +1214,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
                 if(c == FCxtrans(cy, cx, roi_in, xtrans))
                 {
                   pix[c] = in[roi_in->width * cy + cx];
-                  i_src[0][row - top][col - left] = in[roi_in->width * cy + cx] + 0.0f * _Complex_I;
+                  *(i_src + TS*(row - top) + (col - left)) = in[roi_in->width * cy + cx] + 0.0f * _Complex_I;
                 }
                 else
                 {
@@ -1222,7 +1233,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
                       }
                     }
                   pix[c] = sum / count;
-                  i_src[0][row - top][col - left] = pix[c] + 0.0f * _Complex_I;
+                  *(i_src + TS*(row - top) + (col - left)) = pix[c] + 0.0f * _Complex_I;
                 }
               }
           }
@@ -1473,12 +1484,10 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
 
       /* Perform the convolutions using fftw */
       // First fft transform the source
-      in_src = (fftwf_complex*)i_src;
-      out_src = (fftwf_complex*)o_src;
-      fftwf_execute_dft(p_forw_src, in_src, out_src);
+      fftwf_execute_dft(p_forw_src, (fftwf_complex*)i_src, (fftwf_complex*)o_src);
       // Pad the kernel with zeros to TS x TS
       float complex *fcptr, *fcptr_end;
-      for(fcptr = &i_kernel[0][0][0], fcptr_end = &i_kernel[0][0][0] + TS*TS ; fcptr != fcptr_end ; ++fcptr)
+      for(fcptr = i_kernel, fcptr_end = i_kernel + TS*TS ; fcptr != fcptr_end ; ++fcptr)
         *fcptr = 0.0f + 0.0f * _Complex_I;
 
       // Now the 4 filtering operations
@@ -1489,19 +1498,16 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
         // Prepare the kernel
         for(int i = 0 ; i < 13 ; ++i)
           for(int j = 0 ; j < 13 ; ++j)
-            i_kernel[0][i][j] = harr[filnum][i][j];
+            *(i_kernel + i*TS + j) = harr[filnum][i][j];
         // Then fft transform the kernel
-        in_kernel = (fftwf_complex*)i_kernel;
-        out_kernel = (fftwf_complex*)o_kernel;
-        fftwf_execute_dft(p_forw_kernel, in_kernel, out_kernel);
+        fftwf_execute_dft(p_forw_kernel, (fftwf_complex*)i_kernel, (fftwf_complex*)o_kernel);
         // Compute the lement-wise product of the two transforms
         // And put the result in o_kernel
         for(int row = 0; row < TS; row++)
           for(int col = 0; col < TS; col++)
-            o_kernel[0][row][col] = o_src[0][row][col] * o_kernel[0][row][col];
+            *(o_kernel + row*TS + col) = *(o_src + row*TS + col) * *(o_kernel + row*TS + col);
         // Compute the backward transform
-        out_kernel = (fftwf_complex*)o_kernel;
-        fftwf_execute_dft(p_back, out_kernel, Cmarr[filnum]);
+        fftwf_execute_dft(p_back, (fftwf_complex*)o_kernel, Cmarr[filnum]);
         // Scale the transform
         for(fcptr = (float complex*)Cmarr[filnum], fcptr_end = (float complex*)Cmarr[filnum] + TS*TS ; fcptr != fcptr_end ; ++fcptr)
           *fcptr /= scaler;
@@ -1535,10 +1541,10 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
             }
           float w = dirsum / (float)dircount;
           // get modulated chroma from filtered raw
-          float complex C2m = C2mbuff[0][row+6][col+6];
-          float complex C5m = C5mbuff[0][row+6][col+6];
-          float complex C7m = C7mbuff[0][row+6][col+6];
-          float complex C10m = C10mbuff[0][row+6][col+6];
+          float complex C2m = *(C2mbuff + (row+6)*TS + col+6);
+          float complex C5m = *(C5mbuff + (row+6)*TS + col+6);
+          float complex C7m = *(C7mbuff + (row+6)*TS + col+6);
+          float complex C10m = *(C10mbuff + (row+6)*TS + col+6);
           // build the q vector components
           myrow = (row + rowoffset) % 6;
           mycol = (col + coloffset) % 6;
@@ -1558,7 +1564,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
           float complex C6m = qmat[2] * (conjf(modulator[4]) + conjf(modulator[5]));
           float complex C12m = qmat[5] * (modulator[4] + modulator[5]);
           float complex C18m = qmat[7] * modulator[6];
-          qmat[0] = i_src[0][row][col] - C2m - C3m - C5m - C6m - 2.0f*C7m - C12m - C18m;
+          qmat[0] = *(i_src + row*TS + col) - C2m - C3m - C5m - C6m - 2.0f*C7m - C12m - C18m;
           // get the rgb components from fdc
           float rgbpix[3] = { 0.0f, 0.0f, 0.0f};
           // multiply with the inverse matrix of M
@@ -1575,41 +1581,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
           float cbcr[2];
           cbcr[0] = -0.16874f * rgbpix[0] - 0.33126f * rgbpix[1] + 0.50000f * rgbpix[2];
           cbcr[1] =  0.50000f * rgbpix[0] - 0.41869f * rgbpix[1] - 0.08131f * rgbpix[2];
-          for(int c = 0; c < 2; c++)fdc_chroma[c][row][col] = cbcr[c];
-        }
-
-      /* One intermediary round of median filtering of chroma       */
-      for(int row = 8; row < mrow - 8; row++)   //8 as manual padding
-        for(int col = 8; col < mcol - 8; col++)
-        {
-          for(int chrm = 0; chrm < 2; chrm++)
-          {
-            // Load the circular window
-            float temp [21] = {
-              fdc_chroma[chrm][row-2][col-1],
-              fdc_chroma[chrm][row-2][col],
-              fdc_chroma[chrm][row-2][col+1],
-              fdc_chroma[chrm][row-1][col-2],
-              fdc_chroma[chrm][row-1][col-1],
-              fdc_chroma[chrm][row-1][col],
-              fdc_chroma[chrm][row-1][col+1],
-              fdc_chroma[chrm][row-1][col+2],
-              fdc_chroma[chrm][row][col-2],
-              fdc_chroma[chrm][row][col-1],
-              fdc_chroma[chrm][row][col],
-              fdc_chroma[chrm][row][col+1],
-              fdc_chroma[chrm][row][col+2],
-              fdc_chroma[chrm][row+1][col-2],
-              fdc_chroma[chrm][row+1][col-1],
-              fdc_chroma[chrm][row+1][col],
-              fdc_chroma[chrm][row+1][col+1],
-              fdc_chroma[chrm][row+1][col+2],
-              fdc_chroma[chrm][row+2][col-1],
-              fdc_chroma[chrm][row+2][col],
-              fdc_chroma[chrm][row+2][col+1]
-            };
-            fdc_chroma[chrm+2][row][col] = quick_select(temp);
-          }
+          for(int c = 0; c < 2; c++) *(fdc_chroma + c*TS*TS + row*TS + col) = cbcr[c];
         }
 
       /* Average the most homogenous pixels for the final result:       */
@@ -1639,37 +1611,21 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
           float rgbpix[3];
           for(int c = 0; c < 3; c++) rgbpix[c] = avg[c] / avg[3];
           // preserve only luma component of Markesteijn for this pixel
-          float cbcr[2];
           float y  =  0.29900f * rgbpix[0] + 0.58700f * rgbpix[1] + 0.11400f * rgbpix[2];
-          // now back to RGB
+          float cbcr[2];
           // instead of merely reding the values, perform median filter
-          for(int chrm = 2; chrm < 4; chrm++)
+          // one median filter is required to avoid textile artifacts
+          for(int chrm = 0; chrm < 2; chrm++)
           {
             // Load the circular window
-            float temp [21] = {
-              fdc_chroma[chrm][row-2][col-1],
-              fdc_chroma[chrm][row-2][col],
-              fdc_chroma[chrm][row-2][col+1],
-              fdc_chroma[chrm][row-1][col-2],
-              fdc_chroma[chrm][row-1][col-1],
-              fdc_chroma[chrm][row-1][col],
-              fdc_chroma[chrm][row-1][col+1],
-              fdc_chroma[chrm][row-1][col+2],
-              fdc_chroma[chrm][row][col-2],
-              fdc_chroma[chrm][row][col-1],
-              fdc_chroma[chrm][row][col],
-              fdc_chroma[chrm][row][col+1],
-              fdc_chroma[chrm][row][col+2],
-              fdc_chroma[chrm][row+1][col-2],
-              fdc_chroma[chrm][row+1][col-1],
-              fdc_chroma[chrm][row+1][col],
-              fdc_chroma[chrm][row+1][col+1],
-              fdc_chroma[chrm][row+1][col+2],
-              fdc_chroma[chrm][row+2][col-1],
-              fdc_chroma[chrm][row+2][col],
-              fdc_chroma[chrm][row+2][col+1]
+            float temp [21];
+            memcpy(&temp[0], fdc_chroma + chrm*TS*TS + (row-2)*TS + (col-1), 3*sizeof(float));
+            memcpy(&temp[3], fdc_chroma + chrm*TS*TS + (row-1)*TS + (col-2), 5*sizeof(float));
+            memcpy(&temp[8], fdc_chroma + chrm*TS*TS + row*TS + (col-2), 5*sizeof(float));
+            memcpy(&temp[13], fdc_chroma + chrm*TS*TS + (row+1)*TS + (col-2), 5*sizeof(float));
+            memcpy(&temp[18], fdc_chroma + chrm*TS*TS + (row+2)*TS + (col-1), 3*sizeof(float));
             };
-            cbcr[chrm-2] = quick_select(temp);
+            cbcr[chrm] = quick_select(temp);
           }
           rgbpix[0] = y                      + 1.40200f * cbcr[1];
           rgbpix[1] = y - 0.34414f * cbcr[0] - 0.71414f * cbcr[1];
@@ -1684,6 +1640,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
   fftwf_destroy_plan(p_back);
   dt_pthread_mutex_unlock(fftw_lock);
   dt_free_align(all_buffers);
+  dt_free_align(all_fdc_buffers);
 }
 
 #undef SWAP
