@@ -321,7 +321,11 @@ if(TESTBUILD_OPENCL_PROGRAMS)
   set(TESTBUILD_OPENCL_PROGRAMS OFF)
 
   # 3.9 is the first version with which this works.
-  find_package(LLVM 3.9 CONFIG)
+  find_package(LLVM 4.0 CONFIG)
+  if (NOT LLVM_FOUND)
+    find_package(LLVM 3.9 CONFIG)
+  endif()
+
   if (LLVM_FOUND)
     message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 
