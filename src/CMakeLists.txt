@@ -111,7 +111,8 @@ FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*
 if(APPLE)
   list(APPEND SOURCE_FILES "osx/osx.mm")
   list(APPEND HEADER_FILES "osx/osx.h")
-  set_source_files_properties(osx/osx.mm PROPERTIES LANGUAGE CXX)
+  #set_source_files_properties(osx/osx.mm PROPERTIES LANGUAGE CXX) #???
+  set_source_files_properties("osx/osx.mm" PROPERTIES COMPILE_FLAGS "-x objective-c++")
 endif(APPLE)
 
 if(WIN32)
