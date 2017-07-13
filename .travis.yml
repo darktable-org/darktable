@@ -32,15 +32,6 @@ notifications:
 
 language: generic
 
-os:
-  - linux
-  - osx
-
-sudo: required
-
-services:
-  - docker
-
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker pull darktable/darktable; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update && brew tap Homebrew/bundle && cd .ci && brew bundle --verbose; fi
