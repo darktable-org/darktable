@@ -361,6 +361,8 @@ inline int dt_pthread_mutex_BAD_unlock(dt_pthread_mutex_t *mutex)
 
 int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *arg);
 
+void dt_pthread_setname(const char *name);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
