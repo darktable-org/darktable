@@ -61,9 +61,9 @@ matrix:
     sudo: required
     services:
       - docker
-    env: CC=clang-3.9 CXX=clang++-3.9 TARGET=build ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF"
+    env: CC=clang-4.0 CXX=clang++-4.0 TARGET=build ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF"
   - os: osx
-    env: CC=gcc-6 CXX=c++ TARGET=build # can't use CXX=g++-6 fails for osx.mm
+    env: CC=gcc-7 CXX=c++ TARGET=build # can't use CXX=g++ fails for osx.mm
   - os: linux
     sudo: required
     services:
