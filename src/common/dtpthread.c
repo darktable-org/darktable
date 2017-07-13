@@ -20,6 +20,8 @@
 #include "config.h"
 #endif
 
+#define _GNU_SOURCE
+
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -66,6 +68,26 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
 
   return ret;
 }
+
+void dt_pthread_setname(const char *name)
+{
+#if defined __linux__
+  pthread_setname_np(pthread_self(), name);
+#elif defined __FreeBSD__ || defined __DragonFly__
+  // TODO: is this the right syntax?
+  // pthread_setname_np(pthread_self(), name, 0);
+#elif defined __NetBSD__
+  // TODO: is this the right syntax?
+  // pthread_setname_np(pthread_self(), name, NULL);
+#elif defined __OpenBSD__
+  // TODO: find out if there is pthread_setname_np() on OpenBSD and how to call it
+#elif defined __APPLE__
+  pthread_setname_np(name);
+#elif defined _WIN32
+  // TODO: according to the Internets there is no pthread_setname_np on Windows
+#endif
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

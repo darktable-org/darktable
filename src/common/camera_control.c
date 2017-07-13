@@ -481,6 +481,9 @@ static void *dt_camctl_camera_get_live_view(void *data)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)data;
   dt_camera_t *cam = (dt_camera_t *)camctl->active_camera;
+
+  dt_pthread_setname("live view");
+
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view thread started\n");
 
   int frames = 0;
@@ -809,6 +812,8 @@ static int _detect_cameras_callback(dt_job_t *job)
 static void *_camera_event_thread(void *data)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)data;
+
+  dt_pthread_setname("tethering");
 
   const dt_camera_t *camera = camctl->active_camera;
 
