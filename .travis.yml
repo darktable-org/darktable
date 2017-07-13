@@ -51,12 +51,17 @@ env:
     - BUILD_DIR=/build/darktable-build
     - INSTALL_PREFIX=/build/darktable-install
     - CFLAGS=-pipe CXXFLAGS=-pipe
-  matrix:
-    - CC=gcc-7 CXX=g++-7 TARGET=build # default system compiler, all platforms
 
 matrix:
   fast_finish: true
   include:
+  - os: linux
+    sudo: required
+    services:
+      - docker
+    env: CC=gcc-7 CXX=g++-7 TARGET=build
+  - os: osx
+    env: CC=cc CXX=c++ TARGET=build # can't use CXX=g++ fails for osx.mm
   - os: linux
     sudo: required
     services:
