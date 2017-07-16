@@ -1186,6 +1186,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
     {
       int mrow = MIN(top + TS, height + pad_tile);
       int mcol = MIN(left + TS, width + pad_tile);
+#define LIM(x,min,max) MAX(min,MIN(x,max))
 
       // Copy current tile from in to image buffer. If border goes
       // beyond edges of image, fill with mirrored/interpolated edges.
@@ -1198,7 +1199,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
           {
             const int f = FCxtrans(row, col, roi_in, xtrans);
             for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
-            *(i_src + TS*(row - top) + (col - left)) = in[roi_in->width * row + col] + 0.0f * _Complex_I;
+            *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * row + col], 0.0f, FLT_MAX) + 0.0f * _Complex_I; //here is the problem
           }
           else
           {
@@ -1214,7 +1215,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
                 if(c == FCxtrans(cy, cx, roi_in, xtrans))
                 {
                   pix[c] = in[roi_in->width * cy + cx];
-                  *(i_src + TS*(row - top) + (col - left)) = in[roi_in->width * cy + cx] + 0.0f * _Complex_I;
+                  *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * cy + cx], 0.0f, FLT_MAX) + 0.0f * _Complex_I;
                 }
                 else
                 {
@@ -1233,7 +1234,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
                       }
                     }
                   pix[c] = sum / count;
-                  *(i_src + TS*(row - top) + (col - left)) = pix[c] + 0.0f * _Complex_I;
+                  *(i_src + TS*(row - top) + (col - left)) = LIM(pix[c], 0.0f, FLT_MAX) + 0.0f * _Complex_I;
                 }
               }
           }
@@ -1573,7 +1574,6 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
             {
               rgbpix[color] += Minv[color][c] * qmat[c];
             }
-#define LIM(x,min,max) MAX(min,MIN(x,max))
           for(int c = 0; c < 3; c++) rgbpix[c] = LIM(rgbpix[c], 0.0f, FLT_MAX);
           // now separate luma and chroma for
           // frequency domain chroma
@@ -1625,6 +1625,8 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
             memcpy(&temp[13], fdc_chroma + chrm*TS*TS + (row+1)*TS + (col-2), 5*sizeof(float));
             memcpy(&temp[18], fdc_chroma + chrm*TS*TS + (row+2)*TS + (col-1), 3*sizeof(float));
             cbcr[chrm] = quick_select(temp);
+            cbcr[chrm] = *(fdc_chroma + chrm*TS*TS + row*TS + col);
+
           }
           rgbpix[0] = y                      + 1.40200f * cbcr[1];
           rgbpix[1] = y - 0.34414f * cbcr[0] - 0.71414f * cbcr[1];
