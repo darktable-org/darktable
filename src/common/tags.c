@@ -356,11 +356,13 @@ GList *dt_tag_get_list(gint imgid)
   GList *taglist = NULL;
   GList *tags = NULL;
 
+  gboolean omit_tag_hierarchy = dt_conf_get_bool("omit_tag_hierarchy");
+
   uint32_t count = dt_tag_get_attached(imgid, &taglist, TRUE);
 
   if(count < 1) return NULL;
 
-  while(taglist)
+  for(; taglist; taglist = g_list_next(taglist))
   {
     dt_tag_t *t = (dt_tag_t *)taglist->data;
     gchar *value = t->tag;
@@ -370,15 +372,22 @@ GList *dt_tag_get_list(gint imgid)
 
     if(pch != NULL)
     {
-      while(pch[j] != NULL)
+      if(omit_tag_hierarchy)
       {
-        tags = g_list_prepend(tags, g_strdup(pch[j]));
-        j++;
+        char **iter = pch;
+        for(; *iter && *(iter + 1); iter++);
+        if(*iter) tags = g_list_prepend(tags, g_strdup(*iter));
+      }
+      else
+      {
+        while(pch[j] != NULL)
+        {
+          tags = g_list_prepend(tags, g_strdup(pch[j]));
+          j++;
+        }
       }
       g_strfreev(pch);
     }
-
-    taglist = g_list_next(taglist);
   }
 
   g_list_free_full(taglist, g_free);
