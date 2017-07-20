@@ -16,11 +16,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define _GNU_SOURCE
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-
-#define _GNU_SOURCE
 
 #include <pthread.h>
 #include <stdint.h>
