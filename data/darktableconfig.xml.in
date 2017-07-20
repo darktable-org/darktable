@@ -182,6 +182,13 @@
     <shortdescription>store xmp tags in compressed format</shortdescription>
     <longdescription>entries in xmp tags can get rather large and may exceed the available space to store the history stack in output files. this option allows xmp tags to be compressed and save space.</longdescription>
   </dtconfig>
+  <dtconfig prefs="core">
+    <name>omit_tag_hierarchy</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>omit hierarchy in simple tag lists</shortdescription>
+    <longdescription>when exporting images the hierarchical tags are also added as a simple list of non-hierarchical ones to make them visible to some other programs. when this option is checked darktable will only include their last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'.</longdescription>
+  </dtconfig>
   <dtconfig prefs="core" capability="opencl">
     <name>opencl</name>
     <type>bool</type>
