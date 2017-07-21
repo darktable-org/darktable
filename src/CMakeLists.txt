@@ -197,9 +197,15 @@ list(APPEND LIBS "-lm")
 
 # Check for openmp
 find_package(OpenMP)
-if(OpenMP_C_FLAGS AND USE_OPENMP)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+if(USE_OPENMP)
+  if(OpenMP_C_FLAGS)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  endif()
+
+  if(OpenMP_CXX_FLAGS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  endif()
+
   if(WIN32)
     list(APPEND LIBS gomp)
   endif(WIN32)
