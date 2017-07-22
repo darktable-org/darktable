@@ -1016,14 +1016,14 @@ inline float quick_select(float *x)
     x[a] = x[b], x[b] = t;
   }
 
-  int left = 0, right = 20;
+  int left = 0, right = 4;
   int pos, i;
   float pivot;
 
   while (left < right)
   {
-    pivot = x[10];
-    swap(10, right);
+    pivot = x[2];
+    swap(2, right);
     for (i = pos = left; i < right; i++)
     {
       if (x[i] < pivot)
@@ -1033,11 +1033,11 @@ inline float quick_select(float *x)
       }
     }
     swap(right, pos);
-    if (pos == 10) break;
-    if (pos < 10) left = pos + 1;
+    if (pos == 2) break;
+    if (pos < 2) left = pos + 1;
     else right = pos - 1;
   }
-  return x[10];
+  return x[2];
 }
 
 #define TS 122
@@ -1617,16 +1617,12 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
           // one median filter is required to avoid textile artifacts
           for(int chrm = 0; chrm < 2; chrm++)
           {
-            // Load the circular window
-            float temp [21];
-            memcpy(&temp[0], fdc_chroma + chrm*TS*TS + (row-2)*TS + (col-1), 3*sizeof(float));
-            memcpy(&temp[3], fdc_chroma + chrm*TS*TS + (row-1)*TS + (col-2), 5*sizeof(float));
-            memcpy(&temp[8], fdc_chroma + chrm*TS*TS + row*TS + (col-2), 5*sizeof(float));
-            memcpy(&temp[13], fdc_chroma + chrm*TS*TS + (row+1)*TS + (col-2), 5*sizeof(float));
-            memcpy(&temp[18], fdc_chroma + chrm*TS*TS + (row+2)*TS + (col-1), 3*sizeof(float));
+            // Load the window
+            float temp [5];
+            memcpy(&temp[0], fdc_chroma + chrm*TS*TS + (row-1)*TS + (col), 1*sizeof(float));
+            memcpy(&temp[1], fdc_chroma + chrm*TS*TS + (row)*TS + (col-1), 3*sizeof(float));
+            memcpy(&temp[4], fdc_chroma + chrm*TS*TS + (row+1)*TS + (col), 1*sizeof(float));
             cbcr[chrm] = quick_select(temp);
-            cbcr[chrm] = *(fdc_chroma + chrm*TS*TS + row*TS + col);
-
           }
           rgbpix[0] = y                      + 1.40200f * cbcr[1];
           rgbpix[1] = y - 0.34414f * cbcr[0] - 0.71414f * cbcr[1];
