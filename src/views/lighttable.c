@@ -1077,7 +1077,7 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   }
   else if(zoom < 1.01)
   {
-    if(zoom == 1 && zoom_x < 0) // full view, wrap around
+    if(zoom == 1 && zoom_x < 0 && zoom_y > 0) // full view, wrap around
     {
       zoom_x = wd * DT_LIBRARY_MAX_ZOOM - wd;
       zoom_y -= ht;
