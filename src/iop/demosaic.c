@@ -1126,17 +1126,19 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
     uint8_t (*const homosum)[TS][TS] = (uint8_t(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float)
                                                             + TS * TS * ndir * sizeof(uint8_t));
     // append all fdc related buffers
-    float complex(*const i_src) = (float complex*)(buffer + TS * TS * (ndir * 4 + 3) * sizeof(float));
-    float complex(*const o_src) = (float complex*)((buffer + TS * TS * (ndir * 4 + 3) * sizeof(float)) + TS * TS * sizeof(complex float));
-    float complex(*const i_kernel) = (float complex*)((buffer + TS * TS * (ndir * 4 + 3) * sizeof(float)) + TS * TS * 2 * sizeof(complex float));
-    float complex(*const o_kernel) = (float complex*)((buffer + TS * TS * (ndir * 4 + 3) * sizeof(float)) + TS * TS * 3 * sizeof(complex float));
-    float complex(*const C2mbuff) = (float complex*)((buffer + TS * TS * (ndir * 4 + 3) * sizeof(float)) + TS * TS * 4 * sizeof(complex float));
-    float complex(*const C5mbuff) = (float complex*)((buffer + TS * TS * (ndir * 4 + 3) * sizeof(float)) + TS * TS * 5 * sizeof(complex float));
-    float complex(*const C7mbuff) = (float complex*)((buffer + TS * TS * (ndir * 4 + 3) * sizeof(float)) + TS * TS * 6 * sizeof(complex float));
+    float complex* fdc_buf_start = (float complex*)(buffer + TS * TS * (ndir * 4 + 3) * sizeof(float));
+    const int fdc_buf_size = TS * TS;
+    float complex(*const i_src) =    fdc_buf_start;
+    float complex(*const o_src) =    fdc_buf_start + fdc_buf_size;
+    float complex(*const i_kernel) = fdc_buf_start + fdc_buf_size * 2;
+    float complex(*const o_kernel) = fdc_buf_start + fdc_buf_size * 3;
+    float complex(*const C2mbuff) =  fdc_buf_start + fdc_buf_size * 4;
+    float complex(*const C5mbuff) =  fdc_buf_start + fdc_buf_size * 5;
+    float complex(*const C7mbuff) =  fdc_buf_start + fdc_buf_size * 6;
     // C10m are the last modulated coefficinets. By the time they are calculated, i_kernel becomes irrelevant.
-    float complex(*const C10mbuff) = (float complex*)((buffer + TS * TS * (ndir * 4 + 3) * sizeof(float)) + TS * TS * 3 * sizeof(complex float));
+    float complex(*const C10mbuff) = i_kernel;
     // by the time the chroma values are calculated, o_src can be overwritten.
-    float (*const fdc_chroma) = (float*)((buffer + TS * TS * (ndir * 4 + 3) * sizeof(float)) + TS * TS * sizeof(complex float));
+    float (*const fdc_chroma) = (float*)o_src;
 
     for(int left = -pad_tile; left < width - pad_tile; left += TS - (pad_tile*2))
     {
