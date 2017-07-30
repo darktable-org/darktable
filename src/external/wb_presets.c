@@ -5115,6 +5115,12 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-GX8", Incandescent, 0, { 1.664063, 1, 2.800781, 0 } },
   { "Panasonic", "DMC-GX8", Flash, 0,        { 2.320313, 1, 1.824219, 0 } },
 
+  { "Panasonic", "DMC-GX85", Daylight, 0,     { 2.4296875, 1, 1.62109375, 0 } },
+  { "Panasonic", "DMC-GX85", Cloudy, 0,       { 2.6015625, 1, 1.50390625, 0 } },
+  { "Panasonic", "DMC-GX85", Shade, 0,        { 2.77734375, 1, 1.4296875, 0 } },
+  { "Panasonic", "DMC-GX85", Incandescent, 0, { 1.6875, 1, 2.37109375, 0 } },
+  { "Panasonic", "DMC-GX85", Flash, 0,        { 2.51953125, 1, 1.51171875, 0 } },
+
   /* Firmware version 1.1 */
   { "Panasonic", "DMC-GM1", Daylight, 0,	{ 2.469697, 1, 1.659091, 0 } },
   { "Panasonic", "DMC-GM1", Cloudy, 0,	{ 2.609848, 1, 1.553030, 0 } },
