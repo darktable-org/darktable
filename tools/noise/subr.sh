@@ -169,13 +169,16 @@ awk is needed to parse gphot2(1) output."; then
 
 pdf_tools_installed() {
 	local missing_tool
-	missing_tool=0
+	missing_tool=1
 
 	echo "--> Check for pdf tools availability"
 
-	if ! tool_installed pdftk "
-pdftk is needed if you want one single result pdf."; then
-		missing_tool=1
+	if tool_installed pdftk; then
+		missing_tool=0
+	elif tool_installed gs; then
+		missing_tool=0
+	else
+		echo "pdftk or ghoscript are needed if you want one single result pdf."
 	fi
 
 	return $missing_tool
