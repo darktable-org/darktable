@@ -217,14 +217,6 @@ static void on_film_imported(gpointer instance, uint32_t id, gpointer user_data)
       LUA_ASYNC_DONE);
 }
 
-static void on_image_imported(gpointer instance, uint32_t id, gpointer user_data)
-{
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0,NULL,NULL,
-      LUA_ASYNC_TYPENAME,"const char*","post-import-image",
-      LUA_ASYNC_TYPENAME,"dt_lua_image_t",GINT_TO_POINTER(id),
-      LUA_ASYNC_DONE);
-}
 int dt_lua_init_database(lua_State *L)
 {
 
@@ -272,7 +264,7 @@ int dt_lua_init_database(lua_State *L)
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "post-import-image");
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_IMPORT, G_CALLBACK(on_image_imported), NULL);
+
   return 0;
 }
 
