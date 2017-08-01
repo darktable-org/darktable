@@ -1027,7 +1027,7 @@ local widget = dt.new_widget("button"){
 
 	events["post-import-image"]:set_text([[This event is triggered whenever a new image is imported into the database.
 
-	This event can be registered multiple times, all callbacks will be called.]])
+	This event can be registered multiple times, all callbacks will be called. The call is blocking.]])
 	events["post-import-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
 	events["post-import-image"].callback:add_parameter("image",types.dt_lua_image_t,[[The image object that has been imported.]])
 	events["post-import-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
