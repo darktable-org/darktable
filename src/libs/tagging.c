@@ -626,16 +626,16 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
       }
       else // all selected images
       {
-        GList *selected_images = g_list_first(dt_collection_get_selected(darktable.collection, -1));
+        GList *selected_images = dt_collection_get_selected(darktable.collection, -1);
         if(selected_images)
         {
-          GList *iter = selected_images;
-          do
+          dt_tag_attach_string_list(tag, -1);
+
+          for(GList *iter = selected_images; iter; iter = g_list_next(iter))
           {
             int imgid = GPOINTER_TO_INT(iter->data);
-            dt_tag_attach_string_list(tag, imgid);
             dt_image_synch_xmp(imgid);
-          } while((iter = g_list_next(iter)) != NULL);
+          }
         }
         g_list_free(selected_images);
       }
