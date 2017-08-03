@@ -193,7 +193,8 @@ gboolean dt_tag_exists(const char *name, guint *tagid)
   return FALSE;
 }
 
-void dt_tag_attach(guint tagid, gint imgid)
+// we keep this separate so that updating the gui only happens once (and it's the caller's responsibility)
+static void _attach_tag(guint tagid, gint imgid)
 {
   sqlite3_stmt *stmt;
   if(imgid > 0)
@@ -217,6 +218,11 @@ void dt_tag_attach(guint tagid, gint imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+}
+
+void dt_tag_attach(guint tagid, gint imgid)
+{
+  _attach_tag(tagid, imgid);
 
   dt_tag_update_used_tags();
 
@@ -228,8 +234,12 @@ void dt_tag_attach_list(GList *tags, gint imgid)
   GList *child = NULL;
   if((child = g_list_first(tags)) != NULL) do
     {
-      dt_tag_attach(GPOINTER_TO_INT(child->data), imgid);
+      _attach_tag(GPOINTER_TO_INT(child->data), imgid);
     } while((child = g_list_next(child)) != NULL);
+
+  dt_tag_update_used_tags();
+
+  dt_collection_update_query(darktable.collection);
 }
 
 void dt_tag_attach_string_list(const gchar *tags, gint imgid)
@@ -250,10 +260,14 @@ void dt_tag_attach_string_list(const gchar *tags, gint imgid)
         // add the tag to the image
         guint tagid = 0;
         dt_tag_new(e, &tagid);
-        dt_tag_attach(tagid, imgid);
+        _attach_tag(tagid, imgid);
       }
       entry++;
     }
+
+    dt_tag_update_used_tags();
+
+    dt_collection_update_query(darktable.collection);
   }
   g_strfreev(tokens);
 }
