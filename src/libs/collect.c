@@ -749,6 +749,41 @@ static int string_array_length(char **list)
   return length;
 }
 
+// returns a NULL terminated array of path components
+static char **split_path(const char *path)
+{
+  if(!path || !*path) return NULL;
+
+  char **result;
+  char **tokens = g_strsplit(path, G_DIR_SEPARATOR_S, -1);
+
+#ifdef _WIN32
+
+  if(! (g_ascii_isalpha(tokens[0][0]) && tokens[0][strlen(tokens[0]) - 1] == ':') )
+  {
+    g_strfreev(tokens);
+    tokens = NULL;
+  }
+
+  result = tokens;
+
+#else
+
+  // there are size + 1 elements in tokens -- the final NULL! we want to ignore it.
+  unsigned int size = g_strv_length(tokens);
+
+  result = malloc(size * sizeof(char *));
+  for(unsigned int i = 0; i < size; i++)
+    result[i] = tokens[i + 1];
+
+  g_free(tokens[0]);
+  g_free(tokens);
+
+#endif
+
+  return result;
+}
+
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
 static void tree_view(dt_lib_collect_rule_t *dr)
 {
@@ -757,8 +792,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   int property = gtk_combo_box_get_active(dr->combo);
   gboolean folders = (property == DT_COLLECTION_PROP_FOLDERS);
   gboolean tags = (property == DT_COLLECTION_PROP_TAG);
-  const char *separator = folders ? "/" : "|";
-  const char *format_separator = folders ? "%s/" : "%s|";
+  const char *format_separator = folders ? "%s" G_DIR_SEPARATOR_S : "%s|";
 
   set_properties(dr);
 
@@ -811,14 +845,18 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       }
       else
       {
-        char **tokens = g_strsplit(name, separator, -1);
+        char **tokens;
+        if(folders)
+          tokens = split_path(name);
+        else
+          tokens = g_strsplit(name, "|", -1);
 
         if(tokens != NULL)
         {
           // find the number of common parts at the beginning of tokens and last_tokens
           GtkTreeIter parent = {0};
           int tokens_length = string_array_length(tokens);
-          int common_length = folders ? 1 : 0;
+          int common_length = 0;
           if(last_tokens)
           {
             for(common_length = 0; tokens[common_length] && last_tokens[common_length]; common_length++)
@@ -840,14 +878,12 @@ static void tree_view(dt_lib_collect_rule_t *dr)
           }
 
           // insert everything from tokens past the common part
-          int parent_depth = common_length;
-          if(folders) parent_depth--;
 
           char *pth = NULL;
+#ifndef _WIN32
           if(folders) pth = g_strdup("/");
-          int loop_start = folders ? 1 : 0; // again, ignore the initial empty element for folders
-          int loop_end = folders ? parent_depth + 1 : parent_depth;
-          for(int i = loop_start; i < loop_end; i++)
+#endif
+          for(int i = 0; i < common_length; i++)
             pth = dt_util_dstrcat(pth, format_separator, tokens[i]);
 
           for(char **token = &tokens[common_length]; *token; token++)
@@ -863,13 +899,13 @@ static void tree_view(dt_lib_collect_rule_t *dr)
             else
               pth2 = dt_util_dstrcat(pth2, "%%");
 
-            gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, parent_depth > 0 ? &parent : NULL, 0);
+            gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, common_length > 0 ? &parent : NULL, 0);
             gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, *token,
                                DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
             if(folders)
               gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_UNREACHABLE,
                                  !(g_file_test(pth, G_FILE_TEST_IS_DIR)), -1);
-            parent_depth++;
+            common_length++;
             parent = iter;
             g_free(pth2);
           }
