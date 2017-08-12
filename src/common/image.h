@@ -211,8 +211,12 @@ void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len);
 /** look for duplicate's xmp files and read them. */
 void dt_image_read_duplicates(uint32_t id, const char *filename);
-/** imports a new image from raw/etc file and adds it to the data base and image cache. */
-uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
+/** imports a new image from raw/etc file and adds it to the data base and image cache. Don't call directly, use wrapper functions below.*/
+uint32_t dt_image_import_internal(int32_t film_id, const char *filename, gboolean override_ignore_jpegs, gboolean lua_locking);
+/** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
+#define dt_image_import(film_id,filename,override_ignore_jpegs) dt_image_import_internal(film_id,filename,override_ignore_jpegs,true)
+/** imports a new image from raw/etc file and adds it to the data base and image cache. Use from lua thread.*/
+#define dt_image_import_lua(film_id,filename,override_ignore_jpegs) dt_image_import_internal(film_id,filename,override_ignore_jpegs,false)
 /** removes the given image from the database. */
 void dt_image_remove(const int32_t imgid);
 /** duplicates the given image in the database with the duplicate getting the supplied version number. if that
