@@ -745,7 +745,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
 }
 
 
-uint32_t dt_image_import_internal(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs, gboolean lua_locking)
+static uint32_t dt_image_import_internal(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs, gboolean lua_locking)
 {
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR) || dt_util_get_file_size(filename) == 0) return 0;
   const char *cc = filename + strlen(filename);
@@ -987,6 +987,16 @@ uint32_t dt_image_import_internal(const int32_t film_id, const char *filename, g
   // keywords side pane when trying to use it, which can lock up the whole dt GUI ..
   // if (new_tags_set) dt_control_signal_raise(darktable.signals,DT_SIGNAL_TAG_CHANGED);
   return id;
+}
+
+uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
+{
+  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, true);
+}
+
+uint32_t dt_image_import_lua(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
+{
+  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, false);
 }
 
 void dt_image_init(dt_image_t *img)
