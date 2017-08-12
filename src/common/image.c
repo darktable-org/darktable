@@ -991,12 +991,12 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
 
 uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
-  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, true);
+  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, TRUE);
 }
 
 uint32_t dt_image_import_lua(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
-  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, false);
+  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, FALSE);
 }
 
 void dt_image_init(dt_image_t *img)
