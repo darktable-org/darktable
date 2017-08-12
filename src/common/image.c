@@ -967,9 +967,9 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   g_free(basename);
   g_free(sql_pattern);
 
-  #ifdef USE_LUA
+#ifdef USE_LUA
   //Synchronous calling of lua post-import-image events
-  if (lua_locking)
+  if(lua_locking)
     dt_lua_lock();
 
   lua_State *L = darktable.lua_state.state;
@@ -977,9 +977,9 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   luaA_push(L, dt_lua_image_t, &id);
   dt_lua_event_trigger(L, "post-import-image", 1);
 
-  if (lua_locking)
+  if(lua_locking)
     dt_lua_unlock();
-  #endif  
+#endif
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_IMPORT, id);
   // the following line would look logical with new_tags_set being the return value
