@@ -1033,7 +1033,13 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
   const int height = roi_out->height;
   const int ndir = 4;
 
+#ifdef INGO
   const size_t buffer_size = (size_t) TS * TS * (ndir * 4 + 17) * sizeof(float);
+#endif
+#ifndef INGO
+  // without the use of FFTW, the speed is slower, but the memory consumption is lower, too.
+  const size_t buffer_size = (size_t) TS * TS * (ndir * 4 + 7) * sizeof(float);
+#endif
   char *const all_buffers = (char *)dt_alloc_align(16, dt_get_num_threads() * buffer_size);
   if(!all_buffers)
   {
@@ -1042,6 +1048,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
   }
 
   // Preparations for fftw
+#ifdef INGO
   dt_pthread_mutex_lock(fftw_lock);
   fftwf_complex *in_src = NULL, *out_src = NULL, *out_kernel = NULL, *in_kernel = NULL, *Cm = NULL;
   // Initialization of the plans
@@ -1049,6 +1056,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
   fftwf_plan p_forw_kernel = fftwf_plan_dft_2d(TS, TS, in_kernel, out_kernel, FFTW_FORWARD, FFTW_ESTIMATE);
   fftwf_plan p_back = fftwf_plan_dft_2d(TS, TS, out_kernel, Cm, FFTW_BACKWARD, FFTW_ESTIMATE);
   dt_pthread_mutex_unlock(fftw_lock);
+#endif
 
   /* Map a green hexagon around each non-green pixel and vice versa:    */
   for(int row = 0; row < 3; row++)
@@ -1101,7 +1109,13 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
   }
 
 #ifdef _OPENMP
+#ifdef INGO
 #pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out, rowoffset, coloffset, p_forw_src, p_forw_kernel, p_back) schedule(dynamic)
+#endif
+#ifndef INGO
+#pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out, rowoffset, coloffset) schedule(dynamic)
+
+#endif
 #endif
   // step through TSxTS cells of image, each tile overlapping the
   // prior as interpolation needs a substantial border
@@ -1128,8 +1142,14 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
     // append all fdc related buffers
     float complex* fdc_buf_start = (float complex*)(buffer + TS * TS * (ndir * 4 + 3) * sizeof(float));
     const int fdc_buf_size = TS * TS;
+#ifdef INGO
     float complex(*const i_src) =    fdc_buf_start;
+#endif
+#ifndef INGO
+    float (*const i_src) = (float*)fdc_buf_start;
+#endif
     float complex(*const o_src) =    fdc_buf_start + fdc_buf_size;
+#ifdef INGO
     float complex(*const i_kernel) = fdc_buf_start + fdc_buf_size * 2;
     float complex(*const o_kernel) = fdc_buf_start + fdc_buf_size * 3;
     float complex(*const C2mbuff) =  fdc_buf_start + fdc_buf_size * 4;
@@ -1137,6 +1157,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
     float complex(*const C7mbuff) =  fdc_buf_start + fdc_buf_size * 6;
     // C10m are the last modulated coefficinets. By the time they are calculated, i_kernel becomes irrelevant.
     float complex(*const C10mbuff) = i_kernel;
+#endif
     // by the time the chroma values are calculated, o_src can be overwritten.
     float (*const fdc_chroma) = (float*)o_src;
 
@@ -1157,7 +1178,12 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
           {
             const int f = FCxtrans(row, col, roi_in, xtrans);
             for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
+#ifdef INGO
             *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * row + col], 0.f, FLT_MAX) + 0.f * _Complex_I; //here is the problem
+#endif
+#ifndef INGO
+            *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * row + col], 0.f, FLT_MAX) ; //here is the problem
+#endif
           }
           else
           {
@@ -1173,7 +1199,12 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
                 if(c == FCxtrans(cy, cx, roi_in, xtrans))
                 {
                   pix[c] = in[roi_in->width * cy + cx];
+#ifdef INGO
                   *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * cy + cx], 0.f, FLT_MAX) + 0.f * _Complex_I;
+#endif
+#ifdef INGO
+                  *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * cy + cx], 0.f, FLT_MAX) + 0.f ;
+#endif
                 }
                 else
                 {
@@ -1192,7 +1223,12 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
                       }
                     }
                   pix[c] = sum / count;
+#ifdef INGO
                   *(i_src + TS*(row - top) + (col - left)) = LIM(pix[c], 0.f, FLT_MAX) + 0.f * _Complex_I;
+#endif
+#ifndef INGO
+                  *(i_src + TS*(row - top) + (col - left)) = LIM(pix[c], 0.f, FLT_MAX) + 0.f ;
+#endif
                 }
               }
           }
@@ -1442,6 +1478,8 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
         }
 
       // Perform the four convolutions using fftw
+      // This is to be executed only if FFTW3 is present
+#ifdef INGO
       // First fft transform the source
       fftwf_execute_dft(p_forw_src, (fftwf_complex*)i_src, (fftwf_complex*)o_src);
       // Pad the kernel with zeros to TS x TS
@@ -1471,6 +1509,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
         for(fcptr = (float complex*)Cmarr[filnum], fcptr_end = (float complex*)Cmarr[filnum] + TS*TS ; fcptr != fcptr_end ; ++fcptr)
           *fcptr /= scaler;
       }
+#endif
 
       /* Calculate chroma values in fdc:       */
       for(int row = 6; row < mrow - 6; row++) //6 as manual padding
@@ -1499,11 +1538,27 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
               dirsum += directionality[d];
             }
           float w = dirsum / (float)dircount;
+#ifdef INGO
           // get modulated chroma from filtered raw
           float complex C2m = *(C2mbuff + (row+6)*TS + col+6);
           float complex C5m = *(C5mbuff + (row+6)*TS + col+6);
           float complex C7m = *(C7mbuff + (row+6)*TS + col+6);
           float complex C10m = *(C10mbuff + (row+6)*TS + col+6);
+#endif
+#ifndef INGO
+          int fdc_row, fdc_col;
+          float complex C2m, C5m, C7m, C10m;
+#define CONV_FILT(VAR,FILT) \
+VAR = 0.0f + 0.0f * _Complex_I; \
+for (fdc_row=0, myrow=row-6; fdc_row < 13; fdc_row++, myrow++) \
+for (fdc_col=0, mycol=col-6; fdc_col < 13; fdc_col++, mycol++) \
+VAR += FILT[12-fdc_row][12-fdc_col] * *(i_src + TS*myrow + mycol);
+          CONV_FILT(C2m,harr[0])
+          CONV_FILT(C5m,harr[1])
+          CONV_FILT(C7m,harr[2])
+          CONV_FILT(C10m,harr[3])
+#undef CONV_FILT
+#endif
           // build the q vector components
           myrow = (row + rowoffset) % 6;
           mycol = (col + coloffset) % 6;
@@ -1596,11 +1651,13 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
         }
     }
   }
+#ifdef INGO
   dt_pthread_mutex_lock(fftw_lock);
   fftwf_destroy_plan(p_forw_src);
   fftwf_destroy_plan(p_forw_kernel);
   fftwf_destroy_plan(p_back);
   dt_pthread_mutex_unlock(fftw_lock);
+#endif
   dt_free_align(all_buffers);
 }
 
