@@ -1033,10 +1033,10 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
   const int height = roi_out->height;
   const int ndir = 4;
 
-#ifdef INGO
+#ifdef HAVE_FFTW3
   const size_t buffer_size = (size_t) TS * TS * (ndir * 4 + 17) * sizeof(float);
 #endif
-#ifndef INGO
+#ifndef HAVE_FFTW3
   // without the use of FFTW, the speed is slower, but the memory consumption is lower, too.
   const size_t buffer_size = (size_t) TS * TS * (ndir * 4 + 7) * sizeof(float);
 #endif
@@ -1048,7 +1048,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
   }
 
   // Preparations for fftw
-#ifdef INGO
+#ifdef HAVE_FFTW3
   dt_pthread_mutex_lock(fftw_lock);
   fftwf_complex *in_src = NULL, *out_src = NULL, *out_kernel = NULL, *in_kernel = NULL, *Cm = NULL;
   // Initialization of the plans
@@ -1109,10 +1109,10 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
   }
 
 #ifdef _OPENMP
-#ifdef INGO
+#ifdef HAVE_FFTW3
 #pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out, rowoffset, coloffset, p_forw_src, p_forw_kernel, p_back) schedule(dynamic)
 #endif
-#ifndef INGO
+#ifndef HAVE_FFTW3
 #pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out, rowoffset, coloffset) schedule(dynamic)
 
 #endif
@@ -1142,14 +1142,14 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
     // append all fdc related buffers
     float complex* fdc_buf_start = (float complex*)(buffer + TS * TS * (ndir * 4 + 3) * sizeof(float));
     const int fdc_buf_size = TS * TS;
-#ifdef INGO
+#ifdef HAVE_FFTW3
     float complex(*const i_src) =    fdc_buf_start;
 #endif
-#ifndef INGO
+#ifndef HAVE_FFTW3
     float (*const i_src) = (float*)fdc_buf_start;
 #endif
     float complex(*const o_src) =    fdc_buf_start + fdc_buf_size;
-#ifdef INGO
+#ifdef HAVE_FFTW3
     float complex(*const i_kernel) = fdc_buf_start + fdc_buf_size * 2;
     float complex(*const o_kernel) = fdc_buf_start + fdc_buf_size * 3;
     float complex(*const C2mbuff) =  fdc_buf_start + fdc_buf_size * 4;
@@ -1178,10 +1178,10 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
           {
             const int f = FCxtrans(row, col, roi_in, xtrans);
             for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
-#ifdef INGO
+#ifdef HAVE_FFTW3
             *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * row + col], 0.f, FLT_MAX) + 0.f * _Complex_I; //here is the problem
 #endif
-#ifndef INGO
+#ifndef HAVE_FFTW3
             *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * row + col], 0.f, FLT_MAX) ; //here is the problem
 #endif
           }
@@ -1199,10 +1199,10 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
                 if(c == FCxtrans(cy, cx, roi_in, xtrans))
                 {
                   pix[c] = in[roi_in->width * cy + cx];
-#ifdef INGO
+#ifdef HAVE_FFTW3
                   *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * cy + cx], 0.f, FLT_MAX) + 0.f * _Complex_I;
 #endif
-#ifdef INGO
+#ifdef HAVE_FFTW3
                   *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * cy + cx], 0.f, FLT_MAX) + 0.f ;
 #endif
                 }
@@ -1223,10 +1223,10 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
                       }
                     }
                   pix[c] = sum / count;
-#ifdef INGO
+#ifdef HAVE_FFTW3
                   *(i_src + TS*(row - top) + (col - left)) = LIM(pix[c], 0.f, FLT_MAX) + 0.f * _Complex_I;
 #endif
-#ifndef INGO
+#ifndef HAVE_FFTW3
                   *(i_src + TS*(row - top) + (col - left)) = LIM(pix[c], 0.f, FLT_MAX) + 0.f ;
 #endif
                 }
@@ -1479,7 +1479,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
 
       // Perform the four convolutions using fftw
       // This is to be executed only if FFTW3 is present
-#ifdef INGO
+#ifdef HAVE_FFTW3
       // First fft transform the source
       fftwf_execute_dft(p_forw_src, (fftwf_complex*)i_src, (fftwf_complex*)o_src);
       // Pad the kernel with zeros to TS x TS
@@ -1538,14 +1538,14 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
               dirsum += directionality[d];
             }
           float w = dirsum / (float)dircount;
-#ifdef INGO
+#ifdef HAVE_FFTW3
           // get modulated chroma from filtered raw
           float complex C2m = *(C2mbuff + (row+6)*TS + col+6);
           float complex C5m = *(C5mbuff + (row+6)*TS + col+6);
           float complex C7m = *(C7mbuff + (row+6)*TS + col+6);
           float complex C10m = *(C10mbuff + (row+6)*TS + col+6);
 #endif
-#ifndef INGO
+#ifndef HAVE_FFTW3
           int fdc_row, fdc_col;
           float complex C2m, C5m, C7m, C10m;
 #define CONV_FILT(VAR,FILT) \
@@ -1651,7 +1651,7 @@ VAR += FILT[12-fdc_row][12-fdc_col] * *(i_src + TS*myrow + mycol);
         }
     }
   }
-#ifdef INGO
+#ifdef HAVE_FFTW3
   dt_pthread_mutex_lock(fftw_lock);
   fftwf_destroy_plan(p_forw_src);
   fftwf_destroy_plan(p_forw_kernel);

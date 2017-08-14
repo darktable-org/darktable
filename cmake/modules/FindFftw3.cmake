@@ -21,6 +21,9 @@ endif()
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.
 # NOTE: Singular variables for this library, plural for libraries this this lib depends on.
-set(Fftw3_PROCESS_INCLUDES Fftw3_INCLUDE_DIR)
-set(Fftw3_PROCESS_LIBS Fftw3_LIBRARY)
-libfind_process(Fftw3)
+if (Fftw3_FOUND)
+  set(Fftw3_PROCESS_INCLUDES Fftw3_INCLUDE_DIR)
+  set(Fftw3_PROCESS_LIBS Fftw3_LIBRARY)
+  libfind_process(Fftw3)
+endif()
+
