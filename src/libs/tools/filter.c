@@ -35,15 +35,6 @@ typedef struct dt_lib_tool_filter_t
   GtkWidget *reverse;
 } dt_lib_tool_filter_t;
 
-static const char *comparators[] = {
-  "<", // DT_COLLECTION_RATING_COMP_LT = 0,
-  "≤", // DT_COLLECTION_RATING_COMP_LEQ,
-  "=", // DT_COLLECTION_RATING_COMP_EQ,
-  "≥", // DT_COLLECTION_RATING_COMP_GEQ,
-  ">", // DT_COLLECTION_RATING_COMP_GT,
-  "≠", // DT_COLLECTION_RATING_COMP_NE,
-};
-
 /* proxy function to intelligently reset filter */
 static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter);
 
@@ -53,14 +44,12 @@ static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data
 static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user_data);
 /* callback for reverse sort check button change */
 static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget, gpointer user_data);
-/* callback for rating comparator check button change */
-static void _lib_filter_compare_button_changed(GtkDarktableToggleButton *widget, gpointer user_data);
+/* callback for rating comparator combobox change */
+static void _lib_filter_comparator_changed(GtkComboBox *widget, gpointer user_data);
 /* updates the query and redraws the view */
 static void _lib_filter_update_query(dt_lib_module_t *self);
 /* make sure that the comparator button matches what is shown in the filter dropdown */
 static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self);
-/* go through possible comparators when scrolling the button */
-static gboolean _comparator_scolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
 
 
 const char *name(dt_lib_module_t *self)
@@ -110,12 +99,17 @@ void gui_init(dt_lib_module_t *self)
   widget = gtk_label_new(_("view"));
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
 
-  d->comparator = widget = gtk_toggle_button_new_with_label(comparators[dt_collection_get_rating_comparator(darktable.collection)]);
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
-  g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(_lib_filter_compare_button_changed),
-                   (gpointer)self);
-  gtk_widget_add_events(widget, GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
-  g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(_comparator_scolled), self);
+  d->comparator = widget = gtk_combo_box_text_new();
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "<"); // DT_COLLECTION_RATING_COMP_LT = 0,
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "≤"); // DT_COLLECTION_RATING_COMP_LEQ,
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "="); // DT_COLLECTION_RATING_COMP_EQ,
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "≥"); // DT_COLLECTION_RATING_COMP_GEQ,
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), ">"); // DT_COLLECTION_RATING_COMP_GT,
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "≠"); // DT_COLLECTION_RATING_COMP_NE,
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_collection_get_rating_comparator(darktable.collection));
+  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(_lib_filter_comparator_changed), (gpointer)self);
 
   /* create the filter combobox */
   d->filter = widget = gtk_combo_box_text_new();
@@ -185,16 +179,11 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-// TODO: decide what to do with the button when not in explicit star mode.
-//       - insensitive makes a bright button and is ugly
-//       - changing the string makes the width change slightly
-//       - leaving it clickable is probably confusing as it doesn't do anything then
+// show/hide the comparator dropdown as required
 static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
   int filter = gtk_combo_box_get_active(GTK_COMBO_BOX(d->filter));
-  //   dt_collection_rating_comperator_t comparator =
-  //   dt_collection_get_rating_comparator(darktable.collection);
 
   // 0 all
   // 1 unstarred only
@@ -206,24 +195,10 @@ static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self)
   // 7 rejected only
   // 8 all except rejected
 
-  g_signal_handlers_block_by_func(d->comparator, _lib_filter_compare_button_changed, self);
-
   if(filter > 1 && filter < 7)
-  {
-    // stars -> enable d->comparator and set its text to comparators[comparator]
-    //     gtk_widget_set_sensitive(d->comparator, TRUE);
-    //     gtk_button_set_label(GTK_BUTTON(d->comparator), comparators[comparator]);
     gtk_widget_show(d->comparator);
-  }
   else
-  {
-    // disable d->comparator and set its text to something funny or stupid or just different
-    //     gtk_widget_set_sensitive(d->comparator, FALSE);
-    //     gtk_button_set_label(GTK_BUTTON(d->comparator), " ");
     gtk_widget_hide(d->comparator);
-  }
-
-  g_signal_handlers_unblock_by_func(d->comparator, _lib_filter_compare_button_changed, self);
 
   return FALSE;
 }
@@ -254,7 +229,7 @@ static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data
 
   /* set the star filter in collection */
   dt_collection_set_rating(darktable.collection, i);
-  dt_control_set_mouse_over_id(-1); // may me I'm storing mouse_over_id (arrows)
+  dt_control_set_mouse_over_id(-1); // maybe we are storing mouse_over_id (arrows)
 
   /* update the gui accordingly */
   _lib_filter_sync_combobox_and_comparator(user_data);
@@ -280,33 +255,11 @@ static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget,
   _lib_filter_update_query(user_data);
 }
 
-static void _change_comparator(GtkWidget *widget, gpointer user_data, int change)
+static void _lib_filter_comparator_changed(GtkComboBox *widget, gpointer user_data)
 {
-  g_signal_handlers_block_by_func(widget, _lib_filter_compare_button_changed, user_data);
-
-  dt_collection_rating_comperator_t comparator = dt_collection_get_rating_comparator(darktable.collection);
-  comparator = ((comparator + DT_COLLECTION_RATING_N_COMPS + change) % DT_COLLECTION_RATING_N_COMPS);
-  dt_collection_set_rating_comparator(darktable.collection, comparator);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
-  gtk_button_set_label(GTK_BUTTON(widget), comparators[comparator]);
-
-  g_signal_handlers_unblock_by_func(widget, _lib_filter_compare_button_changed, user_data);
+  dt_collection_set_rating_comparator(darktable.collection, gtk_combo_box_get_active(widget));
 
   _lib_filter_update_query(user_data);
-}
-
-static void _lib_filter_compare_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
-{
-  _change_comparator(GTK_WIDGET(widget), user_data, 1);
-}
-
-static gboolean _comparator_scolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
-{
-  int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
-    _change_comparator(GTK_WIDGET(widget), user_data, delta_y);
-  return TRUE;
 }
 
 static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user_data)
