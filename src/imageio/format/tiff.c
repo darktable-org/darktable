@@ -269,7 +269,6 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
       int max_width, max_height;
       int width, height;
       char style[128];
-      gboolean style_append;
       int bpp;
       int compress;
       TIFF *handle;
@@ -292,6 +291,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
   }
   return NULL;
 }
+
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
