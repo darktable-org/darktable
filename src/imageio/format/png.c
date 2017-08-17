@@ -36,7 +36,7 @@
 #include "control/conf.h"
 #include "imageio/format/imageio_format_api.h"
 
-DT_MODULE(2)
+DT_MODULE(3)
 
 typedef struct dt_imageio_png_t
 {
@@ -45,6 +45,7 @@ typedef struct dt_imageio_png_t
   char style[128];
   gboolean style_append;
   int bpp;
+  int compression;
   FILE *f;
   png_structp png_ptr;
   png_infop info_ptr;
@@ -53,6 +54,7 @@ typedef struct dt_imageio_png_t
 typedef struct dt_imageio_png_gui_t
 {
   GtkWidget *bit_depth;
+  GtkWidget *compression;
 } dt_imageio_png_gui_t;
 
 /* Write EXIF data to PNG file.
@@ -65,8 +67,8 @@ typedef struct dt_imageio_png_gui_t
  * for making useful code much more readable and discoverable ;)
  */
 
-static void PNGwriteRawProfile(png_struct *ping, png_info *ping_info, char *profile_type,
-                               guint8 *profile_data, png_uint_32 length)
+static void PNGwriteRawProfile(png_struct *ping, png_info *ping_info, char *profile_type, guint8 *profile_data,
+                               png_uint_32 length)
 {
   png_textp text;
   long i;
@@ -120,8 +122,8 @@ static void PNGwriteRawProfile(png_struct *ping, png_info *ping_info, char *prof
   png_free(ping, text);
 }
 
-int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const void *ivoid, void *exif,
-                int exif_len, int imgid, int num, int total)
+int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const void *ivoid, void *exif, int exif_len,
+                int imgid, int num, int total)
 {
   dt_imageio_png_t *p = (dt_imageio_png_t *)p_tmp;
   const int width = p->width, height = p->height;
@@ -155,7 +157,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
 
   png_init_io(png_ptr, f);
 
-  png_set_compression_level(png_ptr, Z_BEST_COMPRESSION);
+  png_set_compression_level(png_ptr, p->compression);
   png_set_compression_mem_level(png_ptr, 8);
   png_set_compression_strategy(png_ptr, Z_DEFAULT_STRATEGY);
   png_set_compression_window_bits(png_ptr, 15);
@@ -209,8 +211,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
     /* swap bytes of 16 bit files to most significant bit first */
     png_set_swap(png_ptr);
 
-    for(unsigned i = 0; i < height; i++)
-      row_pointers[i] = (png_bytep)((uint16_t *)ivoid + (size_t)4 * i * width);
+    for(unsigned i = 0; i < height; i++) row_pointers[i] = (png_bytep)((uint16_t *)ivoid + (size_t)4 * i * width);
   }
   else
   {
@@ -350,21 +351,19 @@ int read_image(dt_imageio_module_data_t *p_tmp, uint8_t *out)
 
 size_t params_size(dt_imageio_module_format_t *self)
 {
-  return sizeof(dt_imageio_module_data_t) + sizeof(int);
+  return sizeof(dt_imageio_module_data_t) + 2 * sizeof(int);
 }
 
-void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params,
-                    const size_t old_params_size, const int old_version, const int new_version,
-                    size_t *new_size)
+void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params, const size_t old_params_size,
+                    const int old_version, const int new_version, size_t *new_size)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1 && new_version == 3)
   {
     typedef struct dt_imageio_png_v1_t
     {
       int max_width, max_height;
       int width, height;
       char style[128];
-      gboolean style_append;
       int bpp;
       FILE *f;
       png_structp png_ptr;
@@ -381,6 +380,38 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     g_strlcpy(n->style, o->style, sizeof(o->style));
     n->style_append = 0;
     n->bpp = o->bpp;
+    n->compression = Z_BEST_COMPRESSION;
+    n->f = o->f;
+    n->png_ptr = o->png_ptr;
+    n->info_ptr = o->info_ptr;
+    *new_size = self->params_size(self);
+    return n;
+  }
+  else if(old_version == 2 && new_version == 3)
+  {
+    typedef struct dt_imageio_png_v2_t
+    {
+      int max_width, max_height;
+      int width, height;
+      char style[128];
+      gboolean style_append;
+      int bpp;
+      FILE *f;
+      png_structp png_ptr;
+      png_infop info_ptr;
+    } dt_imageio_png_v2_t;
+
+    dt_imageio_png_v2_t *o = (dt_imageio_png_v2_t *)old_params;
+    dt_imageio_png_t *n = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
+
+    n->max_width = o->max_width;
+    n->max_height = o->max_height;
+    n->width = o->width;
+    n->height = o->height;
+    g_strlcpy(n->style, o->style, sizeof(o->style));
+    n->style_append = o->style_append;
+    n->bpp = o->bpp;
+    n->compression = Z_BEST_COMPRESSION;
     n->f = o->f;
     n->png_ptr = o->png_ptr;
     n->info_ptr = o->info_ptr;
@@ -389,6 +420,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
   }
   return NULL;
 }
+
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_png_t *d = (dt_imageio_png_t *)calloc(1, sizeof(dt_imageio_png_t));
@@ -397,6 +429,16 @@ void *get_params(dt_imageio_module_format_t *self)
     d->bpp = 8;
   else
     d->bpp = 16;
+
+  // PNG compression level might actually be zero!
+  if(!dt_conf_key_exists("plugins/imageio/format/png/compression"))
+    d->compression = 5;
+  else
+  {
+    d->compression = dt_conf_get_int("plugins/imageio/format/png/compression");
+    if(d->compression < 0 || d->compression > 9) d->compression = 5;
+  }
+
   return d;
 }
 
@@ -415,6 +457,8 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   else
     dt_bauhaus_combobox_set(g->bit_depth, 1);
   dt_conf_set_int("plugins/imageio/format/png/bpp", d->bpp);
+  dt_bauhaus_slider_set(g->compression, d->compression);
+  dt_conf_set_int("plugins/imageio/format/png/compression", d->compression);
   return 0;
 }
 
@@ -449,6 +493,12 @@ static void bit_depth_changed(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/imageio/format/png/bpp", bpp);
 }
 
+static void compression_level_changed(GtkWidget *slider, gpointer user_data)
+{
+  const int compression = (int)dt_bauhaus_slider_get(slider);
+  dt_conf_set_int("plugins/imageio/format/png/compression", compression);
+}
+
 void init(dt_imageio_module_format_t *self)
 {
 #ifdef USE_LUA
@@ -460,14 +510,20 @@ void cleanup(dt_imageio_module_format_t *self)
 {
 }
 
-// TODO: some quality/compression stuff?
 void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)malloc(sizeof(dt_imageio_png_gui_t));
   self->gui_data = (void *)gui;
   const int bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
+
+  // PNG compression level might actually be zero!
+  int compression = 5;
+  if(dt_conf_key_exists("plugins/imageio/format/png/compression"))
+    compression = dt_conf_get_int("plugins/imageio/format/png/compression");
+
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
 
+  // Bit depth combo box
   gui->bit_depth = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(gui->bit_depth, NULL, _("bit depth"));
   dt_bauhaus_combobox_add(gui->bit_depth, _("8 bit"));
@@ -475,6 +531,13 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_set(gui->bit_depth, bpp);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->bit_depth, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->bit_depth), "value-changed", G_CALLBACK(bit_depth_changed), NULL);
+
+  // Compression level slider
+  gui->compression = dt_bauhaus_slider_new_with_range(NULL, 0, 9, 1, 5, 0);
+  dt_bauhaus_widget_set_label(gui->compression, NULL, _("compression"));
+  dt_bauhaus_slider_set(gui->compression, compression);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->compression), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(gui->compression), "value-changed", G_CALLBACK(compression_level_changed), NULL);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

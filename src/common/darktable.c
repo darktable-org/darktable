@@ -940,17 +940,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_lib_init(darktable.lib);
 
     dt_gui_gtk_load_config();
-  }
 
-  const char *mode = "lighttable";
-  // april 1st: you have to earn using dt first! or know that you can switch views with keyboard shortcuts
-  time_t now;
-  time(&now);
-  struct tm lt;
-  localtime_r(&now, &lt);
-  if(lt.tm_mon == 3 && lt.tm_mday == 1) mode = "knight";
-  if(init_gui)
-  {
     // init the gui part of views
     dt_view_manager_gui_init(darktable.view_manager);
     // Loading the keybindings
@@ -975,9 +965,37 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     // initialize undo struct
     darktable.undo = dt_undo_init();
+  }
+
+  if(darktable.unmuted & DT_DEBUG_MEMORY)
+  {
+    fprintf(stderr, "[memory] after successful startup\n");
+    dt_print_mem_usage();
+  }
+
+  dt_image_local_copy_synch();
+
+/* init lua last, since it's user made stuff it must be in the real environment */
+#ifdef USE_LUA
+  dt_lua_init(darktable.lua_state.state, lua_command);
+#endif
+
+  if(init_gui)
+  {
+    const char *mode = "lighttable";
+    // april 1st: you have to earn using dt first! or know that you can switch views with keyboard shortcuts
+    time_t now;
+    time(&now);
+    struct tm lt;
+    localtime_r(&now, &lt);
+    if(lt.tm_mon == 3 && lt.tm_mday == 1) mode = "knight";
+    // we have to call dt_ctl_switch_mode_to() here already to not run into a lua deadlock.
+    // having another call later is ok
+    dt_ctl_switch_mode_to(mode);
 
 #ifndef MAC_INTEGRATION
-    // load image(s) specified on cmdline
+    // load image(s) specified on cmdline.
+    // this has to happen after lua is initialized as image import can run lua code
     // If only one image is listed, attempt to load it in darkroom
     int last_id = 0;
     gboolean only_single_images = TRUE;
@@ -999,25 +1017,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(loaded_images == 1 && only_single_images)
     {
       dt_control_set_mouse_over_id(last_id);
-      mode = "darkroom";
+      dt_ctl_switch_mode_to("darkroom");
     }
 #endif
   }
-
-  if(darktable.unmuted & DT_DEBUG_MEMORY)
-  {
-    fprintf(stderr, "[memory] after successful startup\n");
-    dt_print_mem_usage();
-  }
-
-  dt_image_local_copy_synch();
-
-/* init lua last, since it's user made stuff it must be in the real environment */
-#ifdef USE_LUA
-  dt_lua_init(darktable.lua_state.state, lua_command);
-#endif
-
-  if(init_gui) dt_ctl_switch_mode_to(mode);
 
   // last but not least construct the popup that asks the user about images whose xmp files are newer than the
   // db entry

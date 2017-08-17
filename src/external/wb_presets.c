@@ -768,6 +768,14 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 6D", Fluorescent, 0,		{ 1.726562, 1, 2.337891, 0 } },
   { "Canon", "EOS 6D", Flash, 0,		{ 2.192383, 1, 1.458984, 0 } },
 
+  /* Canon EOS 6D Mark II Firmware Version 1.0.2 */
+  { "Canon", "EOS 6D Mark II", Daylight, 0,	{ 2.0810546875, 1, 1.6435546875, 0 } },
+  { "Canon", "EOS 6D Mark II", Shade, 0,	{ 2.4208984375, 1, 1.4023437500, 0 } },
+  { "Canon", "EOS 6D Mark II", Cloudy, 0,	{ 2.2558593750, 1, 1.5146484375, 0 } },
+  { "Canon", "EOS 6D Mark II", Tungsten, 0,	{ 1.4501953125, 1, 2.4150390625, 0 } },
+  { "Canon", "EOS 6D Mark II", Fluorescent, 0,	{ 1.7294921875, 1, 2.2802734375, 0 } },
+  { "Canon", "EOS 6D Mark II", Flash, 0,	{ 2.2802734375, 1, 1.4882812500, 0 } },
+
   /* Canon EOS 7D Firmware Version 2.0.3 */
   /* Fine-tuning for the 7D are the camera's Amber-Blue bracketing. */
   { "Canon", "EOS 7D", Daylight, -9,		{ 1.8281, 1, 1.8281, 0 } },

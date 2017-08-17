@@ -60,6 +60,8 @@ void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt
                     void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
                     void (*free_data)(gpointer data))
 {
+  if(!self) return;
+
   dt_undo_item_t *item = malloc(sizeof(dt_undo_item_t));
 
   item->user_data = user_data;
@@ -80,6 +82,8 @@ void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt
 
 void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
 {
+  if(!self) return;
+
   dt_pthread_mutex_lock(&self->mutex);
 
   GList *l = g_list_first(self->redo_list);
@@ -122,6 +126,8 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
 
 void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 {
+  if(!self) return;
+
   dt_pthread_mutex_lock(&self->mutex);
 
   GList *l = g_list_first(self->undo_list);
@@ -191,6 +197,8 @@ static void _undo_clear_list(GList **list, uint32_t filter)
 
 void dt_undo_clear(dt_undo_t *self, uint32_t filter)
 {
+  if(!self) return;
+
   dt_pthread_mutex_lock(&self->mutex);
   _undo_clear_list(&self->undo_list, filter);
   _undo_clear_list(&self->redo_list, filter);
@@ -220,6 +228,8 @@ static void _undo_iterate(GList *list, uint32_t filter, gpointer user_data,
 void dt_undo_iterate_internal(dt_undo_t *self, uint32_t filter, gpointer user_data,
                               void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item))
 {
+  if(!self) return;
+
   _undo_iterate(self->undo_list, filter, user_data, apply);
   _undo_iterate(self->redo_list, filter, user_data, apply);
 }
@@ -228,6 +238,8 @@ void dt_undo_iterate_internal(dt_undo_t *self, uint32_t filter, gpointer user_da
 void dt_undo_iterate(dt_undo_t *self, uint32_t filter, gpointer user_data,
                      void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item))
 {
+  if(!self) return;
+
   dt_pthread_mutex_lock(&self->mutex);
   dt_undo_iterate_internal(self, filter, user_data, apply);
   dt_pthread_mutex_unlock(&self->mutex);

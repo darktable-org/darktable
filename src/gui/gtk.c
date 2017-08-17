@@ -749,7 +749,7 @@ static gboolean osx_openfile_callback(GtkOSXApplication *OSXapp, gchar *path, gp
 static gboolean osx_openfile_callback(GtkosxApplication *OSXapp, gchar *path, gpointer user_data)
 #endif
 {
-  return dt_load_from_string(path, FALSE, NULL) == 0 ? FALSE : TRUE;
+  return dt_load_from_string(path, TRUE, NULL) > 0;
 }
 #endif
 

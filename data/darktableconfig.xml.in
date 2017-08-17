@@ -1315,6 +1315,13 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/png/compression</name>
+    <type>int</type>
+    <default>5</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/pwstorage/pwstorage_backend</name>
     <type>
