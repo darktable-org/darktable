@@ -209,7 +209,7 @@ if(USE_OPENMP)
   if(WIN32)
     list(APPEND LIBS gomp)
   endif(WIN32)
-endif(OpenMP_C_FLAGS AND USE_OPENMP)
+endif(USE_OPENMP)
 
 if(USE_DARKTABLE_PROFILING)
 	add_definitions(-DUSE_DARKTABLE_PROFILING)

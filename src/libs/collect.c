@@ -742,6 +742,48 @@ static GtkTreeModel *_create_filtered_model(GtkTreeModel *model, dt_lib_collect_
   return filter;
 }
 
+static int string_array_length(char **list)
+{
+  int length = 0;
+  for(; *list; list++) length++;
+  return length;
+}
+
+// returns a NULL terminated array of path components
+static char **split_path(const char *path)
+{
+  if(!path || !*path) return NULL;
+
+  char **result;
+  char **tokens = g_strsplit(path, G_DIR_SEPARATOR_S, -1);
+
+#ifdef _WIN32
+
+  if(! (g_ascii_isalpha(tokens[0][0]) && tokens[0][strlen(tokens[0]) - 1] == ':') )
+  {
+    g_strfreev(tokens);
+    tokens = NULL;
+  }
+
+  result = tokens;
+
+#else
+
+  // there are size + 1 elements in tokens -- the final NULL! we want to ignore it.
+  unsigned int size = g_strv_length(tokens);
+
+  result = malloc(size * sizeof(char *));
+  for(unsigned int i = 0; i < size; i++)
+    result[i] = tokens[i + 1];
+
+  g_free(tokens[0]);
+  g_free(tokens);
+
+#endif
+
+  return result;
+}
+
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
 static void tree_view(dt_lib_collect_rule_t *dr)
 {
@@ -750,6 +792,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   int property = gtk_combo_box_get_active(dr->combo);
   gboolean folders = (property == DT_COLLECTION_PROP_FOLDERS);
   gboolean tags = (property == DT_COLLECTION_PROP_TAG);
+  const char *format_separator = folders ? "%s" G_DIR_SEPARATOR_S : "%s|";
 
   set_properties(dr);
 
@@ -770,13 +813,14 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     gtk_widget_hide(GTK_WIDGET(d->sw2));
 
     /* query construction */
-    char query[1024] = { 0 };
-    if(folders)
-      g_strlcpy(query, "SELECT DISTINCT folder, id FROM main.film_rolls ORDER BY UPPER(folder) DESC", sizeof(query));
-    else if(tags)
-      g_strlcpy(query, "SELECT DISTINCT name, id FROM data.tags ORDER BY UPPER(name) DESC", sizeof(query));
+    const char *query = folders ? "SELECT DISTINCT folder, id FROM main.film_rolls ORDER BY UPPER(folder) DESC" :
+                        tags ? "SELECT DISTINCT name, id FROM data.tags ORDER BY UPPER(name) DESC" : NULL;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+
+    char **last_tokens = NULL;
+    int last_tokens_length = 0;
+    GtkTreeIter last_parent = { 0 };
 
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -801,88 +845,78 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       }
       else
       {
-        int level = 0;
-        GtkTreeIter current, iter;
-        char **pch = NULL;
-        if(tags)
-          pch = g_strsplit(name, "|", -1);
-        else if(folders)
-          pch = g_strsplit(name, "/", -1);
+        char **tokens;
+        if(folders)
+          tokens = split_path(name);
+        else
+          tokens = g_strsplit(name, "|", -1);
 
-        if(pch != NULL)
+        if(tokens != NULL)
         {
-          int max_level = 0;
-          int j = 0;
-          if(folders) j = 1; // path should have a starting '/'
-          while(pch[j] != NULL)
+          // find the number of common parts at the beginning of tokens and last_tokens
+          GtkTreeIter parent = {0};
+          int tokens_length = string_array_length(tokens);
+          int common_length = 0;
+          if(last_tokens)
           {
-            max_level++;
-            j++;
-          }
-          max_level--;
-          j = 0;
-          if(folders) j = 1; // path should have a starting '/'
-          while(pch[j] != NULL)
-          {
-            gboolean found = FALSE;
-            int children = gtk_tree_model_iter_n_children(model, level > 0 ? &current : NULL);
-            /* find child with name, if not found create and continue */
-            for(int k = 0; k < children; k++)
+            for(common_length = 0; tokens[common_length] && last_tokens[common_length]; common_length++)
             {
-              if(gtk_tree_model_iter_nth_child(model, &iter, level > 0 ? &current : NULL, k))
+              if(g_strcmp0(tokens[common_length], last_tokens[common_length]))
               {
-                char *value;
-                gtk_tree_model_get(model, &iter, 0, &value, -1);
-
-                if(strcmp(value, pch[j]) == 0)
-                {
-                  g_free(value);
-                  current = iter;
-                  found = TRUE;
-                  break;
-                }
-
-                g_free(value);
+                common_length++;
+                break;
               }
             }
+            common_length--;
 
-            /* lets add new keyword/folder and assign current */
-            if(!found && pch[j] && *pch[j])
+            // point parent iter to where the entries should be added
+            for(int i = common_length; i < last_tokens_length; i++)
             {
-              gchar *pth2 = NULL;
-
-              if(folders) pth2 = dt_util_dstrcat(pth2, "/");
-
-              for(int i = 0; i <= level; i++)
-              {
-                if(tags)
-                  pth2 = dt_util_dstrcat(pth2, "%s|", pch[i]);
-                else if(folders)
-                  pth2 = dt_util_dstrcat(pth2, "%s/", pch[i + 1]);
-              }
-              gchar *pth3 = g_strdup(pth2);
-
-              if(folders || level == max_level)
-                pth2[strlen(pth2) - 1] = '\0';
-              else
-                pth2 = dt_util_dstrcat(pth2, "%%");
-
-              gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, level > 0 ? &current : NULL, 0);
-              gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, pch[j],
-                                 DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
-              if(folders)
-                gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_UNREACHABLE,
-                                   !(g_file_test(pth3, G_FILE_TEST_IS_DIR)), -1);
-              g_free(pth2);
-              g_free(pth3);
-              current = iter;
+              gtk_tree_model_iter_parent(model, &parent, &last_parent);
+              last_parent = parent;
             }
-
-            level++;
-            j++;
           }
 
-          g_strfreev(pch);
+          // insert everything from tokens past the common part
+
+          char *pth = NULL;
+#ifndef _WIN32
+          if(folders) pth = g_strdup("/");
+#endif
+          for(int i = 0; i < common_length; i++)
+            pth = dt_util_dstrcat(pth, format_separator, tokens[i]);
+
+          for(char **token = &tokens[common_length]; *token; token++)
+          {
+            GtkTreeIter iter;
+
+            pth = dt_util_dstrcat(pth, format_separator, *token);
+
+            gchar *pth2 = g_strdup(pth);
+
+            if(folders || *(token + 1) == NULL)
+              pth2[strlen(pth2) - 1] = '\0';
+            else
+              pth2 = dt_util_dstrcat(pth2, "%%");
+
+            gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, common_length > 0 ? &parent : NULL, 0);
+            gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, *token,
+                               DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
+            if(folders)
+              gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_UNREACHABLE,
+                                 !(g_file_test(pth, G_FILE_TEST_IS_DIR)), -1);
+            common_length++;
+            parent = iter;
+            g_free(pth2);
+          }
+
+          g_free(pth);
+
+          // remember things for the next round
+          if(last_tokens) g_strfreev(last_tokens);
+          last_tokens = tokens;
+          last_parent = parent;
+          last_tokens_length = tokens_length;
         }
       }
     }
@@ -897,6 +931,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
 
     g_object_unref(model);
+    g_strfreev(last_tokens);
 
     d->view_rule = property;
   }
