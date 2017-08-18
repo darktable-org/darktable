@@ -504,11 +504,7 @@ if [ "$pdf_enabled" ]; then
 		done
 	done
 	echo Filelist: $flist
-	if $(which pdftk &>/dev/null); then
-		pdftk $flist cat output $resultpdf
-	else
-		gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=$resultpdf $flist
-	fi
+	pdfcat $resultpdf $flist
 fi
 
 # Prepare a tarball ready to be sent to the darktable team.
