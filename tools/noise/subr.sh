@@ -174,8 +174,18 @@ pdf_tools_installed() {
 	echo "--> Check for pdf tools availability"
 
 	if tool_installed pdftk; then
+		pdfcat() {
+			local output=$1; shift
+			local inputs=$@
+			pdftk $inputs cat output $output
+		}
 		missing_tool=0
 	elif tool_installed gs; then
+		pdfcat() {
+			local output=$1; shift
+			local inputs=$@
+			gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=$output $inputs
+		}
 		missing_tool=0
 	else
 		echo "pdftk or ghoscript are needed if you want one single result pdf."
