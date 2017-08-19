@@ -37,7 +37,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <complex.h>
+#ifdef HAVE_FFTW3
 #include <fftw3.h>
+#endif
 
 // we assume people have -msee support.
 #if defined(__SSE__)
@@ -1114,7 +1116,6 @@ static void xtrans_fdc_interpolate(float *out, const float *const in,
 #endif
 #ifndef HAVE_FFTW3
 #pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out, rowoffset, coloffset) schedule(dynamic)
-
 #endif
 #endif
   // step through TSxTS cells of image, each tile overlapping the
