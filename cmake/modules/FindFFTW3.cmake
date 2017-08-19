@@ -7,17 +7,11 @@
 
 # INCLUDE(UsePkgConfig)
 
-# use pkg-config to get the directories and then use these values
-# in the FIND_PATH() and FIND_LIBRARY() calls
-# PKGCONFIG(FFTW3 _FFTW3IncDir _FFTW3LinkDir _flickculrLinkFlags _FFTW3Cflags)
-
 FIND_PATH(FFTW3_INCLUDE_DIR fftw3.h)
 
 FIND_LIBRARY(FFTW3_LIBRARY
   NAMES fftw3f libfftw3f
 )
-message("FFTW3_INCLUDE_DIR: ${FFTW3_INCLUDE_DIR}")
-message("FFTW3_LIBRARY: ${FFTW3_LIBRARY}")
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(FFTW3 DEFAULT_MSG FFTW3_LIBRARY FFTW3_INCLUDE_DIR)
