@@ -44,7 +44,7 @@
 
 #define GRAIN_LUT_SIZE 128
 #define GRAIN_LUT_DELTA_MAX 2.0
-#define GRAIN_LUT_DELTA_MIN 0.005
+#define GRAIN_LUT_DELTA_MIN 0.0001
 #define GRAIN_LUT_PAPER_GAMMA 1.0
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
@@ -350,13 +350,15 @@ static double _perlin_2d_noise(double x,double y,uint32_t octaves,double persist
 
 static double _simplex_2d_noise(double x, double y, uint32_t octaves, double persistance, double z)
 {
-  double f = 1, a = 1, total = 0;
+  double total = 0;
+
+  // parametrization of octaves to match power spectrum of real grain scans
+  static double f[] = {0.4910, 0.9441, 1.7280};
+  static double a[] = {0.2340, 0.7850, 1.2150};
 
   for(uint32_t o = 0; o < octaves; o++)
   {
-    total += (_simplex_noise(x * f / z, y * f / z, o) * a);
-    f = 2 * o;
-    a = persistance * o;
+    total += (_simplex_noise(x * f[o] / z, y * f[o] / z, o) * a[o]);
   }
   return total;
 }
