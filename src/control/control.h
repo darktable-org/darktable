@@ -39,24 +39,6 @@
 
 struct dt_lib_backgroundjob_element_t;
 
-typedef enum dt_control_gui_mode_t
-{
-  DT_LIBRARY = 0,
-  DT_DEVELOP,
-#ifdef HAVE_GPHOTO2
-  DT_CAPTURE,
-#endif
-#ifdef HAVE_MAP
-  DT_MAP,
-#endif
-  DT_SLIDESHOW,
-#ifdef HAVE_PRINT
-  DT_PRINT,
-#endif
-  DT_KNIGHT,
-  DT_MODE_NONE
-} dt_control_gui_mode_t;
-
 typedef GdkCursorType dt_cursor_t;
 
 // called from gui
@@ -98,7 +80,8 @@ void dt_control_queue_redraw_center();
 void dt_control_queue_redraw_widget(GtkWidget *widget);
 
 void dt_ctl_switch_mode();
-void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode);
+void dt_ctl_switch_mode_to(const char *mode);
+void dt_ctl_switch_mode_to_by_view(const dt_view_t *view);
 
 struct dt_control_t;
 
@@ -235,9 +218,6 @@ void dt_control_cleanup(dt_control_t *s);
 
 // call this to quit dt
 void dt_control_quit();
-
-int dt_control_load_config(dt_control_t *c);
-int dt_control_write_config(dt_control_t *c);
 
 /** get threadsafe running state. */
 int dt_control_running();

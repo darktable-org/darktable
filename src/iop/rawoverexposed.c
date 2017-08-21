@@ -83,6 +83,9 @@ static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   dt_develop_t *dev = self->dev;
   dt_iop_rawoverexposed_data_t *d = piece->data;
 
+  // 4BAYER is not supported by this module yet anyway.
+  const int ch = (dev->image_storage.flags & DT_IMAGE_4BAYER) ? 4 : 3;
+
   float threshold;
 
   // the clipping is detected as >1.0 after white level normalization
@@ -107,7 +110,7 @@ static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     threshold = FLT_MAX;
 
     // so to detect the color clipping, we need to take white balance into account.
-    for(int k = 0; k < 4; k++) threshold = fminf(threshold, piece->pipe->dsc.temperature.coeffs[k]);
+    for(int k = 0; k < ch; k++) threshold = fminf(threshold, piece->pipe->dsc.temperature.coeffs[k]);
   }
   else
   {
@@ -116,7 +119,7 @@ static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
 
   threshold *= dev->rawoverexposed.threshold;
 
-  for(int k = 0; k < 4; k++)
+  for(int k = 0; k < ch; k++)
   {
     // here is our threshold
     float chthr = threshold;
@@ -246,7 +249,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #ifdef HAVE_OPENCL
@@ -496,7 +499,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_rawoverexposed_t));
   module->hide_enable_button = 1;
   module->default_enabled = 1;
-  module->priority = 940; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 941; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rawoverexposed_t);
   module->gui_data = NULL;
 }

@@ -114,6 +114,13 @@
     <longdescription>defines priorities on how (multiple) OpenCL devices are allocated to the different types of pixelpipe (full, preview, export, thumbnail). for more details visit our usermanual (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>opencl_mandatory_timeout</name>
+    <type min="0">int</type>
+    <default>200</default>
+    <shortdescription>timeout period for locking mandatory opencl device</shortdescription>
+    <longdescription>time period (in units of 5ms) after which we give up try-locking an opencl device for mandatory use. defaults to 200.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>opencl_use_pinned_memory</name>
     <type>bool</type>
     <default>false</default>
@@ -142,11 +149,11 @@
     <longdescription>darktable re-checks the performance benchmarks of your system in case your setup has changed, which is indicated by a change versus the stored checksum in this config variable; darktable de-activates opencl if the GPU benchmark lies below the one of the CPU.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>opencl_enable_markesteijn</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>whether to process markesteijn demosaicing in the OpenCL codepath</shortdescription>
-    <longdescription>markesteijn is a very demanding demosaicing method for x-trans sensors. the OpenCL codepath will only give advantage on very performant GPUs - else a slowdown is to be expected. users should benchmark their system and then decide if they switch this on or off.</longdescription>
+    <name>pixelpipe_synchronization_timeout</name>
+    <type>int</type>
+    <default>200</default>
+    <shortdescription>timeout period of pixelpipe synchronization</shortdescription>
+    <longdescription>time period (in units of 5ms) after which synchronization of preview and full pixelpipe is assumed to have failed. set to zero to omit pixelpipe synchronization. defaults to 200.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>never_use_embedded_thumb</name>
@@ -175,12 +182,32 @@
     <shortdescription>store xmp tags in compressed format</shortdescription>
     <longdescription>entries in xmp tags can get rather large and may exceed the available space to store the history stack in output files. this option allows xmp tags to be compressed and save space.</longdescription>
   </dtconfig>
+  <dtconfig prefs="core">
+    <name>omit_tag_hierarchy</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>omit hierarchy in simple tag lists</shortdescription>
+    <longdescription>when exporting images the hierarchical tags are also added as a simple list of non-hierarchical ones to make them visible to some other programs. when this option is checked darktable will only include their last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'.</longdescription>
+  </dtconfig>
   <dtconfig prefs="core" capability="opencl">
     <name>opencl</name>
     <type>bool</type>
     <default>${DEFCONFIG_OPENCL}</default>
     <shortdescription>activate OpenCL support</shortdescription>
     <longdescription>if found, use OpenCL runtime on your system for improved processing speed. can be switched on and off at any time.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="core" capability="opencl">
+    <name>opencl_scheduling_profile</name>
+    <type>
+      <enum>
+        <option>default</option>
+        <option>multiple GPUs</option>
+        <option>very fast GPU</option>
+      </enum>
+    </type>
+    <default>default</default>
+    <shortdescription>OpenCL scheduling profile</shortdescription>
+    <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems. default - GPU processes full and CPU processes preview pipe (adaptable by config parameters); multiple GPUs - process both pixelpipes in parallel on two different GPUs; very fast GPU - process both pixelipes sequentially on the GPU.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_library</name>
@@ -221,8 +248,8 @@
     <name>ask_before_delete</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>ask before erasing images from disk</shortdescription>
-    <longdescription>always ask the user before any image file is deleted.</longdescription>
+    <shortdescription>ask before erasing images from disk / discarding history stack</shortdescription>
+    <longdescription>always ask the user before any image file is deleted / history stack is discarded.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>send_to_trash</name>
@@ -565,6 +592,18 @@
     <default>medium</default>
     <shortdescription>smoothing of brush strokes</shortdescription>
     <longdescription>sets level for smoothing of brush strokes. stronger smoothing leads to less nodes and easier editing but with lower control of accuracy.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
+    <name>channel_display</name>
+    <type>
+      <enum>
+        <option>false color</option>
+        <option>grey scale</option>
+      </enum>
+    </type>
+    <default>false color</default>
+    <shortdescription>display of individual color channels</shortdescription>
+    <longdescription>defines how color channels are displayed when activated in the parametric masks feature.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
@@ -1081,6 +1120,13 @@
     <shortdescription>do high quality resampling during export</shortdescription>
     <longdescription>the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower.</longdescription>
   </dtconfig>
+ <dtconfig prefs="gui">
+    <name>rating_one_double_tap</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>rating an image one star twice will not zero out the rating</shortdescription>
+    <longdescription>do not have the rating of one star behave as documented in the manual--an image rated one star twice will result in a zero star rating.</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>darkroom/ui/rawoverexposed/mode</name>
     <type>int</type>
@@ -1266,6 +1312,13 @@
     <name>plugins/imageio/format/png/bpp</name>
     <type>int</type>
     <default>8</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/png/compression</name>
+    <type>int</type>
+    <default>5</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>

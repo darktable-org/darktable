@@ -45,7 +45,7 @@
 #define MAXNODES 20
 
 
-DT_MODULE_INTROSPECTION(4, dt_iop_basecurve_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_basecurve_params_t)
 
 typedef struct dt_iop_basecurve_node_t
 {
@@ -62,10 +62,22 @@ typedef struct dt_iop_basecurve_params_t
   int basecurve_type[3];
   int exposure_fusion;    // number of exposure fusion steps
   float exposure_stops;   // number of stops between fusion images
+  float exposure_bias;    // whether to do exposure-fusion with over or under-exposure
 } dt_iop_basecurve_params_t;
 
+typedef struct dt_iop_basecurve_params3_t
+{
+  // three curves (c, ., .) with max number of nodes
+  // the other two are reserved, maybe we'll have cam rgb at some point.
+  dt_iop_basecurve_node_t basecurve[3][MAXNODES];
+  int basecurve_nodes[3];
+  int basecurve_type[3];
+  int exposure_fusion;  // number of exposure fusion steps
+  float exposure_stops; // number of stops between fusion images
+} dt_iop_basecurve_params3_t;
+
 // same but semantics/defaults changed
-typedef dt_iop_basecurve_params_t dt_iop_basecurve_params3_t;
+typedef dt_iop_basecurve_params3_t dt_iop_basecurve_params4_t;
 
 typedef struct dt_iop_basecurve_params2_t
 {
@@ -85,7 +97,7 @@ typedef struct dt_iop_basecurve_params1_t
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 5)
   {
     dt_iop_basecurve_params1_t *o = (dt_iop_basecurve_params1_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
@@ -103,23 +115,34 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->basecurve_type[0] = CUBIC_SPLINE;
     n->exposure_fusion = 0;
     n->exposure_stops = 1;
+    n->exposure_bias = 1.0;
     return 0;
   }
-  if(old_version == 2 && new_version == 4)
+  if(old_version == 2 && new_version == 5)
   {
     dt_iop_basecurve_params2_t *o = (dt_iop_basecurve_params2_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
     memcpy(n, o, sizeof(dt_iop_basecurve_params2_t));
     n->exposure_fusion = 0;
     n->exposure_stops = 1;
+    n->exposure_bias = 1.0;
     return 0;
   }
-  if(old_version == 3 && new_version == 4)
+  if(old_version == 3 && new_version == 5)
   {
     dt_iop_basecurve_params3_t *o = (dt_iop_basecurve_params3_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
     memcpy(n, o, sizeof(dt_iop_basecurve_params3_t));
     n->exposure_stops = (o->exposure_fusion == 0 && o->exposure_stops == 0) ? 1.0f : o->exposure_stops;
+    n->exposure_bias = 1.0;
+    return 0;
+  }
+  if(old_version == 4 && new_version == 5)
+  {
+    dt_iop_basecurve_params4_t *o = (dt_iop_basecurve_params4_t *)old_params;
+    dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
+    memcpy(n, o, sizeof(dt_iop_basecurve_params4_t));
+    n->exposure_bias = 1.0;
     return 0;
   }
   return 1;
@@ -148,7 +171,8 @@ typedef struct basecurve_preset_t
   const char *name;
   const char *maker;
   const char *model;
-  int iso_min, iso_max;
+  int iso_min;
+  float iso_max;
   dt_iop_basecurve_params_t params;
   int autoapply;
   int filter;
@@ -158,55 +182,59 @@ typedef struct basecurve_preset_t
 
 static const basecurve_preset_t basecurve_camera_presets[] = {
   // copy paste your measured basecurve line at the top here, like so (note the exif data and the last 1):
+  // clang-format off
 
   // nikon d750 by Edouard Gomez
-  {"Nikon D750", "NIKON CORPORATION", "NIKON D750", 0, 51200, {{{{0.000000, 0.000000}, {0.018124, 0.026126}, {0.143357, 0.370145}, {0.330116, 0.730507}, {0.457952, 0.853462}, {0.734950, 0.965061}, {0.904758, 0.985699}, {1.000000, 1.000000}}}, {8}, {m}}, 0, 1},
+  {"Nikon D750", "NIKON CORPORATION", "NIKON D750", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.018124, 0.026126}, {0.143357, 0.370145}, {0.330116, 0.730507}, {0.457952, 0.853462}, {0.734950, 0.965061}, {0.904758, 0.985699}, {1.000000, 1.000000}}}, {8}, {m}}, 0, 1},
   // contributed by Stefan Kauerauf
-  {"Nikon D5100", "NIKON CORPORATION", "NIKON D5100", 0, 51200, {{{{0.000000, 0.000000}, {0.001113, 0.000506}, {0.002842, 0.001338}, {0.005461, 0.002470}, {0.011381, 0.006099}, {0.013303, 0.007758}, {0.034638, 0.041119}, {0.044441, 0.063882}, {0.070338, 0.139639}, {0.096068, 0.210915}, {0.137693, 0.310295}, {0.206041, 0.432674}, {0.255508, 0.504447}, {0.302770, 0.569576}, {0.425625, 0.726755}, {0.554526, 0.839541}, {0.621216, 0.882839}, {0.702662, 0.927072}, {0.897426, 0.990984}, {1.000000, 1.000000}}}, {20}, {m}}, 0, 1},
+  {"Nikon D5100", "NIKON CORPORATION", "NIKON D5100", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.001113, 0.000506}, {0.002842, 0.001338}, {0.005461, 0.002470}, {0.011381, 0.006099}, {0.013303, 0.007758}, {0.034638, 0.041119}, {0.044441, 0.063882}, {0.070338, 0.139639}, {0.096068, 0.210915}, {0.137693, 0.310295}, {0.206041, 0.432674}, {0.255508, 0.504447}, {0.302770, 0.569576}, {0.425625, 0.726755}, {0.554526, 0.839541}, {0.621216, 0.882839}, {0.702662, 0.927072}, {0.897426, 0.990984}, {1.000000, 1.000000}}}, {20}, {m}}, 0, 1},
   // nikon d7000 by Edouard Gomez
-  {"Nikon D7000", "NIKON CORPORATION", "NIKON D7000", 0, 51200, {{{{0.000000, 0.000000}, {0.001943, 0.003040}, {0.019814, 0.028810}, {0.080784, 0.210476}, {0.145700, 0.383873}, {0.295961, 0.654041}, {0.651915, 0.952819}, {1.000000, 1.000000}}}, {8}, {m}}, 0, 1},
+  {"Nikon D7000", "NIKON CORPORATION", "NIKON D7000", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.001943, 0.003040}, {0.019814, 0.028810}, {0.080784, 0.210476}, {0.145700, 0.383873}, {0.295961, 0.654041}, {0.651915, 0.952819}, {1.000000, 1.000000}}}, {8}, {m}}, 0, 1},
   // nikon d7200 standard by Ralf Brown (firmware 1.00)
-  {"Nikon D7200", "NIKON CORPORATION", "NIKON D7200", 0, 51200, {{{{0.000000, 0.000000}, {0.001604, 0.001334}, {0.007401, 0.005237}, {0.009474, 0.006890}, {0.017348, 0.017176}, {0.032782, 0.044336}, {0.048033, 0.086548}, {0.075803, 0.168331}, {0.109539, 0.273539}, {0.137373, 0.364645}, {0.231651, 0.597511}, {0.323797, 0.736475}, {0.383796, 0.805797}, {0.462284, 0.872247}, {0.549844, 0.918328}, {0.678855, 0.962361}, {0.817445, 0.990406}, {1.000000, 1.000000}}}, {18}, {m}}, 1, 1},
+  {"Nikon D7200", "NIKON CORPORATION", "NIKON D7200", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.001604, 0.001334}, {0.007401, 0.005237}, {0.009474, 0.006890}, {0.017348, 0.017176}, {0.032782, 0.044336}, {0.048033, 0.086548}, {0.075803, 0.168331}, {0.109539, 0.273539}, {0.137373, 0.364645}, {0.231651, 0.597511}, {0.323797, 0.736475}, {0.383796, 0.805797}, {0.462284, 0.872247}, {0.549844, 0.918328}, {0.678855, 0.962361}, {0.817445, 0.990406}, {1.000000, 1.000000}}}, {18}, {m}}, 1, 1},
   // sony rx100m2 by Günther R.
-  { "Sony DSC-RX100M2", "SONY", "DSC-RX100M2", 0, 51200, { { { { 0.000000, 0.000000 }, { 0.015106, 0.008116 }, { 0.070077, 0.093725 }, { 0.107484, 0.170723 }, { 0.191528, 0.341093 }, { 0.257996, 0.458453 }, { 0.305381, 0.537267 }, { 0.326367, 0.569257 }, { 0.448067, 0.723742 }, { 0.509627, 0.777966 }, { 0.676751, 0.898797 }, { 1.000000, 1.000000 } } }, { 12 }, { m } }, 0, 1 },
+  { "Sony DSC-RX100M2", "SONY", "DSC-RX100M2", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.015106, 0.008116 }, { 0.070077, 0.093725 }, { 0.107484, 0.170723 }, { 0.191528, 0.341093 }, { 0.257996, 0.458453 }, { 0.305381, 0.537267 }, { 0.326367, 0.569257 }, { 0.448067, 0.723742 }, { 0.509627, 0.777966 }, { 0.676751, 0.898797 }, { 1.000000, 1.000000 } } }, { 12 }, { m } }, 0, 1 },
   // contributed by matthias bodenbinder
-  { "Canon EOS 6D", "Canon", "Canon EOS 6D", 0, 51200, { { { { 0.000000, 0.002917 }, { 0.000751, 0.001716 }, { 0.006011, 0.004438 }, { 0.020286, 0.021725 }, { 0.048084, 0.085918 }, { 0.093914, 0.233804 }, { 0.162284, 0.431375 }, { 0.257701, 0.629218 }, { 0.384673, 0.800332 }, { 0.547709, 0.917761 }, { 0.751315, 0.988132 }, { 1.000000, 0.999943 } } }, { 12 }, { m } }, 0, 1 },
+  { "Canon EOS 6D", "Canon", "Canon EOS 6D", 0, FLT_MAX, { { { { 0.000000, 0.002917 }, { 0.000751, 0.001716 }, { 0.006011, 0.004438 }, { 0.020286, 0.021725 }, { 0.048084, 0.085918 }, { 0.093914, 0.233804 }, { 0.162284, 0.431375 }, { 0.257701, 0.629218 }, { 0.384673, 0.800332 }, { 0.547709, 0.917761 }, { 0.751315, 0.988132 }, { 1.000000, 0.999943 } } }, { 12 }, { m } }, 0, 1 },
   // contributed by Dan Torop
-  { "Fujifilm X100S", "Fujifilm", "X100S", 0, 51200, { { { { 0.000000, 0.000000 }, { 0.009145, 0.007905 }, { 0.026570, 0.032201 }, { 0.131526, 0.289717 }, { 0.175858, 0.395263 }, { 0.350981, 0.696899 }, { 0.614997, 0.959451 }, { 1.000000, 1.000000 } } }, { 8 }, { m } }, 0, 1 },
-  { "Fujifilm X100T", "Fujifilm", "X100T", 0, 51200, { { { { 0.000000, 0.000000 }, { 0.009145, 0.007905 }, { 0.026570, 0.032201 }, { 0.131526, 0.289717 }, { 0.175858, 0.395263 }, { 0.350981, 0.696899 }, { 0.614997, 0.959451 }, { 1.000000, 1.000000 } } }, { 8 }, { m } }, 0, 1 },
+  { "Fujifilm X100S", "Fujifilm", "X100S", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.009145, 0.007905 }, { 0.026570, 0.032201 }, { 0.131526, 0.289717 }, { 0.175858, 0.395263 }, { 0.350981, 0.696899 }, { 0.614997, 0.959451 }, { 1.000000, 1.000000 } } }, { 8 }, { m } }, 0, 1 },
+  { "Fujifilm X100T", "Fujifilm", "X100T", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.009145, 0.007905 }, { 0.026570, 0.032201 }, { 0.131526, 0.289717 }, { 0.175858, 0.395263 }, { 0.350981, 0.696899 }, { 0.614997, 0.959451 }, { 1.000000, 1.000000 } } }, { 8 }, { m } }, 0, 1 },
   // contributed by Johannes Hanika
-  { "Canon EOS 5D Mark II", "Canon", "Canon EOS 5D Mark II", 0, 51200, { { { { 0.000000, 0.000366 }, { 0.006560, 0.003504 }, { 0.027310, 0.029834 }, { 0.045915, 0.070230 }, { 0.206554, 0.539895 }, { 0.442337, 0.872409 }, { 0.673263, 0.971703 }, { 1.000000, 0.999832 } } }, { 8 }, { m } }, 0, 1 },
+  { "Canon EOS 5D Mark II", "Canon", "Canon EOS 5D Mark II", 0, FLT_MAX, { { { { 0.000000, 0.000366 }, { 0.006560, 0.003504 }, { 0.027310, 0.029834 }, { 0.045915, 0.070230 }, { 0.206554, 0.539895 }, { 0.442337, 0.872409 }, { 0.673263, 0.971703 }, { 1.000000, 0.999832 } } }, { 8 }, { m } }, 0, 1 },
   // contributed by chrik5
-  { "Pentax K-5", "Pentax", "Pentax K-5", 0, 51200, { { { { 0.000000, 0.000000 }, { 0.004754, 0.002208 }, { 0.009529, 0.004214 }, { 0.023713, 0.013508 }, { 0.031866, 0.020352 }, { 0.046734, 0.034063 }, { 0.059989, 0.052413 }, { 0.088415, 0.096030 }, { 0.136610, 0.190629 }, { 0.174480, 0.256484 }, { 0.205192, 0.307430 }, { 0.228896, 0.348447 }, { 0.286411, 0.428680 }, { 0.355314, 0.513527 }, { 0.440014, 0.607651 }, { 0.567096, 0.732791 }, { 0.620597, 0.775968 }, { 0.760355, 0.881828 }, { 0.875139, 0.960682 }, { 1.000000, 1.000000 } } }, { 20 }, { m } }, 0, 1 },
+  { "Pentax K-5", "Pentax", "Pentax K-5", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.004754, 0.002208 }, { 0.009529, 0.004214 }, { 0.023713, 0.013508 }, { 0.031866, 0.020352 }, { 0.046734, 0.034063 }, { 0.059989, 0.052413 }, { 0.088415, 0.096030 }, { 0.136610, 0.190629 }, { 0.174480, 0.256484 }, { 0.205192, 0.307430 }, { 0.228896, 0.348447 }, { 0.286411, 0.428680 }, { 0.355314, 0.513527 }, { 0.440014, 0.607651 }, { 0.567096, 0.732791 }, { 0.620597, 0.775968 }, { 0.760355, 0.881828 }, { 0.875139, 0.960682 }, { 1.000000, 1.000000 } } }, { 20 }, { m } }, 0, 1 },
   // contributed by Togan Muftuoglu - ed: slope is too aggressive on shadows
-  //{ "Nikon D90", "NIKON", "D90", 0, 51200, { { { { 0.000000, 0.000000 }, { 0.015520, 0.012248 }, { 0.097950, 0.251013 }, { 0.301515, 0.621951 }, { 0.415513, 0.771384 }, { 0.547326, 0.843079 }, { 0.819769, 0.956678 }, { 1.000000, 1.000000 } } }, { 8 }, { m } }, 0, 1 },
+  //{ "Nikon D90", "NIKON", "D90", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.015520, 0.012248 }, { 0.097950, 0.251013 }, { 0.301515, 0.621951 }, { 0.415513, 0.771384 }, { 0.547326, 0.843079 }, { 0.819769, 0.956678 }, { 1.000000, 1.000000 } } }, { 8 }, { m } }, 0, 1 },
   // contributed by Edouard Gomez
-  {"Nikon D90", "NIKON CORPORATION", "NIKON D90", 0, 51200, {{{{0.000000, 0.000000}, {0.011702, 0.012659}, {0.122918, 0.289973}, {0.153642, 0.342731}, {0.246855, 0.510114}, {0.448958, 0.733820}, {0.666759, 0.894290}, {1.000000, 1.000000}}}, {8}, {m}}, 0, 1},
+  {"Nikon D90", "NIKON CORPORATION", "NIKON D90", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.011702, 0.012659}, {0.122918, 0.289973}, {0.153642, 0.342731}, {0.246855, 0.510114}, {0.448958, 0.733820}, {0.666759, 0.894290}, {1.000000, 1.000000}}}, {8}, {m}}, 0, 1},
   // contributed by Pascal Obry
-  { "Nikon D800", "NIKON", "D800", 0, 51200, { { { { 0.000000, 0.000000 }, { 0.001773, 0.001936 }, { 0.009671, 0.009693 }, { 0.016754, 0.020617 }, { 0.024884, 0.037309 }, { 0.048174, 0.107768 }, { 0.056932, 0.139532 }, { 0.085504, 0.233303 }, { 0.130378, 0.349747 }, { 0.155476, 0.405445 }, { 0.175245, 0.445918 }, { 0.217657, 0.516873 }, { 0.308475, 0.668608 }, { 0.375381, 0.754058 }, { 0.459858, 0.839909 }, { 0.509567, 0.881543 }, { 0.654394, 0.960877 }, { 0.783380, 0.999161 }, { 0.859310, 1.000000 }, { 1.000000, 1.000000 } } }, { 20 }, { m } }, 0, 1 },
+  { "Nikon D800", "NIKON", "D800", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.001773, 0.001936 }, { 0.009671, 0.009693 }, { 0.016754, 0.020617 }, { 0.024884, 0.037309 }, { 0.048174, 0.107768 }, { 0.056932, 0.139532 }, { 0.085504, 0.233303 }, { 0.130378, 0.349747 }, { 0.155476, 0.405445 }, { 0.175245, 0.445918 }, { 0.217657, 0.516873 }, { 0.308475, 0.668608 }, { 0.375381, 0.754058 }, { 0.459858, 0.839909 }, { 0.509567, 0.881543 }, { 0.654394, 0.960877 }, { 0.783380, 0.999161 }, { 0.859310, 1.000000 }, { 1.000000, 1.000000 } } }, { 20 }, { m } }, 0, 1 },
+  // clang-format on
 };
 static const int basecurve_camera_presets_cnt = sizeof(basecurve_camera_presets) / sizeof(basecurve_preset_t);
 
 static const basecurve_preset_t basecurve_presets[] = {
+  // clang-format off
   // smoother cubic spline curve
-  { N_("cubic spline"), "", "", 0, 51200, { { { { 0.0, 0.0}, { 1.0, 1.0 }, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.} } }, { 2 }, { CUBIC_SPLINE } }, 0, 0 },
-  { neutral,         "", "",                      0, 51200, { { { { 0.000000, 0.000000 }, { 0.005000, 0.002500 }, { 0.150000, 0.300000 }, { 0.400000, 0.700000 }, { 0.750000, 0.950000 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 0, 1 },
-  { canon_eos,       "Canon", "",                 0, 51200, { { { { 0.000000, 0.000000 }, { 0.028226, 0.029677 }, { 0.120968, 0.232258 }, { 0.459677, 0.747581 }, { 0.858871, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { canon_eos_alt,   "Canon", "EOS 5D Mark",      0, 51200, { { { { 0.000000, 0.000000 }, { 0.026210, 0.029677 }, { 0.108871, 0.232258 }, { 0.350806, 0.747581 }, { 0.669355, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { nikon,           "NIKON", "",                 0, 51200, { { { { 0.000000, 0.000000 }, { 0.036290, 0.036532 }, { 0.120968, 0.228226 }, { 0.459677, 0.759678 }, { 0.858871, 0.983468 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { nikon_alt,       "NIKON", "D____",            0, 51200, { { { { 0.000000, 0.000000 }, { 0.012097, 0.007322 }, { 0.072581, 0.130742 }, { 0.310484, 0.729291 }, { 0.611321, 0.951613 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { sony_alpha,      "SONY", "",                  0, 51200, { { { { 0.000000, 0.000000 }, { 0.031949, 0.036532 }, { 0.105431, 0.228226 }, { 0.434505, 0.759678 }, { 0.855738, 0.983468 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { pentax,          "PENTAX", "",                0, 51200, { { { { 0.000000, 0.000000 }, { 0.032258, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { ricoh,           "RICOH", "",                 0, 51200, { { { { 0.000000, 0.000000 }, { 0.032259, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { olympus,         "OLYMPUS", "",               0, 51200, { { { { 0.000000, 0.000000 }, { 0.033962, 0.028226 }, { 0.249057, 0.439516 }, { 0.501887, 0.798387 }, { 0.750943, 0.955645 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { olympus_alt,     "OLYMPUS", "E-M",            0, 51200, { { { { 0.000000, 0.000000 }, { 0.012097, 0.010322 }, { 0.072581, 0.167742 }, { 0.310484, 0.711291 }, { 0.645161, 0.956855 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { panasonic,       "Panasonic", "",             0, 51200, { { { { 0.000000, 0.000000 }, { 0.036290, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { leica,           "Leica", "",                 0, 51200, { { { { 0.000000, 0.000000 }, { 0.036291, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { kodak_easyshare, "EASTMAN KODAK COMPANY", "", 0, 51200, { { { { 0.000000, 0.000000 }, { 0.044355, 0.020967 }, { 0.133065, 0.154322 }, { 0.209677, 0.300301 }, { 0.572581, 0.753477 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { konica_minolta,  "MINOLTA", "",               0, 51200, { { { { 0.000000, 0.000000 }, { 0.020161, 0.010322 }, { 0.112903, 0.167742 }, { 0.500000, 0.711291 }, { 0.899194, 0.956855 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { samsung,         "SAMSUNG", "",               0, 51200, { { { { 0.000000, 0.000000 }, { 0.040323, 0.029677 }, { 0.133065, 0.232258 }, { 0.447581, 0.747581 }, { 0.842742, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { fujifilm,        "FUJIFILM", "",              0, 51200, { { { { 0.000000, 0.000000 }, { 0.028226, 0.029677 }, { 0.104839, 0.232258 }, { 0.387097, 0.747581 }, { 0.754032, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
-  { nokia,           "Nokia", "",                 0, 51200, { { { { 0.000000, 0.000000 }, { 0.041825, 0.020161 }, { 0.117871, 0.153226 }, { 0.319392, 0.500000 }, { 0.638783, 0.842742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { N_("cubic spline"), "", "", 0, FLT_MAX, { { { { 0.0, 0.0}, { 1.0, 1.0 }, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.} } }, { 2 }, { CUBIC_SPLINE } }, 0, 0 },
+  { neutral,         "", "",                      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.005000, 0.002500 }, { 0.150000, 0.300000 }, { 0.400000, 0.700000 }, { 0.750000, 0.950000 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 0, 1 },
+  { canon_eos,       "Canon", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.028226, 0.029677 }, { 0.120968, 0.232258 }, { 0.459677, 0.747581 }, { 0.858871, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { canon_eos_alt,   "Canon", "EOS 5D Mark",      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.026210, 0.029677 }, { 0.108871, 0.232258 }, { 0.350806, 0.747581 }, { 0.669355, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { nikon,           "NIKON", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036290, 0.036532 }, { 0.120968, 0.228226 }, { 0.459677, 0.759678 }, { 0.858871, 0.983468 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { nikon_alt,       "NIKON", "D____",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.007322 }, { 0.072581, 0.130742 }, { 0.310484, 0.729291 }, { 0.611321, 0.951613 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { sony_alpha,      "SONY", "",                  0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.031949, 0.036532 }, { 0.105431, 0.228226 }, { 0.434505, 0.759678 }, { 0.855738, 0.983468 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { pentax,          "PENTAX", "",                0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.032258, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { ricoh,           "RICOH", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.032259, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { olympus,         "OLYMPUS", "",               0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.033962, 0.028226 }, { 0.249057, 0.439516 }, { 0.501887, 0.798387 }, { 0.750943, 0.955645 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { olympus_alt,     "OLYMPUS", "E-M",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.010322 }, { 0.072581, 0.167742 }, { 0.310484, 0.711291 }, { 0.645161, 0.956855 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { panasonic,       "Panasonic", "",             0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036290, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { leica,           "Leica", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036291, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { kodak_easyshare, "EASTMAN KODAK COMPANY", "", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.044355, 0.020967 }, { 0.133065, 0.154322 }, { 0.209677, 0.300301 }, { 0.572581, 0.753477 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { konica_minolta,  "MINOLTA", "",               0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.020161, 0.010322 }, { 0.112903, 0.167742 }, { 0.500000, 0.711291 }, { 0.899194, 0.956855 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { samsung,         "SAMSUNG", "",               0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.040323, 0.029677 }, { 0.133065, 0.232258 }, { 0.447581, 0.747581 }, { 0.842742, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { fujifilm,        "FUJIFILM", "",              0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.028226, 0.029677 }, { 0.104839, 0.232258 }, { 0.387097, 0.747581 }, { 0.754032, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { nokia,           "Nokia", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.041825, 0.020161 }, { 0.117871, 0.153226 }, { 0.319392, 0.500000 }, { 0.638783, 0.842742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  // clang-format on
 };
 #undef m
 static const int basecurve_presets_cnt = sizeof(basecurve_presets) / sizeof(basecurve_preset_t);
@@ -217,7 +245,7 @@ typedef struct dt_iop_basecurve_gui_data_t
   int minmax_curve_type, minmax_curve_nodes;
   GtkBox *hbox;
   GtkDrawingArea *area;
-  GtkWidget *scale, *fusion, *exstep;
+  GtkWidget *scale, *fusion, *exposure_step, *exposure_bias;
   double mouse_x, mouse_y;
   int selected;
   double selected_offset, selected_y, selected_min, selected_max;
@@ -236,6 +264,7 @@ typedef struct dt_iop_basecurve_data_t
   float unbounded_coeffs[3]; // approximation for extrapolation
   int exposure_fusion;
   float exposure_stops;
+  float exposure_bias;
 } dt_iop_basecurve_data_t;
 
 typedef struct dt_iop_basecurve_global_data_t
@@ -271,7 +300,7 @@ int groups()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *presets, int count, int *force_autoapply)
@@ -285,6 +314,7 @@ static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *pres
     {
       tmp.exposure_fusion = 0;
       tmp.exposure_stops = 1.0f;
+      tmp.exposure_bias = 1.0f;
     }
     // add the preset.
     dt_gui_presets_add_generic(_(presets[k].name), self->op, self->version(),
@@ -316,6 +346,12 @@ void init_presets(dt_iop_module_so_t *self)
 
   // sql commit
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+}
+
+static float exposure_increment(float stops, int e, float fusion, float bias)
+{
+  float offset = (stops * fusion) * (bias - 1.0) / 2.0;
+  return powf(2.0f, stops * e + offset);
 }
 
 #ifdef HAVE_OPENCL
@@ -418,7 +454,6 @@ int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   return TRUE;
 }
 
-
 static
 int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                       const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -490,7 +525,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     // for every exposure fusion image: push by some ev, apply base curve and compute features
     do
     {
-      const float ev = powf(2.0f, d->exposure_stops * e);
+      const float ev = exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias);
 
       size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -883,7 +918,7 @@ static inline void gauss_blur(
       for(int jj=-2;jj<=2;jj++)
         output[4*(j*wd+i)+c] += tmp[4*(MIN(j+jj, ht-(j+jj-ht+1))*wd+i)+c] * w[jj+2];
   }
-  free(tmp);
+  dt_free_align(tmp);
 }
 
 static inline void gauss_expand(
@@ -925,7 +960,7 @@ static inline void gauss_reduce(
   gauss_blur(input, blurred, wd, ht);
   for(size_t j=0;j<ch;j++) for(size_t i=0;i<cw;i++)
     for(int c=0;c<4;c++) coarse[4*(j*cw+i)+c] = blurred[4*(2*j*wd+2*i)+c];
-  free(blurred);
+  dt_free_align(blurred);
 
   if(detail)
   {
@@ -974,10 +1009,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(int e=0;e<d->exposure_fusion+1;e++)
     { // for every exposure fusion image:
       // push by some ev, apply base curve:
-      apply_ev_and_curve(
-          in, col[0], wd, ht,
-          powf(2.0f, d->exposure_stops * e),
-          d->table, d->unbounded_coeffs);
+      apply_ev_and_curve(in, col[0], wd, ht,
+                         exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias), d->table,
+                         d->unbounded_coeffs);
 
       // compute features
       compute_features(col[0], wd, ht);
@@ -1085,8 +1119,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // free temp buffers
     for(int k=0;k<num_levels;k++)
     {
-      free(col[k]);
-      free(comb[k]);
+      dt_free_align(col[k]);
+      dt_free_align(comb[k]);
     }
     free(col);
     free(comb);
@@ -1120,9 +1154,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)p1;
 
-  // TODO: implement opencl version:
   d->exposure_fusion = p->exposure_fusion;
   d->exposure_stops = p->exposure_stops;
+  d->exposure_bias = p->exposure_bias;
 
   const int ch = 0;
   // take care of possible change of curve type or number of nodes (not yet implemented in UI)
@@ -1179,10 +1213,17 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_bauhaus_combobox_set(g->fusion, p->exposure_fusion);
   if(p->exposure_fusion != 0)
-    gtk_widget_set_visible(g->exstep, TRUE);
+  {
+    gtk_widget_set_visible(g->exposure_step, TRUE);
+    gtk_widget_set_visible(g->exposure_bias, TRUE);
+  }
   if(p->exposure_fusion == 0)
-    gtk_widget_set_visible(g->exstep, FALSE);
-  dt_bauhaus_slider_set(g->exstep, p->exposure_stops);
+  {
+    gtk_widget_set_visible(g->exposure_step, FALSE);
+    gtk_widget_set_visible(g->exposure_bias, FALSE);
+  }
+  dt_bauhaus_slider_set(g->exposure_step, p->exposure_stops);
+  dt_bauhaus_slider_set(g->exposure_bias, p->exposure_bias);
   // gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -1192,7 +1233,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_basecurve_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_basecurve_params_t));
   module->default_enabled = 0;
-  module->priority = 298; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 294; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_basecurve_params_t);
   module->gui_data = NULL;
   dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t){
@@ -1204,7 +1245,7 @@ void init(dt_iop_module_t *module)
     },
     { 2, 0, 0 }, // number of nodes per curve
     { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
-    0, 1.0f,     // no exposure fusion, but if we would, add one stop
+    0, 1.0f, 1.0f // no exposure fusion, but if we would, add one stop
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_basecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_basecurve_params_t));
@@ -1263,21 +1304,12 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 static gboolean dt_iop_basecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  c->mouse_x = fabs(c->mouse_x);
-  c->mouse_y = fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
 
 static gboolean dt_iop_basecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  // sign swapping for fluxbox
-  c->mouse_x = -fabs(c->mouse_x);
-  c->mouse_y = -fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -1369,6 +1401,39 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_fill(cr);
 
   cairo_translate(cr, 0, height);
+  if(c->selected >= 0)
+  {
+    char text[30];
+    // draw information about current selected node
+    PangoLayout *layout;
+    PangoRectangle ink;
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    pango_font_description_set_absolute_size(desc, PANGO_SCALE);
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
+
+    const float x_node_value = basecurve[c->selected].x * 100;
+    const float y_node_value = basecurve[c->selected].y * 100;
+    const float d_node_value = y_node_value - x_node_value;
+    // scale conservatively to 100% of width:
+    snprintf(text, sizeof(text), "100.00 / 100.00 ( +100.00)");
+    pango_layout_set_text(layout, text, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    pango_font_description_set_absolute_size(desc, width*1.0/ink.width * PANGO_SCALE);
+    pango_layout_set_font_description(layout, desc);
+
+    snprintf(text, sizeof(text), "%.2f / %.2f ( %+.2f)", x_node_value, y_node_value, d_node_value);
+
+    cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+    pango_layout_set_text(layout, text, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, 0.98f * width - ink.width - ink.x, -0.02 * height - ink.height - ink.y);
+    pango_cairo_show_layout(cr, layout);
+    cairo_stroke(cr);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
+  }
   cairo_scale(cr, 1.0f, -1.0f);
 
   // draw grid
@@ -1489,6 +1554,8 @@ static void dt_iop_basecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widg
   }
 }
 
+static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state);
+
 static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1502,11 +1569,13 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   gtk_widget_get_allocation(widget, &allocation);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-  c->mouse_x = CLAMP(event->x - inset, 0, width);
-  c->mouse_y = CLAMP(event->y - inset, 0, height);
+  const double old_m_x = c->mouse_x;
+  const double old_m_y = c->mouse_y;
+  c->mouse_x = event->x - inset;
+  c->mouse_y = event->y - inset;
 
-  const float mx = c->mouse_x / (float)width;
-  const float my = 1.0f - c->mouse_y / (float)height;
+  const float mx = CLAMP(c->mouse_x, 0, width) / (float)width;
+  const float my = 1.0f - CLAMP(c->mouse_y, 0, height) / (float)height;
   const float linx = to_lin(mx, c->loglogscale), liny = to_lin(my, c->loglogscale);
 
   if(event->state & GDK_BUTTON1_MASK)
@@ -1514,11 +1583,16 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     // got a vertex selected:
     if(c->selected >= 0)
     {
-      basecurve[c->selected].x = linx;
-      basecurve[c->selected].y = liny;
+      // this is used to translate mause position in loglogscale to make this behavior unified with linear scale.
+      const float translate_mouse_x = old_m_x / width - to_log(basecurve[c->selected].x, c->loglogscale);
+      const float translate_mouse_y = 1 - old_m_y / height - to_log(basecurve[c->selected].y, c->loglogscale);
+      // dx & dy are in linear coordinates
+      const float dx = to_lin(c->mouse_x / width - translate_mouse_x, c->loglogscale)
+                       - to_lin(old_m_x / width - translate_mouse_x, c->loglogscale);
+      const float dy = to_lin(1 - c->mouse_y / height - translate_mouse_y, c->loglogscale)
+                       - to_lin(1 - old_m_y / height - translate_mouse_y, c->loglogscale);
 
-      dt_iop_basecurve_sanity_check(self, widget);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      return _move_point_internal(self, widget, dx, dy, event->state);
     }
     else if(nodes < MAXNODES && c->selected >= -1)
     {
@@ -1571,11 +1645,11 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
       const int inset = DT_GUI_CURVE_EDITOR_INSET;
       GtkAllocation allocation;
       gtk_widget_get_allocation(widget, &allocation);
-      int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-      c->mouse_x = CLAMP(event->x - inset, 0, width);
-      c->mouse_y = CLAMP(event->y - inset, 0, height);
+      int width = allocation.width - 2 * inset;
+      c->mouse_x = event->x - inset;
+      c->mouse_y = event->y - inset;
 
-      const float mx = c->mouse_x / (float)width;
+      const float mx = CLAMP(c->mouse_x, 0, width) / (float)width;
       const float linx = to_lin(mx, c->loglogscale);
 
       // don't add a node too close to others in x direction, it can crash dt
@@ -1639,6 +1713,28 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
       return TRUE;
     }
   }
+  else if(event->button == 3 && c->selected >= 0)
+  {
+    if(c->selected == 0 || c->selected == nodes - 1)
+    {
+      float reset_value = c->selected == 0 ? 0 : 1;
+      basecurve[c->selected].y = basecurve[c->selected].x = reset_value;
+      gtk_widget_queue_draw(self->widget);
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      return TRUE;
+    }
+
+    for(int k = c->selected; k < nodes - 1; k++)
+    {
+      basecurve[k].x = basecurve[k + 1].x;
+      basecurve[k].y = basecurve[k + 1].y;
+    }
+    c->selected = -2; // avoid re-insertion of that point immediately after this
+    p->basecurve_nodes[ch]--;
+    gtk_widget_queue_draw(self->widget);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    return TRUE;
+  }
   return FALSE;
 }
 
@@ -1700,22 +1796,14 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
 
   if(c->selected < 0) return TRUE;
 
-  int handled = 0;
-  float dy = 0.0f;
-  if(event->direction == GDK_SCROLL_UP)
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
-    handled = 1;
-    dy = BASECURVE_DEFAULT_STEP;
-  }
-  if(event->direction == GDK_SCROLL_DOWN)
-  {
-    handled = 1;
-    dy = -BASECURVE_DEFAULT_STEP;
+    delta_y *= -BASECURVE_DEFAULT_STEP;
+    return _move_point_internal(self, widget, 0.0, delta_y, event->state);
   }
 
-  if(!handled) return TRUE;
-
-  return _move_point_internal(self, widget, 0.0, dy, event->state);
+  return TRUE;
 }
 
 static gboolean dt_iop_basecurve_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
@@ -1762,19 +1850,34 @@ static void fusion_callback(GtkWidget *widget, gpointer user_data)
   int fuse = dt_bauhaus_combobox_get(widget);
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   if(p->exposure_fusion == 0 && fuse != 0)
-    gtk_widget_set_visible(g->exstep, TRUE);
+  {
+    gtk_widget_set_visible(g->exposure_step, TRUE);
+    gtk_widget_set_visible(g->exposure_bias, TRUE);
+  }
   if(p->exposure_fusion != 0 && fuse == 0)
-    gtk_widget_set_visible(g->exstep, FALSE);
+  {
+    gtk_widget_set_visible(g->exposure_step, FALSE);
+    gtk_widget_set_visible(g->exposure_bias, FALSE);
+  }
   p->exposure_fusion = fuse;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void exstep_callback(GtkWidget *widget, gpointer user_data)
+static void exposure_step_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   float stops = dt_bauhaus_slider_get(widget);
   p->exposure_stops = stops;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void exposure_bias_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  float bias = dt_bauhaus_slider_get(widget);
+  p->exposure_bias = bias;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1824,19 +1927,30 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(c->fusion, _("none"));
   dt_bauhaus_combobox_add(c->fusion, _("two exposures"));
   dt_bauhaus_combobox_add(c->fusion, _("three exposures"));
-  gtk_widget_set_tooltip_text(c->fusion, _("fuse this image stopped up a couple of times with itself, to compress high dynamic range. expose for the highlights before use."));
+  gtk_widget_set_tooltip_text(c->fusion, _("fuse this image stopped up/down a couple of times with itself, to "
+                                           "compress high dynamic range. expose for the highlights before use."));
   gtk_box_pack_start(GTK_BOX(self->widget), c->fusion, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->fusion), "value-changed", G_CALLBACK(fusion_callback), self);
 
-  c->exstep = dt_bauhaus_slider_new_with_range(self, 0.01, 4.0, 0.100, 1.0, 3);
-  gtk_widget_set_tooltip_text(c->exstep, _("how many stops to shift the individual exposures apart"));
-  dt_bauhaus_widget_set_label(c->exstep, NULL, _("exposure shift"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->exstep, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(c->exstep), "value-changed", G_CALLBACK(exstep_callback), self);
+  c->exposure_step = dt_bauhaus_slider_new_with_range(self, 0.01, 4.0, 0.100, 1.0, 3);
+  gtk_widget_set_tooltip_text(c->exposure_step, _("how many stops to shift the individual exposures apart"));
+  dt_bauhaus_widget_set_label(c->exposure_step, NULL, _("exposure shift"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->exposure_step, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(c->exposure_step), "value-changed", G_CALLBACK(exposure_step_callback), self);
+
+  // initially set to 1 (consistency with previous versions), but double-click resets to 0
+  // to get a quick way to reach 0 with the mouse.
+  c->exposure_bias = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.100, 0.0, 3);
+  gtk_widget_set_tooltip_text(c->exposure_bias, _("whether to shift exposure up or down "
+                                                  "(-1: reduce highlight, +1: reduce shadows)"));
+  dt_bauhaus_widget_set_label(c->exposure_bias, NULL, _("exposure bias"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->exposure_bias, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(c->exposure_bias), "value-changed", G_CALLBACK(exposure_bias_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK | GDK_KEY_PRESS_MASK);
+                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                                 | GDK_SMOOTH_SCROLL_MASK | GDK_KEY_PRESS_MASK);
   gtk_widget_set_can_focus(GTK_WIDGET(c->area), TRUE);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_basecurve_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_basecurve_button_press), self);

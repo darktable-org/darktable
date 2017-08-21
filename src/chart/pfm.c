@@ -25,7 +25,7 @@
 
 float *read_pfm(const char *filename, int *wd, int *ht)
 {
-  FILE *f = fopen(filename, "rb");
+  FILE *f = g_fopen(filename, "rb");
 
   if(!f)
   {
@@ -72,7 +72,7 @@ float *read_pfm(const char *filename, int *wd, int *ht)
     if(ret != width * height)
     {
       fprintf(stderr, "error reading PFM\n");
-      free(image);
+      dt_free_align(image);
       fclose(f);
       return NULL;
     }
@@ -103,7 +103,7 @@ float *read_pfm(const char *filename, int *wd, int *ht)
         if(ret != 1)
         {
           fprintf(stderr, "error reading PFM\n");
-          free(image);
+          dt_free_align(image);
           fclose(f);
           return NULL;
         }
@@ -127,7 +127,7 @@ float *read_pfm(const char *filename, int *wd, int *ht)
 
 void write_pfm(const char *filename, int width, int height, float *data)
 {
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   if(f)
   {
     // INFO: per-line fwrite call seems to perform best. LebedevRI, 18.04.2014

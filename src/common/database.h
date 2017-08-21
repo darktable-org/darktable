@@ -32,6 +32,8 @@ struct sqlite3 *dt_database_get(const struct dt_database_t *);
 const gchar *dt_database_get_path(const struct dt_database_t *db);
 /** test if database was already locked by another instance */
 gboolean dt_database_get_lock_acquired(const struct dt_database_t *db);
+/** show an error popup. this has to be postponed until after we tried using dbus to reach another instance */
+void dt_database_show_error(const struct dt_database_t *db);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

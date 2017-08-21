@@ -30,7 +30,7 @@ fcol(const int row, const int col, const unsigned int filters, global const unsi
 }
 
 kernel void
-vng_border_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+vng_border_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int border,
                        const int r_x, const int r_y, const unsigned int filters, global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
@@ -39,7 +39,6 @@ vng_border_interpolate(read_only image2d_t in, write_only image2d_t out, const i
   if(x >= width || y >= height) return;
 
   const int colors = (filters == 9) ? 3 : 4;
-  const int border = 2;
   const int avgwindow = 1;
 
   if(x >= border && x < width-border && y >= border && y < height-border) return;
@@ -271,7 +270,7 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
 
       for(int c = 0; c < colors; c++)
       {
-        if(c == color && offset1)
+        if(c == color && (idx1 + c1))
         {
           sum[c] += (buffer[c] + buffer[idx1 + c1]) * 0.5f;
         }

@@ -203,7 +203,7 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
   const int ch = piece->colors;
   const int size = d->params.size;
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, width, height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 
   /* if gui and have buffer lets gaussblur and fill buffer with zone indexes */
   if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && g && g->in_preview_buffer
@@ -457,7 +457,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_zonesystem_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_zonesystem_params_t));
   module->default_enabled = 0;
-  module->priority = 656; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 661; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_zonesystem_params_t);
   module->gui_data = NULL;
   dt_iop_zonesystem_params_t tmp = (dt_iop_zonesystem_params_t){
@@ -589,7 +589,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->zones), "scroll-event", G_CALLBACK(dt_iop_zonesystem_bar_scrolled), self);
   gtk_widget_add_events(GTK_WIDGET(g->zones), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                               | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                              | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                              | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                              | GDK_SMOOTH_SCROLL_MASK);
   gtk_widget_set_size_request(g->zones, -1, DT_PIXEL_APPLY_DPI(40));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->preview, TRUE, TRUE, 0);
@@ -772,18 +773,14 @@ static gboolean dt_iop_zonesystem_bar_scrolled(GtkWidget *widget, GdkEventScroll
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
   int cs = CLAMP(p->size, 4, MAX_ZONE_SYSTEM_SIZE);
 
-  if(event->direction == GDK_SCROLL_UP)
-    p->size += 1;
-  else if(event->direction == GDK_SCROLL_DOWN)
-    p->size -= 1;
-
-  /* sanity checks */
-  p->size = CLAMP(p->size, 4, MAX_ZONE_SYSTEM_SIZE);
-
-  p->zone[cs] = -1;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-
-  gtk_widget_queue_draw(widget);
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  {
+    p->size = CLAMP(p->size - delta_y, 4, MAX_ZONE_SYSTEM_SIZE);
+    p->zone[cs] = -1;
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
+  }
 
   return TRUE;
 }
