@@ -84,7 +84,7 @@ int groups()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -166,37 +166,20 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   else if(d->mode == DT_IOP_HIGHLIGHTS_LCH && filters == 9u)
   {
     // xtrans sensor raws with LCH mode
+    int blocksizex, blocksizey;
 
-    // we use local buffering for speed reasons; determine suited work group size
-    size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-    size_t workgroupsize = 0;       // the maximum number of items in a work group
-    unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-    size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+    dt_opencl_local_buffer_t locopt
+      = (dt_opencl_local_buffer_t){ .xoffset = 2 * 2, .xfactor = 1, .yoffset = 2 * 2, .yfactor = 1,
+                                    .cellsize = sizeof(float), .overhead = 0,
+                                    .sizex = 1 << 8, .sizey = 1 << 8 };
 
-    int blocksizex = 1 << 8;
-    int blocksizey = 1 << 8;
-
-    if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-       && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_highlights_1f_lch_xtrans, &kernelworkgroupsize) == CL_SUCCESS)
+    if(dt_opencl_local_buffer_opt(devid, gd->kernel_highlights_1f_lch_xtrans, &locopt))
     {
-      while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey
-            || localmemsize < (blocksizex + 4) * (blocksizey + 4) * sizeof(float)
-            || workgroupsize < blocksizex * blocksizey || kernelworkgroupsize < blocksizex * blocksizey)
-      {
-        if(blocksizex == 1 && blocksizey == 1) break;
-
-        if(blocksizex > blocksizey)
-          blocksizex >>= 1;
-        else
-          blocksizey >>= 1;
-      }
+      blocksizex = locopt.sizex;
+      blocksizey = locopt.sizey;
     }
     else
-    {
-      dt_print(DT_DEBUG_OPENCL,
-           "[opencl_highlights] can not identify resource limits for device %d\n", devid);
-      goto error;
-    }
+      blocksizex = blocksizey = 1;
 
     dev_xtrans
         = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
@@ -939,7 +922,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                         piece->pipe->dsc.processed_maximum[2]);
   for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 static void clip_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -1040,7 +1023,7 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_highlights_data_t));
   module->params = calloc(1, sizeof(dt_iop_highlights_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_highlights_params_t));
-  module->priority = 59; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 58; // module order created by iop_dependencies.py, do not edit!
   module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_highlights_params_t);
   module->gui_data = NULL;

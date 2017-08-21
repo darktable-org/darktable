@@ -963,13 +963,13 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       dt_image_path_append_version(imgid, filename, sizeof(filename));
       g_strlcat(filename, ".xmp", sizeof(filename));
 
-      delete_status = delete_file_from_disk(filename);
-      if (delete_status == _DT_DELETE_STATUS_OK_TO_REMOVE)
-      {
-        snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
-        _set_remove_flag(imgidstr);
-        dt_image_remove(imgid);
-      }
+      // remove image from db first ...
+      snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
+      _set_remove_flag(imgidstr);
+      dt_image_remove(imgid);
+
+      // ... and delete afterwards because removing will re-write the XMP
+      delete_file_from_disk(filename);
     }
 
 delete_next_file:
@@ -1347,7 +1347,7 @@ void dt_control_flip_images(const int32_t cw)
                                            PROGRESS_SIMPLE));
 }
 
-void dt_control_remove_images()
+gboolean dt_control_remove_images()
 {
   // get all selected images now, to avoid the set changing during ui interaction
   dt_job_t *job = dt_control_generic_images_job_create(&dt_control_remove_images_job_run, N_("remove images"), 0, NULL,
@@ -1367,7 +1367,7 @@ void dt_control_remove_images()
     if(number == 0)
     {
       dt_control_job_dispose(job);
-      return;
+      return TRUE;
     }
 
     dialog = gtk_message_dialog_new(
@@ -1382,10 +1382,11 @@ void dt_control_remove_images()
     if(res != GTK_RESPONSE_YES)
     {
       dt_control_job_dispose(job);
-      return;
+      return FALSE;
     }
   }
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+  return TRUE;
 }
 
 void dt_control_delete_images()

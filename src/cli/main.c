@@ -80,8 +80,8 @@ int main(int argc, char *arg[])
       }
       else if(!strcmp(arg[k], "--version"))
       {
-        printf("this is darktable-cli %s\ncopyright (c) 2012-2016 johannes hanika, tobias ellinghaus\n",
-               darktable_package_version);
+        printf("this is darktable-cli %s\ncopyright (c) 2012-%s johannes hanika, tobias ellinghaus\n",
+               darktable_package_version, darktable_last_commit_year);
         exit(1);
       }
       else if(!strcmp(arg[k], "--width") && argc > k + 1)

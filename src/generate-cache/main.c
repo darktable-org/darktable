@@ -87,6 +87,9 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
   {
     const int32_t imgid = sqlite3_column_int(stmt, 0);
 
+    counter++;
+    fprintf(stderr, "image %zu/%zu (%.02f%%) (id:%d)\n", counter, image_count, 100.0 * counter / (float)image_count, imgid);
+
     for(int k = max_mip; k >= min_mip && k >= 0; k--)
     {
       char filename[PATH_MAX] = { 0 };
@@ -103,9 +106,6 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
 
     // and immediately write thumbs to disc and remove from mipmap cache.
     dt_mimap_cache_evict(darktable.mipmap_cache, imgid);
-
-    counter++;
-    fprintf(stderr, "image %zu/%zu (%.02f%%)\n", counter, image_count, 100.0 * counter / (float)image_count);
   }
 
   sqlite3_finalize(stmt);

@@ -803,7 +803,7 @@ void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolea
   {
     if(overwrite)
     {
-      if(unlink(stylename))
+      if(g_unlink(stylename))
       {
         dt_control_log(_("failed to overwrite style file for %s"), style_name);
         return;
@@ -1055,7 +1055,7 @@ void dt_styles_import_from_file(const char *style_path)
   style = dt_styles_style_data_new();
   parser = g_markup_parse_context_new(&dt_style_parser, 0, style, NULL);
 
-  if((style_file = fopen(style_path, "r")))
+  if((style_file = g_fopen(style_path, "r")))
   {
 
     while(!feof(style_file))

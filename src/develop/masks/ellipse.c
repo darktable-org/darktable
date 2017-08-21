@@ -682,7 +682,7 @@ static int dt_ellipse_events_mouse_moved(struct dt_iop_module_t *module, float p
     float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
     float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     float y = pzy * darktable.develop->preview_pipe->backbuf_height;
-    int in, inb, near, ins;
+    int in = 0, inb = 0, near = 0, ins = 0; // FIXME gcc7 false-positive
     dt_ellipse_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
                             pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, &in, &inb,
                             &near, &ins);

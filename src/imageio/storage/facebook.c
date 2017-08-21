@@ -1329,7 +1329,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   }
 
 cleanup:
-  unlink(fname);
+  g_unlink(fname);
   g_free(caption);
 
   if(result)

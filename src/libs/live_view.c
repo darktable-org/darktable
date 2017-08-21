@@ -140,9 +140,10 @@ const char *name(dt_lib_module_t *self)
   return _("live view");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_TETHERING;
+  static const char *v[] = {"tethering", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -587,6 +588,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
             break;
           default:
             fprintf(stderr, "OMFG, the world will collapse, this shouldn't be reachable!\n");
+            dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
             return;
         }
 

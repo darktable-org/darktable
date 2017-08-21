@@ -7,12 +7,13 @@
   <indexterm>
   <primary>Lua API</primary>
   </indexterm>
-  <para>To access the darktable specific functions you must load the darktable environment:</para>
+  <para>This documentation is for the *development* version of darktable. for the stable version, please visit the user manual</para>
+<para>To access the darktable specific functions you must load the darktable environment:</para>
 
 <para><programlisting language="lua">darktable = require "darktable"</programlisting></para>
 
 <para>All functions and data are accessed through the darktable module.</para>
-<para>This documentation for API version 4.0.0.</para>
+<para>This documentation for API version 5.0.0-dev.</para>
 
 <section status="final" id="darktable">
 <title>darktable</title>
@@ -43,6 +44,27 @@
 </variablelist>
 </section>
 
+<section status="final" id="darktable_print_log">
+<title>darktable.print_log</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>print_log</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_print_log_message">message</link></emphasis> : string
+)</synopsis>
+<para>This function will print its parameter if the Lua logdomain is activated. Start darktable with the "-d lua" command line option to enable the Lua logdomain.</para>
+
+<variablelist>
+<varlistentry id="darktable_print_log_message"><term>message</term><listitem>
+<synopsis>string</synopsis>
+<para>The string to display.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 <section status="final" id="darktable_print_error">
 <title>darktable.print_error</title>
 <indexterm>
@@ -50,17 +72,11 @@
 <secondary>print_error</secondary>
 </indexterm>
 <synopsis>function( 
-	<emphasis><link linkend="darktable_print_error_message">message</link></emphasis> : string
 )</synopsis>
-<para>This function will print its parameter if the Lua logdomain is activated. Start darktable with the "-d lua" command line option to enable the Lua logdomain.</para>
+<para>This function is similar to<link linkend="darktable_print_log">darktable.print_log</link> but adds an ERROR prefix for clarity.)
+darktable.print_error:add_parameter("message","string",[[The string to display.</para>
 
 <variablelist>
-<varlistentry id="darktable_print_error_message"><term>message</term><listitem>
-<synopsis>string</synopsis>
-<para>The string to display.</para>
-
-</listitem></varlistentry>
-
 </variablelist>
 </section>
 
@@ -579,7 +595,8 @@
 <secondary>new_widget</secondary>
 </indexterm>
 <synopsis>function( 
-	<emphasis><link linkend="darktable_new_widget_type">type</link></emphasis> : string
+	<emphasis><link linkend="darktable_new_widget_type">type</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_new_widget____">...</link></emphasis> : variable
 ) : <link linkend="types_lua_widget">types.lua_widget</link></synopsis>
 <para>Creates a new widget object to display in the UI</para>
 
@@ -595,12 +612,19 @@
 <listitem><para>entry</para></listitem>
 <listitem><para>file_chooser_button</para></listitem>
 <listitem><para>label</para></listitem>
+<listitem><para>section_label</para></listitem>
 <listitem><para>separator</para></listitem>
 <listitem><para>slider</para></listitem>
 <listitem><para>stack</para></listitem>
 <listitem><para>text_view</para></listitem>
 </itemizedlist>
 </para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_new_widget____"><term>...</term><listitem>
+<synopsis>variable</synopsis>
+<para>Extra parameters, exact value are documented with each type</para>
 
 </listitem></varlistentry>
 
@@ -3297,6 +3321,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 	<emphasis><link linkend="darktable_control_read_file">file</link></emphasis> : file
 )</synopsis>
 <para>Block until a file is readable while not blocking darktable</para>
+<para><emphasis>This function is not available on Windows builds</emphasis></para>
 
 <variablelist>
 <varlistentry id="darktable_control_read_file"><term>file</term><listitem>
@@ -7368,6 +7393,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" id="types_lua_widget_extra_registration_parameters">
+<title>types.lua_widget.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
+</section>
+
 <section status="final" id="types_lua_widget_sensitive">
 <title>types.lua_widget.sensitive</title>
 <indexterm>
@@ -7509,6 +7544,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
 </section>
 
+<section status="final" id="types_lua_container_extra_registration_parameters">
+<title>types.lua_container.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
+</section>
+
 <section status="final" id="types_lua_container__hash_">
 <title>types.lua_container.#</title>
 <indexterm>
@@ -7551,6 +7596,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>__call</secondary>
 </indexterm>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
+<section status="final" id="types_lua_check_button_extra_registration_parameters">
+<title>types.lua_check_button.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
 </section>
 
 <section status="final" id="types_lua_check_button_label">
@@ -7655,6 +7710,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>__call</secondary>
 </indexterm>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
+<section status="final" id="types_lua_label_extra_registration_parameters">
+<title>types.lua_label.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
 </section>
 
 <section status="final" id="types_lua_label_label">
@@ -7772,6 +7837,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
 </section>
 
+<section status="final" id="types_lua_button_extra_registration_parameters">
+<title>types.lua_button.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
+</section>
+
 <section status="final" id="types_lua_button_label">
 <title>types.lua_button.label</title>
 <indexterm>
@@ -7855,6 +7930,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
 </section>
 
+<section status="final" id="types_lua_box_extra_registration_parameters">
+<title>types.lua_box.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
+</section>
+
 <section status="final" id="types_lua_box_orientation">
 <title>types.lua_box.orientation</title>
 <indexterm>
@@ -7905,6 +7990,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>__call</secondary>
 </indexterm>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
+<section status="final" id="types_lua_entry_extra_registration_parameters">
+<title>types.lua_entry.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
 </section>
 
 <section status="final" id="types_lua_entry_text">
@@ -8022,6 +8117,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
 </section>
 
+<section status="final" id="types_lua_separator_extra_registration_parameters">
+<title>types.lua_separator.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
+</section>
+
 <section status="final" id="types_lua_separator_orientation">
 <title>types.lua_separator.orientation</title>
 <indexterm>
@@ -8074,6 +8179,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>__call</secondary>
 </indexterm>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
+<section status="final" id="types_lua_combobox_extra_registration_parameters">
+<title>types.lua_combobox.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
 </section>
 
 <section status="final" id="types_lua_combobox_value">
@@ -8240,6 +8355,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
 </section>
 
+<section status="final" id="types_lua_file_chooser_button_extra_registration_parameters">
+<title>types.lua_file_chooser_button.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
+</section>
+
 <section status="final" id="types_lua_file_chooser_button_title">
 <title>types.lua_file_chooser_button.title</title>
 <indexterm>
@@ -8365,6 +8490,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
 </section>
 
+<section status="final" id="types_lua_stack_extra_registration_parameters">
+<title>types.lua_stack.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
+</section>
+
 <section status="final" id="types_lua_stack_active">
 <title>types.lua_stack.active</title>
 <indexterm>
@@ -8415,6 +8550,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>__call</secondary>
 </indexterm>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
+<section status="final" id="types_lua_slider_extra_registration_parameters">
+<title>types.lua_slider.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
 </section>
 
 <section status="final" id="types_lua_slider_soft_min">
@@ -8616,6 +8761,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
 </section>
 
+<section status="final" id="types_lua_text_view_extra_registration_parameters">
+<title>types.lua_text_view.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
+</section>
+
 <section status="final" id="types_lua_text_view_text">
 <title>types.lua_text_view.text</title>
 <indexterm>
@@ -8645,6 +8800,68 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>False if the entry should be read-only</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+</section>
+
+<section status="final" id="types_lua_section_label">
+<title>types.lua_section_label</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_section_label</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A section label</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_widget">types.lua_widget</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" >
+<title>types.lua_section_label.__call</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>__call</secondary>
+</indexterm>
+<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
+<section status="final" id="types_lua_section_label_extra_registration_parameters">
+<title>types.lua_section_label.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters</para>
+
+</section>
+
+<section status="final" id="types_lua_section_label_label">
+<title>types.lua_section_label.label</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>label</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The section name</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
@@ -9060,11 +9277,18 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>callback</secondary>
 </indexterm>
 <synopsis>function( 
+	<emphasis><link linkend="events_mouse-over-image-changed_callback_event">event</link></emphasis> : string, 
 	<emphasis><link linkend="events_mouse-over-image-changed_callback_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para></para>
 
 <variablelist>
+<varlistentry id="events_mouse-over-image-changed_callback_event"><term>event</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the event that triggered the callback.</para>
+
+</listitem></varlistentry>
+
 <varlistentry id="events_mouse-over-image-changed_callback_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The new image under the mouse, can be nil if there is no image under the mouse</para>

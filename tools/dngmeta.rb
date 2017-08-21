@@ -52,12 +52,28 @@ def get_iso(exifhash)
   return iso
 end
 
-def get_exif(filename)
+def get_exiv2(filename)
   exifhash = {}
 
   IO.popen("exiv2 -q -Qm -Pkt \"#{filename}\" 2> /dev/null") do |io|
     while !io.eof?
       lineparts = io.readline.split(" ", 2).map(&:strip)
+
+      next if not lineparts.size == 2
+
+      lineparts.each_slice(2) { |k,v| exifhash[k] = v }
+   end
+  end
+
+  return exifhash
+end
+
+def get_exiftool(filename)
+  exifhash = {}
+
+  IO.popen("exiftool \"#{filename}\" 2> /dev/null") do |io|
+    while !io.eof?
+      lineparts = io.readline.split(" : ", 2).map(&:strip)
 
       next if not lineparts.size == 2
 
@@ -110,7 +126,7 @@ end
 make = model = uniquecameramodel = nil
 sensors = {}
 ARGV.each do |filename|
-  exifhash = get_exif(filename)
+  exifhash = get_exiv2(filename)
 
   if (make and make != exifhash["Exif.Image.Make"]) or
       # (model and model != exifhash["Exif.Image.Model"]) or
@@ -128,6 +144,10 @@ ARGV.each do |filename|
   white = exifhash["Exif.SubImage1.WhiteLevel"].to_i
 
   blacks = exifhash["Exif.SubImage1.BlackLevel"].split().map(&:strip)
+
+  #exiftoolhash = get_exiftool(filename)
+  #white = exiftoolhash["Specular White Level"].to_i
+  #blacks = exiftoolhash["Per Channel Black Level"].split().map(&:strip)
 
   blacks = blacks.map(&:to_r)
 

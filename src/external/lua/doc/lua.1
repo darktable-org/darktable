@@ -1,5 +1,4 @@
-.\" $Id: lua.man,v 1.13 2011/11/16 17:16:53 lhf Exp $
-.TH LUA 1 "$Date: 2011/11/16 17:16:53 $"
+.TH LUA 1 "$Date: 2014/12/10 15:55:45 $"
 .SH NAME
 lua \- Lua interpreter
 .SH SYNOPSIS
@@ -50,22 +49,18 @@ In interactive mode,
 prompts the user,
 reads lines from the standard input,
 and executes them as they are read.
+If the line contains an expression or list of expressions,
+then the line is evaluated and the results are printed.
 If a line does not contain a complete statement,
 then a secondary prompt is displayed and
 lines are read until a complete statement is formed or
 a syntax error is found.
-If a line starts with
-.BR '=' ,
-then
-.B lua
-evaluates and displays
-the values of the expressions in the remainder of the line.
 .LP
 At the very start,
 before even handling the command line,
 .B lua
 checks the contents of the environment variables
-.B LUA_INIT_5_2
+.B LUA_INIT_5_3
 or
 .BR LUA_INIT ,
 in that order.

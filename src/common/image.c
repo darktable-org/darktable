@@ -32,6 +32,9 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "develop/lightroom.h"
+#ifdef USE_LUA
+#include "lua/image.h"
+#endif
 #include <assert.h>
 #include <math.h>
 #include <sqlite3.h>
@@ -102,7 +105,7 @@ const char *dt_image_film_roll_name(const char *path)
   if(numparts < 1) numparts = 1;
   while(folder > path)
   {
-    if(*folder == '/')
+    if(*folder == G_DIR_SEPARATOR)
       if(++count >= numparts)
       {
         ++folder;
@@ -678,9 +681,10 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
     if(handle != INVALID_HANDLE_VALUE)
     {
       do
-        files = g_list_append(files, g_strdup(data.cFileName));
+        files = g_list_append(files, g_build_filename(imgpath, data.cFileName, NULL));
       while(FindNextFile(handle, &data));
     }
+    FindClose(handle);
 #else
     glob_t globbuf;
     if(!glob(pattern, 0, NULL, &globbuf))
@@ -741,7 +745,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
 }
 
 
-uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
+static uint32_t dt_image_import_internal(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs, gboolean lua_locking)
 {
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR) || dt_util_get_file_size(filename) == 0) return 0;
   const char *cc = filename + strlen(filename);
@@ -758,14 +762,12 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
     return 0;
   }
   int supported = 0;
-  char **extensions = g_strsplit(dt_supported_extensions, ",", 100);
-  for(char **i = extensions; *i != NULL; i++)
+  for(const char **i = dt_supported_extensions; *i != NULL; i++)
     if(!strcmp(ext, *i))
     {
       supported = 1;
       break;
     }
-  g_strfreev(extensions);
   if(!supported)
   {
     g_free(ext);
@@ -965,12 +967,36 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   g_free(basename);
   g_free(sql_pattern);
 
+#ifdef USE_LUA
+  //Synchronous calling of lua post-import-image events
+  if(lua_locking)
+    dt_lua_lock();
+
+  lua_State *L = darktable.lua_state.state;
+
+  luaA_push(L, dt_lua_image_t, &id);
+  dt_lua_event_trigger(L, "post-import-image", 1);
+
+  if(lua_locking)
+    dt_lua_unlock();
+#endif
+
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_IMPORT, id);
   // the following line would look logical with new_tags_set being the return value
   // from dt_tag_new above, but this could lead to too rapid signals, being able to lock up the
   // keywords side pane when trying to use it, which can lock up the whole dt GUI ..
   // if (new_tags_set) dt_control_signal_raise(darktable.signals,DT_SIGNAL_TAG_CHANGED);
   return id;
+}
+
+uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
+{
+  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, TRUE);
+}
+
+uint32_t dt_image_import_lua(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
+{
+  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, FALSE);
 }
 
 void dt_image_init(dt_image_t *img)

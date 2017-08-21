@@ -283,7 +283,7 @@
     </para>
 
     <para>
-<programlisting>darktable —config allow_lab_output=true
+<programlisting>darktable --conf allow_lab_output=true
 </programlisting>
     </para>
 

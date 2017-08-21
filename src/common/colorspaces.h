@@ -21,6 +21,11 @@
 #include "common/darktable.h"
 #include <lcms2.h>
 
+// this was removed from lcms2 in 2.4
+#ifndef TYPE_XYZA_FLT
+  #define TYPE_XYZA_FLT         (FLOAT_SH(1)|COLORSPACE_SH(PT_XYZ)|EXTRA_SH(1)|CHANNELS_SH(3)|BYTES_SH(4))
+#endif
+
 // constants fit to the ones from lcms.h:
 typedef enum dt_iop_color_intent_t
 {
@@ -145,6 +150,9 @@ void dt_Lab_to_XYZ(const float *Lab, float *XYZ);
 
 /** uses D50 white point and clips the output to [0..1]. */
 void dt_XYZ_to_sRGB(const float * const XYZ, float *sRGB);
+
+void dt_Lab_to_prophotorgb(const float * const Lab, float *rgb);
+void dt_prophotorgb_to_Lab(const float * const rgb, float *Lab);
 
 /** extracts tonecurves and color matrix prof to XYZ from a given input profile, returns 0 on success (curves
  * and matrix are inverted for input) */

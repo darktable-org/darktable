@@ -19,6 +19,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/tags.h"
+#include "common/image.h"
 #include "lua/image.h"
 #include "lua/types.h"
 
@@ -60,7 +61,7 @@ static int tag_length(lua_State *L)
     return luaL_error(L, "unknown SQL error");
   }
   count = sqlite3_column_int(stmt, 0);
-  lua_pushnumber(L, count);
+  lua_pushinteger(L, count);
   sqlite3_finalize(stmt);
   return 1;
 }
@@ -107,7 +108,7 @@ static int tag_lib_length(lua_State *L)
     return luaL_error(L, "unknown SQL error");
   }
   count = sqlite3_column_int(stmt, 0);
-  lua_pushnumber(L, count);
+  lua_pushinteger(L, count);
   sqlite3_finalize(stmt);
   return 1;
 }
@@ -125,8 +126,7 @@ static int tag_lib_index(lua_State *L)
   }
   else
   {
-    sqlite3_finalize(stmt);
-    luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
   }
   sqlite3_finalize(stmt);
   return 1;
@@ -148,7 +148,30 @@ static int tag_delete(lua_State *L)
 {
   dt_lua_tag_t tagid;
   luaA_to(L, dt_lua_tag_t, &tagid, -1);
-  dt_tag_remove(tagid, true);
+  
+  GList *tagged_images = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.tagged_images WHERE tagid=?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    tagged_images = g_list_append(tagged_images, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+  }
+  sqlite3_finalize(stmt);
+
+  dt_tag_remove(tagid, TRUE);
+
+  GList *list_iter;
+  if((list_iter = g_list_first(tagged_images)) != NULL)
+  {
+    do
+    {
+      dt_image_synch_xmp(GPOINTER_TO_INT(list_iter->data));
+    } while((list_iter = g_list_next(list_iter)) != NULL);
+  }
+  g_list_free(g_list_first(tagged_images));
+
   return 0;
 }
 
@@ -168,6 +191,7 @@ int dt_lua_tag_attach(lua_State *L)
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
   dt_tag_attach(tagid, imgid);
+  dt_image_synch_xmp(imgid);
   return 0;
 }
 
@@ -186,6 +210,7 @@ int dt_lua_tag_detach(lua_State *L)
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
   dt_tag_detach(tagid, imgid);
+  dt_image_synch_xmp(imgid);
   return 0;
 }
 

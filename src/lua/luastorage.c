@@ -133,8 +133,8 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
   luaA_push(L, dt_lua_image_t, &imgid);
   luaA_push_type(L, format->parameter_lua_type, fdata);
   lua_pushstring(L, complete_name);
-  lua_pushnumber(L, num);
-  lua_pushnumber(L, total);
+  lua_pushinteger(L, num);
+  lua_pushinteger(L, total);
   lua_pushboolean(L, high_quality);
   push_lua_data(L,d);
   dt_lua_goto_subtable(L,"extra");

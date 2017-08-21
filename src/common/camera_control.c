@@ -294,7 +294,7 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
 
         char *output = g_build_filename(output_path, fname, (char *)NULL);
 
-        int handle = open(output, O_CREAT | O_WRONLY, 0666);
+        int handle = g_open(output, O_CREAT | O_WRONLY, 0666);
         if(handle != -1)
         {
           gp_file_new_from_fd(&destination, handle);
@@ -355,6 +355,15 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
           {
             dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
             if(cam->live_view_pixbuf != NULL) g_object_unref(cam->live_view_pixbuf);
+            // Calling gdk_pixbuf_loader_close forces the data to be parsed by the
+            // loader.  We must do this before calling gdk_pixbuf_loader_get_pixbuf.
+            gdk_pixbuf_loader_close(loader, &error);
+            if(error)
+            {
+              dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to close image loader: %s\n",
+                       error->message);
+              g_error_free(error);
+            }
             cam->live_view_pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
             dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
           }
@@ -362,7 +371,7 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
         gdk_pixbuf_loader_close(loader, NULL);
       }
       if(fp) gp_file_free(fp);
-      dt_pthread_mutex_unlock(&cam->live_view_synch);
+      dt_pthread_mutex_BAD_unlock(&cam->live_view_synch);
       dt_control_queue_redraw_center();
     }
     break;
@@ -472,6 +481,9 @@ static void *dt_camctl_camera_get_live_view(void *data)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)data;
   dt_camera_t *cam = (dt_camera_t *)camctl->active_camera;
+
+  dt_pthread_setname("live view");
+
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view thread started\n");
 
   int frames = 0;
@@ -479,7 +491,7 @@ static void *dt_camctl_camera_get_live_view(void *data)
 
   while(cam->is_live_viewing == TRUE)
   {
-    dt_pthread_mutex_lock(&cam->live_view_synch);
+    dt_pthread_mutex_BAD_lock(&cam->live_view_synch);
 
     // calculate FPS
     double current_time = dt_get_wtime();
@@ -551,7 +563,7 @@ void dt_camctl_camera_stop_live_view(const dt_camctl_t *c)
 void _camctl_lock(const dt_camctl_t *c, const dt_camera_t *cam)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  dt_pthread_mutex_lock(&camctl->lock);
+  dt_pthread_mutex_BAD_lock(&camctl->lock);
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control locked for camera %p\n", cam);
   camctl->active_camera = cam;
   _dispatch_control_status(c, CAMERA_CONTROL_BUSY);
@@ -562,7 +574,7 @@ void _camctl_unlock(const dt_camctl_t *c)
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   const dt_camera_t *cam = camctl->active_camera;
   camctl->active_camera = NULL;
-  dt_pthread_mutex_unlock(&camctl->lock);
+  dt_pthread_mutex_BAD_unlock(&camctl->lock);
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control un-locked for camera %p\n", cam);
   _dispatch_control_status(c, CAMERA_CONTROL_AVAILABLE);
 }
@@ -801,6 +813,8 @@ static void *_camera_event_thread(void *data)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)data;
 
+  dt_pthread_setname("tethering");
+
   const dt_camera_t *camera = camctl->active_camera;
 
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] starting camera event thread of context %p\n", data);
@@ -924,7 +938,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
 
       char *output = g_build_filename(output_path, fname, (char *)NULL);
 
-      int handle = open(output, O_CREAT | O_WRONLY, 0666);
+      int handle = g_open(output, O_CREAT | O_WRONLY, 0666);
       if (handle > 0) {
         if (write(handle, data, size) > 0) {
           _dispatch_camera_image_downloaded(c, cam, output);
@@ -962,7 +976,7 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_preview_flags
     for(int i = 0; i < gp_list_count(files); i++)
     {
       gp_list_get_name(files, i, &filename);
-      char *file = g_strconcat(path, "/", filename, NULL);
+      char *file = g_build_filename(path, filename, NULL);
 
       // Lets check the type of file...
       CameraFileInfo cfi;
@@ -1434,7 +1448,7 @@ void _camera_poll_events(const dt_camctl_t *c, const dt_camera_t *cam)
 
         char *output = g_build_filename(output_path, fname, (char *)NULL);
 
-        int handle = open(output, O_CREAT | O_WRONLY, 0666);
+        int handle = g_open(output, O_CREAT | O_WRONLY, 0666);
         if(handle != -1)
         {
           gp_file_new_from_fd(&destination, handle);

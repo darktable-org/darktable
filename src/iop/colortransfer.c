@@ -504,7 +504,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
       memcpy (&g->flowback, d, self->params_size);
       g->flowback_set = 1;
-      FILE *f = fopen("/tmp/dt_colortransfer_loaded", "wb");
+      FILE *f = g_fopen("/tmp/dt_colortransfer_loaded", "wb");
       if(f)
       {
         if(fwrite(&g->flowback, self->params_size, 1, f) > 0) g->flowback.flag = APPLY;
@@ -559,7 +559,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colortransfer_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colortransfer_params_t));
   module->default_enabled = 0;
-  module->priority = 477; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 485; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colortransfer_params_t);
   module->gui_data = NULL;
   dt_iop_colortransfer_params_t tmp;
@@ -683,7 +683,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->apply_button, _("apply previously analyzed image look to this image"));
   gtk_box_pack_start(box, g->apply_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->apply_button), "clicked", G_CALLBACK(apply_button_pressed), (gpointer)self);
-  FILE *f = fopen("/tmp/dt_colortransfer_loaded", "rb");
+  FILE *f = g_fopen("/tmp/dt_colortransfer_loaded", "rb");
   if(f)
   {
     if(fread(&g->flowback, self->params_size, 1, f) > 0) g->flowback_set = 1;

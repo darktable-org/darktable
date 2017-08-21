@@ -34,9 +34,6 @@
 #include <xmmintrin.h>
 #endif
 
-
-#define BLOCKSIZE                                                                                            \
-  2048 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 #define NUM_BUCKETS 4
 
 // this is the version of the modules parameters,
@@ -216,34 +213,31 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(buckets[k] == NULL) goto error;
   }
 
-  // prepare local work group
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group of the kernel
-  // assuming this is the same for nlmeans_horiz and nlmeans_vert
+  int hblocksize;
+  dt_opencl_local_buffer_t hlocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 2 * P, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 16, .sizey = 1 };
 
-  // make sure blocksize is not too large
-  int blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_nlmeans_horiz, &kernelworkgroupsize)
-        == CL_SUCCESS)
-  {
-    // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
-          || blocksize > workgroupsize || (blocksize + 2 * P) * sizeof(float) > localmemsize)
-    {
-      if(blocksize == 1) break;
-      blocksize >>= 1;
-    }
-  }
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_nlmeans_horiz, &hlocopt))
+    hblocksize = hlocopt.sizex;
   else
-  {
-    blocksize = 1; // slow but safe
-  }
+    hblocksize = 1;
 
-  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1) * blocksize;
-  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1) * blocksize;
+  int vblocksize;
+  dt_opencl_local_buffer_t vlocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 1, .xfactor = 1, .yoffset = 2 * P, .yfactor = 1,
+                                  .cellsize = sizeof(float), .overhead = 0,
+                                  .sizex = 1, .sizey = 1 << 16 };
+
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_nlmeans_vert, &vlocopt))
+    vblocksize = vlocopt.sizey;
+  else
+    vblocksize = 1;
+
+
+  const size_t bwidth = ROUNDUP(width, hblocksize);
+  const size_t bheight = ROUNDUP(height, vblocksize);
 
   size_t sizesl[3];
   size_t local[3];
@@ -276,7 +270,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       sizesl[0] = bwidth;
       sizesl[1] = ROUNDUPHT(height);
       sizesl[2] = 1;
-      local[0] = blocksize;
+      local[0] = hblocksize;
       local[1] = 1;
       local[2] = 1;
       dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
@@ -286,7 +280,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 3, sizeof(int), (void *)&height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 4, 2 * sizeof(int), (void *)&q);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 5, sizeof(int), (void *)&P);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 6, (blocksize + 2 * P) * sizeof(float), NULL);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 6, (hblocksize + 2 * P) * sizeof(float), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_nlmeans_horiz, sizesl, local);
       if(err != CL_SUCCESS) goto error;
 
@@ -295,7 +289,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       sizesl[1] = bheight;
       sizesl[2] = 1;
       local[0] = 1;
-      local[1] = blocksize;
+      local[1] = vblocksize;
       local[2] = 1;
       dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
@@ -305,7 +299,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 4, 2 * sizeof(int), (void *)&q);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 5, sizeof(int), (void *)&P);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 6, sizeof(float), (void *)&sharpness);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 7, (blocksize + 2 * P) * sizeof(float), NULL);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 7, (vblocksize + 2 * P) * sizeof(float), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_nlmeans_vert, sizesl, local);
       if(err != CL_SUCCESS) goto error;
 
@@ -513,7 +507,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // free shared tmp memory:
   dt_free_align(Sa);
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #if defined(__SSE__)
@@ -707,7 +701,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   // free shared tmp memory:
   dt_free_align(Sa);
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
 
@@ -728,7 +722,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_nlmeans_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_nlmeans_params_t));
   // about the first thing to do in Lab space:
-  module->priority = 522; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 529; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_nlmeans_params_t);
   module->gui_data = NULL;
   module->data = NULL;
