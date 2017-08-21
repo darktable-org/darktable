@@ -27,6 +27,9 @@
 
 #define EPSILON 2 * FLT_MIN
 #define MAX_ITER 10
+
+static const int curvedata_anchors_max = 20;
+
 // declare some functions and so I can use the function pointer
 float spline_cubic_val(int n, float t[], float tval, float y[], float ypp[]);
 float catmull_rom_val(int n, float x[], float xval, float y[], float tangents[]);
@@ -92,6 +95,8 @@ float *(*spline_set[])(int, float[], float[]) = { spline_cubic_set, catmull_rom_
 float *d3_np_fs(int n, float a[], float b[])
 
 {
+  if(n <= 0 || n > curvedata_anchors_max) return NULL;
+
   int i;
   float *x;
   float xmult;

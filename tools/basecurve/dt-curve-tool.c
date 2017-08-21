@@ -1020,7 +1020,7 @@ fit:;
 
   fprintf(f, "# err %f improved %d times\n", sqerr, accepts);
   fprintf(f, "# copy paste into iop/basecurve.c (be sure to insert name, maker, model, and set the last 0 to 1 if happy to filter it):\n");
-  fprintf(f, "# { \"%s\", \"%s\", \"%s\", 0, 51200,                        {{{",
+  fprintf(f, "# { \"%s\", \"%s\", \"%s\", 0, FLT_MAX,                      {{{",
     opt.filename_exif ? model : "new measured basecurve",
     opt.filename_exif ? maker : "insert maker",
     opt.filename_exif ? model : "insert model");
@@ -1058,13 +1058,13 @@ fit:;
     fprintf(stdout, "# note that it is a smart idea to backup your database before messing with it on this level.\n");
     fprintf(stdout, "# (you have been warned :) )\n\n");
     // the big binary blob is a canonical blend mode option (switched off).
-    fprintf(stdout, "echo \"INSERT INTO presets (name,description,operation,op_version,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name,model,maker,lens,iso_min,iso_max,exposure_min,exposure_max,aperture_min,aperture_max,focal_length_min,focal_length_max,writeprotect,autoapply,filter,def,format) VALUES('%s','','basecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n",
+    fprintf(stdout, "echo \"INSERT INTO presets (name,description,operation,op_version,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name,model,maker,lens,iso_min,iso_max,exposure_min,exposure_max,aperture_min,aperture_max,focal_length_min,focal_length_max,writeprotect,autoapply,filter,def,format) VALUES('%s','','basecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,340282346638528859812000000000000000000,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/data.db\n",
       opt.filename_exif ? model : "new measured basecurve",
       BASECURVE_PARAMS_VERSION, encoded);
 
     fprintf(stdout, "\n\n\n"
             "# if it pleases you, then in iop/basecurve.c append the following line to the array basecurve_presets and modify its name\n"
-            "# {\"%s\", \"%s\", \"%s\", 0, 51200, {{{",
+            "# {\"%s\", \"%s\", \"%s\", 0, FLT_MAX, {{{",
             opt.filename_exif ? model : "new measured basecurve",
             opt.filename_exif ? maker : "<MAKER>",
             opt.filename_exif ? model : "<MODEL>");
@@ -1139,12 +1139,12 @@ fit:;
     fprintf(stdout, "#!/bin/sh\n");
     fprintf(stdout, "# to test your new tonecurve, copy/paste the following line into your shell.\n");
     fprintf(stdout, "# note that it is a smart idea to backup your database before messing with it on this level.\n\n");
-    fprintf(stdout, "echo \"INSERT INTO presets (name,description,operation,op_version,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name,model,maker,lens,iso_min,iso_max,exposure_min,exposure_max,aperture_min,aperture_max,focal_length_min,focal_length_max,writeprotect,autoapply,filter,def,format) VALUES('%s','','tonecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n",
+    fprintf(stdout, "echo \"INSERT INTO presets (name,description,operation,op_version,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name,model,maker,lens,iso_min,iso_max,exposure_min,exposure_max,aperture_min,aperture_max,focal_length_min,focal_length_max,writeprotect,autoapply,filter,def,format) VALUES('%s','','tonecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,340282346638528859812000000000000000000,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/data.db\n",
             opt.filename_exif ? model : "new measured tonecurve",
             TONECURVE_PARAMS_VERSION, encoded);
     fprintf(stdout, "\n\n\n"
                     "# if it pleases you, then in iop/tonecurve.c append the following line to the array preset_camera_curves and modify its name\n"
-                    "# {\"%s\", \"%s\", \"%s\", 0, 51200, {{",
+                    "# {\"%s\", \"%s\", \"%s\", 0, FLT_MAX, {{",
                     opt.filename_exif ? model : "new measured tonecurve",
                     opt.filename_exif ? maker : "<MAKER>",
                     opt.filename_exif ? model : "<MODEL>");

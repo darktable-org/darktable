@@ -104,9 +104,10 @@ const char *name(dt_lib_module_t *self)
 }
 
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE;
+  static const char *v[] = {"lighttable", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -175,7 +176,7 @@ static void _lib_import_tethered_callback(GtkToggleButton *button, gpointer data
 {
   /* select camera to work with before switching mode */
   dt_camctl_select_camera(darktable.camctl, (dt_camera_t *)data);
-  dt_ctl_switch_mode_to(DT_CAPTURE);
+  dt_ctl_switch_mode_to("tethering");
 }
 
 
@@ -404,6 +405,11 @@ static void reset_child(GtkWidget* child, gpointer user_data)
 }
 #endif
 
+static void _check_button_callback(GtkWidget *widget, gpointer data)
+{
+    dt_conf_set_bool("ui_last/import_ignore_jpegs",
+                     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+}
 
 static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_import_metadata_t *data, gboolean import_folder)
 {
@@ -450,6 +456,8 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ignore_jpeg),
                                  dt_conf_get_bool("ui_last/import_ignore_jpegs"));
     gtk_box_pack_start(GTK_BOX(extra), ignore_jpeg, FALSE, FALSE, 0);
+    g_signal_connect(G_OBJECT(ignore_jpeg), "clicked",
+                   G_CALLBACK(_check_button_callback), ignore_jpeg);
   }
 
   // default metadata
@@ -634,16 +642,16 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   preview = GTK_WIDGET(data);
   filename = gtk_file_chooser_get_preview_filename(file_chooser);
 
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-  {
-    no_preview_fallback = TRUE;
-  }
-  else
+  if(filename && g_file_test(filename, G_FILE_TEST_IS_REGULAR))
   {
     // don't create dng thumbnails to avoid crashes in libtiff when these are hdr:
     char *c = filename + strlen(filename);
     while(c > filename && *c != '.') c--;
     if(!strcasecmp(c, ".dng")) no_preview_fallback = TRUE;
+  }
+  else
+  {
+    no_preview_fallback = TRUE;
   }
 
   // unfortunately we can not use following, because frequently it uses wrong orientation
@@ -783,18 +791,17 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
     g_free(last_directory);
   }
 
-  char *cp, **extensions, ext[1024];
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
-  extensions = g_strsplit(dt_supported_extensions, ",", 100);
-  for(char **i = extensions; *i != NULL; i++)
+  for(const char **i = dt_supported_extensions; *i != NULL; i++)
   {
-    snprintf(ext, sizeof(ext), "*.%s", *i);
+    char *ext = g_strdup_printf("*.%s", *i);
+    char *ext_upper = g_ascii_strup(ext, -1);
     gtk_file_filter_add_pattern(filter, ext);
-    gtk_file_filter_add_pattern(filter, cp = g_ascii_strup(ext, -1));
-    g_free(cp);
+    gtk_file_filter_add_pattern(filter, ext_upper);
+    g_free(ext_upper);
+    g_free(ext);
   }
-  g_strfreev(extensions);
   gtk_file_filter_set_name(filter, _("supported images"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
@@ -856,7 +863,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
       else
       {
         dt_control_set_mouse_over_id(id);
-        dt_ctl_switch_mode_to(DT_DEVELOP);
+        dt_ctl_switch_mode_to("darkroom");
       }
     }
   }

@@ -133,10 +133,10 @@ const char *name(dt_lib_module_t *self)
   return _("image information");
 }
 
-/* show module in left panel in all views */
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_ALL;
+  static const char *v[] = {"*", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)

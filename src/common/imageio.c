@@ -414,7 +414,7 @@ gboolean dt_imageio_is_ldr(const char *filename)
 {
   size_t offset = 0;
   uint8_t block[16] = { 0 };
-  FILE *fin = fopen(filename, "rb");
+  FILE *fin = g_fopen(filename, "rb");
   if(fin)
   {
     /* read block from file */

@@ -77,7 +77,8 @@ const char *dt_xmp_keys[]
         "Xmp.darktable.xmp_version", "Xmp.darktable.raw_params", "Xmp.darktable.auto_presets_applied",
         "Xmp.darktable.mask_id", "Xmp.darktable.mask_type", "Xmp.darktable.mask_name",
         "Xmp.darktable.mask_version", "Xmp.darktable.mask", "Xmp.darktable.mask_nb", "Xmp.darktable.mask_src",
-        "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights" };
+        "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights",
+        "Xmp.xmpMM.DerivedFrom" };
 
 static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys); // the number of XmpBag XmpSeq keys that dt uses
 
@@ -996,7 +997,7 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
     Exiv2::PreviewPropertiesList list = loader.getPreviewProperties();
     if(list.empty())
     {
-      std::cerr << "[exiv2] couldn't find thumbnail for " << path << std::endl;
+      dt_print(DT_DEBUG_LIGHTTABLE, "[exiv2] couldn't find thumbnail for %s", path);
       return 1;
     }
 
@@ -1729,12 +1730,16 @@ static void free_entry(gpointer data)
 // we have to use pugixml as the old format could contain empty rdf:li elements in the multi_name array
 // which causes problems when accessing it with libexiv2 :(
 // superold is a flag indicating that data is wrapped in <rdf:Bag> instead of <rdf:Seq>.
-static GList *read_history_v1(const char *filename, const int superold)
+static GList *read_history_v1(const std::string &xmpPacket, const char *filename, const int superold)
 {
   GList *history_entries = NULL;
 
   pugi::xml_document doc;
-  pugi::xml_parse_result result = doc.load_file(filename);
+#if defined(PUGIXML_VERSION) && PUGIXML_VERSION >= 150
+  pugi::xml_parse_result result = doc.load_string(xmpPacket.c_str());
+#else
+  pugi::xml_parse_result result = doc.load(xmpPacket.c_str());
+#endif
 
   if(!result)
   {
@@ -2110,9 +2115,10 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
     if(version < 2)
     {
-      history_entries = read_history_v1(filename, 0);
+      std::string &xmpPacket = image->xmpPacket();
+      history_entries = read_history_v1(xmpPacket, filename, 0);
       if(!history_entries) // didn't work? try super old version with rdf:Bag
-        history_entries = read_history_v1(filename, 1);
+        history_entries = read_history_v1(xmpPacket, filename, 1);
     }
     else if(version == 2)
       history_entries = read_history_v2(xmpData, filename);
@@ -2270,6 +2276,10 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     if(sqlite3_column_type(stmt, 5) == SQLITE_FLOAT) altitude = sqlite3_column_double(stmt, 5);
     history_end = sqlite3_column_int(stmt, 6);
   }
+
+  // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
+  Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
+  if(pos != xmpData.end()) xmpData.erase(pos);
   xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); // rejected image = -1, others = 0..5
 
   // The original file name
@@ -2490,11 +2500,8 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 7);
 
     if(!operation) continue; // no op is fatal.
-    // FIXME: this was like that in the old code. was that intended to test params instead of blendop_params?
-    if(!blendop_blob) continue; // no blendop_params, no history item.
 
     char *params = dt_exif_xmp_encode((const unsigned char *)params_blob, params_len, NULL);
-    char *blendop_params = dt_exif_xmp_encode((const unsigned char *)blendop_blob, blendop_params_len, NULL);
 
     snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:operation", num);
     xmpData[key] = operation;
@@ -2508,13 +2515,19 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     xmpData[key] = multi_name ? multi_name : "";
     snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:multi_priority", num);
     xmpData[key] = multi_priority;
-    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:blendop_version", num);
-    xmpData[key] = blendop_version;
-    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:blendop_params", num);
-    xmpData[key] = blendop_params;
+    if(blendop_blob)
+    {
+      // this shouldn't fail in general, but reading is robust enough to allow it,
+      // and flipping images from LT will result in this being left out
+      char *blendop_params = dt_exif_xmp_encode((const unsigned char *)blendop_blob, blendop_params_len, NULL);
+      snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:blendop_version", num);
+      xmpData[key] = blendop_version;
+      snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:blendop_params", num);
+      xmpData[key] = blendop_params;
+      free(blendop_params);
+    }
 
     free(params);
-    free(blendop_params);
 
     num++;
   }
@@ -2593,7 +2606,7 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
   try
   {
     char input_filename[PATH_MAX] = { 0 };
-    gboolean from_cache = FALSE;
+    gboolean from_cache = TRUE;
     dt_image_full_path(imgid, input_filename, sizeof(input_filename), &from_cache);
 
     std::unique_ptr<Exiv2::Image> img(Exiv2::ImageFactory::open(filename));
@@ -2602,13 +2615,20 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
     // img->clearXmpPacket();
     img->readMetadata();
 
-    // initialize XMP and IPTC data with the one from the original file
-    std::unique_ptr<Exiv2::Image> input_image(Exiv2::ImageFactory::open(input_filename));
-    if(input_image.get() != 0)
+    try
     {
-      input_image->readMetadata();
-      img->setIptcData(input_image->iptcData());
-      img->setXmpData(input_image->xmpData());
+      // initialize XMP and IPTC data with the one from the original file
+      std::unique_ptr<Exiv2::Image> input_image(Exiv2::ImageFactory::open(input_filename));
+      if(input_image.get() != 0)
+      {
+        input_image->readMetadata();
+        img->setIptcData(input_image->iptcData());
+        img->setXmpData(input_image->xmpData());
+      }
+    }
+    catch(Exiv2::AnyError &e)
+    {
+      std::cerr << "[xmp_attach] " << input_filename << ": caught exiv2 exception '" << e << "'\n";
     }
 
     Exiv2::XmpData &xmpData = img->xmpData();
@@ -2630,7 +2650,6 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
     }
 
     dt_remove_known_keys(xmpData); // is this needed?
-
     // last but not least attach what we have in DB to the XMP. in theory that should be
     // the same as what we just copied over from the sidecar file, but you never know ...
     dt_exif_xmp_read_data(xmpData, imgid);
@@ -2659,8 +2678,28 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
   {
     Exiv2::XmpData xmpData;
     std::string xmpPacket;
+    char *checksum_old = NULL;
     if(g_file_test(filename, G_FILE_TEST_EXISTS))
     {
+      // we want to avoid writing the sidecar file if it didn't change to avoid issues when using the same images
+      // from different computers. sample use case: images on NAS, several computers using them NOT AT THE SAME TIME and
+      // the xmp crawler is used to find changed sidecars.
+      FILE *fd = g_fopen(filename, "rb");
+      if(fd)
+      {
+        fseek(fd, 0, SEEK_END);
+        size_t end = ftell(fd);
+        rewind(fd);
+        unsigned char *content = (unsigned char *)malloc(end * sizeof(char));
+        if(content)
+        {
+          if(fread(content, sizeof(unsigned char), end, fd) == end)
+            checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5, content, end);
+          free(content);
+        }
+        fclose(fd);
+      }
+
       Exiv2::DataBuf buf = Exiv2::readFile(filename);
       xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
       Exiv2::XmpParser::decode(xmpData, xmpPacket);
@@ -2678,13 +2717,35 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
     {
       throw Exiv2::Error(1, "[xmp_write] failed to serialize xmp data");
     }
-    std::ofstream fout(filename);
-    if(fout.is_open())
+
+    // hash the new data and compare it to the old hash (if applicable)
+    const char *xml_header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    gboolean write_sidecar = TRUE;
+    if(checksum_old)
     {
-      fout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"; // write XML header
-      fout << xmpPacket;
-      fout.close();
+      GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
+      if(checksum)
+      {
+        g_checksum_update(checksum, (unsigned char*)xml_header, -1);
+        g_checksum_update(checksum, (unsigned char*)xmpPacket.c_str(), -1);
+        const char *checksum_new = g_checksum_get_string(checksum);
+        write_sidecar = g_strcmp0(checksum_old, checksum_new) != 0;
+        g_checksum_free(checksum);
+      }
+      g_free(checksum_old);
     }
+
+    if(write_sidecar)
+    {
+      std::ofstream fout(filename);
+      if(fout.is_open())
+      {
+        fout << xml_header;
+        fout << xmpPacket;
+        fout.close();
+      }
+    }
+
     return 0;
   }
   catch(Exiv2::AnyError &e)

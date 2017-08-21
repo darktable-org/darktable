@@ -23,7 +23,7 @@
 
 // some typedefs for structs that hold the data in a machine readable form
 
-#define DT_INTROSPECTION_VERSION 5
+#define DT_INTROSPECTION_VERSION 6
 
 // clang-format off
 
@@ -228,6 +228,7 @@ typedef struct dt_introspection_t
   const char                         *type_name;      // the typedef'ed name for this type as passed to DT_MODULE_INTROSPECTION()
   size_t                              size;           // size of the params struct
   dt_introspection_field_t           *field;          // the type of the params. should always be a DT_INTROSPECTION_TYPE_STRUCT
+  size_t                              self_size;      // size of dt_iop_module_t. useful to not need dt headers
 } dt_introspection_t;
 
 // clang-format on

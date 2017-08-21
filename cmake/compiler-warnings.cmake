@@ -6,8 +6,15 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wall)
 
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-fno-strict-aliasing)
 
-CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wformat)
-CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wformat-security)
+if(WIN32)
+  # MSYS2 gcc compiler gives false positive warnings for (format (printf, 1, 2) - need to turn off for the time being
+  CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-format)
+
+  CHECK_COMPILER_FLAG_AND_ENABLE_IT(-mms-bitfields)
+else()
+  CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wformat)
+  CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wformat-security)
+endif()
 
 # cleanup this once we no longer need to support gcc-4.9
 if(NOT (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_LESS 5.0))
@@ -23,8 +30,14 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wvla)
 
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wold-style-declaration)
 
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wthread-safety)
+
 # may be our bug :(
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-error=varargs)
+
+# need proper gcc7 to try to fix all the warnings.
+# so just disable for now.
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-format-truncation)
 
 # clang-4.0 bug https://llvm.org/bugs/show_bug.cgi?id=28115#c7
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-error=address-of-packed-member)

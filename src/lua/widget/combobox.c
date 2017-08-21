@@ -69,6 +69,9 @@ static int combobox_numindex(lua_State*L)
   }
   if(key <= 0 || key > length) {
     return luaL_error(L,"Invalid index for combo box : %d\n",key);
+  } else if (key > length) {
+    lua_pushnil(L);
+    return 1;
   }
   const GList *labels = dt_bauhaus_combobox_get_labels(combobox->widget);
   lua_pushstring(L,g_list_nth_data((GList*)labels,key-1));
