@@ -2500,11 +2500,8 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 7);
 
     if(!operation) continue; // no op is fatal.
-    // FIXME: this was like that in the old code. was that intended to test params instead of blendop_params?
-    if(!blendop_blob) continue; // no blendop_params, no history item.
 
     char *params = dt_exif_xmp_encode((const unsigned char *)params_blob, params_len, NULL);
-    char *blendop_params = dt_exif_xmp_encode((const unsigned char *)blendop_blob, blendop_params_len, NULL);
 
     snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:operation", num);
     xmpData[key] = operation;
@@ -2518,13 +2515,19 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     xmpData[key] = multi_name ? multi_name : "";
     snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:multi_priority", num);
     xmpData[key] = multi_priority;
-    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:blendop_version", num);
-    xmpData[key] = blendop_version;
-    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:blendop_params", num);
-    xmpData[key] = blendop_params;
+    if(blendop_blob)
+    {
+      // this shouldn't fail in general, but reading is robust enough to allow it,
+      // and flipping images from LT will result in this being left out
+      char *blendop_params = dt_exif_xmp_encode((const unsigned char *)blendop_blob, blendop_params_len, NULL);
+      snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:blendop_version", num);
+      xmpData[key] = blendop_version;
+      snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:blendop_params", num);
+      xmpData[key] = blendop_params;
+      free(blendop_params);
+    }
 
     free(params);
-    free(blendop_params);
 
     num++;
   }
