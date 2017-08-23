@@ -588,7 +588,7 @@ endif()
 
 # compile rawspeed
 list(APPEND LIB_DEPS rawspeed)
-list(APPEND STATIC_LIBS rawspeed_static_dt)
+list(APPEND STATIC_LIBS rawspeed)
 
 # osm gps map library
 if(USE_MAP)
