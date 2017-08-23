@@ -4565,7 +4565,7 @@ void reload_defaults(dt_iop_module_t *module)
   else
     module->default_enabled = 0;
 
-  if(module->dev->image_storage.buf_dsc.filters == 9u) tmp.demosaicing_method = DT_IOP_DEMOSAIC_FDC;
+  if(module->dev->image_storage.buf_dsc.filters == 9u) tmp.demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
 
 end:
   memcpy(module->params, &tmp, sizeof(dt_iop_demosaic_params_t));
@@ -4695,7 +4695,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slow)"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("passthrough (monochrome) (experimental)"));
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Frequency Domain Chroma"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Frequency Domain Chroma (slow)"));
   gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("demosaicing raw data method"));
 
   g->median_thrs = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
