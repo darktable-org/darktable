@@ -618,27 +618,9 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
     case GDK_KEY_KP_Enter:
     {
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
-      /* attach tag to images  */
-      if(d->floating_tag_imgid > 0) // just a single image
-      {
-        dt_tag_attach_string_list(tag, d->floating_tag_imgid);
-        dt_image_synch_xmp(d->floating_tag_imgid);
-      }
-      else // all selected images
-      {
-        GList *selected_images = g_list_first(dt_collection_get_selected(darktable.collection, -1));
-        if(selected_images)
-        {
-          GList *iter = selected_images;
-          do
-          {
-            int imgid = GPOINTER_TO_INT(iter->data);
-            dt_tag_attach_string_list(tag, imgid);
-            dt_image_synch_xmp(imgid);
-          } while((iter = g_list_next(iter)) != NULL);
-        }
-        g_list_free(selected_images);
-      }
+      // both these functions can deal with -1 for all selected images. no need for extra code in here!
+      dt_tag_attach_string_list(tag, d->floating_tag_imgid);
+      dt_image_synch_xmp(d->floating_tag_imgid);
       update(self, 1);
       update(self, 0);
       gtk_widget_destroy(d->floating_tag_window);

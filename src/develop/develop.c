@@ -567,7 +567,7 @@ int dt_dev_write_history_item(const dt_image_t *image, dt_dev_history_item_t *h,
 
 void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
 {
-  if(darktable.gui->reset) return;
+  if(!darktable.gui || darktable.gui->reset) return;
   dt_pthread_mutex_lock(&dev->history_mutex);
   if(dev->gui_attached)
   {
