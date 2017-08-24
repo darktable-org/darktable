@@ -586,10 +586,6 @@ if(NOT SOURCE_PACKAGE AND NOT APPLE)
   add_definitions(-Werror)
 endif()
 
-# compile rawspeed
-list(APPEND LIB_DEPS rawspeed)
-list(APPEND STATIC_LIBS rawspeed)
-
 # osm gps map library
 if(USE_MAP)
   find_package(OSMGpsMap)
@@ -737,8 +733,9 @@ set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
 #
 
 add_dependencies(lib_darktable ${LIB_DEPS})
-target_link_libraries(lib_darktable ${STATIC_LIBS})
-target_link_libraries(lib_darktable ${LIBS})
+target_link_libraries(lib_darktable PUBLIC ${STATIC_LIBS})
+target_link_libraries(lib_darktable PRIVATE rawspeed)
+target_link_libraries(lib_darktable PUBLIC ${LIBS})
 
 unset(LIBS)
 unset(STATIC_LIBS)
