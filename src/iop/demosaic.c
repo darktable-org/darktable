@@ -993,9 +993,6 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 #undef TS
 
 #define TS 122
-/*
-  Ingo Liebhardt 's  frequency domain chroma approach for Fuji X-Trans sensors
- */
 static void xtrans_fdc_interpolate(float *out, const float *const in,
                                            const dt_iop_roi_t *const roi_out,
                                            const dt_iop_roi_t *const roi_in,
@@ -1226,7 +1223,7 @@ const float complex harr[4][13][13] = { {
     {
       int mrow = MIN(top + TS, height + pad_tile);
       int mcol = MIN(left + TS, width + pad_tile);
-#define LIM(x,min,max) MAX(min,MIN(x,max))
+#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 
       // Copy current tile from in to image buffer. If border goes
       // beyond edges of image, fill with mirrored/interpolated edges.
@@ -1240,10 +1237,10 @@ const float complex harr[4][13][13] = { {
             const int f = FCxtrans(row, col, roi_in, xtrans);
             for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
 #ifdef HAVE_FFTW3
-            *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * row + col], 0.f, FLT_MAX) + 0.f * _Complex_I; //here is the problem
+            *(i_src + TS*(row - top) + (col - left)) = CLIP(in[roi_in->width * row + col]) + 0.f * _Complex_I; //here is the problem
 #endif
 #ifndef HAVE_FFTW3
-            *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * row + col], 0.f, FLT_MAX) ; //here is the problem
+            *(i_src + TS*(row - top) + (col - left)) = CLIP(in[roi_in->width * row + col]) ; //here is the problem
 #endif
           }
           else
@@ -1261,10 +1258,10 @@ const float complex harr[4][13][13] = { {
                 {
                   pix[c] = in[roi_in->width * cy + cx];
 #ifdef HAVE_FFTW3
-                  *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * cy + cx], 0.f, FLT_MAX) + 0.f * _Complex_I;
+                  *(i_src + TS*(row - top) + (col - left)) = CLIP(in[roi_in->width * cy + cx]) + 0.f * _Complex_I;
 #endif
 #ifdef HAVE_FFTW3
-                  *(i_src + TS*(row - top) + (col - left)) = LIM(in[roi_in->width * cy + cx], 0.f, FLT_MAX) + 0.f ;
+                  *(i_src + TS*(row - top) + (col - left)) = CLIP(in[roi_in->width * cy + cx]) + 0.f ;
 #endif
                 }
                 else
@@ -1285,10 +1282,10 @@ const float complex harr[4][13][13] = { {
                     }
                   pix[c] = sum / count;
 #ifdef HAVE_FFTW3
-                  *(i_src + TS*(row - top) + (col - left)) = LIM(pix[c], 0.f, FLT_MAX) + 0.f * _Complex_I;
+                  *(i_src + TS*(row - top) + (col - left)) = CLIP(pix[c]) + 0.f * _Complex_I;
 #endif
 #ifndef HAVE_FFTW3
-                  *(i_src + TS*(row - top) + (col - left)) = LIM(pix[c], 0.f, FLT_MAX) + 0.f ;
+                  *(i_src + TS*(row - top) + (col - left)) = CLIP(pix[c]) + 0.f ;
 #endif
                 }
               }
@@ -1648,7 +1645,7 @@ VAR += FILT[12-fdc_row][12-fdc_col] * *(i_src + TS*myrow + mycol);
             {
               rgbpix[color] += Minv[color][c] * qmat[c];
             }
-          for(int c = 0; c < 3; c++) rgbpix[c] = LIM(rgbpix[c], 0.f, FLT_MAX);
+          for(int c = 0; c < 3; c++) rgbpix[c] = CLIP(rgbpix[c]);
           // now separate luma and chroma for
           // frequency domain chroma
           // and store it in fdc_chroma
@@ -1708,7 +1705,7 @@ VAR += FILT[12-fdc_row][12-fdc_col] * *(i_src + TS*myrow + mycol);
           rgbpix[0] = y                      + 1.40200f * cbcr[1];
           rgbpix[1] = y - 0.34414f * cbcr[0] - 0.71414f * cbcr[1];
           rgbpix[2] = y + 1.77200f * cbcr[0];
-          for(int c = 0; c < 3; c++) out[4 * (width * (row + top) + col + left) + c ] = LIM(rgbpix[c], 0.f, FLT_MAX);
+          for(int c = 0; c < 3; c++) out[4 * (width * (row + top) + col + left) + c ] = CLIP(rgbpix[c]);
         }
     }
   }
@@ -1724,7 +1721,7 @@ VAR += FILT[12-fdc_row][12-fdc_col] * *(i_src + TS*myrow + mycol);
 
 #undef PIX_SWAP
 #undef PIX_SORT
-#undef LIM
+#undef CLIP
 #undef TS
 
 /* taken from dcraw and demosaic_ppg below */
@@ -2422,7 +2419,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if((qual_flags & DEMOSAIC_MEDIUM_QUAL)
      && // only overwrite setting if quality << requested and in dr mode
      (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)) // do not touch this special method
-    demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_FDC;
+    demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
 
   const float *const pixels = (float *)i;
 
@@ -4695,7 +4692,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slow)"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("passthrough (monochrome) (experimental)"));
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Frequency Domain Chroma (slow)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("frequency domain chroma (slow)"));
   gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("demosaicing raw data method"));
 
   g->median_thrs = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
