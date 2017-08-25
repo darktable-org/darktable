@@ -35,6 +35,7 @@
 #include <memory.h>
 #include <stdlib.h>
 #include <string.h>
+#include <complex.h>
 
 // we assume people have -msee support.
 #if defined(__SSE__)
@@ -56,7 +57,8 @@ typedef enum dt_iop_demosaic_method_t
   // methods for x-trans images
   DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 0,
   DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,
-  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2
+  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2,
+  DT_IOP_DEMOSAIC_FDC = DEMOSAIC_XTRANS | 4
 } dt_iop_demosaic_method_t;
 
 typedef enum dt_iop_demosaic_greeneq_t
@@ -73,7 +75,7 @@ typedef enum dt_iop_demosaic_qual_flags_t
   // or third scale interpolation instead
   DEMOSAIC_FULL_SCALE              = 1 << 0,
   DEMOSAIC_ONLY_VNG_LINEAR         = 1 << 1,
-  DEMOSAIC_XTRANS_FULL_MARKESTEIJN = 1 << 2,
+  DEMOSAIC_XTRANS_FULL             = 1 << 2,
   DEMOSAIC_MEDIUM_QUAL             = 1 << 3
 } dt_iop_demosaic_qual_flags_t;
 
@@ -222,6 +224,9 @@ static const char* method2string(dt_iop_demosaic_method_t method)
       break;
     case DT_IOP_DEMOSAIC_MARKESTEIJN_3:
       string = "Markesteijn-3 (xtrans)";
+      break;
+    case DT_IOP_DEMOSAIC_FDC:
+      string = "Frequency Domain Chroma (xtrans)";
       break;
     default:
       string = "(unknown method)";
@@ -985,6 +990,1093 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 
 #undef TS
 
+#define TS 122
+static void xtrans_fdc_interpolate(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
+                                   const dt_iop_roi_t *const roi_in, const uint8_t (*const xtrans)[6])
+{
+
+  static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
+                     patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
+                                     { 0, 1, 0, -2, 1, 0, -2, 0, 1, 1, -2, -2, 1, -1, -1, 1 } },
+                     dir[4] = { 1, TS, TS + 1, TS - 1 };
+
+  static const float directionality[8] = { 1.0f, 0.0f, 0.5f, 0.5f, 1.0f, 0.0f, 0.5f, 0.5f };
+
+  short allhex[3][3][8];
+  // sgrow/sgcol is the offset in the sensor matrix of the solitary
+  // green pixels (initialized here only to avoid compiler warning)
+  unsigned short sgrow = 0, sgcol = 0;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  static const int ndir = 4;
+
+  static const float complex Minv[3][8] = {
+    { 1.000000e+00f, 2.500000e-01f - 4.330127e-01f * _Complex_I, -2.500000e-01f - 4.330127e-01f * _Complex_I,
+      -1.000000e+00f, 7.500000e-01f - 1.299038e+00f * _Complex_I, -2.500000e-01f + 4.330127e-01f * _Complex_I,
+      7.500000e-01f + 1.299038e+00f * _Complex_I, 2.500000e-01f + 4.330127e-01f * _Complex_I },
+    { 1.000000e+00f, -2.000000e-01f + 3.464102e-01f * _Complex_I, 2.000000e-01f + 3.464102e-01f * _Complex_I,
+      8.000000e-01f, 0.0f, 2.000000e-01f - 3.464102e-01f * _Complex_I, 0.0f,
+      -2.000000e-01f - 3.464102e-01f * _Complex_I },
+    { 1.000000e+00f, 2.500000e-01f - 4.330127e-01f * _Complex_I, -2.500000e-01f - 4.330127e-01f * _Complex_I,
+      -1.000000e+00f, -7.500000e-01f + 1.299038e+00f * _Complex_I, -2.500000e-01f + 4.330127e-01f * _Complex_I,
+      -7.500000e-01f - 1.299038e+00f * _Complex_I, 2.500000e-01f + 4.330127e-01f * _Complex_I },
+  };
+
+  static const float complex modarr[6][6][8] = {
+    { { 1.000000e+00f + 0.000000e+00f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I,
+        1.000000e+00f + 0.000000e+00f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I,
+        1.000000e+00f + 0.000000e+00f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I,
+        1.000000e+00f + 0.000000e+00f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I },
+      { -1.000000e+00f - 1.224647e-16f * _Complex_I, 5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -1.000000e+00f - 1.224647e-16f * _Complex_I, 5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I },
+      { 1.000000e+00f + 2.449294e-16f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        1.000000e+00f + 2.449294e-16f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I },
+      { -1.000000e+00f - 3.673940e-16f * _Complex_I, -1.000000e+00f + 1.224647e-16f * _Complex_I,
+        -1.000000e+00f - 3.673940e-16f * _Complex_I, -1.000000e+00f - 1.224647e-16f * _Complex_I,
+        1.000000e+00f - 2.449294e-16f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I,
+        1.000000e+00f - 2.449294e-16f * _Complex_I, 1.000000e+00f + 2.449294e-16f * _Complex_I },
+      { 1.000000e+00f + 4.898587e-16f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        1.000000e+00f + 4.898587e-16f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I },
+      { -1.000000e+00f - 6.123234e-16f * _Complex_I, 5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -1.000000e+00f - 6.123234e-16f * _Complex_I, 5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I } },
+    { { 5.000000e-01f + 8.660254e-01f * _Complex_I, -1.000000e+00f + 1.224647e-16f * _Complex_I,
+        5.000000e-01f - 8.660254e-01f * _Complex_I, -1.000000e+00f + 1.224647e-16f * _Complex_I,
+        1.000000e+00f + 0.000000e+00f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I },
+      { -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I },
+      { 5.000000e-01f + 8.660254e-01f * _Complex_I, 5.000000e-01f - 8.660254e-01f * _Complex_I,
+        5.000000e-01f - 8.660254e-01f * _Complex_I, 5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        1.000000e+00f - 2.449294e-16f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I },
+      { -5.000000e-01f - 8.660254e-01f * _Complex_I, 1.000000e+00f - 2.449294e-16f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I,
+        1.000000e+00f - 2.449294e-16f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I },
+      { 5.000000e-01f + 8.660254e-01f * _Complex_I, 5.000000e-01f + 8.660254e-01f * _Complex_I,
+        5.000000e-01f - 8.660254e-01f * _Complex_I, 5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, 1.000000e+00f + 2.449294e-16f * _Complex_I },
+      { -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        1.000000e+00f - 2.266216e-15f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I } },
+    { { -5.000000e-01f + 8.660254e-01f * _Complex_I, 1.000000e+00f - 2.449294e-16f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, 1.000000e+00f - 2.449294e-16f * _Complex_I,
+        1.000000e+00f + 0.000000e+00f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I },
+      { 5.000000e-01f - 8.660254e-01f * _Complex_I, 5.000000e-01f + 8.660254e-01f * _Complex_I,
+        5.000000e-01f + 8.660254e-01f * _Complex_I, 5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        1.000000e+00f - 2.449294e-16f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I },
+      { -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I },
+      { 5.000000e-01f - 8.660254e-01f * _Complex_I, -1.000000e+00f + 3.673940e-16f * _Complex_I,
+        5.000000e-01f + 8.660254e-01f * _Complex_I, -1.000000e+00f + 1.224647e-16f * _Complex_I,
+        1.000000e+00f - 2.449294e-16f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I },
+      { -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        1.000000e+00f - 4.898587e-16f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I },
+      { 5.000000e-01f - 8.660254e-01f * _Complex_I, 5.000000e-01f - 8.660254e-01f * _Complex_I,
+        5.000000e-01f + 8.660254e-01f * _Complex_I, 5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, 1.000000e+00f + 1.133108e-15f * _Complex_I } },
+    { { -1.000000e+00f + 1.224647e-16f * _Complex_I, -1.000000e+00f + 3.673940e-16f * _Complex_I,
+        -1.000000e+00f - 1.224647e-16f * _Complex_I, -1.000000e+00f + 3.673940e-16f * _Complex_I,
+        1.000000e+00f + 0.000000e+00f * _Complex_I, 1.000000e+00f - 2.449294e-16f * _Complex_I,
+        1.000000e+00f - 2.449294e-16f * _Complex_I, 1.000000e+00f - 2.449294e-16f * _Complex_I },
+      { 1.000000e+00f + 0.000000e+00f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        1.000000e+00f + 2.449294e-16f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, 1.000000e+00f - 2.449294e-16f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I },
+      { -1.000000e+00f - 1.224647e-16f * _Complex_I, 5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -1.000000e+00f - 3.673940e-16f * _Complex_I, 5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, 1.000000e+00f - 2.449294e-16f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I },
+      { 1.000000e+00f + 2.449294e-16f * _Complex_I, 1.000000e+00f - 4.898587e-16f * _Complex_I,
+        1.000000e+00f + 4.898587e-16f * _Complex_I, 1.000000e+00f - 2.449294e-16f * _Complex_I,
+        1.000000e+00f - 2.449294e-16f * _Complex_I, 1.000000e+00f - 2.449294e-16f * _Complex_I,
+        1.000000e+00f - 4.898587e-16f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I },
+      { -1.000000e+00f - 3.673940e-16f * _Complex_I, 5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -1.000000e+00f - 6.123234e-16f * _Complex_I, 5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, 1.000000e+00f - 2.449294e-16f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I },
+      { 1.000000e+00f + 4.898587e-16f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        1.000000e+00f + 7.347881e-16f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, 1.000000e+00f - 2.449294e-16f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I } },
+    { { -5.000000e-01f - 8.660254e-01f * _Complex_I, 1.000000e+00f - 4.898587e-16f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, 1.000000e+00f - 4.898587e-16f * _Complex_I,
+        1.000000e+00f + 0.000000e+00f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I },
+      { 5.000000e-01f + 8.660254e-01f * _Complex_I, 5.000000e-01f + 8.660254e-01f * _Complex_I,
+        5.000000e-01f - 8.660254e-01f * _Complex_I, 5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, 1.000000e+00f - 2.449294e-16f * _Complex_I },
+      { -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        1.000000e+00f - 4.898587e-16f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I },
+      { 5.000000e-01f + 8.660254e-01f * _Complex_I, -1.000000e+00f + 6.123234e-16f * _Complex_I,
+        5.000000e-01f - 8.660254e-01f * _Complex_I, -1.000000e+00f + 3.673940e-16f * _Complex_I,
+        1.000000e+00f - 2.449294e-16f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I },
+      { -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I },
+      { 5.000000e-01f + 8.660254e-01f * _Complex_I, 5.000000e-01f - 8.660254e-01f * _Complex_I,
+        5.000000e-01f - 8.660254e-01f * _Complex_I, 5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        1.000000e+00f - 7.347881e-16f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I } },
+    { { 5.000000e-01f - 8.660254e-01f * _Complex_I, -1.000000e+00f + 6.123234e-16f * _Complex_I,
+        5.000000e-01f + 8.660254e-01f * _Complex_I, -1.000000e+00f + 6.123234e-16f * _Complex_I,
+        1.000000e+00f + 0.000000e+00f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I },
+      { -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        1.000000e+00f - 2.266216e-15f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I },
+      { 5.000000e-01f - 8.660254e-01f * _Complex_I, 5.000000e-01f - 8.660254e-01f * _Complex_I,
+        5.000000e-01f + 8.660254e-01f * _Complex_I, 5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, 1.000000e+00f - 1.133108e-15f * _Complex_I },
+      { -5.000000e-01f + 8.660254e-01f * _Complex_I, 1.000000e+00f - 7.347881e-16f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, 1.000000e+00f - 4.898587e-16f * _Complex_I,
+        1.000000e+00f - 2.449294e-16f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I },
+      { 5.000000e-01f - 8.660254e-01f * _Complex_I, 5.000000e-01f + 8.660254e-01f * _Complex_I,
+        5.000000e-01f + 8.660254e-01f * _Complex_I, 5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        1.000000e+00f - 7.347881e-16f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I },
+      { -5.000000e-01f + 8.660254e-01f * _Complex_I, -5.000000e-01f + 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f - 8.660254e-01f * _Complex_I, -5.000000e-01f - 8.660254e-01f * _Complex_I,
+        -5.000000e-01f + 8.660254e-01f * _Complex_I, 1.000000e+00f + 0.000000e+00f * _Complex_I } },
+  };
+
+  static const float complex harr[4][13][13]
+      = { { { 1.326343e-03f - 1.299441e-18f * _Complex_I, 7.091837e-04f - 1.228342e-03f * _Complex_I,
+              -6.278557e-04f - 1.087478e-03f * _Complex_I, -1.157216e-03f + 9.920263e-19f * _Complex_I,
+              -4.887166e-04f + 8.464820e-04f * _Complex_I, 5.758687e-04f + 9.974338e-04f * _Complex_I,
+              1.225183e-03f - 9.002496e-19f * _Complex_I, 5.758687e-04f - 9.974338e-04f * _Complex_I,
+              -4.887166e-04f - 8.464820e-04f * _Complex_I, -1.157216e-03f + 7.085902e-19f * _Complex_I,
+              -6.278557e-04f + 1.087478e-03f * _Complex_I, 7.091837e-04f + 1.228342e-03f * _Complex_I,
+              1.326343e-03f - 6.497206e-19f * _Complex_I },
+            { -1.980815e-03f + 1.698059e-18f * _Complex_I, -1.070384e-03f + 1.853959e-03f * _Complex_I,
+              7.924697e-04f + 1.372598e-03f * _Complex_I, 1.876584e-03f - 1.378892e-18f * _Complex_I,
+              1.225866e-03f - 2.123262e-03f * _Complex_I, -1.569320e-03f - 2.718142e-03f * _Complex_I,
+              -3.273971e-03f + 2.004729e-18f * _Complex_I, -1.569320e-03f + 2.718142e-03f * _Complex_I,
+              1.225866e-03f + 2.123262e-03f * _Complex_I, 1.876584e-03f - 9.192611e-19f * _Complex_I,
+              7.924697e-04f - 1.372598e-03f * _Complex_I, -1.070384e-03f - 1.853959e-03f * _Complex_I,
+              -1.980815e-03f + 7.277398e-19f * _Complex_I },
+            { 1.457023e-03f - 1.070603e-18f * _Complex_I, 8.487143e-04f - 1.470016e-03f * _Complex_I,
+              -6.873776e-04f - 1.190573e-03f * _Complex_I, -2.668335e-03f + 1.633884e-18f * _Complex_I,
+              -2.459813e-03f + 4.260521e-03f * _Complex_I, 3.238772e-03f + 5.609717e-03f * _Complex_I,
+              7.074895e-03f - 3.465699e-18f * _Complex_I, 3.238772e-03f - 5.609717e-03f * _Complex_I,
+              -2.459813e-03f - 4.260521e-03f * _Complex_I, -2.668335e-03f + 9.803302e-19f * _Complex_I,
+              -6.873776e-04f + 1.190573e-03f * _Complex_I, 8.487143e-04f + 1.470016e-03f * _Complex_I,
+              1.457023e-03f - 3.568678e-19f * _Complex_I },
+            { -1.017660e-03f + 6.231370e-19f * _Complex_I, -5.415171e-04f + 9.379351e-04f * _Complex_I,
+              7.255109e-04f + 1.256622e-03f * _Complex_I, 3.699792e-03f - 1.812375e-18f * _Complex_I,
+              4.090356e-03f - 7.084704e-03f * _Complex_I, -6.006283e-03f - 1.040319e-02f * _Complex_I,
+              -1.391431e-02f + 5.112034e-18f * _Complex_I, -6.006283e-03f + 1.040319e-02f * _Complex_I,
+              4.090356e-03f + 7.084704e-03f * _Complex_I, 3.699792e-03f - 9.061876e-19f * _Complex_I,
+              7.255109e-04f - 1.256622e-03f * _Complex_I, -5.415171e-04f - 9.379351e-04f * _Complex_I,
+              -1.017660e-03f + 1.246274e-19f * _Complex_I },
+            { 9.198983e-04f - 4.506202e-19f * _Complex_I, 6.815900e-04f - 1.180548e-03f * _Complex_I,
+              -1.287335e-03f - 2.229729e-03f * _Complex_I, -5.023856e-03f + 1.845735e-18f * _Complex_I,
+              -5.499048e-03f + 9.524630e-03f * _Complex_I, 9.797672e-03f + 1.697006e-02f * _Complex_I,
+              2.504795e-02f - 6.134977e-18f * _Complex_I, 9.797672e-03f - 1.697006e-02f * _Complex_I,
+              -5.499048e-03f - 9.524630e-03f * _Complex_I, -5.023856e-03f + 6.152449e-19f * _Complex_I,
+              -1.287335e-03f + 2.229729e-03f * _Complex_I, 6.815900e-04f + 1.180548e-03f * _Complex_I,
+              9.198983e-04f + 0.000000e+00f * _Complex_I },
+            { -7.972663e-04f + 2.929109e-19f * _Complex_I, -1.145605e-03f + 1.984247e-03f * _Complex_I,
+              1.983334e-03f + 3.435235e-03f * _Complex_I, 6.730096e-03f - 1.648398e-18f * _Complex_I,
+              6.782033e-03f - 1.174683e-02f * _Complex_I, -1.392077e-02f - 2.411147e-02f * _Complex_I,
+              -3.906939e-02f + 4.784620e-18f * _Complex_I, -1.392077e-02f + 2.411147e-02f * _Complex_I,
+              6.782033e-03f + 1.174683e-02f * _Complex_I, 6.730096e-03f + 0.000000e+00f * _Complex_I,
+              1.983334e-03f - 3.435235e-03f * _Complex_I, -1.145605e-03f - 1.984247e-03f * _Complex_I,
+              -7.972663e-04f - 9.763696e-20f * _Complex_I },
+            { 8.625458e-04f - 2.112628e-19f * _Complex_I, 1.431113e-03f - 2.478760e-03f * _Complex_I,
+              -2.310309e-03f - 4.001572e-03f * _Complex_I, -7.706486e-03f + 9.437723e-19f * _Complex_I,
+              -7.220186e-03f + 1.250573e-02f * _Complex_I, 1.587118e-02f + 2.748969e-02f * _Complex_I,
+              4.765675e-02f + 0.000000e+00f * _Complex_I, 1.587118e-02f - 2.748969e-02f * _Complex_I,
+              -7.220186e-03f - 1.250573e-02f * _Complex_I, -7.706486e-03f - 9.437723e-19f * _Complex_I,
+              -2.310309e-03f + 4.001572e-03f * _Complex_I, 1.431113e-03f + 2.478760e-03f * _Complex_I,
+              8.625458e-04f + 2.112628e-19f * _Complex_I },
+            { -7.972663e-04f + 9.763696e-20f * _Complex_I, -1.145605e-03f + 1.984247e-03f * _Complex_I,
+              1.983334e-03f + 3.435235e-03f * _Complex_I, 6.730096e-03f + 0.000000e+00f * _Complex_I,
+              6.782033e-03f - 1.174683e-02f * _Complex_I, -1.392077e-02f - 2.411147e-02f * _Complex_I,
+              -3.906939e-02f - 4.784620e-18f * _Complex_I, -1.392077e-02f + 2.411147e-02f * _Complex_I,
+              6.782033e-03f + 1.174683e-02f * _Complex_I, 6.730096e-03f + 1.648398e-18f * _Complex_I,
+              1.983334e-03f - 3.435235e-03f * _Complex_I, -1.145605e-03f - 1.984247e-03f * _Complex_I,
+              -7.972663e-04f - 2.929109e-19f * _Complex_I },
+            { 9.198983e-04f + 0.000000e+00f * _Complex_I, 6.815900e-04f - 1.180548e-03f * _Complex_I,
+              -1.287335e-03f - 2.229729e-03f * _Complex_I, -5.023856e-03f - 6.152449e-19f * _Complex_I,
+              -5.499048e-03f + 9.524630e-03f * _Complex_I, 9.797672e-03f + 1.697006e-02f * _Complex_I,
+              2.504795e-02f + 6.134977e-18f * _Complex_I, 9.797672e-03f - 1.697006e-02f * _Complex_I,
+              -5.499048e-03f - 9.524630e-03f * _Complex_I, -5.023856e-03f - 1.845735e-18f * _Complex_I,
+              -1.287335e-03f + 2.229729e-03f * _Complex_I, 6.815900e-04f + 1.180548e-03f * _Complex_I,
+              9.198983e-04f + 4.506202e-19f * _Complex_I },
+            { -1.017660e-03f - 1.246274e-19f * _Complex_I, -5.415171e-04f + 9.379351e-04f * _Complex_I,
+              7.255109e-04f + 1.256622e-03f * _Complex_I, 3.699792e-03f + 9.061876e-19f * _Complex_I,
+              4.090356e-03f - 7.084704e-03f * _Complex_I, -6.006283e-03f - 1.040319e-02f * _Complex_I,
+              -1.391431e-02f - 5.112034e-18f * _Complex_I, -6.006283e-03f + 1.040319e-02f * _Complex_I,
+              4.090356e-03f + 7.084704e-03f * _Complex_I, 3.699792e-03f + 1.812375e-18f * _Complex_I,
+              7.255109e-04f - 1.256622e-03f * _Complex_I, -5.415171e-04f - 9.379351e-04f * _Complex_I,
+              -1.017660e-03f - 6.231370e-19f * _Complex_I },
+            { 1.457023e-03f + 3.568678e-19f * _Complex_I, 8.487143e-04f - 1.470016e-03f * _Complex_I,
+              -6.873776e-04f - 1.190573e-03f * _Complex_I, -2.668335e-03f - 9.803302e-19f * _Complex_I,
+              -2.459813e-03f + 4.260521e-03f * _Complex_I, 3.238772e-03f + 5.609717e-03f * _Complex_I,
+              7.074895e-03f + 3.465699e-18f * _Complex_I, 3.238772e-03f - 5.609717e-03f * _Complex_I,
+              -2.459813e-03f - 4.260521e-03f * _Complex_I, -2.668335e-03f - 1.633884e-18f * _Complex_I,
+              -6.873776e-04f + 1.190573e-03f * _Complex_I, 8.487143e-04f + 1.470016e-03f * _Complex_I,
+              1.457023e-03f + 1.070603e-18f * _Complex_I },
+            { -1.980815e-03f - 7.277398e-19f * _Complex_I, -1.070384e-03f + 1.853959e-03f * _Complex_I,
+              7.924697e-04f + 1.372598e-03f * _Complex_I, 1.876584e-03f + 9.192611e-19f * _Complex_I,
+              1.225866e-03f - 2.123262e-03f * _Complex_I, -1.569320e-03f - 2.718142e-03f * _Complex_I,
+              -3.273971e-03f - 2.004729e-18f * _Complex_I, -1.569320e-03f + 2.718142e-03f * _Complex_I,
+              1.225866e-03f + 2.123262e-03f * _Complex_I, 1.876584e-03f + 1.378892e-18f * _Complex_I,
+              7.924697e-04f - 1.372598e-03f * _Complex_I, -1.070384e-03f - 1.853959e-03f * _Complex_I,
+              -1.980815e-03f - 1.698059e-18f * _Complex_I },
+            { 1.326343e-03f + 6.497206e-19f * _Complex_I, 7.091837e-04f - 1.228342e-03f * _Complex_I,
+              -6.278557e-04f - 1.087478e-03f * _Complex_I, -1.157216e-03f - 7.085902e-19f * _Complex_I,
+              -4.887166e-04f + 8.464820e-04f * _Complex_I, 5.758687e-04f + 9.974338e-04f * _Complex_I,
+              1.225183e-03f + 9.002496e-19f * _Complex_I, 5.758687e-04f - 9.974338e-04f * _Complex_I,
+              -4.887166e-04f - 8.464820e-04f * _Complex_I, -1.157216e-03f - 9.920263e-19f * _Complex_I,
+              -6.278557e-04f + 1.087478e-03f * _Complex_I, 7.091837e-04f + 1.228342e-03f * _Complex_I,
+              1.326343e-03f + 1.299441e-18f * _Complex_I } },
+          { { 9.129120e-04f - 8.943958e-19f * _Complex_I, -5.925973e-04f - 1.026409e-03f * _Complex_I,
+              -5.989682e-04f + 1.037443e-03f * _Complex_I, 1.158755e-03f - 8.514393e-19f * _Complex_I,
+              -8.992493e-04f - 1.557545e-03f * _Complex_I, -1.283187e-03f + 2.222546e-03f * _Complex_I,
+              2.730635e-03f - 1.337625e-18f * _Complex_I, -1.283187e-03f - 2.222546e-03f * _Complex_I,
+              -8.992493e-04f + 1.557545e-03f * _Complex_I, 1.158755e-03f - 2.838131e-19f * _Complex_I,
+              -5.989682e-04f - 1.037443e-03f * _Complex_I, -5.925973e-04f + 1.026409e-03f * _Complex_I,
+              9.129120e-04f + 0.000000e+00f * _Complex_I },
+            { -5.588854e-04f - 9.680179e-04f * _Complex_I, -6.474856e-04f + 1.121478e-03f * _Complex_I,
+              1.536588e-03f - 1.129066e-18f * _Complex_I, -9.123802e-04f - 1.580289e-03f * _Complex_I,
+              -1.541434e-03f + 2.669842e-03f * _Complex_I, 4.379825e-03f - 9.925627e-18f * _Complex_I,
+              -2.394173e-03f - 4.146830e-03f * _Complex_I, -2.189912e-03f + 3.793039e-03f * _Complex_I,
+              3.082869e-03f - 3.493222e-18f * _Complex_I, -9.123802e-04f - 1.580289e-03f * _Complex_I,
+              -7.682939e-04f + 1.330724e-03f * _Complex_I, 1.294971e-03f + 0.000000e+00f * _Complex_I,
+              -5.588854e-04f - 9.680179e-04f * _Complex_I },
+            { -5.883876e-04f + 1.019117e-03f * _Complex_I, 1.714796e-03f - 1.260012e-18f * _Complex_I,
+              -1.180365e-03f - 2.044451e-03f * _Complex_I, -1.483082e-03f + 2.568774e-03f * _Complex_I,
+              4.933362e-03f - 2.416651e-18f * _Complex_I, -3.296542e-03f - 5.709779e-03f * _Complex_I,
+              -3.546477e-03f + 6.142678e-03f * _Complex_I, 6.593085e-03f - 1.614840e-18f * _Complex_I,
+              -2.466681e-03f - 4.272417e-03f * _Complex_I, -1.483082e-03f + 2.568774e-03f * _Complex_I,
+              2.360729e-03f + 0.000000e+00f * _Complex_I, -8.573982e-04f - 1.485057e-03f * _Complex_I,
+              -5.883876e-04f + 1.019117e-03f * _Complex_I },
+            { 1.483526e-03f - 1.090077e-18f * _Complex_I, -1.074793e-03f - 1.861596e-03f * _Complex_I,
+              -1.447448e-03f + 2.507053e-03f * _Complex_I, 3.952416e-03f - 1.936126e-18f * _Complex_I,
+              -3.496688e-03f - 6.056441e-03f * _Complex_I, -4.898024e-03f + 8.483627e-03f * _Complex_I,
+              1.070518e-02f - 2.622012e-18f * _Complex_I, -4.898024e-03f - 8.483627e-03f * _Complex_I,
+              -3.496688e-03f + 6.056441e-03f * _Complex_I, 3.952416e-03f + 0.000000e+00f * _Complex_I,
+              -1.447448e-03f - 2.507053e-03f * _Complex_I, -1.074793e-03f + 1.861596e-03f * _Complex_I,
+              1.483526e-03f + 3.633590e-19f * _Complex_I },
+            { -9.966429e-04f - 1.726236e-03f * _Complex_I, -1.478281e-03f + 2.560458e-03f * _Complex_I,
+              4.306274e-03f - 2.109466e-18f * _Complex_I, -3.294955e-03f - 5.707029e-03f * _Complex_I,
+              -5.436890e-03f + 9.416970e-03f * _Complex_I, 1.556418e-02f - 3.812124e-18f * _Complex_I,
+              -8.842875e-03f - 1.531631e-02f * _Complex_I, -7.782088e-03f + 1.347897e-02f * _Complex_I,
+              1.087378e-02f + 0.000000e+00f * _Complex_I, -3.294955e-03f - 5.707029e-03f * _Complex_I,
+              -2.153137e-03f + 3.729342e-03f * _Complex_I, 2.956562e-03f + 3.350104e-18f * _Complex_I,
+              -9.966429e-04f - 1.726236e-03f * _Complex_I },
+            { -1.291288e-03f + 2.236576e-03f * _Complex_I, 3.942788e-03f - 8.935208e-18f * _Complex_I,
+              -2.798347e-03f - 4.846880e-03f * _Complex_I, -4.448869e-03f + 7.705666e-03f * _Complex_I,
+              1.522441e-02f - 3.728906e-18f * _Complex_I, -1.175443e-02f - 2.035927e-02f * _Complex_I,
+              -1.417872e-02f + 2.455826e-02f * _Complex_I, 2.350886e-02f + 0.000000e+00f * _Complex_I,
+              -7.612206e-03f - 1.318473e-02f * _Complex_I, -4.448869e-03f + 7.705666e-03f * _Complex_I,
+              5.596695e-03f + 1.370795e-18f * _Complex_I, -1.971394e-03f - 3.414555e-03f * _Complex_I,
+              -1.291288e-03f + 2.236576e-03f * _Complex_I },
+            { 2.779286e-03f - 1.361458e-18f * _Complex_I, -2.194126e-03f - 3.800338e-03f * _Complex_I,
+              -3.057720e-03f + 5.296126e-03f * _Complex_I, 9.725261e-03f - 2.382002e-18f * _Complex_I,
+              -8.649261e-03f - 1.498096e-02f * _Complex_I, -1.417667e-02f + 2.455472e-02f * _Complex_I,
+              3.552610e-02f + 0.000000e+00f * _Complex_I, -1.417667e-02f - 2.455472e-02f * _Complex_I,
+              -8.649261e-03f + 1.498096e-02f * _Complex_I, 9.725261e-03f + 2.382002e-18f * _Complex_I,
+              -3.057720e-03f - 5.296126e-03f * _Complex_I, -2.194126e-03f + 3.800338e-03f * _Complex_I,
+              2.779286e-03f + 1.361458e-18f * _Complex_I },
+            { -1.291288e-03f - 2.236576e-03f * _Complex_I, -1.971394e-03f + 3.414555e-03f * _Complex_I,
+              5.596695e-03f - 1.370795e-18f * _Complex_I, -4.448869e-03f - 7.705666e-03f * _Complex_I,
+              -7.612206e-03f + 1.318473e-02f * _Complex_I, 2.350886e-02f + 0.000000e+00f * _Complex_I,
+              -1.417872e-02f - 2.455826e-02f * _Complex_I, -1.175443e-02f + 2.035927e-02f * _Complex_I,
+              1.522441e-02f + 3.728906e-18f * _Complex_I, -4.448869e-03f - 7.705666e-03f * _Complex_I,
+              -2.798347e-03f + 4.846880e-03f * _Complex_I, 3.942788e-03f + 8.935208e-18f * _Complex_I,
+              -1.291288e-03f - 2.236576e-03f * _Complex_I },
+            { -9.966429e-04f + 1.726236e-03f * _Complex_I, 2.956562e-03f - 3.350104e-18f * _Complex_I,
+              -2.153137e-03f - 3.729342e-03f * _Complex_I, -3.294955e-03f + 5.707029e-03f * _Complex_I,
+              1.087378e-02f + 0.000000e+00f * _Complex_I, -7.782088e-03f - 1.347897e-02f * _Complex_I,
+              -8.842875e-03f + 1.531631e-02f * _Complex_I, 1.556418e-02f + 3.812124e-18f * _Complex_I,
+              -5.436890e-03f - 9.416970e-03f * _Complex_I, -3.294955e-03f + 5.707029e-03f * _Complex_I,
+              4.306274e-03f + 2.109466e-18f * _Complex_I, -1.478281e-03f - 2.560458e-03f * _Complex_I,
+              -9.966429e-04f + 1.726236e-03f * _Complex_I },
+            { 1.483526e-03f - 3.633590e-19f * _Complex_I, -1.074793e-03f - 1.861596e-03f * _Complex_I,
+              -1.447448e-03f + 2.507053e-03f * _Complex_I, 3.952416e-03f + 0.000000e+00f * _Complex_I,
+              -3.496688e-03f - 6.056441e-03f * _Complex_I, -4.898024e-03f + 8.483627e-03f * _Complex_I,
+              1.070518e-02f + 2.622012e-18f * _Complex_I, -4.898024e-03f - 8.483627e-03f * _Complex_I,
+              -3.496688e-03f + 6.056441e-03f * _Complex_I, 3.952416e-03f + 1.936126e-18f * _Complex_I,
+              -1.447448e-03f - 2.507053e-03f * _Complex_I, -1.074793e-03f + 1.861596e-03f * _Complex_I,
+              1.483526e-03f + 1.090077e-18f * _Complex_I },
+            { -5.883876e-04f - 1.019117e-03f * _Complex_I, -8.573982e-04f + 1.485057e-03f * _Complex_I,
+              2.360729e-03f + 0.000000e+00f * _Complex_I, -1.483082e-03f - 2.568774e-03f * _Complex_I,
+              -2.466681e-03f + 4.272417e-03f * _Complex_I, 6.593085e-03f + 1.614840e-18f * _Complex_I,
+              -3.546477e-03f - 6.142678e-03f * _Complex_I, -3.296542e-03f + 5.709779e-03f * _Complex_I,
+              4.933362e-03f + 2.416651e-18f * _Complex_I, -1.483082e-03f - 2.568774e-03f * _Complex_I,
+              -1.180365e-03f + 2.044451e-03f * _Complex_I, 1.714796e-03f + 1.260012e-18f * _Complex_I,
+              -5.883876e-04f - 1.019117e-03f * _Complex_I },
+            { -5.588854e-04f + 9.680179e-04f * _Complex_I, 1.294971e-03f + 0.000000e+00f * _Complex_I,
+              -7.682939e-04f - 1.330724e-03f * _Complex_I, -9.123802e-04f + 1.580289e-03f * _Complex_I,
+              3.082869e-03f + 3.493222e-18f * _Complex_I, -2.189912e-03f - 3.793039e-03f * _Complex_I,
+              -2.394173e-03f + 4.146830e-03f * _Complex_I, 4.379825e-03f + 9.925627e-18f * _Complex_I,
+              -1.541434e-03f - 2.669842e-03f * _Complex_I, -9.123802e-04f + 1.580289e-03f * _Complex_I,
+              1.536588e-03f + 1.129066e-18f * _Complex_I, -6.474856e-04f - 1.121478e-03f * _Complex_I,
+              -5.588854e-04f + 9.680179e-04f * _Complex_I },
+            { 9.129120e-04f + 0.000000e+00f * _Complex_I, -5.925973e-04f - 1.026409e-03f * _Complex_I,
+              -5.989682e-04f + 1.037443e-03f * _Complex_I, 1.158755e-03f + 2.838131e-19f * _Complex_I,
+              -8.992493e-04f - 1.557545e-03f * _Complex_I, -1.283187e-03f + 2.222546e-03f * _Complex_I,
+              2.730635e-03f + 1.337625e-18f * _Complex_I, -1.283187e-03f - 2.222546e-03f * _Complex_I,
+              -8.992493e-04f + 1.557545e-03f * _Complex_I, 1.158755e-03f + 8.514393e-19f * _Complex_I,
+              -5.989682e-04f - 1.037443e-03f * _Complex_I, -5.925973e-04f + 1.026409e-03f * _Complex_I,
+              9.129120e-04f + 8.943958e-19f * _Complex_I } },
+          { { 8.228091e-04f + 0.000000e+00f * _Complex_I, -5.365069e-04f + 9.292572e-04f * _Complex_I,
+              -6.011501e-04f - 1.041223e-03f * _Complex_I, 1.249890e-03f - 3.061346e-19f * _Complex_I,
+              -7.632708e-04f + 1.322024e-03f * _Complex_I, -9.846035e-04f - 1.705383e-03f * _Complex_I,
+              2.080486e-03f - 1.019144e-18f * _Complex_I, -9.846035e-04f + 1.705383e-03f * _Complex_I,
+              -7.632708e-04f - 1.322024e-03f * _Complex_I, 1.249890e-03f - 9.184039e-19f * _Complex_I,
+              -6.011501e-04f + 1.041223e-03f * _Complex_I, -5.365069e-04f - 9.292572e-04f * _Complex_I,
+              8.228091e-04f - 8.061204e-19f * _Complex_I },
+            { -5.616336e-04f - 9.727779e-04f * _Complex_I, 1.382894e-03f + 0.000000e+00f * _Complex_I,
+              -8.694311e-04f + 1.505899e-03f * _Complex_I, -9.721139e-04f - 1.683751e-03f * _Complex_I,
+              2.446785e-03f - 2.772471e-18f * _Complex_I, -1.605471e-03f + 2.780758e-03f * _Complex_I,
+              -1.832781e-03f - 3.174469e-03f * _Complex_I, 3.210942e-03f - 7.276687e-18f * _Complex_I,
+              -1.223392e-03f + 2.118978e-03f * _Complex_I, -9.721139e-04f - 1.683751e-03f * _Complex_I,
+              1.738862e-03f - 1.277695e-18f * _Complex_I, -6.914471e-04f + 1.197621e-03f * _Complex_I,
+              -5.616336e-04f - 9.727779e-04f * _Complex_I },
+            { -5.723872e-04f + 9.914038e-04f * _Complex_I, -8.302721e-04f - 1.438073e-03f * _Complex_I,
+              2.445280e-03f + 0.000000e+00f * _Complex_I, -1.378399e-03f + 2.387458e-03f * _Complex_I,
+              -1.882898e-03f - 3.261274e-03f * _Complex_I, 4.921549e-03f - 1.205432e-18f * _Complex_I,
+              -2.760152e-03f + 4.780723e-03f * _Complex_I, -2.460774e-03f - 4.262186e-03f * _Complex_I,
+              3.765795e-03f - 1.844708e-18f * _Complex_I, -1.378399e-03f + 2.387458e-03f * _Complex_I,
+              -1.222640e-03f - 2.117675e-03f * _Complex_I, 1.660544e-03f - 1.220148e-18f * _Complex_I,
+              -5.723872e-04f + 9.914038e-04f * _Complex_I },
+            { 1.226482e-03f + 3.004015e-19f * _Complex_I, -9.600816e-04f + 1.662910e-03f * _Complex_I,
+              -1.495900e-03f - 2.590974e-03f * _Complex_I, 3.833507e-03f + 0.000000e+00f * _Complex_I,
+              -3.167257e-03f + 5.485850e-03f * _Complex_I, -4.303595e-03f - 7.454046e-03f * _Complex_I,
+              9.412791e-03f - 2.305469e-18f * _Complex_I, -4.303595e-03f + 7.454046e-03f * _Complex_I,
+              -3.167257e-03f - 5.485850e-03f * _Complex_I, 3.833507e-03f - 1.877877e-18f * _Complex_I,
+              -1.495900e-03f + 2.590974e-03f * _Complex_I, -9.600816e-04f - 1.662910e-03f * _Complex_I,
+              1.226482e-03f - 9.012046e-19f * _Complex_I },
+            { -9.898007e-04f - 1.714385e-03f * _Complex_I, 3.215120e-03f + 3.643077e-18f * _Complex_I,
+              -2.507621e-03f + 4.343327e-03f * _Complex_I, -3.557798e-03f - 6.162286e-03f * _Complex_I,
+              1.105198e-02f + 0.000000e+00f * _Complex_I, -7.691179e-03f + 1.332151e-02f * _Complex_I,
+              -8.705793e-03f - 1.507888e-02f * _Complex_I, 1.538236e-02f - 3.767591e-18f * _Complex_I,
+              -5.525988e-03f + 9.571292e-03f * _Complex_I, -3.557798e-03f - 6.162286e-03f * _Complex_I,
+              5.015242e-03f - 2.456760e-18f * _Complex_I, -1.607560e-03f + 2.784375e-03f * _Complex_I,
+              -9.898007e-04f - 1.714385e-03f * _Complex_I },
+            { -1.414655e-03f + 2.450254e-03f * _Complex_I, -2.341263e-03f - 4.055186e-03f * _Complex_I,
+              6.915775e-03f + 1.693876e-18f * _Complex_I, -5.086403e-03f + 8.809908e-03f * _Complex_I,
+              -8.062191e-03f - 1.396412e-02f * _Complex_I, 2.415333e-02f + 0.000000e+00f * _Complex_I,
+              -1.451128e-02f + 2.513428e-02f * _Complex_I, -1.207667e-02f - 2.091740e-02f * _Complex_I,
+              1.612438e-02f - 3.949335e-18f * _Complex_I, -5.086403e-03f + 8.809908e-03f * _Complex_I,
+              -3.457887e-03f - 5.989237e-03f * _Complex_I, 4.682526e-03f - 1.061161e-17f * _Complex_I,
+              -1.414655e-03f + 2.450254e-03f * _Complex_I },
+            { 3.039574e-03f + 1.488962e-18f * _Complex_I, -2.598226e-03f + 4.500260e-03f * _Complex_I,
+              -3.750909e-03f - 6.496765e-03f * _Complex_I, 1.119776e-02f + 2.742661e-18f * _Complex_I,
+              -9.210579e-03f + 1.595319e-02f * _Complex_I, -1.464762e-02f - 2.537042e-02f * _Complex_I,
+              3.672076e-02f + 0.000000e+00f * _Complex_I, -1.464762e-02f + 2.537042e-02f * _Complex_I,
+              -9.210579e-03f - 1.595319e-02f * _Complex_I, 1.119776e-02f - 2.742661e-18f * _Complex_I,
+              -3.750909e-03f + 6.496765e-03f * _Complex_I, -2.598226e-03f - 4.500260e-03f * _Complex_I,
+              3.039574e-03f - 1.488962e-18f * _Complex_I },
+            { -1.414655e-03f - 2.450254e-03f * _Complex_I, 4.682526e-03f + 1.061161e-17f * _Complex_I,
+              -3.457887e-03f + 5.989237e-03f * _Complex_I, -5.086403e-03f - 8.809908e-03f * _Complex_I,
+              1.612438e-02f + 3.949335e-18f * _Complex_I, -1.207667e-02f + 2.091740e-02f * _Complex_I,
+              -1.451128e-02f - 2.513428e-02f * _Complex_I, 2.415333e-02f + 0.000000e+00f * _Complex_I,
+              -8.062191e-03f + 1.396412e-02f * _Complex_I, -5.086403e-03f - 8.809908e-03f * _Complex_I,
+              6.915775e-03f - 1.693876e-18f * _Complex_I, -2.341263e-03f + 4.055186e-03f * _Complex_I,
+              -1.414655e-03f - 2.450254e-03f * _Complex_I },
+            { -9.898007e-04f + 1.714385e-03f * _Complex_I, -1.607560e-03f - 2.784375e-03f * _Complex_I,
+              5.015242e-03f + 2.456760e-18f * _Complex_I, -3.557798e-03f + 6.162286e-03f * _Complex_I,
+              -5.525988e-03f - 9.571292e-03f * _Complex_I, 1.538236e-02f + 3.767591e-18f * _Complex_I,
+              -8.705793e-03f + 1.507888e-02f * _Complex_I, -7.691179e-03f - 1.332151e-02f * _Complex_I,
+              1.105198e-02f + 0.000000e+00f * _Complex_I, -3.557798e-03f + 6.162286e-03f * _Complex_I,
+              -2.507621e-03f - 4.343327e-03f * _Complex_I, 3.215120e-03f - 3.643077e-18f * _Complex_I,
+              -9.898007e-04f + 1.714385e-03f * _Complex_I },
+            { 1.226482e-03f + 9.012046e-19f * _Complex_I, -9.600816e-04f + 1.662910e-03f * _Complex_I,
+              -1.495900e-03f - 2.590974e-03f * _Complex_I, 3.833507e-03f + 1.877877e-18f * _Complex_I,
+              -3.167257e-03f + 5.485850e-03f * _Complex_I, -4.303595e-03f - 7.454046e-03f * _Complex_I,
+              9.412791e-03f + 2.305469e-18f * _Complex_I, -4.303595e-03f + 7.454046e-03f * _Complex_I,
+              -3.167257e-03f - 5.485850e-03f * _Complex_I, 3.833507e-03f + 0.000000e+00f * _Complex_I,
+              -1.495900e-03f + 2.590974e-03f * _Complex_I, -9.600816e-04f - 1.662910e-03f * _Complex_I,
+              1.226482e-03f - 3.004015e-19f * _Complex_I },
+            { -5.723872e-04f - 9.914038e-04f * _Complex_I, 1.660544e-03f + 1.220148e-18f * _Complex_I,
+              -1.222640e-03f + 2.117675e-03f * _Complex_I, -1.378399e-03f - 2.387458e-03f * _Complex_I,
+              3.765795e-03f + 1.844708e-18f * _Complex_I, -2.460774e-03f + 4.262186e-03f * _Complex_I,
+              -2.760152e-03f - 4.780723e-03f * _Complex_I, 4.921549e-03f + 1.205432e-18f * _Complex_I,
+              -1.882898e-03f + 3.261274e-03f * _Complex_I, -1.378399e-03f - 2.387458e-03f * _Complex_I,
+              2.445280e-03f + 0.000000e+00f * _Complex_I, -8.302721e-04f + 1.438073e-03f * _Complex_I,
+              -5.723872e-04f - 9.914038e-04f * _Complex_I },
+            { -5.616336e-04f + 9.727779e-04f * _Complex_I, -6.914471e-04f - 1.197621e-03f * _Complex_I,
+              1.738862e-03f + 1.277695e-18f * _Complex_I, -9.721139e-04f + 1.683751e-03f * _Complex_I,
+              -1.223392e-03f - 2.118978e-03f * _Complex_I, 3.210942e-03f + 7.276687e-18f * _Complex_I,
+              -1.832781e-03f + 3.174469e-03f * _Complex_I, -1.605471e-03f - 2.780758e-03f * _Complex_I,
+              2.446785e-03f + 2.772471e-18f * _Complex_I, -9.721139e-04f + 1.683751e-03f * _Complex_I,
+              -8.694311e-04f - 1.505899e-03f * _Complex_I, 1.382894e-03f + 0.000000e+00f * _Complex_I,
+              -5.616336e-04f + 9.727779e-04f * _Complex_I },
+            { 8.228091e-04f + 8.061204e-19f * _Complex_I, -5.365069e-04f + 9.292572e-04f * _Complex_I,
+              -6.011501e-04f - 1.041223e-03f * _Complex_I, 1.249890e-03f + 9.184039e-19f * _Complex_I,
+              -7.632708e-04f + 1.322024e-03f * _Complex_I, -9.846035e-04f - 1.705383e-03f * _Complex_I,
+              2.080486e-03f + 1.019144e-18f * _Complex_I, -9.846035e-04f + 1.705383e-03f * _Complex_I,
+              -7.632708e-04f - 1.322024e-03f * _Complex_I, 1.249890e-03f + 3.061346e-19f * _Complex_I,
+              -6.011501e-04f + 1.041223e-03f * _Complex_I, -5.365069e-04f - 9.292572e-04f * _Complex_I,
+              8.228091e-04f + 0.000000e+00f * _Complex_I } },
+          { { 1.221201e-03f + 5.982162e-19f * _Complex_I, -1.773498e-03f - 6.515727e-19f * _Complex_I,
+              1.246697e-03f + 3.053526e-19f * _Complex_I, -8.215306e-04f - 1.006085e-19f * _Complex_I,
+              7.609372e-04f + 0.000000e+00f * _Complex_I, -4.863927e-04f + 5.956592e-20f * _Complex_I,
+              4.882100e-04f - 1.195770e-19f * _Complex_I, -4.863927e-04f + 1.786978e-19f * _Complex_I,
+              7.609372e-04f - 3.727517e-19f * _Complex_I, -8.215306e-04f + 5.030424e-19f * _Complex_I,
+              1.246697e-03f - 9.160579e-19f * _Complex_I, -1.773498e-03f + 1.520336e-18f * _Complex_I,
+              1.221201e-03f - 1.196432e-18f * _Complex_I },
+            { 7.406884e-04f - 1.282910e-03f * _Complex_I, -1.025411e-03f + 1.776065e-03f * _Complex_I,
+              7.186273e-04f - 1.244699e-03f * _Complex_I, -4.025606e-04f + 6.972554e-04f * _Complex_I,
+              5.908383e-04f - 1.023362e-03f * _Complex_I, -1.125190e-03f + 1.948886e-03f * _Complex_I,
+              1.432695e-03f - 2.481501e-03f * _Complex_I, -1.125190e-03f + 1.948886e-03f * _Complex_I,
+              5.908383e-04f - 1.023362e-03f * _Complex_I, -4.025606e-04f + 6.972554e-04f * _Complex_I,
+              7.186273e-04f - 1.244699e-03f * _Complex_I, -1.025411e-03f + 1.776065e-03f * _Complex_I,
+              7.406884e-04f - 1.282910e-03f * _Complex_I },
+            { -7.162255e-04f - 1.240539e-03f * _Complex_I, 8.961176e-04f + 1.552121e-03f * _Complex_I,
+              -6.705589e-04f - 1.161442e-03f * _Complex_I, 6.187140e-04f + 1.071644e-03f * _Complex_I,
+              -1.165433e-03f - 2.018589e-03f * _Complex_I, 1.948120e-03f + 3.374242e-03f * _Complex_I,
+              -2.297663e-03f - 3.979669e-03f * _Complex_I, 1.948120e-03f + 3.374242e-03f * _Complex_I,
+              -1.165433e-03f - 2.018589e-03f * _Complex_I, 6.187140e-04f + 1.071644e-03f * _Complex_I,
+              -6.705589e-04f - 1.161442e-03f * _Complex_I, 8.961176e-04f + 1.552121e-03f * _Complex_I,
+              -7.162255e-04f - 1.240539e-03f * _Complex_I },
+            { -1.280260e-03f - 7.839331e-19f * _Complex_I, 1.987108e-03f + 9.734024e-19f * _Complex_I,
+              -2.614019e-03f - 9.603749e-19f * _Complex_I, 3.635167e-03f + 8.903590e-19f * _Complex_I,
+              -4.954867e-03f - 6.067962e-19f * _Complex_I, 6.653220e-03f + 0.000000e+00f * _Complex_I,
+              -7.600546e-03f + 9.307984e-19f * _Complex_I, 6.653220e-03f - 1.629569e-18f * _Complex_I,
+              -4.954867e-03f + 1.820389e-18f * _Complex_I, 3.635167e-03f - 1.780718e-18f * _Complex_I,
+              -2.614019e-03f + 1.600625e-18f * _Complex_I, 1.987108e-03f - 1.460104e-18f * _Complex_I,
+              -1.280260e-03f + 1.097506e-18f * _Complex_I },
+            { -5.756945e-04f + 9.971322e-04f * _Complex_I, 1.268614e-03f - 2.197304e-03f * _Complex_I,
+              -2.421407e-03f + 4.194000e-03f * _Complex_I, 4.045715e-03f - 7.007384e-03f * _Complex_I,
+              -5.527367e-03f + 9.573681e-03f * _Complex_I, 6.837207e-03f - 1.184239e-02f * _Complex_I,
+              -7.288212e-03f + 1.262355e-02f * _Complex_I, 6.837207e-03f - 1.184239e-02f * _Complex_I,
+              -5.527367e-03f + 9.573681e-03f * _Complex_I, 4.045715e-03f - 7.007384e-03f * _Complex_I,
+              -2.421407e-03f + 4.194000e-03f * _Complex_I, 1.268614e-03f - 2.197304e-03f * _Complex_I,
+              -5.756945e-04f + 9.971322e-04f * _Complex_I },
+            { 7.349896e-04f + 1.273039e-03f * _Complex_I, -1.748057e-03f - 3.027723e-03f * _Complex_I,
+              3.332671e-03f + 5.772355e-03f * _Complex_I, -6.051736e-03f - 1.048191e-02f * _Complex_I,
+              9.842376e-03f + 1.704749e-02f * _Complex_I, -1.401169e-02f - 2.426897e-02f * _Complex_I,
+              1.598601e-02f + 2.768858e-02f * _Complex_I, -1.401169e-02f - 2.426897e-02f * _Complex_I,
+              9.842376e-03f + 1.704749e-02f * _Complex_I, -6.051736e-03f - 1.048191e-02f * _Complex_I,
+              3.332671e-03f + 5.772355e-03f * _Complex_I, -1.748057e-03f - 3.027723e-03f * _Complex_I,
+              7.349896e-04f + 1.273039e-03f * _Complex_I },
+            { 1.400383e-03f + 1.028985e-18f * _Complex_I, -3.545886e-03f - 2.171229e-18f * _Complex_I,
+              7.289370e-03f + 3.570761e-18f * _Complex_I, -1.418908e-02f - 5.212982e-18f * _Complex_I,
+              2.520839e-02f + 6.174275e-18f * _Complex_I, -3.934772e-02f - 4.818706e-18f * _Complex_I,
+              4.797481e-02f + 0.000000e+00f * _Complex_I, -3.934772e-02f + 4.818706e-18f * _Complex_I,
+              2.520839e-02f - 6.174275e-18f * _Complex_I, -1.418908e-02f + 5.212982e-18f * _Complex_I,
+              7.289370e-03f - 3.570761e-18f * _Complex_I, -3.545886e-03f + 2.171229e-18f * _Complex_I,
+              1.400383e-03f - 1.028985e-18f * _Complex_I },
+            { 7.349896e-04f - 1.273039e-03f * _Complex_I, -1.748057e-03f + 3.027723e-03f * _Complex_I,
+              3.332671e-03f - 5.772355e-03f * _Complex_I, -6.051736e-03f + 1.048191e-02f * _Complex_I,
+              9.842376e-03f - 1.704749e-02f * _Complex_I, -1.401169e-02f + 2.426897e-02f * _Complex_I,
+              1.598601e-02f - 2.768858e-02f * _Complex_I, -1.401169e-02f + 2.426897e-02f * _Complex_I,
+              9.842376e-03f - 1.704749e-02f * _Complex_I, -6.051736e-03f + 1.048191e-02f * _Complex_I,
+              3.332671e-03f - 5.772355e-03f * _Complex_I, -1.748057e-03f + 3.027723e-03f * _Complex_I,
+              7.349896e-04f - 1.273039e-03f * _Complex_I },
+            { -5.756945e-04f - 9.971322e-04f * _Complex_I, 1.268614e-03f + 2.197304e-03f * _Complex_I,
+              -2.421407e-03f - 4.194000e-03f * _Complex_I, 4.045715e-03f + 7.007384e-03f * _Complex_I,
+              -5.527367e-03f - 9.573681e-03f * _Complex_I, 6.837207e-03f + 1.184239e-02f * _Complex_I,
+              -7.288212e-03f - 1.262355e-02f * _Complex_I, 6.837207e-03f + 1.184239e-02f * _Complex_I,
+              -5.527367e-03f - 9.573681e-03f * _Complex_I, 4.045715e-03f + 7.007384e-03f * _Complex_I,
+              -2.421407e-03f - 4.194000e-03f * _Complex_I, 1.268614e-03f + 2.197304e-03f * _Complex_I,
+              -5.756945e-04f - 9.971322e-04f * _Complex_I },
+            { -1.280260e-03f - 1.097506e-18f * _Complex_I, 1.987108e-03f + 1.460104e-18f * _Complex_I,
+              -2.614019e-03f - 1.600625e-18f * _Complex_I, 3.635167e-03f + 1.780718e-18f * _Complex_I,
+              -4.954867e-03f - 1.820389e-18f * _Complex_I, 6.653220e-03f + 1.629569e-18f * _Complex_I,
+              -7.600546e-03f - 9.307984e-19f * _Complex_I, 6.653220e-03f + 0.000000e+00f * _Complex_I,
+              -4.954867e-03f + 6.067962e-19f * _Complex_I, 3.635167e-03f - 8.903590e-19f * _Complex_I,
+              -2.614019e-03f + 9.603749e-19f * _Complex_I, 1.987108e-03f - 9.734024e-19f * _Complex_I,
+              -1.280260e-03f + 7.839331e-19f * _Complex_I },
+            { -7.162255e-04f + 1.240539e-03f * _Complex_I, 8.961176e-04f - 1.552121e-03f * _Complex_I,
+              -6.705589e-04f + 1.161442e-03f * _Complex_I, 6.187140e-04f - 1.071644e-03f * _Complex_I,
+              -1.165433e-03f + 2.018589e-03f * _Complex_I, 1.948120e-03f - 3.374242e-03f * _Complex_I,
+              -2.297663e-03f + 3.979669e-03f * _Complex_I, 1.948120e-03f - 3.374242e-03f * _Complex_I,
+              -1.165433e-03f + 2.018589e-03f * _Complex_I, 6.187140e-04f - 1.071644e-03f * _Complex_I,
+              -6.705589e-04f + 1.161442e-03f * _Complex_I, 8.961176e-04f - 1.552121e-03f * _Complex_I,
+              -7.162255e-04f + 1.240539e-03f * _Complex_I },
+            { 7.406884e-04f + 1.282910e-03f * _Complex_I, -1.025411e-03f - 1.776065e-03f * _Complex_I,
+              7.186273e-04f + 1.244699e-03f * _Complex_I, -4.025606e-04f - 6.972554e-04f * _Complex_I,
+              5.908383e-04f + 1.023362e-03f * _Complex_I, -1.125190e-03f - 1.948886e-03f * _Complex_I,
+              1.432695e-03f + 2.481501e-03f * _Complex_I, -1.125190e-03f - 1.948886e-03f * _Complex_I,
+              5.908383e-04f + 1.023362e-03f * _Complex_I, -4.025606e-04f - 6.972554e-04f * _Complex_I,
+              7.186273e-04f + 1.244699e-03f * _Complex_I, -1.025411e-03f - 1.776065e-03f * _Complex_I,
+              7.406884e-04f + 1.282910e-03f * _Complex_I },
+            { 1.221201e-03f + 1.196432e-18f * _Complex_I, -1.773498e-03f - 1.520336e-18f * _Complex_I,
+              1.246697e-03f + 9.160579e-19f * _Complex_I, -8.215306e-04f - 5.030424e-19f * _Complex_I,
+              7.609372e-04f + 3.727517e-19f * _Complex_I, -4.863927e-04f - 1.786978e-19f * _Complex_I,
+              4.882100e-04f + 1.195770e-19f * _Complex_I, -4.863927e-04f - 5.956592e-20f * _Complex_I,
+              7.609372e-04f + 0.000000e+00f * _Complex_I, -8.215306e-04f + 1.006085e-19f * _Complex_I,
+              1.246697e-03f - 3.053526e-19f * _Complex_I, -1.773498e-03f + 6.515727e-19f * _Complex_I,
+              1.221201e-03f - 5.982162e-19f * _Complex_I } } };
+
+  const size_t buffer_size = (size_t)TS * TS * (ndir * 4 + 7) * sizeof(float);
+  char *const all_buffers = (char *)dt_alloc_align(16, dt_get_num_threads() * buffer_size);
+  if(!all_buffers)
+  {
+    fprintf(stderr, "[demosaic] not able to allocate FDC base buffers\n");
+    return;
+  }
+
+  /* Map a green hexagon around each non-green pixel and vice versa:    */
+  for(int row = 0; row < 3; row++)
+    for(int col = 0; col < 3; col++)
+      for(int ng = 0, d = 0; d < 10; d += 2)
+      {
+        int g = FCxtrans(row, col, NULL, xtrans) == 1;
+        if(FCxtrans(row + orth[d], col + orth[d + 2], NULL, xtrans) == 1)
+          ng = 0;
+        else
+          ng++;
+        // if there are four non-green pixels adjacent in cardinal
+        // directions, this is the solitary green pixel
+        if(ng == 4)
+        {
+          sgrow = row;
+          sgcol = col;
+        }
+        if(ng == g + 1)
+          for(int c = 0; c < 8; c++)
+          {
+            int v = orth[d] * patt[g][c * 2] + orth[d + 1] * patt[g][c * 2 + 1];
+            int h = orth[d + 2] * patt[g][c * 2] + orth[d + 3] * patt[g][c * 2 + 1];
+            // offset within TSxTS buffer
+            allhex[row][col][c ^ (g * 2 & d)] = h + v * TS;
+          }
+      }
+
+  // extra passes propagates out errors at edges, hence need more padding
+  const int pad_tile = 13;
+
+  // calculate offsets for this roi
+  int rowoffset = 0;
+  int coloffset = 0;
+  for(int row = 0; row < 6; row++)
+  {
+    if(!((row - sgrow) % 3))
+    {
+      for(int col = 0; col < 6; col++)
+      {
+        if(!((col - sgcol) % 3) && (FCxtrans(row, col + 1, roi_in, xtrans) == 0))
+        {
+          rowoffset = 37 - row - pad_tile; // 1 plus a generous multiple of 6
+          coloffset = 37 - col - pad_tile; // to avoid that this value gets negative
+          break;
+        }
+      }
+      break;
+    }
+  }
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out, rowoffset, coloffset) schedule(dynamic)
+#endif
+  // step through TSxTS cells of image, each tile overlapping the
+  // prior as interpolation needs a substantial border
+  for(int top = -pad_tile; top < height - pad_tile; top += TS - (pad_tile * 2))
+  {
+    char *const buffer = all_buffers + dt_get_thread_num() * buffer_size;
+    // rgb points to ndir TSxTS tiles of 3 channels (R, G, and B)
+    float(*rgb)[TS][TS][3] = (float(*)[TS][TS][3])buffer;
+    // yuv points to 3 channel (Y, u, and v) TSxTS tiles
+    // note that channels come before tiles to allow for a
+    // vectorization optimization when building drv[] from yuv[]
+    float (*const yuv)[TS][TS] = (float(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
+    // drv points to ndir TSxTS tiles, each a single chanel of derivatives
+    float (*const drv)[TS][TS] = (float(*)[TS][TS])(buffer + TS * TS * (ndir * 3 + 3) * sizeof(float));
+    // gmin and gmax reuse memory which is used later by yuv buffer;
+    // each points to a TSxTS tile of single channel data
+    float (*const gmin)[TS] = (float(*)[TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
+    float (*const gmax)[TS] = (float(*)[TS])(buffer + TS * TS * (ndir * 3 + 1) * sizeof(float));
+    // homo and homosum reuse memory which is used earlier in the
+    // loop; each points to ndir single-channel TSxTS tiles
+    uint8_t (*const homo)[TS][TS] = (uint8_t(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
+    uint8_t (*const homosum)[TS][TS]
+        = (uint8_t(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float) + TS * TS * ndir * sizeof(uint8_t));
+    // append all fdc related buffers
+    float complex *fdc_buf_start = (float complex *)(buffer + TS * TS * (ndir * 4 + 3) * sizeof(float));
+    const int fdc_buf_size = TS * TS;
+    float(*const i_src) = (float *)fdc_buf_start;
+    float complex(*const o_src) = fdc_buf_start + fdc_buf_size;
+    // by the time the chroma values are calculated, o_src can be overwritten.
+    float(*const fdc_chroma) = (float *)o_src;
+
+    for(int left = -pad_tile; left < width - pad_tile; left += TS - (pad_tile * 2))
+    {
+      int mrow = MIN(top + TS, height + pad_tile);
+      int mcol = MIN(left + TS, width + pad_tile);
+
+      // Copy current tile from in to image buffer. If border goes
+      // beyond edges of image, fill with mirrored/interpolated edges.
+      // The extra border avoids discontinuities at image edges.
+      for(int row = top; row < mrow; row++)
+        for(int col = left; col < mcol; col++)
+        {
+          float(*const pix) = rgb[0][row - top][col - left];
+          if((col >= 0) && (row >= 0) && (col < width) && (row < height))
+          {
+            const int f = FCxtrans(row, col, roi_in, xtrans);
+            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
+            *(i_src + TS * (row - top) + (col - left)) = in[roi_in->width * row + col];
+          }
+          else
+          {
+            // mirror a border pixel if beyond image edge
+            const int c = FCxtrans(row, col, roi_in, xtrans);
+            for(int cc = 0; cc < 3; cc++)
+              if(cc != c)
+                pix[cc] = 0.0f;
+              else
+              {
+#define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 2) : abs(n))
+                const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
+                if(c == FCxtrans(cy, cx, roi_in, xtrans))
+                {
+                  pix[c] = in[roi_in->width * cy + cx];
+                  *(i_src + TS * (row - top) + (col - left)) = in[roi_in->width * cy + cx];
+                }
+                else
+                {
+                  // interpolate if mirror pixel is a different color
+                  float sum = 0.0f;
+                  uint8_t count = 0;
+                  for(int y = row - 1; y <= row + 1; y++)
+                    for(int x = col - 1; x <= col + 1; x++)
+                    {
+                      const int yy = TRANSLATE(y, height), xx = TRANSLATE(x, width);
+                      const int ff = FCxtrans(yy, xx, roi_in, xtrans);
+                      if(ff == c)
+                      {
+                        sum += in[roi_in->width * yy + xx];
+                        count++;
+                      }
+                    }
+                  pix[c] = sum / count;
+                  *(i_src + TS * (row - top) + (col - left)) = pix[c];
+                }
+              }
+          }
+        }
+
+      // duplicate rgb[0] to rgb[1], rgb[2], and rgb[3]
+      for(int c = 1; c <= 3; c++) memcpy(rgb[c], rgb[0], sizeof(*rgb));
+
+      // note that successive calculations are inset within the tile
+      // so as to give enough border data, and there needs to be a 6
+      // pixel border initially to allow allhex to find neighboring
+      // pixels
+
+      /* Set green1 and green3 to the minimum and maximum allowed values:   */
+      // Run through each red/blue or blue/red pair, setting their g1
+      // and g3 values to the min/max of green pixels surrounding the
+      // pair. Use a 3 pixel border as gmin/gmax is used by
+      // interpolate green which has a 3 pixel border.
+      const int pad_g1_g3 = 3;
+      for(int row = top + pad_g1_g3; row < mrow - pad_g1_g3; row++)
+      {
+        // setting max to 0.0f signifies that this is a new pair, which
+        // requires a new min/max calculation of its neighboring greens
+        float min = FLT_MAX, max = 0.0f;
+        for(int col = left + pad_g1_g3; col < mcol - pad_g1_g3; col++)
+        {
+          // if in row of horizontal red & blue pairs (or processing
+          // vertical red & blue pairs near image bottom), reset min/max
+          // between each pair
+          if(FCxtrans(row, col, roi_in, xtrans) == 1)
+          {
+            min = FLT_MAX, max = 0.0f;
+            continue;
+          }
+          // if at start of red & blue pair, calculate min/max of green
+          // pixels surrounding it; note that while normally using == to
+          // compare floats is suspect, here the check is if 0.0f has
+          // explicitly been assigned to max (which signifies a new
+          // red/blue pair)
+          if(max == 0.0f)
+          {
+            float (*const pix)[3] = &rgb[0][row - top][col - left];
+            const short *const hex = hexmap(row, col, allhex);
+            for(int c = 0; c < 6; c++)
+            {
+              const float val = pix[hex[c]][1];
+              if(min > val) min = val;
+              if(max < val) max = val;
+            }
+          }
+          gmin[row - top][col - left] = min;
+          gmax[row - top][col - left] = max;
+          // handle vertical red/blue pairs
+          switch((row - sgrow) % 3)
+          {
+            // hop down a row to second pixel in vertical pair
+            case 1:
+              if(row < mrow - 4) row++, col--;
+              break;
+            // then if not done with the row hop up and right to next
+            // vertical red/blue pair, resetting min/max
+            case 2:
+              min = FLT_MAX, max = 0.0f;
+              if((col += 2) < mcol - 4 && row > top + 3) row--;
+          }
+        }
+      }
+
+      /* Interpolate green horizontally, vertically, and along both diagonals: */
+      // need a 3 pixel border here as 3*hex[] can have a 3 unit offset
+      const int pad_g_interp = 3;
+      for(int row = top + pad_g_interp; row < mrow - pad_g_interp; row++)
+        for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
+        {
+          float color[8];
+          int f = FCxtrans(row, col, roi_in, xtrans);
+          if(f == 1) continue;
+          float (*const pix)[3] = &rgb[0][row - top][col - left];
+          const short *const hex = hexmap(row, col, allhex);
+          // TODO: these constants come from integer math constants in
+          // dcraw -- calculate them instead from interpolation math
+          color[0] = 0.6796875f * (pix[hex[1]][1] + pix[hex[0]][1])
+                     - 0.1796875f * (pix[2 * hex[1]][1] + pix[2 * hex[0]][1]);
+          color[1] = 0.87109375f * pix[hex[3]][1] + pix[hex[2]][1] * 0.13f
+                     + 0.359375f * (pix[0][f] - pix[-hex[2]][f]);
+          for(int c = 0; c < 2; c++)
+            color[2 + c] = 0.640625f * pix[hex[4 + c]][1] + 0.359375f * pix[-2 * hex[4 + c]][1]
+                           + 0.12890625f * (2 * pix[0][f] - pix[3 * hex[4 + c]][f] - pix[-3 * hex[4 + c]][f]);
+          for(int c = 0; c < 4; c++)
+            rgb[c ^ !((row - sgrow) % 3)][row - top][col - left][1]
+                = CLAMPS(color[c], gmin[row - top][col - left], gmax[row - top][col - left]);
+        }
+
+      /* Interpolate red and blue values for solitary green pixels:   */
+      const int pad_rb_g = 6;
+      for(int row = (top - sgrow + pad_rb_g + 2) / 3 * 3 + sgrow; row < mrow - pad_rb_g; row += 3)
+        for(int col = (left - sgcol + pad_rb_g + 2) / 3 * 3 + sgcol; col < mcol - pad_rb_g; col += 3)
+        {
+          float(*rfx)[3] = &rgb[0][row - top][col - left];
+          int h = FCxtrans(row, col + 1, roi_in, xtrans);
+          float diff[6] = { 0.0f };
+          float color[3][8];
+          for(int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2)
+          {
+            for(int c = 0; c < 2; c++, h ^= 2)
+            {
+              float g = 2 * rfx[0][1] - rfx[i << c][1] - rfx[-(i << c)][1];
+              color[h][d] = g + rfx[i << c][h] + rfx[-(i << c)][h];
+              if(d > 1)
+                diff[d] += SQR(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h]) + SQR(g);
+            }
+            if(d > 1 && (d & 1))
+              if(diff[d - 1] < diff[d])
+                for(int c = 0; c < 2; c++) color[c * 2][d] = color[c * 2][d - 1];
+            if(d < 2 || (d & 1))
+            {
+              for(int c = 0; c < 2; c++) rfx[0][c * 2] = color[c * 2][d] / 2.f;
+              rfx += TS * TS;
+            }
+          }
+        }
+
+      /* Interpolate red for blue pixels and vice versa:              */
+      const int pad_rb_br = 6;
+      for(int row = top + pad_rb_br; row < mrow - pad_rb_br; row++)
+        for(int col = left + pad_rb_br; col < mcol - pad_rb_br; col++)
+        {
+          int f = 2 - FCxtrans(row, col, roi_in, xtrans);
+          if(f == 1) continue;
+          float(*rfx)[3] = &rgb[0][row - top][col - left];
+          int c = (row - sgrow) % 3 ? TS : 1;
+          int h = 3 * (c ^ TS ^ 1);
+          for(int d = 0; d < 4; d++, rfx += TS * TS)
+          {
+            int i = d > 1 || ((d ^ c) & 1)
+                            || ((fabsf(rfx[0][1] - rfx[c][1]) + fabsf(rfx[0][1] - rfx[-c][1]))
+                                < 2.f * (fabsf(rfx[0][1] - rfx[h][1]) + fabsf(rfx[0][1] - rfx[-h][1])))
+                        ? c
+                        : h;
+            rfx[0][f] = (rfx[i][f] + rfx[-i][f] + 2.f * rfx[0][1] - rfx[i][1] - rfx[-i][1]) / 2.f;
+          }
+        }
+
+      /* Fill in red and blue for 2x2 blocks of green:                */
+      const int pad_g22 = 8;
+      for(int row = top + pad_g22; row < mrow - pad_g22; row++)
+        if((row - sgrow) % 3)
+          for(int col = left + pad_g22; col < mcol - pad_g22; col++)
+            if((col - sgcol) % 3)
+            {
+              float(*rfx)[3] = &rgb[0][row - top][col - left];
+              const short *const hex = hexmap(row, col, allhex);
+              for(int d = 0; d < ndir; d += 2, rfx += TS * TS)
+                if(hex[d] + hex[d + 1])
+                {
+                  float g = 3.f * rfx[0][1] - 2.f * rfx[hex[d]][1] - rfx[hex[d + 1]][1];
+                  for(int c = 0; c < 4; c += 2) rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 3.f;
+                }
+                else
+                {
+                  float g = 2.f * rfx[0][1] - rfx[hex[d]][1] - rfx[hex[d + 1]][1];
+                  for(int c = 0; c < 4; c += 2) rfx[0][c] = (g + rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 2.f;
+                }
+            }
+
+      // jump back to the first set of rgb buffers (this is a nop
+      // unless on the second pass)
+      rgb = (float(*)[TS][TS][3])buffer;
+      // from here on out, mainly are working within the current tile
+      // rather than in reference to the image, so don't offset
+      // mrow/mcol by top/left of tile
+      mrow -= top;
+      mcol -= left;
+
+      /* Convert to perceptual colorspace and differentiate in all directions:  */
+      // Original dcraw algorithm uses CIELab as perceptual space
+      // (presumably coming from original AHD) and converts taking
+      // camera matrix into account. Now use YPbPr which requires much
+      // less code and is nearly indistinguishable. It assumes the
+      // camera RGB is roughly linear.
+      for(int d = 0; d < ndir; d++)
+      {
+        const int pad_yuv = 8;
+        for(int row = pad_yuv; row < mrow - pad_yuv; row++)
+          for(int col = pad_yuv; col < mcol - pad_yuv; col++)
+          {
+            float *rx = rgb[d][row][col];
+            // use ITU-R BT.2020 YPbPr, which is great, but could use
+            // a better/simpler choice? note that imageop.h provides
+            // dt_iop_RGB_to_YCbCr which uses Rec. 601 conversion,
+            // which appears less good with specular highlights
+            float y = 0.2627f * rx[0] + 0.6780f * rx[1] + 0.0593f * rx[2];
+            yuv[0][row][col] = y;
+            yuv[1][row][col] = (rx[2] - y) * 0.56433f;
+            yuv[2][row][col] = (rx[0] - y) * 0.67815f;
+          }
+        // Note that f can offset by a column (-1 or +1) and by a row
+        // (-TS or TS). The row-wise offsets cause the undefined
+        // behavior sanitizer to warn of an out of bounds index, but
+        // as yfx is multi-dimensional and there is sufficient
+        // padding, that is not actually so.
+        const int f = dir[d & 3];
+        const int pad_drv = 9;
+        for(int row = pad_drv; row < mrow - pad_drv; row++)
+          for(int col = pad_drv; col < mcol - pad_drv; col++)
+          {
+            float(*yfx)[TS][TS] = (float(*)[TS][TS]) & yuv[0][row][col];
+            drv[d][row][col] = SQR(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
+                               + SQR(2 * yfx[1][0][0] - yfx[1][0][f] - yfx[1][0][-f])
+                               + SQR(2 * yfx[2][0][0] - yfx[2][0][f] - yfx[2][0][-f]);
+          }
+      }
+
+      /* Build homogeneity maps from the derivatives:                   */
+      memset(homo, 0, (size_t)ndir * TS * TS * sizeof(uint8_t));
+      const int pad_homo = 10;
+      for(int row = pad_homo; row < mrow - pad_homo; row++)
+        for(int col = pad_homo; col < mcol - pad_homo; col++)
+        {
+          float tr = FLT_MAX;
+          for(int d = 0; d < ndir; d++)
+            if(tr > drv[d][row][col]) tr = drv[d][row][col];
+          tr *= 8;
+          for(int d = 0; d < ndir; d++)
+            for(int v = -1; v <= 1; v++)
+              for(int h = -1; h <= 1; h++) homo[d][row][col] += ((drv[d][row + v][col + h] <= tr) ? 1 : 0);
+        }
+
+      /* Build 5x5 sum of homogeneity maps for each pixel & direction */
+      for(int d = 0; d < ndir; d++)
+        for(int row = pad_tile; row < mrow - pad_tile; row++)
+        {
+          // start before first column where homo[d][row][col+2] != 0,
+          // so can know v5sum and homosum[d][row][col] will be 0
+          int col = pad_tile - 5;
+          uint8_t v5sum[5] = { 0 };
+          homosum[d][row][col] = 0;
+          // calculate by rolling through column sums
+          for(col++; col < mcol - pad_tile; col++)
+          {
+            uint8_t colsum = 0;
+            for(int v = -2; v <= 2; v++) colsum += homo[d][row + v][col + 2];
+            homosum[d][row][col] = homosum[d][row][col - 1] - v5sum[col % 5] + colsum;
+            v5sum[col % 5] = colsum;
+          }
+        }
+
+      /* Calculate chroma values in fdc:       */
+      for(int row = 6; row < mrow - 6; row++) // 6 as manual padding
+        for(int col = 6; col < mcol - 6; col++) // 6 as manual padding
+        {
+          int myrow, mycol;
+          uint8_t hm[8] = { 0 };
+          uint8_t maxval = 0;
+          for(int d = 0; d < ndir; d++)
+          {
+            hm[d] = homosum[d][row][col];
+            maxval = (maxval < hm[d] ? hm[d] : maxval);
+          }
+          maxval -= maxval >> 3;
+          for(int d = 0; d < ndir - 4; d++)
+            if(hm[d] < hm[d + 4])
+              hm[d] = 0;
+            else if(hm[d] > hm[d + 4])
+              hm[d + 4] = 0;
+          float dircount = 0;
+          float dirsum = 0.f;
+          for(int d = 0; d < ndir; d++)
+            if(hm[d] >= maxval)
+            {
+              dircount++;
+              dirsum += directionality[d];
+            }
+          float w = dirsum / (float)dircount;
+          int fdc_row, fdc_col;
+          float complex C2m, C5m, C7m, C10m;
+#define CONV_FILT(VAR, FILT)                                                                                      \
+  VAR = 0.0f + 0.0f * _Complex_I;                                                                                 \
+  for(fdc_row = 0, myrow = row - 6; fdc_row < 13; fdc_row++, myrow++)                                             \
+    for(fdc_col = 0, mycol = col - 6; fdc_col < 13; fdc_col++, mycol++)                                           \
+      VAR += FILT[12 - fdc_row][12 - fdc_col] * *(i_src + TS * myrow + mycol);
+          CONV_FILT(C2m, harr[0])
+          CONV_FILT(C5m, harr[1])
+          CONV_FILT(C7m, harr[2])
+          CONV_FILT(C10m, harr[3])
+#undef CONV_FILT
+          // build the q vector components
+          myrow = (row + rowoffset) % 6;
+          mycol = (col + coloffset) % 6;
+          float complex modulator[8];
+          for(int c = 0; c < 8; c++) modulator[c] = modarr[myrow][mycol][c];
+          float complex qmat[8];
+          qmat[4] = w * C10m * modulator[0] - (1.0f - w) * C2m * modulator[1];
+          qmat[6] = conjf(qmat[4]);
+          qmat[1] = C5m * modulator[6];
+          qmat[2] = conjf(-0.5f * qmat[1]);
+          qmat[5] = conjf(qmat[2]);
+          qmat[3] = C7m * modulator[7];
+          qmat[7] = conjf(qmat[1]);
+          // get L
+          C2m = qmat[4] * (conjf(modulator[0]) - conjf(modulator[1]));
+          float complex C3m = qmat[6] * (modulator[2] - modulator[3]);
+          float complex C6m = qmat[2] * (conjf(modulator[4]) + conjf(modulator[5]));
+          float complex C12m = qmat[5] * (modulator[4] + modulator[5]);
+          float complex C18m = qmat[7] * modulator[6];
+          qmat[0] = *(i_src + row * TS + col) - C2m - C3m - C5m - C6m - 2.0f * C7m - C12m - C18m;
+          // get the rgb components from fdc
+          float rgbpix[3] = { 0.f, 0.f, 0.f };
+          // multiply with the inverse matrix of M
+          for(int color = 0; color < 3; color++)
+            for(int c = 0; c < 8; c++)
+            {
+              rgbpix[color] += Minv[color][c] * qmat[c];
+            }
+          // now separate luma and chroma for
+          // frequency domain chroma
+          // and store it in fdc_chroma
+          float cbcr[2];
+#define CCLIP(x) (((x) < -0.5f) ? -0.5f : ((x) > 0.5f) ? 0.5f : (x))
+          cbcr[0] = CCLIP(-0.16874f * rgbpix[0] - 0.33126f * rgbpix[1] + 0.50000f * rgbpix[2]);
+          cbcr[1] = CCLIP(0.50000f * rgbpix[0] - 0.41869f * rgbpix[1] - 0.08131f * rgbpix[2]);
+          for(int c = 0; c < 2; c++) *(fdc_chroma + c * TS * TS + row * TS + col) = cbcr[c];
+        }
+
+      /* Average the most homogenous pixels for the final result:       */
+      for(int row = pad_tile; row < mrow - pad_tile; row++)
+        for(int col = pad_tile; col < mcol - pad_tile; col++)
+        {
+          uint8_t hm[8] = { 0 };
+          uint8_t maxval = 0;
+          for(int d = 0; d < ndir; d++)
+          {
+            hm[d] = homosum[d][row][col];
+            maxval = (maxval < hm[d] ? hm[d] : maxval);
+          }
+          maxval -= maxval >> 3;
+          for(int d = 0; d < ndir - 4; d++)
+            if(hm[d] < hm[d + 4])
+              hm[d] = 0;
+            else if(hm[d] > hm[d + 4])
+              hm[d + 4] = 0;
+          float avg[4] = { 0.f };
+          for(int d = 0; d < ndir; d++)
+            if(hm[d] >= maxval)
+            {
+              for(int c = 0; c < 3; c++) avg[c] += rgb[d][row][col][c];
+              avg[3]++;
+            }
+          float rgbpix[3];
+          for(int c = 0; c < 3; c++) rgbpix[c] = avg[c] / avg[3];
+          // preserve only luma component of Markesteijn for this pixel
+          float y = 0.29900f * rgbpix[0] + 0.58700f * rgbpix[1] + 0.11400f * rgbpix[2];
+          float cbcr[2];
+          // instead of merely reding the values, perform 5 pixel median filter
+          // one median filter is required to avoid textile artifacts
+          for(int chrm = 0; chrm < 2; chrm++)
+          {
+            float temp[5];
+            float tempf;
+#define PIX_SWAP(a, b)                                                                                            \
+  {                                                                                                               \
+    tempf = (a);                                                                                                  \
+    (a) = (b);                                                                                                    \
+    (b) = tempf;                                                                                                  \
+  }
+#define PIX_SORT(a, b)                                                                                            \
+  {                                                                                                               \
+    if((a) > (b)) PIX_SWAP((a), (b));                                                                             \
+  }
+            // Load the window into temp
+            memcpy(&temp[0], fdc_chroma + chrm * TS * TS + (row - 1) * TS + (col), 1 * sizeof(float));
+            memcpy(&temp[1], fdc_chroma + chrm * TS * TS + (row)*TS + (col - 1), 3 * sizeof(float));
+            memcpy(&temp[4], fdc_chroma + chrm * TS * TS + (row + 1) * TS + (col), 1 * sizeof(float));
+            PIX_SORT(temp[0], temp[1]);
+            PIX_SORT(temp[3], temp[4]);
+            PIX_SORT(temp[0], temp[3]);
+            PIX_SORT(temp[1], temp[4]);
+            PIX_SORT(temp[1], temp[2]);
+            PIX_SORT(temp[2], temp[3]);
+            PIX_SORT(temp[1], temp[2]);
+            cbcr[chrm] = temp[2];
+          }
+          // combine the luma from Markesteijn with the chroma from FDC
+          rgbpix[0] = y + 1.40200f * cbcr[1];
+          rgbpix[1] = y - 0.34414f * cbcr[0] - 0.71414f * cbcr[1];
+          rgbpix[2] = y + 1.77200f * cbcr[0];
+          for(int c = 0; c < 3; c++) out[4 * (width * (row + top) + col + left) + c] = rgbpix[c];
+        }
+    }
+  }
+  dt_free_align(all_buffers);
+}
+
+#undef PIX_SWAP
+#undef PIX_SORT
+#undef CCLIP
+#undef TS
+
 /* taken from dcraw and demosaic_ppg below */
 
 static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
@@ -1612,19 +2704,19 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
       {
         const int qual = get_quality();
         if (qual > 0) flags |= DEMOSAIC_FULL_SCALE;
-        if (qual > 1) flags |= DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+        if (qual > 1) flags |= DEMOSAIC_XTRANS_FULL;
         if ((qual < 2) && (roi_out->scale <= .99999f))
           flags |= DEMOSAIC_MEDIUM_QUAL;
       }
       break;
     case DT_DEV_PIXELPIPE_EXPORT:
-      flags |= DEMOSAIC_FULL_SCALE | DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+      flags |= DEMOSAIC_FULL_SCALE | DEMOSAIC_XTRANS_FULL;
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
       // we check if we need ultra-high quality thumbnail for this size
       if (get_thumb_quality(roi_out->width, roi_out->height))
       {
-        flags |= DEMOSAIC_FULL_SCALE | DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+        flags |= DEMOSAIC_FULL_SCALE | DEMOSAIC_XTRANS_FULL;
       }
       break;
     default: // make C not complain about missing enum members
@@ -1646,7 +2738,7 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
   // quality is required
   if (roi_out->scale > 0.667f)
   {
-    flags |= DEMOSAIC_XTRANS_FULL_MARKESTEIJN;
+    flags |= DEMOSAIC_XTRANS_FULL;
   }
 
   // we check if we can stop at the linear interpolation step in VNG
@@ -1706,7 +2798,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else if(piece->pipe->dsc.filters == 9u)
     {
-      if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && (qual_flags & DEMOSAIC_XTRANS_FULL_MARKESTEIJN))
+      if(demosaicing_method == DT_IOP_DEMOSAIC_FDC && (qual_flags & DEMOSAIC_XTRANS_FULL))
+        xtrans_fdc_interpolate(tmp, pixels, &roo, &roi, xtrans);
+      else if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && (qual_flags & DEMOSAIC_XTRANS_FULL))
         xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans,
                                        1 + (demosaicing_method - DT_IOP_DEMOSAIC_MARKESTEIJN) * 2);
       else
@@ -3450,7 +4544,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     return process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
   }
   else if((demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) &&
-    !(qual_flags & DEMOSAIC_XTRANS_FULL_MARKESTEIJN))
+    !(qual_flags & DEMOSAIC_XTRANS_FULL))
   {
     return process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
   }
@@ -3506,8 +4600,9 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->overlap = 5; // take care of border handling
   }
   else if(((demosaicing_method ==  DT_IOP_DEMOSAIC_MARKESTEIJN) ||
-           (demosaicing_method ==  DT_IOP_DEMOSAIC_MARKESTEIJN_3)) &&
-          (qual_flags & DEMOSAIC_XTRANS_FULL_MARKESTEIJN))
+           (demosaicing_method ==  DT_IOP_DEMOSAIC_MARKESTEIJN_3) ||
+           (demosaicing_method == DT_IOP_DEMOSAIC_FDC)) &&
+          (qual_flags & DEMOSAIC_XTRANS_FULL))
   {
     // X-Trans pattern full Markesteijn processing
     const int ndir = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 8 : 4;
@@ -3715,6 +4810,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     case DT_IOP_DEMOSAIC_MARKESTEIJN_3:
       piece->process_cl_ready = 1;
       break;
+    case DT_IOP_DEMOSAIC_FDC:
+      piece->process_cl_ready = 0;
+      break;
     default:
       piece->process_cl_ready = 0;
   }
@@ -3915,8 +5013,8 @@ static void demosaic_method_xtrans_callback(GtkWidget *combo, dt_iop_module_t *s
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
   p->demosaicing_method = dt_bauhaus_combobox_get(combo) | DEMOSAIC_XTRANS;
-  if((p->demosaicing_method > (DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME | DEMOSAIC_XTRANS))
-     || (p->demosaicing_method < DT_IOP_DEMOSAIC_VNG))
+  if((p->demosaicing_method > (DT_IOP_DEMOSAIC_FDC | DEMOSAIC_XTRANS))
+     || (p->demosaicing_method < (DT_IOP_DEMOSAIC_VNG | DEMOSAIC_XTRANS)))
     p->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -3947,6 +5045,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slow)"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("passthrough (monochrome) (experimental)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("frequency domain chroma (slow)"));
   gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("demosaicing raw data method"));
 
   g->median_thrs = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
