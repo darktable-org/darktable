@@ -61,6 +61,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->gui_leaving = 0;
   dev->gui_synch = 0;
   dt_pthread_mutex_init(&dev->history_mutex, NULL);
+  dt_pthread_mutex_init(&dev->fftw_lock, NULL);
   dev->history_end = 0;
   dev->history = NULL; // empty list
 
@@ -133,6 +134,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   // image_cache does not have to be unref'd, this is done outside develop module.
   dt_pthread_mutex_destroy(&dev->pipe_mutex);
   dt_pthread_mutex_destroy(&dev->preview_pipe_mutex);
+  dt_pthread_mutex_destroy(&dev->fftw_lock);
   //   dt_pthread_mutex_destroy(&dev->histogram_waveform_mutex);
   if(dev->pipe)
   {

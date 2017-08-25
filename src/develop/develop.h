@@ -150,6 +150,7 @@ typedef struct dt_develop_t
   // operations pipeline
   int32_t iop_instance;
   GList *iop;
+  dt_pthread_mutex_t fftw_lock;
 
   // histogram for display.
   uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
