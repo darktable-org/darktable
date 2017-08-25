@@ -26,6 +26,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#ifdef _WIN32
+#include "win/dtwin.h"
+#endif // _WIN32
+
 int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *arg)
 {
   int ret;
@@ -84,7 +88,7 @@ void dt_pthread_setname(const char *name)
 #elif defined __APPLE__
   pthread_setname_np(name);
 #elif defined _WIN32
-  // TODO: according to the Internets there is no pthread_setname_np on Windows
+  SetThreadName((DWORD)-1, name);
 #endif
 }
 
