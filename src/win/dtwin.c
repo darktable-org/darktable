@@ -16,8 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <windows.h>
 #include "dtwin.h"
+#include <setjmp.h>
+#include <windows.h>
 
 const wchar_t *dtwin_get_locale()
 {
@@ -312,6 +313,28 @@ const wchar_t *dtwin_get_locale()
   return posix;
 }
 
+typedef struct tagTHREADNAME_INFO
+{
+  DWORD dwType;     // must be 0x1000
+  LPCSTR szName;    // pointer to name (in user addr space)
+  DWORD dwThreadID; // thread ID (-1=caller thread)
+  DWORD dwFlags;    // reserved for future use, must be zero
+} THREADNAME_INFO;
+
+const DWORD MS_VC_EXCEPTION = 0x406D1388;
+
+void SetThreadName(DWORD dwThreadID, const char *threadName)
+{
+  THREADNAME_INFO info;
+  info.dwType = 0x1000;
+  info.szName = threadName;
+  info.dwThreadID = dwThreadID;
+  info.dwFlags = 0;
+
+  // Yes, don't get heart attack, naming of thread is done by raising a special exception on Windows
+  // https://msdn.microsoft.com/en-us/library/xcb2z8hs(v=vs.71).aspx
+  RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(DWORD), (const ULONG_PTR *)&info);
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
