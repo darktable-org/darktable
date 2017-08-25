@@ -139,6 +139,7 @@ if(WIN32)
   ADD_DEFINITIONS(-D_POSIX_THREAD_SAFE_FUNCTIONS)
 
   # add icon, version, ... resources for Windows executable
+  configure_file("${CMAKE_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico" "${CMAKE_BINARY_DIR}/data/pixmaps/dt_logo_128x128.ico" COPYONLY)
   SET(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
   set(RESOURCE_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.rc")
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/win/darktable.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.rc")
@@ -598,10 +599,6 @@ if(NOT SOURCE_PACKAGE AND NOT APPLE)
   add_definitions(-Werror)
 endif()
 
-# compile rawspeed
-list(APPEND LIB_DEPS rawspeed)
-list(APPEND STATIC_LIBS rawspeed_static_dt)
-
 # osm gps map library
 if(USE_MAP)
   find_package(OSMGpsMap)
@@ -749,8 +746,9 @@ set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
 #
 
 add_dependencies(lib_darktable ${LIB_DEPS})
-target_link_libraries(lib_darktable ${STATIC_LIBS})
-target_link_libraries(lib_darktable ${LIBS})
+target_link_libraries(lib_darktable PUBLIC ${STATIC_LIBS})
+target_link_libraries(lib_darktable PRIVATE rawspeed)
+target_link_libraries(lib_darktable PUBLIC ${LIBS})
 
 unset(LIBS)
 unset(STATIC_LIBS)
