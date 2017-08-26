@@ -88,7 +88,7 @@ void dt_pthread_setname(const char *name)
 #elif defined __APPLE__
   pthread_setname_np(name);
 #elif defined _WIN32
-  SetThreadName((DWORD)-1, name);
+  dtwin_set_thread_name((DWORD)-1, name);
 #endif
 }
 

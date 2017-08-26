@@ -18,10 +18,11 @@
 */
 
 #pragma once
+
 #include <windows.h>
 
 const wchar_t *dtwin_get_locale();
-void SetThreadName(DWORD dwThreadID, const char *threadName);
+void dtwin_set_thread_name(DWORD dwThreadID, const char *threadName);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
