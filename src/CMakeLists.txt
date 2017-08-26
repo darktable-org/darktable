@@ -732,7 +732,10 @@ set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
 # Link external libs
 #
 
-add_dependencies(lib_darktable ${LIB_DEPS})
+if(LIB_DEPS)
+  add_dependencies(lib_darktable ${LIB_DEPS})
+endif()
+
 target_link_libraries(lib_darktable PUBLIC ${STATIC_LIBS})
 target_link_libraries(lib_darktable PRIVATE rawspeed)
 target_link_libraries(lib_darktable PUBLIC ${LIBS})
