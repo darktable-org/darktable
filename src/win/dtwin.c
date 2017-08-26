@@ -323,7 +323,7 @@ typedef struct tagTHREADNAME_INFO
 
 const DWORD MS_VC_EXCEPTION = 0x406D1388;
 
-void SetThreadName(DWORD dwThreadID, const char *threadName)
+void dtwin_set_thread_name(DWORD dwThreadID, const char *threadName)
 {
   THREADNAME_INFO info;
   info.dwType = 0x1000;
