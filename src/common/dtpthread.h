@@ -297,32 +297,32 @@ typedef struct CAPABILITY("mutex") dt_pthread_mutex_t
 } CAPABILITY("mutex") dt_pthread_mutex_t;
 
 // *please* do use these;
-inline int dt_pthread_mutex_init(dt_pthread_mutex_t *mutex, const pthread_mutexattr_t *mutexattr)
+static inline int dt_pthread_mutex_init(dt_pthread_mutex_t *mutex, const pthread_mutexattr_t *mutexattr)
 {
   return pthread_mutex_init(&mutex->mutex, mutexattr);
 };
 
-inline int dt_pthread_mutex_lock(dt_pthread_mutex_t *mutex) ACQUIRE(mutex) NO_THREAD_SAFETY_ANALYSIS
+static inline int dt_pthread_mutex_lock(dt_pthread_mutex_t *mutex) ACQUIRE(mutex) NO_THREAD_SAFETY_ANALYSIS
 {
   return pthread_mutex_lock(&mutex->mutex);
 };
 
-inline int dt_pthread_mutex_trylock(dt_pthread_mutex_t *mutex) TRY_ACQUIRE(0, mutex)
+static inline int dt_pthread_mutex_trylock(dt_pthread_mutex_t *mutex) TRY_ACQUIRE(0, mutex)
 {
   return pthread_mutex_trylock(&mutex->mutex);
 };
 
-inline int dt_pthread_mutex_unlock(dt_pthread_mutex_t *mutex) RELEASE(mutex) NO_THREAD_SAFETY_ANALYSIS
+static inline int dt_pthread_mutex_unlock(dt_pthread_mutex_t *mutex) RELEASE(mutex) NO_THREAD_SAFETY_ANALYSIS
 {
   return pthread_mutex_unlock(&mutex->mutex);
 };
 
-inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
+static inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
 {
   return pthread_mutex_destroy(&mutex->mutex);
 };
 
-inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t *mutex)
+static inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t *mutex)
 {
   return pthread_cond_wait(cond, &mutex->mutex);
 };
@@ -344,17 +344,17 @@ inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t *mutex)
 #endif
 
 // if at all possible, do NOT use.
-inline int dt_pthread_mutex_BAD_lock(dt_pthread_mutex_t *mutex)
+static inline int dt_pthread_mutex_BAD_lock(dt_pthread_mutex_t *mutex)
 {
   return pthread_mutex_lock(&mutex->mutex);
 };
 
-inline int dt_pthread_mutex_BAD_trylock(dt_pthread_mutex_t *mutex)
+static inline int dt_pthread_mutex_BAD_trylock(dt_pthread_mutex_t *mutex)
 {
   return pthread_mutex_trylock(&mutex->mutex);
 };
 
-inline int dt_pthread_mutex_BAD_unlock(dt_pthread_mutex_t *mutex)
+static inline int dt_pthread_mutex_BAD_unlock(dt_pthread_mutex_t *mutex)
 {
   return pthread_mutex_unlock(&mutex->mutex);
 };
