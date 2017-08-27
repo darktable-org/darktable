@@ -15,9 +15,9 @@ echo "Removing the following non existent file(s):"
 
 cat $TMPFILE | while read result
 do
-  ID=$(echo "$result" | cut -f1 -d"|")
-  FD=$(echo "$result" | cut -f2 -d"|")
-  FL=$(echo "$result" | cut -f3 -d"|")
+  ID=$(cut -f1 -d"|" <<< "$result")
+  FD=$(cut -f2 -d"|" <<< "$result")
+  FL=$(cut -f3 -d"|" <<< "$result")
   if ! [ -f "$FD/$FL" ];
   then
     echo "  $FD/$FL with ID = $ID"
