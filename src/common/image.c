@@ -747,17 +747,25 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
 
 static uint32_t dt_image_import_internal(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs, gboolean lua_locking)
 {
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR) || dt_util_get_file_size(filename) == 0) return 0;
-  const char *cc = filename + strlen(filename);
-  for(; *cc != '.' && cc > filename; cc--)
+  char *normalized_filename = dt_util_normalize_path(filename);
+  if(!normalized_filename || !g_file_test(normalized_filename, G_FILE_TEST_IS_REGULAR) || dt_util_get_file_size(normalized_filename) == 0)
+  {
+    g_free(normalized_filename);
+    return 0;
+  }
+  const char *cc = normalized_filename + strlen(normalized_filename);
+  for(; *cc != '.' && cc > normalized_filename; cc--)
     ;
-  if(!strcmp(cc, ".dt")) return 0;
-  if(!strcmp(cc, ".dttags")) return 0;
-  if(!strcmp(cc, ".xmp")) return 0;
+  if(!strcasecmp(cc, ".dt") || !strcasecmp(cc, ".dttags") || !strcasecmp(cc, ".xmp"))
+  {
+    g_free(normalized_filename);
+    return 0;
+  }
   char *ext = g_ascii_strdown(cc + 1, -1);
   if(override_ignore_jpegs == FALSE && (!strcmp(ext, "jpg") || !strcmp(ext, "jpeg"))
      && dt_conf_get_bool("ui_last/import_ignore_jpegs"))
   {
+    g_free(normalized_filename);
     g_free(ext);
     return 0;
   }
@@ -770,6 +778,7 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
     }
   if(!supported)
   {
+    g_free(normalized_filename);
     g_free(ext);
     return 0;
   }
@@ -777,7 +786,7 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   uint32_t id = 0;
   // select from images; if found => return
   gchar *imgfname;
-  imgfname = g_path_get_basename((const gchar *)filename);
+  imgfname = g_path_get_basename(normalized_filename);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id FROM main.images WHERE film_id = ?1 AND filename = ?2", -1, &stmt, NULL);
@@ -788,12 +797,13 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
     id = sqlite3_column_int(stmt, 0);
     g_free(imgfname);
     sqlite3_finalize(stmt);
-    g_free(ext);
     dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'w');
     img->flags &= ~DT_IMAGE_REMOVE;
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-    dt_image_read_duplicates(id, filename);
-    dt_image_synch_all_xmp(filename);
+    dt_image_read_duplicates(id, normalized_filename);
+    dt_image_synch_all_xmp(normalized_filename);
+    g_free(ext);
+    g_free(normalized_filename);
     return id;
   }
   sqlite3_finalize(stmt);
@@ -807,13 +817,13 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   }
   flags |= DT_IMAGE_NO_LEGACY_PRESETS;
   // set the bits in flags that indicate if any of the extra files (.txt, .wav) are present
-  char *extra_file = dt_image_get_audio_path_from_path(filename);
+  char *extra_file = dt_image_get_audio_path_from_path(normalized_filename);
   if(extra_file)
   {
     flags |= DT_IMAGE_HAS_WAV;
     g_free(extra_file);
   }
-  extra_file = dt_image_get_text_path_from_path(filename);
+  extra_file = dt_image_get_text_path_from_path(normalized_filename);
   if(extra_file)
   {
     flags |= DT_IMAGE_HAS_TXT;
@@ -931,9 +941,9 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   img->group_id = group_id;
 
   // read dttags and exif for database queries!
-  (void)dt_exif_read(img, filename);
+  (void)dt_exif_read(img, normalized_filename);
   char dtfilename[PATH_MAX] = { 0 };
-  g_strlcpy(dtfilename, filename, sizeof(dtfilename));
+  g_strlcpy(dtfilename, normalized_filename, sizeof(dtfilename));
   // dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
   g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
 
@@ -960,12 +970,13 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   dt_mipmap_cache_remove(darktable.mipmap_cache, id);
 
   // read all sidecar files
-  dt_image_read_duplicates(id, filename);
-  dt_image_synch_all_xmp(filename);
+  dt_image_read_duplicates(id, normalized_filename);
+  dt_image_synch_all_xmp(normalized_filename);
 
   g_free(imgfname);
   g_free(basename);
   g_free(sql_pattern);
+  g_free(normalized_filename);
 
 #ifdef USE_LUA
   //Synchronous calling of lua post-import-image events
