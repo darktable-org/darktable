@@ -20,10 +20,16 @@
 #if defined __APPLE__ || defined _POSIX_C_SOURCE >= 1 || defined _XOPEN_SOURCE || defined _BSD_SOURCE        \
     || defined _SVID_SOURCE || defined _POSIX_SOURCE || defined __DragonFly__ || defined __FreeBSD__         \
     || defined __NetBSD__ || defined __OpenBSD__
-#include "darktable.h"
-#include <pwd.h>
-#include <sys/types.h>
-#include <unistd.h>
+  #include "darktable.h"
+  #include <pwd.h>
+  #include <sys/types.h>
+  #include <unistd.h>
+#endif
+
+#ifdef _WIN32
+  #include <Windows.h>
+  #include <WinBase.h>
+  #include <FileAPI.h>
 #endif
 
 #include <math.h>
@@ -32,11 +38,12 @@
 #include <sys/stat.h>
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+  #include <config.h>
 #endif
 
 #include "file_location.h"
 #include "utility.h"
+#include "common/grealpath.h"
 
 gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...)
 {
@@ -426,6 +433,73 @@ gchar *dt_util_elevation_str(float elevation)
   return g_strdup_printf("%.2f %s %s", elevation, _("m"), _(c));
 }
 
+// make paths absolute and try to normalize on Windows
+gchar *dt_util_normalize_path(const gchar *input)
+{
+  gchar *filename = NULL;
+
+  filename = g_filename_from_uri(input, NULL, NULL);
+
+  if(!filename)
+  {
+    if(g_str_has_prefix(input, "file://")) // in this case we should take care of %XX encodings in the string
+                                           // (for example %20 = ' ')
+    {
+      input += strlen("file://");
+      filename = g_uri_unescape_string(input, NULL);
+    }
+    else
+      filename = g_strdup(input);
+  }
+
+  if(g_path_is_absolute(filename) == FALSE)
+  {
+    char *current_dir = g_get_current_dir();
+    char *tmp_filename = g_build_filename(current_dir, filename, NULL);
+    g_free(filename);
+    filename = g_realpath(tmp_filename);
+    if(filename == NULL)
+    {
+      g_free(current_dir);
+      g_free(tmp_filename);
+      g_free(filename);
+      return NULL;
+    }
+    g_free(current_dir);
+    g_free(tmp_filename);
+  }
+
+#ifdef _WIN32
+  // on Windows filenames are case insensitive, so we can end up with an arbitrary number of different spellings for the same file.
+  // another problem is that path separators can either be / or \ leading to even more problems.
+
+  // TODO:
+  // this only handles filenames in the old <drive letter>:\path\to\file form, not the \\?\UNC\ form and not some others like \Device\...
+
+  TCHAR LongPath[MAX_PATH] = {0};
+  DWORD size = GetLongPathName(filename, LongPath, MAX_PATH);
+  g_free(filename);
+  if(size == 0 || size > MAX_PATH)
+    return NULL;
+
+
+  GFile *gfile = g_file_new_for_path(LongPath);
+  filename = g_file_get_path(gfile);
+  g_object_unref(gfile);
+
+
+  char drive_letter = g_ascii_toupper(filename[0]);
+  if(drive_letter < 'A' || drive_letter > 'Z' || filename[1] != ':')
+  {
+    g_free(filename);
+    return NULL;
+  }
+  filename[0] = drive_letter;
+
+#endif
+
+  return filename;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

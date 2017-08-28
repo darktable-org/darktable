@@ -194,50 +194,12 @@ static void strip_semicolons_from_keymap(const char *path)
   g_object_unref(gpathtmp);
 }
 
-static gchar *dt_make_path_absolute(const gchar *input)
-{
-  gchar *filename = NULL;
-
-  filename = g_filename_from_uri(input, NULL, NULL);
-
-  if(!filename)
-  {
-    if(g_str_has_prefix(input, "file://")) // in this case we should take care of %XX encodings in the string
-                                          // (for example %20 = ' ')
-    {
-      input += strlen("file://");
-      filename = g_uri_unescape_string(input, NULL);
-    }
-    else
-      filename = g_strdup(input);
-  }
-
-  if(g_path_is_absolute(filename) == FALSE)
-  {
-    char *current_dir = g_get_current_dir();
-    char *tmp_filename = g_build_filename(current_dir, filename, NULL);
-    g_free(filename);
-    filename = g_realpath(tmp_filename);
-    if(filename == NULL)
-    {
-      g_free(current_dir);
-      g_free(tmp_filename);
-      g_free(filename);
-      return NULL;
-    }
-    g_free(current_dir);
-    g_free(tmp_filename);
-  }
-
-  return filename;
-}
-
 int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean *single_image)
 {
   int id = 0;
   if(input == NULL || input[0] == '\0') return 0;
 
-  char *filename = dt_make_path_absolute(input);
+  char *filename = dt_util_normalize_path(input);
 
   if(filename == NULL)
   {
@@ -432,7 +394,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   bindtextdomain(GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
   bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
   textdomain(GETTEXT_PACKAGE);
-
 
   // init all pointers to 0:
   memset(&darktable, 0, sizeof(darktable_t));
@@ -815,7 +776,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     {
       // make the filename absolute ...
       if(argv[i] == NULL || *argv[i] == '\0') continue;
-      gchar *filename = dt_make_path_absolute(argv[i]);
+      gchar *filename = dt_util_normalize_path(argv[i]);
       if(filename == NULL) continue;
       if(!connection) connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
       // ... and send it to the running instance of darktable
