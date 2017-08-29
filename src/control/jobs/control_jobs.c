@@ -923,13 +923,15 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
                  c2);
 
 #ifdef __WIN32__
-        WIN32_FIND_DATA data;
-        HANDLE handle = FindFirstFile(pattern, &data);
+        wchar_t *wpattern = g_utf8_to_utf16(pattern, -1, NULL, NULL, NULL);
+        WIN32_FIND_DATAW data;
+        HANDLE handle = FindFirstFileW(wpattern, &data);
+        g_free(wpattern);
         if(handle != INVALID_HANDLE_VALUE)
         {
           do
-            files = g_list_append(files, g_strdup(data.cFileName));
-          while(FindNextFile(handle, &data));
+            files = g_list_append(files, g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL));
+          while(FindNextFileW(handle, &data));
         }
 #else
         glob_t globbuf;

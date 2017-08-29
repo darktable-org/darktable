@@ -138,6 +138,9 @@ if(WIN32)
   # add it to have proper time.h functions available
   ADD_DEFINITIONS(-D_POSIX_THREAD_SAFE_FUNCTIONS)
 
+  # avoid calling legacy ANSI win api functions
+  add_definitions("-DUNICODE -D_UNICODE")
+
   # add icon, version, ... resources for Windows executable
   configure_file("${CMAKE_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico" "${CMAKE_BINARY_DIR}/data/pixmaps/dt_logo_128x128.ico" COPYONLY)
   SET(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")

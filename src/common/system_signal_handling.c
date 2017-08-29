@@ -177,8 +177,10 @@ static LONG WINAPI dt_toplevel_exception_handler(PEXCEPTION_POINTERS pExceptionI
                                                "after you click on the OK button.\nIf you report this issue, "
                                                "please share this backtrace with the developers.\n",
                                                name_used);
-    MessageBox(0, exception_message, "Error!", MB_OK);
+    wchar_t *wexception_message = g_utf8_to_utf16(exception_message, -1, NULL, NULL, NULL);
+    MessageBoxW(0, wexception_message, L"Error!", MB_OK);
     g_free(exception_message);
+    g_free(wexception_message);
   }
 
   g_free(name_used);

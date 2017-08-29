@@ -38,6 +38,8 @@
  * limitations under the License.
  */
 
+#include <glib.h>
+
 #include <string.h>
 #include <malloc.h>
 
@@ -61,9 +63,12 @@ int statvfs(const char *path, struct statvfs *buf)
   szDrive[2] = '\\';
   szDrive[3] = '\0';
 
-  res = GetDiskFreeSpace((LPCSTR)szDrive, &lpSectorsPerCluster, &lpBytesPerSector, &lpNumberOfFreeClusters,
+  wchar_t *wszDrive = g_utf8_to_utf16(szDrive, -1, NULL, NULL, NULL);
+
+  res = GetDiskFreeSpaceW(wszDrive, &lpSectorsPerCluster, &lpBytesPerSector, &lpNumberOfFreeClusters,
                          &lpTotalNumberOfClusters);
-  // free(unicodestr);
+
+  g_free(wszDrive);
 
   buf->f_bsize = lpBytesPerSector;                        /* file system block size */
   buf->f_frsize = lpBytesPerSector * lpSectorsPerCluster; /* fragment size */

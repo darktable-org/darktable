@@ -1580,15 +1580,20 @@ void dt_colorspaces_set_display_profile()
   {
     DWORD len = 0;
     GetICMProfile(hdc, &len, NULL);
-    gchar *path = g_new(gchar, len);
+    wchar_t *wpath = g_new(wchar_t, len);
 
-    if(GetICMProfile(hdc, &len, path))
+    if(GetICMProfileW(hdc, &len, wpath))
     {
-      gsize size;
-      g_file_get_contents(path, (gchar **)&buffer, &size, NULL);
-      buffer_size = size;
+      gchar *path = g_utf16_to_utf8(wpath, -1, NULL, NULL, NULL);
+      if(path)
+      {
+        gsize size;
+        g_file_get_contents(path, (gchar **)&buffer, &size, NULL);
+        buffer_size = size;
+        g_free(path);
+      }
     }
-    g_free(path);
+    g_free(wpath);
     ReleaseDC(NULL, hdc);
   }
   profile_source = g_strdup("windows color profile api");
