@@ -57,7 +57,7 @@ gchar *dt_util_latitude_str(float latitude);
 gchar *dt_util_longitude_str(float longitude);
 gchar *dt_util_elevation_str(float elevation);
 
-// make paths absolute and try to normalize on Windows
+// make paths absolute and try to normalize on Windows. also deal with character encoding on Windows.
 gchar *dt_util_normalize_path(const gchar *input);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

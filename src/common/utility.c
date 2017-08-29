@@ -433,12 +433,23 @@ gchar *dt_util_elevation_str(float elevation)
   return g_strdup_printf("%.2f %s %s", elevation, _("m"), _(c));
 }
 
-// make paths absolute and try to normalize on Windows
-gchar *dt_util_normalize_path(const gchar *input)
+// make paths absolute and try to normalize on Windows. also deal with character encoding on Windows.
+gchar *dt_util_normalize_path(const gchar *_input)
 {
-  gchar *filename = NULL;
+#ifdef _WIN32
+  gchar *input;
+  if(g_utf8_validate(_input, -1, NULL))
+    input = g_strdup(_input);
+  else
+  {
+    input = g_locale_to_utf8(_input, -1, NULL, NULL, NULL);
+    if(!input) return NULL;
+  }
+#else
+  const gchar *input = _input;
+#endif
 
-  filename = g_filename_from_uri(input, NULL, NULL);
+  gchar *filename = g_filename_from_uri(input, NULL, NULL);
 
   if(!filename)
   {
@@ -451,6 +462,10 @@ gchar *dt_util_normalize_path(const gchar *input)
     else
       filename = g_strdup(input);
   }
+
+#ifdef _WIN32
+  g_free(input);
+#endif
 
   if(g_path_is_absolute(filename) == FALSE)
   {
@@ -476,17 +491,31 @@ gchar *dt_util_normalize_path(const gchar *input)
   // TODO:
   // this only handles filenames in the old <drive letter>:\path\to\file form, not the \\?\UNC\ form and not some others like \Device\...
 
-  TCHAR LongPath[MAX_PATH] = {0};
-  DWORD size = GetLongPathName(filename, LongPath, MAX_PATH);
+  // the Windows api expects wide chars and not utf8 :(
+  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
   g_free(filename);
+  if(!wfilename)
+    return NULL;
+
+  wchar_t LongPath[MAX_PATH] = {0};
+  DWORD size = GetLongPathNameW(wfilename, LongPath, MAX_PATH);
+  g_free(wfilename);
   if(size == 0 || size > MAX_PATH)
     return NULL;
 
+  // back to utf8!
+  filename = g_utf16_to_utf8(LongPath, -1, NULL, NULL, NULL);
+  if(!filename)
+    return NULL;
 
-  GFile *gfile = g_file_new_for_path(LongPath);
+  GFile *gfile = g_file_new_for_path(filename);
+  g_free(filename);
+  if(!gfile)
+    return NULL;
   filename = g_file_get_path(gfile);
   g_object_unref(gfile);
-
+  if(!filename)
+    return NULL;
 
   char drive_letter = g_ascii_toupper(filename[0]);
   if(drive_letter < 'A' || drive_letter > 'Z' || filename[1] != ':')
@@ -495,7 +524,6 @@ gchar *dt_util_normalize_path(const gchar *input)
     return NULL;
   }
   filename[0] = drive_letter;
-
 #endif
 
   return filename;
