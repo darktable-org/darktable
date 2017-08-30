@@ -2,7 +2,7 @@
    This file is part of darktable,
    copyright (c) 2009--2013 johannes hanika.
    copyright (c) 2011 henrik andersson.
-   copyright (c) 2012 tobias ellinghaus.
+   copyright (c) 2012-2017 tobias ellinghaus.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -41,12 +41,7 @@ extern "C" {
 #include <sstream>
 #include <string>
 
-#include <exiv2/easyaccess.hpp>
-#include <exiv2/error.hpp>
-#include <exiv2/exif.hpp>
-#include <exiv2/image.hpp>
-#include <exiv2/preview.hpp>
-#include <exiv2/xmp.hpp>
+#include <exiv2/exiv2.hpp>
 
 #include <pugixml.hpp>
 
