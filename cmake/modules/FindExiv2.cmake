@@ -15,11 +15,25 @@ include(LibFindMacros)
 
 SET(EXIV2_FIND_REQUIRED ${Exiv2_FIND_REQUIRED})
 
-find_path(EXIV2_INCLUDE_DIR NAMES exiv2/image.hpp)
+libfind_pkg_check_modules(Exiv2 exiv2)
+
+find_path(EXIV2_INCLUDE_DIR
+    NAMES
+        exiv2/image.hpp
+    HINTS
+        ${Exiv2_INCLUDEDIR}
+        ${Exiv2_INCLUDE_DIRS}
+)
 mark_as_advanced(EXIV2_INCLUDE_DIR)
 
 set(EXIV2_NAMES ${EXIV2_NAMES} exiv2 libexiv2)
-find_library(EXIV2_LIBRARY NAMES ${EXIV2_NAMES} )
+find_library(EXIV2_LIBRARY
+    NAMES
+        ${EXIV2_NAMES}
+    HINTS
+        ${Exiv2_LIBDIR}
+        ${Exiv2_LIBRARY_DIRS}
+)
 mark_as_advanced(EXIV2_LIBRARY)
 
 if(WIN32)
@@ -27,8 +41,6 @@ if(WIN32)
   find_library(ICONV_LIBRARY NAMES iconv )
   list(APPEND EXIV2_LIBRARY ${EXPAT_LIBRARY} ${ICONV_LIBRARY})
 endif(WIN32)
-
-libfind_pkg_check_modules(Exiv2 exiv2)
 
 if(Exiv2_VERSION VERSION_LESS Exiv2_FIND_VERSION)
   message(FATAL_ERROR "Exiv2 version check failed.  Version ${Exiv2_VERSION} was found, at least version ${Exiv2_FIND_VERSION} is required")
