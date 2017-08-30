@@ -43,6 +43,12 @@ extern "C" {
 
 #include <exiv2/exiv2.hpp>
 
+#if defined(_WIN32) && defined(EXV_UNICODE_PATH)
+  #define WIDEN(s) pugi::as_wide(s)
+#else
+  #define WIDEN(s) (s)
+#endif
+
 #include <pugixml.hpp>
 
 using namespace std;
@@ -982,7 +988,7 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
 {
   try
   {
-    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(path));
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
     assert(image.get() != 0);
     image->readMetadata();
 
@@ -1043,7 +1049,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
 
   try
   {
-    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(path));
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
     assert(image.get() != 0);
     image->readMetadata();
     bool res = true;
@@ -1086,7 +1092,7 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
 {
   try
   {
-    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(path));
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
     assert(image.get() != 0);
     image->readMetadata();
     Exiv2::ExifData &imgExifData = image->exifData();
@@ -1146,7 +1152,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
   *buf = NULL;
   try
   {
-    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(path));
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
     assert(image.get() != 0);
     image->readMetadata();
     Exiv2::ExifData &exifData = image->exifData();
@@ -1980,7 +1986,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
   try
   {
     // read xmp sidecar
-    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(filename));
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(filename)));
     assert(image.get() != 0);
     image->readMetadata();
     Exiv2::XmpData &xmpData = image->xmpData();
@@ -2550,7 +2556,7 @@ char *dt_exif_xmp_read_string(const int imgid)
     {
       std::string xmpPacket;
 
-      Exiv2::DataBuf buf = Exiv2::readFile(input_filename);
+      Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(input_filename));
       xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
       Exiv2::XmpParser::decode(xmpData, xmpPacket);
       // because XmpSeq or XmpBag are added to the list, we first have
@@ -2566,7 +2572,7 @@ char *dt_exif_xmp_read_string(const int imgid)
       Exiv2::XmpData sidecarXmpData;
       std::string xmpPacket;
 
-      Exiv2::DataBuf buf = Exiv2::readFile(input_filename);
+      Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(input_filename));
       xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
       Exiv2::XmpParser::decode(sidecarXmpData, xmpPacket);
 
@@ -2604,7 +2610,7 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
     gboolean from_cache = TRUE;
     dt_image_full_path(imgid, input_filename, sizeof(input_filename), &from_cache);
 
-    std::unique_ptr<Exiv2::Image> img(Exiv2::ImageFactory::open(filename));
+    std::unique_ptr<Exiv2::Image> img(Exiv2::ImageFactory::open(WIDEN(filename)));
     // unfortunately it seems we have to read the metadata, to not erase the exif (which we just wrote).
     // will make export slightly slower, oh well.
     // img->clearXmpPacket();
@@ -2613,7 +2619,7 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
     try
     {
       // initialize XMP and IPTC data with the one from the original file
-      std::unique_ptr<Exiv2::Image> input_image(Exiv2::ImageFactory::open(input_filename));
+      std::unique_ptr<Exiv2::Image> input_image(Exiv2::ImageFactory::open(WIDEN(input_filename)));
       if(input_image.get() != 0)
       {
         input_image->readMetadata();
@@ -2636,7 +2642,7 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
       Exiv2::XmpData sidecarXmpData;
       std::string xmpPacket;
 
-      Exiv2::DataBuf buf = Exiv2::readFile(input_filename);
+      Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(input_filename));
       xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
       Exiv2::XmpParser::decode(sidecarXmpData, xmpPacket);
 
@@ -2695,7 +2701,7 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
         fclose(fd);
       }
 
-      Exiv2::DataBuf buf = Exiv2::readFile(filename);
+      Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(filename));
       xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
       Exiv2::XmpParser::decode(xmpData, xmpPacket);
       // because XmpSeq or XmpBag are added to the list, we first have
@@ -2732,12 +2738,13 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
 
     if(write_sidecar)
     {
-      std::ofstream fout(filename);
-      if(fout.is_open())
+      // using std::ofstream isn't possible here -- on Windows it doesn't support Unicode filenames with mingw
+      FILE *fout = g_fopen(filename, "wb");
+      if(fout)
       {
-        fout << xml_header;
-        fout << xmpPacket;
-        fout.close();
+        fprintf(fout, "%s", xml_header);
+        fprintf(fout, "%s", xmpPacket.c_str());
+        fclose(fout);
       }
     }
 
