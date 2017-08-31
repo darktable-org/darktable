@@ -7591,7 +7591,7 @@ msgstr "prednastavitve/nevtralna kamera"
 #: ../src/iop/temperature.c:202
 msgctxt "accel"
 msgid "preset/spot"
-msgstr "prednastavitev za točkovno merjenje"
+msgstr "prednastavitve/točkovno merjenje"
 
 #: ../src/iop/temperature.c:737
 msgctxt "white balance"
