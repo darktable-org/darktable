@@ -651,7 +651,16 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gcha
     gchar *end = g_strstr_len(accel_path, strlen(accel_path), "/");
     gchar *node = g_strndup(accel_path, end - accel_path);
     gchar *trans_end = g_strstr_len(translated_path, strlen(translated_path), "/");
-    gchar *trans_node = g_strndup(translated_path, trans_end - translated_path);
+    gchar *trans_node;
+    // safeguard against broken translations
+    if(trans_end)
+      trans_node = g_strndup(translated_path, trans_end - translated_path);
+    else
+    {
+      fprintf(stderr, "error: translation mismatch: `%s' vs. `%s'\n", accel_path, translated_path);
+      trans_node = g_strdup(node);
+      translated_path = accel_path;
+    }
 
     /* search the tree if we alread have an sibling with node name */
     int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model), parent);
