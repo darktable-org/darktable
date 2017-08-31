@@ -1678,16 +1678,22 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
   size_t ret_val_size;
   (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid, CL_PROGRAM_BUILD_LOG, 0, NULL,
                                                  &ret_val_size);
-  build_log = (char *)malloc(sizeof(char) * (ret_val_size + 1));
-  (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid, CL_PROGRAM_BUILD_LOG,
-                                                 ret_val_size, build_log, NULL);
+  if(ret_val_size != SIZE_MAX)
+  {
+    build_log = (char *)malloc(sizeof(char) * (ret_val_size + 1));
+    if(build_log)
+    {
+      (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid, CL_PROGRAM_BUILD_LOG,
+                                                     ret_val_size, build_log, NULL);
 
-  build_log[ret_val_size] = '\0';
+      build_log[ret_val_size] = '\0';
 
-  dt_print(DT_DEBUG_OPENCL, "BUILD LOG:\n");
-  dt_print(DT_DEBUG_OPENCL, "%s\n", build_log);
+      dt_print(DT_DEBUG_OPENCL, "BUILD LOG:\n");
+      dt_print(DT_DEBUG_OPENCL, "%s\n", build_log);
 
-  free(build_log);
+      free(build_log);
+    }
+  }
 
   if(err != CL_SUCCESS)
     return err;
