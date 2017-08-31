@@ -168,8 +168,17 @@ if (WIN32)
       PATTERN "*.la" EXCLUDE)
 
   # Add lensfun libraries
+  set(LENSFUN_DB "${MINGW_PATH}/../share/lensfun/version_1")
+  if(EXISTS "C:/var/lib/lensfun-updates/version_1")
+    file(READ "${MINGW_PATH}/../share/lensfun/version_1/timestamp.txt" LENSFUN_TS)
+    file(READ "C:/var/lib/lensfun-updates/version_1/timestamp.txt" LENSFUN_TS_UPDATE)
+    if(LENSFUN_TS LESS LENSFUN_TS_UPDATE)
+      set(LENSFUN_DB "C:/var/lib/lensfun-updates/version_1")
+    endif()
+  endif()
+  message(STATUS "Installing lensfun database from ${LENSFUN_DB}")
   install(DIRECTORY
-      "${MINGW_PATH}/../share/lensfun/version_1"
+      "${LENSFUN_DB}"
       DESTINATION share/lensfun/
       COMPONENT DTApplication)
 
