@@ -28,10 +28,14 @@ fi
 MAJOR_VERSION=0
 MINOR_VERSION=0
 PATCH_VERSION=0
+N_COMMITS=0
 if echo "$NEW_VERSION" | grep -q "^[0-9]\+\.[0-9]\+\.[0-9]\+"; then
   MAJOR_VERSION=$(echo "$NEW_VERSION" | sed "s/^\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\).*/\1/")
   MINOR_VERSION=$(echo "$NEW_VERSION" | sed "s/^\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\).*/\2/")
   PATCH_VERSION=$(echo "$NEW_VERSION" | sed "s/^\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\).*/\3/")
+fi
+if echo "$NEW_VERSION" | grep -q "^[0-9]\+\.[0-9]\+\.[0-9]\++[0-9]\+"; then
+  N_COMMITS=$(echo "$NEW_VERSION" | sed "s/^\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)+\([0-9]\+\).*/\4/")
 fi
 
 LAST_COMMIT_YEAR=$("${DT_SRC_DIR}/tools/get_last_commit_year.sh")
@@ -50,6 +54,7 @@ if [ $VERSION_C_NEEDS_UPDATE -eq 1 ]; then
   echo "  #define DT_MAJOR ${MAJOR_VERSION}" >> "$C_FILE"
   echo "  #define DT_MINOR ${MINOR_VERSION}" >> "$C_FILE"
   echo "  #define DT_PATCH ${PATCH_VERSION}" >> "$C_FILE"
+  echo "  #define DT_N_COMMITS ${N_COMMITS}" >> "$C_FILE"
   echo "  #define LAST_COMMIT_YEAR \"${LAST_COMMIT_YEAR}\"" >> "$C_FILE"
   echo "#endif" >> "$C_FILE"
 
