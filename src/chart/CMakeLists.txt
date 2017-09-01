@@ -14,6 +14,7 @@ target_link_libraries(darktable-chart lib_darktable)
 set_target_properties(darktable-chart PROPERTIES LINKER_LANGUAGE C)
 
 if (WIN32)
+  set_target_properties(darktable-chart PROPERTIES LINK_FLAGS "-mwindows -Wl,-subsystem,windows")
   _detach_debuginfo (darktable-chart bin)
 endif(WIN32)
 
