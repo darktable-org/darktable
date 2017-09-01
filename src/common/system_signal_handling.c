@@ -159,11 +159,12 @@ static LONG WINAPI dt_toplevel_exception_handler(PEXCEPTION_POINTERS pExceptionI
   if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
     fout = STDOUT_FILENO; // just print everything to stdout
 
-  if(fout != STDOUT_FILENO)
-  {
-    close(fout);
-    g_unlink(name_used);
-  };
+  FILE *fd = fdopen(fout, "wb");
+  fprintf(fd, "this is %s reporting an exception:\n\n", darktable_package_string);
+  fclose(fd);
+
+  if(fout != STDOUT_FILENO) close(fout);
+
 
   // Set up logfile name
   ok = ExcHndlSetLogFileNameA(name_used);
