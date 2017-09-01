@@ -430,9 +430,6 @@ endif()
 
 
 if(WIN32)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -Wl,-subsystem,windows")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows -Wl,-subsystem,windows")
-
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
   set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
@@ -799,6 +796,7 @@ endif(APPLE)
 target_link_libraries(darktable lib_darktable)
 
 if (WIN32)
+  set_target_properties(darktable PROPERTIES LINK_FLAGS "-mwindows -Wl,-subsystem,windows")
   _detach_debuginfo (darktable bin)
   _detach_debuginfo (lib_darktable bin)
 endif(WIN32)
