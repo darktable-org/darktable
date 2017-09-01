@@ -2,7 +2,7 @@
 #define RC_BUILD
 #include "../version_gen.c"
 
-#define DT_VERSION  DT_MAJOR,DT_MINOR,DT_PATCH,0
+#define DT_VERSION  DT_MAJOR,DT_MINOR,DT_PATCH,DT_N_COMMITS
 
 
 IDI_ICON1               ICON    DISCARDABLE     "../../data/pixmaps/dt_logo_128x128.ico"
