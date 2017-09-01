@@ -394,6 +394,7 @@ static void _lib_import_presets_changed(GtkWidget *widget, dt_lib_import_metadat
     g_value_unset(&value);
   }
 }
+
 #ifdef USE_LUA
 static void reset_child(GtkWidget* child, gpointer user_data)
 {
@@ -402,6 +403,13 @@ static void reset_child(GtkWidget* child, gpointer user_data)
       LUA_ASYNC_TYPENAME,"lua_widget",child, // the GtkWidget is an alias for the lua_widget
       LUA_ASYNC_TYPENAME,"const char*","reset",
       LUA_ASYNC_DONE);
+}
+
+// remove the extra portion from the filechooser before destroying it
+static void detach_lua_widgets(GtkWidget *extra_lua_widgets)
+{
+  GtkWidget *parent = gtk_widget_get_parent(extra_lua_widgets);
+  gtk_container_remove(GTK_CONTAINER(parent), extra_lua_widgets);
 }
 #endif
 
@@ -816,7 +824,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
 
   dt_lib_import_metadata_t metadata;
   gtk_file_chooser_set_extra_widget(GTK_FILE_CHOOSER(filechooser),
-                                    _lib_import_get_extra_widget(self,&metadata, FALSE));
+                                    _lib_import_get_extra_widget(self, &metadata, FALSE));
 
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
@@ -867,6 +875,12 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
       }
     }
   }
+
+#ifdef USE_LUA
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  detach_lua_widgets(d->extra_lua_widgets);
+#endif
+
   gtk_widget_destroy(metadata.frame);
   gtk_widget_destroy(filechooser);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
@@ -891,7 +905,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
 
   dt_lib_import_metadata_t metadata;
   gtk_file_chooser_set_extra_widget(GTK_FILE_CHOOSER(filechooser),
-                                    _lib_import_get_extra_widget(self,&metadata, TRUE));
+                                    _lib_import_get_extra_widget(self, &metadata, TRUE));
 
   // run the dialog
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -937,12 +951,12 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
 
     g_slist_free(list);
   }
+
 #ifdef USE_LUA
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  // remove the extra portion from the filechooser before destroying it
-  GtkWidget * parent =gtk_widget_get_parent(d->extra_lua_widgets);
-  gtk_container_remove(GTK_CONTAINER(parent),d->extra_lua_widgets);
+  detach_lua_widgets(d->extra_lua_widgets);
 #endif
+
   gtk_widget_destroy(metadata.frame);
   gtk_widget_destroy(filechooser);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
