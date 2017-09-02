@@ -2578,6 +2578,17 @@ end</programlisting></para>
 
 </section>
 
+<section status="final" id="darktable_configuration_running_os">
+<title>darktable.configuration.running_os</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>running_os</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The name of the Operating system darktable is currently running on</para>
+
+</section>
+
 <section status="final" id="darktable_configuration_check_version">
 <title>darktable.configuration.check_version</title>
 <indexterm>
@@ -8877,6 +8888,33 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="types_lua_os_type">
+<title>types.lua_os_type</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_os_type</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>undocumented</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>windows</para></listitem>
+<listitem><para>macos</para></listitem>
+<listitem><para>linux</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 </section>
 
 <section status="final" id="events">
@@ -8966,7 +9004,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <synopsis>event</synopsis>
 <para>This event is triggered whenever a new image is imported into the database.
 
-	This event can be registered multiple times, all callbacks will be called.</para>
+	This event can be registered multiple times, all callbacks will be called. The call is blocking.</para>
 
 <section status="final" id="events_post-import-image_callback">
 <title>events.post-import-image.callback</title>
