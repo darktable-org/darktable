@@ -71,6 +71,19 @@ static int check_version(lua_State *L)
 }
 
 
+typedef enum
+{
+  os_windows,
+  os_macos,
+  os_linux
+} lua_os_type;
+#if defined(_WIN32)
+static const lua_os_type cur_os = os_windows;
+#elif defined(__MACH__) || defined(__APPLE__)
+static const lua_os_type cur_os = os_macos;
+#else
+static const lua_os_type cur_os = os_linux;
+#endif
 
 int dt_lua_init_configuration(lua_State *L)
 {
@@ -138,6 +151,14 @@ int dt_lua_init_configuration(lua_State *L)
 
   lua_pushstring(L, "check_version");
   lua_pushcfunction(L, check_version);
+  lua_settable(L, -3);
+
+  luaA_enum(L, lua_os_type);
+  luaA_enum_value_name(L, lua_os_type, os_windows, "windows");
+  luaA_enum_value_name(L, lua_os_type, os_macos, "macos");
+  luaA_enum_value_name(L, lua_os_type, os_linux, "linux");
+  lua_pushstring(L, "running_os");
+  luaA_push(L, lua_os_type, &cur_os);
   lua_settable(L, -3);
 
   lua_pop(L, 1); // remove the configuration table from the stack

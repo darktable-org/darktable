@@ -267,6 +267,7 @@ darktable.configuration.api_version_minor:set_text([[The minor version number of
 darktable.configuration.api_version_patch:set_text([[The patch version number of the lua API.]])
 darktable.configuration.api_version_suffix:set_text([[The version suffix of the lua API.]])
 darktable.configuration.api_version_string:set_text([[The version description of the lua API. This is a string compatible with the semantic versioning convention]])
+darktable.configuration.running_os:set_text([[The name of the Operating system darktable is currently running on]])
 darktable.configuration.check_version:set_text([[Check that a module is compatible with the running version of darktable]]..para().."Add the following line at the top of your module : "..
 code("darktable.configuration.check(...,{M,m,p},{M2,m2,p2})").."To document that your module has been tested with API version M.m.p and M2.m2.p2."..para()..
 "This will raise an error if the user is running a released version of DT and a warning if he is running a development version"..para().."(the ... here will automatically expand to your module name if used at the top of your script")
@@ -585,6 +586,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	----------------------
 	types:set_text([[This section documents types that are specific to darktable's Lua API.]])
 
+	types.lua_os_type:set_text([[The type of OS we darktable can run on]])
 
 	types.dt_lua_image_t:set_text([[Image objects represent an image in the database. This is slightly different from a file on disk since a file can have multiple developments.
 
