@@ -376,7 +376,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   char kerneldir[PATH_MAX] = { 0 };
   snprintf(kerneldir, sizeof(kerneldir), "%s/kernels", dtpath);
 
-  options = g_strdup_printf("-cl-fast-relaxed-math %s -D%s=1 -I%s",
+  options = g_strdup_printf("-cl-fast-relaxed-math %s -D%s=1 -I\"%s\"",
                             (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
                             dt_opencl_get_vendor_by_id(vendor_id), kerneldir);
   cl->dev[dev].options = strdup(options);
