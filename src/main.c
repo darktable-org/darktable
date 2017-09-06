@@ -61,10 +61,20 @@ int main(int argc, char *argv[])
   }
 #endif
 
-  if(dt_init(argc, argv, TRUE, TRUE, NULL)) exit(1);
+  // On Windows the command line arguments are ANSI encoded. We want UTF-8 in dt though.
+  char **argv_utf8 = argv;
+#if _WIN32
+  argv_utf8 = g_malloc0((argc + 1) * sizeof(char *));
+  for(int i = 0; i < argc; i++)
+    argv_utf8[i] = g_locale_to_utf8(argv[i], -1, NULL, NULL, NULL);
+#endif
+
+  if(dt_init(argc, argv_utf8, TRUE, TRUE, NULL)) exit(1);
   dt_gui_gtk_run(darktable.gui);
 
 #ifdef _WIN32
+  g_strfreev(argv_utf8);
+
   if(redirect_output)
   {
     dt_gettime(datetime, sizeof(datetime));
