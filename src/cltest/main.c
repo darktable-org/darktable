@@ -21,6 +21,7 @@
 
 #ifdef _WIN32
 #include <conio.h>
+#include "win/main_wrapper.h"
 #endif
 
 int main(int argc, char *arg[])

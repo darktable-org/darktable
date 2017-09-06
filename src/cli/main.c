@@ -45,6 +45,10 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#ifdef _WIN32
+#include "win/main_wrapper.h"
+#endif
+
 static void usage(const char *progname)
 {
   fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max "
