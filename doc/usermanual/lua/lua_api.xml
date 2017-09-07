@@ -8907,6 +8907,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <listitem><para>windows</para></listitem>
 <listitem><para>macos</para></listitem>
 <listitem><para>linux</para></listitem>
+<listitem><para>unix</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
