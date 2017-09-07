@@ -790,16 +790,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return;
   }
 
-  /* create the rsvghandle from parsed svg data */
-  GError *error = NULL;
-  RsvgHandle *svg = rsvg_handle_new_from_data((const guint8 *)svgdoc, strlen(svgdoc), &error);
-  g_free(svgdoc);
-  if(!svg || error)
-  {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
-    return;
-  }
-
   /* setup stride for performance */
   int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
 
@@ -817,6 +807,23 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   /* create cairo context and setup transformation/scale */
   cairo_t *cr = cairo_create(surface);
+
+  // rsvg (or some part of cairo whic is used underneath) isn't thread safe, for example when handling fonts
+  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+
+  /* create the rsvghandle from parsed svg data */
+  GError *error = NULL;
+  RsvgHandle *svg = rsvg_handle_new_from_data((const guint8 *)svgdoc, strlen(svgdoc), &error);
+  g_free(svgdoc);
+  if(!svg || error)
+  {
+    g_free(image);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+    fprintf(stderr, "[watermark] error processing svg file: %s\n", error->message);
+    g_error_free(error);
+    return;
+  }
 
   /* get the dimension of svg */
   RsvgDimensionData dimension;
@@ -945,8 +952,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   cairo_scale(cr, scale, scale);
 
   /* render svg into surface*/
-  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   rsvg_handle_render_cairo(svg, cr);
+
+  // no more non-thread safe rsvg usage
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   cairo_destroy(cr);
