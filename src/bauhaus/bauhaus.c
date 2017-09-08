@@ -1144,7 +1144,7 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g,
     }
   }
   // new stop:
-  if(d->grad_cnt < 10)
+  if(d->grad_cnt < DT_BAUHAUS_SLIDER_MAX_STOPS)
   {
     int k = d->grad_cnt++;
     d->grad_pos[k] = rawstop;
@@ -1154,7 +1154,7 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g,
   }
   else
   {
-    fprintf(stderr, "[bauhaus_slider_set_stop] only 10 stops allowed.\n");
+    fprintf(stderr, "[bauhaus_slider_set_stop] only %d stops allowed.\n", DT_BAUHAUS_SLIDER_MAX_STOPS);
   }
 }
 
