@@ -1297,7 +1297,7 @@ static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
     gradient = cairo_pattern_create_linear(0, 0, wd - 4 - ht - 2, ht);
     for(int k = 0; k < d->grad_cnt; k++)
       cairo_pattern_add_color_stop_rgba(gradient, d->grad_pos[k], d->grad_col[k][0], d->grad_col[k][1],
-                                        d->grad_col[k][2], .25f);
+                                        d->grad_col[k][2], 0.4f);
     cairo_set_source(cr, gradient);
   }
   else
