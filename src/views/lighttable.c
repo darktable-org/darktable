@@ -132,6 +132,7 @@ typedef struct dt_library_t
   gboolean offset_changed;
   int images_in_row;
   int max_rows;
+  int32_t single_img_id;
 
   float thumb_size;
   int last_mouse_over_thumb;
@@ -205,7 +206,7 @@ static void switch_layout_to(dt_library_t *lib, int new_layout)
   {
     if(lib->first_visible_zoomable >= 0)
     {
-      lib->offset = lib->first_visible_zoomable;
+      lib->first_visible_filemanager = lib->offset = lib->first_visible_zoomable;
     }
     lib->first_visible_zoomable = 0;
 
@@ -321,7 +322,7 @@ static void _update_collected_images(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   sqlite3_stmt *stmt;
-  int32_t min_before = 0, min_after = 0;
+  int32_t min_before = 0, min_after = -1;
 
   /* check if we can get a query from collection */
   gchar *query = g_strdup(dt_collection_get_query(darktable.collection));
@@ -365,16 +366,16 @@ static void _update_collected_images(dt_view_t *self)
   g_free(ins_query);
 
   // 3. get new low-bound, then update the full preview rowid accordingly
-  if (lib->full_preview_id != -1)
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MIN(rowid) FROM memory.collected_images", -1,
+                              &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MIN(rowid) FROM memory.collected_images",
-                                -1, &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      min_after = sqlite3_column_int(stmt, 0);
-    }
-    sqlite3_finalize(stmt);
+    min_after = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
 
+  if(lib->full_preview_id != -1)
+  {
     // note that this adjustement is needed as for a memory table the rowid doesn't start to 1 after the DELETE
     // above,
     // but rowid is incremented each time we INSERT.
@@ -395,7 +396,20 @@ static void _update_collected_images(dt_view_t *self)
     sqlite3_finalize(stmt);
   }
 
-  /* if we have a statement lets clean it */
+  if(lib->single_img_id != -1 && min_after != -1)
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT rowid FROM memory.collected_images WHERE imgid=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, lib->single_img_id);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      int new_rowid = sqlite3_column_int(stmt, 0);
+      lib->first_visible_filemanager = lib->offset = new_rowid - min_after;
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  /* if we have a statment lets clean it */
   if(lib->statements.main_query) sqlite3_finalize(lib->statements.main_query);
 
   /* prepare a new main query statement for collection */
@@ -464,6 +478,7 @@ void init(dt_view_t *self)
   lib->full_res_thumb = 0;
   lib->full_res_thumb_id = -1;
   lib->audio_player_id = -1;
+  lib->single_img_id = -1;
 
   lib->thumb_size = -1;
   lib->last_mouse_over_thumb = -1;
@@ -823,7 +838,11 @@ end_query_cache:
           // contain
           // this single image.
           dt_selection_select_single(darktable.selection, id);
+          lib->single_img_id = id;
         }
+        else
+          lib->single_img_id = -1;
+
         if (id == mouse_over_id
             || lib->force_expose_all
             || id == before_last_exposed_id
@@ -1337,7 +1356,10 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
           // contain
           // this single image.
           dt_selection_select_single(darktable.selection, id);
+          lib->single_img_id = id;
         }
+        else
+          lib->single_img_id = -1;
       }
       else
         goto failure;
