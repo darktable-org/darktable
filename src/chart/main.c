@@ -871,6 +871,8 @@ static char *encode_colorchecker(int num, const double *point, const double **ta
 static void process_data(dt_lut_t *self, double *target_L, double *target_a, double *target_b,
                          double *colorchecker_Lab, int N, int num_tonecurve, int sparsity)
 {
+  if (num_tonecurve < 2)
+    num_tonecurve = 2;
   tonecurve_t tonecurve;
   double *cx = malloc(sizeof(double) * num_tonecurve);
   double *cy = malloc(sizeof(double) * num_tonecurve);
@@ -878,7 +880,8 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   cx[num_tonecurve - 1] = cy[num_tonecurve - 1] = 100.0; // fix white
   for(int k = 1; k < num_tonecurve - 1; k++)
     cx[num_tonecurve - 1 - k] = colorchecker_Lab[3 * (N - num_tonecurve + 2 + k - 1)];
-  for(int k = 1; k < num_tonecurve - 1; k++) cy[num_tonecurve - 1 - k] = target_L[N - num_tonecurve + 2 + k - 1];
+  for(int k = 1; k < num_tonecurve - 1; k++)
+    cy[num_tonecurve - 1 - k] = target_L[N - num_tonecurve + 2 + k - 1];
   tonecurve_create(&tonecurve, cx, cy, num_tonecurve);
 
   cy = NULL;
@@ -927,6 +930,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
     target_a[k] = Lab[1];
     target_b[k] = Lab[2];
   }
+  tonecurve_delete(&rgbcurve);
 #endif
 
   const double *target[3] = { target_L, target_a, target_b };
@@ -938,11 +942,14 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   double avgerr, maxerr;
   sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff, &avgerr, &maxerr);
 
-  // TODO: is the rank interesting, too?
-  char *result_string = g_strdup_printf(_("average dE: %.02f\nmax dE: %.02f"), avgerr, maxerr);
-  gtk_label_set_text(GTK_LABEL(self->result_label), result_string);
-  g_free(result_string);
-
+  if (self->result_label != NULL)
+  {
+    // TODO: is the rank interesting, too?
+    char *result_string = g_strdup_printf(_("average dE: %.02f\nmax dE: %.02f"), avgerr, maxerr);
+    gtk_label_set_text(GTK_LABEL(self->result_label), result_string);
+    g_free(result_string);
+  }
+  
   free(coeff_b);
   free(coeff_a);
   free(coeff_L);
