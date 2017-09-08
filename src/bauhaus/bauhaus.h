@@ -46,6 +46,7 @@ extern GType DT_BAUHAUS_WIDGET_TYPE;
 
 #define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX 500
 #define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN 25
+#define DT_BAUHAUS_SLIDER_MAX_STOPS 10
 
 typedef enum dt_bauhaus_type_t
 {
@@ -73,9 +74,9 @@ typedef struct dt_bauhaus_slider_data_t
   float scale; // step width for loupe mode
   int digits;  // how many decimals to round to
 
-  float grad_col[10][3]; // colors for gradient slider
-  int grad_cnt;          // how many stops
-  float grad_pos[10];    // and position of these.
+  float grad_col[DT_BAUHAUS_SLIDER_MAX_STOPS][3]; // colors for gradient slider
+  int grad_cnt;                                   // how many stops
+  float grad_pos[DT_BAUHAUS_SLIDER_MAX_STOPS];    // and position of these.
 
   int fill_feedback; // fill the slider with brighter part up to the handle?
 
