@@ -1118,6 +1118,14 @@ int dt_bauhaus_combobox_get(GtkWidget *widget)
   return d->active;
 }
 
+void dt_bauhaus_slider_clear_stops(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  d->grad_cnt = 0;
+}
+
 void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
