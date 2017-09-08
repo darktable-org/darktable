@@ -1063,6 +1063,12 @@ gui:
 
     dt_bauhaus_slider_set_default(g->scale_k, TempK);
     dt_bauhaus_slider_set_default(g->scale_tint, tint);
+
+    const float neutral_stop_tint = (tint - DT_IOP_LOWEST_TINT) / (DT_IOP_HIGHEST_TINT - DT_IOP_LOWEST_TINT);
+    dt_bauhaus_slider_clear_stops(g->scale_tint);
+    dt_bauhaus_slider_set_stop(g->scale_tint, 0.0, 1.0, 0.0, 1.0);
+    dt_bauhaus_slider_set_stop(g->scale_tint, neutral_stop_tint, 1.0, 1.0, 1.0);
+    dt_bauhaus_slider_set_stop(g->scale_tint, 1.0, 0.0, 1.0, 0.0);
   }
 
 end:
@@ -1371,6 +1377,29 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale_g = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[1], 3);
   g->scale_b = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[2], 3);
   g->scale_g2 = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[3], 3);
+
+  // reflect actual black body colors for the temperature slider
+  const double temp_step = (double)(DT_IOP_HIGHEST_TEMPERATURE - DT_IOP_LOWEST_TEMPERATURE) / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
+  for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
+  {
+    const float stop = i / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
+    const double K = DT_IOP_LOWEST_TEMPERATURE + i * temp_step;
+    cmsCIEXYZ cmsXYZ = temperature_to_XYZ(K);
+    float sRGB[3], XYZ[3] = {cmsXYZ.X, cmsXYZ.Y, cmsXYZ.Z};
+    dt_XYZ_to_sRGB(XYZ, sRGB);
+    dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[0], sRGB[1], sRGB[2]);
+  }
+
+  dt_bauhaus_slider_set_stop(g->scale_tint, 0.0, 1.0, 0.0, 1.0);
+  dt_bauhaus_slider_set_stop(g->scale_tint, 1.0, 0.0, 1.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_r, 0.0, 0.0, 0.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_r, 1.0, 1.0, 0.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_g, 0.0, 0.0, 0.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_g, 1.0, 0.0, 1.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_b, 0.0, 0.0, 0.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_b, 1.0, 0.0, 0.0, 1.0);
+  dt_bauhaus_slider_set_stop(g->scale_g2, 0.0, 0.0, 0.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_g2, 1.0, 0.0, 1.0, 0.0);
 
   dt_bauhaus_slider_set_format(g->scale_k, "%.0fK");
   dt_bauhaus_widget_set_label(g->scale_tint, NULL, _("tint"));
