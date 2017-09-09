@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
 
 /***/
 typedef enum _camctl_camera_job_type_t
@@ -939,16 +940,44 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
       char *output = g_build_filename(output_path, fname, (char *)NULL);
 
       int handle = g_open(output, O_CREAT | O_WRONLY, 0666);
-      if (handle > 0) {
-        if (write(handle, data, size) > 0) {
-          _dispatch_camera_image_downloaded(c, cam, output);
+      if(handle > 0)
+      {
+        size_t written = 0;
+
+        while(written < size)
+        {
+          ssize_t ret = write(handle, data + written, size - written);
+
+          if(ret < 0)
+          {
+            if(errno == EINTR)
+            {
+              continue;
+            }
+            else
+            {
+              break;
+            }
+          }
+
+          written += ret;
         }
-        else {
+
+        close(handle);
+
+        if(written < size)
+        {
+          // If the file was not copied successfully we remove it.
+          g_unlink(output);
           dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to download file %s\n", output);
         }
-        close(handle);
+        else
+        {
+          _dispatch_camera_image_downloaded(c, cam, output);
+        }
       }
-      else {
+      else
+      {
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to download file %s\n", output);
       }
       gp_file_free(camfile);
