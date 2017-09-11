@@ -39,7 +39,7 @@
 #include <gio/gio.h>
 #include <glib.h>
 #include <glib/gstdio.h>
-#ifndef __WIN32__
+#ifndef _WIN32
 #include <glob.h>
 #endif
 #ifdef __APPLE__
@@ -878,6 +878,10 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     gboolean from_cache = FALSE;
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
+#ifdef _WIN32
+    char *dirname = g_path_get_dirname(filename);
+#endif
+
     int duplicates = 0;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW) duplicates = sqlite3_column_int(stmt, 0);
@@ -922,7 +926,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
         snprintf(c1 + strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp",
                  c2);
 
-#ifdef __WIN32__
+#ifdef _WIN32
         wchar_t *wpattern = g_utf8_to_utf16(pattern, -1, NULL, NULL, NULL);
         WIN32_FIND_DATAW data;
         HANDLE handle = FindFirstFileW(wpattern, &data);
@@ -930,7 +934,11 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
         if(handle != INVALID_HANDLE_VALUE)
         {
           do
-            files = g_list_append(files, g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL));
+          {
+            char *xmp_filename = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
+            files = g_list_append(files, g_build_filename(dirname, xmp_filename));
+            g_free(xmp_filename);
+          }
           while(FindNextFileW(handle, &data));
         }
 #else
@@ -975,6 +983,9 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     }
 
 delete_next_file:
+#ifdef _WIN32
+    g_free(dirname);
+#endif
     t = g_list_delete_link(t, t);
     fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
