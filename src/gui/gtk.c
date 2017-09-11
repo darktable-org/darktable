@@ -892,15 +892,6 @@ static gboolean mouse_moved(GtkWidget *w, GdkEventMotion *event, gpointer user_d
     gdk_event_get_axis ((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
   }
   dt_control_mouse_moved(event->x, event->y, pressure, event->state & 0xf);
-  gint x, y;
-  gdk_window_get_device_position(event->window,
-#if GTK_CHECK_VERSION(3, 20, 0)
-                                 gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(w))),
-#else
-                                 gdk_device_manager_get_client_pointer(
-                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
-#endif
-                                 &x, &y, NULL);
   return FALSE;
 }
 
