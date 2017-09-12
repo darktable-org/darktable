@@ -27,6 +27,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
