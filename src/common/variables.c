@@ -61,6 +61,25 @@ gchar *_string_get_next_variable(gchar *string, gchar *variable, const size_t va
   return end;
 }
 
+gboolean _variable_search_replace(const gchar *search,
+                                  const gchar *replace,
+                                  gchar *value,
+                                  size_t value_len)
+{
+    gchar *replace_value = NULL;
+
+    replace_value = dt_util_str_replace(value, search, replace);
+    if (g_utf8_strlen(replace_value, -1) >= value_len) {
+        g_free(replace_value);
+        return FALSE;
+    }
+
+    snprintf(value, value_len, "%s", (char *)replace_value);
+    g_free(replace_value);
+
+    return TRUE;
+}
+
 gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gchar *value, size_t value_len)
 {
   const gchar *file_ext = NULL;
@@ -127,6 +146,9 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gch
   strv_variable = g_strsplit(tmp_variable + 2, "/", 3);
   g_free(tmp_variable);
   length = g_strv_length(strv_variable);
+  if (length == 0) {
+      return FALSE;
+  }
 
   variable = strv_variable[0];
 
@@ -292,6 +314,20 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gch
       snprintf(value, value_len, "%s", _("none"));
     }
     g_list_free_full(res, &g_free);
+  }
+
+  if (length == 3) {
+      gboolean ok;
+
+      ok = _variable_search_replace(strv_variable[1],
+                                    strv_variable[2],
+                                    value,
+                                    value_len);
+      if (!ok) {
+          dt_print(DT_DEBUG_CONTROL,
+                   "Search and replace failed for $(%s): %s",
+                   variable, value);
+      }
   }
 
   g_strfreev(strv_variable);
