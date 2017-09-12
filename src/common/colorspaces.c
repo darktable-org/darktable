@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011--2017 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -346,120 +347,6 @@ static cmsToneCurve *build_linear_gamma(void)
   Parameters[1] = 0;
 
   return cmsBuildParametricToneCurve(0, 1, Parameters);
-}
-
-static float cbrt_5f(float f)
-{
-  uint32_t *p = (uint32_t *)&f;
-  *p = *p / 3 + 709921077;
-  return f;
-}
-
-static float cbrta_halleyf(const float a, const float R)
-{
-  const float a3 = a * a * a;
-  const float b = a * (a3 + R + R) / (a3 + a3 + R);
-  return b;
-}
-
-static float lab_f(const float x)
-{
-  const float epsilon = 216.0f / 24389.0f;
-  const float kappa = 24389.0f / 27.0f;
-  if(x > epsilon)
-  {
-    // approximate cbrtf(x):
-    const float a = cbrt_5f(x);
-    return cbrta_halleyf(a, x);
-  }
-  else
-    return (kappa * x + 16.0f) / 116.0f;
-}
-
-void dt_XYZ_to_Lab(const float *XYZ, float *Lab)
-{
-  const float d50[3] = { 0.9642, 1.0, 0.8249 };
-  const float f[3] = { lab_f(XYZ[0] / d50[0]), lab_f(XYZ[1] / d50[1]), lab_f(XYZ[2] / d50[2]) };
-  Lab[0] = 116.0f * f[1] - 16.0f;
-  Lab[1] = 500.0f * (f[0] - f[1]);
-  Lab[2] = 200.0f * (f[1] - f[2]);
-}
-
-static float lab_f_inv(const float x)
-{
-  const float epsilon = 0.20689655172413796; // cbrtf(216.0f/24389.0f);
-  const float kappa = 24389.0f / 27.0f;
-  if(x > epsilon)
-    return x * x * x;
-  else
-    return (116.0f * x - 16.0f) / kappa;
-}
-
-void dt_Lab_to_XYZ(const float *Lab, float *XYZ)
-{
-  const float d50[3] = { 0.9642, 1.0, 0.8249 };
-  const float fy = (Lab[0] + 16.0f) / 116.0f;
-  const float fx = Lab[1] / 500.0f + fy;
-  const float fz = fy - Lab[2] / 200.0f;
-  XYZ[0] = d50[0] * lab_f_inv(fx);
-  XYZ[1] = d50[1] * lab_f_inv(fy);
-  XYZ[2] = d50[2] * lab_f_inv(fz);
-}
-
-void dt_XYZ_to_sRGB(const float * const XYZ, float *sRGB)
-{
-  const float xyz_to_srgb_matrix[3][3] =
-  {
-    {3.1338561, -1.6168667, -0.4906146},
-    {-0.9787684, 1.9161415, 0.0334540},
-    {0.0719453, -0.2289914, 1.4052427}
-  };
-
-  // XYZ -> sRGB
-  float rgb[3] = {0, 0, 0};
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++)
-      rgb[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
-  // linear sRGB -> gamma corrected sRGB
-  for(int c = 0; c < 3; c++)
-    rgb[c] = rgb[c] <= 0.0031308 ? 12.92 * rgb[c] : (1.0 + 0.055) * powf(rgb[c], 1.0 / 2.4) - 0.055;
-
-#define CLIP(a) ((a) < 0 ? 0 : (a) > 1 ? 1 : (a))
-
-  for(int i = 0; i < 3; i++)
-    sRGB[i] = CLIP(rgb[i]);
-
-#undef CLIP
-}
-
-void dt_Lab_to_prophotorgb(const float *const Lab, float *rgb)
-{
-  const float xyz_to_rgb[3][3] = { // prophoto rgb d50
-    { 1.3459433, -0.2556075, -0.0511118},
-    {-0.5445989,  1.5081673,  0.0205351},
-    { 0.0000000,  0.0000000,  1.2118128},
-  };
-
-  float XYZ[3];
-  dt_Lab_to_XYZ(Lab, XYZ);
-  rgb[0] = rgb[1] = rgb[2] = 0.0f;
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++)
-      rgb[r] += xyz_to_rgb[r][c] * XYZ[c];
-}
-
-void dt_prophotorgb_to_Lab(const float *const rgb, float *Lab)
-{
-  const float rgb_to_xyz[3][3] = { // prophoto rgb
-    {0.7976749, 0.1351917, 0.0313534},
-    {0.2880402, 0.7118741, 0.0000857},
-    {0.0000000, 0.0000000, 0.8252100},
-  };
-  float XYZ[3] = {0.0f};
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++)
-      XYZ[r] += rgb_to_xyz[r][c] * rgb[c];
-  dt_XYZ_to_Lab(XYZ, Lab);
 }
 
 int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)

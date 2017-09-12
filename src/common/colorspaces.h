@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011--2017 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +20,7 @@
 #pragma once
 
 #include "common/darktable.h"
+
 #include <lcms2.h>
 
 // this was removed from lcms2 in 2.4
@@ -141,18 +143,6 @@ cmsHPROFILE dt_colorspaces_get_rgb_profile_from_mem(uint8_t *data, uint32_t size
 
 /** free the resources of a profile created with the functions above. */
 void dt_colorspaces_cleanup_profile(cmsHPROFILE p);
-
-/** uses D50 white point. */
-void dt_XYZ_to_Lab(const float *XYZ, float *Lab);
-
-/** uses D50 white point. */
-void dt_Lab_to_XYZ(const float *Lab, float *XYZ);
-
-/** uses D50 white point and clips the output to [0..1]. */
-void dt_XYZ_to_sRGB(const float * const XYZ, float *sRGB);
-
-void dt_Lab_to_prophotorgb(const float * const Lab, float *rgb);
-void dt_prophotorgb_to_Lab(const float * const rgb, float *Lab);
 
 /** extracts tonecurves and color matrix prof to XYZ from a given input profile, returns 0 on success (curves
  * and matrix are inverted for input) */

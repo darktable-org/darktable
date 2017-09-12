@@ -30,7 +30,7 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
-#include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -1386,7 +1386,7 @@ void gui_init(struct dt_iop_module_t *self)
     const double K = DT_IOP_LOWEST_TEMPERATURE + i * temp_step;
     cmsCIEXYZ cmsXYZ = temperature_to_XYZ(K);
     float sRGB[3], XYZ[3] = {cmsXYZ.X, cmsXYZ.Y, cmsXYZ.Z};
-    dt_XYZ_to_sRGB(XYZ, sRGB);
+    dt_XYZ_to_sRGB_clipped(XYZ, sRGB);
     dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[0], sRGB[1], sRGB[2]);
   }
 
