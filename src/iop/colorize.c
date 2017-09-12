@@ -19,7 +19,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
-#include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"

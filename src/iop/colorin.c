@@ -22,6 +22,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colormatrices.c"
 #include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/image_cache.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -448,114 +449,6 @@ error:
 }
 #endif
 
-static inline float _cbrtf(const float x)
-{
-  union convert {
-    float f;
-    int i;
-  } data, dataout;
-
-  data.f = x;
-
-  // approximate cbrtf(x):
-  dataout.i = (((int)(((float)(data.i)) / 3.0f)) + 709921077);
-
-  return dataout.f;
-}
-
-#if defined(__SSE2__)
-static inline __m128 _cbrtf_sse2(const __m128 x)
-{
-  return (_mm_castsi128_ps(
-      _mm_add_epi32(_mm_cvtps_epi32(_mm_div_ps(_mm_cvtepi32_ps(_mm_castps_si128(x)), _mm_set1_ps(3.0f))),
-                    _mm_set1_epi32(709921077))));
-}
-#endif
-
-static inline float lab_f_m(const float x)
-{
-  const float epsilon = (216.0f / 24389.0f);
-  const float kappa = (24389.0f / 27.0f);
-
-  const float a = _cbrtf(x);
-  const float a3 = a * a * a;
-
-  // x > epsilon
-  const float res_big = (((a) * ((x + x) + a3)) / ((a3 + a3) + x));
-
-  // x <= epsilon
-  const float res_small = (((kappa * x) + (16.0f)) / (116.0f));
-
-  // blend results according to whether each component is > epsilon or not
-  return ((x > epsilon) ? res_big : res_small);
-}
-
-#if defined(__SSE2__)
-static inline __m128 lab_f_m_sse2(const __m128 x)
-{
-  const __m128 epsilon = _mm_set1_ps(216.0f / 24389.0f);
-  const __m128 kappa = _mm_set1_ps(24389.0f / 27.0f);
-
-  // calculate as if x > epsilon : result = cbrtf(x)
-  // approximate cbrtf(x):
-  const __m128 a = _cbrtf_sse2(x);
-  const __m128 a3 = _mm_mul_ps(_mm_mul_ps(a, a), a);
-  const __m128 res_big
-      = _mm_div_ps(_mm_mul_ps(a, _mm_add_ps(a3, _mm_add_ps(x, x))), _mm_add_ps(_mm_add_ps(a3, a3), x));
-
-  // calculate as if x <= epsilon : result = (kappa*x+16)/116
-  const __m128 res_small
-      = _mm_div_ps(_mm_add_ps(_mm_mul_ps(kappa, x), _mm_set1_ps(16.0f)), _mm_set1_ps(116.0f));
-
-  // blend results according to whether each component is > epsilon or not
-  const __m128 mask = _mm_cmpgt_ps(x, epsilon);
-  return _mm_or_ps(_mm_and_ps(mask, res_big), _mm_andnot_ps(mask, res_small));
-}
-#endif
-
-static inline void _dt_XYZ_to_Lab(const float *const XYZ, float *const Lab)
-{
-  const float d50_inv[4] = { 1.0f / 0.9642f, 1.0f, 1.0f / 0.8249f, 0.0f };
-  const float coef[4] = { 116.0f, 500.0f, 200.0f, 0.0f };
-
-  float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-  for(int c = 0; c < 4; c++)
-  {
-    _xyz[c] = lab_f_m(d50_inv[c] * XYZ[c]);
-  }
-
-  // because d50_inv.z is 0.0f, lab_f(0) == 16/116, so Lab[0] = 116*f[0] - 16 equal to 116*(f[0]-f[3])
-
-  float sf1[4];
-  sf1[0] = _xyz[1];
-  sf1[1] = _xyz[0];
-  sf1[2] = _xyz[1];
-  sf1[3] = _xyz[3];
-
-  float sf2[4];
-  sf2[0] = _xyz[3];
-  sf2[1] = _xyz[1];
-  sf2[2] = _xyz[2];
-  sf2[3] = _xyz[3];
-
-  for(int c = 0; c < 4; c++)
-  {
-    Lab[c] = (sf1[c] - sf2[c]) * coef[c];
-  }
-}
-
-#if defined(__SSE2__)
-static inline __m128 dt_XYZ_to_Lab_sse2(const __m128 XYZ)
-{
-  const __m128 d50_inv = _mm_set_ps(0.0f, 1.0f / 0.8249f, 1.0f, 1.0f / 0.9642f);
-  const __m128 coef = _mm_set_ps(0.0f, 200.0f, 500.0f, 116.0f);
-  const __m128 f = lab_f_m_sse2(_mm_mul_ps(XYZ, d50_inv));
-  // because d50_inv.z is 0.0f, lab_f(0) == 16/116, so Lab[0] = 116*f[0] - 16 equal to 116*(f[0]-f[3])
-  return _mm_mul_ps(coef, _mm_sub_ps(_mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 1, 0, 1)),
-                                     _mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 2, 1, 3))));
-}
-#endif
-
 static inline void apply_blue_mapping(const float *const in, float *const out)
 {
   out[0] = in[0];
@@ -621,7 +514,7 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
           }
         }
 
-        _dt_XYZ_to_Lab(_xyz, out);
+        dt_XYZ_to_Lab(_xyz, out);
       }
       else
       {
@@ -651,7 +544,7 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
           }
         }
 
-        _dt_XYZ_to_Lab(XYZ, out);
+        dt_XYZ_to_Lab(XYZ, out);
       }
     }
   }
@@ -685,7 +578,7 @@ static void process_cmatrix_fastpath_simple(struct dt_iop_module_t *self, dt_dev
       }
     }
 
-    _dt_XYZ_to_Lab(_xyz, out);
+    dt_XYZ_to_Lab(_xyz, out);
   }
 }
 
@@ -732,7 +625,7 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_d
       }
     }
 
-    _dt_XYZ_to_Lab(XYZ, out);
+    dt_XYZ_to_Lab(XYZ, out);
   }
 }
 
@@ -795,7 +688,7 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
           }
         }
 
-        _dt_XYZ_to_Lab(_xyz, out);
+        dt_XYZ_to_Lab(_xyz, out);
       }
       else
       {
@@ -825,7 +718,7 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
           }
         }
 
-        _dt_XYZ_to_Lab(XYZ, out);
+        dt_XYZ_to_Lab(XYZ, out);
       }
     }
   }
