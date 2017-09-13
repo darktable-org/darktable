@@ -114,12 +114,12 @@ static inline __m128 _mm_log2_ps(__m128 x)
 
 static inline __m128 _mm_pow_ps(__m128 x, __m128 y)
 {
-  return _mm_exp2_ps(_mm_log2_ps(x) * y);
+  return _mm_exp2_ps(_mm_mul_ps(_mm_log2_ps(x), y));
 }
 
 static inline __m128 _mm_pow_ps1(__m128 x, float y)
 {
-  return _mm_exp2_ps(_mm_log2_ps(x) * y);
+  return _mm_exp2_ps(_mm_mul_ps(_mm_log2_ps(x), _mm_set1_ps(y)));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
