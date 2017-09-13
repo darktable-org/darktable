@@ -19,6 +19,10 @@ init:
 install:
   - git submodule update --init --recursive
 
+before_build:
+  - cmd: "for /f %%i in ('git describe --tags --dirty') do set NEWVERSION=%%i"
+  - cmd: appveyor UpdateBuild -Version "%NEWVERSION:release-=%"
+
 build_script:
   - C:\msys64\usr\bin\pacman --noconfirm --sync --refresh --refresh --sysupgrade --sysupgrade
   - C:\msys64\usr\bin\bash --login -c "$(cygpath ${APPVEYOR_BUILD_FOLDER})/.ci/ci-script-windows.sh"
