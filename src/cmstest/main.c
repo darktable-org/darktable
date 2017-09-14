@@ -447,7 +447,7 @@ end:
     // print it
     printf("\n%s", monitor_name);
     if(message) printf("\t%s", message);
-    printf("\n\tX atom:\t%s (%ld bytes)\n\t\tdescription: %s\n", x_atom_name, monitor->x_atom_length,
+    printf("\n\tX atom:\t%s (%zu bytes)\n\t\tdescription: %s\n", x_atom_name, monitor->x_atom_length,
            x_atom_description);
 #ifdef HAVE_COLORD
     printf("\tcolord:\t\"%s\"\n\t\tdescription: %s\n", colord_filename, colord_description);
