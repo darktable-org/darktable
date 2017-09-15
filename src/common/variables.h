@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2010 henrik andersson.
+    copyright (c) 2010--2017 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,10 +24,6 @@
 
 typedef struct dt_variables_params_t
 {
-
-  /** only validates string */
-  gboolean validate_only;
-
   /** used for expanding variables that uses filename $(FILE_FOLDER) $(FILE_NAME) and $(FILE_EXTENSION). */
   const gchar *filename;
 
@@ -54,8 +51,8 @@ void dt_variables_set_time(dt_variables_params_t *params, time_t time);
 void dt_variables_set_exif_time(dt_variables_params_t *params, time_t time);
 
 /** expands variables in string, this free's previous expanding result */
-gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate);
-/** get the expanded string result, use a copy of this string in your code like g_strdup(). */
+void dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate);
+/** get the expanded string result. the result should be freed with g_free(). */
 gchar *dt_variables_get_result(dt_variables_params_t *params);
 /** reset sequence number */
 void dt_variables_reset_sequence(dt_variables_params_t *params);
