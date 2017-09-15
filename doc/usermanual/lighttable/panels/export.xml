@@ -77,7 +77,7 @@
           <tbody>
             <row>
               <entry>
-                $(ROLL_NAME)
+                <code>$(ROLL_NAME)</code>
               </entry>
               <entry>
                 roll of the input image
@@ -85,7 +85,7 @@
             </row>
             <row>
               <entry>
-                $(FILE_FOLDER)
+                <code>$(FILE_FOLDER)</code>
               </entry>
               <entry>
                 folder containing the input image
@@ -93,7 +93,7 @@
             </row>
             <row>
               <entry>
-                $(FILE_NAME)
+                <code>$(FILE_NAME)</code>
               </entry>
               <entry>
                 basename of the input image
@@ -101,7 +101,7 @@
             </row>
             <row>
               <entry>
-                $(FILE_EXTENSION)
+                <code>$(FILE_EXTENSION)</code>
               </entry>
               <entry>
                 extension of the input image
@@ -109,7 +109,15 @@
             </row>
             <row>
               <entry>
-                $(VERSION)
+                <code>$(ID)</code>
+              </entry>
+              <entry>
+                the image id
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(VERSION)</code>
               </entry>
               <entry>
                 the duplicate version (see <xref linkend="sidecar_files"/>)
@@ -117,7 +125,7 @@
             </row>
             <row>
               <entry>
-                $(SEQUENCE)
+                <code>$(SEQUENCE)</code>
               </entry>
               <entry>
                 a sequence number within export job
@@ -125,7 +133,7 @@
             </row>
             <row>
               <entry>
-                $(YEAR)
+                <code>$(YEAR)</code>
               </entry>
               <entry>
                 year at date of export
@@ -133,7 +141,7 @@
             </row>
             <row>
               <entry>
-                $(MONTH)
+                <code>$(MONTH)</code>
               </entry>
               <entry>
                 month at date of export
@@ -141,7 +149,7 @@
             </row>
             <row>
               <entry>
-                $(DAY)
+                <code>$(DAY)</code>
               </entry>
               <entry>
                 day at date of export
@@ -149,7 +157,7 @@
             </row>
             <row>
               <entry>
-                $(HOUR)
+                <code>$(HOUR)</code>
               </entry>
               <entry>
                 hour at time of export
@@ -157,7 +165,7 @@
             </row>
             <row>
               <entry>
-                $(MINUTE)
+                <code>$(MINUTE)</code>
               </entry>
               <entry>
                 minute at time of export
@@ -165,7 +173,7 @@
             </row>
             <row>
               <entry>
-                $(SECOND)
+                <code>$(SECOND)</code>
               </entry>
               <entry>
                 second at time of export
@@ -173,7 +181,7 @@
             </row>
             <row>
               <entry>
-                $(EXIF_YEAR)
+                <code>$(EXIF_YEAR)</code>
               </entry>
               <entry>
                 Exif year
@@ -181,7 +189,7 @@
             </row>
             <row>
               <entry>
-                $(EXIF_MONTH)
+                <code>$(EXIF_MONTH)</code>
               </entry>
               <entry>
                 Exif month
@@ -189,7 +197,7 @@
             </row>
             <row>
               <entry>
-                $(EXIF_DAY)
+                <code>$(EXIF_DAY)</code>
               </entry>
               <entry>
                 Exif day
@@ -197,7 +205,7 @@
             </row>
             <row>
               <entry>
-                $(EXIF_HOUR)
+                <code>$(EXIF_HOUR)</code>
               </entry>
               <entry>
                 Exif hour
@@ -205,7 +213,7 @@
             </row>
             <row>
               <entry>
-                $(EXIF_MINUTE)
+                <code>$(EXIF_MINUTE)</code>
               </entry>
               <entry>
                 Exif minute
@@ -213,7 +221,7 @@
             </row>
             <row>
               <entry>
-                $(EXIF_SECOND)
+                <code>$(EXIF_SECOND)</code>
               </entry>
               <entry>
                 Exif second
@@ -221,7 +229,7 @@
             </row>
             <row>
               <entry>
-                $(STARS)
+                <code>$(STARS)</code>
               </entry>
               <entry>
                 star rating
@@ -229,7 +237,7 @@
             </row>
             <row>
               <entry>
-                $(LABELS)
+                <code>$(LABELS)</code>
               </entry>
               <entry>
                 colorlabels
@@ -237,7 +245,63 @@
             </row>
             <row>
               <entry>
-                $(PICTURES_FOLDER)
+                <code>$(MAKER)</code>
+              </entry>
+              <entry>
+                camera maker
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(MODEL)</code>
+              </entry>
+              <entry>
+                camera model
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(TITLE)</code>
+              </entry>
+              <entry>
+                title from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(CREATOR)</code>
+              </entry>
+              <entry>
+                creator from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(PUBLISHER)</code>
+              </entry>
+              <entry>
+                publisher from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(RIGHTS)</code>
+              </entry>
+              <entry>
+                rights from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(USERNAME)</code>
+              </entry>
+              <entry>
+                user name
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(PICTURES_FOLDER)</code>
               </entry>
               <entry>
                 pictures folder
@@ -245,7 +309,7 @@
             </row>
             <row>
               <entry>
-                $(HOME)
+                <code>$(HOME)</code>
               </entry>
               <entry>
                 home folder
@@ -253,7 +317,7 @@
             </row>
             <row>
               <entry>
-                $(DESKTOP)
+                <code>$(DESKTOP)</code>
               </entry>
               <entry>
                 desktop folder
