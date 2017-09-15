@@ -155,7 +155,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
 
   char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
-      _("enter the path where to put exported images\nrecognized variables:"),
+      _("enter the path where to put exported images\nvariables support bash like search and replace\nrecognized variables:"),
       dt_gtkentry_get_default_path_compl_list());
   gtk_widget_set_tooltip_text(widget, tooltip_text);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);

@@ -263,6 +263,14 @@
         </tgroup>
       </informaltable>
 
+      <para>
+        All of the variables support basic search and replace like bash
+        supports. For example you can do the following:
+        $(ROLL_NAME/search/replace). This means if your roll name is e.g.
+        1970-01-01_RAW_Time-Begins and you use $(ROLL_NAME/RAW/JPG) it will
+        result in a roll name of: 1970-01-01_JPG_Time-Begins
+      </para>
+
     </sect4>
 
     <sect4>
