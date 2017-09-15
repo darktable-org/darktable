@@ -142,7 +142,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
 
   char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
-      _("enter the path where to put exported images\nrecognized variables:"),
+      _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
+        "recognized variables:"),
       dt_gtkentry_get_default_path_compl_list());
 
   d->entry = GTK_ENTRY(widget);
