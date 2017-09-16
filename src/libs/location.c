@@ -332,6 +332,7 @@ static gboolean _lib_location_search(gpointer user_data)
   // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, lib);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _lib_location_curl_write_data);
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, (char *)darktable_package_string);
 
   res = curl_easy_perform(curl);
   if(res != 0) goto bail_out;
