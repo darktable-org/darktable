@@ -196,7 +196,7 @@ cairo_surface_t *cairo_surface_create_from_xyz_data(const float *const image, co
     {
       float sRGB[3];
       int32_t pixel = 0;
-      dt_XYZ_to_sRGB(iter, sRGB);
+      dt_XYZ_to_sRGB_clipped(iter, sRGB);
       for(int c = 0; c < 3; c++) pixel |= ((int)(sRGB[c] * 255) & 0xff) << (16 - c * 8);
       *((int *)(&rgbbuf[(x + (size_t)y * width) * 4])) = pixel;
     }

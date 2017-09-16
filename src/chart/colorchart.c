@@ -118,7 +118,7 @@ void set_color(box_t *box, dt_colorspaces_color_profile_type_t color_space, floa
     case DT_COLORSPACE_LAB:
       dt_Lab_to_XYZ(Lab, XYZ);
     case DT_COLORSPACE_XYZ:
-      dt_XYZ_to_sRGB(XYZ, box->rgb);
+      dt_XYZ_to_sRGB_clipped(XYZ, box->rgb);
       break;
   }
 }
