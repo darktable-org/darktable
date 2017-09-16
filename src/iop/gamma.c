@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "gui/accelerators.h"
@@ -109,14 +109,14 @@ static inline void LCH_2_RGB(const float *LCH, float *RGB)
   float Lab[3], XYZ[3];
   LCH_2_Lab(LCH, Lab);
   dt_Lab_to_XYZ(Lab, XYZ);
-  dt_XYZ_to_sRGB(XYZ, RGB);
+  dt_XYZ_to_sRGB_clipped(XYZ, RGB);
 }
 
 static inline void Lab_2_RGB(const float *Lab, float *RGB)
 {
   float XYZ[3];
   dt_Lab_to_XYZ(Lab, XYZ);
-  dt_XYZ_to_sRGB(XYZ, RGB);
+  dt_XYZ_to_sRGB_clipped(XYZ, RGB);
 }
 
 static inline void false_color(float val, dt_dev_pixelpipe_display_mask_t channel, float *out)
