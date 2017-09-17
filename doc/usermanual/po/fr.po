@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2017-09-16 18:55+0200\n"
-"PO-Revision-Date: 2017-09-16 23:17+0200\n"
+"PO-Revision-Date: 2017-09-17 19:16+0200\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -3766,7 +3766,6 @@ msgid "raw files"
 msgstr "fichiers RAW"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2800(para)
-#, fuzzy
 msgid ""
 "darktable reads raw files using the open source library <ulink url=\"https://"
 "github.com/darktable-org/rawspeed\">RawSpeed</ulink>, originally developed "
@@ -3778,14 +3777,16 @@ msgid ""
 "images from cameras with non-Bayer sensors (e.g. Sigmas with the Foveon X3 "
 "sensor)."
 msgstr ""
-"darktable lit les fichiers RAW en utilisant la bibliothèque RawSpeed, à code "
-"source ouvert, développée par Klaus Post. Le nombre d’appareils et de "
-"formats de fichiers pris en charge est en constante augmentation. Il est en "
-"dehors de l’objectif de ce manuel d’en donner une liste exhaustive. La "
-"plupart des appareils modernes sont pris en charge et les nouveaux tendent à "
-"être ajoutés très rapidement. À l'exception des appareils Fujifilm X-Trans, "
-"darktable ne décode pas les images provenant d'appareils n'ayant pas un "
-"capteur Bayer (par exemple les appareils Sigma avec le capteur Foveon X3)."
+"darktable lit les fichiers RAW en utilisant la bibliothèque à code source "
+"ouvert <ulink url=\"https://github.com/darktable-org/rawspeed\">RawSpeed</"
+"ulink>, originellement développée par Klaus Post et maintenue à présent dans "
+"le projet darktable lui-même. Le nombre d’appareils et de formats de "
+"fichiers pris en charge est en constante augmentation. En donner la liste "
+"exhaustive dépasse le cadre de ce manuel. La plupart des appareils modernes "
+"sont pris en charge et la tendance est d'ajouter les nouveaux très "
+"rapidement. À l'exception des appareils Fujifilm X-Trans, darktable ne "
+"décode pas les images provenant d'appareils n'ayant pas un capteur Bayer "
+"(par exemple les appareils Sigma avec le capteur Foveon X3)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2815(title)
 msgid "LDR image files"
@@ -5669,7 +5670,7 @@ msgstr "var"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4544(code)
 msgid "default"
-msgstr "default"
+msgstr "défaut"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4543(entry)
 msgid "If <placeholder-1/> is empty, use <placeholder-2/>."
@@ -11095,7 +11096,7 @@ msgstr "courbe de base"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8973(primary)
 msgid "exposure fusion"
-msgstr "fusion d'expositions"
+msgstr "fusion d'exposition"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8977(primary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9070(title)
@@ -11222,7 +11223,6 @@ msgid "exposure shift"
 msgstr "décalage d'exposition"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9062(para)
-#, fuzzy
 msgid ""
 "This slider is only visible if the <emphasis>exposure fusion</emphasis> "
 "feature is activated. It allows you to set the exposure difference between "
@@ -11230,7 +11230,7 @@ msgid ""
 msgstr ""
 "Ce curseur est uniquement visible si la fonctionnalité <emphasis>fusion "
 "d'exposition</emphasis> est activée. Il vous permet de fixer, en unités IL, "
-"la différence d'exposition entre des images à fusionner (par défaut 3)."
+"la différence d'exposition entre les images fusionnées (par défaut 1)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9071(para)
 msgid ""
@@ -11241,6 +11241,13 @@ msgid ""
 "underexposed copies. A bias of 0 tries to preserve the overall lightness of "
 "the image by combining both over and under-exposed copies of the image."
 msgstr ""
+"Ce curseur est visible uniquement si la fonctionnalité <emphasis>fusion "
+"d'exposition</emphasis> est activée. Il vous permet de choisir comment sont "
+"combinées les expositions multiples. Avec le biais fixé à 1 (la valeur par "
+"défaut), l'image est fusionnée avec des copies d'elle même sur-exposées . "
+"Avec le biais fixé à -1, elle est fusionnée avec des copies sous-exposées. "
+"Un biais fixé à 0 essaie de préserver la brillance globale de l'image en "
+"combinant à la fois des copies sur- et sous-exposées de l'image."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9086(title)
 msgid "Exposure"
@@ -13101,15 +13108,14 @@ msgid "velvia"
 msgstr "velvia"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10840(entry)
-#, fuzzy
 msgid ""
 "The velvia module enhances image saturation. Its effect is tailored to "
 "increase saturation less on lower saturated pixels than on highly saturated "
 "pixels."
 msgstr ""
-"Le module velvia accentue la saturation des couleurs de l’image. On obtient "
-"cet effet en augmentant moins la saturation des pixels faiblement saturés et "
-"en augmentant plus celle des pixels fortement saturés."
+"Le module velvia accentue la saturation de l’image. Son action est conçue "
+"pour augmenter moins la saturation des pixels faiblement saturés et pour "
+"augmenter plus celle des pixels fortement saturés."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10859(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12541(title)
@@ -14911,7 +14917,6 @@ msgstr ""
 "tgroup></informaltable>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12868(para)
-#, fuzzy
 msgid ""
 "Note that the strength by default varies linearly from 0% to 100% between "
 "the center and the radius of the control point. It is possible to modify the "
@@ -14931,15 +14936,17 @@ msgid ""
 msgstr ""
 "Notez que par défaut la force varie linéairement de 0% à 100% entre le "
 "centre du nœud et le point de contrôle du rayon. Il est possible de modifier "
-"la progressivité de l'effet en cliquant le centre du nœud : <informaltable "
+"la progressivité de l'effet en cliquant le centre du cercle : <informaltable "
 "frame=\"none\" width=\"80%\"><tgroup cols=\"3\" colsep=\"0\" rowsep="
 "\"0\"><colspec colwidth=\"2*\"/><colspec colwidth=\"4*\"/><colspec colwidth="
-"\"4*\"/><tbody><row><entry><emphasis>linéaire</emphasis></entry><entry> "
+"\"4*\"/><tbody><row><entry><emphasis>défaut</emphasis></entry><entry> "
 "Linéaire du centre au point de contrôle du rayon. </entry><entry><graphic "
 "fileref=\"darkroom/modules/images/liquify_ex1.png\" scalefit=\"1\" width="
 "\"80%\" align=\"center\"/></entry></row><row><entry><emphasis>progressif</"
 "emphasis></entry><entry> Deux cercles de contrôle sont affichés et peuvent "
-"être modifiés indépendamment pour rendre progressif la force de l'effet. </"
+"être modifiés indépendamment pour rendre progressif la force de l'effet. "
+"Notez que cliquer à nouveau le centre du cercle cache uniquement les "
+"contrôles de progressivité mais ne retourne pas au mode défaut.</"
 "entry><entry><graphic fileref=\"darkroom/modules/images/liquify_ex2.png\" "
 "scalefit=\"1\" width=\"80%\" align=\"center\"/></entry></row></tbody></"
 "tgroup></informaltable>"
@@ -15046,7 +15053,6 @@ msgstr ""
 "de droite."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12990(para)
-#, fuzzy
 msgid ""
 "It is possible to change the way the points of the curve are linked together "
 "by using ctrl-click on the center. There are four modes which correspond to "
@@ -15065,31 +15071,25 @@ msgid ""
 "handles are always moved together. This mode is depicted by a square symbol "
 "in the node center. </entry></row></tbody></tgroup></informaltable>"
 msgstr ""
-"Les centres des nœuds sont les points de raccordement des différentes "
-"courbes de Bézier qui constituent la courbe. Des ctrl-clics successifs du "
-"centre d'un nœud font apparaître cycliquement les quatre modes de "
-"raccordement des deux courbes de Bézier qui se raccordent en ce point. "
-"Chacun de ces modes gèrent les tangentes aux deux courbes de Bézier au point "
-"de raccordement par l'ajout de deux points de contrôle. <informaltable frame="
+"Il est possible de modifier la manière dont les points de la courbe son "
+"reliés entre eux en utilisant un ctrl-clic sur le centre. Il y a quatre "
+"modes qui correspondent aux différentes façons de gérer la \"pente\" de la "
+"courbe de Bézier à l'aide de poignées de contrôle : <informaltable frame="
 "\"none\" width=\"80%\"><tgroup cols=\"3\" colsep=\"0\" rowsep=\"0\"><colspec "
 "colwidth=\"4*\"/><colspec colwidth=\"6*\"/"
 "><tbody><row><entry><emphasis>automatique</emphasis></entry><entry> C'est le "
-"mode par défaut. Les deux points de contrôle ne sont pas affichés car ils "
-"sont automatiquement calculés pour donner une courbe lissée au voisinage du "
-"centre du nœud. </entry></row><row><entry><emphasis>cups</emphasis></"
-"entry><entry> Les deux points de contrôle ajoutés peuvent être déplacés "
-"indépendamment permettant ainsi de modifier indépendamment les tangentes aux "
-"deux courbes de Bézier passant par le centre de ce nœud. Ce mode est "
-"représenté par un triangle au centre de ce nœud. </entry></"
-"row><row><entry><emphasis>lissée</emphasis></entry><entry> Les deux points "
-"de contrôle ajoutés peuvent être déplacés, ces deux point de contrôle et le "
-"centre du nœud restant alignés. Il en résulte une courbe lissée au voisinage "
-"du centre du nœud. Ce mode est représenté par un losange au centre de ce "
-"nœud.  </entry><entry/></row><row><entry><emphasis>symmétrique</emphasis></"
-"entry><entry> Les deux points de contrôle ajoutés peuvent être déplacés, "
-"mais restent symétriques par rapport au centre du nœud.  Il en résulte une "
-"courbe lissée au voisinage du centre du nœud. Ce mode est représenté par un "
-"carré au centre de ce nœud.  </entry></row></tbody></tgroup></informaltable>"
+"mode par défaut pour lequel les poignées de contrôle ne sont pas affichées "
+"dans la mesure où elles sont automatiquement calculées pour donner toujours "
+"une courbe lissée. </entry></row><row><entry><emphasis>parabolique</"
+"emphasis></entry><entry> Les poignées de contrôle peuvent être déplacées "
+"indépendamment. Ce mode est signalé par un symbole triangulaire au centre du "
+"nœud. </entry></row><row><entry><emphasis>lissé</emphasis></entry><entry> "
+"Les poignées de contrôle donnent toujours une courbe lissée. Ce mode est "
+"signalé par un symbole losange au centre du nœud. </entry><entry/></"
+"row><row><entry><emphasis>symétrique</emphasis></entry><entry> Les poignées "
+"de contrôle sont toujours déplacées ensemble. Ce mode est signalé par un "
+"symbole carré au centre du nœud. </entry></row></tbody></tgroup></"
+"informaltable>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13043(title)
 msgid "node edit tool"
@@ -16155,15 +16155,13 @@ msgstr ""
 "boîtiers)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14095(title)
-#, fuzzy
 msgid "Automatic haze removal"
-msgstr "supprimer le bruit"
+msgstr "Suppression automatique de la brume"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14099(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14103(primary)
-#, fuzzy
 msgid "haze removal"
-msgstr "supprimer le bruit"
+msgstr "suppression de la brume"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14116(entry)
 msgid ""
@@ -16172,6 +16170,11 @@ msgid ""
 "landscape photographs. In general, this module may be employed to give "
 "pictures a color boost specifically in low-contrast image regions."
 msgstr ""
+"Le module suppression de la brume est conçu pour automatiquement réduire "
+"l'effet de poussière et de brume dans l'air, qui souvent réduit le contraste "
+"de couleur dans les photographies de paysage. En général, ce module peut "
+"être employé pour renforcer la couleur des images spécifiquement dans les "
+"régions de faible contraste."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14130(para)
 msgid ""
@@ -16183,6 +16186,14 @@ msgid ""
 "amount of haze in the scene first and then removes the diffusive background "
 "light according to its local strength and recovers the original object light."
 msgstr ""
+"Plus la densité de la brume dans l'air est élevée et plus la distance entre "
+"le boîtier et l'objet photographié est grande, moins coloré apparaît l'objet "
+"dans l'image. La brume absorbe la lumière approchant les objets dans la "
+"direction du boîtier mais elle est aussi une source de lumière de fond "
+"diffuse. C'est pourquoi le module suppression de la brume estime tout "
+"d'abord la quantité de brume pour chaque région de l'image et ensuite "
+"supprime la lumière de fond diffuse en fonction de sa puissance locale et "
+"récupère la lumière originale de l'objet. "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14145(para)
 msgid ""
@@ -16194,6 +16205,12 @@ msgid ""
 "Optimal values are typically below unity and these are rather image "
 "dependent but also a matter of personal aesthetic preferences."
 msgstr ""
+"Le module suppression de la brume a deux contrôles qui déterminent la "
+"quantité de réduction de la brume et limitent la distance jusqu'à laquelle "
+"la brume est supprimée. Positionner les deux contrôles à un maximise la "
+"quantité de suppression de la brume mais cela est également susceptible de "
+"produire des artefacts. Supprimer la lumière atmosphérique peut rendre "
+"l'image \"plate\" et donner lieu à un style paraissant non naturel."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14156(para)
 msgid ""
@@ -16202,6 +16219,12 @@ msgid ""
 "camera and up to the specified distance; see below. Negative values for the "
 "strength increase the amound of haze in the image."
 msgstr ""
+"Le paramètre <emphasis>force</emphasis> contrôle la quantité de suppression "
+"de la brume. Quand il est défini à un, le module supprime 100 pour cent de "
+"la brume détectée jusqu'à une distance du boîtier spécifiée par le paramètre "
+"<emphasis>distance</emphasis>; voyez ci-dessous. Des valeurs négatives du "
+"paramètre <emphasis>force</emphasis> augmentent la quantité de brume dans "
+"l'image."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14165(title)
 msgid "distance"
@@ -16215,6 +16238,12 @@ msgid ""
 "is set to unity. In case of a negative strength the distance control has no "
 "effect."
 msgstr ""
+"Ce paramètre limite la distance jusqu'à laquelle la brume est supprimée. "
+"Pour des petites valeurs la suppression de la brume est restreinte au "
+"premier plan de l'image. La brume est supprimée du premier plan jusqu'à "
+"l'arrière plan lointain si le paramètre <emphasis>distance</emphasis> est "
+"défini à un. Dans le cas d'une valeur négative du paramètre <emphasis>force</"
+"emphasis> le contrôle <emphasis>distance</emphasis> n'a aucun effet. "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14180(title)
 msgid "Defringe"
@@ -18069,21 +18098,20 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16609(title)
 msgid "Cross-processing"
-msgstr "Traitement croisé"
+msgstr "Développement croisé"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16621(entry)
-#, fuzzy
 msgid ""
 "Cross-processing is an analog processing technique where slide film "
 "(normally developed thanks to an E6 solution) is processed in chemicals used "
 "for processing print film (C41). The resulting images get skewed colors "
 "usually a cyan hue and increased contrast and saturation."
 msgstr ""
-"Le traitement croisé est une technique issue du monde de la photo argentique "
-"où un film diapositive (normalement développé grâce à une solution E6) est "
-"développé dans une solution chimique destinée aux négatifs (C41). Les images "
-"résultantes possèdent des couleurs faussées, généralement une teinte cyan "
-"ainsi qu'un contraste et une saturation augmentés."
+"Le développement croisé est une technique de traitement où une pellicule "
+"diapositive (normalement développée grâce à une solution E6) est développée "
+"dans une solution chimique destinée aux pellicules négatives (C41). Les "
+"images résultantes ont des couleurs faussées, généralement une teinte cyan "
+"avec un contraste et une saturation accrus."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16635(para)
 msgid ""
@@ -18091,9 +18119,9 @@ msgid ""
 "curve tool but darktable lacks this tool for the moment and another way to "
 "accommodate the effect is used."
 msgstr ""
-"La manière standard de procéder à un traitement croisé en numérique est "
-"d’utiliser un outil courbes mais darktable ne dispose pas encore de cet "
-"outil et un autre moyen est utilisé pour réaliser cet effet."
+"De façon standard, pour effectuer un développement numérique croisé on "
+"utilise un outil courbe d'ajustement de canal mais darktable ne dispose pas "
+"encore de cet outil et un autre moyen est utilisé pour réaliser cet effet."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16645(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16773(title)
@@ -18116,9 +18144,9 @@ msgid ""
 "Prepare the image for the cross process steps by adjusting the base settings "
 "such as exposure, whitebalance etc. for a correctly looking image."
 msgstr ""
-"Préparez l’image pour le traitement croisé en ajustant les réglages de base "
-"tels que l’exposition, la balance des blancs, etc. afin d’avoir une image "
-"d’aspect correct."
+"Préparez l’image pour le développement croisé en ajustant les réglages de "
+"base tels que l’exposition, la balance des blancs, etc. afin d’avoir une "
+"image d’aspect correct."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16662(para)
 msgid "Boost contrast"
@@ -20405,7 +20433,7 @@ msgid ""
 "quote>."
 msgstr ""
 "Outil de sauvegarde des mots de passe. Options: <quote>auto</quote> "
-"(default), <quote>aucun</quote>, <quote>libsecret</quote>, <quote>kwallet</"
+"(défaut), <quote>aucun</quote>, <quote>libsecret</quote>, <quote>kwallet</"
 "quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18645(bridgehead)
