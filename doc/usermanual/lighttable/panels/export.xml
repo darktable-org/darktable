@@ -372,7 +372,7 @@
               </entry>
               <entry>
                 At most <code>length</code> characters of <code>var</code>, starting from
-                <code>offest</code>. If <code>offset</code> is less than zero it is counted from
+                <code>offset</code>. If <code>offset</code> is less than zero it is counted from
                 the back of <code>var</code>. If <code>length</code> is less than zero it indicates
                 the end of the result, counted from the back of <code>var</code>, and not an actual length.
               </entry>
