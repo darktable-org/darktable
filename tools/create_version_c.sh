@@ -13,7 +13,7 @@ if [ -z "$NEW_VERSION" ]; then
   NEW_VERSION=$(./tools/get_git_version_string.sh)
 fi
 
-if [ -n  "`echo -e $NEW_VERSION | grep  Format`" ]; then
+if echo "$NEW_VERSION" | grep -q Format; then
   NEW_VERSION="unknown-version"
 fi
 
