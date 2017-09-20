@@ -241,9 +241,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     d->vp->jobcode = "export";
     d->vp->imgid = imgid;
     d->vp->sequence = num;
-    dt_variables_expand(d->vp, d->filename, TRUE);
 
-    gchar *result_filename = dt_variables_get_result(d->vp);
+    gchar *result_filename = dt_variables_expand(d->vp, d->filename, TRUE);
     g_strlcpy(filename, result_filename, sizeof(filename));
     g_free(result_filename);
 

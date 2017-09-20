@@ -50,10 +50,8 @@ void dt_variables_set_time(dt_variables_params_t *params, time_t time);
 /** set the time to use for EXIF variables */
 void dt_variables_set_exif_time(dt_variables_params_t *params, time_t time);
 
-/** expands variables in string, this free's previous expanding result */
-void dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate);
-/** get the expanded string result. the result should be freed with g_free(). */
-gchar *dt_variables_get_result(dt_variables_params_t *params);
+/** expands variables in string. the result should be freed with g_free(). */
+char *dt_variables_expand(dt_variables_params_t *params, gchar *source, gboolean iterate);
 /** reset sequence number */
 void dt_variables_reset_sequence(dt_variables_params_t *params);
 
