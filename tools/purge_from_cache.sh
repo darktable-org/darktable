@@ -30,7 +30,7 @@ cache_base="${HOME}/.cache/darktable"
 dryrun=1
 
 # remember the command line to show it in the end when not purging
-commandline="$0 $@"
+commandline="$0 $*"
 
 # handle command line arguments
 while [ "$#" -ge 1 ] ; do
@@ -81,7 +81,7 @@ if [ ! -f "${library}" ]; then
 fi
 
 # the mipmap directory matching the selected library
-cache_dir="${cache_base}/mipmaps-$(echo -n "${library}" | sha1sum | cut --delimiter=" " --fields=1).d"
+cache_dir="${cache_base}/mipmaps-$(echo "${library}" | sha1sum | cut --delimiter=" " --fields=1).d"
 
 if [ ! -d "${cache_dir}" ]; then
   echo "cache directory '${cache_dir}' doesn't exist"
@@ -93,7 +93,7 @@ id_list=$(mktemp -t darktable-tmp.XXXXXX)
 sqlite3 "${library}" "select id from images order by id" > "${id_list}"
 
 # iterate over cached mipmaps and check for each if the image is in the db
-find "${cache_dir}" -type f | while read mipmap; do
+find "${cache_dir}" -type f | while read -r mipmap; do
   # get the image id from the filename
   id=$(echo "${mipmap}" | sed 's,.*/\([0-9]*\).*,\1,')
   # ... and delete it if it's not in the library

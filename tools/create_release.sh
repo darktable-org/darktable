@@ -3,25 +3,25 @@
 DT_SRC_DIR=$(dirname "$0")
 DT_SRC_DIR=$(cd "$DT_SRC_DIR/../" && pwd -P)
 
-cd $DT_SRC_DIR
+cd "$DT_SRC_DIR" || exit
 
 git shortlog -sne release-2.2.0..HEAD
 
 echo "are you sure these guys received proper credit in the about dialog?"
 echo "HINT: $ tools/generate_authors.rb release-2.2.0..HEAD > AUTHORS"
-read answer
+read -r answer
 
 # prefix rc with ~, so debian thinks its less than
 echo "* archiving git tree"
 
-dt_decoration=$(git describe --tags $branch | sed 's,^release-,,;s,-,+,;s,-,~,;' | sed 's/rc/~rc/')
+dt_decoration=$(git describe --tags | sed -e 's,^release-,,;s,-,+,;s,-,~,;' -e 's/rc/~rc/')
 
 echo "* * creating root archive"
-git archive --format tar HEAD --prefix=darktable-$dt_decoration/ -o darktable-$dt_decoration.tar
+git archive --format tar HEAD --prefix=darktable-"$dt_decoration"/ -o darktable-"$dt_decoration".tar
 
 echo "* * creating submodule archives"
 # for each of git submodules append to the root archive
-git submodule foreach --recursive 'git archive --format tar --verbose --prefix="darktable-'$dt_decoration'/$path/" HEAD --output "'$DT_SRC_DIR'/darktable-sub-$sha1.tar"'
+git submodule foreach --recursive 'git archive --format tar --verbose --prefix="darktable-'"$dt_decoration"'/$path/" HEAD --output "'"$DT_SRC_DIR"'/darktable-sub-$sha1.tar"'
 
 if [ $(ls "$DT_SRC_DIR/darktable-sub-"*.tar | wc -l) != 0  ]; then
   echo "* * appending submodule archives, combining all tars"
@@ -33,22 +33,22 @@ fi
 
 echo "* * done creating archive"
 
-TMPDIR=`mktemp -d -t darktable-XXXXXX`
-cd "$TMPDIR"
+TMPDIR=$(mktemp -d -t darktable-XXXXXX)
+cd "$TMPDIR" || exit
 
 tar xf "$DT_SRC_DIR/darktable-$dt_decoration.tar"
 
 # create version header for non-git tarball:
 echo "* creating version header"
-"$DT_SRC_DIR/tools/create_version_c.sh" darktable-$dt_decoration/src/version_gen.c $dt_decoration
+"$DT_SRC_DIR/tools/create_version_c.sh" "darktable-$dt_decoration/src/version_gen.c" "$dt_decoration"
 
 # remove usermanual, that's > 80 MB and released separately
 echo "* removing usermanual"
-rm -rf darktable-$dt_decoration/doc/usermanual
+rm -rf darktable-"$dt_decoration"/doc/usermanual
 
 # drop regression_tests. for internal use, and need git anyway
 echo "* removing tools/regression_tests"
-rm -rf darktable-$dt_decoration/tools/regression_tests
+rm -rf darktable-"$dt_decoration"/tools/regression_tests
 
 # ... and also remove RELEASE_NOTES. that file is just for internal use
 #echo "* removing RELEASE_NOTES"
@@ -56,16 +56,16 @@ rm -rf darktable-$dt_decoration/tools/regression_tests
 
 # wrap it up again
 echo "* creating final tarball"
-tar cf darktable-$dt_decoration.tar darktable-$dt_decoration/
+tar cf "darktable-$dt_decoration.tar$ darktable-$dt_decoration/"
 rm "$DT_SRC_DIR/darktable-$dt_decoration.tar"
-xz -z -v -9 -e darktable-$dt_decoration.tar
-cp darktable-$dt_decoration.tar.xz "$DT_SRC_DIR"
+xz -z -v -9 -e "darktable-$dt_decoration.tar"
+cp "darktable-$dt_decoration.tar.xz" "$DT_SRC_DIR"
 
 # now test the build:
 echo "* test compiling"
-rm -rf darktable-$dt_decoration/
-tar xf darktable-$dt_decoration.tar.xz
-cd darktable-$dt_decoration/
+rm -rf "darktable-$dt_decoration/"
+tar xf "darktable-$dt_decoration.tar.xz"
+cd "darktable-$dt_decoration/" || exit
 ./build.sh --prefix "$TMPDIR/darktable/"
 
 echo
@@ -73,6 +73,3 @@ echo "to actually test this build you should do:"
 echo "cd $TMPDIR/darktable-$dt_decoration/build && make install"
 echo "then run darktable from:"
 echo "$TMPDIR/darktable/bin/darktable"
-
-
-
