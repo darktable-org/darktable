@@ -790,6 +790,11 @@ endif(BUILD_CMSTEST)
 # have a gui tool to create CLUTs from colour chart targets
 add_subdirectory(chart)
 
+# have some test programs for unit testing, ...
+if(BUILD_TESTS)
+  add_subdirectory(tests)
+endif(BUILD_TESTS)
+
 #
 # build darktable executable
 #
