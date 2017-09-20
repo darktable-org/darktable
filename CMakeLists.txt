@@ -76,6 +76,7 @@ option(BUILD_PRINT "Build the print module" ON)
 option(BUILD_RS_IDENTIFY "Build the darktable-rs-identify debug aid" ON)
 option(BUILD_SSE2_CODEPATHS "(EXPERIMENTAL OPTION, DO NOT DISABLE) Building SSE2-optimized codepaths" ON)
 option(VALIDATE_APPDATA_FILE "Use appstream-util (if found) to validate the .appdata file" OFF)
+option(BUILD_TESTS "Build tests in src/tests/, runnable from the build/ directory" OFF)
 
 if(USE_OPENCL)
   option(TESTBUILD_OPENCL_PROGRAMS "Test-compile opencl programs (needs llvm and clang 3.9+)" ON)
