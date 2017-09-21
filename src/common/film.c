@@ -288,9 +288,71 @@ int dt_film_import(const char *dirname)
   return filmid;
 }
 
+static gboolean ask_and_delete(gpointer user_data)
+{
+  GList *empty_dirs = (GList *)user_data;
+  const int n_empty_dirs = g_list_length(empty_dirs);
+
+  GtkWidget *dialog;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+  dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
+                                  GTK_BUTTONS_YES_NO,
+                                  ngettext("do you want to remove this empty directory?",
+                                           "do you want to remove these empty directories?", n_empty_dirs));
+
+  gtk_window_set_title(GTK_WINDOW(dialog),
+                       ngettext("remove empty directory?", "remove empty directories?", n_empty_dirs));
+
+  GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_vexpand(scroll, TRUE);
+  gtk_widget_set_margin_start(scroll, DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_end(scroll, DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_top(scroll, DT_PIXEL_APPLY_DPI(0));
+  gtk_widget_set_margin_bottom(scroll, DT_PIXEL_APPLY_DPI(0));
+
+  GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
+
+  for(GList *list_iter = empty_dirs; list_iter; list_iter = g_list_next(list_iter))
+  {
+    GtkTreeIter iter;
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, list_iter->data, -1);
+  }
+
+  GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
+
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("name"), gtk_cell_renderer_text_new(),
+                                                                       "text", 0, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  gtk_container_add(GTK_CONTAINER(scroll), tree);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+
+  gtk_container_add(GTK_CONTAINER(content_area), scroll);
+
+  gtk_widget_show_all(dialog); // needed for the content area!
+
+  gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+  if(res == GTK_RESPONSE_YES)
+    for(GList *iter = empty_dirs; iter; iter = g_list_next(iter))
+      rmdir((char *)iter->data);
+
+  g_list_free_full(empty_dirs, g_free);
+  g_object_unref(store);
+
+  return FALSE;
+}
+
 void dt_film_remove_empty()
 {
   // remove all empty film rolls from db:
+  GList *empty_dirs = NULL;
+  gboolean ask_before_rmdir = dt_conf_get_bool("ask_before_rmdir");
   gboolean raise_signal = FALSE;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id,folder FROM main.film_rolls AS B WHERE "
@@ -309,10 +371,18 @@ void dt_film_remove_empty()
     sqlite3_step(inner_stmt);
     sqlite3_finalize(inner_stmt);
 
-    if(dt_util_is_dir_empty(folder)) rmdir(folder);
+    if(dt_util_is_dir_empty(folder))
+    {
+      if(ask_before_rmdir) empty_dirs = g_list_append(empty_dirs, g_strdup(folder));
+      else rmdir(folder);
+    }
   }
   sqlite3_finalize(stmt);
   if(raise_signal) dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_REMOVED);
+
+  // dispatch asking for deletion (and subsequent deletion) to the gui thread
+  if(empty_dirs)
+    g_idle_add(ask_and_delete, empty_dirs);
 }
 
 int dt_film_is_empty(const int id)
