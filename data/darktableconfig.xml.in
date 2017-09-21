@@ -273,6 +273,13 @@
     <longdescription>always ask the user before any image file is copied.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>ask_before_rmdir</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>ask before removing empty folders</shortdescription>
+    <longdescription>always ask the user before removing any empty folder. this can happen after moving or deleting images.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>show_folder_levels</name>
     <type>int</type>
     <default>1</default>
