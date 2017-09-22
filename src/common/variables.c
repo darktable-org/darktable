@@ -50,7 +50,67 @@ typedef struct dt_variables_data_t
 
 } dt_variables_data_t;
 
-static char *expand(dt_variables_params_t *params, char **source, int depth);
+static char *expand(dt_variables_params_t *params, char **source, char extra_stop);
+
+// gather some data that might be used for variable expansion
+static void init_expansion(dt_variables_params_t *params, gboolean iterate)
+{
+  if(iterate) params->data->sequence++;
+
+  params->data->homedir = dt_loc_get_home_dir(NULL);
+
+  if(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) == NULL)
+    params->data->pictures_folder = g_build_path(G_DIR_SEPARATOR_S, params->data->homedir, "Pictures", (char *)NULL);
+  else
+    params->data->pictures_folder = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
+
+  if(params->filename)
+  {
+    params->data->file_ext = (g_strrstr(params->filename, ".") + 1);
+    if(params->data->file_ext == (gchar *)1) params->data->file_ext = params->filename + strlen(params->filename);
+  }
+  else
+    params->data->file_ext = NULL;
+
+  /* image exif time */
+  params->data->have_exif_tm = FALSE;
+  params->data->exif_iso = 100;
+  params->data->camera_maker = NULL;
+  params->data->camera_alias = NULL;
+  params->data->version = 0;
+  params->data->stars = 0;
+  if(params->imgid)
+  {
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
+    if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &params->data->exif_tm.tm_year, &params->data->exif_tm.tm_mon,
+      &params->data->exif_tm.tm_mday, &params->data->exif_tm.tm_hour, &params->data->exif_tm.tm_min, &params->data->exif_tm.tm_sec) == 6)
+    {
+      params->data->exif_tm.tm_year -= 1900;
+      params->data->exif_tm.tm_mon--;
+      params->data->have_exif_tm = TRUE;
+    }
+    params->data->exif_iso = img->exif_iso;
+    params->data->camera_maker = g_strdup(img->camera_maker);
+    params->data->camera_alias = g_strdup(img->camera_alias);
+    params->data->version = img->version;
+    params->data->stars = (img->flags & 0x7);
+    if(params->data->stars == 6) params->data->stars = -1;
+
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
+  else if (params->data->exif_time) {
+    localtime_r(&params->data->exif_time, &params->data->exif_tm);
+    params->data->have_exif_tm = TRUE;
+  }
+}
+
+static void cleanup_expansion(dt_variables_params_t *params)
+{
+  g_free(params->data->homedir);
+  g_free(params->data->pictures_folder);
+  g_free(params->data->camera_maker);
+  g_free(params->data->camera_alias);
+}
 
 static inline gboolean has_prefix(char **str, const char *prefix)
 {
@@ -223,7 +283,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
 // http://www.tldp.org/LDP/abs/html/parameter-substitution.html
 // https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
 // the descriptions in the comments are refering to the bash behaviour, dt doesn't do it 100% like that!
-static char *variable_get_value(dt_variables_params_t *params, char **variable, int depth)
+static char *variable_get_value(dt_variables_params_t *params, char **variable)
 {
   // invariant: the variable starts with "$(" which we can skip
   (*variable) += 2;
@@ -243,7 +303,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable, 
           If parameter not set, use default.
       */
       {
-        char *replacement = expand(params, variable, depth + 1);
+        char *replacement = expand(params, variable, ')');
         if(!base_value || !*base_value)
         {
           g_free(base_value);
@@ -259,7 +319,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable, 
           If parameter set, use alt_value, else use null string.
       */
       {
-        char *replacement = expand(params, variable, depth + 1);
+        char *replacement = expand(params, variable, ')');
         if(*base_value)
         {
           g_free(base_value);
@@ -317,15 +377,15 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable, 
           Remove from $var the shortest part of $Pattern that matches the front end of $var.
       */
       {
-        char *pattern = *variable;
-        while(**variable && **variable != ')') (*variable)++;
-        const size_t pattern_length = (*variable) - pattern;
+        char *pattern = expand(params, variable, ')');
+        const size_t pattern_length = strlen(pattern);
         if(!strncmp(base_value, pattern, pattern_length))
         {
           char *_base_value = g_strdup(base_value + pattern_length);
           g_free(base_value);
           base_value = _base_value;
         }
+        g_free(pattern);
       }
       break;
     case '%':
@@ -334,11 +394,11 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable, 
           Remove from $var the shortest part of $Pattern that matches the back end of $var.
       */
       {
-        char *pattern = *variable;
-        while(**variable && **variable != ')') (*variable)++;
-        const size_t pattern_length = (*variable) - pattern;
+        char *pattern = expand(params, variable, ')');
+        const size_t pattern_length = strlen(pattern);
         if(!strncmp(base_value + base_value_length - pattern_length, pattern, pattern_length))
           base_value[base_value_length - pattern_length] = '\0';
+        g_free(pattern);
       }
       break;
     case '/':
@@ -363,11 +423,10 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable, 
         const char mode = **variable;
 
         if(mode == '/' || mode == '#' || mode == '%') (*variable)++;
-        char *pattern = *variable;
-        while(**variable && **variable != '/') (*variable)++;
-        const size_t pattern_length = (*variable) - pattern;
+        char *pattern = expand(params, variable, '/');
+        const size_t pattern_length = strlen(pattern);
         (*variable)++;
-        char *replacement = expand(params, variable, depth + 1);
+        char *replacement = expand(params, variable, ')');
         const size_t replacement_length = strlen(replacement);
 
         switch(mode)
@@ -426,6 +485,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable, 
             break;
           }
         }
+        g_free(pattern);
         g_free(replacement);
       }
       break;
@@ -485,131 +545,78 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable, 
   return base_value;
 }
 
-static char *expand(dt_variables_params_t *params, char **source, int depth)
+static void grow_buffer(char **result, char **result_iter, size_t *result_length, size_t extra_space)
 {
-  // go through the source and look for variables, replacing one by one
-  char *iter = *source;
+  const size_t used_length = *result_iter - *result;
+  if(used_length + extra_space > *result_length)
+  {
+    *result_length = used_length + extra_space;
+    *result = g_realloc(*result, *result_length + 1);
+    *result_iter = *result + used_length;
+  }
+}
+
+static char *expand(dt_variables_params_t *params, char **source, char extra_stop)
+{
   char *result = g_strdup("");
+  char *result_iter = result;
   size_t result_length = 0;
-  char *variable_start;
+  char *source_iter = *source;
+  const size_t source_length = strlen(*source);
 
-  while((variable_start = g_strstr_len(iter, -1, "$(")))
+  while(*source_iter && *source_iter != extra_stop)
   {
-    size_t copy_over_length = variable_start - iter;
-
-    char *replacement = variable_get_value(params, &variable_start, depth);
-    size_t replacement_length;
-    if(replacement)
-      replacement_length = strlen(replacement);
-    else
+    // find start of variable, copying over everything till then
+    while(*source_iter && *source_iter != extra_stop)
     {
-      // the error case of missing closing ')'
-      replacement_length = 0;
-      copy_over_length =variable_start - iter;
+      char c = *source_iter;
+      if(c == '\\' && source_iter[1])
+        c = *(++source_iter);
+      else if(c == '$' && source_iter[1] == '(')
+        break;
+
+      if(result_iter - result >= result_length)
+        grow_buffer(&result, &result_iter, &result_length, source_length - (source_iter - *source));
+      *result_iter = c;
+      result_iter++;
+      source_iter++;
+
     }
 
-    const size_t new_result_length = result_length + copy_over_length + replacement_length;
-    if(new_result_length > result_length)
+    // it seems we have a variable here
+    if(*source_iter == '$')
     {
-      result = g_realloc(result, new_result_length + 1);
-      if(copy_over_length > 0)
-        memcpy(result + result_length, iter, copy_over_length);
-      if(replacement_length > 0)
-        memcpy(result + result_length + copy_over_length, replacement, replacement_length);
-      result[new_result_length] = '\0';
-      result_length = new_result_length;
+      char *old_source_iter = source_iter;
+      char *replacement = variable_get_value(params, &source_iter);
+      if(replacement)
+      {
+        const size_t replacement_length = strlen(replacement);
+        grow_buffer(&result, &result_iter, &result_length, replacement_length);
+        memcpy(result_iter, replacement, replacement_length);
+        result_iter += replacement_length;
+        g_free(replacement);
+      }
+      else
+      {
+        // the error case of missing closing ')' -- try to recover
+        source_iter = old_source_iter;
+        grow_buffer(&result, &result_iter, &result_length, source_length - (source_iter - *source));
+        *result_iter++ = *source_iter++;
+      }
     }
-    iter = variable_start;
-    g_free(replacement);
   }
 
-  // take care of whatever is coming past the last variable
-  if(*iter)
-  {
-    size_t copy_over_length = strlen(iter);
-    if(depth > 0)
-    {
-      char *end = g_strstr_len(iter, -1, ")");
-      if(end)
-        copy_over_length = end - iter;
-    }
-    const size_t new_result_length = result_length + copy_over_length;
-    result = g_realloc(result, new_result_length + 1);
-    memcpy(result + result_length, iter, copy_over_length);
-    result[result_length + copy_over_length] = '\0';
-    iter += copy_over_length;
-  }
-
-  *source = iter;
+  *result_iter = '\0';
+  *source = source_iter;
 
   return result;
-}
-
-// gather some data that might be used for variable expansion
-static void init_expansion(dt_variables_params_t *params, gboolean iterate)
-{
-  if(iterate) params->data->sequence++;
-
-  params->data->homedir = dt_loc_get_home_dir(NULL);
-
-  if(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) == NULL)
-    params->data->pictures_folder = g_build_path(G_DIR_SEPARATOR_S, params->data->homedir, "Pictures", (char *)NULL);
-  else
-    params->data->pictures_folder = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
-
-  if(params->filename)
-  {
-    params->data->file_ext = (g_strrstr(params->filename, ".") + 1);
-    if(params->data->file_ext == (gchar *)1) params->data->file_ext = params->filename + strlen(params->filename);
-  }
-  else
-    params->data->file_ext = NULL;
-
-  /* image exif time */
-  params->data->have_exif_tm = FALSE;
-  params->data->exif_iso = 100;
-  params->data->camera_maker = NULL;
-  params->data->camera_alias = NULL;
-  params->data->version = 0;
-  params->data->stars = 0;
-  if(params->imgid)
-  {
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
-    if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &params->data->exif_tm.tm_year, &params->data->exif_tm.tm_mon,
-      &params->data->exif_tm.tm_mday, &params->data->exif_tm.tm_hour, &params->data->exif_tm.tm_min, &params->data->exif_tm.tm_sec) == 6)
-    {
-      params->data->exif_tm.tm_year -= 1900;
-      params->data->exif_tm.tm_mon--;
-      params->data->have_exif_tm = TRUE;
-    }
-    params->data->exif_iso = img->exif_iso;
-    params->data->camera_maker = g_strdup(img->camera_maker);
-    params->data->camera_alias = g_strdup(img->camera_alias);
-    params->data->version = img->version;
-    params->data->stars = (img->flags & 0x7);
-    if(params->data->stars == 6) params->data->stars = -1;
-
-    dt_image_cache_read_release(darktable.image_cache, img);
-  }
-  else if (params->data->exif_time) {
-    localtime_r(&params->data->exif_time, &params->data->exif_tm);
-    params->data->have_exif_tm = TRUE;
-  }
-}
-
-static void cleanup_expansion(dt_variables_params_t *params)
-{
-  g_free(params->data->homedir);
-  g_free(params->data->pictures_folder);
-  g_free(params->data->camera_maker);
-  g_free(params->data->camera_alias);
 }
 
 char *dt_variables_expand(dt_variables_params_t *params, gchar *source, gboolean iterate)
 {
   init_expansion(params, iterate);
 
-  char *result = expand(params, &source, 0);
+  char *result = expand(params, &source, '\0');
 
   cleanup_expansion(params);
 
