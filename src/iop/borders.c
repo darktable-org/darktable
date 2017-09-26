@@ -361,13 +361,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const int frame_br_in_y = CLAMP(image_ty - frame_offset + frame_in_height - 1, 0, roi_out->height - 1);
     // ... if 100% frame_offset we ensure frame_line "stick" the out border
     const int frame_br_out_x
-        = (d->frame_offset == 1.0f)
-              ? (roi_out->width - 1)
-              : CLAMP(image_lx - frame_offset - frame_size + frame_out_width - 1, 0, roi_out->width - 1);
+        = (d->frame_offset == 1.0f && (border_min_size == MIN(border_size_l, border_size_r)))
+              ? (roi_out->width)
+              : CLAMP(image_lx - frame_offset - frame_size + frame_out_width - 1, 0, roi_out->width);
     const int frame_br_out_y
-        = (d->frame_offset == 1.0f)
-              ? (roi_out->height - 1)
-              : CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height - 1);
+        = (d->frame_offset == 1.0f && (border_min_size == MIN(border_size_t, border_size_b)))
+              ? (roi_out->height)
+              : CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height);
 
     for(int r = frame_tl_out_y; r <= frame_br_out_y; r++)
     {
