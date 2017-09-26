@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.8.11\n"
+"X-Generator: Poedit 2.0.3\n"
 "X-Poedit-Basepath: src\n"
 "X-Poedit-SearchPath-0: .\n"
 
@@ -2942,7 +2942,7 @@ msgstr "$(MAKER) - produttore fotocamera"
 
 #: ../src/gui/gtkentry.c:206
 msgid "$(MODEL) - camera model"
-msgstr "$(MODEL) - produttore fotocamera"
+msgstr "$(MODEL) - modello fotocamera"
 
 #: ../src/gui/gtkentry.c:207
 msgid "$(STARS) - star rating"
