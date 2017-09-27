@@ -100,7 +100,7 @@ ARGV.each do |filename|
         red = values[1].to_f/green
         blue = values[2].to_f/green
         green = 1
-      elsif tag == "White Point"
+      elsif tag == "White Point" && values.length > 3
         green = (values[1].to_f+values[2].to_f)/2.0
         red = values[0].to_f/green
         blue = values[3].to_f/green
