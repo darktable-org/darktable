@@ -673,14 +673,84 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="draft">
 
-    <title>Multiple OpenCL devices</title>
+    <title>OpenCL scheduling profile</title>
 
     <para>
-      While most systems will only have one OpenCL capable GPU installed, darktable is also able
-      to make use of multiple devices in parallel. There is a configuration parameter which
-      helps to optimize GPU priorities in that case.
+      darktable can use the CPU and one or several OpenCL capable GPUs. Depending on the
+      relative performance users can choose among certain scheduling profiles to optimize
+      performance. This is done by the configuration parameter <quote>OpenCL scheduling
+      profile</quote> in the <quote>core options</quote> dialog (<xref linkend="core_options"/>)
+      which offers the following choices:
+    </para>
+
+    <para>
+      <informaltable frame="none" width="60%">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth='1*'/>
+          <colspec colwidth='3*'/>
+          <tbody>
+            <row>
+              <entry>
+                default
+              </entry>
+              <entry>
+                If an OpenCL capable GPU is found darktable uses it for processing the center
+                image view while the preview window (see <xref linkend="navigation"/>) is
+                processed on the CPU in parallel. This is the preferred setting for systems with
+                a reasonably fast CPU and a moderately fast GPU. The exact allocation of devices
+                to the various pixelpipe types can be finetuned with the
+                <quote>opencl_device_priority</quote> configuration parameter (see below).
+              </entry>
+            </row>
+            <row>
+              <entry>
+                very fast GPU
+              </entry>
+              <entry>
+                With this scheduling profile darktable processes the center image view and the
+                preview window on the GPU sequentially. This is the preferred setting for
+                systems with a GPU that strongly outperforms the CPU.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                multiple GPUs
+              </entry>
+              <entry>
+                This setting addresses systems with multiple GPUs whose relative performance
+                does not differ significantly. Whenever a processing job is started darktable
+                uses any currently idle GPU but not the CPU. Users of systems with a variety of
+                GPUs will need better control on their relative priority. They should better
+                select the <quote>default</quote> profile and finetune their system with the
+                <quote>opencl_device_priority</quote> configuration parameter (see below).
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+    <para>
+      On first start-up or after any detected change in the GPU configuration of your system
+      darktable tries to identify the best suited profile for you. You can change it at any time
+      in the <quote>core options</quote> dialog (<xref linkend="core_options"/>) with immediate
+      effect.
+    </para>
+
+  </sect2>
+
+  <sect2 status="final">
+
+    <title>Multiple OpenCL devices&nbsp;&ndash; manual settings</title>
+
+    <para>
+      The scheduling of OpenCL devices on most typical systems can be optimized using the
+      <quote>OpenCL scheduling profile</quote> settings. However, if your systems is equipped
+      with a variety of GPUs you might want to set the relative device priority manually. To do
+      so you need to select the <quote>default</quote> scheduling profile and do your settings
+      in the <quote>opencl_device_priority</quote> configuration parameter.
     </para>
 
     <para>
@@ -699,17 +769,12 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
     <para>
       The computational demand depends a lot on the pixelpipe type. Preview image and thumbnails
       have a low resolution and can be processed quickly; center image view is more demanding,
-      let alone the pixelpipe doing a file export. If you have a reasonably fast GPU and want to
-      get a low latency during interactive work, it is therefore important that your GPU is
-      allocated to do the more demanding center image (full) pixelpipe, while the smaller
-      preview image can be processed in parallel by the CPU. Older versions of darktable would
-      therefore not allow the preview pixelpipe to grab any OpenCL device.
+      let alone the pixelpipe doing a file export.
     </para>
 
     <para>
-      Starting with darktable 1.2 there is a more flexible scheme to allocate and prioritize
-      your OpenCL device(s). Configuration parameter <quote>opencl_device_priority</quote> holds
-      a string with the following structure:
+      Configuration parameter <quote>opencl_device_priority</quote> holds a string with the
+      following structure:
     </para>
 
     <para>
@@ -738,8 +803,8 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
     </para>
 
     <para>
-      A device specifier can be preceded by an exclamation mark <quote>!</quote>, in which case
-      the device is excluded from processing this pixelpipe. You can also give an asterisk
+      A device specifier can be prefixed with an exclamation mark <quote>!</quote>, in which
+      case the device is excluded from processing this pixelpipe. You can also give an asterisk
       <quote>*</quote> as a wildcard, representing all devices not mentioned explicitly before
       in that group.
     </para>
@@ -751,7 +816,15 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
     </para>
 
     <para>
-      darktable's default setting for opencl_device_priority is:
+      If a pixelpipe process is about to be started and if all GPUs in the corresponding group
+      are busy, darktable automatically processes the image on the CPU by default. You can
+      enforce GPU processing by prefixing the list of allowed GPUs with a plus sign
+      <quote>+</quote>. darktable will not use the CPU but rather suspend processing until the
+      next allowed OpenCL device is available.
+    </para>
+
+    <para>
+      darktable's default setting for <quote>opencl_device_priority</quote> is:
     </para>
 
     <para>
@@ -763,9 +836,9 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
       Any detected OpenCL device is allowed to process our center view image. The first OpenCL
       device (0) is not allowed to process the preview pixelpipe. As a consequence, if there is
       only one GPU owned by your system, preview pixelpipe will always be processed on CPU,
-      keeping your single GPU exclusively for the more demanding center image view. This is
-      reasonable and identical to the old behavior. No restrictions apply to export and
-      thumbnail pixelpipes.
+      keeping your single GPU exclusively for the more demanding center image view. This is a
+      reasonable setting for most systms. No restrictions apply to export and thumbnail
+      pixelpipes.
     </para>
 
     <para>
