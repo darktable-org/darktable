@@ -89,6 +89,15 @@
     and <quote>only large entries</quote> (default).
   </para>
 
+  <bridgehead renderas="sect4">omit hierarchy in simple tag lists</bridgehead>
+
+  <para>
+    When exporting images the hierarchical tags are also added as a simple list of
+    non-hierarchical ones to make them visible to some other programs. When this option is
+    checked darktable will only include their last part and ignore the rest. So
+    <quote>foo|bar|baz</quote> will only add <quote>baz</quote>.
+  </para>
+
   <bridgehead renderas="sect4">activate OpenCL support</bridgehead>
 
   <para>
