@@ -266,6 +266,14 @@
     result in better quality sometimes, but will always be slower (default on).
   </para>
 
+  <bridgehead renderas="sect4">rating an image one star twice will not zero out the rating</bridgehead>
+
+  <para>
+    Normally clicking a one star rating twice will set a zero star rating to that image. When
+    checking this option a second click on a one star rating will keep that rating (default
+    off).
+  </para>
+
   <bridgehead renderas="sect4">method to use for getting the display profile</bridgehead>
 
   <para>
