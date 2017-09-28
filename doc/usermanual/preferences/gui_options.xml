@@ -171,6 +171,14 @@
     easier editing at the expense of lower accuracy.
   </para>
 
+  <bridgehead renderas="sect4">display of individual color channels</bridgehead>
+
+  <para>
+    Controls how individual color channels are displayed when activated in the parametric masks
+    feature. You can choose between <quote>false color</quote> and <quote>grey scale</quote>
+    (default false color).
+  </para>
+
   <bridgehead renderas="sect4">ask before deleting a tag</bridgehead>
 
   <para>
