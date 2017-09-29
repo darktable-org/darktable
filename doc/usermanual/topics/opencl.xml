@@ -747,7 +747,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
 
     <para>
       The scheduling of OpenCL devices on most typical systems can be optimized using the
-      <quote>OpenCL scheduling profile</quote> settings. However, if your systems is equipped
+      <quote>OpenCL scheduling profile</quote> settings. However, if your system is equipped
       with a variety of GPUs you might want to set the relative device priority manually. To do
       so you need to select the <quote>default</quote> scheduling profile and do your settings
       in the <quote>opencl_device_priority</quote> configuration parameter.
@@ -837,7 +837,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
       device (0) is not allowed to process the preview pixelpipe. As a consequence, if there is
       only one GPU owned by your system, preview pixelpipe will always be processed on CPU,
       keeping your single GPU exclusively for the more demanding center image view. This is a
-      reasonable setting for most systms. No restrictions apply to export and thumbnail
+      reasonable setting for most systems. No restrictions apply to export and thumbnail
       pixelpipes.
     </para>
 
