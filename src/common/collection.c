@@ -1255,6 +1255,7 @@ void dt_collection_hint_message(const dt_collection_t *collection)
 
 static int dt_collection_image_offset_with_collection(const dt_collection_t *collection, int imgid)
 {
+  if(imgid == -1) return 0;
   const gchar *qin = dt_collection_get_query(collection);
   int offset = 0;
   sqlite3_stmt *stmt;
