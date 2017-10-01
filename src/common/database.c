@@ -1173,8 +1173,9 @@ static void _create_memory_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE TABLE memory.tmp_selection (imgid INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.tagq (tmpid INTEGER PRIMARY KEY, id INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.taglist "
-                           "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT REPLACE, count INTEGER)",
+                           "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT IGNORE, count INTEGER)",
                NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE memory.similar_tags (tagid INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
       "CREATE TABLE memory.history (imgid INTEGER, num INTEGER, module INTEGER, "
@@ -1296,6 +1297,7 @@ static gboolean _synchronize_tags(dt_database_t *db)
              "AS t USING (name)", "[synchronize tags] can't collect used tags into temporary table\n");
 
     // insert updated valued into temp_tagged_images
+    // FIXME: slowish!
     TRY_EXEC("INSERT INTO temp_tagged_images (imgid, tagid) SELECT imgid, new_id FROM main.tagged_images, "
              "(SELECT u.id AS old_id, tu.id AS new_id, name FROM used_tags AS u, temp_used_tags AS tu "
              "USING (name)) ON old_id = tagid",
@@ -1306,6 +1308,7 @@ static gboolean _synchronize_tags(dt_database_t *db)
     TRY_EXEC("DELETE FROM main.used_tags", "[synchronize tags] can't clear table `used_tags'\n");
 
     // copy back to main.tagged_images
+    // FIXME: slow with huge db! dropping the index first and adding it back in the end speeds it up a little
     TRY_EXEC("INSERT INTO main.tagged_images (imgid, tagid) SELECT imgid, tagid FROM temp_tagged_images",
              "[synchronize tags] can't update table `tagged_images`\n");
 
