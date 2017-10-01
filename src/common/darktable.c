@@ -313,6 +313,7 @@ static void dt_codepaths_init()
 
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
 {
+  double start_wtime = dt_get_wtime();
 #ifndef __WIN32__
   if(getuid() == 0 || geteuid() == 0)
     printf(
@@ -397,6 +398,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // init all pointers to 0:
   memset(&darktable, 0, sizeof(darktable_t));
+
+  darktable.start_wtime = start_wtime;
 
   darktable.progname = argv[0];
 
@@ -989,6 +992,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     dt_control_crawler_show_image_list(changed_xmp_files);
   }
+
+  dt_print(DT_DEBUG_CONTROL, "[init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
 
   return 0;
 }
