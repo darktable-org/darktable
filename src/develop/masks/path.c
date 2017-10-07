@@ -992,7 +992,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       _path_init_ctrl_points(form);
 
       // we save the form and quit creation mode
-      dt_masks_gui_form_save_creation(crea_module, form, gui);
+      dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
       if(crea_module)
       {
         dt_dev_add_history_item(darktable.develop, crea_module, TRUE);

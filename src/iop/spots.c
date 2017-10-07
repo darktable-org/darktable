@@ -106,7 +106,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       // adapt for raw orientation changes
       dt_masks_legacy_params(self->dev, form, form->version, dt_masks_version());
 
-      dt_masks_gui_form_save_creation(self, form, NULL);
+      dt_masks_gui_form_save_creation(self->dev, self, form, NULL);
 
       // and add it to the module params
       n->clone_id[i] = form->formid;
