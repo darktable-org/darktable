@@ -1130,11 +1130,15 @@ static void _masks_write_form_db(dt_masks_form_t *form, dt_develop_t *dev)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, form->version);
   if(form->type & DT_MASKS_CIRCLE)
   {
-    dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
-    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, circle, sizeof(dt_masks_point_circle_t), SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
+    GList *points = g_list_first(form->points);
+    if(points)
+    {
+      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(points->data);
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, circle, sizeof(dt_masks_point_circle_t), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
   }
   else if(form->type & DT_MASKS_PATH)
   {
