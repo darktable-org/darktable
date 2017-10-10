@@ -86,7 +86,7 @@ darktable.print:add_parameter("message","string",[[The string to display which s
 
 darktable.print_log:set_text([[This function will print its parameter if the Lua logdomain is activated. Start darktable with the "-d lua" command line option to enable the Lua logdomain.]])
 darktable.print_log:add_parameter("message","string",[[The string to display.]])
-darktable.print_error:set_text([[This function is similar to]]..my_tostring(darktable.print_log)..[[ but adds an ERROR prefix for clarity.)
+darktable.print_error:set_text([[This function is similar to]]..my_tostring(darktable.print_log)..[[ but adds an ERROR prefix for clarity.]])
 darktable.print_error:add_parameter("message","string",[[The string to display.]])
 
 darktable.register_event:set_text([[This function registers a callback to be called when a given event happens.]]..para()..
