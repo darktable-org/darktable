@@ -758,7 +758,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
   g_free((gchar *)lang);
 
-  void *splashscreen = NULL;
   // we need this REALLY early so that error messages can be shown, however after gtk_disable_setlocale
   if(init_gui)
   {
@@ -769,8 +768,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     gdk_set_allowed_backends("x11,*");
 #endif
     gtk_init(&argc, &argv);
-
-    splashscreen = dt_gui_show_splashscreen();
   }
 
   // detect cpu features and decide which codepaths to enable
@@ -884,8 +881,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // The GUI must be initialized before the views, because the init()
   // functions of the views depend on darktable.control->accels_* to register
   // their keyboard accelerators
-
-  dt_gui_close_splashscreen(splashscreen);
 
   if(init_gui)
   {
