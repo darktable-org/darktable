@@ -179,6 +179,8 @@ typedef struct dt_control_t
   {
     GList *list;
     size_t list_length;
+    size_t n_progress_bar;
+    double global_progress;
     dt_pthread_mutex_t mutex;
 
     // these proxy functions should ONLY be used by control/process.c!
