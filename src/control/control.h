@@ -34,6 +34,10 @@
 #include "libs/lib.h"
 #include <gtk/gtk.h>
 
+#ifdef _WIN32
+#include <shobjidl.h>
+#endif
+
 // A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
 #define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
 
@@ -182,6 +186,10 @@ typedef struct dt_control_t
     size_t n_progress_bar;
     double global_progress;
     dt_pthread_mutex_t mutex;
+
+#ifdef _WIN32
+    ITaskbarList3 *taskbarlist;
+#endif
 
     // these proxy functions should ONLY be used by control/process.c!
     struct

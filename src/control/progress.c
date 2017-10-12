@@ -27,6 +27,20 @@
 #include <gtkosxapplication.h>
 #endif
 
+#ifdef _WIN32
+#include <gdk/gdkwin32.h>
+#ifndef ITaskbarList3_SetProgressValue
+  #define ITaskbarList3_SetProgressValue(This,hwnd,ullCompleted,ullTotal) (This)->lpVtbl->SetProgressValue(This,hwnd,ullCompleted,ullTotal)
+#endif
+#ifndef ITaskbarList3_SetProgressState
+  #define ITaskbarList3_SetProgressState(This,hwnd,tbpFlags) (This)->lpVtbl->SetProgressState(This,hwnd,tbpFlags)
+#endif
+#ifndef ITaskbarList3_HrInit
+  #define ITaskbarList3_HrInit(This) (This)->lpVtbl->HrInit(This)
+#endif
+#endif
+
+
 typedef struct _dt_progress_t
 {
   double progress;
@@ -49,6 +63,8 @@ static void global_progress_start(dt_control_t *control, dt_progress_t *progress
 {
   control->progress_system.n_progress_bar++;
 
+#ifndef _WIN32
+
 #ifdef HAVE_UNITY
 
   progress->darktable_launcher = unity_launcher_entry_get_for_desktop_id("darktable.desktop");
@@ -66,6 +82,7 @@ static void global_progress_start(dt_control_t *control, dt_progress_t *progress
 
     GVariantBuilder builder;
     g_variant_builder_init(&builder, G_VARIANT_TYPE("a{sv}"));
+    g_variant_builder_add(&builder, "{sv}", "progress", g_variant_new_double(control->progress_system.global_progress));
     g_variant_builder_add(&builder, "{sv}", "progress-visible", g_variant_new_boolean(TRUE));
     GVariant *params = g_variant_new("(sa{sv})", "application://darktable.desktop", &builder);
 
@@ -83,11 +100,37 @@ static void global_progress_start(dt_control_t *control, dt_progress_t *progress
     }
   }
 
+#endif // HAVE_UNITY
+
+#else // _WIN32
+
+  // we can't init this in dt_control_progress_init as it's run too early :/
+  if(!control->progress_system.taskbarlist)
+  {
+    void *taskbarlist;
+    if(CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, &IID_ITaskbarList3, (void **)&taskbarlist) == S_OK)
+      if(ITaskbarList3_HrInit((ITaskbarList3 *)taskbarlist) == S_OK)
+        control->progress_system.taskbarlist = taskbarlist;
+  }
+
+  if(control->progress_system.taskbarlist)
+  {
+    HWND hwnd = GDK_WINDOW_HWND(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)));
+    if(ITaskbarList3_SetProgressState(control->progress_system.taskbarlist, hwnd, TBPF_NORMAL) != S_OK)
+      fprintf(stderr, "[progress_create] SetProgressState failed\n");
+    if(ITaskbarList3_SetProgressValue(control->progress_system.taskbarlist, hwnd, control->progress_system.global_progress * 100, 100) != S_OK)
+      fprintf(stderr, "[progress_create] SetProgressValue failed\n");
+  }
+
 #endif
 }
 
 static void global_progress_set(dt_control_t *control, dt_progress_t *progress, double value)
 {
+  control->progress_system.global_progress = MAX(control->progress_system.global_progress, value);
+
+#ifndef _WIN32
+
 #ifdef HAVE_UNITY
 
   unity_launcher_entry_set_progress(progress->darktable_launcher, value);
@@ -97,8 +140,6 @@ static void global_progress_set(dt_control_t *control, dt_progress_t *progress, 
   if(darktable.dbus->dbus_connection)
   {
     GError *error = NULL;
-
-    control->progress_system.global_progress = MAX(control->progress_system.global_progress, value);
 
     GVariantBuilder builder;
     g_variant_builder_init(&builder, G_VARIANT_TYPE("a{sv}"));
@@ -119,12 +160,35 @@ static void global_progress_set(dt_control_t *control, dt_progress_t *progress, 
     }
   }
 
+#endif // HAVE_UNITY
+
+#else // _WIN32
+
+  if(control->progress_system.taskbarlist)
+  {
+    HWND hwnd = GDK_WINDOW_HWND(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)));
+    if(ITaskbarList3_SetProgressValue(control->progress_system.taskbarlist, hwnd, control->progress_system.global_progress * 100, 100) != S_OK)
+      fprintf(stderr, "[progress_create] SetProgressValue failed\n");
+  }
+
 #endif
 }
 
 static void global_progress_end(dt_control_t *control, dt_progress_t *progress)
 {
   control->progress_system.n_progress_bar--;
+
+  // find the biggest progress value among the remaining progress bars
+  control->progress_system.global_progress = 0.0;
+  for(GList *iter = control->progress_system.list; iter; iter = g_list_next(iter))
+  {
+    // this is called after the current progress got removed from the list!
+    dt_progress_t *p = (dt_progress_t *)iter->data;
+    double value = dt_control_progress_get_progress(p);
+    control->progress_system.global_progress = MAX(control->progress_system.global_progress, value);
+  }
+
+#ifndef _WIN32
 
 #ifdef HAVE_UNITY
 
@@ -136,16 +200,6 @@ static void global_progress_end(dt_control_t *control, dt_progress_t *progress)
   if(darktable.dbus->dbus_connection)
   {
     GError *error = NULL;
-
-    // find the biggest progress value among the remaining progress bars
-    control->progress_system.global_progress = 0.0;
-    for(GList *iter = control->progress_system.list; iter; iter = g_list_next(iter))
-    {
-      // this is called after the current progress got removed from the list!
-      dt_progress_t *p = (dt_progress_t *)iter->data;
-      double value = dt_control_progress_get_progress(p);
-      control->progress_system.global_progress = MAX(control->progress_system.global_progress, value);
-    }
 
     GVariantBuilder builder;
     g_variant_builder_init(&builder, G_VARIANT_TYPE("a{sv}"));
@@ -170,11 +224,33 @@ static void global_progress_end(dt_control_t *control, dt_progress_t *progress)
     g_object_unref(G_OBJECT(darktable.dbus->dbus_connection));
   }
 
+#endif // HAVE_UNITY
+
+#else // _WIN32
+
+  if(control->progress_system.taskbarlist)
+  {
+    HWND hwnd = GDK_WINDOW_HWND(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)));
+    if(control->progress_system.n_progress_bar == 0)
+    {
+      if(ITaskbarList3_SetProgressState(control->progress_system.taskbarlist, hwnd, TBPF_NOPROGRESS) != S_OK)
+        fprintf(stderr, "[progress_create] SetProgressState failed\n");
+    }
+    else
+    {
+      if(ITaskbarList3_SetProgressValue(control->progress_system.taskbarlist, hwnd,
+                                        control->progress_system.global_progress * 100, 100) != S_OK)
+        fprintf(stderr, "[progress_create] SetProgressValue failed\n");
+    }
+  }
+
 #endif
 }
 
 void dt_control_progress_init(struct dt_control_t *control)
 {
+#ifndef _WIN32
+
 #ifdef HAVE_UNITY
 
   UnityLauncherEntry *darktable_launcher = unity_launcher_entry_get_for_desktop_id("darktable.desktop");
@@ -207,7 +283,14 @@ void dt_control_progress_init(struct dt_control_t *control)
     g_object_unref(G_OBJECT(darktable.dbus->dbus_connection));
   }
 
-#endif
+#endif // HAVE_UNITY
+
+#else // _WIN32
+
+  // initializing control->progress_system.taskbarlist in here doesn't work,
+  // it seems to only succeed after dt_gui_gtk_init
+
+#endif // _WIN32
 }
 
 dt_progress_t *dt_control_progress_create(dt_control_t *control, gboolean has_progress_bar,
