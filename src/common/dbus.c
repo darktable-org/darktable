@@ -21,20 +21,9 @@
 #include "control/conf.h"
 #include "control/control.h"
 
-#include <gio/gio.h>
-
 #ifdef USE_LUA
 #include "lua/call.h"
 #endif
-
-typedef struct dt_dbus_t
-{
-  int connected;
-
-  GDBusNodeInfo *introspection_data;
-  guint owner_id;
-  guint registration_id;
-} dt_dbus_t;
 
 /* Introspection data for the service we are exporting */
 static const gchar introspection_xml[] = "<node>"
@@ -199,6 +188,9 @@ struct dt_dbus_t *dt_dbus_init()
                                   G_BUS_NAME_OWNER_FLAGS_NONE, _on_bus_acquired, _on_name_acquired,
                                   _on_name_lost, dbus, NULL);
 
+  dbus->dbus_connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+  g_object_set(G_OBJECT(dbus->dbus_connection), "exit-on-close", FALSE, (gchar *)0);
+
   return dbus;
 }
 
@@ -206,6 +198,7 @@ void dt_dbus_destroy(const dt_dbus_t *dbus)
 {
   g_bus_unown_name(dbus->owner_id);
   g_dbus_node_info_unref(dbus->introspection_data);
+  g_object_unref(G_OBJECT(dbus->dbus_connection));
 
   g_free((dt_dbus_t *)dbus);
 }
