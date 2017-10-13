@@ -52,6 +52,8 @@ typedef struct dt_database_t
 
   /* ondisk DB */
   sqlite3 *handle;
+
+  gchar *error_message, *error_dbfilename;
 } dt_database_t;
 
 
@@ -1171,8 +1173,9 @@ static void _create_memory_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE TABLE memory.tmp_selection (imgid INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.tagq (tmpid INTEGER PRIMARY KEY, id INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.taglist "
-                           "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT REPLACE, count INTEGER)",
+                           "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT IGNORE, count INTEGER)",
                NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE memory.similar_tags (tagid INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
       "CREATE TABLE memory.history (imgid INTEGER, num INTEGER, module INTEGER, "
@@ -1294,6 +1297,7 @@ static gboolean _synchronize_tags(dt_database_t *db)
              "AS t USING (name)", "[synchronize tags] can't collect used tags into temporary table\n");
 
     // insert updated valued into temp_tagged_images
+    // FIXME: slowish!
     TRY_EXEC("INSERT INTO temp_tagged_images (imgid, tagid) SELECT imgid, new_id FROM main.tagged_images, "
              "(SELECT u.id AS old_id, tu.id AS new_id, name FROM used_tags AS u, temp_used_tags AS tu "
              "USING (name)) ON old_id = tagid",
@@ -1304,6 +1308,7 @@ static gboolean _synchronize_tags(dt_database_t *db)
     TRY_EXEC("DELETE FROM main.used_tags", "[synchronize tags] can't clear table `used_tags'\n");
 
     // copy back to main.tagged_images
+    // FIXME: slow with huge db! dropping the index first and adding it back in the end speeds it up a little
     TRY_EXEC("INSERT INTO main.tagged_images (imgid, tagid) SELECT imgid, tagid FROM temp_tagged_images",
              "[synchronize tags] can't update table `tagged_images`\n");
 
@@ -1328,17 +1333,79 @@ static gboolean _synchronize_tags(dt_database_t *db)
 #undef TRY_PREPARE
 #undef FINALIZE
 
-static gboolean _lock_single_database(const char *dbfilename, char **lockfile)
+void dt_database_show_error(const dt_database_t *db)
 {
-  gboolean lock_acquired;
+  if(!db->lock_acquired)
+  {
+    char *label_text = g_markup_printf_escaped(_("an error has occured while trying to open the database from\n"
+                                                  "\n"
+                                                  "<span style=\"italic\">%s</span>\n"
+                                                  "\n"
+                                                  "%s\n"),
+                                                db->error_dbfilename, db->error_message ? db->error_message : "");
+
+    dt_gui_show_standalone_yes_no_dialog(_("darktable - error locking database"), label_text, _("close darktable"),
+                                         /*_("try again")*/NULL);
+
+    g_free(label_text);
+  }
+
+  g_free(db->error_message);
+  g_free(db->error_dbfilename);
+  ((dt_database_t *)db)->error_message = NULL;
+  ((dt_database_t *)db)->error_dbfilename = NULL;
+}
+
+static gboolean pid_is_alive(int pid)
+{
+  gboolean pid_is_alive;
 
 #ifdef __WIN32__
-
-  lock_acquired = TRUE;
-
+  pid_is_alive = FALSE;
+  HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+  if(h)
+  {
+    wchar_t wfilename[MAX_PATH];
+    long unsigned int n_filename = sizeof(wfilename);
+    int ret = QueryFullProcessImageNameW(h, 0, wfilename, &n_filename);
+    char *filename = g_utf16_to_utf8(wfilename, -1, NULL, NULL, NULL);
+    if(ret && n_filename > 0 && filename && g_str_has_suffix(filename, "darktable.exe"))
+      pid_is_alive = TRUE;
+    g_free(filename);
+    CloseHandle(h);
+  }
 #else
+  pid_is_alive = !((kill(pid, 0) == -1) && errno == ESRCH);
 
-  lock_acquired = FALSE;
+#ifdef __linux__
+  // If this is Linux, we can query /proc to see if the pid is
+  // actually a darktable instance.
+  if(pid_is_alive)
+  {
+    gchar *contents;
+    gsize length;
+    gchar filename[64];
+    snprintf(filename, sizeof(filename), "/proc/%d/cmdline", pid);
+
+    if(g_file_get_contents("", &contents, &length, NULL))
+    {
+      if(strstr(contents, "darktable") == NULL)
+      {
+        pid_is_alive = FALSE;
+      }
+      g_free(contents);
+    }
+  }
+#endif
+
+#endif
+
+  return pid_is_alive;
+}
+
+static gboolean _lock_single_database(dt_database_t *db, const char *dbfilename, char **lockfile)
+{
+  gboolean lock_acquired = FALSE;
   mode_t old_mode;
   int fd = 0, lock_tries = 0;
   gchar *pid = g_strdup_printf("%d", getpid());
@@ -1353,7 +1420,7 @@ static gboolean _lock_single_database(const char *dbfilename, char **lockfile)
 lock_again:
     lock_tries++;
     old_mode = umask(0);
-    fd = open(*lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
+    fd = g_open(*lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
     umask(old_mode);
 
     if(fd != -1) // the lockfile was successfully created - write our PID into it
@@ -1365,17 +1432,17 @@ lock_again:
     {
       char buf[64];
       memset(buf, 0, sizeof(buf));
-      fd = open(*lockfile, O_RDWR | O_CREAT, 0666);
+      fd = g_open(*lockfile, O_RDWR | O_CREAT, 0666);
       if(fd != -1)
       {
         int foo;
         if((foo = read(fd, buf, sizeof(buf) - 1)) > 0)
         {
           int other_pid = atoi(buf);
-          if((kill(other_pid, 0) == -1) && errno == ESRCH)
+          if(!pid_is_alive(other_pid))
           {
             // the other process seems to no longer exist. unlink the .lock file and try again
-            unlink(*lockfile);
+            g_unlink(*lockfile);
             if(lock_tries < 5)
             {
               close(fd);
@@ -1388,33 +1455,38 @@ lock_again:
               stderr,
               "[init] the database lock file contains a pid that seems to be alive in your system: %d\n",
               other_pid);
+            db->error_message = g_strdup_printf(_("the database lock file contains a pid that seems to be alive in your system: %d"), other_pid);
           }
         }
         else
         {
           fprintf(stderr, "[init] the database lock file seems to be empty\n");
+          db->error_message = g_strdup_printf(_("the database lock file seems to be empty"));
         }
         close(fd);
       }
       else
       {
-        fprintf(stderr, "[init] error opening the database lock file for reading\n");
+        int err = errno;
+        fprintf(stderr, "[init] error opening the database lock file for reading: %s\n", strerror(err));
+        db->error_message = g_strdup_printf(_("error opening the database lock file for reading: %s"), strerror(err));
       }
     }
   }
 
   g_free(pid);
 
-#endif
+  if(db->error_message)
+    db->error_dbfilename = g_strdup(dbfilename);
 
   return lock_acquired;
 }
 
 static gboolean _lock_databases(dt_database_t *db)
 {
-  if(!_lock_single_database(db->dbfilename_data, &db->lockfile_data))
+  if(!_lock_single_database(db, db->dbfilename_data, &db->lockfile_data))
     return FALSE;
-  if(!_lock_single_database(db->dbfilename_library, &db->lockfile_library))
+  if(!_lock_single_database(db, db->dbfilename_library, &db->lockfile_library))
   {
     // unlock data.db to not leave a stale lock file around
     g_unlink(db->lockfile_data);
@@ -1756,12 +1828,12 @@ void dt_database_destroy(const dt_database_t *db)
   sqlite3_close(db->handle);
   if (db->lockfile_data)
   {
-    unlink(db->lockfile_data);
+    g_unlink(db->lockfile_data);
     g_free(db->lockfile_data);
   }
   if (db->lockfile_library)
   {
-    unlink(db->lockfile_library);
+    g_unlink(db->lockfile_library);
     g_free(db->lockfile_library);
   }
   g_free(db->dbfilename_data);
@@ -1821,11 +1893,11 @@ static void _database_delete_mipmaps_files()
   if(access(mipmapfilename, F_OK) != -1)
   {
     fprintf(stderr, "[mipmap_cache] dropping old version file: %s\n", mipmapfilename);
-    unlink(mipmapfilename);
+    g_unlink(mipmapfilename);
 
     snprintf(mipmapfilename, sizeof(mipmapfilename), "%s/mipmaps.fallback", cachedir);
 
-    if(access(mipmapfilename, F_OK) != -1) unlink(mipmapfilename);
+    if(access(mipmapfilename, F_OK) != -1) g_unlink(mipmapfilename);
   }
 }
 

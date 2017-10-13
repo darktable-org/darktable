@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define _GNU_SOURCE
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -23,6 +25,10 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
+
+#ifdef _WIN32
+#include "win/dtwin.h"
+#endif // _WIN32
 
 int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *arg)
 {
@@ -66,6 +72,26 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
 
   return ret;
 }
+
+void dt_pthread_setname(const char *name)
+{
+#if defined __linux__
+  pthread_setname_np(pthread_self(), name);
+#elif defined __FreeBSD__ || defined __DragonFly__
+  // TODO: is this the right syntax?
+  // pthread_setname_np(pthread_self(), name, 0);
+#elif defined __NetBSD__
+  // TODO: is this the right syntax?
+  // pthread_setname_np(pthread_self(), name, NULL);
+#elif defined __OpenBSD__
+  // TODO: find out if there is pthread_setname_np() on OpenBSD and how to call it
+#elif defined __APPLE__
+  pthread_setname_np(name);
+#elif defined _WIN32
+  dtwin_set_thread_name((DWORD)-1, name);
+#endif
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

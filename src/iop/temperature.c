@@ -30,7 +30,7 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
-#include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -111,6 +111,18 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     return 0;
   }
   return 1;
+}
+
+static int is_leica_monochrom(dt_image_t *img)
+{
+  if(strncmp(img->exif_maker, "Leica Camera AG", 15) != 0) return 0;
+
+  gchar *tmp_model = g_ascii_strdown(img->exif_model, -1);
+
+  const int res = strstr(tmp_model, "monochrom") != NULL;
+  g_free(tmp_model);
+
+  return res;
 }
 
 static int ignore_missing_wb(dt_image_t *img)
@@ -485,7 +497,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
 
-    if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+    if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
 
   piece->pipe->dsc.temperature.enabled = 1;
@@ -517,7 +529,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
 
       // process unaligned pixels
-      for(; i < alignment; i++, out++, in++) *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
+      for(; i < alignment && i < roi_out->width; i++, out++, in++)
+        *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
 
       const __m128 coeffs[3] = {
         _mm_set_ps(d->coeffs[FCxtrans(j, i + 3, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 2, roi_out, xtrans)],
@@ -557,7 +570,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
 
       // process unaligned pixels
-      for(; i < alignment; i++, out++, in++)
+      for(; i < alignment && i < roi_out->width; i++, out++, in++)
         *out = *in * d->coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
 
       const __m128 coeffs = _mm_set_ps(d->coeffs[FC(j + roi_out->y, roi_out->x + i + 3, filters)],
@@ -603,7 +616,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
     _mm_sfence();
 
-    if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+    if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
 
   piece->pipe->dsc.temperature.enabled = 1;
@@ -950,8 +963,7 @@ void reload_defaults(dt_iop_module_t *module)
     }
     else
     {
-      if(!(!strncmp(module->dev->image_storage.exif_maker, "Leica Camera AG", 15)
-           && !strncmp(module->dev->image_storage.exif_model, "M9 monochrom", 12)))
+      if(!is_leica_monochrom(&(module->dev->image_storage)))
       {
         if(!ignore_missing_wb(&(module->dev->image_storage)))
         {
@@ -1051,6 +1063,12 @@ gui:
 
     dt_bauhaus_slider_set_default(g->scale_k, TempK);
     dt_bauhaus_slider_set_default(g->scale_tint, tint);
+
+    const float neutral_stop_tint = (tint - DT_IOP_LOWEST_TINT) / (DT_IOP_HIGHEST_TINT - DT_IOP_LOWEST_TINT);
+    dt_bauhaus_slider_clear_stops(g->scale_tint);
+    dt_bauhaus_slider_set_stop(g->scale_tint, 0.0, 1.0, 0.0, 1.0);
+    dt_bauhaus_slider_set_stop(g->scale_tint, neutral_stop_tint, 1.0, 1.0, 1.0);
+    dt_bauhaus_slider_set_stop(g->scale_tint, 1.0, 0.0, 1.0, 0.0);
   }
 
 end:
@@ -1359,6 +1377,29 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale_g = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[1], 3);
   g->scale_b = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[2], 3);
   g->scale_g2 = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[3], 3);
+
+  // reflect actual black body colors for the temperature slider
+  const double temp_step = (double)(DT_IOP_HIGHEST_TEMPERATURE - DT_IOP_LOWEST_TEMPERATURE) / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
+  for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
+  {
+    const float stop = i / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
+    const double K = DT_IOP_LOWEST_TEMPERATURE + i * temp_step;
+    cmsCIEXYZ cmsXYZ = temperature_to_XYZ(K);
+    float sRGB[3], XYZ[3] = {cmsXYZ.X, cmsXYZ.Y, cmsXYZ.Z};
+    dt_XYZ_to_sRGB_clipped(XYZ, sRGB);
+    dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[0], sRGB[1], sRGB[2]);
+  }
+
+  dt_bauhaus_slider_set_stop(g->scale_tint, 0.0, 1.0, 0.0, 1.0);
+  dt_bauhaus_slider_set_stop(g->scale_tint, 1.0, 0.0, 1.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_r, 0.0, 0.0, 0.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_r, 1.0, 1.0, 0.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_g, 0.0, 0.0, 0.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_g, 1.0, 0.0, 1.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_b, 0.0, 0.0, 0.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_b, 1.0, 0.0, 0.0, 1.0);
+  dt_bauhaus_slider_set_stop(g->scale_g2, 0.0, 0.0, 0.0, 0.0);
+  dt_bauhaus_slider_set_stop(g->scale_g2, 1.0, 0.0, 1.0, 0.0);
 
   dt_bauhaus_slider_set_format(g->scale_k, "%.0fK");
   dt_bauhaus_widget_set_label(g->scale_tint, NULL, _("tint"));

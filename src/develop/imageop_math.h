@@ -65,8 +65,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out, const uint16_t *
 void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const uint16_t *const in,
                                                    const dt_iop_roi_t *const roi_out,
                                                    const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                                   const int32_t in_stride, const uint8_t (*const xtrans)[6],
-                                                   const uint16_t whitelevel);
+                                                   const int32_t in_stride, const uint8_t (*const xtrans)[6]);
 
 void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const float *const in,
                                                      const dt_iop_roi_t *const roi_out,

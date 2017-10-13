@@ -118,7 +118,7 @@ void set_color(box_t *box, dt_colorspaces_color_profile_type_t color_space, floa
     case DT_COLORSPACE_LAB:
       dt_Lab_to_XYZ(Lab, XYZ);
     case DT_COLORSPACE_XYZ:
-      dt_XYZ_to_sRGB(XYZ, box->rgb);
+      dt_XYZ_to_sRGB_clipped(XYZ, box->rgb);
       break;
   }
 }
@@ -127,6 +127,11 @@ static void free_labels_list(gpointer data)
 {
   g_list_free_full((GList *)data, g_free);
 }
+
+// In some environments ERROR is already defined, ie: WIN32
+#if defined(ERROR)
+#undef ERROR
+#endif // defined (ERROR)
 
 #define ERROR                                                                                                     \
   {                                                                                                               \
@@ -141,7 +146,7 @@ chart_t *parse_cht(const char *filename)
   chart_t *result = (chart_t *)calloc(1, sizeof(chart_t));
   int lineno = 0;
 
-  FILE *fp = fopen(filename, "rb");
+  FILE *fp = g_fopen(filename, "rb");
   if(!fp)
   {
     fprintf(stderr, "error opening `%s'\n", filename);

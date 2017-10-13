@@ -29,7 +29,9 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/mipmap_cache.h"
+#include "common/opencl.h"
 #include "common/tags.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -40,7 +42,6 @@
 #include "develop/masks.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "views/undo.h"
 
 #define DT_DEV_AVERAGE_DELAY_START 250
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
@@ -88,6 +89,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   else if(g_strcmp0(mode, "waveform") == 0)
     dev->histogram_type = DT_DEV_HISTOGRAM_WAVEFORM;
   g_free(mode);
+
+  dev->forms = NULL;
+  dev->form_visible = NULL;
+  dev->form_gui = NULL;
+  dev->allforms = NULL;
 
   if(dev->gui_attached)
   {
@@ -153,6 +159,9 @@ void dt_dev_cleanup(dt_develop_t *dev)
   free(dev->histogram);
   free(dev->histogram_pre_tonecurve);
   free(dev->histogram_pre_levels);
+
+  g_list_free(dev->forms);
+  g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
 
   g_list_free_full(dev->proxy.exposure, g_free);
 
@@ -556,7 +565,7 @@ int dt_dev_write_history_item(const dt_image_t *image, dt_dev_history_item_t *h,
 
 void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
 {
-  if(darktable.gui->reset) return;
+  if(!darktable.gui || darktable.gui->reset) return;
   dt_pthread_mutex_lock(&dev->history_mutex);
   if(dev->gui_attached)
   {
@@ -896,7 +905,7 @@ static void auto_apply_presets(dt_develop_t *dev)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->camera_alias, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, image->camera_maker, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, image->exif_lens, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, image->exif_iso)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(FLT_MAX, image->exif_iso)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
@@ -1804,6 +1813,69 @@ uint64_t dt_dev_hash_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, in
   return hash;
 }
 
+int dt_dev_wait_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                     const volatile uint64_t *const hash)
+{
+  const int usec = 5000;
+  int nloop;
+
+#ifdef HAVE_OPENCL
+  if(pipe->devid >= 0)
+    nloop = darktable.opencl->opencl_synchronization_timeout;
+  else
+    nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+#else
+  nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+#endif
+
+  if(nloop <= 0) return TRUE;  // non-positive values omit pixelpipe synchronization
+
+  for(int n = 0; n < nloop; n++)
+  {
+    if(pipe->shutdown)
+      return TRUE;  // stop waiting if pipe shuts down
+
+    uint64_t probehash;
+
+    if(lock)
+    {
+      dt_pthread_mutex_lock(lock);
+      probehash = *hash;
+      dt_pthread_mutex_unlock(lock);
+    }
+    else
+      probehash = *hash;
+
+    if(probehash == dt_dev_hash_plus(dev, pipe, pmin, pmax))
+      return TRUE;
+
+    dt_iop_nap(usec);
+  }
+
+  return FALSE;
+}
+
+int dt_dev_sync_pixelpipe_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                               const volatile uint64_t *const hash)
+{
+  // first wait for matching hash values
+  if(dt_dev_wait_hash(dev, pipe, pmin, pmax, lock, hash))
+    return TRUE;
+
+  // timed out. let's see if history stack has changed
+  if(pipe->changed & (DT_DEV_PIPE_TOP_CHANGED | DT_DEV_PIPE_REMOVE | DT_DEV_PIPE_SYNCH))
+  {
+    // history stack has changed. let's trigger reprocessing
+    dt_control_queue_redraw_center();
+    // pretend that everything is fine
+    return TRUE;
+  }
+
+  // no way to get pixelpipes in sync
+  return FALSE;
+}
+
+
 uint64_t dt_dev_hash_distort(dt_develop_t *dev)
 {
   return dt_dev_hash_distort_plus(dev, dev->preview_pipe, 0, 99999);
@@ -1834,6 +1906,68 @@ uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *
   }
   dt_pthread_mutex_unlock(&dev->history_mutex);
   return hash;
+}
+
+int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                     const volatile uint64_t *const hash)
+{
+  const int usec = 5000;
+  int nloop;
+
+#ifdef HAVE_OPENCL
+  if(pipe->devid >= 0)
+    nloop = darktable.opencl->opencl_synchronization_timeout;
+  else
+    nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+#else
+  nloop = dt_conf_get_int("pixelpipe_synchronization_timeout");
+#endif
+
+  if(nloop <= 0) return TRUE;  // non-positive values omit pixelpipe synchronization
+
+  for(int n = 0; n < nloop; n++)
+  {
+    if(pipe->shutdown)
+      return TRUE;  // stop waiting if pipe shuts down
+
+    uint64_t probehash;
+
+    if(lock)
+    {
+      dt_pthread_mutex_lock(lock);
+      probehash = *hash;
+      dt_pthread_mutex_unlock(lock);
+    }
+    else
+      probehash = *hash;
+
+    if(probehash == dt_dev_hash_distort_plus(dev, pipe, pmin, pmax))
+      return TRUE;
+
+    dt_iop_nap(usec);
+  }
+
+  return FALSE;
+}
+
+int dt_dev_sync_pixelpipe_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                                       const volatile uint64_t *const hash)
+{
+  // first wait for matching hash values
+  if(dt_dev_wait_hash_distort(dev, pipe, pmin, pmax, lock, hash))
+    return TRUE;
+
+  // timed out. let's see if history stack has changed
+  if(pipe->changed & (DT_DEV_PIPE_TOP_CHANGED | DT_DEV_PIPE_REMOVE | DT_DEV_PIPE_SYNCH))
+  {
+    // history stack has changed. let's trigger reprocessing
+    dt_control_queue_redraw_center();
+    // pretend that everything is fine
+    return TRUE;
+  }
+
+  // no way to get pixelpipes in sync
+  return FALSE;
 }
 
 

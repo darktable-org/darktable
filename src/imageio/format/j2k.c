@@ -531,7 +531,6 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
       int max_width, max_height;
       int width, height;
       char style[128];
-      gboolean style_append;
       int bpp;
       dt_imageio_j2k_format_t format;
       dt_imageio_j2k_preset_t preset;

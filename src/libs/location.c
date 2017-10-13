@@ -93,9 +93,10 @@ const char *name(dt_lib_module_t *self)
   return _("find location");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_MAP;
+  static const char *v[] = {"map", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -331,6 +332,7 @@ static gboolean _lib_location_search(gpointer user_data)
   // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, lib);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _lib_location_curl_write_data);
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, (char *)darktable_package_string);
 
   res = curl_easy_perform(curl);
   if(res != 0) goto bail_out;

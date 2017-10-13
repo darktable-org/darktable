@@ -137,7 +137,7 @@ static int write_image(lua_State *L)
 
   lua_getmetatable(L, 1);
   lua_getfield(L, -1, "__luaA_Type");
-  luaA_Type format_type = luaL_checkint(L, -1);
+  luaA_Type format_type = luaL_checkinteger(L, -1);
   lua_pop(L, 1);
   lua_getfield(L, -1, "__associated_object");
   dt_imageio_module_format_t *format = lua_touserdata(L, -1);

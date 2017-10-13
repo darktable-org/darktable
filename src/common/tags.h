@@ -89,6 +89,9 @@ GList *dt_tag_get_list(gint imgid);
  *  the difference to dt_tag_get_attached() is that this one filters out the "darktable|" tags. */
 GList *dt_tag_get_hierarchical(gint imgid);
 
+/** get the subset of images from the selected ones that have a given tag attached */
+GList *dt_tag_get_images_from_selection(gint imgid, gint tagid);
+
 /** retrieves a list of suggested tags matching keyword. \param[in] keyword the keyword to search \param[out]
  * result a pointer to list populated with result. \return the count \note the limit of result is decided by
  * conf value "xxx" */

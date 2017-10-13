@@ -84,7 +84,9 @@ darktable:set_text([[The darktable library is the main entry point for all acces
 darktable.print:set_text([[Will print a string to the darktable control log (the long overlayed window that appears over the main panel).]])
 darktable.print:add_parameter("message","string",[[The string to display which should be a single line.]])
 
-darktable.print_error:set_text([[This function will print its parameter if the Lua logdomain is activated. Start darktable with the "-d lua" command line option to enable the Lua logdomain.]])
+darktable.print_log:set_text([[This function will print its parameter if the Lua logdomain is activated. Start darktable with the "-d lua" command line option to enable the Lua logdomain.]])
+darktable.print_log:add_parameter("message","string",[[The string to display.]])
+darktable.print_error:set_text([[This function is similar to]]..my_tostring(darktable.print_log)..[[ but adds an ERROR prefix for clarity.)
 darktable.print_error:add_parameter("message","string",[[The string to display.]])
 
 darktable.register_event:set_text([[This function registers a callback to be called when a given event happens.]]..para()..
@@ -177,6 +179,7 @@ for k,v in sorted_pairs(debug.getregistry().dt_lua_modules.widget) do
   tmp = tmp..listel(k)
 end
 darktable.new_widget:add_parameter("type","string",[[The type of storage object to create, one of : ]]..  startlist().. tmp..endlist())
+darktable.new_widget:add_parameter("...","variable",[[Extra parameters, exact value are documented with each type]])
 darktable.new_widget:add_return(types.lua_widget,"The newly created object. Exact type depends on the type passed")
 ----------------------
 --  DARKTABLE.GUI   --
@@ -264,6 +267,7 @@ darktable.configuration.api_version_minor:set_text([[The minor version number of
 darktable.configuration.api_version_patch:set_text([[The patch version number of the lua API.]])
 darktable.configuration.api_version_suffix:set_text([[The version suffix of the lua API.]])
 darktable.configuration.api_version_string:set_text([[The version description of the lua API. This is a string compatible with the semantic versioning convention]])
+darktable.configuration.running_os:set_text([[The name of the Operating system darktable is currently running on]])
 darktable.configuration.check_version:set_text([[Check that a module is compatible with the running version of darktable]]..para().."Add the following line at the top of your module : "..
 code("darktable.configuration.check(...,{M,m,p},{M2,m2,p2})").."To document that your module has been tested with API version M.m.p and M2.m2.p2."..para()..
 "This will raise an error if the user is running a released version of DT and a warning if he is running a development version"..para().."(the ... here will automatically expand to your module name if used at the top of your script")
@@ -524,7 +528,7 @@ darktable.control.sleep:add_parameter("delay","int","The delay in millisecond to
 darktable.control.execute:set_text("Run a command in a shell while not blocking darktable")
 darktable.control.execute:add_parameter("command","string","The command to run, as in 'sh -c'")
 darktable.control.execute:add_return("int","The result of the system call")
-darktable.control.read:set_text("Block until a file is readable while not blocking darktable")
+darktable.control.read:set_text("Block until a file is readable while not blocking darktable"..para()..emphasis("This function is not available on Windows builds"))
 darktable.control.read:add_parameter("file","file","The file object to wait for")
 
 
@@ -582,6 +586,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	----------------------
 	types:set_text([[This section documents types that are specific to darktable's Lua API.]])
 
+	types.lua_os_type:set_text([[The type of OS we darktable can run on]])
 
 	types.dt_lua_image_t:set_text([[Image objects represent an image in the database. This is slightly different from a file on disk since a file can have multiple developments.
 
@@ -878,6 +883,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 
 
   types.lua_widget:set_text("Common parent type for all lua-handled widgets");
+  types.lua_widget.extra_registration_parameters:set_text("This widget has no extra registration parameters")
   types.lua_widget.sensitive:set_text("Set if the widget is enabled/disabled");
   types.lua_widget.tooltip:set_text("Tooltip to display for the widget");
   types.lua_widget.tooltip:set_reported_type("string or nil")
@@ -897,12 +903,14 @@ local widget = dt.new_widget("button"){
 
 
   types.lua_container:set_text("A widget containing other widgets");
+  types.lua_container.extra_registration_parameters:set_text("This widget has no extra registration parameters")
 	types.lua_container["#"]:set_reported_type(types.lua_widget)
 	types.lua_container["#"]:set_text("The widgets contained by the box"..para()..
       "You can append widgets by adding them at the end of the list"..para()..
       "You can remove widgets by setting them to nil")
 
   types.lua_check_button:set_text("A checkable button with a label next to it");
+  types.lua_check_button.extra_registration_parameters:set_text("This widget has no extra registration parameters")
   types.lua_check_button.label:set_reported_type("string")
   types.lua_check_button.label:set_text("The label displayed next to the button");
   types.lua_check_button.value:set_text("If the widget is checked or not");
@@ -911,6 +919,7 @@ local widget = dt.new_widget("button"){
   types.lua_check_button.clicked_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
 
   types.lua_label:set_text("A label containing some text");
+  types.lua_label.extra_registration_parameters:set_text("This widget has no extra registration parameters")
   types.lua_label.label:set_text("The label displayed");
   types.lua_label.selectable:set_text("True if the label content should be selectable");
   types.lua_label.halign:set_text("The horizontal alignment of the label");
@@ -919,6 +928,7 @@ local widget = dt.new_widget("button"){
   types.lua_label.ellipsize:set_reported_type(types.dt_lua_ellipsize_mode_t)
 
   types.lua_button:set_text("A clickable button");
+  types.lua_button.extra_registration_parameters:set_text("This widget has no extra registration parameters")
   types.lua_button.label:set_reported_type("string")
   types.lua_button.label:set_text("The label displayed on the button");
   types.lua_button.clicked_callback:set_text("A function to call on button click")
@@ -926,10 +936,12 @@ local widget = dt.new_widget("button"){
   types.lua_button.clicked_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
 
   types.lua_box:set_text("A container for widget in a horizontal or vertical list");
+  types.lua_box.extra_registration_parameters:set_text("This widget has no extra registration parameters")
   types.lua_box.orientation:set_text("The orientation of the box.")
   types.lua_box.orientation:set_reported_type(types.dt_lua_orientation_t)
 
   types.lua_entry:set_text("A widget in which the user can input text")
+  types.lua_entry.extra_registration_parameters:set_text("This widget has no extra registration parameters")
   types.lua_entry.text:set_text("The content of the entry")
   types.lua_entry.placeholder:set_reported_type("string")
   types.lua_entry.placeholder:set_text("The text to display when the entry is empty")
@@ -937,11 +949,13 @@ local widget = dt.new_widget("button"){
   types.lua_entry.editable:set_text("False if the entry should be read-only")
 
   types.lua_separator:set_text("A widget providing a separation in the UI.")
+  types.lua_separator.extra_registration_parameters:set_text("This widget has no extra registration parameters")
   types.lua_separator.orientation:set_text("The orientation of the separator.")
 
   types.lua_combobox:set_text("A widget with multiple text entries in a menu"..para()..
       "This widget can be set as editable at construction time."..para()..
       "If it is editable the user can type a value and is not constrained by the values in the menu")
+  types.lua_combobox.extra_registration_parameters:set_text("This widget has no extra registration parameters")
   types.lua_combobox.value:set_reported_type("string")
   types.lua_combobox.value:set_text("The text content of the selected entry, can be nil"..para()..
       "You can set it to a number to select the corresponding entry from the menu"..para()..
@@ -962,6 +976,7 @@ local widget = dt.new_widget("button"){
   types.lua_combobox.label:set_text("The label displayed on the combobox");
 
   types.lua_file_chooser_button:set_text("A button that allows the user to select an existing file")
+  types.lua_file_chooser_button.extra_registration_parameters:set_text("This widget has no extra registration parameters")
   types.lua_file_chooser_button.title:set_text("The title of the window when choosing a file")
   types.lua_file_chooser_button.value:set_text("The currently selected file")
   types.lua_file_chooser_button.value:set_reported_type("string")
@@ -971,10 +986,12 @@ local widget = dt.new_widget("button"){
   types.lua_file_chooser_button.is_directory:set_text("True if the file chooser button only allows directories to be selected")
 
   types.lua_stack:set_text("A container that will only show one of its child at a time")
+  types.lua_stack.extra_registration_parameters:set_text("This widget has no extra registration parameters")
   types.lua_stack.active:set_text("The currently selected child, can be nil if the container has no child, can be set to one of the child widget or to an index in the child table")
   types.lua_stack.active:set_reported_type(my_tostring(types.lua_widget).." or nil")
 
   types.lua_slider:set_text("A slider that can be set by the user")
+  types.lua_slider.extra_registration_parameters:set_text("This widget has no extra registration parameters")
   types.lua_slider.soft_min:set_text("The soft minimum value for the slider, the slider can't go beyond this point")
   types.lua_slider.soft_max:set_text("The soft maximum value for the slider, the slider can't go beyond this point")
   types.lua_slider.hard_min:set_text("The hard minimum value for the slider, the user can't manually enter a value beyond this point")
@@ -987,8 +1004,13 @@ local widget = dt.new_widget("button"){
   types.lua_slider.label:set_reported_type("string")
 
   types.lua_text_view:set_text("A multiline text input widget")
+  types.lua_text_view.extra_registration_parameters:set_text("This widget has no extra registration parameters")
   types.lua_text_view.text:set_text("The text in the widget")
   types.lua_text_view.editable:set_text("False if the entry should be read-only")
+
+  types.lua_section_label:set_text("A section label");
+  types.lua_section_label.extra_registration_parameters:set_text("This widget has no extra registration parameters")
+  types.lua_section_label.label:set_text("The section name");
 
 	----------------------
 	--  EVENTS          --
@@ -1007,7 +1029,7 @@ local widget = dt.new_widget("button"){
 
 	events["post-import-image"]:set_text([[This event is triggered whenever a new image is imported into the database.
 
-	This event can be registered multiple times, all callbacks will be called.]])
+	This event can be registered multiple times, all callbacks will be called. The call is blocking.]])
 	events["post-import-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
 	events["post-import-image"].callback:add_parameter("image",types.dt_lua_image_t,[[The image object that has been imported.]])
 	events["post-import-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
@@ -1049,6 +1071,7 @@ local widget = dt.new_widget("button"){
 	events["global_toolbox-overlay_toggle"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
   events["mouse-over-image-changed"]:set_text([[This event is triggered whenever the image under the mouse changes]])
+	events["mouse-over-image-changed"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
   events["mouse-over-image-changed"].callback:add_parameter("image",types.dt_lua_image_t,[[The new image under the mouse, can be nil if there is no image under the mouse]])
 	events["mouse-over-image-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
   events["exit"]:set_text([[This event is triggered when darktable exits, it allows lua scripts to do cleanup jobs]])
@@ -1076,12 +1099,10 @@ local widget = dt.new_widget("button"){
 	invisible_attr(attributes.internal_attr)
 	invisible_attr(attributes.read)
 	invisible_attr(attributes.has_pairs)
-	invisible_attr(attributes.has_ipairs)
 	invisible_attr(attributes.is_self)
 	invisible_attr(attributes.has_length)
 	attributes.write:set_text([[This object is a variable that can be written to.]])
   --attributes.has_pairs:set_text([[This object can be used as an argument to the system function "pairs" and iterated upon.]])
-	--attributes.has_ipairs:set_text([[This object can be used as an argument to the system function "ipairs" and iterated upon.]])
 	--attributes.has_equal:set_text([[This object has a specific comparison function that will be used when comparing it to an object of the same type.]])
 	--attributes.has_length:set_text([[This object has a specific length function that will be used by the # operator.]])
 	attributes.has_tostring:set_text([[This object has a specific reimplementation of the "tostring" method that allows pretty-printing it.]])

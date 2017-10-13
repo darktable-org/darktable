@@ -28,6 +28,8 @@ typedef struct _dt_progress_t dt_progress_t;
 
 typedef void (*dt_progress_cancel_callback_t)(dt_progress_t *progress, void *data);
 
+/* init the progress system, basically making sure that any global progress bar is hidden */
+void dt_control_progress_init(struct dt_control_t *control);
 
 /** create a new progress object and add it to the gui. pass it to dt_control_progress_destroy() to free the
  * resources. */

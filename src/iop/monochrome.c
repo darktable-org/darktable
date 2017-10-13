@@ -337,7 +337,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_monochrome_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_monochrome_params_t));
   module->default_enabled = 0;
-  module->priority = 626; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 632; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_monochrome_params_t);
   module->gui_data = NULL;
   dt_iop_monochrome_params_t tmp = (dt_iop_monochrome_params_t){ 0., 0., 2., 0. };
@@ -534,10 +534,15 @@ static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *ev
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  if(event->direction == GDK_SCROLL_UP && p->size > .5) p->size -= 0.1;
-  if(event->direction == GDK_SCROLL_DOWN && p->size < 3.0) p->size += 0.1;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  gtk_widget_queue_draw(widget);
+
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  {
+    p->size = CLAMP(p->size + delta_y * 0.1, 0.5f, 3.0f);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
+  }
+
   return TRUE;
 }
 
@@ -587,7 +592,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                             | GDK_SMOOTH_SCROLL_MASK);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_monochrome_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_monochrome_button_press), self);
   g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(dt_iop_monochrome_button_release),

@@ -40,6 +40,8 @@
 #include <time.h>
 #include <zlib.h>
 
+#include <glib/gstdio.h>
+
 #ifdef STANDALONE
 #define PACKAGE_STRING "darktable pdf library"
 #else
@@ -208,7 +210,7 @@ dt_pdf_t *dt_pdf_start(const char *filename, float width, float height, float dp
   dt_pdf_t *pdf = calloc(1, sizeof(dt_pdf_t));
   if(!pdf) return NULL;
 
-  pdf->fd = fopen(filename, "wb");
+  pdf->fd = g_fopen(filename, "wb");
   if(!pdf->fd)
   {
     free(pdf);
@@ -306,7 +308,7 @@ static size_t _pdf_write_stream(dt_pdf_t *pdf, dt_pdf_stream_encoder_t encoder, 
 
 int dt_pdf_add_icc(dt_pdf_t *pdf, const char *filename)
 {
-  FILE *in = fopen(filename, "rb");
+  FILE *in = g_fopen(filename, "rb");
   if(!in) return 0;
 
   fseek(in, 0, SEEK_END);
@@ -780,7 +782,7 @@ time_error:
 // just for debugging to read a ppm file
 float * read_ppm(const char * filename, int * wd, int * ht)
 {
-  FILE *f = fopen(filename, "rb");
+  FILE *f = g_fopen(filename, "rb");
 
   if(!f)
   {

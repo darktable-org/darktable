@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011--2017 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -348,90 +349,6 @@ static cmsToneCurve *build_linear_gamma(void)
   return cmsBuildParametricToneCurve(0, 1, Parameters);
 }
 
-static float cbrt_5f(float f)
-{
-  uint32_t *p = (uint32_t *)&f;
-  *p = *p / 3 + 709921077;
-  return f;
-}
-
-static float cbrta_halleyf(const float a, const float R)
-{
-  const float a3 = a * a * a;
-  const float b = a * (a3 + R + R) / (a3 + a3 + R);
-  return b;
-}
-
-static float lab_f(const float x)
-{
-  const float epsilon = 216.0f / 24389.0f;
-  const float kappa = 24389.0f / 27.0f;
-  if(x > epsilon)
-  {
-    // approximate cbrtf(x):
-    const float a = cbrt_5f(x);
-    return cbrta_halleyf(a, x);
-  }
-  else
-    return (kappa * x + 16.0f) / 116.0f;
-}
-
-void dt_XYZ_to_Lab(const float *XYZ, float *Lab)
-{
-  const float d50[3] = { 0.9642, 1.0, 0.8249 };
-  const float f[3] = { lab_f(XYZ[0] / d50[0]), lab_f(XYZ[1] / d50[1]), lab_f(XYZ[2] / d50[2]) };
-  Lab[0] = 116.0f * f[1] - 16.0f;
-  Lab[1] = 500.0f * (f[0] - f[1]);
-  Lab[2] = 200.0f * (f[1] - f[2]);
-}
-
-static float lab_f_inv(const float x)
-{
-  const float epsilon = 0.20689655172413796; // cbrtf(216.0f/24389.0f);
-  const float kappa = 24389.0f / 27.0f;
-  if(x > epsilon)
-    return x * x * x;
-  else
-    return (116.0f * x - 16.0f) / kappa;
-}
-
-void dt_Lab_to_XYZ(const float *Lab, float *XYZ)
-{
-  const float d50[3] = { 0.9642, 1.0, 0.8249 };
-  const float fy = (Lab[0] + 16.0f) / 116.0f;
-  const float fx = Lab[1] / 500.0f + fy;
-  const float fz = fy - Lab[2] / 200.0f;
-  XYZ[0] = d50[0] * lab_f_inv(fx);
-  XYZ[1] = d50[1] * lab_f_inv(fy);
-  XYZ[2] = d50[2] * lab_f_inv(fz);
-}
-
-void dt_XYZ_to_sRGB(const float * const XYZ, float *sRGB)
-{
-  const float xyz_to_srgb_matrix[3][3] =
-  {
-    {3.1338561, -1.6168667, -0.4906146},
-    {-0.9787684, 1.9161415, 0.0334540},
-    {0.0719453, -0.2289914, 1.4052427}
-  };
-
-  // XYZ -> sRGB
-  float rgb[3] = {0, 0, 0};
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++)
-      rgb[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
-  // linear sRGB -> gamma corrected sRGB
-  for(int c = 0; c < 3; c++)
-    rgb[c] = rgb[c] <= 0.0031308 ? 12.92 * rgb[c] : (1.0 + 0.055) * powf(rgb[c], 1.0 / 2.4) - 0.055;
-
-#define CLIP(a) ((a) < 0 ? 0 : (a) > 1 ? 1 : (a))
-
-  for(int i = 0; i < 3; i++)
-    sRGB[i] = CLIP(rgb[i]);
-
-#undef CLIP
-}
-
 int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
 {
   dt_profiled_colormatrix_t *preset = NULL;
@@ -655,9 +572,6 @@ cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel)
 static cmsHPROFILE dt_colorspaces_create_xyz_profile(void)
 {
   cmsHPROFILE hXYZ = cmsCreateXYZProfile();
-  // revert some settings which prevent us from using XYZ as output profile:
-  cmsSetDeviceClass(hXYZ, cmsSigDisplayClass);
-  cmsSetColorSpace(hXYZ, cmsSigRgbData);
   cmsSetPCS(hXYZ, cmsSigXYZData);
   cmsSetHeaderRenderingIntent(hXYZ, INTENT_PERCEPTUAL);
 
@@ -1153,6 +1067,78 @@ static gint _sort_profiles(gconstpointer a, gconstpointer b)
   return result;
 }
 
+static GList *load_profile_from_dir(const char *subdir)
+{
+  GList *temp_profiles = NULL;
+  const gchar *d_name;
+  char datadir[PATH_MAX] = { 0 };
+  char confdir[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  char *lang = getenv("LANG");
+  if(!lang) lang = "en_US";
+
+  char *dirname = g_build_filename(confdir, "color", subdir, NULL);
+  if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
+  {
+    g_free(dirname);
+    dirname = g_build_filename(datadir, "color", subdir, NULL);
+  }
+  GDir *dir = g_dir_open(dirname, 0, NULL);
+  if(dir)
+  {
+    while((d_name = g_dir_read_name(dir)))
+    {
+      char *filename = g_build_filename(dirname, d_name, NULL);
+      const char *cc = filename + strlen(filename);
+      for(; *cc != '.' && cc > filename; cc--)
+        ;
+      if(!g_ascii_strcasecmp(cc, ".icc") || !g_ascii_strcasecmp(cc, ".icm"))
+      {
+        // TODO: add support for grayscale profiles, then remove _ensure_rgb_profile() from here
+        char *icc_content = NULL;
+        cmsHPROFILE tmpprof;
+
+        FILE *fd = g_fopen(filename, "rb");
+        if(!fd) goto icc_loading_done;
+
+        fseek(fd, 0, SEEK_END);
+        size_t end = ftell(fd);
+        rewind(fd);
+
+        icc_content = (char *)malloc(end * sizeof(char));
+        if(!icc_content) goto icc_loading_done;
+        if(fread(icc_content, sizeof(char), end, fd) != end) goto icc_loading_done;
+
+        tmpprof = _ensure_rgb_profile(cmsOpenProfileFromMem(icc_content, end * sizeof(char)));
+        if(tmpprof)
+        {
+          dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+          dt_colorspaces_get_profile_name(tmpprof, lang, lang + 3, prof->name, sizeof(prof->name));
+
+          g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
+          prof->type = DT_COLORSPACE_FILE;
+          prof->profile = tmpprof;
+          // these will be set after sorting!
+          prof->in_pos = -1;
+          prof->out_pos = -1;
+          prof->display_pos = -1;
+          temp_profiles = g_list_append(temp_profiles, prof);
+        }
+
+icc_loading_done:
+        if(fd) fclose(fd);
+        free(icc_content);
+      }
+      g_free(filename);
+    }
+    g_dir_close(dir);
+    temp_profiles = g_list_sort(temp_profiles, _sort_profiles);
+  }
+  g_free(dirname);
+  return temp_profiles;
+}
+
 dt_colorspaces_t *dt_colorspaces_init()
 {
   cmsSetLogErrorHandler(cms_error_handler);
@@ -1164,17 +1150,6 @@ dt_colorspaces_t *dt_colorspaces_init()
   int in_pos = -1,
       out_pos = -1,
       display_pos = -1;
-  cmsHPROFILE tmpprof;
-  const gchar *d_name;
-  char datadir[PATH_MAX] = { 0 };
-  char confdir[PATH_MAX] = { 0 };
-  char dirname[PATH_MAX] = { 0 };
-  char filename[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  GDir *dir;
-  char *lang = getenv("LANG");
-  if(!lang) lang = "en_US";
 
   // init the display profile with srgb so some stupid code that runs before the real profile could be fetched has something to work with
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_DISPLAY, dt_colorspaces_create_srgb_profile(),
@@ -1230,39 +1205,10 @@ dt_colorspaces_t *dt_colorspaces_init()
                                                                ++in_pos, ++out_pos, ++display_pos));
 
   // temporary list of profiles to be added, we keep this separate to be able to sort it before adding
-  GList *temp_profiles = NULL;
+  GList *temp_profiles;
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
-  snprintf(dirname, sizeof(dirname), "%s/color/in", confdir);
-  if(!g_file_test(dirname, G_FILE_TEST_IS_DIR)) snprintf(dirname, sizeof(dirname), "%s/color/in", datadir);
-  dir = g_dir_open(dirname, 0, NULL);
-  if(dir)
-  {
-    while((d_name = g_dir_read_name(dir)))
-    {
-      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
-      const char *cc = filename + strlen(filename);
-      for(; *cc != '.' && cc > filename; cc--)
-        ;
-      if(g_ascii_strcasecmp(cc, ".icc") && g_ascii_strcasecmp(cc, ".icm")) continue;
-      tmpprof = _ensure_rgb_profile(cmsOpenProfileFromFile(filename, "r"));
-      if(tmpprof)
-      {
-        dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
-        dt_colorspaces_get_profile_name(tmpprof, lang, lang + 3, prof->name, sizeof(prof->name));
-
-        g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
-        prof->type = DT_COLORSPACE_FILE;
-        prof->profile = tmpprof;
-        prof->in_pos = -1; // will be set after sorting!
-        prof->out_pos = -1;
-        prof->display_pos = -1;
-        temp_profiles = g_list_append(temp_profiles, prof);
-      }
-    }
-    g_dir_close(dir);
-  }
-  temp_profiles = g_list_sort(temp_profiles, _sort_profiles);
+  temp_profiles = load_profile_from_dir("in");
   for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
   {
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
@@ -1270,40 +1216,8 @@ dt_colorspaces_t *dt_colorspaces_init()
   }
   res->profiles = g_list_concat(res->profiles, temp_profiles);
 
-  temp_profiles = NULL;
-
   // read {conf,data}dir/color/out/*.icc
-  snprintf(dirname, sizeof(dirname), "%s/color/out", confdir);
-  if(!g_file_test(dirname, G_FILE_TEST_IS_DIR)) snprintf(dirname, sizeof(dirname), "%s/color/out", datadir);
-  dir = g_dir_open(dirname, 0, NULL);
-  if(dir)
-  {
-    while((d_name = g_dir_read_name(dir)))
-    {
-      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
-      const char *cc = filename + strlen(filename);
-      for(; *cc != '.' && cc > filename; cc--)
-        ;
-      if(g_ascii_strcasecmp(cc, ".icc") && g_ascii_strcasecmp(cc, ".icm")) continue;
-      // TODO: add support for grayscale output, then remove _ensure_rgb_profile() from here
-      tmpprof = _ensure_rgb_profile(cmsOpenProfileFromFile(filename, "r"));
-      if(tmpprof)
-      {
-        dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
-        dt_colorspaces_get_profile_name(tmpprof, lang, lang + 3, prof->name, sizeof(prof->name));
-
-        g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
-        prof->type = DT_COLORSPACE_FILE;
-        prof->profile = tmpprof;
-        prof->in_pos = -1;
-        prof->out_pos = -1; // will be set after sorting!
-        prof->display_pos = -1;  // will be set after sorting!
-        temp_profiles = g_list_append(temp_profiles, prof);
-      }
-    }
-    g_dir_close(dir);
-  }
-  temp_profiles = g_list_sort(temp_profiles, _sort_profiles);
+  temp_profiles = load_profile_from_dir("out");
   for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
   {
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
@@ -1553,15 +1467,20 @@ void dt_colorspaces_set_display_profile()
   {
     DWORD len = 0;
     GetICMProfile(hdc, &len, NULL);
-    gchar *path = g_new(gchar, len);
+    wchar_t *wpath = g_new(wchar_t, len);
 
-    if(GetICMProfile(hdc, &len, path))
+    if(GetICMProfileW(hdc, &len, wpath))
     {
-      gsize size;
-      g_file_get_contents(path, (gchar **)&buffer, &size, NULL);
-      buffer_size = size;
+      gchar *path = g_utf16_to_utf8(wpath, -1, NULL, NULL, NULL);
+      if(path)
+      {
+        gsize size;
+        g_file_get_contents(path, (gchar **)&buffer, &size, NULL);
+        buffer_size = size;
+        g_free(path);
+      }
     }
-    g_free(path);
+    g_free(wpath);
     ReleaseDC(NULL, hdc);
   }
   profile_source = g_strdup("windows color profile api");

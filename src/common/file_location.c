@@ -88,22 +88,8 @@ static gchar *dt_loc_init_generic(const char *value, const char *default_value)
 
 void dt_loc_init_user_config_dir(const char *configdir)
 {
-  gchar *xdg_config_dir = NULL;
-  gchar *default_config_dir = NULL;
-
-  const char *xdg_config_home = g_getenv("XDG_CONFIG_HOME");
-  gchar *homedir = dt_loc_get_home_dir(NULL);
-
-  if(xdg_config_home) xdg_config_dir = g_strconcat(xdg_config_home, "/darktable", NULL);
-
-  if(homedir)
-  {
-    default_config_dir = g_strconcat(homedir, "/.config/darktable", NULL);
-    g_free(homedir);
-  }
-
-  darktable.configdir = dt_loc_init_generic(configdir, xdg_config_dir ? xdg_config_dir : default_config_dir);
-  g_free(xdg_config_dir);
+  char *default_config_dir = g_build_filename(g_get_user_config_dir(), "darktable", NULL);
+  darktable.configdir = dt_loc_init_generic(configdir, default_config_dir);
   g_free(default_config_dir);
 }
 
@@ -146,26 +132,51 @@ char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
   g_free(curr);
   return g_strdup(tmp);
 }
+#elif defined(_WIN32)
+char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
+{
+  gchar *runtime_prefix;
+  gchar *slash;
+  gchar *finaldir;
+  wchar_t fn[PATH_MAX];
+
+  GetModuleFileNameW(NULL, fn, G_N_ELEMENTS(fn));
+  runtime_prefix = g_utf16_to_utf8(fn, -1, NULL, NULL, NULL);
+
+  // strip off /darktable
+  slash = strrchr(runtime_prefix, '\\');
+  *slash = '\0';
+
+  // strip off /bin
+  slash = strrchr(runtime_prefix, '\\');
+  *slash = '\0';
+
+  finaldir = g_build_filename(runtime_prefix, suffix, NULL);
+
+  return g_strdup(finaldir);
+}
 #endif
+
 int dt_loc_init_tmp_dir(const char *tmpdir)
 {
-  darktable.tmpdir = dt_loc_init_generic(tmpdir, DARKTABLE_TMPDIR);
+  darktable.tmpdir = dt_loc_init_generic(tmpdir, g_get_tmp_dir());
   if(darktable.tmpdir == NULL) return 1;
   return 0;
 }
+
 void dt_loc_init_user_cache_dir(const char *cachedir)
 {
-  gchar *xdg_cache_dir = NULL;
-  const char *xdg_cache_home = g_getenv("XDG_CACHE_HOME");
-  if(xdg_cache_home) xdg_cache_dir = g_strconcat(xdg_cache_home, "/darktable", NULL);
-  darktable.cachedir = dt_loc_init_generic(cachedir, xdg_cache_dir ? xdg_cache_dir : DARKTABLE_CACHEDIR);
-  g_free(xdg_cache_dir);
+  char *default_cache_dir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
+  darktable.cachedir = dt_loc_init_generic(cachedir, default_cache_dir);
+  g_free(default_cache_dir);
 }
 
 void dt_loc_init_plugindir(const char *plugindir)
 {
-#if defined(__MACH__) || defined(__APPLE__)
-  char *directory = dt_loc_find_install_dir("/lib/darktable", darktable.progname);
+#if defined(__MACH__) || defined(__APPLE__) || defined(_WIN32)
+  char *suffix = g_build_filename("lib", "darktable", NULL);
+  char *directory = dt_loc_find_install_dir(suffix, darktable.progname);
+  g_free(suffix);
   if(plugindir || !directory)
   {
     darktable.plugindir = dt_loc_init_generic(plugindir, DARKTABLE_LIBDIR);
@@ -181,8 +192,10 @@ void dt_loc_init_plugindir(const char *plugindir)
 
 void dt_loc_init_datadir(const char *datadir)
 {
-#if defined(__MACH__) || defined(__APPLE__)
-  char *directory = dt_loc_find_install_dir("/share/darktable", darktable.progname);
+#if defined(__MACH__) || defined(__APPLE__) || defined(_WIN32)
+  char *suffix = g_build_filename("share", "darktable", NULL);
+  char *directory = dt_loc_find_install_dir(suffix, darktable.progname);
+  g_free(suffix);
   if(datadir || !directory)
   {
     darktable.datadir = dt_loc_init_generic(datadir, DARKTABLE_DATADIR);

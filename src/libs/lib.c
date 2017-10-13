@@ -18,6 +18,7 @@
 */
 #include "libs/lib.h"
 #include "common/debug.h"
+#include "common/module.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -49,6 +50,22 @@ typedef struct dt_lib_presets_edit_dialog_t
   gint old_id;
 } dt_lib_presets_edit_dialog_t;
 
+gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module, const dt_view_t *view)
+{
+  if(!module->views)
+  {
+    fprintf(stderr, "module %s doesn't have views flags\n", module->name(module));
+    return FALSE;
+  }
+
+  const char **views = module->views(module);
+  for(const char **iter = views; *iter; iter++)
+  {
+    if(!strcmp(*iter, "*") || !strcmp(*iter, view->module_name)) return TRUE;
+  }
+  return FALSE;
+}
+
 static gchar *get_preset_name(GtkMenuItem *menuitem)
 {
   const gchar *name = gtk_label_get_label(GTK_LABEL(gtk_bin_get_child(GTK_BIN(menuitem))));
@@ -73,6 +90,9 @@ static gchar *get_preset_name(GtkMenuItem *menuitem)
   if(c2 && c2 > pn) *(c2 - 1) = '\0';
   return pn;
 }
+
+/** calls module->cleanup and closes the dl connection. */
+static void dt_lib_unload_module(dt_lib_module_t *module);
 
 static gchar *get_active_preset_name(dt_lib_module_info_t *minfo)
 {
@@ -178,7 +198,8 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_pre
                                 "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
                                 "focal_length_min, focal_length_max, writeprotect, "
                                 "autoapply, filter, def, format) VALUES (?1, ?2, ?3, ?4, ?5, NULL, 0, 1, "
-                                "'%', '%', '%', 0, 51200, 0, 100000000, 0, 100000000, 0, 1000, 0, 0, 0, 0, "
+                                "'%', '%', '%', 0, 340282346638528859812000000000000000000, 0, 100000000, 0, "
+                                "100000000, 0, 1000, 0, 0, 0, 0, "
                                 "0)",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
@@ -289,14 +310,15 @@ static void menuitem_new_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *min
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO data.presets (name, description, operation, op_version, op_params, "
-                              "blendop_params, blendop_version, enabled, model, maker, lens, "
-                              "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-                              "focal_length_min, focal_length_max, writeprotect, "
-                              "autoapply, filter, def, format) VALUES (?1, '', ?2, ?3, ?4, NULL, 0, 1, '%', "
-                              "'%', '%', 0, 51200, 0, 100000000, 0, 100000000, 0, 1000, 0, 0, 0, 0, 0)",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "INSERT INTO data.presets (name, description, operation, op_version, op_params, "
+      "blendop_params, blendop_version, enabled, model, maker, lens, "
+      "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
+      "focal_length_min, focal_length_max, writeprotect, "
+      "autoapply, filter, def, format) VALUES (?1, '', ?2, ?3, ?4, NULL, 0, 1, '%', "
+      "'%', '%', 0, 340282346638528859812000000000000000000, 0, 100000000, 0, 100000000, 0, 1000, 0, 0, 0, 0, 0)",
+      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, _("new preset"), -1, SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
@@ -506,9 +528,9 @@ static int _lib_default_expandable()
   return 1;
 }
 
-static int dt_lib_load_module(dt_lib_module_t *module, const char *libname, const char *plugin_name)
+static int dt_lib_load_module(void *m, const char *libname, const char *plugin_name)
 {
-  //  char name[1024];
+  dt_lib_module_t *module = (dt_lib_module_t *)m;
   module->dt = &darktable;
   module->widget = NULL;
   module->expander = NULL;
@@ -703,53 +725,18 @@ void dt_lib_init_presets(dt_lib_module_t *module)
   if(module->init_presets) module->init_presets(module);
 }
 
-int dt_lib_load_modules()
+static void dt_lib_init_module(void *m)
 {
-  darktable.lib->plugins = NULL;
-  GList *res = NULL;
-  dt_lib_module_t *module;
-  char plugindir[PATH_MAX] = { 0 }, plugin_name[256];
-  const gchar *d_name;
-  dt_loc_get_plugindir(plugindir, sizeof(plugindir));
-  g_strlcat(plugindir, "/plugins/lighttable", sizeof(plugindir));
-  GDir *dir = g_dir_open(plugindir, 0, NULL);
-  if(!dir) return 1;
-  const int name_offset = strlen(SHARED_MODULE_PREFIX),
-            name_end = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
-  while((d_name = g_dir_read_name(dir)))
+  dt_lib_module_t *module = (dt_lib_module_t *)m;
+  dt_lib_init_presets(module);
+  // Calling the keyboard shortcut initialization callback if present
+  // do not init accelerators if there is no gui
+  if(darktable.gui)
   {
-    // get lib*.(so|dll)
-    if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
-    if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
-    strncpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end);
-    plugin_name[strlen(d_name) - name_end] = '\0';
-    module = (dt_lib_module_t *)malloc(sizeof(dt_lib_module_t));
-    gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
-
-    if(dt_lib_load_module(module, libname, plugin_name))
-    {
-      free(module);
-      continue;
-    }
-    // TODO: init presets
-    g_free(libname);
-    res = g_list_insert_sorted(res, module, dt_lib_sort_plugins);
-
-    dt_lib_init_presets(module);
-    // Calling the keyboard shortcut initialization callback if present
-    // do not init accelerators if there is no gui
-    if(darktable.gui)
-    {
-     if(module->init_key_accels) module->init_key_accels(module);
-     module->gui_init(module);
-     g_object_ref_sink(module->widget);
-    }
+    if(module->init_key_accels) module->init_key_accels(module);
+    module->gui_init(module);
+    g_object_ref_sink(module->widget);
   }
-  g_dir_close(dir);
-
-  darktable.lib->plugins = res;
-
-  return 0;
 }
 
 void dt_lib_unload_module(dt_lib_module_t *module)
@@ -809,6 +796,8 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
   }
   dt_lib_presets_popup_menu_show(&mi);
 
+  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+
 #if GTK_CHECK_VERSION(3, 22, 0)
   int c = module->container(module);
 
@@ -817,9 +806,8 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
   if((c == DT_UI_CONTAINER_PANEL_LEFT_TOP) || (c == DT_UI_CONTAINER_PANEL_LEFT_CENTER)
      || (c == DT_UI_CONTAINER_PANEL_LEFT_BOTTOM))
   {
-    // FIXME: these should be _EAST, but then it goes out of the sidepanel...
-    widget_gravity = GDK_GRAVITY_SOUTH;
-    menu_gravity = GDK_GRAVITY_NORTH;
+    widget_gravity = GDK_GRAVITY_SOUTH_EAST;
+    menu_gravity = GDK_GRAVITY_NORTH_EAST;
   }
   else
   {
@@ -830,14 +818,11 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
   gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu,
                            dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander)), widget_gravity,
                            menu_gravity, NULL);
-
 #else
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_posistion, button, 0,
                  gtk_get_current_event_time());
-#endif
-
-  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
+#endif
 }
 
 void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
@@ -941,7 +926,7 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
       {
         dt_lib_module_t *m = (dt_lib_module_t *)it->data;
 
-        if(m != module && container == m->container(module) && m->expandable(module) && (m->views(module) & v->view(v)))
+        if(m != module && container == m->container(m) && m->expandable(m) && dt_lib_is_visible_in_view(m, v))
         {
           all_other_closed = all_other_closed && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(m->expander));
           dt_lib_gui_set_expanded(m, FALSE);
@@ -1078,7 +1063,8 @@ void dt_lib_init(dt_lib_t *lib)
 {
   // Setting everything to null initially
   memset(lib, 0, sizeof(dt_lib_t));
-  (void)dt_lib_load_modules();
+  darktable.lib->plugins = dt_module_load_modules("/plugins/lighttable", sizeof(dt_lib_module_t),
+                                                  dt_lib_load_module, dt_lib_init_module, dt_lib_sort_plugins);
 }
 
 void dt_lib_cleanup(dt_lib_t *lib)
@@ -1112,14 +1098,15 @@ void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO data.presets (name, description, operation, op_version, op_params, "
-                              "blendop_params, blendop_version, enabled, model, maker, lens, "
-                              "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-                              "focal_length_min, focal_length_max, writeprotect, "
-                              "autoapply, filter, def, format) VALUES (?1, '', ?2, ?3, ?4, NULL, 0, 1, '%', "
-                              "'%', '%', 0, 51200, 0, 10000000, 0, 100000000, 0, 1000, 1, 0, 0, 0, 0)",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "INSERT INTO data.presets (name, description, operation, op_version, op_params, "
+      "blendop_params, blendop_version, enabled, model, maker, lens, "
+      "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
+      "focal_length_min, focal_length_max, writeprotect, "
+      "autoapply, filter, def, format) VALUES (?1, '', ?2, ?3, ?4, NULL, 0, 1, '%', "
+      "'%', '%', 0, 340282346638528859812000000000000000000, 0, 10000000, 0, 100000000, 0, 1000, 1, 0, 0, 0, 0)",
+      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);

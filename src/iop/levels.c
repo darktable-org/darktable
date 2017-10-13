@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2014-2015 LebedevRI.
+    copyright (c) 2014-2016 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -94,6 +94,7 @@ typedef struct dt_iop_levels_gui_data_t
   GtkWidget *percentile_grey;
   GtkWidget *percentile_white;
   float auto_levels[3];
+  uint64_t hash;
   dt_pthread_mutex_t lock;
 } dt_iop_levels_gui_data_t;
 
@@ -156,20 +157,20 @@ static void dt_iop_levels_compute_levels_manual(const uint32_t *histogram, float
   if(!histogram) return;
 
   // search histogram for min (search from bottom)
-  for(int k = 0; k <= 4 * 63; k += 4)
+  for(int k = 0; k <= 4 * 255; k += 4)
   {
     if(histogram[k] > 1)
     {
-      levels[0] = ((float)(k) / (4 * 64));
+      levels[0] = ((float)(k) / (4 * 256));
       break;
     }
   }
   // then for max (search from top)
-  for(int k = 4 * 63; k >= 0; k -= 4)
+  for(int k = 4 * 255; k >= 0; k -= 4)
   {
     if(histogram[k] > 1)
     {
-      levels[2] = ((float)(k) / (4 * 64));
+      levels[2] = ((float)(k) / (4 * 256));
       break;
     }
   }
@@ -224,7 +225,7 @@ static void compute_lut(dt_dev_pixelpipe_iop_t *piece)
 
   for(unsigned int i = 0; i < 0x10000; i++)
   {
-    float percentage = (float)i / (float)0xfffful;
+    float percentage = (float)i / (float)0x10000ul;
     d->lut[i] = 100.0f * pow(percentage, d->in_inv_gamma);
   }
 }
@@ -243,6 +244,17 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     if(g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
     {
       dt_pthread_mutex_lock(&g->lock);
+      const uint64_t hash = g->hash;
+      dt_pthread_mutex_unlock(&g->lock);
+
+      // note that the case 'hash == 0' on first invocation in a session implies that d->levels[]
+      // contains NANs which initiates special handling below to avoid inconsistent results. in all
+      // other cases we make sure that the preview pipe has left us with proper readings for
+      // g->auto_levels[]. if data are not yet there we need to wait (with timeout).
+      if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+        dt_control_log(_("inconsistent output"));
+
+      dt_pthread_mutex_lock(&g->lock);
       d->levels[0] = g->auto_levels[0];
       d->levels[1] = g->auto_levels[1];
       d->levels[2] = g->auto_levels[2];
@@ -260,10 +272,12 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
     if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && d->mode == LEVELS_MODE_AUTOMATIC)
     {
+      uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
       dt_pthread_mutex_lock(&g->lock);
       g->auto_levels[0] = d->levels[0];
       g->auto_levels[1] = d->levels[1];
       g->auto_levels[2] = d->levels[2];
+      g->hash = hash;
       dt_pthread_mutex_unlock(&g->lock);
     }
   }
@@ -306,7 +320,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         // Within the expected input range we can use the lookup table
         float percentage = (L_in - d->levels[0]) / (d->levels[2] - d->levels[0]);
         // out[0] = 100.0 * pow(percentage, d->in_inv_gamma);
-        out[0] = d->lut[CLAMP((int)(percentage * 0xfffful), 0, 0xffff)];
+        out[0] = d->lut[CLAMP((int)(percentage * 0x10000ul), 0, 0xffff)];
       }
 
       // Preserving contrast
@@ -323,7 +337,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
   }
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #ifdef HAVE_OPENCL
@@ -395,7 +409,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   piece->request_histogram |= (DT_REQUEST_ONLY_IN_GUI);
 
-  piece->histogram_params.bins_count = 64;
+  piece->histogram_params.bins_count = 256;
 
   if(p->mode == LEVELS_MODE_AUTOMATIC)
   {
@@ -474,6 +488,7 @@ void gui_update(dt_iop_module_t *self)
   g->auto_levels[0] = NAN;
   g->auto_levels[1] = NAN;
   g->auto_levels[2] = NAN;
+  g->hash = 0;
   dt_pthread_mutex_unlock(&g->lock);
 
   gtk_widget_queue_draw(self->widget);
@@ -493,7 +508,7 @@ void init(dt_iop_module_t *self)
   self->default_params = calloc(1, sizeof(dt_iop_levels_params_t));
   self->default_enabled = 0;
   self->request_histogram |= (DT_REQUEST_ON);
-  self->priority = 686; // module order created by iop_dependencies.py, do not edit!
+  self->priority = 691; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_levels_params_t);
   self->gui_data = NULL;
 }
@@ -533,6 +548,7 @@ void gui_init(dt_iop_module_t *self)
   c->auto_levels[0] = NAN;
   c->auto_levels[1] = NAN;
   c->auto_levels[2] = NAN;
+  c->hash = 0;
   dt_pthread_mutex_unlock(&c->lock);
 
   c->modes = NULL;
@@ -572,7 +588,8 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                             | GDK_SMOOTH_SCROLL_MASK);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_levels_area_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_levels_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(dt_iop_levels_button_release), self);
@@ -841,7 +858,7 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
     if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
-      cairo_scale(cr, width / 63.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
+      cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
       dt_draw_histogram_8(cr, hist, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw
                                                                                         // handle waveform
@@ -1013,28 +1030,16 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, g
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
-  const float interval = 0.002; // Distance moved for each scroll event
-  gboolean updated = FALSE;
-  float new_position = 0;
-
   if(c->dragging)
   {
     return FALSE;
   }
 
-  if(event->direction == GDK_SCROLL_UP)
+  const float interval = 0.002; // Distance moved for each scroll event
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
-    new_position = p->levels[c->handle_move] + interval;
-    updated = TRUE;
-  }
-  else if(event->direction == GDK_SCROLL_DOWN)
-  {
-    new_position = p->levels[c->handle_move] - interval;
-    updated = TRUE;
-  }
-
-  if(updated)
-  {
+    float new_position = p->levels[c->handle_move] - interval * delta_y;
     dt_iop_levels_move_handle(self, c->handle_move, new_position, p->levels, c->drag_start_percentage);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;

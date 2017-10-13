@@ -67,7 +67,7 @@ typedef struct dt_gaussian_cl_t
   dt_gaussian_cl_global_t *global;
   int devid;
   int width, height, channels;
-  int blocksize, blockwd, blockht;
+  int blocksize;
   size_t bwidth, bheight;
   float sigma;
   int order;

@@ -37,8 +37,6 @@
 
 #define MAX_RADIUS 16
 #define BOX_ITERATIONS 8
-#define BLOCKSIZE                                                                                            \
-  2048 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 #define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
@@ -165,32 +163,31 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   float contrast_scale = ((d->contrast / 100.0f) * 7.5f);
 
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+  int hblocksize;
+  dt_opencl_local_buffer_t hlocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 2 * wdh, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 16, .sizey = 1 };
 
-  // make sure blocksize is not too large
-  int blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_highpass_hblur, &kernelworkgroupsize)
-        == CL_SUCCESS)
-  {
-    // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
-          || blocksize > workgroupsize || (blocksize + 2 * wdh) * sizeof(float) > localmemsize)
-    {
-      if(blocksize == 1) break;
-      blocksize >>= 1;
-    }
-  }
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_highpass_hblur, &hlocopt))
+    hblocksize = hlocopt.sizex;
   else
-  {
-    blocksize = 1; // slow but safe
-  }
+    hblocksize = 1;
 
-  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1) * blocksize;
-  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1) * blocksize;
+  int vblocksize;
+  dt_opencl_local_buffer_t vlocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 1, .xfactor = 1, .yoffset = 2 * wdh, .yfactor = 1,
+                                  .cellsize = sizeof(float), .overhead = 0,
+                                  .sizex = 1, .sizey = 1 << 16 };
+
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_highpass_vblur, &vlocopt))
+    vblocksize = vlocopt.sizey;
+  else
+    vblocksize = 1;
+
+
+  const size_t bwidth = ROUNDUP(width, hblocksize);
+  const size_t bheight = ROUNDUP(height, vblocksize);
 
   size_t sizes[3];
   size_t local[3];
@@ -218,7 +215,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     sizes[0] = bwidth;
     sizes[1] = ROUNDUPHT(height);
     sizes[2] = 1;
-    local[0] = blocksize;
+    local[0] = hblocksize;
     local[1] = 1;
     local[2] = 1;
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 0, sizeof(cl_mem), (void *)&dev_tmp);
@@ -227,8 +224,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 3, sizeof(int), (void *)&wdh);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 4, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 5, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 6, sizeof(int), (void *)&blocksize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 7, (blocksize + 2 * wdh) * sizeof(float), NULL);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 6, sizeof(int), (void *)&hblocksize);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 7, (hblocksize + 2 * wdh) * sizeof(float), NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_highpass_hblur, sizes, local);
     if(err != CL_SUCCESS) goto error;
 
@@ -238,7 +235,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     sizes[1] = bheight;
     sizes[2] = 1;
     local[0] = 1;
-    local[1] = blocksize;
+    local[1] = vblocksize;
     local[2] = 1;
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 0, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 1, sizeof(cl_mem), (void *)&dev_tmp);
@@ -246,8 +243,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 3, sizeof(int), (void *)&wdh);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 4, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 5, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 6, sizeof(int), (void *)&blocksize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 7, (blocksize + 2 * wdh) * sizeof(float), NULL);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 6, sizeof(int), (void *)&vblocksize);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 7, (vblocksize + 2 * wdh) * sizeof(float), NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_highpass_vblur, sizes, local);
     if(err != CL_SUCCESS) goto error;
   }
@@ -435,7 +432,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_highpass_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_highpass_params_t));
   module->default_enabled = 0;
-  module->priority = 761; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 764; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_highpass_params_t);
   module->gui_data = NULL;
   dt_iop_highpass_params_t tmp = (dt_iop_highpass_params_t){ 50, 50 };

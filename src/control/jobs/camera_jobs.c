@@ -336,7 +336,7 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
 
   // Switch to new filmroll
   dt_film_open(dt_import_session_film_id(params->shared.session));
-  dt_ctl_switch_mode_to(DT_LIBRARY);
+  dt_ctl_switch_mode_to("lighttable");
 
   // register listener
   dt_camctl_listener_t listener = { 0 };
