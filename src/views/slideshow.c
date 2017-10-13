@@ -509,7 +509,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 0;
   }
   // go back to lt mode
-  dt_ctl_switch_mode_to(DT_LIBRARY);
+  dt_ctl_switch_mode_to("lighttable");
   return 0;
 }
 

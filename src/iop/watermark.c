@@ -96,6 +96,7 @@ typedef struct dt_iop_watermark_data_t
 typedef struct dt_iop_watermark_gui_data_t
 {
   GtkWidget *watermarks;                             // watermark
+  GList     *watermarks_filenames;                   // the actual filenames. the dropdown lacks file extensions
   GtkWidget *refresh;                                // refresh watermarks...
   GtkWidget *align[9];                               // Alignment buttons
   GtkWidget *opacity, *scale, *x_offset, *y_offset;  // opacity, scale, xoffs, yoffs
@@ -267,14 +268,14 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "y offset", GTK_WIDGET(g->y_offset));
 }
 
-static void _combo_box_set_active_text(GtkWidget *cb, gchar *text)
+static void _combo_box_set_active_text(dt_iop_watermark_gui_data_t *g, gchar *text)
 {
   int i = 0;
-  for(const GList *iter = dt_bauhaus_combobox_get_labels(cb); iter; iter = g_list_next(iter))
+  for(const GList *iter = g->watermarks_filenames; iter; iter = g_list_next(iter))
   {
     if(!g_strcmp0((gchar *)iter->data, text))
     {
-      dt_bauhaus_combobox_set(cb, i);
+      dt_bauhaus_combobox_set(g->watermarks, i);
       return;
     }
     i++;
@@ -789,16 +790,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return;
   }
 
-  /* create the rsvghandle from parsed svg data */
-  GError *error = NULL;
-  RsvgHandle *svg = rsvg_handle_new_from_data((const guint8 *)svgdoc, strlen(svgdoc), &error);
-  g_free(svgdoc);
-  if(!svg || error)
-  {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
-    return;
-  }
-
   /* setup stride for performance */
   int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
 
@@ -816,6 +807,23 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   /* create cairo context and setup transformation/scale */
   cairo_t *cr = cairo_create(surface);
+
+  // rsvg (or some part of cairo whic is used underneath) isn't thread safe, for example when handling fonts
+  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+
+  /* create the rsvghandle from parsed svg data */
+  GError *error = NULL;
+  RsvgHandle *svg = rsvg_handle_new_from_data((const guint8 *)svgdoc, strlen(svgdoc), &error);
+  g_free(svgdoc);
+  if(!svg || error)
+  {
+    g_free(image);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+    fprintf(stderr, "[watermark] error processing svg file: %s\n", error->message);
+    g_error_free(error);
+    return;
+  }
 
   /* get the dimension of svg */
   RsvgDimensionData dimension;
@@ -944,8 +952,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   cairo_scale(cr, scale, scale);
 
   /* render svg into surface*/
-  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   rsvg_handle_render_cairo(svg, cr);
+
+  // no more non-thread safe rsvg usage
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   cairo_destroy(cr);
@@ -991,10 +1000,41 @@ static void watermark_callback(GtkWidget *tb, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   memset(p->filename, 0, sizeof(p->filename));
-  snprintf(p->filename, sizeof(p->filename), "%s", dt_bauhaus_combobox_get_text(g->watermarks));
+  int n = dt_bauhaus_combobox_get(g->watermarks);
+  snprintf(p->filename, sizeof(p->filename), "%s", (char *)g_list_nth_data(g->watermarks_filenames, n));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+
+static void load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g)
+{
+  GList *files = NULL;
+  char *watermarks_dir = g_build_filename(basedir, "watermarks", NULL);
+  GDir *dir = g_dir_open(watermarks_dir, 0, NULL);
+  if(dir)
+  {
+    const gchar *d_name;
+    while((d_name = g_dir_read_name(dir)))
+      files = g_list_append(files, g_strdup(d_name));
+    g_dir_close(dir);
+  }
+
+  files = g_list_sort(files, (GCompareFunc)g_strcmp0);
+  for(GList *iter = files; iter; iter = g_list_next(iter))
+  {
+    char *filename = iter->data;
+    // remember the whole filename for later
+    g->watermarks_filenames = g_list_append(g->watermarks_filenames, g_strdup(filename));
+    // ... and remove the file extension from the string shown in the gui
+    char *c = filename + strlen(filename);
+    while(c >= filename && *c != '.') *c-- = '\0';
+    if(*c == '.') *c = '\0';
+    dt_bauhaus_combobox_add(g->watermarks, filename);
+  }
+
+  g_list_free_full(files, g_free);
+  g_free(watermarks_dir);
+}
 
 static void refresh_watermarks(dt_iop_module_t *self)
 {
@@ -1005,45 +1045,19 @@ static void refresh_watermarks(dt_iop_module_t *self)
 
   // Clear combobox...
   dt_bauhaus_combobox_clear(g->watermarks);
+  g_list_free_full(g->watermarks_filenames, g_free);
+  g->watermarks_filenames = NULL;
 
   // check watermarkdir and update combo with entries...
-  int count = 0;
-  const gchar *d_name = NULL;
   gchar configdir[PATH_MAX] = { 0 };
   gchar datadir[PATH_MAX] = { 0 };
-  gchar filename[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
-  g_strlcat(datadir, "/watermarks", sizeof(datadir));
-  g_strlcat(configdir, "/watermarks", sizeof(configdir));
 
-  /* read watermarks from datadir */
-  GDir *dir = g_dir_open(datadir, 0, NULL);
-  if(dir)
-  {
-    while((d_name = g_dir_read_name(dir)))
-    {
-      snprintf(filename, sizeof(filename), "%s/%s", datadir, d_name);
-      dt_bauhaus_combobox_add(g->watermarks, d_name);
-      count++;
-    }
-    g_dir_close(dir);
-  }
+  load_watermarks(datadir, g);
+  load_watermarks(configdir, g);
 
-  /* read watermarks from user config dir*/
-  dir = g_dir_open(configdir, 0, NULL);
-  if(dir)
-  {
-    while((d_name = g_dir_read_name(dir)))
-    {
-      snprintf(filename, sizeof(filename), "%s/%s", configdir, d_name);
-      dt_bauhaus_combobox_add(g->watermarks, d_name);
-      count++;
-    }
-    g_dir_close(dir);
-  }
-
-  _combo_box_set_active_text(g->watermarks, p->filename);
+  _combo_box_set_active_text(g, p->filename);
 
   g_signal_handlers_unblock_by_func(g->watermarks, watermark_callback, self);
 }
@@ -1233,7 +1247,7 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
   }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
-  _combo_box_set_active_text(g->watermarks, p->filename);
+  _combo_box_set_active_text(g, p->filename);
   dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
   gtk_entry_set_text(GTK_ENTRY(g->text), p->text);
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
@@ -1265,7 +1279,7 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_watermark_gui_data_t));
+  self->gui_data = calloc(1, sizeof(dt_iop_watermark_gui_data_t));
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
@@ -1419,6 +1433,10 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+
+  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  g_list_free_full(g->watermarks_filenames, g_free);
+  g->watermarks_filenames = NULL;
   free(self->gui_data);
   self->gui_data = NULL;
 }

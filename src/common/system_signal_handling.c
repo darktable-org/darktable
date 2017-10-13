@@ -45,27 +45,32 @@
 #include <sys/wait.h> // for waitpid
 #endif
 
+#ifdef _WIN32
+#include <exchndl.h>
+#endif //_WIN32
+
 #if defined(__linux__) && !defined(PR_SET_PTRACER)
 #define PR_SET_PTRACER 0x59616d61
 #endif
 
-#if !defined(__WIN32__)
 typedef void(dt_signal_handler_t)(int);
-#endif
 
 #if !defined(__APPLE__) && !defined(__WIN32__)
-// static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 #endif
 
-#if !defined(__WIN32__)
 // deer graphicsmagick, please stop messing with the stuff that you should not be touching at all.
 // based on GM's InitializeMagickSignalHandlers() and MagickSignalHandlerMessage()
+#if !defined(__WIN32__)
 static const int _signals_to_preserve[] = { SIGHUP,  SIGINT,  SIGQUIT, SIGILL,  SIGABRT, SIGBUS, SIGFPE,
                                             SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGXCPU, SIGXFSZ };
+#else
+static const int _signals_to_preserve[] = { SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM };
+static LPTOP_LEVEL_EXCEPTION_FILTER _dt_exceptionfilter_old_handler = NULL;
+#endif //! defined (__WIN32__)
+
 #define _NUM_SIGNALS_TO_PRESERVE (sizeof(_signals_to_preserve) / sizeof(_signals_to_preserve[0]))
 static dt_signal_handler_t *_orig_sig_handlers[_NUM_SIGNALS_TO_PRESERVE] = { NULL };
-#endif
 
 #if(defined(__FreeBSD_version) && (__FreeBSD_version < 800071)) || (defined(OpenBSD) && (OpenBSD < 201305))       \
     || defined(__SUNOS__)
@@ -141,11 +146,62 @@ static void _dt_sigsegv_handler(int param)
 #endif
 
 static int _times_handlers_were_set = 0;
+
+#if defined(_WIN32)
+
+static LONG WINAPI dt_toplevel_exception_handler(PEXCEPTION_POINTERS pExceptionInfo)
+{
+  gchar *name_used;
+  int fout;
+  BOOL ok;
+
+  // Find a filename for the backtrace file
+  if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
+    fout = STDOUT_FILENO; // just print everything to stdout
+
+  FILE *fd = fdopen(fout, "wb");
+  fprintf(fd, "this is %s reporting an exception:\n\n", darktable_package_string);
+  fclose(fd);
+
+  if(fout != STDOUT_FILENO) close(fout);
+
+
+  // Set up logfile name
+  ok = ExcHndlSetLogFileNameA(name_used);
+  if(!ok)
+  {
+    g_printerr("backtrace logfile cannot be set to %s\n", name_used);
+  }
+  else
+  {
+    gchar *exception_message = g_strdup_printf("An unhandled exception occured.\nBacktrace will be written to: %s "
+                                               "after you click on the OK button.\nIf you report this issue, "
+                                               "please share this backtrace with the developers.\n",
+                                               name_used);
+    wchar_t *wexception_message = g_utf8_to_utf16(exception_message, -1, NULL, NULL, NULL);
+    MessageBoxW(0, wexception_message, L"Error!", MB_OK);
+    g_free(exception_message);
+    g_free(wexception_message);
+  }
+
+  g_free(name_used);
+
+  // finally call the original exception handler (which should be drmingw's exception handler)
+  return _dt_exceptionfilter_old_handler(pExceptionInfo);
+}
+
+void dt_set_unhandled_exception_handler_win()
+{
+  // Set up drming's exception handler
+  ExcHndlInit();
+}
+#endif // defined(_WIN32)
+
+
 void dt_set_signal_handlers()
 {
   _times_handlers_were_set++;
 
-#if !defined(__WIN32__)
   dt_signal_handler_t *prev;
 
   if(1 == _times_handlers_were_set)
@@ -171,7 +227,7 @@ void dt_set_signal_handlers()
     (void)signal(signum, _orig_sig_handlers[i]);
   }
 
-#if !defined(__APPLE__)
+#if !defined(__APPLE__) && !defined(_WIN32)
   // now, set our SIGSEGV handler.
   // FIXME: what about SIGABRT?
   prev = signal(SIGSEGV, &_dt_sigsegv_handler);
@@ -187,8 +243,27 @@ void dt_set_signal_handlers()
     fprintf(stderr, "[dt_set_signal_handlers] error: signal(SIGSEGV) returned SIG_ERR: %i (%s)\n", errsv,
             strerror(errsv));
   }
-#endif
-#endif
+#elif !defined(__APPLE__)
+  /*
+  Set up exception handler for backtrace on Windows
+  Works when there is NO SIGSEGV handler installed
+
+  SetUnhandledExceptionFilter handler must be saved on the first invokation
+  as GraphicsMagick is overwriting SetUnhandledExceptionFilter and all other signals in InitializeMagick()
+  Eventually InitializeMagick() should be fixed upstream not to ignore existing exception handlers
+  */
+
+  dt_set_unhandled_exception_handler_win();
+  if(1 == _times_handlers_were_set)
+  {
+    // Save UnhandledExceptionFilter handler which just has been set up
+    // This should be drmingw's exception handler
+    _dt_exceptionfilter_old_handler = SetUnhandledExceptionFilter(dt_toplevel_exception_handler);
+  }
+  // Restore our UnhandledExceptionFilter handler no matter what GM is doing
+  SetUnhandledExceptionFilter(dt_toplevel_exception_handler);
+
+#endif //!defined(__APPLE__) && !defined(_WIN32)
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

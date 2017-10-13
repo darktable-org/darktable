@@ -228,7 +228,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 
@@ -361,8 +361,11 @@ static void output_callback(GtkComboBox *combo, gpointer user_data)
   if(combo1_index >= 0)
   {
     dt_bauhaus_slider_set(g->scale1, p->red[combo1_index]);
+    dt_bauhaus_slider_set_default(g->scale1, combo1_index == CHANNEL_RED ? 1.0 : 0.0);
     dt_bauhaus_slider_set(g->scale2, p->green[combo1_index]);
+    dt_bauhaus_slider_set_default(g->scale2, combo1_index == CHANNEL_GREEN ? 1.0 : 0.0);
     dt_bauhaus_slider_set(g->scale3, p->blue[combo1_index]);
+    dt_bauhaus_slider_set_default(g->scale3, combo1_index == CHANNEL_BLUE ? 1.0 : 0.0);
   }
   // dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -415,7 +418,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_channelmixer_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_channelmixer_params_t));
   module->default_enabled = 0;
-  module->priority = 820; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 823; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_channelmixer_params_t);
   module->gui_data = NULL;
   dt_iop_channelmixer_params_t tmp = (dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0 },

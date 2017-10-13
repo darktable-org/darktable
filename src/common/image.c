@@ -32,6 +32,9 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "develop/lightroom.h"
+#ifdef USE_LUA
+#include "lua/image.h"
+#endif
 #include <assert.h>
 #include <math.h>
 #include <sqlite3.h>
@@ -102,7 +105,7 @@ const char *dt_image_film_roll_name(const char *path)
   if(numparts < 1) numparts = 1;
   while(folder > path)
   {
-    if(*folder == '/')
+    if(*folder == G_DIR_SEPARATOR)
       if(++count >= numparts)
       {
         ++folder;
@@ -673,14 +676,21 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
     snprintf(c1 + strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp", c2);
 
 #ifdef __WIN32__
-    WIN32_FIND_DATA data;
-    HANDLE handle = FindFirstFile(pattern, &data);
+    wchar_t *wpattern = g_utf8_to_utf16(pattern, -1, NULL, NULL, NULL);
+    WIN32_FIND_DATAW data;
+    HANDLE handle = FindFirstFileW(wpattern, &data);
+    g_free(wpattern);
     if(handle != INVALID_HANDLE_VALUE)
     {
       do
-        files = g_list_append(files, g_strdup(data.cFileName));
-      while(FindNextFile(handle, &data));
+      {
+        char *file = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
+        files = g_list_append(files, g_build_filename(imgpath, file, NULL));
+        g_free(file);
+      }
+      while(FindNextFileW(handle, &data));
     }
+    FindClose(handle);
 #else
     glob_t globbuf;
     if(!glob(pattern, 0, NULL, &globbuf))
@@ -741,33 +751,40 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
 }
 
 
-uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
+static uint32_t dt_image_import_internal(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs, gboolean lua_locking)
 {
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR) || dt_util_get_file_size(filename) == 0) return 0;
-  const char *cc = filename + strlen(filename);
-  for(; *cc != '.' && cc > filename; cc--)
+  char *normalized_filename = dt_util_normalize_path(filename);
+  if(!normalized_filename || !g_file_test(normalized_filename, G_FILE_TEST_IS_REGULAR) || dt_util_get_file_size(normalized_filename) == 0)
+  {
+    g_free(normalized_filename);
+    return 0;
+  }
+  const char *cc = normalized_filename + strlen(normalized_filename);
+  for(; *cc != '.' && cc > normalized_filename; cc--)
     ;
-  if(!strcmp(cc, ".dt")) return 0;
-  if(!strcmp(cc, ".dttags")) return 0;
-  if(!strcmp(cc, ".xmp")) return 0;
+  if(!strcasecmp(cc, ".dt") || !strcasecmp(cc, ".dttags") || !strcasecmp(cc, ".xmp"))
+  {
+    g_free(normalized_filename);
+    return 0;
+  }
   char *ext = g_ascii_strdown(cc + 1, -1);
   if(override_ignore_jpegs == FALSE && (!strcmp(ext, "jpg") || !strcmp(ext, "jpeg"))
      && dt_conf_get_bool("ui_last/import_ignore_jpegs"))
   {
+    g_free(normalized_filename);
     g_free(ext);
     return 0;
   }
   int supported = 0;
-  char **extensions = g_strsplit(dt_supported_extensions, ",", 100);
-  for(char **i = extensions; *i != NULL; i++)
+  for(const char **i = dt_supported_extensions; *i != NULL; i++)
     if(!strcmp(ext, *i))
     {
       supported = 1;
       break;
     }
-  g_strfreev(extensions);
   if(!supported)
   {
+    g_free(normalized_filename);
     g_free(ext);
     return 0;
   }
@@ -775,7 +792,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   uint32_t id = 0;
   // select from images; if found => return
   gchar *imgfname;
-  imgfname = g_path_get_basename((const gchar *)filename);
+  imgfname = g_path_get_basename(normalized_filename);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id FROM main.images WHERE film_id = ?1 AND filename = ?2", -1, &stmt, NULL);
@@ -786,12 +803,13 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
     id = sqlite3_column_int(stmt, 0);
     g_free(imgfname);
     sqlite3_finalize(stmt);
-    g_free(ext);
     dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'w');
     img->flags &= ~DT_IMAGE_REMOVE;
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-    dt_image_read_duplicates(id, filename);
-    dt_image_synch_all_xmp(filename);
+    dt_image_read_duplicates(id, normalized_filename);
+    dt_image_synch_all_xmp(normalized_filename);
+    g_free(ext);
+    g_free(normalized_filename);
     return id;
   }
   sqlite3_finalize(stmt);
@@ -805,13 +823,13 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   }
   flags |= DT_IMAGE_NO_LEGACY_PRESETS;
   // set the bits in flags that indicate if any of the extra files (.txt, .wav) are present
-  char *extra_file = dt_image_get_audio_path_from_path(filename);
+  char *extra_file = dt_image_get_audio_path_from_path(normalized_filename);
   if(extra_file)
   {
     flags |= DT_IMAGE_HAS_WAV;
     g_free(extra_file);
   }
-  extra_file = dt_image_get_text_path_from_path(filename);
+  extra_file = dt_image_get_text_path_from_path(normalized_filename);
   if(extra_file)
   {
     flags |= DT_IMAGE_HAS_TXT;
@@ -929,9 +947,9 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   img->group_id = group_id;
 
   // read dttags and exif for database queries!
-  (void)dt_exif_read(img, filename);
+  (void)dt_exif_read(img, normalized_filename);
   char dtfilename[PATH_MAX] = { 0 };
-  g_strlcpy(dtfilename, filename, sizeof(dtfilename));
+  g_strlcpy(dtfilename, normalized_filename, sizeof(dtfilename));
   // dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
   g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
 
@@ -958,12 +976,27 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   dt_mipmap_cache_remove(darktable.mipmap_cache, id);
 
   // read all sidecar files
-  dt_image_read_duplicates(id, filename);
-  dt_image_synch_all_xmp(filename);
+  dt_image_read_duplicates(id, normalized_filename);
+  dt_image_synch_all_xmp(normalized_filename);
 
   g_free(imgfname);
   g_free(basename);
   g_free(sql_pattern);
+  g_free(normalized_filename);
+
+#ifdef USE_LUA
+  //Synchronous calling of lua post-import-image events
+  if(lua_locking)
+    dt_lua_lock();
+
+  lua_State *L = darktable.lua_state.state;
+
+  luaA_push(L, dt_lua_image_t, &id);
+  dt_lua_event_trigger(L, "post-import-image", 1);
+
+  if(lua_locking)
+    dt_lua_unlock();
+#endif
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_IMPORT, id);
   // the following line would look logical with new_tags_set being the return value
@@ -971,6 +1004,16 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   // keywords side pane when trying to use it, which can lock up the whole dt GUI ..
   // if (new_tags_set) dt_control_signal_raise(darktable.signals,DT_SIGNAL_TAG_CHANGED);
   return id;
+}
+
+uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
+{
+  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, TRUE);
+}
+
+uint32_t dt_image_import_lua(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
+{
+  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, FALSE);
 }
 
 void dt_image_init(dt_image_t *img)

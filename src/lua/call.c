@@ -18,10 +18,14 @@
 #include "lua/call.h"
 #include "control/control.h"
 #include "lua/lua.h"
+#ifndef _WIN32
 #include <glib-unix.h>
+#endif
 #include <glib.h>
 #include <stdlib.h>
+#ifndef _WIN32
 #include <sys/select.h>
+#endif
 
 int dt_lua_check_print_error(lua_State* L, int result) 
 {
@@ -601,13 +605,14 @@ static int execute_cb(lua_State*L)
 
 static int sleep_cb(lua_State*L)
 {
-  const int delay = luaL_optint(L, 1, 0);
+  const int delay = luaL_optinteger(L, 1, 0);
   dt_lua_unlock();
   g_usleep(delay*1000);
   dt_lua_lock();
   return 0;
 }
 
+#if !defined (_WIN32)
 static int read_cb(lua_State*L)
 {
   luaL_checkudata(L,1,LUA_FILEHANDLE);
@@ -621,6 +626,7 @@ static int read_cb(lua_State*L)
   dt_lua_lock();
   return 0;
 }
+#endif
 
 typedef struct gtk_wrap_communication {
   GCond end_cond;
@@ -651,7 +657,8 @@ static int gtk_wrap(lua_State*L)
     return lua_gettop(L);
   } else {
 #ifdef _DEBUG
-  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %ld\n",__FUNCTION__,lua_tostring(L,lua_upvalueindex(2)), lua_tointeger(L,lua_upvalueindex(3)));
+    dt_print(DT_DEBUG_LUA, "LUA DEBUG : %s called from %s %llu\n", __FUNCTION__,
+             lua_tostring(L, lua_upvalueindex(2)), lua_tointeger(L, lua_upvalueindex(3)));
 #endif
     dt_lua_unlock();
     gtk_wrap_communication communication;
@@ -665,7 +672,8 @@ static int gtk_wrap(lua_State*L)
     g_mutex_clear(&communication.end_mutex);
     dt_lua_lock();
 #ifdef _DEBUG
-  dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s return for call from from %s %ld\n",__FUNCTION__,lua_tostring(L,lua_upvalueindex(2)), lua_tointeger(L,lua_upvalueindex(3)));
+    dt_print(DT_DEBUG_LUA, "LUA DEBUG : %s return for call from from %s %llu\n", __FUNCTION__,
+             lua_tostring(L, lua_upvalueindex(2)), lua_tointeger(L, lua_upvalueindex(3)));
 #endif
     if(communication.retval == LUA_OK) {
       return lua_gettop(L);
@@ -701,9 +709,11 @@ int dt_lua_init_call(lua_State *L)
   lua_pushcfunction(L,sleep_cb);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "sleep");
+#if !defined (_WIN32)
   lua_pushcfunction(L,read_cb);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "read");
+#endif
 
   lua_newtable(L);
   lua_setfield(L, LUA_REGISTRYINDEX, "dt_lua_bg_threads");

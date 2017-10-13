@@ -144,7 +144,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->shutdown = 0;
   pipe->opencl_error = 0;
   pipe->tiling = 0;
-  pipe->mask_display = 0;
+  pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   pipe->input_timestamp = 0;
   pipe->levels = IMAGEIO_RGB | IMAGEIO_INT8;
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
@@ -217,7 +217,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
       piece->enabled = module->enabled;
       piece->request_histogram = DT_REQUEST_ONLY_IN_GUI;
       piece->histogram_params.roi = NULL;
-      piece->histogram_params.bins_count = 64;
+      piece->histogram_params.bins_count = 256;
       piece->histogram_stats.bins_count = 0;
       piece->histogram_stats.pixels = 0;
       piece->colors
@@ -230,6 +230,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
       piece->data = NULL;
       piece->hash = 0;
       piece->process_cl_ready = 0;
+      piece->process_tiling_ready = 0;
       dt_iop_init_pipe(piece->module, pipe, piece);
       pipe->nodes = g_list_append(pipe->nodes, piece);
     }
@@ -710,6 +711,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     **out_format = pipe->dsc = piece->dsc_out;
 
+    const size_t out_bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
 
     // reserve new cache line: output
     dt_pthread_mutex_lock(&pipe->busy_mutex);
@@ -729,47 +731,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %p\n", module->op, pipe ==
 // dev->preview_pipe ? "[preview]" : "", hash, *output);
 
-#if 0
-    // tonecurve/levels histogram (collect luminance only):
-    dt_pthread_mutex_lock(&pipe->busy_mutex);
-    if(pipe->shutdown)
-    {
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      return 1;
-    }
-    if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0 || strcmp(module->op, "levels") == 0))
-    {
-      float *pixel = (float *)input;
-      float *histogram_pre = NULL;
-      float *histogram_pre_max = NULL;
-
-      if(!strcmp(module->op, "tonecurve"))
-      {
-        histogram_pre = dev->histogram_pre_tonecurve;
-        histogram_pre_max = &(dev->histogram_pre_tonecurve_max);
-      }
-      else
-      {
-        histogram_pre = dev->histogram_pre_levels;
-        histogram_pre_max = &(dev->histogram_pre_levels_max);
-      }
-
-      *histogram_pre_max = 0;
-      memset (histogram_pre, 0, sizeof(float)*4*64);
-      for(int j=0; j<roi_in.height; j+=4) for(int i=0; i<roi_in.width; i+=4)
-        {
-          uint8_t L = CLAMP(63/100.0*(pixel[4*j*roi_in.width+4*i]), 0, 63);
-          histogram_pre[4*L+3] ++;
-        }
-      // don't count <= 0 pixels
-      for(int k=19; k<4*64; k+=4) *histogram_pre_max = *histogram_pre_max > histogram_pre[k] ? *histogram_pre_max : histogram_pre[k];
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      if(module->widget) dt_control_queue_redraw_widget(module->widget);
-    }
-    else dt_pthread_mutex_unlock(&pipe->busy_mutex);
-#endif
-
-
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown)
     {
@@ -781,6 +742,42 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     dt_get_times(&start);
 
     dt_pixelpipe_flow_t pixelpipe_flow = (PIXELPIPE_FLOW_NONE | PIXELPIPE_FLOW_HISTOGRAM_NONE);
+
+    // special case: user requests to see channel data in the parametric mask of a module. In that case
+    // we skip all modules manipulating pixel content and only process image distorting modules. Finally
+    // "gamma" is responsible to display channel data accordingly.
+    if(strcmp(module->op, "gamma") && (pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY) && !(module->operation_tags() & IOP_TAG_DISTORT) &&
+      (in_bpp == out_bpp) && !memcmp(&roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
+    {
+#ifdef HAVE_OPENCL
+      if(dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0 && (cl_mem_input != NULL))
+      {
+        *cl_mem_output = cl_mem_input;
+      }
+      else
+      {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(roi_out, roi_in, output, input)
+#endif
+        for(int j = 0; j < roi_out->height; j++)
+            memcpy(((char *)*output) + (size_t)out_bpp * j * roi_out->width,
+                   ((char *)input) + (size_t)in_bpp * j * roi_in.width,
+                   (size_t)in_bpp * roi_in.width);
+      }
+#else // don't HAVE_OPENCL
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(roi_out, roi_in, output, input)
+#endif
+      for(int j = 0; j < roi_out->height; j++)
+            memcpy(((char *)*output) + (size_t)out_bpp * j * roi_out->width,
+                   ((char *)input) + (size_t)in_bpp * j * roi_in.width,
+                   (size_t)in_bpp * roi_in.width);
+#endif
+
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 0;
+    }
+
 
     /* get tiling requirement of module */
     dt_develop_tiling_t tiling = { 0 };
@@ -821,6 +818,11 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       /* if input is on gpu memory only, remember this fact to later take appropriate action */
       int valid_input_on_gpu_only = (cl_mem_input != NULL);
 
+      /* pre-check if there is enough space on device for non-tiled processing */
+      const int fits_on_device = dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width),
+                                                             MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
+                                                             tiling.factor, tiling.overhead);
+
       /* general remark: in case of opencl errors within modules or out-of-memory on GPU, we transparently
          fall back to the respective cpu module and continue in pixelpipe. If we encounter errors we set
          pipe->opencl_error=1, return this function with value 1, and leave appropriate action to the calling
@@ -830,7 +832,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
       /* try to enter opencl path after checking some module specific pre-requisites */
       if(module->process_cl && piece->process_cl_ready
-         && !((pipe->type == DT_DEV_PIXELPIPE_PREVIEW) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL)))
+         && !((pipe->type == DT_DEV_PIXELPIPE_PREVIEW) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL))
+         && (fits_on_device || piece->process_tiling_ready))
       {
 
         // fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, width %d, height %d, bpp %d\n",
@@ -840,9 +843,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         // cl_mem_input, *cl_mem_output);
         // fprintf(stderr, "[opencl_pixelpipe 1] module '%s'\n", module->op);
 
-        if(dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width),
-                                       MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp), tiling.factor,
-                                       tiling.overhead))
+        if(fits_on_device)
         {
           /* image is small enough -> try to directly process entire image with opencl */
 
@@ -1003,7 +1004,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             return 1;
           }
         }
-        else if(module->flags() & IOP_FLAGS_ALLOW_TILING)
+        else if(piece->process_tiling_ready)
         {
           /* image is too big for direct opencl processing -> try to process image via tiling */
 
@@ -1202,7 +1203,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         else
         {
           /* Bad luck, opencl failed. Let's clean up and fall back to cpu module */
-          dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] failed to run module '%s'. fall back to cpu path\n",
+          dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] could not run module '%s' on gpu. falling back to cpu path\n",
                    module->op);
 
           // fprintf(stderr, "[opencl_pixelpipe 4] module '%s' running on cpu\n", module->op);
@@ -1281,7 +1282,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           }
 
           /* process module on cpu. use tiling if needed and possible. */
-          if((module->flags() & IOP_FLAGS_ALLOW_TILING)
+          if(piece->process_tiling_ready
              && !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width),
                                                   MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
                                                   tiling.factor, tiling.overhead))
@@ -1414,7 +1415,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
 
         /* process module on cpu. use tiling if needed and possible. */
-        if((module->flags() & IOP_FLAGS_ALLOW_TILING)
+        if(piece->process_tiling_ready
            && !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width),
                                                 MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
                                                 tiling.factor, tiling.overhead))
@@ -1512,7 +1513,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       }
 
       /* process module on cpu. use tiling if needed and possible. */
-      if((module->flags() & IOP_FLAGS_ALLOW_TILING)
+      if(piece->process_tiling_ready
          && !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width),
                                               MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
                                               tiling.factor, tiling.overhead))
@@ -1597,7 +1598,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     }
 
     /* process module on cpu. use tiling if needed and possible. */
-    if((module->flags() & IOP_FLAGS_ALLOW_TILING)
+    if(piece->process_tiling_ready
        && !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width),
                                             MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
                                             tiling.factor, tiling.overhead))
@@ -2229,7 +2230,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
                              float scale)
 {
   pipe->processing = 1;
-  pipe->opencl_enabled = dt_opencl_update_enabled(); // update enabled flag from preferences
+  pipe->opencl_enabled = dt_opencl_update_settings(); // update enabled flag and profile from preferences
   pipe->devid = (pipe->opencl_enabled) ? dt_opencl_lock_device(pipe->type)
                                        : -1; // try to get/lock opencl resource
 
@@ -2261,7 +2262,7 @@ restart:
   pipe->cache_obsolete = 0;
 
   // mask display off as a starting point
-  pipe->mask_display = 0;
+  pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   void *buf = NULL;
   void *cl_mem_out = NULL;

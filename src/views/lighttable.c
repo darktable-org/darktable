@@ -124,10 +124,7 @@ typedef struct dt_library_t
     sqlite3_stmt *is_grouped;
   } statements;
 
-  struct
-  {
-    GtkWidget *button, *floating_window;
-  } profile;
+  GtkWidget *profile_floating_window;
 
 } dt_library_t;
 
@@ -488,7 +485,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   int32_t mouse_over_id = dt_control_get_mouse_over_id(), mouse_over_group = -1;
 
   /* fill background */
-  cairo_set_source_rgb(cr, .2, .2, .2);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_paint(cr);
 
   offset_changed = lib->offset_changed;
@@ -979,7 +976,7 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   lib->images_in_row = zoom;
   lib->image_over = DT_VIEW_DESERT;
 
-  cairo_set_source_rgb(cr, .2, .2, .2);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_paint(cr);
 
   const float wd = width / zoom;
@@ -1080,7 +1077,7 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   }
   else if(zoom < 1.01)
   {
-    if(zoom == 1 && zoom_x < 0) // full view, wrap around
+    if(zoom == 1 && zoom_x < 0 && zoom_y > 0) // full view, wrap around
     {
       zoom_x = wd * DT_LIBRARY_MAX_ZOOM - wd;
       zoom_y -= ht;
@@ -1291,7 +1288,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   }
 
   lib->image_over = DT_VIEW_DESERT;
-  cairo_set_source_rgb(cr, .1, .1, .1);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG);
   cairo_paint(cr);
 
   const int frows = 5, fcols = 5;
@@ -1622,8 +1619,11 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
       gchar **image_to_load = uri_list;
       while(*image_to_load)
       {
-        dt_load_from_string(*image_to_load, FALSE, NULL); // TODO: do we want to open the image in darkroom mode? If
-                                                          // yes -> set to TRUE.
+        if(**image_to_load)
+        {
+          dt_load_from_string(*image_to_load, FALSE, NULL); // TODO: do we want to open the image in darkroom mode? If
+                                                            // yes -> set to TRUE.
+        }
         image_to_load++;
       }
     }
@@ -2274,42 +2274,6 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "realign images to grid", closure);
 }
 
-
-
-// ugly hack. we lose focus when moving the mouse over the main window, but also when opening the bauhaus popup
-static gboolean _profile_close_popup(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_library_t *lib = (dt_library_t *)user_data;
-  if(!gtk_widget_is_visible(darktable.bauhaus->popup_window))
-    gtk_widget_hide(lib->profile.floating_window);
-  return FALSE;
-}
-
-static gboolean _profile_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_library_t *lib = (dt_library_t *)user_data;
-  /** finally move the window next to the button */
-  gint x, y, wx, wy;
-  gint px, py, window_w, window_h;
-  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  gtk_widget_show_all(lib->profile.floating_window);
-  gdk_window_get_origin(gtk_widget_get_window(lib->profile.button), &px, &py);
-
-  window_w = gdk_window_get_width(gtk_widget_get_window(lib->profile.floating_window));
-  window_h = gdk_window_get_height(gtk_widget_get_window(lib->profile.floating_window));
-
-  gtk_widget_translate_coordinates(lib->profile.button, window, 0, 0, &wx, &wy);
-  x = px + wx - window_w + DT_PIXEL_APPLY_DPI(5);
-  y = py + wy - window_h - DT_PIXEL_APPLY_DPI(5);
-  gtk_window_move(GTK_WINDOW(lib->profile.floating_window), x, y);
-
-  gtk_window_present(GTK_WINDOW(lib->profile.floating_window));
-
-  // when the mouse moves back over the main window we close the popup.
-  g_signal_connect(lib->profile.floating_window, "focus-out-event", G_CALLBACK(_profile_close_popup), user_data);
-  return TRUE;
-}
-
 static void display_intent_callback(GtkWidget *combo, gpointer user_data)
 {
   const int pos = dt_bauhaus_combobox_get(combo);
@@ -2386,38 +2350,26 @@ void gui_init(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
 
   // create display profile button
-  lib->profile.button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-  gtk_widget_set_tooltip_text(lib->profile.button, _("set display profile"));
-  g_signal_connect(G_OBJECT(lib->profile.button), "button-press-event", G_CALLBACK(_profile_quickbutton_pressed), lib);
-  dt_view_manager_module_toolbox_add(darktable.view_manager, lib->profile.button, DT_VIEW_LIGHTTABLE);
+  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  gtk_widget_set_tooltip_text(profile_button, _("set display profile"));
+  dt_view_manager_module_toolbox_add(darktable.view_manager, profile_button, DT_VIEW_LIGHTTABLE);
 
   // and the popup window
   const int panel_width = dt_conf_get_int("panel_width");
+  lib->profile_floating_window = gtk_popover_new(profile_button);
+  gtk_widget_set_size_request(GTK_WIDGET(lib->profile_floating_window), panel_width, -1);
+#if GTK_CHECK_VERSION(3, 16, 0)
+  g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
+#endif
+  g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event", G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
 
-  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-
-  lib->profile.floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_default_size(GTK_WINDOW(lib->profile.floating_window), panel_width, -1);
-  GtkWidget *frame = gtk_frame_new(NULL);
-  GtkWidget *event_box = gtk_event_box_new();
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
 
-  gtk_widget_set_can_focus(lib->profile.floating_window, TRUE);
-  gtk_window_set_decorated(GTK_WINDOW(lib->profile.floating_window), FALSE);
-  gtk_window_set_type_hint(GTK_WINDOW(lib->profile.floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
-  gtk_window_set_transient_for(GTK_WINDOW(lib->profile.floating_window), GTK_WINDOW(window));
-  gtk_widget_set_opacity(lib->profile.floating_window, 0.9);
-
-  gtk_widget_set_state_flags(frame, GTK_STATE_FLAG_SELECTED, TRUE);
-  gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
-
-  gtk_container_add(GTK_CONTAINER(lib->profile.floating_window), frame);
-  gtk_container_add(GTK_CONTAINER(frame), event_box);
-  gtk_container_add(GTK_CONTAINER(event_box), vbox);
+  gtk_container_add(GTK_CONTAINER(lib->profile_floating_window), vbox);
 
   /** let's fill the encapsulating widgets */
   char datadir[PATH_MAX] = { 0 };

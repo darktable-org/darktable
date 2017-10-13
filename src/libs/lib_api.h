@@ -43,7 +43,7 @@ int version();
 const char *name(struct dt_lib_module_t *self);
 
 /** get the views which the module should be loaded in. */
-uint32_t views(struct dt_lib_module_t *self);
+const char **views(struct dt_lib_module_t *self);
 /** get the container which the module should be placed in */
 uint32_t container(struct dt_lib_module_t *self);
 /** check if module should use a expander or not, default implementation

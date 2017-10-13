@@ -51,11 +51,16 @@ typedef enum dt_logo_season_t
 } dt_logo_season_t;
 
 /** returns the dt logo season to use right now */
-dt_logo_season_t get_logo_season(void);
+dt_logo_season_t dt_util_get_logo_season(void);
+
+cairo_surface_t *dt_util_get_logo(float size);
 
 gchar *dt_util_latitude_str(float latitude);
 gchar *dt_util_longitude_str(float longitude);
 gchar *dt_util_elevation_str(float elevation);
+
+// make paths absolute and try to normalize on Windows. also deal with character encoding on Windows.
+gchar *dt_util_normalize_path(const gchar *input);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

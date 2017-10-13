@@ -369,7 +369,7 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
       form->source[0] = form->source[1] = 0.0f;
     }
     form->points = g_list_append(form->points, ellipse);
-    dt_masks_gui_form_save_creation(crea_module, form, gui);
+    dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
 
     if(crea_module)
     {
@@ -682,7 +682,7 @@ static int dt_ellipse_events_mouse_moved(struct dt_iop_module_t *module, float p
     float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
     float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     float y = pzy * darktable.develop->preview_pipe->backbuf_height;
-    int in, inb, near, ins;
+    int in = 0, inb = 0, near = 0, ins = 0; // FIXME gcc7 false-positive
     dt_ellipse_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
                             pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, &in, &inb,
                             &near, &ins);

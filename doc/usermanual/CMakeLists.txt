@@ -98,6 +98,11 @@ if(can_build_usermanual)
         # all translated usermanuals should depend on the profiled xml file
 	#
 	string(REGEX REPLACE "/" "\\\\/" binary_path ${CMAKE_CURRENT_BINARY_DIR})
+	if (WIN32)
+		# On Windows/MINGW the path name works only with the preceding '/'
+		set (binary_path "\\/${binary_path}")
+	endif()
+
 	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable_profile.xml
 		COMMAND ${Xsltproc_BIN} --nonet --xinclude --output ${CMAKE_CURRENT_BINARY_DIR}/darktable_profile.xml xsl/darktable_profile.xsl darktable.xml
@@ -147,7 +152,7 @@ endif(USE_XMLLINT)
 	add_custom_target(darktable-usermanual DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.pdf)
   add_dependencies(usermanual darktable-usermanual)
 	add_dependencies(darktable-usermanual target_media_images darktable_single_xml )
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.pdf DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.pdf DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL COMPONENT DTDocuments)
 
 	#
 	# draft chunked html usermanual for web
@@ -184,7 +189,7 @@ endif(USE_XMLLINT)
         endif (Saxon_FOUND)
 	add_custom_target(darktable-usermanual-html DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html )
 	add_dependencies(darktable-usermanual-html target_media_images darktable_single_xml )
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL COMPONENT DTDocuments)
 
 	#
 	# draft chunked usermanual for wordpress
@@ -227,7 +232,7 @@ endif(USE_XMLLINT)
         endif (Saxon_FOUND)
 	add_custom_target(darktable-usermanual-wordpress DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/wp/index.html.php )
 	add_dependencies(darktable-usermanual-wordpress target_media_images darktable_single_xml )
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL COMPONENT DTDocuments)
 
 #	#
 #	# final translated usermanual's
@@ -243,7 +248,7 @@ endif(USE_XMLLINT)
 #	add_custom_target(darktable-usermanual-final DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-en.pdf )
 #	add_dependencies(darktable-usermanual-final target_media_images darktable_single_final_xml )
 #	add_dependencies(usermanual darktable-usermanual-final)
-#	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-final.pdf DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL)
+#	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-final.pdf DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL COMPONENT DTDocuments)
 #
 #	if(NOT ${Xml2po_BIN} STREQUAL "Xml2po_BIN-NOTFOUND")
 #		# localized final usermanuals
@@ -268,7 +273,7 @@ endif(USE_XMLLINT)
 #			add_custom_target(darktable-usermanual-${language} DEPENDS ${pdffile})
 #			add_dependencies(usermanual darktable-usermanual-${language})
 #			add_dependencies(darktable-usermanual-${language} target_media_images darktable_single_final_xml )
-#			install(FILES ${pdffile} DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL)
+#			install(FILES ${pdffile} DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL COMPONENT DTDocuments)
 #		endforeach(language)
 #	endif()
 
@@ -298,7 +303,7 @@ endif(USE_XMLLINT)
 			add_custom_target(darktable-usermanual-${language} DEPENDS ${pdffile})
 			add_dependencies(usermanual darktable-usermanual-${language})
 			add_dependencies(darktable-usermanual-${language} target_media_images darktable_profile_xml )
-            install(FILES ${pdffile} DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL)
+            install(FILES ${pdffile} DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL COMPONENT DTDocuments)
 		endforeach(language)
 	endif()
 #
@@ -319,7 +324,7 @@ endif(USE_XMLLINT)
 	add_custom_target(darktable-lua-api DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf)
   add_dependencies(lua-api darktable-lua-api)
 	add_dependencies(darktable-lua-api target_media_images )
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf DESTINATION ${CMAKE_INSTALL_DOCDIR}/lua-api OPTIONAL)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable-lua-api.pdf DESTINATION ${CMAKE_INSTALL_DOCDIR}/lua-api OPTIONAL COMPONENT DTDocuments)
 
 	#
 	# draft chunked html api for web
@@ -356,7 +361,7 @@ endif(USE_XMLLINT)
         endif (Saxon_FOUND)
 	add_custom_target(darktable-lua-api-html DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api/index.html )
 	add_dependencies(darktable-lua-api-html target_media_images)
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api DESTINATION ${CMAKE_INSTALL_DOCDIR}/lua-api OPTIONAL)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html_lua_api DESTINATION ${CMAKE_INSTALL_DOCDIR}/lua-api OPTIONAL COMPONENT DTDocuments)
 
 	#
 	# draft chunked usermanual for wordpress
@@ -399,7 +404,7 @@ endif(USE_XMLLINT)
         endif (Saxon_FOUND)
 	add_custom_target(darktable-lua-api-wordpress DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api/index.html.php )
 	add_dependencies(darktable-lua-api-wordpress target_media_images)
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api DESTINATION ${CMAKE_INSTALL_DOCDIR}/lua-api OPTIONAL)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/wp_lua_api DESTINATION ${CMAKE_INSTALL_DOCDIR}/lua-api OPTIONAL COMPONENT DTDocuments)
 
 
 	#
@@ -428,7 +433,7 @@ endif(USE_XMLLINT)
 			add_custom_target(darktable-lua-api-${language} DEPENDS ${pdffile})
 			add_dependencies(lua-api darktable-lua-api-${language})
 			add_dependencies(darktable-lua-api-${language} target_media_images darktable_profile_xml )
-            install(FILES ${pdffile} DESTINATION ${CMAKE_INSTALL_DOCDIR}/lua-api OPTIONAL)
+            install(FILES ${pdffile} DESTINATION ${CMAKE_INSTALL_DOCDIR}/lua-api OPTIONAL COMPONENT DTDocuments)
 		endforeach(language)
 	endif()
 else(can_build_usermanual)

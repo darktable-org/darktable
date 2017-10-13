@@ -42,8 +42,13 @@
 
 #define GRAIN_SCALE_FACTOR 213.2
 
+#define GRAIN_LUT_SIZE 128
+#define GRAIN_LUT_DELTA_MAX 2.0
+#define GRAIN_LUT_DELTA_MIN 0.0001
+#define GRAIN_LUT_PAPER_GAMMA 1.0
+
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-DT_MODULE_INTROSPECTION(1, dt_iop_grain_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_grain_params_t)
 
 
 typedef enum _dt_iop_grain_channel_t
@@ -59,13 +64,14 @@ typedef struct dt_iop_grain_params_t
   _dt_iop_grain_channel_t channel;
   float scale;
   float strength;
+  float midtones_bias;
 } dt_iop_grain_params_t;
 
 typedef struct dt_iop_grain_gui_data_t
 {
   GtkBox *vbox;
   GtkWidget *label1, *label2, *label3; // channel, scale, strength
-  GtkWidget *scale1, *scale2;          // scale, strength
+  GtkWidget *scale1, *scale2, *scale3; // scale, strength, midtones_bias
 } dt_iop_grain_gui_data_t;
 
 typedef struct dt_iop_grain_data_t
@@ -73,7 +79,35 @@ typedef struct dt_iop_grain_data_t
   _dt_iop_grain_channel_t channel;
   float scale;
   float strength;
+  float midtones_bias;
+  float grain_lut[GRAIN_LUT_SIZE * GRAIN_LUT_SIZE];
 } dt_iop_grain_data_t;
+
+
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
+                  const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_iop_grain_params_v1_t
+    {
+      _dt_iop_grain_channel_t channel;
+      float scale;
+      float strength;
+    } dt_iop_grain_params_v1_t;
+
+    const dt_iop_grain_params_v1_t *o = old_params;
+    dt_iop_grain_params_t *n = new_params;
+
+    n->channel = o->channel;
+    n->scale = o->scale;
+    n->strength = o->strength;
+    n->midtones_bias = 0.0; // it produces the same results as the old version
+
+    return 0;
+  }
+  return 1;
+}
 
 
 static int grad3[12][3] = { { 1, 1, 0 },
@@ -316,17 +350,71 @@ static double _perlin_2d_noise(double x,double y,uint32_t octaves,double persist
 
 static double _simplex_2d_noise(double x, double y, uint32_t octaves, double persistance, double z)
 {
-  double f = 1, a = 1, total = 0;
+  double total = 0;
+
+  // parametrization of octaves to match power spectrum of real grain scans
+  static double f[] = {0.4910, 0.9441, 1.7280};
+  static double a[] = {0.2340, 0.7850, 1.2150};
 
   for(uint32_t o = 0; o < octaves; o++)
   {
-    total += (_simplex_noise(x * f / z, y * f / z, o) * a);
-    f = 2 * o;
-    a = persistance * o;
+    total += (_simplex_noise(x * f[o] / z, y * f[o] / z, o) * a[o]);
   }
   return total;
 }
 
+static float paper_resp(float exposure, float mb, float gp)
+{
+  float density;
+  float delta = GRAIN_LUT_DELTA_MAX * expf((mb / 100.0f) * logf(GRAIN_LUT_DELTA_MIN));
+  density = (1.0f + 2.0f * delta) / (1.0f + expf( (4.0f * gp * (0.5f - exposure)) / (1.0f + 2.0f * delta) )) - delta;
+  return density;
+}
+
+static float paper_resp_inverse(float density, float mb, float gp)
+{
+  float exposure;
+  float delta = GRAIN_LUT_DELTA_MAX * expf((mb / 100.0f) * logf(GRAIN_LUT_DELTA_MIN));
+  exposure = -logf((1.0f + 2.0f * delta) / (density + delta) - 1.0f) * (1.0f + 2.0f * delta) / (4.0f * gp) + 0.5f;
+  return exposure;
+}
+
+static void evaluate_grain_lut(float *grain_lut, const float mb)
+{
+  for(int i = 0; i < GRAIN_LUT_SIZE; i++)
+  {
+    for(int j = 0; j < GRAIN_LUT_SIZE; j++)
+    {
+      float gu = (float)i / (GRAIN_LUT_SIZE - 1) - 0.5;
+      float l = (float)j / (GRAIN_LUT_SIZE - 1);
+      grain_lut[j * GRAIN_LUT_SIZE + i] = 100.0f * (paper_resp(gu + paper_resp_inverse(l, mb, GRAIN_LUT_PAPER_GAMMA), mb, GRAIN_LUT_PAPER_GAMMA) - l);
+    }
+  }
+}
+
+static float dt_lut_lookup_2d_1c(const float *grain_lut, const float x, const float y)
+{
+  const float _x = CLAMPS((x + 0.5) * (GRAIN_LUT_SIZE - 1), 0, GRAIN_LUT_SIZE - 1);
+  const float _y = CLAMPS(y * (GRAIN_LUT_SIZE - 1), 0, GRAIN_LUT_SIZE - 1);
+
+  const int _x0 = _x < GRAIN_LUT_SIZE - 2 ? _x : GRAIN_LUT_SIZE - 2;
+  const int _y0 = _y < GRAIN_LUT_SIZE - 2 ? _y : GRAIN_LUT_SIZE - 2;
+
+  const int _x1 = _x0 + 1;
+  const int _y1 = _y0 + 1;
+
+  const float x_diff = _x - _x0;
+  const float y_diff = _y - _y0;
+
+  const float l00 = grain_lut[_y0 * GRAIN_LUT_SIZE + _x0];
+  const float l01 = grain_lut[_y0 * GRAIN_LUT_SIZE + _x1];
+  const float l10 = grain_lut[_y1 * GRAIN_LUT_SIZE + _x0];
+  const float l11 = grain_lut[_y1 * GRAIN_LUT_SIZE + _x1];
+
+  const float xy0 = (1.0 - y_diff) * l00 + l10 * y_diff;
+  const float xy1 = (1.0 - y_diff) * l01 + l11 * y_diff;
+  return xy0 * (1.0f - x_diff) + xy1 * x_diff;
+}
 
 const char *name()
 {
@@ -423,7 +511,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         noise = _simplex_2d_noise(x + hash, y, octaves, 1.0, zoom);
       }
 
-      out[0] = in[0] + ((100.0 * (noise * (strength))) * GRAIN_LIGHTNESS_STRENGTH_SCALE);
+      out[0] = in[0] + dt_lut_lookup_2d_1c(data->grain_lut, (noise * strength) * GRAIN_LIGHTNESS_STRENGTH_SCALE, in[0] / 100.0f);
       out[1] = in[1];
       out[2] = in[2];
       out[3] = in[3];
@@ -452,6 +540,14 @@ static void strength_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void midtones_bias_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
+  p->midtones_bias = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -462,6 +558,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->channel = p->channel;
   d->scale = p->scale;
   d->strength = p->strength;
+  d->midtones_bias = p->midtones_bias;
+  
+  evaluate_grain_lut(d->grain_lut, d->midtones_bias);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -484,6 +583,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_slider_set(g->scale1, p->scale * GRAIN_SCALE_FACTOR);
   dt_bauhaus_slider_set(g->scale2, p->strength);
+  dt_bauhaus_slider_set(g->scale3, p->midtones_bias);
 }
 
 void init(dt_iop_module_t *module)
@@ -492,11 +592,11 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_grain_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_grain_params_t));
   module->default_enabled = 0;
-  module->priority = 776; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 779; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_grain_params_t);
   module->gui_data = NULL;
   dt_iop_grain_params_t tmp
-      = (dt_iop_grain_params_t){ DT_GRAIN_CHANNEL_LIGHTNESS, 1600.0 / GRAIN_SCALE_FACTOR, 25.0 };
+      = (dt_iop_grain_params_t){ DT_GRAIN_CHANNEL_LIGHTNESS, 1600.0 / GRAIN_SCALE_FACTOR, 25.0, 100.0 };
   memcpy(module->params, &tmp, sizeof(dt_iop_grain_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_grain_params_t));
 }
@@ -530,6 +630,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->scale2, _("the strength of applied grain"));
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(strength_callback), self);
+
+  /* midtones bias */
+  g->scale3 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->midtones_bias, 2);
+  dt_bauhaus_widget_set_label(g->scale3, NULL, _("midtones bias"));
+  dt_bauhaus_slider_set_format(g->scale3, "%.0f%%");
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->scale3, _("amount of midtones bias from the photographic paper response modeling. the greater the bias, the more pronounced the fall off of the grain in shadows and highlights"));
+  g_signal_connect(G_OBJECT(g->scale3), "value-changed", G_CALLBACK(midtones_bias_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

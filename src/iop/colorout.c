@@ -21,6 +21,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/opencl.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -322,87 +323,6 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
   }
 }
 
-#if defined(_OPENMP) && defined(OPENMP_SIMD_)
-#pragma omp declare SIMD()
-#endif
-static inline float lab_f_inv_m(const float x)
-{
-  const float epsilon = (0.20689655172413796f); // cbrtf(216.0f/24389.0f);
-  const float kappa_rcp_x16 = (16.0f * 27.0f / 24389.0f);
-  const float kappa_rcp_x116 = (116.0f * 27.0f / 24389.0f);
-
-  // x > epsilon
-  float res_big = x * x * x;
-
-  // x <= epsilon
-  float res_small = ((kappa_rcp_x116 * x) - kappa_rcp_x16);
-
-  // blend results according to whether each component is > epsilon or not
-  return ((x > epsilon) ? res_big : res_small);
-}
-
-#if defined(__SSE__)
-static inline __m128 lab_f_inv_m_SSE(const __m128 x)
-{
-  const __m128 epsilon = _mm_set1_ps(0.20689655172413796f); // cbrtf(216.0f/24389.0f);
-  const __m128 kappa_rcp_x16 = _mm_set1_ps(16.0f * 27.0f / 24389.0f);
-  const __m128 kappa_rcp_x116 = _mm_set1_ps(116.0f * 27.0f / 24389.0f);
-
-  // x > epsilon
-  const __m128 res_big = _mm_mul_ps(_mm_mul_ps(x, x), x);
-  // x <= epsilon
-  const __m128 res_small = _mm_sub_ps(_mm_mul_ps(kappa_rcp_x116, x), kappa_rcp_x16);
-
-  // blend results according to whether each component is > epsilon or not
-  const __m128 mask = _mm_cmpgt_ps(x, epsilon);
-  return _mm_or_ps(_mm_and_ps(mask, res_big), _mm_andnot_ps(mask, res_small));
-}
-#endif
-
-static inline void _dt_Lab_to_XYZ(const float *const Lab, float *const xyz)
-{
-  const float d50[] = { 0.9642f, 1.0f, 0.8249f };
-  const float coef[] = { 1.0f / 500.0f, 1.0f / 116.0f, -1.0f / 200.0f };
-  const float offset = (0.137931034f);
-
-  float _F[3];
-  _F[0] = Lab[1];
-  _F[1] = Lab[0];
-  _F[2] = Lab[2];
-
-  for(int c = 0; c < 3; c++)
-  {
-    _F[c] *= coef[c];
-  }
-
-  float _F1[3];
-  _F1[0] = _F[1];
-  _F1[1] = 0.0f;
-  _F1[2] = _F[1];
-
-  for(int c = 0; c < 3; c++)
-  {
-    const float f = _F[c] + _F1[c] + offset;
-    xyz[c] = d50[c] * lab_f_inv_m(f);
-  }
-}
-
-#if defined(__SSE__)
-static inline __m128 dt_Lab_to_XYZ_SSE(const __m128 Lab)
-{
-  const __m128 d50 = _mm_set_ps(0.0f, 0.8249f, 1.0f, 0.9642f);
-  const __m128 coef = _mm_set_ps(0.0f, -1.0f / 200.0f, 1.0f / 116.0f, 1.0f / 500.0f);
-  const __m128 offset = _mm_set1_ps(0.137931034f);
-
-  // last component ins shuffle taken from 1st component of Lab to make sure it is not nan, so it will become
-  // 0.0f in f
-  const __m128 f = _mm_mul_ps(_mm_shuffle_ps(Lab, Lab, _MM_SHUFFLE(0, 2, 0, 1)), coef);
-
-  return _mm_mul_ps(
-      d50, lab_f_inv_m_SSE(_mm_add_ps(_mm_add_ps(f, _mm_shuffle_ps(f, f, _MM_SHUFFLE(1, 1, 3, 1))), offset)));
-}
-#endif
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -427,7 +347,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float *out = (float *)ovoid + (size_t)k;
 
       float xyz[3];
-      _dt_Lab_to_XYZ(in, xyz);
+      dt_Lab_to_XYZ(in, xyz);
 
       for(int c = 0; c < 3; c++)
       {
@@ -469,7 +389,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #if defined(__SSE__)
@@ -502,7 +422,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
       for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
       {
-        const __m128 xyz = dt_Lab_to_XYZ_SSE(_mm_load_ps(in));
+        const __m128 xyz = dt_Lab_to_XYZ_sse2(_mm_load_ps(in));
         const __m128 t
             = _mm_add_ps(_mm_mul_ps(m0, _mm_shuffle_ps(xyz, xyz, _MM_SHUFFLE(0, 0, 0, 0))),
                          _mm_add_ps(_mm_mul_ps(m1, _mm_shuffle_ps(xyz, xyz, _MM_SHUFFLE(1, 1, 1, 1))),
@@ -548,7 +468,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     _mm_sfence();
   }
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
 
@@ -592,6 +512,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   cmsHPROFILE output = NULL;
   cmsHPROFILE softproof = NULL;
+  cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
   d->mode = pipe->type == DT_DEV_PIXELPIPE_FULL ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
 
@@ -636,6 +557,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
   // and the subsequent error messages
+  d->type = out_type;
   if(out_type == DT_COLORSPACE_LAB)
     goto end;
 
@@ -650,7 +572,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   const dt_colorspaces_color_profile_t *out_profile
         = dt_colorspaces_get_profile(out_type, out_filename, DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
   if(out_profile)
+  {
     output = out_profile->profile;
+    if(out_type == DT_COLORSPACE_XYZ) output_format = TYPE_XYZA_FLT;
+  }
   else
   {
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "",
@@ -708,7 +633,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   {
     d->cmatrix[0] = NAN;
     piece->process_cl_ready = 0;
-    d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, TYPE_RGBA_FLT, softproof,
+    d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
                                           out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
   }
 
@@ -725,7 +650,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       d->cmatrix[0] = NAN;
       piece->process_cl_ready = 0;
 
-      d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, TYPE_RGBA_FLT, softproof,
+      d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
                                             out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
     }
   }
@@ -806,7 +731,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_colorout_params_t));
   module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
-  module->priority = 805; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 808; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
   dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){ DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL};

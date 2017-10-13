@@ -20,7 +20,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
-#include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/debug.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -100,6 +100,7 @@ typedef struct dt_iop_colorreconstruct_gui_data_t
   GtkWidget *precedence;
   GtkWidget *hue;
   dt_iop_colorreconstruct_bilateral_frozen_t *can;
+  uint64_t hash;
   dt_pthread_mutex_t lock;
 } dt_iop_colorreconstruct_gui_data_t;
 
@@ -616,10 +617,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
     const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2.0 : 1.0, 0);
 
-    dt_pthread_mutex_lock(&g->lock);
     // if we are zoomed in more than just a little bit, we try to use the canned grid of the preview pipeline
-    can = (cur_scale > 1.05f * min_scale) ? g->can : NULL;
-    dt_pthread_mutex_unlock(&g->lock);
+    if(cur_scale > 1.05f * min_scale)
+    {
+      if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+        dt_control_log(_("inconsistent output"));
+
+      dt_pthread_mutex_lock(&g->lock);
+      can = g->can;
+      dt_pthread_mutex_unlock(&g->lock);
+    }
   }
 
   if(can)
@@ -640,9 +647,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // here is where we generate the canned bilateral grid of the preview pipe for later use
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
+    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
     dt_pthread_mutex_lock(&g->lock);
     dt_iop_colorreconstruct_bilateral_dump(g->can);
     g->can = dt_iop_colorreconstruct_bilateral_freeze(b);
+    g->hash = hash;
     dt_pthread_mutex_unlock(&g->lock);
   }
 
@@ -688,38 +697,20 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
                                         const float sigma_s,     // spatial sigma (blur pixel coords)
                                         const float sigma_r)     // range sigma (blur luma values)
 {
-  // check if our device offers enough room for local buffers
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+  int blocksizex, blocksizey;
 
+  dt_opencl_local_buffer_t locopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = 4 * sizeof(float) + sizeof(int), .overhead = 0,
+                                  .sizex = 1 << 6, .sizey = 1 << 6 };
 
-  int blocksizex = 64;
-  int blocksizey = 64;
-
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, global->kernel_colorreconstruct_splat,
-                                             &kernelworkgroupsize) == CL_SUCCESS)
+  if(dt_opencl_local_buffer_opt(devid, global->kernel_colorreconstruct_splat, &locopt))
   {
-    while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey
-          || localmemsize < blocksizex * blocksizey * (4 * sizeof(float) + sizeof(int))
-          || workgroupsize < blocksizex * blocksizey || kernelworkgroupsize < blocksizex * blocksizey)
-    {
-      if(blocksizex == 1 || blocksizey == 1) break;
-
-      if(blocksizex > blocksizey)
-        blocksizex >>= 1;
-      else
-        blocksizey >>= 1;
-    }
+    blocksizex = locopt.sizex;
+    blocksizey = locopt.sizey;
   }
   else
-  {
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_colorreconstruction] can not identify resource limits for device %d in bilateral grid\n", devid);
-    return NULL;
-  }
+    blocksizex = blocksizey = 1;
 
   if(blocksizex * blocksizey < 16 * 16)
   {
@@ -850,38 +841,20 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
 {
   if(!bf || !bf->buf) return NULL;
 
-  // check if our device offers enough room for local buffers
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+  int blocksizex, blocksizey;
 
+  dt_opencl_local_buffer_t locopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = 4 * sizeof(float) + sizeof(int), .overhead = 0,
+                                  .sizex = 1 << 6, .sizey = 1 << 6 };
 
-  int blocksizex = 64;
-  int blocksizey = 64;
-
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, global->kernel_colorreconstruct_splat,
-                                             &kernelworkgroupsize) == CL_SUCCESS)
+  if(dt_opencl_local_buffer_opt(devid, global->kernel_colorreconstruct_splat, &locopt))
   {
-    while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey
-          || localmemsize < blocksizex * blocksizey * (4 * sizeof(float) + sizeof(int))
-          || workgroupsize < blocksizex * blocksizey || kernelworkgroupsize < blocksizex * blocksizey)
-    {
-      if(blocksizex == 1 || blocksizey == 1) break;
-
-      if(blocksizex > blocksizey)
-        blocksizex >>= 1;
-      else
-        blocksizey >>= 1;
-    }
+    blocksizex = locopt.sizex;
+    blocksizey = locopt.sizey;
   }
   else
-  {
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_colorreconstruction] can not identify resource limits for device %d in bilateral grid\n", devid);
-    return NULL;
-  }
+    blocksizex = blocksizey = 1;
 
   if(blocksizex * blocksizey < 16 * 16)
   {
@@ -1097,10 +1070,16 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
     const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2.0 : 1.0, 0);
 
-    dt_pthread_mutex_lock(&g->lock);
     // if we are zoomed in more than just a little bit, we try to use the canned grid of the preview pipeline
-    can = (cur_scale > 1.05f * min_scale) ? g->can : NULL;
-    dt_pthread_mutex_unlock(&g->lock);
+    if(cur_scale > 1.05f * min_scale)
+    {
+      if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+        dt_control_log(_("inconsistent output"));
+
+      dt_pthread_mutex_lock(&g->lock);
+      can = g->can;
+      dt_pthread_mutex_unlock(&g->lock);
+    }
   }
 
   if(can)
@@ -1123,9 +1102,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
+    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
     dt_pthread_mutex_lock(&g->lock);
     dt_iop_colorreconstruct_bilateral_dump(g->can);
     g->can = dt_iop_colorreconstruct_bilateral_freeze_cl(b);
+    g->hash = hash;
     dt_pthread_mutex_unlock(&g->lock);
   }
 
@@ -1307,6 +1288,12 @@ void gui_update(struct dt_iop_module_t *self)
       gtk_widget_hide(g->hue);
       break;
   }
+
+  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_colorreconstruct_bilateral_dump(g->can);
+  g->can = NULL;
+  g->hash = 0;
+  dt_pthread_mutex_unlock(&g->lock);
 }
 
 void init(dt_iop_module_t *module)
@@ -1314,7 +1301,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colorreconstruct_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorreconstruct_params_t));
   module->default_enabled = 0;
-  module->priority = 358; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 367; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorreconstruct_params_t);
   module->gui_data = NULL;
   dt_iop_colorreconstruct_params_t tmp = (dt_iop_colorreconstruct_params_t){ 100.0f, 400.0f, 10.0f, 0.66f, COLORRECONSTRUCT_PRECEDENCE_NONE };
@@ -1360,6 +1347,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_pthread_mutex_init(&g->lock, NULL);
   g->can = NULL;
+  g->hash = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

@@ -43,53 +43,6 @@
 #include <strings.h>
 
 
-int dt_control_load_config(dt_control_t *c)
-{
-  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-  dt_conf_set_int("ui_last/view", DT_MODE_NONE);
-  int width = dt_conf_get_int("ui_last/window_w");
-  int height = dt_conf_get_int("ui_last/window_h");
-#ifndef __WIN32__
-  gint x = dt_conf_get_int("ui_last/window_x");
-  gint y = dt_conf_get_int("ui_last/window_y");
-  gtk_window_move(GTK_WINDOW(widget), x, y);
-#endif
-  gtk_window_resize(GTK_WINDOW(widget), width, height);
-  int fullscreen = dt_conf_get_bool("ui_last/fullscreen");
-  if(fullscreen)
-    gtk_window_fullscreen(GTK_WINDOW(widget));
-  else
-  {
-    gtk_window_unfullscreen(GTK_WINDOW(widget));
-    int maximized = dt_conf_get_bool("ui_last/maximized");
-    if(maximized)
-      gtk_window_maximize(GTK_WINDOW(widget));
-    else
-      gtk_window_unmaximize(GTK_WINDOW(widget));
-  }
-  return 0;
-}
-
-int dt_control_write_config(dt_control_t *c)
-{
-  // TODO: move to gtk.c
-  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  gint x, y;
-  gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
-  dt_conf_set_int("ui_last/window_x", x);
-  dt_conf_set_int("ui_last/window_y", y);
-  dt_conf_set_int("ui_last/window_w", allocation.width);
-  dt_conf_set_int("ui_last/window_h", allocation.height);
-  dt_conf_set_bool("ui_last/maximized",
-                   (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_MAXIMIZED));
-  dt_conf_set_bool("ui_last/fullscreen",
-                   (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN));
-
-  return 0;
-}
-
 void dt_control_init(dt_control_t *s)
 {
   memset(s->vimkey, 0, sizeof(s->vimkey));
@@ -104,8 +57,6 @@ void dt_control_init(dt_control_t *s)
   s->log_busy = 0;
   s->log_message_timeout_id = 0;
   dt_pthread_mutex_init(&(s->log_mutex), NULL);
-
-  dt_conf_set_int("ui_last/view", DT_MODE_NONE);
 
   pthread_cond_init(&s->cond, NULL);
   dt_pthread_mutex_init(&s->cond_mutex, NULL);
@@ -440,37 +391,49 @@ void dt_control_button_released(double x, double y, int which, uint32_t state)
   dt_view_manager_button_released(darktable.view_manager, x - tb, y - tb, which, state);
 }
 
-static gboolean _dt_ctl_switch_mode_to(gpointer user_data)
+static void _dt_ctl_switch_mode_prepare()
 {
-  dt_control_gui_mode_t mode = GPOINTER_TO_INT(user_data);
-
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
   darktable.gui->center_tooltip = 0;
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   gtk_widget_set_tooltip_text(widget, "");
+}
 
-  if(!dt_view_manager_switch(darktable.view_manager, mode))
-    dt_conf_set_int("ui_last/view", mode);
-
+static gboolean _dt_ctl_switch_mode_to(gpointer user_data)
+{
+  const char *mode = (const char*)user_data;
+  _dt_ctl_switch_mode_prepare();
+  dt_view_manager_switch(darktable.view_manager, mode);
   return FALSE;
 }
 
-void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode)
+static gboolean _dt_ctl_switch_mode_to_by_view(gpointer user_data)
 {
-  dt_control_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
-  if(oldmode == mode) return;
+  const dt_view_t *view = (const dt_view_t*)user_data;
+  _dt_ctl_switch_mode_prepare();
+  dt_view_manager_switch_by_view(darktable.view_manager, view);
+  return FALSE;
+}
 
-  g_main_context_invoke(NULL, _dt_ctl_switch_mode_to, GINT_TO_POINTER(mode));
+void dt_ctl_switch_mode_to(const char *mode)
+{
+  const dt_view_t *current_view = dt_view_manager_get_current_view(darktable.view_manager);
+  if(current_view && !strcmp(mode, current_view->module_name)) return;
+
+  g_main_context_invoke(NULL, _dt_ctl_switch_mode_to, (gpointer)mode);
+}
+
+void dt_ctl_switch_mode_to_by_view(const dt_view_t *view)
+{
+  if(view == dt_view_manager_get_current_view(darktable.view_manager)) return;
+  g_main_context_invoke(NULL, _dt_ctl_switch_mode_to_by_view, (gpointer)view);
 }
 
 void dt_ctl_switch_mode()
 {
-  dt_control_gui_mode_t mode = dt_conf_get_int("ui_last/view");
-  if(mode == DT_LIBRARY)
-    mode = DT_DEVELOP;
-  else
-    mode = DT_LIBRARY;
+  const dt_view_t *view = dt_view_manager_get_current_view(darktable.view_manager);
+  const char *mode = (view && !strcmp(view->module_name, "lighttable")) ? "darkroom" : "lighttable";
   dt_ctl_switch_mode_to(mode);
 }
 

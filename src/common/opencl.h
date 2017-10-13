@@ -47,6 +47,18 @@
 #define ROUNDUPWD(a) dt_opencl_roundup(a)
 #define ROUNDUPHT(a) dt_opencl_roundup(a)
 
+typedef enum dt_opencl_memory_t
+{
+  OPENCL_MEMORY_ADD,
+  OPENCL_MEMORY_SUB
+} dt_opencl_memory_t;
+
+typedef enum dt_opencl_scheduling_profile_t
+{
+  OPENCL_PROFILE_DEFAULT,
+  OPENCL_PROFILE_MULTIPLE_GPUS,
+  OPENCL_PROFILE_VERYFAST_GPU
+} dt_opencl_scheduling_profile_t;
 
 /**
  * Accounting information used for OpenCL events.
@@ -94,9 +106,12 @@ typedef struct dt_opencl_device_t
   const char *options;
   cl_int summary;
   float benchmark;
+  size_t memory_in_use;
+  size_t peak_memory;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
+struct dt_local_laplacian_cl_global_t;
 /**
  * main struct, stored in darktable.opencl.
  * holds pointers to all
@@ -111,19 +126,24 @@ typedef struct dt_opencl_t
   int number_event_handles;
   int print_statistics;
   int synch_cache;
-  int enable_markesteijn;
   int micro_nap;
   int enabled;
   int stopped;
   int num_devs;
   int error_count;
+  int opencl_synchronization_timeout;
+  dt_opencl_scheduling_profile_t scheduling_profile;
   uint32_t crc;
+  int mandatory[4];
   int *dev_priority_image;
   int *dev_priority_preview;
   int *dev_priority_export;
   int *dev_priority_thumbnail;
   dt_opencl_device_t *dev;
   dt_dlopencl_t *dlocl;
+
+  // global kernels for blending operations.
+  struct dt_blendop_cl_global_t *blendop;
 
   // global kernels for bilateral filtering, to be reused by a few plugins.
   struct dt_bilateral_cl_global_t *bilateral;
@@ -133,7 +153,25 @@ typedef struct dt_opencl_t
 
   // global kernels for interpolation resampling.
   struct dt_interpolation_cl_global_t *interpolation;
+
+  // global kernels for local laplacian filter.
+  struct dt_local_laplacian_cl_global_t *local_laplacian;
 } dt_opencl_t;
+
+/** description of memory requirements of local buffer
+  * local buffer size will be calculated as:
+  * (xoffset + xfactor * x) * (yoffset + yfactor * y) * cellsize + overhead; */
+typedef struct dt_opencl_local_buffer_t
+{
+  const int xoffset;
+  const int xfactor;
+  const int yoffset;
+  const int yfactor;
+  const size_t cellsize;
+  const size_t overhead;
+  int sizex;  // initial value and final values after optimization
+  int sizey;  // initial value and final values after optimization
+} dt_opencl_local_buffer_t;
 
 /** internally calls dt_clGetDeviceInfo, and takes care of memory allocation
  * afterwards, *param_value will point to memory block of size at least *param_value
@@ -206,8 +244,8 @@ int dt_opencl_is_enabled(void);
 /** disable opencl */
 void dt_opencl_disable(void);
 
-/** update enabled flag with value from preferences */
-int dt_opencl_update_enabled(void);
+/** update enabled flag and profile with value from preferences, returns enabled flag */
+int dt_opencl_update_settings(void);
 
 /** HAVE_OPENCL mode only: copy and alloc buffers. */
 int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width,
@@ -287,6 +325,12 @@ void *dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, c
 
 int dt_opencl_unmap_mem_object(const int devid, cl_mem mem_object, void *mapped_ptr);
 
+size_t dt_opencl_get_mem_object_size(cl_mem mem);
+
+int dt_opencl_get_mem_context_id(cl_mem mem);
+
+void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action);
+
 /** check if image size fit into limits given by OpenCL runtime */
 int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead);
@@ -313,6 +357,9 @@ cl_int dt_opencl_events_flush(const int devid, const int reset);
 
 /** display OpenCL profiling information. If summary is not 0, try to generate summarized info for kernels */
 void dt_opencl_events_profiling(const int devid, const int aggregated);
+
+/** utility function to calculate optimal work group dimensions for a given kernel */
+int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_local_buffer_t *factors);
 
 #else
 #include "control/conf.h"
@@ -404,7 +451,7 @@ static inline int dt_opencl_is_enabled(void)
 static inline void dt_opencl_disable(void)
 {
 }
-static inline int dt_opencl_update_enabled(void)
+static inline int dt_opencl_update_settings(void)
 {
   return 0;
 }

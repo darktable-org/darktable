@@ -161,6 +161,14 @@ void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc 
   button->icon_flags = paintflags;
 }
 
+void dtgtk_button_set_active(GtkDarktableButton *button, gboolean active)
+{
+  if(active)
+    button->icon_flags |= CPF_ACTIVE;
+  else
+    button->icon_flags &= ~CPF_ACTIVE;
+}
+
 void dtgtk_button_override_color(GtkDarktableButton *button, GdkRGBA *color)
 {
   if(color)

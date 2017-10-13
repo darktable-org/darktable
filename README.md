@@ -20,6 +20,13 @@ Contributing
 Building
 --------
 
+Note that [rawspeed](https://github.com/darktable-org/rawspeed) is tracked via a git submodule, so after checking-out the darktable, you need to update/checkout rawspeed,
+
+```bash
+git submodule init
+git submodule update
+```
+
 ### Easy way
 
 ```bash

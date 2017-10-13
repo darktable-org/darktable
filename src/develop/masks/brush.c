@@ -1583,7 +1583,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
       gui->guipoints_count = 0;
 
       // we save the form and quit creation mode
-      dt_masks_gui_form_save_creation(crea_module, form, gui);
+      dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
       if(crea_module)
       {
         dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
@@ -1599,14 +1599,16 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
     }
     else
     {
+      // unlikely case of button released but no points gathered -> no form
       dt_masks_dynbuf_free(gui->guipoints);
       dt_masks_dynbuf_free(gui->guipoints_payload);
       gui->guipoints = NULL;
       gui->guipoints_payload = NULL;
       gui->guipoints_count = 0;
 
-      // we remove the form
-      dt_masks_free_form(form);
+      dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+      dt_masks_iop_update(module);
+
       dt_masks_change_form_gui(NULL);
     }
 
@@ -2087,7 +2089,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       }
 
       cairo_save(cr);
-      cairo_set_source_rgba(cr, .8, .8, .8, masks_density);
+      dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, masks_density);
+      if(masks_density < 1.0) cairo_set_line_width(cr, cairo_get_line_width(cr) * .8);
       cairo_arc(cr, xpos, ypos, radius1, 0, 2.0 * M_PI);
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, .8, .8, .8, .8);
@@ -2142,7 +2145,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       opacity = oldopacity = masks_density;
 
       cairo_set_line_width(cr, 2 * radius);
-      cairo_set_source_rgba(cr, .1, .1, .1, opacity);
+      dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_TRACE, opacity);
 
       cairo_move_to(cr, guipoints[0], guipoints[1]);
       for(int i = 1; i < gui->guipoints_count; i++)
@@ -2185,7 +2188,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
           cairo_stroke(cr);
           stroked = 1;
           cairo_set_line_width(cr, 2 * radius);
-          cairo_set_source_rgba(cr, .1, .1, .1, opacity);
+          dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_TRACE, opacity);
           oldradius = radius;
           oldopacity = opacity;
           cairo_move_to(cr, guipoints[i * 2], guipoints[i * 2 + 1]);
@@ -2194,7 +2197,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       if(!stroked) cairo_stroke(cr);
 
       cairo_set_line_width(cr, linewidth);
-      cairo_set_source_rgba(cr, .8, .8, .8, opacity);
+      dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
+      if(opacity < 1.0) cairo_set_line_width(cr, cairo_get_line_width(cr) * .8);
       cairo_arc(cr, guipoints[2 * (gui->guipoints_count - 1)],
                 guipoints[2 * (gui->guipoints_count - 1) + 1], radius, 0, 2.0 * M_PI);
       cairo_fill_preserve(cr);

@@ -5,16 +5,33 @@ DT_SRC_DIR=$(cd "$DT_SRC_DIR/../" && pwd -P)
 
 cd $DT_SRC_DIR
 
-git shortlog -sne release-2.0.0..HEAD
+git shortlog -sne release-2.2.0..HEAD
 
 echo "are you sure these guys received proper credit in the about dialog?"
-echo "HINT: $ tools/generate_authors.rb release-2.0.0..HEAD > AUTHORS"
+echo "HINT: $ tools/generate_authors.rb release-2.2.0..HEAD > AUTHORS"
 read answer
 
 # prefix rc with ~, so debian thinks its less than
 echo "* archiving git tree"
+
 dt_decoration=$(git describe --tags $branch | sed 's,^release-,,;s,-,+,;s,-,~,;' | sed 's/rc/~rc/')
-git archive HEAD --prefix=darktable-$dt_decoration/ -o darktable-$dt_decoration.tar
+
+echo "* * creating root archive"
+git archive --format tar HEAD --prefix=darktable-$dt_decoration/ -o darktable-$dt_decoration.tar
+
+echo "* * creating submodule archives"
+# for each of git submodules append to the root archive
+git submodule foreach --recursive 'git archive --format tar --verbose --prefix="darktable-'$dt_decoration'/$path/" HEAD --output "'$DT_SRC_DIR'/darktable-sub-$sha1.tar"'
+
+if [ $(ls "$DT_SRC_DIR/darktable-sub-"*.tar | wc -l) != 0  ]; then
+  echo "* * appending submodule archives, combining all tars"
+  tar --concatenate --file "$DT_SRC_DIR/darktable-$dt_decoration.tar" "$DT_SRC_DIR/darktable-sub-"*.tar
+  # remove sub tars
+  echo "* * removing all sub tars"
+  rm -rf "$DT_SRC_DIR/darktable-sub-"*.tar
+fi
+
+echo "* * done creating archive"
 
 TMPDIR=`mktemp -d -t darktable-XXXXXX`
 cd "$TMPDIR"
@@ -42,7 +59,7 @@ echo "* creating final tarball"
 tar cf darktable-$dt_decoration.tar darktable-$dt_decoration/
 rm "$DT_SRC_DIR/darktable-$dt_decoration.tar"
 xz -z -v -9 -e darktable-$dt_decoration.tar
-cp darktable-$dt_decoration.tar.xz "$SRCDIR"
+cp darktable-$dt_decoration.tar.xz "$DT_SRC_DIR"
 
 # now test the build:
 echo "* test compiling"

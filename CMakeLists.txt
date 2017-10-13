@@ -76,6 +76,7 @@ option(BUILD_PRINT "Build the print module" ON)
 option(BUILD_RS_IDENTIFY "Build the darktable-rs-identify debug aid" ON)
 option(BUILD_SSE2_CODEPATHS "(EXPERIMENTAL OPTION, DO NOT DISABLE) Building SSE2-optimized codepaths" ON)
 option(VALIDATE_APPDATA_FILE "Use appstream-util (if found) to validate the .appdata file" OFF)
+option(BUILD_TESTS "Build tests in src/tests/, runnable from the build/ directory" OFF)
 
 if(USE_OPENCL)
   option(TESTBUILD_OPENCL_PROGRAMS "Test-compile opencl programs (needs llvm and clang 3.9+)" ON)
@@ -102,15 +103,21 @@ else()
 	MESSAGE(STATUS "Found little endian system. Good.")
 endif(${BIGENDIAN})
 
+set(CMAKE_REQUIRED_INCLUDES_OLD "${CMAKE_REQUIRED_INCLUDES}")
+list(APPEND CMAKE_REQUIRED_INCLUDES "${CMAKE_SOURCE_DIR}")
+
 check_c_source_compiles("
 #include <stdio.h>
 int main() {
-#include \"${CMAKE_SOURCE_DIR}/src/is_supported_platform.h\"
+#include \"src/is_supported_platform.h\"
 }" IS_SUPPORTED_PLATFORM)
 if(NOT IS_SUPPORTED_PLATFORM)
   MESSAGE(FATAL_ERROR "The target platform is not supported!")
 endif(NOT IS_SUPPORTED_PLATFORM)
 MESSAGE(STATUS "Is the target platform supported: ${IS_SUPPORTED_PLATFORM}")
+
+set(CMAKE_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES_OLD}")
+unset(CMAKE_REQUIRED_INCLUDES_OLD)
 
 if(APPLE)
 	option(USE_MAC_INTEGRATION "Enable OS X integration" ON)
@@ -155,7 +162,11 @@ include(compiler-versions)
 
 if(WIN32)
   message("-- Win32 build detected, setting default features")
-  set(USE_CAMERA_SUPPORT OFF)
+  set(USE_COLORD OFF)
+  set(USE_KWALLET OFF)
+  set(BUILD_CMSTEST OFF)
+  set(BUILD_PRINT OFF)
+  set(TESTBUILD_OPENCL_PROGRAMS OFF)
 endif(WIN32)
 
 
@@ -195,7 +206,7 @@ else(DEFINED PROJECT_VERSION)
   if(NOT SOURCE_PACKAGE) # i.e., a git checkout
     # this part is setting the corresponding CMake variable which gets used for example when creating a source package
     execute_process(
-      COMMAND ${CMAKE_SOURCE_DIR}/tools/get_git_version_string.sh OUTPUT_STRIP_TRAILING_WHITESPACE
+      COMMAND sh ${CMAKE_SOURCE_DIR}/tools/get_git_version_string.sh OUTPUT_STRIP_TRAILING_WHITESPACE
       OUTPUT_VARIABLE PROJECT_VERSION
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     # FIXME: PROJECT_VERSION will not be updated automatically, until you rerun cmake
@@ -212,7 +223,7 @@ else(DEFINED PROJECT_VERSION)
     else(NOT EXISTS ${CMAKE_SOURCE_DIR}/src/version_gen.c)
       # no need to create version_gen.c if it's already shipped. that is for example the case with our release tarballs
       execute_process(
-        COMMAND ${CMAKE_SOURCE_DIR}/tools/parse_version_c.sh ${CMAKE_SOURCE_DIR}/src/version_gen.c OUTPUT_STRIP_TRAILING_WHITESPACE
+        COMMAND sh ${CMAKE_SOURCE_DIR}/tools/parse_version_c.sh ${CMAKE_SOURCE_DIR}/src/version_gen.c OUTPUT_STRIP_TRAILING_WHITESPACE
         OUTPUT_VARIABLE PROJECT_VERSION
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       )
@@ -255,6 +266,7 @@ if(CMAKE_BUILD_TYPE MATCHES "^[Dd][Ee][Bb][Uu][Gg]$" AND SOURCE_PACKAGE)
 endif()
 
 include(compiler-warnings)
+include(windows-macros)
 
 # Setting the runtime path works differently on OSX than on Linux or BSD.
 # Hence use a variable that maps those in the correct way for each OS.
@@ -321,19 +333,23 @@ if(TESTBUILD_OPENCL_PROGRAMS)
   set(TESTBUILD_OPENCL_PROGRAMS OFF)
 
   # 3.9 is the first version with which this works.
-  find_package(LLVM 3.9 CONFIG)
+  find_package(LLVM 4.0 CONFIG)
+  if (NOT LLVM_FOUND)
+    find_package(LLVM 3.9 CONFIG)
+  endif()
+
   if (LLVM_FOUND)
     message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 
     find_program(CLANG_OPENCL_COMPILER
-      NAMES clang-${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR} clang-${LLVM_PACKAGE_VERSION}
+      NAMES clang-${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR} clang-${LLVM_PACKAGE_VERSION} clang${LLVM_VERSION_MAJOR}${LLVM_VERSION_MINOR}
     )
 
     if (NOT ${CLANG_OPENCL_COMPILER} STREQUAL "CLANG_OPENCL_COMPILER-NOTFOUND")
       message(STATUS "Found clang compiler - ${CLANG_OPENCL_COMPILER}")
 
       find_path(CLANG_OPENCL_INCLUDE_DIR opencl-c.h
-        HINTS ${LLVM_INSTALL_PREFIX}/lib/clang
+        HINTS ${LLVM_INSTALL_PREFIX}/lib/clang ${LLVM_INSTALL_PREFIX}/lib64/clang
         PATH_SUFFIXES include ${LLVM_PACKAGE_VERSION}/include
         NO_DEFAULT_PATH
       )
@@ -415,16 +431,6 @@ if(USE_NLS)
         message(STATUS "Cannot find msgfmt to convert .po file. Translation won't be enabled")
     endif()
 endif(USE_NLS)
-
-#find a temporary directory
-if(NOT TMP_DIR)
-	SET(TMP_DIR "~/.local/tmp")
-endif(NOT TMP_DIR)
-
-#find a cache directory
-if(NOT CACHE_DIR)
-	SET(CACHE_DIR "~/.cache/darktable")
-endif(NOT CACHE_DIR)
 
 # needed to generate file "preferences_gen.h" accordingly
 if(USE_OPENCL)
@@ -518,10 +524,20 @@ if(NOT WIN32)
   endif(CMAKE_SYSTEM MATCHES "SunOS.*")
 endif(NOT WIN32)
 
+# Set default component name - that way external modules like RawSpeed will install their
+# materials under the default component and not under 'Unspecified'
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME DTApplication)
+
 # lets continue into build directories
-add_subdirectory(src)
+include(data/supported_extensions.cmake) # this file needs to be included first as it gets ammended in src/
+add_subdirectory(src) # src/ needs to be before data/ so that the correct CSS file gets installed
 add_subdirectory(data)
 add_subdirectory(doc)
+
+# This contains fixup_bundle
+# And adding a separate subderectory as a last one will make sure
+# that fixup_bundle will run _after_ all files has been installed
+add_subdirectory(packaging)
 
 include(cmake/darktable-packaging.cmake)
 

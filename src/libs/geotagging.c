@@ -44,9 +44,10 @@ const char *name(dt_lib_module_t *self)
   return _("geotagging");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE;
+  static const char *v[] = {"lighttable", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -272,7 +273,7 @@ static void _lib_geotagging_calculate_offset_callback(GtkWidget *widget, dt_lib_
   if(gps_time)
   {
     gchar **tokens = g_strsplit(gps_time, ":", 0);
-    if(tokens[0] != '\0' && tokens[1] != '\0' && tokens[2] != '\0')
+    if(tokens[0] != NULL && tokens[1] != NULL && tokens[2] != NULL)
     {
       if(g_ascii_isdigit(tokens[0][0]) && g_ascii_isdigit(tokens[0][1]) && tokens[0][2] == '\0'
          && g_ascii_isdigit(tokens[1][0]) && g_ascii_isdigit(tokens[1][1]) && tokens[1][2] == '\0'
@@ -547,14 +548,21 @@ static GList *_lib_geotagging_get_timezones(void)
       if(!g_file_test(zone_tab, G_FILE_TEST_IS_REGULAR))
       {
         g_free(zone_tab);
-        // TODO: Solaris test
-        return NULL;
+        char datadir[PATH_MAX] = { 0 };
+        dt_loc_get_datadir(datadir, sizeof(datadir));
+        zone_tab = g_build_filename(datadir, "zone.tab", NULL);
+        if(!g_file_test(zone_tab, G_FILE_TEST_IS_REGULAR))
+        {
+          g_free(zone_tab);
+          // TODO: Solaris test
+          return NULL;
+        }
       }
     }
   }
 
   // parse zone.tab and put all time zone descriptions into tz
-  fp = fopen(zone_tab, "r");
+  fp = g_fopen(zone_tab, "r");
   g_free(zone_tab);
 
   if(!fp) return NULL;

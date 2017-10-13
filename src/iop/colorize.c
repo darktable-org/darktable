@@ -19,7 +19,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
-#include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -398,7 +398,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colorize_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorize_params_t));
   module->default_enabled = 0;
-  module->priority = 462; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 470; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorize_params_t);
   module->gui_data = NULL;
   dt_iop_colorize_params_t tmp = (dt_iop_colorize_params_t){ 0, 0.5, 50, 50, module->version() };

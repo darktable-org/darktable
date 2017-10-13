@@ -169,13 +169,26 @@ awk is needed to parse gphot2(1) output."; then
 
 pdf_tools_installed() {
 	local missing_tool
-	missing_tool=0
+	missing_tool=1
 
 	echo "--> Check for pdf tools availability"
 
-	if ! tool_installed pdftk "
-pdftk is needed if you want one single result pdf."; then
-		missing_tool=1
+	if tool_installed pdftk; then
+		pdfcat() {
+			local output=$1; shift
+			local inputs=$@
+			pdftk $inputs cat output $output
+		}
+		missing_tool=0
+	elif tool_installed gs; then
+		pdfcat() {
+			local output=$1; shift
+			local inputs=$@
+			gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=$output $inputs
+		}
+		missing_tool=0
+	else
+		echo "pdftk or ghoscript are needed if you want one single result pdf."
 	fi
 
 	return $missing_tool
@@ -299,6 +312,9 @@ get_image_iso() {
 	if [ -z "$iso" -o "$iso" = "65535" ]; then
 		iso=$(get_exif_key "$file" Exif.Photo.StandardOutputSensitivity)
 	fi
+	if [ -z "$iso" -o "$iso" = "65535" ]; then
+		iso=$(get_exif_key "$file" Exif.Image.ISOSpeedRatings)
+	fi
 
 	# Then try some brand specific values if still not found.
 
@@ -323,6 +339,11 @@ get_image_iso() {
 				iso=$(get_exif_key "$file" Exif.NikonIi.ISO)
 			fi
 			;;
+    [Cc][Aa][Nn][Oo][Nn]*)
+			if [ -z "$iso" -o "$iso" = "0" ]; then
+				iso=$(get_exif_key "$file" Exif.CanonSi.ISOSpeed)
+			fi
+      ;;
 		esac
 	fi
 

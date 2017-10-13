@@ -32,6 +32,12 @@ static int lua_print(lua_State *L)
 }
 
 
+static int lua_print_log(lua_State *L)
+{
+  dt_print(DT_DEBUG_LUA, "LUA %s\n", luaL_checkstring(L, -1));
+  return 0;
+}
+
 static int lua_print_error(lua_State *L)
 {
   dt_print(DT_DEBUG_LUA, "LUA ERROR %s\n", luaL_checkstring(L, -1));
@@ -44,6 +50,10 @@ int dt_lua_init_print(lua_State *L)
 
   lua_pushstring(L, "print");
   lua_pushcfunction(L, &lua_print);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "print_log");
+  lua_pushcfunction(L, &lua_print_log);
   lua_settable(L, -3);
 
   lua_pushstring(L, "print_error");

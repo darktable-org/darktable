@@ -56,9 +56,10 @@ const char *name(dt_lib_module_t *self)
   return _("darktable");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_ALL;
+  static const char *v[] = {"*", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -78,8 +79,6 @@ int position()
 
 void gui_init(dt_lib_module_t *self)
 {
-  char filename[PATH_MAX] = { 0 };
-  char datadir[PATH_MAX] = { 0 };
   /* initialize ui widgets */
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)g_malloc0(sizeof(dt_lib_darktable_t));
   self->data = (void *)d;
@@ -93,73 +92,30 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_darktable_button_press_callback), self);
 
   /* create a cairo surface of dt icon */
-  char *logo;
-  dt_logo_season_t season = get_logo_season();
-  if(season != DT_LOGO_SEASON_NONE)
-    logo = g_strdup_printf("%%s/pixmaps/idbutton-%d.%%s", (int)season);
-  else
-    logo = g_strdup("%s/pixmaps/idbutton.%s");
-
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  snprintf(filename, sizeof(filename), logo, datadir, "svg");
 
   // first we try the SVG
+  d->image = dt_util_get_logo(DT_PIXEL_APPLY_DPI(-1.0));
+  if(d->image)
+    d->image_buffer = cairo_image_surface_get_data(d->image);
+  else
   {
-    GError *error = NULL;
-    RsvgHandle *svg = rsvg_handle_new_from_file(filename, &error);
-    if(!svg || error)
-    {
-      fprintf(stderr,
-              "warning: can't load darktable logo from SVG file `%s', falling back to PNG version\n%s\n",
-              filename, error->message);
-      g_error_free(error);
-      error = NULL;
-      goto png_fallback;
-    }
-
+    // let's fall back to the PNG
+    char *logo;
+    char datadir[PATH_MAX] = { 0 };
     cairo_surface_t *surface;
     cairo_t *cr;
 
-    RsvgDimensionData dimension;
-    rsvg_handle_get_dimensions(svg, &dimension);
+    dt_loc_get_datadir(datadir, sizeof(datadir));
+    dt_logo_season_t season = dt_util_get_logo_season();
+    if(season != DT_LOGO_SEASON_NONE)
+      logo = g_strdup_printf("idbutton-%d.png", (int)season);
+    else
+      logo = g_strdup("idbutton.png");
+    char *filename = g_build_filename(datadir, "pixmaps", logo, NULL);
 
-    int width = DT_PIXEL_APPLY_DPI(dimension.width) * darktable.gui->ppd,
-        height = DT_PIXEL_APPLY_DPI(dimension.height) * darktable.gui->ppd;
-    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
-
-    d->image_buffer = (guint8 *)calloc(stride * height, sizeof(guint8));
-    surface
-        = dt_cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
-    if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
-    {
-      free(d->image_buffer);
-      d->image_buffer = NULL;
-      g_object_unref(svg);
-      fprintf(stderr, "warning: can't load darktable logo from SVG file `%s', falling back to PNG version\n",
-              filename);
-      goto png_fallback;
-    }
-
-    cr = cairo_create(surface);
-    cairo_scale(cr, darktable.gui->dpi_factor, darktable.gui->dpi_factor);
-    rsvg_handle_render_cairo(svg, cr);
-    cairo_destroy(cr);
-    cairo_surface_flush(surface);
-
-    d->image = surface;
-    g_object_unref(svg);
-  }
-
-  goto done;
-
-png_fallback:
-  // let's fall back to the PNG
-  {
-    cairo_surface_t *surface;
-    cairo_t *cr;
-
-    snprintf(filename, sizeof(filename), logo, datadir, "png");
     surface = cairo_image_surface_create_from_png(filename);
+    g_free(logo);
+    g_free(filename);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
       fprintf(stderr, "warning: can't load darktable logo from PNG file `%s'\n", filename);
@@ -199,8 +155,6 @@ png_fallback:
   }
 
 done:
-  g_free(logo);
-
   d->image_width = d->image ? dt_cairo_image_surface_get_width(d->image) : 0;
   d->image_height = d->image ? dt_cairo_image_surface_get_height(d->image) : 0;
 
@@ -285,11 +239,13 @@ static void _lib_darktable_show_about_dialog()
   GtkWidget *dialog = gtk_about_dialog_new();
   gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), darktable_package_version);
-  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), _("copyright (c) the authors 2009-2016"));
+  char *copyright = g_strdup_printf(_("copyright (c) the authors 2009-%s"), darktable_last_commit_year);
+  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), copyright);
+  g_free(copyright);
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog),
                                 _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://www.darktable.org/");
-  dt_logo_season_t season = get_logo_season();
+  dt_logo_season_t season = dt_util_get_logo_season();
   char *icon;
   if(season != DT_LOGO_SEASON_NONE)
     icon = g_strdup_printf("darktable-%d", (int)season);
