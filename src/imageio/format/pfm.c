@@ -33,7 +33,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 {
   const dt_imageio_module_data_t *const pfm = data;
   int status = 0;
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   if(f)
   {
     // align pfm header to sse, assuming the file will

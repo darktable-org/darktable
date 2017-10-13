@@ -30,6 +30,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include "win/main_wrapper.h"
+#endif
+
 const double thrs = 200.0;
 
 enum
@@ -559,7 +563,7 @@ static void export_style(dt_lut_t *self, const char *filename, const char *name,
 {
   int num = 0;
 
-  FILE *fd = fopen(filename, "w");
+  FILE *fd = g_fopen(filename, "w");
   if(!fd) return;
 
   fprintf(fd, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -594,7 +598,7 @@ static void export_raw(dt_lut_t *self, char *filename, char *name, char *descrip
   GHashTableIter table_iter;
   gpointer key, value;
 
-  FILE *fd = fopen(filename, "w");
+  FILE *fd = g_fopen(filename, "w");
   if(!fd) return;
 
   GList *patch_names = NULL;
@@ -780,7 +784,7 @@ static char *encode_tonecurve(const tonecurve_t *c)
 
   dt_iop_tonecurve_params_t params;
   memset(&params, 0, sizeof(params));
-  params.tonecurve_autoscale_ab = 0; // manual
+  params.tonecurve_autoscale_ab = 3; // prophoto rgb
   params.tonecurve_type[0] = 2;      // MONOTONE_HERMITE
   params.tonecurve_type[1] = 2;      // MONOTONE_HERMITE
   params.tonecurve_type[2] = 2;      // MONOTONE_HERMITE
@@ -864,17 +868,48 @@ static char *encode_colorchecker(int num, const double *point, const double **ta
   return dt_exif_xmp_encode_internal((uint8_t *)&params, sizeof(params), NULL, FALSE);
 }
 
-static void process_data(dt_lut_t *self, double *target_L, double *target_a, double *target_b,
-                         double *colorchecker_Lab, int N, int num_tonecurve, int sparsity)
+static int compare_L_source(const void *x_, const void *y_)
 {
+  const double x = *(const double *)x_;
+  const double y = *(const double *)y_;
+  return x < y ? -1 : (x > y ? +1 : 0);
+}
+
+static void process_data(dt_lut_t *self, double *target_L, double *target_a, double *target_b,
+                         double *colorchecker_Lab, int N, int num_grays, int sparsity)
+{
+  // sort all gray patches according to the L channel of the source colors
+  double *grays = malloc(sizeof(double) * 6 * num_grays);
+  for(int k = 0; k < num_grays; k++)
+  {
+    grays[k * 6 + 0] = colorchecker_Lab[(k + N - num_grays) * 3 + 0];
+    grays[k * 6 + 1] = colorchecker_Lab[(k + N - num_grays) * 3 + 1];
+    grays[k * 6 + 2] = colorchecker_Lab[(k + N - num_grays) * 3 + 2];
+    grays[k * 6 + 3] = target_L[k + N - num_grays];
+    grays[k * 6 + 4] = target_a[k + N - num_grays];
+    grays[k * 6 + 5] = target_b[k + N - num_grays];
+  }
+  qsort(grays, num_grays, sizeof(double) * 6, compare_L_source);
+  for(int k = 0; k < num_grays; k++)
+  {
+    colorchecker_Lab[(k + N - num_grays) * 3 + 0] = grays[k * 6 + 0];
+    colorchecker_Lab[(k + N - num_grays) * 3 + 1] = grays[k * 6 + 1];
+    colorchecker_Lab[(k + N - num_grays) * 3 + 2] = grays[k * 6 + 2];
+    target_L[k + N - num_grays] = grays[k * 6 + 3];
+    target_a[k + N - num_grays] = grays[k * 6 + 4];
+    target_b[k + N - num_grays] = grays[k * 6 + 5];
+  }
+  free(grays);
+
+  // construct a tone curve from the grays plus pure black and pure white
+  int num_tonecurve = num_grays + 2;
   tonecurve_t tonecurve;
   double *cx = malloc(sizeof(double) * num_tonecurve);
   double *cy = malloc(sizeof(double) * num_tonecurve);
-  cx[0] = cy[0] = 0.0;                                   // fix black
-  cx[num_tonecurve - 1] = cy[num_tonecurve - 1] = 100.0; // fix white
-  for(int k = 1; k < num_tonecurve - 1; k++)
-    cx[num_tonecurve - 1 - k] = colorchecker_Lab[3 * (N - num_tonecurve + 2 + k - 1)];
-  for(int k = 1; k < num_tonecurve - 1; k++) cy[num_tonecurve - 1 - k] = target_L[N - num_tonecurve + 2 + k - 1];
+  cx[0] = cy[0] = 0.0;                           // fix black
+  cx[num_grays + 1] = cy[num_grays + 1] = 100.0; // fix white
+  for(int k = 0; k < num_grays; k++) cx[k + 1] = colorchecker_Lab[3 * (N - num_grays + k)];
+  for(int k = 0; k < num_grays; k++) cy[k + 1] = target_L[N - num_grays + k];
   tonecurve_create(&tonecurve, cx, cy, num_tonecurve);
 
   cy = NULL;
@@ -882,12 +917,49 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
 
 #if 0 // quiet.
   for(int k = 0; k < num_tonecurve; k++)
-    fprintf(stderr, "L[%g] = %g\n", 100.0 * k / (num_tonecurve - 1.0f),
-            tonecurve_apply(&tonecurve, 100.0f * k / (num_tonecurve - 1.0f)));
+    fprintf(stderr, "L[%g] = %g\n", 100.0 * k / (num_tonecurve - 1.0),
+            tonecurve_apply(&tonecurve, 100.0 * k / (num_tonecurve - 1.0)));
 #endif
 
+#if 0 // Lab tonecurve on L only
   // unapply from target data, we will apply it later in the pipe and want to match the colours only:
   for(int k = 0; k < N; k++) target_L[k] = tonecurve_unapply(&tonecurve, target_L[k]);
+#else // rgb tonecurve affecting colours, too
+  tonecurve_t rgbcurve;
+  cx = malloc(sizeof(double) * num_tonecurve);
+  cy = malloc(sizeof(double) * num_tonecurve);
+  cx[0] = cy[0] = 0.0;                           // fix black
+  cx[num_grays + 1] = cy[num_grays + 1] = 100.0; // fix white
+  for(int k = 0; k < num_grays; k++)
+  {
+    float rgb[3], Lab[3] = { 0.0f, 0.0f, 0.0f };
+    Lab[0] = colorchecker_Lab[3 * (N - num_grays + k)];
+    dt_Lab_to_prophotorgb(Lab, rgb);
+    cx[k + 1] = rgb[0];
+    Lab[0] = tonecurve_apply(&tonecurve, Lab[0]);
+    dt_Lab_to_prophotorgb(Lab, rgb);
+    cy[k + 1] = rgb[0];
+  }
+  tonecurve_create(&rgbcurve, cx, cy, num_tonecurve);
+
+  // now unapply the curve:
+  for(int k = 0; k < N; k++)
+  {
+    float rgb[3], Lab[3] = { 0.0f, 0.0f, 0.0f };
+    Lab[0] = target_L[k];
+    Lab[1] = target_a[k];
+    Lab[2] = target_b[k];
+    dt_Lab_to_prophotorgb(Lab, rgb);
+    rgb[0] = tonecurve_unapply(&rgbcurve, rgb[0]);
+    rgb[1] = tonecurve_unapply(&rgbcurve, rgb[1]);
+    rgb[2] = tonecurve_unapply(&rgbcurve, rgb[2]);
+    dt_prophotorgb_to_Lab(rgb, Lab);
+    target_L[k] = Lab[0];
+    target_a[k] = Lab[1];
+    target_b[k] = Lab[2];
+  }
+  tonecurve_delete(&rgbcurve);
+#endif
 
   const double *target[3] = { target_L, target_a, target_b };
   double *coeff_L = malloc((N + 4) * sizeof(double));
@@ -898,11 +970,14 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   double avgerr, maxerr;
   sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff, &avgerr, &maxerr);
 
-  // TODO: is the rank interesting, too?
-  char *result_string = g_strdup_printf(_("average dE: %.02f\nmax dE: %.02f"), avgerr, maxerr);
-  gtk_label_set_text(GTK_LABEL(self->result_label), result_string);
-  g_free(result_string);
-
+  if (self->result_label != NULL)
+  {
+    // TODO: is the rank interesting, too?
+    char *result_string = g_strdup_printf(_("average dE: %.02f\nmax dE: %.02f"), avgerr, maxerr);
+    gtk_label_set_text(GTK_LABEL(self->result_label), result_string);
+    g_free(result_string);
+  }
+  
   free(coeff_b);
   free(coeff_a);
   free(coeff_L);
@@ -1609,7 +1684,7 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   *name = NULL;
   *description = NULL;
 
-  FILE *f = fopen(filename, "rb");
+  FILE *f = g_fopen(filename, "rb");
   if(!f) return 0;
   int N = 0;
   int r = 0;

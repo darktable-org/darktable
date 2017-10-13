@@ -89,7 +89,7 @@ typedef struct dt_lib_module_t
   /** get name of the module, to be translated. */
   const char *(*name)(struct dt_lib_module_t *self);
   /** get the views which the module should be loaded in. */
-  uint32_t (*views)(struct dt_lib_module_t *self);
+  const char **(*views)(struct dt_lib_module_t *self);
   /** get the container which the module should be placed in */
   uint32_t (*container)(struct dt_lib_module_t *self);
   /** check if module should use a expander or not, default implementation
@@ -143,10 +143,6 @@ typedef struct dt_lib_module_t
 void dt_lib_init(dt_lib_t *lib);
 void dt_lib_cleanup(dt_lib_t *lib);
 
-/** loads and inits the modules in the libs/ directory. */
-int dt_lib_load_modules();
-/** calls module->cleanup and closes the dl connection. */
-void dt_lib_unload_module(dt_lib_module_t *module);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module);
 /** set a expand/collaps plugin expander */
@@ -161,6 +157,8 @@ void dt_lib_connect_common_accels(dt_lib_module_t *module);
 gboolean dt_lib_is_visible(dt_lib_module_t *module);
 /** set the visible state of a plugin */
 void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible);
+/** check if a plugin is to be shown in a given view */
+gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module, const dt_view_t *view);
 
 /** returns the localized plugin name for a given plugin_name. must not be freed. */
 gchar *dt_lib_get_localized_name(const gchar *plugin_name);

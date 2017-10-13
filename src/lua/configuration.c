@@ -30,22 +30,22 @@ static int check_version(lua_State *L)
   gboolean valid = false;
   for(int i = 2; i <= lua_gettop(L); i++)
   {
-    lua_pushnumber(L, 1);
+    lua_pushinteger(L, 1);
     lua_gettable(L, i);
-    int major = luaL_checkint(L, -1);
+    int major = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    lua_pushnumber(L, 2);
+    lua_pushinteger(L, 2);
     lua_gettable(L, i);
-    int minor = luaL_checkint(L, -1);
+    int minor = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
     /*
        patch number is not needed to check for compatibility
        but let's take the good habits
-       lua_pushnumber(L,3);
+       lua_pushinteger(L,3);
        lua_gettable(L,i);
-       int patch= luaL_checkint(L,-1);
+       int patch= luaL_checkinteger(L,-1);
        lua_pop(L,1);
      */
     if(major == LUA_API_VERSION_MAJOR && minor <= LUA_API_VERSION_MINOR)
@@ -71,6 +71,22 @@ static int check_version(lua_State *L)
 }
 
 
+typedef enum
+{
+  os_windows,
+  os_macos,
+  os_linux,
+  os_unix
+} lua_os_type;
+#if defined(_WIN32)
+static const lua_os_type cur_os = os_windows;
+#elif defined(__MACH__) || defined(__APPLE__)
+static const lua_os_type cur_os = os_macos;
+#elif defined(__linux__)
+static const lua_os_type cur_os = os_linux;
+#else
+static const lua_os_type cur_os = os_unix;
+#endif
 
 int dt_lua_init_configuration(lua_State *L)
 {
@@ -109,15 +125,15 @@ int dt_lua_init_configuration(lua_State *L)
   lua_settable(L, -3);
 
   lua_pushstring(L, "api_version_major");
-  lua_pushnumber(L, LUA_API_VERSION_MAJOR);
+  lua_pushinteger(L, LUA_API_VERSION_MAJOR);
   lua_settable(L, -3);
 
   lua_pushstring(L, "api_version_minor");
-  lua_pushnumber(L, LUA_API_VERSION_MINOR);
+  lua_pushinteger(L, LUA_API_VERSION_MINOR);
   lua_settable(L, -3);
 
   lua_pushstring(L, "api_version_patch");
-  lua_pushnumber(L, LUA_API_VERSION_PATCH);
+  lua_pushinteger(L, LUA_API_VERSION_PATCH);
   lua_settable(L, -3);
 
   lua_pushstring(L, "api_version_suffix");
@@ -138,6 +154,15 @@ int dt_lua_init_configuration(lua_State *L)
 
   lua_pushstring(L, "check_version");
   lua_pushcfunction(L, check_version);
+  lua_settable(L, -3);
+
+  luaA_enum(L, lua_os_type);
+  luaA_enum_value_name(L, lua_os_type, os_windows, "windows");
+  luaA_enum_value_name(L, lua_os_type, os_macos, "macos");
+  luaA_enum_value_name(L, lua_os_type, os_linux, "linux");
+  luaA_enum_value_name(L, lua_os_type, os_unix, "unix");
+  lua_pushstring(L, "running_os");
+  luaA_push(L, lua_os_type, &cur_os);
   lua_settable(L, -3);
 
   lua_pop(L, 1); // remove the configuration table from the stack

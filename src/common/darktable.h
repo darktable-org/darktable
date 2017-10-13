@@ -44,6 +44,7 @@
 #include <sys/resource.h>
 #endif
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <glib/gi18n.h>
 #include <inttypes.h>
 #include <json-glib/json-glib.h>
@@ -81,7 +82,7 @@ typedef unsigned int u_int;
 #include "common/poison.h"
 #endif
 
-#define DT_MODULE_VERSION 16 // version of dt's module interface
+#define DT_MODULE_VERSION 17 // version of dt's module interface
 
 // every module has to define this:
 #ifdef _DEBUG
@@ -135,7 +136,10 @@ static inline int dt_version()
 // NaN-safe clamping (NaN compares false, and will thus result in H)
 #define CLAMPS(A, L, H) ((A) > (L) ? ((A) < (H) ? (A) : (H)) : (L))
 
+#undef STR_HELPER
 #define STR_HELPER(x) #x
+
+#undef STR
 #define STR(x) STR_HELPER(x)
 
 struct dt_gui_gtk_t;
@@ -157,7 +161,6 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_CACHE = 1 << 0,
   DT_DEBUG_CONTROL = 1 << 1,
   DT_DEBUG_DEV = 1 << 2,
-  DT_DEBUG_FSWATCH = 1 << 3,
   DT_DEBUG_PERF = 1 << 4,
   DT_DEBUG_CAMCTL = 1 << 5,
   DT_DEBUG_PWSTORAGE = 1 << 6,
@@ -200,7 +203,6 @@ typedef struct darktable_t
   struct dt_image_cache_t *image_cache;
   struct dt_bauhaus_t *bauhaus;
   const struct dt_database_t *db;
-  const struct dt_fswatch_t *fswatch;
   const struct dt_pwstorage_t *pwstorage;
   const struct dt_camctl_t *camctl;
   const struct dt_collection_t *collection;
@@ -208,7 +210,6 @@ typedef struct darktable_t
   struct dt_points_t *points;
   struct dt_imageio_t *imageio;
   struct dt_opencl_t *opencl;
-  struct dt_blendop_t *blendop;
   struct dt_dbus_t *dbus;
   struct dt_undo_t *undo;
   struct dt_colorspaces_t *color_profiles;
@@ -223,6 +224,7 @@ typedef struct darktable_t
   char *cachedir;
   dt_lua_state_t lua_state;
   GList *guides;
+  double start_wtime;
 } darktable_t;
 
 typedef struct
@@ -232,7 +234,6 @@ typedef struct
 } dt_times_t;
 
 extern darktable_t darktable;
-extern const char dt_supported_extensions[];
 
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L);
 void dt_cleanup();
@@ -333,7 +334,7 @@ static inline void dt_print_mem_usage()
   char pidstatus[128];
   snprintf(pidstatus, sizeof(pidstatus), "/proc/%u/status", (uint32_t)getpid());
 
-  f = fopen(pidstatus, "r");
+  f = g_fopen(pidstatus, "r");
   if(!f) return;
 
   /* read memory size data from /proc/pid/status */
@@ -373,6 +374,33 @@ static inline void dt_print_mem_usage()
                   "[memory] max used memory   (vmhwm ): %15s\n"
                   "[memory] cur used memory   (vmrss ): %12llu kB\n",
           "unknown", (uint64_t)t_info.virtual_size / 1024, "unknown", (uint64_t)t_info.resident_size / 1024);
+#elif defined (_WIN32)
+  //Based on: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+  MEMORYSTATUSEX memInfo;
+  memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+  GlobalMemoryStatusEx(&memInfo);
+  // DWORDLONG totalVirtualMem = memInfo.ullTotalPageFile;
+
+  // Virtual Memory currently used by current process:
+  PROCESS_MEMORY_COUNTERS_EX pmc;
+  GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS *)&pmc, sizeof(pmc));
+  size_t virtualMemUsedByMe = pmc.PagefileUsage;
+  size_t virtualMemUsedByMeMax = pmc.PeakPagefileUsage;
+
+  // Max Physical Memory currently used by current process
+  size_t physMemUsedByMeMax = pmc.PeakWorkingSetSize;
+
+  // Physical Memory currently used by current process
+  size_t physMemUsedByMe = pmc.WorkingSetSize;
+
+
+  fprintf(stderr, "[memory] max address space (vmpeak): %12llu kB\n"
+                  "[memory] cur address space (vmsize): %12llu kB\n"
+                  "[memory] max used memory   (vmhwm ): %12llu kB\n"
+                  "[memory] cur used memory   (vmrss ): %12llu Kb\n",
+          virtualMemUsedByMeMax / 1024, virtualMemUsedByMe / 1024, physMemUsedByMeMax / 1024,
+          physMemUsedByMe / 1024);
+
 #else
   fprintf(stderr, "dt_print_mem_usage() currently unsupported on this platform\n");
 #endif
@@ -383,7 +411,7 @@ static inline int dt_get_num_atom_cores()
 #if defined(__linux__)
   int count = 0;
   char line[256];
-  FILE *f = fopen("/proc/cpuinfo", "r");
+  FILE *f = g_fopen("/proc/cpuinfo", "r");
   if(f)
   {
     while(!feof(f))
@@ -450,6 +478,12 @@ static inline int dt_get_num_atom_cores()
   }
 
   return hw_ncpu;
+#elif defined _WIN32
+
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo(&sysinfo);
+  return sysinfo.dwNumberOfProcessors;
+
 #else
   return 0;
 #endif
@@ -458,7 +492,7 @@ static inline int dt_get_num_atom_cores()
 static inline size_t dt_get_total_memory()
 {
 #if defined(__linux__)
-  FILE *f = fopen("/proc/meminfo", "rb");
+  FILE *f = g_fopen("/proc/meminfo", "rb");
   if(!f) return 0;
   size_t mem = 0;
   char *line = NULL;
@@ -480,6 +514,11 @@ static inline size_t dt_get_total_memory()
   size_t length = sizeof(uint64_t);
   sysctl(mib, 2, (void *)&physical_memory, &length, (void *)NULL, 0);
   return physical_memory / 1024;
+#elif defined _WIN32
+  MEMORYSTATUSEX memInfo;
+  memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+  GlobalMemoryStatusEx(&memInfo);
+  return memInfo.ullTotalPhys / (uint64_t)1024;
 #else
   // assume 2GB until we have a better solution.
   fprintf(stderr, "Unknown memory size. Assuming 2GB\n");

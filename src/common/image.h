@@ -171,7 +171,7 @@ typedef struct dt_image_t
   /* needed in exposure iop for Deflicker */
   uint16_t raw_black_level;
   uint16_t raw_black_level_separate[4];
-  uint16_t raw_white_point;
+  uint32_t raw_white_point;
 
   /* needed to fix some manufacturers madness */
   uint32_t fuji_rotation_pos;
@@ -211,8 +211,10 @@ void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len);
 /** look for duplicate's xmp files and read them. */
 void dt_image_read_duplicates(uint32_t id, const char *filename);
-/** imports a new image from raw/etc file and adds it to the data base and image cache. */
+/** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
 uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
+/** imports a new image from raw/etc file and adds it to the data base and image cache. Use from lua thread.*/
+uint32_t dt_image_import_lua(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** removes the given image from the database. */
 void dt_image_remove(const int32_t imgid);
 /** duplicates the given image in the database with the duplicate getting the supplied version number. if that
@@ -247,11 +249,11 @@ static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int
     case 1:
       return ORIENTATION_NONE;
     case 2:
-      return ORIENTATION_FLIP_VERTICALLY;
+      return ORIENTATION_FLIP_HORIZONTALLY;
     case 3:
       return ORIENTATION_ROTATE_180_DEG;
     case 4:
-      return ORIENTATION_FLIP_HORIZONTALLY;
+      return ORIENTATION_FLIP_VERTICALLY;
     case 5:
       return ORIENTATION_400; // ???
     case 6:

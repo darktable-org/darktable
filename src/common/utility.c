@@ -16,24 +16,41 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/darktable.h"
+#include "common/file_location.h"
+#include "common/grealpath.h"
+#include "common/utility.h"
+#include "gui/gtk.h"
+
 /* getpwnam_r availibility check */
 #if defined __APPLE__ || defined _POSIX_C_SOURCE >= 1 || defined _XOPEN_SOURCE || defined _BSD_SOURCE        \
     || defined _SVID_SOURCE || defined _POSIX_SOURCE || defined __DragonFly__ || defined __FreeBSD__         \
     || defined __NetBSD__ || defined __OpenBSD__
-#include "darktable.h"
-#include <pwd.h>
-#include <sys/types.h>
-#include <unistd.h>
+  #include <pwd.h>
+  #include <sys/types.h>
+  #include <unistd.h>
 #endif
+
+#ifdef _WIN32
+  #include <Windows.h>
+  #include <WinBase.h>
+  #include <FileAPI.h>
+#endif
+
+#include <math.h>
+#include <glib/gi18n.h>
 
 #include <sys/stat.h>
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+  #include <config.h>
 #endif
 
-#include "file_location.h"
-#include "utility.h"
+#include <librsvg/rsvg.h>
+// ugh, ugly hack. why do people break stuff all the time?
+#ifndef RSVG_CAIRO_H
+#include <librsvg/rsvg-cairo.h>
+#endif
 
 gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...)
 {
@@ -330,7 +347,7 @@ static void easter(int Y, int* month, int *day)
 }
 
 // days are in [1..31], months are in [0..11], see "man localtime"
-dt_logo_season_t get_logo_season(void)
+dt_logo_season_t dt_util_get_logo_season(void)
 {
   time_t now;
   time(&now);
@@ -357,6 +374,73 @@ dt_logo_season_t get_logo_season(void)
   }
 
   return DT_LOGO_SEASON_NONE;
+}
+
+cairo_surface_t *dt_util_get_logo(float size)
+{
+  GError *error = NULL;
+  cairo_surface_t *surface = NULL;
+  char datadir[PATH_MAX] = { 0 };
+  char *logo;
+  dt_logo_season_t season = dt_util_get_logo_season();
+  if(season != DT_LOGO_SEASON_NONE)
+    logo = g_strdup_printf("idbutton-%d.svg", (int)season);
+  else
+    logo = g_strdup("idbutton.svg");
+
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  char *dtlogo = g_build_filename(datadir, "pixmaps", logo, NULL);
+  RsvgHandle *svg = rsvg_handle_new_from_file(dtlogo, &error);
+  if(svg)
+  {
+    cairo_t *cr;
+
+    RsvgDimensionData dimension;
+    rsvg_handle_get_dimensions(svg, &dimension);
+
+    float ppd = darktable.gui ? darktable.gui->ppd : 1.0;
+
+    float svg_size = MAX(dimension.width, dimension.height);
+    float factor = size > 0.0 ? size / svg_size : -1.0 * size;
+    float final_width = dimension.width * factor * ppd,
+          final_height = dimension.height * factor * ppd;
+    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
+
+    guint8 *image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
+    if(darktable.gui)
+      surface = dt_cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
+                                                      final_height, stride);
+    else // during startup we don't know ppd yet and darktable.gui isn't initialized yet.
+      surface = cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
+                                                       final_height, stride);
+    if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+    {
+      fprintf(stderr, "warning: can't load darktable logo from SVG file `%s'\n", dtlogo);
+      cairo_surface_destroy(surface);
+      free(image_buffer);
+      image_buffer = NULL;
+      surface = NULL;
+    }
+    else
+    {
+      cr = cairo_create(surface);
+      cairo_scale(cr, factor, factor);
+      rsvg_handle_render_cairo(svg, cr);
+      cairo_destroy(cr);
+      cairo_surface_flush(surface);
+    }
+    g_object_unref(svg);
+  }
+  else
+  {
+    fprintf(stderr, "warning: can't load darktable logo from SVG file `%s'\n%s\n", dtlogo, error->message);
+    g_error_free(error);
+  }
+
+  g_free(logo);
+  g_free(dtlogo);
+
+  return surface;
 }
 
 // the following two functions (dt_util_latitude_str and dt_util_longitude_str) were taken from libosmgpsmap
@@ -423,6 +507,101 @@ gchar *dt_util_elevation_str(float elevation)
   return g_strdup_printf("%.2f %s %s", elevation, _("m"), _(c));
 }
 
+// make paths absolute and try to normalize on Windows. also deal with character encoding on Windows.
+gchar *dt_util_normalize_path(const gchar *_input)
+{
+#ifdef _WIN32
+  gchar *input;
+  if(g_utf8_validate(_input, -1, NULL))
+    input = g_strdup(_input);
+  else
+  {
+    input = g_locale_to_utf8(_input, -1, NULL, NULL, NULL);
+    if(!input) return NULL;
+  }
+#else
+  const gchar *input = _input;
+#endif
+
+  gchar *filename = g_filename_from_uri(input, NULL, NULL);
+
+  if(!filename)
+  {
+    if(g_str_has_prefix(input, "file://")) // in this case we should take care of %XX encodings in the string
+                                           // (for example %20 = ' ')
+    {
+      input += strlen("file://");
+      filename = g_uri_unescape_string(input, NULL);
+    }
+    else
+      filename = g_strdup(input);
+  }
+
+#ifdef _WIN32
+  g_free(input);
+#endif
+
+  if(g_path_is_absolute(filename) == FALSE)
+  {
+    char *current_dir = g_get_current_dir();
+    char *tmp_filename = g_build_filename(current_dir, filename, NULL);
+    g_free(filename);
+    filename = g_realpath(tmp_filename);
+    if(filename == NULL)
+    {
+      g_free(current_dir);
+      g_free(tmp_filename);
+      g_free(filename);
+      return NULL;
+    }
+    g_free(current_dir);
+    g_free(tmp_filename);
+  }
+
+#ifdef _WIN32
+  // on Windows filenames are case insensitive, so we can end up with an arbitrary number of different spellings for the same file.
+  // another problem is that path separators can either be / or \ leading to even more problems.
+
+  // TODO:
+  // this only handles filenames in the old <drive letter>:\path\to\file form, not the \\?\UNC\ form and not some others like \Device\...
+
+  // the Windows api expects wide chars and not utf8 :(
+  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
+  g_free(filename);
+  if(!wfilename)
+    return NULL;
+
+  wchar_t LongPath[MAX_PATH] = {0};
+  DWORD size = GetLongPathNameW(wfilename, LongPath, MAX_PATH);
+  g_free(wfilename);
+  if(size == 0 || size > MAX_PATH)
+    return NULL;
+
+  // back to utf8!
+  filename = g_utf16_to_utf8(LongPath, -1, NULL, NULL, NULL);
+  if(!filename)
+    return NULL;
+
+  GFile *gfile = g_file_new_for_path(filename);
+  g_free(filename);
+  if(!gfile)
+    return NULL;
+  filename = g_file_get_path(gfile);
+  g_object_unref(gfile);
+  if(!filename)
+    return NULL;
+
+  char drive_letter = g_ascii_toupper(filename[0]);
+  if(drive_letter < 'A' || drive_letter > 'Z' || filename[1] != ':')
+  {
+    g_free(filename);
+    return NULL;
+  }
+  filename[0] = drive_letter;
+#endif
+
+  return filename;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -63,11 +63,15 @@ const char *name(dt_lib_module_t *self)
   return _("tagging");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  uint32_t v = DT_VIEW_LIGHTTABLE | DT_VIEW_MAP | DT_VIEW_TETHERING;
-  if(dt_conf_get_bool("plugins/darkroom/tagging/visible")) v |= DT_VIEW_DARKROOM;
-  return v;
+  static const char *v1[] = {"lighttable", "darkroom", "map", "tethering", NULL};
+  static const char *v2[] = {"lighttable", "map", "tethering", NULL};
+
+  if(dt_conf_get_bool("plugins/darkroom/tagging/visible"))
+    return v1;
+  else
+    return v2;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -194,9 +198,21 @@ static void detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   if(tagid <= 0) return;
 
   imgsel = dt_view_get_image_to_act_on();
+  GList *affected_images = dt_tag_get_images_from_selection(imgsel, tagid);
 
   dt_tag_detach(tagid, imgsel);
-  dt_image_synch_xmp(imgsel);
+
+  // we have to check the conf option as dt_image_synch_xmp() doesn't when called for a single image
+  if(dt_conf_get_bool("write_sidecar_files"))
+  {
+    for(GList *image_iter = affected_images; image_iter; image_iter = g_list_next(image_iter))
+    {
+      int imgid = GPOINTER_TO_INT(image_iter->data);
+      dt_image_synch_xmp(imgid);
+    }
+  }
+
+  g_list_free(affected_images);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
@@ -602,27 +618,9 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
     case GDK_KEY_KP_Enter:
     {
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
-      /* attach tag to images  */
-      if(d->floating_tag_imgid > 0) // just a single image
-      {
-        dt_tag_attach_string_list(tag, d->floating_tag_imgid);
-        dt_image_synch_xmp(d->floating_tag_imgid);
-      }
-      else // all selected images
-      {
-        GList *selected_images = g_list_first(dt_collection_get_selected(darktable.collection, -1));
-        if(selected_images)
-        {
-          GList *iter = selected_images;
-          do
-          {
-            int imgid = GPOINTER_TO_INT(iter->data);
-            dt_tag_attach_string_list(tag, imgid);
-            dt_image_synch_xmp(imgid);
-          } while((iter = g_list_next(iter)) != NULL);
-        }
-        g_list_free(selected_images);
-      }
+      // both these functions can deal with -1 for all selected images. no need for extra code in here!
+      dt_tag_attach_string_list(tag, d->floating_tag_imgid);
+      dt_image_synch_xmp(d->floating_tag_imgid);
       update(self, 1);
       update(self, 0);
       gtk_widget_destroy(d->floating_tag_window);

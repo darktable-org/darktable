@@ -1,6 +1,8 @@
 // CMake uses config.cmake.h to generate config.h within the build folder.
 #pragma once
 
+#include <stddef.h>
+
 // clang-format off
 // it butchers @@ and ${} :(
 
@@ -10,11 +12,12 @@
 // these will be defined in build/src/version_gen.c
 extern const char darktable_package_version[];
 extern const char darktable_package_string[];
+extern const char darktable_last_commit_year[];
+
+static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUPPORTED_EXTENSIONS_STRING@", NULL};
 
 #define GETTEXT_PACKAGE "darktable"
 #define DARKTABLE_LOCALEDIR "@CMAKE_INSTALL_FULL_LOCALEDIR@"
-#define DARKTABLE_TMPDIR "@TMP_DIR@"
-#define DARKTABLE_CACHEDIR "@CACHE_DIR@"
 
 #define DARKTABLE_LIBDIR "@CMAKE_INSTALL_FULL_LIBDIR@/darktable"
 #define DARKTABLE_DATADIR "@CMAKE_INSTALL_FULL_DATAROOTDIR@/darktable"

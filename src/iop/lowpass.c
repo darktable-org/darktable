@@ -44,9 +44,6 @@
 
 #define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
-#define BLOCKSIZE 64 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed  \
-                        */
-
 DT_MODULE_INTROSPECTION(4, dt_iop_lowpass_params_t)
 
 typedef enum dt_iop_lowpass_algo_t
@@ -601,7 +598,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_lowpass_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_lowpass_params_t));
   module->default_enabled = 0;
-  module->priority = 746; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 749; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_lowpass_params_t);
   module->gui_data = NULL;
   dt_iop_lowpass_params_t tmp = (dt_iop_lowpass_params_t){ 0, 10.0f, 1.0f, 0.0f, 1.0f, LOWPASS_ALGO_GAUSSIAN, 1 };

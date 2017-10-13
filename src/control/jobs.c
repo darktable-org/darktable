@@ -176,10 +176,16 @@ void dt_control_job_wait(_dt_job_t *job)
   if(!job) return;
   dt_job_state_t state = dt_control_job_get_state(job);
 
-  /* if job execution is not finished let's wait for signal */
+  // NOTE: could also use signals.
+
+  /* if job execution is not finished let's wait for it */
   if(state == DT_JOB_STATE_RUNNING || state == DT_JOB_STATE_CANCELLED)
   {
+    // once the job finishes, it unlocks the mutex
+    // so by locking the mutex here, we will only get the lock once the job
+    // has finished and unlocked it.
     dt_pthread_mutex_lock(&job->wait_mutex);
+    // yay, the job finished, we got the lock. nothing more to do.
     dt_pthread_mutex_unlock(&job->wait_mutex);
   }
 }
@@ -506,6 +512,9 @@ static void *dt_control_work_res(void *ptr)
   worker_thread_parameters_t *params = (worker_thread_parameters_t *)ptr;
   dt_control_t *s = params->self;
   threadid = params->threadid;
+  char name[16] = {0};
+  snprintf(name, sizeof(name), "worker res %d", threadid);
+  dt_pthread_setname(name);
   free(params);
   int32_t threadid_res = dt_control_get_threadid_res();
   while(dt_control_running())
@@ -529,6 +538,7 @@ static void *dt_control_work_res(void *ptr)
 static void *dt_control_worker_kicker(void *ptr)
 {
   dt_control_t *control = (dt_control_t *)ptr;
+  dt_pthread_setname("kicker");
   while(dt_control_running())
   {
     sleep(2);
@@ -547,6 +557,9 @@ static void *dt_control_work(void *ptr)
   worker_thread_parameters_t *params = (worker_thread_parameters_t *)ptr;
   dt_control_t *control = params->self;
   threadid = params->threadid;
+  char name[16] = {0};
+  snprintf(name, sizeof(name), "worker %d", threadid);
+  dt_pthread_setname(name);
   free(params);
   // int32_t threadid = dt_control_get_threadid();
   while(dt_control_running())

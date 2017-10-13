@@ -78,6 +78,27 @@ typedef enum dt_dev_pixelpipe_status_t
   DT_DEV_PIXELPIPE_INVALID = 3  // pixelpipe has finished; invalid result
 } dt_dev_pixelpipe_status_t;
 
+typedef enum dt_dev_pixelpipe_display_mask_t
+{
+  DT_DEV_PIXELPIPE_DISPLAY_NONE = 0,
+  DT_DEV_PIXELPIPE_DISPLAY_MASK = 1 << 0,
+  DT_DEV_PIXELPIPE_DISPLAY_CHANNEL = 1 << 1,
+  DT_DEV_PIXELPIPE_DISPLAY_OUTPUT = 1 << 2,
+  DT_DEV_PIXELPIPE_DISPLAY_L = 1 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_a = 2 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_b = 3 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_R = 4 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_G = 5 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_B = 6 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_GRAY = 7 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_LCH_C = 8 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_LCH_h = 9 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2
+} dt_dev_pixelpipe_display_mask_t;
+
 extern const gchar *dt_dev_histogram_type_names[];
 
 typedef struct dt_dev_proxy_exposure_t
@@ -144,6 +165,8 @@ typedef struct dt_develop_t
   GList *forms;
   struct dt_masks_form_t *form_visible;
   struct dt_masks_form_gui_t *form_gui;
+  // all forms to be linked here for cleanup:
+  GList *allforms;
 
   //full preview stuff
   int full_preview;
@@ -354,10 +377,22 @@ struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, st
 uint64_t dt_dev_hash(dt_develop_t *dev);
 /** same function, but we can specify iop with priority between pmin and pmax */
 uint64_t dt_dev_hash_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax);
+/** wait until hash value found in hash matches hash value defined by dev/pipe/pmin/pmax with timeout */
+int dt_dev_wait_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                     const volatile uint64_t *const hash);
+/** synchronize pixelpipe by means hash values by waiting with timeout and potential reprocessing */
+int dt_dev_sync_pixelpipe_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                               const volatile uint64_t *const hash);
 /** generate hash value out of module settings of all distorting modules of pixelpipe */
 uint64_t dt_dev_hash_distort(dt_develop_t *dev);
 /** same function, but we can specify iop with priority between pmin and pmax */
 uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax);
+/** same as dt_dev_wait_hash but only for distorting modules */
+int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                             const volatile uint64_t *const hash);
+/** same as dt_dev_sync_pixelpipe_hash but ony for distorting modules */
+int dt_dev_sync_pixelpipe_hash_distort (dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                                        const volatile uint64_t *const hash);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

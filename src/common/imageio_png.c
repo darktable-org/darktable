@@ -44,7 +44,7 @@ typedef struct dt_imageio_png_t
 
 int read_header(const char *filename, dt_imageio_png_t *png)
 {
-  png->f = fopen(filename, "rb");
+  png->f = g_fopen(filename, "rb");
 
   if(!png->f) return 1;
 

@@ -8,6 +8,12 @@
 @define-color tooltip_bg_color #000000;
 @define-color tooltip_fg_color #ffffff;
 @define-color really_dark_bg_color #111;
+@define-color darkroom_bg_color #333333;
+@define-color darkroom_preview_bg_color shade(@darkroom_bg_color, .5);
+@define-color lighttable_bg_color @darkroom_bg_color;
+@define-color lighttable_preview_bg_color shade(@lighttable_bg_color, .5);
+@define-color brush_cursor alpha(white, .9);
+@define-color brush_trace alpha(black, .8);
 
 @define-color dark_bg_color #350000;
 
@@ -203,12 +209,22 @@ table
   background-color: transparent;
 }
 
+popover {
+  opacity: 0.9;
+  border: 0;
+  border-radius: 0;
+  box-shadow: 0 0 0 2pt #111111;
+  background-color: @selected_bg_color;
+  padding: 1pt;
+}
+
 frame {
   border: 1pt solid #111111;
   background-color: @selected_bg_color;
   color: @selected_fg_color;
 }
 
+popover *,
 frame * {
   background-color: transparent;
   color: @selected_fg_color;

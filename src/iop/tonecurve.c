@@ -27,6 +27,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -42,7 +43,7 @@
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 #define DT_GUI_CURVE_INFL .3f
 
-#define DT_IOP_TONECURVE_RES 64
+#define DT_IOP_TONECURVE_RES 256
 #define DT_IOP_TONECURVE_MAXNODES 20
 
 DT_MODULE_INTROSPECTION(4, dt_iop_tonecurve_params_t)
@@ -77,6 +78,7 @@ typedef enum dt_iop_tonecurve_autoscale_t
                                 // transforming the curve C to C' like:
                                 // L_out=C(L_in) -> Y_out=C'(Y_in) and applying C' to the X and Z
                                 // channels, too (and then transforming it back to Lab of course)
+  s_scale_automatic_rgb = 3,    // similar to above but use an rgb working space
 } dt_iop_tonecurve_autoscale_t;
 
 // parameter structure of tonecurve 1st version, needed for use in legacy_params()
@@ -228,7 +230,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
   const int autoscale_ab = d->autoscale_ab;
   const int unbound_ab = d->unbound_ab;
-  const float low_approximation = d->table[0][(int)(0.01f * 0xfffful)];
+  const float low_approximation = d->table[0][(int)(0.01f * 0x10000ul)];
 
   dev_L = dt_opencl_copy_host_to_device(devid, d->table[ch_L], 256, 256, sizeof(float));
   if(dev_L == NULL) goto error;
@@ -290,7 +292,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float xm_al = 1.0f - 1.0f / d->unbounded_coeffs_ab[3];
   const float xm_br = 1.0f / d->unbounded_coeffs_ab[6];
   const float xm_bl = 1.0f - 1.0f / d->unbounded_coeffs_ab[9];
-  const float low_approximation = d->table[0][(int)(0.01f * 0xfffful)];
+  const float low_approximation = d->table[0][(int)(0.01f * 0x10000ul)];
 
   const int width = roi_out->width;
   const int height = roi_out->height;
@@ -309,7 +311,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       const float L_in = in[0] / 100.0f;
 
-      out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in * 0xfffful), 0, 0xffff)]
+      out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)]
                              : dt_iop_eval_exp(d->unbounded_coeffs_L, L_in);
 
       if(autoscale_ab == s_scale_manual)
@@ -320,8 +322,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         if(unbound_ab == 0)
         {
           // old style handling of a/b curves: only lut lookup with clamping
-          out[1] = d->table[ch_a][CLAMP((int)(a_in * 0xfffful), 0, 0xffff)];
-          out[2] = d->table[ch_b][CLAMP((int)(b_in * 0xfffful), 0, 0xffff)];
+          out[1] = d->table[ch_a][CLAMP((int)(a_in * 0x10000ul), 0, 0xffff)];
+          out[2] = d->table[ch_b][CLAMP((int)(b_in * 0x10000ul), 0, 0xffff)];
         }
         else
         {
@@ -330,11 +332,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           out[1] = (a_in > xm_ar)
                        ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in)
                        : ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 3, 1.0f - a_in)
-                                         : d->table[ch_a][CLAMP((int)(a_in * 0xfffful), 0, 0xffff)]);
+                                         : d->table[ch_a][CLAMP((int)(a_in * 0x10000ul), 0, 0xffff)]);
           out[2] = (b_in > xm_br)
                        ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 6, b_in)
                        : ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 9, 1.0f - b_in)
-                                         : d->table[ch_b][CLAMP((int)(b_in * 0xfffful), 0, 0xffff)]);
+                                         : d->table[ch_b][CLAMP((int)(b_in * 0x10000ul), 0, 0xffff)]);
         }
       }
       else if(autoscale_ab == s_scale_automatic)
@@ -356,9 +358,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         float XYZ[3];
         dt_Lab_to_XYZ(in, XYZ);
         for(int c=0;c<3;c++)
-          XYZ[c] = (XYZ[c] < xm_L) ? d->table[ch_L][CLAMP((int)(XYZ[c] * 0xfffful), 0, 0xffff)]
+          XYZ[c] = (XYZ[c] < xm_L) ? d->table[ch_L][CLAMP((int)(XYZ[c] * 0x10000ul), 0, 0xffff)]
                                    : dt_iop_eval_exp(d->unbounded_coeffs_L, XYZ[c]);
         dt_XYZ_to_Lab(XYZ, out);
+      }
+      else if(autoscale_ab == s_scale_automatic_rgb)
+      {
+        float rgb[3] = {0, 0, 0};
+        dt_Lab_to_prophotorgb(in, rgb);
+        for(int c=0;c<3;c++)
+          rgb[c] = (rgb[c] < xm_L) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
+                                   : dt_iop_eval_exp(d->unbounded_coeffs_L, rgb[c]);
+        dt_prophotorgb_to_Lab(rgb, out);
       }
 
       out[3] = in[3];
@@ -372,24 +383,24 @@ static const struct
   const char *maker;
   const char *model;
   int iso_min;
-  int iso_max;
+  float iso_max;
   struct dt_iop_tonecurve_params_t preset;
 } preset_camera_curves[] = {
-    // This is where you can paste the line provided by dt-curve-tool
-    // Here is a valid example for you to compare
-    // clang-format off
+  // This is where you can paste the line provided by dt-curve-tool
+  // Here is a valid example for you to compare
+  // clang-format off
     // nikon d750 by Edouard Gomez
-    {"Nikon D750", "NIKON CORPORATION", "NIKON D750", 0, 51200, {{{{0.000000, 0.000000}, {0.083508, 0.073677}, {0.212191, 0.274799}, {0.397095, 0.594035}, {0.495025, 0.714660}, {0.683565, 0.878550}, {0.854059, 0.950927}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
+    {"Nikon D750", "NIKON CORPORATION", "NIKON D750", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.083508, 0.073677}, {0.212191, 0.274799}, {0.397095, 0.594035}, {0.495025, 0.714660}, {0.683565, 0.878550}, {0.854059, 0.950927}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
     // nikon d5100 contributed by Stefan Kauerauf
-    {"NIKON D5100", "NIKON CORPORATION", "NIKON D5100", 0, 51200, {{{{0.000000, 0.000000}, {0.000957, 0.000176}, {0.002423, 0.000798}, {0.005893, 0.003685}, {0.013219, 0.006619}, {0.023372, 0.011954}, {0.037580, 0.017817}, {0.069695, 0.035353}, {0.077276, 0.040315}, {0.123707, 0.082707}, {0.145249, 0.112105}, {0.189168, 0.186135}, {0.219576, 0.243677}, {0.290201, 0.385251}, {0.428150, 0.613355}, {0.506199, 0.700256}, {0.622833, 0.805488}, {0.702763, 0.870959}, {0.935053, 0.990139}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },}, {20, 20, 20}, {2, 2, 2}, 1, 0, 0}},
+    {"NIKON D5100", "NIKON CORPORATION", "NIKON D5100", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.000957, 0.000176}, {0.002423, 0.000798}, {0.005893, 0.003685}, {0.013219, 0.006619}, {0.023372, 0.011954}, {0.037580, 0.017817}, {0.069695, 0.035353}, {0.077276, 0.040315}, {0.123707, 0.082707}, {0.145249, 0.112105}, {0.189168, 0.186135}, {0.219576, 0.243677}, {0.290201, 0.385251}, {0.428150, 0.613355}, {0.506199, 0.700256}, {0.622833, 0.805488}, {0.702763, 0.870959}, {0.935053, 0.990139}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },}, {20, 20, 20}, {2, 2, 2}, 1, 0, 0}},
     // nikon d7000 by Edouard Gomez
-    {"Nikon D7000", "NIKON CORPORATION", "NIKON D7000", 0, 51200, {{{{0.000000, 0.000000}, {0.110633, 0.111192}, {0.209771, 0.286963}, {0.355888, 0.561236}, {0.454987, 0.673098}, {0.769212, 0.920485}, {0.800468, 0.933428}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
+    {"Nikon D7000", "NIKON CORPORATION", "NIKON D7000", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.110633, 0.111192}, {0.209771, 0.286963}, {0.355888, 0.561236}, {0.454987, 0.673098}, {0.769212, 0.920485}, {0.800468, 0.933428}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
     // nikon d7200 standard by Ralf Brown (firmware 1.00)
-    {"Nikon D7200", "NIKON CORPORATION", "NIKON D7200", 0, 51200, {{{{0.000000, 0.000000}, {0.000618, 0.003286}, {0.001639, 0.003705}, {0.005227, 0.005101}, {0.013299, 0.011192}, {0.016048, 0.013130}, {0.037941, 0.027014}, {0.058195, 0.041339}, {0.086531, 0.069088}, {0.116679, 0.107283}, {0.155629, 0.159422}, {0.205477, 0.246265}, {0.225923, 0.287343}, {0.348056, 0.509104}, {0.360629, 0.534732}, {0.507562, 0.762089}, {0.606899, 0.865692}, {0.734828, 0.947468}, {0.895488, 0.992021}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },}, {20, 20, 20}, {2, 2, 2}, 1, 0, 0}},
+    {"Nikon D7200", "NIKON CORPORATION", "NIKON D7200", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.000618, 0.003286}, {0.001639, 0.003705}, {0.005227, 0.005101}, {0.013299, 0.011192}, {0.016048, 0.013130}, {0.037941, 0.027014}, {0.058195, 0.041339}, {0.086531, 0.069088}, {0.116679, 0.107283}, {0.155629, 0.159422}, {0.205477, 0.246265}, {0.225923, 0.287343}, {0.348056, 0.509104}, {0.360629, 0.534732}, {0.507562, 0.762089}, {0.606899, 0.865692}, {0.734828, 0.947468}, {0.895488, 0.992021}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },}, {20, 20, 20}, {2, 2, 2}, 1, 0, 0}},
     // nikon d90 by Edouard Gomez
-    {"Nikon D90", "NIKON CORPORATION", "NIKON D90", 0, 51200, {{{{0.000000, 0.000000}, {0.002915, 0.006453}, {0.023324, 0.021601}, {0.078717, 0.074963}, {0.186589, 0.242230}, {0.364432, 0.544956}, {0.629738, 0.814127}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
-    // clang-format on
-  };
+    {"Nikon D90", "NIKON CORPORATION", "NIKON D90", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.002915, 0.006453}, {0.023324, 0.021601}, {0.078717, 0.074963}, {0.186589, 0.242230}, {0.364432, 0.544956}, {0.629738, 0.814127}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
+  // clang-format on
+};
 
 void init_presets(dt_iop_module_so_t *self)
 {
@@ -524,6 +535,19 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       d->table[ch_L][k] = XYZ[1]; // now mapping Y_in to Y_out
     }
   }
+  else if(p->tonecurve_autoscale_ab == s_scale_automatic_rgb)
+  {
+    // derive curve for rgb:
+    for(int k=0;k<0x10000;k++)
+    {
+      float rgb[3] = {k/(float)0x10000, k/(float)0x10000, k/(float)0x10000};
+      float Lab[3] = {0.0};
+      dt_prophotorgb_to_Lab(rgb, Lab);
+      Lab[0] = d->table[ch_L][CLAMP((int)(Lab[0]/100.0f * 0x10000), 0, 0xffff)];
+      dt_Lab_to_prophotorgb(Lab, rgb);
+      d->table[ch_L][k] = rgb[1]; // now mapping G_in to G_out
+    }
+  }
 
   d->autoscale_ab = p->tonecurve_autoscale_ab;
   d->unbound_ab = p->tonecurve_unbound_ab;
@@ -612,6 +636,7 @@ void gui_update(struct dt_iop_module_t *self)
   if(p->tonecurve_autoscale_ab == 0) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic);
   if(p->tonecurve_autoscale_ab == 1) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_manual);
   if(p->tonecurve_autoscale_ab == 2) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic_xyz);
+  if(p->tonecurve_autoscale_ab == 3) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic_rgb);
   // that's all, gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -623,7 +648,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_tonecurve_params_t));
   module->default_enabled = 0;
   module->request_histogram |= (DT_REQUEST_ON);
-  module->priority = 671; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 676; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
   dt_iop_tonecurve_params_t tmp = (dt_iop_tonecurve_params_t){
@@ -677,6 +702,7 @@ static void autoscale_ab_callback(GtkWidget *widget, dt_iop_module_t *self)
   if(combo == 0) p->tonecurve_autoscale_ab = s_scale_automatic;
   if(combo == 1) p->tonecurve_autoscale_ab = s_scale_manual;
   if(combo == 2) p->tonecurve_autoscale_ab = s_scale_automatic_xyz;
+  if(combo == 3) p->tonecurve_autoscale_ab = s_scale_automatic_rgb;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -807,22 +833,14 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
 
   if(c->selected < 0) return TRUE;
 
-  int handled = 0;
-  float dy = 0.0f;
-  if(event->direction == GDK_SCROLL_UP)
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
-    handled = 1;
-    dy = TONECURVE_DEFAULT_STEP;
-  }
-  if(event->direction == GDK_SCROLL_DOWN)
-  {
-    handled = 1;
-    dy = -TONECURVE_DEFAULT_STEP;
+    delta_y *= -TONECURVE_DEFAULT_STEP;
+    return _move_point_internal(self, widget, 0.0, delta_y, event->state);
   }
 
-  if(!handled) return TRUE;
-
-  return _move_point_internal(self, widget, 0.0, dy, event->state);
+  return TRUE;
 }
 
 static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
@@ -929,7 +947,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK | GDK_KEY_PRESS_MASK);
+                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                                 | GDK_SMOOTH_SCROLL_MASK | GDK_KEY_PRESS_MASK);
   gtk_widget_set_can_focus(GTK_WIDGET(c->area), TRUE);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_tonecurve_button_press), self);
@@ -946,6 +965,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic"));
   dt_bauhaus_combobox_add(c->autoscale_ab, C_("scale", "manual"));
   dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic in XYZ"));
+  dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic in RGB"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(c->autoscale_ab, _("if set to auto, a and b curves have no effect and are "
                                                  "not displayed. chroma values (a and b) of each pixel are "
@@ -973,21 +993,12 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  c->mouse_x = fabs(c->mouse_x);
-  c->mouse_y = fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
 
 static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  // weird sign dance for fluxbox:
-  c->mouse_x = -fabs(c->mouse_x);
-  c->mouse_y = -fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -1056,6 +1067,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_translate(cr, inset, inset);
   width -= 2 * inset;
   height -= 2 * inset;
+  char text[256];
 
 #if 0
   // draw shadow around
@@ -1126,7 +1138,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     float *raw_mean, *raw_min, *raw_max;
     float *raw_mean_output;
     float picker_mean[3], picker_min[3], picker_max[3];
-    char text[256];
 
     raw_mean = self->picked_color;
     raw_min = self->picked_color_min;
@@ -1139,7 +1150,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
-      cairo_scale(cr, width / 63.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
+      cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
       dt_draw_histogram_8(cr, hist, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw
                                                                                          // handle waveform
@@ -1179,12 +1190,19 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         PangoRectangle ink;
         PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
         pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-        pango_font_description_set_absolute_size(desc,(DT_PIXEL_APPLY_DPI(0.06) * height) * PANGO_SCALE);
+        pango_font_description_set_absolute_size(desc, PANGO_SCALE);
         layout = pango_cairo_create_layout(cr);
         pango_layout_set_font_description(layout, desc);
         picker_scale(raw_mean, picker_mean);
         picker_scale(raw_min, picker_min);
         picker_scale(raw_max, picker_max);
+
+        // scale conservatively to 100% of width:
+        snprintf(text, sizeof(text), "100.00 / 100.00 ( +100.00)");
+        pango_layout_set_text(layout, text, -1);
+        pango_layout_get_pixel_extents(layout, &ink, NULL);
+        pango_font_description_set_absolute_size(desc, width*1.0/ink.width * PANGO_SCALE);
+        pango_layout_set_font_description(layout, desc);
 
         cairo_set_source_rgba(cr, 0.7, 0.5, 0.5, 0.33);
         cairo_rectangle(cr, width * picker_min[ch], 0, width * fmax(picker_max[ch] - picker_min[ch], 0.0f),
@@ -1198,7 +1216,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         snprintf(text, sizeof(text), "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
 
         cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-        cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(0.06) * height);
+        cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(0.04) * height);
         pango_layout_set_text(layout, text, -1);
         pango_layout_get_pixel_extents(layout, &ink, NULL);
         cairo_move_to(cr, 0.02f * width, -0.94 * height - ink.height - ink.y);
@@ -1212,6 +1230,40 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   if(c->selected >= 0)
   {
+    // draw information about current selected node
+    PangoLayout *layout;
+    PangoRectangle ink;
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    pango_font_description_set_absolute_size(desc, PANGO_SCALE);
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
+
+    // scale conservatively to 100% of width:
+    snprintf(text, sizeof(text), "100.00 / 100.00 ( +100.00)");
+    pango_layout_set_text(layout, text, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    pango_font_description_set_absolute_size(desc, width*1.0/ink.width * PANGO_SCALE);
+    pango_layout_set_font_description(layout, desc);
+
+    const float min_scale_value = ch == ch_L ? 0.0f : -128.0f;
+    const float max_scale_value = ch == ch_L ? 100.0f : 128.0f;
+
+    const float x_node_value = tonecurve[c->selected].x * (max_scale_value - min_scale_value) + min_scale_value;
+    const float y_node_value = tonecurve[c->selected].y * (max_scale_value - min_scale_value) + min_scale_value;
+    const float d_node_value = y_node_value - x_node_value;
+    snprintf(text, sizeof(text), "%.2f / %.2f ( %+.2f)", x_node_value, y_node_value, d_node_value);
+
+    cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+    pango_layout_set_text(layout, text, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, 0.98f * width - ink.width - ink.x, -0.02 * height - ink.height - ink.y);
+    pango_cairo_show_layout(cr, layout);
+    cairo_stroke(cr);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
+
+    // enlarge selected node
     cairo_set_source_rgb(cr, .9, .9, .9);
     cairo_arc(cr, tonecurve[c->selected].x * width, -tonecurve[c->selected].y * height, DT_PIXEL_APPLY_DPI(4),
               0, 2. * M_PI);
@@ -1293,22 +1345,23 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-  c->mouse_x = CLAMP(event->x - inset, 0, width);
-  c->mouse_y = CLAMP(event->y - inset, 0, height);
+  double old_m_x = c->mouse_x;
+  double old_m_y = c->mouse_y;
+  c->mouse_x = event->x - inset;
+  c->mouse_y = event->y - inset;
 
-  const float mx = c->mouse_x / (float)width;
-  const float my = 1.0f - c->mouse_y / (float)height;
+  const float mx = CLAMP(c->mouse_x, 0, width) / width;
+  const float my = 1.0f - CLAMP(c->mouse_y, 0, height) / height;
+
+  const double dx = -(old_m_x - c->mouse_x) / width;
+  const double dy = (old_m_y - c->mouse_y) / height;
 
   if(event->state & GDK_BUTTON1_MASK)
   {
     // got a vertex selected:
     if(c->selected >= 0)
     {
-      tonecurve[c->selected].x = mx;
-      tonecurve[c->selected].y = my;
-
-      dt_iop_tonecurve_sanity_check(self, widget);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      return _move_point_internal(self, widget, dx, dy, event->state);
     }
     else if(nodes < DT_IOP_TONECURVE_MAXNODES && c->selected >= -1)
     {
@@ -1362,11 +1415,11 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       const int inset = DT_GUI_CURVE_EDITOR_INSET;
       GtkAllocation allocation;
       gtk_widget_get_allocation(widget, &allocation);
-      int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-      c->mouse_x = CLAMP(event->x - inset, 0, width);
-      c->mouse_y = CLAMP(event->y - inset, 0, height);
+      int width = allocation.width - 2 * inset;
+      c->mouse_x = event->x - inset;
+      c->mouse_y = event->y - inset;
 
-      const float mx = c->mouse_x / (float)width;
+      const float mx = CLAMP(c->mouse_x, 0, width) / (float)width;
 
       // don't add a node too close to others in x direction, it can crash dt
       int selected = -1;
@@ -1438,12 +1491,35 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
           if(p->tonecurve_autoscale_ab == 0) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_automatic);
           if(p->tonecurve_autoscale_ab == 1) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_manual);
           if(p->tonecurve_autoscale_ab == 2) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_automatic_xyz);
+          if(p->tonecurve_autoscale_ab == 3) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_automatic_rgb);
           dt_dev_add_history_item(darktable.develop, self, TRUE);
           gtk_widget_queue_draw(self->widget);
         }
       }
       return TRUE;
     }
+  }
+  else if(event->button == 3 && c->selected >= 0)
+  {
+    if(c->selected == 0 || c->selected == nodes - 1)
+    {
+      float reset_value = c->selected == 0 ? 0 : 1;
+      tonecurve[c->selected].y = tonecurve[c->selected].x = reset_value;
+      gtk_widget_queue_draw(self->widget);
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      return TRUE;
+    }
+
+    for(int k = c->selected; k < nodes - 1; k++)
+    {
+      tonecurve[k].x = tonecurve[k + 1].x;
+      tonecurve[k].y = tonecurve[k + 1].y;
+    }
+    c->selected = -2; // avoid re-insertion of that point immediately after this
+    p->tonecurve_nodes[ch]--;
+    gtk_widget_queue_draw(self->widget);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    return TRUE;
   }
   return FALSE;
 }

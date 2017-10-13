@@ -200,25 +200,28 @@ int main(int argc __attribute__((unused)), char *arg[] __attribute__((unused)))
     XID primary = XRRGetOutputPrimary(display, root);
     gboolean have_primary = FALSE;
     int primary_id = -1;
-    for(int crtc = 0; crtc < rsrc->ncrtc; crtc++)
+    if(rsrc)
     {
-      XRRCrtcInfo *crtc_info = XRRGetCrtcInfo(display, rsrc, rsrc->crtcs[crtc]);
-      if(!crtc_info)
-        continue;
-
-      if(crtc_info->mode != None && crtc_info->noutput > 0)
+      for(int crtc = 0; crtc < rsrc->ncrtc; crtc++)
       {
-        for(int output = 0; output < crtc_info->noutput; output++)
+        XRRCrtcInfo *crtc_info = XRRGetCrtcInfo(display, rsrc, rsrc->crtcs[crtc]);
+        if(!crtc_info)
+          continue;
+
+        if(crtc_info->mode != None && crtc_info->noutput > 0)
         {
-          if(crtc_info->outputs[output] == primary)
+          for(int output = 0; output < crtc_info->noutput; output++)
           {
-            primary_id = crtc;
-            break;
+            if(crtc_info->outputs[output] == primary)
+            {
+              primary_id = crtc;
+              break;
+            }
           }
         }
-      }
 
-      XRRFreeCrtcInfo(crtc_info);
+        XRRFreeCrtcInfo(crtc_info);
+      }
     }
     if (primary_id == -1)
       printf("couldn't locate primary CRTC!\n");
@@ -229,81 +232,84 @@ int main(int argc __attribute__((unused)), char *arg[] __attribute__((unused)))
     }
 
     // now iterate over the CRTCs again and add the relevant ones to the list
-    for(int crtc = 0; crtc < rsrc->ncrtc; ++crtc)
+    if(rsrc)
     {
-      XRROutputInfo *output_info = NULL;
-      XRRCrtcInfo *crtc_info = XRRGetCrtcInfo(display, rsrc, rsrc->crtcs[crtc]);
-      if(!crtc_info)
+      for(int crtc = 0; crtc < rsrc->ncrtc; ++crtc)
       {
-        printf("can't get CRTC info for screen %d CRTC %d\n", screen, crtc);
-        goto end;
-      }
-      // only handle those that are attached though
-      if(crtc_info->mode == None || crtc_info->noutput <= 0)
-      {
-        printf("CRTC for screen %d CRTC %d has no mode or no output, skipping\n", screen, crtc);
-        goto end;
-      }
-
-      // Choose the primary output of the CRTC if we have one, else default to the first. i.e. we punt with
-      // mirrored displays.
-      gboolean is_primary = FALSE;
-      int output = 0;
-      if(have_primary)
-      {
-        for(int j = 0; j < crtc_info->noutput; j++)
+        XRROutputInfo *output_info = NULL;
+        XRRCrtcInfo *crtc_info = XRRGetCrtcInfo(display, rsrc, rsrc->crtcs[crtc]);
+        if(!crtc_info)
         {
-          if(crtc_info->outputs[j] == primary)
+          printf("can't get CRTC info for screen %d CRTC %d\n", screen, crtc);
+          goto end;
+        }
+        // only handle those that are attached though
+        if(crtc_info->mode == None || crtc_info->noutput <= 0)
+        {
+          printf("CRTC for screen %d CRTC %d has no mode or no output, skipping\n", screen, crtc);
+          goto end;
+        }
+
+        // Choose the primary output of the CRTC if we have one, else default to the first. i.e. we punt with
+        // mirrored displays.
+        gboolean is_primary = FALSE;
+        int output = 0;
+        if(have_primary)
+        {
+          for(int j = 0; j < crtc_info->noutput; j++)
           {
-            output = j;
-            is_primary = TRUE;
-            break;
+            if(crtc_info->outputs[j] == primary)
+            {
+              output = j;
+              is_primary = TRUE;
+              break;
+            }
           }
         }
-      }
 
-      output_info = XRRGetOutputInfo(display, rsrc, crtc_info->outputs[output]);
-      if(!output_info)
-      {
-        printf("can't get output info for screen %d CRTC %d output %d\n", screen, crtc, output);
-        goto end;
-      }
+        output_info = XRRGetOutputInfo(display, rsrc, crtc_info->outputs[output]);
+        if(!output_info)
+        {
+          printf("can't get output info for screen %d CRTC %d output %d\n", screen, crtc, output);
+          goto end;
+        }
 
-      if(output_info->connection == RR_Disconnected)
-      {
-        printf("screen %d CRTC %d output %d is disconnected, skipping\n", screen, crtc, output);
-        goto end;
-      }
+        if(output_info->connection == RR_Disconnected)
+        {
+          printf("screen %d CRTC %d output %d is disconnected, skipping\n", screen, crtc, output);
+          goto end;
+        }
 
-      monitor_t *monitor = (monitor_t *)calloc(1, sizeof(monitor_t));
+        monitor_t *monitor = (monitor_t *)calloc(1, sizeof(monitor_t));
 #if 0
-      // in case we also want the edid data
-      Atom edid_atom = XInternAtom(display, "EDID", False), actual_type;
-      int actual_format;
-      unsigned long nitems, bytes_after;
-      unsigned char *prop;
-      int res = XRRGetOutputProperty(display, rsrc->outputs[output], edid_atom, 0, G_MAXLONG, FALSE,
-      FALSE, XA_INTEGER, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
-      if(res == Success && actual_type == XA_INTEGER && actual_format == 8 && nitems != 0)
-      {
-        printf("EDID for %s has size %lu\n", output_info->name, nitems);
-        // TODO: parse the edid blob in prop. since that is really ugly code I left it out for now.
-      }
-      if(prop)
-        XFree(prop);
+        // in case we also want the edid data
+        Atom edid_atom = XInternAtom(display, "EDID", False), actual_type;
+        int actual_format;
+        unsigned long nitems, bytes_after;
+        unsigned char *prop;
+        int res = XRRGetOutputProperty(display, rsrc->outputs[output], edid_atom, 0, G_MAXLONG, FALSE,
+            FALSE, XA_INTEGER, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
+        if(res == Success && actual_type == XA_INTEGER && actual_format == 8 && nitems != 0)
+        {
+          printf("EDID for %s has size %lu\n", output_info->name, nitems);
+          // TODO: parse the edid blob in prop. since that is really ugly code I left it out for now.
+        }
+        if(prop)
+          XFree(prop);
 #endif
 
-      monitor->root = root;
-      monitor->screen = screen;
-      monitor->crtc = crtc;
-      monitor->is_primary = is_primary;
-      monitor->atom_id = atom_id++;
-      monitor->name = g_strdup(output_info->name);
-      monitor_list = g_list_append(monitor_list, monitor);
+        monitor->root = root;
+        monitor->screen = screen;
+        monitor->crtc = crtc;
+        monitor->is_primary = is_primary;
+        monitor->atom_id = atom_id++;
+        monitor->name = g_strdup(output_info->name);
+        monitor_list = g_list_append(monitor_list, monitor);
 
 end:
-      XRRFreeCrtcInfo(crtc_info);
-      XRRFreeOutputInfo(output_info);
+        XRRFreeCrtcInfo(crtc_info);
+        XRRFreeOutputInfo(output_info);
+      }
     }
     XRRFreeScreenResources(rsrc);
   }
@@ -441,7 +447,7 @@ end:
     // print it
     printf("\n%s", monitor_name);
     if(message) printf("\t%s", message);
-    printf("\n\tX atom:\t%s (%ld bytes)\n\t\tdescription: %s\n", x_atom_name, monitor->x_atom_length,
+    printf("\n\tX atom:\t%s (%zu bytes)\n\t\tdescription: %s\n", x_atom_name, monitor->x_atom_length,
            x_atom_description);
 #ifdef HAVE_COLORD
     printf("\tcolord:\t\"%s\"\n\t\tdescription: %s\n", colord_filename, colord_description);

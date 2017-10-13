@@ -293,7 +293,7 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
 void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index);
 void dt_masks_gui_form_remove(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index);
 void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui);
-void dt_masks_gui_form_save_creation(struct dt_iop_module_t *module, dt_masks_form_t *form,
+void dt_masks_gui_form_save_creation(dt_develop_t *dev, struct dt_iop_module_t *module, dt_masks_form_t *form,
                                      dt_masks_form_gui_t *gui);
 void dt_masks_group_ungroup(dt_masks_form_t *dest_grp, dt_masks_form_t *grp);
 dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp, dt_masks_form_t *form);
@@ -373,9 +373,9 @@ static inline
 float dt_masks_dynbuf_get(dt_masks_dynbuf_t *a, int offset)
 {
   assert(a != NULL);
-  // offset: must be negative distance relative to end of buffer or zero
-  assert(offset <= 0);
-  // assert(a->pos + offset >= 0);
+  // offset: must be negative distance relative to end of buffer
+  assert(offset < 0);
+  assert((long)a->pos + offset >= 0);
   return (a->buffer[a->pos + offset]);
 }
 
@@ -383,9 +383,9 @@ static inline
 void dt_masks_dynbuf_set(dt_masks_dynbuf_t *a, int offset, float value)
 {
   assert(a != NULL);
-  // offset: must be negative distance relative to end of buffer or zero
-  assert(offset <= 0);
-  // assert(a->pos + offset >= 0);
+  // offset: must be negative distance relative to end of buffer
+  assert(offset < 0);
+  assert((long)a->pos + offset >= 0);
   a->buffer[a->pos + offset] = value;
 }
 

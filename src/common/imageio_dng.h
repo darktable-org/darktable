@@ -215,7 +215,7 @@ static inline void dt_imageio_write_dng(
     const uint8_t xtrans[6][6],
     const float whitelevel)
 {
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   int k = 0;
   if(f)
   {

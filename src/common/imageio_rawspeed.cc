@@ -15,13 +15,14 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#include <memory>
+#include "RawSpeed-API.h"
 
-#include "rawspeed/RawSpeed/RawSpeed-API.h"
+#include <memory>
 
 #define __STDC_LIMIT_MACROS
 
@@ -45,7 +46,7 @@ int rawspeed_get_number_of_processor_cores()
 #endif
 }
 
-using namespace RawSpeed;
+using namespace rawspeed;
 
 static dt_imageio_retval_t dt_imageio_open_rawspeed_sraw (dt_image_t *img, RawImage r, dt_mipmap_buffer_t *buf);
 static CameraMetaData *meta = NULL;
@@ -74,7 +75,7 @@ void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
   int got_it_done = FALSE;
   try {
     dt_rawspeed_load_meta();
-    Camera *cam = meta->getCamera(maker, model, "");
+    const Camera *cam = meta->getCamera(maker, model, "");
     // Also look for dng cameras
     if (!cam)
       cam = meta->getCamera(maker, model, "dng");
@@ -105,12 +106,7 @@ uint32_t dt_rawspeed_crop_dcraw_filters(uint32_t filters, uint32_t crop_x, uint3
 {
   if(!filters || filters == 9u) return filters;
 
-  ColorFilterArray cfa(filters);
-
-  if(crop_x & 1) cfa.shiftLeft();
-  if(crop_y & 1) cfa.shiftDown();
-
-  return cfa.getDcrawFilter();
+  return ColorFilterArray::shiftDcrawFilter(filters, crop_x, crop_y);
 }
 
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
@@ -118,28 +114,21 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 {
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
-#ifdef __WIN32__
-  const size_t len = strlen(filename) + 1;
-  wchar_t filen[len];
-  mbstowcs(filen, filename, len);
-  FileReader f(filen);
-#else
   char filen[PATH_MAX] = { 0 };
   snprintf(filen, sizeof(filen), "%s", filename);
   FileReader f(filen);
-#endif
 
   std::unique_ptr<RawDecoder> d;
-  std::unique_ptr<FileMap> m;
+  std::unique_ptr<const Buffer> m;
 
   try
   {
     dt_rawspeed_load_meta();
 
-    m = unique_ptr<FileMap>(f.readFile());
+    m = f.readFile();
 
     RawParser t(m.get());
-    d = unique_ptr<RawDecoder>(t.getDecoder(meta));
+    d = t.getDecoder(meta);
 
     if(!d.get()) return DT_IMAGEIO_FILE_CORRUPTED;
 
@@ -149,8 +138,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     d->decodeMetaData(meta);
     RawImage r = d->mRaw;
 
-    for (uint32 i=0; i<r->errors.size(); i++)
-      fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, r->errors[i]);
+    const auto errors = r->getErrors();
+    for(const auto &error : errors) fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
 
     g_strlcpy(img->camera_maker, r->metadata.canonical_make.c_str(), sizeof(img->camera_maker));
     g_strlcpy(img->camera_model, r->metadata.canonical_model.c_str(), sizeof(img->camera_model));

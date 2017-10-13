@@ -39,7 +39,7 @@
 #include <gio/gio.h>
 #include <glib.h>
 #include <glib/gstdio.h>
-#ifndef __WIN32__
+#ifndef _WIN32
 #include <glob.h>
 #endif
 #ifdef __APPLE__
@@ -878,6 +878,10 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     gboolean from_cache = FALSE;
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
+#ifdef _WIN32
+    char *dirname = g_path_get_dirname(filename);
+#endif
+
     int duplicates = 0;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW) duplicates = sqlite3_column_int(stmt, 0);
@@ -922,14 +926,20 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
         snprintf(c1 + strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp",
                  c2);
 
-#ifdef __WIN32__
-        WIN32_FIND_DATA data;
-        HANDLE handle = FindFirstFile(pattern, &data);
+#ifdef _WIN32
+        wchar_t *wpattern = g_utf8_to_utf16(pattern, -1, NULL, NULL, NULL);
+        WIN32_FIND_DATAW data;
+        HANDLE handle = FindFirstFileW(wpattern, &data);
+        g_free(wpattern);
         if(handle != INVALID_HANDLE_VALUE)
         {
           do
-            files = g_list_append(files, g_strdup(data.cFileName));
-          while(FindNextFile(handle, &data));
+          {
+            char *xmp_filename = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
+            files = g_list_append(files, g_build_filename(dirname, xmp_filename));
+            g_free(xmp_filename);
+          }
+          while(FindNextFileW(handle, &data));
         }
 #else
         glob_t globbuf;
@@ -963,16 +973,19 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       dt_image_path_append_version(imgid, filename, sizeof(filename));
       g_strlcat(filename, ".xmp", sizeof(filename));
 
-      delete_status = delete_file_from_disk(filename);
-      if (delete_status == _DT_DELETE_STATUS_OK_TO_REMOVE)
-      {
-        snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
-        _set_remove_flag(imgidstr);
-        dt_image_remove(imgid);
-      }
+      // remove image from db first ...
+      snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
+      _set_remove_flag(imgidstr);
+      dt_image_remove(imgid);
+
+      // ... and delete afterwards because removing will re-write the XMP
+      delete_file_from_disk(filename);
     }
 
 delete_next_file:
+#ifdef _WIN32
+    g_free(dirname);
+#endif
     t = g_list_delete_link(t, t);
     fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
@@ -1347,7 +1360,7 @@ void dt_control_flip_images(const int32_t cw)
                                            PROGRESS_SIMPLE));
 }
 
-void dt_control_remove_images()
+gboolean dt_control_remove_images()
 {
   // get all selected images now, to avoid the set changing during ui interaction
   dt_job_t *job = dt_control_generic_images_job_create(&dt_control_remove_images_job_run, N_("remove images"), 0, NULL,
@@ -1367,7 +1380,7 @@ void dt_control_remove_images()
     if(number == 0)
     {
       dt_control_job_dispose(job);
-      return;
+      return TRUE;
     }
 
     dialog = gtk_message_dialog_new(
@@ -1382,10 +1395,11 @@ void dt_control_remove_images()
     if(res != GTK_RESPONSE_YES)
     {
       dt_control_job_dispose(job);
-      return;
+      return FALSE;
     }
   }
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+  return TRUE;
 }
 
 void dt_control_delete_images()

@@ -155,7 +155,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
 
   char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
-      _("enter the path where to put exported images\nrecognized variables:"),
+      _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
+        "recognized variables:"),
       dt_gtkentry_get_default_path_compl_list());
   gtk_widget_set_tooltip_text(widget, tooltip_text);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
@@ -221,9 +222,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   d->vp->jobcode = "export";
   d->vp->imgid = imgid;
   d->vp->sequence = num;
-  dt_variables_expand(d->vp, d->filename, TRUE);
 
-  gchar *result_tmp_dir = dt_variables_get_result(d->vp);
+  gchar *result_tmp_dir = dt_variables_expand(d->vp, d->filename, TRUE);
   g_strlcpy(tmp_dir, result_tmp_dir, sizeof(tmp_dir));
   g_free(result_tmp_dir);
 
@@ -243,9 +243,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   g_strlcpy(d->filename, fixed_path, sizeof(d->filename));
   g_free(fixed_path);
 
-  dt_variables_expand(d->vp, d->filename, TRUE);
-
-  gchar *result_filename = dt_variables_get_result(d->vp);
+  gchar *result_filename = dt_variables_expand(d->vp, d->filename, TRUE);
   g_strlcpy(filename, result_filename, sizeof(filename));
   g_free(result_filename);
 
@@ -380,8 +378,8 @@ static void copy_res(const char *src, const char *dst)
   dt_loc_get_datadir(share, sizeof(share));
   gchar *sourcefile = g_build_filename(share, src, NULL);
   char *content = NULL;
-  FILE *fin = fopen(sourcefile, "rb");
-  FILE *fout = fopen(dst, "wb");
+  FILE *fin = g_fopen(sourcefile, "rb");
+  FILE *fout = g_fopen(dst, "wb");
 
   if(fin && fout)
   {
@@ -443,7 +441,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
 
   const char *title = d->title;
 
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   if(!f) return;
   fprintf(f,
           "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "

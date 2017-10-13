@@ -23,6 +23,7 @@
 #include "common/history.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
+#include "common/ratings.h"
 #include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -142,9 +143,10 @@ const char *name(dt_lib_module_t *self)
   return _("filmstrip");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT;
+  static const char *v[] = {"darkroom", "tethering", "map", "print", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -309,7 +311,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->filmstrip, "drag-data-get", G_CALLBACK(_lib_filmstrip_dnd_get_callback), self);
 
   gtk_widget_add_events(d->filmstrip, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
-                                      | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_SCROLL_MASK
+                                      | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                      | GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK
                                       | GDK_LEAVE_NOTIFY_MASK);
 
   /* connect callbacks */
@@ -488,36 +491,23 @@ static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, 
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
   /* change the offset */
-  if(strip->offset > 0 && (e->direction == GDK_SCROLL_UP || e->direction == GDK_SCROLL_LEFT))
-    strip->offset--;
-  else if(strip->offset < strip->collection_count - 1
-          && (e->direction == GDK_SCROLL_DOWN || e->direction == GDK_SCROLL_RIGHT))
-    strip->offset++;
-  else
-    return TRUE;
+  int delta_x, delta_y;
+  if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
+  {
+    strip->offset = CLAMP(strip->offset + delta_x + delta_y, 0, strip->collection_count-1);
+    gtk_widget_queue_draw(self->widget);
+  }
 
-  gtk_widget_queue_draw(self->widget);
   return TRUE;
 }
 
 static gboolean _lib_filmstrip_imgid_in_collection(const dt_collection_t *collection, const int imgid)
 {
-  sqlite3_stmt *stmt = NULL;
-  uint32_t count = 1;
-  const gchar *query = dt_collection_get_query(collection);
-  gchar *count_query = NULL;
+  sqlite3_stmt *stmt;
+  gboolean image_in_collection = TRUE;
+  const char *query = dt_collection_get_query(collection);
 
-  // gchar *fq = g_strstr_len(query, strlen(query), "FROM");
-  gchar *fw = g_strstr_len(query, strlen(query), "WHERE") + 6;
-
-  gchar *qq = NULL;
-  qq = dt_util_dstrcat(qq, "id=?3 AND %s", fw);
-
-  if((collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
-    count_query
-        = dt_util_dstrcat(NULL, "SELECT COUNT(*) FROM main.images %s AND id=?3", collection->where_ext);
-  else
-    count_query = dt_util_dstrcat(count_query, "SELECT COUNT(*) FROM main.images WHERE %s", qq);
+  char *count_query = g_strdup_printf("SELECT count(id) FROM (%s) WHERE id = ?3", query);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
   if((collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
@@ -528,10 +518,11 @@ static gboolean _lib_filmstrip_imgid_in_collection(const dt_collection_t *collec
   }
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
 
-  if(sqlite3_step(stmt) == SQLITE_ROW) count = sqlite3_column_int(stmt, 0);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    image_in_collection = (sqlite3_column_int(stmt, 0) > 0);
   sqlite3_finalize(stmt);
   g_free(count_query);
-  return count;
+  return image_in_collection;
 }
 
 static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
@@ -824,6 +815,7 @@ static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *ac
   int32_t mouse_over_id = dt_control_get_mouse_over_id();
   if(mouse_over_id <= 0) return FALSE;
   strip->history_copy_imgid = mouse_over_id;
+  strip->dg.selops = NULL;
 
   /* check if images is currently loaded in darkroom */
   if(dt_dev_is_current_image(darktable.develop, mouse_over_id)) dt_dev_write_history(darktable.develop);
@@ -949,19 +941,7 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
       int offset = 0;
       if(mouse_over_id == activated_image) offset = dt_collection_image_offset(mouse_over_id);
 
-      dt_image_t *image = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'w');
-      if(num == 666)
-        image->flags &= ~0xf;
-      else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1))
-        image->flags &= ~0x7;
-      else if(num == DT_VIEW_REJECT && ((image->flags & 0x7) == 6))
-        image->flags &= ~0x7;
-      else
-      {
-        image->flags &= ~0x7;
-        image->flags |= num;
-      }
-      dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+      dt_ratings_apply_to_image(mouse_over_id, num);
 
       dt_collection_hint_message(darktable.collection); // More than this, we need to redraw all
 

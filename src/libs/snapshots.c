@@ -79,9 +79,10 @@ const char *name(dt_lib_module_t *self)
   return _("snapshots");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_DARKROOM;
+  static const char *v[] = {"darkroom", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -527,7 +528,7 @@ static int max_snapshot_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  lua_pushnumber(L, d->size);
+  lua_pushinteger(L, d->size);
   return 1;
 }
 
@@ -561,7 +562,7 @@ static int snapshots_length(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  lua_pushnumber(L, d->num_snapshots);
+  lua_pushinteger(L, d->num_snapshots);
   return 1;
 }
 
@@ -570,9 +571,12 @@ static int number_member(lua_State *L)
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   int index = luaL_checkinteger(L, 2);
-  if(index > d->num_snapshots || index < 1)
+  if( index < 1)
   {
     return luaL_error(L, "Accessing a non-existant snapshot");
+  }else if(index > d->num_snapshots ) {
+    lua_pushnil(L);
+    return 1;
   }
   index = index - 1;
   luaA_push(L, dt_lua_snapshot_t, &index);

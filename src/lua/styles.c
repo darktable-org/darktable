@@ -98,7 +98,7 @@ static int style_length(lua_State *L)
   dt_style_t style;
   luaA_to(L, dt_style_t, &style, -1);
   GList *items = dt_styles_get_item_list(style.name, true, -1);
-  lua_pushnumber(L, g_list_length(items));
+  lua_pushinteger(L, g_list_length(items));
   g_list_free_full(items, dt_style_item_free);
   return 1;
 }
@@ -197,15 +197,14 @@ static int style_table_index(lua_State *L)
     const char *name = (const char *)sqlite3_column_text(stmt, 0);
     dt_style_t *style = dt_styles_get_by_name(name);
     luaA_push(L, dt_style_t, style);
-    sqlite3_finalize(stmt);
     free(style);
-    return 1;
   }
   else
   {
-    sqlite3_finalize(stmt);
-    return luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
   }
+  sqlite3_finalize(stmt);
+  return 1;
 }
 
 static int style_table_len(lua_State *L)
@@ -213,10 +212,10 @@ static int style_table_len(lua_State *L)
   sqlite3_stmt *stmt = NULL;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM data.styles", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
-    lua_pushnumber(L, sqlite3_column_int(stmt, 0));
+    lua_pushinteger(L, sqlite3_column_int(stmt, 0));
   else
   {
-    lua_pushnumber(L, 0);
+    lua_pushinteger(L, 0);
   }
   sqlite3_finalize(stmt);
   return 1;

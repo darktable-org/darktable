@@ -40,7 +40,7 @@ int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void 
   int status = 0;
   uint16_t *row = (uint16_t *)in;
   uint16_t swapped[3];
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   if(f)
   {
     (void)fprintf(f, "P6\n%d %d\n65535\n", ppm->width, ppm->height);

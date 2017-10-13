@@ -196,7 +196,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       } while(ce != ceb);
 
       /* build cdf of clipped histogram */
-      int hMin = BINS;
+      unsigned int hMin = BINS;
       for(int b = 0; b < hMin; b++)
         if(clippedhist[b] != 0) hMin = b;
 
@@ -292,7 +292,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_rlce_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_rlce_params_t));
   module->default_enabled = 0;
-  module->priority = 895; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 897; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rlce_params_t);
   module->gui_data = NULL;
   dt_iop_rlce_params_t tmp = (dt_iop_rlce_params_t){ 64, 1.25 };
