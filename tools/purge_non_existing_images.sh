@@ -7,13 +7,13 @@ if [ "$1" = "-p" ]; then
 fi
 
 DBFILE=~/.config/darktable/library.db
-TMPFILE=`mktemp -t tmp.XXXXXXXXXX`
+TMPFILE=$(mktemp -t tmp.XXXXXXXXXX)
 QUERY="select A.id,B.folder,A.filename from images as A join film_rolls as B on A.film_id = B.id"
-sqlite3 $DBFILE "$QUERY" > $TMPFILE
+sqlite3 $DBFILE "$QUERY" > "$TMPFILE"
 
 echo "Removing the following non existent file(s):"
 
-cat $TMPFILE | while read result
+cat "$TMPFILE" | while read -r result
 do
   ID=$(echo "$result" | cut -f1 -d"|")
   FD=$(echo "$result" | cut -f2 -d"|")
@@ -33,7 +33,7 @@ do
     fi
   fi
 done
-rm $TMPFILE
+rm "$TMPFILE"
 
 
 if [ $DRYRUN = no ]; then
@@ -48,5 +48,5 @@ fi
 if [ $DRYRUN = yes ]; then
     echo
     echo to really remove non existing images from the database call:
-    echo $0 -p
+    echo "$0" -p
 fi

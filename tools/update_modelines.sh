@@ -23,7 +23,7 @@ do
   #  echo Current file is "$f"
   #  echo " removing any old modelines"
 
-  TEMPFILE=`tempfile`
+  TEMPFILE=$(tempfile)
   # Check for lines beginning with a comment and a modeline keyword
   grep -v "^// vim:\|^// kate:\|^// modelines:" "$f" > "$TEMPFILE"
 

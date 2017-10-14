@@ -21,13 +21,13 @@ ATTACH DATABASE \"$DATADB\" as data;
 DELETE FROM data.tags WHERE id NOT IN (SELECT tagid FROM tagged_images);
 "
 
-if [ ! -f $LIBDB ]; then
-    echo missing \"$LIBDB\" file
+if [ ! -f "$LIBDB" ]; then
+    echo missing \""$LIBDB"\" file
     exit 1
 fi
 
-if [ ! -f $DATADB ]; then
-    echo missing \"$DATADB\" file
+if [ ! -f "$DATADB" ]; then
+    echo missing \""$DATADB"\" file
     exit 1
 fi
 
@@ -40,5 +40,5 @@ else
     echo "$Q1C" | sqlite3
     echo
     echo to really purge from the database call:
-    echo $0 -p
+    echo "$0" -p
 fi
