@@ -32,7 +32,7 @@ echo "" >> "$H_FILE"
 
 echo "static const char *authors[] = {" >> "$H_FILE"
 
-cat "$AUTHORS" | sed "s/^/\"/g" | sed "s/$/\",/g" >> "$H_FILE"
+sed -e "s/^/\"/g" -e "s/$/\",/g" "$AUTHORS" >> "$H_FILE"
 
 echo "NULL };" >> "$H_FILE"
 

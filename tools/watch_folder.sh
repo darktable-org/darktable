@@ -75,12 +75,12 @@ fi
 
 
 "${INOTIFYWAIT}" --monitor "${BASE_FOLDER}" --event close_write --excludei ".*\.xmp$" |
-  while read path event file; do
+  while read -r path event file; do
     if [ ${HAVE_LUA} -eq 0 ]; then
       echo "'${file}' added"
       "${DBUS_SEND}" --type=method_call --dest=org.darktable.service /darktable org.darktable.service.Remote.Lua string:"local dt = require('darktable') dt.database.import('${path}/${file}') dt.print('a new image was added')"
     else
-      ID=`"${DBUS_SEND}" --print-reply --type=method_call --dest=org.darktable.service /darktable org.darktable.service.Remote.Open string:"${path}/${file}" | tail --lines 1 | sed 's/.* //'`
+      ID=$("${DBUS_SEND}" --print-reply --type=method_call --dest=org.darktable.service /darktable org.darktable.service.Remote.Open string:"${path}/${file}" | tail --lines 1 | sed 's/.* //')
       if [ "${ID}" -eq 0 ]; then
         # TODO: maybe try to wait a few seconds and retry? Not sure if that is needed.
         echo "'${file}' couldn't be added"
