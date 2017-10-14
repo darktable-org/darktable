@@ -240,36 +240,100 @@ static inline float *ll_pad_input(
     const int ht,
     const int max_supp,
     int *wd2,
-    int *ht2)
+    int *ht2,
+    local_laplacian_boundary_t *b)
 {
   const int stride = 4;
   *wd2 = 2*max_supp + wd;
   *ht2 = 2*max_supp + ht;
   float *const out = dt_alloc_align(16, *wd2**ht2*sizeof(*out));
 
+  if(b && b->mode == 2)
+  { // pad by preview buffer
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2)
-#endif
-  for(int j=0;j<ht;j++)
-  {
-    for(int i=0;i<max_supp;i++)
-      out[(j+max_supp)**wd2+i] = input[stride*wd*j]* 0.01f; // L -> [0,1]
-    for(int i=0;i<wd;i++)
+#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2) collapse(2)
+#endif // fill regular pixels:
+    for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
       out[(j+max_supp)**wd2+i+max_supp] = input[stride*(wd*j+i)] * 0.01f; // L -> [0,1]
-    for(int i=wd+max_supp;i<*wd2;i++)
-      out[(j+max_supp)**wd2+i] = input[stride*(j*wd+wd-1)] * 0.01f; // L -> [0,1]
-  }
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2)
-#endif
-  for(int j=0;j<max_supp;j++)
-    memcpy(out + *wd2*j, out+max_supp**wd2, sizeof(float)**wd2);
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2)
-#endif
-  for(int j=max_supp+ht;j<*ht2;j++)
-    memcpy(out + *wd2*j, out + *wd2*(max_supp+ht-1), sizeof(float)**wd2);
 
+    // for all out of roi pixels on the boundary we wish to pad:
+    // compute coordinate in full image.
+    // if not out of buf:
+    //   compute padded preview pixel coordinate (clamp to padded preview buffer size)
+    // else
+    //   pad as usual (hi-res sample and hold)
+#define LL_FILL(fallback) do {\
+    float isx = ((i - max_supp) + b->roi->x)/b->roi->scale;\
+    float isy = ((j - max_supp) + b->roi->y)/b->roi->scale;\
+    if(isx < 0 || isy >= b->buf->width\
+    || isy < 0 || isy >= b->buf->height)\
+      out[*wd2*j+i] = (fallback);\
+    else\
+    {\
+      int px = CLAMP(isx / (float)b->buf->width  * b->wd + (b->pwd-b->wd)/2, 0, b->pwd-1);\
+      int py = CLAMP(isy / (float)b->buf->height * b->ht + (b->pht-b->ht)/2, 0, b->pht-1);\
+      /* TODO: linear interpolation?*/\
+      out[*wd2*j+i] = b->pad0[b->pwd*py+px];\
+    } } while(0)
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2, b) collapse(2)
+#endif // left border
+    for(int j=max_supp;j<*ht2-max_supp;j++) for(int i=0;i<max_supp;i++)
+      LL_FILL(input[stride*wd*(j-max_supp)]* 0.01f);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2, b) collapse(2)
+#endif // right border
+    for(int j=max_supp;j<*ht2-max_supp;j++) for(int i=wd+max_supp;i<*wd2;i++)
+      LL_FILL(input[stride*((j-max_supp)*wd+wd-1)] * 0.01f);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2, b) collapse(2)
+#endif // top border
+    for(int j=0;j<max_supp;j++) for(int i=0;i<*wd2;i++)
+      LL_FILL(out[*wd2*max_supp+i]);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2, b) collapse(2)
+#endif // bottom border
+    for(int j=max_supp+ht;j<*ht2;j++) for(int i=0;i<*wd2;i++)
+      LL_FILL(out[*wd2*(max_supp+ht-1)+i]);
+#undef LL_FILL
+  }
+  else
+  { // pad by replication:
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2)
+#endif
+    for(int j=0;j<ht;j++)
+    {
+      for(int i=0;i<max_supp;i++)
+        out[(j+max_supp)**wd2+i] = input[stride*wd*j]* 0.01f; // L -> [0,1]
+      for(int i=0;i<wd;i++)
+        out[(j+max_supp)**wd2+i+max_supp] = input[stride*(wd*j+i)] * 0.01f; // L -> [0,1]
+      for(int i=wd+max_supp;i<*wd2;i++)
+        out[(j+max_supp)**wd2+i] = input[stride*(j*wd+wd-1)] * 0.01f; // L -> [0,1]
+    }
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2)
+#endif
+    for(int j=0;j<max_supp;j++)
+      memcpy(out + *wd2*j, out+max_supp**wd2, sizeof(float)**wd2);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic) default(none) shared(wd2, ht2)
+#endif
+    for(int j=max_supp+ht;j<*ht2;j++)
+      memcpy(out + *wd2*j, out + *wd2*(max_supp+ht-1), sizeof(float)**wd2);
+  }
+#if 0
+  if(b && b->mode == 2)
+  {
+    FILE *f = fopen("/tmp/padded.pfm", "wb");
+    fprintf(f, "PF\n%d %d\n-1.0\n", *wd2, *ht2);
+    for(int j=0;j<*ht2;j++)
+      for(int i=0;i<*wd2;i++)
+        for(int c=0;c<3;c++)
+          fwrite(out + *wd2*j+i, 1, sizeof(float), f);
+    fclose(f);
+  }
+#endif
   return out;
 }
 
@@ -469,40 +533,48 @@ void local_laplacian_internal(
     const float shadows,        // user param: lift shadows
     const float highlights,     // user param: compress highlights
     const float clarity,        // user param: increase clarity/local contrast
-    const int use_sse2)         // flag whether to use SSE version
+    const int use_sse2,         // flag whether to use SSE version
+    local_laplacian_boundary_t *b)
 {
 #define max_levels 30
 #define num_gamma 6
   // don't divide by 2 more often than we can:
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(wd,ht)));
-  const int max_supp = 1<<(num_levels-1);
+  int last_level = num_levels-1;
+  if(b && b->mode == 2)
+    // last_level = num_levels-3 >= 2 ? num_levels-3 : 2;
+    last_level = num_levels > 4 ? 4 : num_levels-1;
+  const int max_supp = 1<<last_level;
   int w, h;
   float *padded[max_levels] = {0};
-  padded[0] = ll_pad_input(input, wd, ht, max_supp, &w, &h);
+  if(b && b->mode == 2)
+    padded[0] = ll_pad_input(input, wd, ht, max_supp, &w, &h, b);
+  else
+    padded[0] = ll_pad_input(input, wd, ht, max_supp, &w, &h, 0);
 
   // allocate pyramid pointers for padded input
-  for(int l=1;l<num_levels;l++)
+  for(int l=1;l<=last_level;l++)
     padded[l] = dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
   // allocate pyramid pointers for output
   float *output[max_levels] = {0};
-  for(int l=0;l<num_levels;l++)
+  for(int l=0;l<=last_level;l++)
     output[l] = dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
   // create gauss pyramid of padded input, write coarse directly to output
 #if defined(__SSE2__)
   if(use_sse2)
   {
-    for(int l=1;l<num_levels-1;l++)
+    for(int l=1;l<last_level;l++)
       gauss_reduce_sse2(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
-    gauss_reduce_sse2(padded[num_levels-2], output[num_levels-1], dl(w,num_levels-2), dl(h,num_levels-2));
+    gauss_reduce_sse2(padded[last_level-1], output[last_level], dl(w,last_level-1), dl(h,last_level-1));
   }
   else
 #endif
   {
-    for(int l=1;l<num_levels-1;l++)
+    for(int l=1;l<last_level;l++)
       gauss_reduce(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
-    gauss_reduce(padded[num_levels-2], output[num_levels-1], dl(w,num_levels-2), dl(h,num_levels-2));
+    gauss_reduce(padded[last_level-1], output[last_level], dl(w,last_level-1), dl(h,last_level-1));
   }
 
   // evenly sample brightness [0,1]:
@@ -512,7 +584,7 @@ void local_laplacian_internal(
 
   // allocate memory for intermediate laplacian pyramids
   float *buf[num_gamma][max_levels] = {{0}};
-  for(int k=0;k<num_gamma;k++) for(int l=0;l<num_levels;l++)
+  for(int k=0;k<num_gamma;k++) for(int l=0;l<=last_level;l++)
     buf[k][l] = dt_alloc_align(16, sizeof(float)*dl(w,l)*dl(h,l));
 
   // the paper says remapping only level 3 not 0 does the trick, too
@@ -528,7 +600,7 @@ void local_laplacian_internal(
     {apply_curve(buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);}
 
     // create gaussian pyramids
-    for(int l=1;l<num_levels;l++)
+    for(int l=1;l<=last_level;l++)
 #if defined(__SSE2__)
       if(use_sse2)
         gauss_reduce_sse2(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
@@ -537,8 +609,94 @@ void local_laplacian_internal(
         gauss_reduce(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
   }
 
+  // resample output[last_level] from preview
+  // requires to transform from padded/downsampled to full image and then
+  // to padded/downsampled in preview
+  if(b && b->mode == 2)
+  {
+    const float isize = powf(2.0f, last_level) / b->roi->scale; // pixel size of coarsest level in image space
+    const float psize = isize / b->buf->width * b->wd; // pixel footprint rescaled to preview buffer
+    const float pl = log2f(psize); // mip level in preview buffer
+    const int pl0 = CLAMP((int)pl, 0, b->num_levels-1), pl1 = CLAMP((int)(pl+1), 0, b->num_levels-1);
+    const float weight = CLAMP(pl-pl0, 0, 1); // weight between mip levels
+    const float mul0 = 1.0/powf(2.0f, pl0);
+    const float mul1 = 1.0/powf(2.0f, pl1);
+    const float mul = powf(2.0f, last_level);
+    const int pw = dl(w,last_level), ph = dl(h,last_level);
+    const int pw0 = dl(b->pwd, pl0), ph0 = dl(b->pht, pl0);
+    const int pw1 = dl(b->pwd, pl1), ph1 = dl(b->pht, pl1);
+#if 0
+    {
+    FILE *f = fopen("/tmp/coarse.pfm", "wb");
+    fprintf(f, "PF\n%d %d\n-1.0\n", pw0, ph0);
+    for(int j=0;j<ph0;j++)
+      for(int i=0;i<pw0;i++)
+        for(int c=0;c<3;c++)
+          fwrite(b->output[pl0] + pw0*j+i, 1, sizeof(float), f);
+    fclose(f);
+    }
+#endif
+#if 0
+    {
+    FILE *f = fopen("/tmp/oldcoarse.pfm", "wb");
+    fprintf(f, "PF\n%d %d\n-1.0\n", pw, ph);
+    for(int j=0;j<ph;j++)
+      for(int i=0;i<pw;i++)
+        for(int c=0;c<3;c++)
+          fwrite(output[last_level] + pw*j+i, 1, sizeof(float), f);
+    fclose(f);
+    }
+#endif
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) collapse(2) default(shared)
+#endif
+    for(int j=0;j<ph;j++) for(int i=0;i<pw;i++)
+    {
+      float ix = ((i*mul - max_supp) + b->roi->x)/b->roi->scale;
+      float iy = ((j*mul - max_supp) + b->roi->y)/b->roi->scale;
+      float px = CLAMP(ix / (float)b->buf->width  * b->wd + (b->pwd-b->wd)/2, 0, b->pwd-1);
+      float py = CLAMP(iy / (float)b->buf->height * b->ht + (b->pht-b->ht)/2, 0, b->pht-1);
+      // trilinear lookup:
+      int px0 = CLAMP(px*mul0-.5f, 0, pw0-1);
+      int py0 = CLAMP(py*mul0-.5f, 0, ph0-1);
+      int px1 = CLAMP(px*mul1-.5f, 0, pw1-1);
+      int py1 = CLAMP(py*mul1-.5f, 0, ph1-1);
+#if 1
+      float f0x = CLAMP(px*mul0 - px0, 0.0, 1.0);
+      float f0y = CLAMP(py*mul0 - py0, 0.0, 1.0);
+      float f1x = CLAMP(px*mul1 - px1, 0.0, 1.0);
+      float f1y = CLAMP(py*mul1 - py1, 0.0, 1.0);
+      float c0 =
+        (1.0f-f0x)*(1.0f-f0y)*b->output[pl0][CLAMP(py0  , 0, ph0-1)*pw0 + CLAMP(px0  , 0, pw0-1)]+
+        (     f0x)*(1.0f-f0y)*b->output[pl0][CLAMP(py0  , 0, ph0-1)*pw0 + CLAMP(px0+1, 0, pw0-1)]+
+        (1.0f-f0x)*(     f0y)*b->output[pl0][CLAMP(py0+1, 0, ph0-1)*pw0 + CLAMP(px0  , 0, pw0-1)]+
+        (     f0x)*(     f0y)*b->output[pl0][CLAMP(py0+1, 0, ph0-1)*pw0 + CLAMP(px0+1, 0, pw0-1)];
+      float c1 =
+        (1.0f-f1x)*(1.0f-f1y)*b->output[pl1][CLAMP(py1  , 0, ph1-1)*pw1 + CLAMP(px1  , 0, pw1-1)]+
+        (     f1x)*(1.0f-f1y)*b->output[pl1][CLAMP(py1  , 0, ph1-1)*pw1 + CLAMP(px1+1, 0, pw1-1)]+
+        (1.0f-f1x)*(     f1y)*b->output[pl1][CLAMP(py1+1, 0, ph1-1)*pw1 + CLAMP(px1  , 0, pw1-1)]+
+        (     f1x)*(     f1y)*b->output[pl1][CLAMP(py1+1, 0, ph1-1)*pw1 + CLAMP(px1+1, 0, pw1-1)];
+#else
+      float c0 = b->output[pl0][py0*pw0 + px0];
+      float c1 = b->output[pl1][py1*pw1 + px1];
+#endif
+      output[last_level][j*pw+i] = weight * c1 + (1.0f-weight) * c0;
+    }
+#if 0
+    {
+    FILE *f = fopen("/tmp/newcoarse.pfm", "wb");
+    fprintf(f, "PF\n%d %d\n-1.0\n", pw, ph);
+    for(int j=0;j<ph;j++)
+      for(int i=0;i<pw;i++)
+        for(int c=0;c<3;c++)
+          fwrite(output[last_level] + pw*j+i, 1, sizeof(float), f);
+    fclose(f);
+    }
+#endif
+  }
+
   // assemble output pyramid coarse to fine
-  for(int l=num_levels-2;l >= 0; l--)
+  for(int l=last_level-1;l >= 0; l--)
   {
     const int pw = dl(w,l), ph = dl(h,l);
 
@@ -573,12 +731,22 @@ void local_laplacian_internal(
     out[4*(j*wd+i)+1] = input[4*(j*wd+i)+1]; // copy original colour channels
     out[4*(j*wd+i)+2] = input[4*(j*wd+i)+2];
   }
-  // free all buffers!
+  if(b && b->mode == 1)
+  { // output the buffers for later re-use
+    b->pad0 = padded[0];
+    b->wd = wd;
+    b->ht = ht;
+    b->pwd = w;
+    b->pht = h;
+    b->num_levels = num_levels;
+    for(int l=0;l<num_levels;l++) b->output[l] = output[l];
+  }
+  // free all buffers except the ones passed out for preview rendering
   for(int l=0;l<max_levels;l++)
   {
-    dt_free_align(padded[l]);
-    dt_free_align(output[l]);
-    for(int k = 0; k < num_gamma; k++) dt_free_align(buf[k][l]);
+    if(!b || b->mode != 1 || l)   dt_free_align(padded[l]);
+    if(!b || b->mode != 1)        dt_free_align(output[l]);
+    for(int k=0; k<num_gamma;k++) dt_free_align(buf[k][l]);
   }
 #undef num_levels
 #undef num_gamma
