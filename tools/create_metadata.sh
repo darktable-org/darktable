@@ -5,7 +5,7 @@ outputdir="$2"
 outputheader=metadata_gen.h
 outputbody=metadata_gen.c
 
-headerdefine=__$(printf $outputheader | tr '[:lower:].' '[:upper:]_')__
+headerdefine=__$(printf "%s" "$outputheader" | tr '[:lower:].' '[:upper:]_')__
 # header of the .h file
 cat > "$outputdir/$outputheader" << EOF
 /** generated file, do not edit! */
@@ -30,13 +30,13 @@ EOF
 
 # iterate over the input
 first=0
-for line in $(cat "$inputfile" | grep -v "^#"); do
-    enum=DT_METADATA_$(printf $line | tr '[:lower:].' '[:upper:]_')
-    length=$(printf $line | wc -c)
+grep -v "^#" "$inputfile" | while IFS= read -r line; do
+    enum=DT_METADATA_$(printf "%s" "$line" | tr '[:lower:].' '[:upper:]_')
+    length=$(printf "%s" "$line" | wc -c)
     if [ "$first" -ne 0 ]; then
         printf ",\n" >> "$outputdir/$outputheader"
     fi
-    printf "    $enum" >> "$outputdir/$outputheader"
+    printf "%s" "    $enum" >> "$outputdir/$outputheader"
     first=1
 
     cat >> "$outputdir/$outputbody" << EOF

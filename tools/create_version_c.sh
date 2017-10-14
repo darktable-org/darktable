@@ -42,21 +42,23 @@ LAST_COMMIT_YEAR=$("${DT_SRC_DIR}/tools/get_last_commit_year.sh")
 
 if [ $VERSION_C_NEEDS_UPDATE -eq 1 ]; then
 # when changing format, you must also update tools/get_git_version_string.sh !!!
-  echo "#ifndef RC_BUILD" > "$C_FILE"
-  echo "  #ifdef HAVE_CONFIG_H" >> "$C_FILE"
-  echo "    #include \"config.h\"" >> "$C_FILE"
-  echo "  #endif" >> "$C_FILE"
+  {
+    echo "#ifndef RC_BUILD"
+    echo "  #ifdef HAVE_CONFIG_H"
+    echo "    #include \"config.h\""
+    echo "  #endif"
 
-  echo "  const char darktable_package_version[] = \"${NEW_VERSION}\";" >> "$C_FILE"
-  echo "  const char darktable_package_string[] = PACKAGE_NAME \" ${NEW_VERSION}\";" >> "$C_FILE"
-  echo "  const char darktable_last_commit_year[] = \"${LAST_COMMIT_YEAR}\";" >> "$C_FILE"
-  echo "#else" >> "$C_FILE"
-  echo "  #define DT_MAJOR ${MAJOR_VERSION}" >> "$C_FILE"
-  echo "  #define DT_MINOR ${MINOR_VERSION}" >> "$C_FILE"
-  echo "  #define DT_PATCH ${PATCH_VERSION}" >> "$C_FILE"
-  echo "  #define DT_N_COMMITS ${N_COMMITS}" >> "$C_FILE"
-  echo "  #define LAST_COMMIT_YEAR \"${LAST_COMMIT_YEAR}\"" >> "$C_FILE"
-  echo "#endif" >> "$C_FILE"
+    echo "  const char darktable_package_version[] = \"${NEW_VERSION}\";"
+    echo "  const char darktable_package_string[] = PACKAGE_NAME \" ${NEW_VERSION}\";"
+    echo "  const char darktable_last_commit_year[] = \"${LAST_COMMIT_YEAR}\";"
+    echo "#else"
+    echo "  #define DT_MAJOR ${MAJOR_VERSION}"
+    echo "  #define DT_MINOR ${MINOR_VERSION}"
+    echo "  #define DT_PATCH ${PATCH_VERSION}"
+    echo "  #define DT_N_COMMITS ${N_COMMITS}"
+    echo "  #define LAST_COMMIT_YEAR \"${LAST_COMMIT_YEAR}\""
+    echo "#endif";
+  } > "$C_FILE"
 
 fi
 
