@@ -9,11 +9,9 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     and this line to /opt/local/etc/macports/variants.conf:
      +no_gnome +no_x11 +quartz -x11 -gnome +ld64_xcode
     You will also need to add patches for python (https://trac.macports.org/ticket/51736) and GraphicsMagick (both fixes are required due to set deployment target):
-     $ mkdir -p ~/ports/lang/python34/files ~/ports/lang/python35/files ~/ports/graphics/GraphicsMagick/files
-     $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/lang/python34 ~/ports/lang
-     $ curl -Lo ~/ports/lang/python34/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python34-stack_size.diff
-     $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/lang/python35 ~/ports/lang
-     $ curl -Lo ~/ports/lang/python35/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python35-stack_size.diff
+     $ mkdir -p ~/ports/lang/python36/files ~/ports/graphics/GraphicsMagick/files
+     $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/lang/python36 ~/ports/lang
+     $ curl -Lo ~/ports/lang/python36/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python36-stack_size.diff
      $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/graphics/GraphicsMagick ~/ports/graphics
      $ curl -Lo ~/ports/graphics/GraphicsMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gm-deployment_target.diff
     then add this line:
@@ -22,7 +20,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ portindex ~/ports
     Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
     Install required dependencies:
-     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg lua52 webp libsecret pugixml osm-gps-map adwaita-icon-theme
+     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg lua webp libsecret pugixml osm-gps-map adwaita-icon-theme intltool
     To have working OpenMP (at least partly, only for C source files) you will also need gcc6:
      $ sudo port install gcc6
     (llvm port, which gets installed as dependency, won't compile with macosx_deployment_target set, so comment it out when llvm is built)
