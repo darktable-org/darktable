@@ -61,31 +61,20 @@ static dt_masks_form_t *_dup_masks_form(const dt_masks_form_t *form)
 
   if (form->points)
   {
-    int size_item;
+    int size_item = 0;
 
-    switch (form->type)
-    {
-    case DT_MASKS_CIRCLE:
+    if (form->type & DT_MASKS_CIRCLE)
       size_item = sizeof(struct dt_masks_point_circle_t);
-      break;
-    case DT_MASKS_ELLIPSE:
+    else if (form->type & DT_MASKS_ELLIPSE)
       size_item = sizeof(struct dt_masks_point_ellipse_t);
-      break;
-    case DT_MASKS_GRADIENT:
+    else if (form->type & DT_MASKS_GRADIENT)
       size_item = sizeof(struct dt_masks_point_gradient_t);
-      break;
-    case DT_MASKS_BRUSH:
+    else if (form->type & DT_MASKS_BRUSH)
       size_item = sizeof(struct dt_masks_point_brush_t);
-      break;
-    case DT_MASKS_GROUP:
+    else if (form->type & DT_MASKS_GROUP)
       size_item = sizeof(struct dt_masks_point_group_t);
-      break;
-    case DT_MASKS_PATH:
+    else if (form->type & DT_MASKS_PATH)
       size_item = sizeof(struct dt_masks_point_path_t);
-      break;
-    default:
-      size_item = 0;
-    }
 
     if (size_item != 0)
     {
