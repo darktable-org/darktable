@@ -33,6 +33,9 @@
 #ifdef USE_LUA
 #include "lua/preferences.h"
 #endif
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #define ICON_SIZE 13
 
 typedef struct dt_gui_presets_edit_dialog_t
@@ -247,6 +250,9 @@ void dt_gui_preferences_show()
   _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), GTK_WINDOW(win),
                                                     GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                     _("close"), GTK_RESPONSE_ACCEPT, NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(_preferences_dialog);
+#endif
   gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ALWAYS);
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(_preferences_dialog));
   GtkWidget *notebook = gtk_notebook_new();

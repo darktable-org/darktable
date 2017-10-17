@@ -27,6 +27,9 @@
 // #include "libs/lib.h"
 #include "control/jobs.h"
 #include "libs/lib_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #include <gdk/gdkkeysyms.h>
 
@@ -371,6 +374,9 @@ static void _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_
   center_h = gdk_window_get_height(gtk_widget_get_window(center));
 
   d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(d->floating_window);
+#endif
   gtk_widget_set_can_focus(d->floating_window, TRUE);
   gtk_window_set_decorated(GTK_WINDOW(d->floating_window), FALSE);
   gtk_window_set_type_hint(GTK_WINDOW(d->floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
@@ -454,6 +460,9 @@ static void _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *sel
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("open GPX file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, _("_cancel"), GTK_RESPONSE_CANCEL,
       _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
 
   char *last_directory = dt_conf_get_string("ui_last/gpx_last_directory");
   if(last_directory != NULL)
