@@ -23,6 +23,9 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #include <math.h>
 #include <pango/pangocairo.h>
@@ -551,6 +554,9 @@ void dt_bauhaus_init()
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   // but this doesn't flicker, and the above hack with key input seems to work well.
   darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_POPUP);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(darktable.bauhaus->popup_window);
+#endif
   // this is needed for popup, not for toplevel.
   // since popup_area gets the focus if we show the window, this is all
   // we need.
