@@ -35,6 +35,9 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #include <glib.h>
 #include <math.h>
@@ -264,6 +267,9 @@ static void bitness_nagging()
         _("you are making a mistake!"), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), flags,
         _("_yes, i understood. please let me suffer by using 32-bit darktable."), GTK_RESPONSE_NONE,
         NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
     const gchar *msg = _("warning!\nyou are using a 32-bit build of darktable.\nthe 32-bit build has "

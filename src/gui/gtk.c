@@ -1856,6 +1856,9 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
                                               const char *yes_text)
 {
   GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(window);
+#endif
 
   gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
   gtk_window_set_title(GTK_WINDOW(window), title);

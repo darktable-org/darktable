@@ -1059,6 +1059,9 @@ static void import_export(GtkButton *button, gpointer data)
     chooser = gtk_file_chooser_dialog_new(_("select file to export"), NULL, GTK_FILE_CHOOSER_ACTION_SAVE,
                                           _("_cancel"), GTK_RESPONSE_CANCEL, _("_save"), GTK_RESPONSE_ACCEPT,
                                           NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(chooser);
+#endif
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser), TRUE);
     gchar *exported_path = dt_conf_get_string("ui_last/exported_path");
     if(exported_path != NULL)
@@ -1082,6 +1085,9 @@ static void import_export(GtkButton *button, gpointer data)
     chooser = gtk_file_chooser_dialog_new(_("select file to import"), NULL, GTK_FILE_CHOOSER_ACTION_OPEN,
                                           _("_cancel"), GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT,
                                           NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(chooser);
+#endif
 
     gchar *import_path = dt_conf_get_string("ui_last/import_path");
     if(import_path != NULL)
@@ -1238,6 +1244,9 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(_preferences_dialog),
                                        GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, _("_ok"),
                                        GTK_RESPONSE_NONE, NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(20));

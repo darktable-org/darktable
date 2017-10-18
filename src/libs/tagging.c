@@ -373,6 +373,9 @@ static void import_button_clicked(GtkButton *button, gpointer user_data)
                                                        GTK_FILE_CHOOSER_ACTION_OPEN,
                                                        _("_cancel"), GTK_RESPONSE_CANCEL,
                                                        _("_import"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_dirname);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
@@ -410,6 +413,9 @@ static void export_button_clicked(GtkButton *button, gpointer user_data)
                                                        GTK_FILE_CHOOSER_ACTION_SAVE,
                                                        _("_cancel"), GTK_RESPONSE_CANCEL,
                                                        _("_export"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
   gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(filechooser), TRUE);
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_dirname);
   gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(filechooser), export_filename);

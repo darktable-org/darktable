@@ -27,6 +27,9 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <assert.h>
 #include <stdlib.h>
 

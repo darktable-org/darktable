@@ -26,6 +26,9 @@
 #include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -235,6 +238,9 @@ static void edit_preset(const char *name_in, dt_lib_module_info_t *minfo)
   snprintf(title, sizeof(title), _("edit `%s'"), name);
   dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, _("_ok"),
                                        GTK_RESPONSE_ACCEPT, _("_cancel"), GTK_RESPONSE_REJECT, NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));

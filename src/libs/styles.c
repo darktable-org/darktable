@@ -26,6 +26,9 @@
 #include "gui/styles.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -209,6 +212,9 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
     GtkWidget *filechooser = gtk_file_chooser_dialog_new(
         _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
         GTK_RESPONSE_CANCEL, _("_save"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(filechooser);
+#endif
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), g_get_home_dir());
     gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
     if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -229,6 +235,9 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("select style"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, _("_cancel"), GTK_RESPONSE_CANCEL,
       _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), g_get_home_dir());

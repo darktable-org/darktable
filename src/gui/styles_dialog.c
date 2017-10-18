@@ -26,6 +26,9 @@
 #include "develop/imageop.h"
 #include "gui/gtk.h"
 #include "gui/styles.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 /* creates a styles dialog, if edit equals true id=styleid else id=imgid */
 static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid);
@@ -282,6 +285,9 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   GtkDialog *dialog = GTK_DIALOG(
       gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, _("_cancel"),
                                   GTK_RESPONSE_REJECT, _("_save"), GTK_RESPONSE_ACCEPT, NULL));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
+#endif
 
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5)));
