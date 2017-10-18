@@ -42,9 +42,6 @@
 #include "libs/colorpicker.h"
 #include "views/view.h"
 #include "views/view_api.h"
-#ifdef GDK_WINDOWING_QUARTZ
-#include "osx/osx.h"
-#endif
 
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
@@ -1434,9 +1431,6 @@ void gui_init(dt_view_t *self)
 
     // and the popup window
     dev->rawoverexposed.floating_window = gtk_popover_new(dev->rawoverexposed.button);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(dev->rawoverexposed.floating_window);
-#endif
     gtk_widget_set_size_request(GTK_WIDGET(dev->rawoverexposed.floating_window), panel_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
     g_object_set(G_OBJECT(dev->rawoverexposed.floating_window), "transitions-enabled", FALSE, NULL);
@@ -1505,9 +1499,6 @@ void gui_init(dt_view_t *self)
 
     // and the popup window
     dev->overexposed.floating_window = gtk_popover_new(dev->overexposed.button);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(dev->overexposed.floating_window);
-#endif
     gtk_widget_set_size_request(GTK_WIDGET(dev->overexposed.floating_window), panel_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
     g_object_set(G_OBJECT(dev->overexposed.floating_window), "transitions-enabled", FALSE, NULL);
@@ -1583,9 +1574,6 @@ void gui_init(dt_view_t *self)
 
     // and the popup window, which is shared between the two profile buttons
     dev->profile.floating_window = gtk_popover_new(NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(dev->profile.floating_window);
-#endif
     gtk_widget_set_size_request(GTK_WIDGET(dev->profile.floating_window), panel_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
     g_object_set(G_OBJECT(dev->profile.floating_window), "transitions-enabled", FALSE, NULL);
