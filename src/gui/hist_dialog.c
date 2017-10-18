@@ -26,6 +26,9 @@
 #include "gui/gtk.h"
 #include "gui/hist_dialog.h"
 #include "gui/styles.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 typedef enum _style_items_columns_t
 {
@@ -137,6 +140,9 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
       _("select parts"), GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("select _all"), GTK_RESPONSE_YES, _("select _none"), GTK_RESPONSE_NONE, _("_ok"),
       GTK_RESPONSE_OK, NULL));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
+#endif
 
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 3));
