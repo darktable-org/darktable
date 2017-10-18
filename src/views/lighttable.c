@@ -38,9 +38,6 @@
 #include "libs/lib.h"
 #include "views/view.h"
 #include "views/view_api.h"
-#ifdef GDK_WINDOWING_QUARTZ
-#include "osx/osx.h"
-#endif
 
 #include <assert.h>
 #include <dirent.h>
@@ -2360,9 +2357,6 @@ void gui_init(dt_view_t *self)
   // and the popup window
   const int panel_width = dt_conf_get_int("panel_width");
   lib->profile_floating_window = gtk_popover_new(profile_button);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(lib->profile_floating_window);
-#endif
 
   gtk_widget_set_size_request(GTK_WIDGET(lib->profile_floating_window), panel_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
