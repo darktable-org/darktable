@@ -1064,7 +1064,7 @@ static void dt_iop_levels_pick_general_handler(GtkToggleButton *togglebutton, dt
   if(TRUE == toggle)
   {
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-    dt_lib_colorpicker_set_point(darktable.lib, xpick, ypick);
+    dt_lib_colorpicker_set(darktable.lib, xpick, ypick);
     c->activeToggleButton = togglebutton;
     c->current_pick = picklevel;
     dt_dev_reprocess_all(self->dev);

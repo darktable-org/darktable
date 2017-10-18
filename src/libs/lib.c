@@ -26,6 +26,7 @@
 #include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "libs/colorpicker.h"
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -1202,6 +1203,14 @@ void dt_lib_colorpicker_set_point(dt_lib_t *lib, float x, float y)
 {
   if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.set_sample_point) return;
   lib->proxy.colorpicker.set_sample_point(lib->proxy.colorpicker.module, x, y);
+}
+
+void dt_lib_colorpicker_set(dt_lib_t *lib, float sizex, float y)
+{
+  if(dt_conf_get_int("ui_last/colorpicker_size") == DT_COLORPICKER_SIZE_POINT)
+    dt_lib_colorpicker_set_point(lib, sizex, y);
+  else
+    dt_lib_colorpicker_set_area(lib, sizex);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

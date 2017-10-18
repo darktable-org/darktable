@@ -142,7 +142,7 @@ static void request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t 
 
   if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+    dt_lib_colorpicker_set(darktable.lib, 0.99, 0);
     dt_dev_reprocess_all(self->dev);
   }
   else

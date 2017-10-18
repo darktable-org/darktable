@@ -527,7 +527,7 @@ static void _blendop_blendif_pick_toggled(GtkToggleButton *togglebutton, dt_iop_
   /* set the area sample size */
   if(module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
-    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+    dt_lib_colorpicker_set(darktable.lib, 0.5, 0.5);
     dt_dev_reprocess_all(module->dev);
   }
   else

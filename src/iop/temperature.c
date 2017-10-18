@@ -1248,8 +1248,7 @@ static void apply_preset(dt_iop_module_t *self)
       self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
 
       /* set the area sample size*/
-      if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
-        dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+      if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF) dt_lib_colorpicker_set(darktable.lib, 0.99, 0);
 
       break;
     default: // camera WB presets
