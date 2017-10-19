@@ -63,7 +63,7 @@ if (JAVA_RUNTIME)
   mark_as_advanced (SAXON)
 
   find_file (JAVA_DOCBOOK_XSL_SAXON_LIBRARY
-    NAMES saxon.jar saxon65.jar saxon653.jar saxon654.jar saxon655.jar docbook-xsl-saxon.jar
+    NAMES docbook-xsl-saxon.jar saxon.jar saxon65.jar saxon653.jar saxon654.jar saxon655.jar
     PATH_SUFFIXES share/xml/docbook/stylesheet/nwalsh/current/extensions
                   share/xml/docbook-xsl/extensions
                   share/xml/docbook/xsl/extensions

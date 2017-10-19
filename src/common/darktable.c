@@ -314,6 +314,7 @@ static void dt_codepaths_init()
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
 {
   double start_wtime = dt_get_wtime();
+
 #ifndef __WIN32__
   if(getuid() == 0 || geteuid() == 0)
     printf(
@@ -402,6 +403,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.start_wtime = start_wtime;
 
   darktable.progname = argv[0];
+
+  // FIXME: move there into dt_database_t
+  dt_pthread_mutex_init(&(darktable.db_insert), NULL);
+  dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
+  dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
+  darktable.control = (dt_control_t *)calloc(1, sizeof(dt_control_t));
 
   // database
   char *dbfilename_from_command = NULL;
@@ -683,6 +690,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_print_mem_usage();
   }
 
+  if(init_gui)
+  {
+    // I doubt that connecting to dbus for darktable-cli makes sense
+    darktable.dbus = dt_dbus_init();
+
+    // make sure that we have no stale global progress bar visible. thus it's run as early is possible
+    dt_control_progress_init(darktable.control);
+  }
+
 #ifdef _OPENMP
   omp_set_num_threads(darktable.num_openmp_threads);
 #endif
@@ -809,11 +825,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     changed_xmp_files = dt_control_crawler_run();
   }
 
-  // FIXME: move there into dt_database_t
-  dt_pthread_mutex_init(&(darktable.db_insert), NULL);
-  dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
-  dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
-  darktable.control = (dt_control_t *)calloc(1, sizeof(dt_control_t));
   if(init_gui)
   {
     dt_control_init(darktable.control);
@@ -923,9 +934,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       gtk_accel_map_load(keyfile);
     else
       gtk_accel_map_save(keyfile); // Save the default keymap if none is present
-
-    // I doubt that connecting to dbus for darktable-cli makes sense
-    darktable.dbus = dt_dbus_init();
 
     // initialize undo struct
     darktable.undo = dt_undo_init();

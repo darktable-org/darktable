@@ -500,54 +500,18 @@ static void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation,
   free(g->image_buffer);
 
   /* load the dt logo as a brackground */
-  char filename[PATH_MAX] = { 0 };
-  char datadir[PATH_MAX] = { 0 };
-  char *logo;
-  dt_logo_season_t season = get_logo_season();
-  if(season != DT_LOGO_SEASON_NONE)
-    logo = g_strdup_printf("%%s/pixmaps/idbutton-%d.svg", (int)season);
-  else
-    logo = g_strdup("%s/pixmaps/idbutton.svg");
-
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  snprintf(filename, sizeof(filename), logo, datadir);
-  g_free(logo);
-  RsvgHandle *svg = rsvg_handle_new_from_file(filename, NULL);
-  if(svg)
+  g->image = dt_util_get_logo(MIN(allocation->width, allocation->height) * 0.75);
+  if(g->image)
   {
-    cairo_surface_t *surface;
-    cairo_t *cr;
-
-    RsvgDimensionData dimension;
-    rsvg_handle_get_dimensions(svg, &dimension);
-
-    float svg_size = MAX(dimension.width, dimension.height);
-    float final_size = MIN(allocation->width, allocation->height) * 0.75;
-    float factor = final_size / svg_size;
-    float final_width = dimension.width * factor * darktable.gui->ppd,
-          final_height = dimension.height * factor * darktable.gui->ppd;
-    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
-
-    g->image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
-    surface = dt_cairo_image_surface_create_for_data(g->image_buffer, CAIRO_FORMAT_ARGB32, final_width,
-                                                     final_height, stride);
-    if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
-    {
-      free(g->image_buffer);
-      g->image_buffer = NULL;
-    }
-    else
-    {
-      cr = cairo_create(surface);
-      cairo_scale(cr, factor, factor);
-      rsvg_handle_render_cairo(svg, cr);
-      cairo_destroy(cr);
-      cairo_surface_flush(surface);
-      g->image = surface;
-      g->image_width = final_width / darktable.gui->ppd;
-      g->image_height = final_height / darktable.gui->ppd;
-    }
-    g_object_unref(svg);
+    g->image_buffer = cairo_image_surface_get_data(g->image);
+    g->image_width = cairo_image_surface_get_width(g->image);
+    g->image_height = cairo_image_surface_get_height(g->image);
+  }
+  else
+  {
+    g->image_buffer = NULL;
+    g->image_width = 0;
+    g->image_height = 0;
   }
 }
 

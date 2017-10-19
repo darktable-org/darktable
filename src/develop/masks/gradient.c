@@ -169,7 +169,7 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
 
 
     form->points = g_list_append(form->points, gradient);
-    dt_masks_gui_form_save_creation(crea_module, form, gui);
+    dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
 
     if(crea_module)
     {
