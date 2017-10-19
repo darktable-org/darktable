@@ -57,7 +57,7 @@
     The most frequently used control elements of modules are sliders, comboboxes and curves.
   </para>
 
-  <sect3>
+  <sect3 id="interacting_sliders">
 
     <title>Sliders</title>
 
@@ -177,7 +177,7 @@
 
   </sect3>
 
-  <sect3>
+  <sect3 id="interacting_comboboxes">
 
     <title>Comboboxes</title>
 
@@ -200,7 +200,7 @@
 
   </sect3>
 
-  <sect3>
+  <sect3 id="interacting_curves">
 
     <title>Curves</title>
 
@@ -211,7 +211,7 @@
 
   </sect3>
 
-  <sect3>
+  <sect3 id="interacting_undo_redo">
 
     <title>Undo/redo</title>
 
@@ -247,7 +247,7 @@
 
       </itemizedlist>
     </para>
-    
+
     <para>
       Please note that changes to drawn masks (see <xref linkend="drawn_mask"/>) are not recorded
       and thus cannot be undone.

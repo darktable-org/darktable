@@ -33,7 +33,7 @@
     </screenshot>
   </para>
 
-  <sect1 status="final">
+  <sect1 status="final" id="tethering_overview">
 
     <title>Overview</title>
 
@@ -58,7 +58,7 @@
       order to verify your camera has tethering support.
     </para>
 
-    <sect2 status="final">
+    <sect2 status="final" id="tethering_overview_tethering">
 
       <title>Tethering</title>
 

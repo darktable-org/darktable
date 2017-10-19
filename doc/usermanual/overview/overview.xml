@@ -671,7 +671,7 @@
 
 <synopsis>darktable-chart
               [--help]
-              [&lt;input Lab pfm file&gt;] 
+              [&lt;input Lab pfm file&gt;]
               [&lt;cht file&gt;]
               [&lt;reference cgats/it8 or Lab pfm file&gt;]</synopsis>
 
@@ -734,8 +734,8 @@
 
 <synopsis>darktable-chart
               --csv
-              &lt;csv file&gt; 
-              &lt;number patches&gt; 
+              &lt;csv file&gt;
+              &lt;number patches&gt;
               &lt;output dtstyle file&gt;</synopsis>
 
       <para>
@@ -914,7 +914,7 @@
         </informaltable>
       </para>
 
-      <sect3 status="final">
+      <sect3 status="final" id="overview_lighttable">
 
         <title>Lighttable</title>
 
@@ -926,7 +926,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="overview_darkroom">
 
         <title>Darkroom</title>
 
@@ -937,7 +937,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="overview_tethering">
 
         <title>Tethering</title>
 
@@ -949,7 +949,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="overview_map">
 
         <title>Map</title>
 
@@ -960,7 +960,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="overview_slideshow">
 
         <title>Slideshow</title>
 
@@ -971,7 +971,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="overview_print">
 
         <title>Print</title>
 
@@ -1071,7 +1071,7 @@
       development workflow and how to export the final result.
     </para>
 
-    <sect2 status ="final">
+    <sect2 status ="final" id="darktable_basic_workflow_importing">
 
       <title>Importing images</title>
 
@@ -1081,7 +1081,7 @@
         the filesystem or, if darktable supports your camera model, directly from camera.
       </para>
 
-      <sect3 status="final">
+      <sect3 status="final" id="darktable_basic_workflow_importing_from_fs">
 
         <title>Importing images from filesystem</title>
 
@@ -1093,7 +1093,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="darktable_basic_workflow_importing_from_camera">
 
         <title>Importing from camera</title>
 
@@ -1114,7 +1114,7 @@
 
       <title>Basic development steps</title>
 
-      <sect3>
+      <sect3 id="basic_development_steps_introduction">
 
         <title>Introduction</title>
 
@@ -1167,7 +1167,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_wb">
 
         <title>White balance</title>
 
@@ -1182,7 +1182,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_exposure">
 
         <title>Exposure correction</title>
 
@@ -1197,7 +1197,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_noise">
 
         <title>Noise reduction</title>
 
@@ -1223,7 +1223,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_spots">
 
         <title>Fixing spots</title>
 
@@ -1238,7 +1238,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_geometry">
 
         <title>Geometrical corrections</title>
 
@@ -1257,7 +1257,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_details">
 
         <title>Bringing back detail</title>
 
@@ -1277,7 +1277,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_tonality">
 
         <title>Adjusting tonal values</title>
 
@@ -1295,7 +1295,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_local_contrast">
 
         <title>Enhancing local contrast</title>
 
@@ -1312,7 +1312,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_colors">
 
         <title>Color adjustments</title>
 
@@ -1335,7 +1335,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_sharpening">
 
         <title>Sharpening</title>
 
@@ -1350,7 +1350,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_effects">
 
         <title>Artistic effects</title>
 

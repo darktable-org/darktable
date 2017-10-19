@@ -33,7 +33,7 @@
     </screenshot>
   </para>
 
-  <sect1 status="final">
+  <sect1 status="final" id="slideshow_overview">
 
     <title>Overview</title>
 
@@ -53,7 +53,7 @@
 
   </sect1>
 
-  <sect1 status="final">
+  <sect1 status="final" id="slideshow_usage">
 
     <title>Usage</title>
 

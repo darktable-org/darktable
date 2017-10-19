@@ -46,11 +46,11 @@
     button to manage your presets.
   </para>
 
-  <sect3>
+  <sect3 id="export_selected_usage">
 
     <title>Usage</title>
 
-    <sect4>
+    <sect4 id="export_selected_usage_storage">
 
       <title>target storage</title>
 
@@ -63,7 +63,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="export_selected_usage_filename">
 
       <title>filename template</title>
 
@@ -470,7 +470,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="export_selected_usage_directory">
 
       <title>output directory</title>
 
@@ -482,7 +482,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="export_selected_usage_conflict">
 
       <title>on conflict</title>
 
@@ -497,7 +497,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="export_selected_usage_format">
 
       <title>file format</title>
 
@@ -543,7 +543,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="export_selected_usage_size">
 
       <title>max size</title>
 
@@ -563,7 +563,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="export_selected_usage_upscaling">
 
       <title>allow upscaling</title>
 
@@ -576,7 +576,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="export_selected_usage_profile">
 
       <title>profile</title>
 
@@ -589,7 +589,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="export_selected_usage_intent">
 
       <title>intent</title>
 
@@ -601,7 +601,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="export_selected_usage_style">
 
       <title>style</title>
 
@@ -618,7 +618,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="export_selected_usage_mode">
 
       <title>mode</title>
 
@@ -635,7 +635,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="export_selected_usage_export">
 
       <title>export</title>
 

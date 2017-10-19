@@ -50,11 +50,11 @@
     images of the last imported film roll or any other film roll chosen.
   </para>
 
-  <sect3>
+  <sect3 id="collect_images_usage">
 
     <title>Usage</title>
 
-    <sect4>
+    <sect4 id="collect_images_usage_attributes">
 
       <title>image attributes</title>
 
@@ -250,7 +250,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="collect_images_usage_rules">
 
       <title>search rules</title>
 
@@ -262,7 +262,7 @@
         where the query matches. Leaving the text field empty matches all images for that
         attribute.
       </para>
-      
+
       <para>
         Attributes with numerical values as well as date and time attributes can be used in
         combination with comparative and range operators. Write <emphasis>&lt;</emphasis>,
@@ -285,14 +285,14 @@
         them:
       </para>
 
-      <sect5>
+      <sect5 id="collect_images_usage_rules_clear">
         <title>clear this rule</title>
         <para>
           Removes this rule&nbsp;&ndash; or resets to default if this is the only rule defined.
         </para>
       </sect5>
 
-      <sect5>
+      <sect5 id="collect_images_usage_rules_narrow">
         <title>narrow down search</title>
         <para>
           Adds a new rule which is combined with the previous rule(s) in a logical
@@ -301,7 +301,7 @@
         </para>
       </sect5>
 
-      <sect5>
+      <sect5 id="collect_images_usage_rules_more">
         <title>add more images</title>
         <para>
           Adds a new rule which is combined with the previous rule(s) in a logical
@@ -310,7 +310,7 @@
         </para>
       </sect5>
 
-      <sect5>
+      <sect5 id="collect_images_usage_rules_exclude">
         <title>exclude images</title>
         <para>
           Adds a new rule which is combined with the previous rule(s) in a logical
@@ -321,7 +321,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="collect_images_usage_combining">
 
       <title>combining rules</title>
 
@@ -338,7 +338,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="collect_images_usage_update">
 
       <title>updating folder path</title>
 
