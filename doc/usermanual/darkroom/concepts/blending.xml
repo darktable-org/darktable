@@ -11,7 +11,7 @@
     <primary>blending</primary>
   </indexterm>
 
-  <sect3 status="final">
+  <sect3 status="final" id="blending_overview">
 
     <title>Overview</title>
 
@@ -42,7 +42,7 @@
 
   </sect3>
 
-  <sect3 status="final">
+  <sect3 status="final" id="blending_usage">
 
     <title>Usage</title>
 
@@ -64,7 +64,7 @@
       </tgroup>
     </informaltable>
 
-    <sect4>
+    <sect4 id="blending_usage_blend">
 
       <title>blend</title>
 
@@ -73,7 +73,7 @@
         control elements will show up.
       </para>
 
-      <sect5>
+      <sect5 id="blending_usage_off">
         <title>off</title>
         <para>
           module's output is passed to the next module in pixelpipe without additional
@@ -81,7 +81,7 @@
         </para>
       </sect5>
 
-      <sect5>
+      <sect5 id="blending_usage_uniform">
         <title>uniformily</title>
         <para>
           reprocessing takes place with the chosen blend mode and opacity value&nbsp;&ndash; the
@@ -90,7 +90,7 @@
         </para>
       </sect5>
 
-      <sect5>
+      <sect5 id="blending_usage_drawn_mask">
         <title>drawn mask</title>
         <para>
           reprocessing takes place with the chosen blend mode and opacity. Additional controls
@@ -103,7 +103,7 @@
         </para>
       </sect5>
 
-      <sect5>
+      <sect5 id="blending_usage_parametric_mask">
         <title>parametric mask</title>
         <para>
           reprocessing takes place with the chosen blend mode and opacity. Additional controls
@@ -113,7 +113,7 @@
         </para>
       </sect5>
 
-      <sect5>
+      <sect5 id="blending_usage_drawn_parametric_mask">
         <title>drawn and parametric mask</title>
         <para>
           this option combines drawn and parametric masks and shows the full set of both
@@ -124,11 +124,11 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="blending_usage_mask_combination_inversion">
 
       <title>Mask combination and inversion</title>
 
-      <sect5>
+      <sect5 id="blending_usage_mask_combination_inversion_invert">
         <title>invert mask</title>
         <para>
           When <quote>drawn mask</quote> is selected there is an additional combobox to invert
@@ -136,7 +136,7 @@
         </para>
       </sect5>
 
-      <sect5>
+      <sect5 id="blending_usage_mask_combination_inversion_combine">
         <title>combine masks</title>
         <para>
           When either <quote>parametric masks</quote>, or <quote>drawn and parametric
@@ -148,7 +148,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="blending_usage_additional_controls">
 
       <title>Additional controls</title>
 
@@ -157,7 +157,7 @@
         you may blur the mask, temporarily disable it, or display it as an overlay image.
       </para>
 
-      <sect5>
+      <sect5 id="blending_usage_additional_controls_blur">
         <title>mask blur</title>
         <para>
           Blurring the mask creates a softer transition between blended and unblended parts of
@@ -167,7 +167,7 @@
         </para>
       </sect5>
 
-      <sect5>
+      <sect5 id="blending_usage_additional_controls_temp_off">
         <title>temporarily switch off mask</title>
         <para>
           Sometimes it is useful to visualize the module's effect without the mask taking
@@ -179,7 +179,7 @@
         </para>
       </sect5>
 
-      <sect5>
+      <sect5 id="blending_usage_additional_controls_display">
         <title>display mask</title>
         <para>
           Clicking on the
@@ -194,11 +194,11 @@
 
   </sect3>
 
-  <sect3 status="final">
+  <sect3 status="final" id="blending_examples">
 
     <title>Examples</title>
 
-    <sect4>
+    <sect4 id="blending_examples_texturing">
 
       <title>Texturing an image</title>
 
@@ -209,7 +209,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="blending_examples_gritty_details">
 
       <title>Gritty details</title>
 
