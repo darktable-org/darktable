@@ -29,7 +29,7 @@
     length, ISO, camera model and other fields.
   </para>
 
-  <sect3 status="final">
+  <sect3 status="final" id="module_presets_new">
 
     <title>Creating a new preset</title>
 
@@ -72,7 +72,7 @@
 
   </sect3>
 
-  <sect3 status="final">
+  <sect3 status="final" id="module_presets_managing">
 
     <title>Managing Presets</title>
 
