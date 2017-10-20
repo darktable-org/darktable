@@ -181,30 +181,67 @@ if(can_build_usermanual)
     # draft chunked usermanual for the website
     #
 
-    if (Saxon_FOUND)
+    add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dtorg/images/
+        COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/dtorg/
+        DEPENDS target_media_images
+        COMMENT "Copying images to the usermanual for darktable.org" VERBATIM
+    )
+    add_custom_target(darktable-usermanual-dtorg-images DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/dtorg/images/)
+    add_custom_target(darktable-usermanual-dtorg)
+
+    if(${Xml2po_BIN} STREQUAL "Xml2po_BIN-NOTFOUND")
+      set(dtorg_languages en)
+    else()
+      set(dtorg_languages en fr it es)
+    endif()
+
+    string(REPLACE ";" " " dtorg_languages_string "${dtorg_languages}")
+
+    foreach(language ${dtorg_languages})
+
+      set(xslfile "${CMAKE_CURRENT_SOURCE_DIR}/xsl/darktable_html_dtorg.xsl")
+      set(outputdir "${CMAKE_CURRENT_BINARY_DIR}/dtorg/${language}")
+
+      if(${language} STREQUAL "en")
+        set(xmllangfile "${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml")
+      else()
+        set(pofile "${CMAKE_CURRENT_SOURCE_DIR}/po/${language}.po")
+        set(xmlfile "${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml")
+        set(xmllangfile "${CMAKE_CURRENT_BINARY_DIR}/darktable_single-${language}.xml")
         add_custom_command(
-            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dtorg/index.html
-            COMMAND ${XSLT_SAXON_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml xsl/darktable_html_dtorg.xsl use.extensions=1 base.dir=${CMAKE_CURRENT_BINARY_DIR}/dtorg/
-            COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/dtorg -name *.html -exec sed -n -i "1h;1!H;\${;g;s/${binary_path}\\/media\\///g;p;}" {} \;
-            COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/dtorg/
+            OUTPUT ${xmllangfile}
+            COMMAND xml2po -e -p ${pofile} -l ${language} -o ${xmllangfile} ${xmlfile}
+            DEPENDS ${pofile} ${xmlfile}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
-            COMMENT "Building the usermanual for darktable.org" VERBATIM
+            COMMENT "Creating translated XML usermanual file (${language})" VERBATIM
         )
-    else (Saxon_FOUND)
-        add_custom_command(
-            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dtorg/index.html
-            COMMAND ${XSLT_XSLTPROC_EXECUTABLE} --stringparam chunker.output.encoding UTF-8 --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/dtorg/ xsl/darktable_html_dtorg.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
-            COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/dtorg -name *.html -exec sed -i s/${binary_path}\\/media\\///g {} \;
-            COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/dtorg/
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
-            COMMENT "Building the usermanual for darktable.org" VERBATIM
-        )
-    endif (Saxon_FOUND)
-    add_custom_target(darktable-usermanual-dtorg DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/dtorg/index.html )
-    add_dependencies(darktable-usermanual-dtorg target_media_images darktable_single_xml )
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dtorg DESTINATION ${CMAKE_INSTALL_DOCDIR}/usermanual OPTIONAL COMPONENT DTDocuments)
+      endif()
+
+      if (Saxon_FOUND)
+          add_custom_command(
+              OUTPUT ${outputdir}/index.html
+              COMMAND ${XSLT_SAXON_COMMAND} ${xmllangfile} ${xslfile} use.extensions=1 l10n.gentext.language=${language} usermanual_languages=${dtorg_languages_string} base.dir=${outputdir}
+              COMMAND find ${outputdir} -name *.html -exec sed -n -i "1h;1!H;\${;g;s/${binary_path}\\/media\\//..\\//g;p;}" {} \;
+              WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+              DEPENDS ${xmllangfile} ${xslfile}
+              COMMENT "Building the ${language} usermanual for darktable.org" VERBATIM
+          )
+      else (Saxon_FOUND)
+          add_custom_command(
+              OUTPUT ${outputdir}/index.html
+              COMMAND ${XSLT_XSLTPROC_EXECUTABLE} --stringparam chunker.output.encoding UTF-8 --stringparam base.dir ${outputdir} --stringparam usermanual_languages ${dtorg_languages_string} ${xslfile} ${xmllangfile}
+              COMMAND find ${outputdir} -name *.html -exec sed -i s/${binary_path}\\/media\\//..\\//g {} \;
+              WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+              DEPENDS ${xmllangfile} ${xslfile}
+              COMMENT "Building the ${language} usermanual for darktable.org" VERBATIM
+          )
+      endif (Saxon_FOUND)
+      add_custom_target(darktable-usermanual-dtorg-${language} DEPENDS ${outputdir}/index.html )
+      add_dependencies(darktable-usermanual-dtorg-${language} darktable-usermanual-dtorg-images )
+      add_dependencies(darktable-usermanual-dtorg darktable-usermanual-dtorg-${language})
+
+    endforeach()
 
     #
     # draft translated usermanuals
