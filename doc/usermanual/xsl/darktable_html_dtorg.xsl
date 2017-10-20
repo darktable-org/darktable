@@ -12,6 +12,8 @@
 <!-- we pass that from the outside so that we can use the same .xsl with Saxon and xsltproc -->
 <!-- <xsl:param name="use.extensions" select="1"></xsl:param> -->
 
+<xsl:param name="chunk.quietly" select="1"></xsl:param>
+
 <xsl:param name="tablecolumns.extension" select="1"></xsl:param>
 <xsl:param name="graphicsize.extension" select="1"></xsl:param>
 <xsl:param name="default.table.width" select="'100%'"></xsl:param>
@@ -42,7 +44,7 @@
 
 <xsl:param name="variablelist.as.blocks" select="1"></xsl:param>
 
-
+<xsl:param name="usermanual_languages"></xsl:param>
 
 <!-- see: http://www.sagehill.net/docbookxsl/index.html -->
 
@@ -503,6 +505,80 @@
 </xsl:template>
 
 
+<!-- the links to other languages -->
+<xsl:template name="format.dt_language">
+  <xsl:param name="language" />
+  <xsl:call-template name="l10n.language.name">
+    <xsl:with-param name="lang" select="$language" />
+  </xsl:call-template>
+<!--   <xsl:text> (</xsl:text> -->
+<!--   <xsl:value-of select="$language" /> -->
+<!--   <xsl:text>)</xsl:text> -->
+</xsl:template>
+
+
+<xsl:template name="output.dt_language">
+  <xsl:param name="language" />
+  <xsl:variable name="current_language">
+    <xsl:call-template name="l10n.language"/>
+  </xsl:variable>
+
+  <li class="language_list_entry">
+  <xsl:choose>
+    <xsl:when test="$language = $current_language">
+      <xsl:call-template name="format.dt_language">
+        <xsl:with-param name="language" select="$language" />
+      </xsl:call-template>
+    </xsl:when>
+    <xsl:otherwise>
+      <a>
+        <xsl:attribute name="href">
+          <xsl:text>../</xsl:text>
+          <xsl:value-of select="$language" />
+          <xsl:text>/</xsl:text>
+          <xsl:call-template name="href.target" />
+        </xsl:attribute>
+        <xsl:call-template name="format.dt_language">
+          <xsl:with-param name="language" select="$language" />
+        </xsl:call-template>
+      </a>
+    </xsl:otherwise>
+  </xsl:choose>
+  </li>
+
+</xsl:template>
+
+<xsl:template name="output.dt_languages">
+  <xsl:param name="languages" select="''"/>
+  <xsl:choose>
+    <xsl:when test="contains($languages, ' ')">
+      <xsl:variable name="language" select="substring-before($languages, ' ')"/>
+      <xsl:call-template name="output.dt_language">
+        <xsl:with-param name="language" select="$language"/>
+      </xsl:call-template>
+      <xsl:call-template name="output.dt_languages">
+        <xsl:with-param name="languages" select="substring-after($languages, ' ')"/>
+      </xsl:call-template>
+    </xsl:when>
+    <xsl:when test="$languages != ''">
+      <xsl:call-template name="output.dt_language">
+        <xsl:with-param name="language" select="$languages"/>
+      </xsl:call-template>
+    </xsl:when>
+  </xsl:choose>
+</xsl:template>
+
+<xsl:template name="dt_languages">
+  <xsl:if test="$usermanual_languages != ''">
+    <ul class="language_list">
+      <xsl:call-template name="output.dt_languages">
+        <xsl:with-param name="languages" select="normalize-space($usermanual_languages)"/>
+      </xsl:call-template>
+    </ul>
+  </xsl:if>
+</xsl:template>
+
+
 <!--
   we need to customize chunk-element-content to wrap the page content.
   we keep the other parts separate though to make it easier to update.
@@ -533,6 +609,8 @@
         <xsl:with-param name="next" select="$next"/>
         <xsl:with-param name="nav.context" select="$nav.context"/>
       </xsl:call-template>
+
+      <xsl:call-template name="dt_languages"/>
 
       <section class="article">
 
