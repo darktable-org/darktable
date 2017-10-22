@@ -36,11 +36,11 @@
     </tgroup>
   </informaltable>
 
-  <sect3>
+  <sect3 id="metadata_editor_usage">
 
     <title>Usage</title>
 
-    <sect4>
+    <sect4 id="metadata_editor_usage_clear">
 
       <title>clear</title>
 
@@ -50,7 +50,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="metadata_editor_usage_apply">
 
       <title>apply</title>
 

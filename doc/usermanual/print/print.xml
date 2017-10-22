@@ -33,7 +33,7 @@
     </screenshot>
   </para>
 
-  <sect1 status="final">
+  <sect1 status="final" id="print_overview">
 
     <title>Overview</title>
 
@@ -86,7 +86,7 @@
 
   </sect1>
 
-  <sect1 status="final">
+  <sect1 status="final" id="print_usage">
 
     <title>Usage</title>
 
@@ -109,7 +109,7 @@
       </informaltable>
     </para>
 
-    <sect2 id="printer_section">
+    <sect2 id="print_printer_section">
 
       <title>Printer section</title>
 
@@ -145,7 +145,7 @@
 
     </sect2>
 
-    <sect2 id="page_section">
+    <sect2 id="print_page_section">
 
       <title>Page section</title>
 
