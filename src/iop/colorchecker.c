@@ -29,7 +29,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "iop/svd.h"
+#include "iop/gaussian_elimination.h"
 #include "libs/colorpicker.h"
 #include <assert.h>
 #include <math.h>
@@ -316,14 +316,14 @@ vfastlog (v4sf x)
   return c_0_69314718 * vfastlog2 (x);
 }
 
-// thinplate spline kernel \phi(r)
+// thinplate spline kernel \phi(r) = 2 r^2 ln(r)
 static inline v4sf kerneldist4(const float *x, const float *y)
 {
-  const float r = sqrtf(
+  const float r2 = 
       (x[0]-y[0])*(x[0]-y[0])+
       (x[1]-y[1])*(x[1]-y[1])+
-      (x[2]-y[2])*(x[2]-y[2]));
-  return r*r*fastlog(MAX(1e-8f,r));
+      (x[2]-y[2])*(x[2]-y[2]);
+  return r2 * fastlog(MAX(1e-8f,r2));
 }
 #endif
 
@@ -355,7 +355,7 @@ fastlog (float x)
 //   return y - 87.989971088f;
 // }
 
-// thinplate spline kernel \phi(r)
+// thinplate spline kernel \phi(r) = 2 r^2 ln(r)
 #if defined(_OPENMP) && defined(OPENMP_SIMD_)
 #pragma omp declare SIMD()
 #endif
@@ -369,7 +369,7 @@ static inline float kernel(const float *x, const float *y)
       (x[0]-y[0])*(x[0]-y[0])+
       (x[1]-y[1])*(x[1]-y[1])+
       (x[2]-y[2])*(x[2]-y[2]);
-  return .5f * r2*fastlog(MAX(1e-8f,r2));
+  return r2*fastlog(MAX(1e-8f,r2));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -534,93 +534,206 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorchecker_data_t *d = (dt_iop_colorchecker_data_t *)piece->data;
 
   d->num_patches = MIN(MAX_PATCHES, p->num_patches);
-  for(int k = 0; k < d->num_patches; k++)
+  const int N = d->num_patches, N4 = N + 4;
+  for(int k = 0; k < N; k++)
   {
     d->source_Lab[3*k+0] = p->source_L[k];
     d->source_Lab[3*k+1] = p->source_a[k];
     d->source_Lab[3*k+2] = p->source_b[k];
   }
 
-#define N (d->num_patches) // number of patches
-  // solve equation system to fit thin plate splines to our data
-#ifdef _OPENMP
-#pragma omp parallel default(shared)
-#endif
+  // initialize coefficients with default values that will be
+  // used for N<=4 and if coefficient matrix A is singular
+  for(int i=0;i<4+N;i++)
   {
-    double *A = malloc((N + 4) * (N + 4) * sizeof(double));
-    double *target = calloc(N + 4, sizeof(double));
+    d->coeff_L[i] = 0;
+    d->coeff_a[i] = 0;
+    d->coeff_b[i] = 0;
+  }
+  d->coeff_L[N + 1] = 1;
+  d->coeff_a[N + 2] = 1;
+  d->coeff_b[N + 3] = 1;
 
-  // find coeffs for three channels separately:
-#ifdef _OPENMP
-#pragma omp for
-#endif
-  for(int ch=0;ch<3;ch++)
+  /*
+      Following
+
+      K. Anjyo, J. P. Lewis, and F. Pighin, "Scattered data
+      interpolation for computer graphics," ACM SIGGRAPH 2014 Courses
+      on - SIGGRAPH ’14, 2014.
+      http://dx.doi.org/10.1145/2614028.2615425
+      http://scribblethink.org/Courses/ScatteredInterpolation/scatteredinterpcoursenotes.pdf
+
+      construct the system matrix and the vector of function values and
+      solve the set of linear equations
+
+      / R   P \  / c \   / f \
+      |       |  |   | = |   |
+      \ P^t 0 /  \ d /   \ 0 /
+
+      for the coefficent vector (c d)^t.
+
+      By design of the interpolation scheme the interpolation
+      coefficients c for radial non-linear basis functions (the kernel)
+      must always vanish for N<=4.  For N<4 the (N+4)x(N+4) coefficient
+      matrix A is singular, the linear system has non-unique solutions.
+      Thus the cases with N<=4 need special treatment, unique solutions
+      are found by setting some of the unknown coefficients to zero and
+      solving a smaller linear system.
+  */
+  switch(N)
   {
-    if(ch==0) for(int k=0;k<N;k++) target[k] = p->target_L[k];
-    if(ch==1) for(int k=0;k<N;k++) target[k] = p->target_a[k];
-    if(ch==2) for(int k=0;k<N;k++) target[k] = p->target_b[k];
-    // following JP's great siggraph course on scattered data interpolation,
-    // construct system matrix A such that:
-    // A c = f
-    //
-    // | R   P | |c| = |f|
-    // | P^t 0 | |d|   |0|
-    //
-    // to interpolate values f_i with the radial basis function system matrix R and a polynomial term P.
-    // P is a 3D linear polynomial a + b x + c y + d z
-    //
-    int wd = N+4;
-    // radial basis function part R
+  case 0:
+    break;
+  case 1:
+    // interpolation via constant function
+    d->coeff_L[N + 1] = p->target_L[0] / p->source_L[0];
+    d->coeff_a[N + 2] = p->target_a[0] / p->source_a[0];
+    d->coeff_b[N + 3] = p->target_b[0] / p->source_b[0];
+    break;
+  case 2:
+    // interpolation via single constant function and the linear
+    // function of the corresponding color channel
+    {
+      double A[2 * 2] = { 1, p->source_L[0],
+                          1, p->source_L[1] };
+      double b[2] = { p->target_L[0], p->target_L[1] };
+      if(!gauss_solve(A, b, 2)) break;
+      d->coeff_L[N + 0] = b[0];
+      d->coeff_L[N + 1] = b[1];
+    }
+    {
+      double A[2 * 2] = { 1, p->source_a[0],
+                          1, p->source_a[1] };
+      double b[2] = { p->target_a[0], p->target_a[1] };
+      if(!gauss_solve(A, b, 2)) break;
+      d->coeff_a[N + 0] = b[0];
+      d->coeff_a[N + 2] = b[1];
+    }
+    {
+      double A[2 * 2] = { 1, p->source_b[0],
+                          1, p->source_b[1] };
+      double b[2] = { p->target_b[0], p->target_b[1] };
+      if(!gauss_solve(A, b, 2)) break;
+      d->coeff_b[N + 0] = b[0];
+      d->coeff_b[N + 3] = b[1];
+    }
+    break;
+  case 3:
+    // interpolation via single constant function, the linear function
+    // of the corresponding color channel and the linear functions
+    // of the other two color channels having both the same weight
+    {
+      double A[3 * 3] = { 1, p->source_L[0], p->source_a[0] + p->source_b[0],
+                          1, p->source_L[1], p->source_a[1] + p->source_b[1],
+                          1, p->source_L[2], p->source_a[2] + p->source_b[2] };
+      double b[3] = { p->target_L[0], p->target_L[1], p->target_L[2] };
+      if(!gauss_solve(A, b, 3)) break;
+      d->coeff_L[N + 0] = b[0];
+      d->coeff_L[N + 1] = b[1];
+      d->coeff_L[N + 2] = b[2];
+      d->coeff_L[N + 3] = b[2];
+    }
+    {
+      double A[3 * 3] = { 1, p->source_a[0], p->source_L[0] + p->source_b[0],
+                          1, p->source_a[1], p->source_L[1] + p->source_b[1],
+                          1, p->source_a[2], p->source_L[2] + p->source_b[2] };
+      double b[3] = { p->target_a[0], p->target_a[1], p->target_a[2] };
+      if(!gauss_solve(A, b, 3)) break;
+      d->coeff_a[N + 0] = b[0];
+      d->coeff_a[N + 1] = b[2];
+      d->coeff_a[N + 2] = b[1];
+      d->coeff_a[N + 3] = b[2];
+    }
+    {
+      double A[3 * 3] = { 1, p->source_b[0], p->source_L[0] + p->source_a[0],
+                          1, p->source_b[1], p->source_L[1] + p->source_a[1],
+                          1, p->source_b[2], p->source_L[2] + p->source_a[2] };
+      double b[3] = { p->target_b[0], p->target_b[1], p->target_b[2] };
+      if(!gauss_solve(A, b, 3)) break;
+      d->coeff_b[N + 0] = b[0];
+      d->coeff_b[N + 1] = b[2];
+      d->coeff_b[N + 2] = b[2];
+      d->coeff_b[N + 3] = b[1];
+    }
+    break;
+  case 4:
+  {
+    // interpolation via constant function and 3 linear functions
+    double A[4 * 4] = { 1, p->source_L[0], p->source_a[0], p->source_b[0],
+                        1, p->source_L[1], p->source_a[1], p->source_b[1],
+                        1, p->source_L[2], p->source_a[2], p->source_b[2],
+                        1, p->source_L[3], p->source_a[3], p->source_b[3] };
+    int pivot[4];
+    if(!gauss_make_triangular(A, pivot, 4)) break;
+    {
+      double b[4] = { p->target_L[0], p->target_L[1], p->target_L[2], p->target_L[3] };
+      gauss_solve_triangular(A, pivot, b, 4);
+      d->coeff_L[N + 0] = b[0];
+      d->coeff_L[N + 1] = b[1];
+      d->coeff_L[N + 2] = b[2];
+      d->coeff_L[N + 3] = b[3];
+    }
+    {
+      double b[4] = { p->target_a[0], p->target_a[1], p->target_a[2], p->target_a[3] };
+      gauss_solve_triangular(A, pivot, b, 4);
+      d->coeff_a[N + 0] = b[0];
+      d->coeff_a[N + 1] = b[1];
+      d->coeff_a[N + 2] = b[2];
+      d->coeff_a[N + 3] = b[3];
+    }
+    {
+      double b[4] = { p->target_b[0], p->target_b[1], p->target_b[2], p->target_b[3] };
+      gauss_solve_triangular(A, pivot, b, 4);
+      d->coeff_b[N + 0] = b[0];
+      d->coeff_b[N + 1] = b[1];
+      d->coeff_b[N + 2] = b[2];
+      d->coeff_b[N + 3] = b[3];
+    }
+    break;
+  }
+  default:
+  {
+    // setup linear system of equations
+    double *A = malloc(N4 * N4 * sizeof(*A));
+    double *b = malloc(N4 * sizeof(*b));
+    // coefficients from nonlinear radial kernel functions
     for(int j=0;j<N;j++)
       for(int i=j;i<N;i++)
-        A[j*wd+i] = A[i*wd+j] = kernel(d->source_Lab+3*i, d->source_Lab+3*j);
-
-    // polynomial part P: constant + 3x linear
-    for(int i=0;i<N;i++) A[i*wd+N+0] = A[(N+0)*wd+i] = 1.0f;
-    for(int i=0;i<N;i++) A[i*wd+N+1] = A[(N+1)*wd+i] = d->source_Lab[3*i+0];
-    for(int i=0;i<N;i++) A[i*wd+N+2] = A[(N+2)*wd+i] = d->source_Lab[3*i+1];
-    for(int i=0;i<N;i++) A[i*wd+N+3] = A[(N+3)*wd+i] = d->source_Lab[3*i+2];
-
-    for(int j=N;j<wd;j++) for(int i=N;i<wd;i++) A[j*wd+i] = 0.0f;
-
-    // coefficient vector:
-    double *c = calloc(N + 4, sizeof(double));
-
-    // svd to solve for c:
-    // A * c = offsets
-    // A = u w v => A-1 = v^t 1/w u^t
-    // regularisation epsilon:
-    const float eps = 0.001f;
-    double *w = malloc((N + 4) * sizeof(double));
-    double *v = malloc((N + 4) * (N + 4) * sizeof(double));
-    double *tmp = calloc(N + 4, sizeof(double));
-
-    dsvd(A, N+4, N+4, N+4, w, v);
-
-    for(int j=0;j<wd;j++)
-      for(int i=0;i<wd;i++)
-        tmp[j] += A[i*wd+j] * target[i];
-    for(int i=0;i<wd;i++)
-      tmp[i] *= w[i] / ((w[i] + eps)*(w[i] + eps));
-    for(int j=0;j<wd;j++)
-      for(int i=0;i<wd;i++)
-        c[j] += v[j*wd+i] * tmp[i];
-    if(ch==0) for(int i=0;i<N+4;i++) d->coeff_L[i] = c[i];
-    if(ch==1) for(int i=0;i<N+4;i++) d->coeff_a[i] = c[i];
-    if(ch==2) for(int i=0;i<N+4;i++) d->coeff_b[i] = c[i];
-
-    free(tmp);
-    free(v);
-    free(w);
-    free(c);
-  }
-  // for(int i=0;i<N+4;i++) fprintf(stderr, "coeff L[%d] = %f\n", i, d->coeff_L[i]);
-  // for(int i=0;i<N+4;i++) fprintf(stderr, "coeff a[%d] = %f\n", i, d->coeff_a[i]);
-  // for(int i=0;i<N+4;i++) fprintf(stderr, "coeff b[%d] = %f\n", i, d->coeff_b[i]);
-#undef N
-
-    free(target);
+        A[j*N4+i] = A[i*N4+j] = kernel(d->source_Lab+3*i, d->source_Lab+3*j);
+    // coefficients from constant and linear functions
+    for(int i=0;i<N;i++) A[i*N4+N+0] = A[(N+0)*N4+i] = 1;
+    for(int i=0;i<N;i++) A[i*N4+N+1] = A[(N+1)*N4+i] = d->source_Lab[3*i+0];
+    for(int i=0;i<N;i++) A[i*N4+N+2] = A[(N+2)*N4+i] = d->source_Lab[3*i+1];
+    for(int i=0;i<N;i++) A[i*N4+N+3] = A[(N+3)*N4+i] = d->source_Lab[3*i+2];
+    // lower-right zero block
+    for(int j=N;j<N4;j++)
+      for(int i=N;i<N4;i++)
+        A[j*N4+i] = 0;
+    // make coefficient matrix triangular
+    int *pivot = malloc(N4 * sizeof(*pivot));
+    if (gauss_make_triangular(A, pivot, N4))
+    {
+      // calculate coefficients for L channel
+      for(int i=0;i<N;i++) b[i] = p->target_L[i];
+      for(int i=N;i<N+4;i++) b[i] = 0;
+      gauss_solve_triangular(A, pivot, b, N4);
+      for(int i=0;i<N+4;i++) d->coeff_L[i] = b[i];
+      // calculate coefficients for a channel
+      for(int i=0;i<N;i++) b[i] = p->target_a[i];
+      for(int i=N;i<N+4;i++) b[i] = 0;
+      gauss_solve_triangular(A, pivot, b, N4);
+      for(int i=0;i<N+4;i++) d->coeff_a[i] = b[i];
+      // calculate coefficients for b channel
+      for(int i=0;i<N;i++) b[i] = p->target_b[i];
+      for(int i=N;i<N+4;i++) b[i] = 0;
+      gauss_solve_triangular(A, pivot, b, N4);
+      for(int i=0;i<N+4;i++) d->coeff_b[i] = b[i];
+    }
+    // free resources
+    free(pivot);
+    free(b);
     free(A);
+  }
   }
 }
 
@@ -1091,16 +1204,32 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
   {
     // shift-left while colour picking: replace source colour
     // if clicked outside the valid patches: add new one
-    if(p->num_patches < 24 && (patch < 0 || patch >= p->num_patches))
+
+    // color channels should be nonzero to avoid numerical issues
+    int new_color_valid = fabsf(self->picked_color[0]) > 1.e-3f &&
+                          fabsf(self->picked_color[1]) > 1.e-3f &&
+                          fabsf(self->picked_color[2]) > 1.e-3f;
+    // check if the new color is very close to some color already in the colorchecker
+    for(int i=0;i<p->num_patches;++i)
     {
-      p->num_patches = MIN(MAX_PATCHES, p->num_patches + 1);
-      patch = p->num_patches - 1;
+      float color[] = { p->source_L[i], p->source_a[i], p->source_b[i] };
+      if(fabsf(self->picked_color[0] - color[0]) < 1.e-3f && fabsf(self->picked_color[1] - color[1]) < 1.e-3f
+         && fabsf(self->picked_color[2] - color[2]) < 1.e-3f)
+        new_color_valid = FALSE;
     }
-    p->target_L[patch] = p->source_L[patch] = self->picked_color[0];
-    p->target_a[patch] = p->source_a[patch] = self->picked_color[1];
-    p->target_b[patch] = p->source_b[patch] = self->picked_color[2];
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    self->gui_update(self);
+    if(new_color_valid)
+    {
+      if(p->num_patches < 24 && (patch < 0 || patch >= p->num_patches))
+      {
+        p->num_patches = MIN(MAX_PATCHES, p->num_patches + 1);
+        patch = p->num_patches - 1;
+      }
+      p->target_L[patch] = p->source_L[patch] = self->picked_color[0];
+      p->target_a[patch] = p->source_a[patch] = self->picked_color[1];
+      p->target_b[patch] = p->source_b[patch] = self->picked_color[2];
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      self->gui_update(self);
+    }
     return TRUE;
   }
   if(patch >= p->num_patches) patch = p->num_patches-1;
