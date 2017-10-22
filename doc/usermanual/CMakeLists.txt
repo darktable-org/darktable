@@ -338,8 +338,6 @@ if(can_build_usermanual)
         add_custom_command(
             OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dtorg_lua_api/index.html
             COMMAND ${XSLT_SAXON_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml xsl/darktable_html_dtorg.xsl use.extensions=1 base.dir=${CMAKE_CURRENT_BINARY_DIR}/dtorg_lua_api/
-            COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/dtorg_lua_api -name *.html -exec sed -n -i "1h;1!H;\${;g;s/${binary_path}\\/media\\///g;p;}" {} \;
-            COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/dtorg_lua_api/
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
             COMMENT "Building Lua API for darktable.org" VERBATIM
@@ -348,8 +346,6 @@ if(can_build_usermanual)
         add_custom_command(
             OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dtorg_lua_api/index.html
             COMMAND ${XSLT_XSLTPROC_EXECUTABLE} --stringparam chunker.output.encoding UTF-8 --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/dtorg_lua_api/ xsl/darktable_html_dtorg.xsl ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
-            COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/dtorg_lua_api -name *.html -exec sed -i s/${binary_path}\\/media\\///g {} \;
-            COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/dtorg_lua_api/
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua_api.xml
             COMMENT "Building Lua API for darktable.org" VERBATIM
