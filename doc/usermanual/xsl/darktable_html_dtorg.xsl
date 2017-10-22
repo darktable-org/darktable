@@ -16,6 +16,7 @@
 
 <xsl:param name="tablecolumns.extension" select="1"></xsl:param>
 <xsl:param name="graphicsize.extension" select="1"></xsl:param>
+<xsl:param name="link.to.self.for.mediaobject" select="1" />
 <xsl:param name="default.table.width" select="'100%'"></xsl:param>
 
 <xsl:param name="make.valid.html" select="1"></xsl:param>
