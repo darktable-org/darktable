@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2017-09-29 22:20+0200\n"
+"POT-Creation-Date: 2017-10-19 10:06+0200\n"
 "PO-Revision-Date: 2017-09-29 22:48+0200\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
@@ -13544,11 +13544,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#. by their specification. However, there is an established de-facto standard to embed
-#. profiles which darktable adheres to. Beware that some applications might fail to correctly
-#. handle those profiles and render colors incorrectly.
-#. </para>
+#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+#.         by their specification. However, there is an established de-facto standard to embed
+#.         profiles which darktable adheres to. Beware that some applications might fail to correctly
+#.         handle those profiles and render colors incorrectly.
+#.       </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11367(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
@@ -19930,25 +19930,25 @@ msgstr ""
 
 #. <bridgehead renderas="sect4">maximum width of image drawing area</bridgehead>
 #.
-#. <para>
-#. Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
-#. Needs a restart and will invalidate current thumbnail caches (default 1300).
-#. </para>
+#.   <para>
+#.     Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
+#.     Needs a restart and will invalidate current thumbnail caches (default 1300).
+#.   </para>
 #.
-#. <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
+#.   <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
 #.
-#. <para>
-#. Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
-#. screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
-#. </para>
+#.   <para>
+#.     Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
+#.     screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
+#.   </para>
+#.   
+#.   <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
 #.
-#. <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
-#.
-#. <para>
-#. Controls the compression of thumbnail images in memory and on disk. Options:
-#. <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
-#. (default off).
-#. </para>
+#.   <para>
+#.     Controls the compression of thumbnail images in memory and on disk. Options:
+#.     <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
+#.     (default off).
+#.   </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18399(bridgehead)
 msgid "pen pressure control for brush masks"
 msgstr "contrôle de la pression du pinceau du masque"
@@ -24297,7 +24297,7 @@ msgstr "Multiple cartes graphiques OpenCL"
 msgid ""
 "The scheduling of OpenCL devices on most typical systems can be optimized "
 "using the <quote>OpenCL scheduling profile</quote> settings. However, if "
-"your systems is equipped with a variety of GPUs you might want to set the "
+"your system is equipped with a variety of GPUs you might want to set the "
 "relative device priority manually. To do so you need to select the "
 "<quote>default</quote> scheduling profile and do your settings in the "
 "<quote>opencl_device_priority</quote> configuration parameter."
@@ -24455,7 +24455,7 @@ msgid ""
 "a consequence, if there is only one GPU owned by your system, preview "
 "pixelpipe will always be processed on CPU, keeping your single GPU "
 "exclusively for the more demanding center image view. This is a reasonable "
-"setting for most systms. No restrictions apply to export and thumbnail "
+"setting for most systems. No restrictions apply to export and thumbnail "
 "pixelpipes."
 msgstr ""
 "Tout périphérique OpenCL détecté est autorisé à traiter notre image "
