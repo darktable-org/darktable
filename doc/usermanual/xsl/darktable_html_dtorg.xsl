@@ -635,7 +635,9 @@
                 <xsl:with-param name="nav.context" select="$nav.context"/>
               </xsl:call-template>
 
-              <xsl:copy-of select="$content"/>
+              <div id="search_content">
+                <xsl:copy-of select="$content"/>
+              </div>
 
               <xsl:call-template name="footer.navigation">
                 <xsl:with-param name="prev" select="$prev"/>
