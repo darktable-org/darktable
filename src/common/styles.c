@@ -77,9 +77,11 @@ void dt_style_item_free(gpointer data)
 {
   dt_style_item_t *item = (dt_style_item_t *)data;
   g_free(item->name);
+  g_free(item->operation);
   free(item->params);
   free(item->blendop_params);
   item->name = NULL;
+  item->operation = NULL;
   item->params = NULL;
   item->blendop_params = NULL;
   free(item);
@@ -550,7 +552,7 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
     /* copy history items from styles onto temp table */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO memory.style_items SELECT * FROM "
                                                                "data.style_items WHERE styleid=?1 ORDER BY "
-                                                               "multi_priority DESC",
+                                                               "num DESC",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
@@ -730,6 +732,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
           item->selimg_num = sqlite3_column_int(stmt, 4);
       }
       item->name = g_strdup(iname);
+      item->operation = g_strdup((char *)sqlite3_column_text(stmt, 2));
       result = g_list_append(result, item);
     }
     sqlite3_finalize(stmt);

@@ -154,8 +154,10 @@ static int style_item_tostring(lua_State *L)
 
 static int style_item_gc(lua_State *L)
 {
+  // FIXME: Can't we use dt_style_item_free() instead? Or may the pointer itself not be freed?
   dt_style_item_t *item = luaL_checkudata(L, -1, "dt_style_item_t");
   g_free(item->name);
+  g_free(item->operation);
   free(item->params);
   free(item->blendop_params);
   return 0;
