@@ -590,11 +590,11 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   //  If a style is to be applied during export, add the iop params into the history
   if(!thumbnail_export && format_params->style[0] != '\0')
   {
-    GList *stls;
+    GList *style_items;
 
     dt_iop_module_t *m = NULL;
 
-    if((stls = dt_styles_get_item_list(format_params->style, TRUE, -1)) == 0)
+    if((style_items = dt_styles_get_item_list(format_params->style, TRUE, -1)) == 0)
     {
       dt_control_log(_("cannot find the style '%s' to apply during export."), format_params->style);
       goto error;
@@ -614,27 +614,23 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     }
 
     // Add each params
-    while(stls)
+    for(GList *iter = style_items; iter; iter = g_list_next(iter))
     {
-      dt_style_item_t *s = (dt_style_item_t *)stls->data;
-      gboolean module_found = FALSE;
+      dt_style_item_t *s = (dt_style_item_t *)iter->data;
 
-      GList *modules = dev.iop;
-      while(modules)
+      for(GList *module = dev.iop; module; module = g_list_next(module))
       {
-        m = (dt_iop_module_t *)modules->data;
+        m = (dt_iop_module_t *)module->data;
 
-        //  since the name in the style is returned with a possible multi-name, just check the start of the
-        //  name
-        if(strncmp(m->op, s->name, strlen(m->op)) == 0)
+        if(!strcmp(m->op, s->operation))
         {
           dt_dev_history_item_t *h = malloc(sizeof(dt_dev_history_item_t));
-          dt_iop_module_t *sty_module = m;
+          dt_iop_module_t *style_module = m;
 
           if(format_params->style_append && !(m->flags() & IOP_FLAGS_ONE_INSTANCE))
           {
-            sty_module = dt_dev_module_duplicate(m->dev, m, 0);
-            if(!sty_module)
+            style_module = dt_dev_module_duplicate(m->dev, m, 0);
+            if(!style_module)
             {
               free(h);
               goto error;
@@ -644,8 +640,8 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
           h->params = s->params;
           h->blend_params = s->blendop_params;
           h->enabled = s->enabled;
-          h->module = sty_module;
-          h->multi_priority = 1;
+          h->module = style_module;
+          h->multi_priority = 1; // TODO: support multi instance in styles!
           g_strlcpy(h->multi_name, "<style>", sizeof(h->multi_name));
 
           if(m->legacy_params && (s->module_version != m->version()))
@@ -659,16 +655,16 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
           dev.history_end++;
           dev.history = g_list_append(dev.history, h);
-          module_found = TRUE;
-          g_free(s->name);
+
+          // make sure that we don't free data we still use
+          s->params = NULL;
+          s->blendop_params = NULL;
+
           break;
         }
-        modules = g_list_next(modules);
       }
-      if(!module_found) dt_style_item_free(s);
-      stls = g_list_next(stls);
     }
-    g_list_free(stls);
+    g_list_free_full(style_items, dt_style_item_free);
   }
 
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, buf.iscale);
