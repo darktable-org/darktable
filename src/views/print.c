@@ -57,11 +57,6 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_PRINT;
 }
 
-static void _print_mipmaps_updated_signal_callback(gpointer instance, gpointer user_data)
-{
-  dt_control_queue_redraw_center();
-}
-
 static void _set_orientation(dt_print_t *prt)
 {
   if (prt->image_id <= 0)
@@ -76,6 +71,14 @@ static void _set_orientation(dt_print_t *prt)
     prt->pinfo->page.landscape = FALSE;
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+}
+
+static void _print_mipmaps_updated_signal_callback(gpointer instance, gpointer user_data)
+{
+  const dt_view_t *self = (dt_view_t *)user_data;
+  dt_print_t *prt=(dt_print_t*)self->data;
+  _set_orientation(prt);
+  dt_control_queue_redraw_center();
 }
 
 static void _film_strip_activated(const int imgid, void *data)
