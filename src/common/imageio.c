@@ -590,11 +590,8 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   //  If a style is to be applied during export, add the iop params into the history
   if(!thumbnail_export && format_params->style[0] != '\0')
   {
-    GList *style_items;
-
-    dt_iop_module_t *m = NULL;
-
-    if((style_items = dt_styles_get_item_list(format_params->style, TRUE, -1)) == 0)
+    GList *style_items = dt_styles_get_item_list(format_params->style, TRUE, -1);
+    if(!style_items)
     {
       dt_control_log(_("cannot find the style '%s' to apply during export."), format_params->style);
       goto error;
@@ -620,17 +617,25 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
       for(GList *module = dev.iop; module; module = g_list_next(module))
       {
-        m = (dt_iop_module_t *)module->data;
+        dt_iop_module_t *m = (dt_iop_module_t *)module->data;
 
         if(!strcmp(m->op, s->operation))
         {
           dt_dev_history_item_t *h = malloc(sizeof(dt_dev_history_item_t));
           dt_iop_module_t *style_module = m;
 
-          if(format_params->style_append && !(m->flags() & IOP_FLAGS_ONE_INSTANCE))
+          if((format_params->style_append && !(m->flags() & IOP_FLAGS_ONE_INSTANCE)) || m->multi_priority != s->multi_priority)
           {
-            style_module = dt_dev_module_duplicate(m->dev, m, 0);
-            if(!style_module)
+            // dt_dev_module_duplicate() doesn't work here, it's trying too hard to be clever
+            style_module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+            if(style_module && !dt_iop_load_module(style_module, m->so, m->dev))
+            {
+              style_module->instance = m->instance;
+              style_module->multi_priority = s->multi_priority;
+              snprintf(style_module->multi_name, sizeof(style_module->multi_name), "%s", s->name);
+              dev.iop = g_list_insert_sorted(dev.iop, style_module, sort_plugins);
+            }
+            else
             {
               free(h);
               goto error;
@@ -641,8 +646,8 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
           h->blend_params = s->blendop_params;
           h->enabled = s->enabled;
           h->module = style_module;
-          h->multi_priority = 1; // TODO: support multi instance in styles!
-          g_strlcpy(h->multi_name, "<style>", sizeof(h->multi_name));
+          h->multi_priority = s->multi_priority;
+          g_strlcpy(h->multi_name, s->name, sizeof(h->multi_name));
 
           if(m->legacy_params && (s->module_version != m->version()))
           {
@@ -656,7 +661,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
           dev.history_end++;
           dev.history = g_list_append(dev.history, h);
 
-          // make sure that we don't free data we still use
+          // make sure that dt_style_item_free doesn't free data we still use
           s->params = NULL;
           s->blendop_params = NULL;
 
