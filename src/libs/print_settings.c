@@ -844,17 +844,17 @@ static void _set_orientation(dt_lib_print_settings_t *ps)
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, ps->image_id, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
 
-  // FIXME: if there's no mipmap available, use width/height from EXIF data?
-  if (buf.width > buf.height)
-    ps->prt.page.landscape = TRUE;
-  else
-    ps->prt.page.landscape = FALSE;
+  // If there's a mipmap available, figure out orientation based upon
+  // its dimensions. Otherwise, don't touch orientation until the
+  // mipmap arrives.
+  if (buf.size != DT_MIPMAP_NONE)
+  {
+    ps->prt.page.landscape = (buf.width > buf.height);
+    dt_view_print_settings(darktable.view_manager, &ps->prt);
+    dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape==TRUE?1:0);
+  }
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-
-  dt_view_print_settings(darktable.view_manager, &ps->prt);
-
-  dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape==TRUE?1:0);
 }
 
 static void _image_update(void *data, gboolean new_image)
