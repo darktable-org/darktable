@@ -280,7 +280,7 @@ void enter(dt_view_t *self)
   {
     int imgid = GPOINTER_TO_INT(selected_images->data);
     prt->image_id = imgid;
-    dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
+    dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, TRUE);
   }
   g_list_free(selected_images);
 
