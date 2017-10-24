@@ -857,28 +857,14 @@ static void _set_orientation(dt_lib_print_settings_t *ps)
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 }
 
-static void _image_update(void *data, gboolean new_image)
+static void _print_settings_activate_or_update_callback(gpointer instance,gpointer user_data)
 {
-  const dt_lib_module_t *self = (dt_lib_module_t *)data;
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  if (new_image)
-  {
-    ps->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
-    ps->iwidth = ps->iheight = 0;
-  }
-
+  ps->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+  ps->iwidth = ps->iheight = 0;
   _set_orientation (ps);
-}
-
-static void _print_settings_filmstrip_activate_callback(gpointer instance,gpointer user_data)
-{
-  _image_update(user_data, TRUE);
-}
-
-static void _print_settings_mipmap_updated_signal_callback(gpointer instance,gpointer user_data)
-{
-  _image_update(user_data, FALSE);
 }
 
 static GList* _get_profiles ()
@@ -948,16 +934,16 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   // mode which activates an image: get image_id and orientation
   dt_control_signal_connect(darktable.signals,
                             DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
-                            G_CALLBACK(_print_settings_filmstrip_activate_callback),
+                            G_CALLBACK(_print_settings_activate_or_update_callback),
                             self);
 
-  // If there is an updated mipmap, we may have new orientation
-  // information about the current image. This updates the image_id as
-  // well and zeros out dimensions, but there should be no harm in
-  // that
+  // when an updated mipmap, we may have new orientation information
+  // about the current image. This updates the image_id as well and
+  // zeros out dimensions, but there should be no harm in that
+  // FIXME: This will fire multiple times as higher res mipmaps come in -- conceivably the user could have adjusted the orientation in the meantime and later signals will override the user's choice. Should only change the orientation if it has not previously been set for this image?
   dt_control_signal_connect(darktable.signals,
                             DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_print_settings_mipmap_updated_signal_callback),
+                            G_CALLBACK(_print_settings_activate_or_update_callback),
                             self);
 
   // NOTE: it would be proper to set image_id here to -1, but this seems to make no difference
@@ -966,11 +952,7 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
 void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
 {
   dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(_print_settings_filmstrip_activate_callback),
-                               self);
-
-  dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(_print_settings_mipmap_updated_signal_callback),
+                               G_CALLBACK(_print_settings_activate_or_update_callback),
                                self);
 }
 
