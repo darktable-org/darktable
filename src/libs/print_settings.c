@@ -842,7 +842,7 @@ static void _set_orientation(dt_lib_print_settings_t *ps)
     return;
 
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, ps->image_id, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, ps->image_id, DT_MIPMAP_0, DT_MIPMAP_BEST_EFFORT, 'r');
 
   // If there's a mipmap available, figure out orientation based upon
   // its dimensions. Otherwise, don't touch orientation until the
@@ -940,7 +940,6 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   // when an updated mipmap, we may have new orientation information
   // about the current image. This updates the image_id as well and
   // zeros out dimensions, but there should be no harm in that
-  // FIXME: This will fire multiple times as higher res mipmaps come in -- conceivably the user could have adjusted the orientation in the meantime and later signals will override the user's choice. Should only change the orientation if it has not previously been set for this image?
   dt_control_signal_connect(darktable.signals,
                             DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                             G_CALLBACK(_print_settings_activate_or_update_callback),
