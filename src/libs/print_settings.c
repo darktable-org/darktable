@@ -853,6 +853,8 @@ static void _set_orientation(dt_lib_print_settings_t *ps)
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
   dt_view_print_settings(darktable.view_manager, &ps->prt);
+
+  dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape==TRUE?1:0);
 }
 
 static void _image_update(void *data, gboolean new_image)
@@ -867,8 +869,6 @@ static void _image_update(void *data, gboolean new_image)
   }
 
   _set_orientation (ps);
-
-  dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape==TRUE?1:0);
 }
 
 static void _print_settings_filmstrip_activate_callback(gpointer instance,gpointer user_data)
@@ -999,19 +999,7 @@ gui_init (dt_lib_module_t *self)
 
   d->profiles = _get_profiles();
 
-  //  get orientation of the selectd image if possible
-
   d->image_id = -1;
-
-  GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
-  if(selected_images)
-  {
-    int imgid = GPOINTER_TO_INT(selected_images->data);
-    d->image_id = imgid;
-  }
-  g_list_free(selected_images);
-
-  _set_orientation(d);
 
   //  create the spin-button now as values could be set when the printer has no hardware margin
 
@@ -1848,8 +1836,6 @@ gui_reset (dt_lib_module_t *self)
   // reset page orientation to fit the picture
 
   _set_orientation (ps);
-
-  dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape?1:0);
 }
 
 void init_key_accels(dt_lib_module_t *self)
