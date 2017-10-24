@@ -876,15 +876,6 @@ static void _print_settings_filmstrip_activate_callback(gpointer instance,gpoint
   _image_update(user_data, TRUE);
 }
 
-static void _print_settings_view_changed_callback(gpointer instance, dt_view_t *old_view,
-                                                  dt_view_t *new_view, gpointer user_data)
-{
-  if (new_view->view(new_view) == DT_VIEW_PRINT)
-  {
-    _image_update(user_data, TRUE);
-  }
-}
-
 static void _print_settings_mipmap_updated_signal_callback(gpointer instance,gpointer user_data)
 {
   _image_update(user_data, FALSE);
@@ -951,6 +942,38 @@ static void _new_printer_callback(dt_printer_info_t *printer, void *user_data)
   g_signal_handlers_unblock_by_func(G_OBJECT(d->printers), G_CALLBACK(_printer_changed), NULL);
 }
 
+void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+{
+  // user activated a new image via the filmstrip or user entered view
+  // mode which activates an image: get image_id and orientation
+  dt_control_signal_connect(darktable.signals,
+                            DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+                            G_CALLBACK(_print_settings_filmstrip_activate_callback),
+                            self);
+
+  // If there is an updated mipmap, we may have new orientation
+  // information about the current image. This updates the image_id as
+  // well and zeros out dimensions, but there should be no harm in
+  // that
+  dt_control_signal_connect(darktable.signals,
+                            DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                            G_CALLBACK(_print_settings_mipmap_updated_signal_callback),
+                            self);
+
+  // NOTE: it would be proper to set image_id here to -1, but this seems to make no difference
+}
+
+void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+{
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_print_settings_filmstrip_activate_callback),
+                               self);
+
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_print_settings_mipmap_updated_signal_callback),
+                               self);
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -976,26 +999,6 @@ gui_init (dt_lib_module_t *self)
 
   dt_init_print_info(&d->prt);
   dt_view_print_settings(darktable.view_manager, &d->prt);
-
-  dt_control_signal_connect(darktable.signals,
-                            DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
-                            G_CALLBACK(_print_settings_filmstrip_activate_callback),
-                            self);
-
-  // if print view is activated, figure out what image is selected and
-  // update orientation accordingly
-  // FIXME: enable the filmstrip/mipmap signals only when in print view?
-  dt_control_signal_connect(darktable.signals,
-                            DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
-                            G_CALLBACK(_print_settings_view_changed_callback),
-                            self);
-
-  // if there is an updated mipmap, we may have new orientation
-  // information about the current image
-  dt_control_signal_connect(darktable.signals,
-                            DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_print_settings_mipmap_updated_signal_callback),
-                            self);
 
   d->profiles = _get_profiles();
 
@@ -1788,18 +1791,6 @@ gui_cleanup (dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_left));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_right));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_bottom));
-
-  dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(_print_settings_filmstrip_activate_callback),
-                               self);
-
-  dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(_print_settings_view_changed_callback),
-                               self);
-
-  dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(_print_settings_mipmap_updated_signal_callback),
-                               self);
 
   g_list_free_full(ps->profiles, g_free);
   g_list_free_full(ps->paper_list, free);
