@@ -844,25 +844,50 @@ static void _set_orientation(dt_lib_print_settings_t *ps)
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, ps->image_id, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
 
+  // FIXME: if there's no mipmap available, use width/height from EXIF data?
   if (buf.width > buf.height)
     ps->prt.page.landscape = TRUE;
   else
     ps->prt.page.landscape = FALSE;
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+
+  dt_view_print_settings(darktable.view_manager, &ps->prt);
 }
 
-static void _print_settings_filmstrip_activate_callback(gpointer instance,gpointer user_data)
+static void _image_update(void *data, gboolean new_image)
 {
-  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  const dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  ps->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
-  ps->iwidth = ps->iheight = 0;
+  if (new_image)
+  {
+    ps->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+    ps->iwidth = ps->iheight = 0;
+  }
 
   _set_orientation (ps);
 
   dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape==TRUE?1:0);
+}
+
+static void _print_settings_filmstrip_activate_callback(gpointer instance,gpointer user_data)
+{
+  _image_update(user_data, TRUE);
+}
+
+static void _print_settings_view_changed_callback(gpointer instance, dt_view_t *old_view,
+                                                  dt_view_t *new_view, gpointer user_data)
+{
+  if (new_view->view(new_view) == DT_VIEW_PRINT)
+  {
+    _image_update(user_data, TRUE);
+  }
+}
+
+static void _print_settings_mipmap_updated_signal_callback(gpointer instance,gpointer user_data)
+{
+  _image_update(user_data, FALSE);
 }
 
 static GList* _get_profiles ()
@@ -955,6 +980,21 @@ gui_init (dt_lib_module_t *self)
   dt_control_signal_connect(darktable.signals,
                             DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
                             G_CALLBACK(_print_settings_filmstrip_activate_callback),
+                            self);
+
+  // if print view is activated, figure out what image is selected and
+  // update orientation accordingly
+  // FIXME: enable the filmstrip/mipmap signals only when in print view?
+  dt_control_signal_connect(darktable.signals,
+                            DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
+                            G_CALLBACK(_print_settings_view_changed_callback),
+                            self);
+
+  // if there is an updated mipmap, we may have new orientation
+  // information about the current image
+  dt_control_signal_connect(darktable.signals,
+                            DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                            G_CALLBACK(_print_settings_mipmap_updated_signal_callback),
                             self);
 
   d->profiles = _get_profiles();
@@ -1763,6 +1803,14 @@ gui_cleanup (dt_lib_module_t *self)
 
   dt_control_signal_disconnect(darktable.signals,
                                G_CALLBACK(_print_settings_filmstrip_activate_callback),
+                               self);
+
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_print_settings_view_changed_callback),
+                               self);
+
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_print_settings_mipmap_updated_signal_callback),
                                self);
 
   g_list_free_full(ps->profiles, g_free);
