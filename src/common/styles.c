@@ -1108,6 +1108,8 @@ void dt_styles_import_from_file(const char *style_path)
   //
   dt_styles_style_data_free(style, TRUE);
   fclose(style_file);
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
 }
 
 gchar *dt_styles_get_description(const char *name)
