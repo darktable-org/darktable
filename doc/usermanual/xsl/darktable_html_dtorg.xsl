@@ -391,8 +391,8 @@
   <nav id="menu">
     <ul>
       <li><a href="/news/">news</a></li>
-      <li><a href="/about/">about</a></li>
       <li><a href="/blog/">blog</a></li>
+      <li><a href="/about/">about</a></li>
       <li><a href="/install/">install</a></li>
       <li><a href="/resources/">resources</a></li>
       <li><a href="/development/">development</a></li>
@@ -417,8 +417,11 @@
     </a>
   </span>
 
-  <section class="lede">
-    <img class="lede-img" src="/theme/images/lede-usermanual.jpg" alt="darktable article lede image" />
+  <section class="lede-bg">
+    <img src="/theme/images/lede-usermanual.jpg" alt="darktable page lede image" />
+  </section>
+  <section class="lede page">
+    <img class="lede-img" src="/theme/images/lede-usermanual.jpg" alt="darktable page lede image" width="960" height="402" />
   </section>
 
 </xsl:template>
@@ -611,13 +614,13 @@
         <xsl:with-param name="nav.context" select="$nav.context"/>
       </xsl:call-template>
 
-      <xsl:call-template name="dt_languages"/>
 
-      <section class="article">
+      <section class="page">
 
         <div class="container title">
           <div class="row">
             <div class="column">
+              <xsl:call-template name="dt_languages"/>
               <h1 class="page-title"><xsl:apply-templates select="." mode="title.markup"/></h1>
             </div>
           </div>
