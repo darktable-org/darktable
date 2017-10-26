@@ -66,9 +66,6 @@ typedef struct dt_slideshow_t
   uint32_t back_width, back_height;
   int32_t front_num, back_num;
 
-  // output profile before we overwrote it:
-  int old_profile_type;
-
   // state machine stuff for image transitions:
   dt_pthread_mutex_t lock;
   dt_slideshow_state_t state;      // global state cycle
@@ -190,7 +187,7 @@ static int process_next_image(dt_slideshow_t *d)
   if(id)
     // the flags are: ignore exif, display byteorder, high quality, upscale, thumbnail
     dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 1, high_quality, 1, 0,
-                                 0, 0, 0, 0, 1, 1);
+                                 0, 0, DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL, 1, 1);
   return 0;
 }
 
@@ -351,10 +348,6 @@ void enter(dt_view_t *self)
   // also hide arrows
   dt_ui_border_show(darktable.gui->ui, FALSE);
 
-  // use display profile:
-  d->old_profile_type = dt_conf_get_int("plugins/lighttable/export/icctype");
-  dt_conf_set_int("plugins/lighttable/export/icctype", DT_COLORSPACE_DISPLAY);
-
   // alloc screen-size double buffer
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GdkRectangle rect;
@@ -405,7 +398,6 @@ void leave(dt_view_t *self)
   dt_ui_border_show(darktable.gui->ui, TRUE);
   d->auto_advance = 0;
   dt_view_lighttable_set_position(darktable.view_manager, d->front_num);
-  dt_conf_set_int("plugins/lighttable/export/icctype", d->old_profile_type);
   dt_pthread_mutex_lock(&d->lock);
   dt_free_align(d->buf1);
   dt_free_align(d->buf2);
