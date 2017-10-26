@@ -1246,7 +1246,8 @@ int supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module
 /* this actually does the work */
 int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale)
+          const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
+          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
 {
   gint result = 1;
   dt_storage_facebook_param_t *p = (dt_storage_facebook_param_t *)sdata;
@@ -1291,7 +1292,8 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   if(fdata->max_height == 0 || fdata->max_height > FB_IMAGE_MAX_SIZE) fdata->max_height = FB_IMAGE_MAX_SIZE;
   if(fdata->max_width == 0 || fdata->max_width > FB_IMAGE_MAX_SIZE) fdata->max_width = FB_IMAGE_MAX_SIZE;
 
-  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, FALSE, self, sdata, num, total)
+  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, FALSE, icc_type, icc_filename, icc_intent,
+                       self, sdata, num, total)
      != 0)
   {
     g_printerr("[facebook] could not export to file: `%s'!\n", fname);

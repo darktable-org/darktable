@@ -498,9 +498,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
 
   d->type = p->type;
-  const dt_colorspaces_color_profile_type_t over_type = dt_conf_get_int("plugins/lighttable/export/icctype");
-  gchar *over_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  const dt_iop_color_intent_t over_intent = dt_conf_get_int("plugins/lighttable/export/iccintent");
 
   const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
@@ -530,12 +527,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   /* if we are exporting then check and set usage of override profile */
   if(pipe->type == DT_DEV_PIXELPIPE_EXPORT)
   {
-    if(over_type != DT_COLORSPACE_NONE)
+    if(pipe->icc_type != DT_COLORSPACE_NONE)
     {
-      p->type = over_type;
-      g_strlcpy(p->filename, over_filename, sizeof(p->filename));
+      p->type = pipe->icc_type;
+      g_strlcpy(p->filename, pipe->icc_filename, sizeof(p->filename));
     }
-    if((unsigned int)over_intent < DT_INTENT_LAST) p->intent = over_intent;
+    if((unsigned int)pipe->icc_intent < DT_INTENT_LAST) p->intent = pipe->icc_intent;
 
     out_type = p->type;
     out_filename = p->filename;
@@ -559,7 +556,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // and the subsequent error messages
   d->type = out_type;
   if(out_type == DT_COLORSPACE_LAB)
-    goto end;
+    return;
 
   /*
    * Setup transform flags
@@ -678,8 +675,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // softproof is never the original but always a copy that went through _make_clipping_profile()
   dt_colorspaces_cleanup_profile(softproof);
 
-end:
-  g_free(over_filename);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
