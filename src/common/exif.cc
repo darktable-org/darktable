@@ -2308,6 +2308,7 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     g_ascii_formatd(str, G_ASCII_DTOSTR_BUF_SIZE, "%08f", lat_min);
     gchar *lat_str = g_strdup_printf("%d,%s%c", lat_deg, str, lat_dir);
 
+    xmpData["Xmp.exif.GPSVersionID"] = "2.2.0.0";
     xmpData["Xmp.exif.GPSLongitude"] = long_str;
     xmpData["Xmp.exif.GPSLatitude"] = lat_str;
     g_free(long_str);
