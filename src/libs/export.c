@@ -112,6 +112,9 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
     g_strlcpy(style, tmp, sizeof(style));
     g_free(tmp);
   }
+  dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/lighttable/export/icctype");
+  gchar *icc_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  dt_iop_color_intent_t icc_intent = dt_conf_get_int("plugins/lighttable/export/iccintent");
 
   int imgid = dt_view_get_image_to_act_on();
   GList *list = NULL;
@@ -122,7 +125,9 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
     list = dt_collection_get_selected(darktable.collection, -1);
 
   dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale,
-                    style, style_append);
+                    style, style_append, icc_type, icc_filename, icc_intent);
+
+  g_free(icc_filename);
 }
 
 static void width_changed(GtkSpinButton *spin, gpointer user_data)
