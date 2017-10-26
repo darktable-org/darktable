@@ -622,13 +622,11 @@ static gboolean dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButt
 static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
 static gboolean dt_bauhaus_slider_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
-static gboolean dt_bauhaus_slider_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 
 
 static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
 static gboolean dt_bauhaus_combobox_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
-static gboolean dt_bauhaus_combobox_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 
 // static gboolean
 // dt_bauhaus_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
@@ -931,8 +929,6 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
   g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(dt_bauhaus_slider_key_press), (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "motion-notify-event", G_CALLBACK(dt_bauhaus_slider_motion_notify),
                    (gpointer)NULL);
-  g_signal_connect(G_OBJECT(w), "leave-notify-event", G_CALLBACK(dt_bauhaus_slider_leave_notify),
-                   (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "destroy", G_CALLBACK(dt_bauhaus_slider_destroy), (gpointer)NULL);
   return GTK_WIDGET(w);
 }
@@ -978,8 +974,6 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
                    (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "scroll-event", G_CALLBACK(dt_bauhaus_combobox_scroll), (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(dt_bauhaus_combobox_key_press), (gpointer)NULL);
-  g_signal_connect(G_OBJECT(w), "motion-notify-event", G_CALLBACK(dt_bauhaus_combobox_motion_notify),
-                   (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "destroy", G_CALLBACK(dt_bauhaus_combobox_destroy), (gpointer)NULL);
 }
 
@@ -1913,12 +1907,6 @@ static gboolean dt_bauhaus_combobox_key_press(GtkWidget *widget, GdkEventKey *ev
   return FALSE;
 }
 
-static gboolean dt_bauhaus_combobox_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
-{
-  gtk_widget_grab_focus(widget);
-  return TRUE;
-}
-
 static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   GtkAllocation allocation;
@@ -1926,6 +1914,7 @@ static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButt
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
   if(w->module) dt_iop_request_focus(w->module);
+  else gtk_widget_grab_focus(GTK_WIDGET(w));
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
@@ -2238,6 +2227,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
   gtk_widget_get_allocation(widget, &allocation);
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->module) dt_iop_request_focus(w->module);
+  else gtk_widget_grab_focus(GTK_WIDGET(w));
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   if(w->quad_paint && (event->x > allocation.width - allocation.height))
@@ -2311,15 +2301,8 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
     const float r = 1.0f - (tmp.height + 4.0f) / tmp.width;
     dt_bauhaus_slider_set_normalized(w, (event->x / tmp.width - l) / (r - l));
   }
-  gtk_widget_grab_focus(widget);
   // not sure if needed:
   // gdk_event_request_motions(event);
-  return TRUE;
-}
-
-static gboolean dt_bauhaus_slider_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
-{
-  // TODO: highlight?
   return TRUE;
 }
 
