@@ -247,11 +247,28 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   const int high_quality = 1;
   const int upscale = 1;
+
+  // figure out export profile, which will be the input profile if
+  // converting to printer profile
   dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/print/print/icctype");
   gchar *icc_filename = dt_conf_get_string("plugins/print/print/iccprofile");
   dt_iop_color_intent_t icc_intent = dt_conf_get_int("plugins/print/print/iccintent");
+
+  // colorout also does this lookup, but go ahead and do it now since
+  // no use exporting if there is a profile problem
+  const dt_colorspaces_color_profile_t *eprof = dt_colorspaces_get_profile(icc_type, icc_filename,
+                                                                           DT_PROFILE_DIRECTION_OUT);
+  if (!eprof)
+  {
+    dt_control_log(_("cannot open export profile `%s'"), icc_filename);
+    fprintf(stderr, "cannot open export profile `%s'!\n", icc_filename);
+    dt_control_queue_redraw();
+    return;
+  }
+
   dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
                                NULL, FALSE, icc_type, icc_filename, icc_intent,  NULL, NULL, 1, 1);
+
   g_free(icc_filename);
 
   // after exporting we know the real size of the image, compute the layout
@@ -291,8 +308,8 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
       return;
     }
     else
-      if (dt_apply_printer_profile(imgid, (void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp,
-                                   pprof->profile,
+      if (dt_apply_printer_profile((void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp,
+                                   eprof->profile, pprof->profile,
                                    ps->v_pintent, ps->v_black_point_compensation))
       {
         free(dat.ps->buf);

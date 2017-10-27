@@ -672,6 +672,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
 
   const dt_colorspaces_color_profile_t *p = NULL;
 
+  // FIXME: this code is only useful for export, it would be helpful instead to pull the output profile from the pixelpipe or imageio data of the processed image
   int over_type = dt_conf_get_int("plugins/lighttable/export/icctype");
   gchar *over_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
 
