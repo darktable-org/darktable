@@ -378,14 +378,19 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     }
     else
     {
+#ifndef _WIN32
       // see http://standards.freedesktop.org/basedir-spec/latest/ar01s03.html for a reason to use those as a
       // default
       if(!g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share")
          || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share/")
          || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share") || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share/"))
-        new_xdg_data_dirs = g_strdup("/usr/local/share/:/usr/share/");
+        new_xdg_data_dirs = g_strdup("/usr/local/share/" G_SEARCHPATH_SEPARATOR_S "/usr/share/");
       else
-        new_xdg_data_dirs = g_strdup_printf("%s:/usr/local/share/:/usr/share/", DARKTABLE_SHAREDIR);
+        new_xdg_data_dirs = g_strdup_printf("%s" G_SEARCHPATH_SEPARATOR_S "/usr/local/share/" G_SEARCHPATH_SEPARATOR_S
+                                            "/usr/share/", DARKTABLE_SHAREDIR);
+#else
+      set_env = FALSE;
+#endif
     }
 
     if(set_env) g_setenv("XDG_DATA_DIRS", new_xdg_data_dirs, 1);
