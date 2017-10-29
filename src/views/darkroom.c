@@ -1861,6 +1861,7 @@ void leave(dt_view_t *self)
   // cleanup visible masks
   if(dev->form_gui)
   {
+    dev->gui_module = NULL; // modules have already been free()
     dt_masks_clear_form_gui(dev);
     free(dev->form_gui);
     dev->form_gui = NULL;

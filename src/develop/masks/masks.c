@@ -339,7 +339,7 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev, dt_iop_module_t *module,
     if(!grp)
     {
       // we create a new group
-      if(form->type & DT_MASKS_CLONE)
+      if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         grp = dt_masks_create(DT_MASKS_GROUP | DT_MASKS_CLONE);
       else
         grp = dt_masks_create(DT_MASKS_GROUP);
@@ -1311,6 +1311,26 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
   pzx += 0.5f;
   pzy += 0.5f;
 
+  // allow to select a shape inside an iop
+  if(gui && which == 1)
+  {
+    dt_masks_form_t *sel = NULL;
+
+    if((gui->form_selected || gui->source_selected || gui->point_selected || gui->seg_selected
+        || gui->feather_selected)
+       && !gui->creation && gui->group_edited >= 0)
+    {
+      // we get the slected form
+      dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+      if(fpt)
+      {
+        sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
+      }
+    }
+
+    dt_masks_select_form(module, sel);
+  }
+
   if(form->type & DT_MASKS_CIRCLE)
     return dt_circle_events_button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0);
   else if(form->type & DT_MASKS_PATH)
@@ -1434,6 +1454,8 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
   dev->form_gui->group_edited = -1;
   dev->form_gui->group_selected = -1;
   dev->form_gui->edit_mode = DT_MASKS_EDIT_OFF;
+  // allow to select a shape inside an iop
+  dt_masks_select_form(NULL, NULL);
 }
 
 void dt_masks_change_form_gui(dt_masks_form_t *newform)
@@ -1700,7 +1722,7 @@ void dt_masks_iop_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
   while(forms)
   {
     dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
-    if((form->type & DT_MASKS_CLONE) || form->formid == module->blend_params->mask_id)
+    if((form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE)) || form->formid == module->blend_params->mask_id)
     {
       forms = g_list_next(forms);
       continue;
@@ -1855,7 +1877,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
   int id = form->formid;
   if(grp && !(grp->type & DT_MASKS_GROUP)) return;
 
-  if(!(form->type & DT_MASKS_CLONE) && grp)
+  if(!(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE)) && grp)
   {
     // we try to remove the form from the masks group
     int ok = 0;
@@ -2360,6 +2382,38 @@ int dt_masks_point_in_form_near(float x, float y, float *points, int points_star
     return (nb & 1);
   }
   return 0;
+}
+
+// allow to select a shape inside an iop
+void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel)
+{
+  int selection_changed = 0;
+
+  if(sel)
+  {
+    if(sel->formid != darktable.develop->mask_form_selected_id)
+    {
+      darktable.develop->mask_form_selected_id = sel->formid;
+      selection_changed = 1;
+    }
+  }
+  else
+  {
+    if(darktable.develop->mask_form_selected_id != 0)
+    {
+      darktable.develop->mask_form_selected_id = 0;
+      selection_changed = 1;
+    }
+  }
+  if(selection_changed)
+  {
+    if(!module && darktable.develop->mask_form_selected_id == 0) module = darktable.develop->gui_module;
+    if(module)
+    {
+      if(module->masks_selection_changed)
+        module->masks_selection_changed(module, darktable.develop->mask_form_selected_id);
+    }
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

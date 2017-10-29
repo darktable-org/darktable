@@ -86,6 +86,8 @@ FILE(GLOB SOURCE_FILES
   "develop/blend.c"
   "develop/blend_gui.c"
   "develop/tiling.c"
+  "common/dwt.c"
+  "common/heal.c"
   "develop/masks/masks.c"
   "develop/format.c"
   "dtgtk/button.c"

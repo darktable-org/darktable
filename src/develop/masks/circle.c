@@ -86,7 +86,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
         dt_masks_write_form(form, darktable.develop);
         dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index);
-        if(form->type & DT_MASKS_CLONE)
+        if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
           dt_conf_set_float("plugins/darkroom/spots/circle_border", circle->border);
         else
           dt_conf_set_float("plugins/darkroom/masks/circle/border", circle->border);
@@ -102,7 +102,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
         dt_masks_write_form(form, darktable.develop);
         dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index);
-        if(form->type & DT_MASKS_CLONE)
+        if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
           dt_conf_set_float("plugins/darkroom/spots/circle_size", circle->radius);
         else
           dt_conf_set_float("plugins/darkroom/masks/circle/size", circle->radius);
@@ -169,7 +169,7 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
     circle->center[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
     circle->center[1] = pts[1] / darktable.develop->preview_pipe->iheight;
 
-    if(form->type & DT_MASKS_CLONE)
+    if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
     {
       const float spots_size = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_size"));
       const float spots_border = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_border"));
@@ -206,7 +206,7 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
     }
 
     // if we draw a clone circle, we start now the source dragging
-    if(form->type & DT_MASKS_CLONE)
+    if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
     {
       dt_masks_form_t *grp = darktable.develop->form_visible;
       if(!grp || !(grp->type & DT_MASKS_GROUP)) return 1;
@@ -226,7 +226,10 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
       if(pos2 < 0) return 1;
       dt_masks_form_gui_t *gui2 = darktable.develop->form_gui;
       if(!gui2) return 1;
-      gui2->source_dragging = TRUE;
+      if(form->type & DT_MASKS_CLONE)
+        gui2->source_dragging = TRUE;
+      else
+        gui2->form_dragging = TRUE;
       gui2->group_edited = gui2->group_selected = pos2;
       gui2->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
       gui2->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
@@ -234,6 +237,9 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
       gui2->dy = 0.0;
       gui2->scrollx = pzx;
       gui2->scrolly = pzy;
+      gui2->form_selected = TRUE; // we also want to be selected after button released
+      
+      dt_masks_select_form(module, dt_masks_get_from_id(darktable.develop, form->formid));
     }
     return 1;
   }

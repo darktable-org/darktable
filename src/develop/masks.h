@@ -37,7 +37,8 @@ typedef enum dt_masks_type_t
   DT_MASKS_CLONE = 1 << 3,
   DT_MASKS_GRADIENT = 1 << 4,
   DT_MASKS_ELLIPSE = 1 << 5,
-  DT_MASKS_BRUSH = 1 << 6
+  DT_MASKS_BRUSH = 1 << 6,
+  DT_MASKS_NON_CLONE = 1 << 7
 } dt_masks_type_t;
 
 /**masts states */
@@ -316,6 +317,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid);
 int dt_masks_point_in_form_exact(float x, float y, float *points, int points_start, int points_count);
 int dt_masks_point_in_form_near(float x, float y, float *points, int points_start, int points_count, float distance, int *near);
 
+void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel);
 
 /** code for dynamic handling of intermediate buffers */
 static inline

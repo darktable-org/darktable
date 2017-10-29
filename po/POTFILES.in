@@ -132,6 +132,7 @@ src/iop/sharpen.c
 src/iop/soften.c
 src/iop/splittoning.c
 src/iop/spots.c
+src/iop/retouch.c
 src/iop/temperature.c
 src/iop/tonecurve.c
 src/iop/tonemap.cc
