@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-10-29 20:37+0100\n"
-"PO-Revision-Date: 2017-10-29 20:44+0100\n"
+"PO-Revision-Date: 2017-10-29 21:02+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -9686,7 +9686,7 @@ msgstr "versie"
 
 #: ../src/libs/metadata_view.c:95 ../src/libs/tools/filter.c:145
 msgid "full path"
-msgstr "volledige pad"
+msgstr "volledig pad"
 
 #: ../src/libs/metadata_view.c:96 ../src/libs/metadata_view.c:278
 msgid "local copy"
@@ -9723,7 +9723,7 @@ msgstr "lengtegraad"
 
 #: ../src/libs/metadata_view.c:122
 msgid "elevation"
-msgstr "verhoging"
+msgstr "hoogte"
 
 #: ../src/libs/metadata_view.c:133
 msgid "image information"
