@@ -248,28 +248,23 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   const int high_quality = 1;
   const int upscale = 1;
 
-  // figure out export profile, which will be the input profile if
-  // converting to printer profile
-  dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/print/print/icctype");
-  gchar *icc_filename = dt_conf_get_string("plugins/print/print/iccprofile");
-  dt_iop_color_intent_t icc_intent = dt_conf_get_int("plugins/print/print/iccintent");
-
   // colorout also does this lookup, but go ahead and do it now since
   // no use exporting if there is a profile problem
-  const dt_colorspaces_color_profile_t *eprof = dt_colorspaces_get_profile(icc_type, icc_filename,
+  const dt_colorspaces_color_profile_t *eprof = dt_colorspaces_get_profile(ps->v_icctype, ps->v_iccprofile,
                                                                            DT_PROFILE_DIRECTION_OUT);
   if (!eprof)
   {
-    dt_control_log(_("cannot open export profile `%s'"), icc_filename);
-    fprintf(stderr, "cannot open export profile `%s'!\n", icc_filename);
+    dt_control_log(_("cannot open export profile `%s'"), ps->v_iccprofile);
+    fprintf(stderr, "cannot open export profile `%s'!\n", ps->v_iccprofile);
     dt_control_queue_redraw();
     return;
   }
 
-  dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
-                               NULL, FALSE, icc_type, icc_filename, icc_intent,  NULL, NULL, 1, 1);
+  // DT_INTENT_LAST if to use intent from colorout image settings
+  const dt_iop_color_intent_t icc_intent = ((ps->v_intent == -1) ? DT_INTENT_LAST : ps->v_intent);
 
-  g_free(icc_filename);
+  dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
+                               NULL, FALSE, ps->v_icctype, ps->v_iccprofile, icc_intent,  NULL, NULL, 1, 1);
 
   // after exporting we know the real size of the image, compute the layout
 
@@ -845,10 +840,10 @@ static void
 _intent_callback (GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
-  const int pos = dt_bauhaus_combobox_get(widget);
+  const int pos = dt_bauhaus_combobox_get(widget) - 1;
   // record the intent that will override the out rendering module on export
-  dt_conf_set_int("plugins/print/print/iccintent", pos - 1);
-  ps->v_intent = pos - 1;
+  dt_conf_set_int("plugins/print/print/iccintent", pos);
+  ps->v_intent = pos;
 }
 
 static void _set_orientation(dt_lib_print_settings_t *ps)
@@ -1292,7 +1287,8 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->intent, _("absolute colorimetric"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->intent), TRUE, TRUE, 0);
 
-  dt_bauhaus_combobox_set(d->intent, dt_conf_get_int("plugins/print/print/iccintent") + 1);
+  d->v_intent = dt_conf_get_int("plugins/print/print/iccintent");
+  dt_bauhaus_combobox_set(d->intent, d->v_intent + 1);
 
   g_signal_connect (G_OBJECT (d->intent), "value-changed", G_CALLBACK (_intent_callback), (gpointer)self);
 
