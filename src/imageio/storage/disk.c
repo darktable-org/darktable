@@ -107,11 +107,17 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    char composed[PATH_MAX] = { 0 };
-    snprintf(composed, sizeof(composed), "%s/$(FILE_NAME)", dir);
-    gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
-    dt_conf_set_string("plugins/imageio/storage/disk/file_directory", composed);
+    char *composed = g_build_filename(dir, "$(FILE_NAME)", NULL);
+
+    // composed can now contain '\': on Windows it's the path separator,
+    // on other platforms it can be part of a regular folder name.
+    // This would later clash with variable substitution, so we have to escape them
+    gchar *escaped = dt_util_str_replace(composed, "\\", "\\\\");
+
+    gtk_entry_set_text(GTK_ENTRY(d->entry), escaped); // the signal handler will write this to conf
     g_free(dir);
+    g_free(composed);
+    g_free(escaped);
   }
   gtk_widget_destroy(filechooser);
 }
