@@ -868,12 +868,17 @@ static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   const gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
   char *style = dt_conf_get_string("plugins/lighttable/export/style");
   const gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
+  dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/lighttable/export/icctype");
+  gchar *icc_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  dt_iop_color_intent_t icc_intent = dt_conf_get_int("plugins/lighttable/export/iccintent");
   // darkroom is for single images, so only export the one the user is working on
   GList *l = g_list_append(NULL, GINT_TO_POINTER(dev->image_storage.id));
-  dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, upscale, style, style_append);
+  dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, upscale, style, style_append,
+                    icc_type, icc_filename, icc_intent);
   g_free(format_name);
   g_free(storage_name);
   g_free(style);
+  g_free(icc_filename);
   return TRUE;
 }
 

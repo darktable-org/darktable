@@ -126,6 +126,10 @@ typedef struct dt_dev_pixelpipe_t
   int devid;
   // image struct as it was when the pixelpipe was initialized. copied to avoid race conditions.
   dt_image_t image;
+  // the user might choose to overwrite the output color space and rendering intent.
+  dt_colorspaces_color_profile_type_t icc_type;
+  gchar *icc_filename;
+  dt_iop_color_intent_t icc_intent;
 } dt_dev_pixelpipe_t;
 
 struct dt_develop_t;
@@ -147,6 +151,9 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
 // constructs a new input buffer from given RGB float array.
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width,
                                 int height, float iscale);
+// set some metadata for colorout to avoid race conditions.
+void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe, dt_colorspaces_color_profile_type_t icc_type,
+                              const gchar *icc_filename, dt_iop_color_intent_t icc_intent);
 
 // returns the dimensions of the full image after processing.
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int width_in,

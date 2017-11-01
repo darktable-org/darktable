@@ -245,11 +245,14 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
     g_free(style);
   }
 
-  // the flags are: ignore exif, display byteorder, high quality, upscale, thumbnail
   const int high_quality = 1;
   const int upscale = 1;
-  dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0,
-                               high_quality, upscale, 0, NULL, FALSE, 0, 0, 1, 1);
+  dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/print/print/icctype");
+  gchar *icc_filename = dt_conf_get_string("plugins/print/print/iccprofile");
+  dt_iop_color_intent_t icc_intent = dt_conf_get_int("plugins/print/print/iccintent");
+  dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
+                               NULL, FALSE, icc_type, icc_filename, icc_intent,  NULL, NULL, 1, 1);
+  g_free(icc_filename);
 
   // after exporting we know the real size of the image, compute the layout
 
@@ -755,9 +758,7 @@ _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
     dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
     if(pp->pos == pos)
     {
-      dt_conf_set_int("plugins/lighttable/export/icctype", pp->type);
       dt_conf_set_int("plugins/print/print/icctype", pp->type);
-      dt_conf_set_string("plugins/lighttable/export/iccprofile", pp->filename);
       dt_conf_set_string("plugins/print/print/iccprofile", pp->filename);
       g_free(ps->v_iccprofile);
       ps->v_icctype = pp->type;
@@ -766,9 +767,7 @@ _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
     }
     prof = g_list_next(prof);
   }
-  dt_conf_set_int("plugins/lighttable/export/icctype", DT_COLORSPACE_NONE);
   dt_conf_set_int("plugins/print/print/icctype", DT_COLORSPACE_NONE);
-  dt_conf_set_string("plugins/lighttable/export/iccprofile", "");
   dt_conf_set_string("plugins/print/print/iccprofile", "");
   g_free(ps->v_iccprofile);
   ps->v_icctype = DT_COLORSPACE_NONE;
@@ -831,7 +830,6 @@ _intent_callback (GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   const int pos = dt_bauhaus_combobox_get(widget);
   // record the intent that will override the out rendering module on export
-  dt_conf_set_int("plugins/lighttable/export/iccintent", pos - 1);
   dt_conf_set_int("plugins/print/print/iccintent", pos - 1);
   ps->v_intent = pos - 1;
 }
@@ -1277,7 +1275,7 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->intent, _("absolute colorimetric"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->intent), TRUE, TRUE, 0);
 
-  dt_bauhaus_combobox_set(d->intent, 0);
+  dt_bauhaus_combobox_set(d->intent, dt_conf_get_int("plugins/print/print/iccintent") + 1);
 
   g_signal_connect (G_OBJECT (d->intent), "value-changed", G_CALLBACK (_intent_callback), (gpointer)self);
 
@@ -1789,7 +1787,7 @@ gui_reset (dt_lib_module_t *self)
   ps->prt.page.alignment = ALIGNMENT_CENTER;
   dt_bauhaus_combobox_set(ps->profile, 0);
   dt_bauhaus_combobox_set(ps->pprofile, 0);
-  dt_bauhaus_combobox_set(ps->pintent, dt_conf_get_int("plugins/print/print/iccintent") + 1);
+  dt_bauhaus_combobox_set(ps->pintent, 0);
   dt_bauhaus_combobox_set(ps->style, 0);
   dt_bauhaus_combobox_set(ps->intent, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation), TRUE);

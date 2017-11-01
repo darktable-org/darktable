@@ -118,11 +118,17 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    char composed[PATH_MAX] = { 0 };
-    snprintf(composed, sizeof(composed), "%s/$(FILE_NAME)", dir);
-    gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
-    dt_conf_set_string("plugins/imageio/storage/latex/file_directory", composed);
+    char *composed = g_build_filename(dir, "$(FILE_NAME)", NULL);
+
+    // composed can now contain '\': on Windows it's the path separator,
+    // on other platforms it can be part of a regular folder name.
+    // This would later clash with variable substitution, so we have to escape them
+    gchar *escaped = dt_util_str_replace(composed, "\\", "\\\\");
+
+    gtk_entry_set_text(GTK_ENTRY(d->entry), escaped); // the signal handler will write this to conf
     g_free(dir);
+    g_free(composed);
+    g_free(escaped);
   }
   gtk_widget_destroy(filechooser);
 }
@@ -216,7 +222,8 @@ static gint sort_pos(pair_t *a, pair_t *b)
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale)
+          const gboolean high_quality, const gboolean upscale,dt_colorspaces_color_profile_type_t icc_type,
+          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
 {
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)sdata;
 
@@ -347,7 +354,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   /* export image to file */
-  dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, FALSE, self, sdata, num, total);
+  dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, FALSE, icc_type, icc_filename, icc_intent,
+                    self, sdata, num, total);
 
   printf("[export_job] exported to `%s'\n", filename);
   char *trunc = filename + strlen(filename) - 32;
