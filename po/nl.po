@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-11-03 20:39+0100\n"
-"PO-Revision-Date: 2017-11-03 20:57+0100\n"
+"PO-Revision-Date: 2017-11-03 21:04+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -3986,15 +3986,15 @@ msgstr ""
 
 #: ../src/imageio/storage/disk.c:174
 msgid "on conflict"
-msgstr "bij bestaand  bestand"
+msgstr "bij bestaand  bestand:"
 
 #: ../src/imageio/storage/disk.c:175
 msgid "create unique filename"
-msgstr "geef nieuwe naam"
+msgstr "geef andere bestandsnaam"
 
 #: ../src/imageio/storage/disk.c:176 ../src/libs/copy_history.c:312
 msgid "overwrite"
-msgstr "overschrijf naam"
+msgstr "overschrijf het bestand"
 
 #: ../src/imageio/storage/disk.c:273 ../src/imageio/storage/gallery.c:273
 #: ../src/imageio/storage/latex.c:272
