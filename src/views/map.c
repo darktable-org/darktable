@@ -411,7 +411,7 @@ void init(dt_view_t *self)
     gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map), TRUE, TRUE, 0);
 
     lib->osd = g_object_new(OSM_TYPE_GPS_MAP_OSD, "show-scale", TRUE, "show-coordinates", TRUE, "show-dpad",
-                            TRUE, "show-zoom", TRUE, NULL);
+                            TRUE, "show-zoom", TRUE, "show-copyright", TRUE, NULL);
 
     if(dt_conf_get_bool("plugins/map/show_map_osd"))
     {
