@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-29 20:37+0100\n"
-"PO-Revision-Date: 2017-10-29 21:02+0100\n"
+"POT-Creation-Date: 2017-11-03 20:39+0100\n"
+"PO-Revision-Date: 2017-11-03 20:45+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1846,9 +1846,9 @@ msgstr "verplaats afbeeldingen"
 
 #: ../src/control/jobs/control_jobs.c:1467
 #: ../src/control/jobs/control_jobs.c:1524 ../src/imageio/storage/disk.c:95
-#: ../src/imageio/storage/disk.c:163 ../src/imageio/storage/gallery.c:107
-#: ../src/imageio/storage/gallery.c:172 ../src/imageio/storage/latex.c:106
-#: ../src/imageio/storage/latex.c:171 ../src/libs/styles.c:213
+#: ../src/imageio/storage/disk.c:169 ../src/imageio/storage/gallery.c:107
+#: ../src/imageio/storage/gallery.c:178 ../src/imageio/storage/latex.c:106
+#: ../src/imageio/storage/latex.c:177 ../src/libs/styles.c:213
 #: ../src/lua/preferences.c:592
 msgid "select directory"
 msgstr "selecteer map"
@@ -3691,10 +3691,10 @@ msgstr "ongeldig papier formaat"
 msgid "invalid border size, using 0"
 msgstr "ongeldige randdikte, gebruikt 0"
 
-#: ../src/imageio/format/pdf.c:255 ../src/imageio/storage/disk.c:310
+#: ../src/imageio/format/pdf.c:255 ../src/imageio/storage/disk.c:316
 #: ../src/imageio/storage/email.c:135 ../src/imageio/storage/facebook.c:1300
-#: ../src/imageio/storage/flickr.c:649 ../src/imageio/storage/gallery.c:334
-#: ../src/imageio/storage/gallery.c:369 ../src/imageio/storage/picasa.c:1289
+#: ../src/imageio/storage/flickr.c:649 ../src/imageio/storage/gallery.c:340
+#: ../src/imageio/storage/gallery.c:375 ../src/imageio/storage/picasa.c:1289
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "exporteren naar bestand `%s' mislukt!"
@@ -3708,8 +3708,8 @@ msgstr "PDF"
 #. clang-format off
 #. xmp
 #: ../src/imageio/format/pdf.c:579 ../src/imageio/storage/facebook.c:1112
-#: ../src/imageio/storage/flickr.c:533 ../src/imageio/storage/gallery.c:178
-#: ../src/imageio/storage/latex.c:178 ../src/libs/collect.h:34
+#: ../src/imageio/storage/flickr.c:533 ../src/imageio/storage/gallery.c:184
+#: ../src/imageio/storage/latex.c:184 ../src/libs/collect.h:34
 #: ../src/libs/metadata.c:335 ../src/libs/metadata_view.c:115
 msgid "title"
 msgstr "titel"
@@ -3973,8 +3973,8 @@ msgstr "lokale map"
 msgid "_select as output destination"
 msgstr "_selecteer als bestemming"
 
-#: ../src/imageio/storage/disk.c:151 ../src/imageio/storage/gallery.c:164
-#: ../src/imageio/storage/latex.c:163
+#: ../src/imageio/storage/disk.c:157 ../src/imageio/storage/gallery.c:170
+#: ../src/imageio/storage/latex.c:169
 msgid ""
 "enter the path where to put exported images\n"
 "variables support bash like string manipulation\n"
@@ -3984,31 +3984,31 @@ msgstr ""
 "variabelen steunen bash zoals string manipulatie\n"
 "erkende variabelen zijn:"
 
-#: ../src/imageio/storage/disk.c:168
+#: ../src/imageio/storage/disk.c:174
 msgid "on conflict"
-msgstr "bij conflictsituatie"
+msgstr "bestaande naam"
 
-#: ../src/imageio/storage/disk.c:169
+#: ../src/imageio/storage/disk.c:175
 msgid "create unique filename"
-msgstr "creëer unieke bestandsnaam"
+msgstr "geef nieuwe naam"
 
-#: ../src/imageio/storage/disk.c:170 ../src/libs/copy_history.c:312
+#: ../src/imageio/storage/disk.c:176 ../src/libs/copy_history.c:312
 msgid "overwrite"
-msgstr "overschrijf"
+msgstr "overschrijf naam"
 
-#: ../src/imageio/storage/disk.c:267 ../src/imageio/storage/gallery.c:267
-#: ../src/imageio/storage/latex.c:266
+#: ../src/imageio/storage/disk.c:273 ../src/imageio/storage/gallery.c:273
+#: ../src/imageio/storage/latex.c:272
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "kan de map %s niet aanmaken!"
 
-#: ../src/imageio/storage/disk.c:274
+#: ../src/imageio/storage/disk.c:280
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr "kan niet schrijven in map `%s'!"
 
-#: ../src/imageio/storage/disk.c:317 ../src/imageio/storage/email.c:144
-#: ../src/imageio/storage/gallery.c:379 ../src/imageio/storage/latex.c:357
+#: ../src/imageio/storage/disk.c:323 ../src/imageio/storage/email.c:144
+#: ../src/imageio/storage/gallery.c:385 ../src/imageio/storage/latex.c:363
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgid_plural "%d/%d exported to `%s%s'"
@@ -4272,7 +4272,7 @@ msgstr[1] "%d/%d geëxporteerd naar flickr-webalbum"
 msgid "website gallery"
 msgstr "lokaal opgeslagen webalbum"
 
-#: ../src/imageio/storage/gallery.c:184
+#: ../src/imageio/storage/gallery.c:190
 msgid "enter the title of the website"
 msgstr "geef de titel van de website"
 
@@ -4281,7 +4281,7 @@ msgid "LaTeX book template"
 msgstr "LaTeX boek sjabloon"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
-#: ../src/imageio/storage/latex.c:187
+#: ../src/imageio/storage/latex.c:193
 msgid "enter the title of the book"
 msgstr "geef de titel van het boek"
 
