@@ -314,8 +314,8 @@ static void on_export_image_tmpfile(gpointer instance, int imgid, char *filename
     dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
         0, NULL, NULL,
         LUA_ASYNC_TYPENAME,"const char*","intermediate-export-image",
-        LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
         LUA_ASYNC_TYPENAME,"dt_lua_image_t",imgid,
+        LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
         LUA_ASYNC_TYPEID_WITH_FREE,format->parameter_lua_type,format_copy,g_cclosure_new(G_CALLBACK(&format_destructor),format,NULL),
         LUA_ASYNC_TYPENAME,"void",NULL,
         LUA_ASYNC_DONE);
