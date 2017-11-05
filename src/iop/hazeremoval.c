@@ -38,6 +38,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
@@ -905,6 +906,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   free_gray_image(&trans_map);
   free_gray_image(&trans_map_filtered);
+
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
