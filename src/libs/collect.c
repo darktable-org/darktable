@@ -790,6 +790,27 @@ static char **split_path(const char *path)
   return result;
 }
 
+typedef struct name_key_tuple_t
+{
+  char *name, *collate_key;
+} name_key_tuple_t;
+
+static void free_tuple(gpointer data)
+{
+  name_key_tuple_t *tuple = (name_key_tuple_t *)data;
+  g_free(tuple->name);
+  g_free(tuple->collate_key);
+  free(tuple);
+}
+
+static gint sort_folder_tag(gconstpointer a, gconstpointer b)
+{
+  const name_key_tuple_t *tuple_a = (const name_key_tuple_t *)a;
+  const name_key_tuple_t *tuple_b = (const name_key_tuple_t *)b;
+
+  return g_strcmp0(tuple_a->collate_key, tuple_b->collate_key);
+}
+
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
 static void tree_view(dt_lib_collect_rule_t *dr)
 {
@@ -819,8 +840,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     gtk_widget_hide(GTK_WIDGET(d->sw2));
 
     /* query construction */
-    const char *query = folders ? "SELECT DISTINCT folder, id FROM main.film_rolls ORDER BY UPPER(folder) DESC" :
-                        tags ? "SELECT DISTINCT name, id FROM data.tags ORDER BY UPPER(name) DESC" : NULL;
+    const char *query = folders ? "SELECT DISTINCT folder, id FROM main.film_rolls" :
+                        tags ? "SELECT DISTINCT name, id FROM data.tags" : NULL;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -828,9 +849,35 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     int last_tokens_length = 0;
     GtkTreeIter last_parent = { 0 };
 
+    // we need to sort the names ourselves and not let sqlite handle this
+    // because it knows nothing about path separators.
+    GList *sorted_names = NULL;
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      const char *name = (const char *)sqlite3_column_text(stmt, 0);
+      char *name = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+      char *name_folded = g_utf8_casefold(name, -1);
+      gchar *collate_key = NULL;
+
+      if(folders)
+        collate_key = g_utf8_collate_key_for_filename(name_folded, -1);
+      else if(tags)
+        collate_key = g_utf8_collate_key(name_folded, -1);
+
+      name_key_tuple_t *tuple = (name_key_tuple_t *)malloc(sizeof(name_key_tuple_t));
+      tuple->name = name;
+      tuple->collate_key = collate_key;
+      sorted_names = g_list_prepend(sorted_names, tuple);
+      g_free(name_folded);
+    }
+    sqlite3_finalize(stmt);
+
+    if(folders || tags)
+      sorted_names = g_list_sort(sorted_names, sort_folder_tag);
+
+    for(GList *names = sorted_names; names; names = g_list_next(names))
+    {
+      name_key_tuple_t *tuple = (name_key_tuple_t *)names->data;
+      char *name = tuple->name;
       if(name == NULL) continue; // safeguard against degenerated db entries
 
       if(tags && strchr(name, '|') == 0)
@@ -845,7 +892,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         }
 
         /* adding an uncategorized tag */
-        gtk_tree_store_insert(GTK_TREE_STORE(model), &temp, &uncategorized, 0);
+        gtk_tree_store_insert(GTK_TREE_STORE(model), &temp, &uncategorized, -1);
         gtk_tree_store_set(GTK_TREE_STORE(model), &temp, DT_LIB_COLLECT_COL_TEXT, name,
                            DT_LIB_COLLECT_COL_PATH, name, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
       }
@@ -860,20 +907,16 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         if(tokens != NULL)
         {
           // find the number of common parts at the beginning of tokens and last_tokens
-          GtkTreeIter parent = {0};
+          GtkTreeIter parent = last_parent;
           int tokens_length = string_array_length(tokens);
           int common_length = 0;
           if(last_tokens)
           {
-            for(common_length = 0; tokens[common_length] && last_tokens[common_length]; common_length++)
+            while(tokens[common_length] && last_tokens[common_length] &&
+                  !g_strcmp0(tokens[common_length], last_tokens[common_length]))
             {
-              if(g_strcmp0(tokens[common_length], last_tokens[common_length]))
-              {
-                common_length++;
-                break;
-              }
+              common_length++;
             }
-            common_length--;
 
             // point parent iter to where the entries should be added
             for(int i = common_length; i < last_tokens_length; i++)
@@ -905,7 +948,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
             else
               pth2 = dt_util_dstrcat(pth2, "%%");
 
-            gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, common_length > 0 ? &parent : NULL, 0);
+            gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, common_length > 0 ? &parent : NULL, -1);
             gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, *token,
                                DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
             if(folders)
@@ -926,7 +969,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         }
       }
     }
-    sqlite3_finalize(stmt);
+    g_list_free_full(sorted_names, free_tuple);
 
     gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
 
