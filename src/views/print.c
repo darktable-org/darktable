@@ -41,7 +41,6 @@ DT_MODULE(1)
 typedef struct dt_print_t
 {
   int32_t image_id;
-  int32_t iwidth, iheight;
   dt_print_info_t *pinfo;
 }
 dt_print_t;
@@ -62,33 +61,12 @@ static void _print_mipmaps_updated_signal_callback(gpointer instance, gpointer u
   dt_control_queue_redraw_center();
 }
 
-static void _set_orientation(dt_print_t *prt)
-{
-  if (prt->image_id <= 0)
-    return;
-
-  dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, prt->image_id, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
-
-  if (buf.width > buf.height)
-    prt->pinfo->page.landscape = TRUE;
-  else
-    prt->pinfo->page.landscape = FALSE;
-
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-}
-
 static void _film_strip_activated(const int imgid, void *data)
 {
   const dt_view_t *self = (dt_view_t *)data;
   dt_print_t *prt = (dt_print_t *)self->data;
 
   prt->image_id = imgid;
-  prt->iwidth = prt->iheight = 0;
-
-  //  guess the image orientation
-
-  _set_orientation(prt);
 
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
   // record the imgid to display when going back to lighttable
@@ -302,11 +280,9 @@ void enter(dt_view_t *self)
   {
     int imgid = GPOINTER_TO_INT(selected_images->data);
     prt->image_id = imgid;
-    dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
+    dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, TRUE);
   }
   g_list_free(selected_images);
-
-  _set_orientation(prt);
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                             G_CALLBACK(_print_mipmaps_updated_signal_callback),
