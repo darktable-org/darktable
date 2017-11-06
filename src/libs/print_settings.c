@@ -851,27 +851,29 @@ static void _set_orientation(dt_lib_print_settings_t *ps)
     return;
 
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, ps->image_id, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, ps->image_id, DT_MIPMAP_0, DT_MIPMAP_BEST_EFFORT, 'r');
 
-  if (buf.width > buf.height)
-    ps->prt.page.landscape = TRUE;
-  else
-    ps->prt.page.landscape = FALSE;
+  // If there's a mipmap available, figure out orientation based upon
+  // its dimensions. Otherwise, don't touch orientation until the
+  // mipmap arrives.
+  if (buf.size != DT_MIPMAP_NONE)
+  {
+    ps->prt.page.landscape = (buf.width > buf.height);
+    dt_view_print_settings(darktable.view_manager, &ps->prt);
+    dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape==TRUE?1:0);
+  }
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 }
 
-static void _print_settings_filmstrip_activate_callback(gpointer instance,gpointer user_data)
+static void _print_settings_activate_or_update_callback(gpointer instance,gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   ps->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
   ps->iwidth = ps->iheight = 0;
-
   _set_orientation (ps);
-
-  dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape==TRUE?1:0);
 }
 
 static GList* _get_profiles ()
@@ -935,6 +937,33 @@ static void _new_printer_callback(dt_printer_info_t *printer, void *user_data)
   g_signal_handlers_unblock_by_func(G_OBJECT(d->printers), G_CALLBACK(_printer_changed), NULL);
 }
 
+void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+{
+  // user activated a new image via the filmstrip or user entered view
+  // mode which activates an image: get image_id and orientation
+  dt_control_signal_connect(darktable.signals,
+                            DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+                            G_CALLBACK(_print_settings_activate_or_update_callback),
+                            self);
+
+  // when an updated mipmap, we may have new orientation information
+  // about the current image. This updates the image_id as well and
+  // zeros out dimensions, but there should be no harm in that
+  dt_control_signal_connect(darktable.signals,
+                            DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                            G_CALLBACK(_print_settings_activate_or_update_callback),
+                            self);
+
+  // NOTE: it would be proper to set image_id here to -1, but this seems to make no difference
+}
+
+void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+{
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_print_settings_activate_or_update_callback),
+                               self);
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -961,26 +990,9 @@ gui_init (dt_lib_module_t *self)
   dt_init_print_info(&d->prt);
   dt_view_print_settings(darktable.view_manager, &d->prt);
 
-  dt_control_signal_connect(darktable.signals,
-                            DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
-                            G_CALLBACK(_print_settings_filmstrip_activate_callback),
-                            self);
-
   d->profiles = _get_profiles();
 
-  //  get orientation of the selectd image if possible
-
   d->image_id = -1;
-
-  GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
-  if(selected_images)
-  {
-    int imgid = GPOINTER_TO_INT(selected_images->data);
-    d->image_id = imgid;
-  }
-  g_list_free(selected_images);
-
-  _set_orientation(d);
 
   //  create the spin-button now as values could be set when the printer has no hardware margin
 
@@ -1770,10 +1782,6 @@ gui_cleanup (dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_right));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_bottom));
 
-  dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(_print_settings_filmstrip_activate_callback),
-                               self);
-
   g_list_free_full(ps->profiles, g_free);
   g_list_free_full(ps->paper_list, free);
 
@@ -1809,8 +1817,6 @@ gui_reset (dt_lib_module_t *self)
   // reset page orientation to fit the picture
 
   _set_orientation (ps);
-
-  dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape?1:0);
 }
 
 void init_key_accels(dt_lib_module_t *self)
