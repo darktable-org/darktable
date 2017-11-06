@@ -524,7 +524,9 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
 
   if(imgid > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid)->profile;
+    // the code in this block is never being used. should that ever change make sure to honour the
+    // color profile overwriting the one set in colorout, too. dt_colorspaces_get_output_profile() doesn't do that!
+    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, DT_COLORSPACE_NONE, "")->profile;
     uint32_t len = 0;
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)

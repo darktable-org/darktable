@@ -101,8 +101,9 @@ void cleanup(dt_imageio_module_format_t *self)
 {
 }
 
-int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void *in_tmp, void *exif,
-                int exif_len, int imgid, int num, int total)
+int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void *in_tmp,
+                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                void *exif, int exif_len, int imgid, int num, int total)
 {
   const dt_imageio_exr_t *exr = (dt_imageio_exr_t *)tmp;
 
@@ -137,7 +138,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
               *green_color = NULL,
               *blue_color = NULL,
               *white_point = NULL;
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid)->profile;
+    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
     float r[2], g[2], b[2], w[2];
     float sum;
     Imf::Chromaticities chromaticities;

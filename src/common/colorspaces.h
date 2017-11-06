@@ -134,8 +134,10 @@ cmsHPROFILE dt_colorspaces_create_alternate_profile(const char *makermodel);
 /** just get the associated transformation matrix, for manual application. */
 int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix);
 
-/** return the output profile, taking export override into account */
-const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid);
+/** return the output profile as set in colorout, taking export override into account if passed in. */
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid,
+                                                                        dt_colorspaces_color_profile_type_t over_type,
+                                                                        const char *over_filename);
 
 /** return an rgb lcms2 profile from data. if data points to a grayscale profile a new rgb profile is created
  * that has the same TRC, black and white point and rec709 primaries. */

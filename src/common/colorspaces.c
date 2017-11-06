@@ -651,7 +651,9 @@ int dt_colorspaces_find_profile(char *filename, size_t filename_len, const char 
   return 0;
 }
 
-const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid)
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid,
+                                                                        dt_colorspaces_color_profile_type_t over_type,
+                                                                        const char *over_filename)
 {
   // find the colorout module -- the pointer stays valid until darktable shuts down
   static dt_iop_module_so_t *colorout = NULL;
@@ -672,12 +674,10 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
 
   const dt_colorspaces_color_profile_t *p = NULL;
 
-  int over_type = dt_conf_get_int("plugins/lighttable/export/icctype");
-  gchar *over_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-
   if(over_type != DT_COLORSPACE_NONE)
   {
-    // return the profile specified in export
+    // return the profile specified in export.
+    // we have that in here to get rid of the if() check in all places calling this function.
     p = dt_colorspaces_get_profile(over_type, over_filename, DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
   }
   else if(colorout && colorout->get_p)

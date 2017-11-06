@@ -108,8 +108,9 @@ static int FileWriter(const uint8_t *data, size_t data_size, const WebPPicture *
   return data_size ? (fwrite(data, data_size, 1, out) == 1) : 1;
 }
 
-int write_image(dt_imageio_module_data_t *webp, const char *filename, const void *in_tmp, void *exif,
-                int exif_len, int imgid, int num, int total)
+int write_image(dt_imageio_module_data_t *webp, const char *filename, const void *in_tmp,
+                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                void *exif, int exif_len, int imgid, int num, int total)
 {
   dt_imageio_webp_t *webp_data = (dt_imageio_webp_t *)webp;
   FILE *out = g_fopen(filename, "wb");
