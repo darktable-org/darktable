@@ -133,6 +133,7 @@ static const char *mime(dt_imageio_module_data_t *data)
 }
 
 static int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
+                       dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
                        void *exif, int exif_len, int imgid, int num, int total)
 {
   dt_print_format_t *d = (dt_print_format_t *)data;
@@ -250,6 +251,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/print/print/icctype");
   gchar *icc_filename = dt_conf_get_string("plugins/print/print/iccprofile");
   dt_iop_color_intent_t icc_intent = dt_conf_get_int("plugins/print/print/iccintent");
+  const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(imgid, icc_type, icc_filename);
   dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
                                NULL, FALSE, icc_type, icc_filename, icc_intent,  NULL, NULL, 1, 1);
   g_free(icc_filename);
@@ -291,9 +293,17 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
       return;
     }
     else
-      if (dt_apply_printer_profile(imgid, (void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp,
-                                   pprof->profile,
-                                   ps->v_pintent, ps->v_black_point_compensation))
+    {
+      if(!buf_profile || !buf_profile->profile)
+      {
+        free(dat.ps->buf);
+        dt_control_log("error getting output profile for image %d", imgid);
+        fprintf(stderr, "error getting output profile for image %d\n", imgid);
+        dt_control_queue_redraw();
+        return;
+      }
+      if (dt_apply_printer_profile((void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp, buf_profile->profile,
+                                   pprof->profile, ps->v_pintent, ps->v_black_point_compensation))
       {
         free(dat.ps->buf);
         dt_control_log(_("cannot apply printer profile `%s'"), ps->v_piccprofile);
@@ -301,6 +311,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
         dt_control_queue_redraw();
         return;
       }
+    }
   }
 
   const float page_width  = dt_pdf_mm_to_point(width);

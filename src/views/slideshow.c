@@ -105,8 +105,9 @@ static const char *mime(dt_imageio_module_data_t *data)
   return "memory";
 }
 
-static int write_image(dt_imageio_module_data_t *datai, const char *filename, const void *in, void *exif,
-                       int exif_len, int imgid, int num, int total)
+static int write_image(dt_imageio_module_data_t *datai, const char *filename, const void *in,
+                       dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                       void *exif, int exif_len, int imgid, int num, int total)
 {
   dt_slideshow_format_t *data = (dt_slideshow_format_t *)datai;
   dt_pthread_mutex_lock(&data->d->lock);
