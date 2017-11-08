@@ -526,15 +526,18 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 
 int dt_imageio_export(const uint32_t imgid, const char *filename, dt_imageio_module_format_t *format,
                       dt_imageio_module_data_t *format_params, const gboolean high_quality, const gboolean upscale,
-                      const gboolean copy_metadata, dt_imageio_module_storage_t *storage,
-                      dt_imageio_module_data_t *storage_params, int num, int total)
+                      const gboolean copy_metadata, dt_colorspaces_color_profile_type_t icc_type,
+                      const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
+                      dt_imageio_module_storage_t *storage, dt_imageio_module_data_t *storage_params, int num,
+                      int total)
 {
   if(strcmp(format->mime(format_params), "x-copy") == 0)
     /* This is a just a copy, skip process and just export */
-    return format->write_image(format_params, filename, NULL, NULL, 0, imgid, num, total);
+    return format->write_image(format_params, filename, NULL, icc_type, icc_filename, NULL, 0, imgid, num, total);
   else
     return dt_imageio_export_with_flags(imgid, filename, format, format_params, 0, 0, high_quality, upscale,
-                                        0, NULL, copy_metadata, storage, storage_params, num, total);
+                                        0, NULL, copy_metadata, icc_type, icc_filename, icc_intent, storage,
+                                        storage_params, num, total);
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
@@ -543,6 +546,8 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
                                  const int32_t ignore_exif, const int32_t display_byteorder,
                                  const gboolean high_quality, const gboolean upscale, const int32_t thumbnail_export,
                                  const char *filter, const gboolean copy_metadata,
+                                 dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
+                                 dt_iop_color_intent_t icc_intent,
                                  dt_imageio_module_storage_t *storage,
                                  dt_imageio_module_data_t *storage_params, int num, int total)
 {
@@ -590,11 +595,8 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   //  If a style is to be applied during export, add the iop params into the history
   if(!thumbnail_export && format_params->style[0] != '\0')
   {
-    GList *stls;
-
-    dt_iop_module_t *m = NULL;
-
-    if((stls = dt_styles_get_item_list(format_params->style, TRUE, -1)) == 0)
+    GList *style_items = dt_styles_get_item_list(format_params->style, TRUE, -1);
+    if(!style_items)
     {
       dt_control_log(_("cannot find the style '%s' to apply during export."), format_params->style);
       goto error;
@@ -614,27 +616,31 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     }
 
     // Add each params
-    while(stls)
+    for(GList *iter = style_items; iter; iter = g_list_next(iter))
     {
-      dt_style_item_t *s = (dt_style_item_t *)stls->data;
-      gboolean module_found = FALSE;
+      dt_style_item_t *s = (dt_style_item_t *)iter->data;
 
-      GList *modules = dev.iop;
-      while(modules)
+      for(GList *module = dev.iop; module; module = g_list_next(module))
       {
-        m = (dt_iop_module_t *)modules->data;
+        dt_iop_module_t *m = (dt_iop_module_t *)module->data;
 
-        //  since the name in the style is returned with a possible multi-name, just check the start of the
-        //  name
-        if(strncmp(m->op, s->name, strlen(m->op)) == 0)
+        if(!strcmp(m->op, s->operation))
         {
           dt_dev_history_item_t *h = malloc(sizeof(dt_dev_history_item_t));
-          dt_iop_module_t *sty_module = m;
+          dt_iop_module_t *style_module = m;
 
-          if(format_params->style_append && !(m->flags() & IOP_FLAGS_ONE_INSTANCE))
+          if((format_params->style_append && !(m->flags() & IOP_FLAGS_ONE_INSTANCE)) || m->multi_priority != s->multi_priority)
           {
-            sty_module = dt_dev_module_duplicate(m->dev, m, 0);
-            if(!sty_module)
+            // dt_dev_module_duplicate() doesn't work here, it's trying too hard to be clever
+            style_module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+            if(style_module && !dt_iop_load_module(style_module, m->so, m->dev))
+            {
+              style_module->instance = m->instance;
+              style_module->multi_priority = s->multi_priority;
+              snprintf(style_module->multi_name, sizeof(style_module->multi_name), "%s", s->name);
+              dev.iop = g_list_insert_sorted(dev.iop, style_module, sort_plugins);
+            }
+            else
             {
               free(h);
               goto error;
@@ -644,9 +650,9 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
           h->params = s->params;
           h->blend_params = s->blendop_params;
           h->enabled = s->enabled;
-          h->module = sty_module;
-          h->multi_priority = 1;
-          g_strlcpy(h->multi_name, "<style>", sizeof(h->multi_name));
+          h->module = style_module;
+          h->multi_priority = s->multi_priority;
+          g_strlcpy(h->multi_name, s->name, sizeof(h->multi_name));
 
           if(m->legacy_params && (s->module_version != m->version()))
           {
@@ -659,18 +665,19 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
           dev.history_end++;
           dev.history = g_list_append(dev.history, h);
-          module_found = TRUE;
-          g_free(s->name);
+
+          // make sure that dt_style_item_free doesn't free data we still use
+          s->params = NULL;
+          s->blendop_params = NULL;
+
           break;
         }
-        modules = g_list_next(modules);
       }
-      if(!module_found) dt_style_item_free(s);
-      stls = g_list_next(stls);
     }
-    g_list_free(stls);
+    g_list_free_full(style_items, dt_style_item_free);
   }
 
+  dt_dev_pixelpipe_set_icc(&pipe, icc_type, icc_filename, icc_intent);
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, buf.iscale);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
@@ -688,12 +695,11 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
   // find output color profile for this image:
   int sRGB = 1;
-  int icctype = dt_conf_get_int("plugins/lighttable/export/icctype");
-  if(icctype == DT_COLORSPACE_SRGB)
+  if(icc_type == DT_COLORSPACE_SRGB)
   {
     sRGB = 1;
   }
-  else if(icctype == DT_COLORSPACE_NONE)
+  else if(icc_type == DT_COLORSPACE_NONE)
   {
     GList *modules = dev.iop;
     dt_iop_module_t *colorout = NULL;
@@ -863,13 +869,14 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     // last param is dng mode, it's false here
     length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
 
-    res = format->write_image(format_params, filename, outbuf, exif_profile, length, imgid, num, total);
+    res = format->write_image(format_params, filename, outbuf, icc_type, icc_filename, exif_profile, length, imgid,
+                              num, total);
 
     free(exif_profile);
   }
   else
   {
-    res = format->write_image(format_params, filename, outbuf, NULL, 0, imgid, num, total);
+    res = format->write_image(format_params, filename, outbuf, icc_type, icc_filename, NULL, 0, imgid, num, total);
   }
 
   dt_dev_pixelpipe_cleanup(&pipe);

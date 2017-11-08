@@ -78,7 +78,7 @@ static int style_getnumber(lua_State *L)
   }
   dt_style_t style;
   luaA_to(L, dt_style_t, &style, -2);
-  GList *items = dt_styles_get_item_list(style.name, true, -1);
+  GList *items = dt_styles_get_item_list(style.name, TRUE, -1);
   dt_style_item_t *item = g_list_nth_data(items, index - 1);
   if(!item)
   {
@@ -97,7 +97,7 @@ static int style_length(lua_State *L)
 
   dt_style_t style;
   luaA_to(L, dt_style_t, &style, -1);
-  GList *items = dt_styles_get_item_list(style.name, true, -1);
+  GList *items = dt_styles_get_item_list(style.name, TRUE, -1);
   lua_pushinteger(L, g_list_length(items));
   g_list_free_full(items, dt_style_item_free);
   return 1;
@@ -154,8 +154,10 @@ static int style_item_tostring(lua_State *L)
 
 static int style_item_gc(lua_State *L)
 {
+  // FIXME: Can't we use dt_style_item_free() instead? Or may the pointer itself not be freed?
   dt_style_item_t *item = luaL_checkudata(L, -1, "dt_style_item_t");
   g_free(item->name);
+  g_free(item->operation);
   free(item->params);
   free(item->blendop_params);
   return 0;
