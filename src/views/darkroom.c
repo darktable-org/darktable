@@ -587,14 +587,14 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 
     // the base module is the one with the highest multi_priority
     const guint clen = g_list_length(dev->iop);
-    int mp_base = 0;
+    int base_multi_priority = 0;
     for(int k = 0; k < clen; k++)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)(g_list_nth_data(dev->iop, k));
-      if(strcmp(module->op, mod->op) == 0) mp_base = MAX(mp_base, mod->multi_priority);
+      if(strcmp(module->op, mod->op) == 0) base_multi_priority = MAX(base_multi_priority, mod->multi_priority);
     }
 
-    if(module->multi_priority == mp_base) // if the module is the "base" instance, we keep it
+    if(module->multi_priority == base_multi_priority) // if the module is the "base" instance, we keep it
     {
       module->multi_priority = 0;
       module->multi_name[0] = '\0';
@@ -605,11 +605,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     {
       if(!dt_iop_is_hidden(module))
       {
-        gtk_widget_hide(module->expander);
-        gtk_container_remove(
-            GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
-            module->expander);
-        gtk_widget_destroy(module->widget);
+        gtk_widget_destroy(module->expander);
         dt_iop_gui_cleanup_module(module);
       }
 
