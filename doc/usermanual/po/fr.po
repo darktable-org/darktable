@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2017-10-19 10:06+0200\n"
-"PO-Revision-Date: 2017-09-29 22:48+0200\n"
+"POT-Creation-Date: 2017-11-08 10:09+0100\n"
+"PO-Revision-Date: 2017-11-09 22:21+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -8276,6 +8276,15 @@ msgid ""
 "overlayed to the image. When leaving the slider the image goes back to "
 "normal after a short delay."
 msgstr ""
+"Vous pouvez examiner les données de l'image relatives à un canal de couleur "
+"en maintenant enfoncée la touche <emphasis>maj</emphasis> quand vous "
+"sélectionnez le curseur correspondant avec la souris. L'image du panneau "
+"central affiche alors le canal de couleur sélectionné soit en nuances de "
+"gris, soit en fausses couleurs, en fonction du choix fait dans dans les "
+"<quote>Options d'interface</quote> (voyez <xref linkend=\"gui_options\"/>). "
+"De plus vous pouvez maintenir enfoncée la touche <emphasis>ctrl</emphasis>, "
+"ce qui vous permet de voir le masque résultant superposé à l'image. Lorsque "
+"vous quittez le curseur, l'image redevient normale après un court délai."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6493(title)
 msgid "Color channel sliders"
@@ -13544,11 +13553,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#.         by their specification. However, there is an established de-facto standard to embed
-#.         profiles which darktable adheres to. Beware that some applications might fail to correctly
-#.         handle those profiles and render colors incorrectly.
-#.       </para>
+#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+#. by their specification. However, there is an established de-facto standard to embed
+#. profiles which darktable adheres to. Beware that some applications might fail to correctly
+#. handle those profiles and render colors incorrectly.
+#. </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11367(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
@@ -19930,25 +19939,25 @@ msgstr ""
 
 #. <bridgehead renderas="sect4">maximum width of image drawing area</bridgehead>
 #.
-#.   <para>
-#.     Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
-#.     Needs a restart and will invalidate current thumbnail caches (default 1300).
-#.   </para>
+#. <para>
+#. Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
+#. Needs a restart and will invalidate current thumbnail caches (default 1300).
+#. </para>
 #.
-#.   <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
+#. <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
 #.
-#.   <para>
-#.     Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
-#.     screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
-#.   </para>
-#.   
-#.   <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
+#. <para>
+#. Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
+#. screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
+#. </para>
 #.
-#.   <para>
-#.     Controls the compression of thumbnail images in memory and on disk. Options:
-#.     <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
-#.     (default off).
-#.   </para>
+#. <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
+#.
+#. <para>
+#. Controls the compression of thumbnail images in memory and on disk. Options:
+#. <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
+#. (default off).
+#. </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18399(bridgehead)
 msgid "pen pressure control for brush masks"
 msgstr "contrôle de la pression du pinceau du masque"
@@ -19987,7 +19996,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18417(bridgehead)
 msgid "display of individual color channels"
-msgstr ""
+msgstr "affiche les différents canaux de couleur"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18419(para)
 msgid ""
@@ -19995,6 +20004,10 @@ msgid ""
 "parametric masks feature. You can choose between <quote>false color</quote> "
 "and <quote>grey scale</quote> (default false color)."
 msgstr ""
+"Contrôle comment les différents canaux de couleurs sont affichés quand la "
+"fonctionnalité masque paramétrique est activée. Vous pouvez choisir entre "
+"<quote>fausse couleur</quote> et <quote>échelle de gris</quote> (par défaut "
+"fausse couleur)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18425(bridgehead)
 msgid "ask before deleting a tag"
@@ -20169,7 +20182,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18512(bridgehead)
 msgid "rating an image one star twice will not zero out the rating"
-msgstr ""
+msgstr "appliquer une étoile deux fois à une image ne supprimera pas l'étoile"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18514(para)
 msgid ""
@@ -20177,6 +20190,10 @@ msgid ""
 "that image. When checking this option a second click on a one star rating "
 "will keep that rating (default off)."
 msgstr ""
+"Normalement cliquer deux fois sur l'étoile d'une image évaluée à une seule "
+"étoile, mettra à zéro l'évaluation de cette image. Quand cette option est "
+"cochée, un second clic sur l'étoile d'une image évaluée à une seule étoile "
+"conservera cette évaluation (par défaut non activé)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18520(bridgehead)
 msgid "method to use for getting the display profile"
@@ -20369,7 +20386,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18621(bridgehead)
 msgid "omit hierarchy in simple tag lists"
-msgstr ""
+msgstr "ignore la hiérarchie des mots-clés"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18623(para)
 msgid ""
@@ -20379,6 +20396,12 @@ msgid ""
 "ignore the rest. So <quote>foo|bar|baz</quote> will only add <quote>baz</"
 "quote>."
 msgstr ""
+"Lors de l'exportation des images, les hiérarchies de mots-clés sont ajoutées "
+"sous forme de simples listes de mots-clés permettant ainsi à leurs mots-clés "
+"d'être visibles par d'autres programmes. Si cette option est cochée "
+"darktable inclura uniquement leur dernier élément, ignorant tous les autres. "
+"Ainsi pour la hiérarchie <quote>foo|bar|baz</quote>, seul le mot-clé "
+"<quote>baz</quote> sera ajouté."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18630(bridgehead)
 msgid "activate OpenCL support"
@@ -20401,7 +20424,7 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18639(bridgehead)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21798(title)
 msgid "OpenCL scheduling profile"
-msgstr ""
+msgstr "profil de planification OpenCL"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18641(para)
 msgid ""
@@ -20411,6 +20434,13 @@ msgid ""
 "pixelpipes are processed in parallel on two different GPUs; <quote>very fast "
 "GPU</quote>: both pixelipes are processed sequentially on the GPU."
 msgstr ""
+"Définit comment l'image complète et la prévisualisation sont traitées sur "
+"les systèmes avec support OpenCL. <quote>Par défaut</quote> : le GPU est "
+"utilisé pour le rendu de l'image complète du panneau central et le CPU pour "
+"la prévisualisation ; <quote>GPUs multiples</quote> : les deux pipelines "
+"graphiques sont exécutés en parallèle sur deux GPUs différents ; <quote>GPU "
+"très rapide</quote> : les deux pipelines graphiques sont exécutés "
+"séquentiellement par le GPU."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18649(bridgehead)
 msgid "always use LittleCMS 2 to apply output color profile"
@@ -24237,12 +24267,18 @@ msgid ""
 "options</quote> dialog (<xref linkend=\"core_options\"/>) which offers the "
 "following choices:"
 msgstr ""
+"darktable peut utiliser le CPU ainsi qu'un ou plusieurs GPUs supportant "
+"OpenCL. En fonction des performances relatives les utilisateurs peuvent "
+"choisir parmi différents profils de planifications pour optimiser les "
+"performances. Ceci est fait par le paramètre de configuration <quote>profil "
+"de planification OpenCL</quote> dans la boîte de dialogue "
+"<quote>fonctionnement</quote> (<xref linkend=\"core_options\"/>) qui offre "
+"les choix suivants :"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21824(quote)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21847(quote)
-#, fuzzy
 msgid "opencl_device_priority"
-msgstr "opencl_use_pinned_memory"
+msgstr "opencl_device_priority"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21818(entry)
 msgid ""
@@ -24253,6 +24289,13 @@ msgid ""
 "allocation of devices to the various pixelpipe types can be finetuned with "
 "the <placeholder-1/> configuration parameter (see below)."
 msgstr ""
+"Si un GPU supportant OpenCL est trouvé, darktable l'utilise pour traiter le "
+"panneau de l'image centrale pendant que la fenêtre de prévisualisation "
+"(voyez <xref linkend=\"navigation\"/>) est traitée en parallèle par le CPU. "
+"Ceci est le réglage préférable pour des systèmes ayant un CPU "
+"raisonnablement rapide et un GPU modérément rapide. L'exacte allocation des "
+"dispositifs aux différents types de pipelines peut être ajustée avec le "
+"paramètre de configuration <placeholder-1/> (voyez ci-dessous)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21828(entry)
 msgid "very fast GPU"
@@ -24264,11 +24307,14 @@ msgid ""
 "the preview window on the GPU sequentially. This is the preferred setting "
 "for systems with a GPU that strongly outperforms the CPU."
 msgstr ""
+"Avec ce profil de planification darktable traite séquentiellement sur le GPU "
+"le panneau central contenant l'image et la fenêtre de prévisualisation. Ceci "
+"est le réglage préférable pour les systèmes qui ont un GPU surpassant "
+"fortement le CPU."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21838(entry)
-#, fuzzy
 msgid "multiple GPUs"
-msgstr "instances multiples"
+msgstr "GPUs multiples"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21841(entry)
 msgid ""
@@ -24279,6 +24325,14 @@ msgid ""
 "should better select the <placeholder-1/> profile and finetune their system "
 "with the <placeholder-2/> configuration parameter (see below)."
 msgstr ""
+"Ce réglage est destiné aux systèmes ayant des GPUs multiples dont les "
+"performances relatives ne diffèrent pas de manière significative. Chaque "
+"fois qu'un travail de traitement est démarré, darktable utilise tout GPU "
+"actuellement inactif mais pas le CPU. Les utilisateurs de systèmes avec une "
+"variété de GPUs auront besoin d'un meilleur contrôle sur la priorité "
+"relative de ceux-ci. Il serait préférable qu'ils choisissent le profil "
+"<placeholder-1/> et finalisent leur système avec le paramètre de "
+"configuration <placeholder-2/> (voyez ci-dessous)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21855(para)
 msgid ""
@@ -24287,11 +24341,15 @@ msgid ""
 "can change it at any time in the <quote>core options</quote> dialog (<xref "
 "linkend=\"core_options\"/>) with immediate effect."
 msgstr ""
+"Au premier démarrage ou après détection d'une modification de la "
+"configuration du GPU de votre système, darktable essaie d'identifier le "
+"profil qui vous convient le mieux. Vous pouvez changer ceci à tout moment "
+"dans la boîte de dialogue <quote>fonctionnement</quote> (<xref linkend="
+"\"core_options\"/>) avec effet immédiat."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21866(title)
-#, fuzzy
 msgid "Multiple OpenCL devices – manual settings"
-msgstr "Multiple cartes graphiques OpenCL"
+msgstr "Multiples périphériques OpenCL –  paramètres manuels"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21868(para)
 msgid ""
@@ -24302,6 +24360,13 @@ msgid ""
 "<quote>default</quote> scheduling profile and do your settings in the "
 "<quote>opencl_device_priority</quote> configuration parameter."
 msgstr ""
+"Sur la plupart des systèmes typiques, la planification des périphériques "
+"OpenCL peut être optimisée en utilisant le réglage <quote>profil de "
+"planification OpenCL</quote>. Cependant, si votre système est équipé d'une "
+"variété de GPUs, vous pourriez souhaiter fixer manuellement la priorité "
+"relative des périphériques. Pour ce faire, vous devez sélectionner le profil "
+"de planification <quote> défaut</quote> et définir vos paramètres dans le "
+"paramètre de configuration <quote>opencl_device_priority</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21876(para)
 msgid ""
@@ -24342,15 +24407,12 @@ msgid ""
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21895(para)
-#, fuzzy
 msgid ""
 "Configuration parameter <quote>opencl_device_priority</quote> holds a string "
 "with the following structure:"
 msgstr ""
-"Depuis la version 1.2 de darktable, il existe un schéma plus souple "
-"d’allocation et de priorité pour vos périphériques OpenCL. Le paramètre "
-"<quote>opencl_device_priority</quote> contient une chaîne de caractères "
-"ayant la structure suivante :"
+"Le paramètre de configuration <quote>opencl_device_priority</quote> contient "
+"une chaîne de caractères ayant la structure suivante :"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21901(programlisting)
 msgid "a,b,c.../k,l,m.../o,p,q.../x,y,z..."
@@ -24401,7 +24463,6 @@ msgstr ""
 "différencier."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21925(para)
-#, fuzzy
 msgid ""
 "A device specifier can be prefixed with an exclamation mark <quote>!</"
 "quote>, in which case the device is excluded from processing this pixelpipe. "
@@ -24411,8 +24472,8 @@ msgstr ""
 "Un indicateur de périphérique peut être précédé d’un point d’exclamation "
 "<quote>!</quote>, dans ce cas, le périphérique ne pourra pas exécuter ce "
 "pipeline graphique. Vous pouvez aussi utiliser un astérisque <quote>*</"
-"quote> comme joker, ce qui représentera tous les périphériques non "
-"mentionnés précédemment dans ce groupe."
+"quote> comme joker, qui représentera tous les périphériques non encore  "
+"mentionnés explicitement dans ce groupe."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21932(para)
 msgid ""
@@ -24437,18 +24498,17 @@ msgid ""
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21946(para)
-#, fuzzy
 msgid ""
 "darktable's default setting for <quote>opencl_device_priority</quote> is:"
 msgstr ""
-"Le paramétrage par défaut de darktable pour opencl_device_priority est :"
+"Le paramétrage par défaut de darktable pour <quote>opencl_device_priority</"
+"quote> est :"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21951(programlisting)
 msgid "*/!0,*/*/*"
 msgstr "*/!0,*/*/*"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21955(para)
-#, fuzzy
 msgid ""
 "Any detected OpenCL device is allowed to process our center view image. The "
 "first OpenCL device (0) is not allowed to process the preview pixelpipe. As "
@@ -24458,14 +24518,15 @@ msgid ""
 "setting for most systems. No restrictions apply to export and thumbnail "
 "pixelpipes."
 msgstr ""
-"Tout périphérique OpenCL détecté est autorisé à traiter notre image "
-"centrale. Le premier périphérique OpenCL (0) n'est pas autorisé à traiter le "
-"pipeline graphique de prévisualisation. En conséquence, s’il n'y a qu'un "
-"seul GPU sur votre système, le pipeline graphique de prévisualisation sera "
-"toujours traité par le CPU, ce qui réserve votre unique GPU exclusivement à "
-"la vue de l’image centrale qui demande davantage de ressources. Ceci est "
-"raisonnable et identique à l’ancien comportement. Aucune restriction ne "
-"s’applique aux pipelines de l’exportation et des miniatures."
+"Tout périphérique OpenCL détecté est autorisé à traiter notre image du "
+"panneau central. Le premier périphérique OpenCL (0) n'est pas autorisé à "
+"traiter le pipeline graphique de prévisualisation. En conséquence, s’il n'y "
+"a qu'un seul GPU sur votre système, le pipeline graphique de "
+"prévisualisation sera toujours traité par le CPU, réservant exclusivement "
+"votre unique GPU au panneau central contenant l’image qui demande davantage "
+"de ressources. Ceci est un paramétrage raisonnable pour la plupart des "
+"systèmes. Aucune restriction ne s’applique au pipeline de l’exportation et "
+"au pipeline des miniatures."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21964(para)
 msgid ""
