@@ -863,7 +863,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
       if(folders)
         collate_key = g_utf8_collate_key_for_filename(name_folded, -1);
-      else if(tags)
+      else if(tags || locations)
         collate_key = g_utf8_collate_key(name_folded, -1);
 
       name_key_tuple_t *tuple = (name_key_tuple_t *)malloc(sizeof(name_key_tuple_t));
@@ -874,7 +874,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     }
     sqlite3_finalize(stmt);
 
-    if(folders || tags)
+    if(folders || tags || locations)
       sorted_names = g_list_sort(sorted_names, sort_folder_tag);
 
     for(GList *names = sorted_names; names; names = g_list_next(names))
