@@ -130,6 +130,12 @@ if [[ $MAKE == FUJIFILM && $CFA_PATTERN_WIDTH == 6 && $CFA_PATTERN_HEIGHT == 6 ]
   # The DNG's CFA pattern is mysteriously shifted horizontally for
   # 14-bit x-trans chips (despite it being stored unshifted in the raw
   # file). Identify 14-bit cips by their max white value.
+
+  # FIXME: this is definitively wrong. from rawspeed, DngDecoder::parseCFA():
+  # the cfa is specified relative to the ActiveArea. we want it relative (0,0)
+  # Since in handleMetadata(), in subFrame() we unconditionally shift CFA by
+  # activearea+DefaultCropOrigin; here we need to undo the 'ACTIVEAREA' part.
+
   if [[ $WHITE -gt 16000 ]]; then
     COL_OFFSET=2
   else
