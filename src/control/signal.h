@@ -160,6 +160,9 @@ typedef enum dt_signal_t
    * */
   DT_SIGNAL_CAMERA_DETECTED,
 
+  /** \brief This signal is raised when an image's location is added/deleted/changed  */
+  DT_SIGNAL_LOCATION_CHANGED,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;

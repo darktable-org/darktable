@@ -22,6 +22,22 @@
 #include <sqlite3.h>
 #include <stdint.h>
 
+typedef enum dt_rev_geocode_status_t
+{
+  DT_REV_GEOCODE_STATUS_SUCCESS,
+  DT_REV_GEOCODE_STATUS_FAIL,
+  DT_REV_GEOCODE_STATUS_CONNECT_ERROR,
+  DT_REV_GEOCODE_STATUS_REMOVED,
+  DT_REV_GEOCODE_STATUS_NOTHINGTODO
+} dt_rev_geocode_status_t;
+
+/** Perform a reverse geocode (find location name). \param[in] imgid the image id to reverse geocode
+ *  \return if the lookup has been performed. */
+dt_rev_geocode_status_t dt_rev_geocode(gint imgid, gboolean perform_lookup);
+
+/** Perform a reverse geocode (find location name) on geotagged images with no location set or vice versa.
+ *  Usually called during startup. */
+void dt_rev_geocode_startup();
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

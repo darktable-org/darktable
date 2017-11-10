@@ -49,6 +49,7 @@ static GType pointer_arg[] = { G_TYPE_POINTER };
 static GType pointer_2arg[] = { G_TYPE_POINTER, G_TYPE_POINTER };
 static GType image_export_arg[]
     = { G_TYPE_UINT, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER };
+static GType boolean_arg[] = { G_TYPE_BOOLEAN };
 
 
 
@@ -113,6 +114,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   { "dt-camera-detected", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_CAMERA_DETECTED,
 
+  { "dt-location-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1,
+    boolean_arg, NULL, FALSE }, // DT_SIGNAL_LOCATION_CHANGED
 };
 
 static GType _signal_type;
@@ -213,6 +216,9 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
     g_value_init(&instance_and_params[i], type);
     switch(type)
     {
+      case G_TYPE_BOOLEAN:
+        g_value_set_boolean(&instance_and_params[i], va_arg(extra_args, gboolean));
+        break;
       case G_TYPE_UINT:
         g_value_set_uint(&instance_and_params[i], va_arg(extra_args, guint));
         break;

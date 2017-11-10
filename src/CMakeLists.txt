@@ -67,6 +67,7 @@ FILE(GLOB SOURCE_FILES
   "common/resource_limits.c"
   "common/histogram.c"
   "common/undo.c"
+  "common/revgeocode.c"
   "control/control.c"
   "control/crawler.c"
   "control/jobs.c"

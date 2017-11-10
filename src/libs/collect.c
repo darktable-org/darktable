@@ -471,7 +471,8 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   if(g_str_has_prefix(needle, "%")) startwildcard = TRUE;
   if(g_str_has_suffix(needle, "%")) needle[strlen(needle) - 1] = '\0';
   if(g_str_has_suffix(haystack, "%")) haystack[strlen(haystack) - 1] = '\0';
-  if(gtk_combo_box_get_active(dr->combo) == DT_COLLECTION_PROP_TAG)
+  if(gtk_combo_box_get_active(dr->combo) == DT_COLLECTION_PROP_TAG ||
+      gtk_combo_box_get_active(dr->combo) == DT_COLLECTION_PROP_LOCATION)
   {
     if(g_str_has_suffix(needle, "|")) needle[strlen(needle) - 1] = '\0';
     if(g_str_has_suffix(haystack, "|")) haystack[strlen(haystack) - 1] = '\0';
@@ -819,6 +820,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   int property = gtk_combo_box_get_active(dr->combo);
   gboolean folders = (property == DT_COLLECTION_PROP_FOLDERS);
   gboolean tags = (property == DT_COLLECTION_PROP_TAG);
+  gboolean locations = (property == DT_COLLECTION_PROP_LOCATION);
   const char *format_separator = folders ? "%s" G_DIR_SEPARATOR_S : "%s|";
 
   set_properties(dr);
@@ -841,7 +843,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
     /* query construction */
     const char *query = folders ? "SELECT DISTINCT folder, id FROM main.film_rolls" :
-                        tags ? "SELECT DISTINCT name, id FROM data.tags" : NULL;
+                        tags ? "SELECT DISTINCT name, id FROM data.tags" :
+                        locations ? "SELECT DISTINCT name, id FROM data.locations WHERE EXISTS (SELECT DISTINCT location_id FROM main.images WHERE images.location_id=locations.id)" : NULL;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -880,7 +883,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       char *name = tuple->name;
       if(name == NULL) continue; // safeguard against degenerated db entries
 
-      if(tags && strchr(name, '|') == 0)
+      if((tags || locations) && strchr(name, '|') == 0)
       {
         /* add uncategorized root iter if not exists */
         if(!uncategorized.stamp)
@@ -1212,7 +1215,9 @@ static void update_view(dt_lib_collect_rule_t *dr)
 {
   int property = gtk_combo_box_get_active(dr->combo);
 
-  if(property == DT_COLLECTION_PROP_FOLDERS || property == DT_COLLECTION_PROP_TAG)
+  if(property == DT_COLLECTION_PROP_FOLDERS ||
+      property == DT_COLLECTION_PROP_TAG ||
+      property == DT_COLLECTION_PROP_LOCATION)
     tree_view(dr);
   else
     list_view(dr);
@@ -1391,6 +1396,7 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
   if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
      item == DT_COLLECTION_PROP_TAG ||      // or tags
+     item == DT_COLLECTION_PROP_LOCATION || // or locations
      item == DT_COLLECTION_PROP_FOLDERS)    // or folders
     gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
   else
@@ -1636,6 +1642,26 @@ static void tag_changed(gpointer instance, gpointer self)
   }
 }
 
+static void location_changed(gpointer instance, gboolean list_change, gpointer self)
+{
+  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+
+  // update tree
+  if(list_change)
+    if(gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[d->active_rule].combo)) == DT_COLLECTION_PROP_LOCATION)
+    {
+      d->view_rule = -1;
+      d->rule[d->active_rule].typing = FALSE;
+      update_view(d->rule + d->active_rule);
+    }
+  // update view
+  // TODO: if(current == signalled)
+  for(gint i = 0; i < d->nb_rules; i++)
+    if(gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[i].combo)) == DT_COLLECTION_PROP_LOCATION)
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+}
+
 static void menuitem_clear(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 {
   // remove this row, or if 1st, clear text entry box
@@ -1848,6 +1874,9 @@ void gui_init(dt_lib_module_t *self)
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED, G_CALLBACK(tag_changed),
                             self);
+
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_LOCATION_CHANGED, G_CALLBACK(location_changed),
+                            self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -1861,6 +1890,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_imported), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_removed), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(tag_changed), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(location_changed), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
   free(d->params);
 
@@ -2022,6 +2052,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_APERTURE);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FILENAME);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GEOTAGGING);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_LOCATION);
 
 }
 #endif

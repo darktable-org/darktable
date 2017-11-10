@@ -37,8 +37,8 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 15
-#define CURRENT_DATABASE_VERSION_DATA 1
+#define CURRENT_DATABASE_VERSION_LIBRARY 16
+#define CURRENT_DATABASE_VERSION_DATA 2
 
 typedef struct dt_database_t
 {
@@ -967,6 +967,17 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 15;
+  }
+  else if(version == 15)
+  {
+    // 14 -> 15 add geo location names
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN location_id INTEGER",
+             "[init] can't add column `location_id` to the `images` table\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 16;
   } // maybe in the future, see commented out code elsewhere
     //   else if(version == XXX)
     //   {
@@ -986,12 +997,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   return new_version;
 }
 
-#undef FINALIZE
-
-#undef TRY_EXEC
-#undef TRY_STEP
-#undef TRY_PREPARE
-
 /* do the real migration steps, returns the version the db was converted to */
 static int _upgrade_data_schema_step(dt_database_t *db, int version)
 {
@@ -1006,6 +1011,20 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     new_version = 1; // the version we transformed the db to. this way it might be possible to roll back or
     // add fast paths
   }
+  else if(version == 1)
+  {
+    // 1 -> 2 add geo location names
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    TRY_EXEC("CREATE TABLE data.locations (id INTEGER PRIMARY KEY, name VARCHAR NOT NULL)",
+             "[init] can't create `locations` table\n");
+
+    TRY_EXEC("CREATE INDEX data.locations_name_idx ON locations (name)",
+             "[init] can't create index on table `locations' in database\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 2;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1018,6 +1037,12 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
   return new_version;
 }
+
+#undef FINALIZE
+
+#undef TRY_EXEC
+#undef TRY_STEP
+#undef TRY_PREPARE
 
 /* upgrade library db from 'version' to CURRENT_DATABASE_VERSION_LIBRARY. don't touch this function but
  * _upgrade_library_schema_step() instead. */
@@ -1038,7 +1063,7 @@ static gboolean _upgrade_library_schema(dt_database_t *db, int version)
  * _upgrade_data_schema_step() instead. */
 static gboolean _upgrade_data_schema(dt_database_t *db, int version)
 {
-  while(version < CURRENT_DATABASE_VERSION_LIBRARY)
+  while(version < CURRENT_DATABASE_VERSION_DATA)
   {
     int new_version = _upgrade_data_schema_step(db, version);
     if(new_version == version)

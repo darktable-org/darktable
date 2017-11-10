@@ -30,6 +30,7 @@
 #include "common/imageio_dng.h"
 #include "common/imageio_module.h"
 #include "common/mipmap_cache.h"
+#include "common/revgeocode.h"
 #include "common/tags.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
@@ -521,7 +522,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     newimgid = dt_image_duplicate(imgid);
     if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL);
     t = g_list_delete_link(t, t);
-    fraction = 1.0 / total;
+    fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
@@ -546,7 +547,7 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
     imgid = GPOINTER_TO_INT(t->data);
     dt_image_flip(imgid, cw);
     t = g_list_delete_link(t, t);
-    fraction = 1.0 / total;
+    fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
@@ -656,7 +657,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
     int imgid = GPOINTER_TO_INT(t->data);
     dt_image_remove(imgid);
     t = g_list_delete_link(t, t);
-    fraction = 1.0 / total;
+    fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
@@ -670,6 +671,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   }
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_LOCATION_CHANGED, TRUE);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -991,7 +993,7 @@ delete_next_file:
     g_free(dirname);
 #endif
     t = g_list_delete_link(t, t);
-    fraction = 1.0 / total;
+    fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
     if (delete_status == _DT_DELETE_STATUS_STOP_PROCESSING)
       break;
@@ -1011,6 +1013,7 @@ delete_next_file:
   g_list_free(list);
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_LOCATION_CHANGED, TRUE);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -1754,6 +1757,69 @@ void dt_control_write_sidecar_files()
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_write_sidecar_files_job_run,
                                                           N_("write sidecar files"), 0, NULL, PROGRESS_NONE));
+}
+
+static int32_t dt_control_rev_geocode_job_run(dt_job_t *job)
+{
+  int imgid = -1;
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  GList *t = params->index;
+  guint total = g_list_length(t), cntr=0;
+  gboolean perform_lookup=TRUE;
+  char message[512] = { 0 };
+  double fraction = 0;
+  snprintf(message, sizeof(message), ngettext("getting geolocation name for %d image", "getting geolocation name for %d images", total), total);
+  dt_control_job_set_progress_message(job, message);
+  while(t && dt_control_running())
+  {
+    imgid = GPOINTER_TO_INT(t->data);
+    switch(dt_rev_geocode(imgid, perform_lookup))
+    {
+      case DT_REV_GEOCODE_STATUS_SUCCESS:        // wait and proceed
+        t = g_list_delete_link(t, t);
+        cntr++;
+        g_usleep(1000*1000);
+        break;
+      case DT_REV_GEOCODE_STATUS_FAIL:           // wait a little longer and repeat
+        g_usleep(5000*1000);
+        break;
+      case DT_REV_GEOCODE_STATUS_CONNECT_ERROR:  // proceed with no lookups
+        t = g_list_delete_link(t, t);
+        cntr++;
+        perform_lookup=FALSE;
+        break;
+      case DT_REV_GEOCODE_STATUS_REMOVED:        // proceed
+        t = g_list_delete_link(t, t);
+        cntr++;
+        break;
+      case DT_REV_GEOCODE_STATUS_NOTHINGTODO:    // proceed
+        t = g_list_delete_link(t, t);
+        cntr++;
+        break;
+      default:  // this should never happen. do nothing to create an infinite loop
+        break;
+    }
+    fraction = 1.0*cntr / total;
+    dt_control_job_set_progress(job, fraction);
+  }
+  params->index = NULL;
+  return 0;
+}
+
+void dt_control_rev_geocode(GList *imgid_list)
+{
+  dt_job_t *job = dt_control_job_create(&dt_control_rev_geocode_job_run, "reverse geocode locations");
+  if(!job) return;
+  dt_control_image_enumerator_t *params = dt_control_image_enumerator_alloc();
+  if(!params)
+  {
+    dt_control_job_dispose(job);
+    return;
+  }
+  dt_control_job_set_params(job, params, dt_control_image_enumerator_cleanup);
+  params->index = imgid_list;
+  dt_control_job_add_progress(job, _("getting geolocation names"), FALSE);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_EXPORT, job);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

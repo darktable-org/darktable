@@ -1041,6 +1041,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     }
     break;
 
+    case DT_COLLECTION_PROP_LOCATION: // location
+      query = dt_util_dstrcat(query, "(id IN (SELECT a.id FROM main.images AS a JOIN "
+                                     "data.locations AS b ON a.location_id = b.id WHERE name LIKE '%s'))",
+                              escaped_text);
+      break;
+
     default:
       // we shouldn't be here
       break;

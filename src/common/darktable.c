@@ -33,6 +33,7 @@
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/pwstorage/pwstorage.h"
+#include "common/revgeocode.h"
 #include "common/selection.h"
 #include "common/system_signal_handling.h"
 #ifdef HAVE_GPHOTO2
@@ -1005,6 +1006,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     dt_control_crawler_show_image_list(changed_xmp_files);
   }
+
+  dt_rev_geocode_startup();
 
   dt_print(DT_DEBUG_CONTROL, "[init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
 

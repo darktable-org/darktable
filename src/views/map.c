@@ -1217,6 +1217,7 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
     }
   }
   gtk_drag_finish(context, success, FALSE, time);
+  dt_control_rev_geocode(dt_collection_get_selected(darktable.collection, -1));
   if(success) g_signal_emit_by_name(lib->map, "changed");
 }
 
@@ -1272,6 +1273,7 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
     }
   }
   gtk_drag_finish(context, success, FALSE, time);
+  dt_control_rev_geocode(dt_collection_get_selected(darktable.collection, -1));
   if(success) g_signal_emit_by_name(lib->map, "changed");
 }
 

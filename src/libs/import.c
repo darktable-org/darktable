@@ -25,6 +25,7 @@
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
 #include "common/mipmap_cache.h"
+#include "common/revgeocode.h"
 #include "control/conf.h"
 #include "control/control.h"
 #ifdef HAVE_GPHOTO2
@@ -840,6 +841,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
       {
         dt_control_set_mouse_over_id(id);
         dt_ctl_switch_mode_to("darkroom");
+        dt_control_rev_geocode(g_list_append(NULL, GINT_TO_POINTER(id)));
       }
     }
   }

@@ -136,6 +136,8 @@ int _film_filename_cmp(gchar *a, gchar *b)
 static void dt_film_import1(dt_job_t *job, dt_film_t *film)
 {
   gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
+  gint imgid;
+  GList *imgids = NULL;
 
   /* first of all gather all images to import */
   GList *images = NULL;
@@ -253,7 +255,9 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
     g_free(cdn);
 
     /* import image */
-    dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
+    imgid = dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
+    if(imgid)
+      imgids = g_list_append(imgids, GINT_TO_POINTER(imgid));
 
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
@@ -297,6 +301,8 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
     dt_film_cleanup(cfr);
     free(cfr);
   }
+
+  dt_control_rev_geocode(imgids);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

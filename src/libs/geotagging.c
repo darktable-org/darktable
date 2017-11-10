@@ -17,6 +17,7 @@
 */
 // #include "common/darktable.h"
 // #include "control/control.h"
+#include "common/collection.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
 #include "control/conf.h"
@@ -521,6 +522,7 @@ static void _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *sel
     dt_conf_set_string("plugins/lighttable/geotagging/tz", tz);
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     dt_control_gpx_apply(filename, -1, tz);
+    dt_control_rev_geocode(dt_collection_get_selected(darktable.collection, -1));
     g_free(filename);
     g_free(tz);
   }
