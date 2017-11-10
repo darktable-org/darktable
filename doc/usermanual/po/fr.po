@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2017-11-08 10:09+0100\n"
-"PO-Revision-Date: 2017-11-09 22:21+0100\n"
+"PO-Revision-Date: 2017-11-10 10:18+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -2802,7 +2802,6 @@ msgstr ""
 "affichés dans les miniatures."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2055(para)
-#, fuzzy
 msgid ""
 "You can give a rating from zero to five stars to an image. The quality "
 "criteria which lead to a rating are fully up to you. Whenever you import "
@@ -2852,7 +2851,6 @@ msgid "GUI options"
 msgstr "Options d’interface"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2080(entry)
-#, fuzzy
 msgid ""
 "You can also directly click on the stars displayed in the thumbnails; click "
 "the <placeholder-1/> to reject, click the fifth star to get a rating of five "
@@ -2865,7 +2863,9 @@ msgstr ""
 "miniatures ; cliquer <placeholder-1/> pour rejeter, cliquer la cinquième "
 "étoile pour obtenir une évaluation à cinq étoiles, etc. Cliquer soit "
 "<placeholder-2/> ou soit la première étoile une seconde fois réinitialise "
-"l'évaluation de l'image à non classée ou à zéro étoile."
+"l'évaluation de l'image à non classée ou à zéro étoile. Ce dernier "
+"comportement peut être modifié dans la boîte de dialogue <placeholder-3/> "
+"(voyez <xref linkend=\"gui_options\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2107(emphasis)
 msgid "the bottom panel"
@@ -24405,6 +24405,10 @@ msgid ""
 "and thumbnails have a low resolution and can be processed quickly; center "
 "image view is more demanding, let alone the pixelpipe doing a file export."
 msgstr ""
+"La demande en calcul dépend beaucoup du type de pipeline. Image de "
+"prévisualisation et miniature ont une basse résolution et peuvent être "
+"traitées rapidement ; l'image du panneau central est plus gourmande et le "
+"pipeline réalisant l'exportation l'est encore plus."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21895(para)
 msgid ""
@@ -24496,6 +24500,12 @@ msgid ""
 "CPU but rather suspend processing until the next allowed OpenCL device is "
 "available."
 msgstr ""
+"Si un pipeline est sur le point d'être lancé et si tous les GPUs du groupe "
+"correspondant sont occupés, darktable, par défaut, traite l'image sur le "
+"CPU. Vous pouvez forcer le traitement sur GPU en préfixant la liste des GPUs "
+"autorisés par un signe plus <quote>+</quote>. darktable n'utilisera pas le "
+"CPU mais suspendra le traitement jusqu'à ce que le premier périphérique "
+"OpenCL soit disponible."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21946(para)
 msgid ""
