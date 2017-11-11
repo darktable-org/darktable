@@ -63,6 +63,10 @@
 #include <string.h>
 #include <strings.h>
 
+#ifdef USE_LUA
+#include "lua/image.h"
+#endif
+
 // load a full-res thumbnail:
 int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
                                dt_colorspaces_color_profile_type_t *color_space)
@@ -893,6 +897,28 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   if(!thumbnail_export && strcmp(format->mime(format_params), "memory")
     && !(format->flags(format_params) & FORMAT_FLAGS_NO_TMPFILE))
   {
+#ifdef USE_LUA
+    //Synchronous calling of lua intermediate-export-image events
+    dt_lua_lock();
+
+    lua_State *L = darktable.lua_state.state;
+
+    luaA_push(L, dt_lua_image_t, &imgid);
+
+    lua_pushstring(L, filename);
+
+    luaA_push_type(L, format->parameter_lua_type, format_params);
+ 
+    if (storage)
+      luaA_push_type(L, storage->parameter_lua_type, storage_params);
+    else
+      lua_pushnil(L);
+
+    dt_lua_event_trigger(L, "intermediate-export-image", 4);
+  
+    dt_lua_unlock();
+#endif
+
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_TMPFILE, imgid, filename, format,
                             format_params, storage, storage_params);
   }
