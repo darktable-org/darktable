@@ -1018,7 +1018,7 @@ local widget = dt.new_widget("button"){
 	events:set_text([[This section documents events that can be used to trigger Lua callbacks.]])
 
 
-	events["intermediate-export-image"]:set_text([[This event is called each time an image is exported, once for each image after the image has been processed to an image format but before the storage has moved the image to its final destination. The call is blocking.]])
+	events["intermediate-export-image"]:set_text([[This event is called each time an image is exported, once for each image after the image has been processed to an image format but before the storage has moved the image to its final destination.]])
 	events["intermediate-export-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
 	events["intermediate-export-image"].callback:add_parameter("image",types.dt_lua_image_t,[[The image object that has been exported.]])
 	events["intermediate-export-image"].callback:add_parameter("filename","string",[[The name of the file that is the result of the image being processed.]])
