@@ -499,15 +499,16 @@ export_thumbnail() {
 }
 
 check_exposure() {
-	local orig input over under ret convert_flags
+	local orig input inputdir over under ret convert_flags
 	orig=$1
 	input=$2
+	inputdir=$(dirname $input)
 
 	ret=0
 
 	# See: http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=19805
-
-	convert_flags="-channel RGB -threshold 99% -separate -append"
+	# and https://www.imagemagick.org/script/architecture.php#tera-pixel for the temporary-path thing
+	convert_flags="-define registry:temporary-path=${inputdir}/tmp -channel RGB -threshold 99% -separate -append"
 
 	over=$(convert "$input" $convert_flags -format "%[mean]" info: | cut -f1 -d.)
 	if [ "$over" -a "$over" -lt 80 ]; then
