@@ -175,15 +175,17 @@ pdf_tools_installed() {
 
 	if tool_installed pdftk; then
 		pdfcat() {
-			local output=$1; shift
-			local inputs=$@
+			local output inputs
+			output=$1; shift
+			inputs=$@
 			pdftk $inputs cat output $output
 		}
 		missing_tool=0
 	elif tool_installed gs; then
 		pdfcat() {
-			local output=$1; shift
-			local inputs=$@
+			local output inputs
+			output=$1; shift
+			inputs=$@
 			gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=$output $inputs
 		}
 		missing_tool=0
