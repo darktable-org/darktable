@@ -656,7 +656,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
           dt_database_get(darktable.db),
           "SELECT num, multi_priority, module, operation, enabled, (SELECT MAX(num) FROM main.history WHERE imgid=?2 "
           "AND operation=data.style_items.operation GROUP BY multi_priority),multi_name FROM data.style_items WHERE "
-          "styleid=?1 UNION SELECT -1,main.history.module,main.history.operation,main.history.enabled, "
+          "styleid=?1 UNION SELECT -1,main.history.multi_priority,main.history.module,main.history.operation,main.history.enabled, "
           "main.history.num,multi_name FROM main.history WHERE imgid=?2 AND main.history.enabled=1 AND "
           "(main.history.operation NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1) OR "
           "(main.history.op_params NOT IN (SELECT op_params FROM data.style_items WHERE styleid=?1 AND "
