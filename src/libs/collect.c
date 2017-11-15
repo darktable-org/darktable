@@ -811,6 +811,22 @@ static gint sort_folder_tag(gconstpointer a, gconstpointer b)
   return g_strcmp0(tuple_a->collate_key, tuple_b->collate_key);
 }
 
+// create a key such that "darktable|" is coming first, and the rest is ordered such that sub tags are coming directly
+// behind their parent
+static char *tag_collate_key(char *tag)
+{
+  size_t len = strlen(tag);
+  char *result = g_malloc(len + 2);
+  if(g_str_has_prefix(tag, "darktable|"))
+    *result = '\1';
+  else
+    *result = '\2';
+  memcpy(result + 1, tag, len + 1);
+  for(char *iter = result + 1; *iter; iter++)
+    if(*iter == '|') *iter = '\1';
+  return result;
+}
+
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
 static void tree_view(dt_lib_collect_rule_t *dr)
 {
@@ -820,6 +836,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   gboolean folders = (property == DT_COLLECTION_PROP_FOLDERS);
   gboolean tags = (property == DT_COLLECTION_PROP_TAG);
   const char *format_separator = folders ? "%s" G_DIR_SEPARATOR_S : "%s|";
+  int insert_position = tags ? 0 : -1;
 
   set_properties(dr);
 
@@ -859,9 +876,13 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       gchar *collate_key = NULL;
 
       if(folders)
-        collate_key = g_utf8_collate_key_for_filename(name_folded, -1);
+      {
+        char *name_folded_slash = g_strconcat(name_folded, G_DIR_SEPARATOR_S, NULL);
+        collate_key = g_utf8_collate_key_for_filename(name_folded_slash, -1);
+        g_free(name_folded_slash);
+      }
       else if(tags)
-        collate_key = g_utf8_collate_key(name_folded, -1);
+        collate_key = tag_collate_key(name_folded);
 
       name_key_tuple_t *tuple = (name_key_tuple_t *)malloc(sizeof(name_key_tuple_t));
       tuple->name = name;
@@ -871,8 +892,11 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     }
     sqlite3_finalize(stmt);
 
-    if(folders || tags)
-      sorted_names = g_list_sort(sorted_names, sort_folder_tag);
+    sorted_names = g_list_sort(sorted_names, sort_folder_tag);
+    // we have to know about children in the hierarchy to not add single tags twice when they are
+    // also a top level hierarchy
+    if(tags)
+      sorted_names = g_list_reverse(sorted_names);
 
     for(GList *names = sorted_names; names; names = g_list_next(names))
     {
@@ -880,7 +904,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       char *name = tuple->name;
       if(name == NULL) continue; // safeguard against degenerated db entries
 
-      if(tags && strchr(name, '|') == 0)
+      if(tags && strchr(name, '|') == 0 && (last_tokens_length == 0 || strcmp(name, *last_tokens)))
       {
         /* add uncategorized root iter if not exists */
         if(!uncategorized.stamp)
@@ -889,10 +913,11 @@ static void tree_view(dt_lib_collect_rule_t *dr)
           gtk_tree_store_set(GTK_TREE_STORE(model), &uncategorized, DT_LIB_COLLECT_COL_TEXT,
                              _(UNCATEGORIZED_TAG), DT_LIB_COLLECT_COL_PATH, "", DT_LIB_COLLECT_COL_VISIBLE,
                              TRUE, -1);
+          insert_position++; // we want to have this at the very top!
         }
 
         /* adding an uncategorized tag */
-        gtk_tree_store_insert(GTK_TREE_STORE(model), &temp, &uncategorized, -1);
+        gtk_tree_store_insert(GTK_TREE_STORE(model), &temp, &uncategorized, 0);
         gtk_tree_store_set(GTK_TREE_STORE(model), &temp, DT_LIB_COLLECT_COL_TEXT, name,
                            DT_LIB_COLLECT_COL_PATH, name, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
       }
@@ -942,13 +967,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
             pth = dt_util_dstrcat(pth, format_separator, *token);
 
             gchar *pth2 = g_strdup(pth);
+            pth2[strlen(pth2) - 1] = '\0';
 
-            if(folders || *(token + 1) == NULL)
-              pth2[strlen(pth2) - 1] = '\0';
-            else
-              pth2 = dt_util_dstrcat(pth2, "%%");
-
-            gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, common_length > 0 ? &parent : NULL, -1);
+            gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, common_length > 0 ? &parent : NULL, insert_position);
             gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, *token,
                                DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
             if(folders)
