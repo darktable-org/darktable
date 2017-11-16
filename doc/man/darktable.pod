@@ -170,7 +170,7 @@ If this option is not supplied darktable uses the system default.
 
 =item B<--version>
 
-Show the darktable version along with some important compile options and exit.
+Show the darktable version along with some important build options and exit.
 
 =back
 
