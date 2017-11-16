@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-11-04 16:35+0100\n"
-"PO-Revision-Date: 2017-11-04 16:36+0100\n"
+"PO-Revision-Date: 2017-11-13 10:42+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2014,31 +2014,31 @@ msgstr "conditions de fusion sur le canal de teinte h (de LCh)"
 
 #: ../src/develop/blend_gui.c:1082
 msgid " g "
-msgstr " g"
+msgstr " g "
 
 #: ../src/develop/blend_gui.c:1082
 msgid " R "
-msgstr " R"
+msgstr " R "
 
 #: ../src/develop/blend_gui.c:1082
 msgid " G "
-msgstr " V"
+msgstr " V "
 
 #: ../src/develop/blend_gui.c:1082
 msgid " B "
-msgstr " B"
+msgstr " B "
 
 #: ../src/develop/blend_gui.c:1082
 msgid " H "
-msgstr " H"
+msgstr " H "
 
 #: ../src/develop/blend_gui.c:1082
 msgid " S "
-msgstr " S"
+msgstr " S "
 
 #: ../src/develop/blend_gui.c:1082
 msgid " L "
-msgstr " L"
+msgstr " L "
 
 #: ../src/develop/blend_gui.c:1084
 msgid "sliders for gray value"
@@ -3155,7 +3155,7 @@ msgstr "$(EXIF_MINUTE) - minutes EXIF"
 
 #: ../src/gui/gtkentry.c:203
 msgid "$(EXIF_SECOND) - EXIF second"
-msgstr "$(EXIF_SECOND) - secondes EXIF "
+msgstr "$(EXIF_SECOND) - secondes EXIF"
 
 #: ../src/gui/gtkentry.c:204
 msgid "$(EXIF_ISO) - ISO value"
@@ -3179,7 +3179,7 @@ msgstr "$(LABELS) - labels de couleur"
 
 #: ../src/gui/gtkentry.c:209
 msgid "$(PICTURES_FOLDER) - pictures folder"
-msgstr "$(PICTURES_FOLDER) - fichier 'images'"
+msgstr "$(PICTURES_FOLDER) - fichier images"
 
 #: ../src/gui/gtkentry.c:210
 msgid "$(HOME) - home folder"
@@ -3187,7 +3187,7 @@ msgstr "$(HOME) - dossier personnel"
 
 #: ../src/gui/gtkentry.c:211
 msgid "$(DESKTOP) - desktop folder"
-msgstr "$(DESKTOP) - dossier 'bureau'"
+msgstr "$(DESKTOP) - dossier bureau"
 
 #: ../src/gui/gtkentry.c:212
 msgid "$(TITLE) - title from metadata"
@@ -6208,7 +6208,7 @@ msgstr "seuil "
 #: ../src/iop/demosaic.c:3735
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
-msgstr " matrice couleur « %s » non trouvée pour une image de bayer!"
+msgstr "matrice couleur « %s » non trouvée pour une image de bayer!"
 
 #: ../src/iop/demosaic.c:3935 ../src/iop/demosaic.c:3944
 #: ../src/iop/dither.c:792 ../src/iop/highlights.c:1048
@@ -7993,11 +7993,11 @@ msgstr "contraste moyen"
 
 #: ../src/iop/tonecurve.c:466
 msgid "high contrast"
-msgstr "contraste fort "
+msgstr "contraste fort"
 
 #: ../src/iop/tonecurve.c:915
 msgid "  L  "
-msgstr "  L"
+msgstr "  L "
 
 #: ../src/iop/tonecurve.c:917
 msgid "tonecurve for L channel"
@@ -10043,7 +10043,7 @@ msgstr "largeur/hauteur image"
 
 #: ../src/libs/print_settings.c:1127
 msgid " x "
-msgstr " x"
+msgstr " x "
 
 #: ../src/libs/print_settings.c:1135
 msgid "scale factor"
@@ -10119,16 +10119,16 @@ msgstr "aller à la collection précédente"
 
 #: ../src/libs/recentcollect.c:117
 msgid " and "
-msgstr "et"
+msgstr " et "
 
 #: ../src/libs/recentcollect.c:122
 msgid " or "
-msgstr "ou"
+msgstr " ou "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/recentcollect.c:127
 msgid " but not "
-msgstr "mais sans"
+msgstr " mais sans "
 
 #: ../src/libs/select.c:104
 msgid "select all images in current collection"

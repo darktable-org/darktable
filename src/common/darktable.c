@@ -107,26 +107,31 @@ darktable_t darktable;
 
 static int usage(const char *argv0)
 {
-  printf("usage: %s [-d "
-         "{all,cache,camctl,camsupport,control,dev,input,lighttable,lua,masks,memory,nan,opencl,perf,pwstorage,print,sql}]"
-         " [IMG_1234.{RAW,..}|image_folder/]",
-         argv0);
-#ifdef HAVE_OPENCL
-  printf(" [--disable-opencl]");
-#endif
-  printf(" [--library <library file>]");
-  printf(" [--datadir <data directory>]");
-  printf(" [--moduledir <module directory>]");
-  printf(" [--tmpdir <tmp directory>]");
-  printf(" [--configdir <user config directory>]");
-  printf(" [--cachedir <user cache directory>]");
-  printf(" [--localedir <locale directory>]");
-#ifdef USE_LUA
-  printf(" [--luacmd <lua command>]");
-#endif
-  printf(" [--conf <key>=<value>]");
-  printf(" [--noiseprofiles <noiseprofiles json file>]");
+  printf("usage: %s [options] [IMG_1234.{RAW,..}|image_folder/]\n", argv0);
   printf("\n");
+  printf("options:\n");
+  printf("\n");
+  printf("  --cachedir <user cache directory>\n");
+  printf("  --conf <key>=<value>\n");
+  printf("  --configdir <user config directory>\n");
+  printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch, input,lighttable,\n");
+  printf("      lua, masks,memory,nan,opencl, perf,pwstorage,print,sql}\n");
+  printf("  --datadir <data directory>\n");
+#ifdef HAVE_OPENCL
+  printf("  --disable-opencl\n");
+#endif
+  printf("  -h, --help\n");
+  printf("  --library <library file>\n");
+  printf("  --localedir <locale directory>\n");
+#ifdef USE_LUA
+  printf("  --luacmd <lua command>\n");
+#endif
+  printf("  --moduledir <module directory>\n");
+  printf("  --noiseprofiles <noiseprofiles json file>\n");
+  printf("  -t <num openmp threads>\n");
+  printf("  --tmpdir <tmp directory>\n");
+  printf("  --version\n");
+
   return 1;
 }
 
