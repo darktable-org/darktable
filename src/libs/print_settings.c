@@ -975,9 +975,10 @@ gui_init (dt_lib_module_t *self)
   char confdir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
   dt_loc_get_datadir(datadir, sizeof(datadir));
+  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
+  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
 
   GtkWidget *label;
-  char tooltip[1024];
 
   d->paper_list = NULL;
   d->iwidth = d->iheight = 0;
@@ -1073,8 +1074,10 @@ gui_init (dt_lib_module_t *self)
   }
   dt_bauhaus_combobox_set(d->pprofile, combo_idx);
 
-  snprintf(tooltip, sizeof(tooltip), _("printer ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
+  char *tooltip = g_strdup_printf(_("printer ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(d->pprofile, tooltip);
+  g_free(tooltip);
+
   g_signal_connect(G_OBJECT(d->pprofile), "value-changed", G_CALLBACK(_printer_profile_changed), (gpointer)self);
 
   //  Add printer intent combo
@@ -1282,8 +1285,10 @@ gui_init (dt_lib_module_t *self)
 
   dt_bauhaus_combobox_set(d->profile, combo_idx);
 
-  snprintf(tooltip, sizeof(tooltip), _("output ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
+  tooltip = g_strdup_printf(_("output ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(d->profile, tooltip);
+  g_free(tooltip);
+
   g_signal_connect(G_OBJECT(d->profile), "value-changed", G_CALLBACK(_profile_changed), (gpointer)self);
 
   //  Add export intent combo
@@ -1374,6 +1379,9 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (_print_button_clicked),
                     (gpointer)self);
+
+  g_free(system_profile_dir);
+  g_free(user_profile_dir);
 
   // Let's start the printer discovery now
 
