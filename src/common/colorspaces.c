@@ -637,20 +637,6 @@ static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
   return profile;
 }
 
-int dt_colorspaces_find_profile(char *filename, size_t filename_len, const char *profile, const char *inout)
-{
-  char datadir[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(datadir, sizeof(datadir));
-  snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-  {
-    dt_loc_get_datadir(datadir, sizeof(datadir));
-    snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
-    if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 1;
-  }
-  return 0;
-}
-
 const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid,
                                                                         dt_colorspaces_color_profile_type_t over_type,
                                                                         const char *over_filename)
