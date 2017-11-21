@@ -29,8 +29,8 @@
             <entry>
               This module is able to correct certain lens flaws, namely distortions, transversal
               chromatic aberrations (TCA) and vignetting. It relies on the external library
-              lensfun, which comes with correction profiles for many (but not all) common
-              cameras and lenses.
+              <ulink url="http://lensfun.sourceforge.net/">lensfun</ulink>, which comes with
+              correction profiles for many (but not all) common cameras and lenses.
             </entry>
             <entry>
               <graphic fileref="darkroom/modules/images/lenscorrection.png" scalefit="1" width="80%" align="center" />
@@ -57,6 +57,9 @@
       <para>
         The camera make and model as determined by Exif data. You can override this manually and
         select your camera from a hierarchical menu.
+      </para>
+      <para>
+        Only lenses with correction profiles matching the selected camera will be shown.
       </para>
     </sect5>
 
@@ -85,9 +88,11 @@
       <para>
         If your system's lensfun library has no correction profile for the automatically
         identified camera/lens combination the controls for the three photometric parameters are
-        not displayed, and you get a warning message instead. You may try to find the right
-        profile yourself by searching for it in the menu. If there is no matching profile for
-        your lens, please visit
+        not displayed, and you get a warning message instead. You may try to find the right profile
+        yourself by searching for it in the menu. If you can't find your lens, check if it is in the
+        <ulink url="http://lensfun.sourceforge.net/lenslist/">list of currently supported lenses</ulink>,
+        and refer to the <ulink url="http://lensfun.sourceforge.net/manual/lensfun-update-data.html">
+        lensfun-update-data tool</ulink>. If there is no matching profile for your lens, please visit
         <ulink url="http://www.darktable.org/2013/07/have-your-lens-calibrated/">this lens
         calibration service</ulink> offered by Torsten Bronger, one of darktable's users.
         Alternatively you may go to <ulink url="http://lensfun.sourceforge.net/">lensfun's home
