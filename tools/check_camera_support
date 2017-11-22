@@ -15,16 +15,47 @@ class CameraSupportState
 
   def initialize(opts={})
     @samplesdir = opts[:samplesdir]
+    @basedir=Dir.pwd
+    opts[:ref] ||= 'HEAD'
+    @submodules=get_submodules(opts[:ref])
     @sources = Hash[
       SOURCE_FILES.map do |name, file|
-        if opts[:ref]
-          [name, IO.popen("git show #{opts[:ref]}:#{file}")]
-        else
-          [name, File.open(File.expand_path("../"+file, File.dirname(__FILE__)))]
-        end
+        [name, file_content(file, opts[:ref])]
       end
     ]
     process_files
+  end
+
+  def file_content(filename, rev)
+    submodule,submodulerev=get_submodule(filename)
+    if submodule
+      Dir.chdir(submodule)
+      filename.gsub!("#{submodule}/",'')
+      rev=submodulerev
+    end
+    ret=IO.popen("git show #{rev}:#{filename}")
+    if submodule
+      Dir.chdir(@basedir)
+    end
+    ret
+  end
+
+  def get_submodules(rev)
+    ret={}
+    IO.popen("git ls-tree --full-tree -z -r #{rev}") do |fh|
+      fh.each_line("\0") do |line|
+        # 100644 blob bc16048078e48ccfa6a1aaa539fa295e7d9f2601    tools/wb_presets_common.rb
+        mo=/\A(?<mode>\d+) (?<type>\S+) (?<hash>\S+)\t(?<path>\S+)\0\z/.match(line)
+        if mo and (mo[:type] == 'commit')
+          ret[mo[:path]]=mo[:hash]
+        end
+      end
+    end
+    ret
+  end
+
+  def get_submodule(filename)
+    submodule=@submodules.select {|dir,hash| filename.start_with?(dir) }.first
   end
 
   def get_maker_model(file)
@@ -286,10 +317,10 @@ class CameraSupportState
       puts
     end
 
-    print_list "Base Support:", new_basics
-    print_list "White Balance Presets:", new_presets
-    print_list "Noise Profiles:", new_profiles
-    print_list "Custom Color matrices:", new_matrices
+    print_list "## Base Support:", new_basics
+    print_list "## White Balance Presets:", new_presets
+    print_list "## Noise Profiles:", new_profiles
+    print_list "## Custom Color matrices:", new_matrices
   end
 end #class CameraSupportState
 
