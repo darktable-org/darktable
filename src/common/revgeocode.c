@@ -135,7 +135,7 @@ static gint _rev_geocode_update_location(gchar *location_name)
   return rc;
 }
 
-static dt_rev_geocode_status_t _rev_geocode_set_location_id(gint imgid, gint location_id, _rev_geocode_data_t *data)
+static dt_rev_geocode_status_t _rev_geocode_set_location_id_cached(gint imgid, gint location_id, _rev_geocode_data_t *data)
 {
   sqlite3_stmt *stmt;
 
@@ -149,7 +149,44 @@ static dt_rev_geocode_status_t _rev_geocode_set_location_id(gint imgid, gint loc
     sqlite3_finalize(stmt);
     data->list_changed = TRUE;
   }
+  return DT_REV_GEOCODE_STATUS_CACHEHIT;
+}
+
+static dt_rev_geocode_status_t _rev_geocode_set_location_id(gint imgid, gint location_id, _rev_geocode_data_t *data)
+{
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+      "INSERT INTO data.locations_cache (latitude, longitude, id) VALUES(?1, ?2, ?3)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, data->lat);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 2, data->lon);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, location_id);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  _rev_geocode_set_location_id_cached(imgid, location_id, data);
+
   return DT_REV_GEOCODE_STATUS_SUCCESS;
+}
+
+static gint _rev_geocode_lookup_cached(_rev_geocode_data_t *data)
+{
+  gint location_id = 0;
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+      "SELECT DISTINCT locations_cache.id FROM data.locations_cache "
+      "WHERE latitude = ?1 AND longitude = ?2",
+      -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, data->lat);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 2, data->lon);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    location_id = sqlite3_column_int64(stmt, 0);
+
+  if(location_id > 0)
+    printf("revgeocode cache hit %d\n", location_id);
+
+  return location_id;
 }
 
 static char *_rev_geocode_get_lang()
@@ -341,23 +378,30 @@ dt_rev_geocode_status_t dt_rev_geocode(gint imgid, gboolean perform_lookup)
 {
   dt_rev_geocode_status_t rc;
   _rev_geocode_data_t data;
+  gint location_id;
 
   data.has_lat_lon = data.has_location_id = FALSE;
   data.lat = data.lon = 0.0;
   data.list_changed = FALSE;
   _rev_geocode_get_data(imgid, &data);
   if(data.has_lat_lon)
-    if(perform_lookup)
-      rc = _rev_geocode_lookup_location(imgid, &data);
+    if((location_id = _rev_geocode_lookup_cached(&data)) > 0)
+      rc = _rev_geocode_set_location_id_cached(imgid, location_id, &data);
     else
-      rc = DT_REV_GEOCODE_STATUS_NOTHINGTODO;
+      if(perform_lookup)
+        rc = _rev_geocode_lookup_location(imgid, &data);
+      else
+        rc = DT_REV_GEOCODE_STATUS_NOTHINGTODO;
   else
     if(data.has_location_id)
       rc = _rev_geocode_remove_location(imgid, &data);
     else
       rc = DT_REV_GEOCODE_STATUS_NOTHINGTODO;
 
-  if(rc == DT_REV_GEOCODE_STATUS_SUCCESS || rc == DT_REV_GEOCODE_STATUS_REMOVED)
+  // raise signal if something was changed
+  if(rc == DT_REV_GEOCODE_STATUS_SUCCESS ||
+      rc == DT_REV_GEOCODE_STATUS_REMOVED ||
+      rc == DT_REV_GEOCODE_STATUS_CACHEHIT)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_LOCATION_CHANGED, data.list_changed);
   return rc;
 }

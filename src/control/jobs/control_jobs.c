@@ -1792,6 +1792,10 @@ static int32_t dt_control_rev_geocode_job_run(dt_job_t *job)
         t = g_list_delete_link(t, t);
         cntr++;
         break;
+      case DT_REV_GEOCODE_STATUS_CACHEHIT:       // proceed
+        t = g_list_delete_link(t, t);
+        cntr++;
+        break;
       case DT_REV_GEOCODE_STATUS_NOTHINGTODO:    // proceed
         t = g_list_delete_link(t, t);
         cntr++;

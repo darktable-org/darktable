@@ -1022,6 +1022,13 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE INDEX data.locations_name_idx ON locations (name)",
              "[init] can't create index on table `locations' in database\n");
 
+    TRY_EXEC("CREATE TABLE data.locations_cache (latitude REAL NOT NULL, longitude REAL NOT NULL, "
+              "id INTEGER NOT NULL, PRIMARY KEY(latitude, longitude))",
+             "[init] can't create `locations_cache` table\n");
+
+    TRY_EXEC("CREATE INDEX data.locations_cache_id_idx ON locations_cache (id)",
+             "[init] can't create index on table `locations_cache' in database\n");
+
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 2;
   }

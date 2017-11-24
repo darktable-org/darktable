@@ -24,11 +24,12 @@
 
 typedef enum dt_rev_geocode_status_t
 {
-  DT_REV_GEOCODE_STATUS_SUCCESS,
-  DT_REV_GEOCODE_STATUS_FAIL,
-  DT_REV_GEOCODE_STATUS_CONNECT_ERROR,
-  DT_REV_GEOCODE_STATUS_REMOVED,
-  DT_REV_GEOCODE_STATUS_NOTHINGTODO
+  DT_REV_GEOCODE_STATUS_SUCCESS,         /* lookup successful */
+  DT_REV_GEOCODE_STATUS_FAIL,            /* lookup failure */
+  DT_REV_GEOCODE_STATUS_CONNECT_ERROR,   /* connection failure */
+  DT_REV_GEOCODE_STATUS_REMOVED,         /* location removed */
+  DT_REV_GEOCODE_STATUS_CACHEHIT,        /* location set from cache */
+  DT_REV_GEOCODE_STATUS_NOTHINGTODO      /* nothing to lookup or lookup disabled */
 } dt_rev_geocode_status_t;
 
 /** Perform a reverse geocode (find location name). \param[in] imgid the image id to reverse geocode
