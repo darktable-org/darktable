@@ -610,10 +610,14 @@ void gui_init(dt_lib_module_t *self)
   }
 
   dt_bauhaus_combobox_set(d->profile, 0);
-  char tooltip[1024];
-  snprintf(tooltip, sizeof(tooltip), _("output ICC profiles in %s/color/out or %s/color/out"), confdir,
-           datadir);
+
+  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
+  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
+  char *tooltip = g_strdup_printf(_("output ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(d->profile, tooltip);
+  g_free(system_profile_dir);
+  g_free(user_profile_dir);
+  g_free(tooltip);
 
   //  Add intent combo
 

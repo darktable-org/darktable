@@ -977,6 +977,7 @@ static OsmGpsMapPolygon *_view_map_add_polygon(const dt_view_t *view, GList *poi
 
   g_object_set(poly, "track", track, (gchar *)0);
   g_object_set(poly, "editable", FALSE, (gchar *)0);
+  g_object_set(poly, "shaded", FALSE, (gchar *)0);
 
   osm_gps_map_polygon_add(lib->map, poly);
 
