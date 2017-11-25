@@ -541,8 +541,7 @@ void local_laplacian_internal(
   // don't divide by 2 more often than we can:
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(wd,ht)));
   int last_level = num_levels-1;
-  if(b && b->mode == 2)
-    // last_level = num_levels-3 >= 2 ? num_levels-3 : 2;
+  if(b && b->mode == 2) // higher number here makes it less prone to aliasing and slower.
     last_level = num_levels > 4 ? 4 : num_levels-1;
   const int max_supp = 1<<last_level;
   int w, h;
@@ -652,20 +651,22 @@ void local_laplacian_internal(
 #endif
     for(int j=0;j<ph;j++) for(int i=0;i<pw;i++)
     {
+      // image coordinates in full buffer
       float ix = ((i*mul - max_supp) + b->roi->x)/b->roi->scale;
       float iy = ((j*mul - max_supp) + b->roi->y)/b->roi->scale;
-      float px = CLAMP(ix / (float)b->buf->width  * b->wd + (b->pwd-b->wd)/2, 0, b->pwd-1);
-      float py = CLAMP(iy / (float)b->buf->height * b->ht + (b->pht-b->ht)/2, 0, b->pht-1);
+      // coordinates in padded preview buffer (
+      float px = CLAMP(ix / (float)b->buf->width  * b->wd + (b->pwd-b->wd)/2.0f, 0, b->pwd);
+      float py = CLAMP(iy / (float)b->buf->height * b->ht + (b->pht-b->ht)/2.0f, 0, b->pht);
       // trilinear lookup:
-      int px0 = CLAMP(px*mul0-.5f, 0, pw0-1);
-      int py0 = CLAMP(py*mul0-.5f, 0, ph0-1);
-      int px1 = CLAMP(px*mul1-.5f, 0, pw1-1);
-      int py1 = CLAMP(py*mul1-.5f, 0, ph1-1);
+      int px0 = CLAMP(px*mul0, 0, pw0-1);
+      int py0 = CLAMP(py*mul0, 0, ph0-1);
+      int px1 = CLAMP(px*mul1, 0, pw1-1);
+      int py1 = CLAMP(py*mul1, 0, ph1-1);
 #if 1
-      float f0x = CLAMP(px*mul0 - px0, 0.0, 1.0);
-      float f0y = CLAMP(py*mul0 - py0, 0.0, 1.0);
-      float f1x = CLAMP(px*mul1 - px1, 0.0, 1.0);
-      float f1y = CLAMP(py*mul1 - py1, 0.0, 1.0);
+      float f0x = CLAMP(px*mul0 - px0, 0.0f, 1.0f);
+      float f0y = CLAMP(py*mul0 - py0, 0.0f, 1.0f);
+      float f1x = CLAMP(px*mul1 - px1, 0.0f, 1.0f);
+      float f1y = CLAMP(py*mul1 - py1, 0.0f, 1.0f);
       float c0 =
         (1.0f-f0x)*(1.0f-f0y)*b->output[pl0][CLAMP(py0  , 0, ph0-1)*pw0 + CLAMP(px0  , 0, pw0-1)]+
         (     f0x)*(1.0f-f0y)*b->output[pl0][CLAMP(py0  , 0, ph0-1)*pw0 + CLAMP(px0+1, 0, pw0-1)]+
