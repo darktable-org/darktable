@@ -339,10 +339,9 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
 
   cupsFreeDests(num_dests, dests);
 
-  // disable cm on CUPS, this is important as dt does the cm
+  // if we have a profile, disable cm on CUPS, this is important as dt does the cm
 
-  if (*pinfo->printer.profile)
-    num_options = cupsAddOption("cm-calibration", "true", num_options, &options);
+  num_options = cupsAddOption("cm-calibration", *pinfo->printer.profile ? "true" : "false", num_options, &options);
 
   // media to print on
 
