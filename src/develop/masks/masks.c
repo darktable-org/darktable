@@ -186,7 +186,7 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formty
   else if(formtype & DT_MASKS_BRUSH)
   {
     if(gui->creation)
-      g_strlcat(msg, _("scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set opacity"),
+      g_strlcat(msg, _("scroll to set brush size, shift+scroll to set hardness,\nctrl+scroll to set opacity"),
                 sizeof(msg));
     else if(gui->border_selected)
       g_strlcat(msg, _("scroll to set brush size"), sizeof(msg));
