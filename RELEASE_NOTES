@@ -95,6 +95,7 @@ and the changelog as compared to 2.2.0 can be found below. Some of the fixes mig
 - Reorder callback parameters for intermediate export image: add the actual image to the parameters of the event
 - Call lua post-import-image event synchronously
 - Add darktable.configuration.running_os to detect the OS darktable is running on
+- New widget type: section_label, adds a label which looks like a section change
 
 ## Updated Translations
 - Dutch
