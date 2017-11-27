@@ -56,7 +56,7 @@ rm -rf darktable-"$dt_decoration"/tools/regression_tests
 
 # wrap it up again
 echo "* creating final tarball"
-tar cf "darktable-$dt_decoration.tar$ darktable-$dt_decoration/"
+tar cf darktable-$dt_decoration.tar darktable-$dt_decoration/ || exit
 rm "$DT_SRC_DIR/darktable-$dt_decoration.tar"
 xz -z -v -9 -e "darktable-$dt_decoration.tar"
 cp "darktable-$dt_decoration.tar.xz" "$DT_SRC_DIR"
