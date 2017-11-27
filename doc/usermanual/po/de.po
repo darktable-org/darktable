@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
 "POT-Creation-Date: 2017-11-23 13:06+0100\n"
-"PO-Revision-Date: 2017-11-26 08:07+0100\n"
+"PO-Revision-Date: 2017-11-27 20:49+0100\n"
 "Last-Translator: Pierre Metzner <pierre_metzner@web.de>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -709,9 +709,8 @@ msgid "<filename moreinfo=\"none\">darktable-cli</filename> binary"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:553(primary)
-#, fuzzy
 msgid "darktable-cli"
-msgstr "Darktable"
+msgstr "darktable-cli"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:556(para)
 msgid ""
@@ -910,6 +909,14 @@ msgid ""
 "When asked to generate multiple resolutions at once, the lower-resolution "
 "images are quickly downsampled from the highest-resolution image."
 msgstr ""
+"Darktable kann Vorschaubilder mit bis zu acht verschiedenen Auflösungsstufen"
+" für jedes Bild verwalten und speichern. Diese Parameter legen fest, welche"
+" maximale Auflösung erzeugt werden soll und sind auf einen Bereich von 0-2"
+" voreingestellt. Normalerweise müssen hier nicht alle möglichen Auflösungen"
+" generiert werden; fehlende Auflösungen werden von Darktable automatisch"
+" generiert, sobald sie benötigt werden. Wenn Sie aufgefordert werden, mehrere"
+" Auflösungen gleichzeitig zu erzeugen, werden die Bilder mit niedrigerer"
+" Auflösung schnell vom Bild mit der höchsten Auflösung heruntergerechnet."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:772(term)
 msgid "--min-imgid &lt;N&gt;"
@@ -940,9 +947,8 @@ msgstr ""
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:806(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11532(filename)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22068(primary)
-#, fuzzy
 msgid "darktable-chart"
-msgstr "Darktable"
+msgstr "darktable-chart"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:809(para)
 msgid ""
@@ -982,11 +988,12 @@ msgid "&lt;cht file&gt;"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:858(para)
-#, fuzzy
 msgid ""
 "Specifies a chart file describing the layout of the used color reference "
 "chart."
-msgstr "Dieser Abschnitt beschreibt die Programmoberfläche."
+msgstr ""
+"Gibt eine Diagrammdatei an, die das Layout der verwendeten Farbreferenzkarte"
+" beschreibt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:866(term)
 msgid "&lt;reference cgats/it8 or Lab pfm file&gt;"
@@ -1057,9 +1064,8 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:934(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:947(synopsis)
-#, fuzzy
 msgid "darktable-cltest"
-msgstr "Darktable"
+msgstr "darktable-cltest"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:937(para)
 msgid ""
@@ -1080,9 +1086,8 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:956(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:969(synopsis)
-#, fuzzy
 msgid "darktable-cmstest"
-msgstr "Darktable"
+msgstr "darktable-cmstest"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:959(para)
 msgid ""
@@ -1090,12 +1095,17 @@ msgid ""
 "is correctly configured and it displays some useful information about the "
 "installed monitor profile(s)."
 msgstr ""
+"Diese Binärdatei untersucht, ob das Farbmanagement-Subsystem Ihres Computers"
+" korrekt konfiguriert ist und zeigt einige nützliche Informationen über die"
+" installierten Monitorprofile an."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:965(para)
 msgid ""
 "<filename moreinfo=\"none\">darktable-cmstest</filename> is called without "
 "command line parameters:"
 msgstr ""
+"<filename moreinfo=\"none\">darktable-cmstest</filename>  wird ohne"
+" Kommandozeilenparameter aufgerufen:"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:977(title)
 msgid "User interface"
@@ -1150,14 +1160,13 @@ msgid "Lighttable"
 msgstr "Leuchttisch"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1069(para)
-#, fuzzy
 msgid ""
 "The lighttable view is where images and film rolls are managed. It's also "
 "where you rate images, add tags and colorlabels, and export images among "
 "other actions (see <xref linkend=\"lighttable_chapter\"/>)."
 msgstr ""
-"In der Leuchttisch-Ansicht verwalten Sie ihre Bilder und Filmrollen. Unter "
-"anderem können Sie hier bewerten, Tags und Farbmarkierungen hinzufügen und "
+"In der Leuchttisch-Ansicht verwalten Sie ihre Bilder und Filmrollen. Unter"
+" anderem können Sie hier bewerten, Tags und Farbmarkierungen hinzufügen und "
 "Bilder exportieren."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1079(title)
@@ -1166,13 +1175,12 @@ msgid "Darkroom"
 msgstr "Dunkelkammer"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1081(para)
-#, fuzzy
 msgid ""
 "In the darkroom view you develop a single image using the available modules "
 "(see <xref linkend=\"darkroom_chapter\"/>)."
 msgstr ""
-"In der Dunkelkammer-Ansicht entwickeln Sie einzelne Bilder mit den "
-"bereitgestellten Modulen."
+"In der Dunkelkammer-Ansicht entwickeln Sie einzelne Bilder mit den"
+" bereitgestellten Modulen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1090(title)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17146(title)
@@ -1186,8 +1194,8 @@ msgid ""
 "remotely capturing images that will be downloaded and shown on computer "
 "screen (see <xref linkend=\"tethering_chapter\"/>)."
 msgstr ""
-"Diese Ansicht ist für das Aufnahmen von Bildern bei der bei die Kamera am"
-" Computer angeschlossen ist und die Kamera über Darktable bedient wird. Die"
+"Diese Ansicht ist für das Aufnahmen von Bildern bei der die Kamera am"
+" Computer angeschlossen und über Darktable bedient wird. Die"
 " aufgenommenen Bilder werden automatisch heruntergeladen und am Bildschirm"
 " dargestellt (siehe <xref linkend=\"tethering_chapter\"/>)."
 
@@ -1195,15 +1203,16 @@ msgstr ""
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3924(emphasis)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17557(title)
 msgid "Map"
-msgstr ""
+msgstr "Karte"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1104(para)
 msgid ""
 "This view shows images with geo-tag data on a map and allows manually geo-"
 "tagging new images (see <xref linkend=\"map_chapter\"/>)."
 msgstr ""
-"Diese Ansicht zeigt Bilder mit Geo-Tag-Daten auf einer Karte und ermöglicht"
-" Fotos per ziehen und ablegen geographischen Koordinaten hinzuzufügen. (siehe"
+"Diese Ansicht zeigt auf einer Landkarte die Fotos an, bei denen geografische"
+" Koordinaten hinterlegt sind. Fotos können per Drag-and-drop manuell"
+" entsprechend geographische Koordinaten hinzuzufügen werden. (siehe"
 " <xref linkend=\"map_chapter\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1113(title)
@@ -1216,9 +1225,9 @@ msgid ""
 "This view shows images as a slideshow, processing them on-the-fly (see <xref "
 "linkend=\"slideshow_chapter\"/>)."
 msgstr ""
-"Diese Ansicht zeigt Bilder als Diaschau. Die Diaschau wird dabei sofort"
-" gestartet. Details siehe <xref "
-"linkend=\"slideshow_chapter\"/>."
+"Diese Ansicht zeigt die Fotos als Diaschau an, die Diaschau wird dabei sofort"
+" gestartet ( siehe <xref "
+"linkend=\"slideshow_chapter\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1124(title)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17978(title)
@@ -1230,9 +1239,8 @@ msgid ""
 "This view allows you to send images to your printer (see <xref linkend="
 "\"print_chapter\"/>)."
 msgstr ""
-"In dieser Ansicht können Sie Bilder an Ihren Drucker senden (siehe <xref"
-" linkend="
-"\"print_chapter\"/>)."
+"In dieser Ansicht können Bilder an einen Drucker gesendet werden (siehe <xref"
+" linkend=\"print_chapter\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1137(title)
 msgid "Screen layout"
@@ -1255,10 +1263,10 @@ msgstr ""
 " linke Bedienfeld hat typischerweise einen informativen Zweck. Das rechte"
 " Feld bietet Funktionen zur Modifikation von Bildern. Das obere und untere"
 " Bedienfeld ermöglichen den Zugriff auf verschiedene Einstellungen und"
-" Abkürzungen. Jedes Bedienfeld kann durch Drücken eines Dreiecks <"
-"inlinegraphic fileref=\"images/general_icon_collapse.png\" "
-"scalefit=\"1\" width=\"2%\"/> , das sich in der Nähe des Bedienfeldes"
-" befindet, ein oder aus geklappt werden."
+" Abkürzungen. "
+"Jedes Bedienfeld kann durch Drücken eines Dreiecks <inlinegraphic"
+" fileref=\"images/general_icon_collapse.png\" scalefit=\"1\" width=\"2%\"/> ,"
+" das sich in der Nähe des Bedienfeldes befindet, ein oder aus geklappt werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1150(para)
 msgid ""
@@ -2508,7 +2516,7 @@ msgstr ""
 " angezeigt. Den Benutzern wird empfohlen, Bilder aus der Datenbank zu"
 " entfernen (siehe <xref linkend=\"selected_images\"/>) <emphasis>before<"
 "/emphasis> physisch von der Festplatte zu entfernen. Alternativ können Sie"
-" gelegentlich das Skript <Dateiname moreinfo=\"none\""
+" gelegentlich das Skript <filename moreinfo=\"none\""
 ">purge_non_existing_images.sh</filename> aus dem Werkzeugsatz von Darktable"
 " ausführen, um Ihre Datenbank zu bereinigen."
 
@@ -2597,8 +2605,8 @@ msgid ""
 msgstr ""
 "Es gibt mehrere Möglichkeiten, eine Bewertung zu ändern. Wenn Sie mit dem"
 " Mauszeiger über ein Vorschaubild fahren, kann mit den Zifferntasten <"
-"Emphasis>0 - 5</emphasis> die Anzahl der Sterne vergeben werden oder mit der"
-" <Emphasis>r</emphasis> Taste diese alr <quote>abgelehnt</quote> markieren."
+"emphasis>0 - 5</emphasis> die Anzahl der Sterne vergeben werden oder mit der"
+" <emphasis>r</emphasis> Taste diese als <quote>abgelehnt</quote> markieren."
 " Dies ist wahrscheinlich der schnellste Weg, wenn Sie Ihre Bilder bei der"
 " ersten Inspektion einer Filmrolle bewerten."
 
@@ -2884,12 +2892,12 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2329(title)
 msgid "Sidecar files"
-msgstr ""
+msgstr "Begleitdatei"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2332(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3736(primary)
 msgid "sidecar files"
-msgstr ""
+msgstr "Begleitdatei"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2336(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3740(primary)
@@ -2910,6 +2918,15 @@ msgid ""
 "touching the original raw files. When you import an image into darktable for "
 "the first time, an XMP file with default settings is generated automatically."
 msgstr ""
+"Darktable ist ein zerstörungsfreier Bildeditor. Das bedeutet, dass Darktable"
+" Bilder schreibgeschützt öffnet. Alle neu hinzugefügten Metadaten, Tags und"
+" Parameter von Bildoperationen (der <quote>Verlaufs</quote>) werden in"
+" separaten <emphasis>.xmp</emphasis> Dateien, sogenannten Begleitdateien,"
+" gespeichert, die es Ihnen ermöglichen, Informationen über die Bilder sowie"
+" die gesamte Bearbeitungshistorie zu speichern, ohne die ursprünglichen"
+" Rohdateien zu berühren. Wenn Sie ein Bild zum ersten Mal in Darktable"
+" importieren, wird automatisch eine XMP-Datei mit Standardeinstellungen"
+" erzeugt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2352(para)
 msgid ""
@@ -2925,6 +2942,19 @@ msgid ""
 "duplicate is displayed in the image information panel in each of darktable's "
 "views (see an example in <xref linkend=\"image_information\"/>)."
 msgstr ""
+"Für ein bestimmtes Ausgangsbild können mehrere Bearbeitungsversionen,"
+" sogenannte Duplikate, nebeneinander existieren, die daselbe RAW-Foto"
+" gemeinsam nutzen, aber jeweils eigene Metadaten, Tags und Verlauf haben."
+" Jedes Duplikat wird durch eine separate XMP-Begleitdatei-Datei mit einem"
+" Dateinamen in der Form <quote>&lt; basename&gt;<emphasis>_nn</emphasis"
+">.&lt;extension&gt;.xmp</quote> dargestellt, wobei <emphasis>nn</emphasis>"
+" die (mindestens zweistellige) Versionsnummer dieses Edits darstellt. Die"
+" Informationen für die erste Bearbeitung - die <quote>duplicate</quote> mit"
+" der Versionsnummer Null - werden in der Sidecar-Datei <quote"
+">&lt;basename&gt;.&lt;extension&gt;.xmp</quote> gespeichert. Die"
+" Versionsnummer eines "
+"Duplikat wird im Bildinformationsfenster in jeder der darktable-Ansichten"
+" angezeigt (siehe ein Beispiel in <xref linkend=\"image_information\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2366(para)
 msgid ""
@@ -2944,6 +2974,14 @@ msgid ""
 "updated with data that darktable finds in the sidecar files belonging to "
 "that image."
 msgstr ""
+"Zusätzlich zu den Begleitdateien hält Darktable alle Bildbezogenen Daten in"
+" seiner Datenbank für einen schnellen Zugriff bereit. Ein Bild kann nur dann"
+" von der Darktable aus betrachtet und bearbeitet werden, wenn seine Daten in"
+" die Datenbank geladen werden. Dies geschieht automatisch beim ersten Import"
+" eines Bildes oder zu einem späteren Zeitpunkt durch einen erneuten Import"
+" (siehe <xref linkend=\"import\"/>). Im letzteren Fall wird die Datenbank mit"
+" Daten aktualisiert, die Darktable in den Begleitdateien findet, die zu"
+" diesem Bild gehören."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2381(para)
 msgid ""
@@ -2955,10 +2993,19 @@ msgid ""
 "darktable looks for updated XMP files at startup and offers a choice whether "
 "to update the database or overwrite the XMP file."
 msgstr ""
+"Sobald ein Bild in die Darktable importiert wurde, haben die"
+" Datenbankeinträge Vorrang vor der XMP-Datei. Nachträgliche Änderungen an der"
+" XMP-Datei durch eine andere Software sind für darktable nicht sichtbar -"
+" alle Änderungen werden überschrieben, wenn Darktable die Datei das nächste"
+" Mal synchronisiert. Dieses Verhalten kann im Einstellungsdialog geändert"
+" werden (siehe <xref linkend=\"core_options\"/>). Auf Wunsch sucht Darktable"
+" beim Start nach aktualisierten XMP-Dateien und bietet die Möglichkeit, die"
+" Datenbank zu aktualisieren oder die XMP-Datei zu überschreiben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2396(title)
 msgid "Importing sidecar files generated by other applications"
 msgstr ""
+"Importieren von Begleitdateien, die von anderen Anwendungen erzeugt wurden"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2398(para)
 msgid ""
@@ -2970,24 +3017,34 @@ msgid ""
 "darktable's own sidecar files are always stored in the first format – the "
 "latter one would only be read – not overwritten."
 msgstr ""
+"Beim Importieren eines Bildes prüft Darktable automatisch, ob es sich um eine"
+" Sidecar-Datei handelt. Anders als die Formate <quote"
+">&lt;basename&gt;.&lt;extension&gt;.xmp</quote> und <quote>&lt;basename&gt;<"
+"emphasis>_nn</emphasis>.&lt;extension&gt;.xmp</quote> Darktable prüft auch"
+" das Vorhandensein einer Datei in der Form <quote>&lt;basename&gt;/."
+" Darktable eigene Begleitdateien werden immer im ersten Format gespeichert -"
+" letzteres werden nur gelesen - nicht überschrieben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2412(para)
 msgid "tags and hierarchical tags"
-msgstr ""
+msgstr "Tags und hierarchische Tags"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2420(para)
 msgid "ratings"
-msgstr ""
+msgstr "Bewertungen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2424(para)
 msgid "GPS information"
-msgstr ""
+msgstr "GPS Informationen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2407(para)
 msgid ""
 "At present, darktable is able to deal with the following metadata of "
 "Lightroom generated sidecar files during the import phase: <placeholder-1/>"
 msgstr ""
+"Darktable ist derzeit in der Lage, die folgenden Metadaten der von Lightroom"
+" generierten Begleitdateien während der Import-Phase zu verarbeiten: <"
+"placeholder-1/>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2431(para)
 msgid ""
@@ -3002,52 +3059,66 @@ msgid ""
 "close, and in some cases, the development will need manual adjustment in "
 "darktable."
 msgstr ""
+"Darktable wurde darüber hinaus so konzipiert, dass es bei der Migration"
+" einiger Image-Operationen aus bestimmten anderen Anwendungen hilft. Das Ziel"
+" ist nicht, Darktable zu einem Drop-In-Ersatz für andere Software zu machen;"
+" es ist nur dazu gedacht, Ihnen zu helfen, einen Teil der Arbeit, die Sie in"
+" Ihr Image investiert haben, wiederherzustellen, falls Sie zu Darktable"
+" migrieren. Es ist sehr wichtig zu verstehen, dass dieser Importvorgang"
+" niemals zu identischen Ergebnissen führen wird. Die zugrundeliegenden"
+" Entwicklungsmodule sind von Anwendung zu Anwendung sehr unterschiedlich und"
+" hängen zudem stark vom jeweiligen Image ab. In einigen Fällen wird es"
+" wahrscheinlich nahe sein, und in einigen Fällen muss die Entwicklung manuell"
+" in Darktable angepasst werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2442(para)
 msgid ""
 "The migration happens automatically when entering the darkroom view, "
 "provided that a corresponding XMP sidecar is found."
 msgstr ""
+"Die Migration erfolgt automatisch beim Betreten der Dunkelkammeransicht,"
+" sofern ein entsprechender XMP-Begleitdatei gefunden wird."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2452(para)
 msgid "crop and rotate <emphasis>(crop and rotate)</emphasis>"
 msgstr ""
+"beschneiden und rotieren <emphasis>(beschneiden und rotieren)</emphasis>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2456(para)
 msgid "black level <emphasis>(exposure)</emphasis>"
-msgstr ""
+msgstr "Schwarzwert <emphasis>(Exposition)</emphasis>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2460(para)
 msgid "exposure <emphasis>(exposure)</emphasis>"
-msgstr ""
+msgstr "Exposition <emphasis>(Exposition)</emphasis>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2464(para)
 msgid "vignette <emphasis>(vignette)</emphasis>"
-msgstr ""
+msgstr "Vignette <emphasis>(Vignette)</emphasis>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2468(para)
 msgid "clarity <emphasis>(local contrast)</emphasis>"
-msgstr ""
+msgstr "Klarheit <emphasis>(Lokalkontrast)</emphasis>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2472(para)
 msgid "tone curve <emphasis>(tone curve)</emphasis>"
-msgstr ""
+msgstr "Tonkurve <emphasis>(Tonkurve)</emphasis>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2476(para)
 msgid "HSL <emphasis>(color zones)</emphasis>"
-msgstr ""
+msgstr "HSL <emphasis>(Farbzonen)</emphasis>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2480(para)
 msgid "split toning <emphasis>(split toning)</emphasis>"
-msgstr ""
+msgstr "split toning <emphasis>(split toning)</emphasis>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2484(para)
 msgid "grain <emphasis>(grain)</emphasis>"
-msgstr ""
+msgstr "Körnung <emphasis>(Körnung)</emphasis>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2488(para)
 msgid "spot removal <emphasis>(spot removal)</emphasis>"
-msgstr ""
+msgstr "Fleckenentfernung <emphasis>(Fleckenentfernung)</emphasis>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2447(para)
 msgid ""
@@ -3055,15 +3126,18 @@ msgid ""
 "from Lightroom-generated XMP files (with the corresponding darktable module "
 "in parentheses): <placeholder-1/>"
 msgstr ""
+"Derzeit ist Darktable in der Lage, die folgenden Entwicklungsschritte aus den"
+" von Lightroom generierten XMP-Dateien (mit dem entsprechenden"
+" Darktable-Modul in Klammern) zu verarbeiten: <placeholder-1/>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2501(title)
 msgid "Local copies"
-msgstr ""
+msgstr "Lokale Kopien"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2504(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3557(primary)
 msgid "local copies"
-msgstr ""
+msgstr "lokale Kopien"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2507(para)
 msgid ""
@@ -3094,12 +3168,26 @@ msgid ""
 "input image. These operations can be found in the <emphasis>selected images</"
 "emphasis> panel (see <xref linkend=\"selected_images\"/>)."
 msgstr ""
+"Die Funktion <quote>lokale Kopien</quote> von Darktable wurde entwickelt, um"
+" diese Anwendungsfälle direkt zu unterstützen. Sie können lokale Kopien"
+" ausgewählter Bilder auf dem lokalen Laufwerk Ihres Computers erstellen."
+" Diese lokale Kopie wird immer dann verwendet, wenn sie vorhanden ist, was"
+" den Zugriff auf das Bild ermöglicht, wenn der externe Speicher nicht mehr"
+" angeschlossen ist, und den Vorteil hat, dass sie schneller ist als ein"
+" langsames externes Laufwerk. Zu einem späteren Zeitpunkt, wenn Sie wieder"
+" mit Ihrem Hauptspeichermedium verbunden sind, können Sie die XMP-Dateien"
+" synchronisieren und die lokale Kopie Ihres Eingangsabbildes löschen. Diese"
+" Operationen finden Sie im Panel <emphasis>ausgewählte Bilder</emphasis>"
+" (siehe <xref linkend=\"selected_images\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2526(para)
 msgid ""
 "For safety reasons, if local copies exist and the external storage is "
 "available, the local XMP sidecars are automatically synchronized at start up."
 msgstr ""
+"Wenn lokale Kopien vorhanden sind und der externe Speicher verfügbar ist,"
+" werden die lokalen XMP-Dateien aus Sicherheitsgründen beim Start automatisch"
+" synchronisiert."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2531(para)
 msgid ""
@@ -3112,6 +3200,13 @@ msgid ""
 "row><row><entry><emphasis>EXT</emphasis></entry><entry> is the original "
 "filename extension </entry></row></tbody></tgroup></informaltable>"
 msgstr ""
+"Die lokalen Kopien werden in das Verzeichnis $HOME/.cache/darktable"
+" gespeichert und heißen <quote>img-&lt;SIGNATURE&gt;.&lt;EXT&gt;</quote>,"
+" wobei: <informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"2\""
+" colsep=\"0\" rowsep=\"0\" rowsep=\"0\"><colspec colw "
+"Signatur (MD5) des vollständigen Pfadnamens </entry></row><row><entry><"
+"emphasis>EXT</emphasis></entry></entry><entry></entry></entry></row></tbody><"
+"/tgroup></informaltable>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2568(para)
 msgid ""
@@ -3119,6 +3214,10 @@ msgid ""
 "right of the thumbnail. In addition all local copies carry the "
 "<emphasis>darktable|local-copy</emphasis> tag for selecting them easily."
 msgstr ""
+"Eine lokale Kopie ist in der Leuchttischansicht mit einem weißen Marker"
+" rechts neben dem Vorschaubild gekennzeichnet. Zusätzlich tragen alle lokalen"
+" Kopien das <emphasis>Darktable|locale Kopie</emphasis>-Tag zur einfachen"
+" Auswahl."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2591(title)
 #, fuzzy
@@ -3156,7 +3255,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2609(primary)
 msgid "file import"
-msgstr ""
+msgstr "Datei Import"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2613(primary)
 msgid "camera import"
