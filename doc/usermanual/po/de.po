@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
 "POT-Creation-Date: 2017-11-23 13:06+0100\n"
-"PO-Revision-Date: 2017-11-27 20:49+0100\n"
+"PO-Revision-Date: 2017-11-28 20:26+0100\n"
 "Last-Translator: Pierre Metzner <pierre_metzner@web.de>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -3220,13 +3220,12 @@ msgstr ""
 " Auswahl."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2591(title)
-#, fuzzy
 msgid "Lighttable panels"
-msgstr "Leuchttisch"
+msgstr "Leuchttisch Elemente"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2597(title)
 msgid "Import"
-msgstr ""
+msgstr "Import"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2600(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2864(primary)
@@ -3240,9 +3239,8 @@ msgstr ""
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4038(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4099(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4208(primary)
-#, fuzzy
 msgid "lighttable panels"
-msgstr "Leuchttisch"
+msgstr "Leuchttisch Elemente"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2601(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2605(primary)
@@ -3251,7 +3249,7 @@ msgstr "Leuchttisch"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2839(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3879(title)
 msgid "import"
-msgstr ""
+msgstr "Import"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2609(primary)
 msgid "file import"
@@ -3259,21 +3257,21 @@ msgstr "Datei Import"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2613(primary)
 msgid "camera import"
-msgstr ""
+msgstr "Import von Kamera"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2624(quote)
 msgid "folder"
-msgstr ""
+msgstr "Verzeichnis"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2625(quote)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8655(emphasis)
 msgid "image"
-msgstr ""
+msgstr "Bild"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2626(quote)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2711(quote)
 msgid "scan for devices"
-msgstr ""
+msgstr "Nach Geräten suchen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2622(entry)
 msgid ""
@@ -3284,6 +3282,13 @@ msgid ""
 "can import directly from that camera or control the camera from within "
 "darktable in tethering mode."
 msgstr ""
+"Dieses Eingabefeld dient zum Importieren von Bildern in Filmrollen. Sie"
+" können entweder einen kompletten Ordner importieren, indem Sie <"
+"placeholder-1/> drücken, oder ein einzelnes Bild mit <placeholder-2/>. Sie"
+" können Darktable auch veranlassen, nach angeschlossenen Kameras zu suchen,"
+" indem Sie <placeholder-3/> drücken. Wenn eine unterstützte Kamera"
+" angeschlossen ist, können Sie direkt von dieser Kamera importieren oder die"
+" Kamera im Tethering-Modus von Darktable aus steuern."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2638(para)
 msgid ""
@@ -3297,16 +3302,30 @@ msgid ""
 "collections</emphasis> (see <xref linkend=\"recently_used_collections\"/>) "
 "to open the latest ones you have worked with."
 msgstr ""
+"Importierte Bilder werden als Filmrollen organisiert (siehe <xref"
+" linkend=\"film_rolls\"/>). Alle Filmrollen sind über das Modul <emphasis"
+">Bilder sammeln</emphasis> zugänglich (siehe <xref"
+" linkend=\"collect_images\"/>). Wenn Sie das Auswahlattribut auf <quote"
+">Filmrolle</quote> setzen, erhalten Sie eine Liste der verfügbaren"
+" Filmrollen, die Sie mit der Editbox filtern können, um schnell die"
+" gewünschte Rolle zu finden. Doppelklicken Sie auf eine Filmrolle in der"
+" Liste und sie öffnet sich im Leuchttisch. Sie können auch auf die Elemente"
+" in <emphasis>kürzlich benutze Sammlungen</emphasis> (siehe <xref"
+" linkend=\"recently_used_collections\"/>) klicken, um die neuesten zu öffnen,"
+" mit denen Sie gearbeitet haben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2651(title)
 msgid "Import from filesystem"
-msgstr ""
+msgstr "Import aus dem Dateisystem"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2653(para)
 msgid ""
 "You can import either a single image, or a folder. The imported image(s) "
 "will show up in a film roll with the name of the filesystem folder."
 msgstr ""
+"Sie können entweder ein einzelnes Bild oder einen Ordner importieren. Die"
+" importierten Bilder werden in einer Filmrolle mit dem Namen des"
+" Dateisystem-Ordners angezeigt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2662(para)
 msgid ""
@@ -3314,6 +3333,10 @@ msgid ""
 "selector dialog. Navigate through the filesystem, and select the item to "
 "import. On the lower part of the dialog, are some further import options."
 msgstr ""
+"Ein Klick auf <quote>Bild</quote> oder <quote>Verzeichnis</quote> öffnet"
+" einen Dateiauswahldialog. Navigieren Sie durch das Dateisystem und wählen"
+" Sie das zu importierende Element aus. Im unteren Teil des Dialogs befinden"
+" sich einige weitere Import-Optionen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2668(para)
 msgid ""
@@ -3324,6 +3347,13 @@ msgid ""
 "them, but in the end only keep the recent ones in its cache. It is better to "
 "import images in smaller chunks, making logical film rolls."
 msgstr ""
+"Wie der Name schon sagt, importiert das Ankreuzen von <quote>Verzeichnis"
+" rekursiv importieren</quote> Bilder des aktuellen Verzeichnisses und dessen"
+" Unterverzeichnisse. Es wird nicht empfohlen, und verschwendet Ressourcen,"
+" dies auf eine umfangreiche Liste von Bildern zu tun. Darktable würde für"
+" alle Bilder entsprechende Vorschaubilder erzeugen, aber am Ende nur die"
+" letzten in seinem Cache behalten. Es ist besser, Bilder in kleinere Stücke"
+" zu importieren, um logische Filmrollen herzustellen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2676(para)
 msgid ""
@@ -3332,12 +3362,18 @@ msgid ""
 "stores RAW+JPEG, you often only want to work on the raws, leaving the JPEG "
 "images alone."
 msgstr ""
+"Das Ankreuzen von <quote>JPEG-Dateien ignorieren</quote> ist eine gute Wahl,"
+" wenn sich JPEG-Bilder im selben Ordner befinden, die Sie nicht bearbeiten"
+" wollen; z.B. wenn die Kamera RAW+JPEG speichert, wollen Sie oft nur die"
+" Raw-Bilder arbeiten und lassen die JPEG-Bilder in Ruhe."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2682(para)
 msgid ""
 "You can also apply some metadata during import; see <xref linkend="
 "\"metadata_editor\"/> for more details."
 msgstr ""
+"Sie können auch einige Metadaten während des Imports übernehmen; siehe <xref"
+" linkend=\"metadata_editor\"/> für weitere Details."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2687(para)
 msgid ""
@@ -3350,18 +3386,27 @@ msgid ""
 "image to a folder, after having imported that folder in darktable, the new "
 "image will not be shown until explicitly imported."
 msgstr ""
+"Das Importieren eines Ordners bedeutet nicht, dass Darktable Ihre Bilder in"
+" einen anderen Ordner kopiert. Es bedeutet nur, dass die Bilder im Lichttisch"
+" sichtbar sind und somit entwickelt werden können. Wenn Sie ein Bild oder"
+" einen Ordner nach dem Import von der Festplatte löschen, kann Darktable"
+" nicht mehr darauf zugreifen. Das Importieren eines Bildes oder Ordners in"
+" Darktable ist kein Backup Ihres Dateisystems! Darktable achtet außerdem"
+" nicht auf Änderungen im Dateisystem. Wenn Sie also ein Bild zu einem Ordner"
+" hinzufügen, nachdem Sie diesen Ordner in Darktable importiert haben, wird"
+" das neue Bild erst dann angezeigt, wenn es explizit importiert wurde."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2701(title)
 msgid "Importing from a connected camera"
-msgstr ""
+msgstr "Von angeschlossener Kamera importieren"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2714(quote)
 msgid "import from camera"
-msgstr ""
+msgstr "Von Kamera Importieren"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2715(quote)
 msgid "tethered shoot"
-msgstr ""
+msgstr "Tethering-Aufnahme"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2709(entry)
 msgid ""
@@ -3372,16 +3417,25 @@ msgid ""
 "buttons with actions will be available such as <placeholder-2/> and "
 "<placeholder-3/>."
 msgstr ""
+"Wenn eine Kamera erkannt wird, wird diese nach Drücken von <placeholder-1/>"
+" im Gerätedisplay angezeigt. Wenn Sie mit der Maus über das Label der Kamera"
+" fahren, erscheint ein Tooltip mit Informationen über die Kamera, wie z.B."
+" Modell, Firmware-Version und mehr. Je nach Unterstützung der Kamera stehen"
+" Schaltflächen mit Aktionen wie <placeholder-2/> und <placeholder-3/> zur"
+" Verfügung."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2727(title)
 msgid "Import from camera"
-msgstr ""
+msgstr "Von Kamera importieren"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2729(para)
 msgid ""
 "This will bring up an import dialog, showing the images on camera that can "
 "be selected for import into a film roll in darktable."
 msgstr ""
+"Es öffnet sich ein Import-Dialog, in dem die Bilder der Kamera angezeigt"
+" werden, die für den Import in eine Filmrolle im Darktable ausgewählt werden"
+" können."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2734(para)
 msgid ""
@@ -3389,10 +3443,13 @@ msgid ""
 "pattern of sub directories and individual images in the preferences dialog "
 "(see <xref linkend=\"session_options\"/>)."
 msgstr ""
+"Das Basisverzeichnis für die Speicherung importierter Bilder und das"
+" Benennungsmuster von Unterverzeichnissen und Einzelbildern legen Sie im"
+" Einstellungsdialog fest (siehe <xref linkend=\"session_options\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2744(title)
 msgid "Tethered shoot"
-msgstr ""
+msgstr "Tethering-Aufnahme"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2746(para)
 msgid ""
@@ -3402,6 +3459,12 @@ msgid ""
 "jobs, controlling the number of images and time between captures, along with "
 "camera settings such as exposure time, aperture and more."
 msgstr ""
+"Tethering wird verwendet, um Darktable mit Ihrer Kamera zu integrieren."
+" Während Sie Bilder mit Ihrer Kamera aufnehmen, werden diese automatisch in"
+" den Darktable importiert, so dass Sie das Ergebnis der Aufnahme überprüfen"
+" können. Sie können auch Remote-Aufnahmen einrichten, indem Sie die Anzahl"
+" der Bilder und die Zeit zwischen den Aufnahmen sowie Kameraeinstellungen wie"
+" Belichtungszeit, Blende und mehr steuern."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2754(para)
 msgid ""
@@ -3409,10 +3472,13 @@ msgid ""
 "for tethered shooting. Read more about tethering in <xref linkend="
 "\"tethering_chapter\"/>."
 msgstr ""
+"Wenn dies von Ihrer Kamera unterstützt wird, führt Sie Tethering in die"
+" Capture-Ansicht für Tethering-Aufnahme. Lesen Sie mehr über Tethering in <"
+"xref linkend=\"tethering_chapter\"/>."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2765(title)
 msgid "Supported file formats"
-msgstr ""
+msgstr "Unterstützte Dateiformate"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2767(para)
 msgid ""
@@ -3422,6 +3488,12 @@ msgid ""
 "and <emphasis>high dynamic range</emphasis> images – mainly for data "
 "exchange between darktable and other software."
 msgstr ""
+"Darktable konzentriert sich auf die Verwaltung und Entwicklung von"
+" Kamera-Rohdaten. Es unterstützt eine Vielzahl von Dateiformaten"
+" verschiedener Kamerahersteller. Darktable kann außerdem spezifische <"
+"emphasis>niedriger Dynamikbereich</emphasis> und <emphasis>hoher"
+" Dynamikbereich</emphasis> Bilder lesen - hauptsächlich für den"
+" Datenaustausch zwischen Darktable und anderer Software."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2775(para)
 msgid ""
@@ -3431,12 +3503,20 @@ msgid ""
 "KC2, KDC, MDC, MEF, MOS, MRW, NEF, NRW, ORF, PEF, PFM, PNG, PXN, QTK, RAF, "
 "RAW, RDC, RW1, RW2, SR2, SRF, SRW, STI, TIF, TIFF, X3F."
 msgstr ""
+"Damit Darktable eine Datei für den Import in Betracht ziehen kann, muss sie"
+" eine der folgenden Erweiterungen haben (unabhängig der Gruß- und"
+" Kleinschreibung): : 3FR, ARI, ARW, BAY, BMQ, CAP, "
+"CINE, CR2, CRW, CS1, DC2, DCR, DNG, ERF, FFF, EXR, IA, IIQ, JPEG, JPG, K25,"
+" KC2, KDC, MDC, MEF, MOS, MRW, NEF, NRW, ORF, PEF, PFM, PNG, PXN, QTK, RAF,"
+" RAW, RDC, RW1, RW2, SR2, SRF, SRW, STI, TIF, TIFF, X3F."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2782(para)
 msgid ""
 "If darktable was compiled with JPEG2000 support, these extensions are also "
 "recognized: J2C, J2K, JP2, JPC."
 msgstr ""
+"Wenn Darktable mit JPEG2000-Unterstützung kompiliert wurde, werden auch diese"
+" Erweiterungen erkannt: J2C, J2K, JP2, JPC."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2787(para)
 msgid ""
@@ -3444,14 +3524,17 @@ msgid ""
 "extensions are recognized in addition to the standard ones: BMP, DCM, GIF, "
 "JNG, JPC, JP2, MIFF, MNG, PBM, PGM, PNM, PPM."
 msgstr ""
+"Wenn Darktable mit GraphicsMagick-Unterstützung kompiliert wurde, werden"
+" zusätzlich zu den Standard-Erweiterungen die folgenden Erweiterungen"
+" erkannt: BMP, DCM, GIF, JNG, JPC, JP2, MIFF, MNG, PBM, PGM, PNM, PPM."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2795(title)
 msgid "Camera raw files"
-msgstr ""
+msgstr "Kamera-Rohdaten"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2799(secondary)
 msgid "raw files"
-msgstr ""
+msgstr "Rohdaten"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2802(para)
 msgid ""
@@ -3465,14 +3548,24 @@ msgid ""
 "images from cameras with non-Bayer sensors (e.g. Sigmas with the Foveon X3 "
 "sensor)."
 msgstr ""
+"Darktable liest Rohdateien mit Hilfe der Open-Source-Bibliothek <ulink"
+" url=\"https://github.com/darktable-org/rawspeed\">RawSpeed</ulink>, die"
+" ursprünglich von Klaus Post entwickelt wurde und nun innerhalb des"
+" Darktable-Projekts selbst gepflegt wird. Die Anzahl der unterstützten"
+" Kameras und Dateiformate nimmt ständig zu. Eine erschöpfende Auflistung"
+" dieser Anleitung ist nicht möglich. Die meisten modernen Kameramodelle"
+" werden unterstützt, und neue Modelle werden in der Regel sehr schnell"
+" hinzugefügt. Mit Ausnahme der Fujifilm X-Trans-Kameras dekodiert Darktable"
+" keine Bilder von Kameras mit Fremdsensoren (z.B. Sigmas mit dem Foveon X3"
+" Sensor)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2817(title)
 msgid "LDR image files"
-msgstr ""
+msgstr "LDR-Bilddateien"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2821(secondary)
 msgid "LDR files"
-msgstr ""
+msgstr "LDR-Dateien"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2824(para)
 msgid ""
@@ -3483,34 +3576,43 @@ msgid ""
 "GIF, Dicom DCM, additional exotic TIFF formats, and some of Sun's "
 "<quote>portable xyz-map</quote> family."
 msgstr ""
+"Darktable liest nativ <quote>gewöhnliche</quote> Bilder im JPEG-,"
+" 8-bit/16-bit PNG- und 8-bit/16-bit TIFF-Format. JPEG2000 wird auch"
+" unterstützt, wenn die benötigten Bibliotheken zum Zeitpunkt der Kompilierung"
+" vorhanden sind. Ähnlich, wenn Darktable mit GraphicsMagick-Unterstützung"
+" kompiliert wurde, gibt es weitere Importformate, wie GIF, Dicom DCM,"
+" zusätzliche exotische TIFF-Formate und einige von Suns <quote>portable"
+" xyz-map</quote> Familie."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2836(title)
 msgid "HDR image files"
-msgstr ""
+msgstr "HDR-Bilddateien"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2840(secondary)
 msgid "HDR files"
-msgstr ""
+msgstr "HDR-Dateien"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2844(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3508(primary)
 msgid "HDR images"
-msgstr ""
+msgstr "HDR-Bilder"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2847(para)
 msgid ""
 "darktable reads high dynamic range images in OpenEXR, RGBE and PFM format."
 msgstr ""
+"Darktable liest Bilder mit hohem Dynamikumfang im OpenEXR-, RGBE- und"
+" PFM-Format."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2861(title)
 msgid "Collect images"
-msgstr ""
+msgstr "Bilder sammeln"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2865(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2869(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2883(emphasis)
 msgid "collect images"
-msgstr ""
+msgstr "Bilder sammeln"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2882(entry)
 msgid ""
@@ -3518,6 +3620,9 @@ msgid ""
 "panel lets you narrow down the list of visible images to just the ones you "
 "want to work with."
 msgstr ""
+"Die aktuelle Ansicht im Leuchttisch wird als Kollektion bezeichnet. Mit dem <"
+"placeholder-1/> können Sie die Liste der sichtbaren Bilder auf die Bilder"
+" einschränken, mit denen Sie arbeiten möchten."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2895(para)
 msgid ""
@@ -3526,12 +3631,20 @@ msgid ""
 "applying certain filtering rules to these attributes, creating a subset of "
 "images to display in the lighttable view."
 msgstr ""
+"Informationen über alle Bilder, die in die Darktable importiert werden,"
+" werden in einer Datenbank gespeichert, wobei verschiedene Attribute jedes"
+" Bild beschreiben. Sie definieren eine Kollektion, indem Sie bestimmte"
+" Filterregeln auf diese Attribute anwenden und eine Untermenge von Bildern"
+" erstellen, die in der Leuchttischansicht angezeigt werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2901(para)
 msgid ""
 "The default collection is based on the film roll attribute – it displays all "
 "images of the last imported film roll or any other film roll chosen."
 msgstr ""
+"Die Standardkollektion basiert auf dem Attribut Filmrolle - sie zeigt alle"
+" Bilder der zuletzt importierten Filmrolle oder einer anderen ausgewählten"
+" Filmrolle an."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2908(title)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3325(title)
@@ -3616,41 +3729,50 @@ msgstr "Benutzung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2912(title)
 msgid "image attributes"
-msgstr ""
+msgstr "Bildattribute"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2926(para)
 msgid "the film roll to which the image belongs"
-msgstr ""
+msgstr "die Filmrolle, zu der das Bild gehört"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2936(para)
 msgid "the disk folder where the input image file is located"
 msgstr ""
+"den Ordner auf der Festplatte, in dem sich die Eingabebilddatei befindet."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2946(para)
 msgid "the Exif data entry describing the camera make and model"
 msgstr ""
+"die Exif-Erfassung mit Beschreibung der Kameramarke und des Kameramodells"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2956(para)
 msgid ""
 "any tag that is attached to the image; if activated a hierarchical list of "
 "known tags is displayed for quick selection"
 msgstr ""
+"alle Tags, die an das Bild angehängt sind; wenn aktiviert, wird eine"
+" hierarchische Liste bekannter Tags zur schnellen Auswahl angezeigt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2967(para)
 msgid ""
 "the date when the photo was taken, in the format <emphasis>YYYY:MM:DD</"
 "emphasis>"
 msgstr ""
+"das Datum, an dem das Foto aufgenommen wurde, im Format <emphasis>YYYY:MM:DD<"
+"/emphasis>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2978(para)
 msgid ""
 "the time (date <emphasis>and</emphasis> time of day) when the photo was "
 "taken, in the format <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>"
 msgstr ""
+"die Uhrzeit (Datum <emphasis>und</emphasis>Tageszeit), zu der das Foto"
+" aufgenommen wurde, im Format <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2989(para)
 msgid "choose images whose history stacks have been altered or not altered"
 msgstr ""
+"Wählen Sie Bilder, deren Verlaufsstapel verändert oder nicht verändert wurden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2999(para)
 msgid ""
@@ -3658,49 +3780,61 @@ msgid ""
 "<quote>yellow</quote>, <quote>green</quote>, <quote>blue</quote>, "
 "<quote>purple</quote>"
 msgstr ""
+"jede Farbbeschriftung, die dem Bild beigefügt ist: <quote>rot</quote>, <quote"
+">gelb</quote>, <quote>grün</quote>, <quote>blau</quote>, <quote>purpur</quote>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3011(para)
 msgid "the title, as listed in the image's metadata <quote>title</quote> field"
 msgstr ""
+"der Titel, wie er in den Metadaten des Bildes aufgeführt ist <quote>Titel<"
+"/quote> field"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3021(para)
 msgid ""
 "the description, as listed in the image's metadata <quote>description</"
 "quote> field"
 msgstr ""
+"die Beschreibung, wie sie in den Metadaten des Bildes aufgelistet ist <quote"
+">Beschrifungsfeld</quote>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3032(para)
 msgid ""
 "the creator, as listed in the image's metadata <quote>creator</quote> field"
 msgstr ""
+"der Ersteller, wie in den Metadaten des Bildes aufgelistet <quote>Ersteller<"
+"/quote> field"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3042(para)
 msgid ""
 "the publisher, as listed in the image's metadata <quote>publisher</quote> "
 "field"
 msgstr ""
+"der Herausgeber, wie in den Metadaten des Bildes aufgelistet <quote"
+">Herausgeber</quote> Feld"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3053(para)
 msgid ""
 "the copyrights statement, as written in the image's metadata <quote>rights</"
 "quote> field"
 msgstr ""
+"die Copyright-Erklärung, wie sie im <quote>Metadaten-Rechtefeld</quote> des"
+" Bildes steht."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3064(para)
 msgid "the Exif data entry describing the lens"
-msgstr ""
+msgstr "die Exif-Dateneingabe zur Beschreibung des Objektivs"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3074(para)
 msgid "the ISO value, as derived from Exif data"
-msgstr ""
+msgstr "den ISO-Wert, der sich aus den Exif-Daten ableitet"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3084(para)
 msgid "the aperture value, as derived from Exif data"
-msgstr ""
+msgstr "den Blendenwert, der sich aus den Exif-Daten ableitet"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3094(para)
 msgid "the filename of the physical input image"
-msgstr ""
+msgstr "der Dateiname des physischen Eingabebildes"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2914(para)
 msgid ""
@@ -3721,10 +3855,27 @@ msgid ""
 "row><row><entry> aperture </entry><placeholder-16/></row><row><entry> "
 "filename </entry><placeholder-17/></row></tbody></tgroup></informaltable>"
 msgstr ""
+"In der linken Auswahlbox können Sie aus den verfügbaren Attributen"
+" auswählen:<informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"2\""
+" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"3*\"/"
+"><tbody><row><entry> Filmrolle </entry><placeholder-1/></row><row><entry>"
+" Verzeichnis </entry><placeholder-2/></row><row><entry> Kamera </entry><"
+"placeholder-3/></row><row><entry> Tag <entry><placeholder-4/></row><row><"
+"entry> Datum </entry><placeholder-5/></row><row><entry> Zeit </"
+"entry><placeholder-6/></row><row><entry> Historie </entry><placeholder-7/></"
+"row><row><entry> Farbmakierung </entry><placeholder-8/></row><row><entry> "
+"Titel </entry><placeholder-9/></row><row><entry> Beschreibung </"
+"entry><placeholder-10/></row><row><entry> Ersteller </entry><placeholder-11/"
+"></"
+"row><row><entry> Herausgeber </entry><placeholder-12/></row><row><entry>"
+" Rechte </entry><placeholder-13/></row><row><entry> Objektiv </"
+"entry><placeholder-14/></row><row><entry> ISO </entry><placeholder-15/></"
+"row><row><entry> Blende </entry><placeholder-16/></row><row><entry> Dateiname"
+" </entry><placeholder-17/></row></tbody></tgroup></informaltable>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3108(title)
 msgid "search rules"
-msgstr ""
+msgstr "Suchregeln"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3110(para)
 msgid ""
@@ -3735,6 +3886,13 @@ msgid ""
 "character. The collection gets limited to those images where the query "
 "matches. Leaving the text field empty matches all images for that attribute."
 msgstr ""
+"In das Textfeld rechts neben dem Attribut schreiben Sie ein Muster. Das"
+" Muster wird mit allen Datenbankeinträgen mit dem ausgewählten Attribut"
+" verglichen. Diese Suche findet eine Übereinstimmung, wenn das Attribut des"
+" Bildes das Muster im Volltext enthält. Sie können <emphasis>%</emphasis> als"
+" Platzhalterzeichen verwenden. Die Sammlung wird auf die Bilder beschränkt,"
+" auf die die Abfrage zutrifft. Wenn Sie das Textfeld leer lassen, werden alle"
+" Bilder für dieses Attribut gefunden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3119(para)
 msgid ""
@@ -3841,12 +3999,12 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3217(title)
 msgid "Recently used collections"
-msgstr ""
+msgstr "kürzlich benutze Sammlungen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3221(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3225(primary)
 msgid "recently used collections"
-msgstr ""
+msgstr "kürzlich benutze Sammlungen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3234(entry)
 msgid ""
@@ -3861,7 +4019,7 @@ msgstr "Bildinformation"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3265(primary)
 msgid "Exif data"
-msgstr ""
+msgstr "Exif Daten"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3274(entry)
 msgid ""
@@ -4617,6 +4775,8 @@ msgstr "Datei-Export"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4229(emphasis)
 msgid "Tip: you can use ctrl-e from within the darkroom mode to export."
 msgstr ""
+"Tipp: Sie können ctrl-e aus dem Dunkelkammer-Modus heraus zum Exportieren"
+" verwenden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4226(entry)
 msgid ""
@@ -4643,6 +4803,11 @@ msgid ""
 "Depending on the selected target, you will be asked to give additional "
 "information, like filenames, or account name and password."
 msgstr ""
+"Speicherort für die ausgewählten Bilder. Es sind verschiedene Arten von"
+" Endgeräten implementiert, darunter eine Datei auf der Festplatte, eine"
+" LaTeX-Buchvorlage und verschiedene Web-Alben. Je nach ausgewähltem Ziel"
+" werden Sie aufgefordert, zusätzliche Informationen wie Dateinamen, Kontoname"
+" und Passwort anzugeben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4265(title)
 msgid "filename template"
@@ -4653,6 +4818,8 @@ msgid ""
 "You can define filenames that darktable generates for export. Several pre-"
 "defined variables can be used as placeholders:"
 msgstr ""
+"Sie können Dateinamen definieren, die Darktable für den Export generiert."
+" Mehrere vordefinierte Variablen können als Platzhalter verwendet werden:"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4277(code)
 msgid "$(ROLL_NAME)"
