@@ -1860,9 +1860,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
 
-  char tooltip[1024];
-  snprintf(tooltip, sizeof(tooltip), _("ICC profiles in %s/color/in or %s/color/in"), confdir, datadir);
+  char *system_profile_dir = g_build_filename(datadir, "color", "in", NULL);
+  char *user_profile_dir = g_build_filename(confdir, "color", "in", NULL);
+  char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(g->profile_combobox, tooltip);
+  g_free(system_profile_dir);
+  g_free(user_profile_dir);
+  g_free(tooltip);
 
   g_signal_connect(G_OBJECT(g->profile_combobox), "value-changed", G_CALLBACK(profile_changed), (gpointer)self);
 

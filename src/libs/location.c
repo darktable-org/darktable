@@ -88,6 +88,8 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt, const c
                                                const char **attribute_names, const gchar **attribute_values,
                                                gpointer user_data, GError **error);
 
+static void clear_search(dt_lib_location_t *lib);
+
 const char *name(dt_lib_module_t *self)
 {
   return _("find location");
@@ -107,6 +109,9 @@ uint32_t container(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
+  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  gtk_entry_set_text(lib->search, "");
+  clear_search(lib);
 }
 
 int position()
@@ -245,6 +250,22 @@ static void _clear_markers(dt_lib_location_t *lib)
   lib->marker_type = MAP_DISPLAY_NONE;
 }
 
+static void clear_search(dt_lib_location_t *lib)
+{
+  g_free(lib->response);
+  lib->response = NULL;
+  lib->response_size = 0;
+
+  g_list_free_full(lib->places, g_free);
+  lib->places = NULL;
+
+  gtk_container_foreach(GTK_CONTAINER(lib->result), (GtkCallback)gtk_widget_destroy, NULL);
+  g_list_free_full(lib->callback_params, free);
+  lib->callback_params = NULL;
+
+  _clear_markers(lib);
+}
+
 static void _show_location(dt_lib_location_t *lib, _lib_location_result_t *p)
 {
   if(isnan(p->bbox_lon1) || isnan(p->bbox_lat1) || isnan(p->bbox_lon2) || isnan(p->bbox_lat2))
@@ -308,18 +329,7 @@ static gboolean _lib_location_search(gpointer user_data)
   if(!(text && *text)) goto bail_out;
 
   /* clean up previous results before adding new */
-  g_free(lib->response);
-  lib->response = NULL;
-  lib->response_size = 0;
-
-  g_list_free_full(lib->places, g_free);
-  lib->places = NULL;
-
-  gtk_container_foreach(GTK_CONTAINER(lib->result), (GtkCallback)gtk_widget_destroy, NULL);
-  g_list_free_full(lib->callback_params, free);
-  lib->callback_params = NULL;
-
-  _clear_markers(lib);
+  clear_search(lib);
 
   /* build the query url */
   query = dt_util_dstrcat(query, "http://nominatim.openstreetmap.org/search/%s?format=xml&limit=%d&polygon_text=1", text,
