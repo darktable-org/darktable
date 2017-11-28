@@ -9,7 +9,7 @@ add_custom_command(
   DEPENDS ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/tools/
-  COMMAND ${CMAKE_COMMAND} -E env LANG=C LC_ALL=C ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  COMMAND ${CMAKE_COMMAND} -E env LANG=C LC_ALL=C sh ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
   COMMENT "Generating authors.h for about dialog."
 )
 
