@@ -847,7 +847,12 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   }
 
   dt_image_t buffered_image;
-  const dt_image_t *img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
+  const dt_image_t *img;
+  // if darktable.gui->show_overlays is set or the user points at this image, we really want it:
+  if(darktable.gui->show_overlays || imgsel == imgid || zoom == 1)
+    img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  else
+    img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
 
   if(selected == 1 && zoom != 1) // If zoom == 1 there is no need to set colors here
   {
@@ -860,8 +865,6 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     bgcol = 0.8; // mouse over
     fontcol = 0.7;
     outlinecol = 0.6;
-    // if the user points at this image, we really want it:
-    if(!img) img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   }
   // release image cache lock as early as possible, to avoid deadlocks (mipmap cache might need to lock it, too)
   if(img)
