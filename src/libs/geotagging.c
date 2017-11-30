@@ -35,12 +35,27 @@
 
 DT_MODULE(1)
 
+typedef struct tz_tuple_t
+{
+  char *name, *display;
+} tz_tuple_t;
+
 typedef struct dt_lib_geotagging_t
 {
   GtkWidget *offset_entry;
   GList *timezones;
   GtkWidget *floating_window, *floating_window_ok, *floating_window_cancel, *floating_window_entry;
 } dt_lib_geotagging_t;
+
+static void free_tz_tuple(gpointer data)
+{
+  tz_tuple_t *tz_tuple = (tz_tuple_t *)data;
+  g_free(tz_tuple->display);
+#ifdef _WIN32
+  g_free(tz_tuple->name); // on non-Windows both point to the same string
+#endif
+  free(tz_tuple);
+}
 
 const char *name(dt_lib_module_t *self)
 {
@@ -488,21 +503,25 @@ static void _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *sel
   GtkWidget *label = gtk_label_new(_("camera time zone"));
   gtk_widget_set_tooltip_text(label, _("most cameras don't store the time zone in EXIF. "
                                        "give the correct time zone so the GPX data can be correctly matched"));
-  GtkWidget *tz_selection = gtk_combo_box_text_new();
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(tz_selection), "UTC");
-  gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), 0);
 
-  GList *iter = d->timezones;
+  GtkCellRenderer *renderer;
+  GtkTreeIter tree_iter;
+  GtkListStore *model = gtk_list_store_new(2, G_TYPE_STRING /*display*/, G_TYPE_STRING /*name*/);
+
+  GtkWidget *tz_selection = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
+  renderer = gtk_cell_renderer_text_new();
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(tz_selection), renderer, FALSE);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(tz_selection), renderer, "text", 0, NULL);
+
   int i = 0;
   gchar *old_tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
-  if(iter)
+  for(GList *iter = d->timezones; iter; iter = g_list_next(iter))
   {
-    do
-    {
-      i++;
-      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(tz_selection), (gchar *)iter->data);
-      if(!strcmp((gchar *)iter->data, old_tz)) gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), i);
-    } while((iter = g_list_next(iter)) != NULL);
+    tz_tuple_t *tz_tuple = (tz_tuple_t *)iter->data;
+    gtk_list_store_append(model, &tree_iter);
+    gtk_list_store_set(model, &tree_iter, 0, tz_tuple->display, 1, tz_tuple->name, -1);
+    if(i == 0 || !strcmp(tz_tuple->name, old_tz)) gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), i);
+    i++;
   }
   g_free(old_tz);
 
@@ -517,7 +536,16 @@ static void _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *sel
     dt_conf_set_string("ui_last/gpx_last_directory", folder);
     g_free(folder);
 
-    gchar *tz = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(tz_selection));
+    gchar *tz;
+    if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(tz_selection), &tree_iter) == TRUE)
+    {
+      GValue value = { 0, };
+      gtk_tree_model_get_value(GTK_TREE_MODEL(model), &tree_iter, 1, &value);
+      tz = g_strdup((gchar *)g_value_get_string(&value));
+      g_value_unset(&value);
+    }
+    else
+      tz = g_strdup("UTC");
     dt_conf_set_string("plugins/lighttable/geotagging/tz", tz);
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     dt_control_gpx_apply(filename, -1, tz);
@@ -525,22 +553,57 @@ static void _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *sel
     g_free(tz);
   }
 
+  g_object_unref(model);
   gtk_widget_destroy(extra_box);
   gtk_widget_destroy(filechooser);
   //   dt_control_queue_redraw_center();
 }
 
+static int _sort_timezones(gconstpointer a, gconstpointer b)
+{
+  const tz_tuple_t *tz_a = (tz_tuple_t *)a;
+  const tz_tuple_t *tz_b = (tz_tuple_t *)b;
+
+#ifdef _WIN32
+  gboolean utc_neg_a = g_str_has_prefix(tz_a->display, "(UTC-");
+  gboolean utc_neg_b = g_str_has_prefix(tz_b->display, "(UTC-");
+
+  gboolean utc_pos_a = g_str_has_prefix(tz_a->display, "(UTC+");
+  gboolean utc_pos_b = g_str_has_prefix(tz_b->display, "(UTC+");
+
+  if(utc_neg_a && utc_neg_b)
+  {
+    char *iter_a = tz_a->display + strlen("(UTC-");
+    char *iter_b = tz_b->display + strlen("(UTC-");
+
+    while(((*iter_a >= '0' && *iter_a <= '9') || *iter_a == ':') &&
+          ((*iter_b >= '0' && *iter_b <= '9') || *iter_b == ':'))
+    {
+      if(*iter_a != *iter_b) return *iter_b - *iter_a;
+      iter_a++;
+      iter_b++;
+    }
+  }
+  else if(utc_neg_a && utc_pos_b) return -1;
+  else if(utc_pos_a && utc_neg_b) return 1;
+#endif
+
+  return g_strcmp0(tz_a->display, tz_b->display);
+}
+
 // create a list of possible time zones
-// possible locations for zone.tab:
-// - /usr/share/zoneinfo
-// - /usr/lib/zoneinfo
-// - getenv("TZDIR")
-// - apparently on solaris there is no zones.tab. we need to collect the information ourselves like this:
-//   /bin/grep -h ^Zone /usr/share/lib/zoneinfo/src/* | /bin/awk '{print "??\t+9999+99999\t" $2}'
-#define MAX_LINE_LENGTH 256
 static GList *_lib_geotagging_get_timezones(void)
 {
-  GList *tz = NULL;
+  GList *timezones = NULL;
+
+#ifndef _WIN32
+  // possible locations for zone.tab:
+  // - /usr/share/zoneinfo
+  // - /usr/lib/zoneinfo
+  // - getenv("TZDIR")
+  // - apparently on solaris there is no zones.tab. we need to collect the information ourselves like this:
+  //   /bin/grep -h ^Zone /usr/share/lib/zoneinfo/src/* | /bin/awk '{print "??\t+9999+99999\t" $2}'
+#define MAX_LINE_LENGTH 256
   FILE *fp;
   char line[MAX_LINE_LENGTH];
 
@@ -570,7 +633,7 @@ static GList *_lib_geotagging_get_timezones(void)
     }
   }
 
-  // parse zone.tab and put all time zone descriptions into tz
+  // parse zone.tab and put all time zone descriptions into timezones
   fp = g_fopen(zone_tab, "r");
   g_free(zone_tab);
 
@@ -598,17 +661,113 @@ static GList *_lib_geotagging_get_timezones(void)
     }
     size_t last_char = strlen(name) - 1;
     if(name[last_char] == '\n') name[last_char] = '\0';
-    tz = g_list_append(tz, name);
+    tz_tuple_t *tz_tuple = (tz_tuple_t *)malloc(sizeof(tz_tuple_t));
+    tz_tuple->display = name;
+    tz_tuple->name = name;
+    timezones = g_list_prepend(timezones, tz_tuple);
   }
 
   fclose(fp);
 
-  // sort tz
-  tz = g_list_sort(tz, (GCompareFunc)g_strcmp0);
+  // sort timezones
+  timezones = g_list_sort(timezones, _sort_timezones);
 
-  return g_list_first(tz);
-}
+  tz_tuple_t *utc = (tz_tuple_t *)malloc(sizeof(tz_tuple_t));
+  utc->display = g_strdup("UTC");
+  utc->name = utc->display;
+  timezones = g_list_prepend(timezones, utc);
+
 #undef MAX_LINE_LENGTH
+
+#else // !_WIN32
+  // on Windows we have to grab the time zones from the registry
+  char *keypath = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones\\";
+  HKEY hKey;
+
+  if(RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+                   keypath,
+                   0,
+                   KEY_READ,
+                   &hKey) == ERROR_SUCCESS)
+  {
+    DWORD n_subkeys, max_subkey_len;
+
+    if(RegQueryInfoKey(hKey,
+                       NULL,
+                       NULL,
+                       NULL,
+                       &n_subkeys,
+                       &max_subkey_len,
+                       NULL,
+                       NULL,
+                       NULL,
+                       NULL,
+                       NULL,
+                       NULL) == ERROR_SUCCESS)
+    {
+      wchar_t *subkeyname = (wchar_t *)malloc((max_subkey_len + 1) * sizeof(wchar_t));
+
+      for(DWORD i = 1; i < n_subkeys; i++)
+      {
+        DWORD subkeyname_length = max_subkey_len + 1;
+        if(RegEnumKeyExW(hKey,
+                         i,
+                         subkeyname,
+                         &subkeyname_length,
+                         NULL,
+                         NULL,
+                         NULL,
+                         NULL) == ERROR_SUCCESS)
+        {
+          DWORD buffer_size;
+          char *subkeyname_utf8 = g_utf16_to_utf8(subkeyname, -1, NULL, NULL, NULL);
+          char *subkeypath_utf8 = g_strconcat(keypath, "\\", subkeyname_utf8, NULL);
+          wchar_t *subkeypath = g_utf8_to_utf16(subkeypath_utf8, -1, NULL, NULL, NULL);
+          if(RegGetValueW(HKEY_LOCAL_MACHINE,
+                          subkeypath,
+                          L"Display",
+                          RRF_RT_ANY,
+                          NULL,
+                          NULL,
+                          &buffer_size) == ERROR_SUCCESS)
+          {
+            wchar_t *display_name = (wchar_t *)malloc(buffer_size);
+            if(RegGetValueW(HKEY_LOCAL_MACHINE,
+                            subkeypath,
+                            L"Display",
+                            RRF_RT_ANY,
+                            NULL,
+                            display_name,
+                            &buffer_size) == ERROR_SUCCESS)
+            {
+              tz_tuple_t *tz = (tz_tuple_t *)malloc(sizeof(tz_tuple_t));
+
+              tz->name = subkeyname_utf8;
+              tz->display = g_utf16_to_utf8(display_name, -1, NULL, NULL, NULL);
+              timezones = g_list_prepend(timezones, tz);
+
+              subkeyname_utf8 = NULL; // to not free it later
+            }
+            free(display_name);
+          }
+          g_free(subkeyname_utf8);
+          g_free(subkeypath_utf8);
+          g_free(subkeypath);
+        }
+      }
+
+      free(subkeyname);
+    }
+  }
+
+  RegCloseKey(hKey);
+
+  timezones = g_list_sort(timezones, _sort_timezones);
+#endif // !_WIN32
+
+  return timezones;
+}
+
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -665,7 +824,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   dt_gui_key_accel_block_on_focus_disconnect(d->offset_entry);
-  g_list_free_full(d->timezones, &g_free);
+  g_list_free_full(d->timezones, free_tz_tuple);
   d->timezones = NULL;
   free(self->data);
   self->data = NULL;
