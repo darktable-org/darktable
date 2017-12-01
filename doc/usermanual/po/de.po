@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
 "POT-Creation-Date: 2017-11-23 13:06+0100\n"
-"PO-Revision-Date: 2017-11-30 19:40+0100\n"
+"PO-Revision-Date: 2017-12-01 17:12+0100\n"
 "Last-Translator: Pierre Metzner <pierre_metzner@web.de>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -7439,9 +7439,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5894(title)
 msgid "HSV lightness"
-msgstr ""
-""
-"HSV-Helligkeit"
+msgstr "HSV-Helligkeit"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5896(para)
 msgid ""
@@ -7618,8 +7616,9 @@ msgid ""
 "Clicking the <inlinegraphic fileref=\"images/shape_brush.png\" scalefit=\"1\" "
 "width=\"2%\" align=\"center\"/> symbol adds a brush stroke."
 msgstr ""
-"Ein Klick auf das <inlinegraphische fileref=\"images/shape_brush.png\" "
-"scalefit=\"1\" width=\"2%\" align=\"center\"/> Symbol fügt einen Pinselstrich "
+"Ein Klick auf das <<inlinegraphic fileref=\"images/shape_brush.png\""
+" scalefit=\"1\" "
+"width=\"2%\" align=\"center\"/> Symbol fügt einen Pinselstrich "
 "hinzu."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6051(para)
@@ -8306,6 +8305,12 @@ msgid ""
 "the final mask. More on that topic can be found in <xref linkend="
 "\"combined_masks\"/>."
 msgstr ""
+"Mit dem Invertieren-Button <inlinegraphic fileref=\"images/"
+"darkroom_module_icon_invert.png\" scalefit=\"1\" width=\"2%\" align=\"center"
+"\"/> können Sie die Polaritäten aller Kanäle (einschließlich einer eventuell "
+"aktivierten gezeichneten Maske) umschalten und die Methode ändern, wie Kanäle "
+"in die Endmaske eingebunden werden. Mehr zu diesem Thema finden Sie unter "
+"<xref linkend=\"combined_masks\"/>."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6622(para)
 msgid ""
@@ -8313,10 +8318,13 @@ msgid ""
 "darkroom_module_icon_reset.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/"
 "> you can put all settings back to their default state."
 msgstr ""
+"Mit dem Reset-Button <inlinegraphic fileref=\"images/"
+"darkroom_module_icon_reset.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/"
+"> können Sie alle Einstellungen wieder in den Grundzustand zurücksetzen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6638(title)
 msgid "Colorkey effect"
-msgstr ""
+msgstr "Colorkey-Effekt"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6648(para)
 msgid ""
@@ -8325,12 +8333,18 @@ msgid ""
 "\"><emphasis>monochrome</emphasis></link> to all parts of the image except "
 "for of the saturated red petals."
 msgstr ""
+"Um einen Colorkey-Effekt mit dieser Mohnblüte in Rot und dem Rest des Bildes "
+"in Monochrom zu erzeugen, könnten wir das Modul <link linkend=\"monochrome"
+"\"><emphasis>monochrom</emphasis></emphasis></link> auf alle Teile des Bildes "
+"anwenden, mit Ausnahme der gesättigten roten Blütenblätter."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6655(para)
 msgid ""
 "We choose the hue channel to control our mask as hue provides good separation "
 "between the petals and background."
 msgstr ""
+"Wir wählen den Farbtonkanal, um unsere Maske zu steuern, da der Farbton eine "
+"gute Trennung zwischen den Blütenblättern und dem Hintergrund bietet."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6666(para)
 msgid ""
@@ -8339,23 +8353,30 @@ msgid ""
 "color picker on one of the petals and the markers then closely centered on "
 "the indicated hue to increase the selectivity of our mask."
 msgstr ""
+"Diese Einstellungen im Farbtonkanal konstruieren eine parametrische "
+"Mischmaske, die die roten Blütenblätter ausschließt. Der kleine weiße Balken "
+"im Farbverlauf wurde durch die Verwendung des Farbwählers auf einem der "
+"Blütenblätter erhalten und die Marker wurden dann eng auf den angezeigten "
+"Farbton zentriert, um die Selektivität unserer Maske zu erhöhen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6679(para)
 msgid "The resulting blend mask."
-msgstr ""
+msgstr "Die resultierende Überblendmaske."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6689(para)
 msgid ""
 "The final image after module <emphasis>monochrome</emphasis> is applied."
 msgstr ""
+"Das endgültige Bild nach dem Modul <emphasis>monochrome</emphasis> wird "
+"angewendet."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6712(title)
 msgid "Combining drawn and parametric masks"
-msgstr ""
+msgstr "Kombinieren von gezeichneten und parametrischen Masken"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6716(secondary)
 msgid "combined masks"
-msgstr ""
+msgstr "kombinierte Masken"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6719(para)
 msgid ""
@@ -8365,6 +8386,12 @@ msgid ""
 "don't want to go through all the theoretical details just jump down where we "
 "describe two typical use cases."
 msgstr ""
+"In diesem Abschnitt wird beschrieben, wie Darktable einzelne Masken zu einer "
+"Endmaske eines Moduls zusammenfasst. Individuelle Masken sind die gezeichnete "
+"Maske und alle Einzelkanäle der parametrischen Maske. Das Thema ist ziemlich "
+"weit fortgeschritten - wenn Sie nicht alle theoretischen Details durchgehen "
+"wollen, springen Sie einfach hinunter, wo wir zwei typische Anwendungsfälle "
+"beschreiben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6730(para)
 msgid ""
@@ -8373,12 +8400,18 @@ msgid ""
 "buttons, and the setting in the <quote>combine masks</quote> combobox (see "
 "<xref linkend=\"blending\"/>)."
 msgstr ""
+"Es gibt zwei Hauptelemente, die steuern, wie die einzelnen Masken kombiniert "
+"werden: die Polaritätseinstellung jeder einzelnen Maske, definiert durch die "
+"Plus- oder Minus-Tasten, und die Einstellung in der <quote>combine masks</"
+"quote> combobox (siehe <xref linkend=\"blending\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6736(para)
 msgid ""
 "Masks can be regarded as grayscale images which take up values between 0 and "
 "1.0 (or from 0% to 100%) for each pixel."
 msgstr ""
+"Masken können als Graustufenbilder betrachtet werden, die Werte zwischen 0 "
+"und 1,0 (oder 0% bis 100%) für jedes Pixel aufnehmen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6741(para)
 msgid ""
@@ -8392,6 +8425,16 @@ msgid ""
 "pixel is excluded (its value is 0) by any mask there is no way to include it "
 "again by any other individual mask."
 msgstr ""
+"Eine einfache Möglichkeit, Masken zu kombinieren, besteht darin, die "
+"einzelnen Pixelwerte zu multiplizieren. Die endgültige Maske hat einen "
+"Pixelwert von 0, wenn eine der einzelnen Masken an dieser Pixelposition 0 "
+"ist. Die endgültige Maske kann nur dann einen maximalen Pixelwert von 1,0 "
+"erreichen, wenn jede einzelne Maske an dieser Stelle einen Wert von 1,0 hat. "
+"Wir nennen diese Art der Kombination <quote>exklusiv</quote>. Jede einzelne "
+"Maske kann ein Pixel ausschließen, indem sie seinen Wert auf Null setzt, "
+"unabhängig davon, was die anderen einzelnen Masken tun. Sobald ein Pixel "
+"durch eine Maske ausgeschlossen wird (sein Wert ist 0), gibt es keine "
+"Möglichkeit mehr, es durch eine andere individuelle Maske wieder einzubinden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6752(para)
 msgid ""
@@ -8406,6 +8449,18 @@ msgid ""
 "pixel is included (its value is 1.0) by any mask there is no way to exclude "
 "it again by any other individual mask."
 msgstr ""
+"Eine alternative Möglichkeit, Masken zu kombinieren, ist die folgende: Wir "
+"invertieren zuerst jede einzelne Maske - berechnet 1,0 minus ihren Wert - "
+"dann multiplizieren wir diese invertierten Masken und invertieren im letzten "
+"Schritt die endgültige Maske wieder. Wenn nun eine der nicht invertierten "
+"Einzelmasken an einer Pixelposition einen Wert von 1.0 hat, ist das "
+"Endergebnis ebenfalls 1.0. Die Endmaske kann nur dann einen Pixelwert von 0 "
+"erreichen, wenn alle Einzelmasken den Wert 0 haben. Wir nennen diese Art der "
+"Kombination <quote>inclusive</quote>. Jede einzelne Maske kann ein Pixel "
+"enthalten, indem sie ihren Wert auf 1,0 setzt, unabhängig davon, was die "
+"anderen einzelnen Masken tun. Sobald ein Pixel (sein Wert ist 1.0) durch eine "
+"Maske eingeschlossen ist, gibt es keine Möglichkeit mehr, es durch eine "
+"andere individuelle Maske wieder auszuschließen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6764(para)
 msgid ""
@@ -8419,6 +8474,16 @@ msgid ""
 "polarity button of a mask inverts its values, i.e. it recalculates the pixel "
 "values to 1.0 minus the original value."
 msgstr ""
+"Diese beiden Kombinationsmethoden allein wären noch sehr begrenzt. Maximale "
+"Flexibilität erreichen wir, indem wir für jede einzelne Maske einen "
+"zusätzlichen Inversionsschritt zulassen. Dies wird durch die Polaritätstasten "
+"<inlinegraphic fileref=\"images/darkroom_module_icon_polarity_plus.png\""
+" scalefit=\"1\" "
+"width=\"2%\" align=\"center\"/> und <inlinegraphic fileref=\"images/"
+"darkroom_module_icon_polarity_minus.png\" scalefit=\"1\" width=\"2%\" align="
+"\"center\"/> die Sie in der Nähe der einzelnen Kanäle finden. Das Umschalten"
+" der Polaritätstaste einer Maske invertiert ihre Werte, "
+"d.h. sie berechnet die Pixelwerte auf 1.0 minus den ursprünglichen Wert."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6775(para)
 msgid ""
@@ -8427,6 +8492,10 @@ msgid ""
 "<emphasis>exclusive &amp; inverted</emphasis> or <emphasis>inclusive &amp; "
 "inverted</emphasis> options."
 msgstr ""
+"Schließlich können Sie innerhalb der <quote>combine masks</quote> combobox "
+"das Endergebnis noch einmal invertieren, indem Sie die Optionen "
+"<emphasis>exclusive &amp; inverted</emphasis> oder <emphasis>inclusive &amp; "
+"inverted</emphasis> auswählen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6793(entry)
 msgid ""
@@ -8437,14 +8506,21 @@ msgid ""
 "included in the first place, or you want to exclude parts of the image that "
 "were previously included."
 msgstr ""
+"Sie werden typischerweise gemalte und parametrische Masken kombinieren "
+"wollen, um zuerst einen bestimmten Bereich Ihres Bildes auszuwählen - "
+"entweder durch die gezeichnete oder die parametrische Maske - und den anderen "
+"Maskentyp zu verwenden, um Ihre Auswahl zu verfeinern. Die Feinabstimmung "
+"kann entweder bedeuten, dass Sie weitere Teile des Bildes einbeziehen wollen, "
+"die gar nicht erst enthalten sind, oder dass Sie Teile des Bildes "
+"ausschließen wollen, die vorher aufgenommen wurden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6809(para)
 msgid "This gives two typical use cases:"
-msgstr ""
+msgstr "Daraus ergeben sich zwei typische Anwendungsfälle:"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6815(title)
 msgid "Inclusive mode"
-msgstr ""
+msgstr "Inklusiv-Modus"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6817(para)
 msgid ""
@@ -8458,10 +8534,19 @@ msgid ""
 "selection or you draw shapes on the canvas to select specific areas of your "
 "image."
 msgstr ""
+"Für diesen Modus setzen Sie die <quote>combine masks</quote> combobox auf "
+"<emphasis>inclusive</emphasis> und stellen sicher, dass alle Polaritätstasten "
+"aller Einzelkanäle und der gezeichneten Maske auf negativ gesetzt sind "
+"( <inlinegraphic fileref=\"images/darkroom_module_icon_polarity_minus.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> ). Ihr Ausgangspunkt ist eine "
+"Maske, in der alle Pixel den Wert Null haben, d.h. es wird kein Pixel "
+"ausgewählt. Sie passen nun die Schieberegler der parametrischen Maske an, um "
+"immer mehr Pixel in die Auswahl zu bringen, oder Sie zeichnen Formen auf der "
+"Leinwand, um bestimmte Bereiche Ihres Bildes auszuwählen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6831(title)
 msgid "Exclusive mode"
-msgstr ""
+msgstr "Exklusiv-Modus"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6833(para)
 msgid ""
@@ -8474,6 +8559,15 @@ msgid ""
 "exclude parts of your image as needed or you directly draw shapes on the "
 "canvas to specifically exclude these areas."
 msgstr ""
+"Im umgekehrten Fall setzen Sie die <quote>combine masks</quote> combobox auf "
+"<emphasis>exclusive</emphasis> und stellen Sie sicher, dass alle "
+"Polaritätstasten auf positiv gesetzt sind ( <inlinegraphic fileref=\"images/"
+"darkroom_module_icon_polarity_plus.png\" scalefit=\"1\" width=\"2%\" align="
+"\"center\"/> ). Ihr Ausgangspunkt ist eine Maske mit allen Werten bei 1.0, d."
+"h. allen ausgewählten Pixeln. Sie ändern nun schrittweise die parametrischen "
+"Masken-Schieberegler, um Teile Ihres Bildes bei Bedarf auszuschließen, oder "
+"Sie zeichnen direkt Formen auf die Leinwand, um diese Bereiche gezielt "
+"auszuschließen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6843(para)
 msgid ""
@@ -8483,6 +8577,12 @@ msgid ""
 "toggles between inclusive and exclusive mode in the <quote>combine masks</"
 "quote> combobox."
 msgstr ""
+"Für Ihre Bequemlichkeit finden Sie in der parametrischen Masken-GUI eine "
+"<inlinegraphic fileref=\"images/darkroom_module_icon_invert.png\""
+" scalefit=\"1\" width=\"2%"
+"\" align=\"center\"/> Toggle-Button, der alle "
+"Kanalpolaritäten invertiert und in der <quote>combine masks</quote> Combobox "
+"zwischen Inklusiv- und Exklusivmodus umschaltet."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6850(para)
 msgid ""
@@ -8491,6 +8591,10 @@ msgid ""
 "mask. Advanced users will find their way to take advantage of the many "
 "possible combinations of polarities and mask combination modes."
 msgstr ""
+"Für Anfänger empfiehlt es sich, sich an diese beiden Anwendungsfälle zu "
+"halten. Das bedeutet, dass Sie sich vorher entscheiden sollten, wie Sie Ihre "
+"Maske konstruieren wollen. Fortgeschrittene Anwender werden die vielen "
+"möglichen Kombinationen von Polaritäten und Maskenkombinationen nutzen können."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6867(title)
 msgid "Color management"
@@ -8502,6 +8606,9 @@ msgid ""
 "profiles or – in the case of raw files – from a library of camera specific "
 "color matrices."
 msgstr ""
+"Die Eingangsfarbspezifikationen stammen aus eingebetteten oder vom Anwender "
+"bereitgestellten ICC-Profilen oder - im Falle von Rohdaten - aus einer "
+"Bibliothek kameraspezifischer Farbmatrizen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6883(para)
 msgid ""
@@ -8511,6 +8618,11 @@ msgid ""
 "emphasis> is in place and properly set up to inform darktable about the "
 "correct monitor profile."
 msgstr ""
+"Darktable liest automatisch das Anzeigeprofil Ihres Monitors (sofern richtig "
+"konfiguriert) für eine akkurate Farbwiedergabe auf dem Bildschirm. Multi-"
+"Bildschirm-Setups werden voll unterstützt, solange ein Systemdienst wie "
+"<emphasis>colord</emphasis> vorhanden ist und richtig eingerichtet ist, um "
+"darktable über das richtige Monitorprofil zu informieren."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6890(para)
 msgid ""
@@ -8520,14 +8632,21 @@ msgid ""
 "into any other output color space that the user supplies to darktable as an "
 "ICC profile."
 msgstr ""
+"Ausgabedateien können in einem der eingebauten Profile von darktable kodiert "
+"werden, wie z.B. <ulink url=\"http://en.wikipedia.org/wiki/SRGB\">sRGB</"
+"ulink> oder <ulink url=\"http://en.wikipedia.org/wiki/Adobergb\">AdobeRGB "
+"(kompatibel)</ulink>, oder in jeden anderen Ausgabefarbraum, den der Benutzer "
+"als ICC-Profil an darktable liefert."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6873(para)
 msgid "darktable employs a fully color managed workflow: <placeholder-1/>"
 msgstr ""
+"darktable arbeitet mit einem vollständig farbverwalteten Workflow: "
+"<placeholder-1/>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6902(title)
 msgid "Display profile"
-msgstr ""
+msgstr "Bildschirmprofil"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6917(para)
 msgid ""
@@ -8540,6 +8659,14 @@ msgid ""
 "you can enforce a specific method in the GUI preferences dialog (see <xref "
 "linkend=\"gui_options\"/>)."
 msgstr ""
+"Damit Darktable Farben auf dem Bildschirm korrekt wiedergeben kann, muss es "
+"das richtige Anzeigeprofil Ihres Monitors finden. Im Allgemeinen setzt dies "
+"voraus, dass Ihr Monitor korrekt kalibriert und profiliert ist und dass das "
+"Profil korrekt auf Ihrem System installiert ist. darktable fragt die "
+"<emphasis>xatom</emphasis> Ihres X-Display-Servers sowie den Systemdienst "
+"<emphasis>colord</emphasis> (falls vorhanden) nach dem richtigen Profil ab. "
+"Bei Bedarf können Sie eine bestimmte Methode im GUI-Einstellungsdialog "
+"erzwingen (siehe <xref linkend=\"gui_options\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6927(para)
 msgid ""
@@ -8549,6 +8676,11 @@ msgid ""
 "correctly configured (see <xref linkend="
 "\"darktable_cmstest_commandline_parameters\"/>)."
 msgstr ""
+"Um die Konfiguration Ihres Anzeigeprofils zu untersuchen, können Sie den "
+"<filename moreinfo=\"none\">darktable-cmstest</filename> binary aufrufen, "
+"der nützliche Informationen wie den Profilnamen pro Monitor ausgibt und Ihnen "
+"sagt, ob das System korrekt konfiguriert ist (siehe <xref linkend="
+"\"darktable_cmstest_commandline_parameters\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6934(para)
 msgid ""
@@ -8558,14 +8690,19 @@ msgid ""
 "and the display profile dialog in the lighttable view (see <xref linkend="
 "\"lighttable_overview\"/>)."
 msgstr ""
+"In seltenen Fällen kann es erforderlich sein, das Anzeigeprofil manuell "
+"auszuwählen. Dies ist möglich über die Softproof- und Gamut-Check-Optionen in "
+"der Dunkelkammer-Ansicht (siehe <xref linkend=\"softproof\"/> und <xref "
+"linkend=\"gamutcheck\"/>), und über den Anzeigeprofil-Dialog in der "
+"Lighttable-Ansicht (siehe <xref linkend=\"lighttable_overview\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6945(title)
 msgid "Rendering method"
-msgstr ""
+msgstr "Rendering-Verfahren"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6949(secondary)
 msgid "rendering method"
-msgstr ""
+msgstr "Rendering-Verfahren"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6953(primary)
 msgid "LittleCMS2"
@@ -8577,6 +8714,10 @@ msgid ""
 "profile</quote> in darktable's <emphasis>core options</emphasis> (see <xref "
 "linkend=\"core_options\"/>) defines how colors are rendered."
 msgstr ""
+"Ein Konfigurationsparameter <quote> verwendet immer LittleCMS 2, um das "
+"Ausgabefarbprofil </quote> in Darktable's <emphasis>core options</emphasis> "
+"(siehe <xref linkend=\"core_options\"/>) zu verwenden, definiert, wie Farben "
+"gerendert werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6962(para)
 msgid ""
@@ -8587,6 +8728,12 @@ msgid ""
 "you a choice of the rendering intent and might offer a slightly higher "
 "accuracy in some cases."
 msgstr ""
+"darktable kann Farben entweder mit seinen internen Algorithmen oder mit Hilfe "
+"der externen Bibliothek <ulink url=\"http://www.littlecms.com/"
+"\"><emphasis>LittleCMS2</emphasis></ulink>. darktable's interne Methode ist "
+"um eine Größenordnung schneller als die externe. Die externe Option gibt "
+"Ihnen die Wahl des Rendering Intents und kann in manchen Fällen eine etwas "
+"höhere Genauigkeit bieten."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6970(para)
 msgid ""
@@ -8594,15 +8741,18 @@ msgid ""
 "darktable will use LittleCMS 2 to render the colors regardless of that "
 "configuration parameter's value."
 msgstr ""
+"Beachten Sie, dass darktable, wenn das angegebene ICC LUT-basiert ist oder "
+"beides, eine LUT und eine Matrix, enthält, LittleCMS 2 verwendet, um die "
+"Farben unabhängig vom Wert des Konfigurationsparameters zu rendern."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6980(title)
 msgid "Rendering intent"
-msgstr ""
+msgstr "Rendering Intent"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6984(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6988(primary)
 msgid "rendering intent"
-msgstr ""
+msgstr "Rendering Intent"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6991(para)
 msgid ""
@@ -8624,6 +8774,29 @@ msgid ""
 "row><row><entry><emphasis>absolute colorimetric</emphasis></entry><entry> "
 "Keep the white point. </entry></row></tbody></tgroup></informaltable>"
 msgstr ""
+"Wenn Rendering mit LittleCMS2 aktiviert ist  (siehe <xref"
+" linkend=\"rendering_method\"/>) können Sie festlegen, wie mit"
+" Out-of-Gamut-Farben"
+"bei der Konvertierung zwischen Farbräumen umgegangen werden soll."
+"Eine Auswahlbox im Export-Panel "
+"(siehe <xref linkend=\"export_selected\"/>), das Ausgabefarbprofil-Modul "
+"(siehe <xref linkend=\"output_color_profile\"/>), und die Softproof-Option "
+"(siehe <xref linkend=\"softproof\"/>) gibt Ihnen die Wahl zwischen den"
+" folgenden Darstellungsarten: "
+"<informaltable frame=\"none\" width=\"80%\"><tgroup cols="
+"\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"4*\"/><colspec colwidth="
+"\"6*\"/><tbody><row><entry><emphasis>perceptual</emphasis></entry><entry> "
+"Geeignet für Bilder, da es die relative Position der Farben beibehält. Das"
+" ist "
+"normalerweise die beste Wahl. </entry></row><row><entry><emphasis>relative "
+"colorimetric</emphasis></entry><entry> Out-of-gamut-Farben werden in Farben"
+" mit gleicher Helligkeit, aber unterschiedlicher Sättigung umgewandelt."
+" Andere Farben bleiben unverändert. </entry></row><row><entry><emphasis"
+">saturation</emphasis></"
+"entry><entry> Die Sättigung bleibt erhalten, aber die Helligkeit wird leicht"
+" verändert. </entry></"
+"row><row><entry><emphasis>absolute colorimetric</emphasis></entry><entry> "
+"Bewahrt den Weißpunkt. </entry></row></tbody></tgroup></informaltable>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7046(title)
 msgid "darktable's color spaces"
@@ -8644,6 +8817,14 @@ msgid ""
 "the image processing pipeline is once again in RGB, either shaped for the "
 "monitor display or the output file."
 msgstr ""
+"Die Eingabebilder von darktable sind entweder RGB-Dateien (wie JPEGs oder "
+"TIFFs) oder vordemosaizierte Kamera-Raws - beide repräsentieren Farben durch "
+"eine Kombination aus Rot, Grün und Blau. Die meisten unserer Module agieren "
+"im <ulink url=\"http://en.wikipedia.org/wiki/Lab_color_space\">CIELAB "
+"Farbraum</ulink> (oft nur <quote>Lab</quote> genannt), der Farbe als eine "
+"Kombination aus Helligkeitsdaten (L) und einem Punkt in der a-b Farbebene "
+"beschreibt. Die endgültige Ausgabe der Bildverarbeitungs-Pipeline erfolgt "
+"wieder in RGB, entweder für die Monitoranzeige oder die Ausgabedatei."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7062(para)
 msgid ""
@@ -8654,23 +8835,32 @@ msgid ""
 "\"><emphasis>demosaic</emphasis></link> step for raw images, where the colors "
 "of each pixel are reconstructed by interpolation."
 msgstr ""
+"Dieser Prozess impliziert, dass die Pixelpipe zwei Farbumwandlungsschritte "
+"hat: <link linkend=\"input_color_profile\"><emphasis>input color profile</"
+"emphasis></emphasis></link> und <link linkend=\"output_color_profile"
+"\"><emphasis>output color profile</emphasis></link>. Zusätzlich gibt es noch "
+"den <link linkend=\"demosaic\"><emphasis>demosaic</emphasis></link>> step for "
+"raw images, bei dem die Farben jedes Pixels durch Interpolation rekonstruiert "
+"werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7070(para)
 msgid ""
 "Each module has a fixed position in the pixelpipe which tells you which color "
 "space the module lives in:"
 msgstr ""
+"Jedes Modul hat eine feste Position in der Pixelpipe, die Ihnen sagt, in "
+"welchem Farbraum das Modul lebt:"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7084(emphasis)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7096(emphasis)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9545(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9549(primary)
 msgid "demosaic"
-msgstr ""
+msgstr "Demosaik"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7083(entry)
 msgid "up to <placeholder-1/>"
-msgstr ""
+msgstr "bis zu <placeholder-1/>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7087(entry)
 msgid ""
@@ -8679,6 +8869,11 @@ msgid ""
 "some of the modules in this part can also act on non-raw input images in RGB "
 "format with full information on all three color channels."
 msgstr ""
+"Das Bild ist im Rohdatenformat mit nur latenten Farben. Jedes Pixel enthält "
+"Helligkeits- und Farbinformationen für nur eine Grundfarbe. Bitte beachten "
+"Sie, dass einige der Module in diesem Teil auch auf nicht rohe Eingangsbilder "
+"im RGB-Format mit vollständigen Informationen über alle drei Farbkanäle "
+"reagieren können."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7096(emphasis)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7107(emphasis)
@@ -8687,18 +8882,20 @@ msgstr ""
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11962(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12127(emphasis)
 msgid "input color profile"
-msgstr ""
+msgstr "Eingabefarbprofil"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7095(entry)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7106(entry)
 msgid "between <placeholder-1/> and <placeholder-2/>"
-msgstr ""
+msgstr "zwischen <placeholder-1/> und <placeholder-2/>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7100(entry)
 msgid ""
 "Image is in RGB format within the color space of the specific camera or input "
 "file."
 msgstr ""
+"Das Bild ist im RGB-Format innerhalb des Farbraums der jeweiligen Kamera oder "
+"Eingabedatei."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7107(emphasis)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7120(emphasis)
@@ -8706,7 +8903,7 @@ msgstr ""
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11286(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11291(secondary)
 msgid "output color profile"
-msgstr ""
+msgstr "Ausgabefarbprofil"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7111(entry)
 msgid ""
@@ -8715,24 +8912,31 @@ msgid ""
 "processes images in 4x32-bit floating point buffers, we can handle the Lab "
 "color space without risking banding or tonal breaks."
 msgstr ""
+"Das Bild ist im Lab-Format. Dies ist ein sehr großer universeller Farbraum, "
+"der alle für das menschliche Auge sichtbaren Farben abdeckt (und noch mehr). "
+"Da Darktable Bilder in 4x32-Bit-Fließkomma-Puffern verarbeitet, können wir "
+"den Lab-Farbraum handhaben, ohne Bandenbildung oder Tonwertbrüche zu "
+"riskieren."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7119(entry)
 msgid "after <placeholder-1/>"
-msgstr ""
+msgstr "nach <placeholder-1/>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7123(entry)
 msgid ""
 "Image is in RGB format as defined by the selected display or output ICC "
 "profile."
 msgstr ""
+"Das Bild ist im RGB-Format, wie es durch das gewählte Display oder das ICC-"
+"Profil definiert ist."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7136(title)
 msgid "Unbounded colors"
-msgstr ""
+msgstr "Unbegrenzte Farben"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7139(primary)
 msgid "unbounded colors"
-msgstr ""
+msgstr "Unbegrenzte Farben"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7142(para)
 msgid ""
@@ -8742,6 +8946,11 @@ msgid ""
 "and 100% (or between 0.0 and 1.0). Likewise the L channel in Lab can be "
 "anything between 0 (pure black) and 100 (pure white)."
 msgstr ""
+"Theoretisch sind die einzelnen Komponenten der Farbdaten auf bestimmte "
+"Minimal- und Maximalwerte beschränkt. Beispielsweise kann die Intensität "
+"eines einzelnen roten, grünen oder blauen Farbkanals in RGB im Bereich "
+"zwischen 0% und 100% (oder zwischen 0,0 und 1,0) liegen. Ebenso kann der L-"
+"Kanal im Lab zwischen 0 (reines Schwarz) und 100 (reines Weiß) liegen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7149(para)
 msgid ""
@@ -8750,6 +8959,10 @@ msgid ""
 "well established color matrices, which convert from camera RGB to Lab, may "
 "sometimes produce pixels with negative L values."
 msgstr ""
+"In der Praxis kann es vorkommen, dass die Bildverarbeitungsschritte in den "
+"Modulen von darktable zu Werten führen, die außerhalb dieser engen Bereiche "
+"liegen. Tatsächlich können sogar die etablierten Farbmatrizen, die von Kamera "
+"RGB nach Lab konvertieren, manchmal Pixel mit negativen L-Werten erzeugen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7156(para)
 msgid ""
@@ -8759,6 +8972,12 @@ msgid ""
 "it is much preferred and less prone to artifacts to not clamp in-between "
 "unbounded colors, but treat them just like any other color data."
 msgstr ""
+"Pixel mit solchen Werten haben angeblich <quote>unbegrenzte Farben</quote>. "
+"Man könnte <emphasis>clamp</emphasis> (d.h. beschränken) diese Werte auf den "
+"erlaubten Bereich bei jedem Verarbeitungsschritt. Es hat sich jedoch "
+"herausgestellt, dass es viel bevorzugt und weniger anfällig für Artefakte "
+"ist, nicht zwischen unbegrenzten Farben zu klemmen, sondern sie wie alle "
+"anderen Farbdaten zu behandeln."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7164(para)
 msgid ""
@@ -8769,30 +8988,35 @@ msgid ""
 "reasonable color within the selected output color space. Therefore darktable "
 "avoids clamping as far as the underlying algorithms allow."
 msgstr ""
+"Da wir für alle Verarbeitungsschritte Gleitkommaarithmetik verwenden, können "
+"unbegrenzte Werte wie jeder andere Wert weitergegeben werden, bis das finale "
+"Farbkonvertierungsmodul sicherstellt, dass sie innerhalb des gewählten "
+"Ausgabefarbraums in die sinnvollste Farbe übertragen werden. Darktable "
+"vermeidet so weit wie es die zugrundeliegenden Algorithmen erlauben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7176(title)
 msgid "Possible color artifacts"
-msgstr ""
+msgstr "Mögliche Farbartefakte"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7180(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10150(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11621(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11967(secondary)
 msgid "blue light sources"
-msgstr ""
+msgstr "blaue Lichtquellen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7185(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10145(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11616(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11972(secondary)
 msgid "black pixels"
-msgstr ""
+msgstr "schwarze Pixel"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7189(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11976(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12039(title)
 msgid "gamut clipping"
-msgstr ""
+msgstr "Farbraumbegrenzung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7192(para)
 msgid ""
@@ -8805,6 +9029,15 @@ msgid ""
 "negative L values are especially problematic to these modules and can lead to "
 "black pixel artifacts."
 msgstr ""
+"Dennoch gibt es einige seltene Situationen, die immer noch zu problematischen "
+"Ergebnissen führen können, wenn der Benutzer nichts dagegen unternimmt. "
+"Einige Module im Lab-Farbraum, wie z.B. <link linkend=\"levels"
+"\"><emphasis>levels</emphasis></link> und <link linkend=\"monochrome"
+"\"><emphasis>monochrome</emphasis></link>, müssen sich darauf verlassen, dass "
+"die L-Kanäle alle Helligkeitsinformationen tragen und die a- und b-Kanäle "
+"rein Chroma und Farbton repräsentieren. Unbegrenzte Farben mit negativen L-"
+"Werten sind für diese Module besonders problematisch und können zu schwarzen "
+"Pixelartefakten führen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7202(para)
 msgid ""
@@ -8812,6 +9045,10 @@ msgid ""
 "are hot candidates for pixels with negative L values. If you are engaged in "
 "stage photography you should pay close attention to image areas like that."
 msgstr ""
+"Es hat sich gezeigt, dass hochgesättigte blaue Lichtquellen im Bildrahmen "
+"heiße Kandidaten für Pixel mit negativen L-Werten sind. Wenn Sie sich mit "
+"Bühnenfotografie beschäftigen, sollten Sie genau auf solche Bildbereiche "
+"achten."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7208(para)
 msgid ""
@@ -8823,6 +9060,14 @@ msgid ""
 "the costs of losing some color dynamics. See <xref linkend="
 "\"input_color_profile\"/> for an example."
 msgstr ""
+"Um dieses Problem zu mildern, hat das Modul <emphasis>input color profile</"
+"emphasis> (siehe <xref linkend=\"input_color_profile\"/>) eine Option "
+"<emphasis>gamut clipping</emphasis>. Sie ist standardmäßig ausgeschaltet, "
+"kann aber aktiviert werden, wenn Sie Artefakte beobachten. Je nach "
+"Einstellung werden die Farben auf einen der angebotenen RGB-Gamuts "
+"beschränkt. In der Tat werden schwarze Pixel-Artefakte verhindert, was den "
+"Verlust der Farbdynamik zur Folge hat. Siehe <xref linkend="
+"\"input_color_profile\"/> für ein Beispiel."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7227(title)
 #, fuzzy
@@ -8854,6 +9099,8 @@ msgid ""
 "This section contains documentation for panels that are specific to the "
 "darkroom view."
 msgstr ""
+"Dieser Abschnitt enthält die Dokumentation für Panels, die speziell für die "
+"Dunkelkammeransicht entwickelt wurden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7241(title)
 msgid "Navigation"
@@ -8872,6 +9119,12 @@ msgid ""
 "current zoom scale is displayed to the right of the preview image. Click on "
 "that figure for a quick access to some common zoom levels."
 msgstr ""
+"Oben links im Navigations-Panel sehen Sie eine vollständige Vorschau Ihres "
+"Bildes mit einem Rechteck, das den aktuell sichtbaren Zoombereich in der "
+"Mitte zeigt. Ziehen Sie das Rechteck umher, um die vergrößerte Ansicht zu "
+"verschieben. Die aktuelle Zoomskala wird rechts neben dem Vorschaubild "
+"angezeigt. Klicken Sie auf diese Abbildung, um einen schnellen Zugriff auf "
+"einige gängige Zoomstufen zu erhalten."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7281(title)
 msgid "Snapshots"
@@ -8907,6 +9160,10 @@ msgid ""
 "the center of the line. Click it to change between vertical and horizontal "
 "split view."
 msgstr ""
+"Sie können die Split-Ansicht steuern, indem Sie die Splitline vor und zurück "
+"bewegen. Wenn Sie mit der Maus über die Trennlinie fahren, erscheint ein "
+"kleines Rotationssymbol in der Mitte der Linie. Klicken Sie darauf, um "
+"zwischen vertikaler und horizontaler Split-Ansicht zu wechseln."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7343(para)
 msgid ""
@@ -8916,6 +9173,12 @@ msgid ""
 "module or change a module parameter, all modules above the selected point "
 "will be discarded."
 msgstr ""
+"Der History-Stack listet jede Zustandsänderung (aktiviert/deaktiviert) für "
+"alle Module auf. Hier können Sie <emphasis>select</emphasis> einen Punkt im "
+"Stack auswählen, um zu einem Punkt in der Entwicklungsgeschichte "
+"zurückzukehren. Wenn Sie dann ein neues Modul aktivieren oder einen "
+"Modulparameter ändern, werden alle Module oberhalb des gewählten Punktes "
+"verworfen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7359(emphasis)
 msgid ""
@@ -8923,6 +9186,10 @@ msgid ""
 "modules above the currently selected one. It is easy to lose all development "
 "work on an image this way!"
 msgstr ""
+"Achtung: Das Aktivieren einer beliebigen Modulaktion mit Hilfe von "
+"Tastenbeschleunigern verwirft alle Module oberhalb des aktuell ausgewählten "
+"Moduls. Es ist leicht, auf diese Weise alle Entwicklungsarbeiten an einem "
+"Bild zu verlieren!"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7364(para)
 msgid ""
@@ -8932,6 +9199,11 @@ msgid ""
 "the image you will find the history stack panel in the state where you left "
 "it."
 msgstr ""
+"In Darktable 2.0 ist es sicher, das Programm zu beenden, den Dunkelkammer-"
+"Modus zu verlassen oder zu einem anderen Bild zu wechseln, während man einen "
+"früheren Zustand im History-Stack-Panel ausgewählt hat. Der History-Stack "
+"bleibt unverändert. Wenn Sie zum Bild zurückkehren, finden Sie das History-"
+"Stack-Panel in dem Zustand, in dem Sie es verlassen haben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7371(para)
 msgid ""
@@ -8939,6 +9211,10 @@ msgid ""
 "stack that produces the current image, i.e. suppressing all obsolete stack "
 "items. This also will discard all modules above the currently selected one."
 msgstr ""
+"Durch Drücken von <quote>compress history stack</quote> wird der kürzeste "
+"History-Stack erzeugt, der das aktuelle Bild erzeugt, d.h. alle veralteten "
+"Stack-Items werden unterdrückt. Dadurch werden auch alle Module oberhalb des "
+"aktuell ausgewählten Moduls verworfen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7377(para)
 msgid ""
@@ -8949,6 +9225,13 @@ msgid ""
 "description. You are prompted for which of the current history stack modules "
 "to include in the style."
 msgstr ""
+"Mit dem Button rechts <inlinegraphic fileref=\"images/darkroom_styles.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> können Sie einen neuen Stil "
+"erstellen, um Ihren History-Stack auf andere Bilder anzuwenden. Benutzen Sie "
+"die erste Zeile des Popup-Dialogfensters, um Ihren Stil zu benennen, und die "
+"zweite, um eine durchsuchbare Beschreibung hinzuzufügen. Sie werden gefragt, "
+"welche der aktuellen History-Stack-Module in den Stil aufgenommen werden "
+"sollen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7386(para)
 msgid ""
@@ -8956,10 +9239,13 @@ msgid ""
 "lighttable's <emphasis>styles</emphasis> panel (see <xref linkend=\"styles\"/"
 ">)."
 msgstr ""
+"Einmal erstellte Stile werden dann verwaltet und auf andere Bilder durch "
+"Lighttable's <emphasis>styles</emphasis> panel angewendet (siehe <xref "
+"linkend=\"styles\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7395(title)
 msgid "Global color picker"
-msgstr ""
+msgstr "Globale Farbpipette"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7413(para)
 msgid ""
@@ -8971,6 +9257,13 @@ msgid ""
 "the color picker works, whose settings remain in effect until you leave the "
 "darkroom mode."
 msgstr ""
+"Mit der globalen Farbpipette können Sie Farbmuster aus Ihrem Bild entnehmen, "
+"deren Werte auf verschiedene Arten darstellen und Farben von verschiedenen "
+"Orten vergleichen. Der Farbwähler wird durch Drücken des Icons <inlinegraphic "
+"fileref=\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"3%"
+"\" align=\"center\"/> aktiviert. Es gibt mehrere Parameter, mit denen Sie "
+"steuern können, wie der Farbwähler arbeitet, dessen Einstellungen so lange "
+"wirksam bleiben, bis Sie den Dunkelkammer-Modus verlassen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7430(para)
 msgid ""
@@ -8983,6 +9276,13 @@ msgid ""
 "Lab; they reflect the input and output data of that specific module within "
 "pixelpipe."
 msgstr ""
+"Neben dem hier beschriebenen globalen Farbpicker gibt es in einigen Modulen "
+"auch lokale Farbpicker (z.B. <link linkend=\"tone_curve\"><emphasis>Tonkurve</"
+"emphasis></link>). Globale und lokale Farbauswahlen sind unterschiedlich. Der "
+"globale Farbpicker arbeitet im Monitor-Farbraum und entnimmt Proben, nachdem "
+"die komplette Pixelpipe bearbeitet wurde. Die lokalen Farbwähler laufen im "
+"Farbraum des einzelnen Moduls, in der Regel Lab, und spiegeln die Ein- und "
+"Ausgabedaten des jeweiligen Moduls in Pixelpipe wider."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7439(para)
 msgid ""
@@ -8992,6 +9292,12 @@ msgid ""
 "The combobox to switch between point and area mode can also be used to toggle "
 "the mode of local color pickers."
 msgstr ""
+"Die globale Farbauswahl kann im Punkt- oder Flächenmodus ausgeführt werden. "
+"Im Punktmodus wird nur ein kleiner Punkt unter dem Cursor als Probe genommen. "
+"Im Bereichsmodus können Sie ein Rechteck zeichnen und die darktable Samples "
+"den Bereich innerhalb dieses Rechtecks. Die Combobox zum Umschalten zwischen "
+"Punkt- und Flächenmodus kann auch verwendet werden, um den Modus der lokalen "
+"Farbwähler umzuschalten."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7446(para)
 msgid ""
@@ -9000,6 +9306,11 @@ msgid ""
 "displayed. For obvious statistical reasons mean, min and max are identical "
 "for the single sample of point mode."
 msgstr ""
+"Wenn Proben im Flächenmodus genommen werden, berechnet Darktable den "
+"Mittelwert, den minimalen und den maximalen Farbkanalwert. Über eine Combobox "
+"können Sie auswählen, welche davon angezeigt werden sollen. Aus "
+"offensichtlichen statistischen Gründen sind Mittelwert, Min und Max für die "
+"Einzelmessung im Punktmodus identisch."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7452(para)
 msgid ""
@@ -9009,6 +9320,12 @@ msgid ""
 "into Lab color space. Beware that Lab values are approximated here; depending "
 "on monitor color profile there can be some deviations from the real values."
 msgstr ""
+"Ein Farbmuster, das den abgetasteten Punkt oder Bereich darstellt, wird "
+"angezeigt. Auch numerische Werte werden angezeigt. Wie bereits erwähnt, "
+"arbeitet der globale Farbwähler im RGB-Farbraum des Monitors. Sie können "
+"darktable diese Zahlenwerte auch in den Lab-Farbraum übersetzen lassen. "
+"Beachten Sie, dass hier die Lab-Werte angenähert werden; je nach Farbprofil "
+"des Monitors kann es zu Abweichungen von den tatsächlichen Werten kommen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7460(para)
 msgid ""
@@ -9018,6 +9335,11 @@ msgid ""
 "\"histogram\"/>). This is a way to show which tonal values are present in a "
 "specific area."
 msgstr ""
+"Wenn das Kontrollkästchen <quote>Histogramm auf Auswahl einschränken</quote> "
+"angekreuzt ist, werden nur die Werte des ausgewählten Bereichs oder Punktes "
+"vom Haupthistogramm am oberen Rand des rechten Panels berücksichtigt (siehe "
+"<xref linkend=\"histogram\"/>). Auf diese Weise können Sie anzeigen, welche "
+"Tonwerte in einem bestimmten Bereich vorhanden sind."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7467(para)
 msgid ""
@@ -9027,6 +9349,12 @@ msgid ""
 "once again select which numerical value (mean, min, max) is to be displayed "
 "and if this is to be done in RGB or Lab color space."
 msgstr ""
+"Die gesampelten Farben im Flächen- oder Punktmodus können als Live-Samples "
+"gespeichert werden, indem Sie auf die Schaltfläche <quote>add</quote> "
+"drücken. Darktable zeigt dann für jede gespeicherte Probe ein Farbmuster und "
+"numerische Werte an. Sie können erneut auswählen, welcher Zahlenwert "
+"(Mittelwert, Min, Max) angezeigt werden soll und ob dies im RGB- oder Lab-"
+"Farbraum erfolgen soll."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7474(para)
 msgid ""
@@ -9038,16 +9366,25 @@ msgid ""
 "live samples from the same location and lock just one of them to provide a "
 "before and after sample comparison."
 msgstr ""
+"Newly created live samples are not locked. If you change your image the "
+"changes will be reflected in your live samples. Use this if you want see how "
+"changing parameters effects different parts of an image. Clicking on a live "
+"sample's color swatch locks it and a lock symbol is displayed. Further image "
+"changes will then no longer affect the sample. You can for example take two "
+"live samples from the same location and lock just one of them to provide a "
+"before and after sample comparison."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7483(para)
 msgid ""
 "Live sample locations are indicated in your image if you check option "
 "<quote>display sample areas on image</quote>."
 msgstr ""
+"Live-Sample-Positionen werden in Ihrem Bild angezeigt, wenn Sie die Option "
+"<quote>Anzeige von Sample-Bereichen auf image</quote> aktivieren."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7492(title)
 msgid "Mask manager"
-msgstr ""
+msgstr "Maskenmanager"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7507(para)
 msgid ""
@@ -9056,6 +9393,11 @@ msgid ""
 "change shapes or give them unique names. You can add shapes to and remove "
 "shapes from a mask, and you define how multiple shapes interact within a mask."
 msgstr ""
+"Das Maskenmanager-Panel ist der zentrale Ort, an dem Sie alle Masken und "
+"Formen im Kontext des aktuellen Bildes verwalten. Hier können Sie Formen "
+"anlegen, löschen, ändern oder eindeutig benennen. Sie können Formen zu einer "
+"Maske hinzufügen und entfernen, und Sie legen fest, wie mehrere Formen "
+"innerhalb einer Maske interagieren."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7526(entry)
 msgid ""
@@ -9063,6 +9405,10 @@ msgid ""
 "shapes. They are the same as in the <placeholder-1/> GUI (see <xref linkend="
 "\"drawn_mask\"/> for more details)."
 msgstr ""
+"In der oberen Zeile des Masken-Manager-Fensters finden Sie Schaltflächen, mit "
+"denen Sie neue Formen erstellen können. Sie sind die gleichen wie im "
+"<placeholder-1/> GUI (siehe <xref linkend=\"drawn_mask\"/> für weitere "
+"Details)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7539(para)
 msgid ""
@@ -9074,10 +9420,18 @@ msgid ""
 "the <inlinegraphic fileref=\"images/masks_used.png\" scalefit=\"1\" width=\"2%"
 "\" align=\"center\"/> symbol to the right of the shape name."
 msgstr ""
+"In den folgenden Zeilen sind alle verwendeten Masken und alle individuellen "
+"Formen aufgelistet. Die Masken sind mit einer Überschrift in der Form "
+"<quote>grp levels</quote> gekennzeichnet, die das Modul angibt, in dem sie "
+"verwendet werden. Nach der Liste der Masken folgt eine Liste aller "
+"individuellen Formen, die im Kontext des gegebenen Bildes erzeugt wurden. "
+"Wenn eine Form von einer der Masken verwendet wird, wird sie durch das "
+"<inlinegraphic fileref=\"images/masks_used.png\" scalefit=\"1\" width=\"2%"
+"\" align=\"center\"/> Symbol rechts neben dem Namen der Form gekennzeichnet."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7553(title)
 msgid "Shapes"
-msgstr ""
+msgstr "Formen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7555(para)
 msgid ""
@@ -9091,6 +9445,16 @@ msgid ""
 "name like <quote>house front</quote> makes it easier to get the right shape, "
 "rather than something like <quote>path #32</quote>."
 msgstr ""
+"Standardmäßig erhalten Shapes einen automatisch generierten Namen, bestehend "
+"aus dem Shape-Typ (<quote>brush</quote>, <quote>circle</quote>, "
+"<quote>ellipse</quote>, <quote>path</quote>, <quote>gradient</quote>) und "
+"einer automatisch inkrementierten Zahl. Sie können diese automatisch "
+"generierten Namen durch aussagekräftigere ersetzen. Ein Doppelklick auf den "
+"Namen der vorhandenen Form fordert Sie auf, eine neue Form anzugeben. Einen "
+"aussagekräftigen Namen zu geben ist eine gute Angewohnheit, besonders wenn "
+"Sie die gleiche Auswahl in verschiedenen Masken verwenden wollen. Ein Name "
+"wie <quote>house front</quote> macht es einfacher, die richtige Form zu "
+"bekommen, als etwas wie <quote>path #32</quote>."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7566(para)
 msgid ""
@@ -9099,12 +9463,20 @@ msgid ""
 "specific shape. Especially if there are so many shapes within a mask that "
 "their controls overlap and make it difficult to hit the right target."
 msgstr ""
+"Wenn Sie auf den Namen der Form klicken, wird die ausgewählte Form in der "
+"mittleren Leinwand mit allen Steuerelementen angezeigt. Dies ist ein bequemer "
+"Weg, um die Eigenschaften einer bestimmten Form zu bearbeiten. Vor allem, "
+"wenn es so viele Formen innerhalb einer Maske gibt, dass sich ihre "
+"Steuerelemente überlappen und es schwierig wird, das richtige Ziel zu treffen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7573(para)
 msgid ""
 "Right-clicking on a shape name gives you a drop-down menu with the options to "
 "remove the current shape or to remove all shapes currently not in use."
 msgstr ""
+"Wenn Sie mit der rechten Maustaste auf einen Formnamen klicken, erhalten Sie "
+"ein Dropdown-Menü mit den Optionen zum Entfernen der aktuellen Form oder zum "
+"Entfernen aller derzeit nicht verwendeten Formen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7578(para)
 msgid ""
@@ -9118,16 +9490,29 @@ msgid ""
 "you can no longer rely on the exported file to contain your full history "
 "stack (see <xref linkend=\"export_selected\"/>)."
 msgstr ""
+"Alle Formen, die jemals für das aktuelle Bild definiert wurden, bleiben in "
+"der Liste erhalten, es sei denn, Sie entfernen sie explizit. Wenn Sie viel "
+"mit Shapes an einem Bild gearbeitet haben, kann diese Liste recht lang "
+"werden. Alle Einstellungen - mit allen definierten Formen - sind Teil der XMP-"
+"Tags eines Bildes und werden in exportierte Dateien übernommen. Wenn die "
+"Liste der Formen sehr lang ist, kann der benötigte Speicherplatz für alle "
+"Formen die vorgegebenen Grenzen bestimmter Dateiformate, wie z.B. JPEG, "
+"überschreiten. In diesem Fall kann das Speichern der XMP-Tags beim Export "
+"fehlschlagen. Dies ist normalerweise kein Problem - Sie können sich jedoch "
+"nicht mehr darauf verlassen, dass die exportierte Datei Ihren kompletten "
+"History-Stack enthält (siehe <xref linkend=\"export_selected\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7593(title)
 msgid "Masks"
-msgstr ""
+msgstr "Masken"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7595(para)
 msgid ""
 "Clicking on the name of a mask expands a list showing the individual shapes "
 "which constitute that mask."
 msgstr ""
+"Wenn Sie auf den Namen einer Maske klicken, öffnet sich eine Liste mit den "
+"einzelnen Formen, aus denen die Maske besteht."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7606(entry)
 msgid ""
@@ -9135,6 +9520,10 @@ msgid ""
 "way that the individual shapes interact to form the mask. You can also remove "
 "shapes from that mask."
 msgstr ""
+"Wenn Sie mit der rechten Maustaste auf den Namen der Form klicken, öffnet "
+"sich ein Dropdown-Menü. Hier legen Sie fest, wie die einzelnen Formen "
+"miteinander interagieren, um die Maske zu bilden. Sie können auch Formen aus "
+"dieser Maske entfernen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7619(para)
 msgid ""
@@ -9142,12 +9531,17 @@ msgid ""
 "from top to bottom. Each shape adds to the mask by using at your choice one "
 "out of four logical set operators."
 msgstr ""
+"Masken werden konstruiert, indem man die Formen in der Reihenfolge hinzufügt, "
+"in der sie von oben nach unten aufgelistet sind. Jede Form fügt zur Maske "
+"hinzu, indem Sie einen von vier logischen Set-Operatoren Ihrer Wahl verwenden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7625(para)
 msgid ""
 "As order matters when combining shapes you may move each shape up or down if "
 "needed."
 msgstr ""
+"Da es bei der Kombination von Formen auf Ordnung ankommt, können Sie jede "
+"Form bei Bedarf nach oben oder unten verschieben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7629(para)
 msgid ""
@@ -9155,14 +9549,17 @@ msgid ""
 "<inlinegraphic fileref=\"images/masks_invert.png\" scalefit=\"1\" width=\"2%"
 "\" align=\"center\"/> symbol."
 msgstr ""
+"Jede Form vor dem Hinzufügen kann invertiert werden und wird dann durch das "
+"Symbol <inlinegraphic fileref=\"images/masks_invert.png\" scalefit=\"1\" "
+"width=\"2%\" align=\"center\"/> dargestellt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7639(title)
 msgid "Set operators"
-msgstr ""
+msgstr "Set-Operatoren"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7650(quote)
 msgid "selected"
-msgstr ""
+msgstr "auserwählt"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7647(entry)
 msgid ""
@@ -9171,10 +9568,15 @@ msgid ""
 "As a convention we say that a pixel is <placeholder-1/> in a mask or shape if "
 "it has a value higher than zero."
 msgstr ""
+"Wir verwenden als Beispiel eine Kombination aus einem Gradienten gefolgt von "
+"einem Pfad, um die Wirkung des Set-Operators zu demonstrieren, den wir auf "
+"die Bahnform anwenden. Als Konvention sagen wir, dass ein Pixel "
+"<placeholder-1/> in einer Maske oder Form ist, wenn er einen Wert größer Null "
+"hat."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7669(title)
 msgid "union"
-msgstr ""
+msgstr "Zusammenschluss"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7677(entry)
 msgid ""
@@ -9185,14 +9587,20 @@ msgid ""
 "selected in the existing mask or in the added shape. In overlapping areas the "
 "maximum value is taken."
 msgstr ""
+"Dies ist der Standard-Set-Operator. Es wird durch das <inlinegraphic "
+"fileref=\"images/masks_union.png\" scalefit=\"1\" width=\"4%\" align=\"center"
+"\"/> Symbol links neben dem Formnamen dargestellt. Die Form fügt sich so in "
+"die bestehende Maske ein, dass die resultierende Maske die Pixel enthält, die "
+"entweder in der vorhandenen Maske oder in der hinzugefügten Form ausgewählt "
+"sind. In überlappenden Bereichen wird der Maximalwert genommen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7697(title)
 msgid "intersection"
-msgstr ""
+msgstr "Kreuzungspunkt"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7711(quote)
 msgid "imprint"
-msgstr ""
+msgstr "aufdrucken"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7705(entry)
 msgid ""
@@ -9204,11 +9612,18 @@ msgid ""
 "is used. In the given example we use this operator to <placeholder-1/> the "
 "path with a gradient."
 msgstr ""
+"Dieser Set-Operator wird durch das <inlinegraphic fileref=\"images/"
+"masks_intersection.png\" scalefit=\"1\" width=\"4%\" align=\"center\"/>"
+" Symbol links neben dem Formnamen dargestellt. Die Form fügt sich so in die "
+"bestehende Maske ein, dass die resultierende Maske nur Pixel enthält, die "
+"sowohl in der bestehenden Maske als auch in der hinzugefügten Form ausgewählt "
+"sind. In überlappenden Bereichen wird der Minimalwert verwendet. Im "
+"vorliegenden Beispiel verwenden wir diesen Operator um <placeholder-1/> den "
+"Pfad mit einem Farbverlauf zu definieren."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7726(title)
-#, fuzzy
 msgid "difference"
-msgstr "Voreinstellungen"
+msgstr "Unterschied"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7739(emphasis)
 msgid "not"
@@ -9216,7 +9631,7 @@ msgstr "nicht"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7740(quote)
 msgid "cut out"
-msgstr ""
+msgstr "ausschneiden"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7734(entry)
 msgid ""
@@ -9227,14 +9642,22 @@ msgid ""
 "<placeholder-1/> in the added shape. This set operator can be chosen if you "
 "want to <placeholder-2/> a region from within an existing selection."
 msgstr ""
+"Dieser Set-Operator wird durch das Symbol <inlinegraphic fileref=\"images/"
+"masks_difference.png\" scalefit=\"1\" width=\"4%\" align=\"center\"/> "
+"dargestellt. Im nicht überlappenden Bereich bleibt die bestehende Maske "
+"unverändert. In der resultierenden Maske werden Pixel nur dann selektiert, "
+"wenn sie in der vorhandenen Maske selektiert sind, aber <placeholder-1/> in "
+"der hinzugefügten Form. Dieser Set-Operator kann gewählt werden, wenn Sie "
+"<placeholder-2/> eine Region aus einer bestehenden Auswahl heraus auswählen "
+"möchten."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7755(title)
 msgid "exclusion"
-msgstr ""
+msgstr "Ausschluss"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7768(quote)
 msgid "exclusive or"
-msgstr ""
+msgstr "exklusiv oder"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7763(entry)
 msgid ""
@@ -9244,6 +9667,11 @@ msgid ""
 "existing mask and not in the added shape or vice versa. This is equivalent to "
 "an <placeholder-1/>."
 msgstr ""
+"Dieser Set-Operator wird durch das Symbol <inlinegraphic fileref=\"images/"
+"masks_exclusion.png\" scalefit=\"1\" width=\"4%\" align=\"center\"/> "
+"dargestellt. Die resultierende Maske hat alle Pixel ausgewählt, die entweder "
+"in der vorhandenen Maske und nicht in der hinzugefügten Form ausgewählt sind "
+"oder umgekehrt. Dies entspricht einem <placeholder-1/>."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7788(title)
 msgid "Histogram"
@@ -9263,6 +9691,12 @@ msgid ""
 "button is also provided to toggle between linear view, logarithmic view and "
 "waveform view."
 msgstr ""
+"Dies zeigt ein Histogramm der Lichtverhältnisse des entwickelten Bildes. Im "
+"Auslieferungszustand werden Kurven für alle drei RGB-Farbkanäle angezeigt. "
+"Sie können die farbigen Quadrate ein- und ausschalten, um bestimmte "
+"Farbkanäle zu aktivieren oder zu deaktivieren. Eine Kurventaste ermöglicht "
+"das Umschalten zwischen linearer Ansicht, logarithmischer Ansicht und "
+"Wellenformansicht."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7813(para)
 msgid ""
