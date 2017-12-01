@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
 "POT-Creation-Date: 2017-11-23 13:06+0100\n"
-"PO-Revision-Date: 2017-12-01 17:12+0100\n"
+"PO-Revision-Date: 2017-12-01 22:29+0100\n"
 "Last-Translator: Pierre Metzner <pierre_metzner@web.de>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -318,13 +318,13 @@ msgstr "Völlig nicht-destruktive Bearbeitung."
 
 # Was sind banding breaks?
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:189(para)
-#, fuzzy
 msgid ""
 "All darktable core functions operate on 4x32-bit floating point pixel buffers "
 "for high accuracy processing, preventing banding and color breaks."
 msgstr ""
 "Alle Darktable-Kernfunktionen arbeiten für eine hoch präzise Verarbeitung mit "
-"4x32-Bit Fließkomma-Pixel Puffer, die banding breaks und Farbbrüche "
+"4x32-Bit Fließkomma-Pixel Puffer, die Streifenbildung (Banding) und"
+" Farbbrüche "
 "verhindern."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:194(para)
@@ -2135,7 +2135,6 @@ msgid "image information"
 msgstr "Bildinformation"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1602(entry)
-#, fuzzy
 msgid ""
 "In the central view, your images are shown as thumbnails, surrounded by a "
 "frame. When the mouse is over an image, its rating and color labels are shown "
@@ -2152,10 +2151,10 @@ msgstr ""
 "Dunkelkammer bearbeitet wurde, <inlinegraphic fileref=\"images/"
 "lighttable_thumb_icon_altered.png\" scalefit=\"1\" width=\"3mm\"/> angezeigt. "
 "Wenn die Maus über einem Bilderrahmen schwebt werden außerdem die Metadaten "
-"des Bilder im Metadaten-Panel angezeigt."
+"des Bildes im <link linkend=\"image_information\"><placeholder-1/></link>"
+" Metadaten-Panel angezeigt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1620(para)
-#, fuzzy
 msgid ""
 "While the mouse is over an image frame, there are a number of actions you can "
 "perform. Here is a table of keyboard shortcuts and assigned actions. "
@@ -3370,7 +3369,6 @@ msgstr ""
 "synchronisiert."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2531(para)
-#, fuzzy
 msgid ""
 "The local copies are stored into the $HOME/.cache/darktable directory and "
 "named <quote>img-&lt;SIGNATURE&gt;.&lt;EXT&gt;</quote>, where: <informaltable "
@@ -3381,12 +3379,16 @@ msgid ""
 "emphasis></entry><entry> is the original filename extension </entry></row></"
 "tbody></tgroup></informaltable>"
 msgstr ""
-"Die lokalen Kopien werden in das Verzeichnis $HOME/.cache/darktable "
-"gespeichert und heißen <quote>img-&lt;SIGNATURE&gt;.&lt;EXT&gt;</quote>, "
-"wobei: <informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"2\" colsep="
-"\"0\" rowsep=\"0\" rowsep=\"0\"><colspec colw Signatur (MD5) des "
-"vollständigen Pfadnamens </entry></row><row><entry><emphasis>EXT</emphasis></"
-"entry></entry><entry></entry></entry></row></tbody></tgroup></informaltable>"
+"Die lokalen Kopien werden in das Verzeichnis $HOME/.cache/darktable"
+" gespeichert und heißen <quote>img-&lt;SIGNATURE&gt;.&lt;EXT&gt;</quote>, "
+"wobei: <informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"2\""
+" colsep=\"0\" rowsep="
+"\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"3*\"/"
+"><tbody><row><entry><emphasis>SIGNATUR</emphasis></entry><entry> ein MD5"
+" Prüfsumme des kompletten Pfad </entry></row><row><entry><emphasis>EXT</"
+"emphasis></entry><entry> die original Dateinnamenserweiterung ist </entry><"
+"/row></"
+"tbody></tgroup></informaltable>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2568(para)
 msgid ""
@@ -3950,7 +3952,6 @@ msgstr ""
 "Wählen Sie Bilder, deren Verlaufsstapel verändert oder nicht verändert wurden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2999(para)
-#, fuzzy
 msgid ""
 "any color label that is attached to the image: <quote>red</quote>, "
 "<quote>yellow</quote>, <quote>green</quote>, <quote>blue</quote>, "
@@ -5622,30 +5623,34 @@ msgstr "alt_value"
 msgid ""
 "If <placeholder-1/> is set, use <placeholder-2/>, else use empty string."
 msgstr ""
+"Wenn <placeholder-1/> gesetzt ist, verwenden Sie <placeholder-2/>, ansonsten"
+" verwenden Sie leere Zeichenkette."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4559(code)
 msgid "$(var:offset)"
-msgstr ""
+msgstr "$(var:offset)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4562(code)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4572(code)
 msgid "offset"
-msgstr ""
+msgstr "Versatz"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4561(entry)
 msgid ""
 "<placeholder-1/> starting from <placeholder-2/>. If <placeholder-3/> is less "
 "than zero it is counted from the back of the string."
 msgstr ""
+"<placeholder-1/> beginnend mit <placeholder-2/>. Wenn <placeholder-3/>"
+" kleiner als Null ist, wird es von der Rückseite des Strings gezählt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4568(code)
 msgid "$(var:offset:length)"
-msgstr ""
+msgstr "$(var:offset:length)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4571(code)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4573(code)
 msgid "length"
-msgstr ""
+msgstr "length"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4570(entry)
 msgid ""
@@ -5658,7 +5663,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4579(code)
 msgid "$(var#pattern)"
-msgstr ""
+msgstr "$(var#pattern)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4582(code)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4590(code)
@@ -5669,7 +5674,7 @@ msgstr ""
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4618(code)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4627(code)
 msgid "pattern"
-msgstr ""
+msgstr "pattern"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4581(entry)
 msgid "Remove <placeholder-1/> from the start of <placeholder-2/>."
@@ -5677,7 +5682,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4587(code)
 msgid "$(var%pattern)"
-msgstr ""
+msgstr "$(var%pattern)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4589(entry)
 msgid "Remove <placeholder-1/> from the end of <placeholder-2/>."
@@ -5685,14 +5690,14 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4595(code)
 msgid "$(var/pattern/replacement)"
-msgstr ""
+msgstr "$(var/pattern/replacement)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4599(code)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4609(code)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4619(code)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4628(code)
 msgid "replacement"
-msgstr ""
+msgstr "replacement"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4597(entry)
 msgid ""
@@ -5703,7 +5708,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4605(code)
 msgid "$(var//pattern/replacement)"
-msgstr ""
+msgstr "$(var//pattern/replacement)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4607(entry)
 msgid ""
@@ -5714,7 +5719,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4615(code)
 msgid "$(var/#pattern/replacement)"
-msgstr ""
+msgstr "$(var/#pattern/replacement)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4617(entry)
 msgid ""
@@ -5724,7 +5729,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4624(code)
 msgid "$(var/%pattern/replacement)"
-msgstr ""
+msgstr "$(var/%pattern/replacement)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4626(entry)
 msgid ""
@@ -5734,35 +5739,35 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4633(code)
 msgid "$(var^)"
-msgstr ""
+msgstr "$(var^)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4635(entry)
 msgid "Make the first character of <placeholder-1/> uppercase."
-msgstr ""
+msgstr "Macht das erste Zeichen von <placeholder-1/> zu einem Großbuchstaben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4641(code)
 msgid "$(var^^)"
-msgstr ""
+msgstr "$(var^^)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4643(entry)
 msgid "Make all characters of <placeholder-1/> uppercase."
-msgstr ""
+msgstr "Macht alle Zeichen aus <placeholder-1/> zu Großbuchstaben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4649(code)
 msgid "$(var,)"
-msgstr ""
+msgstr "$(var,)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4651(entry)
 msgid "Make the first character of <placeholder-1/> lowercase."
-msgstr ""
+msgstr "Macht das erste Zeichen von <placeholder-1/> zu einem Kleinbuchstaben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4657(code)
 msgid "$(var,,)"
-msgstr ""
+msgstr "$(var,,)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4659(entry)
 msgid "Make all characters of <placeholder-1/> lowercase."
-msgstr ""
+msgstr "Macht alle Zeichen aus <placeholder-1/> Kleinbuchstaben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4672(title)
 msgid "output directory"
@@ -6150,6 +6155,10 @@ msgid ""
 "<quote>pixelpipe</quote>. Within the pixelpipe image processing consists of "
 "consecutive operations which are implemented as <quote>modules</quote>."
 msgstr ""
+"Darktable verarbeitet Bilder - vom Eingang bis zum Ausgang - in einer"
+" sogenannten <quote>pixelpipe</quote>. Innerhalb der Pixelpipe besteht die"
+" Bildverarbeitung aus fortlaufenden Operationen, die als <quote>Module</quote"
+"> implementiert sind."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4967(para)
 msgid ""
@@ -9070,9 +9079,8 @@ msgstr ""
 "\"input_color_profile\"/> für ein Beispiel."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7227(title)
-#, fuzzy
 msgid "Darkroom panels"
-msgstr "Dunkelkammer"
+msgstr "Bedienfelder der Dunkelkammeransicht"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7230(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7244(primary)
@@ -9090,9 +9098,8 @@ msgstr "Dunkelkammer"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8214(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8284(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8314(primary)
-#, fuzzy
 msgid "darkroom panels"
-msgstr "Dunkelkammer"
+msgstr "Bedienfelder der Dunkelkammeransicht"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7233(para)
 msgid ""
@@ -9136,7 +9143,6 @@ msgid "snapshots"
 msgstr "Snapshots (\"Schnappschüsse\")"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7298(entry)
-#, fuzzy
 msgid ""
 "You can take snapshots of images as you process them. A snapshot is stored as "
 "a bitmap of the current center view and is kept as long as you stay in the "
@@ -9146,12 +9152,15 @@ msgid ""
 "with history (see <xref linkend=\"history\"/>) to compare the snapshot "
 "against different stages of development."
 msgstr ""
-"Sie können einen Snapshot von dem, was in der mittleren Ansicht zu sehen ist, "
-"machen; dieser Snapshot kann dann ausgewählt und über die aktuelle Anzeige "
-"gelegt werden um bei einem Seite-an-Seite-Vergleich zu helfen (links: "
-"Snapshot, rechts: aktive Ansicht) wenn Sie die Parameter eines Moduls "
-"anpassen. In der aktiven Ansicht bleibt der Verlauf nutzbar um Vergleiche mit "
-"dem Snapshot zu machen."
+"Sie können Schnappschüsse von Bildern machen, während diese bearbeitet"
+" werden. Ein Schnappschuss wird als Bitmap der aktuellen Ansicht gespeichert"
+" und bleibt so lange erhalten, wie Sie sich in der Dunkelkammer aufhalten."
+" Ein Schnappschuss kann dann ausgewählt und in der aktuellen Ansicht in der"
+" Mitte überlagert werden, um Ihnen beim Abstimmen von Parametern eines Moduls"
+" einen Seitenvergleich (links: Schnappschuss, rechts: aktiv) zu ermöglichen."
+" Dies kann auch mit dem Verlauf kombiniert werden (siehe <xref"
+" linkend=\"history\"/>), um den Schnappschuss mit verschiedenen"
+" Entwicklungsstadien zu vergleichen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7315(para)
 msgid ""
@@ -9708,102 +9717,123 @@ msgid ""
 "by clicking and dragging in the left hand side. Double-clicking in the "
 "histogram resets the exposure module's parameters to their defaults."
 msgstr ""
+"Das Histogramm ist direkt mit dem Modul <emphasis>exposure</emphasis>"
+" verbunden, das in <xref linkend=\"exposure\"/> beschrieben ist, und Sie"
+" können einige der Steuerelemente des Belichtungsmoduls vom Histogramm aus"
+" bedienen. Sie können mit der linken Maustaste auf die rechte Seite des"
+" Histogramms klicken und dann nach rechts ziehen, um die Belichtung zu"
+" erhöhen oder nach links ziehen, um die Belichtung zu verringern. In"
+" ähnlicher Weise können Sie den Schwarzwert steuern, indem Sie auf der linken"
+" Seite klicken und ziehen. Ein Doppelklick im Histogramm setzt die Parameter"
+" des Belichtungsmoduls auf die Standardwerte zurück."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7835(title)
-#, fuzzy
 msgid "Module groups"
-msgstr "Module"
+msgstr "Modulgruppen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7839(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7843(primary)
-#, fuzzy
 msgid "module groups"
-msgstr "Module"
+msgstr "Modulegruppen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7853(para)
 msgid ""
 "The module groups button bar gives you quick access to darktable's processing "
 "modules."
 msgstr ""
+"Die Schaltflächenleiste der Modulgruppen ermöglicht einen schnellen Zugriff"
+" auf die Verarbeitungsmodule von Darktable."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7866(para)
 msgid "Here follows a description of the module groups available:"
-msgstr ""
+msgstr "Im Folgenden werden die verfügbaren Modulgruppen beschrieben:"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7881(entry)
 msgid "Active"
-msgstr ""
+msgstr "eingeschaltete Module"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7884(entry)
 msgid "Modules you have activated and are using on the current image."
-msgstr ""
+msgstr "Module, die Sie aktiviert haben und auf dem aktuellen Bild verwenden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7892(entry)
 msgid "Favorites"
-msgstr ""
+msgstr "Favoriten"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7896(emphasis)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7980(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7984(primary)
-#, fuzzy
 msgid "more modules"
-msgstr "Module"
+msgstr "weitere Module"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7895(entry)
 msgid ""
 "Modules you have marked as favorites using <placeholder-1/> (see <xref "
 "linkend=\"more_modules\"/>)."
 msgstr ""
+"Module, die Sie mit <placeholder-1/> als Favoriten markiert haben (siehe <"
+"xref "
+"linkend=\"more_modules\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7904(entry)
 msgid "Basic"
-msgstr ""
+msgstr "Basisgruppe"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7907(entry)
 msgid ""
 "Modules that are frequently used, such as exposure, temperature etc. (see "
 "<xref linkend=\"basic_group\"/>)."
 msgstr ""
+"Häufig verwendete Module wie Belichtung, Weißabgleich usw. (siehe <xref"
+" linkend=\"basic_group\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7916(entry)
 msgid "Tone"
-msgstr ""
+msgstr "Helligkeitsgruppe"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7919(entry)
 msgid ""
 "Modules for working with the image's tonal values, e.g. levels, tonemap etc. "
 "(see <xref linkend=\"tone_group\"/>)."
 msgstr ""
+"Module für die Arbeit mit den Tonwerten des Bildes, z.B. Werte, Farbkurve"
+" usw. (siehe <xref linkend=\"tone_group\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7928(entry)
 msgid "Color"
-msgstr "Farbe"
+msgstr "Farbgruppe"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7931(entry)
 msgid ""
 "Modules for processing colors, such as color correction, vibrance etc. (see "
 "<xref linkend=\"color_group\"/>)."
 msgstr ""
+"Module zur Verarbeitung von Farben, wie z.B. Farbkorrektur, Lebendigkeit etc."
+" (siehe <xref linkend=\"color_group\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7940(entry)
 msgid "Correction"
-msgstr "Korrektur"
+msgstr "Korrekturgruppe"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7943(entry)
 msgid ""
 "Modules making corrections to the image, e.g. denoise, CA correction etc. "
 "(see <xref linkend=\"correction_group\"/>)."
 msgstr ""
+"Module, die Korrekturen am Bild vornehmen, z.B. Entrauschen, CA-Korrektur"
+" usw. (siehe <xref linkend=\"correction_group\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7952(entry)
 msgid "Effect"
-msgstr ""
+msgstr "Efektgruppe"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7955(entry)
 msgid ""
 "Modules with a more artistic output, such as vignetting, softening etc. (see "
 "<xref linkend=\"effect_group\"/>)."
 msgstr ""
+"Module mit einem mehr künstlerischen Ergebnissen, wie Vignettierung,"
+" Weichzeichnen usw. (siehe <xref linkend=\"effect_group\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7965(para)
 msgid ""
@@ -9813,11 +9843,16 @@ msgid ""
 "in which modules are applied from bottom to top. As a general principle "
 "darktable applies modules in a pre-defined sequence."
 msgstr ""
+"Wenn Sie auf eines der Gruppen-Symbole klicken, werden die Module dieser"
+" Gruppe angezeigt. Wenn Sie erneut auf das Symbol klicken, wird die"
+" Gruppierung deaktiviert und alle nicht versteckten Module werden in einer"
+" langen Liste angezeigt. Diese Liste zeigt die Reihenfolge, in der die Module"
+" von unten nach oben angewendet werden. Grundsätzlich wendet Darktable Module"
+" in einer vordefinierten Reihenfolge an."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7976(title)
-#, fuzzy
 msgid "More modules"
-msgstr "Module"
+msgstr "weitere Module"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7993(entry)
 msgid ""
@@ -9826,6 +9861,11 @@ msgid ""
 "user but you can use this function to make the extra modules visible, or "
 "alternatively to hide away modules you don't typically use."
 msgstr ""
+"Weitere Module am unteren Rand des rechten Bedienfeldes werden verwendet, um"
+" die weniger häufig verwendeten Module anzuzeigen. Standardmäßig werden dem"
+" Benutzer nur Standardmodule angezeigt, aber Sie können diese Funktion"
+" verwenden, um die zusätzlichen Module sichtbar zu machen oder um Module, die"
+" Sie normalerweise nicht verwenden, auszublenden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8007(para)
 msgid ""
@@ -9839,6 +9879,16 @@ msgid ""
 "background whilst hidden modules have a dark grey background and do not "
 "display any of their controls."
 msgstr ""
+"Jedes Modul wird mit einem kleinen Symbol neben seinem Namen angezeigt."
+" Klicken Sie mit der linken Maustaste, um den Status zwischen sichtbar,"
+" versteckt und Favorit umzuschalten. Bevorzugte Module werden durch einen"
+" Stern vor dem Icon gekennzeichnet und erscheinen zusätzlich zu ihrer"
+" normalen Modulgruppe auch in der Modulgruppe <link linkend=\"module_groups\""
+"><emphasis>favorites</emphasis></link>. Dies ist ein guter Weg, um einen"
+" schnellen Zugriff auf Module zu erhalten, die Sie sehr häufig verwenden."
+" Sichtbare Module sind in der Liste durch einen hellgrauen Hintergrund"
+" gekennzeichnet, während ausgeblendete Module einen dunkelgrauen Hintergrund"
+" haben und keine ihrer Bedienelemente anzeigen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8018(para)
 msgid ""
@@ -9847,14 +9897,19 @@ msgid ""
 "However, you may store various settings at your choice as presets for later "
 "reuse."
 msgstr ""
+"Das Ein- und Ausblenden von Modulen ist nicht als Teil Ihres täglichen"
+" Arbeitsablaufs gedacht, Sie sollten nur gelegentlich die Module überprüfen,"
+" die Sie normalerweise verwenden. Sie können jedoch verschiedene"
+" Einstellungen nach Belieben als Voreinstellungen speichern, um sie später"
+" wiederverwenden zu können."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8030(title)
 msgid "Bottom panel"
-msgstr ""
+msgstr "Fußleiste"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8034(secondary)
 msgid "bottom panel"
-msgstr ""
+msgstr "Fußleiste"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8037(para)
 msgid ""
@@ -9863,10 +9918,15 @@ msgid ""
 "softproofing and gamut check. You can also activate a filmstrip for quick "
 "navigation within the current collection."
 msgstr ""
+"Das untere Bedienfeld bietet schnellen Zugriff auf Voreinstellungen und Stile"
+" für Ihr Bild und ermöglicht die Aktivierung von Über- und"
+" Unterbelichtungswarnungen sowie Softproofing und Gamut-Check. Sie können"
+" auch einen Filmstreifen zur schnellen Navigation innerhalb der aktuellen"
+" Kollektion aktivieren."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8045(title)
 msgid "Quick access to favorite presets"
-msgstr ""
+msgstr "Schneller Zugriff auf bevorzugte Presets"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8047(para)
 msgid ""
@@ -10120,7 +10180,6 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8342(para)
-#, fuzzy
 msgid ""
 "The following shortcuts are available to act on the selected picture(s): "
 "<informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep="
@@ -10141,22 +10200,26 @@ msgid ""
 msgstr ""
 "Der Filmstreifen erlaubt Ihnen auch, bestimmt Aktionen am Bild unter dem "
 "Mauszeiger durchzuführen; nachfolgend eine Übersicht über Tastenkürzel und "
-"zugeordneter Aktion: <informaltable frame=\"none\"><tgroup cols=\"2\" colsep="
-"\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 "
-"– 4</emphasis></entry><entry>setzt die Bewertung des Bildes; wenn ein Bild "
-"einen Stern hat und Sie die <emphasis>1</emphasis> drücken wird das Bild "
-"unbewertet </entry></row><row><entry><emphasis>F1 – F3</emphasis></"
-"entry><entry>setzt eine Farbmarkierung für das Bild</entry></"
-"row><row><entry><emphasis>Strg-c</emphasis></entry><entry>kopiere den "
-"Verlaufsstapel des Bildes</entry></row><row><entry><emphasis>Strg-v</"
-"emphasis></entry><entry>wende den kopierten Verlaufsstapel auf das Bild an</"
-"entry></row><row><entry><emphasis>e</emphasis></entry><entry>öffne das Bild "
-"zum Entwickeln im Dunkelkammer-Modus</entry></row><row><entry><emphasis>z</"
-"emphasis></entry><entry>zeige eine Vollbildansicht des Bildes</entry></row></"
-"tbody></tgroup></informaltable>"
+"zugeordneter Aktion: "
+"<informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep="
+"\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"3*\"/"
+"><tbody><row><entry><emphasis>F1 – F5</emphasis></entry><entry> schaltet die"
+" entsprechende Farbmarkierung für das Bild ein/aus (rot, gelb, grün, blau,"
+" lila) </entry></"
+"row><row><entry><emphasis>0 – 5</emphasis></entry><entry> setzt / ändert die"
+" Bewertung des Bildes </entry></row><row><entry><emphasis>r</emphasis></entry"
+"><entry> markiert das Bild als abgelehnt </entry></row><row><entry><emphasis"
+">Strg-d</emphasis></entry><entry> dupliziert das Bild </entry></row><row><"
+"entry><emphasis>Strg-c</emphasis></"
+"entry><entry> kopiert den kompletten Verlauf </entry></"
+"row><row><entry><emphasis>Strg-v</emphasis></entry><entry> fügt den kopierten"
+" Verlauf ein </entry></row><row><entry><emphasis>Alt-Strg-c</"
+"emphasis></entry><entry> kopiert selektiv den Verlauf </entry></"
+"row><row><entry><emphasis>Alt-Strg-v</emphasis></entry><entry> fügt selektiv"
+" den Verlauf ein </entry></row></tbody></tgroup></"
+"informaltable>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8432(title)
-#, fuzzy
 msgid "Modules"
 msgstr "Module"
 
@@ -10261,7 +10324,6 @@ msgid "rotating an image"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8486(entry)
-#, fuzzy
 msgid ""
 "This module is used to crop, rotate and correct perspective distortions of "
 "your image. You can overlay your image with various helpful guidelines that "
@@ -10498,15 +10560,13 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8799(title)
-#, fuzzy
 msgid "Shadows and Highlights"
-msgstr "Schatten- und Spitzlichtfarbe"
+msgstr "Schatten- und Spitzlichter"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8803(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8807(primary)
-#, fuzzy
 msgid "shadows and highlights"
-msgstr "Schatten- und Spitzlichtfarbe"
+msgstr "Schatten- und Spitzlichter"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8812(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12287(secondary)
@@ -10581,7 +10641,6 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8890(title)
-#, fuzzy
 msgid "compress"
 msgstr "komprimieren"
 
@@ -10971,7 +11030,6 @@ msgstr "Helligkeit"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15608(title)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15968(title)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16319(title)
-#, fuzzy
 msgid "saturation"
 msgstr "Sättigung"
 
@@ -11022,9 +11080,8 @@ msgid "This slider adjusts the image's brightness."
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9365(para)
-#, fuzzy
 msgid "This slider adjusts the color saturation."
-msgstr "Dieser Regler kontrolliert die Stärke des Effekts."
+msgstr "Dieser Regler kontrolliert die Farbsättigung."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9376(title)
 msgid "Color reconstruction"
@@ -11121,7 +11178,6 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9478(title)
-#, fuzzy
 msgid "preference"
 msgstr "Voreinstellungen"
 
@@ -11410,9 +11466,8 @@ msgid "Set the channel values on a scale from 0 to 8."
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9853(title)
-#, fuzzy
 msgid "preset"
-msgstr "Voreinstellungen"
+msgstr "voreingestellt"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9854(para)
 msgid ""
@@ -11911,7 +11966,6 @@ msgid "Add or remove detail. Higher values will increase local contrast."
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10623(title)
-#, fuzzy
 msgid "Example"
 msgstr "Beispiele"
 
@@ -11958,9 +12012,8 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10707(title)
-#, fuzzy
 msgid "contrast compression"
-msgstr "komprimieren"
+msgstr "Kontrastkomprimierung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10708(para)
 msgid ""
@@ -12056,20 +12109,18 @@ msgstr "Velvia"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10836(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10840(primary)
-#, fuzzy
 msgid "velvia"
 msgstr "Velvia"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10853(entry)
-#, fuzzy
 msgid ""
 "The velvia module enhances image saturation. Its effect is tailored to "
 "increase saturation less on lower saturated pixels than on highly saturated "
 "pixels."
 msgstr ""
-"Das Velvia-Modul verstärkt die Sättigung des Bildes; Pixel mit geringer "
-"Sättigung werden stärker verändert als solche, die bereits eine hohe "
-"Sättigung haben."
+"Das Velvia-Modul verstärkt die Sättigung des Bildes. Sein Effekt ist darauf"
+" zugeschnitten, die Sättigung bei niedriger gesättigten Pixeln weniger zu"
+" erhöhen als bei hoch gesättigten Pixeln."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10872(title)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12554(title)
@@ -12082,12 +12133,10 @@ msgid "strength"
 msgstr "Stärke"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10873(para)
-#, fuzzy
 msgid "This slider controls the strength of the effect."
 msgstr "Dieser Regler kontrolliert die Stärke des Effekts."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10879(title)
-#, fuzzy
 msgid "mid-tones bias"
 msgstr "Mittenbetonung"
 
@@ -12550,9 +12599,8 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11572(title)
-#, fuzzy
 msgid "interaction"
-msgstr "Sättigung"
+msgstr "Beeinflussung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11576(para)
 msgid ""
@@ -12699,20 +12747,18 @@ msgid "mix"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11777(para)
-#, fuzzy
 msgid "Use this parameter to tune the strength of the overall effect."
-msgstr "Dieser Regler kontrolliert die Stärke des Effekts."
+msgstr ""
+"Verwenden Sie diesen Parameter, um die Stärke des Gesamteffekts einzustellen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11788(title)
-#, fuzzy
 msgid "Color balance"
-msgstr "Ausgleich"
+msgstr "Farbabgleich"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11792(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11796(primary)
-#, fuzzy
 msgid "color balance"
-msgstr "Ausgleich"
+msgstr "Farbabgleich"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11809(entry)
 msgid ""
@@ -12800,7 +12846,6 @@ msgstr "Lebendigkeit"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11896(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11900(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11937(title)
-#, fuzzy
 msgid "vibrance"
 msgstr "Lebendigkeit"
 
@@ -12996,9 +13041,8 @@ msgid "amount"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12245(para)
-#, fuzzy
 msgid "This controls the strength of the sharpening."
-msgstr "Dieser Regler kontrolliert die Stärke des Effekts."
+msgstr "Dadurch wird die Stärke des Schärfens gesteuert."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12252(para)
 msgid ""
@@ -13488,7 +13532,6 @@ msgid "A ctrl-alt-click on a segment will change it to a line segment."
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13003(para)
-#, fuzzy
 msgid ""
 "It is possible to change the way the points of the curve are linked together "
 "by using ctrl-click on the center. There are four modes which correspond to "
@@ -13507,17 +13550,27 @@ msgid ""
 "handles are always moved together. This mode is depicted by a square symbol "
 "in the node center. </entry></row></tbody></tgroup></informaltable>"
 msgstr ""
-"Der Filmstreifen erlaubt Ihnen auch, bestimmt Aktionen am Bild unter dem "
-"Mauszeiger durchzuführen. Nachfolgend eine Tabelle mit den verfügbaren "
-"Tatenkürzeln: <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" "
-"rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 – 4</"
-"emphasis></entry><entry>setzt die Bewertung des Bildes; wenn ein Bild einen "
-"Stern hat und Sie die <emphasis>1</emphasis> drücken wird das Bild unbewertet "
-"</entry></row><row><entry><emphasis>F1 – F3</emphasis></entry><entry>setzt "
-"eine Farbmarkierung für das Bild</entry></row><row><entry><emphasis>Strg-c</"
-"emphasis></entry><entry>kopiere den Verlaufsstapel des Bildes</entry></"
-"row><row><entry><emphasis>Strg-v</emphasis></entry><entry>wende den kopierten "
-"Verlaufsstapel auf das Bild an</entry></row></tbody></tgroup></informaltable>"
+"Es ist möglich, die Art und Weise, wie die Punkte der Kurve miteinander"
+" verknüpft werden, zu ändern, indem man mit der Strg-Taste auf die Mitte"
+" klickt. Es gibt vier Modi, die den unterschiedlichen Möglichkeiten"
+" entsprechen, die Steilheit der Bezierkurve mit Hilfe von Steuergriffen zu"
+" handhaben: "
+"<informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"3\" colsep=\"0\""
+" rowsep=\"0\"><colspec colwidth=\"4*\"/><colspec colwidth=\"6*\"/><tbody><row"
+"><entry><emphasis>autosmooth</emphasis></entry><entry> "
+"Dies ist der Standardmodus, in dem die Bedienelemente nicht angezeigt werden,"
+" da sie automatisch berechnet werden, um immer eine glatte Kurve zu erhalten."
+" </entry></"
+"row><row><entry><emphasis>cusp</emphasis></entry><entry> Die Bedienelemente"
+" können unabhängig voneinander bewegt werden. Dieser Modus wird durch ein"
+" Dreieckssymbol in der Knotenmitte dargestellt. </entry></row><row><entry><"
+"emphasis>smooth</emphasis></entry><entry> Steuergriffe sorgen immer für eine"
+" glatte Kurve. Dieser Modus wird durch ein Rautensymbol in der Knotenmitte"
+" dargestellt. </entry><entry/></"
+"row><row><entry><emphasis>symmetrical</emphasis></entry><entry>"
+" Bedienelemente werden immer gemeinsam bewegt. Dieser Modus wird durch ein"
+" quadratisches Symbol in der Knotenmitte dargestellt. </entry></row></tbody><"
+"/tgroup></informaltable>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13056(title)
 msgid "node edit tool"
@@ -13993,9 +14046,8 @@ msgid "spot removal"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13655(primary)
-#, fuzzy
 msgid "cloning"
-msgstr "Split-Toning"
+msgstr "Klonen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13668(entry)
 msgid ""
@@ -14090,16 +14142,14 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13821(title)
-#, fuzzy
 msgid "Dithering"
-msgstr "Tethering"
+msgstr "Dithering"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13825(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13829(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15232(title)
-#, fuzzy
 msgid "dithering"
-msgstr "Tethering"
+msgstr "Dithering"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13851(entry)
 msgid ""
@@ -14319,9 +14369,8 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14183(title)
-#, fuzzy
 msgid "distance"
-msgstr "Lebendigkeit"
+msgstr "Entfernung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14184(para)
 msgid ""
@@ -14630,11 +14679,12 @@ msgid "border size"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14857(para)
-#, fuzzy
 msgid ""
 "This slider controls the size of the frame in percent of the underlying full "
 "image."
-msgstr "Dieser Regler kontrolliert die Stärke des Effekts."
+msgstr ""
+"Dieser Schieberegler steuert die Größe des Rahmens in Prozent des zugrunde"
+" liegenden Vollbildes."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14864(para)
 msgid ""
@@ -14736,12 +14786,10 @@ msgstr "Split-Toning"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14983(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14987(primary)
-#, fuzzy
 msgid "splittoning"
 msgstr "Split-Toning"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15000(entry)
-#, fuzzy
 msgid ""
 "darktable's splittoning method creates a two color linear toning effect where "
 "the shadows and highlights are represented by two different colors. In the "
@@ -14767,7 +14815,6 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15024(para)
-#, fuzzy
 msgid ""
 "The splittoning module does not convert images to black and white and has "
 "limited benefits on color images. So, if you want to do traditional "
@@ -14775,18 +14822,17 @@ msgid ""
 "linkend=\"monochrome\"/>) to make the image black and white before playing "
 "around with splittoning effect."
 msgstr ""
-"Das Split-Toning-Modul wandelt Bilder nicht nach Schwarz/Weiß um und "
-"funktioniert auch gut bei Farbbildern. Wenn Sie traditionelles Split-Toning "
-"anwenden wollen sollten Sie das „monochrom“-Modul benutzen, um das Bild "
-"schwarz/weiß zu machen, bevor Sie mit dem Split-Toning-Effekt rumspielen."
+"Das Splittoning-Modul wandelt Bilder nicht in Schwarzweiß um und verfügt über "
+"begrenzte Vorteile bei Farbbildern. Wenn Sie also traditionelles Splittoning"
+" machen wollen, verwenden Sie das Modul emphasis>monochrome</emphasis> (siehe"
+" <xref linkend=\"monochrome\"/>), um das Bild schwarz-weiß zu machen, bevor"
+" Sie mit Splittoning-Effekt herumspielen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15038(title)
-#, fuzzy
 msgid "shadows and highlights color"
 msgstr "Schatten- und Spitzlichtfarbe"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15039(para)
-#, fuzzy
 msgid ""
 "These controls are used to set the color of the splittoning effect, you "
 "select the desired color and saturation for both shadows and highlights. "
@@ -14800,12 +14846,10 @@ msgstr ""
 "klicken um einen normalen Farbauswahldialog zu bekommen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15048(title)
-#, fuzzy
 msgid "balance"
 msgstr "Ausgleich"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15049(para)
-#, fuzzy
 msgid ""
 "This parameter represents the ratio of toning between shadows and highlights. "
 "For a value of 50% half of the lightness range in image is used for shadows "
@@ -14818,12 +14862,10 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15057(title)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16304(title)
-#, fuzzy
 msgid "compression"
-msgstr "komprimieren"
+msgstr "Komprimierung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15058(para)
-#, fuzzy
 msgid ""
 "Compression is a percentage of total lightness range that is not affected by "
 "color toning. Default value is set to 33%; this is not the default behavior "
@@ -14831,7 +14873,8 @@ msgid ""
 "as a default is to invite you experimenting with these parameters and how it "
 "extends the original splittoning method."
 msgstr ""
-"Die Kompression ist eine Prozentangabe des absoluten Helligkeitsumfangs, der "
+"Die Komprimierung ist eine Prozentangabe des absoluten Helligkeitsumfangs,"
+" der "
 "nicht vom Einfärben betroffen ist. Standardmäßig sind dies 33%, was nicht dem "
 "Standardverhalten eines traditionellen Split-Tonings entspricht – dies wären "
 "0% Kompression. Die Wahl von 33% als Ausgangswert soll Sie zum "
@@ -14840,7 +14883,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15083(entry)
 msgid "Original black and white image."
-msgstr ""
+msgstr "Original Schwarz-Weiß-Bild."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15091(entry)
 msgid "Splittoning with blue shadows and yellow highlights."
@@ -15057,7 +15100,6 @@ msgid "Set the grain size, which has been scaled to simulate an ISO number."
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15452(para)
-#, fuzzy
 msgid "Set the strength of the effect."
 msgstr "Dieser Regler kontrolliert die Stärke des Effekts."
 
@@ -15273,9 +15315,8 @@ msgid "Set the threshold for the increase in brightness."
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15871(para)
-#, fuzzy
 msgid "Set the strength of overlightning for the effect."
-msgstr "Dieser Regler kontrolliert die Stärke des Effekts."
+msgstr "Stellen Sie die Stärke der Überbeleuchtung für den Effekt ein."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15900(entry)
 msgid ""
@@ -15516,9 +15557,8 @@ msgid "Set the saturation to add a color cast to the gradient."
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16326(title)
-#, fuzzy
 msgid "position"
-msgstr "Anwendung"
+msgstr "Position"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16334(entry)
 msgid ""
@@ -15718,7 +15758,6 @@ msgid "Cross-processing"
 msgstr "Crossentwicklung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16639(entry)
-#, fuzzy
 msgid ""
 "Cross-processing is an analog processing technique where slide film (normally "
 "developed thanks to an E6 solution) is processed in chemicals used for "
@@ -15733,7 +15772,6 @@ msgstr ""
 
 # Was ist eine channel curve?
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16653(para)
-#, fuzzy
 msgid ""
 "The standard way for doing digital cross-processing is to use a channel curve "
 "tool but darktable lacks this tool for the moment and another way to "
@@ -15749,7 +15787,6 @@ msgid "Procedure"
 msgstr "Vorgehen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16665(para)
-#, fuzzy
 msgid "This procedure uses tone curve, channel mixer and splittoning modules."
 msgstr ""
 "Dieses Vorgehen nutzt Farbkurve, Kanalmixer und das Split-Toning-Modul."
@@ -15848,10 +15885,9 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16793(para)
-#, fuzzy
 msgid "This procedure uses monochrome, channel mixer and splittoning modules."
 msgstr ""
-"Dieses Vorgehen nutzt Farbkurve, Kanalmixer und das Split-Toning-Modul."
+"Dieses Vorgehen nutzt Monochrome, Kanalmixer und das Split-Toning-Modul."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16803(para)
 msgid ""
@@ -16008,9 +16044,8 @@ msgid "Mark the second pupil."
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17017(title)
-#, fuzzy
 msgid "Desaturation"
-msgstr "Sättigung"
+msgstr "Entsättigung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17028(para)
 msgid "Approach - Modifying the output channel <quote>red</quote>."
@@ -16067,7 +16102,6 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17141(keyword)
-#, fuzzy
 msgid "tethering"
 msgstr "Tethering"
 
@@ -16075,9 +16109,8 @@ msgstr "Tethering"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17257(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17297(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17330(primary)
-#, fuzzy
 msgid "tethering view"
-msgstr "Tethering"
+msgstr "Tethering Ansicht"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17152(para)
 msgid ""
@@ -16086,9 +16119,8 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17160(screeninfo)
-#, fuzzy
 msgid "The tethering view"
-msgstr "Tethering"
+msgstr "Die Tethering-Ansicht"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17171(para)
 msgid ""
@@ -16148,9 +16180,8 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17244(title)
-#, fuzzy
 msgid "Tethering panels"
-msgstr "Tethering"
+msgstr "Tethering Eingabefelder"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17246(para)
 msgid ""
@@ -16243,9 +16274,8 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17397(title)
-#, fuzzy
 msgid "Capturing a timelapse"
-msgstr "Neue Voreinstellung erzeugen"
+msgstr "Aufnahme eines Zeitraffers"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17399(para)
 msgid ""
@@ -16399,19 +16429,18 @@ msgstr "Landkarte"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17560(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17751(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17793(primary)
-#, fuzzy
 msgid "map view"
-msgstr "Ansicht"
+msgstr "Karten-Ansicht"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17563(para)
-#, fuzzy
 msgid "The Map view is were you geotag your images."
-msgstr "In der Dunkelkammer-Ansicht entwickeln Sie Ihre Bilder …"
+msgstr ""
+"Die Kartenansicht ist, wo Sie Ihre Bilder mit geografischen Informationen"
+" versehen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17570(screeninfo)
-#, fuzzy
 msgid "The map view"
-msgstr "Die Dunkelkammer-Ansicht"
+msgstr "Die Karten-Ansicht"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17581(para)
 msgid ""
@@ -16502,9 +16531,8 @@ msgid "<emphasis>Ctrl-z</emphasis> : undo last move"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17701(title)
-#, fuzzy
 msgid "Map panels"
-msgstr "Panels"
+msgstr "Karten Eingabefelder"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17703(para)
 msgid ""
@@ -16615,7 +16643,6 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17908(para)
-#, fuzzy
 msgid ""
 "The slideshow view is in an early stage of development with a basic set of "
 "features. <informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"2\" "
@@ -16630,17 +16657,19 @@ msgid ""
 "entry><entry> leave slideshow mode and return to lighttable view </entry></"
 "row></tbody></tgroup></informaltable>"
 msgstr ""
-"Der Filmstreifen erlaubt Ihnen auch, bestimmt Aktionen am Bild unter dem "
-"Mauszeiger durchzuführen. Nachfolgend eine Tabelle mit den verfügbaren "
-"Tatenkürzeln: <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" "
-"rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 – 4</"
-"emphasis></entry><entry>setzt die Bewertung des Bildes; wenn ein Bild einen "
-"Stern hat und Sie die <emphasis>1</emphasis> drücken wird das Bild unbewertet "
-"</entry></row><row><entry><emphasis>F1 – F3</emphasis></entry><entry>setzt "
-"eine Farbmarkierung für das Bild</entry></row><row><entry><emphasis>Strg-c</"
-"emphasis></entry><entry>kopiere den Verlaufsstapel des Bildes</entry></"
-"row><row><entry><emphasis>Strg-v</emphasis></entry><entry>wende den kopierten "
-"Verlaufsstapel auf das Bild an</entry></row></tbody></tgroup></informaltable>"
+"Die Slideshow-Ansicht befindet sich in einem frühen Stadium der Entwicklung"
+" mit einer Reihe grundlegender Funktionen. "
+"<informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"2\" colsep=\"0\""
+" rowsep=\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"3*\"/"
+"><tbody><row><entry><emphasis>links-Klick</emphasis></entry><entry> wechsle"
+" zum nächsten Bild der Sammlung </entry></row><row><entry><emphasis"
+">rechts-Klick</emphasis></entry><entry> wechsle zum vorherigen Bild der"
+" Sammlung </entry></row><row><entry><emphasis>Leertaste</emphasis></entry><"
+"entry> Startet und Stoppt die Diashow-Modus, der automatisch alle fünf"
+" Sekunden auf die nächsten Bilder umschaltet und nach dem letzten Bild wieder"
+" an den Anfang zurückkehrt. </entry></row><row><entry><emphasis>ESC</emphasis"
+"></entry><entry>Verlässt den Diashow-Modus und kehrt zur Lighttable-Ansicht"
+" zurück. </entry></row></tbody></tgroup></informaltable>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17953(para)
 msgid ""
@@ -16668,9 +16697,8 @@ msgid "The print view lets you output a selected image to your printer."
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17991(screeninfo)
-#, fuzzy
 msgid "The print view"
-msgstr "Die Leuchttisch-Ansicht"
+msgstr "Die Drucken-Ansicht"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18002(para)
 msgid ""
@@ -16774,9 +16802,8 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18112(title)
-#, fuzzy
 msgid "Page section"
-msgstr "Bildvorbereitung"
+msgstr "Seitenabschnitt"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18114(bridgehead)
 msgid "paper size"
@@ -16884,7 +16911,6 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18221(keyword)
-#, fuzzy
 msgid "preferences"
 msgstr "Voreinstellungen"
 
@@ -16905,7 +16931,6 @@ msgid "accelerators"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18229(title)
-#, fuzzy
 msgid "Preferences and settings"
 msgstr "Voreinstellungen"
 
@@ -16916,7 +16941,7 @@ msgstr "Voreinstellungen"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18972(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19881(primary)
 msgid "preferences and settings"
-msgstr ""
+msgstr "Voreinstellungen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18235(para)
 msgid ""
@@ -16927,9 +16952,8 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18245(screeninfo)
-#, fuzzy
 msgid "The preferences window"
-msgstr "Voreinstellungen"
+msgstr "Das Voreinstellungs--Fenster"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18263(para)
 msgid "These options control the look and feel of darktable."
@@ -17770,7 +17794,6 @@ msgid "&lt;Primary&gt;q"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19012(entry)
-#, fuzzy
 msgid "global/lighttable view"
 msgstr "Die Leuchttisch-Ansicht"
 
@@ -17780,7 +17803,6 @@ msgid "l"
 msgstr "l"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19020(entry)
-#, fuzzy
 msgid "global/darkroom view"
 msgstr "Die Dunkelkammer-Ansicht"
 
@@ -18253,9 +18275,8 @@ msgid "views/darkroom/export"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19500(entry)
-#, fuzzy
 msgid "views/darkroom/full preview"
-msgstr "Die Dunkelkammer-Ansicht"
+msgstr "Ansichten/Dunkelkammer/Vollansicht"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19503(entry)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19687(entry)
@@ -18364,9 +18385,8 @@ msgid "views/lighttable/color yellow"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19644(entry)
-#, fuzzy
 msgid "views/lighttable/navigate down"
-msgstr "Die Leuchttisch-Ansicht"
+msgstr "Ansichten/Leuchttisch/herab navigieren"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19647(entry)
 msgid "&lt;Shift&gt;g"
@@ -18401,39 +18421,32 @@ msgid "views/lighttable/preview with focus detection"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19684(entry)
-#, fuzzy
 msgid "views/lighttable/preview"
-msgstr "Die Leuchttisch-Ansicht"
+msgstr "Ansichten/Leuchttisch/Vorschau"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19692(entry)
-#, fuzzy
 msgid "views/lighttable/rate 0"
-msgstr "Leuchttisch"
+msgstr "Ansichten/Leuchttisch/Bewertung 0"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19700(entry)
-#, fuzzy
 msgid "views/lighttable/rate 1"
-msgstr "Leuchttisch"
+msgstr "Ansichten/Leuchttisch/Bewertung 1"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19708(entry)
-#, fuzzy
 msgid "views/lighttable/rate 2"
-msgstr "Leuchttisch"
+msgstr "Ansichten/Leuchttisch/Bewertung 2"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19716(entry)
-#, fuzzy
 msgid "views/lighttable/rate 3"
-msgstr "Leuchttisch"
+msgstr "Ansichten/Leuchttisch/Bewertung 3"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19724(entry)
-#, fuzzy
 msgid "views/lighttable/rate 4"
-msgstr "Leuchttisch"
+msgstr "Ansichten/Leuchttisch/Bewertung 4"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19732(entry)
-#, fuzzy
 msgid "views/lighttable/rate 5"
-msgstr "Leuchttisch"
+msgstr "Ansichten/Leuchttisch/Bewertung 5"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19740(entry)
 msgid "views/lighttable/rate reject"
@@ -20875,7 +20888,6 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22180(title)
-#, fuzzy
 msgid "Reference values"
 msgstr "Voreinstellungen"
 
@@ -20913,24 +20925,21 @@ msgid ""
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22213(title)
-#, fuzzy
 msgid "Process"
-msgstr "Vorgehen"
+msgstr "Verfahren/Vorgehen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22223(quote)
 msgid "source image"
 msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22223(quote)
-#, fuzzy
 msgid "reference values"
 msgstr "Voreinstellungen"
 
 # Wikipedia nennt das so ...
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22224(quote)
-#, fuzzy
 msgid "process"
-msgstr "Crossentwicklung"
+msgstr "Verfahren/Vorgehen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22222(entry)
 msgid ""
