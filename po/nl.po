@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-26 09:50+0100\n"
-"PO-Revision-Date: 2017-11-26 09:54+0100\n"
+"POT-Creation-Date: 2017-12-03 12:55+0100\n"
+"PO-Revision-Date: 2017-12-03 12:58+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -950,7 +950,7 @@ msgstr "grafische vormgeving;fotografie;raw;"
 #: ../src/gui/presets.c:383 ../src/gui/styles_dialog.c:286
 #: ../src/imageio/storage/disk.c:95 ../src/imageio/storage/gallery.c:107
 #: ../src/imageio/storage/latex.c:106 ../src/libs/collect.c:240
-#: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:461
+#: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:476
 #: ../src/libs/import.c:755 ../src/libs/import.c:862 ../src/libs/lib.c:240
 #: ../src/libs/styles.c:213 ../src/libs/styles.c:236 ../src/libs/tagging.c:374
 #: ../src/libs/tagging.c:414
@@ -1926,7 +1926,7 @@ msgid_plural "added time offset to %d images"
 msgstr[0] "tijdsverschil toegepast op %d afbeelding"
 msgstr[1] "tijdsverschil toegepast op %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1732 ../src/libs/geotagging.c:624
+#: ../src/control/jobs/control_jobs.c:1732 ../src/libs/geotagging.c:783
 msgid "time offset"
 msgstr "tijdsverschil"
 
@@ -2540,7 +2540,7 @@ msgid "rating"
 msgstr "classificatie"
 
 #: ../src/develop/lightroom.c:1407 ../src/libs/collect.h:38
-#: ../src/libs/geotagging.c:47
+#: ../src/libs/geotagging.c:62
 msgid "geotagging"
 msgstr "geotagging"
 
@@ -2601,11 +2601,11 @@ msgstr ""
 
 #: ../src/develop/masks/masks.c:189
 msgid ""
-"scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set "
-"opacity"
+"scroll to set brush size, shift+scroll to set hardness,\n"
+"ctrl+scroll to set opacity"
 msgstr ""
-"scroll bepaald penseel dikte, shift+scroll bepaald hardheid, ctrl+scroll "
-"bepaald dekking"
+"scroll bepaaldt penseel dikte, shift+scroll bepaaldt hardheid,\n"
+"ctrl+scroll bepaaldt dekking"
 
 #: ../src/develop/masks/masks.c:192
 msgid "scroll to set brush size"
@@ -2914,7 +2914,7 @@ msgstr "parameter opslaan als standaard "
 msgid "reset value to default"
 msgstr "reset waarde naar standaard"
 
-#: ../src/gui/camera_import_dialog.c:212 ../src/libs/geotagging.c:407
+#: ../src/gui/camera_import_dialog.c:212 ../src/libs/geotagging.c:422
 msgid "cancel"
 msgstr "annuleer"
 
@@ -3394,7 +3394,7 @@ msgid "select file to import"
 msgstr "kies bestand voor import"
 
 #: ../src/gui/preferences.c:1086 ../src/libs/collect.c:241
-#: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:462
+#: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:477
 #: ../src/libs/import.c:756 ../src/libs/import.c:863 ../src/libs/styles.c:237
 msgid "_open"
 msgstr "_open"
@@ -8681,7 +8681,7 @@ msgstr "open xmp bestand"
 msgid "XMP sidecar files"
 msgstr "xmp bestanden"
 
-#: ../src/libs/copy_history.c:92 ../src/libs/geotagging.c:483
+#: ../src/libs/copy_history.c:92 ../src/libs/geotagging.c:498
 #: ../src/libs/import.c:786 ../src/libs/styles.c:254
 msgid "all files"
 msgstr "alle bestanden"
@@ -8916,7 +8916,7 @@ msgctxt "accel"
 msgid "export"
 msgstr "exporteer"
 
-#: ../src/libs/geotagging.c:399
+#: ../src/libs/geotagging.c:414
 msgid ""
 "enter the time shown on the selected picture\n"
 "format: hh:mm:ss"
@@ -8925,23 +8925,23 @@ msgstr ""
 "apparaat\n"
 "formaat: hh:mm:ss"
 
-#: ../src/libs/geotagging.c:408
+#: ../src/libs/geotagging.c:423
 msgid "ok"
 msgstr "ok"
 
-#: ../src/libs/geotagging.c:461
+#: ../src/libs/geotagging.c:476
 msgid "open GPX file"
 msgstr "open GPX bestand"
 
-#: ../src/libs/geotagging.c:478
+#: ../src/libs/geotagging.c:493
 msgid "GPS data exchange format"
 msgstr "GPS data exchange format"
 
-#: ../src/libs/geotagging.c:488
+#: ../src/libs/geotagging.c:503
 msgid "camera time zone"
 msgstr "tijdzone van camera"
 
-#: ../src/libs/geotagging.c:489
+#: ../src/libs/geotagging.c:504
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -8949,7 +8949,7 @@ msgstr ""
 "meestal wordt in de exif de tijdzone niet opgeslagen, voer de juiste "
 "tijdzone in zodat de GPX data wel overeenkomt"
 
-#: ../src/libs/geotagging.c:635
+#: ../src/libs/geotagging.c:794
 msgid ""
 "time offset\n"
 "format: [+-]?[[hh:]mm:]ss"
@@ -8957,23 +8957,23 @@ msgstr ""
 "tijdsverschil\n"
 "instelling: [+-]?[[hh:]mm:]ss"
 
-#: ../src/libs/geotagging.c:645
+#: ../src/libs/geotagging.c:804
 msgid "calculate the time offset from an image"
 msgstr ""
 "bereken te compenseren tijd\n"
 "van afbeelding vergeleken met\n"
 "tijd van GPS-apparaat"
 
-#: ../src/libs/geotagging.c:650
+#: ../src/libs/geotagging.c:809
 msgid "apply time offset to selected images"
 msgstr "pas tijdsverschil toe op geselecteerde afbeelding(en)"
 
 #. gpx
-#: ../src/libs/geotagging.c:658
+#: ../src/libs/geotagging.c:817
 msgid "apply GPX track file"
 msgstr "GPX track file toepassen"
 
-#: ../src/libs/geotagging.c:659
+#: ../src/libs/geotagging.c:818
 msgid "parses a GPX file and updates location of selected images"
 msgstr ""
 "parst een GPX bestand en actualiseert locatie van geselecteerde afbeeldingen"
