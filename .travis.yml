@@ -51,15 +51,15 @@ matrix:
     services:
       - docker
     env: CC=gcc-7 CXX=g++-7 TARGET=build
-  - os: osx
-    env: CC=cc CXX=c++ TARGET=build # can't use CXX=g++ fails for osx.mm
+  #- os: osx
+  #  env: CC=cc CXX=c++ TARGET=build # can't use CXX=g++ fails for osx.mm
   - os: linux
     sudo: required
     services:
       - docker
     env: CC=clang-4.0 CXX=clang++-4.0 TARGET=build ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF"
-  - os: osx
-    env: CC=gcc-7 CXX=c++ TARGET=build # can't use CXX=g++ fails for osx.mm
+  #- os: osx
+  #  env: CC=gcc-7 CXX=c++ TARGET=build # can't use CXX=g++ fails for osx.mm
   - os: linux
     sudo: required
     services:
