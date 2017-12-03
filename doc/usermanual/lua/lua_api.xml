@@ -7,13 +7,12 @@
   <indexterm>
   <primary>Lua API</primary>
   </indexterm>
-  <para>This documentation is for the *development* version of darktable. for the stable version, please visit the user manual</para>
-<para>To access the darktable specific functions you must load the darktable environment:</para>
+  <para>To access the darktable specific functions you must load the darktable environment:</para>
 
 <para><programlisting language="lua">darktable = require "darktable"</programlisting></para>
 
 <para>All functions and data are accessed through the darktable module.</para>
-<para>This documentation for API version 5.0.0-dev.</para>
+<para>This documentation for API version 5.0.0.</para>
 
 <section status="final" id="darktable">
 <title>darktable</title>
@@ -8959,7 +8958,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>intermediate-export-image</secondary>
 </indexterm>
 <synopsis>event</synopsis>
-<para>This event is called each time an image is exported, once for each image after the image has been processed to an image format but before the storage has moved the image to its final destination.</para>
+<para>This event is called each time an image is exported, once for each image after the image has been processed to an image format but before the storage has moved the image to its final destination. The call is blocking.</para>
 
 <section status="final" id="events_intermediate-export-image_callback">
 <title>events.intermediate-export-image.callback</title>
