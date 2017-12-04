@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
 "POT-Creation-Date: 2017-11-23 13:06+0100\n"
-"PO-Revision-Date: 2017-12-04 17:46+0100\n"
+"PO-Revision-Date: 2017-12-04 21:24+0100\n"
 "Last-Translator: Pierre Metzner <pierre_metzner@web.de>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -3261,8 +3261,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2452(para)
 msgid "crop and rotate <emphasis>(crop and rotate)</emphasis>"
-msgstr ""
-"beschneiden und rotieren <emphasis>(beschneiden und rotieren)</emphasis>"
+msgstr "Zuschneiden und drehen <emphasis>(zuschneiden und drehen)</emphasis>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2456(para)
 msgid "black level <emphasis>(exposure)</emphasis>"
@@ -7500,7 +7499,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5941(title)
 msgid "Drawn mask"
-msgstr "gezeichnete Maske"
+msgstr "Gezeichnete Maske"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5944(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5948(primary)
@@ -7511,7 +7510,7 @@ msgstr "Maske"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5949(secondary)
 msgid "drawn masks"
-msgstr "gezeichnete Maske"
+msgstr "Gezeichnete Maske"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5953(primary)
 msgid "local adjustments"
@@ -10711,14 +10710,14 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8745(title)
 msgid "Orientation"
-msgstr "Orientierung"
+msgstr "Drehung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8749(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8753(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14871(title)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18120(bridgehead)
 msgid "orientation"
-msgstr "Orientierung"
+msgstr "Drehung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8766(entry)
 msgid ""
@@ -11837,6 +11836,12 @@ msgid ""
 "<quote>full average</quote> and <quote>full and local average</quote>. This "
 "option is not shown for X-Trans sensors."
 msgstr ""
+"Bei einigen Kameras haben die grünen Filter leicht unterschiedliche"
+" Eigenschaften. Dieser Parameter fügt einen zusätzlichen Entzerrungsschritt"
+" hinzu, um Artefakte zu unterdrücken. Verfügbare Optionen sind <quote"
+">deaktiviert</quote>, <quote>lokaler Durchschnitt</quote>, <quote>voller"
+" Durchschnitt</quote> und <quote>voller und lokaler Durchschnitt</quote>."
+" Diese Option wird bei X-Trans-Sensoren nicht angezeigt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9680(title)
 msgid "Highlight reconstruction"
@@ -11876,6 +11881,10 @@ msgid ""
 "method is most useful in cases where clipped highlights occur in non-colored "
 "areas like clouds in the sky."
 msgstr ""
+"Clip-Highlights klemmen einfach alle Pixel auf den Weißwert. Damit werden"
+" alle abgeschnittenen Lichter effektiv in neutrale Grautöne umgewandelt."
+" Diese Methode ist vor allem dann nützlich, wenn abgeschnittene Lichter in"
+" nicht gefärbten Bereichen wie Wolken am Himmel auftreten."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9736(para)
 msgid ""
@@ -11891,6 +11900,19 @@ msgid ""
 "manufacturers apply to their JPEG), which renders highlights desaturated. "
 "This method is a good option on naturally desaturated objects such as clouds."
 msgstr ""
+"<quote>Rekonstruieren in LCh</quote> analysiert jedes Pixel mit mindestens"
+" einem abgeschnittenen Kanal und transformiert die Informationen in den"
+" LCh-Farbraum, um das abgeschnittene Pixel mit den Werten der anderen (3 für"
+" Bayer oder 8 für X-Trans) Pixel im betroffenen Sensorblock zu korrigieren."
+" Diese Methode ist in der Regel besser als <quote>Clip-Highlights</quote>, da"
+" einige Details in den abgeschnittenen Bereichen erhalten bleiben. Allerdings"
+" ist es nicht möglich, jegliche Farbinformationen zu rekonstruieren - die"
+" rekonstruierten Highlights sind alle monochrom, aber heller und"
+" detaillierter als mit <quote>Clip-Highlights</quote>. "
+"Diese Methode funktioniert recht gut mit einer kontrastreichen Basiskurve"
+" (wie sie die meisten Hersteller für ihr JPEG verwenden), wodurch die Lichter"
+" desaturiert werden. Diese Methode ist eine gute Option für natürlich"
+" entsättigte Objekte wie z.B. Wolken."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9749(para)
 msgid ""
@@ -11902,6 +11924,14 @@ msgid ""
 "contrast edges, such as fine, well-exposed structures in front of overexposed "
 "background (for instance ship masts or flags in front of the blown-out sky)."
 msgstr ""
+"Bei der <quote>Rekonstruktion von Farben</quote> wird ein Algorithmus"
+" verwendet, der Farbinformationen aus der unbeschnittenen Umgebung in die"
+" beschnittenen Highlights überträgt. Diese Methode funktioniert sehr gut auf"
+" Flächen mit homogenen Farben und ist besonders nützlich bei Hauttönen mit"
+" sanft verblassenden Highlights. Sie scheitert in bestimmten Fällen, wenn sie"
+" verwirrende Artefakte an Glanzlichtern hinter kontrastreichen Kanten"
+" erzeugt, wie z.B. feine, gut belichtete Strukturen vor überbelichteten"
+" Hintergründen (z.B. Schiffsmasten oder Flaggen vor dem ausgeblasenen Himmel)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9758(para)
 msgid ""
@@ -11912,16 +11942,27 @@ msgid ""
 "the highlights (see <xref linkend=\"drawn_mask\"/> and <xref linkend="
 "\"parametric_mask\"/>)."
 msgstr ""
+"Tipp: Damit die Highlight-Rekonstruktion wirksam wird, müssen Sie im"
+" Belichtungsmodul eine negative EV-Korrektur vornehmen (siehe <xref"
+" linkend=\"exposure\"/>). Wenn Sie eine generelle Verdunkelung Ihres Bildes"
+" vermeiden wollen, können Sie die Maskenfunktion von darktable in diesem"
+" Modul verwenden, um die EV-Korrektur auf die Highlights zu beschränken"
+" (siehe <xref linkend=\"drawn_mask\"/> und <xref linkend=\"parametric_mask\"/"
+">)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9768(para)
 msgid "Choose the method for highlight reconstruction."
-msgstr ""
+msgstr "Wählen Sie die Methode für die Highlight-Rekonstruktion."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9775(para)
 msgid ""
 "Manually adjust the clipping threshold against magenta highlights. The "
 "default is usually satisfactory without any need for additional adjustments."
 msgstr ""
+"Passen Sie die Clipping-Schwelle manuell an die magentafarbenen Lichter an."
+" Die "
+"Standardeinstellung ist in der Regel zufriedenstellend, ohne dass zusätzliche"
+" Anpassungen erforderlich sind."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9791(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9795(primary)
@@ -11934,10 +11975,14 @@ msgid ""
 "with it: (a) Set up tint and temperature, (b) define the value of each "
 "channel, or (c) choose from predefined white balances."
 msgstr ""
+"Dieses Modul dient zur Einstellung des Weißabgleichs. Sie haben drei"
+" Möglichkeiten, mit ihm zu interagieren: (a) Einstellung von Farbton und"
+" Temperatur, (b) Festlegung des Wertes für jeden Kanal oder (c) Auswahl aus"
+" vordefinierten Weißabgleichs."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9828(title)
 msgid "tint"
-msgstr ""
+msgstr "Farbton"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9829(para)
 msgid ""
@@ -11945,6 +11990,9 @@ msgid ""
 "(value &gt; 1). The channel sliders will be updated when you adjust this "
 "parameter."
 msgstr ""
+"Ändern Sie den Farbton des Bildes von Magenta (Wert &lt; 1) auf Grün (Wert"
+" &gt; 1). Die Kanalregler werden aktualisiert, wenn Sie diesen Parameter"
+" einstellen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9836(title)
 msgid "temperature"
@@ -11958,6 +12006,11 @@ msgid ""
 "be authoritative. In the end only the updated channel values determine how "
 "the image is modified."
 msgstr ""
+"Stellen Sie die Farbtemperatur ein (in Kelvin). Die Kanalregler werden"
+" aktualisiert, wenn Sie diesen Parameter einstellen. Darktable leitet die"
+" Farbtemperatur aus den Exif-Daten unter Verwendung einiger Modellannahmen"
+" ab. Der angegebene Wert ist nicht verbindlich. Letztendlich bestimmen nur"
+" die aktualisierten Kanalwerte, wie das Bild verändert wird."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9846(title)
 msgid "red, green and blue channels"
@@ -11965,7 +12018,7 @@ msgstr "rot, grün und blau Kanal"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9847(para)
 msgid "Set the channel values on a scale from 0 to 8."
-msgstr ""
+msgstr "Stellen Sie die Kanalwerte auf einer Skala von 0 bis 8 ein."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9853(title)
 msgid "preset"
@@ -11990,10 +12043,31 @@ msgid ""
 "shade and a number of indoor lighting options. </entry></row></tbody></"
 "tgroup></informaltable>"
 msgstr ""
+"Wählen Sie einen voreingestellten Weißabgleich. <informaltable frame=\"none\""
+" width=\"80%"
+"\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"4*\"/"
+"><colspec colwidth=\"6*\"/><tbody><row><entry><emphasis>Kamera-Weißabgleich"
+" (default)</emphasis></entry><entry> Weißabgleich, der von der Kamera"
+" gemeldet wird.</"
+"entry></row><row><entry><emphasis>Kamera neutral</emphasis></entry><entry> Im"
+" Wesentlichen stellt Temperatur auf 6502K ein. Die eigentliche Mathematik:"
+" Sie berechnet solche Weißabgleich-Kanal-Multiplikatoren, so dass reinweiße"
+" Farbe im Kamerafarbraum in reinweiße Farbe in sRGB D65 umgewandelt wird."
+" (reinweiße Farbe bedeutet hier, dass der gleiche Wert für jeden Kanal = 1,0)"
+" </entry></"
+"row><row><entry><emphasis>spot white balance</emphasis></entry><entry> Wählen"
+" Sie einen quadratischen Bereich in Ihrem Bild, der hauptsächlich graue Pixel"
+" enthält. Der Weißabgleich wird auf der Grundlage des ausgewählten Bereichs"
+" berechnet. </entry></"
+"row><row><entry><emphasis>Kamera Voreinstellung</emphasis></entry><entry>"
+" Kameraspezifische Weißabgleich-Voreinstellungen. Beispiele: direktes"
+" Sonnenlicht, Blitzlicht, Bewölkung, Schatten und eine Reihe von"
+" Innenbeleuchtungsmöglichkeiten. </entry></row></tbody></"
+"tgroup></informaltable>"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9905(title)
 msgid "finetune"
-msgstr ""
+msgstr "Feinabgleich"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9906(para)
 msgid ""
@@ -12002,6 +12076,11 @@ msgid ""
 "steps within a certain range. The adjustments are usually towards yellow "
 "(value &lt; 1) or blue (value &gt; 1)."
 msgstr ""
+"Einige Kameras bieten zusätzliche Feinabstimmungsparameter, wenn eine der"
+" Kameraeinstellungen ausgewählt ist. Abhängig vom Weißabgleich der Kamera"
+" kann der Weißabgleich in Schritten innerhalb eines bestimmten Bereichs"
+" eingestellt werden. Die Einstellungen sind in der Regel in Richtung Gelb"
+" (Wert &lt; 1) oder Blau (Wert &gt; 1)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9919(title)
 msgid "Invert"
@@ -12015,10 +12094,11 @@ msgstr "invertieren"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9940(entry)
 msgid "The main purpose of this module is to invert scanned negatives."
 msgstr ""
+"Der Hauptzweck dieses Moduls ist es, gescannte Negative zu invertieren."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9958(title)
 msgid "color of film material"
-msgstr ""
+msgstr "Farbe des Filmmaterials"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9959(para)
 msgid ""
@@ -12031,15 +12111,24 @@ msgid ""
 "\"/> and take a color probe from your image – preferably from the unexposed "
 "border of your negative."
 msgstr ""
+"Das einzige Steuerelement dieses Moduls ist ein Farbauswahlschalter, der es"
+" ermöglicht, verschiedene Farben Ihres Filmmaterials einzustellen. Wenn Sie"
+" auf das Farbfeld klicken, öffnet sich ein Farbauswahldialog, der Ihnen eine"
+" Auswahl der am häufigsten verwendeten Farben bietet, oder Sie können eine"
+" Farbe im RGB-Farbraum definieren. Sie können einen Farbwähler auch"
+" aktivieren, indem Sie <inlinegraphic fileref=\"images/darkroom_module_icon_pi"
+"cker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> drücken und eine"
+" Farbsonde aus Ihrem Bild nehmen - am besten vom unbelichteten Rand Ihres"
+" Negativs."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9976(title)
 msgid "Raw black/white point"
-msgstr ""
+msgstr "RAW-Schwarz-/Weißpunkt"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9980(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9984(primary)
 msgid "raw black/white point"
-msgstr ""
+msgstr "RAW-Schwarz-/Weißpunkt"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9997(entry)
 msgid ""
@@ -12048,10 +12137,14 @@ msgid ""
 "settings are applied for all supported cameras. Changes to the defaults are "
 "normally not required."
 msgstr ""
+"Dieses Modul wird automatisch für Rohbilder aktiviert und sorgt dafür, dass"
+" die kameraspezifischen Schwarzweißpunkte berücksichtigt werden. Die"
+" Standardeinstellungen gelten für alle unterstützten Kameras. Änderungen an"
+" den Standardeinstellungen sind in der Regel nicht erforderlich."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10018(title)
 msgid "black level 0 to 3"
-msgstr ""
+msgstr "Schwarzwert 0 bis 3"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10019(para)
 msgid ""
@@ -12059,10 +12152,12 @@ msgid ""
 "Pixels with values lower than that level are considered to contain no valid "
 "data."
 msgstr ""
+"Der kameraspezifische Schwarzwert der vier Pixel im RGGB Bayer-Muster. Pixel"
+" mit Werten unter diesem Wert werden als ungültig betrachtet."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10026(title)
 msgid "white point"
-msgstr ""
+msgstr "Weißpunkt"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10027(para)
 msgid ""
@@ -12071,45 +12166,55 @@ msgid ""
 "emphasis> module (see <xref linkend=\"highlight_reconstruction\"/>). Pixels "
 "with values equal to the white level are considered to be white."
 msgstr ""
+"Der kameraspezifische Weißwert. Alle Pixel mit den obigen Werten werden"
+" wahrscheinlich beschnitten und im Modul <emphasis>Spitzlicht Rekonstruktion<"
+"/emphasis> (siehe <xref linkend=\"highlight_reconstruction\"/>) entsprechend"
+" behandelt. Pixel mit Werten, die dem Weißwert entsprechen, gelten als weiß."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10043(title)
 msgid "Tone group"
-msgstr ""
+msgstr "Helligkeitsgruppe"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10045(para)
 msgid ""
 "This group contains modules that operate on the tonal values of an image, "
 "modulating brightness while leaving color values intact."
 msgstr ""
+"Diese Gruppe enthält Module, die auf den Tonwerten eines Bildes arbeiten und"
+" die Helligkeit modulieren, während die Farbwerte intakt bleiben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10052(title)
 msgid "Fill light"
-msgstr ""
+msgstr "Fülllicht"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10056(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10060(primary)
 msgid "fill light"
-msgstr ""
+msgstr "Fülllicht"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10073(entry)
 msgid ""
 "This module allows local modification of the exposure based on pixel "
 "lightness."
 msgstr ""
+"Dieses Modul ermöglicht die lokale Modifikation der Belichtung auf Basis der"
+" Pixelhelligkeit."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10090(para)
 msgid ""
 "Pushes exposure by increasing lightness with a Gaussian curve of a specified "
 "width, centered on a given lightness."
 msgstr ""
+"Drückt die Belichtung durch Erhöhung der Helligkeit mit einer Gauß'schen"
+" Kurve einer bestimmten Breite, zentriert auf eine gegebene Helligkeit."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10097(para)
 msgid "Sets fill-light exposure in [EV]."
-msgstr ""
+msgstr "Stellt die Belichtungskorrektur in[EV] ein."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10103(title)
 msgid "center"
-msgstr ""
+msgstr "Zentrum"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10107(para)
 msgid ""
@@ -12121,10 +12226,17 @@ msgid ""
 "mode from within the global color picker panel (see <xref linkend="
 "\"global_color_picker\"/>)."
 msgstr ""
+"Legt die mittlere Helligkeit fest, die durch das Aufhelllicht beeinflusst"
+" wird. Ein Farbwähler wird aktiviert, indem man <inlinegraphic"
+" fileref=\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2"
+"%\" align=\"center\"/> . Es zeigt den gewählten Helligkeitswert in der"
+" Gradientenleiste an, um den gewünschten Mittelwert zu finden. Sie können"
+" zwischen Punkt- und Flächenstichprobenmodus innerhalb des globalen"
+" Farbauswahlfeldes umschalten (siehe <xref linkend=\"global_color_picker\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10118(title)
 msgid "width"
-msgstr ""
+msgstr "Breite"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10119(para)
 msgid ""
@@ -12132,10 +12244,13 @@ msgid ""
 "the whole dynamic range being 10 zones. As the Gaussian curve is symmetric, "
 "only even numbers can be entered."
 msgstr ""
+"Legt die Breite der Gauß-Kurve fest. Diese Zahl wird in Zonen ausgedrückt,"
+" wobei der gesamte Dynamikbereich 10 Zonen beträgt. Da die Gauß-Kurve"
+" symmetrisch ist, können nur gerade Zahlen eingegeben werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10132(title)
 msgid "Levels"
-msgstr ""
+msgstr "Werte"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10163(entry)
 msgid ""
@@ -12143,6 +12258,9 @@ msgid ""
 "especially useful if the histogram of an image does not span the whole "
 "horizontal range, from pure black to pure white."
 msgstr ""
+"Ein Werkzeug zum Einstellen von schwarzen, weißen und mittelgrauen Punkten."
+" Dieses Modul ist besonders nützlich, wenn das Histogramm eines Bildes nicht"
+" den gesamten horizontalen Bereich von reinem Schwarz bis reinem Weiß abdeckt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10186(para)
 msgid ""
@@ -12358,12 +12476,12 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10446(title)
 msgid "Zone system"
-msgstr ""
+msgstr "Zonensystem"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10450(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10454(primary)
 msgid "zone system"
-msgstr ""
+msgstr "Zonensystem"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10467(entry)
 msgid ""
@@ -12483,18 +12601,18 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10657(title)
 msgid "Tonemapping"
-msgstr ""
+msgstr "Tonemapping"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10661(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10665(primary)
 msgid "tonemapping"
-msgstr ""
+msgstr "Tonemapping"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10666(seealso)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10732(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10736(primary)
 msgid "global tonemap"
-msgstr ""
+msgstr "Globales Tonemapping"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10679(entry)
 msgid ""
@@ -12531,7 +12649,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10728(title)
 msgid "Global tonemap"
-msgstr ""
+msgstr "Global tonemap"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10749(entry)
 msgid ""
@@ -13499,7 +13617,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12179(title)
 msgid "Correction group"
-msgstr ""
+msgstr "Korrekturgruppe"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12181(para)
 msgid ""
@@ -14612,11 +14730,11 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13766(title)
 msgid "Raw denoise"
-msgstr ""
+msgstr "RAW-Entrauschen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13770(secondary)
 msgid "raw denoise"
-msgstr ""
+msgstr "RAW-Entrauschen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13775(secondary)
 msgid "raw"
@@ -14951,7 +15069,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14290(title)
 msgid "Effect group"
-msgstr ""
+msgstr "Effektgruppe"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14292(para)
 msgid "In the effect group you will find modules with a more artistic touch."
