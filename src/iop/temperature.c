@@ -409,7 +409,7 @@ static cmsCIEXYZ mul2xyz(dt_iop_module_t *self, const float coeffs[4])
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
   double CAM[4];
-  for(int k = 0; k < 4; k++) coeffs[k] > 0.0f ? CAM[k] = 1.0 / coeffs[k] : 0.0f;
+  for(int k = 0; k < 4; k++) CAM[k] = coeffs[k] > 0.0f ? 1.0 / coeffs[k] : 0.0f;
 
   double XYZ[3];
   for(int k = 0; k < 3; k++)

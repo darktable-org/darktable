@@ -46,6 +46,7 @@ ALL_DEVELOPERS = [
     "Pedro Côrte-Real",
     "Roman Lebedev",
     "Simon Spannagel",
+    "Stefan Schöfegger",
     "Tobias Ellinghaus",
     "Ulrich Pegelow",
     "johannes hanika",
@@ -93,6 +94,8 @@ puts
 puts "* contributors (at least #{CONTRIBUTORS.values.min} commits):"
 puts CONTRIBUTORS.keys.join(",\n") + "."
 puts
+
+puts "FIXME: account for rawspeed.\n\n"
 
 puts "And all those of you that made previous releases possible"
 
