@@ -114,8 +114,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const int ch = piece->colors;
 
-  const float lower = dev->overexposed.lower / 100.0;
-  const float upper = dev->overexposed.upper / 100.0;
+  const float lower = MAX(dev->overexposed.lower / 100.0f, 1e-6f);
+  const float upper = dev->overexposed.upper / 100.0f;
 
   const int colorscheme = dev->overexposed.colorscheme;
   const float *const upper_color = dt_iop_overexposed_colors[colorscheme][0];
@@ -136,7 +136,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         out[k + c] = upper_color[c];
       }
     }
-    else if(in[k + 0] <= lower || in[k + 1] <= lower || in[k + 2] <= lower)
+    else if(in[k + 0] <= lower && in[k + 1] <= lower && in[k + 2] <= lower)
     {
       for(int c = 0; c < 3; c++)
       {
@@ -153,7 +153,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #if defined(__SSE__)
@@ -163,11 +163,11 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   dt_develop_t *dev = self->dev;
 
   const int ch = piece->colors;
+  const float lower = MAX(dev->overexposed.lower / 100.0f, 1e-6f);
+  const float upper = dev->overexposed.upper / 100.0f;
 
-  const __m128 upper = _mm_set_ps(FLT_MAX, dev->overexposed.upper / 100.0f, dev->overexposed.upper / 100.0f,
-                                  dev->overexposed.upper / 100.0f);
-  const __m128 lower = _mm_set_ps(FLT_MAX, dev->overexposed.lower / 100.0f, dev->overexposed.lower / 100.0f,
-                                  dev->overexposed.lower / 100.0f);
+  const __m128 mupper = _mm_set_ps(FLT_MAX, upper, upper, upper);
+  const __m128 mlower = _mm_set_ps(FLT_MAX, lower, lower, lower);
 
   const int colorscheme = dev->overexposed.colorscheme;
   const __m128 upper_color = _mm_load_ps(dt_iop_overexposed_colors[colorscheme][0]);
@@ -185,11 +185,11 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     {
       const __m128 pixel = _mm_load_ps(in);
 
-      __m128 isoe = _mm_cmpge_ps(pixel, upper);
+      __m128 isoe = _mm_cmpge_ps(pixel, mupper);
       isoe = _mm_or_ps(_mm_unpacklo_ps(isoe, isoe), _mm_unpackhi_ps(isoe, isoe));
       isoe = _mm_or_ps(_mm_unpacklo_ps(isoe, isoe), _mm_unpackhi_ps(isoe, isoe));
 
-      __m128 isue = _mm_cmple_ps(pixel, lower);
+      __m128 isue = _mm_cmple_ps(pixel, mlower);
       isue = _mm_and_ps(_mm_unpacklo_ps(isue, isue), _mm_unpackhi_ps(isue, isue));
       isue = _mm_and_ps(_mm_unpacklo_ps(isue, isue), _mm_unpackhi_ps(isue, isue));
 
@@ -202,7 +202,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   }
   _mm_sfence();
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
 
@@ -219,7 +219,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  const float lower = dev->overexposed.lower / 100.0f;
+  const float lower = MAX(dev->overexposed.lower / 100.0f, 1e-6f);
   const float upper = dev->overexposed.upper / 100.0f;
   const int colorscheme = dev->overexposed.colorscheme;
 
@@ -286,7 +286,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_overexposed_t));
   module->hide_enable_button = 1;
   module->default_enabled = 1;
-  module->priority = 923; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 926; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_overexposed_t);
   module->gui_data = NULL;
 }

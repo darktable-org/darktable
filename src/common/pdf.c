@@ -26,21 +26,26 @@
 // or use
 // gcc -W -Wall -std=c99 -lz -lm `pkg-config --cflags --libs glib-2.0` -g -O3 -fopenmp -DSTANDALONE -o darktable-pdf pdf.c
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #define _XOPEN_SOURCE 700
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <strings.h>
-#include <zlib.h>
-#include <time.h>
 #include <errno.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <time.h>
+#include <zlib.h>
+
+#include <glib/gstdio.h>
 
 #ifdef STANDALONE
 #define PACKAGE_STRING "darktable pdf library"
 #else
-#include "version.h"
+#define PACKAGE_STRING darktable_package_string
 #endif
 
 #include "pdf.h"
@@ -205,7 +210,7 @@ dt_pdf_t *dt_pdf_start(const char *filename, float width, float height, float dp
   dt_pdf_t *pdf = calloc(1, sizeof(dt_pdf_t));
   if(!pdf) return NULL;
 
-  pdf->fd = fopen(filename, "wb");
+  pdf->fd = g_fopen(filename, "wb");
   if(!pdf->fd)
   {
     free(pdf);
@@ -303,7 +308,7 @@ static size_t _pdf_write_stream(dt_pdf_t *pdf, dt_pdf_stream_encoder_t encoder, 
 
 int dt_pdf_add_icc(dt_pdf_t *pdf, const char *filename)
 {
-  FILE *in = fopen(filename, "rb");
+  FILE *in = g_fopen(filename, "rb");
   if(!in) return 0;
 
   fseek(in, 0, SEEK_END);
@@ -733,11 +738,10 @@ time_error:
       time_str
     );
   }
-  bytes_written += fprintf(pdf->fd,
-    "/Producer (" PACKAGE_STRING " http://www.darktable.org)\n"
-    ">>\n"
-    "endobj\n"
-  );
+  bytes_written += fprintf(pdf->fd, "/Producer (%s http://www.darktable.org)\n"
+                                    ">>\n"
+                                    "endobj\n",
+                           PACKAGE_STRING);
 
   pdf->bytes_written += bytes_written;
 
@@ -778,7 +782,7 @@ time_error:
 // just for debugging to read a ppm file
 float * read_ppm(const char * filename, int * wd, int * ht)
 {
-  FILE *f = fopen(filename, "rb");
+  FILE *f = g_fopen(filename, "rb");
 
   if(!f)
   {

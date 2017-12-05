@@ -45,19 +45,19 @@
 #include "libs/lib.h"
 #include "views/view_api.h"
 
+#include <assert.h>
+#include <dirent.h>
+#include <errno.h>
+#include <gdk/gdkkeysyms.h>
+#include <math.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <math.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <dirent.h>
 #include <string.h>
 #include <strings.h>
-#include <errno.h>
-#include <assert.h>
-#include <gdk/gdkkeysyms.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 DT_MODULE(1)
 
@@ -229,7 +229,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_
   while(modules)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    if((module->views(module) & self->view(self)) && module->gui_post_expose)
+    if(module->gui_post_expose && dt_lib_is_visible_in_view(module, self))
       module->gui_post_expose(module, cri, width, height, pointerx, pointery);
     modules = g_list_next(modules);
   }
@@ -251,7 +251,8 @@ static void _capture_mipmaps_updated_signal_callback(gpointer instance, gpointer
 
 
 /** callbacks to deal with images taken in tethering mode */
-static const char *_camera_request_image_filename(const dt_camera_t *camera, const char *filename, void *data)
+static const char *_camera_request_image_filename(const dt_camera_t *camera, const char *filename,
+                                                  time_t *exif_time, void *data)
 {
   struct dt_capture_t *lib = (dt_capture_t *)data;
 
@@ -265,7 +266,7 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
   return g_strdup(file);
 }
 
-static const char *_camera_request_image_path(const dt_camera_t *camera, void *data)
+static const char *_camera_request_image_path(const dt_camera_t *camera, time_t *exif_time, void *data)
 {
   struct dt_capture_t *lib = (dt_capture_t *)data;
   return dt_import_session_path(lib->session, FALSE);

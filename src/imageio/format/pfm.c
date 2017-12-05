@@ -28,16 +28,25 @@
 
 DT_MODULE(1)
 
-int write_image(dt_imageio_module_data_t *data, const char *filename, const void *ivoid, void *exif,
-                int exif_len, int imgid, int num, int total)
+int write_image(dt_imageio_module_data_t *data, const char *filename, const void *ivoid,
+                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                void *exif, int exif_len, int imgid, int num, int total)
 {
   const dt_imageio_module_data_t *const pfm = data;
   int status = 0;
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   if(f)
   {
-    // INFO: per-line fwrite call seems to perform best. LebedevRI, 18.04.2014
-    (void)fprintf(f, "PF\n%d %d\n-1.0\n", pfm->width, pfm->height);
+    // align pfm header to sse, assuming the file will
+    // be mmapped to page boundaries.
+    char header[1024];
+    snprintf(header, 1024, "PF\n%d %d\n-1.0", pfm->width, pfm->height);
+    size_t len = strlen(header);
+    fprintf(f, "PF\n%d %d\n-1.0", pfm->width, pfm->height);
+    ssize_t off = 0;
+    while((len + 1 + off) & 0xf) off++;
+    while(off-- > 0) fprintf(f, "0");
+    fprintf(f, "\n");
     void *buf_line = dt_alloc_align(16, 3 * sizeof(float) * pfm->width);
     for(int j = 0; j < pfm->height; j++)
     {
@@ -49,6 +58,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       {
         memcpy(out, in, 3 * sizeof(float));
       }
+      // INFO: per-line fwrite call seems to perform best. LebedevRI, 18.04.2014
       int cnt = fwrite(buf_line, 3 * sizeof(float), pfm->width, f);
       if(cnt != pfm->width)
         status = 1;

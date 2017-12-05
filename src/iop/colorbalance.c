@@ -24,9 +24,10 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 #endif
 // our includes go first:
 #include "bauhaus/bauhaus.h"
-#include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/opencl.h"
 #include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -101,8 +102,8 @@ int groups()
 }
 
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
   const int ch = piece->colors;
@@ -121,32 +122,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                           d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
                           d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR] };
 
-  // sRGB -> XYZ matrix, D65
-  const float srgb_to_xyz[3][3] = {
-    { 0.4360747, 0.3850649, 0.1430804 },
-    { 0.2225045, 0.7168786, 0.0606169 },
-    { 0.0139322, 0.0971045, 0.7141733 }
-    //     {0.4124564, 0.3575761, 0.1804375},
-    //     {0.2126729, 0.7151522, 0.0721750},
-    //     {0.0193339, 0.1191920, 0.9503041}
-  };
-  // XYZ -> sRGB matrix, D65
-  const float xyz_to_srgb[3][3] = {
-    { 3.1338561, -1.6168667, -0.4906146 },
-    { -0.9787684, 1.9161415, 0.0334540 },
-    { 0.0719453, -0.2289914, 1.4052427 }
-    //     {3.2404542, -1.5371385, -0.4985314},
-    //     {-0.9692660,  1.8760108,  0.0415560},
-    //     {0.0556434, -0.2040259,  1.0572252}
-  };
-
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
-    float *in = ((float *)i) + (size_t)ch * roi_in->width * j;
-    float *out = ((float *)o) + (size_t)ch * roi_out->width * j;
+    float *in = ((float *)ivoid) + (size_t)ch * roi_in->width * j;
+    float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
     for(int i = 0; i < roi_out->width; i++)
     {
       // transform the pixel to sRGB:
@@ -155,11 +137,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_Lab_to_XYZ(in, XYZ);
       // XYZ -> sRGB
       float rgb[3] = { 0, 0, 0 };
-      for(int r = 0; r < 3; r++)
-        for(int c = 0; c < 3; c++) rgb[r] += xyz_to_srgb[r][c] * XYZ[c];
-      // linear sRGB -> gamma corrected sRGB
-      for(int c = 0; c < 3; c++)
-        rgb[c] = rgb[c] <= 0.0031308 ? 12.92 * rgb[c] : (1.0 + 0.055) * powf(rgb[c], 1.0 / 2.4) - 0.055;
+      dt_XYZ_to_sRGB(XYZ, rgb);
 
       // do the calculation in RGB space
       for(int c = 0; c < 3; c++)
@@ -171,12 +149,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       // transform the result back to Lab
       // sRGB -> XYZ
-      XYZ[0] = XYZ[1] = XYZ[2] = 0.0;
-      // gamma corrected sRGB -> linear sRGB
-      for(int c = 0; c < 3; c++)
-        rgb[c] = rgb[c] <= 0.04045 ? rgb[c] / 12.92 : powf((rgb[c] + 0.055) / (1 + 0.055), 2.4);
-      for(int r = 0; r < 3; r++)
-        for(int c = 0; c < 3; c++) XYZ[r] += srgb_to_xyz[r][c] * rgb[c];
+      dt_sRGB_to_XYZ(rgb, XYZ);
+
       // XYZ -> Lab
       dt_XYZ_to_Lab(XYZ, out);
       out[3] = in[3];
@@ -186,6 +160,66 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 }
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
+  const int ch = piece->colors;
+
+  // these are RGB values!
+  const __m128 lift = _mm_setr_ps(2.0 - (d->lift[CHANNEL_RED] * d->lift[CHANNEL_FACTOR]),
+                                  2.0 - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
+                                  2.0 - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]),
+                                  0.0f);
+  const __m128 gamma = _mm_setr_ps(d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
+                                   d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
+                                   d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR],
+                                   0.0f);
+  const __m128 gamma_inv = _mm_setr_ps((gamma[0] != 0.0) ? 1.0 / gamma[0] : 1000000.0,
+                                       (gamma[1] != 0.0) ? 1.0 / gamma[1] : 1000000.0,
+                                       (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0,
+                                       0.0f);
+  const __m128 gain = _mm_setr_ps(d->gain[CHANNEL_RED] * d->gain[CHANNEL_FACTOR],
+                                  d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
+                                  d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR],
+                                  0.0f);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    float *in = ((float *)ivoid) + (size_t)ch * roi_in->width * j;
+    float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
+    for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
+    {
+      // transform the pixel to sRGB:
+      // Lab -> XYZ
+      __m128 Lab = _mm_load_ps(in);
+      __m128 XYZ = dt_Lab_to_XYZ_sse2(Lab);
+      // XYZ -> sRGB
+      __m128 rgb = dt_XYZ_to_sRGB_sse2(XYZ);
+
+      // do the calculation in RGB space
+      __m128 one = _mm_set1_ps(1.0);
+      __m128 tmp = _mm_mul_ps(_mm_add_ps(_mm_mul_ps(_mm_sub_ps(rgb, one), lift),one), gain);
+      tmp = _mm_max_ps(tmp, _mm_setzero_ps());
+      rgb = _mm_pow_ps(tmp, gamma_inv);
+
+      // transform the result back to Lab
+      // sRGB -> XYZ
+      XYZ = dt_sRGB_to_XYZ_sse2(rgb);
+      // XYZ -> Lab
+      __m128 outv = dt_XYZ_to_Lab_sse2(XYZ);
+      _mm_store_ps(out, outv);
+    }
+  }
+
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
+#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
@@ -237,7 +271,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colorbalance_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorbalance_params_t));
   module->default_enabled = 0;
-  module->priority = 430; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 441; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorbalance_params_t);
   module->gui_data = NULL;
   dt_iop_colorbalance_params_t tmp = (dt_iop_colorbalance_params_t){ { 1.0f, 1.0f, 1.0f, 1.0f },
@@ -590,18 +624,26 @@ void gui_init(dt_iop_module_t *self)
   /* lift */
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("lift")), FALSE, FALSE, 5);
 
+  static const char *lift_messages[] = { N_("factor of lift"), N_("lift") };
+  (void)lift_messages;
   ADD_FACTOR(lift)
 
+  static const char *lift_red_messages[] = { N_("factor of red for lift"), N_("red") };
+  (void)lift_red_messages;
   ADD_CHANNEL(lift, r, red, RED)
   dt_bauhaus_slider_set_stop(g->lift_r, 0.0, 0.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_r, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_r, 1.0, 1.0, 0.0, 0.0);
 
+  static const char *lift_green_messages[] = { N_("factor of green for lift"), N_("green") };
+  (void)lift_green_messages;
   ADD_CHANNEL(lift, g, green, GREEN)
   dt_bauhaus_slider_set_stop(g->lift_g, 0.0, 1.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_g, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->lift_g, 1.0, 0.0, 1.0, 0.0);
 
+  static const char *lift_blue_messages[] = { N_("factor of blue for lift"), N_("blue") };
+  (void)lift_blue_messages;
   ADD_CHANNEL(lift, b, blue, BLUE)
   dt_bauhaus_slider_set_stop(g->lift_b, 0.0, 1.0, 1.0, 0.0);
   dt_bauhaus_slider_set_stop(g->lift_b, 0.5, 1.0, 1.0, 1.0);
@@ -610,18 +652,26 @@ void gui_init(dt_iop_module_t *self)
   /* gamma */
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("gamma")), FALSE, FALSE, 5);
 
+  static const char *gamma_messages[] = { N_("factor of gamma"), N_("gamma") };
+  (void)gamma_messages;
   ADD_FACTOR(gamma)
 
+  static const char *gamma_red_messages[] = { N_("factor of red for gamma") };
+  (void)gamma_red_messages;
   ADD_CHANNEL(gamma, r, red, RED)
   dt_bauhaus_slider_set_stop(g->gamma_r, 0.0, 0.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_r, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_r, 1.0, 1.0, 0.0, 0.0);
 
+  static const char *gamma_green_messages[] = { N_("factor of green for gamma") };
+  (void)gamma_green_messages;
   ADD_CHANNEL(gamma, g, green, GREEN)
   dt_bauhaus_slider_set_stop(g->gamma_g, 0.0, 1.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_g, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_g, 1.0, 0.0, 1.0, 0.0);
 
+  static const char *gamma_blue_messages[] = { N_("factor of blue for gamma") };
+  (void)gamma_blue_messages;
   ADD_CHANNEL(gamma, b, blue, BLUE)
   dt_bauhaus_slider_set_stop(g->gamma_b, 0.0, 1.0, 1.0, 0.0);
   dt_bauhaus_slider_set_stop(g->gamma_b, 0.5, 1.0, 1.0, 1.0);
@@ -630,18 +680,26 @@ void gui_init(dt_iop_module_t *self)
   /* gain */
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("gain")), FALSE, FALSE, 5);
 
+  static const char *gain_messages[] = { N_("factor of gain"), N_("gain") };
+  (void)gain_messages;
   ADD_FACTOR(gain)
 
+  static const char *gain_red_messages[] = { N_("factor of red for gain") };
+  (void)gain_red_messages;
   ADD_CHANNEL(gain, r, red, RED)
   dt_bauhaus_slider_set_stop(g->gain_r, 0.0, 0.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_r, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_r, 1.0, 1.0, 0.0, 0.0);
 
+  static const char *gain_green_messages[] = { N_("factor of green for gain") };
+  (void)gain_green_messages;
   ADD_CHANNEL(gain, g, green, GREEN)
   dt_bauhaus_slider_set_stop(g->gain_g, 0.0, 1.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_g, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_g, 1.0, 0.0, 1.0, 0.0);
 
+  static const char *gain_blue_messages[] = { N_("factor of blue for gain") };
+  (void)gain_blue_messages;
   ADD_CHANNEL(gain, b, blue, BLUE)
   dt_bauhaus_slider_set_stop(g->gain_b, 0.0, 1.0, 1.0, 0.0);
   dt_bauhaus_slider_set_stop(g->gain_b, 0.5, 1.0, 1.0, 1.0);

@@ -57,12 +57,16 @@
 
     <sect5>
       <title>center</title>
+      <indexterm>
+        <primary>color picker</primary>
+      </indexterm>
       <para>
         Sets the median lightness impacted by the fill-light. A color picker is activated by
         pressing
         <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
         . It shows the picked lightness value in the gradient bar, which helps find the desired
-        center value.
+        center value. You can switch between point and area sampling mode from within the global
+        color picker panel (see <xref linkend="global_color_picker"/>).
       </para>
     </sect5>
 

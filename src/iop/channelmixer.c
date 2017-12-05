@@ -31,11 +31,11 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
+#include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <stdlib.h>
 #include <math.h>
-#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 /** Crazy presets b&w ...
@@ -182,7 +182,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         hsl2rgb(out, h, s, l);
       }
       else // no HSL copt in[] to out[]
-        for(int i = 0; i < 3; i++) out[i] = in[i];
+        for(int c = 0; c < 3; c++) out[c] = in[c];
 
       // Calculate graymix and RGB mix
       graymix = CLIP((out[0] * data->red[CHANNEL_GRAY]) + (out[1] * data->green[CHANNEL_GRAY])
@@ -228,7 +228,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 
@@ -281,9 +281,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  if(dev_red != NULL) dt_opencl_release_mem_object(dev_red);
-  if(dev_green != NULL) dt_opencl_release_mem_object(dev_green);
-  if(dev_blue != NULL) dt_opencl_release_mem_object(dev_blue);
+  dt_opencl_release_mem_object(dev_red);
+  dt_opencl_release_mem_object(dev_green);
+  dt_opencl_release_mem_object(dev_blue);
   dt_print(DT_DEBUG_OPENCL, "[opencl_channelmixer] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -361,8 +361,11 @@ static void output_callback(GtkComboBox *combo, gpointer user_data)
   if(combo1_index >= 0)
   {
     dt_bauhaus_slider_set(g->scale1, p->red[combo1_index]);
+    dt_bauhaus_slider_set_default(g->scale1, combo1_index == CHANNEL_RED ? 1.0 : 0.0);
     dt_bauhaus_slider_set(g->scale2, p->green[combo1_index]);
+    dt_bauhaus_slider_set_default(g->scale2, combo1_index == CHANNEL_GREEN ? 1.0 : 0.0);
     dt_bauhaus_slider_set(g->scale3, p->blue[combo1_index]);
+    dt_bauhaus_slider_set_default(g->scale3, combo1_index == CHANNEL_BLUE ? 1.0 : 0.0);
   }
   // dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -415,7 +418,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_channelmixer_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_channelmixer_params_t));
   module->default_enabled = 0;
-  module->priority = 830; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 823; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_channelmixer_params_t);
   module->gui_data = NULL;
   dt_iop_channelmixer_params_t tmp = (dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0 },
@@ -481,7 +484,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
   dt_gui_presets_add_generic(_("swap R and B"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 1, 0 },
@@ -528,7 +531,8 @@ void init_presets(dt_iop_module_so_t *self)
                                                               { 0, 0, 0, 0, 0, 0, 0.750 },
                                                               { 0, 0, 0, 0, 0, 0, -0.15 } },
                              sizeof(dt_iop_channelmixer_params_t), 1);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

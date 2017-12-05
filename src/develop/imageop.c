@@ -18,33 +18,35 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/opencl.h"
-#include "common/dtpthread.h"
-#include "common/debug.h"
-#include "common/interpolation.h"
-#include "common/imageio_rawspeed.h"
-#include "bauhaus/bauhaus.h"
-#include "control/control.h"
 #include "develop/imageop.h"
-#include "develop/develop.h"
+#include "bauhaus/bauhaus.h"
+#include "common/debug.h"
+#include "common/dtpthread.h"
+#include "common/imageio_rawspeed.h"
+#include "common/interpolation.h"
+#include "common/module.h"
+#include "common/opencl.h"
+#include "control/control.h"
 #include "develop/blend.h"
-#include "develop/tiling.h"
+#include "develop/develop.h"
+#include "develop/format.h"
 #include "develop/masks.h"
+#include "develop/tiling.h"
+#include "dtgtk/button.h"
+#include "dtgtk/expander.h"
+#include "dtgtk/gradientslider.h"
+#include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "dtgtk/button.h"
-#include "dtgtk/icon.h"
-#include "dtgtk/expander.h"
-#include "dtgtk/gradientslider.h"
 #include "libs/modulegroups.h"
 
-#include <strings.h>
 #include <assert.h>
+#include <gmodule.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gmodule.h>
+#include <strings.h>
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
@@ -121,13 +123,6 @@ static int default_operation_tags()
 static int default_operation_tags_filter()
 {
   return 0;
-}
-
-/* default bytes per pixel: 4*sizeof(float). */
-static int default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                              struct dt_dev_pixelpipe_iop_t *piece)
-{
-  return 4 * sizeof(float);
 }
 
 static void default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params,
@@ -210,8 +205,9 @@ static dt_introspection_field_t *default_get_f(const char *name)
   return NULL;
 }
 
-int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const char *op)
+int dt_iop_load_module_so(void *m, const char *libname, const char *op)
 {
+  dt_iop_module_so_t *module = (dt_iop_module_so_t *)m;
   g_strlcpy(module->op, op, 20);
   module->data = NULL;
   dt_print(DT_DEBUG_CONTROL, "[iop_load_module] loading iop `%s' from %s\n", op, libname);
@@ -237,8 +233,10 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
     module->operation_tags = default_operation_tags;
   if(!g_module_symbol(module->module, "operation_tags_filter", (gpointer) & (module->operation_tags_filter)))
     module->operation_tags_filter = default_operation_tags_filter;
-  if(!g_module_symbol(module->module, "output_bpp", (gpointer) & (module->output_bpp)))
-    module->output_bpp = default_output_bpp;
+  if(!g_module_symbol(module->module, "input_format", (gpointer) & (module->input_format)))
+    module->input_format = default_input_format;
+  if(!g_module_symbol(module->module, "output_format", (gpointer) & (module->output_format)))
+    module->output_format = default_output_format;
   if(!g_module_symbol(module->module, "tiling_callback", (gpointer) & (module->tiling_callback)))
     module->tiling_callback = default_tiling_callback;
   if(!g_module_symbol(module->module, "gui_reset", (gpointer) & (module->gui_reset)))
@@ -373,7 +371,7 @@ static int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t 
   module->histogram = NULL;
   module->histogram_max[0] = module->histogram_max[1] = module->histogram_max[2] = module->histogram_max[3]
       = 0;
-  module->request_mask_display = 0;
+  module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   module->suppress_mask = 0;
   module->enabled = module->default_enabled = 0; // all modules disabled by default.
   g_strlcpy(module->op, so->op, 20);
@@ -389,7 +387,8 @@ static int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t 
   module->description = so->description;
   module->operation_tags = so->operation_tags;
   module->operation_tags_filter = so->operation_tags_filter;
-  module->output_bpp = so->output_bpp;
+  module->input_format = so->input_format;
+  module->output_format = so->output_format;
   module->tiling_callback = so->tiling_callback;
   module->gui_update = so->gui_update;
   module->gui_reset = so->gui_reset;
@@ -522,18 +521,22 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   dt_iop_gui_set_expanded(next, TRUE, FALSE);
   gtk_widget_grab_focus(next->expander);
 
+  darktable.gui->reset = 1;
+
   // we remove the plugin effectively
   if(!dt_iop_is_hidden(module))
   {
     // we just hide the module to avoid lots of gtk critical warnings
     gtk_widget_hide(module->expander);
+
     // we move the module far away, to avoid problems when reordering instance after that
+    // FIXME: ?????
     gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
                           module->expander, -1);
+
+    gtk_widget_destroy(module->widget);
+    dt_iop_gui_cleanup_module(module);
   }
-  darktable.gui->reset = 1;
-  // we cleanup the widget
-  if(!dt_iop_is_hidden(module)) dt_iop_gui_cleanup_module(module);
 
   // we remove all references in the history stack and dev->iop
   dt_dev_module_remove(dev, module);
@@ -859,10 +862,20 @@ static void dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
   dt_iop_gui_duplicate(user_data, TRUE);
 }
 
-static void dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
+static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   if(module->flags() & IOP_FLAGS_ONE_INSTANCE) return;
+
+  if(event->button == 2)
+  {
+    dt_iop_gui_copy_callback(button, user_data);
+    return;
+  }
+  else if(event->button == 3)
+  {
+    return;
+  }
 
   GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
   GtkWidget *item;
@@ -896,8 +909,13 @@ static void dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
   gtk_menu_shell_append(menu, item);
 
   gtk_widget_show_all(GTK_WIDGET(menu));
+
   // popup
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_pointer(GTK_MENU(menu), NULL);
+#else
   gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
+#endif
 }
 
 static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
@@ -1042,7 +1060,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select name, op_version, op_params, blendop_version, blendop_params from presets where operation = ?1",
+      "SELECT name, op_version, op_params, blendop_version, blendop_params FROM data.presets WHERE operation = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_so->op, -1, SQLITE_TRANSIENT);
 
@@ -1064,7 +1082,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
 
       sqlite3_stmt *stmt2;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "select module from history where operation = ?1 and op_params = ?2", -1,
+                                  "SELECT module FROM main.history WHERE operation = ?1 AND op_params = ?2", -1,
                                   &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 1, module_so->op, -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2, old_params, old_params_size, SQLITE_TRANSIENT);
@@ -1091,7 +1109,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
               module_so->op, name);
 
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "update presets set op_version=?1 where operation=?2 and name=?3", -1,
+                                  "UPDATE data.presets SET op_version=?1 WHERE operation=?2 AND name=?3", -1,
                                   &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, old_params_version);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 2, module_so->op, -1, SQLITE_TRANSIENT);
@@ -1140,9 +1158,9 @@ static void init_presets(dt_iop_module_so_t *module_so)
 
       // and write the new params back to the database
       sqlite3_stmt *stmt2;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets "
-                                                                 "set op_version=?1, op_params=?2 "
-                                                                 "where operation=?3 and name=?4",
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE data.presets "
+                                                                 "SET op_version=?1, op_params=?2 "
+                                                                 "WHERE operation=?3 AND name=?4",
                                   -1, &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, module->version());
       DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2, new_params, new_params_size, SQLITE_TRANSIENT);
@@ -1201,9 +1219,9 @@ static void init_presets(dt_iop_module_so_t *module_so)
 
       // and write the new blend params back to the database
       sqlite3_stmt *stmt2;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets "
-                                                                 "set blendop_version=?1, blendop_params=?2 "
-                                                                 "where operation=?3 and name=?4",
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE data.presets "
+                                                                 "SET blendop_version=?1, blendop_params=?2 "
+                                                                 "WHERE operation=?3 AND name=?4",
                                   -1, &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, dt_develop_blend_version());
       DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2, new_blend_params, sizeof(dt_develop_blend_params_t),
@@ -1229,7 +1247,7 @@ static void init_key_accels(dt_iop_module_so_t *module)
   /** load shortcuts for presets **/
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select name from presets where operation=?1 order by writeprotect desc, rowid",
+                              "SELECT name FROM data.presets WHERE operation=?1 ORDER BY writeprotect DESC, rowid",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1241,59 +1259,38 @@ static void init_key_accels(dt_iop_module_so_t *module)
   sqlite3_finalize(stmt);
 }
 
-void dt_iop_load_modules_so()
+static void dt_iop_init_module_so(void *m)
 {
-  GList *res = NULL;
-  dt_iop_module_so_t *module;
-  darktable.iop = NULL;
-  char plugindir[PATH_MAX] = { 0 }, op[20];
-  const gchar *d_name;
-  dt_loc_get_plugindir(plugindir, sizeof(plugindir));
-  g_strlcat(plugindir, "/plugins", sizeof(plugindir));
-  GDir *dir = g_dir_open(plugindir, 0, NULL);
-  if(!dir) return;
-  const int name_offset = strlen(SHARED_MODULE_PREFIX),
-            name_end = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
-  while((d_name = g_dir_read_name(dir)))
+  dt_iop_module_so_t *module = (dt_iop_module_so_t *)m;
+
+  init_presets(module);
+
+  // do not init accelerators if there is no gui
+  if(darktable.gui)
   {
-    // get lib*.so
-    if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
-    if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
-    g_strlcpy(op, d_name + name_offset, MIN(sizeof(op), strlen(d_name) - name_end + 1));
-    module = (dt_iop_module_so_t *)calloc(1, sizeof(dt_iop_module_so_t));
-    gchar *libname = g_module_build_path(plugindir, (const gchar *)op);
-    if(dt_iop_load_module_so(module, libname, op))
+    // Calling the accelerator initialization callback, if present
+    init_key_accels(module);
+
+    if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
-      free(module);
-      continue;
+      dt_accel_register_slider_iop(module, FALSE, NC_("accel", "fusion"));
     }
-    g_free(libname);
-    res = g_list_append(res, module);
-    init_presets(module);
-
-    // do not init accelerators if there is no gui
-    if(darktable.gui)
+    if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
-      // Calling the accelerator initialization callback, if present
-      init_key_accels(module);
+      // Adding the optional show accelerator to the table (blank)
+      dt_accel_register_iop(module, FALSE, NC_("accel", "show module"), 0, 0);
+      dt_accel_register_iop(module, FALSE, NC_("accel", "enable module"), 0, 0);
 
-      if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-      {
-        dt_accel_register_slider_iop(module, FALSE, NC_("accel", "fusion"));
-      }
-      if(!(module->flags() & IOP_FLAGS_DEPRECATED))
-      {
-        // Adding the optional show accelerator to the table (blank)
-        dt_accel_register_iop(module, FALSE, NC_("accel", "show module"), 0, 0);
-        dt_accel_register_iop(module, FALSE, NC_("accel", "enable module"), 0, 0);
-
-        dt_accel_register_iop(module, FALSE, NC_("accel", "reset module parameters"), 0, 0);
-        dt_accel_register_iop(module, FALSE, NC_("accel", "show preset menu"), 0, 0);
-      }
+      dt_accel_register_iop(module, FALSE, NC_("accel", "reset module parameters"), 0, 0);
+      dt_accel_register_iop(module, FALSE, NC_("accel", "show preset menu"), 0, 0);
     }
   }
-  g_dir_close(dir);
-  darktable.iop = res;
+}
+
+void dt_iop_load_modules_so()
+{
+  darktable.iop = dt_module_load_modules("/plugins", sizeof(dt_iop_module_so_t), dt_iop_load_module_so,
+                                         dt_iop_init_module_so, NULL);
 }
 
 int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, dt_develop_t *dev)
@@ -1401,6 +1398,10 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
 
     // assume process_cl is ready, commit_params can overwrite this.
     if(module->process_cl) piece->process_cl_ready = 1;
+
+    // register if module allows tiling, commit_params can overwrite this.
+    if(module->flags() & IOP_FLAGS_ALLOW_TILING) piece->process_tiling_ready = 1;
+
     module->commit_params(module, params, pipe, piece);
     for(int i = 0; i < length; i++) hash = ((hash << 5) + hash) ^ str[i];
     piece->hash = hash;
@@ -1501,7 +1502,7 @@ static void dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module
   dt_dev_add_history_item(module->dev, module, TRUE);
 }
 
-
+#if !GTK_CHECK_VERSION(3, 22, 0)
 static void _preset_popup_position(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer data)
 {
   GtkRequisition requisition = { 0 };
@@ -1512,14 +1513,22 @@ static void _preset_popup_position(GtkMenu *menu, gint *x, gint *y, gboolean *pu
   gtk_widget_get_allocation(GTK_WIDGET(data), &allocation);
   (*y) += allocation.height;
 }
+#endif
 
 static void popup_callback(GtkButton *button, dt_iop_module_t *module)
 {
   dt_gui_presets_popup_menu_show_for_module(module);
+  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu,
+                           dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander)), GDK_GRAVITY_SOUTH_WEST,
+                           GDK_GRAVITY_NORTH_WEST, NULL);
+#else
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_position, button, 0,
                  gtk_get_current_event_time());
-  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
+#endif
 }
 
 void dt_iop_request_focus(dt_iop_module_t *module)
@@ -1706,8 +1715,14 @@ static gboolean _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, g
   else if(e->button == 3)
   {
     dt_gui_presets_popup_menu_show_for_module(module);
-    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
     gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+    gtk_menu_popup_at_pointer(darktable.gui->presets_popup_menu, (GdkEvent *)e);
+#else
+    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
+#endif
+
     return TRUE;
   }
   return FALSE;
@@ -1733,8 +1748,13 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
   else if(e->button == 3)
   {
     dt_gui_presets_popup_menu_show_for_module(module);
-    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
     gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+    gtk_menu_popup_at_pointer(darktable.gui->presets_popup_menu, (GdkEvent *)e);
+#else
+    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
+#endif
 
     return TRUE;
   }
@@ -1854,8 +1874,10 @@ got_image:
   {
     hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     module->multimenu_button = GTK_WIDGET(hw[idx]);
-    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("multiple instances actions"));
-    g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(dt_iop_gui_multimenu_callback), module);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]),
+                                _("multiple instances actions\nmiddle-click creates new instance"));
+    g_signal_connect(G_OBJECT(hw[idx]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback),
+                     module);
     gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
   }
 
@@ -2026,7 +2048,7 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
   sqlite3_stmt *stmt;
   // don't know for which image. show all we got:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select name from presets where operation=?1 order by writeprotect desc, rowid",
+                              "SELECT name FROM data.presets WHERE operation=?1 ORDER BY writeprotect DESC, rowid",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -2106,8 +2128,6 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
   }
   else if(state == dt_iop_state_FAVORITE)
   {
-    dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
-
     mods = g_list_first(darktable.develop->iop);
     while(mods)
     {

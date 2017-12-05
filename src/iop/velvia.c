@@ -18,9 +18,9 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
@@ -165,7 +165,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #if defined(__SSE__)
@@ -229,7 +229,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   }
   _mm_sfence();
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
 
@@ -350,7 +350,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_velvia_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_velvia_params_t));
   module->default_enabled = 0;
-  module->priority = 861; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 882; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_velvia_params_t);
   module->gui_data = NULL;
   dt_iop_velvia_params_t tmp = (dt_iop_velvia_params_t){ 25, 1.0 };

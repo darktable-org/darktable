@@ -15,14 +15,14 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_DEV_PIXELPIPE
-#define DT_DEV_PIXELPIPE
+
+#pragma once
 
 #include "common/image.h"
 #include "common/imageio.h"
 #include "control/conf.h"
-#include "develop/imageop.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
 #include "develop/pixelpipe_cache.h"
 
 /**
@@ -54,7 +54,10 @@ typedef struct dt_dev_pixelpipe_iop_t
   dt_iop_roi_t buf_in,
       buf_out;                // theoretical full buffer regions of interest, as passed through modify_roi_out
   int process_cl_ready;       // set this to 0 in commit_params to temporarily disable the use of process_cl
-  float processed_maximum[4]; // sensor saturation after this iop, used internally for caching
+  int process_tiling_ready;   // set this to 0 in commit_params to temporarily disable tiling
+
+  // the following are used  internally for caching:
+  dt_iop_buffer_dsc_t dsc_in, dsc_out;
 } dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
@@ -87,8 +90,11 @@ typedef struct dt_dev_pixelpipe_t
   float iscale;
   // dimensions of processed buffer
   int processed_width, processed_height;
-  // sensor saturation, propagated through the operations:
-  float processed_maximum[4];
+
+  // this one actually contains the expected output format,
+  // and should be modified by process*(), if necessary.
+  dt_iop_buffer_dsc_t dsc;
+
   // instances of pixelpipe, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;
   // event flag
@@ -113,8 +119,6 @@ typedef struct dt_dev_pixelpipe_t
   int mask_display;
   // input data based on this timestamp:
   int input_timestamp;
-  // input data was pre-demosaiced and the demosaicing method is monochrome
-  int pre_monochrome_demosaiced;
   dt_dev_pixelpipe_type_t type;
   // the final output pixel format this pixelpipe will be converted to
   dt_imageio_levels_t levels;
@@ -122,6 +126,10 @@ typedef struct dt_dev_pixelpipe_t
   int devid;
   // image struct as it was when the pixelpipe was initialized. copied to avoid race conditions.
   dt_image_t image;
+  // the user might choose to overwrite the output color space and rendering intent.
+  dt_colorspaces_color_profile_type_t icc_type;
+  gchar *icc_filename;
+  dt_iop_color_intent_t icc_intent;
 } dt_dev_pixelpipe_t;
 
 struct dt_develop_t;
@@ -142,7 +150,10 @@ int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t
 int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries);
 // constructs a new input buffer from given RGB float array.
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width,
-                                int height, float iscale, int pre_monochrome_demosaiced);
+                                int height, float iscale);
+// set some metadata for colorout to avoid race conditions.
+void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe, dt_colorspaces_color_profile_type_t icc_type,
+                              const gchar *icc_filename, dt_iop_color_intent_t icc_intent);
 
 // returns the dimensions of the full image after processing.
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int width_in,
@@ -183,17 +194,6 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
 void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
 
-// signifies that this pipeline uses the MIP_F buffer instead of MIP_FULL
-// i.e. four floats per pixel already demosaiced/downsampled
-static inline int dt_dev_pixelpipe_uses_downsampled_input(dt_dev_pixelpipe_t *pipe)
-{
-  if(!dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"))
-    return pipe->type == DT_DEV_PIXELPIPE_PREVIEW;
-  else
-    return (pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || (pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
-}
-
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

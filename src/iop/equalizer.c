@@ -101,15 +101,13 @@ int flags()
 
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  float *in = (float *)i;
-  float *out = (float *)o;
   const int chs = piece->colors;
   const int width = roi_in->width, height = roi_in->height;
   const float scale = roi_in->scale;
-  memcpy(out, in, (size_t)chs * sizeof(float) * width * height);
+  memcpy(ovoid, ivoid, (size_t)chs * sizeof(float) * width * height);
 #if 1
   // printf("thread %d starting equalizer", (int)pthread_self());
   // if(piece->iscale != 1.0) printf(" for preview\n");
@@ -136,13 +134,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     tmp[k] = (float *)malloc((size_t)sizeof(float) * wd * ht);
   }
 
-  for(int level = 1; level < numl_cap; level++) dt_iop_equalizer_wtf(out, tmp, level, width, height);
+  for(int level = 1; level < numl_cap; level++) dt_iop_equalizer_wtf(ovoid, tmp, level, width, height);
 
 #if 0
   // printf("transformed\n");
   // store luma wavelet histogram for later drawing
   if(self->dev->gui_attached && piece->iscale == 1.0 && self->dev->preview_pipe && c) // 1.0 => full pipe, only for gui applications.
   {
+    float *out = (float *)ovoid;
     // chose full pipe and current window.
     int cnt[DT_IOP_EQUALIZER_BANDS];
     for(int i=0; i<DT_IOP_EQUALIZER_BANDS; i++) cnt[i] = 0;
@@ -174,6 +173,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   for(int l = 1; l < numl_cap; l++)
   {
+    float *out = (float *)ovoid;
     const float lv = (lm - l1) * (l - 1) / (float)(numl_cap - 1) + l1; // appr level in real image.
     const float band = CLAMP((1.0 - lv / d->num_levels), 0, 1.0);
     for(int ch = 0; ch < 3; ch++)
@@ -204,7 +204,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
   // printf("applied\n");
-  for(int level = numl_cap - 1; level > 0; level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height);
+  for(int level = numl_cap - 1; level > 0; level--) dt_iop_equalizer_iwtf(ovoid, tmp, level, width, height);
 
   for(int k = 1; k < numl_cap; k++) free(tmp[k]);
   free(tmp);
@@ -267,7 +267,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_equalizer_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_equalizer_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 415; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 411; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_equalizer_params_t);
   module->gui_data = NULL;
   dt_iop_equalizer_params_t tmp;
@@ -369,7 +369,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
 
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
   g_signal_connect (G_OBJECT (c->area), "draw",
                     G_CALLBACK (dt_iop_equalizer_expose), self);
   g_signal_connect (G_OBJECT (c->area), "button-press-event",
@@ -674,9 +674,14 @@ static gboolean dt_iop_equalizer_scrolled(GtkWidget *widget, GdkEventScroll *eve
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
-  if(event->direction == GDK_SCROLL_UP   && c->mouse_radius > 0.25/DT_IOP_EQUALIZER_BANDS) c->mouse_radius *= 0.9; //0.7;
-  if(event->direction == GDK_SCROLL_DOWN && c->mouse_radius < 1.0) c->mouse_radius *= (1.0/0.9); //1.42;
-  gtk_widget_queue_draw(widget);
+
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  {
+    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.25 / DT_IOP_EQUALIZER_BANDS, 1.0);
+    gtk_widget_queue_draw(widget);
+  }
+
   return TRUE;
 }
 

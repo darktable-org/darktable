@@ -106,7 +106,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       // adapt for raw orientation changes
       dt_masks_legacy_params(self->dev, form, form->version, dt_masks_version());
 
-      dt_masks_gui_form_save_creation(self, form, NULL);
+      dt_masks_gui_form_save_creation(self->dev, self, form, NULL);
 
       // and add it to the module params
       n->clone_id[i] = form->formid;
@@ -422,9 +422,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         }
 
         // convert from world space:
-        float rad10[2] = { circle->radius, circle->radius };
+        float radius10[2] = { circle->radius, circle->radius };
         float radf[2];
-        masks_point_denormalize(piece, roi_in, rad10, 1, radf);
+        masks_point_denormalize(piece, roi_in, radius10, 1, radf);
 
         const int rad = MIN(radf[0], radf[1]);
         const int posx = points[0] - rad;
@@ -435,7 +435,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         const int dy = posy - posy_source;
         const int fw = 2 * rad, fh = 2 * rad;
 
-        float filter[2 * rad + 1];
+        float *filter = malloc((2 * rad + 1) * sizeof(float));
 
         if(rad > 0)
         {
@@ -449,6 +449,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         {
           filter[0] = 1.0f;
         }
+
         for(int yy = posy; yy < posy + fh; yy++)
         {
           // we test if we are inside roi_out
@@ -470,6 +471,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                               + posx_source - roi_in->x) + c] * f;
           }
         }
+
+        free(filter);
       }
       else
       {
@@ -535,7 +538,7 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;
-  module->priority = 184; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 176; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_spots_params_t);
   module->gui_data = NULL;
   // init defaults:
@@ -565,13 +568,9 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
     else
     {
-      // lost focus, hide all shapes and free if some are in creation
+      // lost focus, hide all shapes
       if (darktable.develop->form_gui->creation && darktable.develop->form_gui->creation_module == self)
-      {
-        dt_masks_form_t *form = darktable.develop->form_visible;
-        if(form) dt_masks_free_form(form);
         dt_masks_change_form_gui(NULL);
-      }
       dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
@@ -690,6 +689,7 @@ void init_key_accels (dt_iop_module_so_t *module)
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot circle tool"),   0, 0);
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot elipse tool"),   0, 0);
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot path tool"),     0, 0);
+  dt_accel_register_iop (module, TRUE, NC_("accel", "spot show or hide"),  0, 0);
 }
 
 static gboolean _add_circle_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -722,6 +722,14 @@ static gboolean _add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceler
   return TRUE;
 }
 
+static gboolean _show_hide_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                     GdkModifierType modifier, gpointer data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)data;
+  dt_masks_set_edit_mode(module, module->dev->form_gui->edit_mode == DT_MASKS_EDIT_FULL ? DT_MASKS_EDIT_OFF : DT_MASKS_EDIT_FULL);
+  return TRUE;
+}
+
 void connect_key_accels (dt_iop_module_t *module)
 {
   GClosure *closure;
@@ -734,6 +742,9 @@ void connect_key_accels (dt_iop_module_t *module)
 
   closure = g_cclosure_new(G_CALLBACK(_add_path_key_accel), (gpointer)module, NULL);
   dt_accel_connect_iop (module, "spot path tool", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(_show_hide_key_accel), (gpointer)module, NULL);
+  dt_accel_connect_iop (module, "spot show or hide", closure);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

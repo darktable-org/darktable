@@ -23,13 +23,13 @@
 #include "common/geo.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
 #include "gui/draw.h"
 #include "libs/lib.h"
-#include "views/undo.h"
 #include "views/view.h"
 #include "views/view_api.h"
 #include <gdk/gdkkeysyms.h>
@@ -38,6 +38,11 @@
 
 DT_MODULE(1)
 
+typedef struct dt_undo_geotag_t
+{
+  int imgid;
+  float longitude, latitude, elevation;
+} dt_undo_geotag_t;
 
 typedef struct dt_map_t
 {
@@ -112,9 +117,9 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
                                           GtkSelectionData *selection_data, guint target_type, guint time,
                                           gpointer data);
 
-static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude,
-                                gboolean record_undo);
-static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude);
+static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, float elevation,
+                                gboolean set_elevation, gboolean record_undo);
+static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude, float *elevation);
 
 static gboolean _view_map_prefs_changed(dt_map_t *lib);
 static void _view_map_build_main_query(dt_map_t *lib);
@@ -219,7 +224,7 @@ static int zoom_member(lua_State *L)
     {
       int value;
       g_object_get(G_OBJECT(lib->map), "zoom", &value, NULL);
-      lua_pushinteger(L, value);
+      lua_pushnumber(L, value);
     }
     return 1;
   }
@@ -229,7 +234,7 @@ static int zoom_member(lua_State *L)
     // lua can have temporarly false values but it will fix itself when entering map
     // unfortunately we can't get the min max when lib->map doesn't exist
     luaL_checktype(L, 3, LUA_TNUMBER);
-    int zoom = luaL_checkint(L, 3);
+    int zoom = luaL_checkinteger(L, 3);
     if(dt_view_manager_get_current_view(darktable.view_manager) != module)
     {
       dt_conf_set_int("plugins/map/zoom", zoom);
@@ -406,7 +411,11 @@ void init(dt_view_t *self)
     gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map), TRUE, TRUE, 0);
 
     lib->osd = g_object_new(OSM_TYPE_GPS_MAP_OSD, "show-scale", TRUE, "show-coordinates", TRUE, "show-dpad",
-                            TRUE, "show-zoom", TRUE, NULL);
+                            TRUE, "show-zoom", TRUE,
+#ifdef HAVE_OSMGPSMAP_NEWER_THAN_110
+                            "show-copyright", TRUE,
+#endif
+                            NULL);
 
     if(dt_conf_get_bool("plugins/map/show_map_osd"))
     {
@@ -662,7 +671,7 @@ static int _view_map_get_img_at_pos(dt_view_t *self, double x, double y)
   return 0;
 }
 
-static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_view_t *self)
+static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMotion *e, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
 
@@ -714,13 +723,8 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
       gdk_pixbuf_scale(source, thumb, _thumb_border, _thumb_border, w, h, _thumb_border, _thumb_border,
                        (1.0 * w) / buf.width, (1.0 * h) / buf.height, GDK_INTERP_HYPER);
 
-#if GTK_CHECK_VERSION(3, 10, 0)
       GdkDragContext *context = gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
                                                                 GDK_ACTION_COPY, 1, (GdkEvent *)e, -1, -1);
-#else
-      GdkDragContext *context
-          = gtk_drag_begin(GTK_WIDGET(lib->map), targets, GDK_ACTION_COPY, 1, (GdkEvent *)e);
-#endif
 
       gtk_drag_set_icon_pixbuf(context, thumb, 0, h + 2 * _thumb_border);
 
@@ -754,7 +758,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
       {
         // open the image in darkroom
         dt_control_set_mouse_over_id(lib->selected_image);
-        dt_ctl_switch_mode_to(DT_DEVELOP);
+        dt_ctl_switch_mode_to("darkroom");
         return TRUE;
       }
       else
@@ -850,7 +854,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 void init_key_accels(dt_view_t *self)
 {
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
-  dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_r, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_y, GDK_CONTROL_MASK);
   // Film strip shortcuts
   dt_accel_register_view(self, NC_("accel", "toggle film strip"), GDK_KEY_f, GDK_CONTROL_MASK);
 }
@@ -858,10 +862,14 @@ void init_key_accels(dt_view_t *self)
 static gboolean _view_map_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                         GdkModifierType modifier, gpointer data)
 {
-  if(keyval == GDK_KEY_z)
-    dt_undo_do_undo(darktable.undo, DT_UNDO_GEOTAG);
-  else
-    dt_undo_do_redo(darktable.undo, DT_UNDO_GEOTAG);
+  dt_undo_do_undo(darktable.undo, DT_UNDO_GEOTAG);
+  return TRUE;
+}
+
+static gboolean _view_map_redo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                        GdkModifierType modifier, gpointer data)
+{
+  dt_undo_do_redo(darktable.undo, DT_UNDO_GEOTAG);
   return TRUE;
 }
 
@@ -876,8 +884,10 @@ static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *accele
 
 void connect_key_accels(dt_view_t *self)
 {
+  // undo/redo
   GClosure *closure = g_cclosure_new(G_CALLBACK(_view_map_undo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "undo", closure);
+  closure = g_cclosure_new(G_CALLBACK(_view_map_redo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "redo", closure);
   // Film strip shortcuts
   closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL);
@@ -965,8 +975,9 @@ static OsmGpsMapPolygon *_view_map_add_polygon(const dt_view_t *view, GList *poi
     osm_gps_map_track_add_point(track, point);
   }
 
-  g_object_set(poly, "track", track, NULL);
-  g_object_set(poly, "editable", FALSE, NULL);
+  g_object_set(poly, "track", track, (gchar *)0);
+  g_object_set(poly, "editable", FALSE, (gchar *)0);
+  g_object_set(poly, "shaded", FALSE, (gchar *)0);
 
   osm_gps_map_polygon_add(lib->map, poly);
 
@@ -993,7 +1004,7 @@ static OsmGpsMapTrack *_view_map_add_track(const dt_view_t *view, GList *points)
     osm_gps_map_track_add_point(track, point);
   }
 
-  g_object_set(track, "editable", FALSE, NULL);
+  g_object_set(track, "editable", FALSE, (gchar *)0);
 
   osm_gps_map_track_add(lib->map, track);
 
@@ -1078,55 +1089,71 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
   }
 }
 
-static void pop_undo(dt_view_t *self, dt_undo_type_t type, dt_undo_data_t *data)
+static void pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
 {
+  dt_view_t *self = (dt_view_t *)user_data;
   dt_map_t *lib = (dt_map_t *)self->data;
 
   if(type == DT_UNDO_GEOTAG)
   {
     dt_undo_geotag_t *geotag = (dt_undo_geotag_t *)data;
-    float longitude, latitude;
-
-    _get_image_location(self, geotag->imgid, &longitude, &latitude);
-    _set_image_location(self, geotag->imgid, geotag->longitude, geotag->latitude, FALSE);
-
-    // give back out previous location
-    geotag->longitude = longitude;
-    geotag->latitude = latitude;
-
+    _set_image_location(self, geotag->imgid, geotag->longitude, geotag->latitude, geotag->elevation, TRUE, FALSE);
     g_signal_emit_by_name(lib->map, "changed");
   }
 }
 
-static void _push_position(dt_view_t *self, int imgid, float longitude, float latitude)
+static void _push_position(dt_view_t *self, int imgid, float longitude, float latitude, float elevation)
 {
-  dt_undo_geotag_t *geotag = g_malloc(sizeof(dt_undo_geotag_t));
+  dt_undo_geotag_t *geotag = malloc(sizeof(dt_undo_geotag_t));
 
   geotag->imgid = imgid;
   geotag->longitude = longitude;
   geotag->latitude = latitude;
+  geotag->elevation = elevation;
 
-  dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo);
+  dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &pop_undo, free);
 }
 
-static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude)
+static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude, float *elevation)
 {
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   *longitude = img->longitude;
   *latitude = img->latitude;
+  *elevation = img->elevation;
   dt_image_cache_read_release(darktable.image_cache, img);
 }
 
-static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude,
-                                gboolean record_undo)
+static void _check_imgid(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item)
+{
+  dt_undo_geotag_t *geotag = (dt_undo_geotag_t *)item;
+  int *state = (int *)user_data;
+  if (geotag->imgid == state[0])
+    state[1] = 1;
+}
+
+static gboolean _in_undo(int imgid)
+{
+  int state[2];
+  state[0] = imgid;
+  state[1] = 0;
+  dt_undo_iterate_internal(darktable.undo, DT_UNDO_GEOTAG, &state, _check_imgid);
+  return state[1];
+}
+
+static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, float elevation,
+                                gboolean set_elevation, gboolean record_undo)
 {
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
-  if(record_undo) _push_position(self, imgid, img->longitude, img->latitude);
-
   img->longitude = longitude;
   img->latitude = latitude;
+  if(set_elevation) img->elevation = elevation;
+
+  if(record_undo) _push_position(self, imgid, img->longitude, img->latitude, img->elevation);
+
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
 }
 
 static void _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint y)
@@ -1138,7 +1165,15 @@ static void _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint 
   osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
   osm_gps_map_point_free(pt);
 
-  _set_image_location(self, imgid, longitude, latitude, TRUE);
+  _set_image_location(self, imgid, longitude, latitude, 0.0, FALSE, TRUE);
+}
+
+static void _view_map_record_current_location(dt_view_t *self, int imgid)
+{
+  float longitude, latitude, elevation;
+  _get_image_location(self, imgid, &longitude, &latitude, &elevation);
+  if (!_in_undo(imgid))
+    _push_position(self, imgid, longitude, latitude, elevation);
 }
 
 static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
@@ -1156,13 +1191,25 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
     int *imgid = (int *)gtk_selection_data_get_data(selection_data);
     if(*imgid > 0)
     {
+      _view_map_record_current_location(self, *imgid);
       _view_map_add_image_to_map(self, *imgid, x, y);
       success = TRUE;
     }
     else if(*imgid == -1) // everything which is selected
     {
       sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct imgid from selected_images",
+
+      // record initial image position for images not yet in the undo list
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT imgid FROM main.selected_images",
+                                  -1, &stmt, NULL);
+
+      // create an undo group for current image position
+
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+        _view_map_record_current_location(self, sqlite3_column_int(stmt, 0));
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT imgid FROM main.selected_images",
                                   -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
         _view_map_add_image_to_map(self, sqlite3_column_int(stmt, 0), x, y);
@@ -1221,7 +1268,7 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
     if(*imgid > 0)
     {
       //  the image was dropped into the filmstrip, let's remove it in this case
-      _set_image_location(self, *imgid, NAN, NAN, TRUE);
+      _set_image_location(self, *imgid, NAN, NAN, NAN, TRUE, TRUE);
       success = TRUE;
     }
   }
@@ -1260,13 +1307,14 @@ static void _view_map_build_main_query(dt_map_t *lib)
   lib->max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
   if(lib->max_images_drawn == 0) lib->max_images_drawn = 100;
   lib->filter_images_drawn = dt_conf_get_bool("plugins/map/filter_images_drawn");
-  geo_query = g_strdup_printf(
-      "select * from (select id, latitude from %s where \
-                               longitude >= ?1 and longitude <= ?2 and latitude <= ?3 and latitude >= ?4 \
-                               and longitude not NULL and latitude not NULL order by abs(latitude - ?5), abs(longitude - ?6) \
-                               limit 0, %d) order by (180 - latitude), id",
-      lib->filter_images_drawn ? "images i inner join memory.collected_images c on i.id = c.imgid" : "images",
-      lib->max_images_drawn);
+  geo_query = g_strdup_printf("SELECT * FROM (SELECT id, latitude FROM %s WHERE longitude >= ?1 AND "
+                              "longitude <= ?2 AND latitude <= ?3 AND latitude >= ?4 AND longitude NOT NULL AND "
+                              "latitude NOT NULL ORDER BY ABS(latitude - ?5), ABS(longitude - ?6) LIMIT 0, %d) "
+                              "ORDER BY (180 - latitude), id",
+                              lib->filter_images_drawn
+                              ? "main.images i INNER JOIN memory.collected_images c ON i.id = c.imgid"
+                              : "main.images",
+                              lib->max_images_drawn);
 
   /* prepare the main query statement */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);

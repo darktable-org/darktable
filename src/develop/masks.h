@@ -16,13 +16,12 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_DEVELOP_MASKS_H
-#define DT_DEVELOP_MASKS_H
+#pragma once
 
+#include "common/opencl.h"
+#include "develop/pixelpipe.h"
 #include "dtgtk/button.h"
 #include "dtgtk/gradientslider.h"
-#include "develop/pixelpipe.h"
-#include "common/opencl.h"
 
 #include <assert.h>
 
@@ -294,7 +293,7 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
 void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index);
 void dt_masks_gui_form_remove(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index);
 void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui);
-void dt_masks_gui_form_save_creation(struct dt_iop_module_t *module, dt_masks_form_t *form,
+void dt_masks_gui_form_save_creation(dt_develop_t *dev, struct dt_iop_module_t *module, dt_masks_form_t *form,
                                      dt_masks_form_gui_t *gui);
 void dt_masks_group_ungroup(dt_masks_form_t *dest_grp, dt_masks_form_t *grp);
 dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp, dt_masks_form_t *form);
@@ -374,9 +373,9 @@ static inline
 float dt_masks_dynbuf_get(dt_masks_dynbuf_t *a, int offset)
 {
   assert(a != NULL);
-  // offset: must be negative distance relative to end of buffer or zero
-  assert(offset <= 0);
-  // assert(a->pos + offset >= 0);
+  // offset: must be negative distance relative to end of buffer
+  assert(offset < 0);
+  assert((long)a->pos + offset >= 0);
   return (a->buffer[a->pos + offset]);
 }
 
@@ -384,9 +383,9 @@ static inline
 void dt_masks_dynbuf_set(dt_masks_dynbuf_t *a, int offset, float value)
 {
   assert(a != NULL);
-  // offset: must be negative distance relative to end of buffer or zero
-  assert(offset <= 0);
-  // assert(a->pos + offset >= 0);
+  // offset: must be negative distance relative to end of buffer
+  assert(offset < 0);
+  assert((long)a->pos + offset >= 0);
   a->buffer[a->pos + offset] = value;
 }
 
@@ -432,7 +431,6 @@ void dt_masks_dynbuf_free(dt_masks_dynbuf_t *a)
   free(a);
 }
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

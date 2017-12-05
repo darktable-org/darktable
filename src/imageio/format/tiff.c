@@ -51,8 +51,9 @@ typedef struct dt_imageio_tiff_gui_t
 } dt_imageio_tiff_gui_t;
 
 
-int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void, void *exif,
-                int exif_len, int imgid, int num, int total)
+int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void,
+                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                void *exif, int exif_len, int imgid, int num, int total)
 {
   const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
 
@@ -67,7 +68,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
   if(imgid > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid)->profile;
+    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
     cmsSaveProfileToMem(out_profile, 0, &profile_len);
     if(profile_len > 0)
     {
@@ -269,7 +270,6 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
       int max_width, max_height;
       int width, height;
       char style[128];
-      gboolean style_append;
       int bpp;
       int compress;
       TIFF *handle;
@@ -292,6 +292,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
   }
   return NULL;
 }
+
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));

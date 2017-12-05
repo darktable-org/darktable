@@ -15,20 +15,20 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <memory.h>
-#include <stdio.h>
-#include <png.h>
-#include <inttypes.h>
-#include <strings.h>
 #include <assert.h>
+#include <inttypes.h>
+#include <memory.h>
+#include <png.h>
+#include <stdio.h>
+#include <strings.h>
 
+#include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/exif.h"
+#include "control/conf.h"
+#include "develop/develop.h"
 #include "imageio.h"
 #include "imageio_tiff.h"
-#include "develop/develop.h"
-#include "common/exif.h"
-#include "common/colorspaces.h"
-#include "control/conf.h"
 
 typedef struct dt_imageio_png_t
 {
@@ -44,11 +44,12 @@ typedef struct dt_imageio_png_t
 
 int read_header(const char *filename, dt_imageio_png_t *png)
 {
-  png->f = fopen(filename, "rb");
+  png->f = g_fopen(filename, "rb");
 
   if(!png->f) return 1;
 
-  const size_t NUM_BYTES_CHECK = 8;
+#define NUM_BYTES_CHECK (8)
+
   png_byte dat[NUM_BYTES_CHECK];
 
   size_t cnt = fread(dat, 1, NUM_BYTES_CHECK, png->f);
@@ -119,6 +120,8 @@ int read_header(const char *filename, dt_imageio_png_t *png)
   png->width = png_get_image_width(png->png_ptr, png->info_ptr);
   png->height = png_get_image_height(png->png_ptr, png->info_ptr);
 
+#undef NUM_BYTES_CHECK
+
   return 0;
 }
 
@@ -132,7 +135,7 @@ int read_image(dt_imageio_png_t *png, void *out)
     return 1;
   }
 
-  png_bytep row_pointers[png->height];
+  png_bytep *row_pointers = malloc((size_t)png->height * sizeof(png_bytep));
 
   png_bytep row_pointer = (png_bytep)out;
   const size_t rowbytes = png_get_rowbytes(png->png_ptr, png->info_ptr);
@@ -147,6 +150,7 @@ int read_image(dt_imageio_png_t *png, void *out)
   png_read_end(png->png_ptr, png->info_ptr);
   png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
 
+  free(row_pointers);
   fclose(png->f);
   return 0;
 }
@@ -172,7 +176,8 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   height = img->height = image.height;
   bpp = image.bit_depth;
 
-  img->bpp = 4 * sizeof(float);
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
 
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!mipbuf)

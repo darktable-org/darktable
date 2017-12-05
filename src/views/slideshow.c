@@ -66,9 +66,6 @@ typedef struct dt_slideshow_t
   uint32_t back_width, back_height;
   int32_t front_num, back_num;
 
-  // output profile before we overwrote it:
-  int old_profile_type;
-
   // state machine stuff for image transitions:
   dt_pthread_mutex_t lock;
   dt_slideshow_state_t state;      // global state cycle
@@ -108,8 +105,9 @@ static const char *mime(dt_imageio_module_data_t *data)
   return "memory";
 }
 
-static int write_image(dt_imageio_module_data_t *datai, const char *filename, const void *in, void *exif,
-                       int exif_len, int imgid, int num, int total)
+static int write_image(dt_imageio_module_data_t *datai, const char *filename, const void *in,
+                       dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                       void *exif, int exif_len, int imgid, int num, int total)
 {
   dt_slideshow_format_t *data = (dt_slideshow_format_t *)datai;
   dt_pthread_mutex_lock(&data->d->lock);
@@ -190,7 +188,7 @@ static int process_next_image(dt_slideshow_t *d)
   if(id)
     // the flags are: ignore exif, display byteorder, high quality, upscale, thumbnail
     dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 1, high_quality, 1, 0,
-                                 0, 0, 0, 0, 1, 1);
+                                 0, 0, DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL, 1, 1);
   return 0;
 }
 
@@ -351,18 +349,23 @@ void enter(dt_view_t *self)
   // also hide arrows
   dt_ui_border_show(darktable.gui->ui, FALSE);
 
-  // use display profile:
-  d->old_profile_type = dt_conf_get_int("plugins/lighttable/export/icctype");
-  dt_conf_set_int("plugins/lighttable/export/icctype", DT_COLORSPACE_DISPLAY);
-
   // alloc screen-size double buffer
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  GdkRectangle rect;
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+  GdkDisplay *display = gtk_widget_get_display(window);
+  GdkMonitor *mon = gdk_display_get_monitor_at_window(display, gtk_widget_get_window(window));
+  gdk_monitor_get_geometry(mon, &rect);
+#else
   GdkScreen *screen = gtk_widget_get_screen(window);
   if(!screen) screen = gdk_screen_get_default();
   int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(window));
-  GdkRectangle rect;
   gdk_screen_get_monitor_geometry(screen, monitor, &rect);
+#endif
+
   dt_pthread_mutex_lock(&d->lock);
+
   d->width = rect.width * darktable.gui->ppd;
   d->height = rect.height * darktable.gui->ppd;
   d->buf1 = dt_alloc_align(64, sizeof(uint32_t) * d->width * d->height);
@@ -396,7 +399,6 @@ void leave(dt_view_t *self)
   dt_ui_border_show(darktable.gui->ui, TRUE);
   d->auto_advance = 0;
   dt_view_lighttable_set_position(darktable.view_manager, d->front_num);
-  dt_conf_set_int("plugins/lighttable/export/icctype", d->old_profile_type);
   dt_pthread_mutex_lock(&d->lock);
   dt_free_align(d->buf1);
   dt_free_align(d->buf2);
@@ -500,7 +502,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 0;
   }
   // go back to lt mode
-  dt_ctl_switch_mode_to(DT_LIBRARY);
+  dt_ctl_switch_mode_to("lighttable");
   return 0;
 }
 

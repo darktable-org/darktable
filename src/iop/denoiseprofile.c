@@ -21,7 +21,6 @@
 #include "bauhaus/bauhaus.h"
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
-#include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -38,8 +37,6 @@
 #include <xmmintrin.h>
 #endif
 
-#define BLOCKSIZE                                                                                            \
-  2048 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 #define REDUCESIZE 64
 #define MAX_PROFILES 30
 #define NUM_BUCKETS 4
@@ -223,7 +220,9 @@ static inline void precondition(const float *const in, float *const buf, const i
                                 const float a[3], const float b[3])
 {
   const float sigma2[3]
-      = { (b[0] / a[0]) * (b[0] / a[0]), (b[1] / a[1]) * (b[1] / a[1]), (b[2] / a[1]) * (b[2] / a[1]) };
+      = { (b[0] / a[0]) * (b[0] / a[0]),
+          (b[1] / a[1]) * (b[1] / a[1]),
+          (b[2] / a[2]) * (b[2] / a[2]) };
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(a)
@@ -250,7 +249,9 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
                                  const float b[3])
 {
   const float sigma2[3]
-      = { (b[0] / a[0]) * (b[0] / a[0]), (b[1] / a[1]) * (b[1] / a[1]), (b[2] / a[1]) * (b[2] / a[1]) };
+      = { (b[0] / a[0]) * (b[0] / a[0]),
+          (b[1] / a[1]) * (b[1] / a[1]),
+          (b[2] / a[2]) * (b[2] / a[2]) };
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(a)
@@ -733,20 +734,20 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // get our data struct:
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
 
-  const int max_max_scale = 5; // hard limit
+#define MAX_MAX_SCALE (5) // hard limit
+
   int max_scale = 0;
-  const float scale = roi_in->scale / piece->iscale;
+  const float in_scale = roi_in->scale / piece->iscale;
   // largest desired filter on input buffer (20% of input dim)
-  const float supp0
-      = MIN(2 * (2 << (max_max_scale - 1)) + 1,
-            MAX(piece->buf_in.height * piece->iscale, piece->buf_in.width * piece->iscale) * 0.2f);
+  const float supp0 = MIN(2 * (2 << (MAX_MAX_SCALE - 1)) + 1,
+                          MAX(piece->buf_in.height * piece->iscale, piece->buf_in.width * piece->iscale) * 0.2f);
   const float i0 = dt_log2f((supp0 - 1.0f) * .5f);
-  for(; max_scale < max_max_scale; max_scale++)
+  for(; max_scale < MAX_MAX_SCALE; max_scale++)
   {
     // actual filter support on scaled buffer
     const float supp = 2 * (2 << max_scale) + 1;
     // approximates this filter size on unscaled input image:
-    const float supp_in = supp * (1.0f / scale);
+    const float supp_in = supp * (1.0f / in_scale);
     const float i_in = dt_log2f((supp_in - 1) * .5f) - 1.0f;
     // i_in = max_scale .. .. .. 0
     const float t = 1.0f - (i_in + .5f) / i0;
@@ -764,7 +765,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     return;
   }
 
-  float *buf[max_max_scale];
+  float *buf[MAX_MAX_SCALE];
   float *tmp = NULL;
   float *buf1 = NULL, *buf2 = NULL;
   for(int k = 0; k < max_scale; k++)
@@ -772,9 +773,9 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   tmp = dt_alloc_align(64, (size_t)4 * sizeof(float) * npixels);
 
   const float wb[3] = { // twice as many samples in green channel:
-                        2.0f * piece->pipe->processed_maximum[0] * d->strength * (scale * scale),
-                        piece->pipe->processed_maximum[1] * d->strength * (scale * scale),
-                        2.0f * piece->pipe->processed_maximum[2] * d->strength * (scale * scale)
+                        2.0f * piece->pipe->dsc.processed_maximum[0] * d->strength * (in_scale * in_scale),
+                        piece->pipe->dsc.processed_maximum[1] * d->strength * (in_scale * in_scale),
+                        2.0f * piece->pipe->dsc.processed_maximum[2] * d->strength * (in_scale * in_scale)
   };
   // only use green channel + wb for now:
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
@@ -787,7 +788,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
   {
     const int n = width*height;
-    FILE *f = fopen("/tmp/transformed.pfm", "wb");
+    FILE *f = g_fopen("/tmp/transformed.pfm", "wb");
     fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
     for(int k=0; k<n; k++)
       fwrite(((float*)ovoid)+4*k, sizeof(float), 3, f);
@@ -811,13 +812,13 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     {
       char filename[512];
       snprintf(filename, sizeof(filename), "/tmp/coarse_%d.pfm", scale);
-      FILE *f = fopen(filename, "wb");
+      FILE *f = g_fopen(filename, "wb");
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
       for(size_t k = 0; k < npixels; k++)
         fwrite(buf2+4*k, sizeof(float), 3, f);
       fclose(f);
       snprintf(filename, sizeof(filename), "/tmp/detail_%d.pfm", scale);
-      f = fopen(filename, "wb");
+      f = g_fopen(filename, "wb");
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
       for(size_t k = 0; k < npixels; k++)
         fwrite(buf[scale]+4*k, sizeof(float), 3, f);
@@ -872,7 +873,9 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
   dt_free_align(tmp);
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, width, height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, width, height);
+
+#undef MAX_MAX_SCALE
 }
 
 static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
@@ -898,9 +901,9 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
   float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
 
-  const float wb[3] = { piece->pipe->processed_maximum[0] * d->strength * (scale * scale),
-                        piece->pipe->processed_maximum[1] * d->strength * (scale * scale),
-                        piece->pipe->processed_maximum[2] * d->strength * (scale * scale) };
+  const float wb[3] = { piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale) };
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
@@ -981,7 +984,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
         {
           // sliding window in j direction:
           int i = MAX(0, -ki);
-          float *s = S + i;
+          s = S + i;
           const float *inp = in + 4 * i + 4l * (size_t)roi_in->width * (j + P + 1);
           const float *inps = in + 4 * i + 4l * ((size_t)roi_in->width * (j + P + 1 + kj) + ki);
           const float *inm = in + 4 * i + 4l * (size_t)roi_in->width * (j - P);
@@ -1021,7 +1024,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   dt_free_align(in);
   backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #if defined(__SSE2__)
@@ -1046,9 +1049,9 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
   float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
 
-  const float wb[3] = { piece->pipe->processed_maximum[0] * d->strength * (scale * scale),
-                        piece->pipe->processed_maximum[1] * d->strength * (scale * scale),
-                        piece->pipe->processed_maximum[2] * d->strength * (scale * scale) };
+  const float wb[3] = { piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale) };
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
@@ -1128,7 +1131,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
         {
           // sliding window in j direction:
           int i = MAX(0, -ki);
-          float *s = S + i;
+          s = S + i;
           const float *inp = in + 4 * i + 4l * (size_t)roi_in->width * (j + P + 1);
           const float *inps = in + 4 * i + 4l * ((size_t)roi_in->width * (j + P + 1 + kj) + ki);
           const float *inm = in + 4 * i + 4l * (size_t)roi_in->width * (j - P);
@@ -1218,7 +1221,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   dt_free_align(in);
   backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
 
@@ -1262,15 +1265,13 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   const float norm = 0.015f / (2 * P + 1);
 
 
-  const float wb[4]
-      = { piece->pipe->processed_maximum[0] * d->strength * (scale * scale),
-          piece->pipe->processed_maximum[1] * d->strength * (scale * scale),
-          piece->pipe->processed_maximum[2] * d->strength * (scale * scale),
-          0.0f };
+  const float wb[4] = { piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale), 0.0f };
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
-                            (bb[2] / aa[1]) * (bb[2] / aa[1]), 0.0f };
+                            (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
   if(dev_tmp == NULL) goto error;
@@ -1284,34 +1285,31 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     if(buckets[k] == NULL) goto error;
   }
 
-  // prepare local work group
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group of the kernel
-  // assuming this is the same for denoiseprofile_horiz and denoiseprofile_vert
+  int hblocksize;
+  dt_opencl_local_buffer_t hlocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 2 * P, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 16, .sizey = 1 };
 
-  // make sure blocksize is not too large
-  int blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_denoiseprofile_horiz, &kernelworkgroupsize)
-        == CL_SUCCESS)
-  {
-    // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
-          || blocksize > workgroupsize || (blocksize + 2 * P) * sizeof(float) > localmemsize)
-    {
-      if(blocksize == 1) break;
-      blocksize >>= 1;
-    }
-  }
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_horiz, &hlocopt))
+    hblocksize = hlocopt.sizex;
   else
-  {
-    blocksize = 1; // slow but safe
-  }
+    hblocksize = 1;
 
-  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1) * blocksize;
-  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1) * blocksize;
+  int vblocksize;
+  dt_opencl_local_buffer_t vlocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 1, .xfactor = 1, .yoffset = 2 * P, .yfactor = 1,
+                                  .cellsize = sizeof(float), .overhead = 0,
+                                  .sizex = 1, .sizey = 1 << 16 };
+
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_vert, &vlocopt))
+    vblocksize = vlocopt.sizey;
+  else
+    vblocksize = 1;
+
+
+  const size_t bwidth = ROUNDUP(width, hblocksize);
+  const size_t bheight = ROUNDUP(height, vblocksize);
 
   const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
   size_t sizesl[3];
@@ -1352,7 +1350,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       sizesl[0] = bwidth;
       sizesl[1] = ROUNDUPHT(height);
       sizesl[2] = 1;
-      local[0] = blocksize;
+      local[0] = hblocksize;
       local[1] = 1;
       local[2] = 1;
       dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
@@ -1362,7 +1360,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 3, sizeof(int), (void *)&height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 4, 2 * sizeof(int), (void *)&q);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 5, sizeof(int), (void *)&P);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 6, (blocksize + 2 * P) * sizeof(float),
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 6, (hblocksize + 2 * P) * sizeof(float),
                                NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_horiz, sizesl, local);
       if(err != CL_SUCCESS) goto error;
@@ -1372,7 +1370,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       sizesl[1] = bheight;
       sizesl[2] = 1;
       local[0] = 1;
-      local[1] = blocksize;
+      local[1] = vblocksize;
       local[2] = 1;
       dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
@@ -1382,7 +1380,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 4, 2 * sizeof(int), (void *)&q);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 5, sizeof(int), (void *)&P);
       dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 6, sizeof(float), (void *)&norm);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 7, (blocksize + 2 * P) * sizeof(float),
+      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 7, (vblocksize + 2 * P) * sizeof(float),
                                NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_vert, sizesl, local);
       if(err != CL_SUCCESS) goto error;
@@ -1416,19 +1414,19 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   for(int k = 0; k < NUM_BUCKETS; k++)
   {
-    if(buckets[k] != NULL) dt_opencl_release_mem_object(buckets[k]);
+    dt_opencl_release_mem_object(buckets[k]);
   }
-  if(dev_U2 != NULL) dt_opencl_release_mem_object(dev_U2);
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_U2);
+  dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
   for(int k = 0; k < NUM_BUCKETS; k++)
   {
-    if(buckets[k] != NULL) dt_opencl_release_mem_object(buckets[k]);
+    dt_opencl_release_mem_object(buckets[k]);
   }
-  if(dev_U2 != NULL) dt_opencl_release_mem_object(dev_U2);
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_U2);
+  dt_opencl_release_mem_object(dev_tmp);
   dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -1473,8 +1471,8 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   cl_mem dev_m = NULL;
   cl_mem dev_r = NULL;
   cl_mem dev_filter = NULL;
-  cl_mem dev_detail[max_max_scale];
-  for(int k = 0; k < max_scale; k++) dev_detail[k] = NULL;
+  cl_mem *dev_detail = calloc(max_max_scale, sizeof(cl_mem));
+  float *sumsum = NULL;
 
   // corner case of extremely small image. this is not really likely to happen but would cause issues later
   // when we divide by (n-1). so let's be prepared
@@ -1485,54 +1483,41 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     size_t region[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
+    free(dev_detail);
     return TRUE;
   }
 
-  // prepare local work group
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+  dt_opencl_local_buffer_t flocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = 4 * sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 4, .sizey = 1 << 4 };
 
-  // make sure blocksize is not too large
-  int blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_denoiseprofile_reduce_first,
-                                             &kernelworkgroupsize) == CL_SUCCESS)
-  {
-    // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize * blocksize > kernelworkgroupsize
-          || blocksize * blocksize > workgroupsize
-          || blocksize * blocksize * 4 * sizeof(float) > localmemsize)
-    {
-      if(blocksize == 1) break;
-      blocksize >>= 1;
-    }
-  }
-  else
-  {
-    blocksize = 1;
-  }
+  if(!dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_reduce_first, &flocopt))
+    goto error;
 
-  if(blocksize < 2)
-  {
-    // very small blocksize. this is really unlikely to happen, but let's be prepared: give up on opencl in
-    // that case
-    return FALSE;
-  }
+  const size_t bwidth = ROUNDUP(width, flocopt.sizex);
+  const size_t bheight = ROUNDUP(height, flocopt.sizey);
 
-  const size_t bwidth = ROUNDUP(width, blocksize);
-  const size_t bheight = ROUNDUP(height, blocksize);
+  const int bufsize = (bwidth / flocopt.sizex) * (bheight / flocopt.sizey);
 
-  const int bufsize = (bwidth / blocksize) * (bheight / blocksize);
-  const int lsize = maxsizes[0];
-  const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, lsize) / lsize);
+  dt_opencl_local_buffer_t slocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = 4 * sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 16, .sizey = 1 };
+
+  if(!dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_reduce_first, &slocopt))
+    goto error;
+
+  const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
 
   dev_m = dt_opencl_alloc_device_buffer(devid, (size_t)bufsize * 4 * sizeof(float));
   if(dev_m == NULL) goto error;
 
   dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * 4 * sizeof(float));
   if(dev_r == NULL) goto error;
+
+  sumsum = dt_alloc_align(16, (size_t)reducesize * 4 * sizeof(float));
+  if(sumsum == NULL) goto error;
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
   if(dev_tmp == NULL) goto error;
@@ -1551,13 +1536,13 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     if(dev_detail[k] == NULL) goto error;
   }
 
-  const float wb[4] = { 2.0f * piece->pipe->processed_maximum[0] * d->strength * (scale * scale),
-                        piece->pipe->processed_maximum[1] * d->strength * (scale * scale),
-                        2.0f * piece->pipe->processed_maximum[2] * d->strength * (scale * scale), 0.0f };
+  const float wb[4] = { 2.0f * piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
+                        piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
+                        2.0f * piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale), 0.0f };
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
-                            (bb[2] / aa[1]) * (bb[2] / aa[1]), 0.0f };
+                            (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
@@ -1600,6 +1585,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     // indirectly give gpu some air to breathe (and to do display related stuff)
     dt_iop_nap(darktable.opencl->micro_nap);
 
+    // swap buffers
     cl_mem dev_buf3 = dev_buf2;
     dev_buf2 = dev_buf1;
     dev_buf1 = dev_buf3;
@@ -1612,7 +1598,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     const float sigma = 1.0f;
     // it is then transformed by wavelet scales via the 5 tap a-trous filter:
     const float varf = sqrtf(2.0f + 2.0f * 4.0f * 4.0f + 6.0f * 6.0f) / 16.0f; // about 0.5
-    const float sigma_band = powf(varf, scale) * sigma;
+    const float sigma_band = powf(varf, s) * sigma;
 
     // determine thrs as bayesshrink
     float sum_y2[3] = { 0.0f };
@@ -1623,8 +1609,8 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     lsizes[0] = bwidth;
     lsizes[1] = bheight;
     lsizes[2] = 1;
-    llocal[0] = blocksize;
-    llocal[1] = blocksize;
+    llocal[0] = flocopt.sizex;
+    llocal[1] = flocopt.sizey;
     llocal[2] = 1;
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 0, sizeof(cl_mem),
                              &(dev_detail[s]));
@@ -1632,32 +1618,31 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 2, sizeof(int), &height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 3, sizeof(cl_mem), &dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 4,
-                             blocksize * blocksize * 4 * sizeof(float), NULL);
+                             flocopt.sizex * flocopt.sizey * 4 * sizeof(float), NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_reduce_first, lsizes,
                                                  llocal);
     if(err != CL_SUCCESS) goto error;
 
 
-    lsizes[0] = reducesize * lsize;
+    lsizes[0] = reducesize * slocopt.sizex;
     lsizes[1] = 1;
     lsizes[2] = 1;
-    llocal[0] = lsize;
+    llocal[0] = slocopt.sizex;
     llocal[1] = 1;
     llocal[2] = 1;
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 0, sizeof(cl_mem), &dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 1, sizeof(cl_mem), &dev_r);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 2, sizeof(int), &bufsize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 3, lsize * 4 * sizeof(float),
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 3, slocopt.sizex * 4 * sizeof(float),
                              NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_reduce_second, lsizes,
                                                  llocal);
     if(err != CL_SUCCESS) goto error;
 
-
-    float sumsum[4 * reducesize];
     err = dt_opencl_read_buffer_from_device(devid, (void *)sumsum, dev_r, 0,
                                             (size_t)reducesize * 4 * sizeof(float), CL_TRUE);
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS)
+      goto error;
 
     for(int k = 0; k < reducesize; k++)
     {
@@ -1680,11 +1665,11 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 0, sizeof(cl_mem),
-                             (void *)&dev_buf2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 1, sizeof(cl_mem),
                              (void *)&dev_buf1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 2, sizeof(cl_mem),
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 1, sizeof(cl_mem),
                              (void *)&dev_detail[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 2, sizeof(cl_mem),
+                             (void *)&dev_buf2);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 3, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 4, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 5, sizeof(float), (void *)&thrs[0]);
@@ -1704,14 +1689,24 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     // indirectly give gpu some air to breathe (and to do display related stuff)
     dt_iop_nap(darktable.opencl->micro_nap);
 
+    // swap buffers
     cl_mem dev_buf3 = dev_buf2;
     dev_buf2 = dev_buf1;
     dev_buf1 = dev_buf3;
   }
 
+  // copy output of last run of synthesize kernel to dev_tmp (if not already there)
+  // note: we need to take swap of buffers into account, so current output lies in dev_buf1
+  if(dev_buf1 != dev_tmp)
+  {
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    err = dt_opencl_enqueue_copy_image(devid, dev_buf1, dev_tmp, origin, origin, region);
+    if(err != CL_SUCCESS) goto error;
+  }
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 0, sizeof(cl_mem),
-                           (void *)&dev_out);
+                           (void *)&dev_tmp);
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 1, sizeof(cl_mem),
                            (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 2, sizeof(int), (void *)&width);
@@ -1726,21 +1721,25 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     dt_opencl_finish(devid);
 
 
-  if(dev_r != NULL) dt_opencl_release_mem_object(dev_r);
-  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
-  if(dev_filter != NULL) dt_opencl_release_mem_object(dev_filter);
+  dt_opencl_release_mem_object(dev_r);
+  dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_filter);
   for(int k = 0; k < max_scale; k++)
-    if(dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+    dt_opencl_release_mem_object(dev_detail[k]);
+  free(dev_detail);
+  dt_free_align(sumsum);
   return TRUE;
 
 error:
-  if(dev_r != NULL) dt_opencl_release_mem_object(dev_r);
-  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
-  if(dev_filter != NULL) dt_opencl_release_mem_object(dev_filter);
+  dt_opencl_release_mem_object(dev_r);
+  dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_filter);
   for(int k = 0; k < max_scale; k++)
-    if(dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+    dt_opencl_release_mem_object(dev_detail[k]);
+  free(dev_detail);
+  dt_free_align(sumsum);
   dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d, devid %d\n", err, devid);
   return FALSE;
 }
@@ -1850,7 +1849,7 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
-  module->priority = 138; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 132; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_denoiseprofile_params_t);
   module->gui_data = NULL;
   module->data = NULL;

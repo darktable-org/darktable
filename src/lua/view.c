@@ -16,10 +16,10 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/view.h"
+#include "control/jobs/control_jobs.h"
+#include "lua/events.h"
 #include "lua/modules.h"
 #include "lua/types.h"
-#include "lua/events.h"
-#include "control/jobs/control_jobs.h"
 
 
 static int id_member(lua_State *L)

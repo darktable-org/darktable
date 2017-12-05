@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "bauhaus/bauhaus.h"
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/history.h"
@@ -28,6 +29,9 @@
 #include "gui/hist_dialog.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -50,9 +54,10 @@ const char *name(dt_lib_module_t *self)
   return _("history stack");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE;
+  static const char *v[] = {"lighttable", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -71,6 +76,9 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("open sidecar file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
 
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
@@ -110,7 +118,8 @@ static int get_selected_image(void)
 
   /* get imageid for source if history past */
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images",
+                              -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     /* copy history of first image in selection */
@@ -168,8 +177,35 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  dt_history_delete_on_selection();
-  dt_control_queue_redraw_center();
+  gint res = GTK_RESPONSE_YES;
+
+  if(dt_conf_get_bool("ask_before_delete"))
+  {
+    const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+    int number;
+    if (dt_view_get_image_to_act_on() != -1)
+      number = 1;
+    else
+      number = dt_collection_get_selected_count(darktable.collection);
+
+    if (number == 0) return;
+
+    GtkWidget *dialog = gtk_message_dialog_new(
+        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+        ngettext("do you really want to clear history of %d selected image?",
+                 "do you really want to clear history of %d selected images?", number), number);
+
+    gtk_window_set_title(GTK_WINDOW(dialog), _("delete images' history?"));
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+  }
+
+  if(res == GTK_RESPONSE_YES)
+  {
+    dt_history_delete_on_selection();
+    dt_control_queue_redraw_center();
+  }
 }
 
 static void paste_button_clicked(GtkWidget *widget, gpointer user_data)

@@ -157,6 +157,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'colorzones'))
   gr.add_edge(('colorout', 'lowlight'))
   gr.add_edge(('colorout', 'monochrome'))
+  gr.add_edge(('colorout', 'vibrance'))
   gr.add_edge(('colorout', 'zonesystem'))
   gr.add_edge(('colorout', 'tonecurve'))
   gr.add_edge(('colorout', 'levels'))
@@ -181,6 +182,7 @@ def add_edges(gr):
   gr.add_edge(('colorzones', 'colorin'))
   gr.add_edge(('lowlight', 'colorin'))
   gr.add_edge(('monochrome', 'colorin'))
+  gr.add_edge(('vibrance', 'colorin'))
   gr.add_edge(('zonesystem', 'colorin'))
   gr.add_edge(('tonecurve', 'colorin'))
   gr.add_edge(('levels', 'colorin'))
@@ -207,6 +209,7 @@ def add_edges(gr):
   gr.add_edge(('colorzones', 'colorreconstruction'))
   gr.add_edge(('lowlight', 'colorreconstruction'))
   gr.add_edge(('monochrome', 'colorreconstruction'))
+  gr.add_edge(('vibrance', 'colorreconstruction'))
   gr.add_edge(('zonesystem', 'colorreconstruction'))
   gr.add_edge(('tonecurve', 'colorreconstruction'))
   gr.add_edge(('levels', 'colorreconstruction'))
@@ -222,6 +225,9 @@ def add_edges(gr):
   gr.add_edge(('colisa', 'colorreconstruction'))
   gr.add_edge(('defringe', 'colorreconstruction'))
 
+  # we want haze removal in RGB space before color reconstruction
+  gr.add_edge(('colorin', 'hazeremoval'))
+  gr.add_edge(('hazeremoval', 'profile_gamma'))
 
   # spot removal works on demosaiced data
   # and needs to be before geometric distortions:
@@ -282,6 +288,7 @@ def add_edges(gr):
   gr.add_edge(('gamma', 'splittoning'))
   gr.add_edge(('gamma', 'watermark'))
   gr.add_edge(('gamma', 'overexposed'))
+  gr.add_edge(('gamma', 'rawoverexposed'))
   gr.add_edge(('gamma', 'borders'))
   gr.add_edge(('gamma', 'dither'))
   gr.add_edge(('channelmixer', 'colorout'))
@@ -292,6 +299,7 @@ def add_edges(gr):
   gr.add_edge(('splittoning', 'colorout'))
   gr.add_edge(('watermark', 'colorout'))
   gr.add_edge(('overexposed', 'colorout'))
+  gr.add_edge(('rawoverexposed', 'colorout'))
   gr.add_edge(('dither', 'colorout'))
 
   # borders should not change shape/color:
@@ -304,6 +312,7 @@ def add_edges(gr):
   gr.add_edge(('borders', 'channelmixer'))
   # don't indicate borders as over/under exposed
   gr.add_edge(('borders', 'overexposed'))
+  gr.add_edge(('borders', 'rawoverexposed')) # can, but no need to
   # don't resample borders when scaling to the output dimensions
   gr.add_edge(('borders', 'finalscale'))
 
@@ -315,7 +324,15 @@ def add_edges(gr):
   gr.add_edge(('finalscale', 'soften'))
   gr.add_edge(('finalscale', 'clahe'))
   gr.add_edge(('finalscale', 'channelmixer'))
-  gr.add_edge(('finalscale', 'overexposed'))
+
+  # but can display overexposure after scaling
+  # NOTE: finalscale is only done in export pipe,
+  #       while *overexposed is only done in full darkroom preview pipe
+  gr.add_edge(('overexposed', 'finalscale'))
+  gr.add_edge(('rawoverexposed', 'finalscale'))
+
+  # let's display raw overexposure indication after usual overexposed
+  gr.add_edge(('rawoverexposed', 'overexposed'))
 
   # but watermark can be drawn on top of borders
   gr.add_edge(('watermark', 'borders'))
@@ -379,6 +396,7 @@ def add_edges(gr):
 
   # defringe before color manipulations (colorbalance is sufficient) and before equalizer
   gr.add_edge(('colorbalance', 'defringe'))
+  gr.add_edge(('vibrance', 'defringe'))
   gr.add_edge(('equalizer', 'defringe'))
 
   # levels come after tone curve
@@ -439,6 +457,7 @@ def add_edges(gr):
   gr.add_edge(('colorzones', 'colorchecker'))
   gr.add_edge(('lowlight', 'colorchecker'))
   gr.add_edge(('monochrome', 'colorchecker'))
+  gr.add_edge(('vibrance', 'colorchecker'))
   gr.add_edge(('zonesystem', 'colorchecker'))
   gr.add_edge(('tonecurve', 'colorchecker'))
   gr.add_edge(('levels', 'colorchecker'))
@@ -454,6 +473,11 @@ def add_edges(gr):
   gr.add_edge(('colisa', 'colorchecker'))
   gr.add_edge(('defringe', 'colorchecker'))
   gr.add_edge(('colorchecker', 'colorreconstruction'))
+
+  # ugly hack: don't let vibrance drift any more
+  # gr.add_edge(('vibrance', 'defringe'))
+  gr.add_edge(('colorbalance', 'vibrance'))
+  gr.add_edge(('colorize', 'vibrance'))
 
 gr = digraph()
 gr.add_nodes([
@@ -495,6 +519,7 @@ gr.add_nodes([
 'highlights',
 'highpass',
 'invert',
+'hazeremoval',
 'hotpixels',
 'lens',
 'levels',
@@ -504,6 +529,7 @@ gr.add_nodes([
 'monochrome',
 'nlmeans',
 'overexposed',
+'rawoverexposed',
 'profile_gamma',
 'rawdenoise',
 'relight',
@@ -518,6 +544,7 @@ gr.add_nodes([
 'tonecurve',
 'tonemap',
 'velvia',
+'vibrance',
 'vignette',
 'watermark',
 'zonesystem',

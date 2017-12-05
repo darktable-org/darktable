@@ -167,6 +167,35 @@ awk is needed to parse gphot2(1) output."; then
 	return $missing_tool
 }
 
+pdf_tools_installed() {
+	local missing_tool
+	missing_tool=1
+
+	echo "--> Check for pdf tools availability"
+
+	if tool_installed pdftk; then
+		pdfcat() {
+			local output inputs
+			output=$1; shift
+			inputs=$@
+			pdftk $inputs cat output $output
+		}
+		missing_tool=0
+	elif tool_installed gs; then
+		pdfcat() {
+			local output inputs
+			output=$1; shift
+			inputs=$@
+			gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=$output $inputs
+		}
+		missing_tool=0
+	else
+		echo "pdftk or ghoscript are needed if you want one single result pdf."
+	fi
+
+	return $missing_tool
+}
+
 profiling_tools_installed() {
 	local missing_tool
 	missing_tool=0
@@ -282,6 +311,12 @@ get_image_iso() {
 	if [ -z "$iso" -o "$iso" = "65535" ]; then
 		iso=$(get_exif_key "$file" Exif.Photo.RecommendedExposureIndex)
 	fi
+	if [ -z "$iso" -o "$iso" = "65535" ]; then
+		iso=$(get_exif_key "$file" Exif.Photo.StandardOutputSensitivity)
+	fi
+	if [ -z "$iso" -o "$iso" = "65535" ]; then
+		iso=$(get_exif_key "$file" Exif.Image.ISOSpeedRatings)
+	fi
 
 	# Then try some brand specific values if still not found.
 
@@ -306,6 +341,11 @@ get_image_iso() {
 				iso=$(get_exif_key "$file" Exif.NikonIi.ISO)
 			fi
 			;;
+    [Cc][Aa][Nn][Oo][Nn]*)
+			if [ -z "$iso" -o "$iso" = "0" ]; then
+				iso=$(get_exif_key "$file" Exif.CanonSi.ISOSpeed)
+			fi
+      ;;
 		esac
 	fi
 
@@ -458,16 +498,17 @@ export_thumbnail() {
 	convert "$input" -resize 1024x1024 "$output"
 }
 
-check_exposition() {
-	local orig input over under ret convert_flags
+check_exposure() {
+	local orig input inputdir over under ret convert_flags
 	orig=$1
 	input=$2
+	inputdir=$(dirname $input)
 
 	ret=0
 
 	# See: http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=19805
-
-	convert_flags="-channel RGB -threshold 99% -separate -append"
+	# and https://www.imagemagick.org/script/architecture.php#tera-pixel for the temporary-path thing
+	convert_flags="-define registry:temporary-path=${inputdir}/tmp -channel RGB -threshold 99% -separate -append"
 
 	over=$(convert "$input" $convert_flags -format "%[mean]" info: | cut -f1 -d.)
 	if [ "$over" -a "$over" -lt 80 ]; then

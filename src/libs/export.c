@@ -64,9 +64,10 @@ const char *name(dt_lib_module_t *self)
   return _("export selected");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE;
+  static const char *v[] = {"lighttable", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -111,6 +112,9 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
     g_strlcpy(style, tmp, sizeof(style));
     g_free(tmp);
   }
+  dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/lighttable/export/icctype");
+  gchar *icc_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  dt_iop_color_intent_t icc_intent = dt_conf_get_int("plugins/lighttable/export/iccintent");
 
   int imgid = dt_view_get_image_to_act_on();
   GList *list = NULL;
@@ -121,7 +125,9 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
     list = dt_collection_get_selected(darktable.collection, -1);
 
   dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale,
-                    style, style_append);
+                    style, style_append, icc_type, icc_filename, icc_intent);
+
+  g_free(icc_filename);
 }
 
 static void width_changed(GtkSpinButton *spin, gpointer user_data)
@@ -571,7 +577,7 @@ void gui_init(dt_lib_module_t *self)
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10)));
   label = gtk_label_new(_("max size"));
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
-  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
   gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
   gtk_box_pack_start(hbox1, GTK_WIDGET(d->width), TRUE, TRUE, 0);
@@ -604,10 +610,14 @@ void gui_init(dt_lib_module_t *self)
   }
 
   dt_bauhaus_combobox_set(d->profile, 0);
-  char tooltip[1024];
-  snprintf(tooltip, sizeof(tooltip), _("output ICC profiles in %s/color/out or %s/color/out"), confdir,
-           datadir);
+
+  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
+  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
+  char *tooltip = g_strdup_printf(_("output ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(d->profile, tooltip);
+  g_free(system_profile_dir);
+  g_free(user_profile_dir);
+  g_free(tooltip);
 
   //  Add intent combo
 
@@ -720,7 +730,7 @@ void init_presets(dt_lib_module_t *self)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select rowid, op_version, op_params, name from presets where operation='export'", -1, &stmt, NULL);
+      "SELECT rowid, op_version, op_params, name FROM data.presets WHERE operation='export'", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int rowid = sqlite3_column_int(stmt, 0);
@@ -736,7 +746,7 @@ void init_presets(dt_lib_module_t *self)
                       "expected. dropping preset.\n",
               name, op_version, version);
       sqlite3_stmt *innerstmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where rowid=?1", -1,
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM data.presets WHERE rowid=?1", -1,
                                   &innerstmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 1, rowid);
       sqlite3_step(innerstmt);
@@ -831,7 +841,7 @@ void init_presets(dt_lib_module_t *self)
                 name, fversion, sversion, new_fversion, new_sversion);
         sqlite3_stmt *innerstmt;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "update presets set op_params=?1 where rowid=?2", -1, &innerstmt, NULL);
+                                    "UPDATE data.presets SET op_params=?1 WHERE rowid=?2", -1, &innerstmt, NULL);
         DT_DEBUG_SQLITE3_BIND_BLOB(innerstmt, 1, new_params, new_params_size, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 2, rowid);
         sqlite3_step(innerstmt);
@@ -851,7 +861,7 @@ void init_presets(dt_lib_module_t *self)
                       "versions %d/%d. dropping preset\n",
               name, fversion, sversion, new_fversion, new_sversion);
       sqlite3_stmt *innerstmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where rowid=?1", -1,
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM data.presets WHERE rowid=?1", -1,
                                   &innerstmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 1, rowid);
       sqlite3_step(innerstmt);

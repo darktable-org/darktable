@@ -16,18 +16,22 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_CUPS_PRINT_H
-#define DT_CUPS_PRINT_H
+#pragma once
 
 #include <common/colorspaces.h>
 
 #define MAX_NAME 128
 
-typedef enum dt_alignment_t
-{
-  top_left, top, top_right,
-  left, center, right,
-  bottom_left, bottom, bottom_right
+typedef enum dt_alignment_t {
+  ALIGNMENT_TOP_LEFT,
+  ALIGNMENT_TOP,
+  ALIGNMENT_TOP_RIGHT,
+  ALIGNMENT_LEFT,
+  ALIGNMENT_CENTER,
+  ALIGNMENT_RIGHT,
+  ALIGNMENT_BOTTOM_LEFT,
+  ALIGNMENT_BOTTOM,
+  ALIGNMENT_BOTTOM_RIGHT
 } dt_alignment_t;
 
 typedef struct dt_paper_info_t
@@ -89,7 +93,6 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt, const 
                          int32_t *px,    int32_t *py,    int32_t *pwidth, int32_t *pheight,
                          int32_t *ax,    int32_t *ay,    int32_t *awidth, int32_t *aheight,
                          int32_t *ix,    int32_t *iy,    int32_t *iwidth, int32_t *iheight);
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

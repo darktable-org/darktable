@@ -15,14 +15,12 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DT_LUA_GUI_H
-#define DT_LUA_GUI_H
+
+#pragma once
+
 #include "lua/lua.h"
 
-
 int dt_lua_init_gui(lua_State *L);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

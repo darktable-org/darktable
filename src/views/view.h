@@ -17,8 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_VIEW_H
-#define DT_VIEW_H
+
+#pragma once
 
 #include "common/image.h"
 #ifdef HAVE_PRINT
@@ -28,17 +28,17 @@
 #include "common/geo.h"
 #include <osm-gps-map.h>
 #endif
-#include <inttypes.h>
-#include <gui/gtk.h>
-#include <gmodule.h>
 #include <cairo.h>
+#include <gmodule.h>
+#include <gui/gtk.h>
+#include <inttypes.h>
 #include <sqlite3.h>
 #ifdef USE_LUA
-#include "lua/types.h"
-#include "lua/modules.h"
-#include "lua/view.h"
-#include "lua/events.h"
 #include "lua/call.h"
+#include "lua/events.h"
+#include "lua/modules.h"
+#include "lua/types.h"
+#include "lua/view.h"
 #endif
 
 /** avilable views flags, a view should return it's type and
@@ -158,15 +158,14 @@ void dt_view_set_selection(int imgid, int value);
 /** toggle selection of given image. */
 void dt_view_toggle_selection(int imgid);
 
-#define DT_VIEW_MAX_MODULES 10
 /**
  * holds all relevant data needed to manage the view
  * modules.
  */
 typedef struct dt_view_manager_t
 {
-  dt_view_t view[DT_VIEW_MAX_MODULES];
-  int32_t current_view, num_views;
+  GList *views;
+  dt_view_t *current_view;
 
   /* reusable db statements
    * TODO: reconsider creating a common/database helper API
@@ -295,7 +294,8 @@ void dt_view_manager_cleanup(dt_view_manager_t *vm);
 /** return translated name. */
 const char *dt_view_manager_name(dt_view_manager_t *vm);
 /** switch to this module. returns non-null if the module fails to change. */
-int dt_view_manager_switch(dt_view_manager_t *vm, int k);
+int dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name);
+int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *new_view);
 /** expose current module. */
 void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, int32_t height,
                             int32_t pointerx, int32_t pointery);
@@ -321,12 +321,6 @@ void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt
 /** add widget to the current module toolbox */
 void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt_view_type_flags_t view);
 
-/** load module to view managers list, if still space. return slot number on success. */
-int dt_view_manager_load_module(dt_view_manager_t *vm, const char *mod);
-/** load a view module */
-int dt_view_load_module(dt_view_t *view, const char *module);
-/** unload, cleanup */
-void dt_view_unload_module(dt_view_t *view);
 /** set scrollbar positions, gui method. */
 void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwinsize, float vpos, float vsize,
                            float vwinsize);
@@ -395,7 +389,6 @@ gboolean dt_view_map_remove_marker(const dt_view_manager_t *vm, dt_geo_map_displ
 void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo);
 #endif
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

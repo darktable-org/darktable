@@ -57,6 +57,10 @@ body.navbody{
   width: 692px;
 }
 
+.dia img {
+  align-self: center;
+}
+
 .page div {
   height:250px;
   float:left;
@@ -79,6 +83,8 @@ body.navbody{
   display:table-cell;
   vertical-align:middle;
   text-align:center;
+  display: flex;
+  justify-content: center;
 }
 /* IE/Mac \*//*/
 * html .page a {

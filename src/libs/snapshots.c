@@ -79,9 +79,10 @@ const char *name(dt_lib_module_t *self)
   return _("snapshots");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_DARKROOM;
+  static const char *v[] = {"darkroom", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -117,15 +118,6 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     d->vp_width = width;
     d->vp_height = height;
 
-    /* check if mouse pointer is on draggable area */
-    double xp = pointerx / d->vp_width;
-    double yp = pointery / d->vp_height;
-    double xpt = xp * 0.01;
-    double ypt = yp * 0.01;
-    gboolean mouse_over_control
-        = d->vertical ? ((xp > d->vp_xpointer - xpt && xp < d->vp_xpointer + xpt) ? TRUE : FALSE)
-                      : ((yp > d->vp_ypointer - ypt && yp < d->vp_ypointer + ypt) ? TRUE : FALSE);
-
     /* set x,y,w,h of surface depending on split align and invert */
     double x = d->vertical ? (d->inverted ? width * d->vp_xpointer : 0) : 0;
     double y = d->vertical ? 0 : (d->inverted ? height * d->vp_ypointer : 0);
@@ -141,7 +133,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
     /* draw the split line */
     cairo_set_source_rgb(cri, .7, .7, .7);
-    cairo_set_line_width(cri, (mouse_over_control ? 2.0 : 0.5));
+    cairo_set_line_width(cri, 1.);
 
     if(d->vertical)
     {
@@ -156,7 +148,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_stroke(cri);
 
     /* if mouse over control lets draw center rotate control, hide if split is dragged */
-    if(!d->dragging && mouse_over_control)
+    if(!d->dragging)
     {
       cairo_set_line_width(cri, 0.5);
       double s = width * HANDLE_SIZE;
@@ -188,8 +180,6 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
   {
     double xp = x / d->vp_width;
     double yp = y / d->vp_height;
-    double xpt = xp * 0.01;
-    double ypt = yp * 0.01;
 
     /* do the split rotating */
     double hhs = HANDLE_SIZE * 0.5;
@@ -209,8 +199,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
       dt_control_queue_redraw_center();
     }
     /* do the dragging !? */
-    else if(which == 1 && ((d->vertical && xp > d->vp_xpointer - xpt && xp < d->vp_xpointer + xpt)
-                           || (yp > d->vp_ypointer - ypt && yp < d->vp_ypointer + ypt)))
+    else if(which == 1)
     {
       d->dragging = TRUE;
       d->vp_ypointer = yp;
@@ -230,7 +219,6 @@ int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int 
   {
     double xp = x / d->vp_width;
     double yp = y / d->vp_height;
-    // double xpt = xp*0.01;
 
     /* update x pointer */
     if(d->dragging)
@@ -238,11 +226,7 @@ int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int 
       d->vp_xpointer = xp;
       d->vp_ypointer = yp;
     }
-
-    /* is mouse over control or in draggin state?, lets redraw */
-    //    if(d->dragging || (xp > d->vp_xpointer-xpt && xp < d->vp_xpointer+xpt))
     dt_control_queue_redraw_center();
-
     return 1;
   }
 
@@ -544,7 +528,7 @@ static int max_snapshot_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  lua_pushnumber(L, d->size);
+  lua_pushinteger(L, d->size);
   return 1;
 }
 
@@ -578,7 +562,7 @@ static int snapshots_length(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  lua_pushnumber(L, d->num_snapshots);
+  lua_pushinteger(L, d->num_snapshots);
   return 1;
 }
 
@@ -587,9 +571,12 @@ static int number_member(lua_State *L)
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   int index = luaL_checkinteger(L, 2);
-  if(index > d->num_snapshots || index < 1)
+  if( index < 1)
   {
     return luaL_error(L, "Accessing a non-existant snapshot");
+  }else if(index > d->num_snapshots ) {
+    lua_pushnil(L);
+    return 1;
   }
   index = index - 1;
   luaA_push(L, dt_lua_snapshot_t, &index);

@@ -32,6 +32,9 @@
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
 #include "imageio/storage/imageio_storage_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <stdio.h>
@@ -91,6 +94,9 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("_select as output destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
@@ -101,11 +107,17 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    char composed[PATH_MAX] = { 0 };
-    snprintf(composed, sizeof(composed), "%s/$(FILE_NAME)", dir);
-    gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
-    dt_conf_set_string("plugins/imageio/storage/disk/file_directory", composed);
+    char *composed = g_build_filename(dir, "$(FILE_NAME)", NULL);
+
+    // composed can now contain '\': on Windows it's the path separator,
+    // on other platforms it can be part of a regular folder name.
+    // This would later clash with variable substitution, so we have to escape them
+    gchar *escaped = dt_util_str_replace(composed, "\\", "\\\\");
+
+    gtk_entry_set_text(GTK_ENTRY(d->entry), escaped); // the signal handler will write this to conf
     g_free(dir);
+    g_free(composed);
+    g_free(escaped);
   }
   gtk_widget_destroy(filechooser);
 }
@@ -142,7 +154,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
 
   char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
-      _("enter the path where to put exported images\nrecognized variables:"),
+      _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
+        "recognized variables:"),
       dt_gtkentry_get_default_path_compl_list());
 
   d->entry = GTK_ENTRY(widget);
@@ -188,7 +201,8 @@ void gui_reset(dt_imageio_module_storage_t *self)
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale)
+          const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
+          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
@@ -200,12 +214,11 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
+    // caching this allows to add "$(FILE_NAME)" to the end of the original string without caring
+    // about a potentially added "_$(SEQUENCE)"
+    char *original_filename = g_strdup(d->filename);
 
-    // if filenamepattern is a directory just let att ${FILE_NAME} as default..
-    if(g_file_test(d->filename, G_FILE_TEST_IS_DIR)
-       || ((d->filename + strlen(d->filename))[0] == '/' || (d->filename + strlen(d->filename))[0] == '\\'))
-      snprintf(d->filename + strlen(d->filename), sizeof(d->filename) - strlen(d->filename), "$(FILE_NAME)");
-
+try_again:
     // avoid braindead export which is bound to overwrite at random:
     if(total > 1 && !g_strrstr(d->filename, "$"))
     {
@@ -220,11 +233,20 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     d->vp->jobcode = "export";
     d->vp->imgid = imgid;
     d->vp->sequence = num;
-    dt_variables_expand(d->vp, d->filename, TRUE);
 
-    gchar *result_filename = dt_variables_get_result(d->vp);
+    gchar *result_filename = dt_variables_expand(d->vp, d->filename, TRUE);
     g_strlcpy(filename, result_filename, sizeof(filename));
     g_free(result_filename);
+
+    // if filenamepattern is a directory just add ${FILE_NAME} as default..
+    char last_char = *(filename + strlen(filename) - 1);
+    if(g_file_test(filename, G_FILE_TEST_IS_DIR) && (last_char == '/' || last_char == '\\'))
+    {
+      snprintf(d->filename, sizeof(d->filename), "%s/$(FILE_NAME)", original_filename);
+      goto try_again;
+    }
+
+    g_free(original_filename);
 
     g_strlcpy(dirname, filename, sizeof(dirname));
 
@@ -287,7 +309,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   if(fail) return 1;
 
   /* export image to file */
-  if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, self, sdata, num, total) != 0)
+  if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, icc_type, icc_filename,
+                       icc_intent, self, sdata, num, total) != 0)
   {
     fprintf(stderr, "[imageio_storage_disk] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);

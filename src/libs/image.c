@@ -16,24 +16,24 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/grouping.h"
-#include "common/collection.h"
 #include "control/control.h"
+#include "control/jobs.h"
 #include "control/jobs/control_jobs.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
 #include "libs/lib.h"
-#include "control/jobs.h"
-#include <stdlib.h>
-#include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include <gtk/gtk.h>
+#include <stdlib.h>
 #ifdef USE_LUA
-#include "lua/image.h"
 #include "lua/call.h"
+#include "lua/image.h"
 #endif
 #include "libs/lib_api.h"
 
@@ -51,9 +51,10 @@ const char *name(dt_lib_module_t *self)
   return _("selected image[s]");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE;
+  static const char *v[] = {"lighttable", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -67,7 +68,7 @@ static void _group_helper_function(void)
 {
   int new_group_id = darktable.gui->expanded_group_id;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct imgid from selected_images", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
                               &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -88,7 +89,7 @@ static void _group_helper_function(void)
 static void _ungroup_helper_function(void)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct imgid from selected_images", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
                               &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {

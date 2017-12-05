@@ -1,3 +1,8 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+                <!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+                %darktable_dtd;
+                ]>
 <sect2 status="final" id="more_modules">
 
   <title>More modules</title>
@@ -44,7 +49,8 @@
 
   <para>
     Hiding or un-hiding modules is not meant to be part of your daily workflow, you should only
-    occasionally need to review the modules you typically use.
+    occasionally need to review the modules you typically use. However, you may store various
+    settings at your choice as presets for later reuse.
   </para>
 
 </sect2>

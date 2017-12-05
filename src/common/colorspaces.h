@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011--2017 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,11 +16,17 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_COLORSPACES_H
-#define DT_COLORSPACES_H
+
+#pragma once
 
 #include "common/darktable.h"
+
 #include <lcms2.h>
+
+// this was removed from lcms2 in 2.4
+#ifndef TYPE_XYZA_FLT
+  #define TYPE_XYZA_FLT         (FLOAT_SH(1)|COLORSPACE_SH(PT_XYZ)|EXTRA_SH(1)|CHANNELS_SH(3)|BYTES_SH(4))
+#endif
 
 // constants fit to the ones from lcms.h:
 typedef enum dt_iop_color_intent_t
@@ -127,17 +134,17 @@ cmsHPROFILE dt_colorspaces_create_alternate_profile(const char *makermodel);
 /** just get the associated transformation matrix, for manual application. */
 int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix);
 
-/** return the output profile, taking export override into account */
-const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid);
+/** return the output profile as set in colorout, taking export override into account if passed in. */
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid,
+                                                                        dt_colorspaces_color_profile_type_t over_type,
+                                                                        const char *over_filename);
+
+/** return an rgb lcms2 profile from data. if data points to a grayscale profile a new rgb profile is created
+ * that has the same TRC, black and white point and rec709 primaries. */
+cmsHPROFILE dt_colorspaces_get_rgb_profile_from_mem(uint8_t *data, uint32_t size);
 
 /** free the resources of a profile created with the functions above. */
 void dt_colorspaces_cleanup_profile(cmsHPROFILE p);
-
-/** uses D50 white point. */
-void dt_XYZ_to_Lab(const float *XYZ, float *Lab);
-
-/** uses D50 white point. */
-void dt_Lab_to_XYZ(const float *Lab, float *XYZ);
 
 /** extracts tonecurves and color matrix prof to XYZ from a given input profile, returns 0 on success (curves
  * and matrix are inverted for input) */
@@ -147,10 +154,6 @@ int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, float *matrix
 /** extracts tonecurves and color matrix prof to XYZ from a given output profile, returns 0 on success. */
 int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
                                                   float *lutb, const int lutsize, const int intent);
-
-/** searches for the given profile name in the user config dir ~/.config/darktable/color/<inout> and
- * /usr/share/darktable/.. */
-int dt_colorspaces_find_profile(char *filename, size_t filename_len, const char *profile, const char *inout);
 
 /** wrapper to get the name from a color profile. this tries to handle character encodings. */
 void dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const char *country, char *name,
@@ -190,7 +193,6 @@ void dt_colorspaces_cygm_to_rgb(float *out, int num, double CAM_to_RGB[3][4]);
 /** convert RGB buffer to CYGM */
 void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3]);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

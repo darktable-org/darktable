@@ -33,14 +33,15 @@ void cleanup(dt_imageio_module_format_t *self)
 {
 }
 
-int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void *in_tmp, void *exif,
-                int exif_len, int imgid, int num, int total)
+int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void *in_tmp,
+                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                void *exif, int exif_len, int imgid, int num, int total)
 {
   const uint16_t *in = (const uint16_t *)in_tmp;
   int status = 0;
   uint16_t *row = (uint16_t *)in;
   uint16_t swapped[3];
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   if(f)
   {
     (void)fprintf(f, "P6\n%d %d\n65535\n", ppm->width, ppm->height);

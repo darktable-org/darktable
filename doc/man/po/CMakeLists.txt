@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.6)
-
 find_program(po4a-updatepo_BIN po4a-updatepo)
 
 # target to update .po files

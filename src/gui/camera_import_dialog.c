@@ -16,20 +16,27 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "gui/camera_import_dialog.h"
+#include "common/camera_control.h"
 #include "common/darktable.h"
-#include "develop/develop.h"
+#include "common/exif.h"
+#include "common/utility.h"
+#include "common/variables.h"
+#include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
-#include "control/conf.h"
-#include "common/exif.h"
-#include "common/variables.h"
-#include "common/camera_control.h"
-#include "common/utility.h"
+#include "develop/develop.h"
 #include "dtgtk/button.h"
-#include "gui/camera_import_dialog.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #include <time.h>
 
+#ifdef _WIN32
+//MSVCRT does not have strptime implemented
+#include "win/strptime.h"
+#endif
 /*
 
   g_object_ref(model); // Make sure the model stays with us after the tree view unrefs it
@@ -204,6 +211,9 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   data->dialog = gtk_dialog_new_with_buttons(_("import images from camera"), NULL, GTK_DIALOG_MODAL,
                                              _("cancel"), GTK_RESPONSE_NONE, C_("camera import", "import"),
                                              GTK_RESPONSE_ACCEPT, NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(data->dialog);
+#endif
   gtk_window_set_default_size(GTK_WINDOW(data->dialog), 100, 600);
   gtk_window_set_transient_for(GTK_WINDOW(data->dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(data->dialog));

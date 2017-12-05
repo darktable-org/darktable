@@ -14,7 +14,7 @@
 
   <para>
     The basic element of an image operation in darktable is called a module. darktable comes
-    with a rich set of over 50 modules for all kind of image manipulations. In
+    with a rich set of over 60 modules for all kind of image manipulations. In
     <xref linkend="modules"/> you will find a description for each of the available modules.
   </para>
 

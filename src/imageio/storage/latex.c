@@ -32,7 +32,9 @@
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
 #include "imageio/storage/imageio_storage_api.h"
-#include "version.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -103,6 +105,9 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("_select as output destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
@@ -113,11 +118,17 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    char composed[PATH_MAX] = { 0 };
-    snprintf(composed, sizeof(composed), "%s/$(FILE_NAME)", dir);
-    gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
-    dt_conf_set_string("plugins/imageio/storage/latex/file_directory", composed);
+    char *composed = g_build_filename(dir, "$(FILE_NAME)", NULL);
+
+    // composed can now contain '\': on Windows it's the path separator,
+    // on other platforms it can be part of a regular folder name.
+    // This would later clash with variable substitution, so we have to escape them
+    gchar *escaped = dt_util_str_replace(composed, "\\", "\\\\");
+
+    gtk_entry_set_text(GTK_ENTRY(d->entry), escaped); // the signal handler will write this to conf
     g_free(dir);
+    g_free(composed);
+    g_free(escaped);
   }
   gtk_widget_destroy(filechooser);
 }
@@ -155,7 +166,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
 
   char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
-      _("enter the path where to put exported images\nrecognized variables:"),
+      _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
+        "recognized variables:"),
       dt_gtkentry_get_default_path_compl_list());
   gtk_widget_set_tooltip_text(widget, tooltip_text);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
@@ -171,7 +183,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   widget = gtk_label_new(_("title"));
   gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
 
   d->title_entry = GTK_ENTRY(gtk_entry_new());
@@ -210,7 +222,8 @@ static gint sort_pos(pair_t *a, pair_t *b)
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale)
+          const gboolean high_quality, const gboolean upscale,dt_colorspaces_color_profile_type_t icc_type,
+          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
 {
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)sdata;
 
@@ -241,9 +254,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     d->vp->jobcode = "export";
     d->vp->imgid = imgid;
     d->vp->sequence = num;
-    dt_variables_expand(d->vp, d->filename, TRUE);
 
-    gchar *result_filename = dt_variables_get_result(d->vp);
+    gchar *result_filename = dt_variables_expand(d->vp, d->filename, TRUE);
     g_strlcpy(filename, result_filename, sizeof(filename));
     g_free(result_filename);
 
@@ -342,7 +354,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   /* export image to file */
-  dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, FALSE, self, sdata, num, total);
+  dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, FALSE, icc_type, icc_filename, icc_intent,
+                    self, sdata, num, total);
 
   printf("[export_job] exported to `%s'\n", filename);
   char *trunc = filename + strlen(filename) - 32;
@@ -358,8 +371,8 @@ static void copy_res(const char *src, const char *dst)
   dt_loc_get_datadir(share, sizeof(share));
   gchar *sourcefile = g_build_filename(share, src, NULL);
   char *content = NULL;
-  FILE *fin = fopen(sourcefile, "rb");
-  FILE *fout = fopen(dst, "wb");
+  FILE *fin = g_fopen(sourcefile, "rb");
+  FILE *fout = g_fopen(dst, "wb");
 
   if(fin && fout)
   {
@@ -394,7 +407,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
 
   const char *title = d->title;
 
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   if(!f) return;
   fprintf(f, "\\newcommand{\\dttitle}{%s}\n"
              "\\newcommand{\\dtauthor}{the author}\n"
@@ -417,7 +430,8 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   }
 
   fprintf(f, "\\end{document}"
-             "%% created with darktable " PACKAGE_VERSION "\n");
+             "%% created with %s\n",
+          darktable_package_string);
   fclose(f);
 }
 

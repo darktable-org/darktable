@@ -1,3 +1,8 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+                <!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+                %darktable_dtd;
+                ]>
 <sect2 status="final" id="select">
 
   <title>Select</title>
@@ -29,11 +34,11 @@
     </tgroup>
   </informaltable>
 
-  <sect3>
+  <sect3 id="select_usage">
 
     <title>Usage</title>
 
-    <sect4>
+    <sect4 id="select_usage_all">
 
       <title>select all</title>
 
@@ -43,7 +48,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="select_usage_none">
 
       <title>select none</title>
 
@@ -53,7 +58,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="select_usage_invert">
 
       <title>invert selection</title>
 
@@ -63,7 +68,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="select_usage_filmroll">
 
       <title>select film roll</title>
 
@@ -73,7 +78,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="select_usage_untouched">
 
       <title>select untouched</title>
 

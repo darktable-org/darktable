@@ -15,10 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <string.h>
 #include "button.h"
-#include "gui/gtk.h"
 #include "bauhaus/bauhaus.h"
+#include "gui/gtk.h"
+#include <string.h>
 
 static void _button_class_init(GtkDarktableButtonClass *klass);
 static void _button_init(GtkDarktableButton *button);
@@ -159,6 +159,14 @@ void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc 
 {
   button->icon = paint;
   button->icon_flags = paintflags;
+}
+
+void dtgtk_button_set_active(GtkDarktableButton *button, gboolean active)
+{
+  if(active)
+    button->icon_flags |= CPF_ACTIVE;
+  else
+    button->icon_flags &= ~CPF_ACTIVE;
 }
 
 void dtgtk_button_override_color(GtkDarktableButton *button, GdkRGBA *color)

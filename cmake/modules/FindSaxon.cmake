@@ -8,7 +8,7 @@
 # Xslt_SAXON_EXTENSIONS
 # Saxon_FOUND
 #
-find_package (Java)
+find_package (Java COMPONENTS Runtime)
 if (JAVA_RUNTIME)
   if (NOT JAVA_CLASSPATH)
     set (JAVA_CLASSPATH $ENV{CLASSPATH} CACHE STRING "java classpath")
@@ -50,18 +50,20 @@ if (JAVA_RUNTIME)
   # Find Saxon 6.5.x
   #
   find_file (SAXON
-    NAMES saxon.jar saxon6.jar saxon-6.5.5.jar saxon-6.5.4.jar saxon-6.5.3.jar
+    NAMES saxon.jar saxon6.jar saxon-6.5.5.jar saxon-6.5.4.jar saxon-6.5.3.jar saxon9he.jar
     PATH_SUFFIXES share/java
                   share/java/saxon
                   share/java/saxon6
-                  share/saxon-6.5/lib 
+                  share/saxon-6.5/lib
+                  java/saxon
+    HINTS ENV SAXON_INSTALL_DIR
     DOC "location of saxon 6.5.x JAR file"
     CMAKE_FIND_ROOT_PATH_BOTH
   )
   mark_as_advanced (SAXON)
 
   find_file (JAVA_DOCBOOK_XSL_SAXON_LIBRARY
-    NAMES saxon.jar saxon65.jar saxon653.jar saxon654.jar saxon655.jar docbook-xsl-saxon.jar
+    NAMES docbook-xsl-saxon.jar saxon.jar saxon65.jar saxon653.jar saxon654.jar saxon655.jar
     PATH_SUFFIXES share/xml/docbook/stylesheet/nwalsh/current/extensions
                   share/xml/docbook-xsl/extensions
                   share/xml/docbook/xsl/extensions
@@ -69,6 +71,8 @@ if (JAVA_RUNTIME)
                   share/java/saxon
                   share/java/docbook-xsl-saxon
                   share/saxon-6.5/lib
+                  java/docbook-xsl-saxon
+    HINTS ENV SAXON_INSTALL_DIR
     DOC "location of saxon 6.5.x DocBook XSL extension JAR file"
     CMAKE_FIND_ROOT_PATH_BOTH
   )

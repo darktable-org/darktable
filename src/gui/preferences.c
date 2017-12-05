@@ -18,20 +18,23 @@
 
 #include <gdk/gdkkeysyms.h>
 
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "bauhaus/bauhaus.h"
 #include "control/control.h"
+#include "develop/imageop.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/preferences.h"
 #include "gui/presets.h"
-#include "develop/imageop.h"
 #include "libs/lib.h"
 #include "preferences_gen.h"
 #ifdef USE_LUA
 #include "lua/preferences.h"
+#endif
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
 #endif
 #define ICON_SIZE 13
 
@@ -247,6 +250,9 @@ void dt_gui_preferences_show()
   _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), GTK_WINDOW(win),
                                                     GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                     _("close"), GTK_RESPONSE_ACCEPT, NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(_preferences_dialog);
+#endif
   gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ALWAYS);
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(_preferences_dialog));
   GtkWidget *notebook = gtk_notebook_new();
@@ -265,10 +271,13 @@ void dt_gui_preferences_show()
   init_tab_accels(notebook);
   init_tab_presets(notebook);
 #ifdef USE_LUA
-  init_tab_lua(_preferences_dialog, notebook);
+  GtkGrid* lua_grid = init_tab_lua(_preferences_dialog, notebook);
 #endif
   gtk_widget_show_all(_preferences_dialog);
   (void)gtk_dialog_run(GTK_DIALOG(_preferences_dialog));
+#ifdef USE_LUA
+  destroy_tab_lua(lua_grid);
+#endif
   gtk_widget_destroy(_preferences_dialog);
 
   // Cleaning up any memory still allocated for remapping
@@ -281,6 +290,11 @@ void dt_gui_preferences_show()
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE);
 }
 
+static void cairo_destroy_from_pixbuf(guchar *pixels, gpointer data)
+{
+  cairo_destroy((cairo_t *)data);
+}
+
 static void tree_insert_presets(GtkTreeStore *tree_model)
 {
   GtkTreeIter iter, parent;
@@ -289,31 +303,38 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
 
   // Create a GdkPixbuf with a cairo drawing.
   // lock
-  cairo_surface_t *lock_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
+  cairo_surface_t *lock_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                         DT_PIXEL_APPLY_DPI(ICON_SIZE));
   cairo_t *lock_cr = cairo_create(lock_cst);
   cairo_set_source_rgb(lock_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_lock(lock_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
-  cairo_destroy(lock_cr);
+  dtgtk_cairo_paint_lock(lock_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0);
+  cairo_surface_flush(lock_cst);
   guchar *data = cairo_image_surface_get_data(lock_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, ICON_SIZE, ICON_SIZE);
-  GdkPixbuf *lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE, ICON_SIZE,
-                                                    cairo_image_surface_get_stride(lock_cst), NULL, NULL);
+  dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
+  GdkPixbuf *lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
+                                                    DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                    cairo_image_surface_get_stride(lock_cst),
+                                                    cairo_destroy_from_pixbuf, lock_cr);
+
   // check mark
-  cairo_surface_t *check_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
+  cairo_surface_t *check_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                          DT_PIXEL_APPLY_DPI(ICON_SIZE));
   cairo_t *check_cr = cairo_create(check_cst);
   cairo_set_source_rgb(check_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_check_mark(check_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
-  cairo_destroy(check_cr);
+  dtgtk_cairo_paint_check_mark(check_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0);
+  cairo_surface_flush(check_cst);
   data = cairo_image_surface_get_data(check_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, ICON_SIZE, ICON_SIZE);
-  GdkPixbuf *check_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE, ICON_SIZE,
-                                                     cairo_image_surface_get_stride(check_cst), NULL, NULL);
+  dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
+  GdkPixbuf *check_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
+                                                     DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                     cairo_image_surface_get_stride(check_cst),
+                                                     cairo_destroy_from_pixbuf, check_cr);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select rowid, name, operation, autoapply, model, maker, lens, iso_min, "
+                              "SELECT rowid, name, operation, autoapply, model, maker, lens, iso_min, "
                               "iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-                              "focal_length_min, focal_length_max, writeprotect from presets order by "
-                              "operation,name",
+                              "focal_length_min, focal_length_max, writeprotect FROM data.presets ORDER BY "
+                              "operation, name",
                               -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -324,8 +345,8 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
     gchar *model = (gchar *)sqlite3_column_text(stmt, 4);
     gchar *maker = (gchar *)sqlite3_column_text(stmt, 5);
     gchar *lens = (gchar *)sqlite3_column_text(stmt, 6);
-    int iso_min = sqlite3_column_double(stmt, 7);
-    int iso_max = sqlite3_column_double(stmt, 8);
+    float iso_min = sqlite3_column_double(stmt, 7);
+    float iso_max = sqlite3_column_double(stmt, 8);
     float exposure_min = sqlite3_column_double(stmt, 9);
     float exposure_max = sqlite3_column_double(stmt, 10);
     float aperture_min = sqlite3_column_double(stmt, 11);
@@ -341,10 +362,10 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
     if(module == NULL) module = g_strdup(dt_lib_get_localized_name(operation));
     if(module == NULL) module = g_strdup(operation);
 
-    if(iso_min == 0.0 && iso_max == 51200.0)
+    if(iso_min == 0.0 && iso_max == FLT_MAX)
       iso = g_strdup("%");
     else
-      iso = g_strdup_printf("%d – %d", iso_min, iso_max);
+      iso = g_strdup_printf("%zu – %zu", (size_t)iso_min, (size_t)iso_max);
 
     min = 0, max = 0;
     for(; min < dt_gui_presets_exposure_value_cnt && exposure_min > dt_gui_presets_exposure_value[min]; min++)
@@ -636,7 +657,16 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gcha
     gchar *end = g_strstr_len(accel_path, strlen(accel_path), "/");
     gchar *node = g_strndup(accel_path, end - accel_path);
     gchar *trans_end = g_strstr_len(translated_path, strlen(translated_path), "/");
-    gchar *trans_node = g_strndup(translated_path, trans_end - translated_path);
+    gchar *trans_node;
+    // safeguard against broken translations
+    if(trans_end)
+      trans_node = g_strndup(translated_path, trans_end - translated_path);
+    else
+    {
+      fprintf(stderr, "error: translation mismatch: `%s' vs. `%s'\n", accel_path, translated_path);
+      trans_node = g_strdup(node);
+      translated_path = accel_path;
+    }
 
     /* search the tree if we alread have an sibling with node name */
     int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model), parent);
@@ -770,7 +800,6 @@ static void delete_matching_accels(gpointer current, gpointer mapped)
 
   if(current_key.accel_key == mapped_key.accel_key                 // Key code matches
      && current_key.accel_mods == mapped_key.accel_mods            // Key state matches
-     && current_accel->views & mapped_accel->views                 // Conflicting views
      && !(current_accel->local && mapped_accel->local              // Not both local to
           && strcmp(current_accel->module, mapped_accel->module))) // diff mods
     gtk_accel_map_change_entry(current_accel->path, 0, 0, TRUE);
@@ -996,7 +1025,7 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
       {
         // TODO: remove accel
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "delete from presets where rowid=?1 and writeprotect=0", -1, &stmt, NULL);
+                                    "DELETE FROM data.presets WHERE rowid=?1 AND writeprotect=0", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
@@ -1030,6 +1059,9 @@ static void import_export(GtkButton *button, gpointer data)
     chooser = gtk_file_chooser_dialog_new(_("select file to export"), NULL, GTK_FILE_CHOOSER_ACTION_SAVE,
                                           _("_cancel"), GTK_RESPONSE_CANCEL, _("_save"), GTK_RESPONSE_ACCEPT,
                                           NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(chooser);
+#endif
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser), TRUE);
     gchar *exported_path = dt_conf_get_string("ui_last/exported_path");
     if(exported_path != NULL)
@@ -1053,6 +1085,9 @@ static void import_export(GtkButton *button, gpointer data)
     chooser = gtk_file_chooser_dialog_new(_("select file to import"), NULL, GTK_FILE_CHOOSER_ACTION_OPEN,
                                           _("_cancel"), GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT,
                                           NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(chooser);
+#endif
 
     gchar *import_path = dt_conf_get_string("ui_last/import_path");
     if(import_path != NULL)
@@ -1209,6 +1244,9 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(_preferences_dialog),
                                        GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, _("_ok"),
                                        GTK_RESPONSE_NONE, NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(20));
@@ -1275,10 +1313,10 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   // iso
   label = gtk_label_new(_("ISO"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
+  g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, FLT_MAX, 100));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->iso_min), _("minimum ISO value"));
   gtk_spin_button_set_digits(g->iso_min, 0);
-  g->iso_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
+  g->iso_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, FLT_MAX, 100));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->iso_max), _("maximum ISO value"));
   gtk_spin_button_set_digits(g->iso_max, 0);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
@@ -1345,9 +1383,9 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select description, model, maker, lens, iso_min, iso_max, exposure_min, "
+                              "SELECT description, model, maker, lens, iso_min, iso_max, exposure_min, "
                               "exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, "
-                              "autoapply, filter, format from presets where rowid = ?1",
+                              "autoapply, filter, format FROM data.presets WHERE rowid = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1395,12 +1433,11 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
   // commit all the user input fields
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "update presets set description = ?1, "
-                              "model = ?2, maker = ?3, lens = ?4, iso_min = ?5, iso_max = ?6, exposure_min = "
-                              "?7, exposure_max = ?8, aperture_min = ?9, "
-                              "aperture_max = ?10, focal_length_min = ?11, focal_length_max = ?12, autoapply "
-                              "= ?13, filter = ?14, def = 0, format = ?15 "
-                              "where rowid = ?16",
+                              "UPDATE data.presets SET description = ?1, model = ?2, maker = ?3, lens = ?4, "
+                              "iso_min = ?5, iso_max = ?6, exposure_min = ?7, exposure_max = ?8, "
+                              "aperture_min = ?9, aperture_max = ?10, focal_length_min = ?11, "
+                              "focal_length_max = ?12, autoapply = ?13, filter = ?14, def = 0, format = ?15 "
+                              "WHERE rowid = ?16",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->description), -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, gtk_entry_get_text(g->model), -1, SQLITE_TRANSIENT);

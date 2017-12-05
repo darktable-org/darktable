@@ -18,9 +18,9 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
@@ -43,8 +43,6 @@
 
 #define MAX_RADIUS 32
 #define BOX_ITERATIONS 8
-#define BLOCKSIZE                                                                                            \
-  2048 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 #define MM_CLIP_PS(X) (_mm_min_ps(_mm_max_ps((X), _mm_setzero_ps()), _mm_set1_ps(1.0)))
@@ -149,6 +147,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
 
+  const size_t scanline_size = (size_t)4 * size;
+  float *const scanline_buf = dt_alloc_align(16, scanline_size * dt_get_num_threads() * sizeof(float));
+
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
 #ifdef _OPENMP
@@ -157,7 +158,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     /* horizontal blur out into out */
     for(int y = 0; y < roi_out->height; y++)
     {
-      __attribute__((aligned(16))) float scanline[(size_t)4 * size];
+      float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
       __attribute__((aligned(16))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       size_t index = (size_t)y * roi_out->width;
@@ -208,7 +209,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
-      __attribute__((aligned(16))) float scanline[(size_t)4 * size];
+      float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
       __attribute__((aligned(16))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       int hits = 0;
@@ -253,6 +254,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
   }
+
+  dt_free_align(scanline_buf);
 
   const float amount = (d->amount / 100.0);
   const float amount_1 = (1 - (d->amount) / 100.0);
@@ -302,6 +305,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
 
+  __m128 *const scanline_buf = dt_alloc_align(16, size * dt_get_num_threads() * sizeof(__m128));
+
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
 #ifdef _OPENMP
@@ -310,7 +315,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     /* horizontal blur out into out */
     for(int y = 0; y < roi_out->height; y++)
     {
-      __m128 scanline[size];
+      __m128 *scanline = scanline_buf + size * dt_get_thread_num();
       size_t index = (size_t)y * roi_out->width;
       __m128 L = _mm_setzero_ps();
       int hits = 0;
@@ -342,7 +347,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
-      __m128 scanline[size];
+      __m128 *scanline = scanline_buf + size * dt_get_thread_num();
       __m128 L = _mm_setzero_ps();
       int hits = 0;
       size_t index = (size_t)x - radius * roi_out->width;
@@ -370,6 +375,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
   }
 
+  dt_free_align(scanline_buf);
 
   const __m128 amount = _mm_set1_ps(data->amount / 100.0);
   const __m128 amount_1 = _mm_set1_ps(1 - (data->amount) / 100.0);
@@ -416,7 +422,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
   const int wd = 2 * wdh + 1;
-  float mat[wd];
+  const size_t mat_size = sizeof(float) * wd;
+  float *mat = malloc(mat_size);
   float *m = mat + wdh;
   float weight = 0.0f;
 
@@ -427,33 +434,31 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // for(int l=-wdh; l<=wdh; l++) printf("%.6f ", (double)m[l]);
   // printf("\n");
 
+  int hblocksize;
+  dt_opencl_local_buffer_t hlocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 2 * wdh, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = 4 * sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 16, .sizey = 1 };
 
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
-
-  // make sure blocksize is not too large
-  int blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_soften_hblur, &kernelworkgroupsize)
-        == CL_SUCCESS)
-  {
-    // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
-          || blocksize > workgroupsize || (blocksize + 2 * wdh) * 4 * sizeof(float) > localmemsize)
-    {
-      if(blocksize == 1) break;
-      blocksize >>= 1;
-    }
-  }
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_soften_hblur, &hlocopt))
+    hblocksize = hlocopt.sizex;
   else
-  {
-    blocksize = 1; // slow but safe
-  }
+    hblocksize = 1;
 
-  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1) * blocksize;
-  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1) * blocksize;
+  int vblocksize;
+  dt_opencl_local_buffer_t vlocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 1, .xfactor = 1, .yoffset = 2 * wdh, .yfactor = 1,
+                                  .cellsize = 4 * sizeof(float), .overhead = 0,
+                                  .sizex = 1, .sizey = 1 << 16 };
+
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_soften_vblur, &vlocopt))
+    vblocksize = vlocopt.sizey;
+  else
+    vblocksize = 1;
+
+
+  const size_t bwidth = ROUNDUP(width, hblocksize);
+  const size_t bheight = ROUNDUP(height, vblocksize);
 
   size_t sizes[3];
   size_t local[3];
@@ -461,7 +466,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
   if(dev_tmp == NULL) goto error;
 
-  dev_m = dt_opencl_copy_host_to_device_constant(devid, (size_t)sizeof(float) * wd, mat);
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, mat_size, mat);
   if(dev_m == NULL) goto error;
 
   /* overexpose image */
@@ -469,7 +474,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   sizes[1] = ROUNDUPHT(height);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_soften_overexposed, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_soften_overexposed, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_soften_overexposed, 1, sizeof(cl_mem), (void *)&dev_tmp);
   dt_opencl_set_kernel_arg(devid, gd->kernel_soften_overexposed, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_soften_overexposed, 3, sizeof(int), (void *)&height);
   dt_opencl_set_kernel_arg(devid, gd->kernel_soften_overexposed, 4, sizeof(float), (void *)&saturation);
@@ -483,17 +488,17 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     sizes[0] = bwidth;
     sizes[1] = ROUNDUPHT(height);
     sizes[2] = 1;
-    local[0] = blocksize;
+    local[0] = hblocksize;
     local[1] = 1;
     local[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 0, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 1, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 0, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 2, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 3, sizeof(int), (void *)&wdh);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 4, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 5, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 6, sizeof(int), (void *)&blocksize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 7, (blocksize + 2 * wdh) * 4 * sizeof(float),
+    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 6, sizeof(int), (void *)&hblocksize);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 7, (hblocksize + 2 * wdh) * 4 * sizeof(float),
                              NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_soften_hblur, sizes, local);
     if(err != CL_SUCCESS) goto error;
@@ -504,27 +509,27 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     sizes[1] = bheight;
     sizes[2] = 1;
     local[0] = 1;
-    local[1] = blocksize;
+    local[1] = vblocksize;
     local[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 0, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 0, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 1, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 2, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 3, sizeof(int), (void *)&wdh);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 4, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 5, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 6, sizeof(int), (void *)&blocksize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 7, (blocksize + 2 * wdh) * 4 * sizeof(float),
+    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 6, sizeof(int), (void *)&vblocksize);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 7, (vblocksize + 2 * wdh) * 4 * sizeof(float),
                              NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_soften_vblur, sizes, local);
     if(err != CL_SUCCESS) goto error;
   }
 
-  /* mixing out and in -> out */
+  /* mixing tmp and in -> out */
   sizes[0] = ROUNDUPWD(width);
   sizes[1] = ROUNDUPHT(height);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_soften_mix, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_soften_mix, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_soften_mix, 1, sizeof(cl_mem), (void *)&dev_tmp);
   dt_opencl_set_kernel_arg(devid, gd->kernel_soften_mix, 2, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_soften_mix, 3, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_soften_mix, 4, sizeof(int), (void *)&height);
@@ -532,13 +537,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_soften_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_tmp);
+  free(mat);
   return TRUE;
 
 error:
-  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_tmp);
+  free(mat);
   dt_print(DT_DEBUG_OPENCL, "[opencl_soften] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -672,7 +679,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_soften_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_soften_params_t));
   module->default_enabled = 0;
-  module->priority = 846; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 838; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_soften_params_t);
   module->gui_data = NULL;
   dt_iop_soften_params_t tmp = (dt_iop_soften_params_t){ 50, 100.0, 0.33, 50 };

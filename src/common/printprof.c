@@ -16,11 +16,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <glib.h>
-#include <unistd.h>
-#include "lcms2.h"
 #include "common/printprof.h"
 #include "common/colorspaces.h"
+#include "lcms2.h"
+#include <glib.h>
+#include <unistd.h>
 
 static cmsUInt32Number ComputeOutputFormatDescriptor (cmsUInt32Number dwInput, int OutColorSpace, int bps)
 {
@@ -38,24 +38,15 @@ static cmsUInt32Number ComputeFormatDescriptor (int OutColorSpace, int bps)
   return (FLOAT_SH(IsFlt)|COLORSPACE_SH(OutColorSpace)|PLANAR_SH(IsPlanar)|CHANNELS_SH(Channels)|BYTES_SH(bps));
 }
 
-int dt_apply_printer_profile(int imgid, void **in, uint32_t width, uint32_t height, int bpp,
+int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp, cmsHPROFILE hInProfile,
                              cmsHPROFILE hOutProfile, int intent, gboolean black_point_compensation)
 {
-  cmsHPROFILE hInProfile;
   cmsHTRANSFORM hTransform;
   cmsUInt32Number wInput, wOutput;
   int OutputColorSpace;
 
-  if(!hOutProfile)
+  if(!hOutProfile || !hInProfile)
     return 1;
-
-  const dt_colorspaces_color_profile_t *in_profile = dt_colorspaces_get_output_profile(imgid);
-  if(!in_profile || !in_profile->profile)
-  {
-    fprintf(stderr, "error getting output profile for image %d\n", imgid);
-    return 1;
-  }
-  hInProfile = in_profile->profile;
 
   wInput = ComputeFormatDescriptor (PT_RGB, (bpp==8?1:2));
 
@@ -67,6 +58,12 @@ int dt_apply_printer_profile(int imgid, void **in, uint32_t width, uint32_t heig
      hOutProfile, wOutput,
      intent,
      black_point_compensation ? cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
+
+  if (!hTransform)
+  {
+    fprintf(stderr, "error printer profile may be corrupted\n");
+    return 1;
+  }
 
   void *out = (void *)malloc(width*height*3);
 

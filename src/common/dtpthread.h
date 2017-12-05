@@ -17,17 +17,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_PTHREAD_H_
-#define DT_PTHREAD_H_
+#pragma once
 
-#include <pthread.h>
-#include <float.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <glib.h>
+#include "ThreadSafetyAnalysis.h"
 #include <assert.h>
+#include <errno.h>
+#include <float.h>
+#include <glib.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef _DEBUG
 
@@ -291,13 +291,41 @@ static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *r
 #undef TOPN
 #else
 
-#define dt_pthread_mutex_t pthread_mutex_t
-#define dt_pthread_mutex_destroy pthread_mutex_destroy
-#define dt_pthread_mutex_init pthread_mutex_init
-#define dt_pthread_mutex_lock pthread_mutex_lock
-#define dt_pthread_mutex_trylock pthread_mutex_trylock
-#define dt_pthread_mutex_unlock pthread_mutex_unlock
-#define dt_pthread_cond_wait pthread_cond_wait
+typedef struct CAPABILITY("mutex") dt_pthread_mutex_t
+{
+  pthread_mutex_t mutex;
+} CAPABILITY("mutex") dt_pthread_mutex_t;
+
+// *please* do use these;
+static inline int dt_pthread_mutex_init(dt_pthread_mutex_t *mutex, const pthread_mutexattr_t *mutexattr)
+{
+  return pthread_mutex_init(&mutex->mutex, mutexattr);
+};
+
+static inline int dt_pthread_mutex_lock(dt_pthread_mutex_t *mutex) ACQUIRE(mutex) NO_THREAD_SAFETY_ANALYSIS
+{
+  return pthread_mutex_lock(&mutex->mutex);
+};
+
+static inline int dt_pthread_mutex_trylock(dt_pthread_mutex_t *mutex) TRY_ACQUIRE(0, mutex)
+{
+  return pthread_mutex_trylock(&mutex->mutex);
+};
+
+static inline int dt_pthread_mutex_unlock(dt_pthread_mutex_t *mutex) RELEASE(mutex) NO_THREAD_SAFETY_ANALYSIS
+{
+  return pthread_mutex_unlock(&mutex->mutex);
+};
+
+static inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
+{
+  return pthread_mutex_destroy(&mutex->mutex);
+};
+
+static inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t *mutex)
+{
+  return pthread_cond_wait(cond, &mutex->mutex);
+};
 
 #define dt_pthread_rwlock_t pthread_rwlock_t
 #define dt_pthread_rwlock_init pthread_rwlock_init
@@ -314,7 +342,26 @@ static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *r
 #define dt_pthread_rwlock_trywrlock_with_caller(A,B,C) pthread_rwlock_trywrlock(A)
 
 #endif
-#endif
+
+// if at all possible, do NOT use.
+static inline int dt_pthread_mutex_BAD_lock(dt_pthread_mutex_t *mutex)
+{
+  return pthread_mutex_lock(&mutex->mutex);
+};
+
+static inline int dt_pthread_mutex_BAD_trylock(dt_pthread_mutex_t *mutex)
+{
+  return pthread_mutex_trylock(&mutex->mutex);
+};
+
+static inline int dt_pthread_mutex_BAD_unlock(dt_pthread_mutex_t *mutex)
+{
+  return pthread_mutex_unlock(&mutex->mutex);
+};
+
+int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *arg);
+
+void dt_pthread_setname(const char *name);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

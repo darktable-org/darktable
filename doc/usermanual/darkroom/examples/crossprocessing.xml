@@ -1,3 +1,8 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+                <!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+                %darktable_dtd;
+                ]>
 <sect2 status="final" id="cross_processing">
 
   <title>Cross-processing</title>
@@ -13,7 +18,7 @@
         <tbody>
           <row>
             <entry>
-              Cross-processing is a analog processing technique where slide film (normally
+              Cross-processing is an analog processing technique where slide film (normally
               developed thanks to an E6 solution) is processed in chemicals used for processing
               print film (C41). The resulting images get skewed colors usually a cyan hue and
               increased contrast and saturation.
@@ -28,7 +33,8 @@
 
     <para>
       The standard way for doing digital cross-processing is to use a channel curve tool but
-      darktable lacks this tool for the moment and another way to accomodate the effect is used.
+      darktable lacks this tool for the moment and another way to accommodate the effect is
+      used.
     </para>
 
   </sect3>

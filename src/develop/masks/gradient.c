@@ -16,12 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "develop/imageop.h"
-#include "develop/blend.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "develop/masks.h"
 #include "common/debug.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/blend.h"
+#include "develop/imageop.h"
+#include "develop/masks.h"
 
 
 static inline void _gradient_point_transform(const float xref, const float yref, const float x, const float y,
@@ -169,7 +169,7 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
 
 
     form->points = g_list_append(form->points, gradient);
-    dt_masks_gui_form_save_creation(crea_module, form, gui);
+    dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
 
     if(crea_module)
     {

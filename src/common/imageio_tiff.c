@@ -16,19 +16,19 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
-#include "imageio.h"
 #include "imageio_tiff.h"
-#include "develop/develop.h"
-#include "common/exif.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/exif.h"
 #include "control/conf.h"
+#include "develop/develop.h"
+#include "imageio.h"
 
+#include <inttypes.h>
 #include <memory.h>
 #include <stdio.h>
-#include <tiffio.h>
-#include <inttypes.h>
 #include <strings.h>
+#include <tiffio.h>
 
 typedef struct tiff_t
 {
@@ -138,8 +138,30 @@ static inline int _read_planar_f(tiff_t *t)
   return 1;
 }
 
+static void _warning_error_handler(const char *type, const char* module, const char* fmt, va_list ap)
+{
+  fprintf(stderr, "[tiff_open] %s: %s: ", type, module);
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
+}
+
+static void _warning_handler(const char* module, const char* fmt, va_list ap)
+{
+  _warning_error_handler("warning", module, fmt, ap);
+}
+
+static void _error_handler(const char* module, const char* fmt, va_list ap)
+{
+  _warning_error_handler("error", module, fmt, ap);
+}
+
 dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
+  // doing this once would be enough, but our imageio reading code is
+  // compiled into dt's core and doesn't have an init routine.
+  TIFFSetWarningHandler(_warning_handler);
+  TIFFSetErrorHandler(_error_handler);
+
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
   if(strncmp(ext, ".tif", 4) && strncmp(ext, ".TIF", 4) && strncmp(ext, ".tiff", 5)
@@ -185,7 +207,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   t.image->width = t.width;
   t.image->height = t.height;
 
-  t.image->bpp = 4 * sizeof(float);
+  t.image->buf_dsc.channels = 4;
+  t.image->buf_dsc.datatype = TYPE_FLOAT;
 
   t.mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, t.image);
   if(!t.mipbuf)

@@ -290,7 +290,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
   if(quality > 90) jpg.cinfo.comp_info[0].v_samp_factor = 1;
   if(quality > 92) jpg.cinfo.comp_info[0].h_samp_factor = 1;
   jpeg_start_compress(&(jpg.cinfo), TRUE);
-  uint8_t row[3 * width];
+  uint8_t *row = malloc((size_t)3 * width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
@@ -302,6 +302,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
     jpeg_write_scanlines(&(jpg.cinfo), tmp, 1);
   }
   jpeg_finish_compress(&(jpg.cinfo));
+  free(row);
   jpeg_destroy_compress(&(jpg.cinfo));
   return 4 * width * height * sizeof(uint8_t) - jpg.dest.free_in_buffer;
 }
@@ -507,7 +508,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
     return 1;
   }
   jpeg_create_compress(&(jpg.cinfo));
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   if(!f) return 1;
   jpeg_stdio_dest(&(jpg.cinfo), f);
 
@@ -523,20 +524,23 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
 
   if(imgid > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid)->profile;
+    // the code in this block is never being used. should that ever change make sure to honour the
+    // color profile overwriting the one set in colorout, too. dt_colorspaces_get_output_profile() doesn't do that!
+    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, DT_COLORSPACE_NONE, "")->profile;
     uint32_t len = 0;
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      unsigned char buf[len];
+      unsigned char *buf = malloc((size_t)len * sizeof(unsigned char));
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg.cinfo), buf, len);
+      free(buf);
     }
   }
 
   if(exif && exif_len > 0 && exif_len < 65534) jpeg_write_marker(&(jpg.cinfo), JPEG_APP0 + 1, exif, exif_len);
 
-  uint8_t row[3 * width];
+  uint8_t *row = malloc((size_t)3 * width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
@@ -548,6 +552,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
     jpeg_write_scanlines(&(jpg.cinfo), tmp, 1);
   }
   jpeg_finish_compress(&(jpg.cinfo));
+  free(row);
   jpeg_destroy_compress(&(jpg.cinfo));
   fclose(f);
   return 0;
@@ -561,7 +566,7 @@ int dt_imageio_jpeg_write(const char *filename, const uint8_t *in, const int wid
 
 int dt_imageio_jpeg_read_header(const char *filename, dt_imageio_jpeg_t *jpg)
 {
-  jpg->f = fopen(filename, "rb");
+  jpg->f = g_fopen(filename, "rb");
   if(!jpg->f) return 1;
 
   struct dt_imageio_jpeg_error_mgr jerr;
@@ -741,7 +746,8 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
-  img->bpp = 4 * sizeof(float);
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {

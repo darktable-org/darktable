@@ -45,6 +45,72 @@
 
   </sect3>
 
+  <sect3 status="final" id="rawoverexposed">
+
+    <title>Raw overexposed warning</title>
+
+    <indexterm>
+      <primary>darkroom panels</primary>
+      <secondary>raw overexposed warning</secondary>
+    </indexterm>
+
+    <indexterm>
+      <primary>raw overexposed warning</primary>
+    </indexterm>
+
+    <para>
+      Clicking the
+      <inlinegraphic fileref="&icon_module_rawoverexposed;" scalefit="1" width="2%" align="center" />
+      icon warns you about areas of your raw input image with clipped color channels. Clipped
+      color channels imply an overexposed image with loss of information in the affected areas.
+      You may use the <emphasis>highlight reconstruction</emphasis> module or the
+      <emphasis>color reconstruction</emphasis> module in order to reconstruct those areas (see
+      <xref linkend="highlight_reconstruction"/> and <xref linkend="color_reconstruction"/>).
+    </para>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              Right-clicking on the icon opens a dialog with configuration parameters.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/images/panel_rawoverexposed.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <bridgehead renderas="sect5">mode</bridgehead>
+
+    <para>
+      The default <quote>mark with CFA color</quote> mode displays a pattern of the respective
+      primary colors (red, green, and blue) to indicate which color channels are found to be
+      clipped. In the <quote>mark with solid color</quote> mode clipped areas are marked with a
+      user defined solid color (see below) independent of the affected color channels. In the
+      <quote>false color</quote> mode clipped color channels are set to zero in the affected
+      areas.
+    </para>
+
+    <bridgehead renderas="sect5">color scheme</bridgehead>
+
+    <para>
+      Selects the solid color for the <quote>mark with solid color</quote> mode.
+    </para>
+
+    <bridgehead renderas="sect5">clipping threshold</bridgehead>
+
+    <para>
+      This slider sets the threshold of what values are considered to be overexposed. You can
+      leave it at its default value 1.0 (white level) in most cases.
+    </para>
+
+  </sect3>
+
   <sect3 status="final" id="overexposed">
 
     <title>Over/underexposed warning</title>
@@ -181,7 +247,7 @@
     <para>
       Sets the color profile for the display. The option <quote>system display profile</quote>
       is the preferred setting when working with a calibrated display; the profile is taken
-      either from your system's color manager or from your X display server. In <emphasis>gui
+      either from your system's color manager or from your X display server. In <emphasis>GUI
       options</emphasis> (see <xref linkend="gui_options"/>) you can specify which method to
       use. For more information see <xref linkend="display_profile"/>.
     </para>
@@ -234,8 +300,97 @@
 
     <para>
       The filmstrip can be switched on and off using the shortcut <emphasis>ctrl-f</emphasis>.
-      You can scroll with your mouse to quickly navigate through the images and change the
-      height of the filmstrip panel by dragging its top.
+      You can change the height of the filmstrip panel by dragging its top.
+    </para>
+
+    <para>
+      You can scroll with your mouse to quickly navigate through the images. You can change the
+      photo being processed by double clicking on another picture. You can also use space bar to
+      process the next photo and use backspace key to process the previous photo.
+    </para>
+
+    <para>
+      The picture currently processed is selected and highlighted; with a single click you can
+      select any other picture from the filmstrip without changing the picture currently
+      processed. With the <emphasis>ctrl-a</emphasis> shortcut you select all the pictures of
+      the filmstrip. With the shortcut <emphasis>ctrl-shift-a</emphasis> you unselect all
+      images, and with <emphasis>ctrl-i</emphasis> you reverse the current selection.
+    </para>
+
+    <para>
+      The following shortcuts are available to act on the selected picture(s):
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="1*"/>
+          <colspec colwidth="3*"/>
+          <tbody>
+            <row>
+              <entry>
+                <emphasis>F1&nbsp;&ndash; F5</emphasis>
+              </entry>
+              <entry>
+                toggle color label (red, yellow, green, blue, purple)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>0&nbsp;&ndash; 5</emphasis>
+              </entry>
+              <entry>
+                set/change image rating
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>r</emphasis>
+              </entry>
+              <entry>
+                reject image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>ctrl-d</emphasis>
+              </entry>
+              <entry>
+                duplicate image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>ctrl-c</emphasis>
+              </entry>
+              <entry>
+                copy the full history stack
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>ctrl-v</emphasis>
+              </entry>
+              <entry>
+                paste all of the copied history stack
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>alt-ctrl-c</emphasis>
+              </entry>
+              <entry>
+                selectively copy the history stack
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>alt-ctrl-v</emphasis>
+              </entry>
+              <entry>
+                selectively paste from the copied history stack
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
     </para>
 
     <para>

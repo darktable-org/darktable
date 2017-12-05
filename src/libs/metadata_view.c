@@ -16,11 +16,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/metadata.h"
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/metadata.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -29,11 +29,11 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
-#include <sys/param.h>
 #include <gdk/gdkkeysyms.h>
+#include <sys/param.h>
 #ifdef USE_LUA
-#include "lua/image.h"
 #include "lua/call.h"
+#include "lua/image.h"
 #endif
 
 #define SHOW_FLAGS 1
@@ -133,10 +133,10 @@ const char *name(dt_lib_module_t *self)
   return _("image information");
 }
 
-/* show module in left panel in all views */
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_ALL;
+  static const char *v[] = {"*", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -211,7 +211,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     else
     {
       sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images limit 1",
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images LIMIT 1",
                                   -1, &stmt, NULL);
       if(sqlite3_step(stmt) == SQLITE_ROW) mouse_over_id = sqlite3_column_int(stmt, 0);
       sqlite3_finalize(stmt);
@@ -234,9 +234,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     dt_image_film_roll(img, value, sizeof(value));
     _metadata_update_value(d->metadata[md_internal_filmroll], value);
-    const int tp = 512;
-    char tooltip[tp];
-    snprintf(tooltip, tp, _("double click to jump to film roll\n%s"), value);
+
+    char tooltip[512];
+    snprintf(tooltip, sizeof(tooltip), _("double click to jump to film roll\n%s"), value);
     gtk_widget_set_tooltip_text(GTK_WIDGET(d->metadata[md_internal_filmroll]), tooltip);
 
     snprintf(value, sizeof(value), "%d", img->id);
@@ -266,7 +266,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       #define FALSE_FIELD '.'
       #define TRUE_FIELD '!'
 
-      char *tooltip = NULL;
+      char *flags_tooltip = NULL;
       char *flag_descriptions[] = { N_("unused"),
                                     N_("unused/deprecated"),
                                     N_("ldr"),
@@ -393,14 +393,14 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       value[13] = '\0';
 
-      tooltip = g_strjoinv("\n", tooltip_parts);
+      flags_tooltip = g_strjoinv("\n", tooltip_parts);
       g_free(loader_tooltip);
 
       _metadata_update_value(d->metadata[md_internal_flags], value);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(d->metadata[md_internal_flags]), tooltip);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(d->metadata[md_internal_flags]), flags_tooltip);
 
       g_free(star_string);
-      g_free(tooltip);
+      g_free(flags_tooltip);
 
       #undef EMPTY_FIELD
       #undef FALSE_FIELD
@@ -468,7 +468,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       g_list_free_full(res, &g_free);
     }
     else
-      snprintf(value, sizeof(value), NODATA_STRING);
+      g_strlcpy(value, NODATA_STRING, sizeof(value));
     _metadata_update_value(d->metadata[md_xmp_title], value);
 
     if((res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL)) != NULL)
@@ -478,7 +478,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       g_list_free_full(res, &g_free);
     }
     else
-      snprintf(value, sizeof(value), NODATA_STRING);
+      g_strlcpy(value, NODATA_STRING, sizeof(value));
     _metadata_update_value(d->metadata[md_xmp_creator], value);
 
     if((res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL)) != NULL)
@@ -488,7 +488,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       g_list_free_full(res, &g_free);
     }
     else
-      snprintf(value, sizeof(value), NODATA_STRING);
+      g_strlcpy(value, NODATA_STRING, sizeof(value));
     _metadata_update_value(d->metadata[md_xmp_rights], value);
 
     /* geotagging */
@@ -583,7 +583,7 @@ static void _jump_to()
   {
     sqlite3_stmt *stmt;
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
                                 NULL);
 
     if(sqlite3_step(stmt) == SQLITE_ROW) imgid = sqlite3_column_int(stmt, 0);

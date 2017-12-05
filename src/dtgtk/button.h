@@ -15,11 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DTGTK_BUTTON_H
-#define DTGTK_BUTTON_H
 
-#include <gtk/gtk.h>
+#pragma once
+
 #include "paint.h"
+#include <gtk/gtk.h>
 G_BEGIN_DECLS
 #define DTGTK_BUTTON(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_button_get_type(), GtkDarktableButton)
 #define DTGTK_BUTTON_CLASS(klass)                                                                            \
@@ -51,13 +51,15 @@ GType dtgtk_button_get_type(void);
 GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags);
 /** set the paint function for a button */
 void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc paint, gint paintflags);
+/** set the active state of the button icon */
+void dtgtk_button_set_active(GtkDarktableButton *button, gboolean active);
 /** overwrite the foreground color, or NULL to reset it */
 void dtgtk_button_override_color(GtkDarktableButton *button, GdkRGBA *color);
 /** overwrite the background color, or NULL to reset it */
 void dtgtk_button_override_background_color(GtkDarktableButton *button, GdkRGBA *color);
 
 G_END_DECLS
-#endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

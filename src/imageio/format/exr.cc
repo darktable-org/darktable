@@ -16,20 +16,19 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "version.h"
 
 // needs to be defined before any system header includes for control/conf.h to work in C++ code
 #define __STDC_FORMAT_MACROS
 
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 #include <memory>
 
-#include <OpenEXR/ImfFrameBuffer.h>
-#include <OpenEXR/ImfTiledOutputFile.h>
 #include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfFrameBuffer.h>
 #include <OpenEXR/ImfStandardAttributes.h>
 #include <OpenEXR/ImfThreading.h>
+#include <OpenEXR/ImfTiledOutputFile.h>
 
 extern "C" {
 #include "bauhaus/bauhaus.h"
@@ -102,8 +101,9 @@ void cleanup(dt_imageio_module_format_t *self)
 {
 }
 
-int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void *in_tmp, void *exif,
-                int exif_len, int imgid, int num, int total)
+int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void *in_tmp,
+                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                void *exif, int exif_len, int imgid, int num, int total)
 {
   const dt_imageio_exr_t *exr = (dt_imageio_exr_t *)tmp;
 
@@ -114,10 +114,19 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
   Imf::Header header(exr->width, exr->height, 1, Imath::V2f(0, 0), 1, Imf::INCREASING_Y,
                      (Imf::Compression)exr->compression);
 
-  header.insert("comment", Imf::StringAttribute("Developed using Darktable " PACKAGE_VERSION));
+  char comment[1024];
+  snprintf(comment, sizeof(comment), "Developed using %s", darktable_package_string);
+
+  header.insert("comment", Imf::StringAttribute(comment));
 
   header.insert("exif", Imf::BlobAttribute(exif_blob));
 
+  char *xmp_string = dt_exif_xmp_read_string(imgid);
+  if(xmp_string)
+  {
+    header.insert("xmp", Imf::StringAttribute(xmp_string));
+    g_free(xmp_string);
+  }
 
   // try to add the chromaticities
   if(imgid > 0)
@@ -129,7 +138,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
               *green_color = NULL,
               *blue_color = NULL,
               *white_point = NULL;
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid)->profile;
+    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
     float r[2], g[2], b[2], w[2];
     float sum;
     Imf::Chromaticities chromaticities;
@@ -235,20 +244,20 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
   {
     enum dt_imageio_exr_pixeltype_t
     {
-      UINT = 0,      // unsigned int (32 bit)
-      HALF = 1,      // half (16 bit floating point)
-      FLOAT = 2,     // float (32 bit floating point)
-      NUM_PIXELTYPES // number of different pixel types
-    };               // copy of Imf::PixelType
+      EXR_PT_UINT = 0,  // unsigned int (32 bit)
+      EXR_PT_HALF = 1,  // half (16 bit floating point)
+      EXR_PT_FLOAT = 2, // float (32 bit floating point)
+      NUM_PIXELTYPES    // number of different pixel types
+    };                  // copy of Imf::PixelType
 
-    typedef struct dt_imageio_exr_v2_t
+    struct dt_imageio_exr_v2_t
     {
       int max_width, max_height;
       int width, height;
       char style[128];
       dt_imageio_exr_compression_t compression;
       dt_imageio_exr_pixeltype_t pixel_type;
-    } dt_imageio_exr_v2_t;
+    };
 
     const dt_imageio_exr_v2_t *o = (dt_imageio_exr_v2_t *)old_params;
     dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
@@ -263,13 +272,13 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
   }
   if(old_version == 3 && new_version == 4)
   {
-    typedef struct dt_imageio_exr_v3_t
+    struct dt_imageio_exr_v3_t
     {
       int max_width, max_height;
       int width, height;
       char style[128];
       dt_imageio_exr_compression_t compression;
-    } dt_imageio_exr_v3_t;
+    };
 
     const dt_imageio_exr_v3_t *o = (dt_imageio_exr_v3_t *)old_params;
     dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));

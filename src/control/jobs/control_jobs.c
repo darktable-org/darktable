@@ -16,32 +16,34 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
+#include "control/jobs/control_jobs.h"
 #include "common/collection.h"
-#include "common/image.h"
-#include "common/image_cache.h"
-#include "common/mipmap_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_dng.h"
+#include "common/darktable.h"
+#include "common/debug.h"
 #include "common/exif.h"
 #include "common/film.h"
-#include "common/history.h"
-#include "common/imageio_module.h"
-#include "common/debug.h"
-#include "common/tags.h"
-#include "common/debug.h"
 #include "common/gpx.h"
+#include "common/history.h"
+#include "common/image.h"
+#include "common/image_cache.h"
+#include "common/imageio.h"
+#include "common/imageio_dng.h"
+#include "common/imageio_module.h"
+#include "common/mipmap_cache.h"
+#include "common/tags.h"
 #include "control/conf.h"
-#include "control/jobs/control_jobs.h"
-#include "control/progress.h"
+#include "develop/imageop_math.h"
 
 #include "gui/gtk.h"
 
+#include <gio/gio.h>
 #include <glib.h>
 #include <glib/gstdio.h>
-#include <gio/gio.h>
-#ifndef __WIN32__
+#ifndef _WIN32
 #include <glob.h>
+#endif
+#ifdef __APPLE__
+#include "osx/osx.h"
 #endif
 
 typedef struct dt_control_time_offset_t
@@ -63,6 +65,9 @@ typedef struct dt_control_export_t
   gboolean high_quality, upscale;
   char style[128];
   gboolean style_append;
+  dt_colorspaces_color_profile_type_t icc_type;
+  gchar *icc_filename;
+  dt_iop_color_intent_t icc_intent;
 } dt_control_export_t;
 
 typedef struct dt_control_image_enumerator_t
@@ -80,7 +85,7 @@ static void dt_control_image_enumerator_job_film_init(dt_control_image_enumerato
 
   sqlite3_stmt *stmt;
   /* get a list of images in filmroll */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from images where film_id = ?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE film_id = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
 
@@ -119,10 +124,8 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   double fraction = 0;
   gchar *newdir = (gchar *)params->data;
 
-  /* create a cancellable bgjob ui template */
   g_snprintf(message, sizeof(message), ngettext(desc, desc_pl, total), total);
-  dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
-  dt_control_progress_attach_job(darktable.control, progress, job);
+  dt_control_job_set_progress_message(job, message);
 
   // create new film roll for the destination directory
   dt_film_t new_film;
@@ -132,7 +135,6 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   if(film_id <= 0)
   {
     dt_control_log(_("failed to create film roll for destination directory, aborting move.."));
-    dt_control_progress_destroy(darktable.control, progress);
     return -1;
   }
 
@@ -141,14 +143,13 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
     fileop_callback(GPOINTER_TO_INT(t->data), film_id);
     t = g_list_delete_link(t, t);
     fraction += 1.0 / total;
-    dt_control_progress_set_progress(darktable.control, progress, fraction);
+    dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
 
   char collect[1024];
   snprintf(collect, sizeof(collect), "1:0:0:%s$", new_film.dirname);
   dt_collection_deserialize(collect);
-  dt_control_progress_destroy(darktable.control, progress);
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
@@ -172,8 +173,10 @@ static void dt_control_image_enumerator_cleanup(void *p)
   free(params);
 }
 
+typedef enum {PROGRESS_NONE, PROGRESS_SIMPLE, PROGRESS_CANCELLABLE} progress_type_t;
+
 static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback execute, const char *message,
-                                                      int flag, gpointer data)
+                                                      int flag, gpointer data, progress_type_t progress_type)
 {
   dt_job_t *job = dt_control_job_create(execute, "%s", message);
   if(!job) return NULL;
@@ -183,6 +186,8 @@ static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback ex
     dt_control_job_dispose(job);
     return NULL;
   }
+  if(progress_type != PROGRESS_NONE)
+    dt_control_job_add_progress(job, _(message), progress_type == PROGRESS_CANCELLABLE);
   dt_control_image_enumerator_job_selected_init(params);
   dt_control_job_set_params(job, params, dt_control_image_enumerator_cleanup);
 
@@ -198,7 +203,7 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   GList *t = params->index;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE images SET write_timestamp = STRFTIME('%s', 'now') WHERE id = ?1", -1,
+                              "UPDATE main.images SET write_timestamp = STRFTIME('%s', 'now') WHERE id = ?1", -1,
                               &stmt, NULL);
   while(t)
   {
@@ -230,6 +235,7 @@ typedef struct dt_control_merge_hdr_t
 {
   uint32_t first_imgid;
   uint32_t first_filter;
+  uint8_t first_xtrans[6][6];
 
   float *pixels, *weight;
 
@@ -286,8 +292,9 @@ static float envelope(const float xx)
 }
 
 static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const char *filename,
-                                        const void *const ivoid, void *exif, int exif_len, int imgid, int num,
-                                        int total)
+                                        const void *const ivoid,
+                                        dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                                        void *exif, int exif_len, int imgid, int num, int total)
 {
   dt_control_merge_hdr_format_t *data = (dt_control_merge_hdr_format_t *)datai;
   dt_control_merge_hdr_t *d = data->d;
@@ -300,7 +307,17 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
   if(!d->pixels)
   {
     d->first_imgid = imgid;
-    d->first_filter = dt_image_filter(&image);
+    d->first_filter = image.buf_dsc.filters;
+    // sensor layout is just passed on to be written to dng.
+    // we offset it to the crop of the image here, so we don't
+    // need to load in the FCxtrans dependency into the dng writer.
+    // for some stupid reason the dng needs this layout wrt cropped
+    // offsets, not globally.
+    dt_iop_roi_t roi = {0};
+    roi.x = image.crop_x;
+    roi.y = image.crop_y;
+    for(int j=0;j<6;j++)
+      for(int i = 0; i < 6; i++) d->first_xtrans[j][i] = FCxtrans(j, i, &roi, image.buf_dsc.xtrans);
     d->pixels = calloc(datai->width * datai->height, sizeof(float));
     d->weight = calloc(datai->width * datai->height, sizeof(float));
     d->wd = datai->width;
@@ -308,13 +325,13 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     d->orientation = image.orientation;
   }
 
-  if(image.filters == 0u || image.filters == 9u || image.bpp != sizeof(uint16_t))
+  if(image.buf_dsc.filters == 0u || image.buf_dsc.channels != 1 || image.buf_dsc.datatype != TYPE_UINT16)
   {
-    dt_control_log(_("exposure bracketing only works on Bayer raw images."));
+    dt_control_log(_("exposure bracketing only works on raw images."));
     d->abort = TRUE;
     return 1;
   }
-  else if(datai->width != d->wd || datai->height != d->ht || d->first_filter != dt_image_filter(&image)
+  else if(datai->width != d->wd || datai->height != d->ht || d->first_filter != image.buf_dsc.filters
           || d->orientation != image.orientation)
   {
     dt_control_log(_("images have to be of same size and orientation!"));
@@ -333,9 +350,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
   const float cal = 100.0f / (aperture * exp * iso);
   // about proportional to how many photons we can expect from this shot:
   const float photoncnt = 100.0f * aperture * exp / iso;
-  // once we get unscaled raw data in this uint16_t buffer, we need to rescale (and subtract black before
-  // using the values):
-  float saturation = 1.0f; // image.raw_white_point - image.raw_black_level;
+  float saturation = 1.0f;
   d->whitelevel = fmaxf(d->whitelevel, saturation * cal);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(d, saturation)
@@ -343,6 +358,8 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
   for(int y = 0; y < d->ht; y++)
     for(int x = 0; x < d->wd; x++)
     {
+      // read unclamped raw value with subtracted black and rescaled to 1.0 saturation.
+      // this is the output of the rawprepare iop.
       const float in = ((float *)ivoid)[x + d->wd * y];
       // weights based on siggraph 12 poster
       // zijian zhu, zhengguo li, susanto rahardja, pasi fraenti
@@ -353,14 +370,14 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
       float offset = 3000.0f / (float)UINT16_MAX;
 
       // cannot do an envelope based on single pixel values here, need to get
-      // maximum value of all color channels. do find that, go through the bayer
-      // pattern block:
+      // maximum value of all color channels. to find that, go through the
+      // pattern block (we conservatively do a 3x3 for bayer or xtrans):
       int xx = x & ~1, yy = y & ~1;
       float M = 0.0f, m = FLT_MAX;
-      if(xx < d->wd - 1 && yy < d->ht - 1)
+      if(xx < d->wd - 2 && yy < d->ht - 2)
       {
-        for(int i = 0; i < 2; i++)
-          for(int j = 0; j < 2; j++)
+        for(int i = 0; i < 3; i++)
+          for(int j = 0; j < 3; j++)
           {
             M = MAX(M, ((float *)ivoid)[xx + i + d->wd * (yy + j)]);
             m = MIN(m, ((float *)ivoid)[xx + i + d->wd * (yy + j)]);
@@ -411,8 +428,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   double fraction = 0;
   snprintf(message, sizeof(message), ngettext("merging %d image", "merging %d images", total), total);
 
-  dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
-  dt_control_progress_attach_job(darktable.control, progress, job);
+  dt_control_job_set_progress_message(job, message);
 
   dt_control_merge_hdr_t d = (dt_control_merge_hdr_t){.epsw = 1e-8f, .abort = FALSE };
 
@@ -431,13 +447,13 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const uint32_t imgid = GPOINTER_TO_INT(t->data);
 
     dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, 0, 1, 0,
-                                 "pre:rawprepare", 0, 0, 0, num, total);
+                                 "pre:rawprepare", 0, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL, NULL, num, total);
 
     t = g_list_delete_link(t, t);
 
     /* update the progress bar */
     fraction += 1.0 / (total + 1);
-    dt_control_progress_set_progress(darktable.control, progress, fraction);
+    dt_control_job_set_progress(job, fraction);
     num++;
   }
   params->index = NULL;
@@ -455,19 +471,20 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   }
 
   // output hdr as digital negative with exif data.
-  uint8_t exif[65535];
+  uint8_t *exif = NULL;
   char pathname[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
   dt_image_full_path(d.first_imgid, pathname, sizeof(pathname), &from_cache);
 
   // last param is dng mode
-  const int exif_len = dt_exif_read_blob(exif, pathname, d.first_imgid, 0, d.wd, d.ht, 1);
+  const int exif_len = dt_exif_read_blob(&exif, pathname, d.first_imgid, 0, d.wd, d.ht, 1);
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname) - (c - pathname));
-  dt_imageio_write_dng(pathname, d.pixels, d.wd, d.ht, exif, exif_len, d.first_filter, 1.0f);
+  dt_imageio_write_dng(pathname, d.pixels, d.wd, d.ht, exif, exif_len, d.first_filter, (const uint8_t (*)[6])d.first_xtrans, 1.0f);
+  free(exif);
 
-  dt_control_progress_set_progress(darktable.control, progress, 1.0);
+  dt_control_job_set_progress(job, 1.0);
 
   while(*c != '/' && c > pathname) c--;
   dt_control_log(_("wrote merged HDR `%s'"), c + 1);
@@ -483,7 +500,6 @@ end:
   free(d.pixels);
   free(d.weight);
 
-  dt_control_progress_destroy(darktable.control, progress);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -498,7 +514,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   char message[512] = { 0 };
   double fraction = 0;
   snprintf(message, sizeof(message), ngettext("duplicating %d image", "duplicating %d images", total), total);
-  dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
+  dt_control_job_set_progress_message(job, message);
   while(t)
   {
     imgid = GPOINTER_TO_INT(t->data);
@@ -506,10 +522,9 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL);
     t = g_list_delete_link(t, t);
     fraction = 1.0 / total;
-    dt_control_progress_set_progress(darktable.control, progress, fraction);
+    dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
-  dt_control_progress_destroy(darktable.control, progress);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
@@ -525,17 +540,16 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
   double fraction = 0;
   char message[512] = { 0 };
   snprintf(message, sizeof(message), ngettext("flipping %d image", "flipping %d images", total), total);
-  dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
+  dt_control_job_set_progress_message(job, message);
   while(t)
   {
     imgid = GPOINTER_TO_INT(t->data);
     dt_image_flip(imgid, cw);
     t = g_list_delete_link(t, t);
     fraction = 1.0 / total;
-    dt_control_progress_set_progress(darktable.control, progress, fraction);
+    dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
-  dt_control_progress_destroy(darktable.control, progress);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -565,7 +579,7 @@ static void _set_remove_flag(char *imgs)
 {
   sqlite3_stmt *stmt = NULL;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE images SET flags = (flags|?1) WHERE id IN (?2)", -1, &stmt, NULL);
+                              "UPDATE main.images SET flags = (flags|?1) WHERE id IN (?2)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_REMOVE);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgs, -1, SQLITE_STATIC);
   sqlite3_step(stmt);
@@ -578,8 +592,8 @@ static GList *_get_full_pathname(char *imgs)
   GList *list = NULL;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT folder || '/' || filename FROM "
-                                                             "images, film_rolls WHERE images.film_id = "
-                                                             "film_rolls.id AND images.id IN (?1)",
+                                                             "main.images i, main.film_rolls f "
+                                                             "ON i.film_id = f.id WHERE i.id IN (?1)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, imgs, -1, SQLITE_STATIC);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -592,7 +606,6 @@ static GList *_get_full_pathname(char *imgs)
 
 static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 {
-  int imgid = -1;
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   char *imgs = _get_image_list(t);
@@ -600,13 +613,13 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   char message[512] = { 0 };
   double fraction = 0;
   snprintf(message, sizeof(message), ngettext("removing %d image", "removing %d images", total), total);
-  dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
+  dt_control_job_set_progress_message(job, message);
   sqlite3_stmt *stmt = NULL;
 
   // check that we can safely remove the image
   gboolean remove_ok = TRUE;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM images WHERE id IN (?2) AND flags&?1=?1", -1, &stmt, NULL);
+                              "SELECT id FROM main.images WHERE id IN (?2) AND flags&?1=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_LOCAL_COPY);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgs, -1, SQLITE_STATIC);
 
@@ -624,7 +637,6 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   if(!remove_ok)
   {
     dt_control_log(_("cannot remove local copy when the original file is not accessible."));
-    dt_control_progress_destroy(darktable.control, progress);
     free(imgs);
     return 0;
   }
@@ -641,11 +653,11 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 
   while(t)
   {
-    imgid = GPOINTER_TO_INT(t->data);
+    int imgid = GPOINTER_TO_INT(t->data);
     dt_image_remove(imgid);
     t = g_list_delete_link(t, t);
     fraction = 1.0 / total;
-    dt_control_progress_set_progress(darktable.control, progress, fraction);
+    dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
 
@@ -656,7 +668,6 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
     dt_image_synch_all_xmp(imgname);
     list = g_list_delete_link(list, list);
   }
-  dt_control_progress_destroy(darktable.control, progress);
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
@@ -768,7 +779,11 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename)
     GError *gerror = NULL;
     if (send_to_trash)
     {
+      #ifdef __APPLE__
+      delete_success = dt_osx_file_trash(filename, &gerror);
+      #else
       delete_success = g_file_trash(gfile, NULL /*cancellable*/, &gerror);
+      #endif
     }
     else
     {
@@ -819,6 +834,8 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename)
         delete_status = _DT_DELETE_STATUS_STOP_PROCESSING;
       }
     }
+    if (gerror != NULL)
+      g_error_free(gerror);
   }
 
   if (gfile != NULL)
@@ -842,7 +859,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     snprintf(message, sizeof(message), ngettext("trashing %d image", "trashing %d images", total), total);
   else
     snprintf(message, sizeof(message), ngettext("deleting %d image", "deleting %d images", total), total);
-  dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
+  dt_control_job_set_progress_message(job, message);
 
   sqlite3_stmt *stmt;
 
@@ -854,9 +871,9 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   free(imgs);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select count(id) from images where filename in (select filename from images "
-                              "where id = ?1) and film_id in (select film_id from images where id = ?1)",
-                              -1, &stmt, NULL);
+                              "SELECT COUNT(*) FROM main.images WHERE filename IN (SELECT filename FROM "
+                              "main.images WHERE id = ?1) AND film_id IN (SELECT film_id FROM main.images WHERE "
+                              "id = ?1)", -1, &stmt, NULL);
   while(t)
   {
     enum _dt_delete_status delete_status = _DT_DELETE_STATUS_UNKNOWN;
@@ -864,6 +881,10 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     char filename[PATH_MAX] = { 0 };
     gboolean from_cache = FALSE;
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
+
+#ifdef _WIN32
+    char *dirname = g_path_get_dirname(filename);
+#endif
 
     int duplicates = 0;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -909,14 +930,20 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
         snprintf(c1 + strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp",
                  c2);
 
-#ifdef __WIN32__
-        WIN32_FIND_DATA data;
-        HANDLE handle = FindFirstFile(pattern, &data);
+#ifdef _WIN32
+        wchar_t *wpattern = g_utf8_to_utf16(pattern, -1, NULL, NULL, NULL);
+        WIN32_FIND_DATAW data;
+        HANDLE handle = FindFirstFileW(wpattern, &data);
+        g_free(wpattern);
         if(handle != INVALID_HANDLE_VALUE)
         {
           do
-            files = g_list_append(files, g_strdup(data.cFileName));
-          while(FindNextFile(handle, &data));
+          {
+            char *xmp_filename = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
+            files = g_list_append(files, g_build_filename(dirname, xmp_filename));
+            g_free(xmp_filename);
+          }
+          while(FindNextFileW(handle, &data));
         }
 #else
         glob_t globbuf;
@@ -950,19 +977,22 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       dt_image_path_append_version(imgid, filename, sizeof(filename));
       g_strlcat(filename, ".xmp", sizeof(filename));
 
-      delete_status = delete_file_from_disk(filename);
-      if (delete_status == _DT_DELETE_STATUS_OK_TO_REMOVE)
-      {
-        snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
-        _set_remove_flag(imgidstr);
-        dt_image_remove(imgid);
-      }
+      // remove image from db first ...
+      snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
+      _set_remove_flag(imgidstr);
+      dt_image_remove(imgid);
+
+      // ... and delete afterwards because removing will re-write the XMP
+      delete_file_from_disk(filename);
     }
 
 delete_next_file:
+#ifdef _WIN32
+    g_free(dirname);
+#endif
     t = g_list_delete_link(t, t);
     fraction = 1.0 / total;
-    dt_control_progress_set_progress(darktable.control, progress, fraction);
+    dt_control_job_set_progress(job, fraction);
     if (delete_status == _DT_DELETE_STATUS_STOP_PROCESSING)
       break;
   }
@@ -979,7 +1009,6 @@ delete_next_file:
     list = g_list_delete_link(list, list);
   }
   g_list_free(list);
-  dt_control_progress_destroy(darktable.control, progress);
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
@@ -1107,14 +1136,9 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
              ngettext("removing local copy of %d image", "removing local copies of %d images", total), total);
 
   dt_control_log("%s", message);
+  dt_control_job_set_progress_message(job, message);
 
   dt_tag_new("darktable|local-copy", &tagid);
-
-  dt_control_t *control = darktable.control;
-
-  /* create a cancellable bgjob ui template */
-  dt_progress_t *progress = dt_control_progress_create(control, TRUE, message);
-  dt_control_progress_attach_job(control, progress, job);
 
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
@@ -1132,11 +1156,10 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     t = g_list_delete_link(t, t);
 
     fraction += 1.0 / total;
-    dt_control_progress_set_progress(control, progress, fraction);
+    dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
 
-  dt_control_progress_destroy(control, progress);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   return 0;
 }
@@ -1188,12 +1211,8 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   char message[512] = { 0 };
   snprintf(message, sizeof(message), ngettext("exporting %d image to %s", "exporting %d images to %s", total),
            total, mstorage->name(mstorage));
-
-  dt_control_t *control = darktable.control;
-
-  /* create a cancellable bgjob ui template */
-  dt_progress_t *progress = dt_control_progress_create(control, TRUE, message);
-  dt_control_progress_attach_job(control, progress, job);
+  // update the message. initialize_store() might have changed the number of images
+  dt_control_job_set_progress_message(job, message);
 
   double fraction = 0;
 
@@ -1241,23 +1260,26 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       else
       {
         dt_image_cache_read_release(darktable.image_cache, image);
-        if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality, settings->upscale) != 0)
+        if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality,
+                           settings->upscale, settings->icc_type, settings->icc_filename, settings->icc_intent) != 0)
           dt_control_job_cancel(job);
       }
     }
 
     fraction += 1.0 / total;
     if(fraction > 1.0) fraction = 1.0;
-    dt_control_progress_set_progress(control, progress, fraction);
+    dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
 
-  dt_control_progress_destroy(control, progress);
   if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
 
 end:
   // all threads free their fdata
   mformat->free_params(mformat, fdata);
+
+  // notify the user via the window manager
+  dt_ui_notify_user();
 
   return 0;
 }
@@ -1318,7 +1340,8 @@ void dt_control_merge_hdr()
 {
   dt_control_add_job(
       darktable.control, DT_JOB_QUEUE_USER_FG,
-      dt_control_generic_images_job_create(&dt_control_merge_hdr_job_run, "merge hdr image", 0, NULL));
+      dt_control_generic_images_job_create(&dt_control_merge_hdr_job_run, N_("merge hdr image"), 0, NULL,
+                                           PROGRESS_CANCELLABLE));
 }
 
 void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz)
@@ -1331,21 +1354,22 @@ void dt_control_duplicate_images()
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_duplicate_images_job_run,
-                                                          "duplicate images", 0, NULL));
+                                                          N_("duplicate images"), 0, NULL, PROGRESS_SIMPLE));
 }
 
 void dt_control_flip_images(const int32_t cw)
 {
   dt_control_add_job(
       darktable.control, DT_JOB_QUEUE_USER_FG,
-      dt_control_generic_images_job_create(&dt_control_flip_images_job_run, "flip images", cw, NULL));
+      dt_control_generic_images_job_create(&dt_control_flip_images_job_run, N_("flip images"), cw, NULL,
+                                           PROGRESS_SIMPLE));
 }
 
-void dt_control_remove_images()
+gboolean dt_control_remove_images()
 {
   // get all selected images now, to avoid the set changing during ui interaction
-  dt_job_t *job
-      = dt_control_generic_images_job_create(&dt_control_remove_images_job_run, "remove images", 0, NULL);
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_remove_images_job_run, N_("remove images"), 0, NULL,
+                                                       PROGRESS_SIMPLE);
   if(dt_conf_get_bool("ask_before_remove"))
   {
     GtkWidget *dialog;
@@ -1361,7 +1385,7 @@ void dt_control_remove_images()
     if(number == 0)
     {
       dt_control_job_dispose(job);
-      return;
+      return TRUE;
     }
 
     dialog = gtk_message_dialog_new(
@@ -1376,17 +1400,18 @@ void dt_control_remove_images()
     if(res != GTK_RESPONSE_YES)
     {
       dt_control_job_dispose(job);
-      return;
+      return FALSE;
     }
   }
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+  return TRUE;
 }
 
 void dt_control_delete_images()
 {
   // first get all selected images, to avoid the set changing during ui interaction
-  dt_job_t *job
-      = dt_control_generic_images_job_create(&dt_control_delete_images_job_run, "delete images", 0, NULL);
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_delete_images_job_run, N_("delete images"), 0, NULL,
+                                                       PROGRESS_SIMPLE);
   int send_to_trash = dt_conf_get_bool("send_to_trash");
   if(dt_conf_get_bool("ask_before_delete"))
   {
@@ -1436,12 +1461,15 @@ void dt_control_move_images()
 
   // Do not show the dialog if no image is selected:
   if(number == 0) return;
-  dt_job_t *job
-      = dt_control_generic_images_job_create(&dt_control_move_images_job_run, "move images", 0, dir);
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_move_images_job_run, N_("move images"), 0, dir,
+                                                       PROGRESS_CANCELLABLE);
 
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("_select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -1490,12 +1518,15 @@ void dt_control_copy_images()
 
   // Do not show the dialog if no image is selected:
   if(number == 0) return;
-  dt_job_t *job
-      = dt_control_generic_images_job_create(&dt_control_copy_images_job_run, "copy images", 0, dir);
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_copy_images_job_run, N_("copy images"), 0, dir,
+                                                       PROGRESS_CANCELLABLE);
 
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("_select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -1536,14 +1567,14 @@ void dt_control_set_local_copy_images()
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_local_copy_images_job_run,
-                                                          "local copy images", 1, NULL));
+                                                          N_("local copy images"), 1, NULL, PROGRESS_CANCELLABLE));
 }
 
 void dt_control_reset_local_copy_images()
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_local_copy_images_job_run,
-                                                          "local copy images", 0, NULL));
+                                                          N_("local copy images"), 0, NULL, PROGRESS_CANCELLABLE));
 }
 
 static dt_control_image_enumerator_t *dt_control_export_alloc()
@@ -1571,13 +1602,16 @@ static void dt_control_export_cleanup(void *p)
 
   mstorage->free_params(mstorage, sdata);
 
+  g_free(settings->icc_filename);
   free(params->data);
 
   dt_control_image_enumerator_cleanup(params);
 }
 
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
-                       gboolean high_quality, gboolean upscale, char *style, gboolean style_append)
+                       gboolean high_quality, gboolean upscale, char *style, gboolean style_append,
+                       dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
+                       dt_iop_color_intent_t icc_intent)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_export_job_run, "export");
   if(!job) return;
@@ -1612,8 +1646,12 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   data->upscale = upscale;
   g_strlcpy(data->style, style, sizeof(data->style));
   data->style_append = style_append;
+  data->icc_type = icc_type;
+  data->icc_filename = g_strdup(icc_filename);
+  data->icc_intent = icc_intent;
 
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+  dt_control_job_add_progress(job, _("export images"), TRUE);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_EXPORT, job);
 
   // tell the storage that we got its params for an export so it can reset itself to a safe state
   mstorage->export_dispatched(mstorage);
@@ -1626,7 +1664,6 @@ static int32_t dt_control_time_offset_job_run(dt_job_t *job)
   double fraction = 0.0;
   GList *t = params->index;
   const long int offset = ((dt_control_time_offset_t *)params->data)->offset;
-  dt_progress_t *progress = NULL;
   char message[512] = { 0 };
 
   /* do we have any selected images and is offset != 0 */
@@ -1637,12 +1674,9 @@ static int32_t dt_control_time_offset_job_run(dt_job_t *job)
 
   const guint total = g_list_length(t);
 
-  if(total > 1)
-  {
-    snprintf(message, sizeof(message),
-             ngettext("adding time offset to %d image", "adding time offset to %d images", total), total);
-    progress = dt_control_progress_create(darktable.control, TRUE, message);
-  }
+  snprintf(message, sizeof(message),
+           ngettext("adding time offset to %d image", "adding time offset to %d images", total), total);
+  dt_control_job_set_progress_message(job, message);
 
   /* go thru each selected image and update datetime_taken */
   do
@@ -1652,16 +1686,11 @@ static int32_t dt_control_time_offset_job_run(dt_job_t *job)
     dt_image_add_time_offset(imgid, offset);
     cntr++;
 
-    if(progress)
-    {
-      fraction = MAX(fraction, (1.0 * cntr) / total);
-      dt_control_progress_set_progress(darktable.control, progress, fraction);
-    }
+    fraction = MAX(fraction, (1.0 * cntr) / total);
+    dt_control_job_set_progress(job, fraction);
   } while((t = g_list_next(t)) != NULL);
 
   dt_control_log(ngettext("added time offset to %d image", "added time offset to %d images", cntr), cntr);
-
-  if(progress) dt_control_progress_destroy(darktable.control, progress);
 
   return 0;
 }
@@ -1700,6 +1729,7 @@ static dt_job_t *dt_control_time_offset_job_create(const long int offset, int im
     dt_control_job_dispose(job);
     return NULL;
   }
+  dt_control_job_add_progress(job, _("time offset"), FALSE);
   dt_control_job_set_params(job, params, dt_control_time_offset_job_cleanup);
 
   if(imgid != -1)
@@ -1723,7 +1753,7 @@ void dt_control_write_sidecar_files()
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_write_sidecar_files_job_run,
-                                                          "write sidecar files", 0, NULL));
+                                                          N_("write sidecar files"), 0, NULL, PROGRESS_NONE));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

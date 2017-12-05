@@ -16,9 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <math.h>
 #include "paint.h"
 #include "gui/draw.h"
+#include <math.h>
 
 #ifndef M_PI
 #define M_PI 3.141592654
@@ -998,7 +998,7 @@ void dtgtk_cairo_paint_showmask(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
   cairo_set_line_width(cr, 0.1);
 
-  if((flags & CPF_ACTIVE)) cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
+  if((flags & CPF_ACTIVE)) cairo_set_source_rgba(cr, 1.0, 1.0, 0.0, 1.0);
 
   /* draw rectangle */
   cairo_rectangle(cr, 0.0, 0.0, 1.0, 1.0);
@@ -1254,6 +1254,46 @@ void dtgtk_cairo_paint_overexposed(cairo_t *cr, gint x, gint y, gint w, gint h, 
   cairo_line_to(cr, (line_width / 2.0), 1.0 - (line_width / 2.0));
   cairo_line_to(cr, 1.0 - (line_width / 2.0), 1.0 - (line_width / 2.0));
   cairo_fill(cr);
+
+  /* outer rect */
+  cairo_rectangle(cr, (line_width / 2.0), (line_width / 2.0), 1.0 - line_width, 1.0 - line_width);
+  cairo_stroke(cr);
+}
+
+void dtgtk_cairo_paint_rawoverexposed(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags)
+{
+  gint s = w < h ? w : h;
+  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_scale(cr, s, s);
+
+  float line_width = 0.15;
+
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  cairo_set_line_width(cr, line_width);
+
+  cairo_save(cr);
+
+  const double step = ((line_width / 2.0) + (1.0 - line_width) / 2.0);
+
+  // draw 4 CFA-like colored squares
+
+  cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0); // red
+  cairo_rectangle(cr, (line_width / 2.0), (line_width / 2.0), step, step);
+  cairo_fill(cr);
+
+  cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 1.0); // green
+  cairo_rectangle(cr, step, (line_width / 2.0), step, step);
+  cairo_fill(cr);
+
+  cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 1.0); // green
+  cairo_rectangle(cr, (line_width / 2.0), step, step, step);
+  cairo_fill(cr);
+
+  cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 1.0); // blue
+  cairo_rectangle(cr, step, step, step, step);
+  cairo_fill(cr);
+
+  cairo_restore(cr);
 
   /* outer rect */
   cairo_rectangle(cr, (line_width / 2.0), (line_width / 2.0), 1.0 - line_width, 1.0 - line_width);

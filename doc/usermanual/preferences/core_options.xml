@@ -21,7 +21,7 @@
   <para>
     In order to speed-up display of film rolls, darktable stores thumbnails in a cache file on
     disk (primary cache) and loads it into memory at startup. This value controls the cache size
-    in megabytes. It needs a restart if changed (default 512MB).
+    in megabytes. It needs a restart if changed (default 256MB).
   </para>
 
   <bridgehead renderas="sect4">enable disk backend for thumbnail cache</bridgehead>
@@ -76,7 +76,7 @@
   <para>
     These redundant XMP files can later be re-imported into a different database, preserving
     your changes to the image. It's strongly recommended to have this option activated so you
-    don't lose data in case of a database corruption. Backing up your RAW file plus the
+    don't lose data in case of a database corruption. Backing up your raw file plus the
     accompanying XMP file will allow you to fully restore your work (default on).
   </para>
 
@@ -89,6 +89,15 @@
     and <quote>only large entries</quote> (default).
   </para>
 
+  <bridgehead renderas="sect4">omit hierarchy in simple tag lists</bridgehead>
+
+  <para>
+    When exporting images the hierarchical tags are also added as a simple list of
+    non-hierarchical ones to make them visible to some other programs. When this option is
+    checked darktable will only include their last part and ignore the rest. So
+    <quote>foo|bar|baz</quote> will only add <quote>baz</quote>.
+  </para>
+
   <bridgehead renderas="sect4">activate OpenCL support</bridgehead>
 
   <para>
@@ -98,12 +107,27 @@
     (default on).
   </para>
 
+  <bridgehead renderas="sect4">OpenCL scheduling profile</bridgehead>
+
+  <para>
+    Defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems.
+    <quote>default</quote>: the GPU processes the center view pixelpipe and the CPU processes
+    the preview pipe; <quote>multiple GPUs</quote>: both pixelpipes are processed in parallel on
+    two different GPUs; <quote>very fast GPU</quote>: both pixelipes are processed sequentially
+    on the GPU.
+  </para>
+
   <bridgehead renderas="sect4">always use LittleCMS 2 to apply output color profile</bridgehead>
 
   <para>
     If this option is activated, darktable will use system library LittleCMS 2 instead of its
     own routines. This is significantly slower than the default but might give more accurate
     results in some cases (default off).
+  </para>
+
+  <para>
+    Note that if the given ICC is LUT-based or contains both, a LUT and a matrix, darktable will
+    use LittleCMS 2 to render the colors regardless of this configuration parameter's value.
   </para>
 
   <bridgehead renderas="sect4">do high quality resampling during export</bridgehead>
@@ -133,8 +157,8 @@
   <bridgehead renderas="sect4">password storage backend to use</bridgehead>
 
   <para>
-    The storage backend for password storage. Options: <quote>none</quote>,
-    <quote>kwallet</quote>, <quote>gnome keyring</quote> (default none).
+    The storage backend for password storage. Options: <quote>auto</quote> (default),
+    <quote>none</quote>, <quote>libsecret</quote>, <quote>kwallet</quote>.
   </para>
 
   <bridgehead renderas="sect4">look for updated xmp files on startup</bridgehead>

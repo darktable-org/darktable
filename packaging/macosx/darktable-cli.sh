@@ -1,5 +1,19 @@
 #!/bin/sh
 
+version="$(sw_vers -productVersion)".
+major_v="${version%%.*}"
+minor_v="${version#*.}"
+minor_v="${minor_v%%.*}"
+if [ -z "$minor_v" ]
+then
+    minor_v=0
+fi
+if [ "$major_v" -lt 10 ] || ( [ "$major_v" -eq 10 ] && [ "$minor_v" -lt 7 ] )
+then
+    echo "darktable: unsupported macOS version (at least 10.7 is required)!"
+    exit 1
+fi
+
 if test -n "$GTK_DEBUG_LAUNCHER"; then
     set -x
 fi
@@ -14,7 +28,7 @@ bundle_bin="$bundle_res"/bin
 bundle_data="$bundle_res"/share
 bundle_etc="$bundle_res"/etc
 
-export XDG_CONFIG_DIRS="$bundle_etc"/xdg
+export XDG_CONFIG_DIRS="$bundle_etc"
 export XDG_DATA_DIRS="$bundle_data"
 export GTK_DATA_PREFIX="$bundle_res"
 export GTK_EXE_PREFIX="$bundle_res"
@@ -22,6 +36,7 @@ export GTK_PATH="$bundle_res"
 
 export GTK_IM_MODULE_FILE="$bundle_etc"/gtk-3.0/gtk.immodules
 export GDK_PIXBUF_MODULE_FILE="$(echo "$bundle_lib"/gdk-pixbuf-2.0/*/loaders.cache)"
+export GSETTINGS_SCHEMA_DIR="$bundle_data"/glib-2.0/schemas
 
 export IOLIBS="$(echo "$bundle_lib"/libgphoto2_port/*/)"
 export CAMLIBS="$(echo "$bundle_lib"/libgphoto2/*/)"

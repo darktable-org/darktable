@@ -19,11 +19,11 @@
 #include "config.h"
 #endif
 #include "common/imageio_rgbe.h"
-#include <math.h>
-#include <string.h>
-#include <stdio.h>
 #include <ctype.h>
+#include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 /* THIS CODE CARRIES NO GUARANTEE OF USABILITY OR FITNESS FOR ANY PURPOSE.
@@ -486,7 +486,7 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
   while(*ext != '.' && ext > filename) ext--;
   if(strncmp(ext, ".hdr", 4) && strncmp(ext, ".HDR", 4) && strncmp(ext, ".Hdr", 4))
     return DT_IMAGEIO_FILE_CORRUPTED;
-  FILE *f = fopen(filename, "rb");
+  FILE *f = g_fopen(filename, "rb");
   if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
 
   if(RGBE_ReadHeader(f, &img->width, &img->height, NULL)) goto error_corrupt;

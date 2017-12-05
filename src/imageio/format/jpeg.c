@@ -23,6 +23,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/exif.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "control/conf.h"
@@ -312,8 +313,9 @@ read_icc_profile (j_decompress_ptr cinfo,
 #undef MAX_SEQ_NO
 
 
-int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const void *in_tmp, void *exif,
-                int exif_len, int imgid, int num, int total)
+int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const void *in_tmp,
+                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                void *exif, int exif_len, int imgid, int num, int total)
 {
   dt_imageio_jpeg_t *jpg = (dt_imageio_jpeg_t *)jpg_tmp;
   const uint8_t *in = (const uint8_t *)in_tmp;
@@ -327,7 +329,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     return 1;
   }
   jpeg_create_compress(&(jpg->cinfo));
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   if(!f) return 1;
   jpeg_stdio_dest(&(jpg->cinfo), f);
 
@@ -368,21 +370,19 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
 
   if(imgid > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid)->profile;
+    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
     uint32_t len = 0;
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      unsigned char buf[len];
+      unsigned char *buf = malloc(len * sizeof(unsigned char));
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg->cinfo), buf, len);
+      free(buf);
     }
   }
 
-  if(exif && exif_len > 0 && exif_len < 65534)
-    jpeg_write_marker(&(jpg->cinfo), JPEG_APP0 + 1, exif, exif_len);
-
-  uint8_t row[3 * jpg->width];
+  uint8_t *row = malloc((size_t)3 * jpg->width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg->cinfo.next_scanline < jpg->cinfo.image_height)
   {
@@ -394,14 +394,18 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     jpeg_write_scanlines(&(jpg->cinfo), tmp, 1);
   }
   jpeg_finish_compress(&(jpg->cinfo));
+  free(row);
   jpeg_destroy_compress(&(jpg->cinfo));
   fclose(f);
+
+  dt_exif_write_blob(exif, exif_len, filename, 1);
+
   return 0;
 }
 
 static int __attribute__((__unused__)) read_header(const char *filename, dt_imageio_jpeg_t *jpg)
 {
-  jpg->f = fopen(filename, "rb");
+  jpg->f = g_fopen(filename, "rb");
   if(!jpg->f) return 1;
 
   struct dt_imageio_jpeg_error_mgr jerr;

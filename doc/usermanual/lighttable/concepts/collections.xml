@@ -22,7 +22,7 @@
 
   <para>
     You can easily construct other kinds of collections based on various image attributes like
-    EXIF data, filename, tags etc. Multiple criteria can be logically combined to narrow or
+    Exif data, filename, tags etc. Multiple criteria can be logically combined to narrow or
     extend your collection (see <xref linkend="collect_images"/>).
   </para>
 

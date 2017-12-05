@@ -35,12 +35,12 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include <strings.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
 
 /**
  * color transfer somewhat based on the glorious paper `color transfer between images'
@@ -220,6 +220,9 @@ static void invert_histogram(const int *hist, float *inv_hist)
   // HISTN-1)]);
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wvla"
+
 static void get_cluster_mapping(const int n, float mi[n][2], float wi[n], float mo[n][2], float wo[n],
                                 const float dominance, int mapio[n])
 {
@@ -295,8 +298,10 @@ static void kmeans(const float *col, const int width, const int height, const in
   const int nit = 40;                       // number of iterations
   const int samples = width * height * 0.2; // samples: only a fraction of the buffer.
 
-  float mean[n][2], var[n][2];
-  int cnt[n], count;
+  float(*const mean)[2] = malloc(2 * n * sizeof(float));
+  float(*const var)[2] = malloc(2 * n * sizeof(float));
+  int *const cnt = malloc(n * sizeof(int));
+  int count;
 
   float a_min = FLT_MAX, b_min = FLT_MAX, a_max = FLT_MIN, b_max = FLT_MIN;
 
@@ -327,7 +332,7 @@ static void kmeans(const float *col, const int width, const int height, const in
     for(int k = 0; k < n; k++) cnt[k] = 0;
 // randomly sample col positions inside roi
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(col, var, mean, mean_out, cnt)
+#pragma omp parallel for default(none) schedule(static) shared(col, mean_out)
 #endif
     for(int s = 0; s < samples; s++)
     {
@@ -384,6 +389,10 @@ static void kmeans(const float *col, const int width, const int height, const in
     // var_out[k][0], var_out[k][1], weight_out[k]);
   }
 
+  free(cnt);
+  free(var);
+  free(mean);
+
   for(int k = 0; k < n; k++)
   {
     // "eliminate" clusters with a variance of zero
@@ -422,6 +431,8 @@ static void kmeans(const float *col, const int width, const int height, const in
     }
   }
 }
+
+#pragma GCC diagnostic pop
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -464,11 +475,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float equalization = data->equalization / 100.0f;
 
     // get mapping from input clusters to target clusters
-    int mapio[data->n];
+    int *const mapio = malloc(data->n * sizeof(int));
+
     get_cluster_mapping(data->n, data->target_mean, data->target_weight, data->source_mean,
                         data->source_weight, dominance, mapio);
 
-    float var_ratio[data->n][2];
+    float(*const var_ratio)[2] = malloc(2 * data->n * sizeof(float));
+
     for(int i = 0; i < data->n; i++)
     {
       var_ratio[i][0]
@@ -499,19 +512,26 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       // bilateral blur of delta L to avoid artifacts caused by limited histogram resolution
       dt_bilateral_t *b = dt_bilateral_init(width, height, sigma_s, sigma_r);
-      if(!b) return;
+      if(!b)
+      {
+        free(var_ratio);
+        free(mapio);
+        return;
+      }
       dt_bilateral_splat(b, out);
       dt_bilateral_blur(b);
       dt_bilateral_slice(b, out, out, -1.0f);
       dt_bilateral_free(b);
     }
 
+    float *const weight_buf = malloc(data->n * dt_get_num_threads() * sizeof(float));
+
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(data, in, out, var_ratio, mapio, equalization)
+#pragma omp parallel for default(none) schedule(static) shared(data, in, out, equalization)
 #endif
     for(int k = 0; k < height; k++)
     {
-      float weight[data->n];
+      float *weight = weight_buf + data->n * dt_get_thread_num();
       size_t j = (size_t)ch * width * k;
       for(int i = 0; i < width; i++)
       {
@@ -535,6 +555,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         j += ch;
       }
     }
+
+    free(weight_buf);
+    free(var_ratio);
+    free(mapio);
   }
   // incomplete parameter set -> do nothing
   else
@@ -567,6 +591,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   float equalization = data->equalization / 100.0f;
 
   dt_bilateral_cl_t *b = NULL;
+  cl_mem dev_tmp = NULL;
   cl_mem dev_target_hist = NULL;
   cl_mem dev_source_ihist = NULL;
   cl_mem dev_target_mean = NULL;
@@ -612,19 +637,27 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
           = (data->target_var[i][1] > 0.0f) ? data->source_var[mapio[i]][1] / data->target_var[i][1] : 0.0f;
     }
 
+    dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+    if(dev_tmp == NULL) goto error;
+
     dev_target_hist = dt_opencl_copy_host_to_device_constant(devid, sizeof(int) * HISTN, data->target_hist);
     if(dev_target_hist == NULL) goto error;
+
     dev_source_ihist
         = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * HISTN, data->source_ihist);
     if(dev_source_ihist == NULL) goto error;
+
     dev_target_mean
         = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * MAXN * 2, data->target_mean);
     if(dev_target_mean == NULL) goto error;
+
     dev_source_mean
         = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * MAXN * 2, data->source_mean);
     if(dev_source_mean == NULL) goto error;
+
     dev_var_ratio = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * MAXN * 2, var_ratio);
     if(dev_var_ratio == NULL) goto error;
+
     dev_mapio = dt_opencl_copy_host_to_device_constant(devid, sizeof(int) * MAXN, mapio);
     if(dev_var_ratio == NULL) goto error;
 
@@ -648,14 +681,21 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       if(err != CL_SUCCESS) goto error;
       err = dt_bilateral_blur_cl(b);
       if(err != CL_SUCCESS) goto error;
-      err = dt_bilateral_slice_cl(b, dev_out, dev_out, -1.0f);
+      err = dt_bilateral_slice_cl(b, dev_out, dev_tmp, -1.0f);
       if(err != CL_SUCCESS) goto error;
       dt_bilateral_free_cl(b);
       b = NULL; // make sure we don't clean it up twice
     }
+    else
+    {
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { width, height, 1 };
+      err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
+      if(err != CL_SUCCESS) goto error;
+    }
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 1, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 2, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 3, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 4, sizeof(int), (void *)&height);
@@ -667,6 +707,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_mapping, sizes);
     if(err != CL_SUCCESS) goto error;
 
+    dt_opencl_release_mem_object(dev_tmp);
     dt_opencl_release_mem_object(dev_target_hist);
     dt_opencl_release_mem_object(dev_source_ihist);
     dt_opencl_release_mem_object(dev_target_mean);
@@ -686,12 +727,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
 error:
   if(b != NULL) dt_bilateral_free_cl(b);
-  if(dev_target_hist != NULL) dt_opencl_release_mem_object(dev_target_hist);
-  if(dev_source_ihist != NULL) dt_opencl_release_mem_object(dev_source_ihist);
-  if(dev_target_mean != NULL) dt_opencl_release_mem_object(dev_target_mean);
-  if(dev_source_mean != NULL) dt_opencl_release_mem_object(dev_source_mean);
-  if(dev_var_ratio != NULL) dt_opencl_release_mem_object(dev_var_ratio);
-  if(dev_mapio != NULL) dt_opencl_release_mem_object(dev_mapio);
+  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_target_hist);
+  dt_opencl_release_mem_object(dev_source_ihist);
+  dt_opencl_release_mem_object(dev_target_mean);
+  dt_opencl_release_mem_object(dev_source_mean);
+  dt_opencl_release_mem_object(dev_var_ratio);
+  dt_opencl_release_mem_object(dev_mapio);
   dt_print(DT_DEBUG_OPENCL, "[opencl_colormapping] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -712,7 +754,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
   const size_t basebuffer = width * height * channels * sizeof(float);
 
-  tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
+  tiling->factor = 3.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
   tiling->maxbuf
       = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r) / basebuffer);
   tiling->overhead = 0;
@@ -740,6 +782,7 @@ static void clusters_changed(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
+  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
 
   int new = (int)dt_bauhaus_slider_get(slider);
   if(new != p->n)
@@ -755,6 +798,8 @@ static void clusters_changed(GtkWidget *slider, dt_iop_module_t *self)
     memset(p->target_weight, 0, sizeof(float) * MAXN);
     p->flag = NEUTRAL;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_control_queue_redraw_widget(g->source_area);
+    dt_control_queue_redraw_widget(g->target_area);
   }
 }
 
@@ -796,7 +841,6 @@ static void acquire_target_button_pressed(GtkButton *button, dt_iop_module_t *se
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_colormapping_data_t));
@@ -824,7 +868,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colormapping_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colormapping_params_t));
   module->default_enabled = 0;
-  module->priority = 492; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 499; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colormapping_params_t);
   module->gui_data = NULL;
 }
@@ -946,9 +990,9 @@ static gboolean cluster_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mod
 }
 
 
-void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t fwidth, int32_t fheight,
-                     int32_t pointerx, int32_t pointery)
+static void process_clusters(gpointer instance, gpointer user_data)
 {
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
   int new_source_clusters = 0;
@@ -986,6 +1030,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t fwidth, 
 
     p->flag |= HAS_SOURCE;
     new_source_clusters = 1;
+
+    dt_control_queue_redraw_widget(g->source_area);
   }
   else if(p->flag & GET_TARGET)
   {
@@ -996,6 +1042,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t fwidth, 
     kmeans(buffer, width, height, p->n, p->target_mean, p->target_var, p->target_weight);
 
     p->flag |= HAS_TARGET;
+
+    dt_control_queue_redraw_widget(g->target_area);
   }
 
   free(buffer);
@@ -1008,7 +1056,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t fwidth, 
     memcpy(g->flowback.weight, p->source_weight, sizeof(float) * MAXN);
     g->flowback.n = p->n;
     g->flowback_set = 1;
-    FILE *f = fopen("/tmp/dt_colormapping_loaded", "wb");
+    FILE *f = g_fopen("/tmp/dt_colormapping_loaded", "wb");
     if(f)
     {
       if(fwrite(&g->flowback, sizeof(g->flowback), 1, f) < 1)
@@ -1100,8 +1148,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->equalization), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->equalization), "value-changed", G_CALLBACK(equalization_changed), self);
 
+  /* add signal handler for preview pipe finished: process clusters if requested */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                            G_CALLBACK(process_clusters), self);
 
-  FILE *f = fopen("/tmp/dt_colormapping_loaded", "rb");
+
+  FILE *f = g_fopen("/tmp/dt_colormapping_loaded", "rb");
   if(f)
   {
     if(fread(&g->flowback, sizeof(g->flowback), 1, f) > 0) g->flowback_set = 1;
@@ -1112,6 +1164,9 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(process_clusters), self);
+
   cmsDeleteTransform(g->xform);
   dt_pthread_mutex_destroy(&g->lock);
   free(g->buffer);

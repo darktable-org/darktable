@@ -16,15 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __INTROSPECTION_H__
-#define __INTROSPECTION_H__
+#pragma once
 
-#include <stdlib.h>
 #include <glib.h>
+#include <stdlib.h>
 
 // some typedefs for structs that hold the data in a machine readable form
 
-#define DT_INTROSPECTION_VERSION 5
+#define DT_INTROSPECTION_VERSION 6
 
 // clang-format off
 
@@ -49,7 +48,8 @@ typedef enum dt_introspection_type_t
   DT_INTROSPECTION_TYPE_BOOL,
   DT_INTROSPECTION_TYPE_ARRAY,
   DT_INTROSPECTION_TYPE_ENUM,
-  DT_INTROSPECTION_TYPE_STRUCT
+  DT_INTROSPECTION_TYPE_STRUCT,
+  DT_INTROSPECTION_TYPE_UNION
 } dt_introspection_type_t;
 
 typedef struct dt_introspection_type_header_t
@@ -191,6 +191,13 @@ typedef struct dt_introspection_type_struct_t
   union dt_introspection_field_t    **fields;       // the fields of the struct. NULL terminated
 } dt_introspection_type_struct_t;
 
+typedef struct dt_introspection_type_union_t
+{
+  dt_introspection_type_header_t      header;
+  size_t                              entries;      // # entries in fields (without the closing NULL)
+  union dt_introspection_field_t    **fields;       // the fields of the union. NULL terminated
+} dt_introspection_type_union_t;
+
 // sorry for the camel case/Capitals, but we have to avoid reserved keywords
 typedef union dt_introspection_field_t
 {
@@ -211,6 +218,7 @@ typedef union dt_introspection_field_t
   dt_introspection_type_array_t         Array;         // an array
   dt_introspection_type_enum_t          Enum;          // an enum
   dt_introspection_type_struct_t        Struct;        // a struct
+  dt_introspection_type_union_t         Union;         // an union
 } dt_introspection_field_t;
 
 typedef struct dt_introspection_t
@@ -220,6 +228,7 @@ typedef struct dt_introspection_t
   const char                         *type_name;      // the typedef'ed name for this type as passed to DT_MODULE_INTROSPECTION()
   size_t                              size;           // size of the params struct
   dt_introspection_field_t           *field;          // the type of the params. should always be a DT_INTROSPECTION_TYPE_STRUCT
+  size_t                              self_size;      // size of dt_iop_module_t. useful to not need dt headers
 } dt_introspection_t;
 
 // clang-format on
@@ -288,8 +297,6 @@ static inline const char *dt_introspection_get_enum_name(dt_introspection_field_
 
   return NULL;
 }
-
-#endif // __INTROSPECTION_H__
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

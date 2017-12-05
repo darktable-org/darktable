@@ -17,11 +17,11 @@
  */
 
 #include "lua/styles.h"
+#include "common/debug.h"
+#include "common/styles.h"
 #include "lua/glist.h"
 #include "lua/image.h"
 #include "lua/types.h"
-#include "common/styles.h"
-#include "common/debug.h"
 
 
 // can't use glist functions we need a list of int and glist can only produce a list of int*
@@ -78,7 +78,7 @@ static int style_getnumber(lua_State *L)
   }
   dt_style_t style;
   luaA_to(L, dt_style_t, &style, -2);
-  GList *items = dt_styles_get_item_list(style.name, true, -1);
+  GList *items = dt_styles_get_item_list(style.name, TRUE, -1);
   dt_style_item_t *item = g_list_nth_data(items, index - 1);
   if(!item)
   {
@@ -97,8 +97,8 @@ static int style_length(lua_State *L)
 
   dt_style_t style;
   luaA_to(L, dt_style_t, &style, -1);
-  GList *items = dt_styles_get_item_list(style.name, true, -1);
-  lua_pushnumber(L, g_list_length(items));
+  GList *items = dt_styles_get_item_list(style.name, TRUE, -1);
+  lua_pushinteger(L, g_list_length(items));
   g_list_free_full(items, dt_style_item_free);
   return 1;
 }
@@ -154,8 +154,10 @@ static int style_item_tostring(lua_State *L)
 
 static int style_item_gc(lua_State *L)
 {
+  // FIXME: Can't we use dt_style_item_free() instead? Or may the pointer itself not be freed?
   dt_style_item_t *item = luaL_checkudata(L, -1, "dt_style_item_t");
   g_free(item->name);
+  g_free(item->operation);
   free(item->params);
   free(item->blendop_params);
   return 0;
@@ -190,33 +192,32 @@ static int style_table_index(lua_State *L)
   }
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  snprintf(query, sizeof(query), "select name from styles order by name limit 1 offset %d", index - 1);
+  snprintf(query, sizeof(query), "SELECT name FROM data.styles ORDER BY name LIMIT 1 OFFSET %d", index - 1);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const char *name = (const char *)sqlite3_column_text(stmt, 0);
     dt_style_t *style = dt_styles_get_by_name(name);
     luaA_push(L, dt_style_t, style);
-    sqlite3_finalize(stmt);
     free(style);
-    return 1;
   }
   else
   {
-    sqlite3_finalize(stmt);
-    return luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
   }
+  sqlite3_finalize(stmt);
+  return 1;
 }
 
 static int style_table_len(lua_State *L)
 {
   sqlite3_stmt *stmt = NULL;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(*) from styles", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM data.styles", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
-    lua_pushnumber(L, sqlite3_column_int(stmt, 0));
+    lua_pushinteger(L, sqlite3_column_int(stmt, 0));
   else
   {
-    lua_pushnumber(L, 0);
+    lua_pushinteger(L, 0);
   }
   sqlite3_finalize(stmt);
   return 1;

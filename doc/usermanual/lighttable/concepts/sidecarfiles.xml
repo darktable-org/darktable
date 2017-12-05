@@ -25,13 +25,13 @@
     read-only. Any newly added metadata, tags, and parameters of image operations (the
     <quote>history stack</quote>) are stored in separate <emphasis>.xmp</emphasis> files,
     so-called sidecars, allowing you to store information about the images as well as the full
-    editing history without touching the original RAW files. When you import an image into
+    editing history without touching the original raw files. When you import an image into
     darktable for the first time, an XMP file with default settings is generated automatically.
   </para>
 
   <para>
     For a given source image, multiple editing versions, called duplicates, can co-exist,
-    sharing the same input (RAW) data but each having their own metadata, tags and history
+    sharing the same input (raw) data but each having their own metadata, tags and history
     stack. Each duplicate is represented by a separate XMP sidecar file with a filename
     constructed in the form
     <quote>&lt;basename&gt;<emphasis>_nn</emphasis>.&lt;extension&gt;.xmp</quote>, where

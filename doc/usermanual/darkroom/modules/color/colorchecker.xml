@@ -1,0 +1,100 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="color_look_up_table">
+
+  <title>Color look up table</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>color look up table</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>color look up table</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module implements a generic color look up table in Lab space. The input is a
+              list of source and target points, the complete mapping will be interpolated using
+              splines. The resulting luts are editable by hand and can be created using the
+              <filename>darktable-chart</filename> utility to match given input (such as
+              hald-cluts and RAW/JPEG with in-camera processing pairs). See
+              <xref linkend="darktable_chart"/> for details.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/colorchecker.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <sect5>
+      <title>color board</title>
+      <para>
+        When you select the module in darkroom mode, it should look something like the image
+        above (configurations with more than 24 patches are shown in a 7x7 grid instead). By
+        default, it will load the 24 patches of a color checker classic and initialise the
+        mapping to identity (no change to the image).
+      </para>
+      <para>
+        The grid shows a list of colored patches. The colors of the patches are the source
+        points. The target color of the selected patch is shown as offsets controlled by sliders
+        in the GUI under the grid of patches. An outline is drawn around patches that have been
+        altered, i.e. the source and target colors differ.
+      </para>
+      <para>
+        The selected patch is marked with a white square, and its number is displayed in the
+        combo box below. Select a patch by left clicking on it, or using the combo box, or using
+        the color picker.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>interaction</title>
+      <indexterm>
+        <primary>color picker</primary>
+      </indexterm>
+      <para>
+        To modify the color mapping, you can change source as well as target colors.
+      </para>
+      <para>
+        The main use case is to change the target colors. You start with an appropriate palette
+        of source colors (either from the presets menu or from a style you download). You can
+        then change lightness (L), green-red (a), blue-yellow (b), or saturation (C) of the
+        patches' target values via sliders.
+      </para>
+      <para>
+        To change the source color of a patch you select a new color from your image by using
+        the color picker, and shift-click on the patch you want to replace. You can switch
+        between point and area sampling mode from within the global color picker panel (see
+        <xref linkend="global_color_picker"/>).
+      </para>
+      <para>
+        To reset a patch, double-click it. Right-click a patch to delete it. Shift-click on
+        empty space to add a new patch (with the currently picked color as source color).
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

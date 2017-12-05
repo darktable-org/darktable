@@ -15,22 +15,142 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "bauhaus/bauhaus.h"
-#include "develop/imageop.h"
-#include "develop/blend.h"
-#include "control/control.h"
-#include "control/conf.h"
 #include "develop/masks.h"
+#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/mipmap_cache.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "common/undo.h"
+#include "develop/blend.h"
+#include "develop/imageop.h"
 
+#pragma GCC diagnostic ignored "-Wshadow"
+
+// clang-format off
 #include "develop/masks/circle.c"
 #include "develop/masks/path.c"
 #include "develop/masks/brush.c"
 #include "develop/masks/gradient.c"
 #include "develop/masks/ellipse.c"
 #include "develop/masks/group.c"
+// clang-format on
 
+typedef struct _masks_undo_data_t
+{
+  GList *forms;
+  dt_masks_form_t *form;
+} _masks_undo_data_t;
+
+static void _masks_write_form_db(dt_masks_form_t *form, dt_develop_t *dev);
+// write a form into the database
+
+static void _masks_write_forms_db(dt_develop_t *dev, gboolean undo);
+// write all masks form into the database. record an undo if undo is true
+
+static dt_masks_form_t *_dup_masks_form(const dt_masks_form_t *form)
+{
+  if (!form) return NULL;
+
+  dt_masks_form_t *new_form = malloc(sizeof(struct dt_masks_form_t));
+  memcpy(new_form, form, sizeof(struct dt_masks_form_t));
+
+  // then duplicate the GList *points
+
+  new_form->points = NULL;
+
+  if (form->points)
+  {
+    int size_item = 0;
+
+    if (form->type & DT_MASKS_CIRCLE)
+      size_item = sizeof(struct dt_masks_point_circle_t);
+    else if (form->type & DT_MASKS_ELLIPSE)
+      size_item = sizeof(struct dt_masks_point_ellipse_t);
+    else if (form->type & DT_MASKS_GRADIENT)
+      size_item = sizeof(struct dt_masks_point_gradient_t);
+    else if (form->type & DT_MASKS_BRUSH)
+      size_item = sizeof(struct dt_masks_point_brush_t);
+    else if (form->type & DT_MASKS_GROUP)
+      size_item = sizeof(struct dt_masks_point_group_t);
+    else if (form->type & DT_MASKS_PATH)
+      size_item = sizeof(struct dt_masks_point_path_t);
+
+    if (size_item != 0)
+    {
+      GList *pt = g_list_first(form->points);
+      while (pt)
+      {
+        void *item = malloc(size_item);
+        memcpy(item, pt->data, size_item);
+        new_form->points = g_list_append(new_form->points, item);
+        pt = g_list_next(pt);
+      }
+    }
+  }
+
+  return new_form;
+}
+
+static void *_dup_masks_form_cb(const void *formdata, gpointer user_data)
+{
+  // duplicate the main form struct
+  dt_masks_form_t *form = (dt_masks_form_t *)formdata;
+  dt_masks_form_t *uform = (dt_masks_form_t *)user_data;
+  const dt_masks_form_t *f = uform == NULL || form->formid != uform->formid ? form : uform;
+  return (void *)_dup_masks_form(f);
+}
+
+// duplicate the list of forms, replace item in the list with form is the same formid
+static GList *_dup_masks_forms_deep(GList *forms, dt_masks_form_t *form)
+{
+  return (GList *)g_list_copy_deep(forms, _dup_masks_form_cb, (gpointer)form);
+}
+
+static _masks_undo_data_t *_create_snapshot(GList *forms, dt_masks_form_t *form, dt_develop_t *dev)
+{
+  _masks_undo_data_t *data = malloc(sizeof(struct _masks_undo_data_t));
+  data->forms = _dup_masks_forms_deep(forms, form);
+  data->form  = dev->form_visible ? _dup_masks_form(dev->form_visible) : NULL;
+  return data;
+}
+
+void _masks_free_undo(gpointer data)
+{
+  _masks_undo_data_t *udata = (_masks_undo_data_t *)data;
+
+  g_list_free_full(udata->forms, (void (*)(void *))dt_masks_free_form);
+  udata->forms = NULL;
+  dt_masks_free_form((dt_masks_form_t *)udata->form);
+  free(udata);
+}
+
+void _masks_do_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item)
+{
+  dt_develop_t *dev = (dt_develop_t *)user_data;
+  _masks_undo_data_t *udata = (_masks_undo_data_t *)item;
+
+  dev->forms = _dup_masks_forms_deep(udata->forms, NULL);
+  dev->form_gui->creation = FALSE;
+
+  dt_masks_clear_form_gui(dev);
+  dt_masks_change_form_gui(_dup_masks_form(udata->form));
+
+  _masks_write_forms_db(dev, FALSE);
+
+  // and we ensure that we are in edit mode
+  dt_masks_iop_update(darktable.develop->gui_module);
+  dt_dev_masks_list_change(dev);
+  dt_masks_set_edit_mode(darktable.develop->gui_module, DT_MASKS_EDIT_FULL);
+  dt_masks_update_image(dev);
+  dt_control_queue_redraw_center();
+}
+
+static void _do_record_undo(dt_develop_t *dev, dt_masks_form_t *form)
+{
+  dt_undo_record(darktable.undo, dev, DT_UNDO_MASK, (dt_undo_data_t *)_create_snapshot(dev->forms, form, dev),
+                 _masks_do_undo, _masks_free_undo);
+}
 
 static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formtype)
 {
@@ -43,11 +163,11 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formty
     else if(gui->point_selected >= 0)
       g_strlcat(msg, _("ctrl+click to switch between smooth/sharp node"), sizeof(msg));
     else if(gui->feather_selected >= 0)
-      g_strlcat(msg, _("right-click to reset feather value"), sizeof(msg));
+      g_strlcat(msg, _("right-click to reset curvature"), sizeof(msg));
     else if(gui->seg_selected >= 0)
       g_strlcat(msg, _("ctrl+click to add a node"), sizeof(msg));
     else if(gui->form_selected)
-      g_strlcat(msg, _("ctrl+scroll to set shape opacity"), sizeof(msg));
+      g_strlcat(msg, _("ctrl+scroll to set shape opacity, shift+scroll to set feather size"), sizeof(msg));
   }
   else if(formtype & DT_MASKS_GRADIENT)
   {
@@ -61,17 +181,22 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formty
     if(gui->point_selected >= 0)
       g_strlcat(msg, _("ctrl+click to rotate"), sizeof(msg));
     else if(gui->form_selected)
-      g_strlcat(msg, _("ctrl+scroll to set shape opacity"), sizeof(msg));
+      g_strlcat(msg, _("shift+click to switch feathering mode, ctrl+scroll to set shape opacity,\nshift+scroll to set feather size"), sizeof(msg));
   }
   else if(formtype & DT_MASKS_BRUSH)
   {
     if(gui->creation)
-      g_strlcat(msg, _("scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set opacity"),
+      g_strlcat(msg, _("scroll to set brush size, shift+scroll to set hardness,\nctrl+scroll to set opacity"),
                 sizeof(msg));
     else if(gui->border_selected)
       g_strlcat(msg, _("scroll to set brush size"), sizeof(msg));
     else if(gui->form_selected)
       g_strlcat(msg, _("scroll to set hardness, ctrl+scroll to set shape opacity"), sizeof(msg));
+  }
+  else if(formtype & DT_MASKS_CIRCLE)
+  {
+    if(gui->form_selected)
+      g_strlcat(msg, _("ctrl+scroll to set shape opacity, shift+scroll to set feather size"), sizeof(msg));
   }
 
   dt_control_hinter_message(darktable.control, msg);
@@ -154,6 +279,7 @@ void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *g
       {
         dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
         dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
+        if (!sel) return;
         dt_masks_gui_form_create(sel, gui, pos);
         fpts = g_list_next(fpts);
         pos++;
@@ -181,15 +307,16 @@ void _check_id(dt_masks_form_t *form)
   }
 }
 
-void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui_t *gui)
+void dt_masks_gui_form_save_creation(dt_develop_t *dev, dt_iop_module_t *module, dt_masks_form_t *form,
+                                     dt_masks_form_gui_t *gui)
 {
   // we check if the id is already registered
   _check_id(form);
 
-  darktable.develop->forms = g_list_append(darktable.develop->forms, form);
+  dev->forms = g_list_append(dev->forms, form);
   if(gui) gui->creation = FALSE;
 
-  guint nb = g_list_length(darktable.develop->forms);
+  guint nb = g_list_length(dev->forms);
 
   if(form->type & DT_MASKS_CIRCLE)
     snprintf(form->name, sizeof(form->name), _("circle #%d"), nb);
@@ -202,13 +329,13 @@ void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *f
   else if(form->type & DT_MASKS_BRUSH)
     snprintf(form->name, sizeof(form->name), _("brush #%d"), nb);
 
-  dt_masks_write_form(form, darktable.develop);
+  dt_masks_write_form(form, dev);
 
   if(module)
   {
     // is there already a masks group for this module ?
     int grpid = module->blend_params->mask_id;
-    dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grpid);
+    dt_masks_form_t *grp = dt_masks_get_from_id(dev, grpid);
     if(!grp)
     {
       // we create a new group
@@ -220,7 +347,7 @@ void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *f
       snprintf(grp->name, sizeof(grp->name), "grp %s", module_label);
       g_free(module_label);
       _check_id(grp);
-      darktable.develop->forms = g_list_append(darktable.develop->forms, grp);
+      dev->forms = g_list_append(dev->forms, grp);
       module->blend_params->mask_id = grpid = grp->formid;
     }
     // we add the form in this group
@@ -232,13 +359,14 @@ void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *f
     grpt->opacity = 1.0f;
     grp->points = g_list_append(grp->points, grpt);
     // we save the group
-    dt_masks_write_form(grp, darktable.develop);
+    dt_masks_write_form(grp, dev);
     // we update module gui
     if(gui) dt_masks_iop_update(module);
+    dt_dev_add_history_item(dev, module, TRUE);
   }
   // show the form if needed
-  if(gui) darktable.develop->form_gui->formid = form->formid;
-  if(gui) dt_dev_masks_list_change(darktable.develop);
+  if(gui) dev->form_gui->formid = form->formid;
+  if(gui) dt_dev_masks_list_change(dev);
 }
 
 int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
@@ -811,12 +939,15 @@ int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_versio
 
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
 {
-  dt_masks_form_t *form = (dt_masks_form_t *)malloc(sizeof(dt_masks_form_t));
+  dt_masks_form_t *form = (dt_masks_form_t *)calloc(1, sizeof(dt_masks_form_t));
+  if(!form) return NULL;
+
   form->type = type;
   form->version = dt_masks_version();
   form->formid = time(NULL);
 
-  form->points = NULL;
+  // all forms created must be registered in darktable.develop->allforms for later cleanup
+  darktable.develop->allforms = g_list_append(darktable.develop->allforms, form);
 
   return form;
 }
@@ -836,25 +967,16 @@ dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id)
 
 void dt_masks_read_forms(dt_develop_t *dev)
 {
-  // first we have to remove all existing entries from the list
-  if(dev->forms)
-  {
-    GList *forms = g_list_first(dev->forms);
-    while(forms)
-    {
-      dt_masks_free_form((dt_masks_form_t *)forms->data);
-      forms = g_list_next(forms);
-    }
-    g_list_free(dev->forms);
-    dev->forms = NULL;
-  }
+  // first we have to reset the list
+  g_list_free(dev->forms);
+  dev->forms = NULL;
 
   if(dev->image_storage.id <= 0) return;
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select imgid, formid, form, name, version, points, points_count, source from mask where imgid = ?1",
+      "SELECT imgid, formid, form, name, version, points, points_count, source FROM main.mask WHERE imgid = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
 
@@ -864,9 +986,11 @@ void dt_masks_read_forms(dt_develop_t *dev)
     // 0-img, 1-formid, 2-form_type, 3-name, 4-version, 5-points, 6-points_count, 7-source
 
     // we get the values
-    dt_masks_form_t *form = (dt_masks_form_t *)malloc(sizeof(dt_masks_form_t));
-    form->formid = sqlite3_column_int(stmt, 1);
-    form->type = sqlite3_column_int(stmt, 2);
+
+    int formid = sqlite3_column_int(stmt, 1);
+    dt_masks_type_t type = sqlite3_column_int(stmt, 2);
+    dt_masks_form_t *form = dt_masks_create(type);
+    form->formid = formid;
     const char *name = (const char *)sqlite3_column_text(stmt, 3);
     snprintf(form->name, sizeof(form->name), "%s", name);
     form->version = sqlite3_column_int(stmt, 4);
@@ -939,8 +1063,6 @@ void dt_masks_read_forms(dt_develop_t *dev)
                 fname, dev->image_storage.id, form->version, dt_masks_version());
         dt_control_log(_("%s: mask version mismatch: %d != %d"), fname, dt_masks_version(), form->version);
 
-        dt_masks_free_form(form);
-
         continue;
       }
     }
@@ -953,20 +1075,40 @@ void dt_masks_read_forms(dt_develop_t *dev)
   dt_dev_masks_list_change(dev);
 }
 
-void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
+static void _masks_write_forms_db(dt_develop_t *dev, gboolean undo)
 {
   // we first erase all masks for the image present in the db
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "delete from mask where imgid = ?1 and formid = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.mask WHERE imgid = ?1", -1, &stmt,
+                              NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, form->formid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  // and we write the form
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into mask (imgid, formid, form, name, "
-                                                             "version, points, points_count,source) values "
+  // and now we write each forms
+  GList *forms = g_list_first(dev->forms);
+  if (undo)
+  {
+    _do_record_undo(dev, NULL);
+  }
+
+  while(forms)
+  {
+    dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
+
+    if (form)
+      _masks_write_form_db(form, dev);
+
+    forms = g_list_next(forms);
+  }
+}
+static void _masks_write_form_db(dt_masks_form_t *form, dt_develop_t *dev)
+{
+  sqlite3_stmt *stmt;
+
+  // write the form into the database
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO main.mask (imgid, formid, form, name, "
+                                                             "version, points, points_count,source) VALUES "
                                                              "(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
@@ -977,11 +1119,15 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, form->version);
   if(form->type & DT_MASKS_CIRCLE)
   {
-    dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
-    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, circle, sizeof(dt_masks_point_circle_t), SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
+    GList *points = g_list_first(form->points);
+    if(points)
+    {
+      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(points->data);
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, circle, sizeof(dt_masks_point_circle_t), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
   }
   else if(form->type & DT_MASKS_PATH)
   {
@@ -1055,114 +1201,25 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
   }
 }
 
-void dt_masks_write_forms(dt_develop_t *dev)
+void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
 {
+  _do_record_undo(dev, form);
+
   // we first erase all masks for the image present in the db
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from mask where imgid = ?1", -1, &stmt,
-                              NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM main.mask WHERE imgid = ?1 AND formid = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, form->formid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  // and now we write each forms
-  GList *forms = g_list_first(dev->forms);
-  while(forms)
-  {
-    dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
+  _masks_write_form_db(form, dev);
+}
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into mask (imgid, formid, form, name, "
-                                                               "version, points, points_count,source) values "
-                                                               "(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, form->formid);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, form->type);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, form->name, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, form->source, 2 * sizeof(float), SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, form->version);
-    if(form->type & DT_MASKS_CIRCLE)
-    {
-      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, circle, sizeof(dt_masks_point_circle_t), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-    }
-    else if(form->type & DT_MASKS_PATH)
-    {
-      guint nb = g_list_length(form->points);
-      dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)calloc(nb, sizeof(dt_masks_point_path_t));
-      GList *points = g_list_first(form->points);
-      int pos = 0;
-      while(points)
-      {
-        dt_masks_point_path_t *pt = (dt_masks_point_path_t *)points->data;
-        ptbuf[pos++] = *pt;
-        points = g_list_next(points);
-      }
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ptbuf, nb * sizeof(dt_masks_point_path_t), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-      free(ptbuf);
-    }
-    else if(form->type & DT_MASKS_GROUP)
-    {
-      guint nb = g_list_length(form->points);
-      dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)calloc(nb, sizeof(dt_masks_point_group_t));
-      GList *points = g_list_first(form->points);
-      int pos = 0;
-      while(points)
-      {
-        dt_masks_point_group_t *pt = (dt_masks_point_group_t *)points->data;
-        ptbuf[pos++] = *pt;
-        points = g_list_next(points);
-      }
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ptbuf, nb * sizeof(dt_masks_point_group_t), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-      free(ptbuf);
-    }
-    else if(form->type & DT_MASKS_GRADIENT)
-    {
-      dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, gradient, sizeof(dt_masks_point_gradient_t), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-    }
-    else if(form->type & DT_MASKS_ELLIPSE)
-    {
-      dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ellipse, sizeof(dt_masks_point_ellipse_t), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-    }
-    else if(form->type & DT_MASKS_BRUSH)
-    {
-      guint nb = g_list_length(form->points);
-      dt_masks_point_brush_t *ptbuf = (dt_masks_point_brush_t *)calloc(nb, sizeof(dt_masks_point_brush_t));
-      GList *points = g_list_first(form->points);
-      int pos = 0;
-      while(points)
-      {
-        dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)points->data;
-        ptbuf[pos++] = *pt;
-        points = g_list_next(points);
-      }
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ptbuf, nb * sizeof(dt_masks_point_brush_t), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-      free(ptbuf);
-    }
-
-
-    forms = g_list_next(forms);
-  }
+void dt_masks_write_forms(dt_develop_t *dev)
+{
+  _masks_write_forms_db(dev, TRUE);
 }
 
 void dt_masks_free_form(dt_masks_form_t *form)
@@ -1171,7 +1228,6 @@ void dt_masks_free_form(dt_masks_form_t *form)
   g_list_free_full(form->points, free);
   form->points = NULL;
   free(form);
-  form = NULL;
 }
 
 int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double y, double pressure, int which)
@@ -1344,6 +1400,7 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
     dt_ellipse_events_post_expose(cr, zoom_scale, gui, 0);
   else if(form->type & DT_MASKS_BRUSH)
     dt_brush_events_post_expose(cr, zoom_scale, gui, 0, g_list_length(form->points));
+
   cairo_restore(cr);
 }
 
@@ -1381,9 +1438,6 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
 void dt_masks_change_form_gui(dt_masks_form_t *newform)
 {
   dt_masks_clear_form_gui(darktable.develop);
-  // free the actual mask form if it's id is 0 (temp mask)
-  if(darktable.develop->form_visible && darktable.develop->form_visible->formid == 0)
-    dt_masks_free_form(darktable.develop->form_visible);
   darktable.develop->form_visible = newform;
 }
 
@@ -1644,12 +1698,9 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
       forms = g_list_next(forms);
       continue;
     }
-    char str[256] = "";
-    g_strlcat(str, form->name, sizeof(str));
-    g_strlcat(str, "   ", sizeof(str));
-    int used = 0;
 
     // we search were this form is used in the current module
+    int used = 0;
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
     if(grp && (grp->type & DT_MASKS_GROUP))
     {
@@ -1669,12 +1720,10 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
     {
       if(nb == 0)
       {
-        char str2[256] = "<";
-        g_strlcat(str2, _("add existing shape"), sizeof(str2));
-        dt_bauhaus_combobox_add(combo, str2);
+        dt_bauhaus_combobox_add_aligned(combo, _("add existing shape"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
         cids[pos++] = 0; // nothing to do
       }
-      dt_bauhaus_combobox_add(combo, str);
+      dt_bauhaus_combobox_add(combo, form->name);
       cids[pos++] = form->formid;
       nb++;
     }
@@ -1696,9 +1745,7 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
       {
         if(nb == 0)
         {
-          char str2[256] = "<";
-          g_strlcat(str2, _("use same shapes as"), sizeof(str2));
-          dt_bauhaus_combobox_add(combo, str2);
+          dt_bauhaus_combobox_add_aligned(combo, _("use same shapes as"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
           cids[pos++] = 0; // nothing to do
         }
         gchar *module_label = dt_history_item_get_name(m);
@@ -1883,7 +1930,6 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
     if(f->formid == id)
     {
       darktable.develop->forms = g_list_remove(darktable.develop->forms, f);
-      dt_masks_free_form(f);
       dt_masks_write_forms(darktable.develop);
       break;
     }
@@ -2224,7 +2270,6 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
     if(u == 0)
     {
       dev->forms = g_list_remove(dev->forms, f);
-      dt_masks_free_form(f);
     }
   }
 

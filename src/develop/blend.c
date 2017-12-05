@@ -16,12 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "blend.h"
+#include "common/gaussian.h"
 #include "control/control.h"
 #include "develop/imageop.h"
-#include "develop/tiling.h"
 #include "develop/masks.h"
-#include "common/gaussian.h"
-#include "blend.h"
+#include "develop/tiling.h"
 
 #define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))
 
@@ -401,6 +401,18 @@ static inline void _blend_Lab_rescale(const float *i, float *o)
   o[1] = i[1] * 128.0f;
   o[2] = i[2] * 128.0f;
 }
+
+
+static inline void _blend_noop(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask,
+                               const float *min, const float *max)
+{
+  for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+  {
+    for(int k = 0; k < bd->bch; k++) b[j + k] = CLAMP_RANGE(a[j + k], min ? min[k] : -INFINITY, max ? max[k] : INFINITY);
+    if(bd->cst != iop_cs_RAW) b[j + 3] = mask[i];
+  }
+}
+
 
 /* generate blend mask */
 static void _blend_make_mask(const _blend_buffer_desc_t *bd, const unsigned int blendif,
@@ -1887,12 +1899,7 @@ static void _blend_lightness(const _blend_buffer_desc_t *bd, const float *a, flo
     }
   }
   else /* if(bd->cst == iop_cs_RAW) */
-  {
-    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
-    {
-      for(int k = 0; k < bd->bch; k++) b[j + k] = CLAMP_RANGE(a[j + k], min[k], max[k]); // Noop for Raw
-    }
-  }
+    _blend_noop(bd, a, b, mask, min, max); // Noop for Raw
 }
 
 /* chroma blend */
@@ -1953,12 +1960,7 @@ static void _blend_chroma(const _blend_buffer_desc_t *bd, const float *a, float 
     }
   }
   else /* if(bd->cst == iop_cs_RAW) */
-  {
-    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
-    {
-      for(int k = 0; k < bd->bch; k++) b[j + k] = CLAMP_RANGE(a[j + k], min[k], max[k]); // Noop for Raw
-    }
-  }
+    _blend_noop(bd, a, b, mask, min, max); // Noop for Raw
 }
 
 /* hue blend */
@@ -2024,12 +2026,7 @@ static void _blend_hue(const _blend_buffer_desc_t *bd, const float *a, float *b,
     }
   }
   else /* if(bd->cst == iop_cs_RAW) */
-  {
-    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
-    {
-      for(int k = 0; k < bd->bch; k++) b[j + k] = CLAMP_RANGE(a[j + k], min[k], max[k]); // Noop for Raw
-    }
-  }
+    _blend_noop(bd, a, b, mask, min, max); // Noop for Raw
 }
 
 /* color blend; blend hue and chroma, but not lightness */
@@ -2098,12 +2095,7 @@ static void _blend_color(const _blend_buffer_desc_t *bd, const float *a, float *
     }
   }
   else /* if(bd->cst == iop_cs_RAW) */
-  {
-    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
-    {
-      for(int k = 0; k < bd->bch; k++) b[j + k] = CLAMP_RANGE(a[j + k], min[k], max[k]); // Noop for Raw
-    }
-  }
+    _blend_noop(bd, a, b, mask, min, max); // Noop for Raw
 }
 
 /* color adjustment; blend hue and chroma; take lightness from module output */
@@ -2172,12 +2164,7 @@ static void _blend_coloradjust(const _blend_buffer_desc_t *bd, const float *a, f
     }
   }
   else /* if(bd->cst == iop_cs_RAW) */
-  {
-    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
-    {
-      for(int k = 0; k < bd->bch; k++) b[j + k] = CLAMP_RANGE(a[j + k], min[k], max[k]); // Noop for Raw
-    }
-  }
+    _blend_noop(bd, a, b, mask, min, max); // Noop for Raw
 }
 
 /* inverse blend */
@@ -2241,9 +2228,6 @@ static void _blend_inverse(const _blend_buffer_desc_t *bd, const float *a, float
 static void _blend_Lab_lightness(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask,
                                  int flag)
 {
-  float max[4] = { 0 }, min[4] = { 0 };
-  _blend_colorspace_channel_range(bd->cst, min, max);
-
   if(bd->cst == iop_cs_Lab)
   {
     for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
@@ -2261,33 +2245,68 @@ static void _blend_Lab_lightness(const _blend_buffer_desc_t *bd, const float *a,
       b[j + 3] = local_opacity;
     }
   }
-  else if(bd->cst == iop_cs_rgb)
+  else /* if(bd->cst == iop_cs_rgb || bd->cst == iop_cs_RAW) */
+    _blend_noop(bd, a, b, mask, NULL, NULL); // Noop for RGB and Raw (unclamped)
+}
+
+/* blend only a-channel in Lab color space without any clamping (a noop for
+ * other color spaces) */
+static void _blend_Lab_a(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask,
+                         int flag)
+{
+  if(bd->cst == iop_cs_Lab)
   {
     for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
     {
       float local_opacity = mask[i];
-      for(int k = 0; k < bd->bch; k++) b[j + k] = a[j + k]; // Noop for RGB (unclamped)
+      float ta[3], tb[3];
+      _blend_Lab_scale(&a[j], ta);
+      _blend_Lab_scale(&b[j], tb);
 
+      tb[0] = ta[0];
+      tb[1] = (ta[1] * (1.0f - local_opacity)) + tb[1] * local_opacity;
+      tb[2] = ta[2];
+
+      _blend_Lab_rescale(tb, &b[j]);
       b[j + 3] = local_opacity;
     }
   }
-  else /* if(bd->cst == iop_cs_RAW) */
+  else /* if(bd->cst == iop_cs_rgb || bd->cst == iop_cs_RAW) */
+    _blend_noop(bd, a, b, mask, NULL, NULL); // Noop for RGB and Raw (unclamped)
+}
+
+/* blend only b-channel in Lab color space without any clamping (a noop for
+ * other color spaces) */
+static void _blend_Lab_b(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask,
+                         int flag)
+{
+  if(bd->cst == iop_cs_Lab)
   {
     for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
     {
-      for(int k = 0; k < bd->bch; k++) b[j + k] = a[j + k]; // Noop for RAW (unclamped)
+      float local_opacity = mask[i];
+      float ta[3], tb[3];
+      _blend_Lab_scale(&a[j], ta);
+      _blend_Lab_scale(&b[j], tb);
+
+      tb[0] = ta[0];
+      tb[1] = ta[1];
+      tb[2] = (ta[2] * (1.0f - local_opacity)) + tb[2] * local_opacity;
+
+      _blend_Lab_rescale(tb, &b[j]);
+      b[j + 3] = local_opacity;
     }
   }
+  else /* if(bd->cst == iop_cs_rgb || bd->cst == iop_cs_RAW) */
+    _blend_noop(bd, a, b, mask, NULL, NULL); // Noop for RGB and Raw (unclamped)
 }
+
 
 /* blend only color in Lab color space without any clamping (a noop for other
  * color spaces) */
 static void _blend_Lab_color(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask,
                              int flag)
 {
-  float max[4] = { 0 }, min[4] = { 0 };
-  _blend_colorspace_channel_range(bd->cst, min, max);
-
   if(bd->cst == iop_cs_Lab)
   {
     for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
@@ -2311,23 +2330,8 @@ static void _blend_Lab_color(const _blend_buffer_desc_t *bd, const float *a, flo
       b[j + 3] = local_opacity;
     }
   }
-  else if(bd->cst == iop_cs_rgb)
-  {
-    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
-    {
-      float local_opacity = mask[i];
-      for(int k = 0; k < bd->bch; k++) b[j + k] = a[j + k]; // Noop for RGB (unclamped)
-
-      b[j + 3] = local_opacity;
-    }
-  }
-  else /* if(bd->cst == iop_cs_RAW) */
-  {
-    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
-    {
-      for(int k = 0; k < bd->bch; k++) b[j + k] = a[j + k]; // Noop for RAW (unclamped)
-    }
-  }
+  else /* if(bd->cst == iop_cs_rgb || bd->cst == iop_cs_RAW) */
+    _blend_noop(bd, a, b, mask, NULL, NULL); // Noop for RGB and Raw (unclamped)
 }
 
 /* blend only lightness in HSV color space without any clamping (a noop for
@@ -2335,16 +2339,7 @@ static void _blend_Lab_color(const _blend_buffer_desc_t *bd, const float *a, flo
 static void _blend_HSV_lightness(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask,
                                  int flag)
 {
-  if(bd->cst == iop_cs_Lab)
-  {
-    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
-    {
-      float local_opacity = mask[i];
-      for(int k = 0; k < bd->bch; k++) b[j + k] = a[j + k]; // Noop for Lab (unclamped)
-      b[j + 3] = local_opacity;
-    }
-  }
-  else if(bd->cst == iop_cs_rgb)
+  if(bd->cst == iop_cs_rgb)
   {
     for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
     {
@@ -2364,13 +2359,8 @@ static void _blend_HSV_lightness(const _blend_buffer_desc_t *bd, const float *a,
       b[j + 3] = local_opacity;
     }
   }
-  else /* if(bd->cst == iop_cs_RAW) */
-  {
-    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
-    {
-      for(int k = 0; k < bd->bch; k++) b[j + k] = a[j + k]; // Noop for RAW (unclamped)
-    }
-  }
+  else /* if(bd->cst == iop_cs_Lab || bd->cst == iop_cs_RAW) */
+    _blend_noop(bd, a, b, mask, NULL, NULL); // Noop for Lab and Raw (unclamped)
 }
 
 /* blend only color in HSV color space without any clamping (a noop for other
@@ -2378,16 +2368,7 @@ static void _blend_HSV_lightness(const _blend_buffer_desc_t *bd, const float *a,
 static void _blend_HSV_color(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask,
                              int flag)
 {
-  if(bd->cst == iop_cs_Lab)
-  {
-    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
-    {
-      float local_opacity = mask[i];
-      for(int k = 0; k < bd->bch; k++) b[j + k] = a[j + k]; // Noop for Lab (unclamped)
-      b[j + 3] = local_opacity;
-    }
-  }
-  else if(bd->cst == iop_cs_rgb)
+  if(bd->cst == iop_cs_rgb)
   {
     for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
     {
@@ -2417,51 +2398,288 @@ static void _blend_HSV_color(const _blend_buffer_desc_t *bd, const float *a, flo
       b[j + 3] = local_opacity;
     }
   }
-  else /* if(bd->cst == iop_cs_RAW) */
+  else /* if(bd->cst == iop_cs_Lab || bd->cst == iop_cs_RAW) */
+    _blend_noop(bd, a, b, mask, NULL, NULL); // Noop for Lab and Raw (unclamped)
+}
+
+/* blend only R-channel in RGB color space without any clamping (a noop for
+ * other color spaces) */
+static void _blend_RGB_R(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask,
+                         int flag)
+{
+  if(bd->cst == iop_cs_rgb)
   {
     for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
     {
-      for(int k = 0; k < bd->bch; k++) b[j + k] = a[j + k]; // Noop for RAW (unclamped)
+      float local_opacity = mask[i];
+
+      b[j + 0] = (a[j + 0] * (1.0f - local_opacity)) + b[j + 0] * local_opacity;
+      b[j + 1] = a[j + 1];
+      b[j + 2] = a[j + 2];
+      b[j + 3] = local_opacity;
     }
+  }
+  else /* if(bd->cst == iop_cs_Lab || bd->cst == iop_cs_RAW) */
+    _blend_noop(bd, a, b, mask, NULL, NULL); // Noop for Lab and Raw (unclamped)
+
+}
+
+/* blend only R-channel in RGB color space without any clamping (a noop for
+ * other color spaces) */
+static void _blend_RGB_G(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask,
+                         int flag)
+{
+  if(bd->cst == iop_cs_rgb)
+  {
+    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+    {
+      float local_opacity = mask[i];
+
+      b[j + 0] = a[j + 0];
+      b[j + 1] = (a[j + 1] * (1.0f - local_opacity)) + b[j + 1] * local_opacity;
+      b[j + 2] = a[j + 2];
+      b[j + 3] = local_opacity;
+    }
+  }
+  else /* if(bd->cst == iop_cs_Lab || bd->cst == iop_cs_RAW) */
+    _blend_noop(bd, a, b, mask, NULL, NULL); // Noop for Lab and Raw (unclamped)
+}
+
+/* blend only R-channel in RGB color space without any clamping (a noop for
+ * other color spaces) */
+static void _blend_RGB_B(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask,
+                         int flag)
+{
+  if(bd->cst == iop_cs_rgb)
+  {
+    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+    {
+      float local_opacity = mask[i];
+
+      b[j + 0] = a[j + 0];
+      b[j + 1] = a[j + 1];
+      b[j + 2] = (a[j + 2] * (1.0f - local_opacity)) + b[j + 2] * local_opacity;
+      b[j + 3] = local_opacity;
+    }
+  }
+  else /* if(bd->cst == iop_cs_Lab || bd->cst == iop_cs_RAW) */
+    _blend_noop(bd, a, b, mask, NULL, NULL); // Noop for Lab and Raw (unclamped)
+}
+
+
+static void display_channel(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask,
+                            dt_dev_pixelpipe_display_mask_t channel)
+{
+
+  switch(channel & DT_DEV_PIXELPIPE_DISPLAY_ANY)
+  {
+    case DT_DEV_PIXELPIPE_DISPLAY_L:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(a[j] / 100.0f, 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_L | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(b[j] / 100.0f, 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_a:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE((a[j + 1] + 128.0f) / 256.0f, 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_a | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE((b[j + 1] + 128.0f) / 256.0f, 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_b:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE((a[j + 2] + 128.0f) / 256.0f, 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_b | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE((b[j + 2] + 128.0f) / 256.0f, 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_R:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(a[j], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_R | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(b[j], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_G:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(a[j + 1], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_G | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(b[j + 1], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_B:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(a[j + 2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_B | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(b[j + 2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_GRAY:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(0.3f * a[j] + 0.59f * a[j + 1] + 0.11f * a[j + 2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_GRAY | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        const float c = CLAMP_RANGE(0.3f * b[j] + 0.59f * b[j + 1] + 0.11f * b[j + 2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float LCH[3];
+        _Lab_2_LCH(a + j, LCH);
+        const float c = CLAMP_RANGE(LCH[1] / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_LCH_C | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float LCH[3];
+        _Lab_2_LCH(b + j, LCH);
+        const float c = CLAMP_RANGE(LCH[1] / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_LCH_h:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float LCH[3];
+        _Lab_2_LCH(a + j, LCH);
+        const float c = CLAMP_RANGE(LCH[2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_LCH_h | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float LCH[3];
+        _Lab_2_LCH(b + j, LCH);
+        const float c = CLAMP_RANGE(LCH[2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_H:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float HSL[3];
+        _RGB_2_HSL(a + j, HSL);
+        const float c = CLAMP_RANGE(HSL[0], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_H | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float HSL[3];
+        _RGB_2_HSL(b + j, HSL);
+        const float c = CLAMP_RANGE(HSL[0], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_S:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float HSL[3];
+        _RGB_2_HSL(a + j, HSL);
+        const float c = CLAMP_RANGE(HSL[1], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_S | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float HSL[3];
+        _RGB_2_HSL(b + j, HSL);
+        const float c = CLAMP_RANGE(HSL[1], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_l:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float HSL[3];
+        _RGB_2_HSL(a + j, HSL);
+        const float c = CLAMP_RANGE(HSL[2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_l | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        float HSL[3];
+        _RGB_2_HSL(b + j, HSL);
+        const float c = CLAMP_RANGE(HSL[2], 0.0f, 1.0f);
+        for(int k = 0; k < bd->bch; k++) b[j + k] = c;
+      }
+      break;
+    default:
+      for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      {
+        for(int k = 0; k < bd->bch; k++) b[j + k] = 0.0f;
+      }
+      break;
+  }
+
+  if(bd->cst != iop_cs_rgb)
+  {
+    for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
+      b[j + 3] = mask[i];
   }
 }
 
-void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                              const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                              const struct dt_iop_roi_t *const roi_out)
+
+_blend_row_func *dt_develop_choose_blend_func(const unsigned int blend_mode)
 {
-  const int ch = piece->colors;           // the number of channels in the buffer
-  const int bch = (ch == 1) ? 1 : ch - 1; // the number of channels to blend (all but alpha)
-
   _blend_row_func *blend = NULL;
-  dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
-
-  if(!d) return;
-
-  const unsigned int blend_mode = d->blend_mode;
-  const unsigned int mask_mode = d->mask_mode;
-  const int xoffs = roi_out->x - roi_in->x;
-  const int yoffs = roi_out->y - roi_in->y;
-  const int iwidth = roi_in->width;
-
-  /* check if blend is disabled */
-  if(!(mask_mode & DEVELOP_MASK_ENABLED)) return;
-
-  /* we can only handle blending if roi_out and roi_in have the same scale and
-     if roi_out fits into the area given by roi_in */
-  if(roi_out->scale != roi_in->scale || xoffs < 0 || yoffs < 0
-     || ((xoffs > 0 || yoffs > 0)
-         && (roi_out->width + xoffs > roi_in->width || roi_out->height + yoffs > roi_in->height)))
-  {
-    // printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale,
-    // roi_out->scale ==
-    // roi_in->scale);
-    // printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs,
-    // roi_out->width, roi_out->height,
-    // roi_in->width, roi_in->height);
-    dt_control_log(_("skipped blending in module '%s': roi's do not match"), self->op);
-    return;
-  }
 
   /* select the blend operator */
   switch(blend_mode)
@@ -2534,7 +2752,14 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       blend = _blend_coloradjust;
       break;
     case DEVELOP_BLEND_LAB_LIGHTNESS:
+    case DEVELOP_BLEND_LAB_L:
       blend = _blend_Lab_lightness;
+      break;
+    case DEVELOP_BLEND_LAB_A:
+      blend = _blend_Lab_a;
+      break;
+    case DEVELOP_BLEND_LAB_B:
+      blend = _blend_Lab_b;
       break;
     case DEVELOP_BLEND_LAB_COLOR:
       blend = _blend_Lab_color;
@@ -2545,6 +2770,15 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     case DEVELOP_BLEND_HSV_COLOR:
       blend = _blend_HSV_color;
       break;
+    case DEVELOP_BLEND_RGB_R:
+      blend = _blend_RGB_R;
+      break;
+    case DEVELOP_BLEND_RGB_G:
+      blend = _blend_RGB_G;
+      break;
+    case DEVELOP_BLEND_RGB_B:
+      blend = _blend_RGB_B;
+      break;
 
     /* fallback to normal blend */
     case DEVELOP_BLEND_NORMAL2:
@@ -2554,11 +2788,62 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       break;
   }
 
+  return blend;
+}
+
+void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                              const void *const ivoid, void *const ovoid, const struct dt_iop_roi_t *const roi_in,
+                              const struct dt_iop_roi_t *const roi_out)
+{
+  const int ch = piece->colors;           // the number of channels in the buffer
+  const int bch = (ch == 1) ? 1 : ch - 1; // the number of channels to blend (all but alpha)
+
+  const dt_develop_blend_params_t *const d = (const dt_develop_blend_params_t *const)piece->blendop_data;
+
+  if(!d) return;
+
+  const unsigned int mask_mode = d->mask_mode;
+  const int xoffs = roi_out->x - roi_in->x;
+  const int yoffs = roi_out->y - roi_in->y;
+  const int iwidth = roi_in->width;
+
+  /* check if blend is disabled */
+  if(!(mask_mode & DEVELOP_MASK_ENABLED)) return;
+
+  /* In most cases of blending-enabled modules input and output of the module have
+   * the exact same dimensions. Only in very special cases we allow a module's input
+   * to exceed its output. This is namely the case for the spot removal module where
+   * the source of a patch might lie outside the roi of the output image. Therefore:
+   * We can only handle blending if roi_out and roi_in have the same scale and
+   * if roi_out fits into the area given by roi_in. xoffs and yoffs describe the relative
+   * offset of the input image to the output image. */
+  if(roi_out->scale != roi_in->scale || xoffs < 0 || yoffs < 0
+     || ((xoffs > 0 || yoffs > 0)
+         && (roi_out->width + xoffs > roi_in->width || roi_out->height + yoffs > roi_in->height)))
+  {
+    // printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale,
+    // roi_out->scale ==
+    // roi_in->scale);
+    // printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs,
+    // roi_out->width, roi_out->height,
+    // roi_in->width, roi_in->height);
+    dt_control_log(_("skipped blending in module '%s': roi's do not match"), self->op);
+    return;
+  }
+
+  /* select the blend operator */
+  _blend_row_func *const blend = dt_develop_choose_blend_func(d->blend_mode);
+
   /* get the clipped opacity value  0 - 1 */
   const float opacity = fmin(fmax(0, (d->opacity / 100.0f)), 1.0f);
 
-  /* only true if mask_display was set by an _earlier_ module */
-  const int mask_display = piece->pipe->mask_display;
+  /* only non-zero if mask_display was set by an _earlier_ module */
+  const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
+
+  /* does user want us to display a specific channel? */
+  const dt_dev_pixelpipe_display_mask_t request_mask_display =
+    (self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH)) ?
+      self->request_mask_display : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   /* check if we only should blend lightness channel. will affect only Lab space
    */
@@ -2568,12 +2853,14 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
 
   /* allocate space for blend mask */
-  float *mask = dt_alloc_align(64, (size_t)roi_out->width * roi_out->height * sizeof(float));
-  if(!mask)
+  float *_mask = dt_alloc_align(64, (size_t)roi_out->width * roi_out->height * sizeof(float));
+  if(!_mask)
   {
     dt_control_log(_("could not allocate buffer for blending"));
     return;
   }
+
+  float *const mask = _mask;
 
   if(mask_mode == DEVELOP_MASK_ENABLED)
   {
@@ -2581,11 +2868,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
     const size_t buffsize = (size_t)roi_out->width * roi_out->height;
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(mask)
-#else
-#pragma omp parallel for shared(mask)
-#endif
+#pragma omp parallel for default(none)
 #endif
     for(size_t i = 0; i < buffsize; i++) mask[i] = opacity;
   }
@@ -2605,11 +2888,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         // if we have a mask and this flag is set -> invert the mask
         const size_t buffsize = (size_t)roi_out->width * roi_out->height;
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(mask)
-#else
-#pragma omp parallel for shared(mask)
-#endif
+#pragma omp parallel for default(none)
 #endif
         for(size_t i = 0; i < buffsize; i++) mask[i] = 1.0f - mask[i];
       }
@@ -2621,11 +2900,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
       const size_t buffsize = (size_t)roi_out->width * roi_out->height;
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(mask)
-#else
-#pragma omp parallel for shared(mask)
-#endif
+#pragma omp parallel for default(none)
 #endif
       for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
     }
@@ -2635,21 +2910,13 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
       const size_t buffsize = (size_t)roi_out->width * roi_out->height;
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(mask)
-#else
-#pragma omp parallel for shared(mask)
-#endif
+#pragma omp parallel for default(none)
 #endif
       for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
     }
 
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__) && !defined(__WIN32__)
-#pragma omp parallel for default(none) shared(mask, blend, d, stderr)
-#else
-#pragma omp parallel for shared(mask, blend, d)
-#endif
+#pragma omp parallel for default(none)
 #endif
     for(size_t y = 0; y < roi_out->height; y++)
     {
@@ -2657,8 +2924,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs) * ch;
       size_t oindex = (size_t)y * roi_out->width * ch;
       _blend_buffer_desc_t bd = { .cst = cst, .stride = (size_t)roi_out->width * ch, .ch = ch, .bch = bch };
-      float *in = (float *)i + iindex;
-      float *out = (float *)o + oindex;
+      float *in = (float *)ivoid + iindex;
+      float *out = (float *)ovoid + oindex;
       float *m = (float *)mask + y * roi_out->width;
       _blend_make_mask(&bd, d->blendif, d->blendif_parameters, d->mask_mode, d->mask_combine, opacity, in,
                        out, m);
@@ -2696,11 +2963,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
        && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH))
     {
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__WIN32__)
-#pragma omp parallel for default(none) shared(mask, stderr)
-#else
-#pragma omp parallel for shared(mask)
-#endif
+#pragma omp parallel for default(none)
 #endif
       for(size_t k = 0; k < (size_t)roi_out->height * roi_out->width; k++)
       {
@@ -2711,34 +2974,33 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
 /* now apply blending with per-pixel opacity value as defined in mask */
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__WIN32__)
-#pragma omp parallel for default(none) shared(mask, blend, stderr)
-#else
-#pragma omp parallel for shared(mask, blend)
-#endif
+#pragma omp parallel for default(none)
 #endif
   for(size_t y = 0; y < roi_out->height; y++)
   {
     size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs) * ch;
     size_t oindex = (size_t)y * roi_out->width * ch;
     _blend_buffer_desc_t bd = { .cst = cst, .stride = (size_t)roi_out->width * ch, .ch = ch, .bch = bch };
-    float *in = (float *)i + iindex;
-    float *out = (float *)o + oindex;
+    float *in = (float *)ivoid + iindex;
+    float *out = (float *)ovoid + oindex;
     float *m = (float *)mask + y * roi_out->width;
-    blend(&bd, in, out, m, blendflag);
 
-    if(mask_display && cst != iop_cs_RAW)
+    if(request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
+      display_channel(&bd, in, out, m, request_mask_display);
+    else
+      blend(&bd, in, out, m, blendflag);
+
+    if((mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) && cst != iop_cs_RAW)
       for(size_t j = 0; j < bd.stride; j += 4) out[j + 3] = in[j + 3];
   }
 
-  /* check if _this_ module should expose mask. */
-  if(self->request_mask_display && self->dev->gui_attached && (self == self->dev->gui_module)
-     && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH))
+  /* register if _this_ module should expose mask or display channel */
+  if(request_mask_display & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
   {
-    piece->pipe->mask_display = 1;
+    piece->pipe->mask_display = request_mask_display;
   }
 
-  dt_free_align(mask);
+  dt_free_align(_mask);
 }
 
 #ifdef HAVE_OPENCL
@@ -2748,9 +3010,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 {
   dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
   cl_int err = -999;
+  cl_mem dev_tmp = NULL;
   cl_mem dev_m = NULL;
   cl_mem dev_mask = NULL;
-  float *mask = NULL;
+  cl_mem dev_masktmp = NULL;
+  float *_mask = NULL;
 
   if(!d) return TRUE;
 
@@ -2762,8 +3026,13 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   /* check if blend is disabled: just return, output is already in dev_out */
   if(!(mask_mode & DEVELOP_MASK_ENABLED)) return TRUE;
 
-  /* we can only handle blending if roi_out and roi_in have the same scale and
-     if roi_out fits into the area given by roi_in */
+  /* In most cases of blending-enabled modules input and output of the module have
+   * the exact same dimensions. Only in very special cases we allow a module's input
+   * to exceed its output. This is namely the case for the spot removal module where
+   * the source of a patch might lie outside the roi of the output image. Therefore:
+   * We can only handle blending if roi_out and roi_in have the same scale and
+   * if roi_out fits into the area given by roi_in. xoffs and yoffs describe the relative
+   * offset of the input image to the output image. */
   if(roi_out->scale != roi_in->scale || xoffs < 0 || yoffs < 0
      || ((xoffs > 0 || yoffs > 0)
          && (roi_out->width + xoffs > roi_in->width || roi_out->height + yoffs > roi_in->height)))
@@ -2780,33 +3049,27 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   }
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
-  const int downsampled = dt_dev_pixelpipe_uses_downsampled_input(piece->pipe);
   int kernel_mask;
   int kernel;
-  int kernel_set_mask = darktable.blendop->kernel_blendop_set_mask;
+  int kernel_set_mask = darktable.opencl->blendop->kernel_blendop_set_mask;
+  int kernel_display_channel = darktable.opencl->blendop->kernel_blendop_display_channel;
 
   switch(cst)
   {
     case iop_cs_RAW:
-      // special case handling: preview pipe uses downsampled rgb images instead
-      // of pre-demosaiced raw data.
-      // actually not used today as there currently exists no pre-demosaic module
-      // with blending *and* opencl support.
-      // only defined here for potential future additions.
-      kernel = (!downsampled) ? darktable.blendop->kernel_blendop_RAW : darktable.blendop->kernel_blendop_rgb;
-      kernel_mask = (!downsampled) ? darktable.blendop->kernel_blendop_mask_RAW
-                                   : darktable.blendop->kernel_blendop_mask_rgb;
+      kernel = darktable.opencl->blendop->kernel_blendop_RAW;
+      kernel_mask = darktable.opencl->blendop->kernel_blendop_mask_RAW;
       break;
 
     case iop_cs_rgb:
-      kernel = darktable.blendop->kernel_blendop_rgb;
-      kernel_mask = darktable.blendop->kernel_blendop_mask_rgb;
+      kernel = darktable.opencl->blendop->kernel_blendop_rgb;
+      kernel_mask = darktable.opencl->blendop->kernel_blendop_mask_rgb;
       break;
 
     case iop_cs_Lab:
     default:
-      kernel = darktable.blendop->kernel_blendop_Lab;
-      kernel_mask = darktable.blendop->kernel_blendop_mask_Lab;
+      kernel = darktable.opencl->blendop->kernel_blendop_Lab;
+      kernel_mask = darktable.opencl->blendop->kernel_blendop_mask_Lab;
       break;
   }
 
@@ -2820,17 +3083,26 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   const int gaussian = d->radius > 0.0f ? 1 : 0;
   const float radius = fabs(d->radius);
   const unsigned int mask_combine = d->mask_combine;
+
+  /* we will transfer alpha channel of input if mask_display was activated by any _earlier_ module */
+  const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
+
+  /* does user want us to display a specific channel? */
+  const dt_dev_pixelpipe_display_mask_t request_mask_display =
+    (self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH)) ?
+      self->request_mask_display : DT_DEV_PIXELPIPE_DISPLAY_NONE;
+
   const int offs[2] = { xoffs, yoffs };
   const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
-  /* quick workaround for masks to be opencl compliant */
-  /* the first mask creation may need to be compute by opencl too */
-  mask = dt_alloc_align(64, (size_t)roi_out->width * roi_out->height * sizeof(float));
-  if(!mask)
+  _mask = dt_alloc_align(64, (size_t)roi_out->width * roi_out->height * sizeof(float));
+  if(!_mask)
   {
     dt_control_log(_("could not allocate buffer for blending"));
     goto error;
   }
+
+  float *const mask = _mask;
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE,
                                                  d->blendif_parameters);
@@ -2838,6 +3110,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   dev_mask = dt_opencl_alloc_device(devid, width, height, sizeof(float));
   if(dev_mask == NULL) goto error;
+
+  dev_masktmp = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  if(dev_masktmp == NULL) goto error;
 
   if(mask_mode == DEVELOP_MASK_ENABLED)
   {
@@ -2866,11 +3141,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
         // if we have a mask and this flag is set -> invert the mask
         const size_t buffsize = (size_t)roi_out->width * roi_out->height;
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(mask)
-#else
-#pragma omp parallel for shared(mask)
-#endif
+#pragma omp parallel for default(none)
 #endif
         for(size_t i = 0; i < buffsize; i++) mask[i] = 1.0f - mask[i];
       }
@@ -2882,11 +3153,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       const float fill = (mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
       const size_t buffsize = (size_t)roi_out->width * roi_out->height;
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(mask)
-#else
-#pragma omp parallel for shared(mask)
-#endif
+#pragma omp parallel for default(none)
 #endif
       for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
     }
@@ -2896,11 +3163,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       const float fill = (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
       const size_t buffsize = (size_t)roi_out->width * roi_out->height;
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(mask)
-#else
-#pragma omp parallel for shared(mask)
-#endif
+#pragma omp parallel for default(none)
 #endif
       for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
     }
@@ -2921,7 +3184,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dt_opencl_set_kernel_arg(devid, kernel_mask, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 2, sizeof(cl_mem), (void *)&dev_mask);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 3, sizeof(cl_mem), (void *)&dev_mask);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 3, sizeof(cl_mem), (void *)&dev_masktmp);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 4, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 5, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 6, sizeof(float), (void *)&opacity);
@@ -2933,26 +3196,26 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
     if(err != CL_SUCCESS) goto error;
 
-    if(maskblur)
+    if(maskblur && gaussian)
     {
-      if(gaussian)
-      {
-        const float sigma = radius * roi_out->scale / piece->iscale;
-        const float mmax[] = { 1.0f };
-        const float mmin[] = { 0.0f };
+      const float sigma = radius * roi_out->scale / piece->iscale;
+      const float mmax[] = { 1.0f };
+      const float mmin[] = { 0.0f };
 
-        dt_gaussian_cl_t *g
-            = dt_gaussian_init_cl(devid, roi_out->width, roi_out->height, 1, mmax, mmin, sigma, 0);
-        if(g)
-        {
-          dt_gaussian_blur_cl(g, dev_mask, dev_mask);
-          dt_gaussian_free_cl(g);
-        }
-      }
-      else
+      dt_gaussian_cl_t *g
+          = dt_gaussian_init_cl(devid, roi_out->width, roi_out->height, 1, mmax, mmin, sigma, 0);
+      if(g)
       {
-        // potential further blend algorithm (bilateral grid?)
+        dt_gaussian_blur_cl(g, dev_masktmp, dev_mask);
+        dt_gaussian_free_cl(g);
       }
+    }
+    else
+    {
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { width, height, 1 };
+      err = dt_opencl_enqueue_copy_image(devid, dev_masktmp, dev_mask, origin, origin, region);
+      if(err != CL_SUCCESS) goto error;
     }
 
     /* check if mask should be suppressed temporarily */
@@ -2968,78 +3231,110 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     }
   }
 
-  /* now apply blending with per-pixel opacity value as defined in dev_mask */
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(unsigned), (void *)&blend_mode);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), (void *)&blendflag);
-  dt_opencl_set_kernel_arg(devid, kernel, 8, 2 * sizeof(int), (void *)&offs);
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  /* get rid of dev_masktmp */
+  dt_opencl_release_mem_object(dev_masktmp);
+  dev_masktmp = NULL;
+
+  /* get temporary buffer for output image to overcome readonly/writeonly limitation */
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  if(dev_tmp == NULL) goto error;
+
+  size_t origin[] = { 0, 0, 0 };
+  size_t region[] = { width, height, 1 };
+  err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
   if(err != CL_SUCCESS) goto error;
 
-  /* we transfer alpha channel of input if mask_display was set by an _earlier_
-   * module */
-  if(piece->pipe->mask_display && cst != iop_cs_RAW)
+  if(request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
   {
-    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 0, sizeof(cl_mem),
-                             (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 1, sizeof(cl_mem),
-                             (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 2, sizeof(cl_mem),
-                             (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 3, sizeof(int),
-                             (void *)&width);
-    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 4, sizeof(int),
-                             (void *)&height);
-    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 5, 2 * sizeof(int),
-                             (void *)&offs);
-    err = dt_opencl_enqueue_kernel_2d(devid, darktable.blendop->kernel_blendop_copy_alpha, sizes);
+    /* let us display a specific channel */
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 1, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 2, sizeof(cl_mem), (void *)&dev_mask);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 3, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 4, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 5, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 6, 2 * sizeof(int), (void *)&offs);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 7, sizeof(int), (void *)&request_mask_display);
+    err = dt_opencl_enqueue_kernel_2d(devid, kernel_display_channel, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+  else
+  {
+    /* apply blending with per-pixel opacity value as defined in dev_mask */
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask);
+    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(unsigned), (void *)&blend_mode);
+    dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), (void *)&blendflag);
+    dt_opencl_set_kernel_arg(devid, kernel, 8, 2 * sizeof(int), (void *)&offs);
+    dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(int), (void *)&mask_display);
+    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }
 
-  /* check if _this_ module should expose mask. */
-  if(self->request_mask_display && self->dev->gui_attached && self == self->dev->gui_module
-     && piece->pipe == self->dev->pipe && (mask_mode & DEVELOP_MASK_BOTH))
+  /* register if _this_ module should expose mask or display channel */
+  if(request_mask_display & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
   {
-    piece->pipe->mask_display = 1;
+    piece->pipe->mask_display = request_mask_display;
   }
 
-  if(mask != NULL) dt_free_align(mask);
-  if(dev_mask != NULL) dt_opencl_release_mem_object(dev_mask);
-  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  dt_free_align(_mask);
+  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_mask);
+  dt_opencl_release_mem_object(dev_m);
   return TRUE;
 
 error:
-  if(mask != NULL) dt_free_align(mask);
-  if(dev_mask != NULL) dt_opencl_release_mem_object(dev_mask);
-  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if(_mask != NULL) dt_free_align(_mask);
+  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_mask);
+  dt_opencl_release_mem_object(dev_masktmp);
+  dt_opencl_release_mem_object(dev_m);
   dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
 
 /** global init of blendops */
-void dt_develop_blend_init(dt_blendop_t *gd)
+dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
 {
 #ifdef HAVE_OPENCL
+  dt_blendop_cl_global_t *b = (dt_blendop_cl_global_t *)calloc(1, sizeof(dt_blendop_cl_global_t));
+
   const int program = 3; // blendop.cl, from programs.conf
-  gd->kernel_blendop_mask_Lab = dt_opencl_create_kernel(program, "blendop_mask_Lab");
-  gd->kernel_blendop_mask_RAW = dt_opencl_create_kernel(program, "blendop_mask_RAW");
-  gd->kernel_blendop_mask_rgb = dt_opencl_create_kernel(program, "blendop_mask_rgb");
-  gd->kernel_blendop_Lab = dt_opencl_create_kernel(program, "blendop_Lab");
-  gd->kernel_blendop_RAW = dt_opencl_create_kernel(program, "blendop_RAW");
-  gd->kernel_blendop_rgb = dt_opencl_create_kernel(program, "blendop_rgb");
-  gd->kernel_blendop_copy_alpha = dt_opencl_create_kernel(program, "blendop_copy_alpha");
-  gd->kernel_blendop_set_mask = dt_opencl_create_kernel(program, "blendop_set_mask");
+  b->kernel_blendop_mask_Lab = dt_opencl_create_kernel(program, "blendop_mask_Lab");
+  b->kernel_blendop_mask_RAW = dt_opencl_create_kernel(program, "blendop_mask_RAW");
+  b->kernel_blendop_mask_rgb = dt_opencl_create_kernel(program, "blendop_mask_rgb");
+  b->kernel_blendop_Lab = dt_opencl_create_kernel(program, "blendop_Lab");
+  b->kernel_blendop_RAW = dt_opencl_create_kernel(program, "blendop_RAW");
+  b->kernel_blendop_rgb = dt_opencl_create_kernel(program, "blendop_rgb");
+  b->kernel_blendop_set_mask = dt_opencl_create_kernel(program, "blendop_set_mask");
+  b->kernel_blendop_display_channel = dt_opencl_create_kernel(program, "blendop_display_channel");
+  return b;
 #else
-  gd->kernel_blendop_Lab = gd->kernel_blendop_RAW = gd->kernel_blendop_rgb = gd->kernel_blendop_copy_alpha
-      = -1;
-  gd->kernel_blendop_mask_Lab = gd->kernel_blendop_mask_RAW = gd->kernel_blendop_mask_rgb
-      = gd->kernel_blendop_set_mask = -1;
+  return NULL;
+#endif
+}
+
+/** global cleanup of blendops */
+void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b)
+{
+#ifdef HAVE_OPENCL
+  if(!b) return;
+
+  dt_opencl_free_kernel(b->kernel_blendop_mask_Lab);
+  dt_opencl_free_kernel(b->kernel_blendop_mask_RAW);
+  dt_opencl_free_kernel(b->kernel_blendop_mask_rgb);
+  dt_opencl_free_kernel(b->kernel_blendop_Lab);
+  dt_opencl_free_kernel(b->kernel_blendop_RAW);
+  dt_opencl_free_kernel(b->kernel_blendop_rgb);
+  dt_opencl_free_kernel(b->kernel_blendop_set_mask);
+  dt_opencl_free_kernel(b->kernel_blendop_display_channel);
+
+  free(b);
 #endif
 }
 
@@ -3049,12 +3344,12 @@ int dt_develop_blend_version(void)
   return DEVELOP_BLEND_VERSION;
 }
 
-/** report back specific memory requirements for blend step */
+/** report back specific memory requirements for blend step (only relevant for OpenCL path) */
 void tiling_callback_blendop(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                              struct dt_develop_tiling_t *tiling)
 {
-  tiling->factor = 2.5f; // in + out + two quarter buffers for mask creation and blur
+  tiling->factor = 3.25f; // in + out + tmp + one quarter buffer for the mask
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 0;

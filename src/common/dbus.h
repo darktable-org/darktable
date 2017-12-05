@@ -16,20 +16,32 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __DBUS_H__
-#define __DBUS_H__
+#pragma once
+
+#include <glib.h>
+#include <gio/gio.h>
+
+typedef struct dt_dbus_t
+{
+  int connected;
+
+  GDBusNodeInfo *introspection_data;
+  guint owner_id;
+  guint registration_id;
+
+  // used for client actions on the bus
+  GDBusConnection *dbus_connection;
+} dt_dbus_t;
 
 /** allocates and initializes dbus */
-struct dt_dbus_t *dt_dbus_init();
+dt_dbus_t *dt_dbus_init();
 
 /** closes down database and frees memory */
-void dt_dbus_destroy(const struct dt_dbus_t *);
+void dt_dbus_destroy(const dt_dbus_t *);
 
 /** have we managed to get the dbus name? when not, then there is already another instance of darktable
  * running */
-gboolean dt_dbus_connected(const struct dt_dbus_t *);
-
-#endif // __DBUS_H__
+gboolean dt_dbus_connected(const dt_dbus_t *);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

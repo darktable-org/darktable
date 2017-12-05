@@ -16,17 +16,17 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/luastorage.h"
-#include "lua/image.h"
-#include "lua/widget/widget.h"
-#include <stdio.h>
-#include <common/darktable.h>
-#include "common/imageio_module.h"
 #include "common/file_location.h"
 #include "common/image.h"
 #include "common/imageio.h"
+#include "common/imageio_module.h"
+#include "control/jobs.h"
 #include "lua/call.h"
 #include "lua/glist.h"
-#include "control/jobs.h"
+#include "lua/image.h"
+#include "lua/widget/widget.h"
+#include <common/darktable.h>
+#include <stdio.h>
 
 typedef struct
 {
@@ -77,7 +77,9 @@ static int default_dimension_wrapper(struct dt_imageio_module_storage_t *self, d
 
 static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data,
                          const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
-                         const int num, const int total, const gboolean high_quality, const gboolean upscale)
+                         const int num, const int total, const gboolean high_quality, const gboolean upscale,
+                         dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
+                         dt_iop_color_intent_t icc_intent)
 {
 
   /* construct a temporary file name */
@@ -94,7 +96,8 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
 
   gchar *complete_name = g_build_filename(tmpdir, filename, (char *)NULL);
 
-  if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality, upscale, FALSE, self, self_data, num, total) != 0)
+  if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality, upscale, FALSE, icc_type, icc_filename,
+                       icc_intent, self, self_data, num, total) != 0)
   {
     fprintf(stderr, "[%s] could not export to file: `%s'!\n", self->name(self), complete_name);
     g_free(complete_name);
@@ -133,8 +136,8 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
   luaA_push(L, dt_lua_image_t, &imgid);
   luaA_push_type(L, format->parameter_lua_type, fdata);
   lua_pushstring(L, complete_name);
-  lua_pushnumber(L, num);
-  lua_pushnumber(L, total);
+  lua_pushinteger(L, num);
+  lua_pushinteger(L, total);
   lua_pushboolean(L, high_quality);
   push_lua_data(L,d);
   dt_lua_goto_subtable(L,"extra");

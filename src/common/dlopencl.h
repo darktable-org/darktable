@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_DLOPENCL_H
-#define DT_DLOPENCL_H
+#pragma once
 
 #ifdef HAVE_OPENCL
 
@@ -233,8 +232,7 @@ void dt_dlopencl_noop(void);
 /* dynamically load OpenCL library and bind needed functions */
 dt_dlopencl_t *dt_dlopencl_init(const char *);
 
-#endif
-#endif
+#endif // HAVE_OPENCL
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

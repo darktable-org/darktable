@@ -131,10 +131,18 @@
             </row>
             <row>
               <entry>
+                $(IMAGE.BASENAME)
+              </entry>
+              <entry>
+                The image file basename
+              </entry>
+            </row>
+            <row>
+              <entry>
                 $(IMAGE.EXIF)
               </entry>
               <entry>
-                The image exif string
+                The image Exif string
               </entry>
             </row>
             <row>
@@ -150,7 +158,7 @@
                 $(EXIF.DATE.SECOND)
               </entry>
               <entry>
-                Seconds from the image EXIF data
+                Seconds from the image Exif data
               </entry>
             </row>
             <row>
@@ -158,7 +166,7 @@
                 $(EXIF.DATE.MINUTE)
               </entry>
               <entry>
-                Minutes from the image EXIF data
+                Minutes from the image Exif data
               </entry>
             </row>
             <row>
@@ -166,7 +174,7 @@
                 $(EXIF.DATE.HOUR)
               </entry>
               <entry>
-                Hours from the image EXIF data (24h)
+                Hours from the image Exif data (24h)
               </entry>
             </row>
             <row>
@@ -174,7 +182,7 @@
                 $(EXIF.DATE.HOUR_AMPM)
               </entry>
               <entry>
-                Hours from the image EXIF data (12h, AM/PM)
+                Hours from the image Exif data (12h, AM/PM)
               </entry>
             </row>
             <row>
@@ -182,7 +190,7 @@
                 $(EXIF.DATE.DAY)
               </entry>
               <entry>
-                Day of month from the image EXIF data (01&nbsp;..&nbsp;31)
+                Day of month from the image Exif data (01&nbsp;..&nbsp;31)
               </entry>
             </row>
             <row>
@@ -190,7 +198,7 @@
                 $(EXIF.DATE.MONTH)
               </entry>
               <entry>
-                Month from the image EXIF data (01&nbsp;..&nbsp;12)
+                Month from the image Exif data (01&nbsp;..&nbsp;12)
               </entry>
             </row>
             <row>
@@ -198,7 +206,7 @@
                 $(EXIF.DATE.SHORT_MONTH)
               </entry>
               <entry>
-                Month from the image EXIF data localized (Jan, Feb,&nbsp;.. Dec)
+                Month from the image Exif data localized (Jan, Feb,&nbsp;.. Dec)
               </entry>
             </row>
             <row>
@@ -206,7 +214,7 @@
                 $(EXIF.DATE.LONG_MONTH)
               </entry>
               <entry>
-                Month from the image EXIF data localized (January, February,&nbsp;.. December)
+                Month from the image Exif data localized (January, February,&nbsp;.. December)
               </entry>
             </row>
             <row>
@@ -214,7 +222,7 @@
                 $(EXIF.DATE.SHORT_YEAR)
               </entry>
               <entry>
-                Abbreviated year from the image EXIF data (2013 is "13")
+                Abbreviated year from the image Exif data (2013 is "13")
               </entry>
             </row>
             <row>
@@ -222,7 +230,7 @@
                 $(EXIF.DATE.LONG_YEAR)
               </entry>
               <entry>
-                Full year from the image EXIF data
+                Full year from the image Exif data
               </entry>
             </row>
             <row>
@@ -377,6 +385,38 @@
                 The rights assigned to the image
               </entry>
             </row>
+            <row>
+              <entry>
+                $(GPS.LATITUDE)
+              </entry>
+              <entry>
+                The image latitude coordinate (N/S 0&nbsp;..&nbsp;90)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(GPS.LONGITUDE)
+              </entry>
+              <entry>
+                The image longitude coordinate (E/W 0&nbsp;..&nbsp;180)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(GPS.ELEVATION)
+              </entry>
+              <entry>
+                The image elevation level (meters)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(GPS.LOCATION)
+              </entry>
+              <entry>
+                All three coordinates (latitude, longitude, elevation)
+              </entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>
@@ -407,9 +447,9 @@
     <sect5>
       <title>text color</title>
       <para>
-        This field shows the text color. Clicking on the color swatch opens a dialog box which
-        offers you a choice of commonly used colors, or lets you add your own choice of colors
-        in a HSV color picker.
+        This field shows the text color. Clicking on the colored field will open a color
+        selector dialog which offers you a choice of commonly used colors, or allows to define a
+        color in RGB color space.
       </para>
     </sect5>
 

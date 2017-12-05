@@ -42,6 +42,8 @@
 // this is the version of the modules parameters, and includes version information about compile-time dt
 DT_MODULE_INTROSPECTION(1, dt_iop_liquify_params_t)
 
+#pragma GCC diagnostic ignored "-Wshadow"
+
 #define MAX_NODES 100 // max of nodes in one instance
 
 const int   LOOKUP_OVERSAMPLE = 10;
@@ -253,9 +255,8 @@ typedef struct {
 
   cairo_t *fake_cr;     ///< A fake cairo context for hit testing and coordinate transform.
 
-  gboolean mouse_pointer_in_widget;
   GtkLabel *label;
-  GtkToggleButton *btn_no_tool, *btn_point_tool, *btn_line_tool, *btn_curve_tool, *btn_node_tool;
+  GtkToggleButton *btn_point_tool, *btn_line_tool, *btn_curve_tool, *btn_node_tool;
 
 } dt_iop_liquify_gui_data_t;
 
@@ -1186,8 +1187,12 @@ void modify_roi_in (struct dt_iop_module_t *module,
 
   distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params);
 
-  cairo_rectangle_int_t pipe_rect
-      = { 0, 0, piece->buf_in.width * roi_in->scale, piece->buf_in.height * roi_in->scale };
+  cairo_rectangle_int_t pipe_rect = {
+    0,
+    0,
+    lroundf((double)piece->buf_in.width * roi_in->scale),
+    lroundf((double)piece->buf_in.height * roi_in->scale)
+  };
 
   cairo_rectangle_int_t roi_in_rect = {
     roi_in->x,
@@ -1452,12 +1457,12 @@ static cl_int_t apply_global_distortion_map_cl (struct dt_iop_module_t *module,
 
 error:
 
-  if (dev_kernel    ) dt_opencl_release_mem_object (dev_kernel);
-  if (dev_kdesc     ) dt_opencl_release_mem_object (dev_kdesc);
-  if (dev_map_extent) dt_opencl_release_mem_object (dev_map_extent);
-  if (dev_map       ) dt_opencl_release_mem_object (dev_map);
-  if (dev_roi_out   ) dt_opencl_release_mem_object (dev_roi_out);
-  if (dev_roi_in    ) dt_opencl_release_mem_object (dev_roi_in);
+  dt_opencl_release_mem_object (dev_kernel);
+  dt_opencl_release_mem_object (dev_kdesc);
+  dt_opencl_release_mem_object (dev_map_extent);
+  dt_opencl_release_mem_object (dev_map);
+  dt_opencl_release_mem_object (dev_roi_out);
+  dt_opencl_release_mem_object (dev_roi_in);
   if (k             ) free (k);
 
   return err;
@@ -1529,7 +1534,7 @@ void init (dt_iop_module_t *module)
 {
   // module is disabled by default
   module->default_enabled = 0;
-  module->priority = 230; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 220; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_liquify_params_t);
   module->gui_data = NULL;
 
@@ -2196,9 +2201,10 @@ static float find_nearest_on_line_t (const float complex p0, const float complex
  * solver. Use the GSL?)
  *
  * Here is an article that explains the math:
- * http://www.particleincell.com/blog/2012/bezier-splines/ Basically
- * we find all the ctrl1 points when we solve the linear system, then
- * we calculate each ctrl2 from the ctrl1.
+ * http://www.particleincell.com/blog/2012/bezier-splines/
+ *
+ * Basically we find all the ctrl1 points when we solve the linear
+ * system, then we calculate each ctrl2 from the ctrl1.
  *
  * We build the linear system choosing for each segment of the path an
  * equation among following 9 equations.  "Straight" is a path that
@@ -2208,30 +2214,30 @@ static float find_nearest_on_line_t (const float complex p0, const float complex
  * knot (1st and 2nd derivatives are constant around the knot.)
  * "Keep" means to keep the control point as the user set it.
  *
- *      start     end of path
- *
- *   1: straight  smooth
- *   2: smooth    smooth
- *   3: smooth    straight
- *   4: keep      smooth
- *   5: keep      keep
- *   6: smooth    keep
- *   7: keep      straight
- *   8: straight  straight  (yields a line)
- *   9: straight  keep
+ * |    | start       |   end of path
+ * | -- | ----------- | ---------------
+ * | 1  | straight    | smooth
+ * | 2  | smooth      | smooth
+ * | 3  | smooth      | straight
+ * | 4  | keep        | smooth
+ * | 5  | keep        | keep
+ * | 6  | smooth      | keep
+ * | 7  | keep        | straight
+ * | 8  | straight    | straight  (yields a line)
+ * | 9  | straight    | keep
  *
  * The equations are (close your eyes):
  *
  * \f{eqnarray}{
- *                2P_{1,i} + P_{1,i+1} &=&  K_i + 2K_{i+1}  \eqno(1) \\
- *    P_{1,i-1} + 4P_{1,i} + P_{1,i+1} &=& 4K_i + 2K_{i+1}  \eqno(2) \\
- *   2P_{1,i-1} + 7P_{1,i}             &=& 8K_i +  K_{i+1}  \eqno(3) \\
- *                 P_{1,i}             &=& C1_i             \eqno(4) \\
- *                 P_{1,i}             &=& C1_i             \eqno(5) \\
- *    P_{1,i-1} + 4P_{1,i}             &=& C2_i + 4K_i      \eqno(6) \\
- *                 P_{1,i}             &=& C1_i             \eqno(7) \\
- *                3P_{1,i}             &=& 2K_i +  K_{i+1}  \eqno(8) \\
- *                2P_{1,i}             &=&  K_i +  C2_i     \eqno(9)
+ *                2P_{1,i} + P_{1,i+1} &=&  K_i + 2K_{i+1}  \label{1} \\
+ *    P_{1,i-1} + 4P_{1,i} + P_{1,i+1} &=& 4K_i + 2K_{i+1}  \label{2} \\
+ *   2P_{1,i-1} + 7P_{1,i}             &=& 8K_i +  K_{i+1}  \label{3} \\
+ *                 P_{1,i}             &=& C1_i             \label{4} \\
+ *                 P_{1,i}             &=& C1_i             \label{5} \\
+ *    P_{1,i-1} + 4P_{1,i}             &=& C2_i + 4K_i      \label{6} \\
+ *                 P_{1,i}             &=& C1_i             \label{7} \\
+ *                3P_{1,i}             &=& 2K_i +  K_{i+1}  \label{8} \\
+ *                2P_{1,i}             &=&  K_i +  C2_i     \label{9}
  * \f}
  *
  * Some of these are the same and differ only in the way we calculate
@@ -2367,71 +2373,31 @@ static void smooth_paths_linsys (dt_iop_liquify_params_t *params)
 
       // Program the linear system with equations:
       //
-      // 1: straight start  smooth end
-      // 2: smooth start    smooth end
-      // 3: smooth start    straight end
-      // 4: keep start      smooth end
-      // 5: keep start      keep end
-      // 6: smooth start    keep end
-      // 7: keep start      straight end
-      // 8: straight start  straight end   (== line)
-      // 9: straight start  keep end
+      //    START           END
+      //    --------------------------
+      // 1: straight        smooth
+      // 2: smooth          smooth
+      // 3: smooth          straight
+      // 4: keep            smooth
+      // 5: keep            keep
+      // 6: smooth          keep
+      // 7: keep            straight
+      // 8: straight        straight   (== line)
+      // 9: straight        keep
 
-      if (lineseg)
-      {
-        eqn[idx] = 5;
-        goto done;
-      }
-      if (!autosmooth && !next_autosmooth)
-      {
-        eqn[idx] = 5;
-        goto done;
-      }
+      if (lineseg)                                                    eqn[idx] = 5;
+      else if (!autosmooth && !next_autosmooth)                       eqn[idx] = 5;
+      else if (firstseg && lastseg && !autosmooth && next_autosmooth) eqn[idx] = 7;
+      else if (firstseg && lastseg && autosmooth && next_autosmooth)  eqn[idx] = 8;
+      else if (firstseg && lastseg && autosmooth && !next_autosmooth) eqn[idx] = 9;
+      else if (firstseg && autosmooth && !next_autosmooth)            eqn[idx] = 5;
+      else if (firstseg && autosmooth)                                eqn[idx] = 1;
+      else if (lastseg && autosmooth && next_autosmooth)              eqn[idx] = 3;
+      else if (lastseg && !autosmooth && next_autosmooth)             eqn[idx] = 7;
+      else if (autosmooth && !next_autosmooth)                        eqn[idx] = 6;
+      else if (!autosmooth && next_autosmooth)                        eqn[idx] = 4;
+      else                                                            eqn[idx] = 2;
 
-      if (firstseg && lastseg && !autosmooth && next_autosmooth)
-      {
-        eqn[idx] = 7;
-        goto done;
-      }
-      if (firstseg && lastseg && autosmooth && next_autosmooth)
-      {
-        eqn[idx] = 8;
-        goto done;
-      }
-      if (firstseg && lastseg && autosmooth && !next_autosmooth)
-      {
-        eqn[idx] = 9;
-        goto done;
-      }
-
-      if (firstseg && autosmooth)
-      {
-        eqn[idx] = 1;
-        goto done;
-      }
-      if (lastseg && autosmooth && next_autosmooth)
-      {
-        eqn[idx] = 3;
-        goto done;
-      }
-      if (lastseg && !autosmooth && next_autosmooth)
-      {
-        eqn[idx] = 7;
-        goto done;
-      }
-      if (autosmooth && !next_autosmooth)
-      {
-        eqn[idx] = 6;
-        goto done;
-      }
-      if (!autosmooth && next_autosmooth)
-      {
-        eqn[idx] = 4;
-        goto done;
-      }
-      eqn[idx] = 2; // default
-
-    done:
       ++idx;
       node = node_next (params, node);
     }
@@ -2604,7 +2570,15 @@ void gui_post_expose (struct dt_iop_module_t *module,
 void gui_focus (struct dt_iop_module_t *module, gboolean in)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  g->mouse_pointer_in_widget = module->enabled && in;
+
+  if (!in)
+  {
+    dt_control_hinter_message (darktable.control, "");
+    gtk_toggle_button_set_active (g->btn_point_tool, FALSE);
+    gtk_toggle_button_set_active (g->btn_line_tool,  FALSE);
+    gtk_toggle_button_set_active (g->btn_curve_tool, FALSE);
+    gtk_toggle_button_set_active (g->btn_node_tool,  FALSE);
+  }
 }
 
 static void sync_pipe (struct dt_iop_module_t *module, gboolean history)
@@ -3014,6 +2988,7 @@ int button_released (struct dt_iop_module_t *module,
   // right click == cancel or delete
   if (which == 3)
   {
+    dt_control_hinter_message (darktable.control, "");
     end_drag (g);
 
     // cancel line or curve creation
@@ -3194,9 +3169,6 @@ done:
   return handled;
 }
 
-static void _liquify_cairo_paint_no_tool
-(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags);
-
 static void _liquify_cairo_paint_point_tool
 (cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags);
 
@@ -3237,14 +3209,15 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
     if (btn == g->btn_node_tool)
       dt_control_hinter_message (darktable.control, _("click to edit nodes"));
   }
-  gtk_toggle_button_set_active (g->btn_no_tool, 0);
   sync_pipe (module, FALSE);
+  dt_iop_request_focus(module);
 }
 
 void gui_update (dt_iop_module_t *module)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
   memcpy(&g->params, module->params, sizeof(dt_iop_liquify_params_t));
+  update_warp_count(g);
 }
 
 void gui_init (dt_iop_module_t *module)
@@ -3265,7 +3238,6 @@ void gui_init (dt_iop_module_t *module)
   g->last_mouse_pos =
   g->last_button1_pressed_pos = -1;
   g->last_hit = NOWHERE;
-  g->mouse_pointer_in_widget = 0;
   dt_pthread_mutex_init (&g->lock, NULL);
   g->node_index = 0;
 
@@ -3310,27 +3282,20 @@ void gui_init (dt_iop_module_t *module)
   gtk_widget_set_size_request (GTK_WIDGET(g->btn_point_tool), bs, bs);
   gtk_box_pack_end (GTK_BOX(hbox), GTK_WIDGET(g->btn_point_tool), FALSE, FALSE, 0);
 
-  g->btn_no_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_no_tool,
-                                                            CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  g_signal_connect (G_OBJECT (g->btn_no_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_no_tool), _("disable all tools"));
-  gtk_toggle_button_set_active (g->btn_no_tool, 0);
-  gtk_widget_set_size_request (GTK_WIDGET(g->btn_no_tool), bs, bs);
-  gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(g->btn_no_tool), FALSE, FALSE, 0);
-
   gtk_box_pack_start(GTK_BOX(module->widget), hbox, TRUE, TRUE, 0);
 
-  dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl+click to add node\nright click to remove path");
-  dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click : linear or feathered\n"
-                                                              "ctrl+click : autosmooth, cups, smooth, symmetrical\n"
-                                                              "right-click to remove");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl-click: add node - right click: remove path\n"
+                                                              "ctrl-alt-click: toggle line/curve");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click: show/hide feathering controls\n"
+                                                              "ctrl-click: autosmooth, cusp, smooth, symmetrical"
+                                                              " - right click to remove");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT1].hint     = _("drag to change shape of path");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT2].hint     = _("drag to change shape of path");
   dt_liquify_layers[DT_LIQUIFY_LAYER_RADIUSPOINT].hint    = _("drag to adjust warp radius");
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT1].hint = _("drag to adjust hardness (center)");
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT2].hint = _("drag to adjust hardness (feather)");
   dt_liquify_layers[DT_LIQUIFY_LAYER_STRENGTHPOINT].hint  = _("drag to adjust warp strength\n"
-                                                              "ctrl+click : linear, grow, and shrink");
+                                                              "ctrl-click: linear, grow, and shrink");
 }
 
 void gui_cleanup (dt_iop_module_t *module)
@@ -3351,14 +3316,12 @@ void init_key_accels (dt_iop_module_so_t *module)
   dt_accel_register_iop (module, FALSE, NC_("accel", "line tool"),      0, 0);
   dt_accel_register_iop (module, FALSE, NC_("accel", "curve tool"),     0, 0);
   dt_accel_register_iop (module, FALSE, NC_("accel", "node tool"),      0, 0);
-  dt_accel_register_iop (module, FALSE, NC_("accel", "disable tools"),  0, 0);
 }
 
 void connect_key_accels (dt_iop_module_t *module)
 {
   const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
 
-  dt_accel_connect_button_iop (module, "disable tools", GTK_WIDGET (g->btn_no_tool));
   dt_accel_connect_button_iop (module, "point tool",    GTK_WIDGET (g->btn_point_tool));
   dt_accel_connect_button_iop (module, "line tool",     GTK_WIDGET (g->btn_line_tool));
   dt_accel_connect_button_iop (module, "curve tool",    GTK_WIDGET (g->btn_curve_tool));
@@ -3382,20 +3345,6 @@ void connect_key_accels (dt_iop_module_t *module)
   cairo_pop_group_to_source (cr);                               \
   cairo_paint_with_alpha (cr, flags & CPF_ACTIVE ? 1.0 : 0.5);  \
   cairo_restore (cr);
-
-static void _liquify_cairo_paint_no_tool (cairo_t *cr,
-                                          const gint x, const gint y, const gint w, const gint h, const gint flags)
-{
-  PREAMBLE;
-  cairo_set_line_width (cr, 0.1);
-  cairo_move_to (cr, 0.3, 0.7);
-  cairo_line_to (cr, 0.7, 0.3);
-
-  cairo_move_to (cr, 0.3, 0.3);
-  cairo_line_to (cr, 0.7, 0.7);
-  cairo_stroke (cr);
-  POSTAMBLE;
-}
 
 static void _liquify_cairo_paint_point_tool (cairo_t *cr,
                                              const gint x, const gint y, const gint w, const gint h, const gint flags)

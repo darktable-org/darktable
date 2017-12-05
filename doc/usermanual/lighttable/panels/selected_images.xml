@@ -33,11 +33,11 @@
     </tgroup>
   </informaltable>
 
-  <sect3>
+  <sect3 id="selected_images_usage">
 
     <title>Usage</title>
 
-    <sect4>
+    <sect4 id="selected_images_usage_remove">
 
       <title>remove</title>
 
@@ -58,7 +58,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="selected_images_usage_delete">
 
       <title>delete/trash</title>
 
@@ -91,7 +91,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="selected_images_usage_move">
 
       <title>move</title>
 
@@ -108,7 +108,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="selected_images_usage_copy">
 
       <title>copy</title>
 
@@ -125,7 +125,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="selected_images_usage_hdr">
 
       <title>create hdr</title>
 
@@ -139,13 +139,13 @@
         been taken on a sturdy tripod. You can also generate HDRs with programs like
         <ulink url="http://qtpfsgui.sourceforge.net/"><emphasis>Luminance
         HDR</emphasis></ulink>, and later import them into darktable for further processing (see
-        <xref linkend="supported_file_formats"/>). Note that darktable cannot currently create
-        HDR files from images made with non-Bayer (e.g. Fujifilm X-Trans) sensors.
+        <xref linkend="supported_file_formats"/>). Note that darktable will only creates HDR
+        images from raw files.
       </para>
 
     </sect4>
 
-    <sect4>
+    <sect4 id="selected_images_usage_duplicate">
 
       <title>duplicate</title>
 
@@ -161,20 +161,20 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="selected_images_usage_rotation">
 
       <title>rotation</title>
 
       <para>
         Perform a counter-clockwise or clockwise rotation on selected images. The third button
-        resets the image rotation to the value in the EXIF data. This feature is directly linked
+        resets the image rotation to the value in the Exif data. This feature is directly linked
         to the orientation module (see <xref linkend="orientation"/>)&nbsp;&ndash; adjustments
         are converted into history stack items of that module.
       </para>
 
     </sect4>
 
-    <sect4>
+    <sect4 id="selected_images_usage_copy_locally">
 
       <title>copy locally</title>
 
@@ -190,7 +190,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="selected_images_usage_resync">
 
       <title>resync local copy</title>
 
@@ -203,7 +203,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="selected_images_usage_group">
 
       <title>group</title>
 
@@ -217,7 +217,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="selected_images_usage_ungroup">
 
       <title>ungroup</title>
 

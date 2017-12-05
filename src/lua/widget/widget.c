@@ -16,12 +16,11 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/widget/common.h"
-#include "lua/widget/common.h"
-#include "lua/types.h"
-#include "lua/modules.h"
-#include "lua/call.h"
 #include "control/control.h"
+#include "lua/call.h"
+#include "lua/modules.h"
+#include "lua/types.h"
+#include "lua/widget/common.h"
 #include "stdarg.h"
 /**
   TODO
@@ -32,6 +31,8 @@ dt_ui_section_label : make new lua widget
 widget names : implement for CSS ?
   */
 
+#pragma GCC diagnostic ignored "-Wshadow"
+
 dt_lua_widget_type_t widget_type = {
   .name = "widget",
   .gui_init = NULL,
@@ -40,6 +41,15 @@ dt_lua_widget_type_t widget_type = {
   .parent = NULL
 };
 
+
+static void cleanup_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type,lua_widget widget);
+static void cleanup_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type,lua_widget widget) {
+  if(widget_type->parent) 
+    cleanup_widget_sub(L,widget_type->parent,widget);
+  if(widget_type->gui_cleanup) {
+    widget_type->gui_cleanup(L,widget);
+  }
+}
 
 static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type);
 static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type) {
@@ -51,17 +61,6 @@ static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type) {
 
 static void on_destroy(GtkWidget *widget, gpointer user_data)
 {
-  lua_widget lwidget = (lua_widget)user_data;
-  dt_lua_lock_silent();
-  lua_State* L = darktable.lua_state.state;
-  if(lwidget->type->gui_cleanup) {
-    lwidget->type->gui_cleanup(L,lwidget);
-  }
-  dt_lua_widget_unbind(L,lwidget);
-  dt_lua_type_gpointer_drop(L,lwidget);
-  dt_lua_type_gpointer_drop(L,lwidget->widget);
-  free(lwidget);
-  dt_lua_unlock();
 }
 
 static gboolean on_destroy_wrapper(gpointer user_data)
@@ -76,9 +75,15 @@ static int widget_gc(lua_State *L)
   luaA_to(L,lua_widget,&lwidget,1);
   if(!lwidget) return 0; // object has been destroyed
   if(gtk_widget_get_parent(lwidget->widget)) {
-    luaL_error(L,"Destroying a widget which is still parented, this should never happen\n");
+    luaL_error(L,"Destroying a widget which is still parented, this should never happen (%s at %p)\n",lwidget->type->name,lwidget);
   }
+  cleanup_widget_sub(L,lwidget->type,lwidget);
+  dt_lua_widget_unbind(L,lwidget);
+  // no need to drop, the pointer table is weak and the widget is already being GC, so it's not in the table anymore
+  //dt_lua_type_gpointer_drop(L,lwidget);
+  //dt_lua_type_gpointer_drop(L,lwidget->widget);
   g_idle_add(on_destroy_wrapper,lwidget->widget);
+  free(lwidget);
   return 0;
 }
 
@@ -327,11 +332,13 @@ int dt_lua_init_widget(lua_State* L)
   dt_lua_init_widget_check_button(L);
   dt_lua_init_widget_combobox(L);
   dt_lua_init_widget_label(L);
+  dt_lua_init_widget_section_label(L);
   dt_lua_init_widget_entry(L);
   dt_lua_init_widget_file_chooser_button(L);
   dt_lua_init_widget_separator(L);
   dt_lua_init_widget_slider(L);
   dt_lua_init_widget_stack(L);
+  dt_lua_init_widget_text_view(L);
 
   dt_lua_push_darktable_lib(L);
   lua_pushstring(L, "new_widget");

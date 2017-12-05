@@ -70,11 +70,6 @@ int operation_tags()
   return IOP_TAG_DISTORT;
 }
 
-int output_bpp(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  return 4 * sizeof(float);
-}
-
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
 {
   dt_iop_scalepixels_data_t *d = piece->data;
@@ -220,20 +215,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
     piece->enabled = 0;
 }
 
-void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in,
-                     const dt_iop_roi_t *const roi_out, dt_develop_tiling_t *tiling)
-{
-  float ioratio = ((float)roi_out->width * roi_out->height) / ((float)roi_in->width * roi_in->height);
-
-  tiling->factor = 1.0f + ioratio; // in + out, no temp
-  tiling->maxbuf = 1.0f;
-  tiling->overhead = 0;
-  tiling->overlap = 4;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
-  return;
-}
-
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_scalepixels_data_t));
@@ -285,7 +266,7 @@ void init(dt_iop_module_t *self)
   self->default_params = calloc(1, sizeof(dt_iop_scalepixels_params_t));
   self->default_enabled = (!isnan(image->pixel_aspect_ratio) && image->pixel_aspect_ratio > 0.0f
                            && image->pixel_aspect_ratio != 1.0f);
-  self->priority = 219; // module order created by iop_dependencies.py, do not edit!
+  self->priority = 249; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_scalepixels_params_t);
   self->gui_data = NULL;
 }

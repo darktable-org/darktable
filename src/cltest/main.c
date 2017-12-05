@@ -19,14 +19,38 @@
 #include "common/darktable.h"
 #include "common/opencl.h"
 
+#ifdef _WIN32
+#include <conio.h>
+#include "win/main_wrapper.h"
+#endif
+
 int main(int argc, char *arg[])
 {
+  int result = 1;
   // only used to force-init opencl, so we want these options:
-  char *m_arg[] = { "darktable-cltest", "-d", "opencl", "--library", ":memory:"};
+  char *m_arg[] = { "-d", "opencl", "--library", ":memory:"};
   const int m_argc = sizeof(m_arg) / sizeof(m_arg[0]);
-  if(dt_init(m_argc, m_arg, 0, NULL)) exit(1);
+  char **argv = malloc(argc * sizeof(arg[0]) + sizeof(m_arg));
+  if(!argv) goto end;
+  for(int i = 0; i < argc; i++)
+    argv[i] = arg[i];
+  for(int i = 0; i < m_argc; i++)
+    argv[argc + i] = m_arg[i];
+  argc += m_argc;
+  if(dt_init(argc, argv, FALSE, FALSE, NULL)) goto end;
   dt_cleanup();
-  exit(0);
+  free(argv);
+
+  result = 0;
+end:
+
+#ifdef _WIN32
+  printf("\npress any key to exit\n");
+  FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+  getch();
+#endif
+
+  exit(result);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

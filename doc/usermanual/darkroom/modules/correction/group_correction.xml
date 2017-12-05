@@ -18,6 +18,10 @@
 
   <xi:include href="denoise_bilateral.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="liquify.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="ashift.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="lenscorrection.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="scalepixels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
@@ -33,6 +37,8 @@
   <xi:include href="hotpixels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="chromatic.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="hazeremoval.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="defringe.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 

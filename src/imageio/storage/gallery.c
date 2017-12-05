@@ -32,7 +32,9 @@
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
 #include "imageio/storage/imageio_storage_api.h"
-#include "version.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -59,6 +61,7 @@ typedef struct dt_imageio_gallery_t
 typedef struct pair_t
 {
   char line[4096];
+  char item[4096];
   int pos;
 } pair_t;
 
@@ -103,6 +106,9 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("_select as output destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
@@ -113,11 +119,17 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    char composed[PATH_MAX] = { 0 };
-    snprintf(composed, sizeof(composed), "%s/$(FILE_NAME)", dir);
-    gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
-    dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", composed);
+    char *composed = g_build_filename(dir, "$(FILE_NAME)", NULL);
+
+    // composed can now contain '\': on Windows it's the path separator,
+    // on other platforms it can be part of a regular folder name.
+    // This would later clash with variable substitution, so we have to escape them
+    gchar *escaped = dt_util_str_replace(composed, "\\", "\\\\");
+
+    gtk_entry_set_text(GTK_ENTRY(d->entry), escaped); // the signal handler will write this to conf
     g_free(dir);
+    g_free(composed);
+    g_free(escaped);
   }
   gtk_widget_destroy(filechooser);
 }
@@ -155,7 +167,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
 
   char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
-      _("enter the path where to put exported images\nrecognized variables:"),
+      _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
+        "recognized variables:"),
       dt_gtkentry_get_default_path_compl_list());
   gtk_widget_set_tooltip_text(widget, tooltip_text);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
@@ -169,7 +182,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   widget = gtk_label_new(_("title"));
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   d->title_entry = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
@@ -206,7 +219,8 @@ static gint sort_pos(pair_t *a, pair_t *b)
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale)
+          const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
+          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)sdata;
 
@@ -214,136 +228,132 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   char dirname[PATH_MAX] = { 0 };
   gboolean from_cache = FALSE;
   dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
-  // we're potentially called in parallel. have sequence number synchronized:
-  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+
+  char tmp_dir[PATH_MAX] = { 0 };
+
+  d->vp->filename = dirname;
+  d->vp->jobcode = "export";
+  d->vp->imgid = imgid;
+  d->vp->sequence = num;
+
+  gchar *result_tmp_dir = dt_variables_expand(d->vp, d->filename, TRUE);
+  g_strlcpy(tmp_dir, result_tmp_dir, sizeof(tmp_dir));
+  g_free(result_tmp_dir);
+
+  // if filenamepattern is a directory just let att ${FILE_NAME} as default..
+  if(g_file_test(tmp_dir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)
+     || ((d->filename + strlen(d->filename) - 1)[0] == '/'
+         || (d->filename + strlen(d->filename) - 1)[0] == '\\'))
+    snprintf(d->filename + strlen(d->filename), sizeof(d->filename) - strlen(d->filename), "/$(FILE_NAME)");
+
+  // avoid braindead export which is bound to overwrite at random:
+  if(total > 1 && !g_strrstr(d->filename, "$"))
   {
+    snprintf(d->filename + strlen(d->filename), sizeof(d->filename) - strlen(d->filename), "_$(SEQUENCE)");
+  }
 
-    char tmp_dir[PATH_MAX] = { 0 };
+  gchar *fixed_path = dt_util_fix_path(d->filename);
+  g_strlcpy(d->filename, fixed_path, sizeof(d->filename));
+  g_free(fixed_path);
 
-    d->vp->filename = dirname;
-    d->vp->jobcode = "export";
-    d->vp->imgid = imgid;
-    d->vp->sequence = num;
-    dt_variables_expand(d->vp, d->filename, TRUE);
+  gchar *result_filename = dt_variables_expand(d->vp, d->filename, TRUE);
+  g_strlcpy(filename, result_filename, sizeof(filename));
+  g_free(result_filename);
 
-    gchar *result_tmp_dir = dt_variables_get_result(d->vp);
-    g_strlcpy(tmp_dir, result_tmp_dir, sizeof(tmp_dir));
-    g_free(result_tmp_dir);
+  g_strlcpy(dirname, filename, sizeof(dirname));
 
-    // if filenamepattern is a directory just let att ${FILE_NAME} as default..
-    if(g_file_test(tmp_dir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)
-       || ((d->filename + strlen(d->filename) - 1)[0] == '/'
-           || (d->filename + strlen(d->filename) - 1)[0] == '\\'))
-      snprintf(d->filename + strlen(d->filename), sizeof(d->filename) - strlen(d->filename), "/$(FILE_NAME)");
+  const char *ext = format->extension(fdata);
+  char *c = dirname + strlen(dirname);
+  for(; c > dirname && *c != '/'; c--)
+    ;
+  if(*c == '/') *c = '\0';
+  if(g_mkdir_with_parents(dirname, 0755))
+  {
+    fprintf(stderr, "[imageio_storage_gallery] could not create directory: `%s'!\n", dirname);
+    dt_control_log(_("could not create directory `%s'!"), dirname);
+    return 1;
+  }
 
-    // avoid braindead export which is bound to overwrite at random:
-    if(total > 1 && !g_strrstr(d->filename, "$"))
-    {
-      snprintf(d->filename + strlen(d->filename), sizeof(d->filename) - strlen(d->filename), "_$(SEQUENCE)");
-    }
+  // store away dir.
+  snprintf(d->cached_dirname, sizeof(d->cached_dirname), "%s", dirname);
 
-    gchar *fixed_path = dt_util_fix_path(d->filename);
-    g_strlcpy(d->filename, fixed_path, sizeof(d->filename));
-    g_free(fixed_path);
+  c = filename + strlen(filename);
+  for(; c > filename && *c != '.' && *c != '/'; c--)
+    ;
+  if(c <= filename || *c == '/') c = filename + strlen(filename);
 
-    dt_variables_expand(d->vp, d->filename, TRUE);
+  sprintf(c, ".%s", ext);
 
-    gchar *result_filename = dt_variables_get_result(d->vp);
-    g_strlcpy(filename, result_filename, sizeof(filename));
-    g_free(result_filename);
+  // save image to list, in order:
+  pair_t *pair = malloc(sizeof(pair_t));
 
-    g_strlcpy(dirname, filename, sizeof(dirname));
+  char *title = NULL, *description = NULL;
+  GList *res_title, *res_desc;
 
-    const char *ext = format->extension(fdata);
-    char *c = dirname + strlen(dirname);
-    for(; c > dirname && *c != '/'; c--)
-      ;
-    if(*c == '/') *c = '\0';
-    if(g_mkdir_with_parents(dirname, 0755))
-    {
-      fprintf(stderr, "[imageio_storage_gallery] could not create directory: `%s'!\n", dirname);
-      dt_control_log(_("could not create directory `%s'!"), dirname);
-      dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-      return 1;
-    }
+  res_title = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
+  if(res_title)
+  {
+    title = res_title->data;
+  }
 
-    // store away dir.
-    snprintf(d->cached_dirname, sizeof(d->cached_dirname), "%s", dirname);
+  res_desc = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
+  if(res_desc)
+  {
+    description = res_desc->data;
+  }
 
-    c = filename + strlen(filename);
-    for(; c > filename && *c != '.' && *c != '/'; c--)
-      ;
-    if(c <= filename || *c == '/') c = filename + strlen(filename);
+  char relfilename[PATH_MAX] = { 0 }, relthumbfilename[PATH_MAX] = { 0 };
+  c = filename + strlen(filename);
+  for(; c > filename && *c != '/'; c--)
+    ;
+  if(*c == '/') c++;
+  if(c <= filename) c = filename;
+  snprintf(relfilename, sizeof(relfilename), "%s", c);
+  snprintf(relthumbfilename, sizeof(relthumbfilename), "%s", relfilename);
+  c = relthumbfilename + strlen(relthumbfilename);
+  for(; c > relthumbfilename && *c != '.'; c--)
+    ;
+  if(c <= relthumbfilename) c = relthumbfilename + strlen(relthumbfilename);
+  sprintf(c, "-thumb.%s", ext);
 
-    sprintf(c, ".%s", ext);
+  char subfilename[PATH_MAX] = { 0 }, relsubfilename[PATH_MAX] = { 0 };
+  snprintf(subfilename, sizeof(subfilename), "%s", d->cached_dirname);
+  char *sc = subfilename + strlen(subfilename);
+  sprintf(sc, "/img_%d.html", num);
+  snprintf(relsubfilename, sizeof(relsubfilename), "img_%d.html", num);
 
-    // save image to list, in order:
-    pair_t *pair = malloc(sizeof(pair_t));
+  snprintf(pair->line, sizeof(pair->line),
+           "\n"
+           "      <div><div class=\"dia\">\n"
+           "      <img src=\"%s\" alt=\"img%d\" class=\"img\" onclick=\"openSwipe(%d)\"/></div>\n"
+           "      <h1>%s</h1>\n"
+           "      %s</div>\n",
+           relthumbfilename,
+           num, num-1, title ? title : "&nbsp;", description ? description : "&nbsp;");
 
-    char *title = NULL, *description = NULL;
-    GList *res_title, *res_desc;
-
-    res_title = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
-    if(res_title)
-    {
-      title = res_title->data;
-    }
-
-    res_desc = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
-    if(res_desc)
-    {
-      description = res_desc->data;
-    }
-
-    char relfilename[PATH_MAX] = { 0 }, relthumbfilename[PATH_MAX] = { 0 };
-    c = filename + strlen(filename);
-    for(; c > filename && *c != '/'; c--)
-      ;
-    if(*c == '/') c++;
-    if(c <= filename) c = filename;
-    snprintf(relfilename, sizeof(relfilename), "%s", c);
-    snprintf(relthumbfilename, sizeof(relthumbfilename), "%s", relfilename);
-    c = relthumbfilename + strlen(relthumbfilename);
-    for(; c > relthumbfilename && *c != '.'; c--)
-      ;
-    if(c <= relthumbfilename) c = relthumbfilename + strlen(relthumbfilename);
-    sprintf(c, "-thumb.%s", ext);
-
-    char subfilename[PATH_MAX] = { 0 }, relsubfilename[PATH_MAX] = { 0 };
-    snprintf(subfilename, sizeof(subfilename), "%s", d->cached_dirname);
-    char *sc = subfilename + strlen(subfilename);
-    sprintf(sc, "/img_%d.html", num);
-    snprintf(relsubfilename, sizeof(relsubfilename), "img_%d.html", num);
-
-    snprintf(pair->line, sizeof(pair->line),
-             "\n"
-             "      <div><a class=\"dia\" rel=\"lightbox[viewer]\" title=\"%s - %s\" "
-             "href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
-             "      <h1>%s</h1>\n"
-             "      %s</div>\n",
-             title ? title : relfilename, description ? description : "&nbsp;", relfilename, relthumbfilename,
-             num, title ? title : "&nbsp;", description ? description : "&nbsp;");
-
-    char next[PATH_MAX] = { 0 };
-    snprintf(next, sizeof(next), "img_%d.html", (num) % total + 1);
-
-    char prev[PATH_MAX] = { 0 };
-    snprintf(prev, sizeof(prev), "img_%d.html", (num == 1) ? total : num - 1);
-
-    pair->pos = num;
-    if(res_title) g_list_free_full(res_title, &g_free);
-    if(res_desc) g_list_free_full(res_desc, &g_free);
-    d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
-  } // end of critical block
-  dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-
-  /* export image to file */
-  if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, FALSE, self, sdata, num, total) != 0)
+  // export image to file. need this to be able to access meaningful
+  // fdata->width and height below.
+  if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, FALSE, icc_type, icc_filename,
+                       icc_intent, self, sdata, num, total) != 0)
   {
     fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     return 1;
   }
+
+  snprintf(pair->item, sizeof(pair->item),
+           "{\n"
+           "src: '%s',\n"
+           "w: %d,\n"
+           "h: %d,\n"
+           "msrc: '%s',\n"
+           "},\n",
+           relfilename, fdata->width, fdata->height, relthumbfilename);
+
+  pair->pos = num;
+  if(res_title) g_list_free_full(res_title, &g_free);
+  if(res_desc) g_list_free_full(res_desc, &g_free);
+  d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
 
   /* also export thumbnail: */
   // write with reduced resolution:
@@ -352,13 +362,14 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   fdata->max_width = 200;
   fdata->max_height = 200;
   // alter filename with -thumb:
-  char *c = filename + strlen(filename);
+  c = filename + strlen(filename);
   for(; c > filename && *c != '.' && *c != '/'; c--)
     ;
   if(c <= filename || *c == '/') c = filename + strlen(filename);
-  const char *ext = format->extension(fdata);
+  ext = format->extension(fdata);
   sprintf(c, "-thumb.%s", ext);
-  if(dt_imageio_export(imgid, filename, format, fdata, FALSE, TRUE, FALSE, self, sdata, num, total) != 0)
+  if(dt_imageio_export(imgid, filename, format, fdata, FALSE, TRUE, FALSE, icc_type, icc_filename, icc_intent, self,
+                       sdata, num, total) != 0)
   {
     fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
@@ -382,8 +393,8 @@ static void copy_res(const char *src, const char *dst)
   dt_loc_get_datadir(share, sizeof(share));
   gchar *sourcefile = g_build_filename(share, src, NULL);
   char *content = NULL;
-  FILE *fin = fopen(sourcefile, "rb");
-  FILE *fout = fopen(dst, "wb");
+  FILE *fin = g_fopen(sourcefile, "rb");
+  FILE *fout = g_fopen(dst, "wb");
 
   if(fin && fout)
   {
@@ -418,50 +429,34 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   copy_res("/style/style.css", filename);
   sprintf(c, "/style/favicon.ico");
   copy_res("/style/favicon.ico", filename);
-  sprintf(c, "/style/bullet.gif");
-  copy_res("/style/bullet.gif", filename);
-  sprintf(c, "/style/close.gif");
-  copy_res("/style/close.gif", filename);
-  sprintf(c, "/style/closelabel.gif");
-  copy_res("/style/closelabel.gif", filename);
-  sprintf(c, "/style/donate-button.gif");
-  copy_res("/style/donate-button.gif", filename);
-  sprintf(c, "/style/download-icon.gif");
-  copy_res("/style/download-icon.gif", filename);
-  sprintf(c, "/style/image-1.jpg");
-  copy_res("/style/image-1.jpg", filename);
-  sprintf(c, "/style/lightbox.css");
-  copy_res("/style/lightbox.css", filename);
-  sprintf(c, "/style/loading.gif");
-  copy_res("/style/loading.gif", filename);
-  sprintf(c, "/style/nextlabel.gif");
-  copy_res("/style/nextlabel.gif", filename);
-  sprintf(c, "/style/prevlabel.gif");
-  copy_res("/style/prevlabel.gif", filename);
-  sprintf(c, "/style/thumb-1.jpg");
-  copy_res("/style/thumb-1.jpg", filename);
 
-  // create subdir   js for lightbox2 viewer scripts
-  sprintf(c, "/js");
+  // create subdir pswp for photoswipe scripts
+  sprintf(c, "/pswp/default-skin/");
   g_mkdir_with_parents(filename, 0755);
-  sprintf(c, "/js/builder.js");
-  copy_res("/js/builder.js", filename);
-  sprintf(c, "/js/effects.js");
-  copy_res("/js/effects.js", filename);
-  sprintf(c, "/js/lightbox.js");
-  copy_res("/js/lightbox.js", filename);
-  sprintf(c, "/js/lightbox-web.js");
-  copy_res("/js/lightbox-web.js", filename);
-  sprintf(c, "/js/prototype.js");
-  copy_res("/js/prototype.js", filename);
-  sprintf(c, "/js/scriptaculous.js");
-  copy_res("/js/scriptaculous.js", filename);
+  sprintf(c, "/pswp/photoswipe.js");
+  copy_res("/pswp/photoswipe.js", filename);
+  sprintf(c, "/pswp/photoswipe.min.js");
+  copy_res("/pswp/photoswipe.min.js", filename);
+  sprintf(c, "/pswp/photoswipe-ui-default.js");
+  copy_res("/pswp/photoswipe-ui-default.js", filename);
+  sprintf(c, "/pswp/photoswipe.css");
+  copy_res("/pswp/photoswipe.css", filename);
+  sprintf(c, "/pswp/photoswipe-ui-default.min.js");
+  copy_res("/pswp/photoswipe-ui-default.min.js", filename);
+  sprintf(c, "/pswp/default-skin/default-skin.css");
+  copy_res("/pswp/default-skin/default-skin.css", filename);
+  sprintf(c, "/pswp/default-skin/default-skin.png");
+  copy_res("/pswp/default-skin/default-skin.png", filename);
+  sprintf(c, "/pswp/default-skin/default-skin.svg");
+  copy_res("/pswp/default-skin/default-skin.svg", filename);
+  sprintf(c, "/pswp/default-skin/preloader.gif");
+  copy_res("/pswp/default-skin/preloader.gif", filename);
 
   sprintf(c, "/index.html");
 
   const char *title = d->title;
 
-  FILE *f = fopen(filename, "wb");
+  FILE *f = g_fopen(filename, "wb");
   if(!f) return;
   fprintf(f,
           "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
@@ -471,10 +466,10 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
           "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
           "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
           "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
-          "    <link rel=\"stylesheet\" href=\"style/lightbox.css\" type=\"text/css\" media=\"screen\" />"
-          "    <script type=\"text/javascript\" src=\"js/prototype.js\"></script>\n"
-          "    <script type=\"text/javascript\" src=\"js/scriptaculous.js?load=effects,builder\"></script>\n"
-          "    <script type=\"text/javascript\" src=\"js/lightbox.js\"></script>\n"
+          "    <link rel=\"stylesheet\" href=\"pswp/photoswipe.css\">\n" 
+          "    <link rel=\"stylesheet\" href=\"pswp/default-skin/default-skin.css\">\n"
+          "    <script src=\"pswp/photoswipe.min.js\"></script>\n"
+          "    <script src=\"pswp/photoswipe-ui-default.min.js\"></script>\n"
           "    <title>%s</title>\n"
           "  </head>\n"
           "  <body>\n"
@@ -482,26 +477,86 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
           "    <div class=\"page\">\n",
           title, title);
 
+  size_t count = 0;
+  GList *tmp = d->l;
+  while(tmp)
+  {
+    pair_t *p = (pair_t *)tmp->data;
+    fprintf(f, "%s", p->line);
+    tmp = g_list_next(tmp);
+    count++;
+  }
+
+  fprintf(f, "        <p style=\"clear:both;\"></p>\n"
+             "    </div>\n"
+             "    <div class=\"footer\">\n"
+             "      <script language=\"JavaScript\" type=\"text/javascript\">\n"
+             "      document.write(\"download all: <em>curl -O#  \" + document.documentURI.replace( /\\\\/g, '/' ).replace( /\\/[^\\/]*$/, '' ) + \"/img_[0000-%04zu].jpg</em>\")\n"
+             "      </script><br />\n"
+             "      created with %s\n"
+             "    </div>\n"
+             "    <div class=\"pswp\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">\n"
+             "        <div class=\"pswp__bg\"></div>\n"
+             "        <div class=\"pswp__scroll-wrap\">\n"
+             "            <div class=\"pswp__container\">\n"
+             "                <div class=\"pswp__item\"></div>\n"
+             "                <div class=\"pswp__item\"></div>\n"
+             "                <div class=\"pswp__item\"></div>\n"
+             "            </div>\n"
+             "            <div class=\"pswp__ui pswp__ui--hidden\">\n"
+             "                <div class=\"pswp__top-bar\">\n"
+             "                    <div class=\"pswp__counter\"></div>\n"
+             "                    <button class=\"pswp__button pswp__button--close\" title=\"Close (Esc)\"></button>\n"
+             "                    <button class=\"pswp__button pswp__button--share\" title=\"Share\"></button>\n"
+             "                    <button class=\"pswp__button pswp__button--fs\" title=\"Toggle fullscreen\"></button>\n"
+             "                    <button class=\"pswp__button pswp__button--zoom\" title=\"Zoom in/out\"></button>\n"
+             "                    <div class=\"pswp__preloader\">\n"
+             "                        <div class=\"pswp__preloader__icn\">\n"
+             "                          <div class=\"pswp__preloader__cut\">\n"
+             "                            <div class=\"pswp__preloader__donut\"></div>\n"
+             "                          </div>\n"
+             "                        </div>\n"
+             "                   </div>\n"
+             "                </div>\n"
+             "                <div class=\"pswp__share-modal pswp__share-modal--hidden pswp__single-tap\">\n"
+             "                    <div class=\"pswp__share-tooltip\"></div>\n"
+             "                </div>\n"
+             "                <button class=\"pswp__button pswp__button--arrow--left\" title=\"Previous (arrow left)\">\n"
+             "                </button>\n"
+             "                <button class=\"pswp__button pswp__button--arrow--right\" title=\"Next (arrow right)\">\n"
+             "                </button>\n"
+             "                <div class=\"pswp__caption\">\n"
+             "                    <div class=\"pswp__caption__center\"></div>\n"
+             "                </div>\n"
+             "            </div>\n"
+             "        </div>\n"
+             "    </div>\n"
+             "  </body>\n"
+             "<script>\n"
+             "var pswpElement = document.querySelectorAll('.pswp')[0];\n"
+             "var items = [\n",
+          count,
+          darktable_package_string);
   while(d->l)
   {
     pair_t *p = (pair_t *)d->l->data;
-    fprintf(f, "%s", p->line);
+    fprintf(f, "%s", p->item);
     free(p);
     d->l = g_list_delete_link(d->l, d->l);
   }
-
-  fprintf(
-      f,
-      "        <p style=\"clear:both;\"></p>\n"
-      "    </div>\n"
-      "    <div class=\"footer\">\n"
-      "      <script language=\"JavaScript\" type=\"text/javascript\">\n"
-      "      document.write(\"download all: <em>wget -r -np -nc -k \" + document.documentURI + \"</em>\")\n"
-      "      </script><br />\n"
-      "      created with darktable " PACKAGE_VERSION "\n"
-      "    </div>\n"
-      "  </body>\n"
-      "</html>\n");
+  fprintf(f, "];\n"
+             "function openSwipe(img)\n"
+             "{\n"
+             "    // define options (if needed)\n"
+             "    var options = {\n"
+             "          // optionName: 'option value'\n"
+             "          index: img // start at first slide\n"
+             "    };\n"
+             "    var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options);\n"
+             "    gallery.init();\n"
+             "}\n"
+             "</script>\n"
+             "</html>\n");
   fclose(f);
 }
 

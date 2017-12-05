@@ -28,6 +28,9 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "views/view.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 
@@ -45,7 +48,7 @@ typedef struct dt_lib_tagging_t
   GtkTreeView *current, *related;
   int imgsel;
 
-  GtkWidget *attach_button, *detach_button, *new_button, *delete_button;
+  GtkWidget *attach_button, *detach_button, *new_button, *delete_button, *import_button, *export_button;
 
   GtkWidget *floating_tag_window;
   int floating_tag_imgid;
@@ -63,11 +66,15 @@ const char *name(dt_lib_module_t *self)
   return _("tagging");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  uint32_t v = DT_VIEW_LIGHTTABLE | DT_VIEW_MAP | DT_VIEW_TETHERING;
-  if(dt_conf_get_bool("plugins/darkroom/tagging/visible")) v |= DT_VIEW_DARKROOM;
-  return v;
+  static const char *v1[] = {"lighttable", "darkroom", "map", "tethering", NULL};
+  static const char *v2[] = {"lighttable", "map", "tethering", NULL};
+
+  if(dt_conf_get_bool("plugins/darkroom/tagging/visible"))
+    return v1;
+  else
+    return v2;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -194,9 +201,21 @@ static void detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   if(tagid <= 0) return;
 
   imgsel = dt_view_get_image_to_act_on();
+  GList *affected_images = dt_tag_get_images_from_selection(imgsel, tagid);
 
   dt_tag_detach(tagid, imgsel);
-  dt_image_synch_xmp(imgsel);
+
+  // we have to check the conf option as dt_image_synch_xmp() doesn't when called for a single image
+  if(dt_conf_get_bool("write_sidecar_files"))
+  {
+    for(GList *image_iter = affected_images; image_iter; image_iter = g_list_next(image_iter))
+    {
+      int imgid = GPOINTER_TO_INT(image_iter->data);
+      dt_image_synch_xmp(imgid);
+    }
+  }
+
+  g_list_free(affected_images);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
@@ -313,7 +332,7 @@ static void delete_button_clicked(GtkButton *button, gpointer user_data)
 
   GList *tagged_images = NULL;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from tagged_images where tagid=?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.tagged_images WHERE tagid=?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -338,6 +357,87 @@ static void delete_button_clicked(GtkButton *button, gpointer user_data)
   update(self, 1);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+}
+
+static void import_button_clicked(GtkButton *button, gpointer user_data)
+{
+  char *last_dirname = dt_conf_get_string("plugins/lighttable/tagging/last_import_export_location");
+  if(!last_dirname || !*last_dirname)
+  {
+    g_free(last_dirname);
+    last_dirname = g_strdup(g_get_home_dir());
+  }
+
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new(_("Select a keyword file"), GTK_WINDOW(win),
+                                                       GTK_FILE_CHOOSER_ACTION_OPEN,
+                                                       _("_cancel"), GTK_RESPONSE_CANCEL,
+                                                       _("_import"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
+  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_dirname);
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+
+  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    char *dirname = g_path_get_dirname(filename);
+    dt_conf_set_string("plugins/lighttable/tagging/last_import_export_location", dirname);
+    ssize_t count = dt_tag_import(filename);
+    if(count < 0)
+      dt_control_log(_("error importing tags"));
+    else
+      dt_control_log(_("%zd tags imported"), count);
+    g_free(filename);
+    g_free(dirname);
+  }
+
+  g_free(last_dirname);
+  gtk_widget_destroy(filechooser);
+}
+
+static void export_button_clicked(GtkButton *button, gpointer user_data)
+{
+  GDateTime *now = g_date_time_new_now_local();
+  char *export_filename = g_date_time_format(now, "darktable_tags_%F_%R.txt");
+  char *last_dirname = dt_conf_get_string("plugins/lighttable/tagging/last_import_export_location");
+  if(!last_dirname || !*last_dirname)
+  {
+    g_free(last_dirname);
+    last_dirname = g_strdup(g_get_home_dir());
+  }
+
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new(_("Select file to export to"), GTK_WINDOW(win),
+                                                       GTK_FILE_CHOOSER_ACTION_SAVE,
+                                                       _("_cancel"), GTK_RESPONSE_CANCEL,
+                                                       _("_export"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
+  gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(filechooser), TRUE);
+  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_dirname);
+  gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(filechooser), export_filename);
+
+  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    char *dirname = g_path_get_dirname(filename);
+    dt_conf_set_string("plugins/lighttable/tagging/last_import_export_location", dirname);
+    ssize_t count = dt_tag_export(filename);
+    if(count < 0)
+      dt_control_log(_("error exporting tags"));
+    else
+      dt_control_log(_("%zd tags exported"), count);
+    g_free(filename);
+    g_free(dirname);
+  }
+
+  g_date_time_unref(now);
+  g_free(last_dirname);
+  g_free(export_filename);
+  gtk_widget_destroy(filechooser);
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -471,6 +571,18 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
 
+  button = gtk_button_new_with_label(C_("verb", "import"));
+  d->import_button = button;
+  gtk_widget_set_tooltip_text(button, _("import tags from a Lightroom keyword file"));
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_button_clicked), (gpointer)self);
+
+  button = gtk_button_new_with_label(C_("verb", "export"));
+  d->export_button = button;
+  gtk_widget_set_tooltip_text(button, _("export all tags to a Lightroom keyword file"));
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)self);
+
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // add entry completion
@@ -515,27 +627,9 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
     case GDK_KEY_KP_Enter:
     {
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
-      /* attach tag to images  */
-      if(d->floating_tag_imgid > 0) // just a single image
-      {
-        dt_tag_attach_string_list(tag, d->floating_tag_imgid);
-        dt_image_synch_xmp(d->floating_tag_imgid);
-      }
-      else // all selected images
-      {
-        GList *selected_images = g_list_first(dt_collection_get_selected(darktable.collection, -1));
-        if(selected_images)
-        {
-          GList *iter = selected_images;
-          do
-          {
-            int imgid = GPOINTER_TO_INT(iter->data);
-            dt_tag_attach_string_list(tag, imgid);
-            dt_image_synch_xmp(imgid);
-          } while((iter = g_list_next(iter)) != NULL);
-        }
-        g_list_free(selected_images);
-      }
+      // both these functions can deal with -1 for all selected images. no need for extra code in here!
+      dt_tag_attach_string_list(tag, d->floating_tag_imgid);
+      dt_image_synch_xmp(d->floating_tag_imgid);
       update(self, 1);
       update(self, 0);
       gtk_widget_destroy(d->floating_tag_window);
@@ -550,6 +644,37 @@ static gboolean _lib_tagging_tag_destroy(GtkWidget *widget, GdkEvent *event, gpo
 {
   gtk_widget_destroy(GTK_WIDGET(user_data));
   return FALSE;
+}
+
+static gboolean _completion_match_func(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter,
+                                       gpointer user_data)
+{
+  gboolean res = FALSE;
+  char *tag = NULL;
+  GtkTreeModel *model = gtk_entry_completion_get_model(completion);
+  int column = gtk_entry_completion_get_text_column(completion);
+
+  if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING) return FALSE;
+
+  gtk_tree_model_get(model, iter, column, &tag, -1);
+
+  if(tag)
+  {
+    char *normalized = g_utf8_normalize(tag, -1, G_NORMALIZE_ALL);
+    if(normalized)
+    {
+      char *casefold = g_utf8_casefold(normalized, -1);
+      if(casefold)
+      {
+        res = g_strstr_len(casefold, -1, key) != NULL;
+      }
+      g_free(casefold);
+    }
+    g_free(normalized);
+    g_free(tag);
+  }
+
+  return res;
 }
 
 static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -593,6 +718,9 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   //   y = py + pointery + 1;
 
   d->floating_tag_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(d->floating_tag_window);
+#endif
   /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
   gtk_widget_set_can_focus(d->floating_tag_window, TRUE);
   gtk_window_set_decorated(GTK_WINDOW(d->floating_tag_window), FALSE);
@@ -611,6 +739,7 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   gtk_entry_completion_set_text_column(completion, 0);
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_completion_set_popup_set_width(completion, FALSE);
+  gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
   gtk_entry_set_completion(GTK_ENTRY(entry), completion);
 
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);

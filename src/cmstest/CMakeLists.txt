@@ -1,5 +1,10 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
-add_executable(darktable-cmstest main.c)
+add_executable(darktable-cmstest main.c ${CMAKE_BINARY_DIR}/src/version_gen.c)
+
+# cmake implicitly sets GENERATED on the source file in the directory of the custom command
+# since this isn't the same directory we do have to manually set it
+set_source_files_properties(${CMAKE_BINARY_DIR}/src/version_gen.c PROPERTIES GENERATED TRUE)
+add_dependencies(darktable-cmstest generate_version)
 
 target_link_libraries(darktable-cmstest ${LCMS2_LIBRARIES})
 add_definitions(${LCMS2_DEFINITIONS})
@@ -33,4 +38,8 @@ endif(COLORD_FOUND AND NOT ${COLORD_VERSION} VERSION_LESS "0.1.32")
 
 set_target_properties(darktable-cmstest PROPERTIES LINKER_LANGUAGE C)
 
-install(TARGETS darktable-cmstest DESTINATION bin)
+if (WIN32)
+  _detach_debuginfo (darktable-cmstest bin)
+endif(WIN32)
+
+install(TARGETS darktable-cmstest DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)

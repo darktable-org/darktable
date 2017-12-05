@@ -16,10 +16,10 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/lib.h"
+#include "gui/gtk.h"
+#include "lua/call.h"
 #include "lua/modules.h"
 #include "lua/types.h"
-#include "lua/call.h"
-#include "gui/gtk.h"
 
 static int expanded_member(lua_State *L)
 {
@@ -103,11 +103,13 @@ static int container_member(lua_State*L) {
 
 static int views_member(lua_State*L) {
   dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
-  int i;
   lua_newtable(L);
-  for(i=0; i<  darktable.view_manager->num_views ; i++) {
-    if(darktable.view_manager->view[i].view(&darktable.view_manager->view[i]) & module->views(module)){
-      dt_lua_module_entry_push(L,"view",(darktable.view_manager->view[i].module_name));
+  for(GList *iter = darktable.view_manager->views; iter; iter = g_list_next(iter))
+  {
+    const dt_view_t *view = (const dt_view_t *)iter->data;
+    if(dt_lib_is_visible_in_view(module, view))
+    {
+      dt_lua_module_entry_push(L,"view",(view->module_name));
       luaL_ref(L,-2);
     }
   }

@@ -16,17 +16,17 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/database.h"
-#include "lua/events.h"
-#include "lua/image.h"
-#include "lua/film.h"
-#include "lua/types.h"
-#include "common/debug.h"
+#include "common/collection.h"
 #include "common/darktable.h"
+#include "common/debug.h"
+#include "common/film.h"
 #include "common/grealpath.h"
 #include "common/image.h"
-#include "common/film.h"
-#include "common/collection.h"
 #include "control/control.h"
+#include "lua/events.h"
+#include "lua/film.h"
+#include "lua/image.h"
+#include "lua/types.h"
 #include <errno.h>
 
 /***********************************************************************
@@ -132,7 +132,7 @@ static int import_images(lua_State *L)
       return luaL_error(L, "error while importing");
     }
 
-    result = dt_image_import(new_film.id, full_name, TRUE);
+    result = dt_image_import_lua(new_film.id, full_name, TRUE);
     if(dt_film_is_empty(new_film.id)) dt_film_remove(new_film.id);
     dt_film_cleanup(&new_film);
     if(result == 0)
@@ -149,11 +149,11 @@ static int import_images(lua_State *L)
 static int database_len(lua_State *L)
 {
   sqlite3_stmt *stmt = NULL;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(*) from images ", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM main.images ", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
-    lua_pushnumber(L, sqlite3_column_int(stmt, 0));
+    lua_pushinteger(L, sqlite3_column_int(stmt, 0));
   else
-    lua_pushnumber(L, 0);
+    lua_pushinteger(L, 0);
   sqlite3_finalize(stmt);
   return 1;
 }
@@ -167,7 +167,7 @@ static int database_numindex(lua_State *L)
   }
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  snprintf(query, sizeof(query), "select images.id from images order by images.id limit 1 offset %d",
+  snprintf(query, sizeof(query), "SELECT id FROM main.images ORDER BY id LIMIT 1 OFFSET %d",
            index - 1);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -179,14 +179,14 @@ static int database_numindex(lua_State *L)
   else
   {
     sqlite3_finalize(stmt);
-    return luaL_error(L, "incorrect index in database");
+    lua_pushnil(L);
   }
   return 1;
 }
 
 static int collection_len(lua_State *L)
 {
-  lua_pushnumber(L, dt_collection_get_count(darktable.collection));
+  lua_pushinteger(L, dt_collection_get_count(darktable.collection));
   return 1;
 }
 
@@ -197,44 +197,13 @@ static int collection_numindex(lua_State *L)
   {
     return luaL_error(L, "incorrect index in database");
   }
-
-  gchar *query = NULL;
-  gchar *sq = NULL;
-
-  /* get collection order */
-  if((darktable.collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    sq = dt_collection_get_sort_query(darktable.collection);
-
-
-  sqlite3_stmt *stmt = NULL;
-
-  /* build the query string */
-  query = dt_util_dstrcat(query, "select distinct id from images ");
-
-  if(darktable.collection->params.sort == DT_COLLECTION_SORT_COLOR
-     && (darktable.collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    query = dt_util_dstrcat(query, "as a left outer join color_labels as b on a.id = b.imgid ");
-
-  query = dt_util_dstrcat(query, "%s limit -1 offset ?1", sq);
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, index -1);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  int imgid = dt_collection_get_nth(darktable.collection,index-1);
+  if (imgid >0)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
-    sqlite3_finalize(stmt);
+  } else { 
+    lua_pushnil(L);
   }
-  else
-  {
-    g_free(sq);
-    g_free(query);
-    sqlite3_finalize(stmt);
-    return luaL_error(L, "incorrect index in database");
-  }
-  g_free(sq);
-  g_free(query);
   return 1;
 
 }
@@ -248,14 +217,6 @@ static void on_film_imported(gpointer instance, uint32_t id, gpointer user_data)
       LUA_ASYNC_DONE);
 }
 
-static void on_image_imported(gpointer instance, uint32_t id, gpointer user_data)
-{
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0,NULL,NULL,
-      LUA_ASYNC_TYPENAME,"const char*","post-import-image",
-      LUA_ASYNC_TYPENAME,"dt_lua_image_t",GINT_TO_POINTER(id),
-      LUA_ASYNC_DONE);
-}
 int dt_lua_init_database(lua_State *L)
 {
 
@@ -303,7 +264,7 @@ int dt_lua_init_database(lua_State *L)
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "post-import-image");
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_IMPORT, G_CALLBACK(on_image_imported), NULL);
+
   return 0;
 }
 

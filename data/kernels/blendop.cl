@@ -19,57 +19,71 @@
 #include "common.h"
 #include "colorspace.cl"
 
+#define BLEND_ONLY_LIGHTNESS     8
 
-#define DEVELOP_BLEND_MASK_FLAG				0x80
-#define DEVELOP_BLEND_DISABLED				0x00
-#define DEVELOP_BLEND_NORMAL				0x01
-#define DEVELOP_BLEND_LIGHTEN				0x02
-#define DEVELOP_BLEND_DARKEN				0x03
-#define DEVELOP_BLEND_MULTIPLY				0x04
-#define DEVELOP_BLEND_AVERAGE				0x05
-#define DEVELOP_BLEND_ADD				0x06
-#define DEVELOP_BLEND_SUBSTRACT				0x07
-#define DEVELOP_BLEND_DIFFERENCE			0x08
-#define DEVELOP_BLEND_SCREEN				0x09
-#define DEVELOP_BLEND_OVERLAY				0x0A
-#define DEVELOP_BLEND_SOFTLIGHT				0x0B
-#define DEVELOP_BLEND_HARDLIGHT				0x0C
-#define DEVELOP_BLEND_VIVIDLIGHT			0x0D
-#define DEVELOP_BLEND_LINEARLIGHT			0x0E
-#define DEVELOP_BLEND_PINLIGHT				0x0F
-#define DEVELOP_BLEND_LIGHTNESS				0x10
-#define DEVELOP_BLEND_CHROMA				0x11
-#define DEVELOP_BLEND_HUE				0x12
-#define DEVELOP_BLEND_COLOR				0x13
-#define DEVELOP_BLEND_INVERSE				0x14
-#define DEVELOP_BLEND_UNBOUNDED                         0x15
-#define DEVELOP_BLEND_COLORADJUST                       0x16
-#define DEVELOP_BLEND_DIFFERENCE2                       0x17
-#define DEVELOP_BLEND_NORMAL2                           0x18
-#define DEVELOP_BLEND_BOUNDED                           0x19
-#define DEVELOP_BLEND_LAB_LIGHTNESS                     0x1A
-#define DEVELOP_BLEND_LAB_COLOR                         0x1B
-#define DEVELOP_BLEND_HSV_LIGHTNESS                     0x1C
-#define DEVELOP_BLEND_HSV_COLOR                         0x1D
+typedef enum dt_develop_blend_mode_t
+{
+  DEVELOP_BLEND_MASK_FLAG = 0x80,
+  DEVELOP_BLEND_DISABLED = 0x00,
+  DEVELOP_BLEND_NORMAL = 0x01, /* deprecated as it did clamping */
+  DEVELOP_BLEND_LIGHTEN = 0x02,
+  DEVELOP_BLEND_DARKEN = 0x03,
+  DEVELOP_BLEND_MULTIPLY = 0x04,
+  DEVELOP_BLEND_AVERAGE = 0x05,
+  DEVELOP_BLEND_ADD = 0x06,
+  DEVELOP_BLEND_SUBSTRACT = 0x07,
+  DEVELOP_BLEND_DIFFERENCE = 0x08, /* deprecated */
+  DEVELOP_BLEND_SCREEN = 0x09,
+  DEVELOP_BLEND_OVERLAY = 0x0A,
+  DEVELOP_BLEND_SOFTLIGHT = 0x0B,
+  DEVELOP_BLEND_HARDLIGHT = 0x0C,
+  DEVELOP_BLEND_VIVIDLIGHT = 0x0D,
+  DEVELOP_BLEND_LINEARLIGHT = 0x0E,
+  DEVELOP_BLEND_PINLIGHT = 0x0F,
+  DEVELOP_BLEND_LIGHTNESS = 0x10,
+  DEVELOP_BLEND_CHROMA = 0x11,
+  DEVELOP_BLEND_HUE = 0x12,
+  DEVELOP_BLEND_COLOR = 0x13,
+  DEVELOP_BLEND_INVERSE = 0x14,   /* deprecated */
+  DEVELOP_BLEND_UNBOUNDED = 0x15, /* deprecated as new normal takes over */
+  DEVELOP_BLEND_COLORADJUST = 0x16,
+  DEVELOP_BLEND_DIFFERENCE2 = 0x17,
+  DEVELOP_BLEND_NORMAL2 = 0x18,
+  DEVELOP_BLEND_BOUNDED = 0x19,
+  DEVELOP_BLEND_LAB_LIGHTNESS = 0x1A,
+  DEVELOP_BLEND_LAB_COLOR = 0x1B,
+  DEVELOP_BLEND_HSV_LIGHTNESS = 0x1C,
+  DEVELOP_BLEND_HSV_COLOR = 0x1D,
+  DEVELOP_BLEND_LAB_L = 0x1E,
+  DEVELOP_BLEND_LAB_A = 0x1F,
+  DEVELOP_BLEND_LAB_B = 0x20,
+  DEVELOP_BLEND_RGB_R = 0x21,
+  DEVELOP_BLEND_RGB_G = 0x22,
+  DEVELOP_BLEND_RGB_B = 0x23
+} dt_develop_blend_mode_t;
 
+typedef enum dt_develop_mask_mode_t
+{
+  DEVELOP_MASK_DISABLED = 0x00,
+  DEVELOP_MASK_ENABLED = 0x01,
+  DEVELOP_MASK_MASK = 0x02,
+  DEVELOP_MASK_CONDITIONAL = 0x04,
+  DEVELOP_MASK_BOTH = (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL)
+} dt_develop_mask_mode_t;
 
-#define DEVELOP_MASK_DISABLED       0x00
-#define DEVELOP_MASK_ENABLED        0x01
-#define DEVELOP_MASK_MASK           0x02
-#define DEVELOP_MASK_CONDITIONAL    0x04
-#define DEVELOP_MASK_BOTH           (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL)
+typedef enum dt_develop_mask_combine_mode_t
+{
+  DEVELOP_COMBINE_NORM = 0x00,
+  DEVELOP_COMBINE_INV = 0x01,
+  DEVELOP_COMBINE_EXCL = 0x00,
+  DEVELOP_COMBINE_INCL = 0x02,
+  DEVELOP_COMBINE_MASKS_POS = 0x04,
+  DEVELOP_COMBINE_NORM_EXCL = (DEVELOP_COMBINE_NORM | DEVELOP_COMBINE_EXCL),
+  DEVELOP_COMBINE_NORM_INCL = (DEVELOP_COMBINE_NORM | DEVELOP_COMBINE_INCL),
+  DEVELOP_COMBINE_INV_EXCL = (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_EXCL),
+  DEVELOP_COMBINE_INV_INCL = (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL)
+} dt_develop_mask_combine_mode_t;
 
-#define DEVELOP_COMBINE_NORM        0x00
-#define DEVELOP_COMBINE_INV         0x01
-#define DEVELOP_COMBINE_EXCL        0x00
-#define DEVELOP_COMBINE_INCL        0x02
-#define DEVELOP_COMBINE_MASKS_POS   0x04
-#define DEVELOP_COMBINE_NORM_EXCL   (DEVELOP_COMBINE_NORM | DEVELOP_COMBINE_EXCL)
-#define DEVELOP_COMBINE_NORM_INCL   (DEVELOP_COMBINE_NORM | DEVELOP_COMBINE_INCL)
-#define DEVELOP_COMBINE_INV_EXCL    (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_EXCL)
-#define DEVELOP_COMBINE_INV_INCL    (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL)
-
-#define BLEND_ONLY_LIGHTNESS				8
 
 typedef enum iop_cs_t 
 {
@@ -122,9 +136,29 @@ typedef enum dt_develop_blendif_channels_t
 
   DEVELOP_BLENDIF_Lab_MASK  = 0x3377,
   DEVELOP_BLENDIF_RGB_MASK  = 0x77FF
-}
-dt_develop_blendif_channels_t;
+} dt_develop_blendif_channels_t;
 
+
+typedef enum dt_dev_pixelpipe_display_mask_t
+{
+  DT_DEV_PIXELPIPE_DISPLAY_NONE = 0,
+  DT_DEV_PIXELPIPE_DISPLAY_MASK = 1 << 0,
+  DT_DEV_PIXELPIPE_DISPLAY_CHANNEL = 1 << 1,
+  DT_DEV_PIXELPIPE_DISPLAY_OUTPUT = 1 << 2,
+  DT_DEV_PIXELPIPE_DISPLAY_L = 1 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_a = 2 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_b = 3 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_R = 4 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_G = 5 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_B = 6 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_GRAY = 7 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_LCH_C = 8 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_LCH_h = 9 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_ANY = (~0) << 2
+} dt_dev_pixelpipe_display_mask_t;
 
 
 float
@@ -270,7 +304,7 @@ blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 
   if(x >= width || y >= height) return;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
 
@@ -282,7 +316,6 @@ blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
   write_imagef(mask, (int2)(x, y), gopacity*opacity);
 }
 
-#if 0
 __kernel void
 blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
              const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs)
@@ -297,33 +330,6 @@ blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
     
   write_imagef(mask, (int2)(x, y), gopacity*opacity);
 }
-#else
-// the following is a workaround for a current bug (as of Nov. 2012) in NVIDIA's OpenCL compiler, affecting GeForce GT6xx gpus.
-// the above original kernel would simply not compile. the code below is functionally equivalent, a bit slower, and complicated enough
-// to trick the compiler.
-// thanks to Jens Fendler for finding this workaround.
-// TODO: review after some time (May 2013) if this is still needed.
-__kernel void
-blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
-  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
-  float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
-  
-  float bif = blendif_factor_Lab(a, b, blendif, blendif_parameters, DEVELOP_MASK_DISABLED, DEVELOP_COMBINE_EXCL);
-
-  float opacity = ((mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - form : form)*bif;
-  opacity /= bif;
-
-  write_imagef(mask, (int2)(x, y), gopacity*opacity);
-}
-#endif
 
 __kernel void
 blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
@@ -334,7 +340,7 @@ blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 
   if(x >= width || y >= height) return;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
 
@@ -348,7 +354,7 @@ blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 
 __kernel void
 blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int blend_mode, const int blendflag, const int2 offs)
+             const int blend_mode, const int blendflag, const int2 offs, const int mask_display)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -359,7 +365,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
   float4 ta, tb, to;
   float d, s;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
 
@@ -585,9 +591,22 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       break;
 
     case DEVELOP_BLEND_LAB_LIGHTNESS:
+    case DEVELOP_BLEND_LAB_L:
       o.x = (a.x * (1.0f - opacity)) + (b.x * opacity);
       o.y = a.y;
       o.z = a.z;
+      break;
+
+    case DEVELOP_BLEND_LAB_A:
+      o.x = a.x;
+      o.y = (a.y * (1.0f - opacity)) + (b.y * opacity);
+      o.z = a.z;
+      break;
+
+    case DEVELOP_BLEND_LAB_B:
+      o.x = a.x;
+      o.y = a.y;
+      o.z = (a.z * (1.0f - opacity)) + (b.z * opacity);
       break;
 
     case DEVELOP_BLEND_LAB_COLOR:
@@ -595,9 +614,12 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o.y = (a.y * (1.0f - opacity)) + (b.y * opacity);
       o.z = (a.z * (1.0f - opacity)) + (b.z * opacity);
       break;
-
+      
     case DEVELOP_BLEND_HSV_LIGHTNESS:
     case DEVELOP_BLEND_HSV_COLOR:
+    case DEVELOP_BLEND_RGB_R:
+    case DEVELOP_BLEND_RGB_G:
+    case DEVELOP_BLEND_RGB_B:
       o = a;                            // Noop for Lab (without clamping)
       break;
 
@@ -613,8 +635,8 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
   /* scale L back to [0; 100] and a,b to [-128; 128] */
   o *= scale;
 
-  /* save opacity in alpha channel */
-  o.w = opacity;
+  /* we transfer alpha channel of input if mask_display is set, else we save opacity into alpha channel */
+  o.w = mask_display ? a.w : opacity;
 
   /* if module wants to blend only lightness, set a and b to values of input image (saved before scaling) */
   if (blendflag & BLEND_ONLY_LIGHTNESS)
@@ -630,7 +652,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 __kernel void
 blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int blend_mode, const int blendflag, const int2 offs)
+             const int blend_mode, const int blendflag, const int2 offs, const int mask_display)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -639,7 +661,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
   float o;
 
-  float a = read_imagef(in_a, sampleri, (int2)(x, y) + offs).x;
+  float a = read_imagef(in_a, sampleri, (int2)(x, y) + offs).x; // see comment in blend.c:dt_develop_blend_process_cl()
   float b = read_imagef(in_b, sampleri, (int2)(x, y)).x;
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
 
@@ -746,11 +768,17 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
     case DEVELOP_BLEND_LAB_LIGHTNESS:
     case DEVELOP_BLEND_LAB_COLOR:
+    case DEVELOP_BLEND_LAB_L:
+    case DEVELOP_BLEND_LAB_A:
+    case DEVELOP_BLEND_LAB_B:
       o = a;                            // Noop for Raw (without clamping)
       break;
 
     case DEVELOP_BLEND_HSV_LIGHTNESS:
     case DEVELOP_BLEND_HSV_COLOR:
+    case DEVELOP_BLEND_RGB_R:
+    case DEVELOP_BLEND_RGB_G:
+    case DEVELOP_BLEND_RGB_B:
       o = a;                            // Noop for Raw (without clamping)
       break;
 
@@ -769,7 +797,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 __kernel void
 blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int blend_mode, const int blendflag, const int2 offs)
+             const int blend_mode, const int blendflag, const int2 offs, const int mask_display)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -780,7 +808,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
   float4 ta, tb, to;
   float d, s;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
 
@@ -918,6 +946,9 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
     case DEVELOP_BLEND_LAB_LIGHTNESS:
     case DEVELOP_BLEND_LAB_COLOR:
+    case DEVELOP_BLEND_LAB_L:
+    case DEVELOP_BLEND_LAB_A:
+    case DEVELOP_BLEND_LAB_B:
       o = a;                            // Noop for RGB (without clamping)
       break;
 
@@ -941,6 +972,25 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       to.z = ta.z;
       o = HSV_2_RGB(to);
       break;
+      
+    case DEVELOP_BLEND_RGB_R:
+      o.x = (a.x * (1.0f - opacity)) + (b.x * opacity);
+      o.y = a.y;
+      o.z = a.z;
+      break;
+
+    case DEVELOP_BLEND_RGB_G:
+      o.x = a.x;
+      o.y = (a.y * (1.0f - opacity)) + (b.y * opacity);
+      o.z = a.z;
+      break;
+
+    case DEVELOP_BLEND_RGB_B:
+      o.x = a.x;
+      o.y = a.y;
+      o.z = (a.z * (1.0f - opacity)) + (b.z * opacity);
+      break;
+
 
     /* fallback to normal blend */
     case DEVELOP_BLEND_UNBOUNDED:
@@ -951,27 +1001,11 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
   }
 
-  /* save opacity in alpha channel */
-  o.w = opacity;
+  /* we transfer alpha channel of input if mask_display is set, else we save opacity into alpha channel */
+  o.w = mask_display ? a.w : opacity;
 
   write_imagef(out, (int2)(x, y), o);
 }
-
-
-__kernel void
-blendop_copy_alpha (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height, const int2 offs)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 pixel = read_imagef(in_a, sampleri, (int2)(x, y));
-  pixel.w = read_imagef(in_b, sampleri, (int2)(x, y) + offs).w;
-
-  write_imagef(out, (int2)(x, y), pixel);
-}
-
 
 __kernel void
 blendop_set_mask (__write_only image2d_t mask, const int width, const int height, const float value)
@@ -985,4 +1019,117 @@ blendop_set_mask (__write_only image2d_t mask, const int width, const int height
 }
 
 
+__kernel void
+blendop_display_channel (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
+                         const int2 offs, const int mask_display)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
+  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
+  float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
+
+  float c;
+  float4 LCH;
+  float4 HSL;
+
+  dt_dev_pixelpipe_display_mask_t channel = (dt_dev_pixelpipe_display_mask_t)mask_display;
+  
+  switch(channel & DT_DEV_PIXELPIPE_DISPLAY_ANY)
+  {
+    case DT_DEV_PIXELPIPE_DISPLAY_L:
+      c = clamp(a.x / 100.0f, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_L | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp(b.x / 100.0f, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_a:
+      c = clamp((a.y + 128.0f) / 256.0f, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_a | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp((b.y + 128.0f) / 256.0f, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_b:
+      c = clamp((a.z + 128.0f) / 256.0f, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_b | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp((b.z + 128.0f) / 256.0f, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_R:
+      c = clamp(a.x, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_R | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp(b.x, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_G:
+      c = clamp(a.y, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_G | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp(b.y, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_B:
+      c = clamp(a.z, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_B | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp(b.z, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_GRAY:
+      c = clamp(0.3f * a.x + 0.59f * a.y + 0.11f * a.z, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_GRAY | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      c = clamp(0.3f * b.x + 0.59f * b.y + 0.11f * b.z, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
+      LCH = Lab_2_LCH(a);
+      c = clamp(LCH.y / (128.0f * sqrt(2.0f)), 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_LCH_C | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      LCH = Lab_2_LCH(b);
+      c = clamp(LCH.y / (128.0f * sqrt(2.0f)), 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_LCH_h:
+      LCH = Lab_2_LCH(a);
+      c = clamp(LCH.z, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_LCH_h | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      LCH = Lab_2_LCH(b);
+      c = clamp(LCH.z, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_H:
+      HSL = RGB_2_HSL(a);
+      c = clamp(HSL.x, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_H | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      HSL = RGB_2_HSL(b);
+      c = clamp(HSL.x, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_S:
+      HSL = RGB_2_HSL(a);
+      c = clamp(HSL.y, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_S | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      HSL = RGB_2_HSL(b);
+      c = clamp(HSL.y, 0.0f, 1.0f);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_l:
+      HSL = RGB_2_HSL(a);
+      c = clamp(HSL.z, 0.0f, 1.0f);
+      break;
+    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_l | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      HSL = RGB_2_HSL(b);
+      c = clamp(HSL.z, 0.0f, 1.0f);
+      break;
+    default:
+      c = 0.0f;
+      break;
+  }
+
+  a.x = a.y = a.z = c;
+  a.w = opacity;
+
+  write_imagef(out, (int2)(x, y), a);
+}
 

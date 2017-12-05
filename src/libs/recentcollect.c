@@ -51,9 +51,10 @@ const char *name(dt_lib_module_t *self)
   return _("recently used collections");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP;
+  static const char *v[] = {"lighttable", "map", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -177,9 +178,9 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)self->data;
   // serialize, check for recently used
   char confname[200];
-  const int bufsize = 4096;
-  char buf[bufsize];
-  if(dt_collection_serialize(buf, bufsize)) return;
+
+  char buf[4096];
+  if(dt_collection_serialize(buf, sizeof(buf))) return;
 
   // is the current position, i.e. the one to be stored with the old collection (pos0, pos1-to-be)
   uint32_t curr_pos = dt_view_lighttable_get_position(darktable.view_manager);

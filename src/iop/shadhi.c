@@ -60,9 +60,6 @@
 #define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 #define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))
 
-#define BLOCKSIZE 64 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed  \
-                        */
-
 DT_MODULE_INTROSPECTION(5, dt_iop_shadhi_params_t)
 
 typedef enum dt_iop_shadhi_algo_t
@@ -480,7 +477,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     _Lab_rescale(ta, &out[j]);
   }
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 
@@ -520,6 +517,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   dt_gaussian_cl_t *g = NULL;
   dt_bilateral_cl_t *b = NULL;
+  cl_mem dev_tmp = NULL;
 
   if(d->shadhi_algo == SHADHI_ALGO_GAUSSIAN)
   {
@@ -557,12 +555,20 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     b = NULL; // make sure we don't clean it up twice
   }
 
-  // final mixing step with dev_temp1 as mask: dev_temp2 -> dev_temp2
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  if(dev_tmp == NULL) goto error;
+
+  size_t origin[] = { 0, 0, 0 };
+  size_t region[] = { width, height, 1 };
+  err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
+  if(err != CL_SUCCESS) goto error;
+
+  // final mixing step
   sizes[0] = ROUNDUPWD(width);
   sizes[1] = ROUNDUPHT(height);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 1, sizeof(cl_mem), (void *)&dev_tmp);
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 2, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 3, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 4, sizeof(int), (void *)&height);
@@ -582,11 +588,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_shadows_highlights_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
+  dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
   if(g) dt_gaussian_free_cl(g);
   if(b) dt_bilateral_free_cl(b);
+  dt_opencl_release_mem_object(dev_tmp);
   dt_print(DT_DEBUG_OPENCL, "[opencl_shadows&highlights] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -612,14 +620,14 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   if(d->shadhi_algo == SHADHI_ALGO_BILATERAL)
   {
     // bilateral filter
-    tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
+    tiling->factor = 2.0f + fmax(1.0f, (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer);
     tiling->maxbuf
         = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r) / basebuffer);
   }
   else
   {
     // gaussian blur
-    tiling->factor = 2.0f + (float)dt_gaussian_memory_use(width, height, channels) / basebuffer;
+    tiling->factor = 2.0f + fmax(1.0f, (float)dt_gaussian_memory_use(width, height, channels) / basebuffer);
     tiling->maxbuf = fmax(1.0f, (float)dt_gaussian_singlebuffer_size(width, height, channels) / basebuffer);
   }
 
@@ -761,7 +769,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_shadhi_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_shadhi_params_t));
   module->default_enabled = 0;
-  module->priority = 553; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 558; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_shadhi_params_t);
   module->gui_data = NULL;
   dt_iop_shadhi_params_t tmp

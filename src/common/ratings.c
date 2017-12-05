@@ -15,12 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
 #include "common/collection.h"
+#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
-#include "control/control.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "gui/gtk.h"
 
 
@@ -28,7 +28,11 @@ void dt_ratings_apply_to_image(int imgid, int rating)
 {
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
   // one star is a toggle, so you can easily reject images by removing the last star:
-  if(((image->flags & 0x7) == 1) && (rating == 1)) rating = 0;
+  if(((image->flags & 0x7) == 1) && !dt_conf_get_bool("rating_one_double_tap") && (rating == 1))
+  {
+    rating = 0;
+  }
+
   image->flags = (image->flags & ~0x7) | (0x7 & rating);
   // synch through:
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
@@ -48,16 +52,14 @@ void dt_ratings_apply_to_selection(int rating)
                      rating, count);
 #if 0 // not updating cache
     gchar query[1024]= {0};
-    g_snprintf(query,sizeof(query),
-               "update images set flags=(images.flags & ~7) | (7 & %d) where id in (select imgid from selected_images)",
-               rating
-              );
+    g_snprintf(query,sizeof(query), "UPDATE main.images SET flags=(flags & ~7) | (7 & %d) WHERE id IN "
+                                    "(SELECT imgid FROM main.selected_images)", rating);
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 #endif
 
     /* for each selected image update rating */
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
                                 NULL);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {

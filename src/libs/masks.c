@@ -33,6 +33,8 @@
 
 DT_MODULE(1)
 
+#pragma GCC diagnostic ignored "-Wshadow"
+
 static void _lib_masks_recreate_list(dt_lib_module_t *self);
 static void _lib_masks_update_list(dt_lib_module_t *self);
 
@@ -54,9 +56,10 @@ const char *name(dt_lib_module_t *self)
   return _("mask manager");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_DARKROOM;
+  static const char *v[] = {"darkroom", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -851,7 +854,7 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
     return;
   }
 
-  // else, we create a new from group with the selection and display it
+  // else, we create a new form group with the selection and display it
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(self->treeview));
   dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
   GList *items = g_list_first(gtk_tree_selection_get_selected_rows(selection, NULL));
@@ -907,7 +910,6 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
   dt_masks_form_t *grp2 = dt_masks_create(DT_MASKS_GROUP);
   grp2->formid = 0;
   dt_masks_group_ungroup(grp2, grp);
-  dt_masks_free_form(grp);
   dt_masks_change_form_gui(grp2);
   darktable.develop->form_gui->edit_mode = DT_MASKS_EDIT_FULL;
   dt_control_queue_redraw_center();
@@ -1164,7 +1166,12 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
     gtk_menu_shell_append(menu, item);
 
     gtk_widget_show_all(GTK_WIDGET(menu));
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+    gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
+#else
     gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 0, gdk_event_get_time((GdkEvent *)event));
+#endif
 
     return 1;
   }
@@ -1703,7 +1710,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(d->scroll_window, -1, DT_PIXEL_APPLY_DPI(300));
   gtk_container_add(GTK_CONTAINER(d->scroll_window), d->treeview);
   // gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->treeview),TREE_USED_TEXT);
-  g_object_set(d->treeview, "has-tooltip", TRUE, NULL);
+  g_object_set(d->treeview, "has-tooltip", TRUE, (gchar *)0);
   g_signal_connect(d->treeview, "query-tooltip", G_CALLBACK(_tree_query_tooltip), NULL);
 
   g_signal_connect(selection, "changed", G_CALLBACK(_tree_selection_change), d);

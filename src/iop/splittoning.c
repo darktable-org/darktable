@@ -113,7 +113,7 @@ void connect_key_accels(dt_iop_module_t *self)
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
   // shadows: #ED7212
   // highlights: #ECA413
@@ -151,7 +151,7 @@ void init_presets(dt_iop_module_so_t *self)
       &(dt_iop_splittoning_params_t){ 28.0 / 360.0, 39.0 / 100.0, 28.0 / 360.0, 8.0 / 100.0, 0.60, 0.0 },
       sizeof(dt_iop_splittoning_params_t), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -454,7 +454,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_splittoning_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_splittoning_params_t));
   module->default_enabled = 0;
-  module->priority = 892; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 867; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_splittoning_params_t);
   module->gui_data = NULL;
   dt_iop_splittoning_params_t tmp = (dt_iop_splittoning_params_t){ 0, 0.5, 0.2, 0.5, 0.5, 33.0 };

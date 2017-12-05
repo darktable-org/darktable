@@ -20,10 +20,10 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
-#include "common/colorspaces.h"
+#include "common/bilateral.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/debug.h"
 #include "common/interpolation.h"
-#include "common/bilateral.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -56,8 +56,8 @@
 #define LENSSHIFT_RANGE_SOFT 1              // allowed min/max range for lensshift paramters with manual adjustment
 #define SHEAR_RANGE 0.2                     // allowed min/max range for shear parameter
 #define SHEAR_RANGE_SOFT 0.5                // allowed min/max range for shear parameter with manual adjustment
-#define MIN_LINE_LENGTH 10                  // the minimum length of a line in pixels to be regarded as relevant
-#define MAX_TANGENTIAL_DEVIATION 15         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
+#define MIN_LINE_LENGTH 5                   // the minimum length of a line in pixels to be regarded as relevant
+#define MAX_TANGENTIAL_DEVIATION 30         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
 #define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
 #define LSD_SCALE 0.99                      // LSD: scaling factor for line detection
 #define LSD_SIGMA_SCALE 0.6                 // LSD: sigma for Gaussian filter is computed as sigma = sigma_scale/scale
@@ -192,7 +192,8 @@ typedef enum dt_iop_ashift_nmsresult_t
 {
   NMS_SUCCESS = 0,
   NMS_NOT_ENOUGH_LINES = 1,
-  NMS_DID_NOT_CONVERGE = 2
+  NMS_DID_NOT_CONVERGE = 2,
+  NMS_INSANE = 3
 } dt_iop_ashift_nmsresult_t;
 
 typedef enum dt_iop_ashift_enhance_t
@@ -223,6 +224,13 @@ typedef enum dt_iop_ashift_bounding_t
   ASHIFT_BOUNDING_SELECT = 1,
   ASHIFT_BOUNDING_DESELECT = 2
 } dt_iop_ashift_bounding_t;
+
+typedef enum dt_iop_ashift_jobcode_t
+{
+  ASHIFT_JOBCODE_NONE = 0,
+  ASHIFT_JOBCODE_GET_STRUCTURE = 1,
+  ASHIFT_JOBCODE_FIT = 2
+} dt_iop_ashift_jobcode_t;
 
 typedef struct dt_iop_ashift_params1_t
 {
@@ -396,9 +404,11 @@ typedef struct dt_iop_ashift_gui_data_t
   uint64_t grid_hash;
   uint64_t buf_hash;
   dt_iop_ashift_fitaxis_t lastfit;
-  dt_pthread_mutex_t lock;
   float lastx;
   float lasty;
+  dt_iop_ashift_jobcode_t jobcode;
+  int jobparams;
+  dt_pthread_mutex_t lock;
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -1560,10 +1570,11 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
 {
   if(set_count < 3) return;
 
-  int best_set[set_count];
-  memcpy(best_set, index_set, sizeof(best_set));
-  int best_inout[set_count];
-  memset(best_inout, 0, sizeof(best_inout));
+  const size_t set_size = set_count * sizeof(int);
+  int *best_set = malloc(set_size);
+  memcpy(best_set, index_set, set_size);
+  int *best_inout = calloc(1, set_size);
+
   float best_quality = 0.0f;
 
   // hurdle value epsilon for rejecting a line as an outlier will be self-tuning
@@ -1580,9 +1591,12 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
   const int riter = (set_count > RANSAC_HURDLE) ? RANSAC_RUNS : fact(set_count);
 
   // some data needed for quickperm
-  int perm[set_count + 1];
+  int *perm = malloc((set_count + 1) * sizeof(int));
   for(int n = 0; n < set_count + 1; n++) perm[n] = n;
   int piter = 1;
+
+  // inout holds good/bad qualification for each line
+  int *inout = malloc(set_size);
 
   for(int r = 0; r < optiruns + riter; r++)
   {
@@ -1591,9 +1605,6 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
       shuffle(index_set, set_count);
     else
       (void)quickperm(index_set, perm, set_count, &piter);
-
-    // inout holds good/bad qualification for each line
-    int inout[set_count];
 
     // summed quality evaluation of this run
     float quality = 0.0f;
@@ -1697,8 +1708,8 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
       // in the "real" runs check against the best model found so far
       if(quality > best_quality)
       {
-        memcpy(best_set, index_set, sizeof(best_set));
-        memcpy(best_inout, inout, sizeof(best_inout));
+        memcpy(best_set, index_set, set_size);
+        memcpy(best_inout, inout, set_size);
         best_quality = quality;
       }
     }
@@ -1714,8 +1725,13 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
   }
 
   // store back best set
-  memcpy(index_set, best_set, set_count * sizeof(int));
-  memcpy(inout_set, best_inout, set_count * sizeof(int));
+  memcpy(index_set, best_set, set_size);
+  memcpy(inout_set, best_inout, set_size);
+
+  free(inout);
+  free(perm);
+  free(best_inout);
+  free(best_set);
 }
 
 
@@ -1733,9 +1749,9 @@ static int remove_outliers(dt_iop_module_t *module)
   const int ymax = ymin + height;
 
   // holds the index set of lines we want to work on
-  int lines_set[g->lines_count];
+  int *lines_set = malloc(g->lines_count * sizeof(int));
   // holds the result of ransac
-  int inout_set[g->lines_count];
+  int *inout_set = malloc(g->lines_count * sizeof(int));
 
   // some accounting variables
   int vnb = 0, vcount = 0;
@@ -1810,9 +1826,14 @@ static int remove_outliers(dt_iop_module_t *module)
   g->horizontal_count = hcount;
   g->lines_version++;
 
+  free(inout_set);
+  free(lines_set);
+
   return TRUE;
 
 error:
+  free(inout_set);
+  free(lines_set);
   return FALSE;
 }
 
@@ -2079,26 +2100,74 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
 
   // error case: we do not run simplex if there are not enough lines
   if(!enough_lines)
+  {
+#ifdef ASHIFT_DEBUG
+    printf("optimization not possible: insufficient number of lines\n");
+#endif
     return NMS_NOT_ENOUGH_LINES;
+  }
 
   // start the simplex fit
   int iter = simplex(model_fitness, params, fit.params_count, NMS_EPSILON, NMS_SCALE, NMS_ITERATIONS, NULL, (void*)&fit);
 
   // error case: the fit did not converge
   if(iter >= NMS_ITERATIONS)
+  {
+#ifdef ASHIFT_DEBUG
+    printf("optimization not successful: maximum number of iterations reached (%d)\n", iter);
+#endif
     return NMS_DID_NOT_CONVERGE;
+  }
 
-  // fit was successful: now write the results into structure p (order matters!!!)
+  // fit was successful: now consolidate the results (order matters!!!)
   pcount = 0;
-  p->rotation = isnan(fit.rotation) ? ilogit(params[pcount++], -fit.rotation_range, fit.rotation_range) : fit.rotation;
-  p->lensshift_v = isnan(fit.lensshift_v) ? ilogit(params[pcount++], -fit.lensshift_v_range, fit.lensshift_v_range) : fit.lensshift_v;
-  p->lensshift_h = isnan(fit.lensshift_h) ? ilogit(params[pcount++], -fit.lensshift_h_range, fit.lensshift_h_range) : fit.lensshift_h;
-  p->shear = isnan(fit.shear) ? ilogit(params[pcount++], -fit.shear_range, fit.shear_range) : fit.shear;
+  fit.rotation = isnan(fit.rotation) ? ilogit(params[pcount++], -fit.rotation_range, fit.rotation_range) : fit.rotation;
+  fit.lensshift_v = isnan(fit.lensshift_v) ? ilogit(params[pcount++], -fit.lensshift_v_range, fit.lensshift_v_range) : fit.lensshift_v;
+  fit.lensshift_h = isnan(fit.lensshift_h) ? ilogit(params[pcount++], -fit.lensshift_h_range, fit.lensshift_h_range) : fit.lensshift_h;
+  fit.shear = isnan(fit.shear) ? ilogit(params[pcount++], -fit.shear_range, fit.shear_range) : fit.shear;
 #ifdef ASHIFT_DEBUG
   printf("params after optimization (%d interations): rotation %f, lensshift_v %f, lensshift_h %f, shear %f\n",
-         iter, p->rotation, p->lensshift_v, p->lensshift_h, p->shear);
+         iter, fit.rotation, fit.lensshift_v, fit.lensshift_h, fit.shear);
 #endif
 
+  // sanity check: in case of extreme values the image gets distorted so strongly that it spans an insanely huge area. we check that
+  // case and assume values that increase the image area by more than a factor of 4 as being insane.
+  float homograph[3][3];
+  homography((float *)homograph, fit.rotation, fit.lensshift_v, fit.lensshift_h, fit.shear, fit.f_length_kb,
+             fit.orthocorr, fit.aspect, fit.width, fit.height, ASHIFT_HOMOGRAPH_FORWARD);
+
+  // visit all four corners and find maximum span
+  float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
+  for(int y = 0; y < fit.height; y += fit.height - 1)
+    for(int x = 0; x < fit.width; x += fit.width - 1)
+    {
+      float pi[3], po[3];
+      pi[0] = x;
+      pi[1] = y;
+      pi[2] = 1.0f;
+      mat3mulv(po, (float *)homograph, pi);
+      po[0] /= po[2];
+      po[1] /= po[2];
+      xm = fmin(xm, po[0]);
+      ym = fmin(ym, po[1]);
+      xM = fmax(xM, po[0]);
+      yM = fmax(yM, po[1]);
+    }
+
+  if((xM - xm) * (yM - ym) > 4.0f * fit.width * fit.height)
+  {
+#ifdef ASHIFT_DEBUG
+    printf("optimization not successful: degenerate case with area growth factor (%f) exceeding limits\n",
+           (xM - xm) * (yM - ym) / (fit.width * fit.height));
+#endif
+    return NMS_INSANE;
+  }
+
+  // now write the results into structure p
+  p->rotation = fit.rotation;
+  p->lensshift_v = fit.lensshift_v;
+  p->lensshift_h = fit.lensshift_h;
+  p->shear = fit.shear;
   return NMS_SUCCESS;
 }
 
@@ -2521,6 +2590,7 @@ static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ash
       goto error;
       break;
     case NMS_DID_NOT_CONVERGE:
+    case NMS_INSANE:
       dt_control_log(_("automatic correction failed, please correct manually"));
       goto error;
       break;
@@ -2691,8 +2761,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
 
-    const int width = roi_in->width;
-    const int height = roi_in->height;
     const int x_off = roi_in->x;
     const int y_off = roi_in->y;
     const float scale = roi_in->scale;
@@ -2722,21 +2790,21 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     g->isflipped = isflipped;
 
     // save a copy of preview input buffer for parameter fitting
-    if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)width * height)
+    if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)iwidth * iheight)
     {
       // if needed allocate buffer
       free(g->buf); // a no-op if g->buf is NULL
       // only get new buffer if no old buffer or old buffer does not fit in terms of size
-      g->buf = malloc((size_t)width * height * 4 * sizeof(float));
+      g->buf = malloc((size_t)iwidth * iheight * 4 * sizeof(float));
     }
 
     if(g->buf /* && hash != g->buf_hash */)
     {
       // copy data
-      err = dt_opencl_copy_device_to_host(devid, g->buf, dev_in, width, height, 4 * sizeof(float));
+      err = dt_opencl_copy_device_to_host(devid, g->buf, dev_in, iwidth, iheight, 4 * sizeof(float));
 
-      g->buf_width = width;
-      g->buf_height = height;
+      g->buf_width = iwidth;
+      g->buf_height = iheight;
       g->buf_x_off = x_off;
       g->buf_y_off = y_off;
       g->buf_scale = scale;
@@ -2818,25 +2886,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  if(dev_homo != NULL) dt_opencl_release_mem_object(dev_homo);
+  dt_opencl_release_mem_object(dev_homo);
   dt_print(DT_DEBUG_OPENCL, "[opencl_ashift] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
-
-
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
-{
-  tiling->factor = 2.0f;
-  tiling->maxbuf = 1.0f;
-  tiling->overhead = 0;
-  tiling->overlap = 3; // accounts for interpolation width
-  tiling->xalign = 1;
-  tiling->yalign = 1;
-  return;
-}
 
 // gather information about "near"-ness in g->points_idx
 static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx, const int lines_count,
@@ -3030,8 +3084,7 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   if(my_points == NULL) goto error;
 
   // second step: generate points for each line
-  size_t offset = 0;
-  for(int n = 0; n < lines_count; n++)
+  for(int n = 0, offset = 0; n < lines_count; n++)
   {
     my_points_idx[n].offset = offset;
 
@@ -3338,7 +3391,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 }
 
 // update the number of selected vertical and horizontal lines
-void update_lines_count(const dt_iop_ashift_line_t *lines, const int lines_count,
+static void update_lines_count(const dt_iop_ashift_line_t *lines, const int lines_count,
                         int *vertical_count, int *horizontal_count)
 {
   int vlines = 0;
@@ -3374,15 +3427,6 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   // the rectangular selection
   if(g->isbounding != ASHIFT_BOUNDING_OFF)
   {
-    float pzx, pzy;
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-
-    pzx += 0.5f;
-    pzy += 0.5f;
-
-    float wd = self->dev->preview_pipe->backbuf_width;
-    float ht = self->dev->preview_pipe->backbuf_height;
-
     if(wd >= 1.0 && ht >= 1.0)
     {
       // mark lines inside the rectangle
@@ -3726,30 +3770,38 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
     if(control)
-      fitaxis = ASHIFT_FIT_ROTATION_VERTICAL_LINES;
+      g->lastfit = fitaxis = ASHIFT_FIT_ROTATION_VERTICAL_LINES;
     else if(shift)
-      fitaxis = ASHIFT_FIT_VERTICALLY_NO_ROTATION;
+      g->lastfit = fitaxis = ASHIFT_FIT_VERTICALLY_NO_ROTATION;
     else
-      fitaxis = ASHIFT_FIT_VERTICALLY;
+      g->lastfit = fitaxis = ASHIFT_FIT_VERTICALLY;
 
     dt_iop_request_focus(self);
     dt_dev_reprocess_all(self->dev);
-    if(do_fit(self, p, fitaxis))
-    {
-      darktable.gui->reset = 1;
-      dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
-      dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
-      dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-      dt_bauhaus_slider_set_soft(g->shear, p->shear);
-      darktable.gui->reset = 0;
-    }
-    g->lastfit = fitaxis;
 
-    // hack to guarantee that module gets enabled on button click
-    if(!self->enabled) p->toggle ^= 1;
+    if(self->enabled)
+    {
+      // module is enable -> we process directly
+      if(do_fit(self, p, fitaxis))
+      {
+        darktable.gui->reset = 1;
+        dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
+        dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
+        dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+        dt_bauhaus_slider_set_soft(g->shear, p->shear);
+        darktable.gui->reset = 0;
+      }
+    }
+    else
+    {
+      // module is not enabled -> invoke it and queue the job to be processed once
+      // the preview image is ready
+      g->jobcode = ASHIFT_JOBCODE_FIT;
+      g->jobparams = g->lastfit = fitaxis;
+      p->toggle ^= 1;
+    }
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-
     return TRUE;
   }
   return FALSE;
@@ -3771,30 +3823,38 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
     if(control)
-      fitaxis = ASHIFT_FIT_ROTATION_HORIZONTAL_LINES;
+      g->lastfit = fitaxis = ASHIFT_FIT_ROTATION_HORIZONTAL_LINES;
     else if(shift)
-      fitaxis = ASHIFT_FIT_HORIZONTALLY_NO_ROTATION;
+      g->lastfit = fitaxis = ASHIFT_FIT_HORIZONTALLY_NO_ROTATION;
     else
-      fitaxis = ASHIFT_FIT_HORIZONTALLY;
+      g->lastfit = fitaxis = ASHIFT_FIT_HORIZONTALLY;
 
     dt_iop_request_focus(self);
     dt_dev_reprocess_all(self->dev);
-    if(do_fit(self, p, fitaxis))
-    {
-      darktable.gui->reset = 1;
-      dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
-      dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
-      dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-      dt_bauhaus_slider_set_soft(g->shear, p->shear);
-      darktable.gui->reset = 0;
-    }
-    g->lastfit = fitaxis;
 
-    // hack to guarantee that module gets enabled on button click
-    if(!self->enabled) p->toggle ^= 1;
+    if(self->enabled)
+    {
+      // module is enable -> we process directly
+      if(do_fit(self, p, fitaxis))
+      {
+        darktable.gui->reset = 1;
+        dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
+        dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
+        dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+        dt_bauhaus_slider_set_soft(g->shear, p->shear);
+        darktable.gui->reset = 0;
+      }
+    }
+    else
+    {
+      // module is not enabled -> invoke it and queue the job to be processed once
+      // the preview image is ready
+      g->jobcode = ASHIFT_JOBCODE_FIT;
+      g->jobparams = g->lastfit = fitaxis;
+      p->toggle ^= 1;
+    }
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-
     return TRUE;
   }
   return FALSE;
@@ -3826,22 +3886,30 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
 
     dt_iop_request_focus(self);
     dt_dev_reprocess_all(self->dev);
-    if(do_fit(self, p, fitaxis))
-    {
-      darktable.gui->reset = 1;
-      dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
-      dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
-      dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-      dt_bauhaus_slider_set_soft(g->shear, p->shear);
-      darktable.gui->reset = 0;
-    }
-    g->lastfit = fitaxis;
 
-    // hack to guarantee that module gets enabled on button click
-    if(!self->enabled) p->toggle ^= 1;
+    if(self->enabled)
+    {
+      // module is enable -> we process directly
+      if(do_fit(self, p, fitaxis))
+      {
+        darktable.gui->reset = 1;
+        dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
+        dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
+        dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+        dt_bauhaus_slider_set_soft(g->shear, p->shear);
+        darktable.gui->reset = 0;
+      }
+    }
+    else
+    {
+      // module is not enabled -> invoke it and queue the job to be processed once
+      // the preview image is ready
+      g->jobcode = ASHIFT_JOBCODE_FIT;
+      g->jobparams = g->lastfit = fitaxis;
+      p->toggle ^= 1;
+    }
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-
     return TRUE;
   }
   return FALSE;
@@ -3855,24 +3923,39 @@ static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gp
   if(event->button == 1)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+    dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
     const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
     const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
 
+    dt_iop_ashift_enhance_t enhance;
+
+    if(control && shift)
+      enhance = ASHIFT_ENHANCE_EDGES | ASHIFT_ENHANCE_DETAIL;
+    else if(shift)
+      enhance = ASHIFT_ENHANCE_DETAIL;
+    else if(control)
+      enhance = ASHIFT_ENHANCE_EDGES;
+    else
+      enhance = ASHIFT_ENHANCE_NONE;
+
     dt_iop_request_focus(self);
     dt_dev_reprocess_all(self->dev);
 
-    if(control && shift)
-      (void)do_get_structure(self, p, ASHIFT_ENHANCE_EDGES | ASHIFT_ENHANCE_DETAIL);
-    else if(shift)
-      (void)do_get_structure(self, p, ASHIFT_ENHANCE_DETAIL);
-    else if(control)
-      (void)do_get_structure(self, p, ASHIFT_ENHANCE_EDGES);
+    if(self->enabled)
+    {
+      // module is enabled -> process directly
+      (void)do_get_structure(self, p, enhance);
+    }
     else
-      (void)do_get_structure(self, p, ASHIFT_ENHANCE_NONE);
+    {
+      // module is not enabled -> invoke it and queue the job to be processed once
+      // the preview image is ready
+      g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE;
+      g->jobparams = enhance;
+      p->toggle ^= 1;
+    }
 
-    // hack to guarantee that module gets enabled on button click
-    if(!self->enabled) p->toggle ^= 1;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
   }
@@ -3886,7 +3969,7 @@ static void clean_button_clicked(GtkButton *button, gpointer user_data)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   (void)do_clean_structure(self, p);
   dt_iop_request_focus(self);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_control_queue_redraw_center();
 }
 
 static void eye_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
@@ -3904,7 +3987,52 @@ static void eye_button_toggled(GtkToggleButton *togglebutton, gpointer user_data
     g->lines_suppressed = gtk_toggle_button_get_active(togglebutton);
   }
   dt_iop_request_focus(self);
-  dt_dev_reprocess_all(self->dev);
+  dt_control_queue_redraw_center();
+}
+
+// routine that is called after preview image has been processed. we use it
+// to perform structure collection or fitting in case those have been triggered while
+// the module had not yet been enabled
+static void process_after_preview_callback(gpointer instance, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  dt_iop_ashift_jobcode_t jobcode = g->jobcode;
+  int jobparams = g->jobparams;
+
+  // purge
+  g->jobcode = ASHIFT_JOBCODE_NONE;
+  g->jobparams = 0;
+
+  if(darktable.gui->reset) return;
+
+  switch(jobcode)
+  {
+    case ASHIFT_JOBCODE_GET_STRUCTURE:
+      (void)do_get_structure(self, p, (dt_iop_ashift_enhance_t)jobparams);
+      break;
+
+    case ASHIFT_JOBCODE_FIT:
+      if(do_fit(self, p, (dt_iop_ashift_fitaxis_t)jobparams))
+      {
+        darktable.gui->reset = 1;
+        dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
+        dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
+        dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
+        dt_bauhaus_slider_set_soft(g->shear, p->shear);
+        darktable.gui->reset = 0;
+      }
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      break;
+      
+    case ASHIFT_JOBCODE_NONE:
+    default:
+      break;
+  }
+
+  dt_control_queue_redraw_center();
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -3992,7 +4120,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_ashift_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_ashift_params_t));
   module->default_enabled = 0;
-  module->priority = 215; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 205; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_ashift_params_t);
   module->gui_data = NULL;
   dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH, 1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,
@@ -4090,6 +4218,9 @@ void reload_defaults(dt_iop_module_t *module)
     g->points_idx = NULL;
     g->points_lines_count = 0;
     g->points_version = 0;
+
+    g->jobcode = ASHIFT_JOBCODE_NONE;
+    g->jobparams = 0;
   }
 }
 
@@ -4233,6 +4364,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->isbounding = ASHIFT_BOUNDING_OFF;
   g->selecting_lines_version = 0;
 
+  g->jobcode = ASHIFT_JOBCODE_NONE;
+  g->jobparams = 0;
+
+
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->rotation = dt_bauhaus_slider_new_with_range(self, -ROTATION_RANGE, ROTATION_RANGE, 0.01*ROTATION_RANGE, p->rotation, 2);
@@ -4246,7 +4381,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_v, -LENSSHIFT_RANGE_SOFT, LENSSHIFT_RANGE_SOFT);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_v, TRUE, TRUE, 0);
 
-  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, 0.01*LENSSHIFT_RANGE, p->lensshift_v, 3);
+  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, 0.01*LENSSHIFT_RANGE, p->lensshift_h, 3);
   dt_bauhaus_widget_set_label(g->lensshift_h, NULL, _("lens shift (horizontal)"));
   dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_h, -LENSSHIFT_RANGE_SOFT, LENSSHIFT_RANGE_SOFT);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);
@@ -4330,7 +4465,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_both, g->fit_h, GTK_POS_RIGHT, 1, 1);
 
   GtkWidget *label2 = gtk_label_new(_("get structure"));
-  gtk_widget_set_halign(label1, GTK_ALIGN_START);
+  gtk_widget_set_halign(label2, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(grid), label2, 0, 1, 1, 1);
 
   g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
@@ -4427,10 +4562,17 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->clean), "clicked", G_CALLBACK(clean_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->eye), "toggled", G_CALLBACK(eye_button_toggled), (gpointer)self);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
+
+  /* add signal handler for preview pipe finish to redraw the overlay */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                            G_CALLBACK(process_after_preview_callback), self);
+
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(process_after_preview_callback), self);
+
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_pthread_mutex_destroy(&g->lock);
   free(g->lines);

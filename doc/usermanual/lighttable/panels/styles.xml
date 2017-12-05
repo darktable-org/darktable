@@ -1,3 +1,8 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+                <!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+                %darktable_dtd;
+                ]>
 <sect2 status="final" id="styles">
 
   <title>Styles</title>
@@ -31,7 +36,7 @@
     </tgroup>
   </informaltable>
 
-  <sect3>
+  <sect3 id="styles_usage">
 
     <title>Usage</title>
 
@@ -45,7 +50,7 @@
       Double clicking on a style name applies the style to all selected images.
     </para>
 
-    <sect4>
+    <sect4 id="styles_usage_duplicate">
 
       <title>create duplicate</title>
 
@@ -58,7 +63,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="styles_usage_create">
 
       <title>create</title>
 
@@ -71,7 +76,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="styles_usage_edit">
 
       <title>edit</title>
 
@@ -84,7 +89,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="styles_usage_delete">
 
       <title>delete</title>
 
@@ -94,7 +99,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="styles_usage_import">
 
       <title>import</title>
 
@@ -105,7 +110,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="styles_usage_export">
 
       <title>export</title>
 

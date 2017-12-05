@@ -16,19 +16,22 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include <string.h>
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <sqlite3.h>
+#include <stdio.h>
+#include <string.h>
 
-#include "crawler.h"
 #include "common/darktable.h"
 #include "common/database.h"
 #include "common/history.h"
 #include "common/image.h"
 #include "control/conf.h"
+#include "crawler.h"
 #include "gui/gtk.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 
 typedef enum dt_control_crawler_cols_t
@@ -58,11 +61,10 @@ GList *dt_control_crawler_run()
   gboolean look_for_xmp = dt_conf_get_bool("write_sidecar_files");
 
   sqlite3_prepare_v2(dt_database_get(darktable.db),
-                     "SELECT images.id, write_timestamp, version, folder || '/' || filename, flags "
-                     "FROM images, film_rolls WHERE images.film_id = film_rolls.id "
-                     "ORDER BY film_rolls.id, filename",
+                     "SELECT i.id, write_timestamp, version, folder || '/' || filename, flags "
+                     "FROM main.images i, main.film_rolls f ON i.film_id = f.id ORDER BY f.id, filename",
                      -1, &stmt, NULL);
-  sqlite3_prepare_v2(dt_database_get(darktable.db), "UPDATE images SET flags = ?1 WHERE id = ?2", -1,
+  sqlite3_prepare_v2(dt_database_get(darktable.db), "UPDATE main.images SET flags = ?1 WHERE id = ?2", -1,
                      &inner_stmt, NULL);
 
   // let's wrap this into a transaction, it might make it a little faster.
@@ -361,6 +363,9 @@ void dt_control_crawler_show_image_list(GList *images)
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("updated xmp sidecar files found"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                   _("_close"), GTK_RESPONSE_CLOSE, NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
   gtk_widget_set_size_request(dialog, -1, DT_PIXEL_APPLY_DPI(400));
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));

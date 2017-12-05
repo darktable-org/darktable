@@ -27,7 +27,7 @@
     The parametric mask is a powerful tool with a certain level of complexity.
   </para>
 
-  <sect3 status="final">
+  <sect3 status="final" id="parametric_mask_overview">
 
     <title>Overview</title>
 
@@ -53,7 +53,7 @@
 
   </sect3>
 
-  <sect3>
+  <sect3 id="parametric_mask_usage">
 
     <title>Usage</title>
 
@@ -77,7 +77,7 @@
       </informaltable>
     </para>
 
-    <sect4>
+    <sect4 id="parametric_mask_usage_tabs">
 
       <title>Channel tabs</title>
 
@@ -95,9 +95,20 @@
         module receives and one for the output data that the module produces prior to blending.
       </para>
 
+      <para>
+        You can inspect the image data corresponding to an individual color channel by holding
+        down the <emphasis>shift</emphasis> key while entering the respective slider with the
+        mouse cursor. The center image changes to display the selected color channel either in
+        graycale values or in false colors, depending on the corresponding preference setting in
+        <quote>GUI options</quote> (see <xref linkend="gui_options"/>). You may additionally
+        hold down the <emphasis>ctrl</emphasis> key which lets you see the resulting mask
+        overlayed to the image. When leaving the slider the image goes back to normal after a
+        short delay.
+      </para>
+
     </sect4>
 
-    <sect4>
+    <sect4 id="parametric_mask_usage_sliders">
 
       <title>Color channel sliders</title>
 
@@ -199,9 +210,13 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="parametric_mask_usage_buttons">
 
       <title>Control buttons</title>
+
+      <indexterm>
+        <primary>color picker</primary>
+      </indexterm>
 
       <para>
         Control buttons help you when designing a parametric mask.
@@ -211,7 +226,9 @@
         With the color picker button
         <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
         you can select a probe from your image. The corresponding values for the real and
-        virtual data channels are then displayed within each color channel slider.
+        virtual data channels are then displayed within each color channel slider. You can
+        switch between point and area sampling mode from within the global color picker panel
+        (see <xref linkend="global_color_picker"/>).
       </para>
 
       <para>
@@ -232,11 +249,11 @@
 
   </sect3>
 
-  <sect3 status="final">
+  <sect3 status="final" id="parametric_mask_examples">
 
     <title>Examples</title>
 
-    <sect4>
+    <sect4 id="parametric_mask_examples_colorkey">
 
       <title>Colorkey effect</title>
 

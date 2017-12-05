@@ -27,12 +27,12 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include <strings.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
 
 /**
  * color transfer somewhat based on the glorious paper `color transfer between images'
@@ -175,6 +175,9 @@ static void invert_histogram(const int *hist, float *inv_hist)
   // HISTN-1)]/(float)HISTN, inv_hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]);
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wvla"
+
 static void get_cluster_mapping(const int n, float mi[n][2], float mo[n][2], int mapio[n])
 {
   for(int ki = 0; ki < n; ki++)
@@ -238,8 +241,9 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
   const int nit = 10;                                 // number of iterations
   const int samples = roi->width * roi->height * 0.2; // samples: only a fraction of the buffer.
 
-  float mean[n][2], var[n][2];
-  int cnt[n];
+  float(*const mean)[2] = malloc(2 * n * sizeof(float));
+  float(*const var)[2] = malloc(2 * n * sizeof(float));
+  int *const cnt = malloc(n * sizeof(int));
 
   // init n clusters for a, b channels at random
   for(int k = 0; k < n; k++)
@@ -254,7 +258,7 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
     for(int k = 0; k < n; k++) cnt[k] = 0;
 // randomly sample col positions inside roi
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(col, var, mean, mean_out, cnt)
+#pragma omp parallel for default(none) schedule(static) shared(col, mean_out)
 #endif
     for(int s = 0; s < samples; s++)
     {
@@ -303,6 +307,9 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
     // for(int k=0;k<n;k++) printf("%f %f -- var %f %f\n", mean_out[k][0], mean_out[k][1], var_out[k][0],
     // var_out[k][1]);
   }
+  free(cnt);
+  free(var);
+  free(mean);
   for(int k = 0; k < n; k++)
   {
     // we actually want the std deviation.
@@ -310,6 +317,8 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
     var_out[k][1] = sqrtf(var_out[k][1]);
   }
 }
+
+#pragma GCC diagnostic pop
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -362,16 +371,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // cluster input buffer
-    float mean[data->n][2], var[data->n][2];
+    float(*const mean)[2] = malloc(2 * data->n * sizeof(float));
+    float(*const var)[2] = malloc(2 * data->n * sizeof(float));
+
     kmeans(in, roi_in, data->n, mean, var);
 
     // get mapping from input clusters to target clusters
-    int mapio[data->n];
+    int *const mapio = malloc(data->n * sizeof(int));
+
     get_cluster_mapping(data->n, mean, data->mean, mapio);
 
 // for all pixels: find input cluster, transfer to mapped target cluster
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(data, mean, var, mapio, in, out)
+#pragma omp parallel for default(none) schedule(static) shared(data, in, out)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -401,6 +413,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         j += ch;
       }
     }
+
+    free(mapio);
+    free(var);
+    free(mean);
   }
   else
   {
@@ -488,7 +504,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
       memcpy (&g->flowback, d, self->params_size);
       g->flowback_set = 1;
-      FILE *f = fopen("/tmp/dt_colortransfer_loaded", "wb");
+      FILE *f = g_fopen("/tmp/dt_colortransfer_loaded", "wb");
       if(f)
       {
         if(fwrite(&g->flowback, self->params_size, 1, f) > 0) g->flowback.flag = APPLY;
@@ -543,7 +559,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colortransfer_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colortransfer_params_t));
   module->default_enabled = 0;
-  module->priority = 476; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 485; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colortransfer_params_t);
   module->gui_data = NULL;
   dt_iop_colortransfer_params_t tmp;
@@ -667,7 +683,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->apply_button, _("apply previously analyzed image look to this image"));
   gtk_box_pack_start(box, g->apply_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->apply_button), "clicked", G_CALLBACK(apply_button_pressed), (gpointer)self);
-  FILE *f = fopen("/tmp/dt_colortransfer_loaded", "rb");
+  FILE *f = g_fopen("/tmp/dt_colortransfer_loaded", "rb");
   if(f)
   {
     if(fread(&g->flowback, self->params_size, 1, f) > 0) g->flowback_set = 1;

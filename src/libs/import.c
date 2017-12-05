@@ -16,17 +16,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/exif.h"
 #include "common/film.h"
-#include "common/collection.h"
 #include "common/image_cache.h"
-#include "common/mipmap_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
-#include "common/exif.h"
-#include "control/control.h"
+#include "common/mipmap_cache.h"
 #include "control/conf.h"
+#include "control/control.h"
 #ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"
 #endif
@@ -39,6 +39,9 @@
 #endif
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #include <librsvg/rsvg.h>
 // ugh, ugly hack. why do people break stuff all the time?
@@ -104,9 +107,10 @@ const char *name(dt_lib_module_t *self)
 }
 
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE;
+  static const char *v[] = {"lighttable", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -175,7 +179,7 @@ static void _lib_import_tethered_callback(GtkToggleButton *button, gpointer data
 {
   /* select camera to work with before switching mode */
   dt_camctl_select_camera(darktable.camctl, (dt_camera_t *)data);
-  dt_ctl_switch_mode_to(DT_CAPTURE);
+  dt_ctl_switch_mode_to("tethering");
 }
 
 
@@ -259,7 +263,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
     // No supported devices is detected lets notice user..
     GtkWidget *label = gtk_label_new(_("no supported devices found"));
     gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-    g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+    g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
     gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
   }
   gtk_widget_show_all(GTK_WIDGET(d->devices));
@@ -393,6 +397,7 @@ static void _lib_import_presets_changed(GtkWidget *widget, dt_lib_import_metadat
     g_value_unset(&value);
   }
 }
+
 #ifdef USE_LUA
 static void reset_child(GtkWidget* child, gpointer user_data)
 {
@@ -402,8 +407,20 @@ static void reset_child(GtkWidget* child, gpointer user_data)
       LUA_ASYNC_TYPENAME,"const char*","reset",
       LUA_ASYNC_DONE);
 }
+
+// remove the extra portion from the filechooser before destroying it
+static void detach_lua_widgets(GtkWidget *extra_lua_widgets)
+{
+  GtkWidget *parent = gtk_widget_get_parent(extra_lua_widgets);
+  gtk_container_remove(GTK_CONTAINER(parent), extra_lua_widgets);
+}
 #endif
 
+static void _check_button_callback(GtkWidget *widget, gpointer data)
+{
+    dt_conf_set_bool("ui_last/import_ignore_jpegs",
+                     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+}
 
 static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_import_metadata_t *data, gboolean import_folder)
 {
@@ -450,6 +467,8 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ignore_jpeg),
                                  dt_conf_get_bool("ui_last/import_ignore_jpegs"));
     gtk_box_pack_start(GTK_BOX(extra), ignore_jpeg, FALSE, FALSE, 0);
+    g_signal_connect(G_OBJECT(ignore_jpeg), "clicked",
+                   G_CALLBACK(_check_button_callback), ignore_jpeg);
   }
 
   // default metadata
@@ -519,7 +538,7 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select name, op_params from presets where operation = \"metadata\"", -1, &stmt,
+                              "SELECT name, op_params FROM data.presets WHERE operation = \"metadata\"", -1, &stmt,
                               NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -527,22 +546,23 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
     int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
 
     char *buf = (char *)op_params;
-    char *title = buf;
-    buf += strlen(title) + 1;
-    char *description = buf;
-    buf += strlen(description) + 1;
-    char *rights = buf;
-    buf += strlen(rights) + 1;
-    char *creator = buf;
-    buf += strlen(creator) + 1;
-    char *publisher = buf;
+    char *title_str = buf;
+    buf += strlen(title_str) + 1;
+    char *description_str = buf;
+    buf += strlen(description_str) + 1;
+    char *rights_str = buf;
+    buf += strlen(rights_str) + 1;
+    char *creator_str = buf;
+    buf += strlen(creator_str) + 1;
+    char *publisher_str = buf;
 
     if(op_params_size
-       == strlen(title) + strlen(description) + strlen(rights) + strlen(creator) + strlen(publisher) + 5)
+       == strlen(title_str) + strlen(description_str) + strlen(rights_str) + strlen(creator_str)
+              + strlen(publisher_str) + 5)
     {
       gtk_list_store_append(model, &iter);
       gtk_list_store_set(model, &iter, NAME_COLUMN, (char *)sqlite3_column_text(stmt, 0), CREATOR_COLUMN,
-                         creator, PUBLISHER_COLUMN, publisher, RIGHTS_COLUMN, rights, -1);
+                         creator_str, PUBLISHER_COLUMN, publisher_str, RIGHTS_COLUMN, rights_str, -1);
     }
   }
   sqlite3_finalize(stmt);
@@ -633,16 +653,16 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   preview = GTK_WIDGET(data);
   filename = gtk_file_chooser_get_preview_filename(file_chooser);
 
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-  {
-    no_preview_fallback = TRUE;
-  }
-  else
+  if(filename && g_file_test(filename, G_FILE_TEST_IS_REGULAR))
   {
     // don't create dng thumbnails to avoid crashes in libtiff when these are hdr:
     char *c = filename + strlen(filename);
     while(c > filename && *c != '.') c--;
     if(!strcasecmp(c, ".dng")) no_preview_fallback = TRUE;
+  }
+  else
+  {
+    no_preview_fallback = TRUE;
   }
 
   // unfortunately we can not use following, because frequently it uses wrong orientation
@@ -705,58 +725,20 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   if(no_preview_fallback || !have_preview)
   {
     /* load the dt logo as a brackground */
-    char filename[PATH_MAX] = { 0 };
-    char datadir[PATH_MAX] = { 0 };
-    char *logo;
-    dt_logo_season_t season = get_logo_season();
-    if(season != DT_LOGO_SEASON_NONE)
-      logo = g_strdup_printf("%%s/pixmaps/idbutton-%d.svg", (int)season);
-    else
-      logo = g_strdup("%s/pixmaps/idbutton.svg");
-
-    dt_loc_get_datadir(datadir, sizeof(datadir));
-    snprintf(filename, sizeof(filename), logo, datadir);
-    g_free(logo);
-    RsvgHandle *svg = rsvg_handle_new_from_file(filename, NULL);
-    if(svg)
+    cairo_surface_t *surface = dt_util_get_logo(128.0);
+    if(surface)
     {
-      cairo_surface_t *surface;
-      cairo_t *cr;
+      guint8 *image_buffer = cairo_image_surface_get_data(surface);
+      int image_width = cairo_image_surface_get_width(surface);
+      int image_height = cairo_image_surface_get_height(surface);
 
-      RsvgDimensionData dimension;
-      rsvg_handle_get_dimensions(svg, &dimension);
+      pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, image_width, image_height);
 
-      float svg_size = MAX(dimension.width, dimension.height);
-      float final_size = 128;
-      float factor = final_size / svg_size;
-      float final_width = dimension.width * factor * darktable.gui->ppd,
-            final_height = dimension.height * factor * darktable.gui->ppd;
-      int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
+      cairo_surface_destroy(surface);
+      free(image_buffer);
 
-      guint8 *image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
-      surface = dt_cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
-                                                       final_height, stride);
-      if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
-      {
-        free(image_buffer);
-        image_buffer = NULL;
-      }
-      else
-      {
-        cr = cairo_create(surface);
-        cairo_scale(cr, factor, factor);
-        rsvg_handle_render_cairo(svg, cr);
-        cairo_destroy(cr);
-        cairo_surface_flush(surface);
-        pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, final_width / darktable.gui->ppd,
-                                             final_height / darktable.gui->ppd);
-        cairo_surface_destroy(surface);
-        free(image_buffer);
-      }
-      g_object_unref(svg);
+      have_preview = TRUE;
     }
-
-    have_preview = TRUE;
   }
   if(have_preview) gtk_image_set_from_pixbuf(GTK_IMAGE(preview), pixbuf);
   if(pixbuf) g_object_unref(pixbuf);
@@ -772,6 +754,9 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("import image"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, _("_cancel"), GTK_RESPONSE_CANCEL,
       _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
@@ -782,18 +767,17 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
     g_free(last_directory);
   }
 
-  char *cp, **extensions, ext[1024];
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
-  extensions = g_strsplit(dt_supported_extensions, ",", 100);
-  for(char **i = extensions; *i != NULL; i++)
+  for(const char **i = dt_supported_extensions; *i != NULL; i++)
   {
-    snprintf(ext, sizeof(ext), "*.%s", *i);
+    char *ext = g_strdup_printf("*.%s", *i);
+    char *ext_upper = g_ascii_strup(ext, -1);
     gtk_file_filter_add_pattern(filter, ext);
-    gtk_file_filter_add_pattern(filter, cp = g_ascii_strup(ext, -1));
-    g_free(cp);
+    gtk_file_filter_add_pattern(filter, ext_upper);
+    g_free(ext_upper);
+    g_free(ext);
   }
-  g_strfreev(extensions);
   gtk_file_filter_set_name(filter, _("supported images"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
@@ -808,7 +792,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
 
   dt_lib_import_metadata_t metadata;
   gtk_file_chooser_set_extra_widget(GTK_FILE_CHOOSER(filechooser),
-                                    _lib_import_get_extra_widget(self,&metadata, FALSE));
+                                    _lib_import_get_extra_widget(self, &metadata, FALSE));
 
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
@@ -855,10 +839,16 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
       else
       {
         dt_control_set_mouse_over_id(id);
-        dt_ctl_switch_mode_to(DT_DEVELOP);
+        dt_ctl_switch_mode_to("darkroom");
       }
     }
   }
+
+#ifdef USE_LUA
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  detach_lua_widgets(d->extra_lua_widgets);
+#endif
+
   gtk_widget_destroy(metadata.frame);
   gtk_widget_destroy(filechooser);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
@@ -871,6 +861,9 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("import film"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
@@ -883,7 +876,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
 
   dt_lib_import_metadata_t metadata;
   gtk_file_chooser_set_extra_widget(GTK_FILE_CHOOSER(filechooser),
-                                    _lib_import_get_extra_widget(self,&metadata, TRUE));
+                                    _lib_import_get_extra_widget(self, &metadata, TRUE));
 
   // run the dialog
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -929,12 +922,12 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
 
     g_slist_free(list);
   }
+
 #ifdef USE_LUA
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  // remove the extra portion from the filechooser before destroying it
-  GtkWidget * parent =gtk_widget_get_parent(d->extra_lua_widgets);
-  gtk_container_remove(GTK_CONTAINER(parent),d->extra_lua_widgets);
+  detach_lua_widgets(d->extra_lua_widgets);
 #endif
+
   gtk_widget_destroy(metadata.frame);
   gtk_widget_destroy(filechooser);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));

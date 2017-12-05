@@ -15,12 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "develop/imageop.h"
-#include "develop/blend.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "develop/masks.h"
 #include "common/debug.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/blend.h"
+#include "develop/imageop.h"
+#include "develop/masks.h"
 
 static void dt_circle_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index, int *inside,
                                    int *inside_border, int *near, int *inside_source)
@@ -75,7 +75,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
     else
     {
       dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
-      if(gui->border_selected)
+      if(gui->border_selected || (state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
         if(up && circle->border > 0.001f)
           circle->border *= 0.97f;
@@ -188,7 +188,7 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
       form->source[0] = form->source[1] = 0.0f;
     }
     form->points = g_list_append(form->points, circle);
-    dt_masks_gui_form_save_creation(crea_module, form, gui);
+    dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
 
     if(crea_module)
     {

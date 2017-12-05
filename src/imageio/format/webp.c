@@ -108,11 +108,12 @@ static int FileWriter(const uint8_t *data, size_t data_size, const WebPPicture *
   return data_size ? (fwrite(data, data_size, 1, out) == 1) : 1;
 }
 
-int write_image(dt_imageio_module_data_t *webp, const char *filename, const void *in_tmp, void *exif,
-                int exif_len, int imgid, int num, int total)
+int write_image(dt_imageio_module_data_t *webp, const char *filename, const void *in_tmp,
+                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                void *exif, int exif_len, int imgid, int num, int total)
 {
   dt_imageio_webp_t *webp_data = (dt_imageio_webp_t *)webp;
-  FILE *out = fopen(filename, "wb");
+  FILE *out = g_fopen(filename, "wb");
 
   // Create, configure and validate a WebPConfig instance
   WebPConfig config;
@@ -191,7 +192,6 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
       int max_width, max_height;
       int width, height;
       char style[128];
-      gboolean style_append;
       int comp_type;
       int quality;
       int hint;
@@ -214,6 +214,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
   }
   return NULL;
 }
+
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_webp_t *d = (dt_imageio_webp_t *)calloc(1, sizeof(dt_imageio_webp_t));

@@ -27,8 +27,7 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED O
 DAMAGE.
 */
 
-#ifndef IMAGESTACK_PERMUTOHEDRAL_LATTICE_H
-#define IMAGESTACK_PERMUTOHEDRAL_LATTICE_H
+#pragma once
 
 /*******************************************************************
  * Permutohedral Lattice implementation from:                      *
@@ -37,8 +36,8 @@ DAMAGE.
  *******************************************************************/
 
 #include <math.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /*******************************************************************
@@ -397,7 +396,7 @@ public:
     if(nThreads <= 1) return;
 
     /* Merge the multiple hash tables into one, creating an offset remap table. */
-    int *offset_remap[nThreads];
+    int **offset_remap = new int *[nThreads];
     for(int i = 1; i < nThreads; i++)
     {
       const short *oldKeys = hashTables[i].getKeys();
@@ -418,6 +417,8 @@ public:
       if(replay[i].table > 0) replay[i].offset = offset_remap[replay[i].table][replay[i].offset / VD];
 
     for(int i = 1; i < nThreads; i++) delete[] offset_remap[i];
+
+    delete[] offset_remap;
   }
 
   /* Performs slicing out of position vectors. Note that the barycentric weights and the simplex
@@ -524,7 +525,6 @@ private:
   HashTablePermutohedral<D, VD> *hashTables;
 };
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

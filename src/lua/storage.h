@@ -15,10 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_LUA_STORAGE_H
-#define DT_LUA_STORAGE_H
-#include <lua/lua.h>
+
+#pragma once
+
 #include <common/imageio_module.h>
+#include <lua/lua.h>
 
 // forward declaration
 struct dt_imageio_module_storage_t;
@@ -32,7 +33,6 @@ void dt_lua_register_storage_type(lua_State *L, struct dt_imageio_module_storage
 
 int dt_lua_init_early_storage(lua_State *L);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

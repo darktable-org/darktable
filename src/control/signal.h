@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_CONTROL_SIGNAL
-#define DT_CONTROL_SIGNAL
+#pragma once
 
 #include <glib-object.h>
 
@@ -111,6 +110,12 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
 
+  /** \brief This signal is raised when a module is removed from the history stack
+    1 module
+    no returned value
+    */
+  DT_SIGNAL_DEVELOP_MODULE_REMOVE,
+
   /** \brief This signal is rasied when image is changed in darkroom */
   DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
 
@@ -168,7 +173,7 @@ void dt_control_signal_connect(const struct dt_control_signal_t *ctlsig, const d
                                GCallback cb, gpointer user_data);
 /* disconnects a callback from a sink */
 void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data);
-#endif
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_COMMON_BILATERAL_H
-#define DT_COMMON_BILATERAL_H
+#pragma once
 
 #include <stddef.h> // for size_t
 
@@ -34,10 +33,20 @@ size_t dt_bilateral_memory_use(const int width,      // width of input image
                                const float sigma_s,  // spatial sigma (blur pixel coords)
                                const float sigma_r); // range sigma (blur luma values)
 
+size_t dt_bilateral_memory_use2(const int width,      // width of input image
+                                const int height,     // height of input image
+                                const float sigma_s,  // spatial sigma (blur pixel coords)
+                                const float sigma_r); // range sigma (blur luma values)
+
 size_t dt_bilateral_singlebuffer_size(const int width,      // width of input image
                                       const int height,     // height of input image
                                       const float sigma_s,  // spatial sigma (blur pixel coords)
                                       const float sigma_r); // range sigma (blur luma values)
+
+size_t dt_bilateral_singlebuffer_size2(const int width,      // width of input image
+                                       const int height,     // height of input image
+                                       const float sigma_s,  // spatial sigma (blur pixel coords)
+                                       const float sigma_r); // range sigma (blur luma values)
 
 dt_bilateral_t *dt_bilateral_init(const int width,      // width of input image
                                   const int height,     // height of input image
@@ -54,8 +63,6 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
                                   const float detail);
 
 void dt_bilateral_free(dt_bilateral_t *b);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

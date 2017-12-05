@@ -1,9 +1,6 @@
-cmake_minimum_required(VERSION 2.6)
-
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+include(manage-symbol-visibility)
 
 add_definitions(-include common/module_api.h)
 add_definitions(-include views/view_api.h)
@@ -15,10 +12,10 @@ add_library(lighttable MODULE "lighttable.c")
 add_library(slideshow MODULE "slideshow.c")
 add_library(knight MODULE "knight.c")
 
-if(USE_GEO)
+if(USE_MAP)
     add_library(map MODULE "map.c")
     set(MODULES ${MODULES} map)
-endif(USE_GEO)
+endif(USE_MAP)
 
 
 if(GPHOTO2_FOUND)
@@ -32,9 +29,13 @@ if(CUPS_FOUND)
 endif(CUPS_FOUND)
 
 foreach(module ${MODULES})
-    target_link_libraries(${module} ${LIBS})
+    target_link_libraries(${module} lib_darktable)
 endforeach(module)
 
 foreach(module ${MODULES})
-    install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/views)
+    if (WIN32)
+      _detach_debuginfo (${module} ${CMAKE_INSTALL_LIBDIR}/darktable/views)
+    endif(WIN32)
+
+    install(TARGETS  ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/views COMPONENT DTApplication)
 endforeach(module)

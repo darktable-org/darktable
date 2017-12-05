@@ -16,25 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
 #include "common/dbus.h"
-#include "control/control.h"
+#include "common/darktable.h"
 #include "control/conf.h"
-
-#include <gio/gio.h>
+#include "control/control.h"
 
 #ifdef USE_LUA
 #include "lua/call.h"
 #endif
-
-typedef struct dt_dbus_t
-{
-  int connected;
-
-  GDBusNodeInfo *introspection_data;
-  guint owner_id;
-  guint registration_id;
-} dt_dbus_t;
 
 /* Introspection data for the service we are exporting */
 static const gchar introspection_xml[] = "<node>"
@@ -69,8 +58,8 @@ static void dbus_lua_call_finished(lua_State* L,int result,void* data)
     }
     else
     {
-      const char *result = luaL_checkstring(L, -1);
-      g_dbus_method_invocation_return_value(invocation, g_variant_new("(s)", result));
+      const char *checkres = luaL_checkstring(L, -1);
+      g_dbus_method_invocation_return_value(invocation, g_variant_new("(s)", checkres));
     }
   }
   else
@@ -103,7 +92,7 @@ static void _handle_method_call(GDBusConnection *connection, const gchar *sender
   {
     const gchar *command;
     g_variant_get(parameters, "(&s)", &command);
-    dt_lua_async_call_string(command, 0,dbus_lua_call_finished,invocation);
+    dt_lua_async_call_string(command, 1,dbus_lua_call_finished,invocation);
     // we don't finish the invocation, the async task will do this for us
   }
 #endif
@@ -199,6 +188,9 @@ struct dt_dbus_t *dt_dbus_init()
                                   G_BUS_NAME_OWNER_FLAGS_NONE, _on_bus_acquired, _on_name_acquired,
                                   _on_name_lost, dbus, NULL);
 
+  dbus->dbus_connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+  g_object_set(G_OBJECT(dbus->dbus_connection), "exit-on-close", FALSE, (gchar *)0);
+
   return dbus;
 }
 
@@ -206,6 +198,7 @@ void dt_dbus_destroy(const dt_dbus_t *dbus)
 {
   g_bus_unown_name(dbus->owner_id);
   g_dbus_node_info_unref(dbus->introspection_data);
+  g_object_unref(G_OBJECT(dbus->dbus_connection));
 
   g_free((dt_dbus_t *)dbus);
 }

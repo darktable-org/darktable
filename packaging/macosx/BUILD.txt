@@ -3,15 +3,30 @@ How to make disk image with darktable application bundle (64 bit Intel only):
 1). Install MacPorts (instructions and prerequisites can be found on official website), please use default installation path (/opt/local).
     They will need some tuning, so before you build anything add these lines to /opt/local/etc/macports/macports.conf:
      buildfromsource always
-     macosx_deployment_target 10.6
-     cxx_stdlib libstdc++
-    (practice showed that support for versions older than 10.6 isn't viable)
-    and this line to /opt/local/etc/macports/variant.conf:
-     +llvm34 +ld64_236 +no_gnome +no_x11 +quartz -x11 -gnome
+     macosx_deployment_target 10.7
+     cxx_stdlib libc++
+    (practice showed that support for versions older than 10.7 isn't viable)
+    and this line to /opt/local/etc/macports/variants.conf:
+     +no_gnome +no_x11 +quartz -x11 -gnome +ld64_xcode
+    You will also need to add patches for python (https://trac.macports.org/ticket/51736) and GraphicsMagick (both fixes are required due to set deployment target),
+    and pango (re-enable font-scaling according to DPI setting, see https://bugzilla.gnome.org/show_bug.cgi?id=782393):
+     $ mkdir -p ~/ports/lang/python36/files ~/ports/graphics/GraphicsMagick/files ~/ports/x11/pango/files
+     $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/lang/python36 ~/ports/lang
+     $ curl -Lo ~/ports/lang/python36/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python36-stack_size.diff
+     $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/graphics/GraphicsMagick ~/ports/graphics
+     $ curl -Lo ~/ports/graphics/GraphicsMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gm-deployment_target.diff
+     $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/x11/pango ~/ports/x11
+     $ curl -Lo ~/ports/x11/pango/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/pango-font_scale.diff
+    then add this line:
+     patchfiles-append patch.diff
+    to ~/ports/*/*/Portfile files you just copied and run
+     $ portindex ~/ports
+    Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
     Install required dependencies:
-     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg15 lua webp libsecret pugixml osm-gps-map adwaita-icon-theme
-    To have working OpenMP (at least partly, only for C source files) you will also need gcc49:
-     $ sudo port install gcc49
+     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg lua webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool
+    To have working OpenMP (at least partly, only for C source files) you will also need gcc6:
+     $ sudo port install gcc6
+    (llvm port, which gets installed as dependency, won't compile with macosx_deployment_target set, so comment it out when llvm is built)
     Clone darktable git repository (in this example into ~/src):
      $ mkdir ~/src
      $ cd ~/src
@@ -20,14 +35,15 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ cd darktable
      $ mkdir build
      $ cd build
-     $ CC=gcc-mp-4.9 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6 -DCMAKE_OSX_SYSROOT=/
+     $ CC=gcc-mp-6 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.7 -DBINARY_PACKAGE_BUILD=ON
      $ make
      $ sudo make install
-    After this darktable will be installed in /usr/local directory and can be started by typing "XDG_DATA_DIRS=/opt/local/share darktable" in terminal.
+    After this darktable will be installed in /usr/local directory and can be started by typing the following command in terminal:
+     $ GSETTINGS_SCHEMA_DIR=/opt/local/share/glib-2.0/schemas/ XDG_DATA_DIRS=/opt/local/share darktable
 
 2). Download, patch and install gtk-mac-bundler (assuming darktable was cloned into ~/src directory):
      $ cd ~/src
-     $ curl -O http://ftp.gnome.org/pub/gnome/sources/gtk-mac-bundler/0.7/gtk-mac-bundler-0.7.4.tar.xz
+     $ curl -O https://ftp.gnome.org/pub/gnome/sources/gtk-mac-bundler/0.7/gtk-mac-bundler-0.7.4.tar.xz
      $ tar -xf gtk-mac-bundler-0.7.4.tar.xz
      $ cd gtk-mac-bundler-0.7.4
      $ patch -p1 < ../darktable/packaging/macosx/gtk-mac-bundler-0.7.4.patch
@@ -41,4 +57,4 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     You may have to provide more specific name for a certificate if you have several matching in your keychain.
 
 4). Assuming that darktable is the only program installed into /usr/local you should remove the install directory before doing next build:
-     $ rm -Rf /usr/local
+     $ sudo rm -Rf /usr/local

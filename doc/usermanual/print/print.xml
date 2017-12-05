@@ -33,7 +33,7 @@
     </screenshot>
   </para>
 
-  <sect1 status="final">
+  <sect1 status="final" id="print_overview">
 
     <title>Overview</title>
 
@@ -61,7 +61,7 @@
       images are present in the filmstrip. Visibility of the filmstrip&nbsp;&ndash; located in
       the bottom panel&nbsp;&ndash; is toggled by pressing <emphasis>ctrl-f</emphasis> (see
       <xref linkend="filmstrip_overview"/>). On the left side you also have an <emphasis>image
-      information</emphasis> panel which displays useful EXIF data of the image in the center
+      information</emphasis> panel which displays useful Exif data of the image in the center
       area, or the filmstrip image under the pointer, respectively (see
       <xref linkend="image_information"/>).
     </para>
@@ -86,7 +86,7 @@
 
   </sect1>
 
-  <sect1 status="final">
+  <sect1 status="final" id="print_usage">
 
     <title>Usage</title>
 
@@ -109,7 +109,7 @@
       </informaltable>
     </para>
 
-    <sect2 id="printer_section">
+    <sect2 id="print_printer_section">
 
       <title>Printer section</title>
 
@@ -145,7 +145,7 @@
 
     </sect2>
 
-    <sect2 id="page_section">
+    <sect2 id="print_page_section">
 
       <title>Page section</title>
 
@@ -158,7 +158,7 @@
       <bridgehead renderas="sect4">orientation</bridgehead>
 
       <para>
-        Portrait or landscape (note that darktable choses by default the best fit).
+        Portrait or landscape (note that darktable chooses by default the best fit).
       </para>
 
       <bridgehead renderas="sect4">units</bridgehead>

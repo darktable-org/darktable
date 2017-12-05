@@ -1,12 +1,9 @@
-cmake_minimum_required(VERSION 2.6)
-
 ###################################
 # ADD NEW MANPAGES HERE
 ###################################
 set(MANPAGES
   "darktable.pod"
   "darktable-cli.pod"
-  "darktable-viewer.pod"
   "darktable-generate-cache.pod"
   "darktable-cltest.pod"
   "darktable-cmstest.pod"
@@ -18,14 +15,6 @@ set(MANPAGES
 
 
 
-if(NOT MAN_INSTALL_DIR)
-  if(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
-    set(MAN_INSTALL_DIR "./man/man1")
-  else()
-    set(MAN_INSTALL_DIR "./share/man/man1")
-  endif()
-endif(NOT MAN_INSTALL_DIR)
-
 add_custom_target(manpages ALL)
 set(MANPAGE_SOURCES)
 
@@ -36,12 +25,12 @@ macro(add_manpage pod)
   set(target ${CMAKE_CURRENT_BINARY_DIR}/${manpage})
   add_custom_command(
     OUTPUT ${target}
-    COMMAND ${CMAKE_SOURCE_DIR}/tools/makeman.sh ${source} ${CMAKE_CURRENT_SOURCE_DIR}/../AUTHORS ${target}
-    DEPENDS ${source} ${CMAKE_CURRENT_SOURCE_DIR}/../AUTHORS ${CMAKE_SOURCE_DIR}/tools/makeman.sh
+    COMMAND ${CMAKE_SOURCE_DIR}/tools/makeman.sh ${source} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${target}
+    DEPENDS ${source} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${CMAKE_SOURCE_DIR}/tools/makeman.sh
   )
   add_custom_target(manpage_${manpage} ALL DEPENDS ${target})
   add_dependencies(manpages manpage_${manpage})
-  install(FILES ${target} DESTINATION ${MAN_INSTALL_DIR})
+  install(FILES ${target} DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 COMPONENT DTDocuments)
 endmacro (add_manpage)
 
 foreach(manpage ${MANPAGES})
@@ -75,13 +64,13 @@ else()
       # turn the .pod into a manpage
       add_custom_command(
         OUTPUT ${target}
-        COMMAND ${CMAKE_SOURCE_DIR}/tools/makeman.sh ${tmppod} ${CMAKE_CURRENT_SOURCE_DIR}/../AUTHORS ${target}
-        DEPENDS ${tmppod} ${CMAKE_CURRENT_SOURCE_DIR}/../AUTHORS ${CMAKE_SOURCE_DIR}/tools/makeman.sh
+        COMMAND ${CMAKE_SOURCE_DIR}/tools/makeman.sh ${tmppod} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${target}
+        DEPENDS ${tmppod} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${CMAKE_SOURCE_DIR}/tools/makeman.sh
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       )
       add_custom_target(manpage-${language}-${manpage} ALL DEPENDS ${target})
       add_dependencies(manpage-${language} manpage-${language}-${manpage})
-      install(FILES ${target} DESTINATION ${MAN_INSTALL_DIR}/../${language}/man1)
+      install(FILES ${target} DESTINATION ${CMAKE_INSTALL_MANDIR}/${language}/man1 COMPONENT DTDocuments)
     endforeach(pod)
   endforeach(language)
 endif()

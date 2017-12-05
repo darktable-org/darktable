@@ -18,8 +18,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_LIB_API_H
-#define DT_LIB_API_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,7 +43,7 @@ int version();
 const char *name(struct dt_lib_module_t *self);
 
 /** get the views which the module should be loaded in. */
-uint32_t views(struct dt_lib_module_t *self);
+const char **views(struct dt_lib_module_t *self);
 /** get the container which the module should be placed in */
 uint32_t container(struct dt_lib_module_t *self);
 /** check if module should use a expander or not, default implementation
@@ -96,8 +95,6 @@ void connect_key_accels(struct dt_lib_module_t *self);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

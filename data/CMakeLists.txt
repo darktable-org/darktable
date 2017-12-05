@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.6)
-
 add_subdirectory(pixmaps)
 
 if(USE_OPENCL)
@@ -9,39 +7,46 @@ endif(USE_OPENCL)
 #
 # Generate and instal darktable.css
 #
-if ("${PC_GTK3_VERSION}" VERSION_GREATER "3.13.6")
-  set(GTK_CSS_CLASS "checked")
+if ("${GTK3_VERSION}" VERSION_GREATER "3.19.0")
+  if ("${GTK3_VERSION}" VERSION_GREATER "3.21.0")
+    set(GTK_CSS_FONT "8pt Sans") # FIXME: does it really equal the old value?
+    set(GTK_CSS_FONT2_SIZE "15pt") # why is it different all of the sudden?
+  else ()
+    set(GTK_CSS_FONT "Sans 8")
+    set(GTK_CSS_FONT2_SIZE "10pt")
+  endif ()
+
+  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.css.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.css )
 else ()
-  set(GTK_CSS_CLASS "active")
-endif ()
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.css.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.css )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.css DESTINATION ${SHARE_INSTALL}/darktable)
+  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable-3.18.css.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.css )
+endif()
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.css DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 
 #
 # web gallery export support files:
 #
 FILE(GLOB WEB_FILES "style/*")
-install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/style)
+install(FILES ${WEB_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/style COMPONENT DTApplication)
 
-FILE(GLOB WEB_FILES "js/*")
-install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/js)
+install(DIRECTORY "pswp" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 
 #
 # latex book template support files:
 #
 FILE(GLOB WEB_FILES "latex/*")
-install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/latex)
+install(FILES ${WEB_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/latex COMPONENT DTApplication)
 
 if(USE_LUA)
 #
 # lua system scripts
 #
-install(DIRECTORY "lua" DESTINATION ${SHARE_INSTALL}/darktable)
-install(FILES luarc DESTINATION ${SHARE_INSTALL}/darktable)
+install(DIRECTORY "lua" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+install(FILES luarc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 endif(USE_LUA)
 #
 # Install (and generate when necessary) other system shares
 #
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in)
 file(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po")
 add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
@@ -50,35 +55,66 @@ add_custom_command(
 		MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in
 		DEPENDS ${PO_FILES}
 )
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in)
 add_custom_target(darktable.desktop_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop DESTINATION ./share/applications)
+if(${VALIDATE_DESKTOP_FILE})
+  add_custom_target(
+    validate_darktable_desktop ALL
+    COMMAND ${desktop_file_validate_BIN} --warn-kde ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
+    COMMENT "Checking validity of darktable.desktop"
+    )
+  add_dependencies(darktable.desktop_file validate_darktable_desktop)
+endif()
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications COMPONENT DTApplication)
 
-add_custom_command(
-		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
-		SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
-		COMMAND ${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
-		MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
-		DEPENDS ${PO_FILES}
-)
+if(${VALIDATE_APPDATA_FILE})
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
+    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+    COMMAND ${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
+    COMMAND ${appstream_util_BIN} validate --nonet ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
+    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+    DEPENDS ${PO_FILES}
+  )
+else()
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
+    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+    COMMAND ${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml
+    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+    DEPENDS ${PO_FILES}
+  )
+endif()
+
 add_custom_target(darktable.appdata_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml DESTINATION ./share/appdata)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/appdata COMPONENT DTApplication)
 
 #
 # Install watermarks
 #
 FILE(GLOB WATERMARKS "watermarks/*.svg")
-install(FILES ${WATERMARKS} DESTINATION ${SHARE_INSTALL}/darktable/watermarks)
+install(FILES ${WATERMARKS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/watermarks COMPONENT DTApplication)
 
 #
 # Install gdb command file for backtrace generation
 #
-install(FILES gdb_commands DESTINATION ${SHARE_INSTALL}/darktable)
+install(FILES gdb_commands DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 
 #
 # Install noiseprofiles
 #
-install(FILES noiseprofiles.json DESTINATION ${SHARE_INSTALL}/darktable)
+if(${VALIDATE_JSON})
+  add_custom_target(
+    validate_noiseprofiles_json ALL
+    COMMAND ${CMAKE_COMMAND} -E env LANG=C.UTF-8 LC_ALL=C.UTF-8 ${jsonschema_BIN} -i ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.json ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.schema
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.json ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.schema
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    COMMENT "Checking validity of noiseprofiles.json"
+  )
+endif()
+install(FILES noiseprofiles.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 
 #
 # Transform darktableconfig.xml into darktablerc
@@ -94,14 +130,29 @@ if(APPLE)
   # OS X doesn't have aplay, but afplay should do
   set(DEFCONFIG_AUDIOPLAYER "afplay")
 endif(APPLE)
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml )
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.dtd COPYONLY )
 
+# get_property(DT_PLUGIN_IOPS GLOBAL PROPERTY DT_PLUGIN_IOPS)
+get_property(DT_PLUGIN_IOPS_VISIBLE_BY_DEFAULT GLOBAL PROPERTY DT_PLUGIN_IOPS_VISIBLE_BY_DEFAULT)
+
+set(DARKTABLECONFIG_IOP_ENTRIES "")
+foreach(DT_PLUGIN_IOP IN LISTS DT_PLUGIN_IOPS_VISIBLE_BY_DEFAULT)
+  set(DARKTABLECONFIG_IOP_ENTRIES "${DARKTABLECONFIG_IOP_ENTRIES}
+  <dtconfig>
+    <name>plugins/darkroom/${DT_PLUGIN_IOP}/visible</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>")
+endforeach()
+
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml )
 
 if(USE_XMLLINT)
   add_custom_target(
     validate_darktableconfig_xml ALL
-    COMMAND ${Xmllint_BIN} --valid --noout ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
+    COMMAND ${Xmllint_BIN} --nonet --valid --noout ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
     COMMENT "Checking validity of data/darktableconfig.xml"
@@ -112,7 +163,7 @@ if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
-    COMMAND ${Xsltproc_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
+    COMMAND ${Xsltproc_BIN} --nonet ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
   )
 else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   if(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
@@ -137,5 +188,5 @@ endif(USE_XMLLINT)
 # first of all install darktablerc file into share as template
 # postinst script should copy this into users homedirectory
 # $HOME/.config/darktable/darktable.rc
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${SHARE_INSTALL}/darktable)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 

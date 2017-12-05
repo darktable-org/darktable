@@ -19,13 +19,16 @@
 #include "config.h"
 #endif
 #include "common/darktable.h"
-#include "common/styles.h"
 #include "common/history.h"
-#include "develop/imageop.h"
+#include "common/styles.h"
 #include "control/control.h"
-#include "gui/styles.h"
+#include "develop/imageop.h"
 #include "gui/gtk.h"
 #include "gui/hist_dialog.h"
+#include "gui/styles.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 typedef enum _style_items_columns_t
 {
@@ -137,6 +140,9 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
       _("select parts"), GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("select _all"), GTK_RESPONSE_YES, _("select _none"), GTK_RESPONSE_NONE, _("_ok"),
       GTK_RESPONSE_OK, NULL));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
+#endif
 
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 3));
@@ -163,7 +169,7 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
   /* name */
   renderer = gtk_cell_renderer_text_new();
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_HIST_ITEMS_COL_NAME);
-  g_object_set(renderer, "xalign", 0.0, NULL);
+  g_object_set(renderer, "xalign", 0.0, (gchar *)0);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(d->items), -1, _("item"), renderer, "text",
                                               DT_HIST_ITEMS_COL_NAME, NULL);
 
@@ -205,7 +211,7 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
   while(1)
   {
     res = gtk_dialog_run(GTK_DIALOG(dialog));
-    if(res == GTK_RESPONSE_CANCEL || res == GTK_RESPONSE_OK) break;
+    if(res == GTK_RESPONSE_CANCEL || res == GTK_RESPONSE_DELETE_EVENT || res == GTK_RESPONSE_OK) break;
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));

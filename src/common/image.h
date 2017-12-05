@@ -15,14 +15,16 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_IMAGE_H
-#define DT_IMAGE_H
+
+#pragma once
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include "common/darktable.h"
 #include "common/dtpthread.h"
+#include "develop/format.h"
 #include <glib.h>
 #include <inttypes.h>
 
@@ -152,9 +154,8 @@ typedef struct dt_image_t
   int32_t num, flags, film_id, id, group_id, version;
   dt_image_loader_t loader;
 
-  uint32_t filters;          // Bayer demosaic pattern
-  int32_t bpp;               // bytes per pixel
-  int32_t cpp;               // components per pixel
+  dt_iop_buffer_dsc_t buf_dsc;
+
   float d65_color_matrix[9]; // the 3x3 matrix embedded in some DNGs
   uint8_t *profile;          // embedded profile, for example from JPEGs
   uint32_t profile_size;
@@ -170,15 +171,11 @@ typedef struct dt_image_t
   /* needed in exposure iop for Deflicker */
   uint16_t raw_black_level;
   uint16_t raw_black_level_separate[4];
-  uint16_t raw_white_point;
+  uint32_t raw_white_point;
 
   /* needed to fix some manufacturers madness */
   uint32_t fuji_rotation_pos;
   float pixel_aspect_ratio;
-
-  /* filter for Fuji X-Trans images, only used if filters == 9u */
-  uint8_t xtrans_uncropped[6][6];
-  uint8_t xtrans[6][6];
 
   /* White balance coeffs from the raw */
   float wb_coeffs[4];
@@ -214,8 +211,10 @@ void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len);
 /** look for duplicate's xmp files and read them. */
 void dt_image_read_duplicates(uint32_t id, const char *filename);
-/** imports a new image from raw/etc file and adds it to the data base and image cache. */
+/** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
 uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
+/** imports a new image from raw/etc file and adds it to the data base and image cache. Use from lua thread.*/
+uint32_t dt_image_import_lua(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** removes the given image from the database. */
 void dt_image_remove(const int32_t imgid);
 /** duplicates the given image in the database with the duplicate getting the supplied version number. if that
@@ -241,38 +240,7 @@ static inline dt_image_orientation_t dt_image_orientation(const dt_image_t *img)
 {
   return img->orientation != ORIENTATION_NULL ? img->orientation : ORIENTATION_NONE;
 }
-/** returns the filter string for the demosaic pattern. */
-static inline uint32_t dt_image_filter(const dt_image_t *img)
-{
-  // from the dcraw source code documentation:
-  //
-  //   0x16161616:     0x61616161:     0x49494949:     0x94949494:
 
-  //   0 1 2 3 4 5     0 1 2 3 4 5     0 1 2 3 4 5     0 1 2 3 4 5
-  // 0 B G B G B G   0 G R G R G R   0 G B G B G B   0 R G R G R G
-  // 1 G R G R G R   1 B G B G B G   1 R G R G R G   1 G B G B G B
-  // 2 B G B G B G   2 G R G R G R   2 G B G B G B   2 R G R G R G
-  // 3 G R G R G R   3 B G B G B G   3 R G R G R G   3 G B G B G B
-  //
-  // orient:     0               5               6               3
-  // orient:     6               0               3               5
-  // orient:     5               3               0               6
-  // orient:     3               6               5               0
-  //
-  // orientation: &1 : flip y    &2 : flip x    &4 : swap x/y
-  //
-  // if image height is odd (and flip y), need to switch pattern by one row:
-  // 0x16161616 <-> 0x61616161
-  // 0x49494949 <-> 0x94949494
-  //
-  // if image width is odd (and flip x), need to switch pattern by one column:
-  // 0x16161616 <-> 0x49494949
-  // 0x61616161 <-> 0x94949494
-
-  // NOTE: we do not rotate data until flip IOP
-
-  return img->filters;
-}
 /** return the raw orientation, from jpg orientation. */
 static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int orient)
 {
@@ -281,11 +249,11 @@ static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int
     case 1:
       return ORIENTATION_NONE;
     case 2:
-      return ORIENTATION_FLIP_VERTICALLY;
+      return ORIENTATION_FLIP_HORIZONTALLY;
     case 3:
       return ORIENTATION_ROTATE_180_DEG;
     case 4:
-      return ORIENTATION_FLIP_HORIZONTALLY;
+      return ORIENTATION_FLIP_VERTICALLY;
     case 5:
       return ORIENTATION_400; // ???
     case 6:
@@ -326,7 +294,6 @@ char *dt_image_get_audio_path_from_path(const char *image_path);
 char *dt_image_get_text_path(const int32_t imgid);
 char *dt_image_get_text_path_from_path(const char *image_path);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

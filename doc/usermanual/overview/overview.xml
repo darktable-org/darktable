@@ -17,7 +17,7 @@
   <title>Overview</title>
 
   <para>
-    darktable is an open source photography workflow application and RAW developer, a virtual
+    darktable is an open source photography workflow application and raw developer, a virtual
     lighttable and darkroom for photographers.
   </para>
 
@@ -45,8 +45,8 @@
 
     <listitem><para>
       darktable makes heavy use of <emphasis>Streaming SIMD Extensions 2</emphasis> (SSE2)
-      instructions of the CPU to speed up processing. In fact, darktable will only run on a CPU
-      that supports SSE2.
+      instructions of the CPU to speed up processing. In fact, darktable requires either an
+      SSE2-capable x86 processor or an ARM64 processor.
     </para></listitem>
 
     <listitem><para>
@@ -71,8 +71,8 @@
     </para></listitem>
 
     <listitem><para>
-      Import a variety of standard, raw and high dynamic range image formats (e.g. JPG, CR2,
-      OpenEXR, PFM, ...).
+      Import a variety of standard, raw and high dynamic range image formats (e.g. JPEG, CR2,
+      DNG, OpenEXR, PFM, ...).
     </para></listitem>
 
     <listitem><para>
@@ -97,7 +97,7 @@
     </para></listitem>
 
     <listitem><para>
-      darktable comes with more than 50 image operation modules which cover everything from
+      darktable comes with more than 60 image operation modules which cover everything from
       basic operations, tonal value changes, color manipulation, correction of common image
       defects to artistic effects.
     </para></listitem>
@@ -122,7 +122,7 @@
       darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser
       that always just works&trade;. It's designed as a module where the denoising performance
       only depends on camera and ISO setting. A database of profiles contains parameters for
-      well above 100 popular camera models.
+      well above 200 popular camera models.
     </para></listitem>
 
     <listitem><para>
@@ -181,15 +181,15 @@
       </para>
 
 <synopsis>darktable [-d {all,cache,camctl,camsupport,control,dev,
-               fswatch,input,lighttable,masks,memory,nan,
+               fswatch,input,lighttable,lua,masks,memory,nan,
                opencl,perf,pwstorage,print,sql}]
-          [IMG_1234.{RAW,..}|image_folder] 
+          [&lt;input file&gt;|&lt;image folder&gt;]
           [--version]
-          [--disable-opencl] 
-          [--library &lt;library file&gt;] 
-          [--datadir &lt;data directory&gt;] 
+          [--disable-opencl]
+          [--library &lt;library file&gt;]
+          [--datadir &lt;data directory&gt;]
           [--moduledir &lt;module directory&gt;]
-          [--tmpdir &lt;tmp directory&gt;] 
+          [--tmpdir &lt;tmp directory&gt;]
           [--configdir &lt;user config directory&gt;]
           [--cachedir &lt;user cache directory&gt;]
           [--localedir &lt;locale directory&gt;]
@@ -217,7 +217,7 @@
 
           <varlistentry>
 
-            <term>IMG_1234.{RAW,..} | image_folder</term>
+            <term>&lt;input file&gt;|&lt;image folder&gt;</term>
 
             <listitem><para>
               You may optionally supply the filename of an image or the name of a folder
@@ -264,6 +264,14 @@
               you. You may also give <quote>:memory:</quote> as a library file in which case the
               database is kept in system memory&nbsp;&ndash; all changes are discarded when
               darktable terminates.
+            </para>
+
+            <para>
+              Whenever darktable starts, it will lock the library to the current user. It does
+              this by writing the current process identifier (PID) into a lock file
+              <quote>&lt;library file&gt;.lock</quote> next to the library specified. If
+              darktable finds an existing lock file for the library, it will terminate
+              immediately.
             </para></listitem>
 
           </varlistentry>
@@ -403,17 +411,23 @@
       </para>
 
       <para>
+        This variant does not open any display, so it will work in pure console mode without
+        using any X11, wayland, etc.&nbsp;&ndash; this mode is useful for servers running
+        background jobs.
+      </para>
+
+      <para>
         <filename>darktable-cli</filename> is called with the following command line parameters:
       </para>
 
-<synopsis>darktable-cli &lt;input file&gt;
-              [&lt;xmp file&gt;] 
+<synopsis>darktable-cli &lt;input file&gt;|&lt;image folder&gt;
+              [&lt;xmp file&gt;]
               &lt;output file&gt;
               [--width &lt;max width&gt;]
               [--height &lt;max height&gt;]
               [--bpp &lt;bpp&gt;]
               [--hq &lt;0|1|true|false&gt;]
-              [--verbose] 
+              [--verbose]
               [--core &lt;darktable options&gt;]</synopsis>
 
       <para>
@@ -426,7 +440,8 @@
             <term>&lt;input file&gt;</term>
 
             <listitem><para>
-              The name of the input file to export.
+              The name of the input file to export or the name of an folder containing input
+              images which are to be exported.
             </para></listitem>
 
           </varlistentry>
@@ -438,7 +453,7 @@
             <listitem><para>
               The optional name of an XMP sidecar file containing the history stack data to be
               applied during export. If this option is not given darktable will search for an
-              XMP file that belongs to the given input file.
+              XMP file that belongs to the given input file(s).
             </para></listitem>
 
           </varlistentry>
@@ -449,7 +464,10 @@
 
             <listitem><para>
               The name of the output file. darktable derives the export file format from the
-              file extension.
+              file extension. You can also use all the variables available in darktable's export
+              module in the output filename (see <xref linkend="export_selected"/>). For obvious
+              reasons this is mandatory if you use the program on an image folder containing
+              multiple images.
             </para></listitem>
 
           </varlistentry>
@@ -554,7 +572,8 @@
 <synopsis>darktable-generate-cache
               [-h, --help]
               [--version]
-              [-m, --max-mip &lt;0 - 7&gt;]
+              [--min-mip &lt;0-7&gt;] [-m, --max-mip &lt;0 - 7&gt;]
+              [--min-imgid &lt;N&gt;] [--max-imgid &lt;N&gt;]
               [--core &lt;darktable options&gt;]</synopsis>
 
       <para>
@@ -584,14 +603,32 @@
 
           <varlistentry>
 
+            <term>--min-mip &lt;0 - 7&gt;</term>
+
             <term>-m, --max-mip &lt;0 - 7&gt;</term>
 
             <listitem><para>
               darktable can handle and store thumbnails with up to eight different resolution
-              steps for each image. This parameter defines which maximum resolution should be
-              generated and defaults to 2. There is normally no need to generate all possible
-              resolutions here; missing ones will be automatically generated by darktable the
-              moment they are needed.
+              steps for each image. These parameters define which maximum resolution should be
+              generated and default to a range of 0-2. There is normally no need to generate all
+              possible resolutions here; missing ones will be automatically generated by
+              darktable the moment they are needed. When asked to generate multiple resolutions
+              at once, the lower-resolution images are quickly downsampled from the
+              highest-resolution image.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>--min-imgid &lt;N&gt;</term>
+
+            <term>--max-imgid &lt;N&gt;</term>
+
+            <listitem><para>
+              Specifies the range of internal image IDs from the database to work on. If no
+              range is given, darktable-generate-cache will process all images from the entire
+              collection.
             </para></listitem>
 
           </varlistentry>
@@ -613,38 +650,41 @@
 
     </sect2>
 
-    <sect2 status="final" id="darktable_viewer_commandline_parameters">
+    <sect2 status="final" id="darktable_chart_commandline_parameters">
 
-      <title><filename>darktable-viewer</filename> binary</title>
+      <title><filename>darktable-chart</filename> binary</title>
 
       <indexterm>
-        <primary>darktable-viewer</primary>
+        <primary>darktable-chart</primary>
       </indexterm>
 
       <para>
-        This binary starts a stand-alone slideshow viewer that displays the images of your
-        current collection fullscreen. Press <emphasis>ESC</emphasis> to stop.
+        This binary is a dedicated utility to create styles out of pairs of images such as
+        RAW+JPEG with in-camera processing. Details about its usage can be found in
+        <xref linkend="darktable_chart"/>.
       </para>
 
       <para>
-        <filename>darktable-viewer</filename> is called with the following command line
-        parameters:
+        <filename>darktable-chart</filename> either starts a GUI or is used as a command-line
+        program.
       </para>
 
-<synopsis>darktable-viewer
-              [-h, --help]
-              [--random]
-              [--repeat]
-              [--core &lt;darktable options&gt;]</synopsis>
+<synopsis>darktable-chart
+              [--help]
+              [&lt;input Lab pfm file&gt;]
+              [&lt;cht file&gt;]
+              [&lt;reference cgats/it8 or Lab pfm file&gt;]</synopsis>
 
       <para>
-        All parameters are optional. If started without parameters
-        <filename>darktable-viewer</filename> uses reasonable defaults.
+        All parameters are optional, however, if you want to supply the second file name you
+        also need to supply the first one etc. Starting <filename>darktable-chart</filename>
+        this way opens a special GUI (details can be found in
+        <xref linkend="darktable_chart"/>).
         <variablelist>
 
           <varlistentry>
 
-            <term>-h, --help</term>
+            <term>--help</term>
 
             <listitem><para>
               Gives usage information and terminates.
@@ -654,33 +694,32 @@
 
           <varlistentry>
 
-            <term>--random</term>
+            <term>&lt;input Lab pfm file&gt;</term>
 
             <listitem><para>
-              Displays images in random instead of the default sequential order.
+              Opens the utility with the given file as source image. The input file needs to be
+              in Lab Portable Float Map format.
             </para></listitem>
 
           </varlistentry>
 
           <varlistentry>
 
-            <term>--repeat</term>
+            <term>&lt;cht file&gt;</term>
 
             <listitem><para>
-              Continues the slideshow in an endless loop instead of terminating after the last
-              image.
+              Specifies a chart file describing the layout of the used color reference chart.
             </para></listitem>
 
           </varlistentry>
 
           <varlistentry>
 
-            <term>--core &lt;darktable options&gt;</term>
+            <term>&lt;reference cgats/it8 or Lab pfm file&gt;</term>
 
             <listitem><para>
-              All command line parameters following <quote>--core</quote> are passed to the
-              darktable core and handled as standard parameters. See
-              <xref linkend="darktable_commandline_parameters"/> for a detailed description.
+              Specifies the reference values, either as measured values according to the CGATS
+              standard, or as a reference image in Lab Portable Float Map format.
             </para></listitem>
 
           </varlistentry>
@@ -689,16 +728,52 @@
       </para>
 
       <para>
-        <filename>darktable-viewer</filename> uses OpenGL to produce soft transitions between
-        images. Although OpenGL and OpenCL (see <xref linkend="darktable_and_opencl"/>) are
-        designed to cooperate flawlessly, there have been reports about problems with certain
-        setups. If <filename>darktable-viewer</filename> crashes upon startup, please try to use
-        it without OpenCL support:
+        Alternatively <filename>darktable-chart</filename> can be used as a command line program
+        to generate darktable style files out of previously saved CSV files.
       </para>
 
+<synopsis>darktable-chart
+              --csv
+              &lt;csv file&gt;
+              &lt;number patches&gt;
+              &lt;output dtstyle file&gt;</synopsis>
+
       <para>
-<programlisting>darktable-viewer --core --disable-opencl
-</programlisting>
+        All parameters are mandatory.
+        <variablelist>
+
+          <varlistentry>
+
+            <term>&lt;csv file&gt;</term>
+
+            <listitem><para>
+              A CSV file previously saved from within <filename>darktable-chart</filename>.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>&lt;number patches&gt;</term>
+
+            <listitem><para>
+              The number of color patches to be used in the <emphasis>color look up
+              table</emphasis> settings of the created style.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>&lt;output dtstyle file&gt;</term>
+
+            <listitem><para>
+              The name of the style file to be created.
+            </para></listitem>
+
+          </varlistentry>
+
+        </variablelist>
       </para>
 
     </sect2>
@@ -839,7 +914,7 @@
         </informaltable>
       </para>
 
-      <sect3 status="final">
+      <sect3 status="final" id="overview_lighttable">
 
         <title>Lighttable</title>
 
@@ -851,7 +926,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="overview_darkroom">
 
         <title>Darkroom</title>
 
@@ -862,7 +937,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="overview_tethering">
 
         <title>Tethering</title>
 
@@ -874,7 +949,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="overview_map">
 
         <title>Map</title>
 
@@ -885,7 +960,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="overview_slideshow">
 
         <title>Slideshow</title>
 
@@ -896,7 +971,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="overview_print">
 
         <title>Print</title>
 
@@ -932,12 +1007,6 @@
 
       <para>
         Fullscreen view can be toggled by pressing <emphasis>F11</emphasis>.
-      </para>
-
-      <para>
-        darktable's contrast can be changed by using <emphasis>F7</emphasis> and
-        <emphasis>F8</emphasis> and darktable's lightness by using <emphasis>F9</emphasis> and
-        <emphasis>F10</emphasis>.
       </para>
 
     </sect2>
@@ -1002,7 +1071,7 @@
       development workflow and how to export the final result.
     </para>
 
-    <sect2 status ="final">
+    <sect2 status ="final" id="darktable_basic_workflow_importing">
 
       <title>Importing images</title>
 
@@ -1012,7 +1081,7 @@
         the filesystem or, if darktable supports your camera model, directly from camera.
       </para>
 
-      <sect3 status="final">
+      <sect3 status="final" id="darktable_basic_workflow_importing_from_fs">
 
         <title>Importing images from filesystem</title>
 
@@ -1024,7 +1093,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="darktable_basic_workflow_importing_from_camera">
 
         <title>Importing from camera</title>
 
@@ -1045,7 +1114,7 @@
 
       <title>Basic development steps</title>
 
-      <sect3>
+      <sect3 id="basic_development_steps_introduction">
 
         <title>Introduction</title>
 
@@ -1067,9 +1136,10 @@
         </para>
 
         <para>
-          All changes are stored automatically. You can safely leave darkroom mode or quit
-          darktable at any time and come back later to continue your work. That said darktable
-          does not need a <quote>save</quote> button and it does not have one.
+          All changes are stored automatically when you switch images or go from one darktable
+          view to another. You can safely leave darkroom mode or quit darktable at any time and
+          come back later to continue your work. That said darktable does not need a
+          <quote>save</quote> button and it does not have one.
           <indexterm>
             <primary>save button</primary>
           </indexterm>
@@ -1097,7 +1167,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_wb">
 
         <title>White balance</title>
 
@@ -1112,7 +1182,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_exposure">
 
         <title>Exposure correction</title>
 
@@ -1127,7 +1197,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_noise">
 
         <title>Noise reduction</title>
 
@@ -1136,8 +1206,8 @@
           <link linkend="denoise_profiled"><emphasis>profiled denoise</emphasis></link>. This
           module offers an almost <quote>single-click</quote> solution to fight noise. From a
           user perspective the effect only depends on camera type and ISO value, both derived
-          from EXIF data. All other settings are taken from a database of noise profiles that
-          the darktable team has collected&nbsp;&ndash; now covering well above 100 popular
+          from Exif data. All other settings are taken from a database of noise profiles that
+          the darktable team has collected&nbsp;&ndash; now covering well above 200 popular
           camera models. In addition you have several other options in darktable to reduce
           noise. There is <link linkend="raw_denoise"><emphasis>raw denoise</emphasis></link>,
           <link linkend="denoise_bilateral"><emphasis>denoising based on bilateral
@@ -1153,7 +1223,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_spots">
 
         <title>Fixing spots</title>
 
@@ -1161,14 +1231,14 @@
           Sometimes you will need to remove spots caused by sensor dirt. The
           <link linkend="spot_removal"><emphasis>spot removal</emphasis></link> module is at
           hand and can also correct other disturbing elements like skin blemishes. If your
-          camera has stuck pixels or tends to produce hot pixels at high ISO values, or longer
+          camera has stuck pixels or tends to produce hot pixels at high ISO values or longer
           exposure times, have a look at the <link linkend="hotpixels"><emphasis>hot
           pixels</emphasis></link> module for automatic correction.
         </para>
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_geometry">
 
         <title>Geometrical corrections</title>
 
@@ -1176,20 +1246,23 @@
           Quite frequently you want to only show part of the captured scene in your image, e.g.
           to take away some disturbing feature close to the frame. In other cases, the horizon
           in the image may need levelling, or there are perspective distortions. All this can be
-          corrected in the <link linkend="crop_and_rotate"><emphasis>crop and
-          rotate</emphasis></link> module. If you need to correct typical camera lens flaws like
-          cushion distortion, transversal chromatic aberrations or vignetting, there is a
+          corrected with full manual control in the
+          <link linkend="crop_and_rotate"><emphasis>crop and rotate</emphasis></link> module.
+          For a fully automatic correction of perspective distortions you may alternatively
+          visit the <link linkend="perspective_correction"><emphasis>perspective
+          correction</emphasis></link> module. If you need to correct typical camera lens flaws
+          like cushion distortion, transversal chromatic aberrations or vignetting, there is a
           <link linkend="lens_correction"><emphasis>lens correction</emphasis></link> module.
         </para>
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_details">
 
         <title>Bringing back detail</title>
 
         <para>
-          Digital RAW images often contain more information than you can see at first sight.
+          Digital raw images often contain more information than you can see at first sight.
           Especially in the shadows of an image, there are lots of hidden details. The
           <link linkend="shadows_and_highlights"><emphasis>shadows and
           highlights</emphasis></link> module helps bring these details back into visible tonal
@@ -1204,7 +1277,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_tonality">
 
         <title>Adjusting tonal values</title>
 
@@ -1222,7 +1295,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_local_contrast">
 
         <title>Enhancing local contrast</title>
 
@@ -1231,7 +1304,7 @@
           used, it can give your photograph the right pop. darktable offers several modules for
           this task. The <link linkend="local_contrast"><emphasis>local
           contrast</emphasis></link> module is easy to handle, with just a few parameters. A
-          much more versatile, but also more complex technique, is offered by the
+          much more versatile, but also more complex, technique is offered by the
           <link linkend="equalizer"><emphasis>equalizer</emphasis></link> module. Have a look at
           its presets, to get a feeling for how it works. Equalizer is darktable's "Swiss Army
           Knife" for many adjustments where spatial dimension plays a role.
@@ -1239,7 +1312,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_colors">
 
         <title>Color adjustments</title>
 
@@ -1262,12 +1335,12 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_sharpening">
 
         <title>Sharpening</title>
 
         <para>
-          If you start your workflow from a RAW image, you will need to have your final output
+          If you start your workflow from a raw image, you will need to have your final output
           sharpened. The <link linkend="sharpen"><emphasis>sharpen</emphasis></link> module can
           do this with the classical USM (unsharp mask) approach, available in most image
           processing software. Another very versatile way to enhance edges in an image is
@@ -1277,7 +1350,7 @@
 
       </sect3>
 
-      <sect3 status="final">
+      <sect3 status="final" id="basic_development_steps_effects">
 
         <title>Artistic effects</title>
 
@@ -1313,7 +1386,7 @@
       <para>
         Images are exported from the lighttable view, using the <emphasis>export
         selected</emphasis> dialog in the right panel (<xref linkend="export_selected"/>). In
-        general, export means: save my developed RAW image as a JPEG.
+        general, export means: save my developed raw image as a JPEG.
       </para>
 
       <para>
@@ -1328,7 +1401,7 @@
         Select images on the lighttable, choose the target storage and format, and set the
         maximum width and height image restraints. This means that none of the images will be
         bigger than any of the width/height restraints and hit the export button. Leave the
-        width and height restraints at zero, if you want the original resolution.
+        width and height restraints at zero if you want the original resolution.
       </para>
 
     </sect2>

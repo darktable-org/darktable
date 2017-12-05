@@ -737,7 +737,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   for(int k = 0; k < max_scale; k++) dt_free_align(detail[k]);
   dt_free_align(tmp);
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, width, height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, width, height);
 
   return;
 
@@ -788,8 +788,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_int err = -999;
   cl_mem dev_filter = NULL;
   cl_mem dev_tmp = NULL;
-  cl_mem dev_detail[max_scale];
-  for(int k = 0; k < max_scale; k++) dev_detail[k] = NULL;
+  cl_mem *dev_detail = calloc(max_scale, sizeof(cl_mem));
 
   float m[] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f }; // 1/16, 4/16, 6/16, 4/16, 1/16
   float mm[5][5];
@@ -887,17 +886,19 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
     dt_opencl_finish(devid);
 
-  if(dev_filter != NULL) dt_opencl_release_mem_object(dev_filter);
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_filter);
+  dt_opencl_release_mem_object(dev_tmp);
   for(int k = 0; k < max_scale; k++)
-    if(dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+    dt_opencl_release_mem_object(dev_detail[k]);
+  free(dev_detail);
   return TRUE;
 
 error:
-  if(dev_filter != NULL) dt_opencl_release_mem_object(dev_filter);
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_filter);
+  dt_opencl_release_mem_object(dev_tmp);
   for(int k = 0; k < max_scale; k++)
-    if(dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+    dt_opencl_release_mem_object(dev_detail[k]);
+  free(dev_detail);
   dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -928,7 +929,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_atrous_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
-  module->priority = 569; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 573; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
@@ -1018,7 +1019,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
   dt_iop_atrous_params_t p;
   p.octaves = 7;
 
@@ -1121,7 +1122,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("clarity"), self->op, self->version(), &p, sizeof(p), 1);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 static void reset_mix(dt_iop_module_t *self)
@@ -1177,9 +1178,9 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t p = *(dt_iop_atrous_params_t *)self->params;
-  int ch = (int)c->channel;
-  int ch2 = (int)c->channel2;
-  for(int k = 0; k < BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
+
+  for(int k = 0; k < BANDS; k++)
+    dt_draw_curve_set_point(c->minmax_curve, k, p.x[(int)c->channel2][k], p.y[(int)c->channel2][k]);
   const int inset = INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1225,6 +1226,8 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 
   if(c->mouse_y > 0 || c->dragging)
   {
+    int ch2 = (int)c->channel2;
+
     // draw min/max curves:
     get_params(&p, ch2, c->mouse_x, 1., c->mouse_radius);
     for(int k = 0; k < BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
@@ -1338,6 +1341,9 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 
   if(c->mouse_y > 0 || c->dragging)
   {
+    int ch = (int)c->channel;
+    int ch2 = (int)c->channel2;
+
     // draw dots on knots
     cairo_save(cr);
     if(ch != ch2)
@@ -1385,7 +1391,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   const float arrw = DT_PIXEL_APPLY_DPI(7.0f);
   for(int k = 1; k < BANDS - 1; k++)
   {
-    cairo_move_to(cr, width * p.x[ch][k], inset - DT_PIXEL_APPLY_DPI(1));
+    cairo_move_to(cr, width * p.x[(int)c->channel][k], inset - DT_PIXEL_APPLY_DPI(1));
     cairo_rel_line_to(cr, -arrw * .5f, 0);
     cairo_rel_line_to(cr, arrw * .5f, -arrw);
     cairo_rel_line_to(cr, arrw * .5f, arrw);
@@ -1526,10 +1532,16 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   }
   gtk_widget_queue_draw(widget);
   gint x, y;
+#if GTK_CHECK_VERSION(3, 20, 0)
+  gdk_window_get_device_position(event->window,
+      gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))),
+      &x, &y, 0);
+#else
   gdk_window_get_device_position(event->window,
                                  gdk_device_manager_get_client_pointer(
                                      gdk_display_get_device_manager(gdk_window_get_display(event->window))),
                                  &x, &y, NULL);
+#endif
   return TRUE;
 }
 
@@ -1586,9 +1598,13 @@ static gboolean area_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(event->direction == GDK_SCROLL_UP && c->mouse_radius > 0.25 / BANDS) c->mouse_radius *= 0.9; // 0.7;
-  if(event->direction == GDK_SCROLL_DOWN && c->mouse_radius < 1.0) c->mouse_radius *= (1.0 / 0.9); // 1.42;
-  gtk_widget_queue_draw(widget);
+
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  {
+    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.25 / BANDS, 1.0);
+    gtk_widget_queue_draw(widget);
+  }
   return TRUE;
 }
 
@@ -1668,7 +1684,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                             | GDK_SMOOTH_SCROLL_MASK);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(area_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(area_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(area_button_release), self);

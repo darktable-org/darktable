@@ -72,7 +72,7 @@
     you first enabled <link linkend="denoise_bilateral"><emphasis>bilateral
     filtering</emphasis></link>, then disabled <link linkend="base_curve"><emphasis>base
     curve</emphasis></link>, then adjusted <link linkend="whitebalance"><emphasis>white
-    balance</emphasis></link>. But at any time, the processing took the RAW image, adjusted
+    balance</emphasis></link>. But at any time, the processing took the raw image, adjusted
     <link linkend="whitebalance"><emphasis>white balance</emphasis></link> on it, then
     <link linkend="demosaic"><emphasis>demosaic</emphasis></link>, then
     <link

@@ -47,6 +47,14 @@ size_t dt_bilateral_memory_use(const int width,     // width of input image
   return size_x * size_y * size_z * sizeof(float);
 }
 
+// for the CPU path this is just an alias as no additional temp buffer is needed
+size_t dt_bilateral_memory_use2(const int width,
+                                const int height,
+                                const float sigma_s,
+                                const float sigma_r)
+{
+  return dt_bilateral_memory_use(width, height, sigma_s, sigma_r);
+}
 
 size_t dt_bilateral_singlebuffer_size(const int width,     // width of input image
                                       const int height,    // height of input image
@@ -61,6 +69,15 @@ size_t dt_bilateral_singlebuffer_size(const int width,     // width of input ima
   size_t size_z = CLAMPS((int)_z, 4, DT_COMMON_BILATERAL_MAX_RES_R) + 1;
 
   return size_x * size_y * size_z * sizeof(float);
+}
+
+// for the CPU path this is just an alias as no additional temp buffer is needed
+size_t dt_bilateral_singlebuffer_size2(const int width,
+                                       const int height,
+                                       const float sigma_s,
+                                       const float sigma_r)
+{
+  return dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r);
 }
 #endif
 

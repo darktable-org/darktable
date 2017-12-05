@@ -22,28 +22,28 @@
 #include "config.h"
 #endif
 
+#include <assert.h>
+#include <inttypes.h>
 #include <memory>
 #include <stdio.h>
-#include <inttypes.h>
 #include <string.h>
-#include <assert.h>
 
-#include <OpenEXR/ImfFrameBuffer.h>
-#include <OpenEXR/ImfTestFile.h>
-#include <OpenEXR/ImfInputFile.h>
-#include <OpenEXR/ImfTiledInputFile.h>
 #include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfFrameBuffer.h>
+#include <OpenEXR/ImfInputFile.h>
 #include <OpenEXR/ImfStandardAttributes.h>
+#include <OpenEXR/ImfTestFile.h>
 #include <OpenEXR/ImfThreading.h>
+#include <OpenEXR/ImfTiledInputFile.h>
 
 extern "C" {
-#include "common/imageio_exr.h"
-#include "common/imageio.h"
-#include "common/darktable.h"
-#include "develop/develop.h"
-#include "common/exif.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/exif.h"
+#include "common/imageio.h"
+#include "common/imageio_exr.h"
 #include "control/conf.h"
+#include "develop/develop.h"
 }
 #include "common/imageio_exr.hh"
 
@@ -53,13 +53,9 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
 
   Imf::setGlobalThreadCount(dt_get_num_threads());
 
-#ifdef __APPLE__
-  std::auto_ptr<Imf::TiledInputFile> fileTiled;
-  std::auto_ptr<Imf::InputFile> file;
-#else
   std::unique_ptr<Imf::TiledInputFile> fileTiled;
   std::unique_ptr<Imf::InputFile> file;
-#endif
+
   Imath::Box2i dw;
   Imf::FrameBuffer frameBuffer;
   uint32_t xstride, ystride;
@@ -73,23 +69,13 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   {
     if(isTiled)
     {
-#ifdef __APPLE__
-      std::auto_ptr<Imf::TiledInputFile> temp(new Imf::TiledInputFile(filename));
-      fileTiled = temp;
-#else
       std::unique_ptr<Imf::TiledInputFile> temp(new Imf::TiledInputFile(filename));
       fileTiled = std::move(temp);
-#endif
     }
     else
     {
-#ifdef __APPLE__
-      std::auto_ptr<Imf::InputFile> temp(new Imf::InputFile(filename));
-      file = temp;
-#else
       std::unique_ptr<Imf::InputFile> temp(new Imf::InputFile(filename));
       file = std::move(temp);
-#endif
     }
   }
   catch(const std::exception &e)
@@ -130,7 +116,8 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   img->height = dw.max.y - dw.min.y + 1;
 
   // Try to allocate image data
-  img->bpp = 4 * sizeof(float);
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {

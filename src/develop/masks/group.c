@@ -15,12 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "develop/imageop.h"
-#include "develop/blend.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "develop/masks.h"
 #include "common/debug.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "develop/blend.h"
+#include "develop/imageop.h"
+#include "develop/masks.h"
 
 static int dt_group_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
                                           uint32_t state, dt_masks_form_t *form, dt_masks_form_gui_t *gui)
@@ -230,6 +230,7 @@ static void dt_group_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   {
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
+    if (!sel) return;
     if(sel->type & DT_MASKS_CIRCLE)
       dt_circle_events_post_expose(cr, zoom_scale, gui, pos);
     else if(sel->type & DT_MASKS_PATH)
@@ -289,14 +290,14 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   // we allocate buffers and values
   const guint nb = g_list_length(form->points);
   if(nb == 0) return 0;
-  float *bufs[nb];
-  int w[nb];
-  int h[nb];
-  int px[nb];
-  int py[nb];
-  int ok[nb];
-  int states[nb];
-  float op[nb];
+  float **bufs = calloc(nb, sizeof(float *));
+  int *w = malloc(nb * sizeof(int));
+  int *h = malloc(nb * sizeof(int));
+  int *px = malloc(nb * sizeof(int));
+  int *py = malloc(nb * sizeof(int));
+  int *ok = malloc(nb * sizeof(int));
+  int *states = malloc(nb * sizeof(int));
+  float *op = malloc(nb * sizeof(float));
 
   // and we get all masks
   GList *fpts = g_list_first(form->points);
@@ -324,7 +325,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     fpts = g_list_next(fpts);
     pos++;
   }
-  if(nb_ok == 0) return 0;
+  if(nb_ok == 0) goto error;
 
   // now we get the min, max, width, height of the final mask
   int l, r, t, b;
@@ -419,14 +420,33 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
       }
     }
 
-    // and we free the buffer
-    free(bufs[i]);
     if(darktable.unmuted & DT_DEBUG_PERF)
       dt_print(DT_DEBUG_MASKS, "[masks %d] combine took %0.04f sec\n", i, dt_get_wtime() - start2);
 //     start2 = dt_get_wtime();
   }
 
+  free(op);
+  free(states);
+  free(ok);
+  free(py);
+  free(px);
+  free(h);
+  free(w);
+  for(int i = 0; i < nb; i++) free(bufs[i]);
+  free(bufs);
   return 1;
+
+error:
+  free(op);
+  free(states);
+  free(ok);
+  free(py);
+  free(px);
+  free(h);
+  free(w);
+  for(int i = 0; i < nb; i++) free(bufs[i]);
+  free(bufs);
+  return 0;
 }
 
 int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,

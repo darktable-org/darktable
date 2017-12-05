@@ -1,3 +1,8 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+                <!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+                %darktable_dtd;
+                ]>
 <sect2 status="final" id="image_information">
 
   <title>Image information</title>
@@ -12,7 +17,7 @@
   </indexterm>
 
   <indexterm>
-    <primary>EXIF data</primary>
+    <primary>Exif data</primary>
   </indexterm>
 
   <informaltable frame="none">
@@ -22,7 +27,7 @@
       <tbody>
         <row>
           <entry>
-            This panel shows information embedded within an image's EXIF data. When hovering
+            This panel shows information embedded within an image's Exif data. When hovering
             with the mouse over thumbnails, darktable will update this view, displaying
             information of the image currently under the mouse cursor. This panel is also
             available in darkroom, tethering, map, and print view.

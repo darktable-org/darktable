@@ -29,7 +29,7 @@
     length, ISO, camera model and other fields.
   </para>
 
-  <sect3 status="final">
+  <sect3 status="final" id="module_presets_new">
 
     <title>Creating a new preset</title>
 
@@ -59,7 +59,7 @@
     </para>
 
     <para>
-      darktable finds this data in your image's EXIF information. If you want a preset to be
+      darktable finds this data in your image's Exif information. If you want a preset to be
       applied to all images from a specific camera leave all fields at default values except for
       the model field.
     </para>
@@ -72,7 +72,7 @@
 
   </sect3>
 
-  <sect3 status="final">
+  <sect3 status="final" id="module_presets_managing">
 
     <title>Managing Presets</title>
 

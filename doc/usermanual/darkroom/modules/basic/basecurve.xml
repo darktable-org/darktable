@@ -16,6 +16,14 @@
     <primary>base curve</primary>
   </indexterm>
 
+  <indexterm>
+    <primary>exposure fusion</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>exposure bias</primary>
+  </indexterm>
+
   <sect4>
 
     <title>Overview</title>
@@ -29,7 +37,7 @@
             <entry>
               Camera sensors provide data in linear RGB format, the original image appears flat
               and dull. That's the reason why camera manufacturers apply their characteristic
-              base curves to the RAW data when they generate in-camera JPEG images with better
+              base curves to the raw data when they generate in-camera JPEG images with better
               colors and contrast.
             </entry>
             <entry>
@@ -48,8 +56,8 @@
 
     <para>
       darktable comes with base curve presets that mimic the curves of various manufacturers.
-      These are automatically applied to RAW images according to the manufacturer ID found in
-      EXIF data. For several camera models darktable comes with base curves adapted for that
+      These are automatically applied to raw images according to the manufacturer ID found in
+      Exif data. For several camera models darktable comes with base curves adapted for that
       specific model. A configuration option in the core preferences dialog (see
       <xref linkend="core_options"/>) defines whether darktable by default should apply the
       per-camera base curve or the manufacturer one.
@@ -57,11 +65,11 @@
 
     <para>
       You can adjust an existing base curve or create a new one. The base curve is defined by
-      two or more nodes. You can drag any node to modify the curve. You can also create
+      two or more nodes. You can move any node to modify the curve. You can also create
       additional nodes by <emphasis>clicking</emphasis> on a curve segment between two nodes.
       With <emphasis>ctrl-click</emphasis> you generate a new node at the x-location of the
-      mouse pointer and the corresponging y-location of the current curve&nbsp;&ndash; this adds
-      a node without risking to accidentally modify the curve. In order to remove a node drag it
+      mouse pointer and the corresponding y-location of the current curve&nbsp;&ndash; this adds
+      a node without risking to accidentally modify the curve. In order to remove a node move it
       outside of the widget area.
     </para>
 
@@ -78,6 +86,41 @@
         This combobox toggles between <quote>linear</quote> and <quote>logarithmic</quote> view.
         In the double logarithmic view more space is given to the lower values allowing a more
         fine-grained adjustment of the shadows.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>fusion</title>
+      <para>
+        This control triggers the
+        <ulink url="https://en.wikipedia.org/wiki/Exposure_Fusion"><emphasis>exposure
+        fusion</emphasis></ulink> feature. You can choose to merge the image with one or two
+        copies of itself after applying the current base curve and boosting its exposure by a
+        selectable number of ev units. The resulting image is thus a combination of two or three
+        different exposures of the original image. Use this to compress dynamic range for
+        extremely underexposed images or for true HDR input. For best results, use the exposure
+        module (see <xref linkend="exposure"/>) to apply a suitable adjustment for correctly
+        exposed highlights.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>exposure shift</title>
+      <para>
+        This slider is only visible if the <emphasis>exposure fusion</emphasis> feature is
+        activated. It allows you to set the exposure difference between the merged images in ev
+        units (default 1).
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>exposure bias</title>
+      <para>
+        This slider is only visible if the <emphasis>exposure fusion</emphasis> feature is
+        activated. It allows you to chose how the multiple exposures are computed. With a bias of 1
+        (the default), the image is fused with overexposed copies of itself. With a bias of -1, it
+        is fused with underexposed copies. A bias of 0 tries to preserve the overall lightness of
+        the image by combining both over and under-exposed copies of the image.
       </para>
     </sect5>
 

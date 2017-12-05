@@ -18,9 +18,9 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
@@ -49,7 +49,7 @@ typedef struct dt_iop_relight_params_t
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
   dt_gui_presets_add_generic(_("fill-light 0.25EV with 4 zones"), self->op, self->version(),
                              &(dt_iop_relight_params_t){ 0.25, 0.25, 4.0 }, sizeof(dt_iop_relight_params_t),
@@ -58,7 +58,7 @@ void init_presets(dt_iop_module_so_t *self)
                              &(dt_iop_relight_params_t){ -0.25, 0.25, 4.0 }, sizeof(dt_iop_relight_params_t),
                              1);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 typedef struct dt_iop_relight_gui_data_t
@@ -297,7 +297,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_relight_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_relight_params_t));
   module->default_enabled = 0;
-  module->priority = 707; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 705; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_relight_params_t);
   module->gui_data = NULL;
   dt_iop_relight_params_t tmp = (dt_iop_relight_params_t){ 0.33, 0, 4 };

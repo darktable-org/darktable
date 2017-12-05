@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LUA_LUA_H
-#define LUA_LUA_H
+
+#pragma once
 
 /* this file can safely be included when lua is disabled */
 
@@ -24,14 +24,14 @@
 /* these include are out of the ifdef to avoid compile errors when compiling with/without lua
    users that accidentally use it won't be affected by the ifdef USE_LUA
  */
-#include <glib.h>
 #include "common/dtpthread.h"
+#include <glib.h>
 
 #ifdef USE_LUA
+#include <lautoc.h>
+#include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
-#include <lauxlib.h>
-#include <lautoc.h>
 
 /**
   (0,+1)
@@ -65,16 +65,20 @@ void dt_lua_debug_table_internal(lua_State *L, int t, const char *function, int 
 
 typedef struct
 {
-  lua_State *state;
-  dt_pthread_mutex_t mutex;
-  int pending_threads ;
-  bool ending;
-  GMainLoop *loop;
-  GMainContext *context;
-  GThreadPool *pool;
-  GAsyncQueue * stacked_job_queue;
-  GAsyncQueue * alien_job_queue;
-  GAsyncQueue * string_job_queue;
+  lua_State *state;                  // main lua context
+
+  dt_pthread_mutex_t mutex;          // mutex protecting the lua condition variabe
+  pthread_cond_t cond;               // condition variable to wait for the lua lock
+  bool exec_lock;                    // true if some lua code is running. this is logically a mutex
+
+  bool ending;                       // true if we are in the process of terminating DT
+
+  GMainLoop *loop;                   // loop running  the lua context
+  GMainContext *context;             // the lua context responsible for dispatching tasks
+  GThreadPool *pool;                 // pool of threads to run lua tasks on (should be one or two at most, unless lot of blocking lua threads
+  GAsyncQueue * stacked_job_queue;   // queue of jobs whose arguments are on a lua stack
+  GAsyncQueue * alien_job_queue;     // queue of jobs coming from C, args are passed in a glist
+  GAsyncQueue * string_job_queue;    // queue of jobs as lua expressions, passed with args as a string
 
 } dt_lua_state_t;
 
@@ -93,9 +97,6 @@ typedef struct
 } dt_lua_state_t;
 #endif
 
-
-
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -39,19 +39,19 @@
 #include "views/view.h"
 #include "views/view_api.h"
 
+#include <assert.h>
+#include <dirent.h>
+#include <errno.h>
+#include <gdk/gdkkeysyms.h>
+#include <math.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <math.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <dirent.h>
 #include <string.h>
 #include <strings.h>
-#include <errno.h>
-#include <assert.h>
-#include <gdk/gdkkeysyms.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 DT_MODULE(1)
 
@@ -124,10 +124,7 @@ typedef struct dt_library_t
     sqlite3_stmt *is_grouped;
   } statements;
 
-  struct
-  {
-    GtkWidget *button, *floating_window;
-  } profile;
+  GtkWidget *profile_floating_window;
 
 } dt_library_t;
 
@@ -148,20 +145,19 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_LIGHTTABLE;
 }
 
-typedef enum direction
-{
-  UP = 0,
-  DOWN = 1,
-  LEFT = 2,
-  RIGHT = 3,
-  ZOOM_IN = 4,
-  ZOOM_OUT = 5,
-  TOP = 6,
-  BOTTOM = 7,
-  PGUP = 8,
-  PGDOWN = 9,
-  CENTER = 10
-} direction;
+typedef enum dt_lighttable_direction_t {
+  DIRECTION_UP = 0,
+  DIRECTION_DOWN = 1,
+  DIRECTION_LEFT = 2,
+  DIRECTION_RIGHT = 3,
+  DIRECTION_ZOOM_IN = 4,
+  DIRECTION_ZOOM_OUT = 5,
+  DIRECTION_TOP = 6,
+  DIRECTION_BOTTOM = 7,
+  DIRECTION_PGUP = 8,
+  DIRECTION_PGDOWN = 9,
+  DIRECTION_CENTER = 10
+} dt_lighttable_direction_t;
 
 static void switch_layout_to(dt_library_t *lib, int new_layout)
 {
@@ -182,46 +178,46 @@ static void switch_layout_to(dt_library_t *lib, int new_layout)
   }
 }
 
-static void move_view(dt_library_t *lib, direction dir)
+static void move_view(dt_library_t *lib, dt_lighttable_direction_t dir)
 {
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
 
   switch(dir)
   {
-    case UP:
+    case DIRECTION_UP:
     {
       if(lib->offset >= 1) lib->offset = lib->offset - iir;
     }
     break;
-    case DOWN:
+    case DIRECTION_DOWN:
     {
       lib->offset = lib->offset + iir;
       while(lib->offset >= lib->collection_count) lib->offset -= iir;
     }
     break;
-    case PGUP:
+    case DIRECTION_PGUP:
     {
       lib->offset -= (lib->max_rows - 1 ) * iir;
       while(lib->offset < 0) lib->offset += iir;
     }
     break;
-    case PGDOWN:
+    case DIRECTION_PGDOWN:
     {
       lib->offset += (lib->max_rows - 1 ) * iir;
       while(lib->offset >= lib->collection_count) lib->offset -= iir;
     }
     break;
-    case TOP:
+    case DIRECTION_TOP:
     {
       lib->offset = 0;
     }
     break;
-    case BOTTOM:
+    case DIRECTION_BOTTOM:
     {
       lib->offset = lib->collection_count - iir;
     }
     break;
-    case CENTER:
+    case DIRECTION_CENTER:
     {
       lib->offset -= lib->offset % iir;
     }
@@ -281,7 +277,7 @@ static void _update_collected_images(dt_view_t *self)
   int32_t min_before = 0, min_after = 0;
 
   /* check if we can get a query from collection */
-  const gchar *query = dt_collection_get_query(darktable.collection);
+  gchar *query = g_strdup(dt_collection_get_query(darktable.collection));
   if(!query) return;
 
   // we have a new query for the collection of images to display. For speed reason we collect all images into
@@ -304,8 +300,8 @@ static void _update_collected_images(dt_view_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.collected_images", NULL, NULL,
                         NULL);
   // reset autoincrement. need in star_key_accel_callback
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.sqlite_sequence where name='collected_images'", NULL, NULL,
-                        NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.sqlite_sequence WHERE "
+                                                       "name='collected_images'", NULL, NULL, NULL);
 
   // 2. insert collected images into the temporary table
 
@@ -318,6 +314,7 @@ static void _update_collected_images(dt_view_t *self)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
+  g_free(query);
   g_free(ins_query);
 
   // 3. get new low-bound, then update the full preview rowid accordingly
@@ -356,7 +353,7 @@ static void _update_collected_images(dt_view_t *self)
 
   /* prepare a new main query statement for collection */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT imgid FROM memory.collected_images ORDER by rowid LIMIT ?1, ?2", -1,
+                              "SELECT imgid FROM memory.collected_images ORDER BY rowid LIMIT ?1, ?2", -1,
                               &lib->statements.main_query, NULL);
 
   dt_control_queue_redraw_center();
@@ -428,10 +425,10 @@ void init(dt_view_t *self)
   _view_lighttable_collection_listener_callback(NULL, self);
 
   /* initialize reusable sql statements */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from selected_images where imgid != ?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.selected_images WHERE imgid != ?1",
                               -1, &lib->statements.delete_except_arg, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select id from images where group_id = ?1 and id != ?2", -1,
+                              "SELECT id FROM main.images WHERE group_id = ?1 AND id != ?2", -1,
                               &lib->statements.is_grouped, NULL); // TODO: only check in displayed images?
 }
 
@@ -488,7 +485,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   int32_t mouse_over_id = dt_control_get_mouse_over_id(), mouse_over_group = -1;
 
   /* fill background */
-  cairo_set_source_rgb(cr, .2, .2, .2);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_paint(cr);
 
   offset_changed = lib->offset_changed;
@@ -679,18 +676,18 @@ end_query_cache:
             // detect if the current movement need some extra movement (page adjust)
             if (current_row  == (int)(max_rows-1.5) && lib->key_jump_offset == iir)
               // going DOWN from last row
-              move_view(lib,DOWN);
+              move_view(lib, DIRECTION_DOWN);
             else if (current_row  == 0 && lib->key_jump_offset == iir*-1)
             {
               // going UP from first row
-              move_view(lib,UP);
+              move_view(lib, DIRECTION_UP);
             }
             else if (current_row == (int)(max_rows-1.5) && current_col ==  0 && lib->key_jump_offset == 1)
               // going RIGHT from last visible
-              move_view(lib,DOWN);
+              move_view(lib, DIRECTION_DOWN);
             else if (current_row == 0 && current_col ==  1 && lib->key_jump_offset == -1)
               // going LEFT from first visible
-              move_view(lib,UP);
+              move_view(lib, DIRECTION_UP);
             if (idx > -1 && idx < lib->collection_count && query_ids[idx])
             {
                 // offset is valid..we know where to jump
@@ -705,7 +702,7 @@ end_query_cache:
               if (lib->key_select) 
               {
                 // managing shift + movement
-                int direction = (lib->key_jump_offset > 0) ? RIGHT : LEFT ;
+                int direction = (lib->key_jump_offset > 0) ? DIRECTION_RIGHT : DIRECTION_LEFT;
                 if (lib->key_select_direction != direction ) 
                 {
                   lib->key_select_direction =  direction;
@@ -903,7 +900,7 @@ after_drawing:
   {
     int32_t imgids_num = 0;
     const int prefetchrows = .5 * max_rows + 1;
-    int32_t imgids[prefetchrows * iir];
+    int32_t *imgids = malloc(prefetchrows * iir * sizeof(int32_t));
 
     /* clear and reset main query */
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
@@ -925,6 +922,8 @@ after_drawing:
       imgids_num--;
       dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgids[imgids_num], mip, DT_MIPMAP_PREFETCH, 'r');
     }
+
+    free(imgids);
   }
 
   lib->offset_changed = FALSE;
@@ -977,7 +976,7 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   lib->images_in_row = zoom;
   lib->image_over = DT_VIEW_DESERT;
 
-  cairo_set_source_rgb(cr, .2, .2, .2);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_paint(cr);
 
   const float wd = width / zoom;
@@ -1078,7 +1077,7 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   }
   else if(zoom < 1.01)
   {
-    if(zoom == 1 && zoom_x < 0) // full view, wrap around
+    if(zoom == 1 && zoom_x < 0 && zoom_y > 0) // full view, wrap around
     {
       zoom_x = wd * DT_LIBRARY_MAX_ZOOM - wd;
       zoom_y -= ht;
@@ -1222,7 +1221,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
     /* If only one image is selected, scroll through all known images. */
     sqlite3_stmt *stmt;
     int sel_img_count = 0;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select COUNT(*) from selected_images", -1,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM main.selected_images", -1,
                                 &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW) sel_img_count = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
@@ -1239,7 +1238,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
                                             * so there's no need to match against the selection */
                                            "" :
                                            /* Limit the matches to the current selection */
-                                           "INNER JOIN selected_images AS sel ON col.imgid = sel.imgid",
+                                           "INNER JOIN main.selected_images AS sel ON col.imgid = sel.imgid",
                                          (offset >= 0) ? ">" : "<",
                                          lib->full_preview_rowid,
                                          /* Direction of our navigation -- when showing for the first time,
@@ -1249,7 +1248,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
 
     /* Walk through the "next" images, activate preload and find out where to go if moving */
-    int preload_stack[preload_num];
+    int *preload_stack = malloc(preload_num * sizeof(int));
     for(int i = 0; i < preload_num; ++i)
     {
       preload_stack[i] = -1;
@@ -1284,10 +1283,12 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
       while(--count >= 0 && preload_stack[count] != -1)
         dt_mipmap_cache_get(darktable.mipmap_cache, NULL, preload_stack[count], mip, DT_MIPMAP_PREFETCH, 'r');
     }
+
+    free(preload_stack);
   }
 
   lib->image_over = DT_VIEW_DESERT;
-  cairo_set_source_rgb(cr, .1, .1, .1);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG);
   cairo_paint(cr);
 
   const int frows = 5, fcols = 5;
@@ -1295,7 +1296,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   {
     if(lib->full_res_thumb_id != lib->full_preview_id)
     {
-      gboolean from_cache = FALSE;
+      gboolean from_cache = TRUE;
       char filename[PATH_MAX] = { 0 };
       dt_image_full_path(lib->full_preview_id, filename, sizeof(filename), &from_cache);
       free(lib->full_res_thumb);
@@ -1438,7 +1439,7 @@ static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *ac
   dt_library_t *lib = (dt_library_t *)self->data;
 
   if(layout == 1)
-    move_view(lib, TOP);
+    move_view(lib, DIRECTION_TOP);
   else
     lib->offset = 0;
   dt_control_queue_redraw_center();
@@ -1453,7 +1454,7 @@ static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *
   dt_library_t *lib = (dt_library_t *)self->data;
 
   if(layout == 1)
-    move_view(lib, BOTTOM);
+    move_view(lib, DIRECTION_BOTTOM);
   else
     lib->offset = 0x1fffffff;
   dt_control_queue_redraw_center();
@@ -1467,7 +1468,7 @@ static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *
   dt_library_t *lib = (dt_library_t *)self->data;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   if(layout == 1)
-    move_view(lib, PGUP);
+    move_view(lib, DIRECTION_PGUP);
   else
   {
     const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
@@ -1487,7 +1488,7 @@ static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   if(layout == 1)
   {
-    move_view(lib, PGDOWN);
+    move_view(lib, DIRECTION_PGDOWN);
   }
   else
   {
@@ -1506,7 +1507,7 @@ static gboolean realign_key_accel_callback(GtkAccelGroup *accel_group, GObject *
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  if(layout == 1) move_view(lib, CENTER);
+  if(layout == 1) move_view(lib, DIRECTION_CENTER);
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -1544,7 +1545,7 @@ static gboolean star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acc
     sqlite3_stmt *stmt;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT MIN(imgid) FROM selected_images", -1, &stmt, NULL);
+                                "SELECT MIN(imgid) FROM main.selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       sqlite3_stmt *inner_stmt;
@@ -1618,8 +1619,11 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
       gchar **image_to_load = uri_list;
       while(*image_to_load)
       {
-        dt_load_from_string(*image_to_load, FALSE, NULL); // TODO: do we want to open the image in darkroom mode? If
-                                                          // yes -> set to TRUE.
+        if(**image_to_load)
+        {
+          dt_load_from_string(*image_to_load, FALSE, NULL); // TODO: do we want to open the image in darkroom mode? If
+                                                            // yes -> set to TRUE.
+        }
         image_to_load++;
       }
     }
@@ -1739,9 +1743,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   else if(layout == 1 && state == 0)
   {
     if(up)
-      move_view(lib, UP);
+      move_view(lib, DIRECTION_UP);
     else
-      move_view(lib, DOWN);
+      move_view(lib, DIRECTION_DOWN);
   }
   else
   {
@@ -1889,8 +1893,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           sqlite3_stmt *stmt;
           DT_DEBUG_SQLITE3_PREPARE_V2(
               dt_database_get(darktable.db),
-              "insert or ignore into selected_images select id from images where group_id = ?1", -1, &stmt,
-              NULL);
+              "INSERT OR IGNORE INTO main.selected_images SELECT id FROM main.images WHERE group_id = ?1",
+              -1, &stmt, NULL);
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
           sqlite3_step(stmt);
           sqlite3_finalize(stmt);
@@ -2106,7 +2110,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     {
       if (zoom == 1)
       {
-        move_view(lib, UP);
+        move_view(lib, DIRECTION_UP);
         lib->using_arrows = 0;
       }
       else
@@ -2130,7 +2134,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     {
       if (zoom == 1)
       {
-        move_view(lib, DOWN);
+        move_view(lib, DIRECTION_DOWN);
         lib->using_arrows = 0;
       }
       else
@@ -2153,7 +2157,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     {
       if (zoom == 1)
       {
-        move_view(lib, UP);
+        move_view(lib, DIRECTION_UP);
         lib->using_arrows = 0;
       }
       else {
@@ -2174,7 +2178,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     {
       if (zoom == 1)
       {
-        move_view(lib, DOWN);
+        move_view(lib, DIRECTION_DOWN);
         lib->using_arrows = 0;
       }
       else
@@ -2270,42 +2274,6 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "realign images to grid", closure);
 }
 
-
-
-// ugly hack. we lose focus when moving the mouse over the main window, but also when opening the bauhaus popup
-static gboolean _profile_close_popup(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_library_t *lib = (dt_library_t *)user_data;
-  if(!gtk_widget_is_visible(darktable.bauhaus->popup_window))
-    gtk_widget_hide(lib->profile.floating_window);
-  return FALSE;
-}
-
-static gboolean _profile_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_library_t *lib = (dt_library_t *)user_data;
-  /** finally move the window next to the button */
-  gint x, y, wx, wy;
-  gint px, py, window_w, window_h;
-  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  gtk_widget_show_all(lib->profile.floating_window);
-  gdk_window_get_origin(gtk_widget_get_window(lib->profile.button), &px, &py);
-
-  window_w = gdk_window_get_width(gtk_widget_get_window(lib->profile.floating_window));
-  window_h = gdk_window_get_height(gtk_widget_get_window(lib->profile.floating_window));
-
-  gtk_widget_translate_coordinates(lib->profile.button, window, 0, 0, &wx, &wy);
-  x = px + wx - window_w + DT_PIXEL_APPLY_DPI(5);
-  y = py + wy - window_h - DT_PIXEL_APPLY_DPI(5);
-  gtk_window_move(GTK_WINDOW(lib->profile.floating_window), x, y);
-
-  gtk_window_present(GTK_WINDOW(lib->profile.floating_window));
-
-  // when the mouse moves back over the main window we close the popup.
-  g_signal_connect(lib->profile.floating_window, "focus-out-event", G_CALLBACK(_profile_close_popup), user_data);
-  return TRUE;
-}
-
 static void display_intent_callback(GtkWidget *combo, gpointer user_data)
 {
   const int pos = dt_bauhaus_combobox_get(combo);
@@ -2332,6 +2300,9 @@ static void display_intent_callback(GtkWidget *combo, gpointer user_data)
   if(new_intent != darktable.color_profiles->display_intent)
   {
     darktable.color_profiles->display_intent = new_intent;
+    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+    dt_colorspaces_update_display_transforms();
+    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
     dt_control_queue_redraw_center();
   }
 }
@@ -2374,68 +2345,38 @@ end:
   }
 }
 
-// FIXME: turning off lcms2 in prefs hides the widget but leaves the window sized like before -> ugly-ish
-static void _preference_changed(gpointer instance, gpointer user_data)
-{
-  GtkWidget *display_intent = GTK_WIDGET(user_data);
-
-  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
-  if(force_lcms2)
-  {
-    gtk_widget_set_no_show_all(display_intent, FALSE);
-    gtk_widget_set_visible(display_intent, TRUE);
-  }
-  else
-  {
-    gtk_widget_set_no_show_all(display_intent, TRUE);
-    gtk_widget_set_visible(display_intent, FALSE);
-  }
-}
-
 void gui_init(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
   // create display profile button
-  lib->profile.button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
-  gtk_widget_set_tooltip_text(lib->profile.button, _("set display profile"));
-  g_signal_connect(G_OBJECT(lib->profile.button), "button-press-event", G_CALLBACK(_profile_quickbutton_pressed), lib);
-  dt_view_manager_module_toolbox_add(darktable.view_manager, lib->profile.button, DT_VIEW_LIGHTTABLE);
+  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  gtk_widget_set_tooltip_text(profile_button, _("set display profile"));
+  dt_view_manager_module_toolbox_add(darktable.view_manager, profile_button, DT_VIEW_LIGHTTABLE);
 
   // and the popup window
   const int panel_width = dt_conf_get_int("panel_width");
+  lib->profile_floating_window = gtk_popover_new(profile_button);
 
-  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  gtk_widget_set_size_request(GTK_WIDGET(lib->profile_floating_window), panel_width, -1);
+#if GTK_CHECK_VERSION(3, 16, 0)
+  g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
+#endif
+  g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event", G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
 
-  lib->profile.floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_default_size(GTK_WINDOW(lib->profile.floating_window), panel_width, -1);
-  GtkWidget *frame = gtk_frame_new(NULL);
-  GtkWidget *event_box = gtk_event_box_new();
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
 
-  gtk_widget_set_can_focus(lib->profile.floating_window, TRUE);
-  gtk_window_set_decorated(GTK_WINDOW(lib->profile.floating_window), FALSE);
-  gtk_window_set_type_hint(GTK_WINDOW(lib->profile.floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
-  gtk_window_set_transient_for(GTK_WINDOW(lib->profile.floating_window), GTK_WINDOW(window));
-  gtk_widget_set_opacity(lib->profile.floating_window, 0.9);
-
-  gtk_widget_set_state_flags(frame, GTK_STATE_FLAG_SELECTED, TRUE);
-  gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
-
-  gtk_container_add(GTK_CONTAINER(lib->profile.floating_window), frame);
-  gtk_container_add(GTK_CONTAINER(frame), event_box);
-  gtk_container_add(GTK_CONTAINER(event_box), vbox);
+  gtk_container_add(GTK_CONTAINER(lib->profile_floating_window), vbox);
 
   /** let's fill the encapsulating widgets */
   char datadir[PATH_MAX] = { 0 };
   char confdir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
   dt_loc_get_datadir(datadir, sizeof(datadir));
-  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
   GtkWidget *display_intent = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(display_intent, NULL, _("display intent"));
@@ -2444,12 +2385,6 @@ void gui_init(dt_view_t *self)
   dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
-
-  if(!force_lcms2)
-  {
-    gtk_widget_set_no_show_all(display_intent, TRUE);
-    gtk_widget_set_visible(display_intent, FALSE);
-  }
 
   GtkWidget *display_profile = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(display_profile, NULL, _("display profile"));
@@ -2470,17 +2405,18 @@ void gui_init(dt_view_t *self)
     }
   }
 
-  char tooltip[1024];
-  snprintf(tooltip, sizeof(tooltip), _("display ICC profiles in %s/color/out or %s/color/out"), confdir,
-           datadir);
+
+  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
+  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
+  char *tooltip = g_strdup_printf(_("display ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(display_profile, tooltip);
+  g_free(system_profile_dir);
+  g_free(user_profile_dir);
+  g_free(tooltip);
+
 
   g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), NULL);
   g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), NULL);
-
-  // update the gui when the preferences changed (i.e. show intent when using lcms2)
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
-                            G_CALLBACK(_preference_changed), (gpointer)display_intent);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

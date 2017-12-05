@@ -1,3 +1,8 @@
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+                <!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+                %darktable_dtd;
+                ]>
 <chapter status="final" id="map_chapter">
 
   <chapterinfo>
@@ -28,7 +33,7 @@
     </screenshot>
   </para>
 
-  <sect1 status="final">
+  <sect1 status="final" id="map_overview">
 
     <title>Overview</title>
 
@@ -41,13 +46,13 @@
 
     <para>
       Even if your camera doesn't support this feature, there is an alternative method.
-      darktable can match the EXIF time and date data in your image(s) to a separate GPX data
+      darktable can match the Exif time and date data in your image(s) to a separate GPX data
       tracking file created by a GPS tracker recording your movements. These can be handheld
       devices or a GPS tracker app on your smartphone. This is all done in the lighttable view
       (see <xref linkend="geotagging"/>).
     </para>
 
-    <sect2 status="final">
+    <sect2 status="final" id="map_center_map_view">
 
       <title>Center map view</title>
 
@@ -106,6 +111,42 @@
 
       <para>
         Left and right to the central map there are panels for additional control.
+      </para>
+
+    </sect2>
+
+    <sect2 id="map_undo_redo">
+
+      <title>Undo/redo</title>
+
+      <indexterm>
+        <primary>undo</primary>
+      </indexterm>
+
+      <indexterm>
+        <primary>redo</primary>
+      </indexterm>
+
+      <para>
+        All image moves in the map view are recorded by darktable. It is then possible to undo
+        or redo such changes to recover a previous state. Note that this undo/redo facility is
+        unlimited while moving images but it is reset each time the map view is left.
+      </para>
+
+      <para>
+        The default key shortcuts are:
+        <itemizedlist>
+
+          <listitem><para>
+            <emphasis>Ctrl-z</emphasis> : undo last move
+          </para></listitem>
+
+          <listitem><para>
+            <emphasis>Ctrl-y</emphasis> : redo last undo (does nothing if undo has not been used
+            yet)
+          </para></listitem>
+
+        </itemizedlist>
       </para>
 
     </sect2>

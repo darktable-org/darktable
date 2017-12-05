@@ -62,9 +62,10 @@ const char *name(dt_lib_module_t *self)
   return _("histogram");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_DARKROOM | DT_VIEW_TETHERING;
+  static const char *v[] = {"darkroom", "tethering", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -128,7 +129,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(self->widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
                                       | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
                                       //                         GDK_STRUCTURE_MASK |
-                                      GDK_SCROLL | GDK_SCROLL_MASK);
+                                      GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
 
   /* connect callbacks */
   gtk_widget_set_tooltip_text(self->widget, _("drag to change exposure,\ndoubleclick resets"));
@@ -376,7 +377,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     {
       // cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
       cairo_translate(cr, 0, height);
-      cairo_scale(cr, width / 63.0, -(height - 10) / hist_max);
+      cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
       // cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
       cairo_set_line_width(cr, 1.);
@@ -412,7 +413,8 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   pango_layout_set_font_description(layout, desc);
 
   char exifline[50];
-  dt_image_print_exif(&dev->image_storage, exifline, 50);
+  dt_image_print_exif(&dev->image_storage, exifline, sizeof(exifline));
+
   pango_layout_set_text(layout, exifline, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .02 * width, .98 * height - ink.height - ink.y);
@@ -526,10 +528,18 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     gtk_widget_queue_draw(widget);
   }
   gint x, y; // notify gtk for motion_hint.
+#if GTK_CHECK_VERSION(3, 20, 0)
+  gdk_window_get_device_position(gtk_widget_get_window(widget),
+      gdk_seat_get_pointer(gdk_display_get_default_seat(
+          gdk_window_get_display(event->window))),
+      &x, &y, 0);
+#else
   gdk_window_get_device_position(event->window,
                                  gdk_device_manager_get_client_pointer(
                                      gdk_display_get_device_manager(gdk_window_get_display(event->window))),
                                  &x, &y, NULL);
+#endif
+
   return TRUE;
 }
 
@@ -597,17 +607,17 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
   float ce = dt_dev_exposure_get_exposure(darktable.develop);
   float cb = dt_dev_exposure_get_black(darktable.develop);
 
-  if(event->direction == GDK_SCROLL_UP && d->highlight == 2)
-    dt_dev_exposure_set_exposure(darktable.develop, ce + 0.15);
-
-  if(event->direction == GDK_SCROLL_DOWN && d->highlight == 2)
-    dt_dev_exposure_set_exposure(darktable.develop, ce - 0.15);
-
-  if(event->direction == GDK_SCROLL_UP && d->highlight == 1)
-    dt_dev_exposure_set_black(darktable.develop, cb - 0.001);
-
-  if(event->direction == GDK_SCROLL_DOWN && d->highlight == 1)
-    dt_dev_exposure_set_black(darktable.develop, cb + 0.001);
+  int delta_y;
+  // note are using unit rather than smooth scroll events, as
+  // exposure changes can get laggy if handling a multitude of smooth
+  // scroll events
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  {
+    if(d->highlight == 2)
+      dt_dev_exposure_set_exposure(darktable.develop, ce - 0.15f * delta_y);
+    else if(d->highlight == 1)
+      dt_dev_exposure_set_black(darktable.develop, cb + 0.001f * delta_y);
+  }
 
   return TRUE;
 }

@@ -31,17 +31,16 @@
 #include "views/view.h"
 #include "views/view_api.h"
 
+#include <gdk/gdkkeysyms.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 
 typedef struct dt_print_t
 {
   int32_t image_id;
-  int32_t iwidth, iheight;
   dt_print_info_t *pinfo;
 }
 dt_print_t;
@@ -62,33 +61,12 @@ static void _print_mipmaps_updated_signal_callback(gpointer instance, gpointer u
   dt_control_queue_redraw_center();
 }
 
-static void _set_orientation(dt_print_t *prt)
-{
-  if (prt->image_id <= 0)
-    return;
-
-  dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, prt->image_id, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
-
-  if (buf.width > buf.height)
-    prt->pinfo->page.landscape = TRUE;
-  else
-    prt->pinfo->page.landscape = FALSE;
-
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-}
-
 static void _film_strip_activated(const int imgid, void *data)
 {
   const dt_view_t *self = (dt_view_t *)data;
   dt_print_t *prt = (dt_print_t *)self->data;
 
   prt->image_id = imgid;
-  prt->iwidth = prt->iheight = 0;
-
-  //  guess the image orientation
-
-  _set_orientation(prt);
 
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
   // record the imgid to display when going back to lighttable
@@ -251,15 +229,15 @@ int try_enter(dt_view_t *self)
   {
     // try last selected
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
                                 NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW) selected = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
 
     // Leave as selected only the image being edited
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "insert or ignore into selected_images values (?1)", -1, &stmt, NULL);
+                                "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, selected);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -302,11 +280,9 @@ void enter(dt_view_t *self)
   {
     int imgid = GPOINTER_TO_INT(selected_images->data);
     prt->image_id = imgid;
-    dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
+    dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, TRUE);
   }
   g_list_free(selected_images);
-
-  _set_orientation(prt);
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                             G_CALLBACK(_print_mipmaps_updated_signal_callback),

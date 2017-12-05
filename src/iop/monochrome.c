@@ -56,6 +56,7 @@ typedef struct dt_iop_monochrome_gui_data_t
 {
   GtkDrawingArea *area;
   GtkWidget *highlights;
+  GtkWidget *colorpicker;
   int dragging;
   cmsHTRANSFORM xform;
 } dt_iop_monochrome_gui_data_t;
@@ -222,7 +223,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 1, sizeof(cl_mem), &dev_tmp);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 1, sizeof(cl_mem), &dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 2, sizeof(int), &width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 3, sizeof(int), &height);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 4, sizeof(float), &d->a);
@@ -231,11 +232,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_monochrome_filter, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  err = dt_bilateral_splat_cl(b, dev_tmp);
+  err = dt_bilateral_splat_cl(b, dev_out);
   if(err != CL_SUCCESS) goto error;
   err = dt_bilateral_blur_cl(b);
   if(err != CL_SUCCESS) goto error;
-  err = dt_bilateral_slice_cl(b, dev_tmp, dev_tmp, detail);
+  err = dt_bilateral_slice_cl(b, dev_out, dev_tmp, detail);
   if(err != CL_SUCCESS) goto error;
   dt_bilateral_free_cl(b);
   b = NULL; // make sure we don't do double cleanup in case the next few lines err out
@@ -252,11 +253,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_monochrome, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
-  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_tmp);
   dt_bilateral_free_cl(b);
   dt_print(DT_DEBUG_OPENCL, "[opencl_monochrome] couldn't enqueue kernel! %d\n", err);
   return FALSE;
@@ -336,7 +337,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_monochrome_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_monochrome_params_t));
   module->default_enabled = 0;
-  module->priority = 630; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 632; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_monochrome_params_t);
   module->gui_data = NULL;
   dt_iop_monochrome_params_t tmp = (dt_iop_monochrome_params_t){ 0., 0., 2., 0. };
@@ -368,7 +369,7 @@ static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
 
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
   {
     float old_a = p->a, old_b = p->b, old_size = p->size;
     p->a = self->picked_color[1];
@@ -379,6 +380,9 @@ static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer
     if(old_a != p->a || old_b != p->b || old_size != p->size)
       dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker),
+                               (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE ? 1 : 0));
 
   const int inset = DT_COLORCORRECTION_INSET;
   GtkAllocation allocation;
@@ -454,10 +458,16 @@ static gboolean dt_iop_monochrome_motion_notify(GtkWidget *widget, GdkEventMotio
     gtk_widget_queue_draw(self->widget);
   }
   gint x, y;
+#if GTK_CHECK_VERSION(3, 20, 0)
+  gdk_window_get_device_position(event->window,
+      gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))),
+      &x, &y, 0);
+#else
   gdk_window_get_device_position(event->window,
                                  gdk_device_manager_get_client_pointer(
                                      gdk_display_get_device_manager(gdk_window_get_display(event->window))),
                                  &x, &y, NULL);
+#endif
   return TRUE;
 }
 
@@ -488,7 +498,7 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
       p->a = PANEL_WIDTH * (mouse_x - width * 0.5f) / (float)width;
       p->b = PANEL_WIDTH * (mouse_y - height * 0.5f) / (float)height;
       g->dragging = 1;
-      g_object_set(G_OBJECT(widget), "has-tooltip", FALSE, (char *)NULL);
+      g_object_set(G_OBJECT(widget), "has-tooltip", FALSE, (gchar *)0);
     }
     gtk_widget_queue_draw(self->widget);
     return TRUE;
@@ -504,7 +514,7 @@ static gboolean dt_iop_monochrome_button_release(GtkWidget *widget, GdkEventButt
     dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     g->dragging = 0;
-    g_object_set(G_OBJECT(widget), "has-tooltip", TRUE, (char *)NULL);
+    g_object_set(G_OBJECT(widget), "has-tooltip", TRUE, (gchar *)0);
     return TRUE;
   }
   return FALSE;
@@ -524,10 +534,15 @@ static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *ev
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  if(event->direction == GDK_SCROLL_UP && p->size > .5) p->size -= 0.1;
-  if(event->direction == GDK_SCROLL_DOWN && p->size < 3.0) p->size += 0.1;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  gtk_widget_queue_draw(widget);
+
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  {
+    p->size = CLAMP(p->size + delta_y * 0.1, 0.5f, 3.0f);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(widget);
+  }
+
   return TRUE;
 }
 
@@ -545,15 +560,18 @@ static void picker_callback(GtkWidget *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
 
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE)
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
   else
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   dt_iop_request_focus(self);
 
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
+  {
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     dt_dev_reprocess_all(self->dev);
+  }
   else
     dt_control_queue_redraw();
 
@@ -574,7 +592,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                             | GDK_SMOOTH_SCROLL_MASK);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_monochrome_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_monochrome_button_press), self);
   g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(dt_iop_monochrome_button_release),
@@ -584,14 +603,21 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(dt_iop_monochrome_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_monochrome_scrolled), self);
 
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
+
   g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, 0.0, 2);
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  dt_bauhaus_widget_set_quad_paint(g->highlights, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE);
   gtk_widget_set_tooltip_text(g->highlights, _("how much to keep highlights"));
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), g->highlights, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);
-  g_signal_connect(G_OBJECT(g->highlights), "quad-pressed", G_CALLBACK(picker_callback), self);
+
+  g->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
+  gtk_box_pack_end(GTK_BOX(box), GTK_WIDGET(g->colorpicker), FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(picker_callback), self);
+
+  gtk_box_pack_end(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
 
   cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
   cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;

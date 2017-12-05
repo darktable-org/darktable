@@ -29,8 +29,8 @@
             <entry>
               This module is able to correct certain lens flaws, namely distortions, transversal
               chromatic aberrations (TCA) and vignetting. It relies on the external library
-              lensfun, which comes with correction profiles for many (but not all) common
-              cameras end lenses.
+              <ulink url="http://lensfun.sourceforge.net/">lensfun</ulink>, which comes with
+              correction profiles for many (but not all) common cameras and lenses.
             </entry>
             <entry>
               <graphic fileref="darkroom/modules/images/lenscorrection.png" scalefit="1" width="80%" align="center" />
@@ -47,7 +47,7 @@
     <title>Usage</title>
 
     <para>
-      In order to perform lens corrections the module uses EXIF data of your image to identify
+      In order to perform lens corrections the module uses Exif data of your image to identify
       the specific camera/lens combination and collects the needed correction parameters from a
       profile in lensfun's database.
     </para>
@@ -55,17 +55,20 @@
     <sect5>
       <title>camera</title>
       <para>
-        The camera make and model as determined by EXIF data. You can override this manually and
+        The camera make and model as determined by Exif data. You can override this manually and
         select your camera from a hierarchical menu.
+      </para>
+      <para>
+        Only lenses with correction profiles matching the selected camera will be shown.
       </para>
     </sect5>
 
     <sect5>
       <title>lens</title>
       <para>
-        The lens make and model as determined by EXIF data. You can override this manually and
+        The lens make and model as determined by Exif data. You can override this manually and
         select your lens from a hierarchical menu. This is mainly needed for pure mechanical
-        lenses.
+        lenses, but may also be needed for off-brand / third party lenses.
       </para>
     </sect5>
 
@@ -73,9 +76,9 @@
       <title>photometric parameters: focal length, aperture, focal distance</title>
       <para>
         Corrections additionally depend on certain photometric parameters that are read from
-        EXIF-data: focal length (needed for distortion, TCA, vignetting), aperture (needed for
+        Exif data: focal length (needed for distortion, TCA, vignetting), aperture (needed for
         TCA, vignetting) and focal distance (needed for vignetting). Many cameras do not record
-        focal distance in their EXIF data; most likely you need to set this manually.
+        focal distance in their Exif data; most likely you need to set this manually.
       </para>
       <para>
         You can manually override all automatically selected parameters. Either take one of the
@@ -83,14 +86,16 @@
         open&nbsp;&ndash; just type in your own value.
       </para>
       <para>
-        If you system's lensfun library has no correction profile for the automatically
+        If your system's lensfun library has no correction profile for the automatically
         identified camera/lens combination the controls for the three photometric parameters are
-        not displayed, and you get a warning message instead. You may try to find the right
-        profile yourself by searching for it in the menu. If there is no matching profile for
-        your lens, please visit
+        not displayed, and you get a warning message instead. You may try to find the right profile
+        yourself by searching for it in the menu. If you can't find your lens, check if it is in the
+        <ulink url="http://lensfun.sourceforge.net/lenslist/">list of currently supported lenses</ulink>,
+        and refer to the <ulink url="http://lensfun.sourceforge.net/manual/lensfun-update-data.html">
+        lensfun-update-data tool</ulink>. If there is no matching profile for your lens, please visit
         <ulink url="http://www.darktable.org/2013/07/have-your-lens-calibrated/">this lens
         calibration service</ulink> offered by Torsten Bronger, one of darktable's users.
-        Alternatively you may go to <ulink url="http://lensfun.berlios.de">lensfun's home
+        Alternatively you may go to <ulink url="http://lensfun.sourceforge.net/">lensfun's home
         page</ulink> and learn how to generate your own set of correction parameters. Don't
         forget to share your profile with the lensfun team!
       </para>
@@ -112,7 +117,9 @@
         In addition to the correction of lens flaws, this module can change the projection type
         of your image. Set this combobox to the aimed projection type, like
         <quote>rectilinear</quote>, <quote>fish-eye</quote>, <quote>panoramic</quote>,
-        <quote>equirectangular</quote>.
+        <quote>equirectangular</quote>, <quote>orthographic</quote>,
+        <quote>stereographic</quote>, <quote>equisolid angle</quote>, <quote>thoby
+        fish-eye</quote>.
       </para>
     </sect5>
 
@@ -128,8 +135,8 @@
     <sect5>
       <title>mode</title>
       <para>
-        The default behavior of this module is to correct lens flaws. Switch this togglebutton
-        to <quote>distort</quote> in order to simulate the behavior of a specific lens (inverted
+        The default behavior of this module is to correct lens flaws. Switch this combobox to
+        <quote>distort</quote> in order to simulate the behavior of a specific lens (inverted
         effect).
       </para>
     </sect5>
@@ -138,7 +145,7 @@
       <title>TCA red</title>
       <para>
         This slider allows to override the correction parameter for TCA. You can also use this
-        slider to manually set the parameter in case the lens profile does not support TCA
+        slider to manually set the parameter in case the lens profile does not contain TCA
         correction. Look out for colored seams at features with high contrast edges and adjust
         this parameter and the following one to minimize those seams.
       </para>
@@ -148,7 +155,7 @@
       <title>TCA blue</title>
       <para>
         This slider allows to override the correction parameter for TCA. You can also use this
-        slider to manually set the parameter in case the lens profile does not support TCA
+        slider to manually set the parameter in case the lens profile does not contain TCA
         correction.
       </para>
     </sect5>

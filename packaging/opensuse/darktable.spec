@@ -66,7 +66,7 @@ export CXXFLAGS="%{optflags} -fno-strict-aliasing "
 export CFLAGS="$CXXFLAGS"
 
 cmake \
-        -DCMAKE_INSTALL_PREFIX=%{_prefix} -DLIB_INSTALL=%{_lib} \
+        -DCMAKE_INSTALL_PREFIX=%{_prefix} -DCMAKE_INSTALL_LIBDIR=%{_lib} \
         -DCMAKE_BUILD_TYPE=Release \
         -DBINARY_PACKAGE_BUILD=1 .. 
 %__make %{_smp_mflags} VERBOSE=1

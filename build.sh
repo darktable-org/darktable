@@ -167,7 +167,7 @@ num_cpu()
 	SunOS)
 		ncpu=$(/usr/sbin/psrinfo |wc -l)
 		;;
-	Linux)
+	Linux|MINGW64*)
 		if [ -r /proc/cpuinfo ]; then
 			ncpu=$(grep -c "^processor" /proc/cpuinfo)
 		elif [ -x /sbin/sysctl ]; then
@@ -176,6 +176,9 @@ num_cpu()
 				ncpu=-1
 			fi
 		fi
+		;;
+	Darwin)
+		ncpu=$(/usr/sbin/sysctl -n machdep.cpu.core_count 2>/dev/null)
 		;;
 	*)
 		printf "warning: unable to determine number of CPUs on $platform\n"

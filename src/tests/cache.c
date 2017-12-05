@@ -26,9 +26,9 @@
 #include "common/cache.h"
 #include "common/cache.c"
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif

@@ -16,11 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __UTILITY_H__
-#define __UTILITY_H__
+#pragma once
 
-#include <string.h>
 #include <gtk/gtk.h>
+#include <string.h>
 
 /** dynamically allocate and concatenate string */
 gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...) __attribute__((format(printf, 2, 3)));
@@ -52,13 +51,17 @@ typedef enum dt_logo_season_t
 } dt_logo_season_t;
 
 /** returns the dt logo season to use right now */
-dt_logo_season_t get_logo_season(void);
+dt_logo_season_t dt_util_get_logo_season(void);
+
+cairo_surface_t *dt_util_get_logo(float size);
 
 gchar *dt_util_latitude_str(float latitude);
 gchar *dt_util_longitude_str(float longitude);
 gchar *dt_util_elevation_str(float elevation);
 
-#endif
+// make paths absolute and try to normalize on Windows. also deal with character encoding on Windows.
+gchar *dt_util_normalize_path(const gchar *input);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -32,9 +32,9 @@ extern "C" {
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
@@ -194,7 +194,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   // also process the clipping point, as good as we can without knowing
   // the local environment (i.e. assuming detail == 0)
-  float *pmax = piece->pipe->processed_maximum;
+  float *pmax = piece->pipe->dsc.processed_maximum;
   float L = 0.2126 * pmax[0] + 0.7152 * pmax[1] + 0.0722 * pmax[2];
   if(L <= 0.0) L = 1e-6;
   L = logf(L);
@@ -266,7 +266,7 @@ void init(dt_iop_module_t *module)
   module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_enabled = 0;
-  module->priority = 153; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 147; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonemapping_params_t);
   module->gui_data = NULL;
 }

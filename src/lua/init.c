@@ -15,35 +15,35 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/lua.h"
 #include "lua/init.h"
+#include "common/darktable.h"
+#include "common/file_location.h"
+#include "control/jobs.h"
 #include "lua/cairo.h"
 #include "lua/call.h"
 #include "lua/configuration.h"
 #include "lua/database.h"
-#include "lua/glist.h"
-#include "lua/gui.h"
-#include "lua/image.h"
-#include "lua/preferences.h"
-#include "lua/print.h"
-#include "lua/types.h"
-#include "lua/gettext.h"
-#include "lua/tags.h"
-#include "lua/modules.h"
-#include "lua/luastorage.h"
 #include "lua/events.h"
-#include "lua/styles.h"
 #include "lua/film.h"
 #include "lua/format.h"
-#include "lua/storage.h"
+#include "lua/gettext.h"
+#include "lua/glist.h"
+#include "lua/gui.h"
+#include "lua/guides.h"
+#include "lua/image.h"
 #include "lua/lib.h"
+#include "lua/lua.h"
+#include "lua/lualib.h"
+#include "lua/luastorage.h"
+#include "lua/modules.h"
+#include "lua/preferences.h"
+#include "lua/print.h"
+#include "lua/storage.h"
+#include "lua/styles.h"
+#include "lua/tags.h"
+#include "lua/types.h"
 #include "lua/view.h"
 #include "lua/widget/widget.h"
-#include "lua/lualib.h"
-#include "lua/guides.h"
-#include "common/darktable.h"
-#include "common/file_location.h"
-#include "control/jobs.h"
 
 static int dt_lua_init_init(lua_State*L)
 {
@@ -83,7 +83,6 @@ void dt_lua_init_early(lua_State *L)
   darktable.lua_state.loop = NULL;;
   darktable.lua_state.context = NULL;;
   darktable.lua_state.stacked_job_queue = NULL;;
-  darktable.lua_state.pending_threads = 0;
   dt_lua_init_lock(); // lock is initialized in the locked state
   luaL_openlibs(darktable.lua_state.state);
   luaA_open(L);
@@ -108,17 +107,19 @@ void dt_lua_init_early(lua_State *L)
 
 static int run_early_script(lua_State* L)
 {
-  char tmp_path[PATH_MAX] = { 0 };
+  char basedir[PATH_MAX] = { 0 };
   // run global init script
-  dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
-  g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
-  dt_lua_check_print_error(L,luaL_dofile(L,tmp_path));
+  dt_loc_get_datadir(basedir, sizeof(basedir));
+  char *luarc = g_build_filename(basedir, "luarc", NULL);
+  dt_lua_check_print_error(L, luaL_dofile(L, luarc));
+  g_free(luarc);
   if(darktable.gui != NULL)
   {
     // run user init script
-    dt_loc_get_user_config_dir(tmp_path, sizeof(tmp_path));
-    g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
-    dt_lua_check_print_error(L,luaL_dofile(L,tmp_path));
+    dt_loc_get_user_config_dir(basedir, sizeof(basedir));
+    luarc = g_build_filename(basedir, "luarc", NULL);
+    dt_lua_check_print_error(L, luaL_dofile(L, luarc));
+    g_free(luarc);
   }
   if(!lua_isnil(L,1)){
     const char *lua_command = lua_tostring(L, 1);
@@ -203,7 +204,7 @@ static int load_from_lua(lua_State *L)
   int argc = lua_gettop(L);
 
   char **argv = calloc(argc + 1, sizeof(char *));
-  char *argv_copy[argc + 1];
+  char **argv_copy = malloc((argc + 1) * sizeof(char *));
   argv[0] = strdup("lua");
   argv_copy[0] = argv[0];
   for(int i = 1; i < argc; i++)
@@ -215,13 +216,14 @@ static int load_from_lua(lua_State *L)
   argv[argc] = NULL;
   argv_copy[argc] = NULL;
   gtk_init(&argc, &argv);
-  if(dt_init(argc, argv, false, L)) {
+  if(dt_init(argc, argv, FALSE, TRUE, L)) {
     luaL_error(L,"Starting darktable failed.");
   }
   for(int i = 0; i < argc; i++)
   {
     free(argv_copy[i]);
   }
+  free(argv_copy);
   free(argv);
   dt_lua_push_darktable_lib(L);
   return 1;
@@ -242,15 +244,7 @@ void dt_lua_finalize_early()
   dt_lua_lock();
   dt_lua_event_trigger(darktable.lua_state.state,"exit",0);
   dt_lua_unlock();
-  int i = 10;
   g_main_context_wakeup(darktable.lua_state.context);
-  while(i && darktable.lua_state.pending_threads){
-    dt_print(DT_DEBUG_LUA, "LUA : waiting for %d threads to finish...\n", darktable.lua_state.pending_threads);
-    sleep(1);// give them a little time to finish
-    i--;
-  }
-  if(darktable.lua_state.pending_threads)
-    dt_print(DT_DEBUG_LUA, "LUA : all threads did not finish properly.\n");
 }
 
 void dt_lua_finalize()

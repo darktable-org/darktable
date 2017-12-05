@@ -15,10 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <glib.h>
-#include <inttypes.h>
 #include "common/gpx.h"
 #include "common/darktable.h"
+#include <glib.h>
+#include <inttypes.h>
 
 typedef struct _gpx_track_point_t
 {
@@ -76,6 +76,7 @@ dt_gpx_t *dt_gpx_new(const gchar *filename)
   GMappedFile *gpxmf = NULL;
   gchar *gpxmf_content = NULL;
   gint gpxmf_size = 0;
+  gint bom_offset = 0;
 
 
   /* map gpx file to parse into memory */
@@ -89,9 +90,13 @@ dt_gpx_t *dt_gpx_new(const gchar *filename)
   /* allocate new dt_gpx_t context */
   gpx = g_malloc0(sizeof(dt_gpx_t));
 
+  /* skip UTF-8 BOM */
+  if(gpxmf_size > 3 && gpxmf_content[0] == '\xef' && gpxmf_content[1] == '\xbb' && gpxmf_content[2] == '\xbf')
+    bom_offset = 3;
+
   /* initialize the parser and start parse gpx xml data */
   ctx = g_markup_parse_context_new(&_gpx_parser, 0, gpx, NULL);
-  g_markup_parse_context_parse(ctx, gpxmf_content, gpxmf_size, &err);
+  g_markup_parse_context_parse(ctx, gpxmf_content + bom_offset, gpxmf_size - bom_offset, &err);
   if(err) goto error;
 
 

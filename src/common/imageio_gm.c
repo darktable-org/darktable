@@ -17,20 +17,20 @@
 */
 
 #ifdef HAVE_GRAPHICSMAGICK
-#include "common/darktable.h"
-#include "imageio.h"
 #include "imageio_gm.h"
-#include "develop/develop.h"
-#include "common/exif.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/exif.h"
 #include "control/conf.h"
+#include "develop/develop.h"
+#include "imageio.h"
 
+#include <assert.h>
+#include <inttypes.h>
+#include <magick/api.h>
 #include <memory.h>
 #include <stdio.h>
-#include <inttypes.h>
 #include <strings.h>
-#include <magick/api.h>
-#include <assert.h>
 
 
 // we only support images with certain filename extensions via GraphicsMagick;
@@ -88,7 +88,8 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   img->width = width;
   img->height = height;
 
-  img->bpp = 4 * sizeof(float);
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
 
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!mipbuf)
@@ -115,7 +116,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   if(image_info) DestroyImageInfo(image_info);
   DestroyExceptionInfo(&exception);
 
-  img->filters = 0u;
+  img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_HDR;
   img->flags |= DT_IMAGE_LDR;

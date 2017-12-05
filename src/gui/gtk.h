@@ -15,35 +15,19 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_GUI_GTK_H
-#define DT_GUI_GTK_H
+
+#pragma once
 
 #include "common/darktable.h"
 
 #include <gtk/gtk.h>
 #include <stdint.h>
 
-// super ugly deprecation avoidance. Ubuntu 14.04 LTS only ships GTK3 3.10
-#if GTK_CHECK_VERSION(3, 12, 0) == 0
-#define gtk_widget_set_margin_start(w, m) gtk_widget_set_margin_left(w, m)
-#define gtk_widget_set_margin_end(w, m) gtk_widget_set_margin_right(w, m)
-#endif
-
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
 
 /* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
  * DPI */
 #define DT_PIXEL_APPLY_DPI(value) ((value) * darktable.gui->dpi_factor)
-
-typedef enum dt_gui_view_switch_t
-{
-  DT_GUI_VIEW_SWITCH_TO_TETHERING = 1,
-  DT_GUI_VIEW_SWITCH_TO_LIBRARY,
-  DT_GUI_VIEW_SWITCH_TO_DARKROOM,
-  DT_GUI_VIEW_SWITCH_TO_MAP,
-  DT_GUI_VIEW_SWITCH_TO_SLIDESHOW,
-  DT_GUI_VIEW_SWITCH_TO_PRINT
-} dt_gui_view_switch_to_t;
 
 typedef struct dt_gui_widgets_t
 {
@@ -60,6 +44,17 @@ typedef struct dt_gui_widgets_t
 
 } dt_gui_widgets_t;
 
+typedef enum dt_gui_color_t {
+  DT_GUI_COLOR_BG = 0,
+  DT_GUI_COLOR_DARKROOM_BG,
+  DT_GUI_COLOR_DARKROOM_PREVIEW_BG,
+  DT_GUI_COLOR_LIGHTTABLE_BG,
+  DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG,
+  DT_GUI_COLOR_BRUSH_CURSOR,
+  DT_GUI_COLOR_BRUSH_TRACE,
+  DT_GUI_COLOR_LAST
+} dt_gui_color_t;
+
 typedef struct dt_gui_gtk_t
 {
 
@@ -72,7 +67,7 @@ typedef struct dt_gui_gtk_t
   char *last_preset;
 
   int32_t reset;
-  float bgcolor[3];
+  GdkRGBA colors[DT_GUI_COLOR_LAST];
 
   int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
 
@@ -136,11 +131,26 @@ static inline GdkPixbuf *dt_gdk_pixbuf_new_from_file_at_size(const char *filenam
 #define dt_gdk_pixbuf_new_from_file_at_size gdk_pixbuf_new_from_file_at_size
 #endif
 
-int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[]);
+int dt_gui_gtk_init(dt_gui_gtk_t *gui);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
 void dt_gui_gtk_quit();
 void dt_gui_store_last_preset(const char *name);
+int dt_gui_gtk_load_config();
+int dt_gui_gtk_write_config();
+void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t);
+void dt_gui_gtk_set_source_rgba(cairo_t *cr, dt_gui_color_t, float opacity_coef);
+
+/* Return requested scroll delta(s) from event. If delta_x or delta_y
+ * is NULL, do not return that delta. Return TRUE if requested deltas
+ * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
+ * GDK_SCROLL_SMOOTH style scroll events. */
+gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x, gdouble *delta_y);
+/* Same as above, except accumulate smooth scrolls deltas of < 1 and
+ * only set deltas and return TRUE once scrolls accumulate to >= 1.
+ * Effectively makes smooth scroll events act like old-style unit
+ * scroll events. */
+gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y);
 
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w);
@@ -229,10 +239,6 @@ typedef enum dt_ui_border_t
   DT_UI_BORDER_SIZE
 } dt_ui_border_t;
 
-/** \brief initialize the ui context */
-struct dt_ui_t *dt_ui_initialize(int argc, char **argv);
-/** \brief destroys the context and frees resources */
-void dt_ui_destroy(struct dt_ui_t *ui);
 /** \brief add's a widget to a defined container */
 void dt_ui_container_add_widget(struct dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w);
 /** \brief gives a widget focus in the container */
@@ -249,6 +255,8 @@ void dt_ui_border_show(struct dt_ui_t *ui, gboolean show);
 void dt_ui_restore_panels(struct dt_ui_t *ui);
 /** \brief toggle view of panels eg. collaps/expands to previous view state */
 void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui);
+/** \brief draw user's attention */
+void dt_ui_notify_user();
 /** \brief get visible state of panel */
 gboolean dt_ui_panel_visible(struct dt_ui_t *ui, const dt_ui_panel_t);
 /** \brief get the center drawable widget */
@@ -261,19 +269,30 @@ GtkBox *dt_ui_get_container(struct dt_ui_t *ui, const dt_ui_container_t c);
 /*  activate ellipsization of the combox entries */
 void dt_ellipsize_combo(GtkComboBox *cbox);
 
-static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
+static inline void dt_ui_section_label_set(GtkWidget *label)
 {
-  GtkWidget *label = gtk_label_new(str);
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
   gtk_widget_set_hexpand(label, TRUE); // not really needed, but it makes sure that parent containers expand
-  g_object_set(G_OBJECT(label), "xalign", 1.0, NULL); // make the text right aligned
+  g_object_set(G_OBJECT(label), "xalign", 1.0, (gchar *)0);    // make the text right aligned
   gtk_widget_set_margin_bottom(label, DT_PIXEL_APPLY_DPI(10)); // gtk+ css doesn't support margins :(
   gtk_widget_set_margin_start(label, DT_PIXEL_APPLY_DPI(30)); // gtk+ css doesn't support margins :(
   gtk_widget_set_name(label, "section_label"); // make sure that we can style these easily
+}
+static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
+{
+  GtkWidget *label = gtk_label_new(str);
+  dt_ui_section_label_set(label);
   return label;
 };
 
-#endif
+// show a dialog box with 2 buttons in case some user interaction is required BEFORE dt's gui is initialised.
+// this expects gtk_init() to be called already which should be the case during most of dt's init phase.
+gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *markup, const char *no_text,
+                                              const char *yes_text);
+
+void *dt_gui_show_splashscreen();
+void dt_gui_close_splashscreen(void *splashscreen);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -1,6 +1,7 @@
 // This file is part of darktable
 //
 // Copyright (c) 2014 Moritz Lipp <mlq@pwmt.org>.
+// Copyright (c) 2016 tobias ellinghaus <me@houz.org>.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +21,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef __BACKEND_LIBSECRET_H__
-#define __BACKEND_LIBSECRET_H__
+#pragma once
 
-#include <libsecret/secret.h>
 #include <glib.h>
 
 typedef struct backend_libsecret_context_t
 {
-  SecretService *secret_service;
-  SecretCollection *secret_collection;
+  int placeholder; // we have to allocate one of these to signal that init didn't fail
 } backend_libsecret_context_t;
 
 /**
@@ -67,8 +65,6 @@ gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t *context, 
  * @return table List of (key,value) pairs
  */
 GHashTable *dt_pwstorage_libsecret_get(const backend_libsecret_context_t *context, const gchar *slot);
-
-#endif // __BACKEND_LIBSECRET_H__
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

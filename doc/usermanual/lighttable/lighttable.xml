@@ -224,7 +224,7 @@
       higher the color intensity the better the sharpness. In case that no area of
       <emphasis>high</emphasis> sharpness is detected darktable indicates areas of
       <emphasis>moderate</emphasis> sharpness with a blue border. For this tool to work the
-      input image needs to hold an embedded JPEG thumbnail which is the case for most RAW files.
+      input image needs to hold an embedded JPEG thumbnail which is the case for most raw files.
     </para>
 
     <para>
@@ -242,7 +242,7 @@
             <entry>
               Fully zoomed-in image view while holding down the <emphasis>ctrl-z</emphasis> key
               with indication of the sharp areas in focus. Sharpness detection is based on an
-              embedded JPEG thumbnail of the original RAW file independent of any processing
+              embedded JPEG thumbnail of the original raw file independent of any processing
               steps within darktable.
             </entry>
             <entry>

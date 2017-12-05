@@ -18,18 +18,18 @@
 
 #ifdef HAVE_OPENCL
 
+#include "common/dlopencl.h"
 #include "common/darktable.h"
 #include "common/dynload.h"
-#include "common/dlopencl.h"
 
+#include <assert.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
-#include <signal.h>
 
 #if defined(WIN32)
-static const char *ocllib[] = { "OpenCL", NULL };
+static const char *ocllib[] = { "OpenCL.dll", NULL };
 #elif defined(__APPLE__)
 static const char *ocllib[] = { "/System/Library/Frameworks/OpenCL.framework/Versions/Current/OpenCL", NULL };
 #else
@@ -198,6 +198,9 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
                                            (void (**)(void)) & ocl->symbols->dt_clEnqueueMapBuffer);
     success = success && dt_gmodule_symbol(module, "clEnqueueUnmapMemObject",
                                            (void (**)(void)) & ocl->symbols->dt_clEnqueueUnmapMemObject);
+    success = success && dt_gmodule_symbol(module, "clGetMemObjectInfo",
+                                           (void (**)(void)) & ocl->symbols->dt_clGetMemObjectInfo);
+
 
     ocl->have_opencl = success;
 

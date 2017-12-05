@@ -27,7 +27,6 @@
 #include "dtgtk/button.h"
 #include "gui/gtkentry.h"
 #include "imageio/format/imageio_format_api.h"
-#include "version.h"
 
 DT_MODULE(1)
 
@@ -231,8 +230,9 @@ static int _paper_size(dt_imageio_pdf_params_t *d, float *page_width, float *pag
 }
 
 
-int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif,
-                int exif_len, int imgid, int num, int total)
+int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
+                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                void *exif, int exif_len, int imgid, int num, int total)
 {
   dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)data;
 
@@ -270,7 +270,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(imgid > 0 && d->params.icc && d->params.mode == MODE_NORMAL)
   {
     // get the id of the profile
-    const dt_colorspaces_color_profile_t *profile = dt_colorspaces_get_output_profile(imgid);
+    const dt_colorspaces_color_profile_t *profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
 
     // look it up in the list
     for(GList *iter = d->icc_profiles; iter; iter = g_list_next(iter))
@@ -288,9 +288,10 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       cmsSaveProfileToMem(profile->profile, 0, &len);
       if(len > 0)
       {
-        unsigned char buf[len];
+        unsigned char *buf = malloc(len * sizeof(unsigned char));
         cmsSaveProfileToMem(profile->profile, buf, &len);
         icc_id = dt_pdf_add_icc_from_data(d->pdf, buf, len);
+        free(buf);
         _pdf_icc_t *icc = (_pdf_icc_t *)malloc(sizeof(_pdf_icc_t));
         icc->profile = profile;
         icc->icc_id = icc_id;
@@ -344,7 +345,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(num == total)
   {
     int n_images = g_list_length(d->images);
-    dt_pdf_page_t *pages[n_images];
+    dt_pdf_page_t **pages = malloc(n_images * sizeof(dt_pdf_page_t *));
 
     gboolean outline_mode = d->params.mode != MODE_NORMAL;
     gboolean show_bb = d->params.mode == MODE_DEBUG;
@@ -354,11 +355,11 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     int i = 0;
     while(iter)
     {
-      dt_pdf_image_t *image = (dt_pdf_image_t *)iter->data;
-      image->outline_mode = outline_mode;
-      image->show_bb = show_bb;
-      image->rotate_to_fit = d->params.rotate;
-      pages[i] = dt_pdf_add_page(d->pdf, &image, 1);
+      dt_pdf_image_t *page = (dt_pdf_image_t *)iter->data;
+      page->outline_mode = outline_mode;
+      page->show_bb = show_bb;
+      page->rotate_to_fit = d->params.rotate;
+      pages[i] = dt_pdf_add_page(d->pdf, &page, 1);
       iter = g_list_next(iter);
       i++;
     }
@@ -370,8 +371,8 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 
     // we allocated the images and pages. the main pdf object gets free'ed in dt_pdf_finish().
     g_list_free_full(d->images, free);
-    for(int i = 0; i < n_images; i++)
-      free(pages[i]);
+    for(i = 0; i < n_images; i++) free(pages[i]);
+    free(pages);
     g_free(d->actual_filename);
     g_list_free_full(d->icc_profiles, free);
 
@@ -578,7 +579,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   widget = gtk_label_new(_("title"));
   gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
   gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
 
   d->title = GTK_ENTRY(gtk_entry_new());
@@ -626,7 +627,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   widget = gtk_label_new(_("border"));
   gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
   gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
 
   d->border = GTK_ENTRY(gtk_entry_new());
@@ -648,7 +649,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   widget = gtk_label_new(_("dpi"));
   gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, NULL);
+  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
   gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
 
   d->dpi = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, 5000, 1));
@@ -811,7 +812,7 @@ void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *par
 
   if(d->actual_filename)
   {
-    unlink(d->actual_filename); // no need to leave broken files on disk
+    g_unlink(d->actual_filename); // no need to leave broken files on disk
     g_free(d->actual_filename);
   }
 

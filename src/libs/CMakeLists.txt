@@ -1,13 +1,23 @@
-
-cmake_minimum_required(VERSION 2.6)
-
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+include(manage-symbol-visibility)
 
 add_definitions(-include common/module_api.h)
 add_definitions(-include libs/lib_api.h)
+
+add_custom_command(
+  DEPENDS ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/tools/
+  COMMAND ${CMAKE_COMMAND} -E env LANG=C LC_ALL=C sh ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  COMMENT "Generating authors.h for about dialog."
+)
+
+add_custom_target(
+  generate_authors_h ALL
+  DEPENDS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
 
 # The modules
 set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs colorpicker masks session)
@@ -50,7 +60,10 @@ add_library(session MODULE "session.c")
 
 # tools
 add_library(viewswitcher MODULE "tools/viewswitcher.c")
+
 add_library(darktable_label MODULE "tools/darktable.c")
+add_dependencies(darktable_label generate_authors_h)
+
 add_library(colorlabels MODULE "tools/colorlabels.c")
 add_library(ratings MODULE "tools/ratings.c")
 add_library(filter MODULE "tools/filter.c")
@@ -69,14 +82,15 @@ if(GPHOTO2_FOUND)
 endif(GPHOTO2_FOUND)
 
 # the modules specific to map mode
-if(USE_GEO)
+if(USE_MAP)
 	add_library(location MODULE "location.c")
 	add_library(map_settings MODULE "map_settings.c")
 	set(MODULES ${MODULES} location map_settings)
+endif(USE_MAP)
 
-	add_library(geotagging MODULE "geotagging.c")
-	set(MODULES ${MODULES} geotagging)
-endif(USE_GEO)
+# the modules specific to geotagging module
+add_library(geotagging MODULE "geotagging.c")
+set(MODULES ${MODULES} geotagging)
 
 # the module specific to print mode
 if(CUPS_FOUND)
@@ -86,12 +100,15 @@ endif(CUPS_FOUND)
 
 # Add libs references
 foreach(module ${MODULES})
-	target_link_libraries(${module} ${LIBS})
+	target_link_libraries(${module} lib_darktable)
 endforeach(module)
 
 # Add installation target for each module
 # TODO: Modules are now not only lighttable related and should be placed
 #       in a better matching structure then just in lighttable directory.
 foreach(module ${MODULES})
-	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins/lighttable)
+    if (WIN32)
+      _detach_debuginfo (${module} ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/lighttable)
+    endif(WIN32)
+    install(TARGETS  ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/lighttable COMPONENT DTApplication)
 endforeach(module)

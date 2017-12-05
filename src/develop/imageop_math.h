@@ -3,6 +3,7 @@
     copyright (c) 2009--2012 johannes hanika.
     copyright (c) 2011 henrik andersson.
     copyright (c) 2012 tobias ellinghaus.
+    copyright (c) 2016 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,8 +18,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_DEVELOP_IMAGEOP_MATH_H
-#define DT_DEVELOP_IMAGEOP_MATH_H
+
+#pragma once
 
 #include "CL/cl.h"           // for cl_mem
 #include "common/image.h"    // for dt_image_t, dt_image_orientation_t
@@ -51,24 +52,25 @@ int dt_iop_clip_and_zoom_roi_cl(int devid, cl_mem dev_out, cl_mem dev_in,
                                 const struct dt_iop_roi_t *const roi_in);
 #endif
 
-/** clip and zoom mosaiced image without demosaicing it uint16_t -> float4 */
-void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
-                                             const struct dt_iop_roi_t *const roi_out,
-                                             const struct dt_iop_roi_t *const roi_in,
+void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *const in,
+                                             const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
                                              const int32_t out_stride, const int32_t in_stride,
                                              const uint32_t filters);
 
-void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome(float *out, const uint16_t *const in,
-                                                          const struct dt_iop_roi_t *const roi_out,
-                                                          const struct dt_iop_roi_t *const roi_in,
-                                                          const int32_t out_stride, const int32_t in_stride);
+void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out, const uint16_t *const in,
+                                           const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
+                                           const int32_t out_stride, const int32_t in_stride,
+                                           const uint32_t filters);
 
-/** clip and zoom mosaiced from half size, crop away black borders. */
-void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(float *out, const uint16_t *const in,
-                                                         struct dt_iop_roi_t *const roi_out,
-                                                         const struct dt_iop_roi_t *const roi_in,
-                                                         const int32_t out_stride, const int32_t in_stride,
-                                                         const dt_image_t *img);
+void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const uint16_t *const in,
+                                                   const dt_iop_roi_t *const roi_out,
+                                                   const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                                   const int32_t in_stride, const uint8_t (*const xtrans)[6]);
+
+void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const float *const in,
+                                                     const dt_iop_roi_t *const roi_out,
+                                                     const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                                     const int32_t in_stride, const uint8_t (*const xtrans)[6]);
 
 void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out, const float *const in,
                                                             const struct dt_iop_roi_t *const roi_out,
@@ -78,22 +80,10 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out, const fl
 
 void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
                                                const struct dt_iop_roi_t *const roi_out,
-                                               const struct dt_iop_roi_t *const roi_in,
-                                               const int32_t out_stride, const int32_t in_stride,
-                                               const uint32_t filters, const float clip);
-
-void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(float *out, const float *const in,
-                                                           const struct dt_iop_roi_t *const roi_out,
-                                                           const struct dt_iop_roi_t *const roi_in,
-                                                           const int32_t out_stride, const int32_t in_stride,
-                                                           const dt_image_t *img, const float clip);
+                                               const struct dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                               const int32_t in_stride, const uint32_t filters);
 
 /** x-trans sensor downscaling */
-void dt_iop_clip_and_zoom_demosaic_third_size_xtrans(float *out, const uint16_t *const in,
-                                                     const struct dt_iop_roi_t *const roi_out,
-                                                     const struct dt_iop_roi_t *const roi_in,
-                                                     const int32_t out_stride, const int32_t in_stride,
-                                                     const uint8_t (*const xtrans)[6]);
 
 void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *const in,
                                                        const struct dt_iop_roi_t *const roi_out,
@@ -181,7 +171,7 @@ static inline void dt_iop_alpha_copy(const void *ivoid, void *ovoid, const int w
 }
 
 /** Calculate the bayer pattern color from the row and column **/
-static inline int FC(const size_t row, const size_t col, const unsigned int filters)
+static inline int FC(const size_t row, const size_t col, const uint32_t filters)
 {
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
@@ -207,16 +197,13 @@ static inline int FCxtrans(const int row, const int col, const dt_iop_roi_t *con
   return xtrans[irow % 6][icol % 6];
 }
 
-static inline int fcol(const int row, const int col, const unsigned int filters,
-                       const uint8_t (*const xtrans)[6])
+static inline int fcol(const int row, const int col, const uint32_t filters, const uint8_t (*const xtrans)[6])
 {
   if(filters == 9)
     return FCxtrans(row, col, NULL, xtrans);
   else
     return FC(row, col, filters);
 }
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

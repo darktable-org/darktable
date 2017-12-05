@@ -17,23 +17,22 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_BAUHAUS_H
-#define DT_BAUHAUS_H
+#pragma once
 
+#include "common/debug.h"
+#include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "control/control.h"
-#include "common/debug.h"
-#include "gui/gtk.h"
 #include "gui/draw.h"
+#include "gui/gtk.h"
 
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
-#include <string.h>
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <gdk/gdkkeysyms.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define DT_BAUHAUS_WIDGET_TYPE (dt_bh_get_type())
 #define DT_BAUHAUS_WIDGET(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauhausWidget))
@@ -47,6 +46,7 @@ extern GType DT_BAUHAUS_WIDGET_TYPE;
 
 #define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX 500
 #define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN 25
+#define DT_BAUHAUS_SLIDER_MAX_STOPS 10
 
 typedef enum dt_bauhaus_type_t
 {
@@ -74,9 +74,9 @@ typedef struct dt_bauhaus_slider_data_t
   float scale; // step width for loupe mode
   int digits;  // how many decimals to round to
 
-  float grad_col[10][3]; // colors for gradient slider
-  int grad_cnt;          // how many stops
-  float grad_pos[10];    // and position of these.
+  float grad_col[DT_BAUHAUS_SLIDER_MAX_STOPS][3]; // colors for gradient slider
+  int grad_cnt;                                   // how many stops
+  float grad_pos[DT_BAUHAUS_SLIDER_MAX_STOPS];    // and position of these.
 
   int fill_feedback; // fill the slider with brighter part up to the handle?
 
@@ -88,15 +88,22 @@ typedef struct dt_bauhaus_slider_data_t
   float (*callback)(GtkWidget*, float, dt_bauhaus_callback_t); // callback function
 } dt_bauhaus_slider_data_t;
 
+typedef enum dt_bauhaus_combobox_alignment_t
+{
+  DT_BAUHAUS_COMBOBOX_ALIGN_LEFT = 0,
+  DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT = 1
+} dt_bauhaus_combobox_alignment_t;
+
 // data portion for a combobox
 typedef struct dt_bauhaus_combobox_data_t
 {
-  int num_labels; // number of elements
-  int active;     // currently active element
-  int defpos;     // default position
-  int editable;   // 1 if arbitrary text may be typed
-  char text[180]; // roughly as much as a slider
-  GList *labels;  // list of elements
+  int num_labels;    // number of elements
+  int active;        // currently active element
+  int defpos;        // default position
+  int editable;      // 1 if arbitrary text may be typed
+  char text[180];    // roughly as much as a slider
+  GList *labels;     // list of elements
+  GList *alignments; // alignments of the labels. we keep this extra to make it easy to pass the labels around
 } dt_bauhaus_combobox_data_t;
 
 typedef union dt_bauhaus_data_t
@@ -117,6 +124,7 @@ typedef void (*dt_bauhaus_quad_paint_f)(cairo_t *cr, gint x, gint y, gint w, gin
 // our new widget and its private members, inheriting from drawing area:
 typedef struct dt_bauhaus_widget_t
 {
+  // gtk base widget
   GtkDrawingArea parent;
   // which type of control
   dt_bauhaus_type_t type;
@@ -260,6 +268,7 @@ float dt_bauhaus_slider_get_step(GtkWidget *w);
 void dt_bauhaus_slider_reset(GtkWidget *widget);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
 void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b);
+void dt_bauhaus_slider_clear_stops(GtkWidget *widget);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
 void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min, float hard_max);
 void dt_bauhaus_slider_set_callback(GtkWidget *widget, float (*callback)(GtkWidget *self, float value, dt_bauhaus_callback_t dir));
@@ -269,6 +278,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* widget,dt_iop_module_t
 GtkWidget *dt_bauhaus_combobox_new(dt_iop_module_t *self);
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text);
+void dt_bauhaus_combobox_add_aligned(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align);
 void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
 void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos);
 void dt_bauhaus_combobox_insert(GtkWidget *widget, const char *text,int pos);
@@ -289,7 +299,6 @@ void dt_bauhaus_vimkey_exec(const char *input);
 // give autocomplete suggestions
 GList *dt_bauhaus_vimkey_complete(const char *input);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -94,142 +94,34 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
 }
 
-int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  return sizeof(float);
-}
-
-static int process_xtrans(const void *const i, void *o, const dt_iop_roi_t *const roi_in, const int width,
-                          const int height, const uint8_t (*const xtrans)[6], const float threshold,
-                          const float multiplier, const gboolean markfixed, const int min_neighbours)
-{
-  // for each cell of sensor array, a list of the x/y offsets of the
-  // four radially nearest pixels of the same color
-  int offsets[6][6][4][2];
-  const int search[20][2] = { { -1, 0 },
-                              { 1, 0 },
-                              { 0, -1 },
-                              { 0, 1 },
-                              { -1, -1 },
-                              { -1, 1 },
-                              { 1, -1 },
-                              { 1, 1 },
-                              { -2, 0 },
-                              { 2, 0 },
-                              { 0, -2 },
-                              { 0, 2 },
-                              { -2, -1 },
-                              { -2, 1 },
-                              { 2, -1 },
-                              { 2, 1 },
-                              { -1, -2 },
-                              { 1, -2 },
-                              { -1, 2 },
-                              { 1, 2 } };
-  for(int j = 0; j < 6; ++j)
-    for(int i = 0; i < 6; ++i)
-    {
-      const uint8_t c = FCxtrans(j, i, roi_in, xtrans);
-      for(int s = 0, found = 0; s < 20 && found < 4; ++s)
-      {
-        if(c == FCxtrans(j + search[s][1], i + search[s][0], roi_in, xtrans))
-        {
-          offsets[i][j][found][0] = search[s][0];
-          offsets[i][j][found][1] = search[s][1];
-          ++found;
-        }
-      }
-    }
-
-  int fixed = 0;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(o, offsets) reduction(+ : fixed) schedule(static)
-#endif
-  for(int row = 1; row < height - 1; row++)
-  {
-    const float *in = (float *)i + (size_t)width * row + 2;
-    float *out = (float *)o + (size_t)width * row + 2;
-    for(int col = 1; col < width - 1; col++, in++, out++)
-    {
-      float mid = *in * multiplier;
-      if(*in > threshold)
-      {
-        int count = 0;
-        float maxin = 0.0;
-        for(int n = 0; n < 4; ++n)
-        {
-          int xx = offsets[col % 6][row % 6][n][0];
-          int yy = offsets[col % 6][row % 6][n][1];
-          if((xx < -col) || (xx >= (width - col)) || (yy < -row) || (yy >= (height - row))) break;
-          float other = *(in + xx + yy * width);
-          if(mid > other)
-          {
-            count++;
-            if(other > maxin) maxin = other;
-          }
-        }
-        // NOTE: it seems that detecting by 2 neighbors would help for extreme cases
-        if(count >= min_neighbours)
-        {
-          *out = maxin;
-          fixed++;
-          if(markfixed)
-          {
-            // cheat and mark all colors of pixels
-            // FIXME: use offsets
-            for(int i = -2; i >= -10 && i >= -col; --i) out[i] = *in;
-            for(int i = 2; i <= 10 && i < width - col; ++i) out[i] = *in;
-          }
-        }
-      }
-    }
-  }
-
-  return fixed;
-}
-
 /* Detect hot sensor pixels based on the 4 surrounding sites. Pixels
  * having 3 or 4 (depending on permissive setting) surrounding pixels that
  * than value*multiplier are considered "hot", and are replaced by the maximum of
  * the neighbour pixels. The permissive variant allows for
  * correcting pairs of hot pixels in adjacent sites. Replacement using
  * the maximum produces fewer artifacts when inadvertently replacing
- * non-hot pixels. */
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+ * non-hot pixels.
+ * This is the Bayer sensor variant. */
+static int process_bayer(const dt_iop_hotpixels_data_t *data,
+                         const void *const ivoid, void *const ovoid,
+                         const dt_iop_roi_t *const roi_out)
 {
-  const dt_image_t *img = &self->dev->image_storage;
-  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
-  const dt_iop_hotpixels_data_t *data = (dt_iop_hotpixels_data_t *)piece->data;
   const float threshold = data->threshold;
   const float multiplier = data->multiplier;
-  const int width = roi_out->width;
-  const int height = roi_out->height;
-  const int widthx2 = width * 2;
   const gboolean markfixed = data->markfixed;
   const int min_neighbours = data->permissive ? 3 : 4;
-
-  // The loop should output only a few pixels, so just copy everything first
-  memcpy(o, i, (size_t)roi_out->width * roi_out->height * sizeof(float));
-
+  const int width = roi_out->width;
+  const int widthx2 = width * 2;
   int fixed = 0;
 
-  if(img->filters == 9u)
-  {
-    fixed = process_xtrans(i, o, roi_in, width, height, img->xtrans, threshold, multiplier, markfixed,
-                           min_neighbours);
-    goto processed;
-  }
-
-// Bayer sensor array
 #ifdef _OPENMP
 #pragma omp parallel for default(none) reduction(+ : fixed) schedule(static)
 #endif
   for(int row = 2; row < roi_out->height - 2; row++)
   {
-    const float *in = (float *)i + (size_t)width * row + 2;
-    float *out = (float *)o + (size_t)width * row + 2;
-    for(int col = 2; col < width - 1; col++, in++, out++)
+    const float *in = (float *)ivoid + (size_t)width * row + 2;
+    float *out = (float *)ovoid + (size_t)width * row + 2;
+    for(int col = 2; col < width - 2; col++, in++, out++)
     {
       float mid = *in * multiplier;
       if(*in > threshold)
@@ -263,7 +155,137 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-processed:
+  return fixed;
+}
+
+/* X-Trans sensor equivalent of process_bayer(). */
+static int process_xtrans(const dt_iop_hotpixels_data_t *data,
+                          const void *const ivoid, void *const ovoid,
+                          const dt_iop_roi_t *const roi_out, const uint8_t (*const xtrans)[6])
+{
+  // for each cell of sensor array, pre-calculate, a list of the x/y
+  // offsets of the four radially nearest pixels of the same color
+  int offsets[6][6][4][2];
+  // increasing offsets from pixel to find nearest like-colored pixels
+  const int search[20][2] = { { -1, 0 },
+                              { 1, 0 },
+                              { 0, -1 },
+                              { 0, 1 },
+                              { -1, -1 },
+                              { -1, 1 },
+                              { 1, -1 },
+                              { 1, 1 },
+                              { -2, 0 },
+                              { 2, 0 },
+                              { 0, -2 },
+                              { 0, 2 },
+                              { -2, -1 },
+                              { -2, 1 },
+                              { 2, -1 },
+                              { 2, 1 },
+                              { -1, -2 },
+                              { 1, -2 },
+                              { -1, 2 },
+                              { 1, 2 } };
+  for(int j = 0; j < 6; ++j)
+  {
+    for(int i = 0; i < 6; ++i)
+    {
+      const uint8_t c = FCxtrans(j, i, roi_out, xtrans);
+      for(int s = 0, found = 0; s < 20 && found < 4; ++s)
+      {
+        if(c == FCxtrans(j + search[s][1], i + search[s][0], roi_out, xtrans))
+        {
+          offsets[j][i][found][0] = search[s][0];
+          offsets[j][i][found][1] = search[s][1];
+          ++found;
+        }
+      }
+    }
+  }
+
+  const float threshold = data->threshold;
+  const float multiplier = data->multiplier;
+  const gboolean markfixed = data->markfixed;
+  const int min_neighbours = data->permissive ? 3 : 4;
+  const int width = roi_out->width;
+  int fixed = 0;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(offsets) reduction(+ : fixed) schedule(static)
+#endif
+  for(int row = 2; row < roi_out->height - 2; row++)
+  {
+    const float *in = (float *)ivoid + (size_t)width * row + 2;
+    float *out = (float *)ovoid + (size_t)width * row + 2;
+    for(int col = 2; col < width - 2; col++, in++, out++)
+    {
+      float mid = *in * multiplier;
+      if(*in > threshold)
+      {
+        int count = 0;
+        float maxin = 0.0;
+        for(int n = 0; n < 4; ++n)
+        {
+          int xx = offsets[row % 6][col % 6][n][0];
+          int yy = offsets[row % 6][col % 6][n][1];
+          float other = *(in + xx + yy * (size_t)width);
+          if(mid > other)
+          {
+            count++;
+            if(other > maxin) maxin = other;
+          }
+        }
+        // NOTE: it seems that detecting by 2 neighbors would help for extreme cases
+        if(count >= min_neighbours)
+        {
+          *out = maxin;
+          fixed++;
+          if(markfixed)
+          {
+            const uint8_t c = FCxtrans(row, col, roi_out, xtrans);
+            for(int i = -2; i >= -10 && i >= -col; --i)
+            {
+              if(c == FCxtrans(row, col+i, roi_out, xtrans))
+              {
+                out[i] = *in;
+              }
+            }
+            for(int i = 2; i <= 10 && i < width - col; ++i)
+            {
+              if(c == FCxtrans(row, col+i, roi_out, xtrans))
+              {
+                out[i] = *in;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return fixed;
+}
+
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
+  const dt_iop_hotpixels_data_t *data = (dt_iop_hotpixels_data_t *)piece->data;
+
+  // The processing loop should output only a few pixels, so just copy everything first
+  memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * sizeof(float));
+
+  int fixed;
+  if(piece->pipe->dsc.filters == 9u)
+  {
+    fixed = process_xtrans(data, ivoid, ovoid, roi_out, (const uint8_t(*const)[6])piece->pipe->dsc.xtrans);
+  }
+  else
+  {
+    fixed = process_bayer(data, ivoid, ovoid, roi_out);
+  }
+
   if(g != NULL && self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
     g->pixels_fixed = fixed;
@@ -295,7 +317,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_hotpixels_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_hotpixels_params_t));
   module->default_enabled = 0;
-  module->priority = 92; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 88; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_hotpixels_params_t);
   module->gui_data = NULL;
 }
@@ -313,15 +335,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 {
   dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)params;
   dt_iop_hotpixels_data_t *d = (dt_iop_hotpixels_data_t *)piece->data;
-  d->filters = dt_image_filter(&pipe->image);
+  d->filters = piece->pipe->dsc.filters;
   d->multiplier = p->strength / 2.0;
   d->threshold = p->threshold;
   d->permissive = p->permissive;
   d->markfixed = p->markfixed && (pipe->type != DT_DEV_PIXELPIPE_EXPORT)
                  && (pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL);
-  if(!(pipe->image.flags & DT_IMAGE_RAW) || dt_dev_pixelpipe_uses_downsampled_input(pipe)
-     || p->strength == 0.0)
-    piece->enabled = 0;
+  if(!(pipe->image.flags & DT_IMAGE_RAW) || p->strength == 0.0) piece->enabled = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

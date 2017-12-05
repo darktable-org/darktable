@@ -16,17 +16,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <glib.h>
-#include <stdio.h>
 #include <cups/cups.h>
 #include <cups/ppd.h>
+#include <glib.h>
+#include <stdio.h>
 
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/pdf.h"
-#include "cups_print.h"
 #include "control/jobs/control_jobs.h"
+#include "cups_print.h"
 
 typedef struct dt_prtctl_t
 {
@@ -99,7 +99,7 @@ dt_printer_info_t *dt_get_printer_info(const char *printer_name)
         result->resolution /= 2.0;
 
       ppdClose(ppd);
-      unlink(PPDFile);
+      g_unlink(PPDFile);
     }
   }
 
@@ -234,15 +234,13 @@ GList *dt_get_papers(const char *printer_name)
     int num_dests = cupsGetDests(&dests);
     cups_dest_t *dest = cupsGetDest(printer_name, NULL, num_dests, dests);
 
-    int cancel;
-    const size_t ressize = 1024;
-    char resource[ressize];
+    int cancel = 0; // important
 
-    cancel = 0; // important
+    char resource[1024];
 
     if (dest)
     {
-      http_t *hcon = cupsConnectDest (dest, 0, 2000, &cancel, resource, ressize, NULL, (void *)NULL);
+      http_t *hcon = cupsConnectDest(dest, 0, 2000, &cancel, resource, sizeof(resource), NULL, (void *)NULL);
 
       if (hcon)
       {
@@ -308,7 +306,7 @@ GList *dt_get_papers(const char *printer_name)
     }
 
     ppdClose(ppd);
-    unlink(PPDFile);
+    g_unlink(PPDFile);
   }
 
   result = g_list_sort_with_data (result, (GCompareDataFunc)sort_papers, NULL);
@@ -404,7 +402,7 @@ static void _get_image_dimension (int32_t imgid, int32_t *iwidth, int32_t *iheig
   if(res)
   {
     // set mem pointer to 0, won't be used.
-    dt_dev_pixelpipe_set_input(&pipe, &dev, NULL, wd, ht, 1.0f, 0);
+    dt_dev_pixelpipe_set_input(&pipe, &dev, NULL, wd, ht, 1.0f);
     dt_dev_pixelpipe_create_nodes(&pipe, &dev);
     dt_dev_pixelpipe_synch_all(&pipe, &dev);
     dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
@@ -558,42 +556,42 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
 
   switch (prt->page.alignment)
   {
-  case top_left:
-    *ix = bx;
-    *iy = by;
-    break;
-  case top:
-    *ix = bx + (*awidth - *iwidth) / 2;
-    *iy = by;
-    break;
-  case top_right:
-    *ix = br - *iwidth;
-    *iy = by;
-    break;
-  case left:
-    *ix = bx;
-    *iy = by + (*aheight - *iheight) / 2;
-    break;
-  case center:
-    *ix = bx + (*awidth - *iwidth) / 2;
-    *iy = by + (*aheight - *iheight) / 2;
-    break;
-  case right:
-    *ix = br - *iwidth;
-    *iy = by + (*aheight - *iheight) / 2;
-    break;
-  case bottom_left:
-    *ix = bx;
-    *iy = bb - *iheight;
-    break;
-  case bottom:
-    *ix = bx + (*awidth - *iwidth) / 2;
-    *iy = bb - *iheight;
-    break;
-  case bottom_right:
-    *ix = br - *iwidth;
-    *iy = bb - *iheight;
-    break;
+    case ALIGNMENT_TOP_LEFT:
+      *ix = bx;
+      *iy = by;
+      break;
+    case ALIGNMENT_TOP:
+      *ix = bx + (*awidth - *iwidth) / 2;
+      *iy = by;
+      break;
+    case ALIGNMENT_TOP_RIGHT:
+      *ix = br - *iwidth;
+      *iy = by;
+      break;
+    case ALIGNMENT_LEFT:
+      *ix = bx;
+      *iy = by + (*aheight - *iheight) / 2;
+      break;
+    case ALIGNMENT_CENTER:
+      *ix = bx + (*awidth - *iwidth) / 2;
+      *iy = by + (*aheight - *iheight) / 2;
+      break;
+    case ALIGNMENT_RIGHT:
+      *ix = br - *iwidth;
+      *iy = by + (*aheight - *iheight) / 2;
+      break;
+    case ALIGNMENT_BOTTOM_LEFT:
+      *ix = bx;
+      *iy = bb - *iheight;
+      break;
+    case ALIGNMENT_BOTTOM:
+      *ix = bx + (*awidth - *iwidth) / 2;
+      *iy = bb - *iheight;
+      break;
+    case ALIGNMENT_BOTTOM_RIGHT:
+      *ix = br - *iwidth;
+      *iy = bb - *iheight;
+      break;
   }
 }
 

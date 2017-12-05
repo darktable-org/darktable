@@ -1,0 +1,303 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+                <!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+                %darktable_dtd;
+                ]>
+<sect1 status="final" id="darktable_chart">
+
+  <title>Using <filename>darktable-chart</filename>
+
+  </title>
+
+  <indexterm>
+    <primary>darktable-chart</primary>
+  </indexterm>
+
+  <sect2 status="final" id="darktable_chart_overview">
+
+    <title>Overview</title>
+
+    <para>
+      With <filename>darktable-chart</filename> we provide a tool for extracting luminance and
+      color values out of images taken from color reference cards like IT8.7/1 charts. Its main
+      purpose is to compare a source image (typically a largely unprocessed raw image) to a
+      target image (typically a JPEG image created in-camera) and produce a darktable style that
+      is able to convert luminance and color values of the source image to produce the target
+      image. This style employs the <emphasis>base curve</emphasis> module, the <emphasis>input
+      color profile</emphasis>, and the <emphasis>color look up table</emphasis> module for that
+      purpose (see <xref linkend="base_curve"/>, <xref linkend="input_color_profile"/>, and
+      <xref linkend="color_look_up_table"/>).
+    </para>
+
+    <para>
+      Some cameras are particularly advanced in offering various film simulation modes of your
+      choice. With the help of <filename>darktable-chart</filename> and the underlying modules
+      you can now create styles that replicate these film simulations from within darktable.
+    </para>
+
+  </sect2>
+
+  <sect2 status="final" id="darktable_chart_usage">
+
+    <title>Usage</title>
+
+    <para>
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                The tool is organized into three tabs in the upper part and a text output frame
+                in the lower part.
+              </entry>
+              <entry>
+                <graphic fileref="images/darktable_chart_overview.png" scalefit="1" width="80%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+    <para>
+      The first tab is used to define the source image, the second tab defines the reference
+      (target) and the third tab contains the controls to generate the resulting darktable
+      style.
+    </para>
+
+  </sect2>
+
+  <sect2 status="final" id="darktable_chart_source_image">
+
+    <title>Source image</title>
+
+    <para>
+      In the <quote>source image</quote> tab you set your source image which requires two
+      elements. The first element is an input file in Lab Portable Float Map format (extension
+      <emphasis>.pfm</emphasis>). The source file represents the largely unmodified data as the
+      camera sees them. Details on taking photos of a color reference card and producing a
+      <emphasis>.pfm</emphasis> output file are described below. The second element is a chart
+      file that contains a formal description of the underlying color reference card's layout
+      (extension <emphasis>.cht</emphasis>). Chart files are usually shipped with your color
+      reference card or can be downloaded.
+    </para>
+
+    <para>
+      In real life the photo taken from the color reference card will show some perspective
+      distortions relative to the layout defined in the chart file. For that reason the layout
+      is displayed as a grid over the image and can be modified.
+    </para>
+
+    <para>
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                You can move the corners of the grid using the mouse to reach best alignment of
+                grid and image.
+              </entry>
+              <entry>
+                <graphic fileref="images/darktable_chart_source.png" scalefit="1" width="80%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+    <para>
+      A rectangular frame is displayed for each patch and defines the area from which
+      <filename>darktable-chart</filename> will actually sample the needed input data. It may be
+      required to modify the size of these rectangles so that the sampling area is big enough
+      but does not overlap with neighboring patches. Use the <quote>size</quote> slider in the
+      upper right part of the GUI. Higher values lead to smaller sizes.
+    </para>
+
+  </sect2>
+
+  <sect2 status="final" id="darktable_chart_reference_values">
+
+    <title>Reference values</title>
+
+    <para>
+      The <quote>reference values</quote> tab determines the target values to which the source
+      image is to be modified by the resulting style. You can either supply reference values in
+      the form of measured data of your color reference card (mode <quote>cie/it8 file</quote>),
+      or you supply a photographic image (mode <quote>color chart image</quote>) much in the
+      same way as described above. This second image must also be supplied in Lab Portable Float
+      Map format. There is no need to supply the chart file again as
+      <filename>darktable-chart</filename> takes the same one as defined under <quote>source
+      image</quote>. You only need to again align the layout grid and the image and potentially
+      adjust the <quote>size</quote> slider.
+    </para>
+
+    <para>
+      In a typical use case the second image will be based on a JPEG file produced in-camera.
+      This way you can create a style to simulate the in-camera processing within darktable.
+    </para>
+
+    <para>
+      In the lower text output frame you see the color values extracted from the available data
+      for each individual color patch. The first column gives the name of the patch, the second
+      and third column show the corresponding color values of the source image in RGB and Lab
+      format, respectively. The fourth column contains the Lab value coming from the reference
+      (or from the chart file if no reference image has been given). Finally, the fifth and
+      sixth columns display how strongly source and reference values deviate in terms of delta E
+      values.
+    </para>
+
+  </sect2>
+
+  <sect2 status="final" id="darktable_chart_process">
+
+    <title>Process</title>
+
+    <para>
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                If all required settings in <quote>source image</quote> and <quote>reference
+                values</quote> are ready you can move to the <quote>process</quote> tab.
+              </entry>
+              <entry>
+                <graphic fileref="images/darktable_chart_process.png" scalefit="1" width="80%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+    <para>
+      You first need to tell <filename>darktable-chart</filename> which of the patches represent
+      the gray ramp. In the screenshot displayed further above the gray ramp is positioned in
+      the lower part of the color reference chart, denoted as <quote>GS00...GS23</quote>.
+    </para>
+
+    <para>
+      The input <quote>number of final patches</quote> defines how many editable color patches
+      the resulting style will use within the <emphasis>color look up table</emphasis> module
+      (for more details see <xref linkend="color_look_up_table"/>).
+    </para>
+
+    <para>
+      By clicking the <quote>process</quote> button you start the calculation.
+    </para>
+
+    <para>
+      The quality of the result in terms of average delta E and maximum delta E are displayed
+      below the button. These data show how close the resulting style applied to the source
+      image will be able to match the reference values&nbsp;&ndash; the lower the better.
+    </para>
+
+    <para>
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                Once you are happy with the result you can click on <quote>export</quote> and
+                save the generated style.
+              </entry>
+              <entry>
+                <graphic fileref="images/darktable_chart_save.png" scalefit="1" width="80%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+    <para>
+      You supply a style name and a style description under which the style will later appear in
+      darktable. <filename>darktable-chart</filename> saves the style as a
+      <emphasis>.dtstyle</emphasis> file which can be imported into darktable (see
+      <xref linkend="styles"/>) and shared with others.
+    </para>
+
+    <para>
+      The <quote>export raw data as csv</quote> button allows you to save the extracted raw data
+      as a CSV file for debugging purposes or later usage. <filename>darktable-chart</filename>
+      offers a command line option to produce a style with the desired number of final patches
+      from a supplied CSV file (see <xref linkend="darktable_chart_commandline_parameters"/>).
+    </para>
+
+  </sect2>
+
+  <sect2 status="final" id="darktable_chart_making_input_images">
+
+    <title>Making input images for <filename>darktable-chart</filename>
+
+    </title>
+
+    <para>
+      To start with, you need a suitable photo of your color reference card in RAW+JPEG format.
+      It goes beyond the scope of this manual to explain the details of how to take this photo,
+      but in a nutshell you need to make the shot on a sunny day around midday with the light
+      source (sun) shining at an angle onto the card. You need to avoid any glare in the image.
+      The neutral white color patch in the gray ramp (G00) should end up at the L value
+      specified in the description of your card. Often this is L=92 and requires you to
+      overexpose the shot by about 1/3 EV. Ideally you make several shots with slightly
+      different exposures to later select the right one in darktable. Make sure that the chart
+      fills up most of the frame. Take a lens with a <quote>normal</quote> focal length (e.g.
+      50mm equivalent) and stop down a bit to avoid vignetting.
+    </para>
+
+    <para>
+      You then open the raw file in darktable and disable most modules, especially
+      <emphasis>base curve</emphasis>. Select the standard input matrix in the <emphasis>input
+      color profile</emphasis> module and disable gamut clipping. Select <quote>camera white
+      balance</quote> in the <emphasis>white balance</emphasis> module (see
+      <xref linkend="base_curve"/>, <xref linkend="input_color_profile"/>, and
+      <xref linkend="whitebalance"/>).
+    </para>
+
+    <para>
+      There is a special situation if your camera automatically applies some lens corrections,
+      namely vignetting correction, to the resulting JPEG file. In this case you need to
+      activate the <emphasis>lens correction</emphasis> module in darktable so that raw
+      processing matches the JPEG in this respect (see <xref linkend="lens_correction"/>).
+    </para>
+
+    <para>
+      To output your image you go to the <quote>export</quote> module in darktable (see
+      <xref linkend="export_selected"/>).
+    </para>
+
+    <para>
+      You need to select <quote>Lab</quote> as output color profile. This color space is not
+      visible in the combobox by default. You first need to enable it by setting
+      allow_lab_output to TRUE in <filename>$HOME/.config/darktable/darktablerc</filename>.
+      Alternatively, you can start darktable with:
+    </para>
+
+    <para>
+<programlisting>darktable --conf allow_lab_output=true
+</programlisting>
+    </para>
+
+    <para>
+      Then select <quote>PFM (float)</quote> as output format and press <quote>export</quote> to
+      generate the source image file.
+    </para>
+
+    <para>
+      In a similar way you produce the corresponding reference (target) image from the JPEG.
+      Also this time you need to disable all modules and export with <quote>Lab</quote> output
+      color profile in <quote>PFM (float)</quote> format.
+    </para>
+
+  </sect2>
+
+</sect1>

@@ -16,9 +16,9 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <glib/gi18n.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "common/darktable.h"
 #include "common/http_server.h"
@@ -113,9 +113,9 @@ static void _new_connection(SoupServer *server, SoupMessage *msg, const char *pa
 end:
   if(res)
   {
+    dt_http_server_t *http_server = params->server;
     soup_server_remove_handler(server, path);
-    g_signal_connect(G_OBJECT(server), "request-finished", G_CALLBACK(_request_finished_callback),
-                     params->server);
+    g_signal_connect(G_OBJECT(server), "request-finished", G_CALLBACK(_request_finished_callback), http_server);
   }
 }
 

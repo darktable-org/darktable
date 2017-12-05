@@ -46,7 +46,7 @@ DT_MODULE(1)
 
 #define FB_CALLBACK_ID "facebook"
 #define FB_WS_BASE_URL "https://www.facebook.com/"
-#define FB_GRAPH_BASE_URL "https://graph.facebook.com/"
+#define FB_GRAPH_BASE_URL "https://graph.facebook.com/v2.8/"
 #define FB_API_KEY "315766121847254"
 
 // facebook doesn't allow pictures bigger than FB_IMAGE_MAX_SIZExFB_IMAGE_MAX_SIZE px
@@ -290,12 +290,12 @@ static JsonObject *fb_parse_response(FBContext *ctx, GString *response)
 }
 
 
-static void fb_query_get_add_url_arguments(GString *key, GString *value, GString *url)
+static void fb_query_get_add_url_arguments(const gchar *key, const gchar *value, GString *url)
 {
   g_string_append(url, "&");
-  g_string_append(url, key->str);
+  g_string_append(url, key);
   g_string_append(url, "=");
-  g_string_append(url, value->str);
+  g_string_append(url, value);
 }
 
 /**
@@ -441,7 +441,11 @@ static GList *fb_get_album_list(FBContext *ctx, gboolean *ok)
   *ok = TRUE;
   GList *album_list = NULL;
 
-  JsonObject *reply = fb_query_get(ctx, "me/albums", NULL);
+  GHashTable *args = g_hash_table_new((GHashFunc)g_str_hash, (GEqualFunc)g_str_equal);
+  g_hash_table_insert(args, "fields", "id,name,can_upload");
+  JsonObject *reply = fb_query_get(ctx, "me/albums", args);
+  g_hash_table_destroy(args);
+
   if(reply == NULL) goto error;
 
   JsonArray *jsalbums = json_object_get_array_member(reply, "data");
@@ -1242,7 +1246,8 @@ int supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module
 /* this actually does the work */
 int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale)
+          const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
+          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
 {
   gint result = 1;
   dt_storage_facebook_param_t *p = (dt_storage_facebook_param_t *)sdata;
@@ -1287,7 +1292,8 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   if(fdata->max_height == 0 || fdata->max_height > FB_IMAGE_MAX_SIZE) fdata->max_height = FB_IMAGE_MAX_SIZE;
   if(fdata->max_width == 0 || fdata->max_width > FB_IMAGE_MAX_SIZE) fdata->max_width = FB_IMAGE_MAX_SIZE;
 
-  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, FALSE, self, sdata, num, total)
+  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, FALSE, icc_type, icc_filename, icc_intent,
+                       self, sdata, num, total)
      != 0)
   {
     g_printerr("[facebook] could not export to file: `%s'!\n", fname);
@@ -1298,7 +1304,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
 
   if(p->facebook_ctx->album_id == NULL)
   {
-    if(p->facebook_ctx->album_title == NULL)
+    if(p->facebook_ctx->album_title == NULL || strlen(p->facebook_ctx->album_title) == 0)
     {
       dt_control_log(_("unable to create album, no title provided"));
       result = 0;
@@ -1325,7 +1331,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   }
 
 cleanup:
-  unlink(fname);
+  g_unlink(fname);
   g_free(caption);
 
   if(result)

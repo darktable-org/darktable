@@ -15,12 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_CONTROL_JOBS_CONTROL_H
-#define DT_CONTROL_JOBS_CONTROL_H
 
-#include <inttypes.h>
-#include "control/control.h"
+#pragma once
+
 #include "common/imageio_module.h"
+#include "control/control.h"
+#include <inttypes.h>
 
 #ifdef HAVE_PRINT
 #include "common/cups_print.h"
@@ -34,19 +34,20 @@ void dt_control_write_sidecar_files();
 void dt_control_delete_images();
 void dt_control_duplicate_images();
 void dt_control_flip_images(const int32_t cw);
-void dt_control_remove_images();
+gboolean dt_control_remove_images();
 void dt_control_move_images();
 void dt_control_copy_images();
 void dt_control_set_local_copy_images();
 void dt_control_reset_local_copy_images();
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
-                       gboolean high_quality, gboolean upscale, char *style, gboolean style_append);
+                       gboolean high_quality, gboolean upscale, char *style, gboolean style_append,
+                       dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
+                       dt_iop_color_intent_t icc_intent);
 void dt_control_merge_hdr();
 
 void dt_control_seed_denoise();
 void dt_control_denoise();
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

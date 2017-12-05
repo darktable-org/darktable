@@ -76,7 +76,7 @@ ARGV.each do |filename|
   red = green = blue = maker = model = preset = nil
   listed_presets = []
   fl_count = 0
-  IO.popen("exiftool \"-WB_*\" -WhiteBalance -WhiteBalance2 -WhitePoint -Make -Model #{filename}") do |io|
+  IO.popen("exiftool \"-WB_*\" -WhiteBalance -WhiteBalance2 -WhitePoint -Make -Model \"#{filename}\"") do |io|
     while !io.eof?
       lineparts = io.readline.split(":")
       tag = lineparts[0].strip
@@ -100,7 +100,7 @@ ARGV.each do |filename|
         red = values[1].to_f/green
         blue = values[2].to_f/green
         green = 1
-      elsif tag == "White Point"
+      elsif tag == "White Point" && values.length > 3
         green = (values[1].to_f+values[2].to_f)/2.0
         red = values[0].to_f/green
         blue = values[3].to_f/green
@@ -144,6 +144,11 @@ ARGV.each do |filename|
   end
 
   found_presets += listed_presets.map do |preset, red, green, blue|
+    # ugly hack. Canon's Fluorescent is listed as WhiteFluorescent in usermanual
+    if maker && maker == "Canon" && preset == "Fluorescent"
+      preset = "WhiteFluorescent"
+    end
+
     preset = FL_PRESET_REPLACE[preset] if FL_PRESET_REPLACE[preset]
     [maker, model, preset, red, green, blue]
   end
@@ -187,8 +192,10 @@ found_presets.each do |maker, model, preset, red, green, blue|
   else
     preset = '"'+preset+'"' if preset[-1] == "K"
     preset = preset + " "*(min_padding-preset.size)
-    red = sprintf('%0.6f',red)
-    blue = sprintf('%0.6f',blue)
     puts "  { \"#{maker}\", \"#{model}\", #{preset}, 0, { #{red}, #{green}, #{blue}, 0 } },"
   end
 end
+
+# vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
+# kate: tab-width: 2; replace-tabs on; indent-width 2; tab-indents: off;
+# kate: indent-mode ruby; remove-trailing-spaces modified;

@@ -15,12 +15,12 @@
  *   You should have received a copy of the GNU General Public License
  *   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "common/darktable.h"
 #include "gui/guides.h"
-#include "lua/lua.h"
-#include "lua/call.h"
-#include "lua/widget/widget.h"
+#include "common/darktable.h"
 #include "lua/cairo.h"
+#include "lua/call.h"
+#include "lua/lua.h"
+#include "lua/widget/widget.h"
 
 typedef struct callback_data_t
 {

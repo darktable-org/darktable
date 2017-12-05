@@ -65,9 +65,10 @@ const char *name(dt_lib_module_t *self)
   return _("navigation");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_DARKROOM;
+  static const char *v[] = {"darkroom", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -297,8 +298,8 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       cairo_translate(cr, 0, height);
       cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
 
-      static int height = -1;
-      if(height == -1)
+      static int font_height = -1;
+      if(font_height == -1)
       {
         PangoLayout *layout;
         PangoRectangle ink;
@@ -309,12 +310,12 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
         pango_layout_set_font_description(layout, desc);
         pango_layout_set_text(layout, "100%", -1); // dummy text, just to get the height
         pango_layout_get_pixel_extents(layout, &ink, NULL);
-        height = ink.height;
+        font_height = ink.height;
         pango_font_description_free(desc);
         g_object_unref(layout);
       }
 
-      h = d->zoom_h = height;
+      h = d->zoom_h = font_height;
       w = h * 1.5;
       float sp = h * 0.6;
       d->zoom_w = w + sp;
@@ -403,10 +404,17 @@ static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget, GdkEve
   gtk_widget_get_allocation(widget, &allocation);
   _lib_navigation_set_position(self, event->x, event->y, allocation.width, allocation.height);
   gint x, y; // notify gtk for motion_hint.
+#if GTK_CHECK_VERSION(3, 20, 0)
+  gdk_window_get_device_position(event->window,
+      gdk_seat_get_pointer(gdk_display_get_default_seat(
+          gdk_window_get_display(event->window))),
+      &x, &y, 0);
+#else
   gdk_window_get_device_position(event->window,
                                  gdk_device_manager_get_client_pointer(
                                      gdk_display_get_device_manager(gdk_window_get_display(event->window))),
                                  &x, &y, NULL);
+#endif
   return TRUE;
 }
 
@@ -508,7 +516,12 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
     gtk_menu_shell_append(menu, item);
 
     gtk_widget_show_all(GTK_WIDGET(menu));
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+    gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
+#else
     gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
+#endif
 
     return TRUE;
   }

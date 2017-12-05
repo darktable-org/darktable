@@ -32,10 +32,10 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
 #include <inttypes.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 DT_MODULE_INTROSPECTION(3, dt_iop_colorzones_params_t)
 
@@ -274,9 +274,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  if(dev_L != NULL) dt_opencl_release_mem_object(dev_L);
-  if(dev_a != NULL) dt_opencl_release_mem_object(dev_a);
-  if(dev_b != NULL) dt_opencl_release_mem_object(dev_b);
+  dt_opencl_release_mem_object(dev_L);
+  dt_opencl_release_mem_object(dev_a);
+  dt_opencl_release_mem_object(dev_b);
   dt_print(DT_DEBUG_OPENCL, "[opencl_colorzones] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -380,7 +380,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colorzones_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorzones_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 600; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 602; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorzones_params_t);
   module->gui_data = NULL;
   dt_iop_colorzones_params_t tmp;
@@ -408,7 +408,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.strength = 0.0;
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
   // red black white
 
@@ -523,7 +523,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.equalizer_y[DT_IOP_COLORZONES_L][7] = 0.613040;
   dt_gui_presets_add_generic(_("black & white film"), self->op, 3, &p, sizeof(p), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 // fills in new parameters based on mouse position (in 0,1)
@@ -784,7 +784,7 @@ static gboolean colorzones_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   for(int i = 0; i < 3; i++)
   {
     // draw curves, selected last.
-    int ch = ((int)c->channel + i + 1) % 3;
+    ch = ((int)c->channel + i + 1) % 3;
     if(i == 2)
       cairo_set_source_rgba(cr, .7, .7, .7, 1.0);
     else
@@ -917,7 +917,6 @@ static gboolean colorzones_button_press(GtkWidget *widget, GdkEventButton *event
     // reset current curve
     dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
     dt_iop_colorzones_params_t *d = (dt_iop_colorzones_params_t *)self->default_params;
-    dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
     for(int k = 0; k < DT_IOP_COLORZONES_BANDS; k++)
     {
       p->equalizer_x[c->channel][k] = d->equalizer_x[c->channel][k];
@@ -979,10 +978,14 @@ static gboolean colorzones_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  if(event->direction == GDK_SCROLL_UP && c->mouse_radius > 0.2 / DT_IOP_COLORZONES_BANDS)
-    c->mouse_radius *= 0.9; // 0.7;
-  if(event->direction == GDK_SCROLL_DOWN && c->mouse_radius < 1.0) c->mouse_radius *= (1.0 / 0.9); // 1.42;
-  gtk_widget_queue_draw(widget);
+
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  {
+    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / DT_IOP_COLORZONES_BANDS, 1.0);
+    gtk_widget_queue_draw(widget);
+  }
+
   return TRUE;
 }
 
@@ -1111,7 +1114,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                             | GDK_SMOOTH_SCROLL_MASK);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(colorzones_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(colorzones_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(colorzones_button_release), self);

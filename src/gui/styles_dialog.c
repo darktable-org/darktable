@@ -18,14 +18,17 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/debug.h"
 #include "common/darktable.h"
-#include "common/styles.h"
+#include "common/debug.h"
 #include "common/history.h"
-#include "develop/imageop.h"
+#include "common/styles.h"
 #include "control/control.h"
-#include "gui/styles.h"
+#include "develop/imageop.h"
 #include "gui/gtk.h"
+#include "gui/styles.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 /* creates a styles dialog, if edit equals true id=styleid else id=imgid */
 static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid);
@@ -55,7 +58,7 @@ static int _single_selected_imgid()
 {
   int imgid = -1;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
                               NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -282,6 +285,9 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   GtkDialog *dialog = GTK_DIALOG(
       gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, _("_cancel"),
                                   GTK_RESPONSE_REJECT, _("_save"), GTK_RESPONSE_ACCEPT, NULL));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
+#endif
 
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5)));
@@ -335,7 +341,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 
   if(edit)
   {
-    GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
+    renderer = gtk_cell_renderer_toggle_new();
     gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
     g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_STYLE_ITEMS_COL_ENABLED);
     g_signal_connect(renderer, "toggled", G_CALLBACK(_gui_styles_item_new_toggled), sd);
@@ -358,7 +364,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   /* name */
   renderer = gtk_cell_renderer_text_new();
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_STYLE_ITEMS_COL_NAME);
-  g_object_set(renderer, "xalign", 0.0, NULL);
+  g_object_set(renderer, "xalign", 0.0, (gchar *)0);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items), -1, _("item"), renderer, "text",
                                               DT_STYLE_ITEMS_COL_NAME, NULL);
   if(edit)
@@ -432,12 +438,12 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
           }
         }
 
-        gchar name[256] = { 0 };
-        g_snprintf(name, sizeof(name), "%s", item->name);
+        gchar iname[256] = { 0 };
+        g_snprintf(iname, sizeof(iname), "%s", item->name);
 
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set(GTK_LIST_STORE(liststore), &iter, DT_STYLE_ITEMS_COL_ENABLED, enabled,
-                           DT_STYLE_ITEMS_COL_NAME, name, DT_STYLE_ITEMS_COL_NUM, item->num, -1);
+                           DT_STYLE_ITEMS_COL_NAME, iname, DT_STYLE_ITEMS_COL_NUM, item->num, -1);
 
         has_item = TRUE;
 

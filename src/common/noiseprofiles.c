@@ -17,9 +17,9 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "control/control.h"
 #include "common/noiseprofiles.h"
 #include "common/file_location.h"
+#include "control/control.h"
 
 // bump this when the noiseprofiles are getting a differen layout or meaning (raw-raw data, ...)
 #define DT_NOISE_PROFILE_VERSION 0
@@ -119,6 +119,8 @@ static gboolean dt_noiseprofile_verify(JsonParser *parser)
 
   if(!json_reader_is_array(reader)) _ERROR("`noiseprofiles' is supposed to be an array");
 
+  size_t n_profiles_total = 0;
+
   // go through all makers
   const int n_makers = json_reader_count_elements(reader);
   dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d makers\n", n_makers);
@@ -136,6 +138,7 @@ static gboolean dt_noiseprofile_verify(JsonParser *parser)
 
     const int n_models = json_reader_count_elements(reader);
     dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d models\n", n_models);
+    n_profiles_total += n_models;
     for(int j = 0; j < n_models; j++)
     {
       if(!json_reader_read_element(reader, j)) _ERROR("can't access model at position %d / %d", j+1, n_models);
@@ -213,6 +216,7 @@ static gboolean dt_noiseprofile_verify(JsonParser *parser)
   json_reader_end_member(reader);
 
   dt_print(DT_DEBUG_CONTROL, "[noiseprofile] verifying noiseprofile completed\n");
+  dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %zu profiles total\n", n_profiles_total);
 
 end:
   if(reader) g_object_unref(reader);

@@ -16,21 +16,21 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LUA_WIDGET_COMMON_H
-#define LUA_WIDGET_COMMON_H
+
+#pragma once
+
 #include "lua/widget/widget.h"
-
-
-
 
 typedef dt_lua_widget_t* lua_separator;
 typedef dt_lua_widget_t* lua_label;
+typedef dt_lua_widget_t* lua_section_label;
 typedef dt_lua_widget_t* lua_file_chooser_button;
 typedef dt_lua_widget_t* lua_entry;
 typedef dt_lua_widget_t* lua_combobox;
 typedef dt_lua_widget_t* lua_check_button;
 typedef dt_lua_widget_t* lua_button;
 typedef dt_lua_widget_t* lua_slider;
+typedef dt_lua_widget_t* lua_text_view;
 
 // containers can be inherited
 extern dt_lua_widget_type_t container_type;
@@ -45,6 +45,7 @@ int dt_lua_init_widget_box(lua_State* L);
 int dt_lua_init_widget_button(lua_State* L);
 int dt_lua_init_widget_check_button(lua_State* L);
 int dt_lua_init_widget_label(lua_State* L);
+int dt_lua_init_widget_section_label(lua_State* L);
 int dt_lua_init_widget_entry(lua_State* L);
 int dt_lua_init_widget_file_chooser_button(lua_State* L);
 int dt_lua_init_widget_separator(lua_State* L);
@@ -52,8 +53,8 @@ int dt_lua_init_widget_combobox(lua_State* L);
 int dt_lua_init_widget_container(lua_State* L);
 int dt_lua_init_widget_stack(lua_State* L);
 int dt_lua_init_widget_slider(lua_State* L);
+int dt_lua_init_widget_text_view(lua_State* L);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -1,3 +1,8 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+                <!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+                %darktable_dtd;
+                ]>
 <sect2 status="final" id="converting_to_black_and_white">
 
   <title>Converting to black and white</title>
@@ -34,8 +39,8 @@
     <para>
       To perform the conversion, just activate the <emphasis>monochrome</emphasis> module
       (<xref linkend="monochrome"/>). You can then simulate a color filter, by dragging the
-      circle above the colours you want to filter. Filter size can be modified thanks to wheel
-      scrolling.
+      circle above the colors you want to filter. Filter size can be modified via scrolling the
+      mouse wheel.
     </para>
 
   </sect3>
@@ -65,6 +70,29 @@
 
   <sect3 status="final">
 
+    <title>The LAB way: color contrast module</title>
+
+    <para>
+      To perform such conversion we use the <emphasis>color contrast</emphasis> module
+      (<xref linkend="color_contrast"/>).
+    </para>
+
+    <orderedlist>
+
+      <listitem><para>
+        Activate the color contrast module
+      </para></listitem>
+
+      <listitem><para>
+        Set both steepness sliders to zero
+      </para></listitem>
+
+    </orderedlist>
+
+  </sect3>
+
+  <sect3 status="final">
+
     <title>The artistic way: color zones module</title>
 
     <para>
@@ -75,7 +103,7 @@
     <orderedlist>
 
       <listitem><para>
-        Activate the colour zones module
+        Activate the color zones module
       </para></listitem>
 
       <listitem><para>

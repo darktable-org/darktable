@@ -17,8 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_DEVELOP_IMAGEOP_H
-#define DT_DEVELOP_IMAGEOP_H
+
+#pragma once
 
 #include <gmodule.h>
 #include <gtk/gtk.h>
@@ -157,8 +157,13 @@ typedef struct dt_iop_module_so_t
   int (*operation_tags)();
   int (*operation_tags_filter)();
 
-  int (*output_bpp)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                    struct dt_dev_pixelpipe_iop_t *piece);
+  /** what do the iop want as an input? */
+  void (*input_format)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                       struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
+  /** what will it output? */
+  void (*output_format)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                        struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
+
   void (*tiling_callback)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                           const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,
                           struct dt_develop_tiling_t *tiling);
@@ -254,7 +259,7 @@ typedef struct dt_iop_module_t
   /** (bitwise) set if you want an histogram generated during next eval */
   dt_dev_request_flags_t request_histogram;
   /** set to 1 if you want the mask to be transferred into alpha channel during next eval. gui mode only. */
-  int32_t request_mask_display;
+  int request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
   int32_t suppress_mask;
   /** bounding box in which the mean color is requested. */
@@ -262,9 +267,9 @@ typedef struct dt_iop_module_t
   /** single point to pick if in point mode */
   float color_picker_point[2];
   /** place to store the picked color of module input. */
-  float picked_color[3], picked_color_min[3], picked_color_max[3];
+  float picked_color[4], picked_color_min[4], picked_color_max[4];
   /** place to store the picked color of module output (before blending). */
-  float picked_output_color[3], picked_output_color_min[3], picked_output_color_max[3];
+  float picked_output_color[4], picked_output_color_min[4], picked_output_color_max[4];
   /** pointer to pre-module histogram data; if available: histogram_bins_count bins with 4 channels each */
   uint32_t *histogram;
   /** stats of captured histogram */
@@ -336,9 +341,11 @@ typedef struct dt_iop_module_t
   int (*operation_tags)();
 
   int (*operation_tags_filter)();
-  /** how many bytes per pixel in the output. */
-  int (*output_bpp)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                    struct dt_dev_pixelpipe_iop_t *piece);
+  void (*input_format)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                       struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
+  /** what will it output? */
+  void (*output_format)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                        struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
   /** report back info for tiling: memory usage and overlap. Memory usage: factor * input_size + overhead */
   void (*tiling_callback)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                           const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,
@@ -528,8 +535,6 @@ gchar *dt_iop_get_localized_name(const gchar *op);
 
 /** Connects common accelerators to an iop module */
 void dt_iop_connect_common_accels(dt_iop_module_t *module);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

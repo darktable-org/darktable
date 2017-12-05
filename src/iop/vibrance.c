@@ -18,9 +18,9 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
@@ -214,7 +214,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_vibrance_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_vibrance_params_t));
   module->default_enabled = 0;
-  module->priority = 396; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 426; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_vibrance_params_t);
   module->gui_data = NULL;
   dt_iop_vibrance_params_t tmp = (dt_iop_vibrance_params_t){ 25 };

@@ -15,10 +15,10 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/widget/common.h"
 #include "bauhaus/bauhaus.h"
-#include "lua/types.h"
 #include "gui/gtk.h"
+#include "lua/types.h"
+#include "lua/widget/common.h"
 
 static void combobox_init(lua_State *L);
 static dt_lua_widget_type_t combobox_type = {
@@ -69,6 +69,9 @@ static int combobox_numindex(lua_State*L)
   }
   if(key <= 0 || key > length) {
     return luaL_error(L,"Invalid index for combo box : %d\n",key);
+  } else if (key > length) {
+    lua_pushnil(L);
+    return 1;
   }
   const GList *labels = dt_bauhaus_combobox_get_labels(combobox->widget);
   lua_pushstring(L,g_list_nth_data((GList*)labels,key-1));

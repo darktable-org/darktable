@@ -15,11 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_COLLECTION_H
-#define DT_COLLECTION_H
 
-#include <inttypes.h>
+#pragma once
+
 #include <glib.h>
+#include <inttypes.h>
 
 typedef enum dt_collection_query_t
 {
@@ -184,7 +184,8 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection);
 
 /** get the count of query */
 uint32_t dt_collection_get_count(const dt_collection_t *collection);
-
+/** get the nth image in the query */
+int dt_collection_get_nth(const dt_collection_t *collection, int nth);
 /** get all image ids order as current selection. no more than limit many images are returned, <0 ==
  * unlimited */
 GList *dt_collection_get_all(const dt_collection_t *collection, int limit);
@@ -212,7 +213,6 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
 void dt_collection_split_operator_datetime(const gchar *input, char **number1, char **number2,
                                            char **operator);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

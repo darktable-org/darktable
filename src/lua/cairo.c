@@ -16,12 +16,12 @@
  *   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "lua/cairo.h"
 #include "common/darktable.h"
 #include "gui/draw.h"
-#include "lua/lua.h"
 #include "lua/call.h"
+#include "lua/lua.h"
 #include "lua/types.h"
-#include "lua/cairo.h"
 
 
 static int _draw_line(lua_State *L)

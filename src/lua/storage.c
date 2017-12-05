@@ -16,11 +16,11 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/storage.h"
+#include "common/imageio.h"
+#include "control/conf.h"
+#include "lua/image.h"
 #include "lua/modules.h"
 #include "lua/types.h"
-#include "lua/image.h"
-#include "control/conf.h"
-#include "common/imageio.h"
 
 static int supports_format(lua_State *L)
 {

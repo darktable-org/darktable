@@ -16,46 +16,32 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_CONTROL_H
-#define DT_CONTROL_H
+
+#pragma once
 
 #include "common/darktable.h"
 #include "common/dtpthread.h"
 #include "control/settings.h"
 
-#include <inttypes.h>
 #include <gtk/gtk.h>
+#include <inttypes.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#include <gtk/gtk.h>
-#include "libs/lib.h"
 #include "control/jobs.h"
 #include "control/progress.h"
+#include "libs/lib.h"
+#include <gtk/gtk.h>
+
+#ifdef _WIN32
+#include <shobjidl.h>
+#endif
 
 // A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
 #define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
 
 struct dt_lib_backgroundjob_element_t;
-
-typedef enum dt_control_gui_mode_t
-{
-  DT_LIBRARY = 0,
-  DT_DEVELOP,
-#ifdef HAVE_GPHOTO2
-  DT_CAPTURE,
-#endif
-#ifdef HAVE_MAP
-  DT_MAP,
-#endif
-  DT_SLIDESHOW,
-#ifdef HAVE_PRINT
-  DT_PRINT,
-#endif
-  DT_KNIGHT,
-  DT_MODE_NONE
-} dt_control_gui_mode_t;
 
 typedef GdkCursorType dt_cursor_t;
 
@@ -98,7 +84,8 @@ void dt_control_queue_redraw_center();
 void dt_control_queue_redraw_widget(GtkWidget *widget);
 
 void dt_ctl_switch_mode();
-void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode);
+void dt_ctl_switch_mode_to(const char *mode);
+void dt_ctl_switch_mode_to_by_view(const dt_view_t *view);
 
 struct dt_control_t;
 
@@ -177,6 +164,7 @@ typedef struct dt_control_t
 
   // job management
   int32_t running;
+  gboolean export_scheduled;
   dt_pthread_mutex_t queue_mutex, cond_mutex, run_mutex;
   pthread_cond_t cond;
   int32_t num_threads;
@@ -195,7 +183,13 @@ typedef struct dt_control_t
   {
     GList *list;
     size_t list_length;
+    size_t n_progress_bar;
+    double global_progress;
     dt_pthread_mutex_t mutex;
+
+#ifdef _WIN32
+    ITaskbarList3 *taskbarlist;
+#endif
 
     // these proxy functions should ONLY be used by control/process.c!
     struct
@@ -206,6 +200,8 @@ typedef struct dt_control_t
       void (*cancellable)(dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance,
                           dt_progress_t *progress);
       void (*updated)(dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance, double value);
+      void (*message_updated)(dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance,
+                              const char *message);
     } proxy;
 
   } progress_system;
@@ -232,9 +228,6 @@ void dt_control_cleanup(dt_control_t *s);
 
 // call this to quit dt
 void dt_control_quit();
-
-int dt_control_load_config(dt_control_t *c);
-int dt_control_write_config(dt_control_t *c);
 
 /** get threadsafe running state. */
 int dt_control_running();
@@ -272,7 +265,6 @@ static inline int32_t dt_ctl_get_num_procs()
 #endif
 }
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

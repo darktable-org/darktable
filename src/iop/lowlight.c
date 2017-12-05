@@ -19,7 +19,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
-#include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/opencl.h"
@@ -212,7 +212,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_m);
   dt_print(DT_DEBUG_OPENCL, "[opencl_lowlight] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -288,7 +288,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_lowlight_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_lowlight_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 615; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 617; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_lowlight_params_t);
   module->gui_data = NULL;
   dt_iop_lowlight_params_t tmp;
@@ -309,7 +309,7 @@ void init_presets(dt_iop_module_so_t *self)
 {
   dt_iop_lowlight_params_t p;
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -465,7 +465,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.blueness = 50.0f;
   dt_gui_presets_add_generic(_("night"), self->op, self->version(), &p, sizeof(p), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 // fills in new parameters based on mouse position (in 0,1)
@@ -721,10 +721,17 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   }
   gtk_widget_queue_draw(widget);
   gint x, y;
+#if GTK_CHECK_VERSION(3, 20, 0)
+  gdk_window_get_device_position(event->window,
+      gdk_seat_get_pointer(gdk_display_get_default_seat(
+          gdk_window_get_display(event->window))),
+      &x, &y, 0);
+#else
   gdk_window_get_device_position(event->window,
                                  gdk_device_manager_get_client_pointer(
                                      gdk_display_get_device_manager(gdk_window_get_display(event->window))),
                                  &x, &y, NULL);
+#endif
   return TRUE;
 }
 
@@ -747,7 +754,6 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
   }
   else if(event->button == 1)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
     c->drag_params = *(dt_iop_lowlight_params_t *)self->params;
     const int inset = DT_IOP_LOWLIGHT_INSET;
@@ -788,10 +794,14 @@ static gboolean lowlight_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoi
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
-  if(event->direction == GDK_SCROLL_UP && c->mouse_radius > 0.2 / DT_IOP_LOWLIGHT_BANDS)
-    c->mouse_radius *= 0.9; // 0.7;
-  if(event->direction == GDK_SCROLL_DOWN && c->mouse_radius < 1.0) c->mouse_radius *= (1.0 / 0.9); // 1.42;
-  gtk_widget_queue_draw(widget);
+
+  gdouble delta_y;
+  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  {
+    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / DT_IOP_LOWLIGHT_BANDS, 1.0);
+    gtk_widget_queue_draw(widget);
+  }
+
   return TRUE;
 }
 
@@ -830,7 +840,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
+                                             | GDK_SMOOTH_SCROLL_MASK);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(lowlight_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(lowlight_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(lowlight_button_release), self);

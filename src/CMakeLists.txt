@@ -1,8 +1,7 @@
-cmake_minimum_required(VERSION 2.6)
-
-cmake_policy(SET CMP0011 NEW)
+add_subdirectory(external)
 
 include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
 
 #
@@ -15,6 +14,7 @@ FILE(GLOB SOURCE_FILES
   "common/cache.c"
   "common/calculator.c"
   "common/collection.c"
+  "common/color_picker.c"
   "common/colorlabels.c"
   "common/colorspaces.c"
   "common/curve_tools.c"
@@ -22,6 +22,7 @@ FILE(GLOB SOURCE_FILES
   "common/darktable.c"
   "common/database.c"
   "common/dbus.c"
+  "common/dtpthread.c"
   "common/exif.cc"
   "common/film.c"
   "common/file_location.c"
@@ -44,12 +45,16 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_rawspeed.cc"
   "common/import_session.c"
   "common/interpolation.c"
+  "common/locallaplacian.c"
+  "common/locallaplaciancl.c"
   "common/metadata.c"
   "common/mipmap_cache.c"
+  "common/module.c"
   "common/noiseprofiles.c"
   "common/pdf.c"
   "common/styles.c"
   "common/selection.c"
+  "common/system_signal_handling.c"
   "common/tags.c"
   "common/utility.c"
   "common/variables.c"
@@ -59,7 +64,9 @@ FILE(GLOB SOURCE_FILES
   "common/dynload.c"
   "common/dlopencl.c"
   "common/ratings.c"
+  "common/resource_limits.c"
   "common/histogram.c"
+  "common/undo.c"
   "control/control.c"
   "control/crawler.c"
   "control/jobs.c"
@@ -78,6 +85,7 @@ FILE(GLOB SOURCE_FILES
   "develop/blend_gui.c"
   "develop/tiling.c"
   "develop/masks/masks.c"
+  "develop/format.c"
   "dtgtk/button.c"
   "dtgtk/drawingarea.c"
   "dtgtk/expander.c"
@@ -97,7 +105,6 @@ FILE(GLOB SOURCE_FILES
   "gui/styles_dialog.c"
   "libs/lib.c"
   "views/view.c"
-  "views/undo.c"
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
 
@@ -107,25 +114,106 @@ if(APPLE)
   set_source_files_properties(osx/osx.mm PROPERTIES LANGUAGE CXX)
 endif(APPLE)
 
+if(WIN32)
+  list(APPEND SOURCE_FILES "win/strptime.c")
+  list(APPEND HEADER_FILES "win/strptime.h")
+  list(APPEND SOURCE_FILES "win/statvfs.c")
+  list(APPEND HEADER_FILES "win/statvfs.h")
+
+  list(APPEND SOURCE_FILES "win/getrusage.c")
+  list(APPEND HEADER_FILES "win/getrusage.h")
+
+  list(APPEND SOURCE_FILES "win/rlimit.c")
+  list(APPEND HEADER_FILES "win/rlimit.h")
+
+  list(APPEND SOURCE_FILES "win/getdelim.c")
+  list(APPEND HEADER_FILES "win/getdelim.h")
+
+  list(APPEND SOURCE_FILES "win/dtwin.c")
+  list(APPEND HEADER_FILES "win/dtwin.h")
+
+  # Use mingw's sprintf instead of windows's
+  ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
+
+  # add it to have proper time.h functions available
+  ADD_DEFINITIONS(-D_POSIX_THREAD_SAFE_FUNCTIONS)
+
+  # avoid calling legacy ANSI win api functions
+  add_definitions("-DUNICODE -D_UNICODE")
+
+  # add icon, version, ... resources for Windows executable
+  configure_file("${CMAKE_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico" "${CMAKE_BINARY_DIR}/data/pixmaps/dt_logo_128x128.ico" COPYONLY)
+  SET(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
+  set(RESOURCE_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.rc")
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/win/darktable.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/win/darktable.rc")
+endif(WIN32)
+
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
+
+CHECK_C_COMPILER_FLAG("-std=c99" COMPILER_SUPPORTS_C99)
+if(NOT COMPILER_SUPPORTS_C99)
+        message(FATAL_ERROR "The compiler ${CMAKE_C_COMPILER} has no C99 support. Please use a different C compiler.")
+endif()
+
+CHECK_C_COMPILER_FLAG("-std=c11" COMPILER_SUPPORTS_C11)
+if(NOT COMPILER_SUPPORTS_C11)
+  message(FATAL_ERROR "The compiler ${CMAKE_C_COMPILER} has no C11 support. Please use a different C compiler.")
+endif()
+
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+if(NOT COMPILER_SUPPORTS_CXX11)
+        message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+endif()
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+if(APPLE AND (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+        list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES stdc++)
+        list(APPEND CMAKE_CXX_IMPLICIT_LINK_LIBRARIES c++)
+        list(REMOVE_DUPLICATES CMAKE_CXX_IMPLICIT_LINK_LIBRARIES)
+        # Also remove incorrectly parsed -lto_library flag
+        # It wasn't present with Xcode 7.2 and appeared before 8.3 release
+        # cmake 3.7.2 doesn't understand this flag and thinks it's a library
+        list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES to_library)
+endif()
+
+# Check for base threading library
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+find_package(Threads REQUIRED)
+# Fail if returned library is not pthread
+if(NOT CMAKE_USE_PTHREADS_INIT)
+  message(FATAL_ERROR "POSIX threads: not found")
+endif()
+# Append thread flags/libraries to LIBS
+list(APPEND LIBS "${CMAKE_THREAD_LIBS_INIT}")
+
+# Need to explicitly link against math library.
+list(APPEND LIBS "-lm")
 
 # Check for openmp
 find_package(OpenMP)
-if(OpenMP_C_FLAGS AND USE_OPENMP)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+if(USE_OPENMP)
+  if(OpenMP_C_FLAGS)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  endif()
+
+  if(OpenMP_CXX_FLAGS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  endif()
+
   if(WIN32)
     list(APPEND LIBS gomp)
   endif(WIN32)
-endif(OpenMP_C_FLAGS AND USE_OPENMP)
+endif(USE_OPENMP)
 
 if(USE_DARKTABLE_PROFILING)
 	add_definitions(-DUSE_DARKTABLE_PROFILING)
@@ -135,11 +223,19 @@ endif()
 #
 # Find all other required libraries for building
 #
+# GTK3 does pull glib, but this allows us to check for the version
+find_package(Glib 2.40 REQUIRED)
+add_definitions("-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_40")
+add_definitions("-DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_MIN_REQUIRED")
+include_directories(SYSTEM ${Glib_INCLUDE_DIRS})
+list(APPEND LIBS ${Glib_LIBRARIES})
+
 # GTK3 pulls in ATK, GDK, GDK-PIXBUF, CAIRO, GLIB, PANGO
-find_package(GTK3 3.10 REQUIRED) # actually it's 3.12, but Ubuntu 14.04 LTS only ships 3.10, so we #define the rest
-include_directories(${GTK3_INCLUDE_DIRS})
+find_package(GTK3 3.14 REQUIRED)
+add_definitions("-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_14")
+#add_definitions("-DGDK_VERSION_MAX_ALLOWED=GDK_VERSION_MIN_REQUIRED")
+include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
-add_definitions(${GTK3_DEFINITIONS})
 
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
@@ -164,14 +260,6 @@ if(USE_CAMERA_SUPPORT)
   add_definitions(${Gphoto2_DEFINITIONS})
 endif(USE_CAMERA_SUPPORT)
 
-# # INotify isn't used anymore as it seems
-# find_package(INotify)
-# if(INOTIFY_FOUND)
-#   include_directories(SYSTEM ${INOTIFY_INCLUDE_DIRS})
-#   list(APPEND LIBS ${INOTIFY_LIBRARIES})
-#   add_definitions(${INOTIFY_DEFINITIONS})
-# endif(INOTIFY_FOUND)
-
 if(USE_OPENEXR)
   find_package(OpenEXR)
   if(OPENEXR_FOUND)
@@ -192,30 +280,18 @@ if(USE_WEBP)
   else(USE_WEBP)
 endif(USE_WEBP)
 
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo PThread Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
   add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
 
-# Require exiv2 >= 0.23 to make sure everything we need is available
-find_package(Exiv2 0.23 REQUIRED)
+# Require exiv2 >= 0.24 to make sure everything we need is available
+find_package(Exiv2 0.24 REQUIRED)
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
-
-if(USE_NLS)
-  find_package(Gettext)
-  if(Gettext_FOUND)
-    include_directories(SYSTEM ${Gettext_INCLUDE_DIRS})
-    list(APPEND LIBS ${Gettext_LIBRARIES})
-    add_definitions("-DUSE_GETTEXT")
-    message(STATUS "Internationalization: Enabled")
-  else()
-    message(STATUS "Internationalization: Disabled (libintl not found)")
-  endif()
-endif(USE_NLS)
 
 if(USE_FLICKR)
   find_package(FLICKCURL)
@@ -228,18 +304,13 @@ endif(USE_FLICKR)
 
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
-  if(OPENJPEG_FOUND)
-    list(APPEND SOURCES "common/imageio_j2k.c")
-    include_directories(SYSTEM ${OPENJPEG_INCLUDE_DIRS})
-    list(APPEND LIBS ${OPENJPEG_LIBRARIES})
-    add_definitions(${OPENJPEG_DEFINITIONS})
+  if(OpenJPEG_FOUND)
     add_definitions("-DHAVE_OPENJPEG")
-    if(OPENJPEG_VERSION VERSION_LESS "1.5.0")
-      message(STATUS "OpenJPEG version ${OPENJPEG_VERSION} found. Only 1.5 and newer support reading of icc profiles.")
-    else()
-      add_definitions("-DHAVE_OPENJPEG_ICC")
-    endif()
-  endif(OPENJPEG_FOUND)
+    list(APPEND SOURCES "common/imageio_j2k.c")
+
+    include_directories(SYSTEM ${OpenJPEG_INCLUDE_DIRS})
+    list(APPEND LIBS ${OpenJPEG_LIBRARIES})
+  endif(OpenJPEG_FOUND)
 endif(USE_OPENJPEG)
 
 #
@@ -290,6 +361,7 @@ if(USE_GRAPHICSMAGICK)
   find_package(GraphicsMagick)
   if(GraphicsMagick_FOUND)
     add_definitions(-DHAVE_GRAPHICSMAGICK)
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} gif jpc jp2 bmp dcm jng miff mng pbm pnm ppm pgm CACHE INTERNAL "")
     include_directories(SYSTEM ${GraphicsMagick_INCLUDE_DIRS})
     list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
   endif(GraphicsMagick_FOUND)
@@ -298,9 +370,6 @@ endif(USE_GRAPHICSMAGICK)
 #
 # Add HAVE_xxx defines used by darktable
 #
-# if(INOTIFY_FOUND)
-#   add_definitions("-DHAVE_INOTIFY")
-# endif(INOTIFY_FOUND)
 
 if(LENSFUN_FOUND)
   add_definitions("-DHAVE_LENSFUN")
@@ -308,6 +377,7 @@ endif(LENSFUN_FOUND)
 
 if(OPENEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")
+  set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} j2c j2k jp2 jpc CACHE INTERNAL "")
 endif(OPENEXR_FOUND)
 
 if(USE_OPENCL)
@@ -331,6 +401,11 @@ if(GPHOTO2_FOUND)
   else()
     add_definitions("-DHAVE_GPHOTO_25_OR_NEWER")
   endif()
+
+  # CPack ignores variables you define in your CMakeLists.txt file,
+  # and only variables ${CPACK_*} are correctly used.
+  # so this needs to be saved by adding another variable with a name beginning with CPACK
+  set( CPACK_NSIS_GPHOTO2_VERSION ${GPHOTO2_VERSION_STRING} CACHE STRING "GPHOT2 version string")
 endif(GPHOTO2_FOUND)
 
 # Check for __builtin_cpu_supports here due to a bug in clang/llvm. LLVM uses
@@ -348,35 +423,27 @@ if(HAVE_BUILTIN_CPU_SUPPORTS)
 endif(HAVE_BUILTIN_CPU_SUPPORTS)
 MESSAGE(STATUS "Does the compiler support __builtin_cpu_supports(): ${HAVE_BUILTIN_CPU_SUPPORTS}")
 
-#
-# Set default compile flags for GCC
-#
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fno-strict-aliasing")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-strict-aliasing")
+check_c_source_compiles("
+static __thread int tls;
+int main(void)
+{
+  return 0;
+}" HAVE_TLS)
+if(NOT HAVE_TLS)
+  MESSAGE(FATAL_ERROR "The compiler does not support Thread-local storage.")
+endif()
 
-if(NOT WIN32)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-endif(NOT WIN32)
 
 if(WIN32)
-  # get rid of the console window. do we need both?
-#   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -Wl,-subsystem,windows")
-#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows -Wl,-subsystem,windows")
-
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc -municode")
   set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
 
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mms-bitfields")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mms-bitfields")
+  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
+  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
 
-  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
-  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
-
-  list(APPEND LIBS ws2_32)
-  list(APPEND LIBS msvcrt) # Needed for _aligned_alloc()
-  list(APPEND SOURCES "win/getrusage.c")
+  list(APPEND LIBS psapi) # Needed for GetProcessMemoryInfo()
+  list(APPEND LIBS exchndl) # Needed for exception handling and backtrace()
 endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
@@ -385,25 +452,7 @@ if(NOT CUSTOM_CFLAGS)
     set(DT_REQ_INSTRUCTIONS "-msse2")
   endif()
 
-  if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
-    set(MARCH "-msse4.2")
-  elseif(NOT BINARY_PACKAGE_BUILD AND (NOT APPLE OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
-    MESSAGE("-- Checking for -march=native support")
-    CHECK_C_COMPILER_FLAG("-march=native" MARCHNATIVE)
-    if (MARCHNATIVE)
-      set(MARCH "-march=native")
-    else()
-      MESSAGE("-- Checking for -mtune=native support")
-      CHECK_C_COMPILER_FLAG("-mtune=native" MTUNENATIVE)
-      if (MTUNENATIVE)
-        set(MARCH "-mtune=native")
-      else()
-        set(MARCH "-mtune=generic")
-      endif()
-    endif()
-  else()
-    set(MARCH "-mtune=generic")
-  endif()
+  include(march-mtune)
 
   #if(NOT BUILD_SSE2_CODEPATHS)
   #  set(MARCH "${MARCH} -mno-sse2 -D__DISABLE_SSE2__ -U__SSE2__ -D__DISABLE_SSE__ -U__SSE__")
@@ -414,8 +463,6 @@ if(NOT CUSTOM_CFLAGS)
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O2")
   set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fno-finite-math-only")
   if(CMAKE_COMPILER_IS_GNUCC)
-    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-
     if(BUILD_SSE2_CODEPATHS)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
     endif()
@@ -430,8 +477,6 @@ if(NOT CUSTOM_CFLAGS)
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O2")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fno-finite-math-only")
   if(CMAKE_COMPILER_IS_GNUCXX)
-    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-
     if(BUILD_SSE2_CODEPATHS)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
     endif()
@@ -447,24 +492,25 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 
 #
-# Generate config.h and version.h. they are split so that a change to version.h isn't recompiling half of dt
+# Generate config.h
 #
+string(REPLACE ";" "\", \"" DT_SUPPORTED_EXTENSIONS_STRING "${DT_SUPPORTED_EXTENSIONS}")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/version.h" @ONLY)
+
 include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 
 #
 # Build external deps
 #
 if(USE_LUA)
-  find_package(Lua52 5.2)
-  if(LUA52_FOUND)
+  find_package(Lua53 5.3)
+  if(LUA53_FOUND)
     message(STATUS "Lua support: Enabled")
-    include_directories(SYSTEM ${LUA52_INCLUDE_DIRS})
-    list(APPEND LIBS ${LUA52_LDFLAGS})
+    include_directories(SYSTEM ${LUA53_INCLUDE_DIRS})
+    list(APPEND LIBS ${LUA53_LDFLAGS})
   else()
     if(DONT_USE_INTERNAL_LUA)
-      message(STATUS "Lua support: System library for lua 5.2 not found (to use darktable's version use -DDONT_USE_INTERNAL_LUA=Off)")
+      message(STATUS "Lua support: System library for lua 5.3 not found (to use darktable's version use -DDONT_USE_INTERNAL_LUA=Off)")
       set(USE_LUA OFF)
     else(DONT_USE_INTERNAL_LUA)
       message(STATUS "Lua support: System library not found (using darktable's version)")
@@ -472,7 +518,7 @@ if(USE_LUA)
       add_subdirectory(external/lua)
       list(APPEND LIBS lua)
     endif(DONT_USE_INTERNAL_LUA)
-  endif(LUA52_FOUND)
+  endif(LUA53_FOUND)
 
   if(USE_LUA)
     add_definitions("-DUSE_LUA")
@@ -511,9 +557,11 @@ if(USE_LUA)
       "lua/widget/entry.c"
       "lua/widget/file_chooser.c"
       "lua/widget/label.c"
+      "lua/widget/section_label.c"
       "lua/widget/separator.c"
       "lua/widget/slider.c"
       "lua/widget/stack.c"
+      "lua/widget/text_view.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
   endif(USE_LUA)
@@ -521,25 +569,30 @@ else(USE_LUA)
   message(STATUS "Lua support: Disabled")
 endif(USE_LUA)
 
+if(USE_LUA)
+  if(NOT LUA53_FOUND)
+    list(APPEND LIB_DEPS lua) # 2nd half of the uglyness :/
+  endif(NOT LUA53_FOUND)
+  # liblautoc for lua automated interface generation
+  add_library(lautoc_static STATIC IMPORTED)
+  set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a POSITION_INDEPENDENT_CODE True)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/)
+  add_subdirectory(external/LuaAutoC)
+  list(APPEND LIB_DEPS lautoc)
+  list(APPEND STATIC_LIBS lautoc_static)
+endif(USE_LUA)
+
 find_package(Pugixml 1.2 REQUIRED)
 include_directories(SYSTEM ${Pugixml_INCLUDE_DIRS})
 list(APPEND LIBS ${Pugixml_LIBRARIES})
 
-#
-# the rawspeed part is a bit of a hack:
-# the static linking didn't work since it was pulling -lstdc++ and -lm into linker flags.
-# so we do a custom dependency and pretend an imported librawsped.a so no other -l are
-# appended.
-#
-add_library(rawspeed_static STATIC IMPORTED)
-set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/rawspeed/librawspeed.a)
-# compile rawspeed
-add_subdirectory(external/rawspeed)
-list(APPEND LIB_DEPS rawspeed)
-list(APPEND STATIC_LIBS rawspeed_static)
+if(NOT SOURCE_PACKAGE AND NOT APPLE)
+  # apple build fails on deprecated warnings..
+  add_definitions(-Werror)
+endif()
 
 # osm gps map library
-if(USE_GEO)
+if(USE_MAP)
   find_package(OSMGpsMap)
   if(OSMGPSMAP_FOUND)
     message(STATUS "Map mode: enabled")
@@ -547,17 +600,20 @@ if(USE_GEO)
     if(NOT OSMGPSMAP_VERSION VERSION_LESS 1.1.0)
       add_definitions("-DHAVE_OSMGPSMAP_110_OR_NEWER")
     endif()
+    if(OSMGPSMAP_VERSION VERSION_GREATER 1.1.0)
+      add_definitions("-DHAVE_OSMGPSMAP_NEWER_THAN_110")
+    endif()
     include_directories(SYSTEM ${OSMGPSMAP_INCLUDE_DIRS})
     list(APPEND LIBS ${OSMGPSMAP_LIBRARIES})
     add_definitions(${OSMGPSMAP_DEFINITIONS})
   else(OSMGPSMAP_FOUND)
-    set(USE_GEO OFF)
+    set(USE_MAP OFF)
     message(STATUS "Map mode: disabled, please install libosmgpsmap")
   endif(OSMGPSMAP_FOUND)
 
-else(USE_GEO)
+else(USE_MAP)
   message(STATUS "Map mode: disabled")
-endif(USE_GEO)
+endif(USE_MAP)
 
 # libcolord-gtk:
 if(USE_COLORD)
@@ -585,31 +641,16 @@ if(USE_COLORD)
   endif(COLORD_FOUND)
 endif(USE_COLORD)
 
-if(USE_LUA)
-  if(NOT LUA52_FOUND)
-    list(APPEND LIB_DEPS liblua) # 2nd half of the uglyness :/
-  endif(NOT LUA52_FOUND)
-  # liblautoc for lua automated interface generation
-  add_library(lautoc_static STATIC IMPORTED)
-  set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/)
-  add_subdirectory(external/LuaAutoC)
-  list(APPEND LIB_DEPS lautoc)
-  list(APPEND STATIC_LIBS lautoc_static)
-endif(USE_LUA)
-
 if(BUILD_PRINT)
-  find_package(CUPS)
+  find_package(Cups)
   if(CUPS_FOUND)
-    include_directories(SYSTEM ${CUPS_INCLUDE_DIRS})
-    add_definitions(${CUPS_DEFINITIONS})
+    include_directories(SYSTEM ${CUPS_INCLUDE_DIR})
     FILE(GLOB SOURCE_FILES_PRINT
       "common/cups_print.h"
       "common/cups_print.c"
       "common/printprof.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
-    add_library(cups_static STATIC IMPORTED)
     list(APPEND LIBS ${CUPS_LIBRARIES})
     add_definitions("-DHAVE_PRINT")
     message(STATUS "Print mode: enabled")
@@ -622,61 +663,12 @@ else(BUILD_PRINT)
 endif(BUILD_PRINT)
 
 #
-# We need C++11
-#
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-	if (GCC_VERSION VERSION_LESS 4.7)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-	else()
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-	endif()
-else()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
-
-#
 # set development flags for our code
 #
-if(NOT SOURCE_PACKAGE AND NOT APPLE)
-  # apple build fails on deprecated warnings..
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits")
-elseif(SOURCE_PACKAGE)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_RELEASE")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
+if(DT_CMAKE_INCLUDE_WHAT_YOU_USE)
+  set(CMAKE_C_INCLUDE_WHAT_YOU_USE ${DT_CMAKE_INCLUDE_WHAT_YOU_USE})
+  set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${DT_CMAKE_INCLUDE_WHAT_YOU_USE})
 endif()
-
-###### GTK+3 port ######
-#
-#  Do not include individual headers
-#
-add_definitions("-DGTK_DISABLE_SINGLE_INCLUDES")
-
-#
-# Dirty hack to enforce GTK3 behaviour in GTK2: "Replace GDK_<keyname> with GDK_KEY_<keyname>"
-#
-add_definitions("-D__GDK_KEYSYMS_COMPAT_H__")
-
-#
-#  Do not use deprecated symbols
-#
-add_definitions("-DGDK_DISABLE_DEPRECATED")
-add_definitions("-DGTK_DISABLE_DEPRECATED")
-add_definitions("-Werror=implicit-function-declaration")
-###### GTK+3 port ######
-
-###### Some good warnings ######
-# Clang-specific warnings:
-if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
-#  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ")
-endif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
-
-# Generic (gcc) warnings:
-if(CMAKE_C_COMPILER_ID STREQUAL "GCC")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wold-style-declaration")
-endif(CMAKE_C_COMPILER_ID STREQUAL "GCC")
-###### Some good warnings ######
 
 #
 # Setup generation of preference dialog files..
@@ -685,7 +677,7 @@ if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-    COMMAND ${Xsltproc_BIN} --stringparam HAVE_OPENCL ${HAVE_OPENCL} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+    COMMAND ${Xsltproc_BIN} --nonet --stringparam HAVE_OPENCL ${HAVE_OPENCL} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
     COMMENT "Generating preferences"
   )
 else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
@@ -728,7 +720,12 @@ add_custom_target(
 #
 # build libdarktable
 #
-add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${SOURCES})
+add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_BINARY_DIR}/src/version_gen.c ${SOURCES})
+
+# cmake implicitly sets GENERATED on the source file in the directory of the custom command
+# since this isn't the same directory we do have to manually set it
+set_source_files_properties(${CMAKE_BINARY_DIR}/src/version_gen.c PROPERTIES GENERATED TRUE)
+
 add_dependencies(lib_darktable generate_version)
 add_dependencies(lib_darktable generate_preferences)
 add_dependencies(lib_darktable generate_metadata)
@@ -743,22 +740,27 @@ set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
 # Link external libs
 #
 
-add_dependencies(lib_darktable ${LIB_DEPS})
-target_link_libraries(lib_darktable ${STATIC_LIBS})
-target_link_libraries(lib_darktable ${LIBS})
+if(LIB_DEPS)
+  add_dependencies(lib_darktable ${LIB_DEPS})
+endif()
+
+target_link_libraries(lib_darktable PUBLIC ${STATIC_LIBS})
+target_link_libraries(lib_darktable PRIVATE rawspeed)
+target_link_libraries(lib_darktable PUBLIC ${LIBS})
+
+unset(LIBS)
+unset(STATIC_LIBS)
+unset(LIB_DEPS)
 
 #
 # Install lib_darktable
 #
 if(WIN32)
   # Windows needs its DLLs in the same directory as the executable to find them.
-  install(TARGETS lib_darktable DESTINATION bin)
+  install(TARGETS lib_darktable DESTINATION bin COMPONENT DTApplication)
 else(WIN32)
-  install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
+  install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable)
 endif(WIN32)
-
-# make sure static libs is first
-list(INSERT LIBS 0 lib_darktable ${STATIC_LIBS})
 
 # Compile views modules
 add_subdirectory(views)
@@ -788,32 +790,33 @@ if(BUILD_CMSTEST)
   add_subdirectory(cmstest)
 endif(BUILD_CMSTEST)
 
-# build opengl slideshow viewer?
-if(BUILD_SLIDESHOW)
-  find_package(SDL)
-  find_package(OpenGL)
-  if(SDL_FOUND AND OPENGL_FOUND)
-    add_subdirectory(dtview)
-  endif(SDL_FOUND AND OPENGL_FOUND)
-endif(BUILD_SLIDESHOW)
+# have a gui tool to create CLUTs from colour chart targets
+add_subdirectory(chart)
+
+# have some test programs for unit testing, ...
+if(BUILD_TESTS)
+  add_subdirectory(tests)
+endif(BUILD_TESTS)
 
 #
 # build darktable executable
 #
 add_executable(darktable ${SUBSYSTEM_MACOSX} ${SUBSYSTEM_WIN32} main.c ${RESOURCE_OBJECT})
-if(NOT WIN32)
-  # Windows doesn't know the concept of RPATHs :(
-  set_target_properties(darktable PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-  set_target_properties(darktable PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-  if(APPLE)
-    set_target_properties(darktable PROPERTIES INSTALL_RPATH @loader_path/../${LIB_INSTALL}/darktable)
-  else(APPLE)
-    set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
-  endif(APPLE)
-endif(NOT WIN32)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon -framework AppKit")
 endif(APPLE)
-target_link_libraries(darktable ${LIBS})
-install(TARGETS darktable DESTINATION bin)
+target_link_libraries(darktable lib_darktable)
+
+if (WIN32)
+  set_target_properties(darktable PROPERTIES LINK_FLAGS "-mwindows -Wl,-subsystem,windows")
+  _detach_debuginfo (darktable bin)
+  _detach_debuginfo (lib_darktable bin)
+endif(WIN32)
+
+install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)
+
+InstallDependencyFiles()
+
+# Tell CPack about the components and group the data components together (CPACK_COMPONENT_${COMPONENT_NAME_ALL_CAPS}_GROUP).
+set(CPACK_COMPONENTS_ALL DTApplication DTDebugSymbols DTDocuments)

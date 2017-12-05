@@ -16,8 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_POINTS_H
-#define DT_POINTS_H
+
+#pragma once
 
 #ifndef __SSE2__
 
@@ -576,8 +576,8 @@ inline static void gen_rand_array(struct sfmt_state_t *s, w128_t *array, int siz
  *
  * The new BSD License is applied to this software, see LICENSE.txt
  */
-#include <string.h>
 #include <assert.h>
+#include <string.h>
 //#include "SFMT.h"
 //#include "SFMT-params.h"
 
@@ -1163,7 +1163,6 @@ static inline float dt_points_get()
   return dt_points_get_for(darktable.points, dt_get_thread_num());
 }
 
-#endif
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __DT_CONTROL_CRAWLER_H__
-#define __DT_CONTROL_CRAWLER_H__
+#pragma once
 
 #include <glib.h>
 
@@ -36,9 +35,6 @@ GList *dt_control_crawler_run();
 
 // show a popup with the images, let the user decide what to do and free the list afterwards
 void dt_control_crawler_show_image_list(GList *images);
-
-#endif // __DT_CONTROL_CRAWLER_H__
-
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

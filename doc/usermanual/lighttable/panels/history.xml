@@ -1,3 +1,8 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+                <!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+                %darktable_dtd;
+                ]>
 <sect2 status="final" id="history_stack">
 
   <title>History stack</title>
@@ -30,11 +35,11 @@
     </tgroup>
   </informaltable>
 
-  <sect3>
+  <sect3 id="history_stack_usage">
 
     <title>Usage</title>
 
-    <sect4>
+    <sect4 id="history_stack_usage_copy">
 
       <title>copy</title>
 
@@ -46,7 +51,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="history_stack_usage_copy_all">
 
       <title>copy all</title>
 
@@ -58,7 +63,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="history_stack_usage_discard">
 
       <title>discard</title>
 
@@ -69,26 +74,7 @@
 
     </sect4>
 
-    <sect4>
-
-      <title>overwrite/append</title>
-
-      <para>
-        This setting defines how a new history stack behaves when pasted on an image that
-        already has a history stack. <quote>Overwrite</quote> will delete the previous history
-        stack, whereas <quote>append</quote> will concatenate the two history stacks.
-      </para>
-
-      <para>
-        <emphasis>Caution: only in <quote>append</quote> mode you keep the option to later
-        reconstruct your existing history stack whereas in <quote>overwrite</quote> mode your
-        previous edit gets irrevocably lost. Beware, the setting of this parameter remains
-        effective when you quit darktable.</emphasis>
-      </para>
-
-    </sect4>
-
-    <sect4>
+    <sect4 id="history_stack_usage_paste">
 
       <title>paste</title>
 
@@ -100,7 +86,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="history_stack_usage_paste_all">
 
       <title>paste all</title>
 
@@ -111,7 +97,35 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="history_stack_usage_mode">
+
+      <title>mode</title>
+
+      <para>
+        This setting defines how a new history stack behaves when pasted on an image that
+        already has a history stack. The <quote>overwrite</quote> mode deletes the previous
+        history stack, whereas <quote>append</quote> will concatenate the two history stacks.
+      </para>
+
+      <para>
+        <emphasis>Note: if you use <quote>overwrite</quote> mode to paste history stack
+        entries to the images that wasn't opened in darkroom previously, i.e. the automatic
+        module presets weren't already applied to the image, next time you open said image
+        in darkroom, the automatic presets will be applied to the image. So it may seem
+        as if the <quote>overwrite</quote> mode did not actually override the existing
+        history stack, but in fact it did override it, and the rest was added later.</emphasis>
+      </para>
+
+      <para>
+        <emphasis>Caution: only in <quote>append</quote> mode you keep the option to later
+        reconstruct your existing history stack whereas in <quote>overwrite</quote> mode your
+        previous edit gets irrevocably lost. Beware, the setting of this parameter remains
+        effective when you quit darktable.</emphasis>
+      </para>
+
+    </sect4>
+
+    <sect4 id="history_stack_usage_load_xmp">
 
       <title>load sidecar file</title>
 
@@ -134,12 +148,12 @@
         feature and its limitations). You can load an exported image as a sidecar file in the
         same way as you do with an XMP file. This feature allows you to recover all parameter
         settings in case you have accidentally lost or overwritten the XMP file. All you need is
-        the source image, typically a RAW, and the exported file.
+        the source image, typically a raw, and the exported file.
       </para>
 
     </sect4>
 
-    <sect4>
+    <sect4 id="history_stack_usage_write_xmp">
 
       <title>write sidecar files</title>
 

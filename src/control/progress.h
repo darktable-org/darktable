@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CONTROL_JOBS_H__
-#define __CONTROL_JOBS_H__
+#pragma once
 
 #include <glib.h>
 
@@ -29,6 +28,8 @@ typedef struct _dt_progress_t dt_progress_t;
 
 typedef void (*dt_progress_cancel_callback_t)(dt_progress_t *progress, void *data);
 
+/* init the progress system, basically making sure that any global progress bar is hidden */
+void dt_control_progress_init(struct dt_control_t *control);
 
 /** create a new progress object and add it to the gui. pass it to dt_control_progress_destroy() to free the
  * resources. */
@@ -54,6 +55,8 @@ double dt_control_progress_get_progress(dt_progress_t *progress);
 
 /** get the message passed during construction. */
 const gchar *dt_control_progress_get_message(dt_progress_t *progress);
+/** update the message. */
+void dt_control_progress_set_message(struct dt_control_t *control, dt_progress_t *progress, const char *message);
 
 /** these functions are to be used by lib/backgroundjobs.c only. */
 void dt_control_progress_set_gui_data(dt_progress_t *progress, void *data);
@@ -64,9 +67,6 @@ gboolean dt_control_progress_has_progress_bar(dt_progress_t *progress);
 
 /** has a job been linked to the progress object? */
 gboolean dt_control_progress_cancellable(dt_progress_t *progress);
-
-
-#endif // __CONTROL_JOBS_H__
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

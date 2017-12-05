@@ -15,16 +15,16 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
    */
-#include <glib.h>
+#include "lua/gui.h"
 #include "common/collection.h"
-#include "common/selection.h"
 #include "common/darktable.h"
+#include "common/selection.h"
 #include "control/control.h"
 #include "control/settings.h"
-#include "lua/gui.h"
+#include "lua/call.h"
 #include "lua/image.h"
 #include "lua/types.h"
-#include "lua/call.h"
+#include <glib.h>
 
 /***********************************************************************
   Creating the images global variable
@@ -104,13 +104,9 @@ static int current_view_cb(lua_State *L)
 {
   if(lua_gettop(L) > 0)
   {
-    dt_view_t *module;
-    luaA_to(L,dt_lua_view_t,&module,1);
-    int i = 0;
-    while(i < darktable.view_manager->num_views && module != &darktable.view_manager->view[i]) i++;
-    if(i == darktable.view_manager->num_views)
-      return luaL_error(L, "should never happen : %s %d\n", __FILE__, __LINE__);
-    dt_ctl_switch_mode_to(i);
+    dt_view_t *view;
+    luaA_to(L, dt_lua_view_t, &view, 1);
+    dt_ctl_switch_mode_to_by_view(view);
   }
   const dt_view_t *current_view = dt_view_manager_get_current_view(darktable.view_manager);
   dt_lua_module_entry_push(L, "view", current_view->module_name);

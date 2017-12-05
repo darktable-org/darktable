@@ -16,13 +16,18 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_CAMERA_CONTROL_H
-#define DT_CAMERA_CONTROL_H
+#pragma once
 
 #include "common/darktable.h"
 
-#include <gphoto2/gphoto2.h>
 #include <glib.h>
+
+#if defined (_WIN32)
+#ifdef interface
+#undef interface
+#endif
+#endif //defined (_WIN32)
+#include <gphoto2/gphoto2.h>
 #include <gtk/gtk.h>
 
 
@@ -161,11 +166,12 @@ typedef struct dt_camctl_listener_t
 
   /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That
    * only one listener should implement this at time... */
-  const char *(*request_image_path)(const dt_camera_t *camera, void *data);
+  const char *(*request_image_path)(const dt_camera_t *camera, time_t *exif_time, void *data);
 
   /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That
    * only one listener should implement this at time... */
-  const char *(*request_image_filename)(const dt_camera_t *camera, const char *filename, void *data);
+  const char *(*request_image_filename)(const dt_camera_t *camera, const char *filename, time_t *exif_time,
+                                        void *data);
 
   /** Invoked when a image is downloaded while in tethered mode or  by import */
   void (*image_downloaded)(const dt_camera_t *camera, const char *filename, void *data);
@@ -258,8 +264,6 @@ const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c, cons
 /** build a popup menu with all properties available */
 void dt_camctl_camera_build_property_menu(const dt_camctl_t *c, const dt_camera_t *cam, GtkMenu **menu,
                                           GCallback item_activate, gpointer user_data);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

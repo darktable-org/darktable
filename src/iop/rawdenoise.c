@@ -22,7 +22,6 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
-#include "common/gaussian.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -71,12 +70,6 @@ int flags()
 int groups()
 {
   return IOP_GROUP_CORRECT;
-}
-
-int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
-  return 4*sizeof(float);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -358,29 +351,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  if (dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
-  {
-    const float radius = 30.0f*powf(fmax(0.0f, d->threshold), 0.7f);  // just a rough visual match
-    const float sigma = radius * roi_in->scale / piece ->iscale;
-    const int order = 0;
-    const int ch = 4;
-
-    const float RGBmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
-    const float RGBmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
-
-    dt_gaussian_t *g = dt_gaussian_init(width, height, ch, RGBmax, RGBmin, sigma, order);
-    if(!g) return;
-    dt_gaussian_blur_4c(g, ivoid, ovoid);
-    dt_gaussian_free(g);
-  }
-  else if (!(d->threshold > 0.0f))
+  if(!(d->threshold > 0.0f))
   {
     memcpy(ovoid, ivoid, (size_t)sizeof(float)*width*height);
   }
   else
   {
-    uint32_t filters = dt_image_filter(&piece->pipe->image);
-    const uint8_t (*const xtrans)[6] = (const uint8_t (*const)[6]) self->dev->image_storage.xtrans;
+    const uint32_t filters = piece->pipe->dsc.filters;
+    const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
     if (filters != 9u)
       wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, filters);
     else
@@ -416,7 +394,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // raw denoise must come just before demosaicing.
-  module->priority = 107; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 102; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rawdenoise_params_t);
   module->gui_data = NULL;
 }

@@ -15,19 +15,19 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DARKTABLE_DEVELOP_H
-#define DARKTABLE_DEVELOP_H
 
-#include <inttypes.h>
+#pragma once
+
 #include <cairo.h>
 #include <glib.h>
+#include <inttypes.h>
 #include <stdint.h>
 
 #include "common/darktable.h"
 #include "common/dtpthread.h"
+#include "common/image.h"
 #include "control/settings.h"
 #include "develop/imageop.h"
-#include "common/image.h"
 
 struct dt_iop_module_t;
 
@@ -49,6 +49,19 @@ typedef enum dt_dev_overexposed_colorscheme_t
   DT_DEV_OVEREXPOSED_PURPLEGREEN = 2
 } dt_dev_overexposed_colorscheme_t;
 
+typedef enum dt_dev_rawoverexposed_mode_t {
+  DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA = 0,
+  DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID = 1,
+  DT_DEV_RAWOVEREXPOSED_MODE_FALSECOLOR = 2,
+} dt_dev_rawoverexposed_mode_t;
+
+typedef enum dt_dev_rawoverexposed_colorscheme_t {
+  DT_DEV_RAWOVEREXPOSED_RED = 0,
+  DT_DEV_RAWOVEREXPOSED_GREEN = 1,
+  DT_DEV_RAWOVEREXPOSED_BLUE = 2,
+  DT_DEV_RAWOVEREXPOSED_BLACK = 3
+} dt_dev_rawoverexposed_colorscheme_t;
+
 typedef enum dt_dev_histogram_type_t
 {
   DT_DEV_HISTOGRAM_LOGARITHMIC = 0,
@@ -64,6 +77,27 @@ typedef enum dt_dev_pixelpipe_status_t
   DT_DEV_PIXELPIPE_VALID = 2,   // pixelpipe has finished; valid result
   DT_DEV_PIXELPIPE_INVALID = 3  // pixelpipe has finished; invalid result
 } dt_dev_pixelpipe_status_t;
+
+typedef enum dt_dev_pixelpipe_display_mask_t
+{
+  DT_DEV_PIXELPIPE_DISPLAY_NONE = 0,
+  DT_DEV_PIXELPIPE_DISPLAY_MASK = 1 << 0,
+  DT_DEV_PIXELPIPE_DISPLAY_CHANNEL = 1 << 1,
+  DT_DEV_PIXELPIPE_DISPLAY_OUTPUT = 1 << 2,
+  DT_DEV_PIXELPIPE_DISPLAY_L = 1 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_a = 2 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_b = 3 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_R = 4 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_G = 5 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_B = 6 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_GRAY = 7 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_LCH_C = 8 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_LCH_h = 9 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2
+} dt_dev_pixelpipe_display_mask_t;
 
 extern const gchar *dt_dev_histogram_type_names[];
 
@@ -131,6 +165,8 @@ typedef struct dt_develop_t
   GList *forms;
   struct dt_masks_form_t *form_visible;
   struct dt_masks_form_gui_t *form_gui;
+  // all forms to be linked here for cleanup:
+  GList *allforms;
 
   //full preview stuff
   int full_preview;
@@ -195,6 +231,18 @@ typedef struct dt_develop_t
     float upper;
   } overexposed;
 
+  // for the raw overexposure indicator
+  struct
+  {
+    guint timeout;
+    GtkWidget *floating_window, *button; // yes, having gtk stuff in here is ugly. live with it.
+
+    gboolean enabled;
+    dt_dev_rawoverexposed_mode_t mode;
+    dt_dev_rawoverexposed_colorscheme_t colorscheme;
+    float threshold;
+  } rawoverexposed;
+
   // the display profile related things (softproof, gamut check, profiles ...)
   struct
   {
@@ -222,6 +270,8 @@ void dt_dev_reload_history_items(dt_develop_t *dev);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
 void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history(dt_develop_t *dev);
+void dt_dev_free_history_item(gpointer data);
+void dt_dev_invalidate_history_module(GList *list, struct dt_iop_module_t *module);
 
 void dt_dev_invalidate(dt_develop_t *dev);
 // also invalidates preview (which is unaffected by resize/zoom/pan)
@@ -327,12 +377,23 @@ struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, st
 uint64_t dt_dev_hash(dt_develop_t *dev);
 /** same function, but we can specify iop with priority between pmin and pmax */
 uint64_t dt_dev_hash_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax);
+/** wait until hash value found in hash matches hash value defined by dev/pipe/pmin/pmax with timeout */
+int dt_dev_wait_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                     const volatile uint64_t *const hash);
+/** synchronize pixelpipe by means hash values by waiting with timeout and potential reprocessing */
+int dt_dev_sync_pixelpipe_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                               const volatile uint64_t *const hash);
 /** generate hash value out of module settings of all distorting modules of pixelpipe */
 uint64_t dt_dev_hash_distort(dt_develop_t *dev);
 /** same function, but we can specify iop with priority between pmin and pmax */
 uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax);
+/** same as dt_dev_wait_hash but only for distorting modules */
+int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                             const volatile uint64_t *const hash);
+/** same as dt_dev_sync_pixelpipe_hash but ony for distorting modules */
+int dt_dev_sync_pixelpipe_hash_distort (dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+                                        const volatile uint64_t *const hash);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

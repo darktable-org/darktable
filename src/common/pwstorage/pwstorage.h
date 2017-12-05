@@ -14,8 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef __PWSTORAGE_H__
-#define __PWSTORAGE_H__
+#pragma once
 
 #include "common/darktable.h"
 
@@ -41,8 +40,6 @@ void dt_pwstorage_destroy(const dt_pwstorage_t *pwstorage);
 gboolean dt_pwstorage_set(const gchar *slot, GHashTable *table);
 /** Load (key,value) pairs. */
 GHashTable *dt_pwstorage_get(const gchar *slot);
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

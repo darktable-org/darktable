@@ -16,16 +16,16 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 * ------------------------------------------------------------------------*/
 
-#include "common/darktable.h"
 #include "common/interpolation.h"
+#include "common/darktable.h"
 #include "control/conf.h"
 
+#include <assert.h>
+#include <glib.h>
+#include <inttypes.h>
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <inttypes.h>
-#include <glib.h>
-#include <assert.h>
 
 /** Border extrapolation modes */
 enum border_mode
@@ -1827,34 +1827,24 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
   // a number of parallel work items each taking care of one horizontal convolution,
   // then sum over work items to do the vertical convolution
 
-  int kernel = darktable.opencl->interpolation->kernel_interpolation_resample;
+  const int kernel = darktable.opencl->interpolation->kernel_interpolation_resample;
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
-
   // make sure blocksize is not too large
-  int taps = roundToNextPowerOfTwo(vmaxtaps); // the number of work items per row rounded up to a power of 2
-                                              // (for quick recursive reduction)
-  int vblocksize = 2048 * taps; // start with large blocksize, then shrink by factors of 2 till it fits
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, kernel, &kernelworkgroupsize) == CL_SUCCESS)
-  {
-    // reduce blocksize step by step until it fits to limits
-    while(vblocksize > maxsizes[1] || vblocksize > kernelworkgroupsize || vblocksize > workgroupsize
-          || vblocksize * 4 * sizeof(float) + hmaxtaps * sizeof(float) + hmaxtaps * sizeof(int) > localmemsize)
-    {
-      if(vblocksize == 1) break;
-      vblocksize >>= 1;
-    }
-  }
+  const int taps = roundToNextPowerOfTwo(vmaxtaps); // the number of work items per row rounded up to a power of 2
+                                                    // (for quick recursive reduction)
+  int vblocksize;
+
+  dt_opencl_local_buffer_t locopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = 4 * sizeof(float), .overhead = hmaxtaps * sizeof(float) + hmaxtaps * sizeof(int),
+                                  .sizex = 1, .sizey = (1 << 16) * taps };
+
+  if(dt_opencl_local_buffer_opt(devid, kernel, &locopt))
+    vblocksize = locopt.sizey;
   else
-  {
     vblocksize = 1;
-  }
 
   if(vblocksize < taps)
   {
@@ -1867,15 +1857,8 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
     goto error;
   }
 
-  size_t sizes[3];
-  size_t local[3];
-
-  sizes[0] = ROUNDUPWD(width);
-  sizes[1] = ROUNDUP(height * taps, vblocksize);
-  sizes[2] = 1;
-  local[0] = 1;
-  local[1] = vblocksize;
-  local[2] = 1;
+  size_t sizes[3] = { ROUNDUPWD(width), ROUNDUP(height * taps, vblocksize), 1 };
+  size_t local[3] = { 1, vblocksize, 1 };
 
   // store resampling plan to device memory
   // hindex, vindex, hkernel, vkernel: (v|h)maxtaps might be too small, so store a bit more than needed
@@ -1944,14 +1927,14 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
   return CL_SUCCESS;
 
 error:
-  if(dev_hindex != NULL) dt_opencl_release_mem_object(dev_hindex);
-  if(dev_hlength != NULL) dt_opencl_release_mem_object(dev_hlength);
-  if(dev_hkernel != NULL) dt_opencl_release_mem_object(dev_hkernel);
-  if(dev_hmeta != NULL) dt_opencl_release_mem_object(dev_hmeta);
-  if(dev_vindex != NULL) dt_opencl_release_mem_object(dev_vindex);
-  if(dev_vlength != NULL) dt_opencl_release_mem_object(dev_vlength);
-  if(dev_vkernel != NULL) dt_opencl_release_mem_object(dev_vkernel);
-  if(dev_vmeta != NULL) dt_opencl_release_mem_object(dev_vmeta);
+  dt_opencl_release_mem_object(dev_hindex);
+  dt_opencl_release_mem_object(dev_hlength);
+  dt_opencl_release_mem_object(dev_hkernel);
+  dt_opencl_release_mem_object(dev_hmeta);
+  dt_opencl_release_mem_object(dev_vindex);
+  dt_opencl_release_mem_object(dev_vlength);
+  dt_opencl_release_mem_object(dev_vkernel);
+  dt_opencl_release_mem_object(dev_vmeta);
   dt_free_align(hlength);
   dt_free_align(vlength);
   dt_print(DT_DEBUG_OPENCL, "[opencl_resampling] couldn't enqueue kernel! %d\n", err);

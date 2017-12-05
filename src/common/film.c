@@ -16,32 +16,32 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
-#include "control/control.h"
-#include "control/conf.h"
-#include "control/jobs.h"
-#include "control/progress.h"
 #include "common/film.h"
-#include "common/dtpthread.h"
 #include "common/collection.h"
-#include "common/image_cache.h"
+#include "common/darktable.h"
 #include "common/debug.h"
+#include "common/dtpthread.h"
+#include "common/image_cache.h"
+#include "common/tags.h"
+#include "control/conf.h"
+#include "control/control.h"
+#include "control/jobs.h"
 #include "views/view.h"
 
+#include <assert.h>
+#include <errno.h>
+#include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
-#include <unistd.h>
-#include <math.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <string.h>
 #include <strings.h>
-#include <errno.h>
-#include <assert.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #ifdef USE_LUA
-#include "lua/lua.h"
 #include "lua/glist.h"
+#include "lua/lua.h"
 #endif
 
 void dt_film_init(dt_film_t *film)
@@ -71,7 +71,7 @@ void dt_film_set_query(const int32_t id)
   dt_conf_set_int("plugins/lighttable/collect/item0", 0);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select id, folder from film_rolls where id = ?1", -1, &stmt, NULL);
+                              "SELECT id, folder FROM main.film_rolls WHERE id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -90,7 +90,7 @@ int dt_film_open2(dt_film_t *film)
   /* query database for id and folder */
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select id, folder from film_rolls where id = ?1", -1, &stmt, NULL);
+                              "SELECT id, folder FROM main.film_rolls WHERE id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film->id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -101,7 +101,7 @@ int dt_film_open2(dt_film_t *film)
     dt_gettime(datetime, sizeof(datetime));
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "update film_rolls set datetime_accessed = ?1 where id = ?2", -1, &stmt,
+                                "UPDATE main.film_rolls SET datetime_accessed = ?1 WHERE id = ?2", -1, &stmt,
                                 NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, film->id);
@@ -124,7 +124,7 @@ int dt_film_open(const int32_t id)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select id, folder from film_rolls where id = ?1", -1, &stmt, NULL);
+                              "SELECT id, folder FROM main.film_rolls WHERE id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -133,7 +133,7 @@ int dt_film_open(const int32_t id)
     dt_gettime(datetime, sizeof(datetime));
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "update film_rolls set datetime_accessed = ?1 where id = ?2", -1, &stmt,
+                                "UPDATE main.film_rolls SET datetime_accessed = ?1 WHERE id = ?2", -1, &stmt,
                                 NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
@@ -152,7 +152,7 @@ int dt_film_open_recent(const int num)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select id from film_rolls order by datetime_accessed desc limit ?1,1", -1,
+                              "SELECT id FROM main.film_rolls ORDER BY datetime_accessed DESC LIMIT ?1,1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, num);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -163,7 +163,7 @@ int dt_film_open_recent(const int num)
     char datetime[20];
     dt_gettime(datetime, sizeof(datetime));
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "update film_rolls set datetime_accessed = ?1 where id = ?2", -1, &stmt,
+                                "UPDATE main.film_rolls SET datetime_accessed = ?1 WHERE id = ?2", -1, &stmt,
                                 NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
@@ -180,7 +180,7 @@ int dt_film_new(dt_film_t *film, const char *directory)
   film->id = -1;
   int rc;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from film_rolls where folder = ?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.film_rolls WHERE folder = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, directory, -1, SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
@@ -189,12 +189,11 @@ int dt_film_new(dt_film_t *film, const char *directory)
   if(film->id <= 0)
   {
     // create a new filmroll
-    sqlite3_stmt *stmt;
     char datetime[20];
     dt_gettime(datetime, sizeof(datetime));
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "insert into film_rolls (id, datetime_accessed, folder) "
-                                "values (null, ?1, ?2)",
+                                "INSERT INTO main.film_rolls (id, datetime_accessed, folder) "
+                                "VALUES (NULL, ?1, ?2)",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, directory, -1, SQLITE_STATIC);
@@ -204,7 +203,7 @@ int dt_film_new(dt_film_t *film, const char *directory)
       fprintf(stderr, "[film_new] failed to insert film roll! %s\n",
               sqlite3_errmsg(dt_database_get(darktable.db)));
     sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from film_rolls where folder=?1",
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.film_rolls WHERE folder=?1",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, directory, -1, SQLITE_STATIC);
     if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
@@ -229,7 +228,7 @@ int dt_film_import(const char *dirname)
   film->id = -1;
 
   /* lookup if film exists and reuse id */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from film_rolls where folder = ?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.film_rolls WHERE folder = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dirname, -1, SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
@@ -242,8 +241,8 @@ int dt_film_import(const char *dirname)
     dt_gettime(datetime, sizeof(datetime));
     /* insert a new film roll into database */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "insert into film_rolls (id, datetime_accessed, folder) values "
-                                "(null, ?1, ?2)",
+                                "INSERT INTO main.film_rolls (id, datetime_accessed, folder) VALUES "
+                                "(NULL, ?1, ?2)",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dirname, -1, SQLITE_STATIC);
@@ -255,7 +254,7 @@ int dt_film_import(const char *dirname)
     sqlite3_finalize(stmt);
 
     /* requery for filmroll and fetch new id */
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from film_rolls where folder=?1",
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.film_rolls WHERE folder=?1",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dirname, -1, SQLITE_STATIC);
     if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
@@ -275,249 +274,89 @@ int dt_film_import(const char *dirname)
     return 0;
   }
 
+  // when called without job system running the import will be done synchronously and destroy the film object
+  int filmid = film->id;
+
   /* at last put import film job on queue */
   film->last_loaded = 0;
   g_strlcpy(film->dirname, dirname, sizeof(film->dirname));
+  char *last = &film->dirname[strlen(film->dirname) - 1];
+  if(*last == '/' && last != film->dirname) *last = '\0'; // remove the closing /, unless it's also the start
   film->dir = g_dir_open(film->dirname, 0, NULL);
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_film_import1_create(film));
 
-  return film->id;
+  return filmid;
 }
 
-
-static GList *_film_recursive_get_files(const gchar *path, gboolean recursive, GList **result)
+static gboolean ask_and_delete(gpointer user_data)
 {
-  gchar *fullname;
+  GList *empty_dirs = (GList *)user_data;
+  const int n_empty_dirs = g_list_length(empty_dirs);
 
-  /* let's try open current dir */
-  GDir *cdir = g_dir_open(path, 0, NULL);
-  if(!cdir) return *result;
+  GtkWidget *dialog;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-  /* lets read all files in current dir, recurse
-     into directories if we should import recursive.
-   */
-  do
+  dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
+                                  GTK_BUTTONS_YES_NO,
+                                  ngettext("do you want to remove this empty directory?",
+                                           "do you want to remove these empty directories?", n_empty_dirs));
+
+  gtk_window_set_title(GTK_WINDOW(dialog),
+                       ngettext("remove empty directory?", "remove empty directories?", n_empty_dirs));
+
+  GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_vexpand(scroll, TRUE);
+  gtk_widget_set_margin_start(scroll, DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_end(scroll, DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_top(scroll, DT_PIXEL_APPLY_DPI(0));
+  gtk_widget_set_margin_bottom(scroll, DT_PIXEL_APPLY_DPI(0));
+
+  GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
+
+  for(GList *list_iter = empty_dirs; list_iter; list_iter = g_list_next(list_iter))
   {
-    /* get the current filename */
-    const gchar *filename = g_dir_read_name(cdir);
+    GtkTreeIter iter;
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, list_iter->data, -1);
+  }
 
-    /* return if no more files are in current dir */
-    if(!filename) break;
-    if(filename[0] == '.') continue;
+  GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
 
-    /* build full path for filename */
-    fullname = g_build_filename(G_DIR_SEPARATOR_S, path, filename, NULL);
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("name"), gtk_cell_renderer_text_new(),
+                                                                       "text", 0, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
-    /* recurse into directory if we hit one and we doing a recursive import */
-    if(recursive && g_file_test(fullname, G_FILE_TEST_IS_DIR))
-    {
-      *result = _film_recursive_get_files(fullname, recursive, result);
-      g_free(fullname);
-    }
-    /* or test if we found a supported image format to import */
-    else if(!g_file_test(fullname, G_FILE_TEST_IS_DIR) && dt_supported_image(filename))
-      *result = g_list_append(*result, fullname);
-    else
-      g_free(fullname);
+  gtk_container_add(GTK_CONTAINER(scroll), tree);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
-  } while(TRUE);
+  gtk_container_add(GTK_CONTAINER(content_area), scroll);
 
-  /* cleanup and return results */
-  g_dir_close(cdir);
+  gtk_widget_show_all(dialog); // needed for the content area!
 
-  return *result;
+  gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+  if(res == GTK_RESPONSE_YES)
+    for(GList *iter = empty_dirs; iter; iter = g_list_next(iter))
+      rmdir((char *)iter->data);
+
+  g_list_free_full(empty_dirs, g_free);
+  g_object_unref(store);
+
+  return FALSE;
 }
-
-/* compare used for sorting the list of files to import
-   only sort on basename of full path eg. the actually filename.
-*/
-int _film_filename_cmp(gchar *a, gchar *b)
-{
-  gchar *a_basename = g_path_get_basename(a);
-  gchar *b_basename = g_path_get_basename(b);
-  int ret = g_strcmp0(a_basename, b_basename);
-  g_free(a_basename);
-  g_free(b_basename);
-  return ret;
-}
-
-void dt_film_import1(dt_film_t *film)
-{
-  gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
-
-  /* first of all gather all images to import */
-  GList *images = NULL;
-  images = _film_recursive_get_files(film->dirname, recursive, &images);
-  if(g_list_length(images) == 0)
-  {
-    dt_control_log(_("no supported images were found to be imported"));
-    return;
-  }
-
-#ifdef USE_LUA
-  /* pre-sort image list for easier handling in Lua code */
-  images = g_list_sort(images, (GCompareFunc)_film_filename_cmp);
-
-  dt_lua_lock();
-  lua_State *L = darktable.lua_state.state;
-  {
-    GList *elt = images;
-    lua_newtable(L);
-    while(elt)
-    {
-      lua_pushstring(L,elt->data);
-      luaL_ref(L, -2);
-      elt = g_list_next(elt);
-    }
-  }
-  lua_pushvalue(L,-1);
-  dt_lua_event_trigger(L,"pre-import",1);
-  {
-    g_list_free_full(images,g_free);
-    // recreate list of images
-    images = NULL;
-    lua_pushnil(L); /* first key */
-    while(lua_next(L, - 2) != 0)
-    {
-      /* uses 'key' (at index -2) and 'value' (at index -1) */
-      void *filename = strdup(luaL_checkstring(L,-1));
-      lua_pop(L, 1);
-      images = g_list_prepend(images, filename);
-    }
-  }
-
-  lua_pop(L, 1); // remove the table again from the stack
-
-  dt_lua_unlock();
-#endif
-
-  if(g_list_length(images) == 0)
-  {
-    //no error message, lua probably emptied the list on purpose
-    return;
-  }
-
-  /* we got ourself a list of images, lets sort and start import */
-  images = g_list_sort(images, (GCompareFunc)_film_filename_cmp);
-
-  /* let's start import of images */
-  gchar message[512] = { 0 };
-  double fraction = 0;
-  guint total = g_list_length(images);
-  g_snprintf(message, sizeof(message) - 1, ngettext("importing %d image", "importing %d images", total),
-             total);
-  dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
-
-
-  /* loop thru the images and import to current film roll */
-  dt_film_t *cfr = film;
-  GList *image = g_list_first(images);
-  do
-  {
-    gchar *cdn = g_path_get_dirname((const gchar *)image->data);
-
-    /* check if we need to initialize a new filmroll */
-    if(!cfr || g_strcmp0(cfr->dirname, cdn) != 0)
-    {
-      // FIXME: maybe refactor into function and call it?
-      if(cfr && cfr->dir)
-      {
-        /* check if we can find a gpx data file to be auto applied
-           to images in the jsut imported filmroll */
-        g_dir_rewind(cfr->dir);
-        const gchar *dfn = NULL;
-        while((dfn = g_dir_read_name(cfr->dir)) != NULL)
-        {
-          /* check if we have a gpx to be auto applied to filmroll */
-          size_t len = strlen(dfn);
-          if(strcmp(dfn + len - 4, ".gpx") == 0 || strcmp(dfn + len - 4, ".GPX") == 0)
-          {
-            gchar *gpx_file = g_build_path(G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
-            gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
-            dt_control_gpx_apply(gpx_file, cfr->id, tz);
-            g_free(gpx_file);
-            g_free(tz);
-          }
-        }
-      }
-
-      /* cleanup previously imported filmroll*/
-      if(cfr && cfr != film)
-      {
-        if(dt_film_is_empty(cfr->id))
-        {
-          dt_film_remove(cfr->id);
-        }
-        dt_film_cleanup(cfr);
-        free(cfr);
-        cfr = NULL;
-      }
-
-      /* initialize and create a new film to import to */
-      cfr = malloc(sizeof(dt_film_t));
-      dt_film_init(cfr);
-      dt_film_new(cfr, cdn);
-    }
-
-    g_free(cdn);
-
-    /* import image */
-    dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
-
-    fraction += 1.0 / total;
-    dt_control_progress_set_progress(darktable.control, progress, fraction);
-
-
-  } while((image = g_list_next(image)) != NULL);
-
-  g_list_free_full(images, g_free);
-
-  // only redraw at the end, to not spam the cpu with exposure events
-  dt_control_queue_redraw_center();
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-
-  dt_control_progress_destroy(darktable.control, progress);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, film->id);
-
-  // FIXME: maybe refactor into function and call it?
-  if(cfr && cfr->dir)
-  {
-    /* check if we can find a gpx data file to be auto applied
-       to images in the just imported filmroll */
-    g_dir_rewind(cfr->dir);
-    const gchar *dfn = NULL;
-    while((dfn = g_dir_read_name(cfr->dir)) != NULL)
-    {
-      /* check if we have a gpx to be auto applied to filmroll */
-      size_t len = strlen(dfn);
-      if(strcmp(dfn + len - 4, ".gpx") == 0 || strcmp(dfn + len - 4, ".GPX") == 0)
-      {
-        gchar *gpx_file = g_build_path(G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
-        gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
-        dt_control_gpx_apply(gpx_file, cfr->id, tz);
-        g_free(gpx_file);
-        g_free(tz);
-      }
-    }
-  }
-
-  /* cleanup previously imported filmroll*/
-  if(cfr && cfr != film)
-  {
-    dt_film_cleanup(cfr);
-    free(cfr);
-  }
-}
-
-
 
 void dt_film_remove_empty()
 {
   // remove all empty film rolls from db:
+  GList *empty_dirs = NULL;
+  gboolean ask_before_rmdir = dt_conf_get_bool("ask_before_rmdir");
   gboolean raise_signal = FALSE;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id,folder FROM film_rolls AS B WHERE "
-                                                             "(SELECT COUNT(A.id) FROM images AS A WHERE "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id,folder FROM main.film_rolls AS B WHERE "
+                                                             "(SELECT COUNT(*) FROM main.images AS A WHERE "
                                                              "A.film_id=B.id)=0",
                               -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -526,23 +365,31 @@ void dt_film_remove_empty()
     raise_signal = TRUE;
     const gint id = sqlite3_column_int(stmt, 0);
     const gchar *folder = (const gchar *)sqlite3_column_text(stmt, 1);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM film_rolls WHERE id=?1", -1,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.film_rolls WHERE id=?1", -1,
                                 &inner_stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(inner_stmt, 1, id);
     sqlite3_step(inner_stmt);
     sqlite3_finalize(inner_stmt);
 
-    if(dt_util_is_dir_empty(folder)) rmdir(folder);
+    if(dt_util_is_dir_empty(folder))
+    {
+      if(ask_before_rmdir) empty_dirs = g_list_append(empty_dirs, g_strdup(folder));
+      else rmdir(folder);
+    }
   }
   sqlite3_finalize(stmt);
   if(raise_signal) dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_REMOVED);
+
+  // dispatch asking for deletion (and subsequent deletion) to the gui thread
+  if(empty_dirs)
+    g_idle_add(ask_and_delete, empty_dirs);
 }
 
 int dt_film_is_empty(const int id)
 {
   int empty = 0;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where film_id = ?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE film_id = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   if(sqlite3_step(stmt) != SQLITE_ROW) empty = 1;
@@ -559,7 +406,7 @@ void dt_film_remove(const int id)
   sqlite3_stmt *stmt;
 
   gboolean remove_ok = TRUE;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM images WHERE film_id = ?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE film_id = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
 
@@ -580,38 +427,38 @@ void dt_film_remove(const int id)
     return;
   }
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from tagged_images where imgid in "
-                                                             "(select id from images where film_id = ?1)",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.tagged_images WHERE imgid IN "
+                                                             "(SELECT id FROM main.images WHERE film_id = ?1)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid in "
-                                                             "(select id from images where film_id = ?1)",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid IN "
+                                                             "(SELECT id FROM main.images WHERE film_id = ?1)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from color_labels where imgid in "
-                                                             "(select id from images where film_id = ?1)",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.color_labels WHERE imgid IN "
+                                                             "(SELECT id FROM main.images WHERE film_id = ?1)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from meta_data where id in "
-                                                             "(select id from images where film_id = ?1)",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.meta_data WHERE id IN "
+                                                             "(SELECT id FROM main.images WHERE film_id = ?1)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from selected_images where imgid in "
-                                                             "(select id from images where film_id = ?1)",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.selected_images WHERE imgid IN "
+                                                             "(SELECT id FROM main.images WHERE film_id = ?1)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where film_id = ?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE film_id = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -623,21 +470,40 @@ void dt_film_remove(const int id)
   }
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from images where id in "
-                                                             "(select id from images where film_id = ?1)",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.images WHERE id IN "
+                                                             "(SELECT id FROM main.images WHERE film_id = ?1)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from film_rolls where id = ?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.film_rolls WHERE id = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   // dt_control_update_recent_films();
+
+  dt_tag_update_used_tags();
+
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
 }
+
+GList *dt_film_get_image_ids(const int filmid)
+{
+  GList *result = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE film_id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int id = sqlite3_column_int(stmt, 0);
+    result = g_list_append(result, GINT_TO_POINTER(id));
+  }
+  return result;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

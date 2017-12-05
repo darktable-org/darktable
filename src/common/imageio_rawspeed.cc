@@ -15,23 +15,24 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#include <memory>
+#include "RawSpeed-API.h"
 
-#include "rawspeed/RawSpeed/RawSpeed-API.h"
+#include <memory>
 
 #define __STDC_LIMIT_MACROS
 
 extern "C" {
-#include "imageio.h"
-#include "common/imageio_rawspeed.h"
-#include "common/exif.h"
-#include "common/darktable.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/exif.h"
 #include "common/file_location.h"
+#include "common/imageio_rawspeed.h"
+#include "imageio.h"
 #include <stdint.h>
 }
 
@@ -45,7 +46,7 @@ int rawspeed_get_number_of_processor_cores()
 #endif
 }
 
-using namespace RawSpeed;
+using namespace rawspeed;
 
 static dt_imageio_retval_t dt_imageio_open_rawspeed_sraw (dt_image_t *img, RawImage r, dt_mipmap_buffer_t *buf);
 static CameraMetaData *meta = NULL;
@@ -74,7 +75,7 @@ void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
   int got_it_done = FALSE;
   try {
     dt_rawspeed_load_meta();
-    Camera *cam = meta->getCamera(maker, model, "");
+    const Camera *cam = meta->getCamera(maker, model, "");
     // Also look for dng cameras
     if (!cam)
       cam = meta->getCamera(maker, model, "dng");
@@ -103,14 +104,9 @@ void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
 
 uint32_t dt_rawspeed_crop_dcraw_filters(uint32_t filters, uint32_t crop_x, uint32_t crop_y)
 {
-    ColorFilterArray cfa(filters);
+  if(!filters || filters == 9u) return filters;
 
-    if (crop_x & 1)
-      cfa.shiftLeft();
-    if (crop_y & 1)
-      cfa.shiftDown();
-
-    return cfa.getDcrawFilter();
+  return ColorFilterArray::shiftDcrawFilter(filters, crop_x, crop_y);
 }
 
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
@@ -118,41 +114,21 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 {
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
-#ifdef __WIN32__
-  const size_t len = strlen(filename) + 1;
-  wchar_t filen[len];
-  mbstowcs(filen, filename, len);
-  FileReader f(filen);
-#else
   char filen[PATH_MAX] = { 0 };
   snprintf(filen, sizeof(filen), "%s", filename);
   FileReader f(filen);
-#endif
 
-#ifdef __APPLE__
-  std::auto_ptr<RawDecoder> d;
-  std::auto_ptr<FileMap> m;
-#else
   std::unique_ptr<RawDecoder> d;
-  std::unique_ptr<FileMap> m;
-#endif
+  std::unique_ptr<const Buffer> m;
 
   try
   {
     dt_rawspeed_load_meta();
 
-#ifdef __APPLE__
-    m = auto_ptr<FileMap>(f.readFile());
-#else
-    m = unique_ptr<FileMap>(f.readFile());
-#endif
+    m = f.readFile();
 
     RawParser t(m.get());
-#ifdef __APPLE__
-    d = auto_ptr<RawDecoder>(t.getDecoder(meta));
-#else
-    d = unique_ptr<RawDecoder>(t.getDecoder(meta));
-#endif
+    d = t.getDecoder(meta);
 
     if(!d.get()) return DT_IMAGEIO_FILE_CORRUPTED;
 
@@ -162,8 +138,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     d->decodeMetaData(meta);
     RawImage r = d->mRaw;
 
-    for (uint32 i=0; i<r->errors.size(); i++)
-      fprintf(stderr, "[rawspeed] %s\n", r->errors[i]);
+    const auto errors = r->getErrors();
+    for(const auto &error : errors) fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
 
     g_strlcpy(img->camera_maker, r->metadata.canonical_make.c_str(), sizeof(img->camera_maker));
     g_strlcpy(img->camera_model, r->metadata.canonical_model.c_str(), sizeof(img->camera_model));
@@ -248,14 +224,38 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     // Grab the WB
     for(int i = 0; i < 4; i++) img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
 
-    img->filters = 0u;
+    img->buf_dsc.filters = 0u;
     if(!r->isCFA)
     {
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, mbuf);
       return ret;
     }
 
-    img->bpp = r->getBpp();
+    if((r->getDataType() != TYPE_USHORT16) && (r->getDataType() != TYPE_FLOAT32)) return DT_IMAGEIO_FILE_CORRUPTED;
+
+    if((r->getBpp() != sizeof(uint16_t)) && (r->getBpp() != sizeof(float))) return DT_IMAGEIO_FILE_CORRUPTED;
+
+    if((r->getDataType() == TYPE_USHORT16) && (r->getBpp() != sizeof(uint16_t))) return DT_IMAGEIO_FILE_CORRUPTED;
+
+    if((r->getDataType() == TYPE_FLOAT32) && (r->getBpp() != sizeof(float))) return DT_IMAGEIO_FILE_CORRUPTED;
+
+    const float cpp = r->getCpp();
+    if(cpp != 1) return DT_IMAGEIO_FILE_CORRUPTED;
+
+    img->buf_dsc.channels = 1;
+
+    switch(r->getBpp())
+    {
+      case sizeof(uint16_t):
+        img->buf_dsc.datatype = TYPE_UINT16;
+        break;
+      case sizeof(float):
+        img->buf_dsc.datatype = TYPE_FLOAT;
+        break;
+      default:
+        return DT_IMAGEIO_FILE_CORRUPTED;
+        break;
+    }
 
     // dimensions of uncropped image
     iPoint2D dimUncropped = r->getUncroppedDim();
@@ -278,32 +278,38 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     img->fuji_rotation_pos = r->metadata.fujiRotationPos;
     img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;
 
-    img->filters = r->cfa.getDcrawFilter();
-    if(FILTERS_ARE_4BAYER(img->filters))
-      img->flags |= DT_IMAGE_4BAYER;
+    // as the X-Trans filters comments later on states, these are for
+    // cropped image, so we need to uncrop them.
+    img->buf_dsc.filters = dt_rawspeed_crop_dcraw_filters(r->cfa.getDcrawFilter(), cropTL.x, cropTL.y);
 
-    if(img->filters)
+    if(FILTERS_ARE_4BAYER(img->buf_dsc.filters)) img->flags |= DT_IMAGE_4BAYER;
+
+    if(img->buf_dsc.filters)
     {
       img->flags &= ~DT_IMAGE_LDR;
       img->flags |= DT_IMAGE_RAW;
-      if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
+      if(r->getDataType() == TYPE_FLOAT32)
+      {
+        img->flags |= DT_IMAGE_HDR;
+
+        // we assume that image is normalized before.
+        // FIXME: not true for hdrmerge DNG's.
+        for(int k = 0; k < 4; k++) img->buf_dsc.processed_maximum[k] = 1.0f;
+      }
+
       // special handling for x-trans sensors
-      if(img->filters == 9u)
+      if(img->buf_dsc.filters == 9u)
       {
         // get 6x6 CFA offset from top left of cropped image
         // NOTE: This is different from how things are done with Bayer
         // sensors. For these, the CFA in cameras.xml is pre-offset
         // depending on the distance modulo 2 between raw and usable
         // image data. For X-Trans, the CFA in cameras.xml is
-        // (currently) aligned with the top left of the raw data, and
-        // hence it is shifted here to align with the top left of the
-        // cropped image.
-        iPoint2D tl_margin = r->getCropOffset();
+        // (currently) aligned with the top left of the raw data.
         for(int i = 0; i < 6; ++i)
           for(int j = 0; j < 6; ++j)
           {
-            img->xtrans_uncropped[j][i] = r->cfa.getColorAt(i % 6, j % 6);
-            img->xtrans[j][i] = r->cfa.getColorAt((i + tl_margin.x) % 6, (j + tl_margin.y) % 6);
+            img->buf_dsc.xtrans[j][i] = r->cfa.getColorAt(i % 6, j % 6);
           }
       }
     }
@@ -319,7 +325,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
      * (from Klaus: r->pitch may differ from DT pitch (line to line spacing))
      * else fallback to generic dt_imageio_flip_buffers()
      */
-    const size_t bufSize_mipmap = (size_t)img->width * img->height * img->bpp;
+    const size_t bufSize_mipmap = (size_t)img->width * img->height * r->getBpp();
     const size_t bufSize_rawspeed = (size_t)r->pitch * dimUncropped.y;
     if(bufSize_mipmap == bufSize_rawspeed)
     {
@@ -333,7 +339,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   }
   catch(const std::exception &exc)
   {
-    printf("[rawspeed] %s\n", exc.what());
+    printf("[rawspeed] (%s) %s\n", img->filename, exc.what());
 
     /* if an exception is raised lets not retry or handle the
      specific ones, consider the file as corrupted */
@@ -358,17 +364,18 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   img->height = r->dim.y;
 
   // actually we want to store full floats here:
-  img->bpp = 4 * sizeof(float);
-  img->cpp = r->getCpp();
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
 
   if(r->getDataType() != TYPE_USHORT16) return DT_IMAGEIO_FILE_CORRUPTED;
 
-  if(img->cpp != 1 && img->cpp != 3) return DT_IMAGEIO_FILE_CORRUPTED;
+  const uint32_t cpp = r->getCpp();
+  if(cpp != 1 && cpp != 3 && cpp != 4) return DT_IMAGEIO_FILE_CORRUPTED;
 
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
-  if(img->cpp == 1)
+  if(cpp == 1)
   {
 /*
  * monochrome image (e.g. Leica M9 monochrom),
@@ -383,7 +390,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
       const uint16_t *in = (uint16_t *) r->getData(0, j);
       float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
-      for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
+      for(int i = 0; i < img->width; i++, in += cpp, out += 4)
       {
         for(int k = 0; k < 3; k++)
         {
@@ -392,7 +399,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
       }
     }
   }
-  else if(img->cpp == 3)
+  else if(cpp == 3 || cpp == 4)
   {
 /*
  * standard 3-ch image
@@ -407,7 +414,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
       const uint16_t *in = (uint16_t *) r->getData(0, j);
       float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
-      for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
+      for(int i = 0; i < img->width; i++, in += cpp, out += 4)
       {
         for(int k = 0; k < 3; k++)
         {

@@ -16,16 +16,16 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
 #include "gui/accelerators.h"
-#include "control/control.h"
+#include "common/darktable.h"
 #include "common/debug.h"
+#include "control/control.h"
 #include "develop/blend.h"
 
 #include "bauhaus/bauhaus.h"
 
-#include <gtk/gtk.h>
 #include <assert.h>
+#include <gtk/gtk.h>
 
 void dt_accel_path_global(char *s, size_t n, const char *path)
 {
@@ -118,7 +118,6 @@ void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierTyp
   g_strlcpy(accel->translated_path, accel_path, sizeof(accel->translated_path));
 
   *(accel->module) = '\0';
-  accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
   accel->local = FALSE;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
@@ -136,7 +135,6 @@ void dt_accel_register_view(dt_view_t *self, const gchar *path, guint accel_key,
   g_strlcpy(accel->translated_path, accel_path, sizeof(accel->translated_path));
 
   g_strlcpy(accel->module, self->module_name, sizeof(accel->module));
-  accel->views = self->view(self);
   accel->local = FALSE;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
@@ -156,7 +154,6 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
 
   g_strlcpy(accel->module, so->op, sizeof(accel->module));
   accel->local = local;
-  accel->views = DT_VIEW_DARKROOM;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
@@ -173,7 +170,6 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
 
   g_strlcpy(accel->module, self->plugin_name, sizeof(accel->module));
   accel->local = FALSE;
-  accel->views = self->views(self);
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
@@ -206,7 +202,6 @@ void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const 
     g_strlcpy(accel->translated_path, paths_trans[i], sizeof(accel->translated_path));
     g_strlcpy(accel->module, so->op, sizeof(accel->module));
     accel->local = local;
-    accel->views = DT_VIEW_DARKROOM;
 
     darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
   }
@@ -225,7 +220,6 @@ void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType m
   g_strlcpy(accel->translated_path, accel_path, sizeof(accel->translated_path));
 
   *(accel->module) = '\0';
-  accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
   accel->local = FALSE;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
@@ -583,9 +577,9 @@ static gboolean preset_iop_module_callback(GtkAccelGroup *accel_group, GObject *
   const char *name = callback_description->name;
 
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params, "
-                                                             "blendop_version from presets where operation = "
-                                                             "?1 and name = ?2",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT op_params, enabled, blendop_params, "
+                                                             "blendop_version FROM data.presets "
+                                                             "WHERE operation = ?1 AND name = ?2",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, name, -1, SQLITE_TRANSIENT);
@@ -669,7 +663,7 @@ static gboolean preset_lib_module_callback(GtkAccelGroup *accel_group, GObject *
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select op_params from presets where operation = ?1 and op_version = ?2 and name = ?3", -1, &stmt,
+      "SELECT op_params FROM data.presets WHERE operation = ?1 AND op_version = ?2 AND name = ?3", -1, &stmt,
       NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
@@ -700,7 +694,7 @@ static gboolean preset_lib_module_callback(GtkAccelGroup *accel_group, GObject *
   {
     dt_control_log(_("deleting preset for obsolete module"));
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "delete from presets where operation = ?1 and op_version = ?2 and name = ?3",
+                                "DELETE FROM data.presets WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->plugin_name, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
@@ -780,7 +774,6 @@ void dt_accel_deregister_iop(dt_iop_module_t *module, const gchar *path)
 
 void dt_accel_deregister_lib(dt_lib_module_t *module, const gchar *path)
 {
-  dt_accel_t *accel;
   GSList *l;
   char build_path[1024];
   dt_accel_path_lib(build_path, sizeof(build_path), module->plugin_name, path);
@@ -802,7 +795,7 @@ void dt_accel_deregister_lib(dt_lib_module_t *module, const gchar *path)
   l = darktable.control->accelerator_list;
   while(l)
   {
-    accel = (dt_accel_t *)l->data;
+    dt_accel_t *accel = (dt_accel_t *)l->data;
     if(accel && !strncmp(accel->path, build_path, 1024))
     {
       darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);

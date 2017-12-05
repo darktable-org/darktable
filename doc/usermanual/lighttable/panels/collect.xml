@@ -50,11 +50,11 @@
     images of the last imported film roll or any other film roll chosen.
   </para>
 
-  <sect3>
+  <sect3 id="collect_images_usage">
 
     <title>Usage</title>
 
-    <sect4>
+    <sect4 id="collect_images_usage_attributes">
 
       <title>image attributes</title>
 
@@ -91,7 +91,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the EXIF data entry describing the camera make and model
+                    the Exif data entry describing the camera make and model
                   </para>
                 </entry>
               </row>
@@ -209,7 +209,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the EXIF data entry describing the lens
+                    the Exif data entry describing the lens
                   </para>
                 </entry>
               </row>
@@ -219,7 +219,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the ISO value, as derived from EXIF data
+                    the ISO value, as derived from Exif data
                   </para>
                 </entry>
               </row>
@@ -229,7 +229,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the aperture value, as derived from EXIF data
+                    the aperture value, as derived from Exif data
                   </para>
                 </entry>
               </row>
@@ -250,7 +250,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="collect_images_usage_rules">
 
       <title>search rules</title>
 
@@ -258,9 +258,19 @@
         In the text field to the right of the attribute, you write a pattern. The pattern is
         compared against all database entries with the selected attribute. This search detects a
         match if the images' attribute contains the pattern in its full text. You may use
-        <quote>%</quote> as wildcard character. The collection gets limited to those images
+        <emphasis>%</emphasis> as wildcard character. The collection gets limited to those images
         where the query matches. Leaving the text field empty matches all images for that
         attribute.
+      </para>
+
+      <para>
+        Attributes with numerical values as well as date and time attributes can be used in
+        combination with comparative and range operators. Write <emphasis>&lt;</emphasis>,
+        <emphasis>&lt;=</emphasis>, <emphasis>&gt;</emphasis>, <emphasis>&gt;=</emphasis>,
+        <emphasis>&lt;&gt;</emphasis>, and <emphasis>=</emphasis> to select images
+        with attributes less, less or equal, greater, greater or equal, not equal, or equal to
+        the a given value, respectively. An expression in the form <emphasis>[from;to]</emphasis>
+        selects a range of values.
       </para>
 
       <para>
@@ -275,14 +285,14 @@
         them:
       </para>
 
-      <sect5>
+      <sect5 id="collect_images_usage_rules_clear">
         <title>clear this rule</title>
         <para>
           Removes this rule&nbsp;&ndash; or resets to default if this is the only rule defined.
         </para>
       </sect5>
 
-      <sect5>
+      <sect5 id="collect_images_usage_rules_narrow">
         <title>narrow down search</title>
         <para>
           Adds a new rule which is combined with the previous rule(s) in a logical
@@ -291,7 +301,7 @@
         </para>
       </sect5>
 
-      <sect5>
+      <sect5 id="collect_images_usage_rules_more">
         <title>add more images</title>
         <para>
           Adds a new rule which is combined with the previous rule(s) in a logical
@@ -300,7 +310,7 @@
         </para>
       </sect5>
 
-      <sect5>
+      <sect5 id="collect_images_usage_rules_exclude">
         <title>exclude images</title>
         <para>
           Adds a new rule which is combined with the previous rule(s) in a logical
@@ -311,7 +321,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="collect_images_usage_combining">
 
       <title>combining rules</title>
 
@@ -324,6 +334,23 @@
         symbol, and <emphasis>EXCEPT</emphasis> by the
         <inlinegraphic fileref="&icon_lighttable_except;" scalefit="1" width="2%" align="center" />
         symbol. Clicking on either symbol gives a choice to change the logical operation.
+      </para>
+
+    </sect4>
+
+    <sect4 id="collect_images_usage_update">
+
+      <title>updating folder path</title>
+
+      <para>
+        While it is best to not touch imported files behind darktable's back, this module can
+        help you recover from situations when you move imported folders after import. The
+        collect images module has a feature that allows you to tell darktable about the new
+        location of imported folders which have been moved. You set the combobox to
+        <emphasis>folders</emphasis> to find the original folder name in the tree. The folder
+        name will be displayed striked-out to emphasize that it is no longer there. Then you
+        right-click on the folder name, select <quote>search filmroll...</quote>, and then
+        select the new location of the folder.
       </para>
 
     </sect4>

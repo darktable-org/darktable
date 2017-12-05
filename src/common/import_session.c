@@ -18,11 +18,11 @@
 
 #include <stdio.h>
 
-#include "control/conf.h"
-#include "control/control.h"
 #include "common/film.h"
 #include "common/import_session.h"
 #include "common/variables.h"
+#include "control/conf.h"
+#include "control/control.h"
 
 /* TODO: Investigate if we can make one import session instance thread safe
          eg. having several background jobs working with same instance.
@@ -204,6 +204,13 @@ void dt_import_session_set_time(struct dt_import_session_t *self, time_t time)
 }
 
 
+void
+dt_import_session_set_exif_time(struct dt_import_session_t *self, time_t exif_time)
+{
+  dt_variables_set_exif_time(self->vp, exif_time);
+}
+
+
 void dt_import_session_set_filename(struct dt_import_session_t *self, const char *filename)
 {
   self->vp->filename = filename;
@@ -241,24 +248,19 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
     return NULL;
   }
 
-  dt_variables_expand(self->vp, pattern, TRUE);
-
   /* verify that expanded path and filename yields a unique file */
   path = dt_import_session_path(self, TRUE);
-  gchar *result_fname = dt_variables_get_result(self->vp);
+  gchar *result_fname = dt_variables_expand(self->vp, pattern, TRUE);
   previous_fname = fname = g_build_path(G_DIR_SEPARATOR_S, path, result_fname, (char *)NULL);
-  g_free(result_fname);
   if(g_file_test(fname, G_FILE_TEST_EXISTS) == TRUE)
   {
     fprintf(stderr, "[import_session] File %s exists.\n", fname);
     do
     {
       /* file exists, yield a new filename */
-      dt_variables_expand(self->vp, pattern, TRUE);
-
-      gchar *result_fname = dt_variables_get_result(self->vp);
-      fname = g_build_path(G_DIR_SEPARATOR_S, path, result_fname, (char *)NULL);
       g_free(result_fname);
+      result_fname = dt_variables_expand(self->vp, pattern, TRUE);
+      fname = g_build_path(G_DIR_SEPARATOR_S, path, result_fname, (char *)NULL);
 
       fprintf(stderr, "[import_session] Testing %s.\n", fname);
       /* check if same filename was yielded as before */
@@ -280,7 +282,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
   g_free(previous_fname);
   g_free(pattern);
 
-  self->current_filename = dt_variables_get_result(self->vp);
+  self->current_filename = result_fname;
   fprintf(stderr, "[import_session] Using filename %s.\n", self->current_filename);
 
   return self->current_filename;
@@ -302,8 +304,7 @@ const char *dt_import_session_path(struct dt_import_session_t *self, gboolean cu
     return NULL;
   }
 
-  dt_variables_expand(self->vp, pattern, FALSE);
-  new_path = dt_variables_get_result(self->vp);
+  new_path = dt_variables_expand(self->vp, pattern, FALSE);
   g_free(pattern);
 
   /* did the session path change ? */

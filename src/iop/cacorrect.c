@@ -31,6 +31,8 @@
 // and includes version information about compile-time dt
 DT_MODULE_INTROSPECTION(1, dt_iop_cacorrect_params_t)
 
+#pragma GCC diagnostic ignored "-Wshadow"
+
 typedef struct dt_iop_cacorrect_params_t
 {
   int keep;
@@ -64,12 +66,6 @@ int flags()
 {
   return IOP_FLAGS_ONE_INSTANCE;
 }
-
-int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  return sizeof(float);
-}
-
 
 /** modify regions of interest (optional, per pixel ops don't need this) */
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
@@ -310,7 +306,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 {
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const uint32_t filters = dt_image_filter(&piece->pipe->image);
+  const uint32_t filters = piece->pipe->dsc.filters;
   memcpy(out, in2, width * height * sizeof(float));
   const float *const in = out;
   const double cared = 0, cablue = 0;
@@ -375,7 +371,9 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
   const float eps = 1e-5f, eps2 = 1e-10f; // tolerance to avoid dividing by zero
 
+#ifdef _OPENMP
 #pragma omp parallel
+#endif
   {
     //     int progresscounter = 0;
 
@@ -397,7 +395,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
     // assign working space
     const int buffersize = 3 * sizeof(float) * ts * ts + 6 * sizeof(float) * ts * tsh + 8 * 64 + 63;
-    char *buffer = (char *)calloc(buffersize, 1);
+    char *buffer = (char *)malloc(buffersize);
     char *data = (char *)(((uintptr_t)buffer + (uintptr_t)63) / 64 * 64);
 
     // shift the beginning of all arrays but the first by 64 bytes to avoid cache miss conflicts on CPUs which
@@ -430,10 +428,13 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     if(autoCA)
     {
 // Main algorithm: Tile loop calculating correction parameters per tile
+#ifdef _OPENMP
 #pragma omp for collapse(2) schedule(dynamic) nowait
+#endif
       for(int top = -border; top < height; top += ts - border2)
         for(int left = -border; left < width; left += ts - border2)
         {
+          memset(buffer, 0, buffersize);
           const int vblock = ((top + border) / (ts - border2)) + 1;
           const int hblock = ((left + border) / (ts - border2)) + 1;
           const int bottom = MIN(top + ts, height + border);
@@ -868,7 +869,9 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
         }
 
 // end of diagnostic pass
+#ifdef _OPENMP
 #pragma omp critical(cadetectpass2)
+#endif
       {
         for(int dir = 0; dir < 2; dir++)
           for(int c = 0; c < 2; c++)
@@ -878,9 +881,13 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
             blockave[dir][c] += blockavethr[dir][c];
           }
       }
+#ifdef _OPENMP
 #pragma omp barrier
+#endif
 
+#ifdef _OPENMP
 #pragma omp single
+#endif
       {
         for(int dir = 0; dir < 2; dir++)
           for(int c = 0; c < 2; c++)
@@ -1069,11 +1076,14 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     // Main algorithm: Tile loop
     if(processpasstwo)
     {
+#ifdef _OPENMP
 #pragma omp for schedule(dynamic) collapse(2) nowait
+#endif
 
       for(int top = -border; top < height; top += ts - border2)
         for(int left = -border; left < width; left += ts - border2)
         {
+          memset(buffer, 0, buffersize);
           float lblockshifts[2][2];
           const int vblock = ((top + border) / (ts - border2)) + 1;
           const int hblock = ((left + border) / (ts - border2)) + 1;
@@ -1433,9 +1443,13 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           //           }
         }
 
+#ifdef _OPENMP
 #pragma omp barrier
+#endif
 // copy temporary image matrix back to image matrix
+#ifdef _OPENMP
 #pragma omp for
+#endif
 
       for(int row = 0; row < height; row++)
         for(int col = 0 + (FC(row, 0, filters) & 1), indx = (row * width + col) >> 1; col < width;
@@ -1480,7 +1494,7 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev) goto end;
 
   // can't be switched on for non-raw or x-trans images:
-  if(dt_image_is_raw(&module->dev->image_storage) && (module->dev->image_storage.filters != 9u))
+  if(dt_image_is_raw(&module->dev->image_storage) && (module->dev->image_storage.buf_dsc.filters != 9u))
     module->hide_enable_button = 0;
   else
     module->hide_enable_button = 1;
@@ -1503,7 +1517,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // we come just before demosaicing.
-  module->priority = 76; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 73; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_cacorrect_params_t);
   module->gui_data = NULL;
 }
@@ -1522,8 +1536,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 {
   // dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)params;
   // dt_iop_cacorrect_data_t *d = (dt_iop_cacorrect_data_t *)piece->data;
-  // preview pipe doesn't have mosaiced data either:
-  if(!(pipe->image.flags & DT_IMAGE_RAW) || dt_dev_pixelpipe_uses_downsampled_input(pipe)) piece->enabled = 0;
+  if(!(pipe->image.flags & DT_IMAGE_RAW)) piece->enabled = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1541,7 +1554,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_update(dt_iop_module_t *self)
 {
   if(dt_image_is_raw(&self->dev->image_storage))
-    if(self->dev->image_storage.filters != 9u)
+    if(self->dev->image_storage.buf_dsc.filters != 9u)
       gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
     else
       gtk_label_set_text(GTK_LABEL(self->widget),

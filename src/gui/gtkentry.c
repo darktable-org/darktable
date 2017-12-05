@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
 #include "gtkentry.h"
+#include "common/darktable.h"
 
 /**
  * Called when the user selects an entry from the autocomplete list.
@@ -229,7 +229,7 @@ gchar *dt_gtkentry_build_completion_tooltip_text(const gchar *header,
 {
   size_t array_len = 0;
   for(dt_gtkentry_completion_spec const *p = compl_list; p->description != NULL; p++) array_len++;
-  const gchar *lines[array_len + 2];
+  const gchar **lines = malloc((array_len + 2) * sizeof(gchar *));
   const gchar **l = lines;
   *l++ = header;
 
@@ -238,7 +238,11 @@ gchar *dt_gtkentry_build_completion_tooltip_text(const gchar *header,
 
   *l = NULL;
 
-  return g_strjoinv("\n", (gchar **)lines);
+  gchar *ret = g_strjoinv("\n", (gchar **)lines);
+
+  free(lines);
+
+  return ret;
 }
 
 

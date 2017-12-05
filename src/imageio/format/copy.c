@@ -29,8 +29,9 @@
 DT_MODULE(1)
 
 // FIXME: we can't rely on darktable to avoid file overwriting -- it doesn't know the filename (extension).
-int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void *in, void *exif, int exif_len,
-                int imgid, int num, int total)
+int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void *in,
+                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                void *exif, int exif_len, int imgid, int num, int total)
 {
   int status = 1;
   char *sourcefile = NULL;
@@ -43,7 +44,7 @@ int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void 
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select folder, filename from images, film_rolls where images.id = ?1 and film_id = film_rolls.id;", -1,
+      "SELECT folder, filename FROM main.images i, main.film_rolls f ON i.film_id = f.id WHERE i.id = ?1", -1,
       &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
@@ -58,8 +59,8 @@ int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void 
 
   if(!strcmp(sourcefile, targetfile)) goto END;
 
-  fin = fopen(sourcefile, "rb");
-  fout = fopen(targetfile, "wb");
+  fin = g_fopen(sourcefile, "rb");
+  fout = g_fopen(targetfile, "wb");
   if(fin == NULL || fout == NULL) goto END;
 
   fseek(fin, 0, SEEK_END);

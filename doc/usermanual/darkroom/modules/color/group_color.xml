@@ -16,6 +16,8 @@
 
   <xi:include href="colorcorrection.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="colorchecker.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="monochrome.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="colorzones.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

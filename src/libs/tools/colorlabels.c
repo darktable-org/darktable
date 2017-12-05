@@ -16,10 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "gui/accelerators.h"
 #include "common/colorlabels.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -40,9 +40,10 @@ const char *name(dt_lib_module_t *self)
   return _("colorlabels");
 }
 
-uint32_t views(dt_lib_module_t *self)
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
+  static const char *v[] = {"lighttable", "tethering", NULL};
+  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)

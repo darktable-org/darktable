@@ -1,4 +1,4 @@
-local indent_string ="   "
+local indent_string = "   "
 local table = require "table"
 local dt = require "darktable"
 local debug = require "debug"
@@ -12,7 +12,6 @@ local function get_userdata_type(object)
   local metatable = getmetatable(object);
   if not metatable then return end
   return metatable.__luaA_TypeName
-
 end
 
 local function header(object,indent,name,obj_expand_mode)
@@ -41,6 +40,7 @@ local function key(object)
   end
   return object
 end
+
 local function introspect_metatable(object,indent,name,known,ancestors)
   if not M.debug then return "" end
   if name == nil then name = "(unknown)" end
@@ -52,6 +52,7 @@ local function introspect_metatable(object,indent,name,known,ancestors)
   table.remove(ancestors);
   return result
 end
+
 local function introspect_uservalue(object,indent,name,known,ancestors)
   if not M.debug then return "" end
   if name == nil then name = "(unknown)" end
@@ -63,7 +64,6 @@ local function introspect_uservalue(object,indent,name,known,ancestors)
   table.remove(ancestors);
   return result
 end
-
 
 introspect_body = function (object,indent,name,known,ancestors)
   if name == nil then name = "(unknown)" end
@@ -121,15 +121,12 @@ introspect_body = function (object,indent,name,known,ancestors)
     return result
   end
   error("unknown type of object")
-
 end
 
 introspect_internal = function(object,indent,name,known,ancestors)
   local result = header(object,indent,name)
   return result..introspect_body(object,indent,name,known,ancestors)
 end
-
-
 
 function M.dump(object,name,orig_known) 
   if name == nil or name == "" then

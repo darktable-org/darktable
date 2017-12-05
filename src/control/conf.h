@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_USER_CONFIG_H
-#define DT_USER_CONFIG_H
+
+#pragma once
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -26,12 +26,13 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 
+#include <glib.h>
+#include <glib/gstdio.h>
+#include <glib/gprintf.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
-#include <glib.h>
-#include <glib/gprintf.h>
 
 typedef struct dt_conf_t
 {
@@ -202,7 +203,11 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
   cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
   FILE *f = 0;
-  char line[1024];
+
+#define LINE_SIZE 1023
+
+  char line[LINE_SIZE + 1];
+
   int read = 0;
   int defaults = 0;
   for(int i = 0; i < 2; i++)
@@ -211,7 +216,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     if(!i)
     {
       snprintf(darktable.conf->filename, sizeof(darktable.conf->filename), "%s", filename);
-      f = fopen(filename, "rb");
+      f = g_fopen(filename, "rb");
       if(!f)
       {
         // remember we init to default rc and try again
@@ -224,14 +229,12 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
       char buf[PATH_MAX] = { 0 }, defaultrc[PATH_MAX] = { 0 };
       dt_loc_get_datadir(buf, sizeof(buf));
       snprintf(defaultrc, sizeof(defaultrc), "%s/darktablerc", buf);
-      f = fopen(defaultrc, "rb");
+      f = g_fopen(defaultrc, "rb");
     }
     if(!f) return;
     while(!feof(f))
     {
-      gchar *line_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(line) - 1);
-      read = fscanf(f, line_pattern, line);
-      g_free(line_pattern);
+      read = fscanf(f, "%" STR(LINE_SIZE) "[^\r\n]\r\n", line);
       if(read > 0)
       {
         char *c = line;
@@ -260,6 +263,8 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     }
   }
 
+#undef LINE_SIZE
+
   return;
 }
 
@@ -270,7 +275,7 @@ static void dt_conf_print(const gchar *key, const gchar *val, FILE *f)
 
 static inline void dt_conf_cleanup(dt_conf_t *cf)
 {
-  FILE *f = fopen(cf->filename, "wb");
+  FILE *f = g_fopen(cf->filename, "wb");
   if(f)
   {
     GList *keys = g_hash_table_get_keys(cf->table);
@@ -338,7 +343,6 @@ static inline void dt_conf_string_entry_free(gpointer data)
   g_free(nv);
 }
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

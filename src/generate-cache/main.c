@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2014 johannes hanika.
-    copyright (c) 2015 LebedevRI.
+    copyright (c) 2015-2016 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,10 +36,14 @@
 #include "config.h"              // for GETTEXT_PACKAGE, etc
 #include "control/conf.h"        // for dt_conf_get_bool
 
-static int generate_thumbnail_cache(const dt_mipmap_size_t max_mip)
+#ifdef _WIN32
+#include "win/main_wrapper.h"
+#endif
+
+static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mipmap_size_t max_mip, const int32_t min_imgid, const int32_t max_imgid)
 {
   fprintf(stderr, _("creating cache directories\n"));
-  for(dt_mipmap_size_t k = DT_MIPMAP_0; k <= max_mip; k++)
+  for(dt_mipmap_size_t k = min_mip; k <= max_mip; k++)
   {
     char dirname[PATH_MAX] = { 0 };
     snprintf(dirname, sizeof(dirname), "%s.d/%d", darktable.mipmap_cache->cachedir, k);
@@ -55,7 +59,10 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t max_mip)
   // some progress counter
   sqlite3_stmt *stmt;
   size_t image_count = 0, counter = 0;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images", -1, &stmt, 0);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM main.images WHERE id >= ?1 AND id <= ?2", -1, &stmt, 0);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, min_imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     image_count = sqlite3_column_int(stmt, 0);
@@ -66,13 +73,28 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t max_mip)
     return 1;
   }
 
+  if(!image_count)
+  {
+    fprintf(stderr, _("warning: no images are matching the requested image id range\n"));
+    if(min_imgid > max_imgid)
+    {
+      fprintf(stderr, _("warning: did you want to swap these boundaries?\n"));
+    }
+  }
+
   // go through all images:
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images", -1, &stmt, 0);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.images WHERE id >= ?1 AND id <= ?2", -1, &stmt, 0);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, min_imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const uint32_t imgid = sqlite3_column_int(stmt, 0);
+    const int32_t imgid = sqlite3_column_int(stmt, 0);
 
-    for(int k = max_mip; k >= DT_MIPMAP_0; k--)
+    counter++;
+    fprintf(stderr, "image %zu/%zu (%.02f%%) (id:%d)\n", counter, image_count, 100.0 * counter / (float)image_count, imgid);
+
+    for(int k = max_mip; k >= min_mip && k >= 0; k--)
     {
       char filename[PATH_MAX] = { 0 };
       snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
@@ -88,9 +110,6 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t max_mip)
 
     // and immediately write thumbs to disc and remove from mipmap cache.
     dt_mimap_cache_evict(darktable.mipmap_cache, imgid);
-
-    counter++;
-    fprintf(stderr, "image %zu/%zu (%.02f%%)\n", counter, image_count, 100.0 * counter / (float)image_count);
   }
 
   sqlite3_finalize(stmt);
@@ -103,7 +122,16 @@ static void usage(const char *progname)
 {
   fprintf(
       stderr,
-      "usage: %s [-h, --help; --version] [-m, --max-mip <0-7> (default = 2)] [--core <darktable options>]\n",
+      "usage: %s [-h, --help; --version]\n"
+      "  [--min-mip <0-7> (default = 0)] [-m, --max-mip <0-7> (default = 2)]\n"
+      "  [--min-imgid <N>] [--max-imgid <N>]\n"
+      "  [--core <darktable options>]\n"
+      "\n"
+      "When multiple mipmap sizes are requested, the biggest one is computed\n"
+      "while the rest are quickly downsampled.\n"
+      "\n"
+      "The --min-imgid and --max-imgid specify the range of internal image ID\n"
+      "numbers to work on.\n",
       progname);
 }
 
@@ -116,7 +144,10 @@ int main(int argc, char *arg[])
   gtk_init_check(&argc, &arg);
 
   // parse command line arguments
+  dt_mipmap_size_t min_mip = DT_MIPMAP_0;
   dt_mipmap_size_t max_mip = DT_MIPMAP_2;
+  int32_t min_imgid = 0;
+  int32_t max_imgid = INT32_MAX;
 
   int k;
   for(k = 1; k < argc; k++)
@@ -136,6 +167,21 @@ int main(int argc, char *arg[])
       k++;
       max_mip = (dt_mipmap_size_t)MIN(MAX(atoi(arg[k]), 0), 7);
     }
+    else if(!strcmp(arg[k], "--min-mip") && argc > k + 1)
+    {
+      k++;
+      min_mip = (dt_mipmap_size_t)MIN(MAX(atoi(arg[k]), 0), 7);
+    }
+    else if(!strcmp(arg[k], "--min-imgid") && argc > k + 1)
+    {
+      k++;
+      min_imgid = (int32_t)MIN(MAX(atoi(arg[k]), 0), INT32_MAX);
+    }
+    else if(!strcmp(arg[k], "--max-imgid") && argc > k + 1)
+    {
+      k++;
+      max_imgid = (int32_t)MIN(MAX(atoi(arg[k]), 0), INT32_MAX);
+    }
     else if(!strcmp(arg[k], "--core"))
     {
       // everything from here on should be passed to the core
@@ -145,7 +191,7 @@ int main(int argc, char *arg[])
   }
 
   int m_argc = 0;
-  char *m_arg[3 + argc - k];
+  char **m_arg = malloc((3 + argc - k + 1) * sizeof(char *));
   m_arg[m_argc++] = "darktable-generate-cache";
   m_arg[m_argc++] = "--conf";
   m_arg[m_argc++] = "write_sidecar_files=FALSE";
@@ -153,7 +199,11 @@ int main(int argc, char *arg[])
   m_arg[m_argc] = NULL;
 
   // init dt without gui:
-  if(dt_init(m_argc, m_arg, 0, NULL)) exit(EXIT_FAILURE);
+  if(dt_init(m_argc, m_arg, FALSE, TRUE, NULL))
+  {
+    free(m_arg);
+    exit(EXIT_FAILURE);
+  }
 
   if(!dt_conf_get_bool("cache_disk_backend"))
   {
@@ -162,17 +212,28 @@ int main(int argc, char *arg[])
               "to pre-generate thumbnails and for darktable to use them, you need to enable disk backend "
               "for thumbnail cache\nno thumbnails to be generated, done."));
     dt_cleanup();
+    free(m_arg);
+    exit(EXIT_FAILURE);
+  }
+
+  if(min_mip > max_mip)
+  {
+    fprintf(stderr, _("error: ensure that min_mip <= max_mip\n"));
+    free(m_arg);
     exit(EXIT_FAILURE);
   }
 
   fprintf(stderr, _("creating complete lighttable thumbnail cache\n"));
 
-  if(generate_thumbnail_cache(max_mip))
+  if(generate_thumbnail_cache(min_mip, max_mip, min_imgid, max_imgid))
   {
+    free(m_arg);
     exit(EXIT_FAILURE);
   }
 
   dt_cleanup();
+
+  free(m_arg);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

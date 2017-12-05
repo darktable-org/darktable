@@ -29,17 +29,15 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
+#include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <stdlib.h>
 #include <math.h>
-#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define BOX_ITERATIONS 8
 #define NUM_BUCKETS 4 /* OpenCL bucket chain size for tmp buffers; minimum 2 */
-#define BLOCKSIZE                                                                                            \
-  2048 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 #define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
@@ -142,7 +140,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int range = 2 * radius + 1;
   const int hr = range / 2;
 
-  const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
+  const size_t size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
+  float *const scanline_buf = malloc(size * dt_get_num_threads() * sizeof(float));
 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
@@ -151,7 +150,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
-      float scanline[size];
+      float *scanline = scanline_buf + size * dt_get_thread_num();
       float L = 0;
       int hits = 0;
       const size_t index = (size_t)y * roi_out->width;
@@ -178,12 +177,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     /* vertical pass on blurlightness */
     const int opoffs = -(hr + 1) * roi_out->width;
     const int npoffs = (hr)*roi_out->width;
+
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(blurlightness) schedule(static)
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
-      float scanline[size];
+      float *scanline = scanline_buf + size * dt_get_thread_num();
       float L = 0;
       int hits = 0;
       size_t index = (size_t)x - hr * roi_out->width;
@@ -209,6 +210,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(int y = 0; y < roi_out->height; y++) blurlightness[y * roi_out->width + x] = scanline[y];
     }
   }
+  free(scanline_buf);
 
 /* screen blend lightness with original */
 #ifdef _OPENMP
@@ -223,7 +225,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     outp[2] = inp[2];
   }
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 
   free(blurlightness);
 }
@@ -262,32 +264,31 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int radius = MIN(256.0f, _r);
   const float scale = 1.0f / exp2f(-1.0f * (fmin(100.0f, d->strength + 1.0f) / 100.0f));
 
-  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
-  size_t workgroupsize = 0;       // the maximum number of items in a work group
-  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+  int hblocksize;
+  dt_opencl_local_buffer_t hlocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 2 * radius, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 16, .sizey = 1 };
 
-  // make sure blocksize is not too large
-  int blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
-     && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_bloom_hblur, &kernelworkgroupsize)
-        == CL_SUCCESS)
-  {
-    // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
-          || blocksize > workgroupsize || (blocksize + 2 * radius) * sizeof(float) > localmemsize)
-    {
-      if(blocksize == 1) break;
-      blocksize >>= 1;
-    }
-  }
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_bloom_hblur, &hlocopt))
+    hblocksize = hlocopt.sizex;
   else
-  {
-    blocksize = 1; // slow but safe
-  }
+    hblocksize = 1;
 
-  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1) * blocksize;
-  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1) * blocksize;
+  int vblocksize;
+  dt_opencl_local_buffer_t vlocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 1, .xfactor = 1, .yoffset = 2 * radius, .yfactor = 1,
+                                  .cellsize = sizeof(float), .overhead = 0,
+                                  .sizex = 1, .sizey = 1 << 16 };
+
+  if(dt_opencl_local_buffer_opt(devid, gd->kernel_bloom_vblur, &vlocopt))
+    vblocksize = vlocopt.sizey;
+  else
+    vblocksize = 1;
+
+
+  const size_t bwidth = ROUNDUP(width, hblocksize);
+  const size_t bheight = ROUNDUP(height, vblocksize);
 
   size_t sizes[3];
   size_t local[3];
@@ -319,7 +320,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       sizes[0] = bwidth;
       sizes[1] = ROUNDUPHT(height);
       sizes[2] = 1;
-      local[0] = blocksize;
+      local[0] = hblocksize;
       local[1] = 1;
       local[2] = 1;
       dev_tmp2 = dev_tmp[bucket_next(&state, NUM_BUCKETS)];
@@ -328,8 +329,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 2, sizeof(int), (void *)&radius);
       dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 3, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 4, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 5, sizeof(int), (void *)&blocksize);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 6, (blocksize + 2 * radius) * sizeof(float),
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 5, sizeof(int), (void *)&hblocksize);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 6, (hblocksize + 2 * radius) * sizeof(float),
                                NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_bloom_hblur, sizes, local);
       if(err != CL_SUCCESS) goto error;
@@ -340,7 +341,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       sizes[1] = bheight;
       sizes[2] = 1;
       local[0] = 1;
-      local[1] = blocksize;
+      local[1] = vblocksize;
       local[2] = 1;
       dev_tmp1 = dev_tmp[bucket_next(&state, NUM_BUCKETS)];
       dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 0, sizeof(cl_mem), (void *)&dev_tmp2);
@@ -348,8 +349,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 2, sizeof(int), (void *)&radius);
       dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 3, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 4, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 5, sizeof(int), (void *)&blocksize);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 6, (blocksize + 2 * radius) * sizeof(float),
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 5, sizeof(int), (void *)&vblocksize);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 6, (vblocksize + 2 * radius) * sizeof(float),
                                NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_bloom_vblur, sizes, local);
       if(err != CL_SUCCESS) goto error;
@@ -368,12 +369,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err != CL_SUCCESS) goto error;
 
   for(int i = 0; i < NUM_BUCKETS; i++)
-    if(dev_tmp[i] != NULL) dt_opencl_release_mem_object(dev_tmp[i]);
+    dt_opencl_release_mem_object(dev_tmp[i]);
   return TRUE;
 
 error:
   for(int i = 0; i < NUM_BUCKETS; i++)
-    if(dev_tmp[i] != NULL) dt_opencl_release_mem_object(dev_tmp[i]);
+    dt_opencl_release_mem_object(dev_tmp[i]);
   dt_print(DT_DEBUG_OPENCL, "[opencl_bloom] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -485,7 +486,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_bloom_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_bloom_params_t));
   module->default_enabled = 0;
-  module->priority = 507; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 514; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_bloom_params_t);
   module->gui_data = NULL;
   dt_iop_bloom_params_t tmp = (dt_iop_bloom_params_t){ 20, 90, 25 };

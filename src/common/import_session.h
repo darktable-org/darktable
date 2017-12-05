@@ -16,8 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _IMPORT_SESSION_H
-#define _IMPORT_SESSION_H
+#pragma once
 
 struct dt_import_session_t;
 
@@ -43,6 +42,9 @@ void dt_import_session_set_name(struct dt_import_session_t *self, const char *na
 */
 void dt_import_session_set_time(struct dt_import_session_t *self, time_t time);
 
+/** \brief set the timestamp for EXIF variables */
+void dt_import_session_set_exif_time(struct dt_import_session_t *self, time_t exif_time);
+
 /** \brief set the orginal filename
     \remark This is used to expand $(FILE_X) variables. */
 void dt_import_session_set_filename(struct dt_import_session_t *self, const char *filename);
@@ -61,7 +63,6 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
 */
 const char *dt_import_session_path(struct dt_import_session_t *self, gboolean current);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

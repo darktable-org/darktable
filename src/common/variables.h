@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2010 henrik andersson.
+    copyright (c) 2010--2017 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,15 +17,13 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef VARIABLES_H
-#define VARIABLES_H
+#pragma once
+
 #include <glib.h>
+#include <stdint.h>
+
 typedef struct dt_variables_params_t
 {
-
-  /** only validates string */
-  gboolean validate_only;
-
   /** used for expanding variables that uses filename $(FILE_FOLDER) $(FILE_NAME) and $(FILE_EXTENSION). */
   const gchar *filename;
 
@@ -48,15 +47,14 @@ void dt_variables_params_init(dt_variables_params_t **params);
 void dt_variables_params_destroy(dt_variables_params_t *params);
 /** set the time in a dt_variables_params_t. */
 void dt_variables_set_time(dt_variables_params_t *params, time_t time);
+/** set the time to use for EXIF variables */
+void dt_variables_set_exif_time(dt_variables_params_t *params, time_t time);
 
-/** expands variables in string, this free's previous expanding result */
-gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate);
-/** get the expanded string result, use a copy of this string in your code like g_strdup(). */
-gchar *dt_variables_get_result(dt_variables_params_t *params);
+/** expands variables in string. the result should be freed with g_free(). */
+char *dt_variables_expand(dt_variables_params_t *params, gchar *source, gboolean iterate);
 /** reset sequence number */
 void dt_variables_reset_sequence(dt_variables_params_t *params);
 
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -15,9 +15,9 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/widget/common.h"
-#include "lua/types.h"
 #include "gui/gtk.h"
+#include "lua/types.h"
+#include "lua/widget/common.h"
 
 static void entry_init(lua_State* L);
 static void entry_cleanup(lua_State* L,lua_widget widget);
@@ -89,7 +89,7 @@ static int editable_member(lua_State *L)
   gboolean editable;
   if(lua_gettop(L) > 2) {
     editable = lua_toboolean(L,3);
-    g_object_set(G_OBJECT(entry->widget),"editable",editable,NULL);
+    g_object_set(G_OBJECT(entry->widget), "editable", editable, (gchar *)0);
     return 0;
   }
   g_object_get(G_OBJECT(entry->widget),"editable",&editable,NULL);

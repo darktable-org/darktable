@@ -18,9 +18,9 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
+#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -31,6 +31,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -66,7 +67,8 @@ typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
 typedef struct dt_iop_highlights_global_data_t
 {
   int kernel_highlights_1f_clip;
-  int kernel_highlights_1f_lch;
+  int kernel_highlights_1f_lch_bayer;
+  int kernel_highlights_1f_lch_xtrans;
   int kernel_highlights_4f_clip;
 } dt_iop_highlights_global_data_t;
 
@@ -82,7 +84,7 @@ int groups()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -106,17 +108,22 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->data;
 
   cl_int err = -999;
+  cl_mem dev_xtrans = NULL;
+
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
   const float clip = d->clip
-                     * fminf(piece->pipe->processed_maximum[0],
-                             fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-  const int filters = dt_image_filter(&piece->pipe->image);
-  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
+                     * fminf(piece->pipe->dsc.processed_maximum[0],
+                             fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+
+  const uint32_t filters = piece->pipe->dsc.filters;
+
+  if(!filters)
   {
+    // non-raw images use dedicated kernel which just clips
+    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f_clip, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f_clip, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f_clip, 2, sizeof(int), (void *)&width);
@@ -126,44 +133,122 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_4f_clip, sizes);
     if(err != CL_SUCCESS) goto error;
   }
-  else
+  else if(d->mode == DT_IOP_HIGHLIGHTS_CLIP)
   {
-    const int kernel
-        = (d->mode == DT_IOP_HIGHLIGHTS_LCH) ? gd->kernel_highlights_1f_lch : gd->kernel_highlights_1f_clip;
+    // raw images with clip mode (both bayer and xtrans)
+    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 4, sizeof(float), (void *)&clip);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 5, sizeof(int), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 6, sizeof(int), (void *)&roi_out->y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 7, sizeof(int), (void *)&filters);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_1f_clip, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+  else if(d->mode == DT_IOP_HIGHLIGHTS_LCH && filters != 9u)
+  {
+    // bayer sensor raws with LCH mode
+    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 4, sizeof(float), (void *)&clip);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 5, sizeof(int), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 6, sizeof(int), (void *)&roi_out->y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_bayer, 7, sizeof(int), (void *)&filters);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_1f_lch_bayer, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+  else if(d->mode == DT_IOP_HIGHLIGHTS_LCH && filters == 9u)
+  {
+    // xtrans sensor raws with LCH mode
+    int blocksizex, blocksizey;
 
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), (void *)&clip);
-    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&roi_out->x);
-    dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(int), (void *)&roi_out->y);
-    dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), (void *)&filters);
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    dt_opencl_local_buffer_t locopt
+      = (dt_opencl_local_buffer_t){ .xoffset = 2 * 2, .xfactor = 1, .yoffset = 2 * 2, .yfactor = 1,
+                                    .cellsize = sizeof(float), .overhead = 0,
+                                    .sizex = 1 << 8, .sizey = 1 << 8 };
+
+    if(dt_opencl_local_buffer_opt(devid, gd->kernel_highlights_1f_lch_xtrans, &locopt))
+    {
+      blocksizex = locopt.sizex;
+      blocksizey = locopt.sizey;
+    }
+    else
+      blocksizex = blocksizey = 1;
+
+    dev_xtrans
+        = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+    if(dev_xtrans == NULL) goto error;
+
+    size_t sizes[] = { ROUNDUP(width, blocksizex), ROUNDUP(height, blocksizey), 1 };
+    size_t local[] = { blocksizex, blocksizey, 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 4, sizeof(float), (void *)&clip);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 5, sizeof(int), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 6, sizeof(int), (void *)&roi_out->y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 7, sizeof(cl_mem), (void *)&dev_xtrans);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 8,
+                               (blocksizex + 4) * (blocksizey + 4) * sizeof(float), NULL);
+
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_highlights_1f_lch_xtrans, sizes, local);
     if(err != CL_SUCCESS) goto error;
   }
 
   // update processed maximum
-  const float m = fmaxf(fmaxf(
-        piece->pipe->processed_maximum[0],
-        piece->pipe->processed_maximum[1]),
-      piece->pipe->processed_maximum[2]);
-  for(int k=0;k<3;k++) piece->pipe->processed_maximum[k] = m;
+  const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
+                        piece->pipe->dsc.processed_maximum[2]);
+  for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
 
+  dt_opencl_release_mem_object(dev_xtrans);
   return TRUE;
 
 error:
+  dt_opencl_release_mem_object(dev_xtrans);
   dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
 
-int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+              struct dt_develop_tiling_t *tiling)
 {
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW))
-    return sizeof(float);
+  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  const uint32_t filters = piece->pipe->dsc.filters;
+
+  tiling->factor = 2.0f;  // in + out
+  tiling->maxbuf = 1.0f;
+  tiling->overhead = 0;
+
+  if(filters == 9u)
+  {
+    // xtrans
+    tiling->xalign = 6;
+    tiling->yalign = 6;
+    tiling->overlap = (d->mode == DT_IOP_HIGHLIGHTS_LCH) ? 2 : 0;
+  }
+  else if(filters)
+  {
+    // bayer
+    tiling->xalign = 2;
+    tiling->yalign = 2;
+    tiling->overlap = (d->mode == DT_IOP_HIGHLIGHTS_LCH) ? 1 : 0;
+  }
   else
-    return 4 * sizeof(float);
+  {
+    // non-raw
+    tiling->xalign = 1;
+    tiling->yalign = 1;
+    tiling->overlap = 0;
+  }
 }
 
 /* interpolate value for a pixel, ideal via ratio to nearby pixel */
@@ -436,7 +521,7 @@ static void process_lch_bayer(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
                               void *const ovoid, const dt_iop_roi_t *const roi_in,
                               const dt_iop_roi_t *const roi_out, const float clip)
 {
-  const int filters = dt_image_filter(&piece->pipe->image);
+  const uint32_t filters = piece->pipe->dsc.filters;
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) default(none)
@@ -531,55 +616,125 @@ static void process_lch_bayer(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   }
 }
 
-static void process_lch_xtrans(
-    const void *const ivoid,
-    void *const ovoid,
-    const int width,
-    const int height,
-    const float clip,
-    const dt_iop_roi_t *const roi_in,
-    const uint8_t (*const xtrans)[6])
+static void process_lch_xtrans(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                               void *const ovoid, const dt_iop_roi_t *const roi_in,
+                               const dt_iop_roi_t *const roi_out, const float clip)
 {
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
+
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for schedule(dynamic) default(none)
 #endif
-  for(int j = 0; j < height; j++)
+  for(int j = 0; j < roi_out->height; j++)
   {
-    float *out = (float *)ovoid + (size_t)width * j;
-    float *in = (float *)ivoid + (size_t)width * j;
-    for(int i = 0; i < width; i++)
+    float *out = (float *)ovoid + (size_t)roi_out->width * j;
+    float *in = (float *)ivoid + (size_t)roi_in->width * j;
+
+    // bit vector used as ring buffer to remember clipping of current
+    // and last two columns, checking current pixel and its vertical
+    // neighbors
+    int cl = 0;
+
+    for(int i = 0; i < roi_out->width; i++)
     {
-      if(i < 3 || i > width - 3 || j < 3 || j > height - 3)
+      // update clipping ring buffer
+      cl = (cl << 1) & 6;
+      if(j >= 2 && j <= roi_out->height - 3)
+      {
+        cl |= (in[-roi_in->width] > clip) | (in[0] > clip) | (in[roi_in->width] > clip);
+      }
+
+      if(i < 2 || i > roi_out->width - 3 || j < 2 || j > roi_out->height - 3)
       {
         // fast path for border
         out[0] = MIN(clip, in[0]);
       }
       else
       {
-        const float near_clip = 0.96f * clip;
-        const float post_clip = 1.10f * clip;
-        float blend[3] = {0.0f};
-        float mean[3] = {0.0f};
-        int cnt[3] = {0};
-        for(int jj = -1; jj <= 1; jj++)
+        // if current pixel is clipped, always reconstruct
+        int clipped = (in[0] > clip);
+        if(!clipped)
         {
-          for(int ii = -1; ii <= 1; ii++)
+          clipped = cl;
+          if(clipped)
           {
-            const float val = in[(size_t)jj * width + ii];
-            const int c = FCxtrans(j+jj, i+ii, roi_in, xtrans);
-            mean[c] += val;
-            cnt[c]++;
-            blend[c] = fmaxf(blend[c], (fminf(post_clip, val) - near_clip) / (post_clip - near_clip));
+            // If the ring buffer can't show we are in an obviously
+            // unclipped region, this is the slow case: check if there
+            // is any 3x3 block touching the current pixel which has
+            // no clipping, as then don't need to reconstruct the
+            // current pixel. This avoids zippering in edge
+            // transitions from clipped to unclipped areas. The
+            // X-Trans sensor seems prone to this, unlike Bayer, due
+            // to its irregular pattern.
+            for(int offset_j = -2; offset_j <= 0; offset_j++)
+            {
+              for(int offset_i = -2; offset_i <= 0; offset_i++)
+              {
+                if(clipped)
+                {
+                  clipped = 0;
+                  for(int jj = offset_j; jj <= offset_j + 2; jj++)
+                  {
+                    for(int ii = offset_i; ii <= offset_i + 2; ii++)
+                    {
+                      const float val = in[(ssize_t)jj * roi_in->width + ii];
+                      clipped = (clipped || (val > clip));
+                    }
+                  }
+                }
+              }
+            }
           }
         }
-        if(blend[0] + blend[1] + blend[2] > 0)
-        { // recover:
-          // options: use max colour and mean blend weight.
-          // const float m = fmaxf(mean[0]/cnt[0], fmaxf(mean[1]/cnt[1], mean[2]/cnt[2]));
-          // const float b = (blend[0] + blend[1] + blend[2])/3.0f;
-          const float m = (mean[0]/cnt[0] + mean[1]/cnt[1] + mean[2]/cnt[2])/3.0f;
-          const float b = fmaxf(fmaxf(blend[0], blend[1]), blend[2]);
-          out[0] = b * m + (1.0f-b) * in[0];
+
+        if(clipped)
+        {
+          float mean[3] = { 0.0f, 0.0f, 0.0f };
+          int cnt[3] = { 0, 0, 0 };
+          float RGBmax[3] = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+          for(int jj = -1; jj <= 1; jj++)
+          {
+            for(int ii = -1; ii <= 1; ii++)
+            {
+              const float val = in[(ssize_t)jj * roi_in->width + ii];
+              const int c = FCxtrans(j+jj, i+ii, roi_in, xtrans);
+              mean[c] += val;
+              cnt[c]++;
+              RGBmax[c] = MAX(RGBmax[c], val);
+            }
+          }
+
+          const float Ro = MIN(mean[0]/cnt[0], clip);
+          const float Go = MIN(mean[1]/cnt[1], clip);
+          const float Bo = MIN(mean[2]/cnt[2], clip);
+
+          const float R = RGBmax[0];
+          const float G = RGBmax[1];
+          const float B = RGBmax[2];
+
+          const float L = (R + G + B) / 3.0f;
+
+          float C = SQRT3 * (R - G);
+          float H = 2.0f * B - G - R;
+
+          const float Co = SQRT3 * (Ro - Go);
+          const float Ho = 2.0f * Bo - Go - Ro;
+
+          if(R != G && G != B)
+          {
+            const float ratio = sqrtf((Co * Co + Ho * Ho) / (C * C + H * H));
+            C *= ratio;
+            H *= ratio;
+          }
+
+          float RGB[3] = { 0.0f, 0.0f, 0.0f };
+
+          RGB[0] = L - H / 6.0f + C / SQRT12;
+          RGB[1] = L - H / 6.0f - C / SQRT12;
+          RGB[2] = L + H / 3.0f;
+
+          out[0] = RGB[FCxtrans(j, i, roi_out, xtrans)];
         }
         else
           out[0] = in[0];
@@ -600,7 +755,7 @@ static void process_clip_plain(dt_dev_pixelpipe_iop_t *piece, const void *const 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  if(piece->pipe->dsc.filters)
   { // raw mosaic
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) schedule(static)
@@ -629,7 +784,7 @@ static void process_clip_sse2(dt_dev_pixelpipe_iop_t *piece, const void *const i
                               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                               const float clip)
 {
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  if(piece->pipe->dsc.filters)
   { // raw mosaic
     const __m128 clipm = _mm_set1_ps(clip);
     const size_t n = (size_t)roi_out->height * roi_out->width;
@@ -682,19 +837,20 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const int filters = dt_image_filter(&piece->pipe->image);
+  const uint32_t filters = piece->pipe->dsc.filters;
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
 
   const float clip
-      = data->clip * fminf(piece->pipe->processed_maximum[0],
-                           fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
+      = data->clip * fminf(piece->pipe->dsc.processed_maximum[0],
+                           fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
   // const int ch = piece->colors;
-  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
+  if(!filters)
   {
     process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
     for(int k=0;k<3;k++)
-      piece->pipe->processed_maximum[k] = fminf(piece->pipe->processed_maximum[0],
-          fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
+      piece->pipe->dsc.processed_maximum[k]
+          = fminf(piece->pipe->dsc.processed_maximum[0],
+                  fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
     return;
   }
 
@@ -702,13 +858,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     case DT_IOP_HIGHLIGHTS_INPAINT: // a1ex's (magiclantern) idea of color inpainting:
     {
-      const float clips[4] = { 0.987 * data->clip * piece->pipe->processed_maximum[0],
-                               0.987 * data->clip * piece->pipe->processed_maximum[1],
-                               0.987 * data->clip * piece->pipe->processed_maximum[2], clip };
+      const float clips[4] = { 0.987 * data->clip * piece->pipe->dsc.processed_maximum[0],
+                               0.987 * data->clip * piece->pipe->dsc.processed_maximum[1],
+                               0.987 * data->clip * piece->pipe->dsc.processed_maximum[2], clip };
 
       if(filters == 9u)
       {
-        const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])self->dev->image_storage.xtrans;
+        const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) default(none)
 #endif
@@ -751,8 +907,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     case DT_IOP_HIGHLIGHTS_LCH:
       if(filters == 9u)
-        process_lch_xtrans(ivoid, ovoid, roi_out->width, roi_out->height, clip, roi_in,
-                           (const uint8_t(*const)[6])self->dev->image_storage.xtrans);
+        process_lch_xtrans(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
       else
         process_lch_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
       break;
@@ -763,13 +918,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   // update processed maximum
-  const float m = fmaxf(fmaxf(
-        piece->pipe->processed_maximum[0],
-        piece->pipe->processed_maximum[1]),
-      piece->pipe->processed_maximum[2]);
-  for(int k=0;k<3;k++) piece->pipe->processed_maximum[k] = m;
+  const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
+                        piece->pipe->dsc.processed_maximum[2]);
+  for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
 
-  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 static void clip_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -797,14 +950,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   piece->process_cl_ready = 1;
 
-  // x-trans images not implemented in OpenCL yet
-  if(pipe->image.filters == 9u) piece->process_cl_ready = 0;
-
   // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT yet.
   if(d->mode == DT_IOP_HIGHLIGHTS_INPAINT) piece->process_cl_ready = 0;
-
-  // no OpenCL for DT_IOP_HIGHLIGHTS_LCH yet.
-  if(d->mode == DT_IOP_HIGHLIGHTS_LCH) piece->process_cl_ready = 0;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -814,7 +961,8 @@ void init_global(dt_iop_module_so_t *module)
       = (dt_iop_highlights_global_data_t *)malloc(sizeof(dt_iop_highlights_global_data_t));
   module->data = gd;
   gd->kernel_highlights_1f_clip = dt_opencl_create_kernel(program, "highlights_1f_clip");
-  gd->kernel_highlights_1f_lch = dt_opencl_create_kernel(program, "highlights_1f_lch");
+  gd->kernel_highlights_1f_lch_bayer = dt_opencl_create_kernel(program, "highlights_1f_lch_bayer");
+  gd->kernel_highlights_1f_lch_xtrans = dt_opencl_create_kernel(program, "highlights_1f_lch_xtrans");
   gd->kernel_highlights_4f_clip = dt_opencl_create_kernel(program, "highlights_4f_clip");
 }
 
@@ -822,7 +970,8 @@ void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_highlights_4f_clip);
-  dt_opencl_free_kernel(gd->kernel_highlights_1f_lch);
+  dt_opencl_free_kernel(gd->kernel_highlights_1f_lch_bayer);
+  dt_opencl_free_kernel(gd->kernel_highlights_1f_lch_xtrans);
   dt_opencl_free_kernel(gd->kernel_highlights_1f_clip);
   free(module->data);
   module->data = NULL;
@@ -874,7 +1023,7 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_highlights_data_t));
   module->params = calloc(1, sizeof(dt_iop_highlights_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_highlights_params_t));
-  module->priority = 61; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 58; // module order created by iop_dependencies.py, do not edit!
   module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_highlights_params_t);
   module->gui_data = NULL;
