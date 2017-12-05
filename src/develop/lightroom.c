@@ -431,8 +431,9 @@ typedef struct lr_data_t
   int orientation;
 } lr_data_t;
 
-static void lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
-                 const xmlChar *name, const xmlChar *value, const xmlNodePtr node, lr_data_t *data)
+/* lrop handle the Lr operation and convert it as a dt iop */
+static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
+                  const xmlChar *name, const xmlChar *value, const xmlNodePtr node, lr_data_t *data)
 {
   const float hfactor = 3.0 / 9.0; // hue factor adjustment (use 3 out of 9 boxes in colorzones)
   const float lfactor = 4.0 / 9.0; // lightness factor adjustment (use 4 out of 9 boxes in colorzones)
@@ -864,6 +865,48 @@ static void lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
   }
 }
 
+/* _has_list returns true if the node contains a list of value */
+static int _has_list(char *name)
+{
+  return !strcmp(name, "subject")
+    || !strcmp(name, "hierarchicalSubject")
+    || !strcmp(name, "RetouchInfo")
+    || !strcmp(name, "ToneCurvePV2012");
+};
+
+/* handle a specific xpath */
+static void _handle_xpath(dt_develop_t *dev, xmlDoc *doc, int imgid, xmlXPathContext *ctx, const xmlChar *xpath, lr_data_t *data)
+{
+  xmlXPathObject *xpathObj = xmlXPathEvalExpression(xpath, ctx);
+
+  if (xpathObj != NULL)
+    {
+      const xmlNodeSetPtr xnodes = xpathObj->nodesetval;
+      const int n = xnodes->nodeNr;
+
+      for (int k=0; k<n; k++)
+        {
+          const xmlNode *node = xnodes->nodeTab[k];
+
+          if (_has_list((char *)node->name))
+            {
+              xmlNodePtr listnode = node->xmlChildrenNode;
+              if (listnode) listnode = listnode->next;
+              if (listnode) listnode = listnode->xmlChildrenNode;
+              if (listnode) listnode = listnode->next;
+              if (listnode) _lrop(dev, doc, imgid, node->name, NULL, listnode, data);
+            }
+          else
+            {
+              const xmlChar *value = xmlNodeListGetString(doc, node->children, 1);
+              _lrop(dev, doc, imgid, node->name, value, NULL, data);
+            }
+        }
+
+      xmlXPathFreeObject(xpathObj);
+    }
+}
+
 void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 {
   gboolean refresh_needed = FALSE;
@@ -966,25 +1009,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 //     return;
 //   }
 
-  xmlXPathFreeObject(xpathObj);
-  xmlXPathFreeContext(xpathCtx);
-
-  // Go safely to Description node
-
-  if(entryNode) entryNode = entryNode->xmlChildrenNode;
-  if(entryNode) entryNode = entryNode->next;
-  if(entryNode) entryNode = entryNode->xmlChildrenNode;
-  if(entryNode) entryNode = entryNode->next;
-
-  if(!entryNode || xmlStrcmp(entryNode->name, (const xmlChar *)"Description"))
-  {
-    if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
-    g_free(pathname);
-    return;
-  }
-  g_free(pathname);
-
-  //  Look for attributes in the Description
+  // let's now parse the needed data
 
   lr_data_t data;
 
@@ -1039,62 +1064,54 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   data.iheight = 0;               // image width / height
   data.orientation = 1;
 
-  xmlAttr *attribute = entryNode->properties;
+  // record the name-spaces needed for the parsing
+  xmlXPathRegisterNs
+    (xpathCtx,
+     BAD_CAST "crs",
+     BAD_CAST "http://ns.adobe.com/camera-raw-settings/1.0/");
+  xmlXPathRegisterNs
+    (xpathCtx,
+     BAD_CAST "dc",
+     BAD_CAST "http://purl.org/dc/elements/1.1/");
+  xmlXPathRegisterNs
+    (xpathCtx,
+     BAD_CAST "tiff",
+     BAD_CAST "http://ns.adobe.com/tiff/1.0/");
+  xmlXPathRegisterNs
+    (xpathCtx,
+     BAD_CAST "xmp",
+     BAD_CAST "http://ns.adobe.com/xap/1.0/");
+  xmlXPathRegisterNs
+    (xpathCtx,
+     BAD_CAST "exif",
+     BAD_CAST "http://ns.adobe.com/exif/1.0/");
+  xmlXPathRegisterNs
+    (xpathCtx,
+     BAD_CAST "lr",
+     BAD_CAST "http://ns.adobe.com/lightroom/1.0/");
+  xmlXPathRegisterNs
+    (xpathCtx,
+     BAD_CAST "rdf",
+     BAD_CAST "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 
-  while(attribute && attribute->name && attribute->children)
-  {
-    xmlChar *value = xmlNodeListGetString(entryNode->doc, attribute->children, 1);
+  // All prefixes to parse from the XMP document
+  static char *names[] = { "crs", "dc", "tiff", "xmp", "exif", "lr", NULL };
 
-    lrop(dev, doc, imgid, attribute->name, value, NULL, &data);
-
-    xmlFree(value);
-    attribute = attribute->next;
-  }
-
-  //  Look for tags (subject/Bag/* and RetouchInfo/seq/*)
-
-  entryNode = entryNode->xmlChildrenNode;
-  if(entryNode) entryNode = entryNode->next;
-
-  while(entryNode)
-  {
-    if(dev == NULL && (!xmlStrcmp(entryNode->name, (const xmlChar *)"subject")
-                       || !xmlStrcmp(entryNode->name, (const xmlChar *)"hierarchicalSubject")))
+  for (int i=0; names[i]!=NULL; i++)
     {
-      xmlNodePtr tagNode = entryNode;
+      char expr[50];
 
-      tagNode = tagNode->xmlChildrenNode;
-      tagNode = tagNode->next;
-      tagNode = tagNode->xmlChildrenNode;
-      tagNode = tagNode->next;
+      /* Lr 7.0 CC (nodes) */
+      snprintf(expr, sizeof(expr), "//%s:*", names[i]);
+      _handle_xpath(dev, doc, imgid, xpathCtx, (const xmlChar *)expr, &data);
 
-      lrop(dev, doc, imgid, entryNode->name, NULL, tagNode, &data);
+      /* Lr up to 6.0 (attributes) */
+      snprintf(expr, sizeof(expr), "//@%s:*", names[i]);
+      _handle_xpath(dev, doc, imgid, xpathCtx, (const xmlChar *)expr, &data);
     }
-    else if(dev != NULL && !xmlStrcmp(entryNode->name, (const xmlChar *)"RetouchInfo"))
-    {
-      xmlNodePtr riNode = entryNode;
 
-      riNode = riNode->xmlChildrenNode;
-      riNode = riNode->next;
-      riNode = riNode->xmlChildrenNode;
-      riNode = riNode->next;
-
-      lrop(dev, doc, imgid, entryNode->name, NULL, riNode, &data);
-    }
-    else if(dev != NULL && !xmlStrcmp(entryNode->name, (const xmlChar *)"ToneCurvePV2012"))
-    {
-      xmlNodePtr tcNode = entryNode;
-
-      tcNode = tcNode->xmlChildrenNode;
-      tcNode = tcNode->next;
-      tcNode = tcNode->xmlChildrenNode;
-      tcNode = tcNode->next;
-
-      lrop(dev, doc, imgid, entryNode->name, NULL, tcNode, &data);
-    }
-    entryNode = entryNode->next;
-  }
-
+  xmlXPathFreeObject(xpathObj);
+  xmlXPathFreeContext(xpathCtx);
   xmlFreeDoc(doc);
 
   //  Integrates into the history all the imported iop
