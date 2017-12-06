@@ -1013,55 +1013,31 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   lr_data_t data;
 
-  memset(&data.pc, 0, sizeof(data.pc));
+  memset(&data, 0, sizeof(data));
+
   data.has_crop = FALSE;
-
-  memset(&data.pf, 0, sizeof(data.pf));
   data.has_flip = FALSE;
-
-  memset(&data.pe, 0, sizeof(data.pe));
   data.has_exposure = FALSE;
-
-  memset(&data.pv, 0, sizeof(data.pv));
   data.has_vignette = FALSE;
-
-  memset(&data.pg, 0, sizeof(data.pg));
   data.has_grain = FALSE;
-
-  memset(&data.ps, 0, sizeof(data.ps));
   data.has_spots = FALSE;
-
-  memset(&data.ptc, 0, sizeof(data.ptc));
-  memset(&data.ptc_value, 0, sizeof(data.ptc_value));
-  memset(&data.ptc_split, 0, sizeof(data.ptc_split));
   data.curve_kind = linear;
   data.n_pts = 0;
-
-  memset(&data.pcz, 0, sizeof(data.pcz));
   data.has_colorzones = FALSE;
-
-  memset(&data.pc, 0, sizeof(data.pst));
   data.has_splittoning = FALSE;
-
-  memset(&data.pbl, 0, sizeof(data.pbl));
   data.has_bilat = FALSE;
-
   data.has_tags = FALSE;
-
   data.rating = 0;
   data.has_rating = FALSE;
-
-  data.lat = 0;
-  data.lon = 0;
+  data.lat = NAN;
+  data.lon = NAN;
   data.has_gps = FALSE;
-
   data.color = 0;
   data.has_colorlabel = FALSE;
-
-  data.fratio = 0;                // factor ratio image
-  data.crop_roundness = 0;        // from lightroom
+  data.fratio = NAN;                // factor ratio image
+  data.crop_roundness = NAN;        // from lightroom
   data.iwidth = 0;
-  data.iheight = 0;               // image width / height
+  data.iheight = 0;                 // image width / height
   data.orientation = 1;
 
   // record the name-spaces needed for the parsing
