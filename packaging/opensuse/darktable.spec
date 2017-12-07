@@ -19,7 +19,7 @@
 Name:           darktable
 Version:        1.0.3
 Release:        0
-Url:            http://darktable.sourceforge.net
+Url:            https://www.darktable.org/
 Source0:        %{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:  Mesa-devel
