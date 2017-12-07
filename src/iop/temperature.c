@@ -58,6 +58,8 @@ DT_MODULE_INTROSPECTION(3, dt_iop_temperature_params_t)
 
 #define DT_IOP_NUM_OF_STD_TEMP_PRESETS 3
 
+#define COLORED_SLIDERS 0
+
 static void gui_sliders_update(struct dt_iop_module_t *self);
 
 typedef struct dt_iop_temperature_params_t
@@ -1064,11 +1066,13 @@ gui:
     dt_bauhaus_slider_set_default(g->scale_k, TempK);
     dt_bauhaus_slider_set_default(g->scale_tint, tint);
 
+#if COLORED_SLIDERS
     const float neutral_stop_tint = (tint - DT_IOP_LOWEST_TINT) / (DT_IOP_HIGHEST_TINT - DT_IOP_LOWEST_TINT);
     dt_bauhaus_slider_clear_stops(g->scale_tint);
     dt_bauhaus_slider_set_stop(g->scale_tint, 0.0, 1.0, 0.0, 1.0);
     dt_bauhaus_slider_set_stop(g->scale_tint, neutral_stop_tint, 1.0, 1.0, 1.0);
     dt_bauhaus_slider_set_stop(g->scale_tint, 1.0, 0.0, 1.0, 0.0);
+#endif
   }
 
 end:
@@ -1378,6 +1382,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale_b = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[2], 3);
   g->scale_g2 = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[3], 3);
 
+#if COLORED_SLIDERS
   // reflect actual black body colors for the temperature slider
   const double temp_step = (double)(DT_IOP_HIGHEST_TEMPERATURE - DT_IOP_LOWEST_TEMPERATURE) / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
@@ -1400,6 +1405,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->scale_b, 1.0, 0.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_g2, 0.0, 0.0, 0.0, 0.0);
   dt_bauhaus_slider_set_stop(g->scale_g2, 1.0, 0.0, 1.0, 0.0);
+#endif
 
   dt_bauhaus_slider_set_format(g->scale_k, "%.0fK");
   dt_bauhaus_widget_set_label(g->scale_tint, NULL, _("tint"));
