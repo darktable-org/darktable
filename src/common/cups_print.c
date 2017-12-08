@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2015 pascal obry.
+    copyright (c) 2014-2017 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ void dt_init_print_info(dt_print_info_t *pinfo)
   memset(&pinfo->page, 0, sizeof(dt_page_setup_t));
   memset(&pinfo->paper, 0, sizeof(dt_paper_info_t));
   pinfo->printer.intent = DT_INTENT_PERCEPTUAL;
+  pinfo->printer.is_turboprint = FALSE;
   *pinfo->printer.profile = '\0';
 }
 
@@ -63,9 +64,19 @@ dt_printer_info_t *dt_get_printer_info(const char *printer_name)
       ppdMarkDefaults(ppd);
       cupsMarkOptions(ppd, dest->num_options, dest->options);
 
+      // first check if this is turboprint drived printer, two solutions:
+      // 1. ModelName constains TurboPrint
+      // 2. zedoPrinterDriver exists
+      ppd_attr_t *attr = ppdFindAttr(ppd, "ModelName", NULL);
+
+      if (attr)
+      {
+        result->is_turboprint = strstr(attr->value, "TurboPrint") == NULL ? FALSE : TRUE;
+      }
+
       // hardware margins
 
-      ppd_attr_t *attr = ppdFindAttr(ppd, "HWMargins", NULL);
+      attr = ppdFindAttr(ppd, "HWMargins", NULL);
 
       if (attr)
       {

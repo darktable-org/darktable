@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2015 pascal obry.
+    copyright (c) 2014-2017 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,6 +54,7 @@ typedef struct dt_printer_info_t
   double hw_margin_top, hw_margin_bottom, hw_margin_left, hw_margin_right;
   dt_iop_color_intent_t intent;
   char profile[256];
+  gboolean is_turboprint;
 } dt_printer_info_t;
 
 typedef struct dt_print_info_t
