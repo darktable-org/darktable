@@ -60,7 +60,7 @@
                       "name": {
                         "type": "string",
                         "pattern": "^[a-zA-Z0-9\\- \\*]+ iso [0-9]{2,6}$",
-                        "minLength": 10,
+                        "minLength": 9,
                         "maxLength": 32
                       },
                       "iso": {
