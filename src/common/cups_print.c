@@ -45,18 +45,16 @@ void dt_init_print_info(dt_print_info_t *pinfo)
   *pinfo->printer.profile = '\0';
 }
 
-dt_printer_info_t *dt_get_printer_info(const char *printer_name)
+void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo)
 {
   cups_dest_t *dests;
   int num_dests = cupsGetDests(&dests);
   cups_dest_t *dest = cupsGetDest(printer_name, NULL, num_dests, dests);
-  dt_printer_info_t *result = NULL;
 
   if (dest)
   {
     const char *PPDFile = cupsGetPPD (printer_name);
-    result = (dt_printer_info_t *)malloc(sizeof(dt_printer_info_t));
-    g_strlcpy(result->name, dest->name, MAX_NAME);
+    g_strlcpy(pinfo->name, dest->name, MAX_NAME);
     ppd_file_t *ppd = ppdOpenFile(PPDFile);
 
     if (ppd)
@@ -71,7 +69,7 @@ dt_printer_info_t *dt_get_printer_info(const char *printer_name)
 
       if (attr)
       {
-        result->is_turboprint = strstr(attr->value, "TurboPrint") == NULL ? FALSE : TRUE;
+        pinfo->is_turboprint = strstr(attr->value, "TurboPrint") == NULL ? FALSE : TRUE;
       }
 
       // hardware margins
@@ -81,13 +79,13 @@ dt_printer_info_t *dt_get_printer_info(const char *printer_name)
       if (attr)
       {
         sscanf(attr->value, "%lf %lf %lf %lf",
-               &result->hw_margin_left, &result->hw_margin_bottom,
-               &result->hw_margin_right, &result->hw_margin_top);
+               &pinfo->hw_margin_left, &pinfo->hw_margin_bottom,
+               &pinfo->hw_margin_right, &pinfo->hw_margin_top);
 
-        result->hw_margin_left   = dt_pdf_point_to_mm (result->hw_margin_left);
-        result->hw_margin_bottom = dt_pdf_point_to_mm (result->hw_margin_bottom);
-        result->hw_margin_right  = dt_pdf_point_to_mm (result->hw_margin_right);
-        result->hw_margin_top    = dt_pdf_point_to_mm (result->hw_margin_top);
+        pinfo->hw_margin_left   = dt_pdf_point_to_mm (pinfo->hw_margin_left);
+        pinfo->hw_margin_bottom = dt_pdf_point_to_mm (pinfo->hw_margin_bottom);
+        pinfo->hw_margin_right  = dt_pdf_point_to_mm (pinfo->hw_margin_right);
+        pinfo->hw_margin_top    = dt_pdf_point_to_mm (pinfo->hw_margin_top);
       }
 
       // default resolution
@@ -99,15 +97,15 @@ dt_printer_info_t *dt_get_printer_info(const char *printer_name)
         char *x = strstr(attr->value, "x");
 
         if (x)
-          sscanf (x+1, "%ddpi", &result->resolution);
+          sscanf (x+1, "%ddpi", &pinfo->resolution);
         else
-          sscanf (attr->value, "%ddpi", &result->resolution);
+          sscanf (attr->value, "%ddpi", &pinfo->resolution);
       }
       else
-        result->resolution = 300;
+        pinfo->resolution = 300;
 
-      while(result->resolution>360)
-        result->resolution /= 2.0;
+      while(pinfo->resolution>360)
+        pinfo->resolution /= 2.0;
 
       ppdClose(ppd);
       g_unlink(PPDFile);
@@ -115,7 +113,6 @@ dt_printer_info_t *dt_get_printer_info(const char *printer_name)
   }
 
   cupsFreeDests(num_dests, dests);
-  return result;
 }
 
 static int _dest_cb(void *user_data, unsigned flags, cups_dest_t *dest)
@@ -126,9 +123,10 @@ static int _dest_cb(void *user_data, unsigned flags, cups_dest_t *dest)
   // check that the printer is ready
   if (psvalue!=NULL && strtol(psvalue, NULL, 10) < IPP_PRINTER_STOPPED)
   {
-    dt_printer_info_t *pr = dt_get_printer_info(dest->name);
-    if (pctl->cb) pctl->cb(pr, pctl->user_data);
-    free(pr);
+    dt_printer_info_t pr;
+    memset(&pr, 0, sizeof(pr));
+    dt_get_printer_info(dest->name, &pr);
+    if (pctl->cb) pctl->cb(&pr, pctl->user_data);
   }
   else
     dt_print(DT_DEBUG_PRINT, "[print] skip printer %s as stopped\n", dest->name);
