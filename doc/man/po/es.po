@@ -1073,18 +1073,18 @@ msgstr "MAS INFORMACIÓN"
 #. type: textblock
 #: darktable.pod:498
 msgid ""
-"Please visit B<darktable>'s website for news, blog and bug tracker: L<https://"
+"Please visit B<darktable>'s website for news, blog and bug tracker: L<http://"
 "www.darktable.org/>"
 msgstr ""
 "Por favor, visite el sitio web de B<darktable> para noticias, blog y reporte "
-"de errores: L<https://www.darktable.org/>"
+"de errores: L<http://www.darktable.org/>"
 
 #. type: textblock
 #: darktable.pod:500
 msgid ""
-"L<https://www.darktable.org/usermanual/> The complete darktable usermanual."
+"L<http://www.darktable.org/usermanual/> The complete darktable usermanual."
 msgstr ""
-"L<https://www.darktable.org/usermanual/> El manual de usuarios completo de "
+"L<http://www.darktable.org/usermanual/> El manual de usuarios completo de "
 "darktable."
 
 #. type: textblock
@@ -1107,10 +1107,10 @@ msgstr "REPORTAR ERRORES"
 #. type: textblock
 #: darktable.pod:508
 msgid ""
-"Please use the bug tracker on L<https://www.darktable.org/redmine/projects/"
+"Please use the bug tracker on L<http://www.darktable.org/redmine/projects/"
 "darktable/issues/> to report bugs, feature requests and so on."
 msgstr ""
-"Por favor utilice el la plataforma de seguimiento de errores L<https://www."
+"Por favor utilice el la plataforma de seguimiento de errores L<http://www."
 "darktable.org/redmine/projects/darktable/issues/> para reportar sus errores, "
 "requerimientos de nuevas características y más."
 
