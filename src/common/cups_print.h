@@ -72,7 +72,7 @@ void dt_printers_abort_discovery(void);
 void dt_init_print_info(dt_print_info_t *pinfo);
 
 // get printer information for the given printer name
-dt_printer_info_t *dt_get_printer_info(const char *printer_name);
+void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo);
 
 // get all available papers for the given printer
 GList *dt_get_papers(const char *printer_name);

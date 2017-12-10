@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2015 pascal obry.
+    copyright (c) 2014-2017 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -380,13 +380,9 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
-  dt_printer_info_t *printer = dt_get_printer_info (printer_name);
 
-  if (!printer) return;
+  dt_get_printer_info (printer_name, &ps->prt.printer);
 
-  memcpy(&ps->prt.printer, printer, sizeof(dt_printer_info_t));
-  free(printer);
-  printer = NULL;
 
   // if there is 0 hardware margins, set the user marging to 15mm
 
