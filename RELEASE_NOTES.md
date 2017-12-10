@@ -14,11 +14,19 @@ $ sha256sum darktable-2.4.0rc1.exe
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
 ## changes since rc0
-* noise profile for Nikon D4
-* Phase One IQ140 support
-* macintosh packaging fixes
-* lightroom import fixes
-
+- noise profile for Nikon D4
+- Phase One IQ140 support
+- OSX packaging fixes
+- Lightroom 7 import fixes
+- Some fixes for sliders and comboboxen and grabbing the keyboard focus
+- Update Catalan translation
+- Update Hungarian translation
+- Fix OpenCL on OSX
+- Bail out of darktable-cli when the XMP file is not readable
+- Fix timezone selection for geotagging on Windows
+- Canon EOS M100 supported
+- Show ratings on zoomable lighttable without a delay
+- Rely on CUPS color management when printing without configuring any color profile in darktable
 
 and the changelog as compared to 2.2.0 can be found below. Some of the fixes might have been backported to the stable 2.2.x series already.
 - The maintainership of the RawSpeed library was transferred to the darktable project. The work on code cleanup, hardening, modernization, simplification and testing is ongoing.
@@ -74,6 +82,7 @@ and the changelog as compared to 2.2.0 can be found below. Some of the fixes mig
 - The grain module was slightly changed to have a more pleasing, photographic-paper like appearance
 - Using the color look up table module you can now convert your images to monochrome, honoring the Helmholtz-Kohlrausch effect
 - Some more small improvements were made
+- Support basic import of Lightroom 7 settings
 
 ## Bugfixes
 - Fix the problem with rating images by accident when moving the mouse while typing an image size in the export module
@@ -103,6 +112,9 @@ and the changelog as compared to 2.2.0 can be found below. Some of the fixes mig
 - Don't re-write all XMP files when detaching a tag
 - Sync XMPs when a tag is removed from the database
 - Sync XMPs after a tag is attached/detached via the Lua API
+- Bail out of darktable-cli when the XMP file is not readable
+- Show ratings on zoomable lighttable without a delay
+- Rely on CUPS color management when printing without configuring any color profile in darktable
 - Many more bugs got fixed
 
 ## Lua
@@ -254,9 +266,11 @@ and the changelog as compared to 2.2.0 can be found below. Some of the fixes mig
 - Sony ILCE-6500
 
 ## Updated Translations
+- Catalan
 - Dutch
 - French
 - German
 - Hebrew
+- Hungarian
 - Russian
 - Spanish
