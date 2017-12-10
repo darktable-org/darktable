@@ -117,6 +117,7 @@ and the changelog as compared to 2.2.0 can be found below. Some of the fixes mig
 #### Warning: support for Nikon NEF 'lossy after split' raws was unintentionally broken due to the lack of such samples. Please see [this post](https://discuss.pixls.us/t/nikon-a-specific-raw-sample-wanted/5483?u=lebedevri) for more details. If you have affected raws, please contribute samples!
 
 ## Base Support:
+
 - Canon EOS 200D
 - Canon EOS Kiss X9
 - Canon EOS Rebel SL2
@@ -126,6 +127,7 @@ and the changelog as compared to 2.2.0 can be found below. Some of the fixes mig
 - Canon EOS 800D
 - Canon EOS Kiss X9i
 - Canon EOS Rebel T7i
+- Canon EOS M100
 - Canon EOS M5
 - Canon EOS M6
 - Canon PowerShot G9 X Mark II
@@ -177,6 +179,7 @@ and the changelog as compared to 2.2.0 can be found below. Some of the fixes mig
 - Pentax K-5 (dng)
 - Pentax K-r (dng)
 - Pentax K10D (dng)
+- Phase One IQ140
 - Samsung G920F
 - Samsung G935F
 - Samsung GX10
@@ -184,6 +187,7 @@ and the changelog as compared to 2.2.0 can be found below. Some of the fixes mig
 - Sony ILCE-9
 
 ## White Balance Presets:
+
 - Canon EOS 6D Mark II
 - Fujifilm X-T20
 - Fujifilm X100F
@@ -198,6 +202,7 @@ and the changelog as compared to 2.2.0 can be found below. Some of the fixes mig
 - Pentax K-3 II
 
 ## Noise Profiles:
+
 - Canon EOS 1300D
 - Canon EOS Kiss X80
 - Canon EOS Rebel T6
@@ -216,6 +221,7 @@ and the changelog as compared to 2.2.0 can be found below. Some of the fixes mig
 - Nikon D2X
 - Nikon D3000
 - Nikon D3400
+- Nikon D4
 - Nikon D500
 - Olympus E-M1MarkII
 - Olympus E-P5
