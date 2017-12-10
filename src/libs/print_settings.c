@@ -383,6 +383,10 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 
   dt_get_printer_info (printer_name, &ps->prt.printer);
 
+  // if this is a turboprint printer, disable the printer profile
+
+  if (ps->prt.printer.is_turboprint)
+    dt_bauhaus_combobox_set(ps->pprofile, 0);
 
   // if there is 0 hardware margins, set the user marging to 15mm
 
@@ -865,7 +869,6 @@ _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
       ps->v_piccprofile = g_strdup(pp->filename);
 
       // activate the black compensation and printer intent
-      gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), TRUE);
       gtk_widget_set_sensitive(GTK_WIDGET(ps->black_point_compensation), TRUE);
       return;
     }
@@ -876,7 +879,6 @@ _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
   g_free(ps->v_piccprofile);
   ps->v_picctype = DT_COLORSPACE_NONE;
   ps->v_piccprofile = g_strdup("");
-  gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->black_point_compensation), FALSE);
 }
 
@@ -887,6 +889,7 @@ _printer_intent_callback (GtkWidget *widget, dt_lib_module_t *self)
   const int pos = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/print/printer/iccintent", pos);
   ps->v_pintent = pos;
+  ps->prt.printer.intent = pos;
 }
 
 static void
@@ -1111,7 +1114,7 @@ gui_init (dt_lib_module_t *self)
   combo_idx = -1;
   n = 0;
 
-  dt_bauhaus_combobox_add(d->pprofile, _("none"));
+  dt_bauhaus_combobox_add(d->pprofile, _("color management in printer driver"));
   while(l)
   {
     dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
@@ -1166,6 +1169,7 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->pintent, d->v_pintent);
 
   g_signal_connect (G_OBJECT (d->pintent), "value-changed", G_CALLBACK (_printer_intent_callback), (gpointer)self);
+  d->prt.printer.intent = d->v_pintent;
 
   d->black_point_compensation = gtk_check_button_new_with_label(_("black point compensation"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->black_point_compensation), TRUE, FALSE, 0);
@@ -1177,7 +1181,6 @@ gui_init (dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->black_point_compensation,
                               _("activate black point compensation when applying the printer profile"));
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->pintent), combo_idx==0?FALSE:TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(d->black_point_compensation), combo_idx==0?FALSE:TRUE);
 
   ////////////////////////// PAGE SETTINGS
@@ -1567,7 +1570,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     }
 
     // in theory pprofile can't be srgb or adobergb, but checking for them won't hurt
-    if(*pprofile == '\0' || !g_strcmp0(pprofile, "none"))
+    if(*pprofile == '\0' || !g_strcmp0(pprofile, _("none")))
     {
       pprofile_type = DT_COLORSPACE_NONE;
     }
@@ -1646,7 +1649,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
 
 int set_params(dt_lib_module_t *self, const void *params, int size)
 {
-  const dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   if(!params) return 1;
 
@@ -1761,6 +1764,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   }
 
   dt_bauhaus_combobox_set (ps->pintent, pintent);
+  ps->prt.printer.intent = pintent;
 
   if (style[0] != '\0')
     _bauhaus_combobox_set_active_text(ps->style, style);
@@ -1912,13 +1916,14 @@ gui_reset (dt_lib_module_t *self)
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), 15 * units[ps->unit]);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[ALIGNMENT_CENTER]), TRUE);
   ps->prt.page.alignment = ALIGNMENT_CENTER;
+  ps->prt.printer.intent = DT_INTENT_PERCEPTUAL;
   dt_bauhaus_combobox_set(ps->profile, 0);
   dt_bauhaus_combobox_set(ps->pprofile, 0);
   dt_bauhaus_combobox_set(ps->pintent, 0);
   dt_bauhaus_combobox_set(ps->style, 0);
   dt_bauhaus_combobox_set(ps->intent, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation), TRUE);
-  gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->black_point_compensation), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->style_mode), FALSE);
 

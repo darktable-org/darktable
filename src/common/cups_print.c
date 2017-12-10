@@ -397,53 +397,121 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
     return;
   }
 
-  cups_dest_t *dests;
-  int num_dests = cupsGetDests(&dests);
-  cups_dest_t *dest = cupsGetDest(pinfo->printer.name, NULL, num_dests, dests);
-
   cups_option_t *options = NULL;
   int num_options = 0;
 
-  for (int j = 0; j < dest->num_options; j ++)
-    if (cupsGetOption(dest->options[j].name, num_options,
-                      options) == NULL)
-      num_options = cupsAddOption(dest->options[j].name,
-                                  dest->options[j].value,
-                                  num_options, &options);
-
-  cupsFreeDests(num_dests, dests);
-
-  // if we have a profile, disable cm on CUPS, this is important as dt does the cm
-
-  num_options = cupsAddOption("cm-calibration", *pinfo->printer.profile ? "true" : "false", num_options, &options);
-
-  // media to print on
-
-  num_options = cupsAddOption("media", pinfo->paper.name, num_options, &options);
-
-  // never print two-side
-
-  num_options = cupsAddOption("sides", "one-sided", num_options, &options);
-
-  // and a single image per page
-
-  num_options = cupsAddOption("number-up", "1", num_options, &options);
-
-  // if the printer has no hardward margins activate the borderless mode
-
-  if (pinfo->printer.hw_margin_top == 0 || pinfo->printer.hw_margin_bottom == 0
-      || pinfo->printer.hw_margin_left == 0 || pinfo->printer.hw_margin_right == 0)
+  // for turboprint drived printer, use the turboprint dialog
+  if (pinfo->printer.is_turboprint)
   {
-    // there is many variant for this parameter
-    num_options = cupsAddOption("StpFullBleed", "true", num_options, &options);
-    num_options = cupsAddOption("STP_FullBleed", "true", num_options, &options);
-    num_options = cupsAddOption("Borderless", "true", num_options, &options);
-  }
+    const char *tp_intent_name[] = { "perception_0", "colorimetric-relative_1", "saturation_1", "colorimetric-absolute_1" };
+    char tpcmd[1024];
+    char tmpfile[PATH_MAX] = { 0 };
 
-  if (pinfo->page.landscape)
-    num_options = cupsAddOption("landscape", "true", num_options, &options);
+    dt_loc_get_tmp_dir(tmpfile, sizeof(tmpfile));
+    g_strlcat(tmpfile, "/dt_cups_opts_XXXXXX", sizeof(tmpfile));
+
+    gint fd = g_mkstemp(tmpfile);
+    if(fd == -1)
+    {
+      dt_control_log(_("failed to create temporary file for printing options"));
+      fprintf(stderr, "failed to create temporary pdf for printing options\n");
+      return;
+    }
+    close(fd);
+
+    // ensure that intent is in the range, may happen if at some point we add new intent in the list
+    const int intent = (pinfo->printer.intent < 4) ? pinfo->printer.intent : 0;
+
+    // start the turboprint dialog
+    snprintf
+      (tpcmd, sizeof(tpcmd),
+       "turboprint --printer=%s --options --output=%s -o copies=1 -o PageSize=%s -o InputSlot=AutoSelect -o zedoIntent=%s -o MediaType=%s",
+       pinfo->printer.name, tmpfile, pinfo->paper.common_name, tp_intent_name[intent], pinfo->medium.name);
+
+    dt_print(DT_DEBUG_PRINT, "[print]   cmd='%s'\n", tpcmd);
+
+    const int res = system(tpcmd);
+
+    if (res==0)
+    {
+      FILE *stream = g_fopen(tmpfile, "rb");
+
+      while(1)
+      {
+        char optname[100];
+        char optvalue[100];
+        const int ropt = fscanf(stream, "%*s %[^= ]=%s", optname, optvalue);
+
+        // if we parsed an option name=value
+        if (ropt==2)
+        {
+          char *v = optvalue;
+
+          // remove possible single quote around value
+          if (*v == '\'') v++;
+          if (v[strlen(v)-1] == '\'') v[strlen(v)-1] = '\0';
+
+          num_options = cupsAddOption(optname, v, num_options, &options);
+        }
+        else if (ropt == EOF)
+          break;
+      }
+      fclose(stream);
+      g_unlink(tmpfile);
+    }
+    else
+    {
+      dt_print(DT_DEBUG_PRINT, "[print]   command fails with %d, cancel printing\n", res);
+      return;
+    }
+  }
   else
-    num_options = cupsAddOption("landscape", "false", num_options, &options);
+  {
+    cups_dest_t *dests;
+    int num_dests = cupsGetDests(&dests);
+    cups_dest_t *dest = cupsGetDest(pinfo->printer.name, NULL, num_dests, dests);
+
+    for (int j = 0; j < dest->num_options; j ++)
+      if (cupsGetOption(dest->options[j].name, num_options,
+                        options) == NULL)
+        num_options = cupsAddOption(dest->options[j].name,
+                                    dest->options[j].value,
+                                    num_options, &options);
+
+    cupsFreeDests(num_dests, dests);
+
+    // if we have a profile, disable cm on CUPS, this is important as dt does the cm
+
+    num_options = cupsAddOption("cm-calibration", *pinfo->printer.profile ? "true" : "false", num_options, &options);
+
+    // media to print on
+
+    num_options = cupsAddOption("media", pinfo->paper.name, num_options, &options);
+
+    // never print two-side
+
+    num_options = cupsAddOption("sides", "one-sided", num_options, &options);
+
+    // and a single image per page
+
+    num_options = cupsAddOption("number-up", "1", num_options, &options);
+
+    // if the printer has no hardward margins activate the borderless mode
+
+    if (pinfo->printer.hw_margin_top == 0 || pinfo->printer.hw_margin_bottom == 0
+        || pinfo->printer.hw_margin_left == 0 || pinfo->printer.hw_margin_right == 0)
+    {
+      // there is many variant for this parameter
+      num_options = cupsAddOption("StpFullBleed", "true", num_options, &options);
+      num_options = cupsAddOption("STP_FullBleed", "true", num_options, &options);
+      num_options = cupsAddOption("Borderless", "true", num_options, &options);
+    }
+
+    if (pinfo->page.landscape)
+      num_options = cupsAddOption("landscape", "true", num_options, &options);
+    else
+      num_options = cupsAddOption("landscape", "false", num_options, &options);
+  }
 
   // print lp options
 
