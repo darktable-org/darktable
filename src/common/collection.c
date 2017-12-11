@@ -842,12 +842,18 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_HISTORY: // history
-      query = dt_util_dstrcat(query, "(id %s IN (SELECT imgid FROM main.history WHERE imgid=images.id)) ",
+      if (!text || text[0] == '\0') // Optimize away the empty case
+        query = dt_util_dstrcat(query, "(1=1)");
+      else
+        query = dt_util_dstrcat(query, "(id %s IN (SELECT imgid FROM main.history WHERE imgid=images.id)) ",
                               (strcmp(escaped_text, _("altered")) == 0) ? "" : "not");
       break;
 
     case DT_COLLECTION_PROP_GEOTAGGING: // geotagging
-      query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images WHERE "
+      if (!text || text[0] == '\0') // Optimize away the empty case
+        query = dt_util_dstrcat(query, "(1=1)");
+      else
+        query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images WHERE "
                                      "(longitude IS NOT NULL AND latitude IS NOT NULL))) ",
                               (strcmp(escaped_text, _("tagged")) == 0) ? "" : "not");
       break;
@@ -887,7 +893,10 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       break;
     case DT_COLLECTION_PROP_TAG: // tag
-      query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
+      if (!text || text[0] == '\0') // Optimize away the empty case
+        query = dt_util_dstrcat(query, "(1=1)");
+      else
+        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
                                      "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%1$s' OR name like '%1$s|%%'))",
                               escaped_text);
       break;
