@@ -260,7 +260,7 @@ GList *dt_get_papers(const char *printer_name)
         {
           if (cupsGetDestMediaByIndex(hcon, dest, info, k, CUPS_MEDIA_FLAGS_DEFAULT, &size))
           {
-            if (!paper_exists(result,size.media))
+            if (size.width!=0 && size.length!=0 && !paper_exists(result, size.media))
             {
               pwg_media_t *med = pwgMediaForPWG (size.media);
               char common_name[MAX_NAME] = { 0 };
@@ -302,7 +302,7 @@ GList *dt_get_papers(const char *printer_name)
 
     for (int k=0; k<ppd->num_sizes; k++)
     {
-      if (!paper_exists(result,size->name))
+      if (size->width!=0 && size->length!=0 && !paper_exists(result, size->name))
       {
         dt_paper_info_t *paper = (dt_paper_info_t*)malloc(sizeof(dt_paper_info_t));
         g_strlcpy(paper->name, size->name, MAX_NAME);
