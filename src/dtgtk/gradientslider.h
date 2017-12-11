@@ -116,7 +116,7 @@ typedef struct _gradient_slider_stop_t
 GType dtgtk_gradient_slider_get_type(void);
 GType dtgtk_gradient_slider_multivalue_get_type(void);
 
-/** Instansiate a new darktable gradient slider control */
+/** instantiate a new darktable gradient slider control */
 GtkWidget *dtgtk_gradient_slider_new();
 GtkWidget *dtgtk_gradient_slider_new_with_color(GdkRGBA start, GdkRGBA end);
 
@@ -149,7 +149,7 @@ void dtgtk_gradient_slider_set_margins(GtkDarktableGradientSlider *gslider, gint
 void dtgtk_gradient_slider_set_increment(GtkDarktableGradientSlider *gslider, gdouble value);
 
 
-/** Instansiate a new darktable gradient slider multivalue control */
+/** instantiate a new darktable gradient slider multivalue control */
 GtkWidget *dtgtk_gradient_slider_multivalue_new(gint positions);
 GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color(GdkRGBA start, GdkRGBA end, gint positions);
 

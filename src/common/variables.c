@@ -282,7 +282,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
 // See here for bash examples and documentation:
 // http://www.tldp.org/LDP/abs/html/parameter-substitution.html
 // https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
-// the descriptions in the comments are refering to the bash behaviour, dt doesn't do it 100% like that!
+// the descriptions in the comments are referring to the bash behaviour, dt doesn't do it 100% like that!
 static char *variable_get_value(dt_variables_params_t *params, char **variable)
 {
   // invariant: the variable starts with "$(" which we can skip

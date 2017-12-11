@@ -107,7 +107,7 @@ luaA_Type dt_lua_module_get_preset_type(lua_State *L, const char *module_type_na
 void dt_lua_register_current_preset(lua_State *L, const char *module_type_name, const char *entry_name,
                                     lua_CFunction pusher, lua_CFunction getter)
 {
-  // stack usefull values
+  // stack useful values
   dt_lua_module_entry_push(L, module_type_name, entry_name);
   void *entry = *(void **)lua_touserdata(L, -1);
   luaA_Type entry_type = dt_lua_module_entry_get_type(L, module_type_name, entry_name);
