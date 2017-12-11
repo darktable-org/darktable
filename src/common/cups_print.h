@@ -40,6 +40,11 @@ typedef struct dt_paper_info_t
   double width, height;
 } dt_paper_info_t;
 
+typedef struct dt_medium_info_t
+{
+  char name[MAX_NAME], common_name[MAX_NAME];
+} dt_medium_info_t;
+
 typedef struct dt_page_setup_t
 {
   gboolean landscape;
@@ -62,6 +67,7 @@ typedef struct dt_print_info_t
   dt_printer_info_t printer;
   dt_page_setup_t page;
   dt_paper_info_t paper;
+  dt_medium_info_t medium;
 } dt_print_info_t;
 
 // Asynchronous printer discovery, cb will be called for each printer found
@@ -79,6 +85,12 @@ GList *dt_get_papers(const char *printer_name);
 
 // get paper information for the given paper name
 dt_paper_info_t *dt_get_paper(GList *papers, const char *name);
+
+// get all available media type for the given printer
+GList *dt_get_media_type(const dt_printer_info_t *printer);
+
+// get paper information for the given paper name
+dt_medium_info_t *dt_get_medium(GList *media, const char *name);
 
 // print filename using the printer and the page size and setup
 void dt_print_file(const int32_t imgid, const char *filename, const dt_print_info_t *pinfo);
