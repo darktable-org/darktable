@@ -331,6 +331,61 @@ GList *dt_get_papers(const char *printer_name)
   return result;
 }
 
+GList *dt_get_media_type(const dt_printer_info_t *printer)
+{
+  const char *printer_name = printer->name;
+  GList *result = NULL;
+
+  // check now PPD media type
+
+  const char *PPDFile = cupsGetPPD(printer_name);
+  ppd_file_t *ppd = ppdOpenFile(PPDFile);
+
+  if (ppd)
+  {
+      ppd_option_t *opt = ppdFindOption(ppd, "MediaType");
+
+      if (opt)
+      {
+        ppd_choice_t *choice = opt->choices;
+
+        for (int k=0; k<opt->num_choices; k++)
+        {
+          dt_medium_info_t *media = (dt_medium_info_t*)malloc(sizeof(dt_medium_info_t));
+          g_strlcpy(media->name, choice->choice, MAX_NAME);
+          g_strlcpy(media->common_name, choice->text, MAX_NAME);
+          result = g_list_append (result, media);
+
+          dt_print(DT_DEBUG_PRINT, "[print] new media %2d (%s) (%s)\n", k, media->name, media->common_name);
+          choice++;
+        }
+      }
+  }
+
+  ppdClose(ppd);
+  g_unlink(PPDFile);
+
+  return result;
+}
+
+dt_medium_info_t *dt_get_medium(GList *media, const char *name)
+{
+  GList *m = media;
+  dt_medium_info_t *result = NULL;
+
+  while (m)
+  {
+    dt_medium_info_t *mi = (dt_medium_info_t*)m->data;
+    if (!strcmp(mi->name, name) || !strcmp(mi->common_name, name))
+    {
+      result = mi;
+      break;
+    }
+    m = g_list_next (m);
+  }
+  return result;
+}
+
 void dt_print_file(const int32_t imgid, const char *filename, const dt_print_info_t *pinfo)
 {
   // first for safety check that filename exists and is readable
