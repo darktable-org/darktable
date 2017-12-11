@@ -127,6 +127,7 @@ static int _dest_cb(void *user_data, unsigned flags, cups_dest_t *dest)
     memset(&pr, 0, sizeof(pr));
     dt_get_printer_info(dest->name, &pr);
     if (pctl->cb) pctl->cb(&pr, pctl->user_data);
+    dt_print(DT_DEBUG_PRINT, "[print] new printer %s found\n", dest->name);
   }
   else
     dt_print(DT_DEBUG_PRINT, "[print] skip printer %s as stopped\n", dest->name);
@@ -276,6 +277,10 @@ GList *dt_get_papers(const char *printer_name)
               paper->width = (double)size.width / 100.0;
               paper->height = (double)size.length / 100.0;
               result = g_list_append (result, paper);
+
+              dt_print(DT_DEBUG_PRINT,
+                       "[print] new media paper %4d %6.2f x %6.2f (%s) (%s)\n",
+                       k, paper->width, paper->height, paper->name, paper->common_name);
             }
           }
         }
@@ -310,6 +315,10 @@ GList *dt_get_papers(const char *printer_name)
         paper->width = (double)dt_pdf_point_to_mm(size->width);
         paper->height = (double)dt_pdf_point_to_mm(size->length);
         result = g_list_append (result, paper);
+
+        dt_print(DT_DEBUG_PRINT,
+                 "[print] new ppd paper %4d %6.2f x %6.2f (%s) (%s)\n",
+                 k, paper->width, paper->height, paper->name, paper->common_name);
       }
       size++;
     }
@@ -384,7 +393,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
 
   dt_print(DT_DEBUG_PRINT, "[print] printer options (%d)\n", num_options);
   for (int k=0; k<num_options; k++)
-    dt_print(DT_DEBUG_PRINT, "[print]   %s=%s\n", options[k].name, options[k].value);
+    dt_print(DT_DEBUG_PRINT, "[print]   %2d  %s=%s\n", k+1, options[k].name, options[k].value);
 
   const int job_id = cupsPrintFile(pinfo->printer.name, filename,  "darktable", num_options, options);
 
