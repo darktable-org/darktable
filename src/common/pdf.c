@@ -738,7 +738,7 @@ time_error:
       time_str
     );
   }
-  bytes_written += fprintf(pdf->fd, "/Producer (%s http://www.darktable.org)\n"
+  bytes_written += fprintf(pdf->fd, "/Producer (%s https://www.darktable.org)\n"
                                     ">>\n"
                                     "endobj\n",
                            PACKAGE_STRING);
