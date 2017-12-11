@@ -723,7 +723,7 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
   g_regex_unref(regex);
 }
 
-void dt_collection_get_makermodel(const gchar *filter, GList **sanitized, GList **exif)
+void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList **exif)
 {
   sqlite3_stmt *stmt;
   gchar *needle = NULL;
@@ -743,21 +743,7 @@ void dt_collection_get_makermodel(const gchar *filter, GList **sanitized, GList 
     char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
     char *exif_model = (char *)sqlite3_column_text(stmt, 1);
 
-    char maker[64];
-    char model[64];
-    char alias[64];
-    maker[0] = model[0] = alias[0] = '\0';
-    dt_rawspeed_lookup_makermodel(exif_maker, exif_model,
-                                  maker, sizeof(maker),
-                                  model, sizeof(model),
-                                  alias, sizeof(alias));
-
-    // Create the makermodel by concatenation
-    char makermodel[128];
-    g_strlcpy(makermodel, maker, sizeof(makermodel));
-    int maker_len = strlen(maker);
-    makermodel[maker_len] = ' ';
-    g_strlcpy(makermodel+maker_len+1, model, sizeof(makermodel)-maker_len-1);
+    gchar *makermodel =  dt_collection_get_makermodel(exif_maker, exif_model);
 
     gchar *haystack = g_utf8_strdown(makermodel, -1);
     if (!needle || g_strrstr(haystack, needle) != NULL)
@@ -778,6 +764,7 @@ void dt_collection_get_makermodel(const gchar *filter, GList **sanitized, GList 
       }
     }
     g_free(haystack);
+    g_free(makermodel);
   }
   sqlite3_finalize(stmt);
   g_free(needle);
@@ -787,6 +774,26 @@ void dt_collection_get_makermodel(const gchar *filter, GList **sanitized, GList 
     *sanitized = g_list_sort(g_hash_table_get_keys(names), (GCompareFunc) strcmp);
     g_hash_table_destroy(names);
   }
+}
+
+gchar *dt_collection_get_makermodel(const char *exif_maker, const char *exif_model)
+{
+  gchar *makermodel = NULL;
+
+  char maker[64];
+  char model[64];
+  char alias[64];
+  maker[0] = model[0] = alias[0] = '\0';
+  dt_rawspeed_lookup_makermodel(exif_maker, exif_model,
+                                maker, sizeof(maker),
+                                model, sizeof(model),
+                                alias, sizeof(alias));
+
+  // Create the makermodel by concatenation
+
+  makermodel = dt_util_dstrcat(makermodel, "%s %s", maker, model);
+
+  return makermodel;
 }
 
 static gchar *get_query_string(const dt_collection_properties_t property, const gchar *text)
@@ -860,7 +867,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         // Start query with a false statement to avoid special casing the first condition
         query = dt_util_dstrcat(query, "((1=0)");
         GList *lists = NULL;
-        dt_collection_get_makermodel(text, NULL, &lists);
+        dt_collection_get_makermodels(text, NULL, &lists);
         GList *element = lists;
         while (element)
         {
