@@ -1815,6 +1815,10 @@ static void show_usage(const char *exe)
 
 int main(int argc, char *argv[])
 {
+#ifdef _WIN32
+  SetErrorMode(SEM_FAILCRITICALERRORS);
+#endif
+
 #ifdef _OPENMP
   omp_set_num_threads(omp_get_num_procs());
 #endif
