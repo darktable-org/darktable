@@ -421,7 +421,7 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 
   if(ps->paper_list) g_list_free_full(ps->paper_list, free);
 
-  ps->paper_list = dt_get_papers (printer_name);
+  ps->paper_list = dt_get_papers (&ps->prt.printer);
   GList *papers = ps->paper_list;
   int np = 0;
   gboolean ispaperset = FALSE;
