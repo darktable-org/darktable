@@ -488,6 +488,10 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
 
     num_options = cupsAddOption("media", pinfo->paper.name, num_options, &options);
 
+    // the media type to print on
+
+    num_options = cupsAddOption("MediaType", pinfo->medium.name, num_options, &options);
+
     // never print two-side
 
     num_options = cupsAddOption("sides", "one-sided", num_options, &options);
