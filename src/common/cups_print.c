@@ -511,10 +511,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
       num_options = cupsAddOption("Borderless", "true", num_options, &options);
     }
 
-    if (pinfo->page.landscape)
-      num_options = cupsAddOption("landscape", "true", num_options, &options);
-    else
-      num_options = cupsAddOption("landscape", "false", num_options, &options);
+    num_options = cupsAddOption("landscape", pinfo->page.landscape ? "true" : "false", num_options, &options);
   }
 
   // print lp options
@@ -523,7 +520,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
   for (int k=0; k<num_options; k++)
     dt_print(DT_DEBUG_PRINT, "[print]   %2d  %s=%s\n", k+1, options[k].name, options[k].value);
 
-  const int job_id = cupsPrintFile(pinfo->printer.name, filename,  "darktable", num_options, options);
+  const int job_id = cupsPrintFile(pinfo->printer.name, filename, "darktable", num_options, options);
 
   if (job_id == 0)
     dt_control_log(_("error while printing image %d on `%s'"), imgid, pinfo->printer.name);
