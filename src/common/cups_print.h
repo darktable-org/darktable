@@ -81,7 +81,7 @@ void dt_init_print_info(dt_print_info_t *pinfo);
 void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo);
 
 // get all available papers for the given printer
-GList *dt_get_papers(const char *printer_name);
+GList *dt_get_papers(const dt_printer_info_t *printer);
 
 // get paper information for the given paper name
 dt_paper_info_t *dt_get_paper(GList *papers, const char *name);

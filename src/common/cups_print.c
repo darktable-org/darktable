@@ -230,8 +230,9 @@ sort_papers (gconstpointer p1, gconstpointer p2)
   return l1==l2 ? strcmp(n1->common_name, n2->common_name) : (l1 < l2 ? -1 : +1);
 }
 
-GList *dt_get_papers(const char *printer_name)
+GList *dt_get_papers(const dt_printer_info_t *printer)
 {
+  const char *printer_name = printer->name;
   GList *result = NULL;
 
 #if ((CUPS_VERSION_MAJOR == 1) && (CUPS_VERSION_MINOR >= 7)) || CUPS_VERSION_MAJOR > 1
