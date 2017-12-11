@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-16 10:32+0100\n"
-"PO-Revision-Date: 2017-11-16 10:39+0100\n"
+"POT-Creation-Date: 2017-12-11 09:38+0100\n"
+"PO-Revision-Date: 2017-12-11 09:49+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.0.4\n"
+"X-Generator: Poedit 2.0.5\n"
 
 #: ../build/src/preferences_gen.h:1617
 msgid "GUI options"
@@ -956,7 +956,7 @@ msgstr "Graphik;Grafik;Photographie;Fotografie;Raw;"
 #: ../src/gui/presets.c:383 ../src/gui/styles_dialog.c:286
 #: ../src/imageio/storage/disk.c:95 ../src/imageio/storage/gallery.c:107
 #: ../src/imageio/storage/latex.c:106 ../src/libs/collect.c:240
-#: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:461
+#: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:476
 #: ../src/libs/import.c:755 ../src/libs/import.c:862 ../src/libs/lib.c:240
 #: ../src/libs/styles.c:213 ../src/libs/styles.c:236 ../src/libs/tagging.c:374
 #: ../src/libs/tagging.c:414
@@ -1017,11 +1017,16 @@ msgstr "Fehler: kann Datei %s nicht öffnen"
 msgid "no images to export, aborting\n"
 msgstr "keine Bilder zum exportieren gefunden, breche ab\n"
 
-#: ../src/cli/main.c:272
+#: ../src/cli/main.c:260
+#, c-format
+msgid "error: can't open xmp file %s"
+msgstr "Fehler: kann XMP-Datei %s nicht öffnen"
+
+#: ../src/cli/main.c:278
 msgid "empty history stack"
 msgstr "leerer Verlaufsstapel"
 
-#: ../src/cli/main.c:295
+#: ../src/cli/main.c:301
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -1029,48 +1034,48 @@ msgstr ""
 "kann Modul zum Speichern auf der Festplatten nicht finden. Bitte die "
 "Installation prüfen, irgendwas scheint kaputt zu sein."
 
-#: ../src/cli/main.c:303
+#: ../src/cli/main.c:309
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "Konnte keine Einstellungen vom Speicher-Modul bekommen, breche Export ab …"
 
-#: ../src/cli/main.c:316
+#: ../src/cli/main.c:322
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "unbekannte Datei-Erweiterung '.%s'"
 
-#: ../src/cli/main.c:325
+#: ../src/cli/main.c:331
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "Konnte keine Einstellungen vom Format-Modul bekommen, breche Export ab …"
 
-#: ../src/common/collection.c:855 ../src/develop/lightroom.c:919
+#: ../src/common/collection.c:855 ../src/develop/lightroom.c:789
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:451
 #: ../src/iop/channelmixer.c:462 ../src/iop/colorbalance.c:631
-#: ../src/iop/temperature.c:1346 ../src/libs/collect.c:1085
+#: ../src/iop/temperature.c:1350 ../src/libs/collect.c:1085
 #: ../src/libs/collect.c:1086 ../src/libs/collect.c:1087
 msgid "red"
 msgstr "Rot"
 
-#: ../src/common/collection.c:857 ../src/develop/lightroom.c:921
-#: ../src/iop/temperature.c:1337 ../src/libs/collect.c:1089
+#: ../src/common/collection.c:857 ../src/develop/lightroom.c:791
+#: ../src/iop/temperature.c:1341 ../src/libs/collect.c:1089
 #: ../src/libs/collect.c:1090 ../src/libs/collect.c:1091
 msgid "yellow"
 msgstr "Gelb"
 
-#: ../src/common/collection.c:859 ../src/develop/lightroom.c:923
+#: ../src/common/collection.c:859 ../src/develop/lightroom.c:793
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:452
 #: ../src/iop/channelmixer.c:468 ../src/iop/colorbalance.c:638
-#: ../src/iop/temperature.c:1334 ../src/iop/temperature.c:1347
+#: ../src/iop/temperature.c:1338 ../src/iop/temperature.c:1351
 #: ../src/libs/collect.c:1093 ../src/libs/collect.c:1094
 #: ../src/libs/collect.c:1095
 msgid "green"
 msgstr "Grün"
 
-#: ../src/common/collection.c:861 ../src/develop/lightroom.c:925
+#: ../src/common/collection.c:861 ../src/develop/lightroom.c:795
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
 #: ../src/iop/channelmixer.c:474 ../src/iop/colorbalance.c:645
-#: ../src/iop/temperature.c:1348 ../src/libs/collect.c:1097
+#: ../src/iop/temperature.c:1352 ../src/libs/collect.c:1097
 #: ../src/libs/collect.c:1098 ../src/libs/collect.c:1099
 msgid "blue"
 msgstr "Blau"
@@ -1103,76 +1108,76 @@ msgstr[0] "%d Bild von %d ist in der aktuellen Sammlung ausgewählt"
 msgstr[1] "%d Bilder von %d sind in der aktuellen Sammlung ausgewählt"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-#: ../src/common/colorspaces.c:949 ../src/iop/colorin.c:1873
+#: ../src/common/colorspaces.c:935 ../src/iop/colorin.c:1877
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
-#: ../src/common/colorspaces.c:950 ../src/common/colorspaces.c:1172
-#: ../src/iop/colorin.c:1874 ../src/libs/print_settings.c:893
+#: ../src/common/colorspaces.c:936 ../src/common/colorspaces.c:1158
+#: ../src/iop/colorin.c:1878 ../src/libs/print_settings.c:893
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibel)"
 
-#: ../src/common/colorspaces.c:951 ../src/common/colorspaces.c:1177
-#: ../src/iop/colorin.c:1875
+#: ../src/common/colorspaces.c:937 ../src/common/colorspaces.c:1163
+#: ../src/iop/colorin.c:1879
 msgid "linear Rec709 RGB"
 msgstr "lineares Rec709-RGB"
 
-#: ../src/common/colorspaces.c:952 ../src/common/colorspaces.c:1182
-#: ../src/iop/colorin.c:1876
+#: ../src/common/colorspaces.c:938 ../src/common/colorspaces.c:1168
+#: ../src/iop/colorin.c:1880
 msgid "linear Rec2020 RGB"
 msgstr "lineares Rec2020-RGB"
 
-#: ../src/common/colorspaces.c:953 ../src/common/colorspaces.c:1187
+#: ../src/common/colorspaces.c:939 ../src/common/colorspaces.c:1173
 msgid "linear XYZ"
 msgstr "lineares XYZ"
 
-#: ../src/common/colorspaces.c:954 ../src/common/colorspaces.c:1193
+#: ../src/common/colorspaces.c:940 ../src/common/colorspaces.c:1179
 #: ../src/libs/colorpicker.c:544 ../src/libs/colorpicker.c:582
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:955 ../src/common/colorspaces.c:1199
+#: ../src/common/colorspaces.c:941 ../src/common/colorspaces.c:1185
 msgid "linear infrared BGR"
 msgstr "linears Infrarot-BGR"
 
-#: ../src/common/colorspaces.c:956 ../src/common/colorspaces.c:1156
+#: ../src/common/colorspaces.c:942 ../src/common/colorspaces.c:1142
 msgid "system display profile"
 msgstr "System-Bildschirmprofil"
 
-#: ../src/common/colorspaces.c:957
+#: ../src/common/colorspaces.c:943
 msgid "embedded ICC profile"
 msgstr "eingebettetes ICC-Profil"
 
-#: ../src/common/colorspaces.c:958
+#: ../src/common/colorspaces.c:944
 msgid "embedded matrix"
 msgstr "eingebettete Matrix"
 
-#: ../src/common/colorspaces.c:959
+#: ../src/common/colorspaces.c:945
 msgid "standard color matrix"
 msgstr "Standard-Farb-Matrix"
 
-#: ../src/common/colorspaces.c:960
+#: ../src/common/colorspaces.c:946
 msgid "enhanced color matrix"
 msgstr "Erweiterte Farb-Matrix"
 
-#: ../src/common/colorspaces.c:961
+#: ../src/common/colorspaces.c:947
 msgid "vendor color matrix"
 msgstr "Hersteller-Farb-Matrix"
 
-#: ../src/common/colorspaces.c:962
+#: ../src/common/colorspaces.c:948
 msgid "alternate color matrix"
 msgstr "Alternative Farb-Matrix"
 
-#: ../src/common/colorspaces.c:1162
+#: ../src/common/colorspaces.c:1148
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (z.B. JPEG)"
 
-#: ../src/common/colorspaces.c:1167 ../src/libs/print_settings.c:886
+#: ../src/common/colorspaces.c:1153 ../src/libs/print_settings.c:886
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-sicher)"
 
-#: ../src/common/colorspaces.c:1204
+#: ../src/common/colorspaces.c:1190
 msgid "BRG (for testing)"
 msgstr "BRG (zum Testen)"
 
@@ -1182,12 +1187,12 @@ msgid "file `%s' to print not found for image %d on `%s'"
 msgstr ""
 "Datei ‚%s‘ zum Drucken von Bild %d konnte auf ‚%s‘ nicht gefunden werden"
 
-#: ../src/common/cups_print.c:384
+#: ../src/common/cups_print.c:383
 #, c-format
 msgid "error while printing image %d on `%s'"
 msgstr "Fehler beim Drucken von Bild %d auf ‚%s‘"
 
-#: ../src/common/cups_print.c:386
+#: ../src/common/cups_print.c:385
 #, c-format
 msgid "printing image %d on `%s'"
 msgstr "drucke Bild %d auf ‚%s‘"
@@ -1297,7 +1302,7 @@ msgstr[1] "Sollen diese leeren Verzeichnisse entfernt werden?"
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
 msgstr[0] "leeres Verzeichnis entfernen?"
-msgstr[1] "Verzeichnis wählen"
+msgstr[1] "leere Verzeichnisse entfernen?"
 
 #: ../src/common/film.c:328 ../src/gui/preferences.c:467
 msgid "name"
@@ -1329,8 +1334,8 @@ msgstr "ein"
 #: ../src/common/styles.c:729 ../src/develop/blend_gui.c:1791
 #: ../src/develop/blend_gui.c:2016 ../src/develop/develop.c:1341
 #: ../src/imageio/format/exr.cc:360 ../src/imageio/format/j2k.c:663
-#: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1872
-#: ../src/iop/demosaic.c:3961 ../src/iop/vignette.c:1140
+#: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1876
+#: ../src/iop/demosaic.c:5060 ../src/iop/vignette.c:1140
 #: ../src/libs/history.c:163 ../src/libs/live_view.c:435
 msgid "off"
 msgstr "aus"
@@ -1381,12 +1386,12 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d lokale Kopie wurde synchronisiert"
 msgstr[1] "%d lokale Kopien wurden synchronisiert"
 
-#: ../src/common/imageio.c:576 ../src/common/mipmap_cache.c:1038
+#: ../src/common/imageio.c:579 ../src/common/mipmap_cache.c:1038
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Bild ‚%s‘ ist nicht verfügbar!"
 
-#: ../src/common/imageio.c:594
+#: ../src/common/imageio.c:597
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -1395,17 +1400,17 @@ msgstr ""
 "Fehler beim Reservieren von Speicher zum %s, bitte die Anzahl Threads für "
 "den Export herabsetzen oder mehr Speicher kaufen."
 
-#: ../src/common/imageio.c:595
+#: ../src/common/imageio.c:598
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "Exportieren der Vorschau"
 
-#: ../src/common/imageio.c:595
+#: ../src/common/imageio.c:598
 msgctxt "noun"
 msgid "export"
 msgstr "Exportieren"
 
-#: ../src/common/imageio.c:605
+#: ../src/common/imageio.c:608
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "Stil ‚%s‘ kann zum Exportieren nicht gefunden werden."
@@ -1427,40 +1432,40 @@ msgstr "generische Poisson-Verteilung"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Rauschprofildatei „%s“ ist defekt"
 
-#: ../src/common/opencl.c:738
+#: ../src/common/opencl.c:746
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr ""
 "OpenCL-Hardware-Beschleunigung wurde aufgrund einer langsamen GPU "
 "deaktiviert."
 
-#: ../src/common/opencl.c:745
+#: ../src/common/opencl.c:753
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "mehrere GPUs gefunden – OpenCL-Scheduler-Profil wurde entsprechend gesetzt."
 
-#: ../src/common/opencl.c:752
+#: ../src/common/opencl.c:760
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "sehr schnelle GPU gefunden – OpenCL-Scheduler-Profil wurde entsprechend "
 "gesetzt."
 
-#: ../src/common/opencl.c:759
+#: ../src/common/opencl.c:767
 msgid "opencl scheduling profile set to default."
 msgstr "OpenCL-Scheduler-Profil wurde auf den Standardwert gesetzt."
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.c:1739
-#: ../src/libs/print_settings.c:1130
+#: ../src/libs/print_settings.c:1133
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1131
+#: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1134
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1132
+#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1135
 msgid "inch"
 msgstr "inch"
 
@@ -1953,7 +1958,7 @@ msgid_plural "added time offset to %d images"
 msgstr[0] "Zeitversatz zu %d Bild hinzugefügt"
 msgstr[1] "Zeitversatz zu %d Bildern hinzugefügt"
 
-#: ../src/control/jobs/control_jobs.c:1732 ../src/libs/geotagging.c:624
+#: ../src/control/jobs/control_jobs.c:1732 ../src/libs/geotagging.c:783
 msgid "time offset"
 msgstr "Zeitversatz"
 
@@ -2499,7 +2504,7 @@ msgstr "%s ist ausgeschaltet"
 #: ../src/gui/accelerators.c:713 ../src/gui/accelerators.c:878
 #: ../src/gui/accelerators.c:904 ../src/gui/presets.c:192
 #: ../src/gui/presets.c:299 ../src/gui/presets.c:641
-#: ../src/iop/temperature.c:1420 ../src/libs/import.c:574 ../src/libs/lib.c:336
+#: ../src/iop/temperature.c:1426 ../src/libs/import.c:574 ../src/libs/lib.c:336
 #: ../src/libs/lib.c:361 ../src/libs/lib.c:1172
 msgid "preset"
 msgstr "Voreinstellung"
@@ -2547,35 +2552,35 @@ msgstr "Einstellungen zurücksetzen"
 msgid "presets"
 msgstr "Voreinstellungen"
 
-#: ../src/develop/lightroom.c:381
+#: ../src/develop/lightroom.c:921
 msgid "cannot find lightroom XMP!"
 msgstr "Lightroom-XMP kann nicht gefunden werden!"
 
-#: ../src/develop/lightroom.c:413 ../src/develop/lightroom.c:435
-#: ../src/develop/lightroom.c:455 ../src/develop/lightroom.c:484
+#: ../src/develop/lightroom.c:953 ../src/develop/lightroom.c:975
+#: ../src/develop/lightroom.c:995
 #, c-format
 msgid "`%s' not a lightroom XMP!"
 msgstr "‚%s‘ ist kein Lightroom-XMP!"
 
-#: ../src/develop/lightroom.c:1389 ../src/libs/import.c:594
+#: ../src/develop/lightroom.c:1455 ../src/libs/import.c:594
 msgid "tags"
 msgstr "Tags"
 
-#: ../src/develop/lightroom.c:1398 ../src/libs/tools/filter.c:141
+#: ../src/develop/lightroom.c:1464 ../src/libs/tools/filter.c:141
 msgid "rating"
 msgstr "Bewertung"
 
-#: ../src/develop/lightroom.c:1407 ../src/libs/collect.h:38
-#: ../src/libs/geotagging.c:47
+#: ../src/develop/lightroom.c:1473 ../src/libs/collect.h:38
+#: ../src/libs/geotagging.c:62
 msgid "geotagging"
 msgstr "Geotagging"
 
-#: ../src/develop/lightroom.c:1416 ../src/libs/collect.h:34
+#: ../src/develop/lightroom.c:1482 ../src/libs/collect.h:34
 #: ../src/libs/tools/filter.c:143
 msgid "color label"
 msgstr "Farbmarkierung"
 
-#: ../src/develop/lightroom.c:1422
+#: ../src/develop/lightroom.c:1488
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -2627,11 +2632,12 @@ msgstr ""
 
 #: ../src/develop/masks/masks.c:189
 msgid ""
-"scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set "
-"opacity"
+"scroll to set brush size, shift+scroll to set hardness,\n"
+"ctrl+scroll to set opacity"
 msgstr ""
 "Scrollen, um die Pinselgröße zu ändern, Shift+Scrollen, um die Härte zu "
-"ändern, Strg+Scrollen um die Deckkraft zu ändern"
+"ändern,\n"
+"Strg+Scrollen um die Deckkraft zu ändern"
 
 #: ../src/develop/masks/masks.c:192
 msgid "scroll to set brush size"
@@ -2941,7 +2947,7 @@ msgstr "Als Standard speichern"
 msgid "reset value to default"
 msgstr "Auf Standard zurücksetzen"
 
-#: ../src/gui/camera_import_dialog.c:212 ../src/libs/geotagging.c:407
+#: ../src/gui/camera_import_dialog.c:212 ../src/libs/geotagging.c:422
 msgid "cancel"
 msgstr "Abbrechen"
 
@@ -3391,7 +3397,7 @@ msgstr "importieren"
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:599 ../src/libs/export.c:665
+#: ../src/gui/preferences.c:599 ../src/libs/export.c:669
 #: ../src/libs/styles.c:384
 msgid "export"
 msgstr "exportieren"
@@ -3421,7 +3427,7 @@ msgid "select file to import"
 msgstr "Datei zum importieren wählen"
 
 #: ../src/gui/preferences.c:1086 ../src/libs/collect.c:241
-#: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:462
+#: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:477
 #: ../src/libs/import.c:756 ../src/libs/import.c:863 ../src/libs/styles.c:237
 msgid "_open"
 msgstr "Ö_ffnen"
@@ -3751,7 +3757,7 @@ msgid "enter the title of the pdf"
 msgstr "Titel des PDFs eingeben"
 
 #. // papers
-#: ../src/imageio/format/pdf.c:603 ../src/libs/print_settings.c:1115
+#: ../src/imageio/format/pdf.c:603 ../src/libs/print_settings.c:1118
 msgid "paper size"
 msgstr "Papierformat"
 
@@ -3770,12 +3776,12 @@ msgid "page orientation"
 msgstr "Seitenausrichtung"
 
 #: ../src/imageio/format/pdf.c:619 ../src/iop/borders.c:994
-#: ../src/libs/print_settings.c:1124
+#: ../src/libs/print_settings.c:1127
 msgid "portrait"
 msgstr "Hochformat"
 
 #: ../src/imageio/format/pdf.c:620 ../src/iop/borders.c:995
-#: ../src/libs/print_settings.c:1125
+#: ../src/libs/print_settings.c:1128
 msgid "landscape"
 msgstr "Querformat"
 
@@ -4839,7 +4845,7 @@ msgstr "Fusion"
 #: ../src/iop/colorreconstruction.c:1366 ../src/iop/lens.c:2079
 #: ../src/libs/export.c:492 ../src/libs/live_view.c:349
 #: ../src/libs/live_view.c:374 ../src/libs/live_view.c:383
-#: ../src/libs/print_settings.c:1041 ../src/libs/print_settings.c:1310
+#: ../src/libs/print_settings.c:1042 ../src/libs/print_settings.c:1315
 msgid "none"
 msgstr "keine"
 
@@ -4886,26 +4892,26 @@ msgid "local contrast"
 msgstr "Lokaler Kontrast"
 
 #. TODO: remove this debug output at some point:
-#: ../src/iop/bilat.c:304
+#: ../src/iop/bilat.c:305
 msgid "local laplacian: inconsistent output"
 msgstr "lokaler Laplace-Filter: inkonsistente Ausgabe"
 
-#: ../src/iop/bilat.c:502 ../src/iop/denoiseprofile.c:2056
+#: ../src/iop/bilat.c:507 ../src/iop/denoiseprofile.c:2056
 #: ../src/iop/exposure.c:849 ../src/iop/lens.c:2227 ../src/iop/levels.c:566
-#: ../src/libs/copy_history.c:310 ../src/libs/export.c:640
-#: ../src/libs/print_settings.c:1351 ../src/views/darkroom.c:1451
+#: ../src/libs/copy_history.c:310 ../src/libs/export.c:644
+#: ../src/libs/print_settings.c:1356 ../src/views/darkroom.c:1451
 msgid "mode"
 msgstr "Modus"
 
-#: ../src/iop/bilat.c:504
+#: ../src/iop/bilat.c:509
 msgid "bilateral grid"
 msgstr "bilaterales Gitter"
 
-#: ../src/iop/bilat.c:505
+#: ../src/iop/bilat.c:510
 msgid "local laplacian filter"
 msgstr "lokaler Laplace-Filter"
 
-#: ../src/iop/bilat.c:508
+#: ../src/iop/bilat.c:513
 msgid ""
 "the filter used for local contrast enhancement. bilateral is faster but can "
 "lead to artifacts around edges for extreme settings."
@@ -4913,55 +4919,55 @@ msgstr ""
 "der Filter, welcher für den lokalen Kontrast genutzt wird. Bilateral ist "
 "schneller, kann aber bei extremen Werten zu Artefakten an Kanten führen."
 
-#: ../src/iop/bilat.c:512 ../src/iop/globaltonemap.c:723
+#: ../src/iop/bilat.c:517 ../src/iop/globaltonemap.c:723
 msgid "detail"
 msgstr "Detail"
 
-#: ../src/iop/bilat.c:514
+#: ../src/iop/bilat.c:519
 msgid "changes the local contrast"
 msgstr "ändert den lokalen Kontrast"
 
-#: ../src/iop/bilat.c:517 ../src/iop/grain.c:620
+#: ../src/iop/bilat.c:522 ../src/iop/grain.c:620
 msgid "coarseness"
 msgstr "Korngröße"
 
-#: ../src/iop/bilat.c:519
+#: ../src/iop/bilat.c:524
 msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr ""
 "Größe der lokalen Details (Sigma der Entfernung für den bilateralen Filter)"
 
-#: ../src/iop/bilat.c:523 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:671
+#: ../src/iop/bilat.c:528 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:671
 msgid "contrast"
 msgstr "Kontrast"
 
-#: ../src/iop/bilat.c:524
+#: ../src/iop/bilat.c:529
 msgid "L difference to detect edges (range sigma of bilateral filter)"
 msgstr ""
 "L-Unterschied für die Kantenerkennung (Sigma des Farbabstands für den "
 "bilateralen Filter)"
 
-#: ../src/iop/bilat.c:528 ../src/iop/monochrome.c:611 ../src/iop/shadhi.c:827
+#: ../src/iop/bilat.c:533 ../src/iop/monochrome.c:611 ../src/iop/shadhi.c:827
 #: ../src/iop/splittoning.c:537
 msgid "highlights"
 msgstr "Spitzlichter"
 
-#: ../src/iop/bilat.c:530
+#: ../src/iop/bilat.c:535
 msgid "changes the local contrast of highlights"
 msgstr "ändert den lokalen Kontrast der Spitzlichter"
 
-#: ../src/iop/bilat.c:534 ../src/iop/shadhi.c:826 ../src/iop/splittoning.c:532
+#: ../src/iop/bilat.c:539 ../src/iop/shadhi.c:826 ../src/iop/splittoning.c:532
 msgid "shadows"
 msgstr "Schatten"
 
-#: ../src/iop/bilat.c:535
+#: ../src/iop/bilat.c:540
 msgid "changes the local contrast of shadows"
 msgstr "ändert den lokalen Kontrast der Schatten"
 
-#: ../src/iop/bilat.c:540
+#: ../src/iop/bilat.c:545
 msgid "midtone range"
 msgstr "Mittenbereich"
 
-#: ../src/iop/bilat.c:541
+#: ../src/iop/bilat.c:546
 msgid ""
 "defines what counts as midtones. lower for better dynamic range compression "
 "(reduce shadow and highlight contrast), increase for more powerful local "
@@ -4982,19 +4988,19 @@ msgid "radius"
 msgstr "Radius"
 
 #: ../src/iop/bilateral.cc:85 ../src/iop/channelmixer.c:130
-#: ../src/iop/temperature.c:208
+#: ../src/iop/temperature.c:210
 msgctxt "accel"
 msgid "red"
 msgstr "Rot"
 
 #: ../src/iop/bilateral.cc:86 ../src/iop/channelmixer.c:131
-#: ../src/iop/temperature.c:209
+#: ../src/iop/temperature.c:211
 msgctxt "accel"
 msgid "green"
 msgstr "Grün"
 
 #: ../src/iop/bilateral.cc:87 ../src/iop/channelmixer.c:132
-#: ../src/iop/temperature.c:210
+#: ../src/iop/temperature.c:212
 msgctxt "accel"
 msgid "blue"
 msgstr "Blau"
@@ -5183,7 +5189,7 @@ msgid "select the aspect ratio or right click and type your own (w:h)"
 msgstr "Seitenverhältnis wählen oder Rechtsklick zum Eintippen (b:h)"
 
 #: ../src/iop/borders.c:992 ../src/iop/flip.c:74
-#: ../src/libs/print_settings.c:1123
+#: ../src/libs/print_settings.c:1126
 msgid "orientation"
 msgstr "Drehung"
 
@@ -5357,19 +5363,19 @@ msgstr "Farbartefakte verstärken"
 
 #: ../src/iop/channelmixer.c:514
 msgid "B/W"
-msgstr "s/w"
+msgstr "S/W"
 
 #: ../src/iop/channelmixer.c:519
 msgid "B/W artifacts boost"
-msgstr "s/w-Artefakte verstärken"
+msgstr "S/W-Artefakte verstärken"
 
 #: ../src/iop/channelmixer.c:524
 msgid "B/W smooth skin"
-msgstr "s/w weiche Haut"
+msgstr "S/W weiche Haut"
 
 #: ../src/iop/channelmixer.c:529
 msgid "B/W blue artifacts reduce"
-msgstr "s/w blaue Artefakte reduzieren"
+msgstr "S/W blaue Artefakte reduzieren"
 
 #: ../src/iop/clahe.c:323 ../src/iop/sharpen.c:765
 msgid "amount"
@@ -5829,21 +5835,21 @@ msgstr ""
 "Nicht unterstütztes Eingabeprofil wurde durch lineares Rec709-RGB ersetzt!"
 
 #: ../src/iop/colorin.c:1855 ../src/iop/denoiseprofile.c:2055
-#: ../src/libs/export.c:603 ../src/libs/print_settings.c:1030
-#: ../src/libs/print_settings.c:1246
+#: ../src/libs/export.c:603 ../src/libs/print_settings.c:1031
+#: ../src/libs/print_settings.c:1249
 msgid "profile"
 msgstr "Profil"
 
-#: ../src/iop/colorin.c:1864
+#: ../src/iop/colorin.c:1865 ../src/iop/colorout.c:802
 #, c-format
-msgid "ICC profiles in %s/color/in or %s/color/in"
-msgstr "ICC-Profile in %s/color/in oder %s/color/in"
+msgid "ICC profiles in %s or %s"
+msgstr "ICC-Profile in %s oder %s"
 
-#: ../src/iop/colorin.c:1870
+#: ../src/iop/colorin.c:1874
 msgid "gamut clipping"
 msgstr "Gamut beschneiden"
 
-#: ../src/iop/colorin.c:1878
+#: ../src/iop/colorin.c:1882
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "Lab-Werte auf den Gamut von RGB-Farbräumen begrenzen"
 
@@ -5975,27 +5981,27 @@ msgstr "nicht unterstütztes Ausgabeprofil wurde durch sRGB ersetzt!"
 msgid "output intent"
 msgstr "Ausgabevorsatz"
 
-#: ../src/iop/colorout.c:779 ../src/libs/export.c:623
-#: ../src/libs/print_settings.c:1084 ../src/libs/print_settings.c:1295
+#: ../src/iop/colorout.c:779 ../src/libs/export.c:627
+#: ../src/libs/print_settings.c:1087 ../src/libs/print_settings.c:1300
 #: ../src/views/darkroom.c:1601 ../src/views/lighttable.c:2390
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
-#: ../src/iop/colorout.c:780 ../src/libs/export.c:624
-#: ../src/libs/print_settings.c:1085 ../src/libs/print_settings.c:1296
+#: ../src/iop/colorout.c:780 ../src/libs/export.c:628
+#: ../src/libs/print_settings.c:1088 ../src/libs/print_settings.c:1301
 #: ../src/views/darkroom.c:1602 ../src/views/lighttable.c:2391
 msgid "relative colorimetric"
 msgstr "Kolorimetrisch (relativ)"
 
-#: ../src/iop/colorout.c:781 ../src/libs/export.c:625
-#: ../src/libs/print_settings.c:1086 ../src/libs/print_settings.c:1297
+#: ../src/iop/colorout.c:781 ../src/libs/export.c:629
+#: ../src/libs/print_settings.c:1089 ../src/libs/print_settings.c:1302
 #: ../src/views/darkroom.c:1603 ../src/views/lighttable.c:2392
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
 
-#: ../src/iop/colorout.c:782 ../src/libs/export.c:626
-#: ../src/libs/print_settings.c:1087 ../src/libs/print_settings.c:1298
+#: ../src/iop/colorout.c:782 ../src/libs/export.c:630
+#: ../src/libs/print_settings.c:1090 ../src/libs/print_settings.c:1303
 #: ../src/views/darkroom.c:1604 ../src/views/lighttable.c:2393
 msgid "absolute colorimetric"
 msgstr "Kolorimetrisch (absolut)"
@@ -6004,14 +6010,9 @@ msgstr "Kolorimetrisch (absolut)"
 msgid "output profile"
 msgstr "Ausgabeprofil"
 
-#: ../src/iop/colorout.c:800
+#: ../src/iop/colorout.c:799
 msgid "rendering intent"
 msgstr "Wiedergabeabsicht"
-
-#: ../src/iop/colorout.c:801
-#, c-format
-msgid "ICC profiles in %s/color/out or %s/color/out"
-msgstr "ICC-Profile in %s/color/out oder %s/color/out"
 
 #: ../src/iop/colorreconstruction.c:127
 msgid "color reconstruction"
@@ -6213,59 +6214,63 @@ msgid "threshold for defringe, higher values mean less defringing"
 msgstr ""
 "Schwellwert der Farbsaumentfernung, höhere Werte führen zu weniger Änderung"
 
-#: ../src/iop/demosaic.c:157
+#: ../src/iop/demosaic.c:159
 msgid "demosaic"
 msgstr "Entrastern"
 
-#: ../src/iop/demosaic.c:172
+#: ../src/iop/demosaic.c:174
 msgctxt "accel"
 msgid "edge threshold"
 msgstr "Kantenschwellwert"
 
-#: ../src/iop/demosaic.c:3735
+#: ../src/iop/demosaic.c:4833
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "‚%s‘ Farbmatrix für 4-Bayer-Bild nicht gefunden!"
 
-#: ../src/iop/demosaic.c:3935 ../src/iop/demosaic.c:3944
+#: ../src/iop/demosaic.c:5033 ../src/iop/demosaic.c:5042
 #: ../src/iop/dither.c:792 ../src/iop/highlights.c:1048
 msgid "method"
 msgstr "Methode"
 
-#: ../src/iop/demosaic.c:3937
+#: ../src/iop/demosaic.c:5035
 msgid "PPG (fast)"
 msgstr "PPG (schnell)"
 
-#: ../src/iop/demosaic.c:3938
+#: ../src/iop/demosaic.c:5036
 msgid "AMaZE (slow)"
 msgstr "AMaZE (langsam)"
 
-#: ../src/iop/demosaic.c:3939
+#: ../src/iop/demosaic.c:5037
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:3940 ../src/iop/demosaic.c:3949
+#: ../src/iop/demosaic.c:5038 ../src/iop/demosaic.c:5047
 msgid "passthrough (monochrome) (experimental)"
 msgstr "durchschleifen (monochrom) (experimentell)"
 
-#: ../src/iop/demosaic.c:3941 ../src/iop/demosaic.c:3950
+#: ../src/iop/demosaic.c:5039 ../src/iop/demosaic.c:5049
 msgid "demosaicing raw data method"
 msgstr "Methode zum Entrastern der Rohdaten"
 
-#: ../src/iop/demosaic.c:3946
+#: ../src/iop/demosaic.c:5044
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:3947
+#: ../src/iop/demosaic.c:5045
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-mal"
 
-#: ../src/iop/demosaic.c:3948
+#: ../src/iop/demosaic.c:5046
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-mal (langsam)"
 
+#: ../src/iop/demosaic.c:5048
+msgid "frequency domain chroma (slow)"
+msgstr "Frequency Domain Chroma (langsam)"
+
 # WTF? Wer bitte soll das verstehen?
-#: ../src/iop/demosaic.c:3953
+#: ../src/iop/demosaic.c:5052
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -6275,63 +6280,63 @@ msgstr ""
 "Auf 0.0 setzen zum Ausschalten.\n"
 "Auf 1.0 setzen um Kanten zu ignorieren."
 
-#: ../src/iop/demosaic.c:3955
+#: ../src/iop/demosaic.c:5054
 msgid "edge threshold"
 msgstr "Kantenschwellwert"
 
-#: ../src/iop/demosaic.c:3959
+#: ../src/iop/demosaic.c:5058
 msgid "color smoothing"
 msgstr "Farbglättung"
 
-#: ../src/iop/demosaic.c:3962
+#: ../src/iop/demosaic.c:5061
 msgid "one time"
 msgstr "einmal"
 
-#: ../src/iop/demosaic.c:3963
+#: ../src/iop/demosaic.c:5062
 msgid "two times"
 msgstr "zweimal"
 
-#: ../src/iop/demosaic.c:3964
+#: ../src/iop/demosaic.c:5063
 msgid "three times"
 msgstr "dreimal"
 
-#: ../src/iop/demosaic.c:3965
+#: ../src/iop/demosaic.c:5064
 msgid "four times"
 msgstr "viermal"
 
-#: ../src/iop/demosaic.c:3966
+#: ../src/iop/demosaic.c:5065
 msgid "five times"
 msgstr "fünfmal"
 
-#: ../src/iop/demosaic.c:3967
+#: ../src/iop/demosaic.c:5066
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "wie viele Median-Schritte zur Fabrglättung nach dem Entrastern"
 
-#: ../src/iop/demosaic.c:3971
+#: ../src/iop/demosaic.c:5070
 msgid "match greens"
 msgstr "Grün anpassen"
 
-#: ../src/iop/demosaic.c:3972
+#: ../src/iop/demosaic.c:5071
 msgid "disabled"
 msgstr "deaktiviert"
 
-#: ../src/iop/demosaic.c:3973
+#: ../src/iop/demosaic.c:5072
 msgid "local average"
 msgstr "lokales Mittel"
 
-#: ../src/iop/demosaic.c:3974
+#: ../src/iop/demosaic.c:5073
 msgid "full average"
 msgstr "volles Mittel"
 
-#: ../src/iop/demosaic.c:3975
+#: ../src/iop/demosaic.c:5074
 msgid "full and local average"
 msgstr "volles und lokales Mittel"
 
-#: ../src/iop/demosaic.c:3976
+#: ../src/iop/demosaic.c:5075
 msgid "green channels matching method"
 msgstr "Methode zum Abgleichen des Grünkanals"
 
-#: ../src/iop/demosaic.c:3988
+#: ../src/iop/demosaic.c:5087
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -7625,7 +7630,7 @@ msgid "the fill-light in EV"
 msgstr "Füllicht in EV"
 
 #: ../src/iop/relight.c:360 ../src/libs/metadata_view.c:111
-#: ../src/libs/print_settings.c:1148
+#: ../src/libs/print_settings.c:1151
 msgid "width"
 msgstr "Breite"
 
@@ -7902,96 +7907,96 @@ msgctxt "accel"
 msgid "spot show or hide"
 msgstr "Flecken anzeigen/verstecken"
 
-#: ../src/iop/temperature.c:163
+#: ../src/iop/temperature.c:165
 msgctxt "modulename"
 msgid "white balance"
 msgstr "Weißabgleich"
 
-#: ../src/iop/temperature.c:206
+#: ../src/iop/temperature.c:208
 msgctxt "accel"
 msgid "tint"
 msgstr "Farbton"
 
-#: ../src/iop/temperature.c:207
+#: ../src/iop/temperature.c:209
 msgctxt "accel"
 msgid "temperature"
 msgstr "Farbtemperatur"
 
-#: ../src/iop/temperature.c:212
+#: ../src/iop/temperature.c:214
 msgctxt "accel"
 msgid "preset/camera"
 msgstr "Voreinstellung/Kamera"
 
-#: ../src/iop/temperature.c:213
+#: ../src/iop/temperature.c:215
 msgctxt "accel"
 msgid "preset/camera neutral"
 msgstr "Voreinstellung/Neutral"
 
-#: ../src/iop/temperature.c:214
+#: ../src/iop/temperature.c:216
 msgctxt "accel"
 msgid "preset/spot"
 msgstr "Voreinstellung/Manuell setzen"
 
-#: ../src/iop/temperature.c:750
+#: ../src/iop/temperature.c:752
 msgctxt "white balance"
 msgid "camera"
 msgstr "Kamera"
 
-#: ../src/iop/temperature.c:751
+#: ../src/iop/temperature.c:753
 msgctxt "white balance"
 msgid "camera neutral"
 msgstr "neutral"
 
-#: ../src/iop/temperature.c:752
+#: ../src/iop/temperature.c:754
 msgctxt "white balance"
 msgid "spot"
 msgstr "manuell setzen"
 
-#: ../src/iop/temperature.c:927
+#: ../src/iop/temperature.c:929
 #, c-format
 msgid "`%s' color matrix not found for image"
 msgstr "‚%s‘ Farbmatrix für Bild nicht gefunden"
 
-#: ../src/iop/temperature.c:970
+#: ../src/iop/temperature.c:972
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "Konnte Weißabgleichsdaten der Kamera nicht aus „%s“ lesen!"
 
-#: ../src/iop/temperature.c:1335
+#: ../src/iop/temperature.c:1339
 msgid "magenta"
 msgstr "Magenta"
 
-#: ../src/iop/temperature.c:1336
+#: ../src/iop/temperature.c:1340
 msgid "cyan"
 msgstr "Cyan"
 
 # https://de.wikipedia.org/wiki/Demosaicing übersetzt "emerald" mit "Cyan"
-#: ../src/iop/temperature.c:1349
+#: ../src/iop/temperature.c:1353
 msgid "emerald"
 msgstr "Cyan"
 
-#: ../src/iop/temperature.c:1405
+#: ../src/iop/temperature.c:1411
 msgid "tint"
 msgstr "Farbton"
 
-#: ../src/iop/temperature.c:1406
+#: ../src/iop/temperature.c:1412
 msgid "temperature"
 msgstr "Farbtemperatur"
 
-#: ../src/iop/temperature.c:1422
+#: ../src/iop/temperature.c:1428
 msgid "choose white balance preset from camera"
 msgstr "aus den Weißabgleichsvorgaben der Kamera wählen"
 
-#: ../src/iop/temperature.c:1425
+#: ../src/iop/temperature.c:1431
 msgid "finetune"
 msgstr "anpassen"
 
-#: ../src/iop/temperature.c:1426
+#: ../src/iop/temperature.c:1432
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f Mired"
 
-#: ../src/iop/temperature.c:1430
+#: ../src/iop/temperature.c:1436
 msgid "fine tune white balance preset"
 msgstr "Weißabgleichsvorgabe feinabstimmen"
 
@@ -8350,7 +8355,7 @@ msgid "position"
 msgstr "Position"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1383 ../src/libs/print_settings.c:1233
+#: ../src/iop/watermark.c:1383 ../src/libs/print_settings.c:1236
 msgid "alignment"
 msgstr "Position"
 
@@ -8748,7 +8753,7 @@ msgstr "Begleitdatei öffnen"
 msgid "XMP sidecar files"
 msgstr "XMP-Begleitdateien"
 
-#: ../src/libs/copy_history.c:92 ../src/libs/geotagging.c:483
+#: ../src/libs/copy_history.c:92 ../src/libs/geotagging.c:498
 #: ../src/libs/import.c:786 ../src/libs/styles.c:254
 msgid "all files"
 msgstr "alle Dateien"
@@ -8942,55 +8947,55 @@ msgstr "×"
 msgid "allow upscaling"
 msgstr "Vergrößern erlauben"
 
-#: ../src/libs/export.c:605 ../src/libs/export.c:622
-#: ../src/libs/print_settings.c:1249 ../src/libs/print_settings.c:1294
+#: ../src/libs/export.c:605 ../src/libs/export.c:626
+#: ../src/libs/print_settings.c:1252 ../src/libs/print_settings.c:1299
 msgid "image settings"
 msgstr "Bildeinstellungen"
 
-#: ../src/libs/export.c:614 ../src/libs/print_settings.c:1285
+#: ../src/libs/export.c:616 ../src/libs/print_settings.c:1288
 #, c-format
-msgid "output ICC profiles in %s/color/out or %s/color/out"
-msgstr "Ausgabe-ICC-Profile in %s/color/out oder %s/color/out"
+msgid "output ICC profiles in %s or %s"
+msgstr "Ausgabe-ICC-Profile in %s oder %s"
 
-#: ../src/libs/export.c:621 ../src/libs/print_settings.c:1083
-#: ../src/libs/print_settings.c:1292
+#: ../src/libs/export.c:625 ../src/libs/print_settings.c:1086
+#: ../src/libs/print_settings.c:1297
 msgid "intent"
 msgstr "Vorsatz"
 
-#: ../src/libs/export.c:632 ../src/libs/print_settings.c:1308
+#: ../src/libs/export.c:636 ../src/libs/print_settings.c:1313
 msgid "style"
 msgstr "Stil"
 
-#: ../src/libs/export.c:635
+#: ../src/libs/export.c:639
 msgid "temporary style to use while exporting"
 msgstr "Stil, der beim Export vorübergehend angewandt werden soll"
 
-#: ../src/libs/export.c:644 ../src/libs/print_settings.c:1353
+#: ../src/libs/export.c:648 ../src/libs/print_settings.c:1358
 msgid "replace history"
 msgstr "Verlauf ersetzen"
 
-#: ../src/libs/export.c:645 ../src/libs/print_settings.c:1354
+#: ../src/libs/export.c:649 ../src/libs/print_settings.c:1359
 msgid "append history"
 msgstr "Verlauf hinzufügen"
 
-#: ../src/libs/export.c:650 ../src/libs/print_settings.c:1361
+#: ../src/libs/export.c:654 ../src/libs/print_settings.c:1366
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
 "sollen Stil-Module an den Verlauf angehängt werden, oder diesen ersetzen"
 
-#: ../src/libs/export.c:667
+#: ../src/libs/export.c:671
 msgid "export with current settings"
 msgstr "mit aktuellen Einstellungen exportieren"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:1187 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:2250
+#: ../src/libs/export.c:1191 ../src/libs/styles.c:71
+#: ../src/views/darkroom.c:2253
 msgctxt "accel"
 msgid "export"
 msgstr "Exportieren"
 
-#: ../src/libs/geotagging.c:399
+#: ../src/libs/geotagging.c:414
 msgid ""
 "enter the time shown on the selected picture\n"
 "format: hh:mm:ss"
@@ -8998,23 +9003,23 @@ msgstr ""
 "Zeit eingeben, die auf dem ausgewählten Bild angezeigt wird\n"
 "Format: hh:mm:ss"
 
-#: ../src/libs/geotagging.c:408
+#: ../src/libs/geotagging.c:423
 msgid "ok"
 msgstr "OK"
 
-#: ../src/libs/geotagging.c:461
+#: ../src/libs/geotagging.c:476
 msgid "open GPX file"
 msgstr "GPX-Datei öffnen"
 
-#: ../src/libs/geotagging.c:478
+#: ../src/libs/geotagging.c:493
 msgid "GPS data exchange format"
 msgstr "GPS-Daten-Austauschformat (GPX)"
 
-#: ../src/libs/geotagging.c:488
+#: ../src/libs/geotagging.c:503
 msgid "camera time zone"
 msgstr "Zeitzone der Kamera"
 
-#: ../src/libs/geotagging.c:489
+#: ../src/libs/geotagging.c:504
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -9023,7 +9028,7 @@ msgstr ""
 "die korrekte Zeitzone angegeben werden, damit die GPX-Daten richtig "
 "zugeordnet werden können"
 
-#: ../src/libs/geotagging.c:635
+#: ../src/libs/geotagging.c:794
 msgid ""
 "time offset\n"
 "format: [+-]?[[hh:]mm:]ss"
@@ -9031,20 +9036,20 @@ msgstr ""
 "Zeitversatz\n"
 "Format: [+-]?[[hh:]mm:]ss"
 
-#: ../src/libs/geotagging.c:645
+#: ../src/libs/geotagging.c:804
 msgid "calculate the time offset from an image"
 msgstr "Zeitversatz anhand eines Bildes berechnen"
 
-#: ../src/libs/geotagging.c:650
+#: ../src/libs/geotagging.c:809
 msgid "apply time offset to selected images"
 msgstr "Zeitversatz auf ausgewählte Bilder anwenden"
 
 #. gpx
-#: ../src/libs/geotagging.c:658
+#: ../src/libs/geotagging.c:817
 msgid "apply GPX track file"
 msgstr "GPX-Track-Datei anwenden"
 
-#: ../src/libs/geotagging.c:659
+#: ../src/libs/geotagging.c:818
 msgid "parses a GPX file and updates location of selected images"
 msgstr "liest eine GPX-Datei und setzt die Position der ausgewählten Bilder"
 
@@ -9571,7 +9576,7 @@ msgstr "Trennlinie"
 msgid "only draw part of the overlay"
 msgstr "zeige nur einen Teil der Überlagerung"
 
-#: ../src/libs/location.c:93
+#: ../src/libs/location.c:95
 msgid "find location"
 msgstr "Position finden"
 
@@ -9770,7 +9775,7 @@ msgstr "Fokus-Entfernung"
 msgid "datetime"
 msgstr "Datum/Uhrzeit"
 
-#: ../src/libs/metadata_view.c:112 ../src/libs/print_settings.c:1152
+#: ../src/libs/metadata_view.c:112 ../src/libs/print_settings.c:1155
 msgid "height"
 msgstr "Höhe"
 
@@ -9959,7 +9964,7 @@ msgid "200%"
 msgstr "200%"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1240
+#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1243
 msgid "print settings"
 msgstr "Druckeinstellungen"
 
@@ -9995,41 +10000,41 @@ msgstr "Konnte Druckerprofile ‚%s‘ nicht anwenden"
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (DPI:%d)"
 
-#: ../src/libs/print_settings.c:1019
+#: ../src/libs/print_settings.c:1020
 msgid "printer"
 msgstr "Drucker"
 
-#: ../src/libs/print_settings.c:1076
+#: ../src/libs/print_settings.c:1077
 #, c-format
-msgid "printer ICC profiles in %s/color/out or %s/color/out"
-msgstr "Drucker-ICC-Profile in %s/color/out oder %s/color/out"
+msgid "printer ICC profiles in %s or %s"
+msgstr "Drucker-ICC-Profile in %s oder %s"
 
-#: ../src/libs/print_settings.c:1095
+#: ../src/libs/print_settings.c:1098
 msgid "black point compensation"
 msgstr "Tiefenkompensation"
 
-#: ../src/libs/print_settings.c:1103
+#: ../src/libs/print_settings.c:1106
 msgid "activate black point compensation when applying the printer profile"
 msgstr "aktiviere Tiefenkompensation wenn das Druckerprofile angewandt wird"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:1110
+#: ../src/libs/print_settings.c:1113
 msgid "page"
 msgstr "Seite"
 
-#: ../src/libs/print_settings.c:1146
+#: ../src/libs/print_settings.c:1149
 msgid "image width/height"
 msgstr "Bildbreite/-höhe"
 
-#: ../src/libs/print_settings.c:1150
+#: ../src/libs/print_settings.c:1153
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:1158
+#: ../src/libs/print_settings.c:1161
 msgid "scale factor"
 msgstr "Skalierungsfaktor"
 
-#: ../src/libs/print_settings.c:1163
+#: ../src/libs/print_settings.c:1166
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -10042,47 +10047,47 @@ msgstr ""
 "ein zu großer Wert kann zu schlechter Druckqualität führen"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1177
+#: ../src/libs/print_settings.c:1180
 msgid "top margin"
 msgstr "oberer Rand"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1181
+#: ../src/libs/print_settings.c:1184
 msgid "left margin"
 msgstr "linker Rand"
 
-#: ../src/libs/print_settings.c:1184
+#: ../src/libs/print_settings.c:1187
 msgid "lock"
 msgstr "sperren"
 
-#: ../src/libs/print_settings.c:1185
+#: ../src/libs/print_settings.c:1188
 msgid "change all margins uniformly"
 msgstr "alle Ränder einheitlich ändern"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1189
+#: ../src/libs/print_settings.c:1192
 msgid "right margin"
 msgstr "rechter Rand"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1193
+#: ../src/libs/print_settings.c:1196
 msgid "bottom margin"
 msgstr "unterer Rand"
 
-#: ../src/libs/print_settings.c:1332
+#: ../src/libs/print_settings.c:1337
 msgid "temporary style to use while printing"
 msgstr "Stil, der beim Drucken vorübergehend angewandt werden soll"
 
 #. Print button
-#: ../src/libs/print_settings.c:1369
+#: ../src/libs/print_settings.c:1374
 msgid "print"
 msgstr "drucken"
 
-#: ../src/libs/print_settings.c:1371
+#: ../src/libs/print_settings.c:1376
 msgid "print with current settings"
 msgstr "mit aktuellen Einstellungen drucken"
 
-#: ../src/libs/print_settings.c:1824
+#: ../src/libs/print_settings.c:1832
 msgctxt "accel"
 msgid "print"
 msgstr "Drucken"
@@ -10920,121 +10925,121 @@ msgstr "Softproof-Profil"
 msgid "display profile"
 msgstr "Anzeigeprofil"
 
-#: ../src/views/darkroom.c:1646 ../src/views/lighttable.c:2415
+#: ../src/views/darkroom.c:1647 ../src/views/lighttable.c:2417
 #, c-format
-msgid "display ICC profiles in %s/color/out or %s/color/out"
-msgstr "Anzeige-ICC-Profile in %s/color/out oder %s/color/out"
+msgid "display ICC profiles in %s or %s"
+msgstr "Anzeige-ICC-Profile in %s oder %s"
 
-#: ../src/views/darkroom.c:1649
+#: ../src/views/darkroom.c:1650
 #, c-format
-msgid "softproof ICC profiles in %s/color/out or %s/color/out"
-msgstr "Softproof-ICC-Profile in %s/color/out oder %s/color/out"
+msgid "softproof ICC profiles in %s or %s"
+msgstr "Softproof-ICC-Profile in %s oder %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2242 ../src/views/map.c:859 ../src/views/print.c:329
+#: ../src/views/darkroom.c:2245 ../src/views/map.c:859 ../src/views/print.c:329
 #: ../src/views/tethering.c:388
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "Filmstreifen umschalten"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2245
+#: ../src/views/darkroom.c:2248
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "Nahansicht"
 
-#: ../src/views/darkroom.c:2246
+#: ../src/views/darkroom.c:2249
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "Ansicht füllen"
 
-#: ../src/views/darkroom.c:2247
+#: ../src/views/darkroom.c:2250
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "Ansicht einpassen"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2253
+#: ../src/views/darkroom.c:2256
 msgctxt "accel"
 msgid "image forward"
 msgstr "Nächstes Bild"
 
-#: ../src/views/darkroom.c:2254
+#: ../src/views/darkroom.c:2257
 msgctxt "accel"
 msgid "image back"
 msgstr "Vorheriges Bild"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:2257
+#: ../src/views/darkroom.c:2260
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "Raw-Überbelichtet"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:2260
+#: ../src/views/darkroom.c:2263
 msgctxt "accel"
 msgid "overexposed"
 msgstr "Überbelichtet"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:2263
+#: ../src/views/darkroom.c:2266
 msgctxt "accel"
 msgid "softproof"
 msgstr "Softproof"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:2266
+#: ../src/views/darkroom.c:2269
 msgctxt "accel"
 msgid "gamut check"
 msgstr "Gamut überprüfen"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2269
+#: ../src/views/darkroom.c:2272
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "Größe des Pinsels erhöhen"
 
-#: ../src/views/darkroom.c:2270
+#: ../src/views/darkroom.c:2273
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "Größe des Pinsels verringern"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2273
+#: ../src/views/darkroom.c:2276
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "Härte des Pinsels erhöhen"
 
-#: ../src/views/darkroom.c:2274
+#: ../src/views/darkroom.c:2277
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "Härte des Pinsels verringern"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2277
+#: ../src/views/darkroom.c:2280
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "Deckkraft des Pinsels erhöhen"
 
-#: ../src/views/darkroom.c:2278
+#: ../src/views/darkroom.c:2281
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "Deckkraft des Pinsels verringern"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:2281
+#: ../src/views/darkroom.c:2284
 msgctxt "accel"
 msgid "full preview"
 msgstr "Kurzvorschau"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2284 ../src/views/map.c:856
+#: ../src/views/darkroom.c:2287 ../src/views/map.c:856
 msgctxt "accel"
 msgid "undo"
 msgstr "Rückgängig"
 
-#: ../src/views/darkroom.c:2285 ../src/views/map.c:857
+#: ../src/views/darkroom.c:2288 ../src/views/map.c:857
 msgctxt "accel"
 msgid "redo"
 msgstr "Wiederherstellen"
@@ -11222,6 +11227,9 @@ msgstr ""
 "Wir raten dringend dazu, zu einem vernünftigen 64 Bit-System zu wechseln.\n"
 "Andernfalls werden sie GARANTIERT Probleme haben, die nicht behoben werden "
 "können.\n"
+
+#~ msgid "ICC profiles in %s/color/out or %s/color/out"
+#~ msgstr "ICC-Profile in %s/color/out oder %s/color/out"
 
 #~ msgid "display mask"
 #~ msgstr "Maske anzeigen"
