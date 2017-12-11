@@ -441,6 +441,9 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
     papers = g_list_next (papers);
   }
 
+  //  paper not found in this printer
+  if (!ispaperset) dt_bauhaus_combobox_set(ps->papers, 0);
+
   const dt_paper_info_t *paper = dt_get_paper(ps->paper_list, default_paper);
 
   if (paper)
