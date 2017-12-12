@@ -842,18 +842,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_HISTORY: // history
-      if (!text || text[0] == '\0') // Optimize away the empty case
-        query = dt_util_dstrcat(query, "(1=1)");
-      else
-        query = dt_util_dstrcat(query, "(id %s IN (SELECT imgid FROM main.history WHERE imgid=images.id)) ",
+      query = dt_util_dstrcat(query, "(id %s IN (SELECT imgid FROM main.history WHERE imgid=images.id)) ",
                               (strcmp(escaped_text, _("altered")) == 0) ? "" : "not");
       break;
 
     case DT_COLLECTION_PROP_GEOTAGGING: // geotagging
-      if (!text || text[0] == '\0') // Optimize away the empty case
-        query = dt_util_dstrcat(query, "(1=1)");
-      else
-        query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images WHERE "
+      query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images WHERE "
                                      "(longitude IS NOT NULL AND latitude IS NOT NULL))) ",
                               (strcmp(escaped_text, _("tagged")) == 0) ? "" : "not");
       break;
@@ -866,37 +860,29 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_CAMERA: // camera
-      if (!text || text[0] == '\0') // Optimize away the empty case
-        query = dt_util_dstrcat(query, "(1=1)");
-      else
+      // Start query with a false statement to avoid special casing the first condition
+      query = dt_util_dstrcat(query, "((1=0)");
+      GList *lists = NULL;
+      dt_collection_get_makermodels(text, NULL, &lists);
+      GList *element = lists;
+      while (element)
       {
-        // Start query with a false statement to avoid special casing the first condition
-        query = dt_util_dstrcat(query, "((1=0)");
-        GList *lists = NULL;
-        dt_collection_get_makermodels(text, NULL, &lists);
-        GList *element = lists;
-        while (element)
-        {
-          GList *tuple = element->data;
-          char *mk = sqlite3_mprintf("%q", tuple->data);
-          char *md = sqlite3_mprintf("%q", tuple->next->data);
-          query = dt_util_dstrcat(query, " OR (maker = '%s' AND model = '%s')", mk, md);
-          sqlite3_free(mk);
-          sqlite3_free(md);
-          g_free(tuple->data);
-          g_free(tuple->next->data);
-          g_list_free(tuple);
-          element = element->next;
-        }
-        g_list_free(lists);
-        query = dt_util_dstrcat(query, ")");
+        GList *tuple = element->data;
+        char *mk = sqlite3_mprintf("%q", tuple->data);
+        char *md = sqlite3_mprintf("%q", tuple->next->data);
+        query = dt_util_dstrcat(query, " OR (maker = '%s' AND model = '%s')", mk, md);
+        sqlite3_free(mk);
+        sqlite3_free(md);
+        g_free(tuple->data);
+        g_free(tuple->next->data);
+        g_list_free(tuple);
+        element = element->next;
       }
+      g_list_free(lists);
+      query = dt_util_dstrcat(query, ")");
       break;
     case DT_COLLECTION_PROP_TAG: // tag
-      if (!text || text[0] == '\0') // Optimize away the empty case
-        query = dt_util_dstrcat(query, "(1=1)");
-      else
-        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
+      query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
                                      "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%1$s' OR name like '%1$s|%%'))",
                               escaped_text);
       break;
@@ -1137,7 +1123,7 @@ void dt_collection_update_query(const dt_collection_t *collection)
   const int num_rules = CLAMP(_n_r, 1, 10);
   char *conj[] = { "AND", "OR", "AND NOT" };
 
-  complete_query = dt_util_dstrcat(complete_query, "(");
+  complete_query = dt_util_dstrcat(complete_query, "(1=1");
 
   for(int i = 0; i < num_rules; i++)
   {
@@ -1145,16 +1131,13 @@ void dt_collection_update_query(const dt_collection_t *collection)
     const int property = dt_conf_get_int(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
     gchar *text = dt_conf_get_string(confname);
-    if(!text) break;
+    if(!text || text[0] == '\0') break;
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
 
     gchar *query = get_query_string(property, text);
 
-    if(i > 0)
-      complete_query = dt_util_dstrcat(complete_query, " %s %s", conj[mode], query);
-    else
-      complete_query = dt_util_dstrcat(complete_query, "%s", query);
+    complete_query = dt_util_dstrcat(complete_query, " %s %s", conj[mode], query);
 
     g_free(query);
     g_free(text);
