@@ -317,7 +317,13 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
     b.roi = roi_in;
     b.buf = &piece->buf_in;
+    // also lock the ll_boundary in case we're using it.
+    // could get away without this if the preview pipe didn't also free the data below.
+    if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+      dt_pthread_mutex_lock(&g->lock);
     local_laplacian_sse2(i, o, roi_in->width, roi_in->height, d->midtone, d->sigma_s, d->sigma_r, d->detail, &b);
+    if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+      dt_pthread_mutex_unlock(&g->lock);
 
     // preview pixelpipe stores values.
     if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
