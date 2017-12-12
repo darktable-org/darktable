@@ -10,7 +10,7 @@ This documentation for API version 2.1.0-dev.]==],
 ["reported_type"] = [==[documentation node]==],
 },
 ["print"] = {
-["__text"] = [==[Will print a string to the darktable control log (the long overlayed window that appears over the main panel).]==],
+["__text"] = [==[Will print a string to the darktable control log (the long overlaid window that appears over the main panel).]==],
 ["__attributes"] = {
 ["reported_type"] = [==[function]==],
 ["signature"] = {
@@ -983,7 +983,7 @@ Note that the parameter order is not relevant.]==],
 ["yellow"] = {} --[=[API["darktable"]["register_storage"].__attributes["signature"]["3"].__attributes["signature"]["1"].__attributes["reported_type"]["supports_format"].__attributes["signature"]["2"].__attributes["reported_type"]["write_image"].__attributes["signature"]["2"].__attributes["reported_type"]["red"]]=],
 ["purple"] = {} --[=[API["darktable"]["register_storage"].__attributes["signature"]["3"].__attributes["signature"]["1"].__attributes["reported_type"]["supports_format"].__attributes["signature"]["2"].__attributes["reported_type"]["write_image"].__attributes["signature"]["2"].__attributes["reported_type"]["red"]]=],
 ["reset"] = {
-["__text"] = [==[Removes all processing from the image, reseting it back to its original state]==],
+["__text"] = [==[Removes all processing from the image, resetting it back to its original state]==],
 ["__attributes"] = {
 ["is_attribute"] = true,
 ["read"] = true,
@@ -1107,7 +1107,7 @@ Darktable will regenerate the thumbnail by itself when it is needed]==],
 ["reported_type"] = [==[function]==],
 ["signature"] = {
 ["1"] = {
-["__text"] = [==[The image whose cache must be droped.]==],
+["__text"] = [==[The image whose cache must be dropped.]==],
 ["__attributes"] = {
 ["is_self"] = true,
 ["reported_type"] = {} --[=[API["darktable"]["register_storage"].__attributes["signature"]["3"].__attributes["signature"]["1"].__attributes["reported_type"]["supports_format"].__attributes["signature"]["2"].__attributes["reported_type"]["write_image"].__attributes["signature"]["2"].__attributes["reported_type"]]=],
@@ -1768,7 +1768,7 @@ Most of these function won't do anything if the GUI is not enabled (i.e you are 
 ["action_images"] = {
 ["__text"] = [==[A table of types.dt_lua_image_t on which the user expects UI actions to happen.
 It is based on both the hovered image and the selection and is consistent with the way darktable works.
-It is recommended to use this table to implement Lua actions rather than darktable.gui.hovered or darktable.gui.selection to be consistant with darktable's GUI.]==],
+It is recommended to use this table to implement Lua actions rather than darktable.gui.hovered or darktable.gui.selection to be consistent with darktable's GUI.]==],
 ["__attributes"] = {
 ["is_attribute"] = true,
 ["read"] = true,
@@ -3376,7 +3376,7 @@ For more details of the member functions have a look at the cairo documentation 
 ["check_version"] = {
 ["__text"] = [==[Check that a module is compatible with the running version of darktable
 Add the following line at the top of your module : <code>darktable.configuration.check(...,{M,m,p},{M2,m2,p2})</code>To document that your module has been tested with API version M.m.p and M2.m2.p2.
-This will raise an error if the user is running a released version of DT and a warning if he is running a developement version
+This will raise an error if the user is running a released version of DT and a warning if he is running a development version
 (the ... here will automatically expand to your module name if used at the top of your script]==],
 ["__attributes"] = {
 ["reported_type"] = [==[function]==],
@@ -3455,7 +3455,7 @@ Note that the directory, enum and file type preferences are stored internally as
 },
 },
 ["6"] = {
-["__text"] = [==[Default value to use when not set explicitely or by the user.
+["__text"] = [==[Default value to use when not set explicitly or by the user.
 For the enum type of pref, this is mandatory]==],
 ["__attributes"] = {
 ["optional"] = true,
@@ -5348,7 +5348,7 @@ You can removes entries by setting them to nil]==],
 ["__text"] = [==[Lua functions can yield at any point. The parameters and return types depend on why we want to yield.
 A callback that is yielding allows other Lua code to run.
 
-* WAIT_MS: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;
+* WAIT_MS: one extra parameter; the execution will pause for that many milliseconds; yield returns nothing;
 * FILE_READABLE: an opened file from a call to the OS library; will return when the file is readable; returns nothing;
 * RUN_COMMAND: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.
 ]==],
