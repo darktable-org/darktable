@@ -1934,7 +1934,7 @@ public:
 };
 
 /*! \class Image
- * \brief Base class  interface for all images.
+ * \brief Base class interface for all images.
  */
 class Image : public Memory
 {

@@ -63,7 +63,7 @@ struct dt_interpolation
  * This function computes a single interpolated sample. Implied costs are:
  * <ul>
  * <li>Horizontal filtering kernel computation</li>
- * <li>Vertical  filtering kernel computation</li>
+ * <li>Vertical filtering kernel computation</li>
  * <li>Sample computation</li>
  * </ul>
  *
