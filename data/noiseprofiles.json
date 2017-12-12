@@ -4530,7 +4530,7 @@
           ]
         },
         {
-          "comment": "k-3 ii contributed by zoltan. iso 25600+ graphs don't match well, but this is the same for K-3 ans seems camera model specific",
+          "comment": "k-3 ii contributed by zoltan. iso 25600+ graphs don't match well, but this is the same for K-3 and seems camera model specific",
           "model": "K-3 II",
           "profiles": [
             {"name": "K-3 II iso 100", "iso": 100, "a": [9.06110231252642e-06, 3.57419098087832e-06, 6.86083198118061e-06], "b": [2.81774050978302e-09, 3.15994036501297e-09, 4.22317452653176e-09]},

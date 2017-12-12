@@ -9,7 +9,7 @@ Takes two mandatory and one optiona argument
   nodes : also dump the content of added nodes
 
 This script will compare the two API and report any differences it sees
-optionnaly printing details of the difference
+optionally printing details of the difference
 
 Use this to quickly assess what has changed between two versions of DT
 

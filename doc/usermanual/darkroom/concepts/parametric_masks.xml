@@ -102,7 +102,7 @@
         graycale values or in false colors, depending on the corresponding preference setting in
         <quote>GUI options</quote> (see <xref linkend="gui_options"/>). You may additionally
         hold down the <emphasis>ctrl</emphasis> key which lets you see the resulting mask
-        overlayed to the image. When leaving the slider the image goes back to normal after a
+        overlaid to the image. When leaving the slider the image goes back to normal after a
         short delay.
       </para>
 

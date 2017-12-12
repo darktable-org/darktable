@@ -165,10 +165,10 @@ echo -e "\t</Camera>"
 echo ""
 
 if [[ $MAKE == Panasonic ]]; then
-  echo "NOTE: Panasonic RW2s are different dependant on aspect ratio, please run this tool on RW2 for each of the camera's ratios (4:3,3:2,16:9,1:1)"
+  echo "NOTE: Panasonic RW2s are different dependent on aspect ratio, please run this tool on RW2 for each of the camera's ratios (4:3,3:2,16:9,1:1)"
   echo ""
 elif [[ $MAKE == "NIKON CORPORATION" ]]; then
-  echo "NOTE: NIKON NEFs are different dependant on mode, please run this tool on NEF for each of the camera's mode (14-bit, 12-bit; compressed, uncompressed)"
+  echo "NOTE: NIKON NEFs are different dependent on mode, please run this tool on NEF for each of the camera's mode (14-bit, 12-bit; compressed, uncompressed)"
   echo ""
 elif [[ $MAKE == "Canon" ]]; then
   echo "NOTE: CANON CR2 have different black/white levels per ISO, please run this tool on CR2 for each of the camera's ISO (including all the sub-iso 1/2 and 1/3)"

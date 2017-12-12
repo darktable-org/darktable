@@ -31,7 +31,7 @@
 <synopsis>function( 
 	<emphasis><link linkend="darktable_print_message">message</link></emphasis> : string
 )</synopsis>
-<para>Will print a string to the darktable control log (the long overlayed window that appears over the main panel).</para>
+<para>Will print a string to the darktable control log (the long overlaid window that appears over the main panel).</para>
 
 <variablelist>
 <varlistentry id="darktable_print_message"><term>message</term><listitem>
@@ -661,7 +661,7 @@
 <synopsis>table</synopsis>
 <para>A table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link> on which the user expects UI actions to happen.</para>
 <para>It is based on both the hovered image and the selection and is consistent with the way darktable works.</para>
-<para>It is recommended to use this table to implement Lua actions rather than <link linkend="darktable_gui_hovered">darktable.gui.hovered</link> or <link linkend="darktable_gui_selection">darktable.gui.selection</link> to be consistant with darktable's GUI.</para>
+<para>It is recommended to use this table to implement Lua actions rather than <link linkend="darktable_gui_hovered">darktable.gui.hovered</link> or <link linkend="darktable_gui_selection">darktable.gui.selection</link> to be consistent with darktable's GUI.</para>
 
 </section>
 
@@ -2698,7 +2698,7 @@ end</programlisting></para>
 
 <varlistentry id="darktable_preferences_register_default"><term>[default]</term><listitem>
 <synopsis>depends on type</synopsis>
-<para>Default value to use when not set explicitely or by the user.</para>
+<para>Default value to use when not set explicitly or by the user.</para>
 <para>For the enum type of pref, this is mandatory</para>
 
 </listitem></varlistentry>
