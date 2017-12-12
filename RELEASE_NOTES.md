@@ -19,6 +19,7 @@ $ sha256sum darktable-2.4.0rc1.exe
 - OSX packaging fixes
 - Lightroom 7 import fixes
 - Some fixes for sliders and comboboxen and grabbing the keyboard focus
+- No longer use colored sliders in the white balance module – they confused people
 - Update Catalan translation
 - Update Hungarian translation
 - Fix OpenCL on OSX
@@ -63,7 +64,7 @@ and the changelog as compared to 2.2.0 can be found below. Some of the fixes mig
 - Add bash like string replacement for variables (export, watermark, session settings).
 - Add a preferences option to ask before removing empty dirs
 - The "colorbalance" module got a lot faster, thanks to SSE optimized code
-- Make gradient sliders a little more colorful and use them in the white balance module
+- Make gradient sliders a little more colorful
 - Make PNG compression level used for exporting configurable
 - On OSX, load single images from command line or via drag&drop in darkroom mode
 - Add an option to omit the intermediate tag hierarchy in exported files and only add the last level
