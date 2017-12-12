@@ -234,7 +234,7 @@ int dt_film_import(const char *dirname)
   if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
-  /* if we didn't find a id, lets instansiate a new filmroll */
+  /* if we didn't find an id, lets instantiate a new filmroll */
   if(film->id <= 0)
   {
     char datetime[20];

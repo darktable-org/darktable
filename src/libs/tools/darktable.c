@@ -199,7 +199,7 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
     cairo_fill(cr);
   }
 
-  /* create a pango layout and print fancy  name/version string */
+  /* create a pango layout and print fancy name/version string */
   PangoLayout *layout;
   layout = gtk_widget_create_pango_layout(widget, NULL);
   pango_font_description_set_weight(font_desc, PANGO_WEIGHT_BOLD);
