@@ -6,7 +6,7 @@
 		]>
 <book lang="en">
 
-  <title>darktable 2.2</title>
+  <title>darktable 2.4</title>
 
   <bookinfo>
 
@@ -76,12 +76,12 @@
     </copyright>
 
     <copyright>
-      <year>2012-2016</year>
+      <year>2012-2017</year>
       <holder>Ulrich Pegelow</holder>
     </copyright>
 
     <copyright>
-      <year>2013-2016</year>
+      <year>2013-2017</year>
       <holder>J&eacute;r&eacute;my Rosen</holder>
     </copyright>
 
@@ -119,10 +119,10 @@
                 user manual
               </entry>
               <entry>
-                2.2.0
+                2.4.0
               </entry>
               <entry>
-                November 2016
+                December 2017
               </entry>
             </row>
             <row>
@@ -130,10 +130,10 @@
                 darktable
               </entry>
               <entry>
-                2.2
+                2.4
               </entry>
               <entry>
-                November 2016
+                December 2017
               </entry>
             </row>
           </tbody>
