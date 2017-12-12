@@ -1576,7 +1576,7 @@ static void entry_focus_in_callback(GtkWidget *w, GdkEventFocus *event, dt_lib_c
   }
 }
 
-static void menuitem_and(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
+static void menuitem_mode(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 {
   // add next row with and operator
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules");
@@ -1585,7 +1585,15 @@ static void menuitem_and(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", active);
-    dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND);
+    dt_lib_collect_mode_t mode = 0;
+    const gchar *label = gtk_menu_item_get_label (menuitem);
+    if(strcmp(label, _("narrow down search")) == 0)
+      mode = DT_LIB_COLLECT_MODE_AND;
+    else if(strcmp(label, _("add more images")) == 0)
+      mode = DT_LIB_COLLECT_MODE_OR;
+    else if(strcmp(label, _("exclude images")) == 0)
+      mode = DT_LIB_COLLECT_MODE_AND_NOT;
+    dt_conf_set_int(confname, mode);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", active);
     dt_conf_set_string(confname, "");
     dt_conf_set_int("plugins/lighttable/collect/num_rules", active + 1);
@@ -1596,47 +1604,7 @@ static void menuitem_and(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   dt_collection_update_query(darktable.collection);
 }
 
-static void menuitem_or(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
-{
-  // add next row with or operator
-  const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules");
-  const int active = CLAMP(_a, 1, MAX_RULES);
-  if(active < MAX_RULES)
-  {
-    char confname[200] = { 0 };
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", active);
-    dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_OR);
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", active);
-    dt_conf_set_string(confname, "");
-    dt_conf_set_int("plugins/lighttable/collect/num_rules", active + 1);
-    dt_lib_collect_t *c = get_collect(d);
-    c->active_rule = active;
-    c->view_rule = -1;
-  }
-  dt_collection_update_query(darktable.collection);
-}
-
-static void menuitem_and_not(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
-{
-  // add next row with and not operator
-  const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules");
-  const int active = CLAMP(_a, 1, MAX_RULES);
-  if(active < MAX_RULES)
-  {
-    char confname[200] = { 0 };
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", active);
-    dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND_NOT);
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", active);
-    dt_conf_set_string(confname, "");
-    dt_conf_set_int("plugins/lighttable/collect/num_rules", active + 1);
-    dt_lib_collect_t *c = get_collect(d);
-    c->active_rule = active;
-    c->view_rule = -1;
-  }
-  dt_collection_update_query(darktable.collection);
-}
-
-static void menuitem_change_and(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
+static void menuitem_mode_change(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 {
   // add next row with and operator
   const int num = d->num + 1;
@@ -1644,37 +1612,15 @@ static void menuitem_change_and(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", num);
-    dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND);
-  }
-  dt_lib_collect_t *c = get_collect(d);
-  c->view_rule = -1;
-  dt_collection_update_query(darktable.collection);
-}
-
-static void menuitem_change_or(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
-{
-  // add next row with or operator
-  const int num = d->num + 1;
-  if(num < MAX_RULES && num > 0)
-  {
-    char confname[200] = { 0 };
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", num);
-    dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_OR);
-  }
-  dt_lib_collect_t *c = get_collect(d);
-  c->view_rule = -1;
-  dt_collection_update_query(darktable.collection);
-}
-
-static void menuitem_change_and_not(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
-{
-  // add next row with and not operator
-  const int num = d->num + 1;
-  if(num < MAX_RULES && num > 0)
-  {
-    char confname[200] = { 0 };
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", num);
-    dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND_NOT);
+    dt_lib_collect_mode_t mode = 0;
+    const gchar *label = gtk_menu_item_get_label (menuitem);
+    if(strcmp(label, _("change to: and")) == 0)
+      mode = DT_LIB_COLLECT_MODE_AND;
+    else if(strcmp(label, _("change to: or")) == 0)
+      mode = DT_LIB_COLLECT_MODE_OR;
+    else if(strcmp(label, _("change to: except")) == 0)
+      mode = DT_LIB_COLLECT_MODE_AND_NOT;
+    dt_conf_set_int(confname, mode);
   }
   dt_lib_collect_t *c = get_collect(d);
   c->view_rule = -1;
@@ -1793,29 +1739,29 @@ static gboolean popup_button_callback(GtkWidget *widget, GdkEventButton *event, 
   {
     mi = gtk_menu_item_new_with_label(_("narrow down search"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_and), d);
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode), d);
 
     mi = gtk_menu_item_new_with_label(_("add more images"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_or), d);
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode), d);
 
     mi = gtk_menu_item_new_with_label(_("exclude images"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_and_not), d);
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode), d);
   }
   else if(d->num < active - 1)
   {
     mi = gtk_menu_item_new_with_label(_("change to: and"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_change_and), d);
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode_change), d);
 
     mi = gtk_menu_item_new_with_label(_("change to: or"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_change_or), d);
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode_change), d);
 
     mi = gtk_menu_item_new_with_label(_("change to: except"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_change_and_not), d);
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode_change), d);
   }
 
   gtk_widget_show_all(GTK_WIDGET(menu));
