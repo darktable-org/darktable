@@ -1337,7 +1337,7 @@ void dt_database_show_error(const dt_database_t *db)
 {
   if(!db->lock_acquired)
   {
-    char *label_text = g_markup_printf_escaped(_("an error has occured while trying to open the database from\n"
+    char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
                                                   "\n"
                                                   "<span style=\"italic\">%s</span>\n"
                                                   "\n"
@@ -1646,7 +1646,7 @@ start:
       // oh, bad situation. the database is corrupt and can't be read!
       // we inform the user here and let him decide what to do: exit or delete and try again.
 
-      char *label_text = g_markup_printf_escaped(_("an error has occured while trying to open the database from\n"
+      char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
                                                    "\n"
                                                    "<span style=\"italic\">%s</span>\n"
                                                    "\n"
@@ -1722,7 +1722,7 @@ start:
     // oh, bad situation. the database is corrupt and can't be read!
     // we inform the user here and let him decide what to do: exit or delete and try again.
 
-    char *label_text = g_markup_printf_escaped(_("an error has occured while trying to open the database from\n"
+    char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
                                                   "\n"
                                                   "<span style=\"italic\">%s</span>\n"
                                                   "\n"
