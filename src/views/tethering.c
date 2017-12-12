@@ -200,7 +200,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     }
     dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
   }
-  else if(lib->image_id >= 0) // First of all draw image if availble
+  else if(lib->image_id >= 0) // First of all draw image if available
   {
     cairo_translate(cr, MARGIN, MARGIN);
     dt_view_image_expose(&(lib->image_over), lib->image_id, cr, width - (MARGIN * 2.0f),
@@ -256,7 +256,7 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
 {
   struct dt_capture_t *lib = (dt_capture_t *)data;
 
-  /* update import session with orginal filename so that $(FILE_EXTENSION)
+  /* update import session with original filename so that $(FILE_EXTENSION)
    *     and alikes can be expanded. */
   dt_import_session_set_filename(lib->session, filename);
   const gchar *file = dt_import_session_filename(lib->session, FALSE);

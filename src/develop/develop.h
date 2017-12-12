@@ -343,9 +343,9 @@ void dt_dev_masks_selection_change(dt_develop_t *dev, int selectid, int throw_ev
 /*
  * multi instances
  */
-/** duplicate a existant module */
+/** duplicate a existent module */
 struct dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, struct dt_iop_module_t *base, int priority);
-/** remove an existant module */
+/** remove an existent module */
 void dt_dev_module_remove(dt_develop_t *dev, struct dt_iop_module_t *module);
 /** update "show" values of the multi instance part (show_move, show_delete, ...) */
 void dt_dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *module);

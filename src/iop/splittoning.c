@@ -162,7 +162,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *out;
   const int ch = piece->colors;
 
-  const float compress = (data->compress / 110.0) / 2.0; // Dont allow 100% compression..
+  const float compress = (data->compress / 110.0) / 2.0; // Don't allow 100% compression..
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(data) private(in, out) schedule(static)
 #endif
@@ -215,7 +215,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  const float compress = (d->compress / 110.0) / 2.0; // Dont allow 100% compression..
+  const float compress = (d->compress / 110.0) / 2.0; // Don't allow 100% compression..
   const float balance = d->balance;
   const float shadow_hue = d->shadow_hue;
   const float shadow_saturation = d->shadow_saturation;

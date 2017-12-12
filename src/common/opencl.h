@@ -221,7 +221,7 @@ int dt_opencl_get_max_work_item_sizes(const int dev, size_t *sizes);
 int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, size_t *workgroupsize,
                                     unsigned long *localmemsize);
 
-/** return max workgroup size for a specifc kernel */
+/** return max workgroup size for a specific kernel */
 int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel, size_t *kernelworkgroupsize);
 
 /** attach arg. */

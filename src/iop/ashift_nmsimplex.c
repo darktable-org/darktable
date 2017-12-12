@@ -22,7 +22,7 @@
  *      do not include "nmsimplex.h" (not needed)
  *      renamed configuration variables to NMS_*
  *      add additional argument to objfun for arbitrary parameters
- *      simplex() returns number of used interations intead of min value
+ *      simplex() returns number of used iterations instead of min value
  *      maximum number of iterations as function parameter
  *      make interface function simplex() static
  *      initialize i and j to avoid compiler warnings

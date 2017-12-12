@@ -289,7 +289,7 @@ static inline void interpolate_color_xtrans(const void *const ivoid, void *const
 {
   // In Bayer each row/col has only green/red or green/blue
   // transitions, hence can reconstruct color by single ratio per
-  // row. In x-trans there can be transitions between arbitary colors
+  // row. In x-trans there can be transitions between arbitrary colors
   // in a row/col (and 2x2 green blocks which provide no color
   // transition information). Hence calculate multiple color ratios
   // for each row/col.

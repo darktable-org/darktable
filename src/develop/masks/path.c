@@ -399,9 +399,9 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
     return 0;
   }
 
-  // we'll iterate throught all border points, but we can't start at point[0]
+  // we'll iterate through all border points, but we can't start at point[0]
   // because it may be in a self-intersected section
-  // so we choose a point where we are sure there's no intersection :
+  // so we choose a point where we are sure there's no intersection:
   // one from border shape extrema (here x_max)
   int lastx = border[(posextr[1] - 1) * 2];
   int lasty = border[(posextr[1] - 1) * 2 + 1];
@@ -2199,8 +2199,8 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
       // we add the point
       if(just_change_dir && ii == i)
       {
-        // if we have changed the direction, we have to be carefull that point can be at the same place
-        // as the previous one , especially on sharp edges
+        // if we have changed the direction, we have to be careful that point can be at the same place
+        // as the previous one, especially on sharp edges
         const size_t idx = (size_t)(yy - (*posy)) * (*width) + xx - (*posx);
         assert(idx < bufsize);
         float v = (*buffer)[idx];

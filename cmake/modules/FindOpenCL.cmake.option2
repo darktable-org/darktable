@@ -3,7 +3,7 @@
 # License: Public Domain
 # - Try to find OpenCL
 # This module tries to find an OpenCL implementation on your system. It supports
-# AMD / ATI, Apple and NVIDIA implementations, but shoudl work, too.
+# AMD / ATI, Apple and NVIDIA implementations, but should work, too.
 #
 # Once done this will define
 #  OPENCL_FOUND        - system has OpenCL

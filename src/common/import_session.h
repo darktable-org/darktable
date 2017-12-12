@@ -45,7 +45,7 @@ void dt_import_session_set_time(struct dt_import_session_t *self, time_t time);
 /** \brief set the timestamp for EXIF variables */
 void dt_import_session_set_exif_time(struct dt_import_session_t *self, time_t exif_time);
 
-/** \brief set the orginal filename
+/** \brief set the original filename
     \remark This is used to expand $(FILE_X) variables. */
 void dt_import_session_set_filename(struct dt_import_session_t *self, const char *filename);
 

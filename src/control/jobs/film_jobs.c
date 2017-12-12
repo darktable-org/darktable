@@ -214,7 +214,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
       if(cfr && cfr->dir)
       {
         /* check if we can find a gpx data file to be auto applied
-           to images in the jsut imported filmroll */
+           to images in the just imported filmroll */
         g_dir_rewind(cfr->dir);
         const gchar *dfn = NULL;
         while((dfn = g_dir_read_name(cfr->dir)) != NULL)

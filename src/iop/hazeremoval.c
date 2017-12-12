@@ -310,7 +310,7 @@ static inline void box_mean_1d(int N, const float *x, float *y, size_t stride_y,
 }
 
 // calculate the two-dimensional moving average over a box of size (2*w+1) x (2*w+1)
-// does the calculation in-place if input and ouput images are identical
+// does the calculation in-place if input and output images are identical
 // this function is always called from a OpenMP thread, thus no parallelization
 static void box_mean(gray_image img1, gray_image img2, int w)
 {
@@ -357,7 +357,7 @@ static inline void box_max_1d(int N, const float *x, float *y, size_t stride_y, 
 }
 
 // calculate the two-dimensional moving maximum over a box of size (2*w+1) x (2*w+1)
-// does the calculation in-place if input and ouput images are identical
+// does the calculation in-place if input and output images are identical
 static void box_max(const gray_image img1, const gray_image img2, const int w)
 {
   gray_image img2_bak;
@@ -428,7 +428,7 @@ static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, 
 }
 
 // calculate the two-dimensional moving minimum over a box of size (2*w+1) x (2*w+1)
-// does the calculation in-place if input and ouput images are identical
+// does the calculation in-place if input and output images are identical
 static void box_min(const gray_image img1, const gray_image img2, const int w)
 {
   gray_image img2_bak;
@@ -737,8 +737,8 @@ void quick_select(float *first, float *nth, float *last)
 // reduced by the factor exp(-1)
 static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
 {
-  const float dark_channel_quantil = 0.95f; // quantil for determing the most hazy pixels
-  const float bright_quantil = 0.95f; // quantil for determing the brightest pixels among the most hazy pixels
+  const float dark_channel_quantil = 0.95f; // quantil for determining the most hazy pixels
+  const float bright_quantil = 0.95f; // quantil for determining the brightest pixels among the most hazy pixels
   int width = img.width;
   int height = img.height;
   const size_t size = (size_t)width * height;
@@ -788,7 +788,7 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
   (*pA0)[2] = A0_b / N_bright_hazy;
   free_gray_image(&dark_ch);
   // the critical haze level is at dark_channel_quantil (not 100%) to be insensitive
-  // to extrime outliners, compensate for that by some factor slighly larger than
+  // to extreme outliners, compensate for that by some factor slightly larger than
   // unity when calculating the maximal image depth
   return -1.125f * logf(crit_haze_level); // return the maximal depth
 }
@@ -803,7 +803,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int width = roi_in->width;
   const int height = roi_in->height;
   const size_t size = (size_t)width * height;
-  const int w1 = 6; // window size (positive integer) for determing the dark channel and the transition map
+  const int w1 = 6; // window size (positive integer) for determining the dark channel and the transition map
   const int w2 = 9; // window size (positive integer) for the guided filter
 
   // module parameters

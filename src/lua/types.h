@@ -63,7 +63,7 @@ typedef PangoEllipsizeMode dt_lua_ellipsize_mode_t;
  * __luaA_Type : int, the associated luaA_Type
  * __pairs : will retun (__next,obj,nil)
  * __next : will iteratethrough the __get table of obj
- * __index : will look into the __get table to find a callback, then  raise an error
+ * __index : will look into the __get table to find a callback, then raise an error
  * __newindex : will look into the __set table to find a callback, then raise an error
  * __get : empty table, contains getters, similar API to __index
  * __set : empty table, contains setters, similar API to __newindex
@@ -105,7 +105,7 @@ void dt_lua_type_register_number_const_type(lua_State *L, luaA_Type type_id);
 
 /// register a type as a parent type
 /// the type will reuse all members and metafiels from the parent (unless it has its own)
-/// inheritence will be marked in __luaA_ParentMetatable
+/// inheritance will be marked in __luaA_ParentMetatable
 /// THIS FUNCTION MUST BE CALLED AFTER PARENT WAS COMPLETELY DEFINED
 #define dt_lua_type_register_parent(L, type_name, parent_type_name)                                          \
   dt_lua_type_register_parent_type(L, luaA_type_find(L, #type_name), luaA_type_find(L, #parent_type_name))
@@ -125,7 +125,7 @@ int dt_lua_type_member_luaautoc(lua_State *L);
 
 /**
   * similar to dt_lua_init_type but creates a type for int or gpointer singletons
-  * the type must match and will guarentee a singleton per value
+  * the type must match and will guarantee a singleton per value
   * i.e if you push the same int twice, you will push the same lua object
   * not recreate a different one each time
   * the singleton objects will still correctly be garbage collected
@@ -146,7 +146,7 @@ void dt_lua_type_gpointer_alias_type(lua_State*L,luaA_Type type_id,void* pointer
 
 /**
   * drop a gpointer. Pushing the pointer again will create a new object.
-  * We can't guarentee when the original object will be GC, but it will point to NULL
+  * We can't guarantee when the original object will be GC, but it will point to NULL
   * instead of its normal content. accessing it from the lua side will cause an error
   * luaA_to will also raise an error
   * NOTE : if the object had aliases, the aliases will return NULL too.

@@ -509,7 +509,7 @@ static inline void _kill_mystery_ship(dt_knight_t *d)
 static inline void _add_mystery_ship(dt_knight_t *d)
 {
   d->mystery_ship_x = 0.0;
-  // only shoot once per occurence
+  // only shoot once per occurrence
   d->mystery_ship_potential_shot_x = (float)rand() / (float)RAND_MAX;
 }
 

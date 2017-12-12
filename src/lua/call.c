@@ -59,7 +59,7 @@ int dt_lua_treated_pcall(lua_State*L, int nargs, int nresults)
    THREAD
    * threads are a way to store some work that will be done later
    * threads are saved in the table at REGISTRY_INDEX "dt_lua_bg_thread", that table is manipulated with save_thread, get_thread, drop_thread. They have a unique integer ID
-   * each thread is a lua_State with the folowing convention for its stack
+   * each thread is a lua_State with the following convention for its stack
       -- top of the stack --
       * args
       * lua function : function to call
@@ -73,7 +73,7 @@ int dt_lua_treated_pcall(lua_State*L, int nargs, int nresults)
   * must be called with the lua lock taken
   * find/create a new gtk thread
   * run that thread which is in charge of doing the job
-  * the ownership of the lock is transfered to the thread
+  * the ownership of the lock is transferred to the thread
   * wait for the thread to release the lock (the thread might not have finished
   * return to the caller
 
@@ -123,7 +123,7 @@ static void drop_thread(lua_State*L, int thread_num)
 
 static void run_async_thread_main(gpointer data,gpointer user_data)
 {
-  // lua lock ownership transfered from parent thread
+  // lua lock ownership transferred from parent thread
   int thread_num = GPOINTER_TO_INT(data);
   lua_State*L = darktable.lua_state.state;
   lua_State* thread = get_thread(L,thread_num);
@@ -152,7 +152,7 @@ static void run_async_thread_main(gpointer data,gpointer user_data)
 static void run_async_thread(lua_State* L, int thread_num)
 {
   g_thread_pool_push(darktable.lua_state.pool,GINT_TO_POINTER(thread_num),NULL);
-  // lock ownership is transfered to the new thread. We want to block until it is returned to us
+  // lock ownership is transferred to the new thread. We want to block until it is returned to us
   // either because the other thread finished or because it paused
   dt_lua_lock();
 }

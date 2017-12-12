@@ -5,7 +5,7 @@ if(USE_OPENCL)
 endif(USE_OPENCL)
 
 #
-# Generate and instal darktable.css
+# Generate and install darktable.css
 #
 if ("${GTK3_VERSION}" VERSION_GREATER "3.19.0")
   if ("${GTK3_VERSION}" VERSION_GREATER "3.21.0")

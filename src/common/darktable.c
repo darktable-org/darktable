@@ -338,7 +338,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   int sse2_supported = 0;
 
 #ifdef HAVE_BUILTIN_CPU_SUPPORTS
-  // NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
+  // NOTE: _may_i_use_cpu_feature() looks better, but only available in ICC
   __builtin_cpu_init();
   sse2_supported = __builtin_cpu_supports("sse2");
 #else

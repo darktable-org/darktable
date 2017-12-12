@@ -152,7 +152,7 @@ float *d3_np_fs(int n, float a[], float b[])
 
     The cubic spline is a piecewise cubic polynomial.  The intervals
     are determined by the "knots" or abscissas of the data to be
-    interpolated.  The cubic spline has continous first and second
+    interpolated.  The cubic spline has continuous first and second
     derivatives over the entire interval of interpolation.
 
     For any point T in the interval T(IVAL), T(IVAL+1), the form of
@@ -683,7 +683,7 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
   float y[20] = { 0 };
   float *ypp;
 
-  // The box points  are what the anchor points are relative
+  // The box points are what the anchor points are relative
   // to so...
 
   float box_width = curve->m_max_x - curve->m_min_x;
@@ -718,7 +718,7 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
   int minY = curve->m_min_y * (sample->m_outputRes - 1);
   // returns an array of second derivatives used to calculate the spline curve.
   // this is a malloc'd array that needs to be freed when done.
-  // The setings currently calculate the natural spline, which closely matches
+  // The settings currently calculate the natural spline, which closely matches
   // camera curve output in raw files.
   ypp = interpolate_set(n, x, y, curve->m_spline_type);
   if(ypp == NULL) return CT_ERROR;

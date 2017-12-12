@@ -19,7 +19,7 @@
 /*
  *  this is a simple PDF writer, capable of creating multi page PDFs with embedded images.
  *  it is NOT meant to be a full fledged PDF library, and shall never turn into something like that!
- *  see the main() fucntion in pdf.c to see an example how to use this.
+ *  see the main() function in pdf.c to see an example how to use this.
  */
 
 #pragma once

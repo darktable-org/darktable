@@ -1006,7 +1006,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   void *sdata = mstorage->get_params(mstorage);
   int32_t fversion = mformat->version();
   int32_t sversion = mstorage->version();
-  // we allow null pointers (plugin not ready for export in current state), and just dont copy back the
+  // we allow null pointers (plugin not ready for export in current state), and just don't copy back the
   // settings later:
   if(!sdata) ssize = 0;
   if(!fdata) fsize = 0;

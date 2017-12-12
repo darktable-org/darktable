@@ -231,7 +231,7 @@ static int zoom_member(lua_State *L)
   else
   {
     // we rely on osm to correctly clamp zoom (checked in osm source
-    // lua can have temporarly false values but it will fix itself when entering map
+    // lua can have temporarily false values but it will fix itself when entering map
     // unfortunately we can't get the min max when lib->map doesn't exist
     luaL_checktype(L, 3, LUA_TNUMBER);
     int zoom = luaL_checkinteger(L, 3);
@@ -567,7 +567,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
     lib->images = NULL;
   }
 
-  /* add  all images to the map */
+  /* add all images to the map */
   gboolean needs_redraw = FALSE;
   const int _thumb_size = DT_PIXEL_APPLY_DPI(thumb_size);
   dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, _thumb_size, _thumb_size);

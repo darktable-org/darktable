@@ -448,7 +448,7 @@ endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
   if(BUILD_SSE2_CODEPATHS)
-    #we MUST always specify our requred instruction set, native might not detect it
+    #we MUST always specify our required instruction set, native might not detect it
     set(DT_REQ_INSTRUCTIONS "-msse2")
   endif()
 
