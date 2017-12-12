@@ -71,7 +71,7 @@ static const float colorchecker_Lab[] =
 };
 
 // we came to the conclusion that more than 7x7 patches will not be
-// managable in the gui. the fitting experiments show however that you
+// manageable in the gui. the fitting experiments show however that you
 // can do significantly better with 49 than you can with 24 patches,
 // especially when considering max delta E.
 #define MAX_PATCHES 49
@@ -570,7 +570,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       |       |  |   | = |   |
       \ P^t 0 /  \ d /   \ 0 /
 
-      for the coefficent vector (c d)^t.
+      for the coefficient vector (c d)^t.
 
       By design of the interpolation scheme the interpolation
       coefficients c for radial non-linear basis functions (the kernel)

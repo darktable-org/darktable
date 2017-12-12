@@ -61,7 +61,7 @@ void *legacy_params(struct dt_imageio_module_format_t *self, const void *const o
 size_t params_size(struct dt_imageio_module_format_t *self);
 void *get_params(struct dt_imageio_module_format_t *self);
 void free_params(struct dt_imageio_module_format_t *self, struct dt_imageio_module_data_t *data);
-/* resets the gui to the paramters as given here. return != 0 on fail. */
+/* resets the gui to the parameters as given here. return != 0 on fail. */
 int set_params(struct dt_imageio_module_format_t *self, const void *params, const int size);
 
 /* returns the mime type of the exported image. */

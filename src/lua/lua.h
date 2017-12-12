@@ -73,7 +73,7 @@ typedef struct
 
   bool ending;                       // true if we are in the process of terminating DT
 
-  GMainLoop *loop;                   // loop running  the lua context
+  GMainLoop *loop;                   // loop running the lua context
   GMainContext *context;             // the lua context responsible for dispatching tasks
   GThreadPool *pool;                 // pool of threads to run lua tasks on (should be one or two at most, unless lot of blocking lua threads
   GAsyncQueue * stacked_job_queue;   // queue of jobs whose arguments are on a lua stack
