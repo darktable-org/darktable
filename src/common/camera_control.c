@@ -47,7 +47,7 @@ typedef enum _camctl_camera_job_type_t
   _JOB_TYPE_SET_PROPERTY_CHOICE,
   /** For some reason stopping live view needs to pass an int, not a string. */
   _JOB_TYPE_SET_PROPERTY_INT,
-  /** get's a property from config cache. \todo This shouldn't be a job in jobqueue !?  */
+  /** gets a property from config cache. \todo This shouldn't be a job in jobqueue !?  */
   _JOB_TYPE_GET_PROPERTY
 } _camctl_camera_job_type_t;
 

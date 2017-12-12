@@ -168,7 +168,7 @@ gboolean dt_image_safe_remove(const int32_t imgid)
 
   else
   {
-    // finaly check if we have a .xmp for the local copy. If no modification done on the local copy it is safe
+    // finally check if we have a .xmp for the local copy. If no modification done on the local copy it is safe
     // to remove.
     g_strlcat(pathname, ".xmp", sizeof(pathname));
     return !g_file_test(pathname, G_FILE_TEST_EXISTS);
@@ -721,7 +721,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
     }
     else
     {
-      // we need to derive the version number from the  filename
+      // we need to derive the version number from the filename
 
       gchar *c3 = xmpfilename + strlen(xmpfilename)
                   - 5; // skip over .xmp extension; position c3 at character before the '.'
@@ -1170,7 +1170,7 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
       }
       g_list_free(dup_list);
 
-      // finaly, rename local copy if any
+      // finally, rename local copy if any
       if(g_file_test(copysrcpath, G_FILE_TEST_EXISTS))
       {
         // get new name

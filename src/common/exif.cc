@@ -1912,7 +1912,7 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
       {
         // AFAICT this can't happen with regular exiv2 parsed XMP data, but better safe than sorry.
         // it can happen though when constructing things in a unusual order and then passing it to us without
-        // serializing it inbetween
+        // serializing it in between
         current_entry = (history_entry_t *)g_list_nth_data(history_entries, n - 1); // XMP starts counting at 1!
       }
 
@@ -2858,7 +2858,7 @@ void dt_exif_init()
   Exiv2::LogMsg::setHandler(&dt_exif_log_handler);
 
   Exiv2::XmpParser::initialize();
-  // this has te stay with the old url (namespace already propagated outside dt)
+  // this has to stay with the old url (namespace already propagated outside dt)
   Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
   Exiv2::XmpProperties::registerNs("http://ns.adobe.com/lightroom/1.0/", "lr");
   Exiv2::XmpProperties::registerNs("http://cipa.jp/exif/1.0/", "exifEX");

@@ -374,7 +374,7 @@ gboolean dt_develop_blend_params_is_all_zero(const void *params, size_t length);
 /** update blendop params from older versions */
 int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const old_params,
                                    const int old_version, void *new_params, const int new_version,
-                                   const int lenght);
+                                   const int length);
 
 /** gui related stuff */
 void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module);
