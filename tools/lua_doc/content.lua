@@ -81,7 +81,7 @@ code([[darktable = require "darktable"]])..
 --  DARKTABLE       --
 ----------------------
 darktable:set_text([[The darktable library is the main entry point for all access to the darktable internals.]])
-darktable.print:set_text([[Will print a string to the darktable control log (the long overlayed window that appears over the main panel).]])
+darktable.print:set_text([[Will print a string to the darktable control log (the long overlaid window that appears over the main panel).]])
 darktable.print:add_parameter("message","string",[[The string to display which should be a single line.]])
 
 darktable.print_log:set_text([[This function will print its parameter if the Lua logdomain is activated. Start darktable with the "-d lua" command line option to enable the Lua logdomain.]])
@@ -189,7 +189,7 @@ darktable.gui:set_text([[This subtable contains function and data to manipulate 
 
 darktable.gui.action_images:set_text([[A table of ]]..my_tostring(types.dt_lua_image_t)..[[ on which the user expects UI actions to happen.]]..para()..
 [[It is based on both the hovered image and the selection and is consistent with the way darktable works.]]..para()..
-[[It is recommended to use this table to implement Lua actions rather than ]]..my_tostring(darktable.gui.hovered)..[[ or ]]..my_tostring(darktable.gui.selection)..[[ to be consistant with darktable's GUI.]])
+[[It is recommended to use this table to implement Lua actions rather than ]]..my_tostring(darktable.gui.hovered)..[[ or ]]..my_tostring(darktable.gui.selection)..[[ to be consistent with darktable's GUI.]])
 
 remove_all_children(darktable.gui.action_images)
 
@@ -290,7 +290,7 @@ darktable.preferences.register:add_parameter("name","string",[[A unique name use
 darktable.preferences.register:add_parameter("type",types.lua_pref_type,[[The type of the preference - one of the string values described above.]])
 darktable.preferences.register:add_parameter("label","string",[[The label displayed in the preference screen.]])
 darktable.preferences.register:add_parameter("tooltip","string",[[The tooltip to display in the preference menu.]])
-darktable.preferences.register:add_parameter("default","depends on type",[[Default value to use when not set explicitely or by the user.]]..para().."For the enum type of pref, this is mandatory"):set_attribute("optional",true)
+darktable.preferences.register:add_parameter("default","depends on type",[[Default value to use when not set explicitly or by the user.]]..para().."For the enum type of pref, this is mandatory"):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("min","int or float",[[Minimum value (integer and float preferences only).]]):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("max","int or float",[[Maximum value (integer and float preferences only).]]):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("step","float",[[Step of the spinner (float preferences only).]]):set_attribute("optional",true)

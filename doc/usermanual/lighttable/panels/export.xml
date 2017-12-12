@@ -398,7 +398,7 @@
                 <code>$(var/pattern/replacement)</code>
               </entry>
               <entry>
-                Replace the first occurence of <code>pattern</code> in <code>var</code> with
+                Replace the first occurrence of <code>pattern</code> in <code>var</code> with
                 <code>replacement</code>. If <code>replacement</code> is empty then
                 <code>pattern</code> will be removed.
               </entry>
@@ -408,7 +408,7 @@
                 <code>$(var//pattern/replacement)</code>
               </entry>
               <entry>
-                Replace all occurences of <code>pattern</code> in <code>var</code> with
+                Replace all occurrences of <code>pattern</code> in <code>var</code> with
                 <code>replacement</code>. If <code>replacement</code> is empty then
                 <code>pattern</code> will be removed.
               </entry>

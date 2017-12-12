@@ -144,7 +144,7 @@
 % PDF/X-3 files contain extra operators that define the bleed and trim area.
 % - The MediaBox defines the size of the entire document
 % - The ArtBox or TrimBox defines the extent of the printable area.
-% - If the file is to be printed with bleed, a BleedBox must be defined. It must be larger than  the TrimBox/ArtBox, but smaller than the MediaBox.
+% - If the file is to be printed with bleed, a BleedBox must be defined. It must be larger than the TrimBox/ArtBox, but smaller than the MediaBox.
 \ifthenelse{\isundefined{\draftmode}}{
 \pdfpageattr{/MediaBox [0 0 792.0 612.0]
 /TrimBox [49.4645668785 18.0 742.535433 594.0]}

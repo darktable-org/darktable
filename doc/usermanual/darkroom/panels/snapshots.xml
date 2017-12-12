@@ -25,7 +25,7 @@
           <entry>
             You can take snapshots of images as you process them. A snapshot is stored as a
             bitmap of the current center view and is kept as long as you stay in the darkroom. A
-            snapshot can then be selected and overlayed in the current center view to help you
+            snapshot can then be selected and overlaid in the current center view to help you
             with a side by side comparison (left: snapshot, right: active) when you are tuning
             parameters of a module. This can also be combined with history (see
             <xref linkend="history"/>) to compare the snapshot against different stages of

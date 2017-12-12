@@ -10,7 +10,7 @@ This documentation for API version 4.0.0.]==],
 ["reported_type"] = [==[documentation node]==],
 },
 ["print"] = {
-["__text"] = [==[Will print a string to the darktable control log (the long overlayed window that appears over the main panel).]==],
+["__text"] = [==[Will print a string to the darktable control log (the long overlaid window that appears over the main panel).]==],
 ["__attributes"] = {
 ["reported_type"] = [==[function]==],
 ["signature"] = {
@@ -1769,7 +1769,7 @@ Most of these function won't do anything if the GUI is not enabled (i.e you are 
 ["action_images"] = {
 ["__text"] = [==[A table of types.dt_lua_image_t on which the user expects UI actions to happen.
 It is based on both the hovered image and the selection and is consistent with the way darktable works.
-It is recommended to use this table to implement Lua actions rather than darktable.gui.hovered or darktable.gui.selection to be consistant with darktable's GUI.]==],
+It is recommended to use this table to implement Lua actions rather than darktable.gui.hovered or darktable.gui.selection to be consistent with darktable's GUI.]==],
 ["__attributes"] = {
 ["is_attribute"] = true,
 ["read"] = true,
@@ -3457,7 +3457,7 @@ Note that the directory, enum, lua and file type preferences are stored internal
 },
 },
 ["6"] = {
-["__text"] = [==[Default value to use when not set explicitely or by the user.
+["__text"] = [==[Default value to use when not set explicitly or by the user.
 For the enum type of pref, this is mandatory]==],
 ["__attributes"] = {
 ["optional"] = true,
