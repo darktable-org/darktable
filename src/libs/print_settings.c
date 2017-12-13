@@ -809,7 +809,7 @@ _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
     }
     prof = g_list_next(prof);
   }
-  dt_conf_set_int("plugins/print/printer/iccprofile", DT_COLORSPACE_NONE);
+  dt_conf_set_int("plugins/print/printer/icctype", DT_COLORSPACE_NONE);
   dt_conf_set_string("plugins/print/printer/iccprofile", "");
   g_free(ps->v_piccprofile);
   ps->v_picctype = DT_COLORSPACE_NONE;

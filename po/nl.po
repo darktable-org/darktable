@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-03 12:55+0100\n"
-"PO-Revision-Date: 2017-12-03 12:58+0100\n"
+"POT-Creation-Date: 2017-12-10 09:22+0100\n"
+"PO-Revision-Date: 2017-12-10 09:33+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1010,60 +1010,65 @@ msgstr "fout: openen bestand %s lukt niet"
 msgid "no images to export, aborting\n"
 msgstr "niets te exporteren, stopt nu\n"
 
-#: ../src/cli/main.c:272
+#: ../src/cli/main.c:260
+#, c-format
+msgid "error: can't open xmp file %s"
+msgstr "fout: openen xmp bestand %s"
+
+#: ../src/cli/main.c:278
 msgid "empty history stack"
 msgstr "verwijder bewerkingsstap(pen)"
 
-#: ../src/cli/main.c:295
+#: ../src/cli/main.c:301
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
 msgstr "module schijfopslag niet gevonden, controleer de installatie"
 
-#: ../src/cli/main.c:303
+#: ../src/cli/main.c:309
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "ophalen instellingen van de opslagmodule mislukt, exporteren is "
 "afgebroken ..."
 
-#: ../src/cli/main.c:316
+#: ../src/cli/main.c:322
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "onbekende extensie '.%s'"
 
-#: ../src/cli/main.c:325
+#: ../src/cli/main.c:331
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "ophalen instellingen van de formaatmodule mislukt, exporteren is "
 "afgebroken ..."
 
-#: ../src/common/collection.c:855 ../src/develop/lightroom.c:919
+#: ../src/common/collection.c:855 ../src/develop/lightroom.c:789
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:451
 #: ../src/iop/channelmixer.c:462 ../src/iop/colorbalance.c:631
-#: ../src/iop/temperature.c:1346 ../src/libs/collect.c:1085
+#: ../src/iop/temperature.c:1350 ../src/libs/collect.c:1085
 #: ../src/libs/collect.c:1086 ../src/libs/collect.c:1087
 msgid "red"
 msgstr "rood"
 
-#: ../src/common/collection.c:857 ../src/develop/lightroom.c:921
-#: ../src/iop/temperature.c:1337 ../src/libs/collect.c:1089
+#: ../src/common/collection.c:857 ../src/develop/lightroom.c:791
+#: ../src/iop/temperature.c:1341 ../src/libs/collect.c:1089
 #: ../src/libs/collect.c:1090 ../src/libs/collect.c:1091
 msgid "yellow"
 msgstr "geel"
 
-#: ../src/common/collection.c:859 ../src/develop/lightroom.c:923
+#: ../src/common/collection.c:859 ../src/develop/lightroom.c:793
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:452
 #: ../src/iop/channelmixer.c:468 ../src/iop/colorbalance.c:638
-#: ../src/iop/temperature.c:1334 ../src/iop/temperature.c:1347
+#: ../src/iop/temperature.c:1338 ../src/iop/temperature.c:1351
 #: ../src/libs/collect.c:1093 ../src/libs/collect.c:1094
 #: ../src/libs/collect.c:1095
 msgid "green"
 msgstr "groen"
 
-#: ../src/common/collection.c:861 ../src/develop/lightroom.c:925
+#: ../src/common/collection.c:861 ../src/develop/lightroom.c:795
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
 #: ../src/iop/channelmixer.c:474 ../src/iop/colorbalance.c:645
-#: ../src/iop/temperature.c:1348 ../src/libs/collect.c:1097
+#: ../src/iop/temperature.c:1352 ../src/libs/collect.c:1097
 #: ../src/libs/collect.c:1098 ../src/libs/collect.c:1099
 msgid "blue"
 msgstr "blauw"
@@ -1092,7 +1097,7 @@ msgstr "%d afbeelding van %d (#%d) uit de collectie is geselecteerd"
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
-msgstr[0] " geselecteerd %d afbeelding uit %d "
+msgstr[0] " geselecteerd %d afbeelding uit %d"
 msgstr[1] "geselecteerd %d afbeeldingen uit %d "
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
@@ -1155,7 +1160,7 @@ msgstr "leverancier kleuren matrix"
 
 #: ../src/common/colorspaces.c:948
 msgid "alternate color matrix"
-msgstr "alternatieve kleuren matrix "
+msgstr "alternatieve kleuren matrix"
 
 #: ../src/common/colorspaces.c:1148
 msgid "sRGB (e.g. JPG)"
@@ -1187,7 +1192,7 @@ msgstr "afdrukken afbeelding %d op `%s'"
 #: ../src/common/darktable.c:211
 #, c-format
 msgid "found strange path `%s'"
-msgstr "onlogisch pad `%s'  gevonden "
+msgstr "onlogisch pad `%s'  gevonden"
 
 #: ../src/common/darktable.c:228
 #, c-format
@@ -1365,31 +1370,31 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d lokale kopie is gesynchroniseerd"
 msgstr[1] "%d lokale kopieën zijn gesynchroniseerd"
 
-#: ../src/common/imageio.c:576 ../src/common/mipmap_cache.c:1038
+#: ../src/common/imageio.c:579 ../src/common/mipmap_cache.c:1038
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "afbeelding `%s' is niet beschikbaar"
 
-#: ../src/common/imageio.c:594
+#: ../src/common/imageio.c:597
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
 "or buy more memory."
 msgstr ""
-"geheugen toewijzing voor %s  mislukt,  verlaag het aantal exporteerstappen "
+"geheugen toewijzing voor %s  mislukt,  verlaag het aantal exporteer stappen "
 "of koop meer geheugen"
 
-#: ../src/common/imageio.c:595
+#: ../src/common/imageio.c:598
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "miniatuur exporteren"
 
-#: ../src/common/imageio.c:595
+#: ../src/common/imageio.c:598
 msgctxt "noun"
 msgid "export"
 msgstr "exporteren"
 
-#: ../src/common/imageio.c:605
+#: ../src/common/imageio.c:608
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "toe te passen stijl '%s'  bij het exporteren is niet gevonden"
@@ -1411,27 +1416,27 @@ msgstr "generic poissonian"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "ruisprofiel bestand `%s' is ongeldig"
 
-#: ../src/common/opencl.c:738
+#: ../src/common/opencl.c:746
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr ""
 "vanwege langzame GPU-hardware wordt versnelling via opencl uitgeschakeld"
 
-#: ../src/common/opencl.c:745
+#: ../src/common/opencl.c:753
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "meerdere GPU's gedecteerd = gepland OpenCL profiel is hiermee overeenkomstig "
 "ingesteld"
 
-#: ../src/common/opencl.c:752
+#: ../src/common/opencl.c:760
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "zeer snelle GPU gedetecteerd - gepland OpenCL profiel is hiermee "
 "overeenkomstig ingesteld"
 
-#: ../src/common/opencl.c:759
+#: ../src/common/opencl.c:767
 msgid "opencl scheduling profile set to default."
 msgstr "maak standaard van gepland OpenCl profiel"
 
@@ -2095,7 +2100,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1277
 msgid "output"
-msgstr "output "
+msgstr "output"
 
 #: ../src/develop/blend_gui.c:1288
 msgid "input"
@@ -2114,7 +2119,7 @@ msgstr[1] "%d vormen gebruikt"
 
 #: ../src/develop/blend_gui.c:1367 ../src/develop/blend_gui.c:1420
 msgid "no mask used"
-msgstr "geen maskers "
+msgstr "geen maskers"
 
 #: ../src/develop/blend_gui.c:1419 ../src/develop/blend_gui.c:1789
 #: ../src/develop/blend_gui.c:1827 ../src/develop/blend_gui.c:1984
@@ -2254,12 +2259,12 @@ msgstr "kleurwaarde"
 #: ../src/develop/blend_gui.c:1755
 msgctxt "blendmode"
 msgid "hue"
-msgstr "tint "
+msgstr "tint"
 
 #: ../src/develop/blend_gui.c:1756
 msgctxt "blendmode"
 msgid "color"
-msgstr "kleur "
+msgstr "kleur"
 
 #: ../src/develop/blend_gui.c:1757
 msgctxt "blendmode"
@@ -2473,7 +2478,7 @@ msgstr "%s is uitgeschakeld"
 #: ../src/gui/accelerators.c:713 ../src/gui/accelerators.c:878
 #: ../src/gui/accelerators.c:904 ../src/gui/presets.c:192
 #: ../src/gui/presets.c:299 ../src/gui/presets.c:641
-#: ../src/iop/temperature.c:1420 ../src/libs/import.c:574 ../src/libs/lib.c:336
+#: ../src/iop/temperature.c:1426 ../src/libs/import.c:574 ../src/libs/lib.c:336
 #: ../src/libs/lib.c:361 ../src/libs/lib.c:1172
 msgid "preset"
 msgstr "voorkeur"
@@ -2521,35 +2526,35 @@ msgstr "reset"
 msgid "presets"
 msgstr "voorkeuren"
 
-#: ../src/develop/lightroom.c:381
+#: ../src/develop/lightroom.c:921
 msgid "cannot find lightroom XMP!"
 msgstr "ligthroom xmp niet gevonden!"
 
-#: ../src/develop/lightroom.c:413 ../src/develop/lightroom.c:435
-#: ../src/develop/lightroom.c:455 ../src/develop/lightroom.c:484
+#: ../src/develop/lightroom.c:953 ../src/develop/lightroom.c:975
+#: ../src/develop/lightroom.c:995
 #, c-format
 msgid "`%s' not a lightroom XMP!"
 msgstr "`%s' is geen lightroom xmp!"
 
-#: ../src/develop/lightroom.c:1389 ../src/libs/import.c:594
+#: ../src/develop/lightroom.c:1455 ../src/libs/import.c:594
 msgid "tags"
 msgstr "labels"
 
-#: ../src/develop/lightroom.c:1398 ../src/libs/tools/filter.c:141
+#: ../src/develop/lightroom.c:1464 ../src/libs/tools/filter.c:141
 msgid "rating"
 msgstr "classificatie"
 
-#: ../src/develop/lightroom.c:1407 ../src/libs/collect.h:38
+#: ../src/develop/lightroom.c:1473 ../src/libs/collect.h:38
 #: ../src/libs/geotagging.c:62
 msgid "geotagging"
 msgstr "geotagging"
 
-#: ../src/develop/lightroom.c:1416 ../src/libs/collect.h:34
+#: ../src/develop/lightroom.c:1482 ../src/libs/collect.h:34
 #: ../src/libs/tools/filter.c:143
 msgid "color label"
 msgstr "kleurlabel"
 
-#: ../src/develop/lightroom.c:1422
+#: ../src/develop/lightroom.c:1488
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -2570,7 +2575,7 @@ msgstr "klik rechtermuisknop om kromming te resetten"
 
 #: ../src/develop/masks/masks.c:168
 msgid "ctrl+click to add a node"
-msgstr "ctrl+klik voegt een knooppunt toe "
+msgstr "ctrl+klik voegt een knooppunt toe"
 
 #: ../src/develop/masks/masks.c:170 ../src/develop/masks/masks.c:199
 msgid "ctrl+scroll to set shape opacity, shift+scroll to set feather size"
@@ -2609,7 +2614,7 @@ msgstr ""
 
 #: ../src/develop/masks/masks.c:192
 msgid "scroll to set brush size"
-msgstr "bepaal penseel dikte door te scrollen "
+msgstr "bepaal penseel dikte door te scrollen"
 
 #: ../src/develop/masks/masks.c:194
 msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
@@ -2908,7 +2913,7 @@ msgstr "verwijder voorkeur voor achterhaalde module"
 
 #: ../src/gui/camera_import_dialog.c:182
 msgid "store value as default"
-msgstr "parameter opslaan als standaard "
+msgstr "parameter opslaan als standaard"
 
 #: ../src/gui/camera_import_dialog.c:188
 msgid "reset value to default"
@@ -3541,7 +3546,7 @@ msgstr "voorkeur opslaan"
 
 #: ../src/gui/presets.c:908 ../src/libs/lib.c:510
 msgid "update preset"
-msgstr "update voorkeur "
+msgstr "update voorkeur"
 
 #: ../src/gui/styles_dialog.c:168 ../src/gui/styles_dialog.c:174
 #: ../src/libs/styles.c:224
@@ -4394,7 +4399,7 @@ msgstr "lensverschuiving (%s)"
 #: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1576
 #: ../src/iop/clipping.c:1865 ../src/iop/clipping.c:1884
 msgid "horizontal"
-msgstr "horizontaal "
+msgstr "horizontaal"
 
 #: ../src/iop/ashift.c:4173 ../src/iop/ashift.c:4174 ../src/iop/ashift.c:4273
 #: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1575
@@ -4937,19 +4942,19 @@ msgid "radius"
 msgstr "straal"
 
 #: ../src/iop/bilateral.cc:85 ../src/iop/channelmixer.c:130
-#: ../src/iop/temperature.c:208
+#: ../src/iop/temperature.c:210
 msgctxt "accel"
 msgid "red"
 msgstr "rood"
 
 #: ../src/iop/bilateral.cc:86 ../src/iop/channelmixer.c:131
-#: ../src/iop/temperature.c:209
+#: ../src/iop/temperature.c:211
 msgctxt "accel"
 msgid "green"
 msgstr "groen"
 
 #: ../src/iop/bilateral.cc:87 ../src/iop/channelmixer.c:132
-#: ../src/iop/temperature.c:210
+#: ../src/iop/temperature.c:212
 msgctxt "accel"
 msgid "blue"
 msgstr "blauw"
@@ -5036,7 +5041,7 @@ msgstr "kies randkleur uit de afbeelding"
 #: ../src/iop/borders.c:183
 msgctxt "accel"
 msgid "frame line size"
-msgstr "afmeting frame "
+msgstr "afmeting frame"
 
 #: ../src/iop/borders.c:184
 msgctxt "accel"
@@ -5252,7 +5257,7 @@ msgstr "bestemming"
 #: ../src/iop/colorzones.c:1077 ../src/iop/colorzones.c:1108
 #: ../src/iop/graduatednd.c:1168 ../src/iop/splittoning.c:488
 msgid "hue"
-msgstr "tint "
+msgstr "tint"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:449 ../src/iop/colisa.c:366
@@ -5820,11 +5825,11 @@ msgstr "bepaal kleur toon"
 
 #: ../src/iop/colorize.c:434 ../src/iop/splittoning.c:495
 msgid "select the hue tone"
-msgstr "bepaal de tint toon "
+msgstr "bepaal de tint toon"
 
 #: ../src/iop/colorize.c:444
 msgid "select the saturation shadow tone"
-msgstr "bepaal verzadiging voor schaduwkleuren "
+msgstr "bepaal verzadiging voor schaduwkleuren"
 
 #: ../src/iop/colorize.c:456
 msgid "source mix"
@@ -5924,7 +5929,7 @@ msgstr "een niet ondersteund uitgaand profiel is vervangen door sRGB!"
 
 #: ../src/iop/colorout.c:778
 msgid "output intent"
-msgstr "voorgenomen output "
+msgstr "voorgenomen output"
 
 #: ../src/iop/colorout.c:779 ../src/libs/export.c:627
 #: ../src/libs/print_settings.c:1087 ../src/libs/print_settings.c:1300
@@ -5966,7 +5971,7 @@ msgstr "kleur reconstructie"
 #: ../src/iop/colorreconstruction.c:173 ../src/iop/tonemap.cc:90
 msgctxt "accel"
 msgid "spatial extent"
-msgstr "omvang "
+msgstr "omvang"
 
 #: ../src/iop/colorreconstruction.c:174
 msgctxt "accel"
@@ -5991,7 +5996,7 @@ msgstr "module 'kleur reconstructie'  mislukte"
 #: ../src/iop/colorreconstruction.c:1361 ../src/iop/shadhi.c:853
 #: ../src/iop/tonemap.cc:298
 msgid "spatial extent"
-msgstr "omvang "
+msgstr "omvang"
 
 #: ../src/iop/colorreconstruction.c:1362
 msgid "range extent"
@@ -6304,7 +6309,7 @@ msgstr "geïnterpoleerd uit ISO %d en %d"
 
 #: ../src/iop/denoiseprofile.c:2057 ../src/iop/nlmeans.c:847
 msgid "patch size"
-msgstr "patch grootte "
+msgstr "patch grootte"
 
 #: ../src/iop/denoiseprofile.c:2060
 msgid "non-local means"
@@ -6687,7 +6692,7 @@ msgstr "dichtheid"
 
 #: ../src/iop/graduatednd.c:1141
 msgid "the density in EV for the filter"
-msgstr "dichtheid voor het filter in EV "
+msgstr "dichtheid voor het filter in EV"
 
 #: ../src/iop/graduatednd.c:1149
 #, no-c-format
@@ -7160,7 +7165,7 @@ msgstr "voeg een lijn toe door te klikken"
 
 #: ../src/iop/liquify.c:3208
 msgid "click to add curve"
-msgstr "voeg een curve toe door te klikken "
+msgstr "voeg een curve toe door te klikken"
 
 #: ../src/iop/liquify.c:3210
 msgid "click to edit nodes"
@@ -7326,7 +7331,7 @@ msgstr "lowpass"
 
 #: ../src/iop/lowpass.c:622
 msgid "local contrast mask"
-msgstr "masker lokaal contrast "
+msgstr "masker lokaal contrast"
 
 #: ../src/iop/lowpass.c:655
 msgid "filter order"
@@ -7555,7 +7560,7 @@ msgstr "schaduwopvulling -0,25EV met vier zones"
 
 #: ../src/iop/relight.c:87
 msgid "fill light"
-msgstr "lichtopvulling "
+msgstr "lichtopvulling"
 
 #: ../src/iop/relight.c:103
 msgctxt "accel"
@@ -7845,95 +7850,95 @@ msgctxt "accel"
 msgid "spot show or hide"
 msgstr "toon of verberg spot"
 
-#: ../src/iop/temperature.c:163
+#: ../src/iop/temperature.c:165
 msgctxt "modulename"
 msgid "white balance"
 msgstr "witbalans"
 
-#: ../src/iop/temperature.c:206
+#: ../src/iop/temperature.c:208
 msgctxt "accel"
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:207
+#: ../src/iop/temperature.c:209
 msgctxt "accel"
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:212
+#: ../src/iop/temperature.c:214
 msgctxt "accel"
 msgid "preset/camera"
 msgstr "voorkeur/camera"
 
-#: ../src/iop/temperature.c:213
+#: ../src/iop/temperature.c:215
 msgctxt "accel"
 msgid "preset/camera neutral"
 msgstr "voorkeur/camera neutraal"
 
-#: ../src/iop/temperature.c:214
+#: ../src/iop/temperature.c:216
 msgctxt "accel"
 msgid "preset/spot"
 msgstr "voorkeur/spot"
 
-#: ../src/iop/temperature.c:750
+#: ../src/iop/temperature.c:752
 msgctxt "white balance"
 msgid "camera"
 msgstr "camera"
 
-#: ../src/iop/temperature.c:751
+#: ../src/iop/temperature.c:753
 msgctxt "white balance"
 msgid "camera neutral"
 msgstr "cameraneutraal"
 
-#: ../src/iop/temperature.c:752
+#: ../src/iop/temperature.c:754
 msgctxt "white balance"
 msgid "spot"
 msgstr "spot"
 
-#: ../src/iop/temperature.c:927
+#: ../src/iop/temperature.c:929
 #, c-format
 msgid "`%s' color matrix not found for image"
 msgstr "`%s' kleuren matrix is niet gevonden"
 
-#: ../src/iop/temperature.c:970
+#: ../src/iop/temperature.c:972
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "ophalen camera-witbalans info van `%s' is niet gelukt!"
 
-#: ../src/iop/temperature.c:1335
+#: ../src/iop/temperature.c:1339
 msgid "magenta"
 msgstr "magenta"
 
-#: ../src/iop/temperature.c:1336
+#: ../src/iop/temperature.c:1340
 msgid "cyan"
 msgstr "cyaan"
 
-#: ../src/iop/temperature.c:1349
+#: ../src/iop/temperature.c:1353
 msgid "emerald"
 msgstr "smaragd"
 
-#: ../src/iop/temperature.c:1405
+#: ../src/iop/temperature.c:1411
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:1406
+#: ../src/iop/temperature.c:1412
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:1422
+#: ../src/iop/temperature.c:1428
 msgid "choose white balance preset from camera"
 msgstr "kies voor camera-witbalans "
 
-#: ../src/iop/temperature.c:1425
+#: ../src/iop/temperature.c:1431
 msgid "finetune"
 msgstr "fijnafstelling"
 
-#: ../src/iop/temperature.c:1426
+#: ../src/iop/temperature.c:1432
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:1430
+#: ../src/iop/temperature.c:1436
 msgid "fine tune white balance preset"
 msgstr "fijnafstelling witbalans voorkeur"
 
@@ -8537,11 +8542,11 @@ msgstr "submappen"
 
 #: ../src/libs/collect.c:1724
 msgid "add more images"
-msgstr "afbeeldingen toevoegen "
+msgstr "afbeeldingen toevoegen"
 
 #: ../src/libs/collect.c:1728
 msgid "exclude images"
-msgstr "afbeeldingen uitsluiten "
+msgstr "afbeeldingen uitsluiten"
 
 #: ../src/libs/collect.c:1734
 msgid "change to: and"
@@ -8993,7 +8998,7 @@ msgstr ""
 
 #: ../src/libs/histogram.c:490
 msgid "set histogram mode to linear"
-msgstr "toon lineair histogram "
+msgstr "toon lineair histogram"
 
 #: ../src/libs/histogram.c:493
 msgid "set histogram mode to waveform"
@@ -9001,15 +9006,15 @@ msgstr "toon histogram als waveform"
 
 #: ../src/libs/histogram.c:496
 msgid "set histogram mode to logarithmic"
-msgstr "toon logaritmisch histogram "
+msgstr "toon logaritmisch histogram"
 
 #: ../src/libs/histogram.c:505
 msgid "click to hide red channel"
-msgstr "verberg rood "
+msgstr "verberg rood"
 
 #: ../src/libs/histogram.c:505
 msgid "click to show red channel"
-msgstr "toon rood "
+msgstr "toon rood"
 
 #: ../src/libs/histogram.c:510
 msgid "click to hide green channel"
@@ -9093,7 +9098,7 @@ msgstr "afbeelding(en) verplaatsen"
 
 #: ../src/libs/image.c:206
 msgid "copy to other folder"
-msgstr "afbeelding(en) kopiëren "
+msgstr "afbeelding(en) kopiëren"
 
 #: ../src/libs/image.c:211
 msgid "create HDR"
@@ -9101,7 +9106,7 @@ msgstr "creëer HDR"
 
 #: ../src/libs/image.c:216
 msgid "create a high dynamic range image from selected shots"
-msgstr "creëer HDR-afbeelding van selectie  "
+msgstr "creëer HDR-afbeelding van selectie"
 
 #: ../src/libs/image.c:218
 msgid "duplicate"
@@ -9287,7 +9292,7 @@ msgstr "toepassen metadata op import"
 
 #: ../src/libs/import.c:478
 msgid "apply some metadata to all newly imported images."
-msgstr "pas metadata  toe op alle nieuw geïmporteerde afbeeldingen "
+msgstr "pas metadata  toe op alle nieuw geïmporteerde afbeeldingen"
 
 #: ../src/libs/import.c:524
 msgid "comma separated list of tags"
@@ -9334,7 +9339,7 @@ msgstr "bewerk `%s'"
 
 #: ../src/libs/live_view.c:140
 msgid "live view"
-msgstr "live-view "
+msgstr "live-view"
 
 #: ../src/libs/live_view.c:166
 msgctxt "accel"
@@ -9506,7 +9511,7 @@ msgstr "splitsing"
 # Ik heb deze niet gewijzigd, maar heb het gevoel dat het wat vreemd overkomt. Is 'overlay' niet in dit geval zelfs een beter woord in het Nederlands vraag ik me af
 #: ../src/libs/live_view.c:437
 msgid "only draw part of the overlay"
-msgstr "teken alleen op het deel van 'bedekken'"
+msgstr "teken alleen op het deel van bedekken"
 
 #: ../src/libs/location.c:95
 msgid "find location"
@@ -10711,7 +10716,7 @@ msgstr "er is nog niet eerder een stijl aangemaakt"
 
 #: ../src/views/darkroom.c:1405
 msgid "quick access to presets of your favorites"
-msgstr "snelle toegang tot de voorkeuren van uw favorieten "
+msgstr "snelle toegang tot de voorkeuren van uw favorieten"
 
 #: ../src/views/darkroom.c:1413
 msgid "quick access for applying any of your styles"
@@ -10986,7 +10991,7 @@ msgstr "dit kan worden uitgevoerd vanuit de importeer-module"
 
 #: ../src/views/lighttable.c:544
 msgid "try to relax the filter settings in the top panel"
-msgstr "verruim het filter in het toppaneel "
+msgstr "verruim het filter in het toppaneel"
 
 #: ../src/views/lighttable.c:553
 msgid "or add images in the collection module in the left panel"
