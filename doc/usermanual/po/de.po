@@ -3,7 +3,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
 "POT-Creation-Date: 2017-12-08 17:33+0100\n"
+<<<<<<< HEAD
 "PO-Revision-Date: 2017-12-12 12:07+0100\n"
+=======
+"PO-Revision-Date: 2017-12-13 10:03+0100\n"
+>>>>>>> 0d6a0066f79e96e110f77c2392d0741e5fea80a4
 "Last-Translator: Pierre Metzner <pierre_metzner@web.de>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -2531,11 +2535,19 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1886(title)
 msgid "Thumbnails"
+<<<<<<< HEAD
 msgstr "Miniaturbilder"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1889(primary)
 msgid "thumbnails"
 msgstr "Miniaturbilder"
+=======
+msgstr "Vorschaubilder"
+
+#: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1889(primary)
+msgid "thumbnails"
+msgstr "Vorschaubilder "
+>>>>>>> 0d6a0066f79e96e110f77c2392d0741e5fea80a4
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1892(para)
 msgid ""
