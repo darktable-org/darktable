@@ -297,7 +297,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
       if(!buf_profile || !buf_profile->profile)
       {
         free(dat.ps->buf);
-        dt_control_log("error getting output profile for image %d", imgid);
+        dt_control_log(_("error getting output profile for image %d"), imgid);
         fprintf(stderr, "error getting output profile for image %d\n", imgid);
         dt_control_queue_redraw();
         return;
@@ -325,7 +325,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   if(fd == -1)
   {
     free(dat.ps->buf);
-    dt_control_log("failed to create temporary pdf for printing");
+    dt_control_log(_("failed to create temporary pdf for printing"));
     fprintf(stderr, "failed to create temporary pdf for printing\n");
     return;
   }
