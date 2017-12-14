@@ -67,6 +67,22 @@ extern "C" {
 #include "develop/imageop.h"
 }
 
+// exiv2's readMetadata is not thread safe in 0.26. so we lock it. since readMetadata might throw an exception we
+// wrap it into some c++ magic to make sure we unlock in all cases. well, actually not magic but basic raii.
+// FIXME: check again once we rely on 0.27
+class Lock
+{
+public:
+  Lock() { dt_pthread_mutex_lock(&darktable.exiv2_threadsafe); }
+  ~Lock() { dt_pthread_mutex_unlock(&darktable.exiv2_threadsafe); }
+};
+
+#define read_metadata_threadsafe(image)                       \
+{                                                             \
+  Lock lock;                                                  \
+  image->readMetadata();                                      \
+}
+
 static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);
 
 // this array should contain all XmpBag and XmpSeq keys used by dt
@@ -990,7 +1006,7 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
   {
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
     assert(image.get() != 0);
-    image->readMetadata();
+    read_metadata_threadsafe(image);
 
     // Get a list of preview images available in the image. The list is sorted
     // by the preview image pixel size, starting with the smallest preview.
@@ -1051,7 +1067,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
   {
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
     assert(image.get() != 0);
-    image->readMetadata();
+    read_metadata_threadsafe(image);
     bool res = true;
 
     // EXIF metadata
@@ -1094,7 +1110,7 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
   {
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
     assert(image.get() != 0);
-    image->readMetadata();
+    read_metadata_threadsafe(image);
     Exiv2::ExifData &imgExifData = image->exifData();
     Exiv2::ExifData blobExifData;
     Exiv2::ExifParser::decode(blobExifData, blob + 6, size);
@@ -1154,7 +1170,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
   {
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
     assert(image.get() != 0);
-    image->readMetadata();
+    read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
 
     // get rid of thumbnails
@@ -1988,7 +2004,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     // read xmp sidecar
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(filename)));
     assert(image.get() != 0);
-    image->readMetadata();
+    read_metadata_threadsafe(image);
     Exiv2::XmpData &xmpData = image->xmpData();
 
     sqlite3_stmt *stmt;
@@ -2615,7 +2631,7 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
     // unfortunately it seems we have to read the metadata, to not erase the exif (which we just wrote).
     // will make export slightly slower, oh well.
     // img->clearXmpPacket();
-    img->readMetadata();
+    read_metadata_threadsafe(img);
 
     try
     {
@@ -2623,7 +2639,7 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
       std::unique_ptr<Exiv2::Image> input_image(Exiv2::ImageFactory::open(WIDEN(input_filename)));
       if(input_image.get() != 0)
       {
-        input_image->readMetadata();
+        read_metadata_threadsafe(input_image);
         img->setIptcData(input_image->iptcData());
         img->setXmpData(input_image->xmpData());
       }
@@ -2808,7 +2824,7 @@ gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *da
   {
     Exiv2::ExifData::const_iterator pos;
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(data, size));
-    image->readMetadata();
+    read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
 
     char exif_datetime_taken[20];
