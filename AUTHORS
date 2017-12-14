@@ -1,57 +1,51 @@
 * developers:
 Roman Lebedev,
-Ulrich Pegelow,
 Tobias Ellinghaus,
-Pedro Côrte-Real,
-Pascal Obry,
 johannes hanika,
-Aldric Renaudin,
+Ulrich Pegelow,
+Stefan Schöfegger,
+Pascal Obry,
 parafin,
 Jérémy Rosen,
-Pascal de Bruijn,
-Edouard Gomez,
-Alexandre Prokoudine,
-Christian Tellefsen.
+Christian Tellefsen,
+Alexandre Prokoudine.
 
 * translators:
 Pascal Obry,
 Ger Siemerink,
 Tobias Ellinghaus,
 shlomi braitbart,
-Michel Leblond,
-Richard Levitte,
-Thomas Pryds,
 tatica,
-Josep V. Moragues,
-Báthory Péter,
-Matjaž Jeran,
-Novy Sawai,
 Alexandre Prokoudine,
-Pascal de Bruijn,
-Alberto Caso,
-Dušan Kazik,
+Báthory Péter,
 Germano Massullo,
-Milan Knížek,
-Nazarii Vitak,
-Tomasz Golinski,
+Josep V. Moragues,
+Matjaž Jeran,
+Matthieu Moy,
 johannes hanika.
 
-* contributors (at least 5 commits):
-Stefan Schöfegger,
-Ger Siemerink,
+* contributors (at least 4 commits):
+Peter Budai,
 Dan Torop,
+Ger Siemerink,
+Matthieu Moy,
+Heiko Bauke,
 Michel Leblond,
+Žilvinas Žaltiena,
+Maximilian Trescher,
+Wolfgang Mader,
+code,
+Andrea Volpato,
 Matthieu Volat,
 shlomi braitbart,
-Asma,
-Bernd Steinhauser,
-tatica,
-Richard Levitte,
-Maurizio Paglia,
-Thomas Pryds,
-Chris Hodapp,
-Matthieu Moy,
-Alexander V. Smal,
-Josep V. Moragues.
+theres.
+
+* RawSpeed contributors (at least 1 commits):
+Axel Waggershauser
+Nathaniel Watson
+Marco Caimi
+Martijn Courteaux
+Uwe Müssel
+Vasily Khoruzhick.
 
 And all those of you that made previous releases possible

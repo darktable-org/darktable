@@ -375,13 +375,21 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   snprintf(filename, sizeof(filename), "%s/kernels/programs.conf", dtpath);
   char kerneldir[PATH_MAX] = { 0 };
   snprintf(kerneldir, sizeof(kerneldir), "%s/kernels", dtpath);
+  char *escapedkerneldir = NULL;
+#ifndef __APPLE__
+  escapedkerneldir = g_strdup_printf("\"%s\"", kerneldir);
+#else
+  escapedkerneldir = dt_util_str_replace(kerneldir, " ", "\\ ");
+#endif
 
-  options = g_strdup_printf("-cl-fast-relaxed-math %s -D%s=1 -I\"%s\"",
+  options = g_strdup_printf("-cl-fast-relaxed-math %s -D%s=1 -I%s",
                             (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
-                            dt_opencl_get_vendor_by_id(vendor_id), kerneldir);
+                            dt_opencl_get_vendor_by_id(vendor_id), escapedkerneldir);
   cl->dev[dev].options = strdup(options);
   g_free(options);
   options = NULL;
+  g_free(escapedkerneldir);
+  escapedkerneldir = NULL;
 
   const char *clincludes[DT_OPENCL_MAX_INCLUDES] = { "colorspace.cl", "common.h", NULL };
   char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };

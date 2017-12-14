@@ -61,11 +61,11 @@
     tagging your selected images by typing a tag phrase and hitting return. </emphasis>
   </para>
 
-  <sect3>
+  <sect3 id="tagging_usage">
 
     <title>Usage</title>
 
-    <sect4>
+    <sect4 id="tagging_usage_attach">
 
       <title>attach</title>
 
@@ -75,7 +75,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="tagging_usage_detach">
 
       <title>detach</title>
 
@@ -86,7 +86,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="tagging_usage_new">
 
       <title>new</title>
 
@@ -96,7 +96,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="tagging_usage_delete">
 
       <title>delete</title>
 

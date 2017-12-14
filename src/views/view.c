@@ -35,6 +35,9 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #include <glib.h>
 #include <math.h>
@@ -264,6 +267,9 @@ static void bitness_nagging()
         _("you are making a mistake!"), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), flags,
         _("_yes, i understood. please let me suffer by using 32-bit darktable."), GTK_RESPONSE_NONE,
         NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
     const gchar *msg = _("warning!\nyou are using a 32-bit build of darktable.\nthe 32-bit build has "
@@ -841,7 +847,12 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   }
 
   dt_image_t buffered_image;
-  const dt_image_t *img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
+  const dt_image_t *img;
+  // if darktable.gui->show_overlays is set or the user points at this image, we really want it:
+  if(darktable.gui->show_overlays || imgsel == imgid || zoom == 1)
+    img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  else
+    img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
 
   if(selected == 1 && zoom != 1) // If zoom == 1 there is no need to set colors here
   {
@@ -854,8 +865,6 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     bgcol = 0.8; // mouse over
     fontcol = 0.7;
     outlinecol = 0.6;
-    // if the user points at this image, we really want it:
-    if(!img) img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   }
   // release image cache lock as early as possible, to avoid deadlocks (mipmap cache might need to lock it, too)
   if(img)

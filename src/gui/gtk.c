@@ -1275,12 +1275,6 @@ static void init_widgets(dt_gui_gtk_t *gui)
   g_signal_connect(G_OBJECT(widget), "key-release-event", G_CALLBACK(key_released), NULL);
   g_signal_connect(G_OBJECT(widget), "focus-in-event", G_CALLBACK(_focus_in_out_event), widget);
   g_signal_connect(G_OBJECT(widget), "focus-out-event", G_CALLBACK(_focus_in_out_event), widget);
-#ifdef GDK_WINDOWING_QUARTZ
-  if(gtk_widget_get_realized(widget))
-    dt_osx_allow_fullscreen(widget);
-  else
-    g_signal_connect(G_OBJECT(widget), "realize", G_CALLBACK(dt_osx_allow_fullscreen), NULL);
-#endif
 
   container = widget;
 
@@ -1862,6 +1856,9 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
                                               const char *yes_text)
 {
   GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(window);
+#endif
 
   gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
   gtk_window_set_title(GTK_WINDOW(window), title);

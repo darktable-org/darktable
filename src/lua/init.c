@@ -107,17 +107,19 @@ void dt_lua_init_early(lua_State *L)
 
 static int run_early_script(lua_State* L)
 {
-  char tmp_path[PATH_MAX] = { 0 };
+  char basedir[PATH_MAX] = { 0 };
   // run global init script
-  dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
-  g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
-  dt_lua_check_print_error(L,luaL_dofile(L,tmp_path));
+  dt_loc_get_datadir(basedir, sizeof(basedir));
+  char *luarc = g_build_filename(basedir, "luarc", NULL);
+  dt_lua_check_print_error(L, luaL_dofile(L, luarc));
+  g_free(luarc);
   if(darktable.gui != NULL)
   {
     // run user init script
-    dt_loc_get_user_config_dir(tmp_path, sizeof(tmp_path));
-    g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
-    dt_lua_check_print_error(L,luaL_dofile(L,tmp_path));
+    dt_loc_get_user_config_dir(basedir, sizeof(basedir));
+    luarc = g_build_filename(basedir, "luarc", NULL);
+    dt_lua_check_print_error(L, luaL_dofile(L, luarc));
+    g_free(luarc);
   }
   if(!lua_isnil(L,1)){
     const char *lua_command = lua_tostring(L, 1);

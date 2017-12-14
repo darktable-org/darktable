@@ -11,7 +11,7 @@
     This section contains examples of typical usages of tethering.
   </para>
 
-  <sect2>
+  <sect2 id="tethering_examples_studio">
 
     <title>Studio setup with screening</title>
 
@@ -37,7 +37,7 @@
 
   </sect2>
 
-  <sect2>
+  <sect2 id="tethering_examples_timelapse">
 
     <title>Capturing a timelapse</title>
 

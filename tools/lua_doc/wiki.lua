@@ -192,8 +192,7 @@ M.page_name = page_name
 
 function M.get_doc()
 	doc.toplevel:set_text(
-	[[This documentation is for the *development* version of darktable. for the stable version, please visit "the user manual":http://www.darktable.org/usermanual/index.html.php
-
+	[[This documentation is for the *development* version of darktable. for the stable version, please visit "the user manual":https://www.darktable.org/usermanual/index.html.php
 	]]..doc.get_text(doc.toplevel)..
 	[[
 

@@ -138,11 +138,21 @@ static inline int _read_planar_f(tiff_t *t)
   return 1;
 }
 
-static void _warning_handler(const char* module, const char* fmt, va_list ap)
+static void _warning_error_handler(const char *type, const char* module, const char* fmt, va_list ap)
 {
-  fprintf(stderr, "[tiff_open] warning: %s: ", module);
+  fprintf(stderr, "[tiff_open] %s: %s: ", type, module);
   vfprintf(stderr, fmt, ap);
   fprintf(stderr, "\n");
+}
+
+static void _warning_handler(const char* module, const char* fmt, va_list ap)
+{
+  _warning_error_handler("warning", module, fmt, ap);
+}
+
+static void _error_handler(const char* module, const char* fmt, va_list ap)
+{
+  _warning_error_handler("error", module, fmt, ap);
 }
 
 dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
@@ -150,6 +160,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   // doing this once would be enough, but our imageio reading code is
   // compiled into dt's core and doesn't have an init routine.
   TIFFSetWarningHandler(_warning_handler);
+  TIFFSetErrorHandler(_error_handler);
 
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;

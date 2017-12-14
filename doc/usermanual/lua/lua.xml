@@ -741,7 +741,7 @@ darktable.register_storage("scp_export","Export via scp",
         </itemizedlist>
         Once you have filled all the fields, checked your code, you can upload it to our script
         page
-        <ulink url="http://darktable.org/redmine/projects/darktable/wiki/LuaScripts">here</ulink>.
+        <ulink url="https://darktable.org/redmine/projects/darktable/wiki/LuaScripts">here</ulink>.
       </para>
 
     </sect2>
@@ -819,7 +819,7 @@ end
         <function>:memory:</function>
         parameter to
         <function>--library</function>
-        is usefull here if you don't want to work on your personal library.
+        is useful here if you don't want to work on your personal library.
       </para>
 
     </sect2>
@@ -837,7 +837,7 @@ end
     <para>
       darktable's Lua API is documented in its own manual with a detailed description of all
       data structures and functions. You can download the API manual from
-      <ulink url="http://www.darktable.org/resources/">darktable's webpage</ulink>.
+      <ulink url="https://www.darktable.org/resources/">darktable's webpage</ulink>.
     </para>
 
   </sect1>

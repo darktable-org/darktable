@@ -1,8 +1,9 @@
 set(CPACK_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The digital darkroom")
-set(CPACK_PACKAGE_CONTACT "http://www.darktable.org/")
+set(CPACK_PACKAGE_CONTACT "https://www.darktable.org/")
 set(CPACK_PACKAGE_VENDOR "the darktable project")
+
 set(CPACK_SOURCE_IGNORE_FILES
    "/.gitignore"
    "${CMAKE_BINARY_DIR}/"

@@ -19,7 +19,7 @@
 
 header=$(cat << EOF
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- created with darktable utility scripts, http://www.darktable.org/ -->
+<!-- created with darktable utility scripts, https://www.darktable.org/ -->
 
 <svg
    xmlns:svg="http://www.w3.org/2000/svg"
@@ -68,7 +68,7 @@ EOF
 
 
 # input file
-log=$1
+log="$1"
 
 # output file
 output="control.svg"
@@ -77,10 +77,10 @@ output="control.svg"
 echo "$header" > $output
 
 # collect thread ids:
-ids=$(grep -E "^\[run_job" $log | cut -f 2 -d ' ' | sort | uniq)
+ids=$(grep -E '^\[run_job' "$log" | cut -f 2 -d ' ' | sort | uniq)
 
 # start time:
-start_time=$(grep -E "^\[run_job" $log | cut -f 3 -d ' ' | head -1 | sed "s/,/./g")
+start_time=$(grep -E '^\[run_job' "$log" | cut -f 3 -d ' ' | head -1 | sed "s/,/./g")
 
 # calculate the radical inverse in posix bc:
 def_ri=$(cat << EOF
@@ -111,15 +111,15 @@ for id in $ids
 do
   # get index to start sort (begin of time)
   len=${#id}
-  start=$(awk -v a="$(head -1 $log)" -v b="$id" 'BEGIN{print index(a,b)}')
-  offs=$(($len + $start))
+  start=$(awk -v a="$(head -1 "$log")" -v b="$id" 'BEGIN{print index(a,b)}')
+  offs=$((len + start))
 
   # get sorted outputs by time (should already be sorted, in fact)
-  numlines=$(cat $log | grep -E '^\[run_job.\] '$id | sort -n -k $offs | wc -l)
-  for i in $(seq 0 2 $(($numlines-1)))
+  numlines=$(grep -E '^\[run_job.\] '$id "$log" | sort -n -k $offs | wc -l)
+  for i in $(seq 0 2 $((numlines - 1)))
   do
-    line1=$(cat $log | grep -E '^\[run_job.\] '$id | sort -n -k $offs | tail -$(($numlines - $i)) | head -1 | sed "s/,/./g")
-    line2=$(cat $log | grep -E '^\[run_job.\] '$id | sort -n -k $offs | tail -$(($numlines - $i - 1)) | head -1 | sed "s/,/./g")
+    line1=$(grep -E '^\[run_job.\] '$id "$log" | sort -n -k $offs | tail -$((numlines - i)) | head -1 | sed "s/,/./g")
+    line2=$(grep -E '^\[run_job.\] '$id "$log" | sort -n -k $offs | tail -$((numlines - i - 1)) | head -1 | sed "s/,/./g")
 
     # get two lines, assert +- and job description string
     descr=$(echo $line1 | cut -f 4- -d" ")
@@ -127,9 +127,9 @@ do
     off=$(echo $line2 | cut -f 3 -d" ")
     x_on=$(echo "100 * ($on - $start_time)" | bc -l)
     x_wd=$(echo "100 * ($off - $start_time) - $x_on" | bc -l)
-    y=$(($offset * 30))
+    y=$((offset * 30))
     ht=20
-    yt=$(($y+10))
+    yt=$((y + 10))
 
     # choose color by radical inverse of the image id, if 'image XXXX' is given
     imgid=$(awk -v a="$line1" -v b="image" 'BEGIN{print substr(a,index(a,b)+6,4)}' | grep -v -E '[^0-9]')

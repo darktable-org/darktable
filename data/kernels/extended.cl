@@ -629,7 +629,7 @@ float thinplate(const float4 x, const float4 y)
       (x.y - y.y) * (x.y - y.y) +
       (x.z - y.z) * (x.z - y.z);
 
-  return 0.5f * r2 * fastlog(max(1e-8f, r2));
+  return r2 * fastlog(max(1e-8f, r2));
 }
 
 kernel void

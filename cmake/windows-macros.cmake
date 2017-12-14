@@ -183,13 +183,6 @@ if (WIN32)
       "${LENSFUN_DB}"
       DESTINATION share/lensfun/
       COMPONENT DTApplication)
-
-  # Add zone.tab for time zone info
-  install(FILES
-      "${MINGW_PATH}/../../usr/share/zoneinfo/zone.tab"
-      DESTINATION share/darktable/
-      COMPONENT DTApplication
-  )
 endif(WIN32)
 
 endfunction()

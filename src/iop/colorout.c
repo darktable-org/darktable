@@ -498,9 +498,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
 
   d->type = p->type;
-  const dt_colorspaces_color_profile_type_t over_type = dt_conf_get_int("plugins/lighttable/export/icctype");
-  gchar *over_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  const dt_iop_color_intent_t over_intent = dt_conf_get_int("plugins/lighttable/export/iccintent");
 
   const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
@@ -530,12 +527,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   /* if we are exporting then check and set usage of override profile */
   if(pipe->type == DT_DEV_PIXELPIPE_EXPORT)
   {
-    if(over_type != DT_COLORSPACE_NONE)
+    if(pipe->icc_type != DT_COLORSPACE_NONE)
     {
-      p->type = over_type;
-      g_strlcpy(p->filename, over_filename, sizeof(p->filename));
+      p->type = pipe->icc_type;
+      g_strlcpy(p->filename, pipe->icc_filename, sizeof(p->filename));
     }
-    if((unsigned int)over_intent < DT_INTENT_LAST) p->intent = over_intent;
+    if((unsigned int)pipe->icc_intent < DT_INTENT_LAST) p->intent = pipe->icc_intent;
 
     out_type = p->type;
     out_filename = p->filename;
@@ -559,7 +556,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // and the subsequent error messages
   d->type = out_type;
   if(out_type == DT_COLORSPACE_LAB)
-    goto end;
+    return;
 
   /*
    * Setup transform flags
@@ -678,8 +675,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // softproof is never the original but always a copy that went through _make_clipping_profile()
   dt_colorspaces_cleanup_profile(softproof);
 
-end:
-  g_free(over_filename);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -801,10 +796,14 @@ void gui_init(struct dt_iop_module_t *self)
     if(prof->out_pos > -1) dt_bauhaus_combobox_add(g->output_profile, prof->name);
   }
 
-  char tooltip[1024];
   gtk_widget_set_tooltip_text(g->output_intent, _("rendering intent"));
-  snprintf(tooltip, sizeof(tooltip), _("ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
+  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
+  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
+  char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(g->output_profile, tooltip);
+  g_free(system_profile_dir);
+  g_free(user_profile_dir);
+  g_free(tooltip);
 
   g_signal_connect(G_OBJECT(g->output_intent), "value-changed", G_CALLBACK(intent_changed), (gpointer)self);
   g_signal_connect(G_OBJECT(g->output_profile), "value-changed", G_CALLBACK(output_profile_changed), (gpointer)self);

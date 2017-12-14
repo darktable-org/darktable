@@ -3,7 +3,7 @@
 # Copyright (c) 2012, James C. McPherson. All rights reserved.
 #
 # This script takes an installed build of darktable
-# (see http://www.darktable.org) and turns it into a new IPS package
+# (see https://www.darktable.org) and turns it into a new IPS package
 # ready for distribution
 #
 

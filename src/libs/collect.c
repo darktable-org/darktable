@@ -31,6 +31,9 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "views/view.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 DT_MODULE(1)
 
@@ -236,6 +239,9 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
   filechooser = gtk_file_chooser_dialog_new(
     _("search filmroll"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
     GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
@@ -784,6 +790,43 @@ static char **split_path(const char *path)
   return result;
 }
 
+typedef struct name_key_tuple_t
+{
+  char *name, *collate_key;
+} name_key_tuple_t;
+
+static void free_tuple(gpointer data)
+{
+  name_key_tuple_t *tuple = (name_key_tuple_t *)data;
+  g_free(tuple->name);
+  g_free(tuple->collate_key);
+  free(tuple);
+}
+
+static gint sort_folder_tag(gconstpointer a, gconstpointer b)
+{
+  const name_key_tuple_t *tuple_a = (const name_key_tuple_t *)a;
+  const name_key_tuple_t *tuple_b = (const name_key_tuple_t *)b;
+
+  return g_strcmp0(tuple_a->collate_key, tuple_b->collate_key);
+}
+
+// create a key such that "darktable|" is coming first, and the rest is ordered such that sub tags are coming directly
+// behind their parent
+static char *tag_collate_key(char *tag)
+{
+  size_t len = strlen(tag);
+  char *result = g_malloc(len + 2);
+  if(g_str_has_prefix(tag, "darktable|"))
+    *result = '\1';
+  else
+    *result = '\2';
+  memcpy(result + 1, tag, len + 1);
+  for(char *iter = result + 1; *iter; iter++)
+    if(*iter == '|') *iter = '\1';
+  return result;
+}
+
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
 static void tree_view(dt_lib_collect_rule_t *dr)
 {
@@ -793,6 +836,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   gboolean folders = (property == DT_COLLECTION_PROP_FOLDERS);
   gboolean tags = (property == DT_COLLECTION_PROP_TAG);
   const char *format_separator = folders ? "%s" G_DIR_SEPARATOR_S : "%s|";
+  int insert_position = tags ? 0 : -1;
 
   set_properties(dr);
 
@@ -813,8 +857,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     gtk_widget_hide(GTK_WIDGET(d->sw2));
 
     /* query construction */
-    const char *query = folders ? "SELECT DISTINCT folder, id FROM main.film_rolls ORDER BY UPPER(folder) DESC" :
-                        tags ? "SELECT DISTINCT name, id FROM data.tags ORDER BY UPPER(name) DESC" : NULL;
+    const char *query = folders ? "SELECT DISTINCT folder, id FROM main.film_rolls" :
+                        tags ? "SELECT DISTINCT name, id FROM data.tags" : NULL;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -822,12 +866,45 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     int last_tokens_length = 0;
     GtkTreeIter last_parent = { 0 };
 
+    // we need to sort the names ourselves and not let sqlite handle this
+    // because it knows nothing about path separators.
+    GList *sorted_names = NULL;
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      const char *name = (const char *)sqlite3_column_text(stmt, 0);
+      char *name = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+      char *name_folded = g_utf8_casefold(name, -1);
+      gchar *collate_key = NULL;
+
+      if(folders)
+      {
+        char *name_folded_slash = g_strconcat(name_folded, G_DIR_SEPARATOR_S, NULL);
+        collate_key = g_utf8_collate_key_for_filename(name_folded_slash, -1);
+        g_free(name_folded_slash);
+      }
+      else if(tags)
+        collate_key = tag_collate_key(name_folded);
+
+      name_key_tuple_t *tuple = (name_key_tuple_t *)malloc(sizeof(name_key_tuple_t));
+      tuple->name = name;
+      tuple->collate_key = collate_key;
+      sorted_names = g_list_prepend(sorted_names, tuple);
+      g_free(name_folded);
+    }
+    sqlite3_finalize(stmt);
+
+    sorted_names = g_list_sort(sorted_names, sort_folder_tag);
+    // we have to know about children in the hierarchy to not add single tags twice when they are
+    // also a top level hierarchy
+    if(tags)
+      sorted_names = g_list_reverse(sorted_names);
+
+    for(GList *names = sorted_names; names; names = g_list_next(names))
+    {
+      name_key_tuple_t *tuple = (name_key_tuple_t *)names->data;
+      char *name = tuple->name;
       if(name == NULL) continue; // safeguard against degenerated db entries
 
-      if(tags && strchr(name, '|') == 0)
+      if(tags && strchr(name, '|') == 0 && (last_tokens_length == 0 || strcmp(name, *last_tokens)))
       {
         /* add uncategorized root iter if not exists */
         if(!uncategorized.stamp)
@@ -836,6 +913,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
           gtk_tree_store_set(GTK_TREE_STORE(model), &uncategorized, DT_LIB_COLLECT_COL_TEXT,
                              _(UNCATEGORIZED_TAG), DT_LIB_COLLECT_COL_PATH, "", DT_LIB_COLLECT_COL_VISIBLE,
                              TRUE, -1);
+          insert_position++; // we want to have this at the very top!
         }
 
         /* adding an uncategorized tag */
@@ -854,20 +932,16 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         if(tokens != NULL)
         {
           // find the number of common parts at the beginning of tokens and last_tokens
-          GtkTreeIter parent = {0};
+          GtkTreeIter parent = last_parent;
           int tokens_length = string_array_length(tokens);
           int common_length = 0;
           if(last_tokens)
           {
-            for(common_length = 0; tokens[common_length] && last_tokens[common_length]; common_length++)
+            while(tokens[common_length] && last_tokens[common_length] &&
+                  !g_strcmp0(tokens[common_length], last_tokens[common_length]))
             {
-              if(g_strcmp0(tokens[common_length], last_tokens[common_length]))
-              {
-                common_length++;
-                break;
-              }
+              common_length++;
             }
-            common_length--;
 
             // point parent iter to where the entries should be added
             for(int i = common_length; i < last_tokens_length; i++)
@@ -893,13 +967,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
             pth = dt_util_dstrcat(pth, format_separator, *token);
 
             gchar *pth2 = g_strdup(pth);
+            pth2[strlen(pth2) - 1] = '\0';
 
-            if(folders || *(token + 1) == NULL)
-              pth2[strlen(pth2) - 1] = '\0';
-            else
-              pth2 = dt_util_dstrcat(pth2, "%%");
-
-            gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, common_length > 0 ? &parent : NULL, 0);
+            gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, common_length > 0 ? &parent : NULL, insert_position);
             gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, *token,
                                DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
             if(folders)
@@ -920,7 +990,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         }
       }
     }
-    sqlite3_finalize(stmt);
+    g_list_free_full(sorted_names, free_tuple);
 
     gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
 

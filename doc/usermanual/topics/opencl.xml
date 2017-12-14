@@ -19,7 +19,7 @@
     darktable can use GPU acceleration via OpenCL to improve performance.
   </para>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_and_opencl_background">
 
     <title>The background</title>
 
@@ -62,7 +62,7 @@
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_and_opencl_working">
 
     <title>How OpenCL works</title>
 
@@ -89,7 +89,7 @@
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_and_opencl_activation">
 
     <title>How to activate OpenCL in darktable</title>
 
@@ -151,7 +151,7 @@
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_and_opencl_system">
 
     <title>Setting up OpenCL on your system</title>
 
@@ -295,7 +295,7 @@ nvidia_uvm
     <para>
 <programlisting>crw-rw-rw- 1 root root 195,   0 Jul 28 21:13 /dev/nvidia0
 crw-rw-rw- 1 root root 195, 255 Jul 28 21:13 /dev/nvidiactl
-crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm 
+crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
 </programlisting>
     </para>
 
@@ -306,7 +306,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_and_opencl_problems_solutions">
 
     <title>Possible problems and solutions</title>
 
@@ -402,7 +402,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_and_opencl_amd">
 
     <title>Setting up OpenCL for AMD/ATI devices</title>
 
@@ -506,7 +506,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_and_opencl_optimization">
 
     <title>OpenCL performance optimization</title>
 
@@ -673,7 +673,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
 
   </sect2>
 
-  <sect2 status="draft">
+  <sect2 status="draft" id="darktable_and_opencl_profiling">
 
     <title>OpenCL scheduling profile</title>
 
@@ -741,7 +741,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_and_opencl_multiple_devices">
 
     <title>Multiple OpenCL devices&nbsp;&ndash; manual settings</title>
 
@@ -856,7 +856,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
 
     <para>
 <programlisting>[opencl_init] successfully initialized.
-[opencl_init] here are the internal numbers and names of 
+[opencl_init] here are the internal numbers and names of
                           OpenCL devices available to darktable:
 [opencl_init]           0       'GeForce GTS 450'
 [opencl_init]           1       'Tahiti'
@@ -896,7 +896,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_and_opencl_still_fubar">
 
     <title>OpenCL still does not run for me!</title>
 

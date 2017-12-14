@@ -19,10 +19,18 @@ as a template for your own example.
 
 Do NOT change table layouts etc. we want the document consistent!
 
-Each section should be tagged with status "draft" <sect2 status="draft">...</sect2>
+Each section should be tagged with status "draft" <sect2 status="draft" id="...">...</sect2>
 when someone have reviewed your section you should change status to "final" to get
 the section into final usermanual document and also the translators will get this text for
 translations.
+
+Make sure to assign an id="..." for every <chapter> and <sect[0-9]>. Those are used to generate the
+filenames for the HTML output and also for link anchors inside those files. Also don't change ids as
+that will break existing links from all over the Internet into our usermanual!
+
+You can check for uniqueness of ids with this command:
+
+grep -r "id=\"" | sed 's/.*id="\([^"]*\)".*/\1/' | sort | uniq -c | grep -v "^[ ]*1"
 
 
 
@@ -31,7 +39,7 @@ Building the usermanual
 To generate the usermanual you need the tools xsltproc,poxml and fop this document will include
 draft sections and is used fo reviewing...
 
-make
+make darktable-usermanual
 
 
 

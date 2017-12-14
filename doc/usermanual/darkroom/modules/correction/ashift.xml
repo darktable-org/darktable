@@ -135,7 +135,7 @@
 
     <para>
       Clicking one of the <quote>automatic fit</quote> icons (see below) starts an optimization
-      process which finds the best suited parameters. The image and the overlayed lines are then
+      process which finds the best suited parameters. The image and the overlaid lines are then
       displayed with perspective corrections applied.
     </para>
 

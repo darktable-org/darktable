@@ -27,9 +27,10 @@
   <data>${prefix}/share/glib-2.0/schemas/org.gtk.Settings.*.gschema.xml</data>
   <data dest="${bundle}/Contents/Resources/share/lensfun">${project}/lensfun/updates</data>
   <data>${prefix:dt}/share/icons</data>
+  <data dest="${bundle}/Contents/Resources/etc/gtk-3.0/settings.ini">${project}/settings.ini</data>
   <data>${prefix}/share/mime</data>
   <data>${prefix}/share/curl/curl-ca-bundle.crt</data>
-  <data dest="${bundle}/Contents/Resources">${project}/Icons.icns</data>
+  <data dest="${bundle}/Contents/Resources/Icons.icns">${project}/Icons.icns</data>
   <data dest="${bundle}/Contents/Resources/share/applications/defaults.list">${project}/defaults.list</data>
   <data dest="${bundle}/Contents/Resources/share/applications/open.desktop">${project}/open.desktop</data>
   <data dest="${bundle}/Contents/MacOS/darktable-chart">${project}/darktable-chart.sh</data>
@@ -37,4 +38,5 @@
   <data dest="${bundle}/Contents/MacOS/darktable-cltest">${project}/start</data>
   <data dest="${bundle}/Contents/MacOS/darktable-generate-cache">${project}/darktable-cli.sh</data>
   <icon-theme icons="all">Adwaita</icon-theme>
+  <icon-theme icons="all">Tango</icon-theme>
 </app-bundle>

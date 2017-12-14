@@ -2,7 +2,7 @@ this is darktable, a free raw photo viewer and organizer.
 
 build dependencies for many platforms are listed here:
 
-http://redmine.darktable.org/projects/darktable/wiki/Building_darktable_20
+https://redmine.darktable.org/projects/darktable/wiki/Building_darktable_20
 
 in summary, you'll need:
 
@@ -60,4 +60,4 @@ darktable has OpenCL support for graphics cards with:
 enjoy!
 
 send any bug reports to the mailing list: darktable-dev@lists.darktable.org
-find more information on the web: http://www.darktable.org/
+find more information on the web: https://www.darktable.org/

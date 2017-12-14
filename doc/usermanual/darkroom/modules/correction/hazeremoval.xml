@@ -41,7 +41,7 @@
     </informaltable>
 
     <para>
-      The higher the haze density in the air and the longer the distace between the camera and
+      The higher the haze density in the air and the longer the distance between the camera and
       the photographed object the less colorful the object appears in the image.  Haze absorbs
       light approaching from the objects into the direction of the camera but it is also a
       source of diffusive background light.  Thus the haze removal module estimates for each
@@ -69,7 +69,7 @@
       <para>
         The strength parameter controls the amount of haze removal.  Setting it to unity, the
         module removes 100 percent of the detected haze between the camera and up to the
-        specified distance; see below.  Negative values for the strength increase the amound of
+        specified distance; see below.  Negative values for the strength increase the amount of
         haze in the image.
       </para>
     </sect5>

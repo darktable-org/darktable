@@ -56,14 +56,24 @@ float dt_osx_get_ppd()
 #endif
 }
 
-void dt_osx_allow_fullscreen(GtkWidget *widget)
+static void dt_osx_disable_fullscreen(GtkWidget *widget)
 {
 #ifdef GDK_WINDOWING_QUARTZ
   GdkWindow *window = gtk_widget_get_window(widget);
   if(window) {
     NSWindow *native = gdk_quartz_window_get_nswindow(window);
-    [native setCollectionBehavior: [native collectionBehavior] | NSWindowCollectionBehaviorFullScreenPrimary];
+    [native setCollectionBehavior: ([native collectionBehavior] & ~NSWindowCollectionBehaviorFullScreenPrimary) | NSWindowCollectionBehaviorFullScreenAuxiliary];
   }
+#endif
+}
+
+void dt_osx_disallow_fullscreen(GtkWidget *widget)
+{
+#ifdef GDK_WINDOWING_QUARTZ
+  if(gtk_widget_get_realized(widget))
+    dt_osx_disable_fullscreen(widget);
+  else
+    g_signal_connect(G_OBJECT(widget), "realize", G_CALLBACK(dt_osx_disable_fullscreen), NULL);
 #endif
 }
 

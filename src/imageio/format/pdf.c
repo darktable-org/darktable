@@ -230,8 +230,9 @@ static int _paper_size(dt_imageio_pdf_params_t *d, float *page_width, float *pag
 }
 
 
-int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif,
-                int exif_len, int imgid, int num, int total)
+int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
+                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                void *exif, int exif_len, int imgid, int num, int total)
 {
   dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)data;
 
@@ -269,7 +270,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(imgid > 0 && d->params.icc && d->params.mode == MODE_NORMAL)
   {
     // get the id of the profile
-    const dt_colorspaces_color_profile_t *profile = dt_colorspaces_get_output_profile(imgid);
+    const dt_colorspaces_color_profile_t *profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
 
     // look it up in the list
     for(GList *iter = d->icc_profiles; iter; iter = g_list_next(iter))

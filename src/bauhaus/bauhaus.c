@@ -23,6 +23,9 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #include <math.h>
 #include <pango/pangocairo.h>
@@ -130,7 +133,7 @@ static int show_pango_text(cairo_t *cr, char *text, float x_pos, float y_pos, fl
 
   if(right_aligned) x_pos -= text_width;
 
-  if(sensitive) set_text_color(cr, sensitive);
+  set_text_color(cr, sensitive);
   if(indicator) set_indicator_color(cr, 1);
   cairo_move_to(cr, x_pos, y_pos);
   pango_cairo_show_layout(cr, layout);
@@ -408,8 +411,8 @@ static gboolean dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButto
     darktable.bauhaus->end_mouse_x = x - wx;
     darktable.bauhaus->end_mouse_y = y - wy;
     dt_bauhaus_widget_accept(darktable.bauhaus->current);
-    dt_bauhaus_hide_popup();
   }
+  dt_bauhaus_hide_popup();
   return TRUE;
 }
 
@@ -437,7 +440,6 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
   {
     dt_bauhaus_widget_reject(darktable.bauhaus->current);
   }
-  dt_bauhaus_hide_popup();
   return TRUE;
 }
 
@@ -551,6 +553,9 @@ void dt_bauhaus_init()
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   // but this doesn't flicker, and the above hack with key input seems to work well.
   darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_POPUP);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(darktable.bauhaus->popup_window);
+#endif
   // this is needed for popup, not for toplevel.
   // since popup_area gets the focus if we show the window, this is all
   // we need.
@@ -594,8 +599,8 @@ void dt_bauhaus_init()
                    G_CALLBACK(dt_bauhaus_popup_button_press), (gpointer)NULL);
   // this is connected to the widget itself, not the popup. we're only interested
   // in mouse release events that are initiated by a press on the original widget.
-  // g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "button-release-event",
-  //                   G_CALLBACK (dt_bauhaus_popup_button_release), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (darktable.bauhaus->popup_area), "button-release-event",
+                    G_CALLBACK (dt_bauhaus_popup_button_release), (gpointer)NULL);
   g_signal_connect(G_OBJECT(darktable.bauhaus->popup_area), "key-press-event",
                    G_CALLBACK(dt_bauhaus_popup_key_press), (gpointer)NULL);
   g_signal_connect(G_OBJECT(darktable.bauhaus->popup_area), "scroll-event",
@@ -616,13 +621,11 @@ static gboolean dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButt
 static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
 static gboolean dt_bauhaus_slider_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
-static gboolean dt_bauhaus_slider_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 
 
 static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
 static gboolean dt_bauhaus_combobox_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
-static gboolean dt_bauhaus_combobox_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 
 // static gboolean
 // dt_bauhaus_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
@@ -925,8 +928,6 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
   g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(dt_bauhaus_slider_key_press), (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "motion-notify-event", G_CALLBACK(dt_bauhaus_slider_motion_notify),
                    (gpointer)NULL);
-  g_signal_connect(G_OBJECT(w), "leave-notify-event", G_CALLBACK(dt_bauhaus_slider_leave_notify),
-                   (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "destroy", G_CALLBACK(dt_bauhaus_slider_destroy), (gpointer)NULL);
   return GTK_WIDGET(w);
 }
@@ -972,8 +973,6 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
                    (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "scroll-event", G_CALLBACK(dt_bauhaus_combobox_scroll), (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(dt_bauhaus_combobox_key_press), (gpointer)NULL);
-  g_signal_connect(G_OBJECT(w), "motion-notify-event", G_CALLBACK(dt_bauhaus_combobox_motion_notify),
-                   (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "destroy", G_CALLBACK(dt_bauhaus_combobox_destroy), (gpointer)NULL);
 }
 
@@ -1671,14 +1670,11 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
           = show_pango_text(cr, w->label, 2, 0, 0, FALSE, gtk_widget_is_sensitive(widget), FALSE);
       dt_bauhaus_draw_quad(w, cr);
 
-      if(gtk_widget_is_sensitive(widget))
-      {
-        dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-        gchar *text = d->text;
-        if(d->active >= 0) text = (gchar *)g_list_nth_data(d->labels, d->active);
-        show_pango_text(cr, text, width - 4 - height, 0, width - 4 - height - label_width - height, TRUE,
-                        TRUE, FALSE);
-      }
+      dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+      gchar *text = d->text;
+      if(d->active >= 0) text = (gchar *)g_list_nth_data(d->labels, d->active);
+      show_pango_text(cr, text, width - 4 - height, 0, width - 4 - height - label_width - height, TRUE,
+                      gtk_widget_is_sensitive(widget), FALSE);
       break;
     }
     case DT_BAUHAUS_SLIDER:
@@ -1831,6 +1827,7 @@ static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *even
   gdouble delta_y;
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_SLIDER) return FALSE;
+  gtk_widget_grab_focus(widget);
 
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
@@ -1874,6 +1871,7 @@ static gboolean dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *ev
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  gtk_widget_grab_focus(widget);
 
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
@@ -1907,12 +1905,6 @@ static gboolean dt_bauhaus_combobox_key_press(GtkWidget *widget, GdkEventKey *ev
   return FALSE;
 }
 
-static gboolean dt_bauhaus_combobox_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
-{
-  gtk_widget_grab_focus(widget);
-  return TRUE;
-}
-
 static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   GtkAllocation allocation;
@@ -1920,6 +1912,7 @@ static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButt
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
   if(w->module) dt_iop_request_focus(w->module);
+  gtk_widget_grab_focus(GTK_WIDGET(w));
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
@@ -2232,6 +2225,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
   gtk_widget_get_allocation(widget, &allocation);
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->module) dt_iop_request_focus(w->module);
+  gtk_widget_grab_focus(GTK_WIDGET(w));
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   if(w->quad_paint && (event->x > allocation.width - allocation.height))
@@ -2305,15 +2299,8 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
     const float r = 1.0f - (tmp.height + 4.0f) / tmp.width;
     dt_bauhaus_slider_set_normalized(w, (event->x / tmp.width - l) / (r - l));
   }
-  gtk_widget_grab_focus(widget);
   // not sure if needed:
   // gdk_event_request_motions(event);
-  return TRUE;
-}
-
-static gboolean dt_bauhaus_slider_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
-{
-  // TODO: highlight?
   return TRUE;
 }
 

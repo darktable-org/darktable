@@ -840,7 +840,8 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
       query = dt_util_dstrcat(
-          query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%1$s' OR folder LIKE '%1$s/%%'))",
+          query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%1$s' OR folder LIKE '%1$s"
+                 G_DIR_SEPARATOR_S "%%'))",
           escaped_text);
       break;
 
@@ -906,7 +907,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
     case DT_COLLECTION_PROP_TAG: // tag
       query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
-                                     "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%s'))",
+                                     "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%1$s' OR name like '%1$s|%%'))",
                               escaped_text);
       break;
 

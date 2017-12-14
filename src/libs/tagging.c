@@ -28,6 +28,9 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "views/view.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 
@@ -370,6 +373,9 @@ static void import_button_clicked(GtkButton *button, gpointer user_data)
                                                        GTK_FILE_CHOOSER_ACTION_OPEN,
                                                        _("_cancel"), GTK_RESPONSE_CANCEL,
                                                        _("_import"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_dirname);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
@@ -407,6 +413,9 @@ static void export_button_clicked(GtkButton *button, gpointer user_data)
                                                        GTK_FILE_CHOOSER_ACTION_SAVE,
                                                        _("_cancel"), GTK_RESPONSE_CANCEL,
                                                        _("_export"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
   gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(filechooser), TRUE);
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_dirname);
   gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(filechooser), export_filename);
@@ -709,6 +718,9 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   //   y = py + pointery + 1;
 
   d->floating_tag_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(d->floating_tag_window);
+#endif
   /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
   gtk_widget_set_can_focus(d->floating_tag_window, TRUE);
   gtk_window_set_decorated(GTK_WINDOW(d->floating_tag_window), FALSE);

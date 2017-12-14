@@ -32,6 +32,7 @@ set(DT_SUPPORTED_EXTENSIONS
     "nef"
     "nrw"
     "orf"
+    "ori"
     "pef"
     "pfm"
     "pxn"

@@ -57,7 +57,7 @@
     ones you have worked with.
   </para>
 
-  <sect3 status="final">
+  <sect3 status="final" id="import_from_fs">
 
     <title>Import from filesystem</title>
 
@@ -107,7 +107,7 @@
 
   </sect3>
 
-  <sect3 status="final">
+  <sect3 status="final" id="import_from_camera">
 
     <title>Importing from a connected camera</title>
 
@@ -133,7 +133,7 @@
       </tgroup>
     </informaltable>
 
-    <sect4>
+    <sect4 id="import_from_camera_import">
 
       <title>Import from camera</title>
 
@@ -150,7 +150,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="import_from_camera_tethering">
 
       <title>Tethered shoot</title>
 
@@ -201,7 +201,7 @@
       PGM, PNM, PPM.
     </para>
 
-    <sect4>
+    <sect4 id="supported_file_formats_raw">
 
       <title>Camera raw files</title>
 
@@ -223,7 +223,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="supported_file_formats_ldr">
 
       <title>LDR image files</title>
 
@@ -242,7 +242,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="supported_file_formats_hdr">
 
       <title>HDR image files</title>
 
