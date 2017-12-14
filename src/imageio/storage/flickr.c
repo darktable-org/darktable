@@ -111,6 +111,7 @@ static void _flickr_api_free(_flickr_api_context_t *ctx)
 static void _flickr_api_error_handler(void *data, const char *message)
 {
   dt_control_log(_("flickr authentication: %s"), message);
+  fprintf(stderr, "[flickr] error: %s\n", message);
   if(data)
   {
     _flickr_api_context_t *ctx = (_flickr_api_context_t *)data;
@@ -589,7 +590,8 @@ void gui_reset(dt_imageio_module_storage_t *self)
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale)
+          const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
+          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
 {
   gint result = 0;
   dt_storage_flickr_params_t *p = (dt_storage_flickr_params_t *)sdata;
@@ -640,7 +642,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   }
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, FALSE, self, sdata, num, total) != 0)
+  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, FALSE, icc_type, icc_filename, icc_intent,
+                       self, sdata, num, total) != 0)
   {
     fprintf(stderr, "[imageio_storage_flickr] could not export to file: `%s'!\n", fname);
     dt_control_log(_("could not export to file `%s'!"), fname);

@@ -1,13 +1,13 @@
 <!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
-		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
-		%darktable_dtd;
-		]>
-<sect1 status="final">
+                <!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+                %darktable_dtd;
+                ]>
+<sect1 status="final" id="tethering_troubleshoot">
 
   <title>Troubleshoot</title>
 
-  <sect2 status="final">
+  <sect2 status="final" id="tethering_troubleshoot_supported">
 
     <title>Verify that your camera is supported</title>
 
@@ -84,7 +84,7 @@
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="tethering_troubleshoot_now_what">
 
     <title>So, now what?</title>
 
@@ -104,7 +104,7 @@
     <para>
       If you successfully went through all the tests above, your camera will most likely be
       supported by darktable. Even if successful, if you stumble upon a problem in darktable,
-      please file a bug at <ulink url="http://www.darktable.org/redmine">redmine</ulink>. Please
+      please file a bug at <ulink url="https://www.darktable.org/redmine">redmine</ulink>. Please
       attach the log outputs from the steps above and the log file output generated after
       starting darktable with the following command.
     </para>

@@ -25,7 +25,7 @@
     thus allowing local adjustments.
   </para>
 
-  <sect3 status="final">
+  <sect3 status="final" id="drawn_mask_overview">
 
     <title>Overview</title>
 
@@ -45,7 +45,7 @@
 
   </sect3>
 
-  <sect3 status="final">
+  <sect3 status="final" id="drawn_mask_usage">
 
     <title>Usage</title>
 
@@ -404,7 +404,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="drawn_mask_usage_drawn">
 
       <title>drawn mask</title>
 
@@ -430,7 +430,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="drawn_mask_usage_manager">
 
       <title>mask manager</title>
 

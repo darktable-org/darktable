@@ -255,7 +255,13 @@ int main(int argc, char *arg[])
     {
       int id = GPOINTER_TO_INT(iter->data);
       dt_image_t *image = dt_image_cache_get(darktable.image_cache, id, 'w');
-      dt_exif_xmp_read(image, xmp_filename, 1);
+      if(dt_exif_xmp_read(image, xmp_filename, 1) != 0)
+      {
+        fprintf(stderr, _("error: can't open xmp file %s"), xmp_filename);
+        fprintf(stderr, "\n");
+        free(m_arg);
+        exit(1);
+      }
       // don't write new xmp:
       dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
     }
@@ -357,13 +363,20 @@ int main(int argc, char *arg[])
     storage->set_params(storage, sdata, storage->params_size(storage));
   }
 
+  // TODO: do we want to use the settings from conf?
+  // TODO: expose these via command line arguments
+  dt_colorspaces_color_profile_type_t icc_type = DT_COLORSPACE_NONE;
+  const gchar *icc_filename = NULL;
+  dt_iop_color_intent_t icc_intent = DT_INTENT_LAST;
+
   // TODO: add a callback to set the bpp without going through the config
 
   int num = 1;
   for(GList *iter = id_list; iter; iter = g_list_next(iter), num++)
   {
     int id = GPOINTER_TO_INT(iter->data);
-    storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale);
+    storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale, icc_type, icc_filename,
+                   icc_intent);
   }
 
   // cleanup time

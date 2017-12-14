@@ -313,8 +313,9 @@ read_icc_profile (j_decompress_ptr cinfo,
 #undef MAX_SEQ_NO
 
 
-int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const void *in_tmp, void *exif,
-                int exif_len, int imgid, int num, int total)
+int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const void *in_tmp,
+                dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                void *exif, int exif_len, int imgid, int num, int total)
 {
   dt_imageio_jpeg_t *jpg = (dt_imageio_jpeg_t *)jpg_tmp;
   const uint8_t *in = (const uint8_t *)in_tmp;
@@ -369,7 +370,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
 
   if(imgid > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid)->profile;
+    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
     uint32_t len = 0;
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)

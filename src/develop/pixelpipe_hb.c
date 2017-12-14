@@ -149,6 +149,10 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->levels = IMAGEIO_RGB | IMAGEIO_INT8;
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
   dt_pthread_mutex_init(&(pipe->busy_mutex), NULL);
+  pipe->icc_type = DT_COLORSPACE_NONE;
+  pipe->icc_filename = NULL;
+  pipe->icc_intent = DT_INTENT_LAST;
+
   return 1;
 }
 
@@ -163,6 +167,15 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
   get_output_format(NULL, pipe, NULL, dev, &pipe->dsc);
 }
 
+void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe, dt_colorspaces_color_profile_type_t icc_type,
+                              const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
+{
+  pipe->icc_type = icc_type;
+  g_free(pipe->icc_filename);
+  pipe->icc_filename = g_strdup(icc_filename);
+  pipe->icc_intent = icc_intent;
+}
+
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
 {
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
@@ -174,6 +187,9 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
   dt_pthread_mutex_destroy(&(pipe->backbuf_mutex));
   dt_pthread_mutex_destroy(&(pipe->busy_mutex));
+  pipe->icc_type = DT_COLORSPACE_NONE;
+  g_free(pipe->icc_filename);
+  pipe->icc_filename = NULL;
 }
 
 void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)

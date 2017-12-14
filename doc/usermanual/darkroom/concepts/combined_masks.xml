@@ -19,7 +19,7 @@
     theoretical details just jump down where we describe two typical use cases.
   </para>
 
-  <sect3>
+  <sect3 id="combined_masks_overview">
 
     <title>Overview</title>
 
@@ -76,7 +76,7 @@
 
   </sect3>
 
-  <sect3>
+  <sect3 id="combined_masks_usage">
 
     <title>Usage</title>
 
@@ -106,7 +106,7 @@
       This gives two typical use cases:
     </para>
 
-    <sect4>
+    <sect4 id="combined_masks_usage_inclusive">
 
       <title>Inclusive mode</title>
 
@@ -122,7 +122,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="combined_masks_usage_exclusive">
 
       <title>Exclusive mode</title>
 

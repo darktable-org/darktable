@@ -18,7 +18,8 @@
 
 #pragma once
 
-#include <common/darktable.h>
+#include "common/colorspaces.h"
+#include "common/darktable.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -114,8 +115,9 @@ typedef struct dt_imageio_module_format_t
   /* bits per pixel and color channel we want to write: 8: char x3, 16: uint16_t x3, 32: float x3. */
   int (*bpp)(dt_imageio_module_data_t *data);
   /* write to file, with exif if not NULL, and icc profile if supported. */
-  int (*write_image)(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif,
-                     int exif_len, int imgid, int num, int total);
+  int (*write_image)(dt_imageio_module_data_t *data, const char *filename, const void *in,
+                     dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                     void *exif, int exif_len, int imgid, int num, int total);
   /* flag that describes the available precision/levels of output format. mainly used for dithering. */
   int (*levels)(dt_imageio_module_data_t *data);
 
@@ -172,7 +174,9 @@ typedef struct dt_imageio_module_storage_t
   /* this actually does the work */
   int (*store)(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data,
                const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
-               const int num, const int total, const gboolean high_quality, const gboolean upscale);
+               const int num, const int total, const gboolean high_quality, const gboolean upscale,
+               dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
+               dt_iop_color_intent_t icc_intent);
   /* called once at the end (after exporting all images), if implemented. */
   void (*finalize_store)(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
 

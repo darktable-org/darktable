@@ -106,26 +106,31 @@ darktable_t darktable;
 
 static int usage(const char *argv0)
 {
-  printf("usage: %s [-d "
-         "{all,cache,camctl,camsupport,control,dev,input,lighttable,lua,masks,memory,nan,opencl,perf,pwstorage,print,sql}]"
-         " [IMG_1234.{RAW,..}|image_folder/]",
-         argv0);
-#ifdef HAVE_OPENCL
-  printf(" [--disable-opencl]");
-#endif
-  printf(" [--library <library file>]");
-  printf(" [--datadir <data directory>]");
-  printf(" [--moduledir <module directory>]");
-  printf(" [--tmpdir <tmp directory>]");
-  printf(" [--configdir <user config directory>]");
-  printf(" [--cachedir <user cache directory>]");
-  printf(" [--localedir <locale directory>]");
-#ifdef USE_LUA
-  printf(" [--luacmd <lua command>]");
-#endif
-  printf(" [--conf <key>=<value>]");
-  printf(" [--noiseprofiles <noiseprofiles json file>]");
+  printf("usage: %s [options] [IMG_1234.{RAW,..}|image_folder/]\n", argv0);
   printf("\n");
+  printf("options:\n");
+  printf("\n");
+  printf("  --cachedir <user cache directory>\n");
+  printf("  --conf <key>=<value>\n");
+  printf("  --configdir <user config directory>\n");
+  printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch, input,lighttable,\n");
+  printf("      lua, masks,memory,nan,opencl, perf,pwstorage,print,sql}\n");
+  printf("  --datadir <data directory>\n");
+#ifdef HAVE_OPENCL
+  printf("  --disable-opencl\n");
+#endif
+  printf("  -h, --help\n");
+  printf("  --library <library file>\n");
+  printf("  --localedir <locale directory>\n");
+#ifdef USE_LUA
+  printf("  --luacmd <lua command>\n");
+#endif
+  printf("  --moduledir <module directory>\n");
+  printf("  --noiseprofiles <noiseprofiles json file>\n");
+  printf("  -t <num openmp threads>\n");
+  printf("  --tmpdir <tmp directory>\n");
+  printf("  --version\n");
+
   return 1;
 }
 
@@ -378,14 +383,19 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     }
     else
     {
+#ifndef _WIN32
       // see http://standards.freedesktop.org/basedir-spec/latest/ar01s03.html for a reason to use those as a
       // default
       if(!g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share")
          || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share/")
          || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share") || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share/"))
-        new_xdg_data_dirs = g_strdup("/usr/local/share/:/usr/share/");
+        new_xdg_data_dirs = g_strdup("/usr/local/share/" G_SEARCHPATH_SEPARATOR_S "/usr/share/");
       else
-        new_xdg_data_dirs = g_strdup_printf("%s:/usr/local/share/:/usr/share/", DARKTABLE_SHAREDIR);
+        new_xdg_data_dirs = g_strdup_printf("%s" G_SEARCHPATH_SEPARATOR_S "/usr/local/share/" G_SEARCHPATH_SEPARATOR_S
+                                            "/usr/share/", DARKTABLE_SHAREDIR);
+#else
+      set_env = FALSE;
+#endif
     }
 
     if(set_env) g_setenv("XDG_DATA_DIRS", new_xdg_data_dirs, 1);
@@ -408,6 +418,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
+  dt_pthread_mutex_init(&(darktable.exiv2_threadsafe), NULL);
   darktable.control = (dt_control_t *)calloc(1, sizeof(dt_control_t));
 
   // database
@@ -960,7 +971,16 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     time(&now);
     struct tm lt;
     localtime_r(&now, &lt);
-    if(lt.tm_mon == 3 && lt.tm_mday == 1) mode = "knight";
+    if(lt.tm_mon == 3 && lt.tm_mday == 1)
+    {
+      int current_year = lt.tm_year + 1900;
+      int last_year = dt_conf_get_int("ui_last/april1st");
+      if(last_year < current_year)
+      {
+        dt_conf_set_int("ui_last/april1st", current_year);
+        mode = "knight";
+      }
+    }
     // we have to call dt_ctl_switch_mode_to() here already to not run into a lua deadlock.
     // having another call later is ok
     dt_ctl_switch_mode_to(mode);
@@ -1079,6 +1099,7 @@ void dt_cleanup()
   dt_pthread_mutex_destroy(&(darktable.db_insert));
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.capabilities_threadsafe));
+  dt_pthread_mutex_destroy(&(darktable.exiv2_threadsafe));
 
   dt_exif_cleanup();
 }

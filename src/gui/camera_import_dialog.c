@@ -27,6 +27,9 @@
 #include "control/jobs.h"
 #include "develop/develop.h"
 #include "dtgtk/button.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #include <time.h>
 
@@ -208,6 +211,9 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   data->dialog = gtk_dialog_new_with_buttons(_("import images from camera"), NULL, GTK_DIALOG_MODAL,
                                              _("cancel"), GTK_RESPONSE_NONE, C_("camera import", "import"),
                                              GTK_RESPONSE_ACCEPT, NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(data->dialog);
+#endif
   gtk_window_set_default_size(GTK_WINDOW(data->dialog), 100, 600);
   gtk_window_set_transient_for(GTK_WINDOW(data->dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(data->dialog));

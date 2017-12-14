@@ -133,6 +133,7 @@ static const char *mime(dt_imageio_module_data_t *data)
 }
 
 static int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
+                       dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
                        void *exif, int exif_len, int imgid, int num, int total)
 {
   dt_print_format_t *d = (dt_print_format_t *)data;
@@ -245,11 +246,15 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
     g_free(style);
   }
 
-  // the flags are: ignore exif, display byteorder, high quality, upscale, thumbnail
   const int high_quality = 1;
   const int upscale = 1;
-  dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0,
-                               high_quality, upscale, 0, NULL, FALSE, 0, 0, 1, 1);
+  dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/print/print/icctype");
+  gchar *icc_filename = dt_conf_get_string("plugins/print/print/iccprofile");
+  dt_iop_color_intent_t icc_intent = dt_conf_get_int("plugins/print/print/iccintent");
+  const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(imgid, icc_type, icc_filename);
+  dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
+                               NULL, FALSE, icc_type, icc_filename, icc_intent,  NULL, NULL, 1, 1);
+  g_free(icc_filename);
 
   // after exporting we know the real size of the image, compute the layout
 
@@ -288,9 +293,17 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
       return;
     }
     else
-      if (dt_apply_printer_profile(imgid, (void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp,
-                                   pprof->profile,
-                                   ps->v_pintent, ps->v_black_point_compensation))
+    {
+      if(!buf_profile || !buf_profile->profile)
+      {
+        free(dat.ps->buf);
+        dt_control_log("error getting output profile for image %d", imgid);
+        fprintf(stderr, "error getting output profile for image %d\n", imgid);
+        dt_control_queue_redraw();
+        return;
+      }
+      if (dt_apply_printer_profile((void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp, buf_profile->profile,
+                                   pprof->profile, ps->v_pintent, ps->v_black_point_compensation))
       {
         free(dat.ps->buf);
         dt_control_log(_("cannot apply printer profile `%s'"), ps->v_piccprofile);
@@ -298,6 +311,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
         dt_control_queue_redraw();
         return;
       }
+    }
   }
 
   const float page_width  = dt_pdf_mm_to_point(width);
@@ -755,9 +769,7 @@ _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
     dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
     if(pp->pos == pos)
     {
-      dt_conf_set_int("plugins/lighttable/export/icctype", pp->type);
       dt_conf_set_int("plugins/print/print/icctype", pp->type);
-      dt_conf_set_string("plugins/lighttable/export/iccprofile", pp->filename);
       dt_conf_set_string("plugins/print/print/iccprofile", pp->filename);
       g_free(ps->v_iccprofile);
       ps->v_icctype = pp->type;
@@ -766,9 +778,7 @@ _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
     }
     prof = g_list_next(prof);
   }
-  dt_conf_set_int("plugins/lighttable/export/icctype", DT_COLORSPACE_NONE);
   dt_conf_set_int("plugins/print/print/icctype", DT_COLORSPACE_NONE);
-  dt_conf_set_string("plugins/lighttable/export/iccprofile", "");
   dt_conf_set_string("plugins/print/print/iccprofile", "");
   g_free(ps->v_iccprofile);
   ps->v_icctype = DT_COLORSPACE_NONE;
@@ -799,7 +809,7 @@ _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
     }
     prof = g_list_next(prof);
   }
-  dt_conf_set_int("plugins/print/printer/iccprofile", DT_COLORSPACE_NONE);
+  dt_conf_set_int("plugins/print/printer/icctype", DT_COLORSPACE_NONE);
   dt_conf_set_string("plugins/print/printer/iccprofile", "");
   g_free(ps->v_piccprofile);
   ps->v_picctype = DT_COLORSPACE_NONE;
@@ -831,7 +841,6 @@ _intent_callback (GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   const int pos = dt_bauhaus_combobox_get(widget);
   // record the intent that will override the out rendering module on export
-  dt_conf_set_int("plugins/lighttable/export/iccintent", pos - 1);
   dt_conf_set_int("plugins/print/print/iccintent", pos - 1);
   ps->v_intent = pos - 1;
 }
@@ -842,27 +851,29 @@ static void _set_orientation(dt_lib_print_settings_t *ps)
     return;
 
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, ps->image_id, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, ps->image_id, DT_MIPMAP_0, DT_MIPMAP_BEST_EFFORT, 'r');
 
-  if (buf.width > buf.height)
-    ps->prt.page.landscape = TRUE;
-  else
-    ps->prt.page.landscape = FALSE;
+  // If there's a mipmap available, figure out orientation based upon
+  // its dimensions. Otherwise, don't touch orientation until the
+  // mipmap arrives.
+  if (buf.size != DT_MIPMAP_NONE)
+  {
+    ps->prt.page.landscape = (buf.width > buf.height);
+    dt_view_print_settings(darktable.view_manager, &ps->prt);
+    dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape==TRUE?1:0);
+  }
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 }
 
-static void _print_settings_filmstrip_activate_callback(gpointer instance,gpointer user_data)
+static void _print_settings_activate_or_update_callback(gpointer instance,gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   ps->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
   ps->iwidth = ps->iheight = 0;
-
   _set_orientation (ps);
-
-  dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape==TRUE?1:0);
 }
 
 static GList* _get_profiles ()
@@ -926,6 +937,33 @@ static void _new_printer_callback(dt_printer_info_t *printer, void *user_data)
   g_signal_handlers_unblock_by_func(G_OBJECT(d->printers), G_CALLBACK(_printer_changed), NULL);
 }
 
+void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+{
+  // user activated a new image via the filmstrip or user entered view
+  // mode which activates an image: get image_id and orientation
+  dt_control_signal_connect(darktable.signals,
+                            DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+                            G_CALLBACK(_print_settings_activate_or_update_callback),
+                            self);
+
+  // when an updated mipmap, we may have new orientation information
+  // about the current image. This updates the image_id as well and
+  // zeros out dimensions, but there should be no harm in that
+  dt_control_signal_connect(darktable.signals,
+                            DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                            G_CALLBACK(_print_settings_activate_or_update_callback),
+                            self);
+
+  // NOTE: it would be proper to set image_id here to -1, but this seems to make no difference
+}
+
+void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+{
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_print_settings_activate_or_update_callback),
+                               self);
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -937,9 +975,10 @@ gui_init (dt_lib_module_t *self)
   char confdir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
   dt_loc_get_datadir(datadir, sizeof(datadir));
+  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
+  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
 
   GtkWidget *label;
-  char tooltip[1024];
 
   d->paper_list = NULL;
   d->iwidth = d->iheight = 0;
@@ -952,26 +991,9 @@ gui_init (dt_lib_module_t *self)
   dt_init_print_info(&d->prt);
   dt_view_print_settings(darktable.view_manager, &d->prt);
 
-  dt_control_signal_connect(darktable.signals,
-                            DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
-                            G_CALLBACK(_print_settings_filmstrip_activate_callback),
-                            self);
-
   d->profiles = _get_profiles();
 
-  //  get orientation of the selectd image if possible
-
   d->image_id = -1;
-
-  GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
-  if(selected_images)
-  {
-    int imgid = GPOINTER_TO_INT(selected_images->data);
-    d->image_id = imgid;
-  }
-  g_list_free(selected_images);
-
-  _set_orientation(d);
 
   //  create the spin-button now as values could be set when the printer has no hardware margin
 
@@ -1052,8 +1074,10 @@ gui_init (dt_lib_module_t *self)
   }
   dt_bauhaus_combobox_set(d->pprofile, combo_idx);
 
-  snprintf(tooltip, sizeof(tooltip), _("printer ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
+  char *tooltip = g_strdup_printf(_("printer ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(d->pprofile, tooltip);
+  g_free(tooltip);
+
   g_signal_connect(G_OBJECT(d->pprofile), "value-changed", G_CALLBACK(_printer_profile_changed), (gpointer)self);
 
   //  Add printer intent combo
@@ -1261,8 +1285,10 @@ gui_init (dt_lib_module_t *self)
 
   dt_bauhaus_combobox_set(d->profile, combo_idx);
 
-  snprintf(tooltip, sizeof(tooltip), _("output ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
+  tooltip = g_strdup_printf(_("output ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(d->profile, tooltip);
+  g_free(tooltip);
+
   g_signal_connect(G_OBJECT(d->profile), "value-changed", G_CALLBACK(_profile_changed), (gpointer)self);
 
   //  Add export intent combo
@@ -1277,7 +1303,7 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->intent, _("absolute colorimetric"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->intent), TRUE, TRUE, 0);
 
-  dt_bauhaus_combobox_set(d->intent, 0);
+  dt_bauhaus_combobox_set(d->intent, dt_conf_get_int("plugins/print/print/iccintent") + 1);
 
   g_signal_connect (G_OBJECT (d->intent), "value-changed", G_CALLBACK (_intent_callback), (gpointer)self);
 
@@ -1353,6 +1379,9 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (_print_button_clicked),
                     (gpointer)self);
+
+  g_free(system_profile_dir);
+  g_free(user_profile_dir);
 
   // Let's start the printer discovery now
 
@@ -1761,10 +1790,6 @@ gui_cleanup (dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_right));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_bottom));
 
-  dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(_print_settings_filmstrip_activate_callback),
-                               self);
-
   g_list_free_full(ps->profiles, g_free);
   g_list_free_full(ps->paper_list, free);
 
@@ -1789,7 +1814,7 @@ gui_reset (dt_lib_module_t *self)
   ps->prt.page.alignment = ALIGNMENT_CENTER;
   dt_bauhaus_combobox_set(ps->profile, 0);
   dt_bauhaus_combobox_set(ps->pprofile, 0);
-  dt_bauhaus_combobox_set(ps->pintent, dt_conf_get_int("plugins/print/print/iccintent") + 1);
+  dt_bauhaus_combobox_set(ps->pintent, 0);
   dt_bauhaus_combobox_set(ps->style, 0);
   dt_bauhaus_combobox_set(ps->intent, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation), TRUE);
@@ -1800,8 +1825,6 @@ gui_reset (dt_lib_module_t *self)
   // reset page orientation to fit the picture
 
   _set_orientation (ps);
-
-  dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape?1:0);
 }
 
 void init_key_accels(dt_lib_module_t *self)

@@ -1106,8 +1106,9 @@ static int _bpp(dt_imageio_module_data_t *data)
   return 8;
 }
 
-static int _write_image(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif,
-                        int exif_len, int imgid, int num, int total)
+static int _write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
+                        dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                        void *exif, int exif_len, int imgid, int num, int total)
 {
   _dummy_data_t *d = (_dummy_data_t *)data;
   memcpy(d->buf, in, data->width * data->height * sizeof(uint32_t));
@@ -1218,7 +1219,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
     // export with flags: ignore exif (don't load from disk), don't swap byte order, don't do hq processing,
     // no upscaling and signal we want thumbnail export
     res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 0, 0, 0, 1,
-                                       NULL, FALSE, NULL, NULL, 1, 1);
+                                       NULL, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL, NULL, 1, 1);
     if(!res)
     {
       // might be smaller, or have a different aspect than what we got as input.

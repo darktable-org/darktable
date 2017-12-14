@@ -411,7 +411,11 @@ void init(dt_view_t *self)
     gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map), TRUE, TRUE, 0);
 
     lib->osd = g_object_new(OSM_TYPE_GPS_MAP_OSD, "show-scale", TRUE, "show-coordinates", TRUE, "show-dpad",
-                            TRUE, "show-zoom", TRUE, NULL);
+                            TRUE, "show-zoom", TRUE,
+#ifdef HAVE_OSMGPSMAP_NEWER_THAN_110
+                            "show-copyright", TRUE,
+#endif
+                            NULL);
 
     if(dt_conf_get_bool("plugins/map/show_map_osd"))
     {
@@ -973,6 +977,7 @@ static OsmGpsMapPolygon *_view_map_add_polygon(const dt_view_t *view, GList *poi
 
   g_object_set(poly, "track", track, (gchar *)0);
   g_object_set(poly, "editable", FALSE, (gchar *)0);
+  g_object_set(poly, "shaded", FALSE, (gchar *)0);
 
   osm_gps_map_polygon_add(lib->map, poly);
 

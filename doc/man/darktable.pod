@@ -9,21 +9,21 @@ darktable - a digital photography workflow application
 
 Options:
 
-    -d {all,cache,camctl,camsupport,control,dev,fswatch,
-        input,lighttable,lua,masks,memory,nan,opencl,
-        perf,pwstorage,print,sql}
-    --disable-opencl
-    --library <library file>
-    --datadir <data directory>
-    --moduledir <module directory>
-    --tmpdir <tmp directory>
-    --configdir <user config directory>
     --cachedir <user cache directory>
+    --conf <key>=<value>
+    --configdir <user config directory>
+    -d {all,cache,camctl,camsupport,control,dev,fswatch, input,lighttable,
+        lua,masks,memory,nan,opencl, perf,pwstorage,print,sql}
+    --datadir <data directory>
+    --disable-opencl
+    -h, --help
+    --library <library file>
     --localedir <locale directory>
     --luacmd <lua command>
-    --conf <key>=<value>
+    --moduledir <module directory>
     --noiseprofiles <noiseprofiles json file>
-    --help
+    -t <num openmp threads>
+    --tmpdir <tmp directory>
     --version
 
 =head1 DESCRIPTION
@@ -56,6 +56,25 @@ If a folder is given darktable starts in lighttable view with the content of tha
 If there is already an instance of darktable running (using the same library) the image or folder will be opened
 there, using B<D-Bus> to communicate between the two processes.
 
+=item B<< --cachedir <cache directory> >>
+
+darktable keeps a cache of image thumbnails for fast image preview and of precompiled OpenCL binaries for fast startup.
+By default the cache is located in C<$HOME/.cache/darktable/>.
+There may exist multiple thumbnail caches in parallel - one for each library file.
+
+=item B<< --conf <key>=<value> >>
+
+darktable supports a rich set of configuration parameters which the
+user defines in C<darktablerc> - darktable's configuration file in the
+user config directory.
+You may temporarily overwrite individual settings on the command line with this option - however, these
+settings will not be stored in C<darktablerc>.
+
+=item B<< --configdir <config directory> >>
+
+This option defines the directory where darktable stores the user specific configuration.
+The default place is C<$HOME/.config/darktable/>.
+
 =item B<< -d <debug option> >>
 
 This option enables debug output to the terminal.
@@ -84,14 +103,24 @@ It will rdtsc-measure the runtimes of all plugins and print them to stdout.
 
 =item B<all>
 
-Enable all debugging output.
+Enable all debugging output. In general this is not very useful.
 
 =back
+
+=item B<< --datadir <data directory> >>
+
+This option defines the directory where darktable finds its runtime data.
+The default place depends on your installation.
+Typical places are C</opt/darktable/share/darktable/> and C</usr/share/darktable/>.
 
 =item B<--disable-opencl>
 
 Prevent darktable from initializing the OpenCL subsystem.
 Use this option in case darktable crashes at startup due to a defective OpenCL implementation.
+
+=item B<-h>, B<--help>
+
+Show the available command line options and exit.
 
 =item B<< --library <library file> >>
 
@@ -101,35 +130,6 @@ You may give an alternative location, e.g. if you want to do some experiments wi
 If the database file does not exist, darktable creates it for you.
 You may also give C<:memory:> as a library file in which case the database is kept in system memory - all
 changes are discarded when darktable terminates.
-
-=item B<< --datadir <data directory> >>
-
-This option defines the directory where darktable finds its runtime data.
-The default place depends on your installation.
-Typical places are C</opt/darktable/share/darktable/> and C</usr/share/darktable/>.
-
-=item B<< --moduledir <module directory> >>
-
-darktable has a modular structure and organizes its modules as shared libraries for loading at runtime.
-With this option you tell darktable where to look for its shared libraries.
-The default place depends on your installation; typical places are
-C</opt/darktable/lib/darktable/> and C</usr/lib/darktable/>.
-
-=item B<< --tmpdir <tmp directory> >>
-
-The place where darktable stores its temporary files.
-If this option is not supplied darktable uses the system default.
-
-=item B<< --configdir <config directory> >>
-
-This option defines the directory where darktable stores the user specific configuration.
-The default place is C<$HOME/.config/darktable/>.
-
-=item B<< --cachedir <cache directory> >>
-
-darktable keeps a cache of image thumbnails for fast image preview and of precompiled OpenCL binaries for fast startup.
-By default the cache is located in C<$HOME/.cache/darktable/>.
-There may exist multiple thumbnail caches in parallel - one for each library file.
 
 =item B<< --localedir <locale directory> >>
 
@@ -144,13 +144,12 @@ These commands will be run after your C<luarc> file.
 
 If lua is not compiled in, this option will be accepted but won't do anything.
 
-=item B<< --conf <key>=<value> >>
+=item B<< --moduledir <module directory> >>
 
-darktable supports a rich set of configuration parameters which the
-user defines in C<darktablerc> - darktable's configuration file in the
-user config directory.
-You may temporarily overwrite individual settings on the command line with this option - however, these
-settings will not be stored in C<darktablerc>.
+darktable has a modular structure and organizes its modules as shared libraries for loading at runtime.
+With this option you tell darktable where to look for its shared libraries.
+The default place depends on your installation; typical places are
+C</opt/darktable/lib/darktable/> and C</usr/lib/darktable/>.
 
 =item B<< --noiseprofiles <noiseprofiles json file> >>
 
@@ -158,6 +157,20 @@ darktable's profiled denoise module uses camera specific profile data that gets 
 With this option the file to be loaded can be changed to allow testing alternative profiles.
 The default profile file is C<noiseprofiles.json> and is typically found in
 C</opt/darktable/share/darktable/> or C</usr/share/darktable/>.
+
+=item B<< -t <num openmp threads> >>
+
+darktable uses OpenMP to parallelize many computation steps and make use of all the available CPU cores.
+With this option you can specify the number of threads to use. Valid values are between C<1> and C<100>.
+
+=item B<< --tmpdir <tmp directory> >>
+
+The place where darktable stores its temporary files.
+If this option is not supplied darktable uses the system default.
+
+=item B<--version>
+
+Show the darktable version along with some important build options and exit.
 
 =back
 
@@ -495,9 +508,9 @@ L<darktable-cli(1)|darktable-cli(1)>
 
 =head1 OTHER INFO
 
-Please visit B<darktable>'s website for news, blog and bug tracker: L<http://www.darktable.org/>
+Please visit B<darktable>'s website for news, blog and bug tracker: L<https://www.darktable.org/>
 
-L<http://www.darktable.org/usermanual/> The complete darktable usermanual.
+L<https://www.darktable.org/usermanual/> The complete darktable usermanual.
 
 B<darktablerc.html> An overview over all default config settings.
 The default place depends on your installation.
@@ -506,7 +519,7 @@ Typical places are C</opt/darktable/share/doc/darktable/> and C</usr/share/doc/d
 =head1 REPORTING BUGS
 
 Please use the bug tracker on
-L<http://www.darktable.org/redmine/projects/darktable/issues/> to report
+L<https://www.darktable.org/redmine/projects/darktable/issues/> to report
 bugs, feature requests and so on.
 
 =head1 AUTHORS

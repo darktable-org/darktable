@@ -274,56 +274,6 @@ static int register_shortcut_event(lua_State *L)
   return result;
 }
 
-/*
-   called on a signal, from a secondary thread
-   => we have the gdk lock, but the main UI thread can run if we release it
-   */
-
-
-static void format_destructor(void* arg, dt_imageio_module_format_t *format)
-{
-  format->free_params(format,arg);
-}
-
-static void storage_destructor(void* arg, dt_imageio_module_storage_t *storage)
-{
-  storage->free_params(storage,arg);
-}
-
-static void on_export_image_tmpfile(gpointer instance, int imgid, char *filename,
-                                    dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
-                                    dt_imageio_module_storage_t *storage, dt_imageio_module_data_t *sdata,
-                                    gpointer user_data)
-{
-  if(storage){
-    dt_imageio_module_data_t *format_copy = format->get_params(format);
-    memcpy(format_copy,fdata,format->params_size(format));
-    dt_imageio_module_data_t *storage_copy = storage->get_params(storage);
-    memcpy(storage_copy,sdata,storage->params_size(storage));
-    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-        0, NULL, NULL,
-        LUA_ASYNC_TYPENAME,"const char*","intermediate-export-image",
-        LUA_ASYNC_TYPENAME,"dt_lua_image_t",imgid,
-        LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
-        LUA_ASYNC_TYPEID_WITH_FREE,format->parameter_lua_type,format_copy,g_cclosure_new(G_CALLBACK(&format_destructor),format,NULL),
-        LUA_ASYNC_TYPEID_WITH_FREE,storage->parameter_lua_type,storage_copy,g_cclosure_new(G_CALLBACK(&storage_destructor),storage,NULL),
-        LUA_ASYNC_DONE);
-  }else{
-    dt_imageio_module_data_t *format_copy = format->get_params(format);
-    memcpy(format_copy,fdata,format->params_size(format));
-    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-        0, NULL, NULL,
-        LUA_ASYNC_TYPENAME,"const char*","intermediate-export-image",
-        LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
-        LUA_ASYNC_TYPENAME,"dt_lua_image_t",imgid,
-        LUA_ASYNC_TYPEID_WITH_FREE,format->parameter_lua_type,format_copy,g_cclosure_new(G_CALLBACK(&format_destructor),format,NULL),
-        LUA_ASYNC_TYPENAME,"void",NULL,
-        LUA_ASYNC_DONE);
-  }
-}
-
-
-
 int dt_lua_init_events(lua_State *L)
 {
 
@@ -332,11 +282,10 @@ int dt_lua_init_events(lua_State *L)
   lua_pushcfunction(L, dt_lua_event_keyed_trigger);
   dt_lua_event_add(L, "shortcut");
 
+
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "intermediate-export-image");
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_TMPFILE,
-                            G_CALLBACK(on_export_image_tmpfile), NULL);
 
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);

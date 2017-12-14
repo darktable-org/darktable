@@ -61,31 +61,20 @@ static dt_masks_form_t *_dup_masks_form(const dt_masks_form_t *form)
 
   if (form->points)
   {
-    int size_item;
+    int size_item = 0;
 
-    switch (form->type)
-    {
-    case DT_MASKS_CIRCLE:
+    if (form->type & DT_MASKS_CIRCLE)
       size_item = sizeof(struct dt_masks_point_circle_t);
-      break;
-    case DT_MASKS_ELLIPSE:
+    else if (form->type & DT_MASKS_ELLIPSE)
       size_item = sizeof(struct dt_masks_point_ellipse_t);
-      break;
-    case DT_MASKS_GRADIENT:
+    else if (form->type & DT_MASKS_GRADIENT)
       size_item = sizeof(struct dt_masks_point_gradient_t);
-      break;
-    case DT_MASKS_BRUSH:
+    else if (form->type & DT_MASKS_BRUSH)
       size_item = sizeof(struct dt_masks_point_brush_t);
-      break;
-    case DT_MASKS_GROUP:
+    else if (form->type & DT_MASKS_GROUP)
       size_item = sizeof(struct dt_masks_point_group_t);
-      break;
-    case DT_MASKS_PATH:
+    else if (form->type & DT_MASKS_PATH)
       size_item = sizeof(struct dt_masks_point_path_t);
-      break;
-    default:
-      size_item = 0;
-    }
 
     if (size_item != 0)
     {
@@ -197,7 +186,7 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formty
   else if(formtype & DT_MASKS_BRUSH)
   {
     if(gui->creation)
-      g_strlcat(msg, _("scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set opacity"),
+      g_strlcat(msg, _("scroll to set brush size, shift+scroll to set hardness,\nctrl+scroll to set opacity"),
                 sizeof(msg));
     else if(gui->border_selected)
       g_strlcat(msg, _("scroll to set brush size"), sizeof(msg));
