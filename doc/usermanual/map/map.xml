@@ -33,7 +33,7 @@
     </screenshot>
   </para>
 
-  <sect1 status="final">
+  <sect1 status="final" id="map_overview">
 
     <title>Overview</title>
 
@@ -52,7 +52,7 @@
       (see <xref linkend="geotagging"/>).
     </para>
 
-    <sect2 status="final">
+    <sect2 status="final" id="map_center_map_view">
 
       <title>Center map view</title>
 
@@ -115,7 +115,7 @@
 
     </sect2>
 
-    <sect2>
+    <sect2 id="map_undo_redo">
 
       <title>Undo/redo</title>
 

@@ -1035,7 +1035,6 @@ void dt_dev_read_history(dt_develop_t *dev)
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
     hist->enabled = sqlite3_column_int(stmt, 5);
 
-    GList *modules = dev->iop;
     const char *opname = (const char *)sqlite3_column_text(stmt, 3);
     int multi_priority = sqlite3_column_int(stmt, 8);
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 9);
@@ -1049,7 +1048,7 @@ void dt_dev_read_history(dt_develop_t *dev)
 
     hist->module = NULL;
     dt_iop_module_t *find_op = NULL;
-    while(opname && modules)
+    for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
       if(!strcmp(module->op, opname))
@@ -1069,7 +1068,6 @@ void dt_dev_read_history(dt_develop_t *dev)
           find_op = module;
         }
       }
-      modules = g_list_next(modules);
     }
     if(!hist->module && find_op)
     {
@@ -1088,7 +1086,7 @@ void dt_dev_read_history(dt_develop_t *dev)
       }
     }
 
-    if(!hist->module && opname)
+    if(!hist->module)
     {
       fprintf(
           stderr,

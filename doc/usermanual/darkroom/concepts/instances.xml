@@ -17,7 +17,7 @@
     delivering its output to the module above.
   </para>
 
-  <sect3 status="final">
+  <sect3 status="final" id="multiple_instances_use_cases">
 
     <title>Typical use cases</title>
 
@@ -65,7 +65,7 @@
 
   </sect3>
 
-  <sect3 status="final">
+  <sect3 status="final" id="multiple_instances_managing">
 
     <title>Managing instances</title>
 

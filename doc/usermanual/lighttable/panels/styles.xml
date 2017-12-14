@@ -36,7 +36,7 @@
     </tgroup>
   </informaltable>
 
-  <sect3>
+  <sect3 id="styles_usage">
 
     <title>Usage</title>
 
@@ -50,7 +50,7 @@
       Double clicking on a style name applies the style to all selected images.
     </para>
 
-    <sect4>
+    <sect4 id="styles_usage_duplicate">
 
       <title>create duplicate</title>
 
@@ -63,7 +63,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="styles_usage_create">
 
       <title>create</title>
 
@@ -76,7 +76,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="styles_usage_edit">
 
       <title>edit</title>
 
@@ -89,7 +89,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="styles_usage_delete">
 
       <title>delete</title>
 
@@ -99,7 +99,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="styles_usage_import">
 
       <title>import</title>
 
@@ -110,7 +110,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="styles_usage_export">
 
       <title>export</title>
 

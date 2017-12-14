@@ -27,6 +27,9 @@
 #define _XOPEN_SOURCE 700 // for localtime_r and dprintf
 #endif
 
+// needs to be defined before any system header includes for control/conf.h to work in C++ code
+#define __STDC_FORMAT_MACROS
+
 #if defined __WIN32__
 #include "win/win.h"
 #endif
@@ -82,7 +85,7 @@ typedef unsigned int u_int;
 #include "common/poison.h"
 #endif
 
-#define DT_MODULE_VERSION 17 // version of dt's module interface
+#define DT_MODULE_VERSION 18 // version of dt's module interface
 
 // every module has to define this:
 #ifdef _DEBUG
@@ -216,6 +219,7 @@ typedef struct darktable_t
   dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
   dt_pthread_mutex_t capabilities_threadsafe;
+  dt_pthread_mutex_t exiv2_threadsafe;
   char *progname;
   char *datadir;
   char *plugindir;

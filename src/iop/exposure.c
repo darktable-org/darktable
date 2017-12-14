@@ -483,13 +483,13 @@ void gui_update(struct dt_iop_module_t *self)
   if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.buf_dsc.channels != 1
      || self->dev->image_storage.buf_dsc.datatype != TYPE_UINT16)
   {
-    gtk_widget_hide(GTK_WIDGET(g->mode));
+    gtk_widget_set_sensitive(GTK_WIDGET(g->mode), FALSE);
     p->mode = EXPOSURE_MODE_MANUAL;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
   else
   {
-    gtk_widget_show(GTK_WIDGET(g->mode));
+    gtk_widget_set_sensitive(GTK_WIDGET(g->mode), TRUE);
   }
 
   dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(p->mode)));
@@ -603,7 +603,7 @@ static void mode_callback(GtkWidget *combo, gpointer user_data)
          || self->dev->image_storage.buf_dsc.datatype != TYPE_UINT16)
       {
         dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(EXPOSURE_MODE_MANUAL)));
-        gtk_widget_hide(GTK_WIDGET(g->mode));
+        gtk_widget_set_sensitive(GTK_WIDGET(g->mode), FALSE);
         break;
       }
       p->mode = EXPOSURE_MODE_DEFLICKER;

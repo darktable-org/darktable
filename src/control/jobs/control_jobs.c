@@ -65,6 +65,9 @@ typedef struct dt_control_export_t
   gboolean high_quality, upscale;
   char style[128];
   gboolean style_append;
+  dt_colorspaces_color_profile_type_t icc_type;
+  gchar *icc_filename;
+  dt_iop_color_intent_t icc_intent;
 } dt_control_export_t;
 
 typedef struct dt_control_image_enumerator_t
@@ -289,8 +292,9 @@ static float envelope(const float xx)
 }
 
 static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const char *filename,
-                                        const void *const ivoid, void *exif, int exif_len, int imgid, int num,
-                                        int total)
+                                        const void *const ivoid,
+                                        dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                                        void *exif, int exif_len, int imgid, int num, int total)
 {
   dt_control_merge_hdr_format_t *data = (dt_control_merge_hdr_format_t *)datai;
   dt_control_merge_hdr_t *d = data->d;
@@ -443,7 +447,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const uint32_t imgid = GPOINTER_TO_INT(t->data);
 
     dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, 0, 1, 0,
-                                 "pre:rawprepare", 0, 0, 0, num, total);
+                                 "pre:rawprepare", 0, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL, NULL, num, total);
 
     t = g_list_delete_link(t, t);
 
@@ -1256,7 +1260,8 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       else
       {
         dt_image_cache_read_release(darktable.image_cache, image);
-        if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality, settings->upscale) != 0)
+        if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality,
+                           settings->upscale, settings->icc_type, settings->icc_filename, settings->icc_intent) != 0)
           dt_control_job_cancel(job);
       }
     }
@@ -1462,6 +1467,9 @@ void dt_control_move_images()
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("_select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -1516,6 +1524,9 @@ void dt_control_copy_images()
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("_select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -1591,13 +1602,16 @@ static void dt_control_export_cleanup(void *p)
 
   mstorage->free_params(mstorage, sdata);
 
+  g_free(settings->icc_filename);
   free(params->data);
 
   dt_control_image_enumerator_cleanup(params);
 }
 
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
-                       gboolean high_quality, gboolean upscale, char *style, gboolean style_append)
+                       gboolean high_quality, gboolean upscale, char *style, gboolean style_append,
+                       dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
+                       dt_iop_color_intent_t icc_intent)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_export_job_run, "export");
   if(!job) return;
@@ -1632,6 +1646,9 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   data->upscale = upscale;
   g_strlcpy(data->style, style, sizeof(data->style));
   data->style_append = style_append;
+  data->icc_type = icc_type;
+  data->icc_filename = g_strdup(icc_filename);
+  data->icc_intent = icc_intent;
 
   dt_control_job_add_progress(job, _("export images"), TRUE);
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_EXPORT, job);

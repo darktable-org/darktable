@@ -2357,6 +2357,7 @@ void gui_init(dt_view_t *self)
   // and the popup window
   const int panel_width = dt_conf_get_int("panel_width");
   lib->profile_floating_window = gtk_popover_new(profile_button);
+
   gtk_widget_set_size_request(GTK_WIDGET(lib->profile_floating_window), panel_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
   g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
@@ -2404,10 +2405,15 @@ void gui_init(dt_view_t *self)
     }
   }
 
-  char tooltip[1024];
-  snprintf(tooltip, sizeof(tooltip), _("display ICC profiles in %s/color/out or %s/color/out"), confdir,
-           datadir);
+
+  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
+  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
+  char *tooltip = g_strdup_printf(_("display ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(display_profile, tooltip);
+  g_free(system_profile_dir);
+  g_free(user_profile_dir);
+  g_free(tooltip);
+
 
   g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), NULL);
   g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), NULL);

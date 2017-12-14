@@ -13,7 +13,7 @@
     <primary>darktable-chart</primary>
   </indexterm>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_chart_overview">
 
     <title>Overview</title>
 
@@ -37,7 +37,7 @@
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_chart_usage">
 
     <title>Usage</title>
 
@@ -69,7 +69,7 @@
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_chart_source_image">
 
     <title>Source image</title>
 
@@ -120,7 +120,7 @@
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_chart_reference_values">
 
     <title>Reference values</title>
 
@@ -153,7 +153,7 @@
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_chart_process">
 
     <title>Process</title>
 
@@ -235,7 +235,7 @@
 
   </sect2>
 
-  <sect2 status="final">
+  <sect2 status="final" id="darktable_chart_making_input_images">
 
     <title>Making input images for <filename>darktable-chart</filename>
 

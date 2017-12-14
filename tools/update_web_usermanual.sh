@@ -1,5 +1,5 @@
 #!/bin/sh
-cd build 
+cd build || exit
 rm -r doc/usermanual
 make darktable-usermanual-html
 rm -r ../doc/htdocs/usermanual

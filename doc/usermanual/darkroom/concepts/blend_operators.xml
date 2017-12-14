@@ -20,11 +20,11 @@
     discuss a few blend modes here in more detail.
   </para>
 
-  <sect3>
+  <sect3 id="blending_operators_modes">
 
     <title>blend modes</title>
 
-    <sect4>
+    <sect4 id="blending_operators_modes_normal">
 
       <title>normal</title>
 
@@ -37,7 +37,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="blending_operators_modes_bounded">
 
       <title>normal bounded</title>
 
@@ -54,7 +54,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="blending_operators_modes_lightness">
 
       <title>lightness</title>
 
@@ -65,7 +65,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="blending_operators_modes_chroma">
 
       <title>chroma</title>
 
@@ -76,7 +76,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="blending_operators_modes_hue">
 
       <title>hue</title>
 
@@ -89,7 +89,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="blending_operators_modes_color">
 
       <title>color</title>
 
@@ -102,7 +102,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="blending_operators_modes_lab_lightness">
 
       <title>Lab lightness</title>
 
@@ -116,7 +116,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="blending_operators_modes_lab_color">
 
       <title>Lab color</title>
 
@@ -130,7 +130,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="blending_operators_modes_hsv_lightness">
 
       <title>HSV lightness</title>
 
@@ -143,7 +143,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="blending_operators_modes_hsv_color">
 
       <title>HSV color</title>
 
@@ -156,7 +156,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="blending_operators_modes_color_adjustment">
 
       <title>color adjustment</title>
 
