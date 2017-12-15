@@ -136,7 +136,7 @@
     <sect5>
       <title>midtone range</title>
       <para>
-      This controls the extent of the S shaper part of the contrast curve. A larger value
+      This controls the extent of the S shaped part of the contrast curve. A larger value
       will make the S wider, and thus classify more values to be midtone range and fewer
       values to belong to the highlights and shadows part. In more high dynamic range
       settings it can be useful to reduce this value to achieve stronger range compression
