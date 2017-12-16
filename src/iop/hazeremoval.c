@@ -748,6 +748,7 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
   // determine the brightest pixels among the most hazy pixels
   gray_image bright_hazy = new_gray_image(width, height);
   copy_gray_image(dark_ch, bright_hazy);
+  // first determine the most hazy pixels
   size_t p = size * dark_channel_quantil;
   quick_select(bright_hazy.data, bright_hazy.data + p, bright_hazy.data + size);
   const float crit_haze_level = bright_hazy.data[p];
@@ -783,14 +784,23 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
       N_bright_hazy++;
     }
   }
-  (*pA0)[0] = A0_r / N_bright_hazy;
-  (*pA0)[1] = A0_g / N_bright_hazy;
-  (*pA0)[2] = A0_b / N_bright_hazy;
+  if(N_bright_hazy > 0)
+  {
+    A0_r /= N_bright_hazy;
+    A0_g /= N_bright_hazy;
+    A0_b /= N_bright_hazy;
+  }
+  (*pA0)[0] = A0_r;
+  (*pA0)[1] = A0_g;
+  (*pA0)[2] = A0_b;
   free_gray_image(&dark_ch);
+  // for almsot haze free images it may happen that crit_haze_level=0, this means
+  // there is a very large image depth, in this case a large number is returned, that
+  // is small enough to avoid overflow in later processing
   // the critical haze level is at dark_channel_quantil (not 100%) to be insensitive
   // to extrime outliners, compensate for that by some factor slighly larger than
   // unity when calculating the maximal image depth
-  return -1.125f * logf(crit_haze_level); // return the maximal depth
+  return crit_haze_level > 0 ? -1.125f * logf(crit_haze_level) : logf(FLT_MAX) / 2; // return the maximal depth
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -889,7 +899,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   // finally, calculate the haze-free image
-  const float t_min = expf(-distance * distance_max); // minimum allowed value for transition map
+  const float t_min
+      = fmaxf(expf(-distance * distance_max), 1.f / 1024); // minimum allowed value for transition map
   const float *const c_A0 = A0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
