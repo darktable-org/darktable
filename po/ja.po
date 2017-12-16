@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-12-15 14:05+0900\n"
-"PO-Revision-Date: 2017-12-16 17:44+0900\n"
+"PO-Revision-Date: 2017-12-16 22:06+0900\n"
 "Last-Translator: a3novy <a3novy01@gmail.com>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1835,7 +1835,7 @@ msgstr "ディレクトリの選択"
 #: ../src/control/jobs/control_jobs.c:1469
 #: ../src/control/jobs/control_jobs.c:1526
 msgid "_select as destination"
-msgstr "送り先として選択"
+msgstr "_送り先として選択"
 
 #: ../src/control/jobs/control_jobs.c:1490
 #, c-format
@@ -2577,8 +2577,8 @@ msgid ""
 "scroll to set brush size, shift+scroll to set hardness,\n"
 "ctrl+scroll to set opacity"
 msgstr ""
-"scroll ブラシサイズ設定, shift+scroll 硬さ設定\n"
-"ctrl+scrol 不透明度設定"
+"スクロール ブラシサイズ設定, shift+スクロール 硬さ設定\n"
+"ctrl+スクロール 不透明度設定"
 
 #: ../src/develop/masks/masks.c:192
 msgid "scroll to set brush size"
@@ -5901,7 +5901,7 @@ msgstr "カラー 復元"
 #: ../src/iop/colorreconstruction.c:173 ../src/iop/tonemap.cc:90
 msgctxt "accel"
 msgid "spatial extent"
-msgstr "空間的広がりの範囲"
+msgstr "空間的拡張"
 
 #: ../src/iop/colorreconstruction.c:174
 msgctxt "accel"
@@ -5926,7 +5926,7 @@ msgstr "モジュール`カラー 復元'が失敗しました"
 #: ../src/iop/colorreconstruction.c:1361 ../src/iop/shadhi.c:853
 #: ../src/iop/tonemap.cc:298
 msgid "spatial extent"
-msgstr "空間的広がりの範囲"
+msgstr "空間的拡張"
 
 #: ../src/iop/colorreconstruction.c:1362
 msgid "range extent"
@@ -6659,8 +6659,8 @@ msgid ""
 "greater the bias, the more pronounced the fall off of the grain in shadows "
 "and highlights"
 msgstr ""
-"印画紙反応モデルによる中間トーン・バイアスの適用量。バイアスが大きいほどシャド"
-"ウとハイライトの粒子の減衰が顕著になります"
+"印画紙反応モデルによる中間トーン・バイアスの適用量。バイアスが大きいほどシャ"
+"ドウとハイライトの粒子の減衰が顕著になります"
 
 #: ../src/iop/hazeremoval.c:85
 msgid "haze removal"
@@ -7636,7 +7636,7 @@ msgstr "適用量"
 
 #: ../src/iop/sharpen.c:760
 msgid "spatial extent of the unblurring"
-msgstr "アンシャープマスクの範囲"
+msgstr "シャープ化の範囲"
 
 #: ../src/iop/sharpen.c:764
 msgid "strength of the sharpen"
