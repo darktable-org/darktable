@@ -50,6 +50,9 @@ rm -rf darktable-"$dt_decoration"/doc/usermanual
 echo "* removing tools/regression_tests"
 rm -rf darktable-"$dt_decoration"/tools/regression_tests
 
+# drop all git-related stuff
+find darktable-"$dt_decoration"/ -iname '.git*' -delete
+
 # ... and also remove RELEASE_NOTES. that file is just for internal use
 #echo "* removing RELEASE_NOTES"
 #rm -rf darktable-$dt_decoration/RELEASE_NOTES
