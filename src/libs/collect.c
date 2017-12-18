@@ -1467,13 +1467,7 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
   d->rule[active].typing = FALSE;
 
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
-  if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
-     item == DT_COLLECTION_PROP_TAG ||      // or tags
-     item == DT_COLLECTION_PROP_FOLDERS ||  // or folders
-     item == DT_COLLECTION_PROP_DAY)        // or days
-    gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
-  else
-    gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
+  gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
 
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
@@ -1520,14 +1514,7 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
       if(gtk_tree_model_get_iter_first(model, &iter))
       {
         gchar *text;
-        const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->combo));
-        if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
-           item == DT_COLLECTION_PROP_TAG ||      // or tags
-           item == DT_COLLECTION_PROP_FOLDERS ||  // or folders
-           item == DT_COLLECTION_PROP_DAY)        // or days
-          gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
-        else
-          gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
+        gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
 
         g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
         g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
