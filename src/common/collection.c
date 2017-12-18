@@ -520,7 +520,7 @@ GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean 
 
 GList *dt_collection_get_all(const dt_collection_t *collection, int limit)
 {
-  return dt_collection_get(collection,limit,FALSE);
+  return dt_collection_get(collection, limit, FALSE);
 }
 
 int dt_collection_get_nth(const dt_collection_t *collection, int nth)
@@ -547,7 +547,7 @@ int dt_collection_get_nth(const dt_collection_t *collection, int nth)
 
 GList *dt_collection_get_selected(const dt_collection_t *collection, int limit)
 {
-  return dt_collection_get(collection,limit,TRUE);
+  return dt_collection_get(collection, limit, TRUE);
 }
 
 /* splits an input string into a number part and an optional operator part.

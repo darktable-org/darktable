@@ -1242,13 +1242,6 @@ static void list_view(dt_lib_collect_rule_t *dr)
                 "FROM main.images WHERE %s GROUP BY filename ORDER BY filename", darktable.collection->where_ext);
         break;
 
-//      case DT_COLLECTION_PROP_DAY:
-//        g_snprintf(query, sizeof(query),
-//                  "SELECT SUBSTR(datetime_taken, 1, 10), 1, COUNT(*) AS count "
-//                          "FROM main.images WHERE %s GROUP BY SUBSTR(datetime_taken, 1, 10) "
-//                          "ORDER BY datetime_taken DESC",
-//                   darktable.collection->where_ext);
-//        break;
 
       case DT_COLLECTION_PROP_TIME:
         g_snprintf(query, sizeof(query), "SELECT datetime_taken, 1, COUNT(*) AS count "
