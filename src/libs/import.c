@@ -680,6 +680,15 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       GdkPixbuf *tmp;
       GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
       if (!gdk_pixbuf_loader_write(loader, buffer, size, NULL)) goto cleanup;
+      // Calling gdk_pixbuf_loader_close forces the data to be parsed by the
+      // loader. We must do this before calling gdk_pixbuf_loader_get_pixbuf.
+      GError *error = NULL;
+      gdk_pixbuf_loader_close(loader, &error);
+      if(error)
+      {
+        g_error_free(error);
+        goto cleanup;
+      }
       if (!(tmp = gdk_pixbuf_loader_get_pixbuf(loader))) goto cleanup;
       float ratio = 1.0 * gdk_pixbuf_get_height(tmp) / gdk_pixbuf_get_width(tmp);
       int width = 128, height = 128 * ratio;
@@ -694,8 +703,9 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       g_object_unref(loader); // This should clean up tmp as well
     }
   }
-  if(have_preview && !no_preview_fallback)
+  if(!have_preview && !no_preview_fallback)
   {
+    pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
     // get image orientation
     dt_image_t img = { 0 };
     (void)dt_exif_read(&img, filename);
@@ -721,8 +731,10 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       g_object_unref(pixbuf);
       pixbuf = tmp;
     }
+
+    have_preview = TRUE;
   }
-  if(no_preview_fallback || !have_preview)
+  if(!have_preview && no_preview_fallback)
   {
     /* load the dt logo as a brackground */
     cairo_surface_t *surface = dt_util_get_logo(128.0);
