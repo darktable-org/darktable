@@ -482,7 +482,8 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
     if(g_str_has_suffix(needle, "/")) needle[strlen(needle) - 1] = '\0';
     if(g_str_has_suffix(haystack, "/")) haystack[strlen(haystack) - 1] = '\0';
   }
-  else if(gtk_combo_box_get_active(dr->combo) == DT_COLLECTION_PROP_DAY)
+  else if(gtk_combo_box_get_active(dr->combo) == DT_COLLECTION_PROP_DAY
+          || gtk_combo_box_get_active(dr->combo) == DT_COLLECTION_PROP_TIME)
   {
     if(g_str_has_suffix(needle, ":")) needle[strlen(needle) - 1] = '\0';
     if(g_str_has_suffix(haystack, ":")) haystack[strlen(haystack) - 1] = '\0';
@@ -879,8 +880,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   gboolean folders = (property == DT_COLLECTION_PROP_FOLDERS);
   gboolean tags = (property == DT_COLLECTION_PROP_TAG);
   gboolean days = (property == DT_COLLECTION_PROP_DAY);
+  gboolean times = (property == DT_COLLECTION_PROP_TIME);
   const char *format_separator = folders ? "%s" G_DIR_SEPARATOR_S :
-  days ? "%s:" : "%s|";
+  days || times ? "%s:" : "%s|";
   int insert_position = tags ? 0 : -1;
 
   set_properties(dr);
@@ -910,6 +912,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                     "JOIN (SELECT name, id AS tag_id FROM data.tags) ON tagid = tag_id "
                     "WHERE %s GROUP BY name,tag_id" :
             days ? "SELECT SUBSTR(datetime_taken, 1, 10) AS date, 1, COUNT(*) AS count FROM main.images "
+                    "WHERE %s GROUP BY date ORDER BY datetime_taken ASC" :
+            times ? "SELECT datetime_taken AS date, 1, COUNT(*) AS count FROM main.images "
                     "WHERE %s GROUP BY date ORDER BY datetime_taken ASC" :
             NULL,
             darktable.collection->where_ext);
@@ -988,6 +992,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
           tokens = split_path(name);
         else if(days)
           tokens = g_strsplit(name, ":", -1);
+        else if(times)
+          tokens = g_strsplit_set(name, ": ", 4);
         else
           tokens = g_strsplit(name, "|", -1);
 
@@ -1027,6 +1033,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
             GtkTreeIter iter;
 
             pth = dt_util_dstrcat(pth, format_separator, *token);
+            if(times && !*(token + 1)) pth[10] = ' ';
 
             gchar *pth2 = g_strdup(pth);
             pth2[strlen(pth2) - 1] = '\0';
@@ -1054,7 +1061,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     }
     g_list_free_full(sorted_names, free_tuple);
 
-    if(folders || days)  gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)tree_count_childsum, NULL);
+    if(folders || days || times)  gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)tree_count_childsum, NULL);
     gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)tree_count_show, NULL);
 
     gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
@@ -1242,13 +1249,6 @@ static void list_view(dt_lib_collect_rule_t *dr)
                 "FROM main.images WHERE %s GROUP BY filename ORDER BY filename", darktable.collection->where_ext);
         break;
 
-
-      case DT_COLLECTION_PROP_TIME:
-        g_snprintf(query, sizeof(query), "SELECT datetime_taken, 1, COUNT(*) AS count "
-                           "FROM main.images WHERE %s GROUP BY datetime_taken ORDER BY datetime_taken DESC",
-                   darktable.collection->where_ext);
-        break;
-
       default: // filmroll
         g_snprintf(query, sizeof(query), "SELECT folder, film_rolls_id, COUNT(*) AS count "
                 "FROM main.images JOIN "
@@ -1324,7 +1324,8 @@ static void update_view(dt_lib_collect_rule_t *dr)
 {
   int property = gtk_combo_box_get_active(dr->combo);
 
-  if(property == DT_COLLECTION_PROP_FOLDERS || property == DT_COLLECTION_PROP_TAG || property == DT_COLLECTION_PROP_DAY)
+  if(property == DT_COLLECTION_PROP_FOLDERS || property == DT_COLLECTION_PROP_TAG
+     || property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
     tree_view(dr);
   else
     list_view(dr);
@@ -1427,7 +1428,8 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
 
   int property = gtk_combo_box_get_active(d->combo);
 
-  if(property == DT_COLLECTION_PROP_FOLDERS || property == DT_COLLECTION_PROP_TAG || property == DT_COLLECTION_PROP_DAY)
+  if(property == DT_COLLECTION_PROP_FOLDERS || property == DT_COLLECTION_PROP_TAG
+     || property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
   {
     d->typing = FALSE;
   }
@@ -1479,7 +1481,8 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
                                     NULL);
   g_free(text);
 
-  if(item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS || item == DT_COLLECTION_PROP_DAY
+  if(item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS
+     || item == DT_COLLECTION_PROP_DAY || item == DT_COLLECTION_PROP_TIME
      || item == DT_COLLECTION_PROP_COLORLABEL || item == DT_COLLECTION_PROP_GEOTAGGING
      || item == DT_COLLECTION_PROP_HISTORY ||  item == DT_COLLECTION_PROP_LOCAL_COPY)
     set_properties(d->rule + active); // we just have to set the selection
@@ -1501,7 +1504,8 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
 
   property = gtk_combo_box_get_active(d->combo);
 
-  if(property != DT_COLLECTION_PROP_FOLDERS && property != DT_COLLECTION_PROP_TAG && property != DT_COLLECTION_PROP_DAY)
+  if(property != DT_COLLECTION_PROP_FOLDERS && property != DT_COLLECTION_PROP_TAG
+     && property != DT_COLLECTION_PROP_DAY && property != DT_COLLECTION_PROP_TIME)
   {
     view = c->view;
     model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
