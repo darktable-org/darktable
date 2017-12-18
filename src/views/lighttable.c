@@ -2197,6 +2197,25 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     lib->center = 1;
     return 1;
   }
+
+  if(key == accels->global_zoom_in.accel_key && state == accels->global_zoom_in.accel_mods)
+  {
+    zoom--;
+    if(zoom < 1) zoom = 1;
+
+    dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
+    return 1;
+  }
+
+  if(key == accels->global_zoom_out.accel_key && state == accels->global_zoom_out.accel_mods)
+  {
+    zoom++;
+    if(zoom > 2 * DT_LIBRARY_MAX_ZOOM) zoom = 2 * DT_LIBRARY_MAX_ZOOM;
+
+    dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
+    return 1;
+  }
+
   return 0;
 }
 
