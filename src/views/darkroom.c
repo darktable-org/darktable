@@ -2229,6 +2229,54 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     else
       return 0;
   }
+
+  if(key == accels->global_zoom_in.accel_key && state == accels->global_zoom_in.accel_mods)
+  {
+    dt_develop_t *dev = (dt_develop_t *)self->data;
+
+    scrolled(self, dev->width / 2, dev->height / 2, 1, 0);
+    return 1;
+  }
+
+  if(key == accels->global_zoom_out.accel_key && state == accels->global_zoom_out.accel_mods)
+  {
+    dt_develop_t *dev = (dt_develop_t *)self->data;
+
+    scrolled(self, dev->width / 2, dev->height / 2, 0, 0);
+    return 1;
+  }
+
+  if(key == GDK_KEY_Left || key == GDK_KEY_Right || key == GDK_KEY_Up || key == GDK_KEY_Down)
+  {
+    dt_develop_t *dev = (dt_develop_t *)self->data;
+    dt_dev_zoom_t zoom;
+
+    zoom = dt_control_get_dev_zoom();
+
+    const int closeup = dt_control_get_dev_closeup();
+    float old_zoom_x, old_zoom_y;
+
+    old_zoom_x = dt_control_get_dev_zoom_x();
+    old_zoom_y = dt_control_get_dev_zoom_y();
+
+    float zx = old_zoom_x;
+    float zy = old_zoom_y;
+
+    if(key == GDK_KEY_Left) zx = zx - 0.1f;
+    if(key == GDK_KEY_Right) zx = zx + 0.1f;
+    if(key == GDK_KEY_Up) zy = zy - 0.1f;
+    if(key == GDK_KEY_Down) zy = zy + 0.1f;
+
+    dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
+    dt_control_set_dev_zoom_x(zx);
+    dt_control_set_dev_zoom_y(zy);
+
+    dt_dev_invalidate(dev);
+    dt_control_queue_redraw();
+
+    return 1;
+  }
+
   return 1;
 }
 

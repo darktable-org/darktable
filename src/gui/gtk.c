@@ -168,6 +168,12 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
 
   dt_accel_path_global(path, sizeof(path), "toggle header");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_header);
+
+  dt_accel_path_global(path, sizeof(path), "zoom in");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_zoom_in);
+
+  dt_accel_path_global(path, sizeof(path), "zoom out");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_zoom_out);
 }
 
 static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
@@ -1091,6 +1097,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   dt_accel_connect_global("switch view",
                           g_cclosure_new(G_CALLBACK(view_switch_key_accel_callback), NULL, NULL));
+
+  // Global zoom in & zoom out
+  dt_accel_register_global(NC_("accel", "zoom in"), GDK_KEY_KP_Add, GDK_CONTROL_MASK);
+  dt_accel_register_global(NC_("accel", "zoom out"), GDK_KEY_KP_Subtract, GDK_CONTROL_MASK);
 
   darktable.gui->reset = 0;
 
