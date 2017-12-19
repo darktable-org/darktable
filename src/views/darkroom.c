@@ -2249,11 +2249,23 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if(key == GDK_KEY_Left || key == GDK_KEY_Right || key == GDK_KEY_Up || key == GDK_KEY_Down)
   {
     dt_develop_t *dev = (dt_develop_t *)self->data;
-    dt_dev_zoom_t zoom;
-
-    zoom = dt_control_get_dev_zoom();
-
+    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
+    float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2.0 : 1.0, 0);
+    int procw, proch;
+    dt_dev_get_processed_size(dev, &procw, &proch);
+
+    GdkModifierType modifiers;
+    modifiers = gtk_accelerator_get_default_mod_mask();
+
+    // For each cursor press, move one screen by default
+    float step_changex = dev->width / (procw * scale);
+    float step_changey = dev->height / (proch * scale);
+    float factor = 1;
+
+    if((state & modifiers) == GDK_MOD1_MASK) factor = 0.1f;
+    if((state & modifiers) == GDK_CONTROL_MASK) factor = 10.0f;
+
     float old_zoom_x, old_zoom_y;
 
     old_zoom_x = dt_control_get_dev_zoom_x();
@@ -2262,10 +2274,10 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     float zx = old_zoom_x;
     float zy = old_zoom_y;
 
-    if(key == GDK_KEY_Left) zx = zx - 0.1f;
-    if(key == GDK_KEY_Right) zx = zx + 0.1f;
-    if(key == GDK_KEY_Up) zy = zy - 0.1f;
-    if(key == GDK_KEY_Down) zy = zy + 0.1f;
+    if(key == GDK_KEY_Left) zx = zx - step_changex * factor;
+    if(key == GDK_KEY_Right) zx = zx + step_changex * factor;
+    if(key == GDK_KEY_Up) zy = zy - step_changey * factor;
+    if(key == GDK_KEY_Down) zy = zy + step_changey * factor;
 
     dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
     dt_control_set_dev_zoom_x(zx);
