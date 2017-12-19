@@ -222,8 +222,29 @@ static void _attach_tag(guint tagid, gint imgid)
 
 void dt_tag_attach(guint tagid, gint imgid)
 {
-  _attach_tag(tagid, imgid);
 
+  gchar *tagname = dt_tag_get_name(tagid);
+  gchar **tokens = g_strsplit(tagname, "|", 0);
+  gchar *longtag;
+  if(tokens)
+  {
+    gchar **entry = tokens;
+    longtag = NULL;
+    while(*entry)
+    {
+      if(entry == tokens)
+      {
+         longtag = g_strdup(*entry);
+      }
+      else
+      {
+         longtag = g_strconcat(longtag,"|",*entry,NULL);
+      }
+        dt_tag_new(longtag, &tagid);
+        _attach_tag(tagid, imgid);
+        entry++;
+    }
+  }
   dt_tag_update_used_tags();
 
   dt_collection_update_query(darktable.collection);
@@ -275,12 +296,22 @@ void dt_tag_attach_string_list(const gchar *tags, gint imgid)
 void dt_tag_detach(guint tagid, gint imgid)
 {
   sqlite3_stmt *stmt;
+  gchar *tagname = dt_tag_get_name(tagid);
   if(imgid > 0)
   {
     // remove from tagged_images
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "DELETE FROM main.tagged_images WHERE tagid = ?1 AND imgid = ?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "DELETE FROM main.tagged_images WHERE tagid IN (SELECT DISTINCT "
+                                "TT.id from tags TT WHERE TT.name > ?1 AND TT.name < ?1 || \"|ZZZZZZ\" ) "
+                                "AND imgid = ?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, tagname, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -295,8 +326,18 @@ void dt_tag_detach(guint tagid, gint imgid)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-  }
 
+    // remove from tagged_images
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "DELETE FROM main.tagged_images WHERE tagid IN (SELECT DISTINCT "
+                                "TT.id from tags TT WHERE TT.name > ?1 AND TT.name < ?1 || \"|ZZZZZZ\" ) "
+                                "AND imgid IN "
+                                "(SELECT imgid FROM main.selected_images)",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, tagname, -1, SQLITE_TRANSIENT);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
   dt_tag_update_used_tags();
 
   dt_collection_update_query(darktable.collection);
@@ -485,7 +526,7 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
 
   /* Only select tags that are similar to the one we are looking for once. */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.similar_tags (tagid) SELECT id FROM data.tags WHERE name LIKE ?1",
+                              "INSERT INTO memory.taglist (id, count) SELECT id, 2000000 FROM data.tags WHERE name LIKE ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, keyword_expr, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
@@ -493,34 +534,18 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
 
   g_free(keyword_expr);
 
-  /* Select tags that are similar to the keyword and are actually used to tag images*/
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.taglist (id, count) SELECT tagid, 1000000+COUNT(*) "
-                              "FROM main.tagged_images "
-                              "WHERE tagid IN memory.similar_tags GROUP BY tagid ",
-                              -1, &stmt, NULL);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  /* Select tags that are similar to the keyword but were not used to tag any image*/
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.taglist (id, count) SELECT tagid,1000000 FROM memory.similar_tags",
-                              -1, &stmt, NULL);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
   /* Select tags from tagged images when at least one tag is similar to the keyword and insert in temp table*/
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO memory.tagq (id) SELECT tagid FROM main.tagged_images WHERE imgid IN "
-                              "(SELECT DISTINCT imgid FROM main.tagged_images JOIN memory.similar_tags USING (tagid)) ",
+                              "(SELECT DISTINCT imgid FROM main.tagged_images INNER JOIN memory.taglist ON tagid = id) ",
                               -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
   /* Select tags from temp table that are not similar to the keyword */
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "INSERT INTO memory.taglist (id, count) SELECT id, "
-                                                       "COUNT(*) FROM memory.tagq WHERE id NOT IN (SELECT id FROM "
-                                                       "memory.taglist) GROUP BY id", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "INSERT INTO memory.taglist (id, count) SELECT distinct id, "
+                                                       "1 FROM memory.tagq WHERE id NOT IN (SELECT id FROM "
+                                                       "memory.taglist)", NULL, NULL, NULL);
 
   /* Now put all the bits together */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -528,7 +553,7 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
                               "JOIN memory.taglist MT ON MT.id = T.id "
                               "WHERE T.id IN (SELECT DISTINCT(MT.id) FROM memory.taglist MT) "
                               "AND T.name NOT LIKE 'darktable|%%' "
-                              "ORDER BY MT.count DESC",
+                              "ORDER BY MT.count DESC, T.name ASC",
                               -1, &stmt, NULL);
 
   /* ... and create the result list to send upwards */
