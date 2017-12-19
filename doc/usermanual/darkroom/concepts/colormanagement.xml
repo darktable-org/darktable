@@ -191,8 +191,8 @@
     </indexterm>
 
     <para>
-      darktable's input images are either RGB files (like JPEGs or TIFFs) or pre-demosaiced
-      camera raws&nbsp;&ndash; both represent colors by a combination of red, green and blue.
+      darktable's input images are either RGB files (like JPEGs or TIFFs) or camera
+      raws&nbsp;&ndash; both represent colors by a combination of red, green and blue.
       Most part of our modules act in the
       <ulink url="http://en.wikipedia.org/wiki/Lab_color_space">CIELAB color space</ulink>
       (often just called <quote>Lab</quote>) which describes color as a combination of lightness
