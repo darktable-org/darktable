@@ -28,7 +28,7 @@
         <tbody>
           <row>
             <entry>
-              Raw denoise allows you to perform denoising on pre-demosaic data. It is ported
+              Raw denoise allows you to perform denoising on the data before it gets demosaiced. It is ported
               from
               <ulink url="http://www.cybercom.net/~dcoffin/dcraw/"><emphasis>dcraw</emphasis></ulink>.
             </entry>
