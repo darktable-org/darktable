@@ -1099,8 +1099,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                           g_cclosure_new(G_CALLBACK(view_switch_key_accel_callback), NULL, NULL));
 
   // Global zoom in & zoom out
-  dt_accel_register_global(NC_("accel", "zoom in"), GDK_KEY_KP_Add, GDK_CONTROL_MASK);
-  dt_accel_register_global(NC_("accel", "zoom out"), GDK_KEY_KP_Subtract, GDK_CONTROL_MASK);
+  dt_accel_register_global(NC_("accel", "zoom in"), GDK_KEY_plus, GDK_CONTROL_MASK);
+  dt_accel_register_global(NC_("accel", "zoom out"), GDK_KEY_minus, GDK_CONTROL_MASK);
 
   darktable.gui->reset = 0;
 
