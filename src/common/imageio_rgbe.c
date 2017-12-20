@@ -167,8 +167,6 @@ int RGBE_WriteHeader(FILE *fp, int width, int height, rgbe_header_info *info)
 int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
 {
   char buf[128];
-  float tempf;
-  size_t i;
 
   if(info)
   {
@@ -185,6 +183,7 @@ int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
   else if(info)
   {
     info->valid |= RGBE_VALID_PROGRAMTYPE;
+    size_t i;
     for(i = 0; i < sizeof(info->programtype) - 1; i++)
     {
       if((buf[i + 2] == 0) || isspace(buf[i + 2])) break;
@@ -193,31 +192,43 @@ int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
     info->programtype[i] = 0;
     if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0) return rgbe_error(rgbe_read_error, NULL);
   }
+  gboolean format_is_rgbe = FALSE;
   for(;;)
   {
     if((buf[0] == 0) || (buf[0] == '\n'))
-      return rgbe_error(rgbe_format_error, "no FORMAT specifier found");
+      break;
     else if(strcmp(buf, "FORMAT=32-bit_rle_rgbe\n") == 0)
-      break; /* format found so break out of loop */
-    else if(info && (sscanf(buf, "GAMMA=%g", &tempf) == 1))
+      format_is_rgbe = TRUE;
+    else if(info)
     {
-      info->gamma = tempf;
-      info->valid |= RGBE_VALID_GAMMA;
+      if(g_str_has_prefix(buf, "GAMMA="))
+      {
+        char *startptr = buf + strlen("GAMMA="), *endptr;
+        float tmp = g_ascii_strtod(startptr, &endptr);
+        if(startptr != endptr)
+        {
+          info->gamma = tmp;
+          info->valid |= RGBE_VALID_GAMMA;
+        }
+      }
+      else if(g_str_has_prefix(buf, "EXPOSURE="))
+      {
+        char *startptr = buf + strlen("EXPOSURE="), *endptr;
+        float tmp = g_ascii_strtod(startptr, &endptr);
+        if(startptr != endptr)
+        {
+          info->exposure = tmp;
+          info->valid |= RGBE_VALID_EXPOSURE;
+        }
+      }
     }
-    else if(info && (sscanf(buf, "EXPOSURE=%g", &tempf) == 1))
-    {
-      info->exposure = tempf;
-      info->valid |= RGBE_VALID_EXPOSURE;
-    }
+
     if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0) return rgbe_error(rgbe_read_error, NULL);
   }
-  if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0) return rgbe_error(rgbe_read_error, NULL);
-  // if (strcmp(buf,"\n") != 0)
-  // return rgbe_error(rgbe_format_error,
-  // "missing blank line after FORMAT specifier");
-  while(strcmp(buf, "\n") != 0)
+  if(!format_is_rgbe)
+    return rgbe_error(rgbe_format_error, "no FORMAT specifier found or it's not 32-bit_rle_rgbe");
+  while(!strcmp(buf, "\n")) // be nice and accept more than one blank line
     if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0) return rgbe_error(rgbe_read_error, NULL);
-  if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0) return rgbe_error(rgbe_read_error, NULL);
   if(sscanf(buf, "-Y %d +X %d", height, width) < 2)
     return rgbe_error(rgbe_format_error, "missing image size specifier");
   return RGBE_RETURN_SUCCESS;

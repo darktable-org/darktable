@@ -198,7 +198,7 @@ chart_t *parse_cht(const char *filename)
         if(*c == 'F')
         {
           float x0, y0, x1, y1, x2, y2, x3, y3;
-          // using sscanf would be nice, but parsign floats does only work with LANG=C
+          // using sscanf would be nice, but parsing floats does only work with LANG=C
           // if(sscanf(line, " F _ _ %f %f %f %f %f %f %f %f", &x0, &y0, &x1, &y1, &x2, &y2, &x3, &y3) != 8)
           // ERROR;
           c++;
