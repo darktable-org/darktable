@@ -539,7 +539,12 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
   for (int k=0; k<num_options; k++)
     dt_print(DT_DEBUG_PRINT, "[print]   %2d  %s=%s\n", k+1, options[k].name, options[k].value);
 
-  const int job_id = cupsPrintFile(pinfo->printer.name, filename, "darktable", num_options, options);
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const char *job_title = (img ? img->filename : "darktable");
+
+  const int job_id = cupsPrintFile(pinfo->printer.name, filename, job_title, num_options, options);
+
+  dt_image_cache_read_release(darktable.image_cache, img);
 
   if (job_id == 0)
     dt_control_log(_("error while printing image %d on `%s'"), imgid, pinfo->printer.name);
