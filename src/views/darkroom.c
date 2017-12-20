@@ -2234,7 +2234,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   {
     dt_develop_t *dev = (dt_develop_t *)self->data;
 
-    scrolled(self, dev->width / 2, dev->height / 2, 1, 0);
+    scrolled(self, dev->width / 2, dev->height / 2, 1, state);
     return 1;
   }
 
@@ -2242,7 +2242,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   {
     dt_develop_t *dev = (dt_develop_t *)self->data;
 
-    scrolled(self, dev->width / 2, dev->height / 2, 0, 0);
+    scrolled(self, dev->width / 2, dev->height / 2, 0, state);
     return 1;
   }
 
