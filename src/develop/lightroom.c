@@ -913,6 +913,9 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   char imported[256] = { 0 };
   int n_import = 0;                // number of iop imported
 
+  const locale_t new_locale = newlocale(LC_NUMERIC, "C", 0);
+  const locale_t current_locale = uselocale(new_locale);
+
   // Get full pathname
   char *pathname = dt_get_lightroom_xmp(imgid);
 
@@ -1497,6 +1500,8 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
     }
   }
+
+  uselocale(current_locale);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
