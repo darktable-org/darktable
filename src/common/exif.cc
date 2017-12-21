@@ -99,85 +99,6 @@ const char *dt_xmp_keys[]
 
 static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys); // the number of XmpBag XmpSeq keys that dt uses
 
-
-/* a few helper functions inspired by
-   https://projects.kde.org/projects/kde/kdegraphics/libs/libkexiv2/repository/revisions/master/entry/libkexiv2/kexiv2gps.cpp
-   */
-
-static double _gps_string_to_number(const gchar *input)
-{
-  double res = 0;
-  gchar *s = g_strdup(input);
-  gchar dir = toupper(s[strlen(s) - 1]);
-  gchar **list = g_strsplit(s, ",", 0);
-  if(list)
-  {
-    if(list[2] == NULL) // format DDD,MM.mm{N|S}
-      res = g_ascii_strtoll(list[0], NULL, 10) + (g_ascii_strtod(list[1], NULL) / 60.0);
-    else if(list[3] == NULL) // format DDD,MM,SS{N|S}
-      res = g_ascii_strtoll(list[0], NULL, 10) + (g_ascii_strtoll(list[1], NULL, 10) / 60.0)
-            + (g_ascii_strtoll(list[2], NULL, 10) / 3600.0);
-    if(dir == 'S' || dir == 'W') res *= -1.0;
-  }
-  g_strfreev(list);
-  g_free(s);
-  return res;
-}
-
-static gboolean _gps_rationale_to_number(const double r0_1, const double r0_2, const double r1_1,
-                                         const double r1_2, const double r2_1, const double r2_2, char sign,
-                                         double *result)
-{
-  if(!result) return FALSE;
-  double res = 0.0;
-  // Latitude decoding from Exif.
-  double num, den, min, sec;
-  num = r0_1;
-  den = r0_2;
-  if(den == 0) return FALSE;
-  res = num / den;
-
-  num = r1_1;
-  den = r1_2;
-  if(den == 0) return FALSE;
-  min = num / den;
-  if(min != -1.0) res += min / 60.0;
-
-  num = r2_1;
-  den = r2_2;
-  if(den == 0)
-  {
-    // be relaxed and accept 0/0 seconds. See #246077.
-    if(num == 0)
-      den = 1;
-    else
-      return FALSE;
-  }
-  sec = num / den;
-  if(sec != -1.0) res += sec / 3600.0;
-
-  if(sign == 'S' || sign == 'W') res *= -1.0;
-
-  *result = res;
-  return TRUE;
-}
-
-static gboolean _gps_elevation_to_number(const double r_1, const double r_2, char sign, double *result)
-{
-  if(!result) return FALSE;
-  double res = 0.0;
-  // Altitude decoding from Exif.
-  const double num = r_1;
-  const double den = r_2;
-  if(den == 0) return FALSE;
-  res = num / den;
-
-  if(sign != '0') res *= -1.0;
-
-  *result = res;
-  return TRUE;
-}
-
 // inspired by ufraw_exiv2.cc:
 
 static void dt_strlcpy_to_utf8(char *dest, size_t dest_max, Exiv2::ExifData::const_iterator &pos,
@@ -381,12 +302,12 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     /* read gps location */
     if(FIND_XMP_TAG("Xmp.exif.GPSLatitude"))
     {
-      img->latitude = _gps_string_to_number(pos->toString().c_str());
+      img->latitude = dt_util_gps_string_to_number(pos->toString().c_str());
     }
 
     if(FIND_XMP_TAG("Xmp.exif.GPSLongitude"))
     {
-      img->longitude = _gps_string_to_number(pos->toString().c_str());
+      img->longitude = dt_util_gps_string_to_number(pos->toString().c_str());
     }
 
     if(FIND_XMP_TAG("Xmp.exif.GPSAltitude"))
@@ -397,7 +318,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
         std::string sign_str = ref->toString();
         const char *sign = sign_str.c_str();
         double elevation = 0.0;
-        if(_gps_elevation_to_number(pos->toRational(0).first, pos->toRational(0).second, sign[0], &elevation))
+        if(dt_util_gps_elevation_to_number(pos->toRational(0).first, pos->toRational(0).second, sign[0], &elevation))
           img->elevation = elevation;
       }
     }
@@ -713,9 +634,9 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         std::string sign_str = ref->toString();
         const char *sign = sign_str.c_str();
         double latitude = 0.0;
-        if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
-                                    pos->toRational(1).first, pos->toRational(1).second,
-                                    pos->toRational(2).first, pos->toRational(2).second, sign[0], &latitude))
+        if(dt_util_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
+                                           pos->toRational(1).first, pos->toRational(1).second,
+                                           pos->toRational(2).first, pos->toRational(2).second, sign[0], &latitude))
           img->latitude = latitude;
       }
     }
@@ -728,9 +649,9 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         std::string sign_str = ref->toString();
         const char *sign = sign_str.c_str();
         double longitude = 0.0;
-        if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
-                                    pos->toRational(1).first, pos->toRational(1).second,
-                                    pos->toRational(2).first, pos->toRational(2).second, sign[0], &longitude))
+        if(dt_util_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
+                                           pos->toRational(1).first, pos->toRational(1).second,
+                                           pos->toRational(2).first, pos->toRational(2).second, sign[0], &longitude))
           img->longitude = longitude;
       }
     }
@@ -743,7 +664,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         std::string sign_str = ref->toString();
         const char *sign = sign_str.c_str();
         double elevation = 0.0;
-        if(_gps_elevation_to_number(pos->toRational(0).first, pos->toRational(0).second, sign[0], &elevation))
+        if(dt_util_gps_elevation_to_number(pos->toRational(0).first, pos->toRational(0).second, sign[0], &elevation))
           img->elevation = elevation;
       }
     }
