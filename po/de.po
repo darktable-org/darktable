@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-12-22 09:37+0100\n"
-"PO-Revision-Date: 2017-12-22 09:38+0100\n"
+"PO-Revision-Date: 2017-12-22 13:14+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -943,23 +943,23 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:5
 msgid "Virtual light table, showing a collection"
-msgstr "Virtueller Leuchttisch zeigt eine Sammlung an"
+msgstr "Der Leuchttisch zeigt eine Sammlung an"
 
 #: ../data/darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
-msgstr "Virtuelle Dunkelkammer mit einem geöffneten Bild"
+msgstr "Die Dunkelkammer mit einem geöffneten Bild"
 
 #: ../data/darktable.appdata.xml.in.h:7
 msgid "Virtual dark room, sharpening an image"
-msgstr "Schärfen eines Bildes in der virtuellen Dunkelkammer"
+msgstr "Schärfen eines Bildes in der Dunkelkammer"
 
 #: ../data/darktable.appdata.xml.in.h:8
 msgid "Virtual dark room, split toning an image"
-msgstr "Split-Toning in der virtuellen Dunkelkammer"
+msgstr "Split-Toning in der Dunkelkammer"
 
 #: ../data/darktable.appdata.xml.in.h:9
 msgid "Show images on a map"
-msgstr "Zeige Bilder auf einer Karte an"
+msgstr "Zeige Bilder auf der Karte an"
 
 #: ../data/darktable.appdata.xml.in.h:10
 msgid "Print your images"
