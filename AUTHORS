@@ -1,6 +1,7 @@
 * developers:
 Roman Lebedev,
 Tobias Ellinghaus,
+Peter Budai,
 johannes hanika,
 Ulrich Pegelow,
 Stefan Schöfegger,
@@ -13,39 +14,44 @@ Alexandre Prokoudine.
 * translators:
 Pascal Obry,
 Ger Siemerink,
+Michel Leblond,
 Tobias Ellinghaus,
 shlomi braitbart,
 tatica,
+Novy Sawai,
 Alexandre Prokoudine,
-Báthory Péter,
 Germano Massullo,
+Báthory Péter,
 Josep V. Moragues,
 Matjaž Jeran,
 Matthieu Moy,
+Tomasz Golinski,
+Ulrich Pegelow,
 johannes hanika.
 
 * contributors (at least 4 commits):
-Peter Budai,
 Dan Torop,
 Ger Siemerink,
+Michel Leblond,
 Matthieu Moy,
 Heiko Bauke,
-Michel Leblond,
 Žilvinas Žaltiena,
+itinerarium,
 Maximilian Trescher,
 Wolfgang Mader,
-code,
 Andrea Volpato,
 Matthieu Volat,
 shlomi braitbart,
-theres.
+Dominik Markiewicz,
+tatica.
 
-* RawSpeed contributors (at least 1 commits):
-Axel Waggershauser
-Nathaniel Watson
-Marco Caimi
-Martijn Courteaux
-Uwe Müssel
+* RawSpeed contributors (at least 1 commit):
+Axel Waggershauser,
+Nathaniel Watson,
+Dan Torop,
+Marco Caimi,
+Martijn Courteaux,
+Uwe Müssel,
 Vasily Khoruzhick.
 
 And all those of you that made previous releases possible
