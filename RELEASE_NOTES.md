@@ -17,13 +17,13 @@ when updating from the currently stable 2.2.x series, please bear in mind that y
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-- The maintainership of the RawSpeed library was transferred to the darktable project. The work on code cleanup, hardening, modernization, simplification and testing is ongoing.
+- The maintainership of the [RawSpeed library](https://github.com/darktable-org/rawspeed) was transferred to the darktable project. The work on code cleanup, hardening, modernization, simplification and testing is ongoing.
 - Almost 3 thousand commits to darktable+rawspeed since 2.2.0
 - 273 pull requests handled
 - 340+ issues closed
 - Updated user manual is coming soon™
 
-Gource visualization of git log from 2.2.0 to right before 2.4.0: https://youtu.be/VNdFenRQWtw
+Gource visualization of git log from 2.2.0 to right before 2.4.0: [https://youtu.be/VNdFenRQWtw](https://youtu.be/VNdFenRQWtw)
 
 ## Hell Froze Over
 
@@ -64,8 +64,8 @@ Gource visualization of git log from 2.2.0 to right before 2.4.0: https://youtu.
 - Support XYZ as a proofing profile
 - Local contrast now got a new slider to set the midtone range
 - darktable got two new helper scripts (those are not installed by default, grab them from [the sources](https://github.com/darktable-org/darktable/tree/master/tools))
-      - One to purge thumbnails that no longer have an associated image in the database,
-      - and a second script that uses inotify to watch a folder for new files to open them in a running darktable instance.
+    - One to purge thumbnails that no longer have an associated image in the database,
+    - and a second script that uses inotify to watch a folder for new files to open them in a running darktable instance.
 - In the curve editors of base curve and tone curve you can now delete nodes with a right click and see coordinates of nodes while editing. Note that you can use keyboard modifiers `ctrl` and `shift` to change the precision of your changes
 - Creating a new instance of a module can now be done with a quick click of the middle mouse button on the multi-instance icon
 - New darktable installations on computers with more than 8 Gb of memory will now by default use half of that per module
