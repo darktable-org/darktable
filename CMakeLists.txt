@@ -332,11 +332,17 @@ endif(VALIDATE_APPDATA_FILE)
 if(TESTBUILD_OPENCL_PROGRAMS)
   set(TESTBUILD_OPENCL_PROGRAMS OFF)
 
+  macro(find_llvm versions)
+    foreach(version ${versions})
+      find_package(LLVM ${version} CONFIG)
+      if(LLVM_FOUND)
+        break()
+      endif()
+    endforeach()
+  endmacro()
+
   # 3.9 is the first version with which this works.
-  find_package(LLVM 4.0 CONFIG)
-  if (NOT LLVM_FOUND)
-    find_package(LLVM 3.9 CONFIG)
-  endif()
+  find_llvm("6.0;5.0;4.0;3.9")
 
   if (LLVM_FOUND)
     message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")

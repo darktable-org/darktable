@@ -431,6 +431,43 @@ typedef struct lr_data_t
   int orientation;
 } lr_data_t;
 
+// three helper functions for parsing RetouchInfo entries. sscanf doesn't work due to floats.
+static gboolean _read_float(const char **startptr, const char *key, float *value)
+{
+  const char *iter = *startptr;
+  while(*iter == ' ') iter++;
+  if(!g_str_has_prefix(iter, key))
+    return FALSE;
+  iter += strlen(key);
+  while(*iter == ' ') iter++;
+  if(*iter++ != '=')
+    return FALSE;
+  while(*iter == ' ') iter++;
+  *value = g_ascii_strtod(iter, (char **)startptr);
+  return iter != *startptr;
+}
+
+static gboolean _skip_key_value_pair(const char **startptr, const char *key)
+{
+  const char *iter = *startptr;
+  while(*iter == ' ') iter++;
+  if(!g_str_has_prefix(iter, key))
+    return FALSE;
+  iter += strlen(key);
+  while(*iter == ' ') iter++;
+  if(*iter++ != '=')
+    return FALSE;
+  while(*iter == ' ') iter++;
+  while((*iter >= 'a' && *iter <= 'z') || (*iter >= 'A' && *iter <= 'Z')) iter++;
+  *startptr = iter;
+  return TRUE;
+}
+
+static gboolean _skip_comma(const char **startptr)
+{
+  return *(*startptr)++ == ',';
+}
+
 /* lrop handle the Lr operation and convert it as a dt iop */
 static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
                   const xmlChar *name, const xmlChar *value, const xmlNodePtr node, lr_data_t *data)
@@ -760,27 +797,19 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
   }
   else if(!xmlStrcmp(name, (const xmlChar *)"GPSLatitude"))
   {
-    int deg;
-    double msec;
-    char d;
-
-    if(sscanf((const char *)value, "%d,%lf%c", &deg, &msec, &d))
+    double latitude = dt_util_gps_string_to_number((const char *)value);
+    if(!isnan(latitude))
     {
-      data->lat = deg + msec / 60.0;
-      if(d == 'S') data->lat = -data->lat;
+      data->lat = latitude;
       data->has_gps = TRUE;
     }
   }
   else if(!xmlStrcmp(name, (const xmlChar *)"GPSLongitude"))
   {
-    int deg;
-    double msec;
-    char d;
-
-    if(sscanf((const char *)value, "%d,%lf%c", &deg, &msec, &d))
+    double longitude = dt_util_gps_string_to_number((const char *)value);
+    if(!isnan(longitude))
     {
-      data->lon = deg + msec / 60.0;
-      if(d == 'W') data->lon = -data->lon;
+      data->lon = longitude;
       data->has_gps = TRUE;
     }
   }
@@ -832,10 +861,25 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
       {
         xmlChar *cvalue = xmlNodeListGetString(doc, riNode->xmlChildrenNode, 1);
         spot_t *p = &data->ps.spot[data->ps.num_spots];
-        if(sscanf((const char *)cvalue, "centerX = %f, centerY = %f, radius = %f, sourceState = %*[a-zA-Z], "
-                  "sourceX = %f, sourceY = %f",
-                  &(p->x), &(p->y), &(p->radius), &(p->xc), &(p->yc)))
+        float x, y, radius, xc, yc;
+        const char *startptr = (const char *)cvalue;
+        if(_read_float(&startptr, "centerX", &x) &&
+           _skip_comma(&startptr) &&
+           _read_float(&startptr, "centerY", &y) &&
+           _skip_comma(&startptr) &&
+           _read_float(&startptr, "radius", &radius) &&
+           _skip_comma(&startptr) &&
+           _skip_key_value_pair(&startptr, "sourceState") &&
+           _skip_comma(&startptr) &&
+           _read_float(&startptr, "sourceX", &xc) &&
+           _skip_comma(&startptr) &&
+           _read_float(&startptr, "sourceY", &yc))
         {
+          p->x = x;
+          p->y = y;
+          p->radius = radius;
+          p->xc = xc;
+          p->yc = yc;
           data->ps.num_spots++;
           data->has_spots = TRUE;
         }

@@ -26,22 +26,26 @@
     </_p>
   </description>
   <screenshots>
-    <screenshot height="741" width="1317" type="default">
-      <image>https://www.darktable.org/images/darktable-appdata-lighttable.png</image>
-      <caption>Virtual light table</caption>
-      </screenshot>
-    <screenshot height="741" width="1317">
-      <image>https://www.darktable.org/images/darktable-appdata-darkroom.png</image>
-      <caption>Virtual dark room</caption>
-      </screenshot>
-    <screenshot height="741" width="1317">
-      <image>https://www.darktable.org/images/darktable-appdata-tethering.png</image>
-      <caption>Tethered to a camera</caption>
+    <screenshot width="1920" height="1080">
+      <image>https://www.darktable.org/images/darktable-appdata-lighttable.jpg</image>
+      <_caption>Virtual light table, showing a collection</_caption>
     </screenshot>
-    <screenshot height="741" width="1317">
-      <image>https://www.darktable.org/images/darktable-appdata-map.png</image>
-      <caption>Where the photographs were taken</caption>
-      </screenshot>
+    <screenshot width="1920" height="1080" type="default">
+      <image>https://www.darktable.org/images/darktable-appdata-darkroom1.jpg</image>
+      <_caption>Virtual dark room with an opened image</_caption>
+    </screenshot>
+    <screenshot width="1920" height="1080">
+      <image>https://www.darktable.org/images/darktable-appdata-darkroom2.jpg</image>
+      <_caption>Virtual dark room, sharpening an image</_caption>
+    </screenshot>
+    <screenshot width="1920" height="1080">
+      <image>https://www.darktable.org/images/darktable-appdata-map.jpg</image>
+      <_caption>Show images on a map</_caption>
+    </screenshot>
+    <screenshot width="1920" height="1080">
+      <image>https://www.darktable.org/images/darktable-appdata-print.jpg</image>
+      <_caption>Print your images</_caption>
+    </screenshot>
   </screenshots>
   <url type="homepage">https://www.darktable.org/</url>
   <url type="bugtracker">https://redmine.darktable.org/projects/darktable/issues</url>
