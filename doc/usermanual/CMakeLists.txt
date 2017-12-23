@@ -385,7 +385,7 @@ if(can_build_usermanual)
         endforeach(language)
     endif()
 else(can_build_usermanual)
-    message("Can NOT build Lua API documentation")
+    message("Can NOT build usermanual and Lua API documentation")
 endif(can_build_usermanual)
 
 add_subdirectory(po)

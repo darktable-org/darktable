@@ -515,7 +515,7 @@ void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)malloc(sizeof(dt_imageio_png_gui_t));
   self->gui_data = (void *)gui;
-  const int bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
+  int bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
 
   // PNG compression level might actually be zero!
   int compression = 5;
@@ -529,7 +529,12 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_widget_set_label(gui->bit_depth, NULL, _("bit depth"));
   dt_bauhaus_combobox_add(gui->bit_depth, _("8 bit"));
   dt_bauhaus_combobox_add(gui->bit_depth, _("16 bit"));
-  dt_bauhaus_combobox_set(gui->bit_depth, bpp);
+  if(bpp == 16)
+    dt_bauhaus_combobox_set(gui->bit_depth, 1);
+  else {
+    bpp = 8; // We know only about 8 or 16 bits, at least for now
+    dt_bauhaus_combobox_set(gui->bit_depth, 0);
+  }
   gtk_box_pack_start(GTK_BOX(self->widget), gui->bit_depth, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->bit_depth), "value-changed", G_CALLBACK(bit_depth_changed), NULL);
 

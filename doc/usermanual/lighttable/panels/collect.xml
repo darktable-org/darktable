@@ -215,6 +215,16 @@
               </row>
               <row>
                 <entry>
+                  focal length
+                </entry>
+                <entry>
+                  <para>
+                    the focal length value, as derived from Exif data
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
                   ISO
                 </entry>
                 <entry>
@@ -240,6 +250,16 @@
                 <entry>
                   <para>
                     the filename of the physical input image
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  geotagging
+                </entry>
+                <entry>
+                  <para>
+                    the geo location of the image
                   </para>
                 </entry>
               </row>
