@@ -1619,6 +1619,12 @@ static void menuitem_mode_change(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d
 
 static void collection_updated(gpointer instance, gpointer self)
 {
+  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+
+  // update tree
+  d->view_rule = -1;
+  d->rule[d->active_rule].typing = FALSE;
   _lib_collect_gui_update(self);
 }
 
