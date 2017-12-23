@@ -877,10 +877,10 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   // update related list
   dt_lib_collect_t *d = get_collect(dr);
   int property = gtk_combo_box_get_active(dr->combo);
-  gboolean folders = (property == DT_COLLECTION_PROP_FOLDERS);
-  gboolean tags = (property == DT_COLLECTION_PROP_TAG);
-  gboolean days = (property == DT_COLLECTION_PROP_DAY);
-  gboolean times = (property == DT_COLLECTION_PROP_TIME);
+  const gboolean folders = (property == DT_COLLECTION_PROP_FOLDERS);
+  const gboolean tags = (property == DT_COLLECTION_PROP_TAG);
+  const gboolean days = (property == DT_COLLECTION_PROP_DAY);
+  const gboolean times = (property == DT_COLLECTION_PROP_TIME);
   const char *format_separator = folders ? "%s" G_DIR_SEPARATOR_S :
   days || times ? "%s:" : "%s|";
   int insert_position = tags ? 0 : -1;
@@ -935,7 +935,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       char *name_folded = g_utf8_casefold(name, -1);
       gchar *collate_key = NULL;
 
-      int count = sqlite3_column_int(stmt, 2);
+      const int count = sqlite3_column_int(stmt, 2);
 
       if(folders)
       {
@@ -966,7 +966,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     {
       name_key_tuple_t *tuple = (name_key_tuple_t *)names->data;
       char *name = tuple->name;
-      int count = tuple->count;
+      const int count = tuple->count;
       if(name == NULL) continue; // safeguard against degenerated db entries
 
       if(tags && strchr(name, '|') == 0 && (last_tokens_length == 0 || strcmp(name, *last_tokens)))
@@ -1128,7 +1128,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         {
           char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
           char *exif_model = (char *)sqlite3_column_text(stmt, 1);
-          int count = sqlite3_column_int(stmt, 2);
+          const int count = sqlite3_column_int(stmt, 2);
 
           gchar *makermodel =  dt_collection_get_makermodel(exif_maker, exif_model);
 
@@ -1276,7 +1276,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
           folder = dt_image_film_roll_name(folder);
         }
         gchar *value = (gchar *)sqlite3_column_text(stmt, 0);
-        int count = sqlite3_column_int(stmt, 2);
+        const int count = sqlite3_column_int(stmt, 2);
 
         // replace invalid utf8 characters if any
         gchar *text = g_strdup(value);
