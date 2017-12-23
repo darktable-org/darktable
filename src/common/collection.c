@@ -72,7 +72,7 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
   {
     memcpy(&collection->params, &clone->params, sizeof(dt_collection_params_t));
     memcpy(&collection->store, &clone->store, sizeof(dt_collection_params_t));
-    collection->where_ext = g_strdup(clone->where_ext);
+    collection->where_ext = g_strdupv(clone->where_ext);
     collection->query = g_strdup(clone->query);
     collection->clone = 1;
     collection->count = clone->count;
@@ -105,7 +105,7 @@ void dt_collection_free(const dt_collection_t *collection)
                                (gpointer)collection);
 
   g_free(collection->query);
-  g_free(collection->where_ext);
+  g_strfreev(collection->where_ext);
   g_free((dt_collection_t *)collection);
 }
 
@@ -121,6 +121,7 @@ int dt_collection_update(const dt_collection_t *collection)
   wq = sq = selq = query = NULL;
 
   /* build where part */
+  gchar *where_ext = dt_collection_get_extended_where(collection, -1);
   if(!(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
     int need_operator = 0;
@@ -158,10 +159,12 @@ int dt_collection_update(const dt_collection_t *collection)
 
     /* add where ext if wanted */
     if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
-      wq = dt_util_dstrcat(wq, " %s %s", (need_operator) ? "AND" : "", collection->where_ext);
+      wq = dt_util_dstrcat(wq, " %s %s", (need_operator) ? "AND" : "", where_ext);
   }
   else
-    wq = dt_util_dstrcat(wq, "%s", collection->where_ext);
+    wq = dt_util_dstrcat(wq, "%s", where_ext);
+
+  g_free(where_ext);
 
   /* grouping */
   if(darktable.gui && darktable.gui->grouping)
@@ -264,13 +267,41 @@ void dt_collection_set_query_flags(const dt_collection_t *collection, uint32_t f
   params->query_flags = flags;
 }
 
-void dt_collection_set_extended_where(const dt_collection_t *collection, gchar *extended_where)
+gchar *dt_collection_get_extended_where(const dt_collection_t *collection, int exclude)
+{
+  gchar *complete_string = NULL;
+
+  if (exclude >= 0)
+  {
+    complete_string = g_strdup("");
+    char confname[200];
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", exclude);
+    const int mode = dt_conf_get_int(confname);
+    if (mode != 1)
+    {
+      for(int i = 0; collection->where_ext[i] != NULL; i++) {
+        // exclude rule from extended where
+        if (i != exclude)
+          complete_string = dt_util_dstrcat(complete_string, "%s", collection->where_ext[i]);
+      }
+    }
+  }
+  else
+    complete_string = g_strjoinv(complete_string, ((dt_collection_t *)collection)->where_ext);
+
+  gchar *where_ext = dt_util_dstrcat(NULL, "(1=1%s)", complete_string);
+  g_free(complete_string);
+
+  return where_ext;
+}
+
+void dt_collection_set_extended_where(const dt_collection_t *collection, gchar **extended_where)
 {
   /* free extended where if already exists */
-  g_free(collection->where_ext);
+  g_strfreev(collection->where_ext);
 
   /* set new from parameter */
-  ((dt_collection_t *)collection)->where_ext = g_strdup(extended_where);
+  ((dt_collection_t *)collection)->where_ext = g_strdupv(extended_where);
 }
 
 void dt_collection_set_film_id(const dt_collection_t *collection, uint32_t film_id)
@@ -436,7 +467,11 @@ static uint32_t _dt_collection_compute_count(const dt_collection_t *collection)
 
   gchar *fq = g_strstr_len(query, strlen(query), "FROM");
   if((collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
-    count_query = dt_util_dstrcat(NULL, "SELECT COUNT(DISTINCT main.images.id) FROM main.images %s", collection->where_ext);
+  {
+    gchar *where_ext = dt_collection_get_extended_where(collection, -1);
+    count_query = dt_util_dstrcat(NULL, "SELECT COUNT(DISTINCT main.images.id) FROM main.images %s", where_ext);
+    g_free(where_ext);
+  }
   else
     count_query = dt_util_dstrcat(count_query, "SELECT COUNT(DISTINCT id) %s", fq);
 
@@ -1117,13 +1152,13 @@ void dt_collection_deserialize(char *buf)
 void dt_collection_update_query(const dt_collection_t *collection)
 {
   char confname[200];
-  gchar *complete_query = NULL;
 
   const int _n_r = dt_conf_get_int("plugins/lighttable/collect/num_rules");
   const int num_rules = CLAMP(_n_r, 1, 10);
   char *conj[] = { "AND", "OR", "AND NOT" };
 
-  complete_query = dt_util_dstrcat(complete_query, "(1=1");
+  gchar **query_parts = g_new (gchar*, num_rules + 1);
+  query_parts[num_rules] =  NULL;
 
   for(int i = 0; i < num_rules; i++)
   {
@@ -1131,24 +1166,28 @@ void dt_collection_update_query(const dt_collection_t *collection)
     const int property = dt_conf_get_int(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
     gchar *text = dt_conf_get_string(confname);
-    if(!text || text[0] == '\0') break;
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
 
-    gchar *query = get_query_string(property, text);
+    if(!text || text[0] == '\0') {
+      if (mode == 1) // for OR show all
+        query_parts[i] = g_strdup(" OR 1=1");
+      else
+        query_parts[i] = g_strdup("");
+    } else {
+      gchar *query = get_query_string(property, text);
 
-    complete_query = dt_util_dstrcat(complete_query, " %s %s", conj[mode], query);
+      query_parts[i] =  g_strdup_printf(" %s %s", conj[mode], query);
 
-    g_free(query);
+      g_free(query);
+    }
     g_free(text);
   }
 
-  complete_query = dt_util_dstrcat(complete_query, ")");
-
-  // printf("complete query: `%s'\n", complete_query);
 
   /* set the extended where and the use of it in the query */
-  dt_collection_set_extended_where(collection, complete_query);
+  dt_collection_set_extended_where(collection, query_parts);
+  g_strfreev(query_parts);
   dt_collection_set_query_flags(collection,
                                 (dt_collection_get_query_flags(collection) | COLLECTION_QUERY_USE_WHERE_EXT));
 
@@ -1159,13 +1198,10 @@ void dt_collection_update_query(const dt_collection_t *collection)
   /* update query and at last the visual */
   dt_collection_update(collection);
 
-  /* free string */
-  g_free(complete_query);
-
   // remove from selected images where not in this query.
   sqlite3_stmt *stmt = NULL;
   const gchar *cquery = dt_collection_get_query(collection);
-  complete_query = NULL;
+  gchar *complete_query = NULL;
   if(cquery && cquery[0] != '\0')
   {
     complete_query

@@ -904,6 +904,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     gtk_widget_hide(GTK_WIDGET(d->sw2));
 
     /* query construction */
+    gchar *where_ext = dt_collection_get_extended_where(darktable.collection, dr->num);
     const char *query = g_strdup_printf(
             folders ? "SELECT folder, film_rolls_id, COUNT(*) AS count FROM main.images "
                     "JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id "
@@ -916,8 +917,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
             times ? "SELECT datetime_taken AS date, 1, COUNT(*) AS count FROM main.images "
                     "WHERE %s GROUP BY date ORDER BY datetime_taken ASC" :
             NULL,
-            darktable.collection->where_ext);
+            where_ext);
 
+    g_free(where_ext);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
     char **last_tokens = NULL;
@@ -1106,6 +1108,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
     gtk_list_store_clear(GTK_LIST_STORE(model));
     gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
     gtk_widget_hide(GTK_WIDGET(d->sw2));
+    gchar *where_ext = dt_collection_get_extended_where(darktable.collection, dr->num);
 
     char query[1024] = { 0 };
 
@@ -1115,7 +1118,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         int index = 0;
         gchar *makermodel_query = NULL;
         makermodel_query = dt_util_dstrcat(makermodel_query, "SELECT maker, model, COUNT(*) AS count "
-                "FROM main.images WHERE %s GROUP BY maker, model",darktable.collection->where_ext);
+                "FROM main.images WHERE %s GROUP BY maker, model", where_ext);
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 makermodel_query,
@@ -1151,7 +1154,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                            "FROM main.images LEFT JOIN "
                            "(SELECT DISTINCT imgid AS history_id, 1 AS altered FROM main.history) ON id = history_id "
                            "WHERE %s GROUP BY altered ORDER BY altered ASC",
-                   _("altered"),  _("not altered"), darktable.collection->where_ext);
+                   _("altered"),  _("not altered"), where_ext);
         break;
 
       case DT_COLLECTION_PROP_GEOTAGGING: // Geotagging, 2 hardcoded alternatives
@@ -1160,7 +1163,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                            "COUNT(*) AS count "
                            "FROM main.images "
                            "WHERE %s GROUP BY tagged ORDER BY tagged ASC",
-                       _("tagged"),  _("not tagged"), darktable.collection->where_ext);
+                       _("tagged"),  _("not tagged"), where_ext);
         break;
 
       case DT_COLLECTION_PROP_LOCAL_COPY: // local copy, 2 hardcoded alternatives
@@ -1181,7 +1184,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                            "FROM main.images JOIN "
                            "(SELECT imgid AS color_labels_id, color FROM main.color_labels) ON id = color_labels_id "
                            "WHERE %s GROUP BY color ORDER BY color DESC",
-                   _("red"), _("yellow"), _("green"), _("blue"), _("purple"), darktable.collection->where_ext);
+                   _("red"), _("yellow"), _("green"), _("blue"), _("purple"), where_ext);
         break;
 
       // TODO: Add empty string for metadata?
@@ -1191,71 +1194,73 @@ static void list_view(dt_lib_collect_rule_t *dr)
                  "SELECT value, 1, COUNT(*) AS count FROM main.images JOIN "
                          "(SELECT id AS meta_data_id, value FROM main.meta_data WHERE key = %d) ON id = meta_data_id "
                          "WHERE %s GROUP BY value ORDER BY value",
-                 DT_METADATA_XMP_DC_TITLE, darktable.collection->where_ext);
+                 DT_METADATA_XMP_DC_TITLE, where_ext);
         break;
       case DT_COLLECTION_PROP_DESCRIPTION: // description
         snprintf(query, sizeof(query),
                  "SELECT value, 1, COUNT(*) AS count FROM main.images JOIN "
                          "(SELECT id AS meta_data_id, value FROM main.meta_data WHERE key = %d) ON id = meta_data_id "
                          "WHERE %s GROUP BY value ORDER BY value",
-                 DT_METADATA_XMP_DC_DESCRIPTION, darktable.collection->where_ext);
+                 DT_METADATA_XMP_DC_DESCRIPTION, where_ext);
         break;
       case DT_COLLECTION_PROP_CREATOR: // creator
         snprintf(query, sizeof(query),
                  "SELECT value, 1, COUNT(*) AS count FROM main.images JOIN "
                          "(SELECT id AS meta_data_id, value FROM main.meta_data WHERE key = %d) ON id = meta_data_id "
                          "WHERE %s GROUP BY value ORDER BY value",
-                 DT_METADATA_XMP_DC_CREATOR, darktable.collection->where_ext);
+                 DT_METADATA_XMP_DC_CREATOR, where_ext);
         break;
       case DT_COLLECTION_PROP_PUBLISHER: // publisher
         snprintf(query, sizeof(query),
                  "SELECT value, 1, COUNT(*) AS count FROM main.images JOIN "
                          "(SELECT id AS meta_data_id, value FROM main.meta_data WHERE key = %d) ON id = meta_data_id "
                          "WHERE %s GROUP BY value ORDER BY value",
-                 DT_METADATA_XMP_DC_PUBLISHER, darktable.collection->where_ext);
+                 DT_METADATA_XMP_DC_PUBLISHER, where_ext);
         break;
       case DT_COLLECTION_PROP_RIGHTS: // rights
         snprintf(query, sizeof(query),
                  "SELECT value, 1, COUNT(*) AS count FROM main.images JOIN "
                          "(SELECT id AS meta_data_id, value FROM main.meta_data WHERE key = %d) ON id = meta_data_id "
                          "WHERE %s GROUP BY value ORDER BY value",
-                 DT_METADATA_XMP_DC_RIGHTS, darktable.collection->where_ext);
+                 DT_METADATA_XMP_DC_RIGHTS, where_ext);
         break;
       case DT_COLLECTION_PROP_LENS: // lens
         g_snprintf(query, sizeof(query), "SELECT lens, 1, COUNT(*) AS count "
-                "FROM main.images WHERE %s GROUP BY lens ORDER BY lens", darktable.collection->where_ext);
+                "FROM main.images WHERE %s GROUP BY lens ORDER BY lens", where_ext);
         break;
 
       case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
         g_snprintf(query, sizeof(query), "SELECT CAST(focal_length AS INTEGER) AS focal_length, 1, COUNT(*) AS count "
                          "FROM main.images WHERE %s GROUP BY focal_length ORDER BY focal_length",
-                   darktable.collection->where_ext);
+                   where_ext);
         break;
 
       case DT_COLLECTION_PROP_ISO: // iso
         g_snprintf(query, sizeof(query), "SELECT CAST(iso AS INTEGER) AS iso, 1, COUNT(*) AS count "
                            "FROM main.images WHERE %s GROUP BY iso ORDER BY iso",
-                   darktable.collection->where_ext);
+                   where_ext);
         break;
 
       case DT_COLLECTION_PROP_APERTURE: // aperture
         g_snprintf(query, sizeof(query), "SELECT ROUND(aperture,1) AS aperture, 1, COUNT(*) AS count "
                            "FROM main.images WHERE %s GROUP BY aperture ORDER BY aperture",
-                   darktable.collection->where_ext);
+                   where_ext);
         break;
 
       case DT_COLLECTION_PROP_FILENAME: // filename
         g_snprintf(query, sizeof(query), "SELECT filename, 1, COUNT(*) AS count "
-                "FROM main.images WHERE %s GROUP BY filename ORDER BY filename", darktable.collection->where_ext);
+                "FROM main.images WHERE %s GROUP BY filename ORDER BY filename", where_ext);
         break;
 
       default: // filmroll
         g_snprintf(query, sizeof(query), "SELECT folder, film_rolls_id, COUNT(*) AS count "
                 "FROM main.images JOIN "
                 "(SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id "
-                "WHERE %s GROUP BY folder ORDER BY folder DESC", darktable.collection->where_ext);
+                "WHERE %s GROUP BY folder ORDER BY folder DESC", where_ext);
         break;
     }
+
+    g_free(where_ext);
 
     if(strlen(query) > 0)
     {

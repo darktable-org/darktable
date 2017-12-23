@@ -128,7 +128,7 @@ typedef struct dt_collection_t
 {
   int clone;
   gchar *query;
-  gchar *where_ext;
+  gchar **where_ext;
   unsigned int count;
   dt_collection_params_t params;
   dt_collection_params_t store;
@@ -151,8 +151,10 @@ const gchar *dt_collection_get_query(const dt_collection_t *collection);
 int dt_collection_update(const dt_collection_t *collection);
 /** reset collection to default dummy selection */
 void dt_collection_reset(const dt_collection_t *collection);
+/** gets an extended where part */
+gchar *dt_collection_get_extended_where(const dt_collection_t *collection, int exclude);
 /** sets an extended where part */
-void dt_collection_set_extended_where(const dt_collection_t *collection, gchar *extended_where);
+void dt_collection_set_extended_where(const dt_collection_t *collection, gchar **extended_where);
 
 /** get filter flags for collection */
 uint32_t dt_collection_get_filter_flags(const dt_collection_t *collection);
