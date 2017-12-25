@@ -1312,13 +1312,14 @@ static void list_view(dt_lib_collect_rule_t *dr)
   }
 
   // if needed, we restrict the tree to matching entries
-  if(property == DT_COLLECTION_PROP_CAMERA || property == DT_COLLECTION_PROP_CREATOR
+  if (dr->typing
+     &&(property == DT_COLLECTION_PROP_CAMERA || property == DT_COLLECTION_PROP_CREATOR
      || property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_DESCRIPTION
      || property == DT_COLLECTION_PROP_FILENAME || property == DT_COLLECTION_PROP_FILMROLL
      || property == DT_COLLECTION_PROP_LENS || property == DT_COLLECTION_PROP_PUBLISHER
      || property == DT_COLLECTION_PROP_RIGHTS || property == DT_COLLECTION_PROP_TIME
      || property == DT_COLLECTION_PROP_TITLE || property == DT_COLLECTION_PROP_APERTURE
-     || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_ISO)
+     || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_ISO))
     gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)list_match_string, dr);
   // we update list selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
