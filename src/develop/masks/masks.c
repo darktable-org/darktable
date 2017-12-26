@@ -2280,7 +2280,7 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
 
 int dt_masks_point_in_form_exact(float x, float y, float *points, int points_start, int points_count)
 {
-  // we use ray casting algorith
+  // we use ray casting algorithm
   // to avoid most problems with horizontal segments, y should be rounded as int
   // so that there's very little chance than y==points...
 
@@ -2309,7 +2309,7 @@ int dt_masks_point_in_form_exact(float x, float y, float *points, int points_sta
 
 int dt_masks_point_in_form_near(float x, float y, float *points, int points_start, int points_count, float distance, int *near)
 {
-  // we use ray casting algorith
+  // we use ray casting algorithm
   // to avoid most problems with horizontal segments, y should be rounded as int
   // so that there's very little chance than y==points...
 

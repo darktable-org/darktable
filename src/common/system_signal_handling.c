@@ -248,7 +248,7 @@ void dt_set_signal_handlers()
   Set up exception handler for backtrace on Windows
   Works when there is NO SIGSEGV handler installed
 
-  SetUnhandledExceptionFilter handler must be saved on the first invokation
+  SetUnhandledExceptionFilter handler must be saved on the first invocation
   as GraphicsMagick is overwriting SetUnhandledExceptionFilter and all other signals in InitializeMagick()
   Eventually InitializeMagick() should be fixed upstream not to ignore existing exception handlers
   */

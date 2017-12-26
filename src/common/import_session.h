@@ -38,7 +38,7 @@ void dt_import_session_import(struct dt_import_session_t *self);
 void dt_import_session_set_name(struct dt_import_session_t *self, const char *name);
 
 /** \brief override the time for specific import session
-    \remark This will override NOW timestamp with specified one used when expanding ${YEAR} and alike.
+    \remark This will override NOW timestamp with a specified one used when expanding ${YEAR} and alike.
 */
 void dt_import_session_set_time(struct dt_import_session_t *self, time_t time);
 
@@ -55,11 +55,11 @@ int32_t dt_import_session_film_id(struct dt_import_session_t *self);
 /** \brief get import session name */
 const char *dt_import_session_name(struct dt_import_session_t *self);
 /** \brief get import session filename.
-    \param[in] current If TRUE the current filename will be return without evaluting a new filename.
+    \param[in] current If TRUE the current filename will be returned without evaluating a new filename.
  */
 const char *dt_import_session_filename(struct dt_import_session_t *self, gboolean current);
 /** \brief get import session path
-    \param[in] current If TRUE the current filename will be return without evaluting a new filename.
+    \param[in] current If TRUE the current filename will be returned without evaluating a new filename.
 */
 const char *dt_import_session_path(struct dt_import_session_t *self, gboolean current);
 

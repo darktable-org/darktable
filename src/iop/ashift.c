@@ -2246,7 +2246,7 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
 }
 #endif
 
-// function to keep crop fitting parameters within contraints
+// function to keep crop fitting parameters within constraints
 static void crop_constraint(double *params, int pcount)
 {
   if(pcount > 0) params[0] = fabs(params[0]);
@@ -2286,7 +2286,7 @@ static double crop_fitness(double *params, void *data)
   P[1] /= P[2];
   P[2] = 1.0f;
 
-  // two auxiliary points (some arbitrary distance away from P) to contruct the diagonals
+  // two auxiliary points (some arbitrary distance away from P) to construct the diagonals
   const float Pa[2][3] = { { P[0] + 10.0f * cos(alpha), P[1] + 10.0f * sin(alpha), 1.0f },
                            { P[0] + 10.0f * cos(alpha), P[1] - 10.0f * sin(alpha), 1.0f } };
 

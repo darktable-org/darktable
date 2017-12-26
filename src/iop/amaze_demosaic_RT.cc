@@ -390,7 +390,7 @@ void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
                                    nyqthresh * 0.03099732204057846f, nyqthresh * 0.018413194161458882f };
   // gaussian on 5x5 alt quincunx, sigma=1.5
   constexpr float gausseven[2] = { 0.13719494435797422f, 0.05640252782101291f };
-  // guassian on quincunx grid
+  // gaussian on quincunx grid
   constexpr float gquinc[4] = { 0.169917f, 0.108947f, 0.069855f, 0.0287182f };
 
   typedef struct

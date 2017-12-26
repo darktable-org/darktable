@@ -123,7 +123,7 @@ typedef enum dt_camera_error_t
 {
   /** Locking camera failed. \remarks This means that camera control is busy and locking failed. */
   CAMERA_LOCK_FAILED,
-  /**  Camera conenction is broken and unusable.
+  /**  Camera connection is broken and unusable.
   \remarks Beyond this message references to dt_camera_t pointer is invalid, which means that the host
   application should remove all references of camera pointer and disallow any operations onto it.
    */

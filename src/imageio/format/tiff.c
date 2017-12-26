@@ -93,7 +93,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   // http://partners.adobe.com/public/developer/en/tiff/TIFFphotoshop.pdf (dated 2002)
   // "A proprietary ZIP/Flate compression code (0x80b2) has been used by some"
   // "software vendors. This code should be considered obsolete. We recommend"
-  // "that TIFF implentations recognize and read the obsolete code but only"
+  // "that TIFF implementations recognize and read the obsolete code but only"
   // "write the official compression code (0x0008)."
   // http://www.awaresystems.be/imaging/tiff/tifftags/compression.html
   // http://www.awaresystems.be/imaging/tiff/tifftags/predictor.html
