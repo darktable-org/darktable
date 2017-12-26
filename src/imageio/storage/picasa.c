@@ -695,7 +695,7 @@ static gchar *picasa_get_user_refresh_token(PicasaContext *ctx)
 
 /**
  * @see https://developers.google.com/accounts/docs/OAuth2InstalledApp
- * @returs NULL if the user cancel the operation or a valid token
+ * @returns NULL if the user cancels the operation or a valid token
  */
 static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 {

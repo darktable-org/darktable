@@ -298,7 +298,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
       if(MODE_LOCAL_AVERAGE == d->op_mode && out[(size_t)v * width * ch + t * ch + 3] > thresh)
       {
         float local_avg = 0.0;
-        // use some and not all values from the neigbourhood to speed things up:
+        // use some and not all values from the neighbourhood to speed things up:
         const int *tmp = xy_avg;
         for(int u = 0; u < samples_avg; u++)
         {

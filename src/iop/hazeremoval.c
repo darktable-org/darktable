@@ -794,7 +794,7 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
   (*pA0)[1] = A0_g;
   (*pA0)[2] = A0_b;
   free_gray_image(&dark_ch);
-  // for almsot haze free images it may happen that crit_haze_level=0, this means
+  // for almost haze free images it may happen that crit_haze_level=0, this means
   // there is a very large image depth, in this case a large number is returned, that
   // is small enough to avoid overflow in later processing
   // the critical haze level is at dark_channel_quantil (not 100%) to be insensitive
