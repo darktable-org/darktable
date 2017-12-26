@@ -160,7 +160,7 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
    * Think of input image as:
    * 1. Square, containing:
    * 3. 4x Right triangles (two pairs), located in the Edges of square
-   * 2. Rectangle (rotated 45 degrees), located inbetween triangles.
+   * 2. Rectangle (rotated 45 degrees), located in between triangles.
    *
    * Therefore, output image dimensions, that are sizes of inner Rectangle
    * can be found using Pythagorean theorem.

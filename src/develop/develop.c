@@ -1503,7 +1503,7 @@ void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_dela
 }
 
 
-/** duplicate a existant module */
+/** duplicate a existent module */
 dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *base, int priority)
 {
   // we create the new module

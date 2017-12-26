@@ -1212,7 +1212,7 @@ gui_init (dt_lib_module_t *self)
   const gboolean lock_active = dt_conf_get_bool("plugins/print/print/lock_borders");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->lock_button), lock_active);
 
-  // pack image dimention hbox here
+  // pack image dimension hbox here
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxdim), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxinfo), TRUE, TRUE, 0);

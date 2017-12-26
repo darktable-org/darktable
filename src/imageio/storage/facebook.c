@@ -96,7 +96,7 @@ typedef enum FBAlbumPrivacyPolicy
 
 
 /**
- * Represents informations about an album
+ * Represents information about an album
  */
 typedef struct FBAlbum
 {
@@ -119,7 +119,7 @@ static void fb_album_destroy(FBAlbum *album)
 }
 
 /**
- * Represents informations about an account
+ * Represents information about an account
  */
 typedef struct FBAccountInfo
 {
@@ -552,7 +552,7 @@ static const gchar *fb_upload_photo_to_album(FBContext *ctx, gchar *albumid, gch
 
 /**
  * @see https://developers.facebook.com/docs/reference/api/user/
- * @return basic informations about the account
+ * @return basic information about the account
  */
 static FBAccountInfo *fb_get_account_info(FBContext *ctx)
 {

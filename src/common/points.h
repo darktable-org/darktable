@@ -459,10 +459,10 @@ PRE_ALWAYS static __m128i mm_recursion(__m128i *a, __m128i *b, __m128i c, __m128
 
 /**
  * This function represents the recursion formula.
- * @param a a 128-bit part of the interal state array
- * @param b a 128-bit part of the interal state array
- * @param c a 128-bit part of the interal state array
- * @param d a 128-bit part of the interal state array
+ * @param a a 128-bit part of the internal state array
+ * @param b a 128-bit part of the internal state array
+ * @param c a 128-bit part of the internal state array
+ * @param d a 128-bit part of the internal state array
  * @param mask 128-bit mask
  * @return output
  */

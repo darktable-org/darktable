@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 
-    part of this file is based on nikon_curve.h  from UFraw
+    part of this file is based on nikon_curve.h from UFraw
     Copyright 2004-2008 by Shawn Freeman, Udi Fuchs
 */
 

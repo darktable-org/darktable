@@ -40,7 +40,7 @@ typedef struct _GtkDarktableIconClass
 
 GType dtgtk_icon_get_type(void);
 
-/** Instansiate a new darktable icon control passing paint function as content */
+/** instantiate a new darktable icon control passing paint function as content */
 GtkWidget *dtgtk_icon_new(DTGTKCairoPaintIconFunc paint, gint paintflags);
 
 /** set the paint function for a icon */

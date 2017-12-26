@@ -174,7 +174,7 @@ static LONG WINAPI dt_toplevel_exception_handler(PEXCEPTION_POINTERS pExceptionI
   }
   else
   {
-    gchar *exception_message = g_strdup_printf("An unhandled exception occured.\nBacktrace will be written to: %s "
+    gchar *exception_message = g_strdup_printf("An unhandled exception occurred.\nBacktrace will be written to: %s "
                                                "after you click on the OK button.\nIf you report this issue, "
                                                "please share this backtrace with the developers.\n",
                                                name_used);

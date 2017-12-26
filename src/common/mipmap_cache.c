@@ -1124,7 +1124,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
   char filename[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
 
-  /* do not even try to process file if it isnt available */
+  /* do not even try to process file if it isn't available */
   dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
   if(!*filename || !g_file_test(filename, G_FILE_TEST_EXISTS))
   {

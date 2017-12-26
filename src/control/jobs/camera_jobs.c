@@ -296,7 +296,7 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
   struct dt_camera_shared_t *shared;
   shared = (dt_camera_shared_t *)data;
 
-  /* update import session with orginal filename so that $(FILE_EXTENSION)
+  /* update import session with original filename so that $(FILE_EXTENSION)
    *     and alikes can be expanded. */
   dt_import_session_set_filename(shared->session, filename);
   if(exif_time)

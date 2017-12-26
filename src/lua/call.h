@@ -32,7 +32,7 @@ void dt_lua_gtk_wrap_internal(lua_State*L,const char* function, int line);
    */
 int dt_lua_treated_pcall(lua_State*L, int nargs, int nresults);
 /* 
-   deal wil lua_pcall calling convention
+   deal with lua_pcall calling convention
    * print the string on the top of L if result != LUA_OK
    * pop the error string
    * return result 
@@ -54,7 +54,7 @@ void dt_lua_async_call_internal(const char * function, int line,lua_State *L, in
 
 /*
    Call a lua function asynchronously, parameters are passed through varags,
-   and temporarly stored in a glist before pushing in the stack
+   and temporarily stored in a glist before pushing in the stack
 
    This function CAN be called with the gtk lock held.
    * function : the function to call

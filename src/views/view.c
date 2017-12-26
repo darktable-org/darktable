@@ -1541,7 +1541,7 @@ void dt_view_filmstrip_scroll_relative(const int diff, int offset)
 
 void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate)
 {
-  // g_return_if_fail(vm->proxy.filmstrip.module!=NULL); // This can happend here for debugging
+  // g_return_if_fail(vm->proxy.filmstrip.module!=NULL); // This can happen here for debugging
   // g_return_if_fail(vm->proxy.filmstrip.scroll_to_image!=NULL);
 
   if(vm->proxy.filmstrip.module && vm->proxy.filmstrip.scroll_to_image)
@@ -1550,7 +1550,7 @@ void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, g
 
 int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm)
 {
-  // g_return_val_if_fail(vm->proxy.filmstrip.module!=NULL, 0); // This can happend here for debugging
+  // g_return_val_if_fail(vm->proxy.filmstrip.module!=NULL, 0); // This can happen here for debugging
   // g_return_val_if_fail(vm->proxy.filmstrip.activated_image!=NULL, 0);
 
   if(vm->proxy.filmstrip.module && vm->proxy.filmstrip.activated_image)

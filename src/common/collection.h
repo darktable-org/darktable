@@ -134,7 +134,7 @@ typedef struct dt_collection_t
 } dt_collection_t;
 
 
-/** instansiates a collection context, if clone equals NULL default query is constructed. */
+/** instantiates a collection context, if clone equals NULL default query is constructed. */
 const dt_collection_t *dt_collection_new(const dt_collection_t *clone);
 /** frees a collection context. */
 void dt_collection_free(const dt_collection_t *collection);

@@ -44,7 +44,7 @@ void expose(struct dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, 
             int32_t pointery);         // expose the module (gtk callback)
 int try_enter(struct dt_view_t *self); // test if enter can succeed.
 void enter(struct dt_view_t *self);    // mode entered, this module got focus. return non-null on failure.
-void leave(struct dt_view_t *self);    // mode left (is called after the new try_enter has succeded).
+void leave(struct dt_view_t *self);    // mode left (is called after the new try_enter has succeeded).
 void reset(struct dt_view_t *self);    // reset default appearance
 
 // event callbacks:

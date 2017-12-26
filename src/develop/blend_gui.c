@@ -1209,7 +1209,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
         bd->numberstops[6] = sizeof(_gradient_gray) / sizeof(dt_iop_gui_blendif_colorstop_t);
         break;
       default:
-        assert(FALSE); // blendif not supported for RAW, which is already catched upstream; we should not get
+        assert(FALSE); // blendif not supported for RAW, which is already caught upstream; we should not get
                        // here
     }
 

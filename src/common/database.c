@@ -285,7 +285,7 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
       i = 0;
     }
 
-    // find the next free ammended version of name
+    // find the next free amended version of name
     sqlite3_prepare_v2(db->handle, "SELECT name FROM main.presets  WHERE name = ?1 || ' (' || ?2 || ')' AND "
                                    "operation = ?3 AND op_version = ?4",
                        -1, &innerstmt, NULL);

@@ -17,7 +17,7 @@ if echo "$NEW_VERSION" | grep -q Format; then
   NEW_VERSION="unknown-version"
 fi
 
-# version.c exists => check if it containts the up-to-date version
+# version.c exists => check if it contains the up-to-date version
 if [ -f "$C_FILE" ]; then
   OLD_VERSION=$(./tools/parse_version_c.sh "$C_FILE")
   if [ "${OLD_VERSION}" = "${NEW_VERSION}" ]; then

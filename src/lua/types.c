@@ -917,8 +917,8 @@ void dt_lua_type_setmetafield_type(lua_State*L,luaA_Type type_id,const char* met
     return;
   // whitelist for specific types
   } else if(
-      // if you add a type here, make sure it handles inheritence of metamethods itself
-      // typically, set the metamethod not for the parent type but just after inheritence
+      // if you add a type here, make sure it handles inheritance of metamethods itself
+      // typically, set the metamethod not for the parent type but just after inheritance
       ( !strcmp(method_name,"__associated_object")&& dt_lua_typeisa_type(L,type_id,luaA_type_find(L,"dt_imageio_module_format_t"))) ||
       ( !strcmp(method_name,"__associated_object")&& dt_lua_typeisa_type(L,type_id,luaA_type_find(L,"dt_imageio_module_storage_t"))) ||
       ( !strcmp(method_name,"__gc")&& dt_lua_typeisa_type(L,type_id,luaA_type_find(L,"dt_style_t"))) ||
