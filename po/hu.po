@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-08 22:46+0100\n"
-"PO-Revision-Date: 2017-12-08 22:46+0100\n"
+"POT-Creation-Date: 2017-12-26 21:15+0100\n"
+"PO-Revision-Date: 2017-12-26 21:42+0100\n"
 "Last-Translator: Báthory Péter <bathory86p@gmail.com>\n"
 "Language-Team: \n"
 "Language: hu\n"
@@ -15,6 +15,7 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: po\n"
 "X-Poedit-SearchPath-1: src\n"
+"X-Poedit-SearchPath-2: .\n"
 
 #: ../build/src/preferences_gen.h:1617
 msgid "GUI options"
@@ -934,6 +935,26 @@ msgstr ""
 "a darktable támogatja a legtöbb modern kamera raw formátumát, a "
 "feldolgozásukat pedig nagy pontossággal végzi."
 
+#: ../data/darktable.appdata.xml.in.h:5
+msgid "Virtual light table, showing a collection"
+msgstr "Virtuális átvilágító, egy gyűjtemény megjelenítése"
+
+#: ../data/darktable.appdata.xml.in.h:6
+msgid "Virtual dark room with an opened image"
+msgstr "Virtuális sötétkamra egy megnyitott képpel"
+
+#: ../data/darktable.appdata.xml.in.h:7
+msgid "Virtual dark room, sharpening an image"
+msgstr "Virtuális sötétkamra, egy kép élesítése"
+
+#: ../data/darktable.appdata.xml.in.h:8
+msgid "Show images on a map"
+msgstr "Képek megjelenítése a térképen"
+
+#: ../data/darktable.appdata.xml.in.h:9
+msgid "Print your images"
+msgstr "Képek nyomtatása"
+
 #: ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
 msgstr "Virtuális átvilágító és sötétkamra"
@@ -950,7 +971,7 @@ msgstr "grafika;fénykép;fotó;raw;"
 #: ../src/imageio/storage/disk.c:95 ../src/imageio/storage/gallery.c:107
 #: ../src/imageio/storage/latex.c:106 ../src/libs/collect.c:240
 #: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:476
-#: ../src/libs/import.c:755 ../src/libs/import.c:862 ../src/libs/lib.c:240
+#: ../src/libs/import.c:773 ../src/libs/import.c:880 ../src/libs/lib.c:240
 #: ../src/libs/styles.c:213 ../src/libs/styles.c:236 ../src/libs/tagging.c:374
 #: ../src/libs/tagging.c:414
 msgid "_cancel"
@@ -1043,7 +1064,7 @@ msgstr ""
 "nem sikerült lekérni a paramétereket a formátum modultól. exportálás "
 "megszakítása…"
 
-#: ../src/common/collection.c:855 ../src/develop/lightroom.c:789
+#: ../src/common/collection.c:855 ../src/develop/lightroom.c:818
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:451
 #: ../src/iop/channelmixer.c:462 ../src/iop/colorbalance.c:631
 #: ../src/iop/temperature.c:1350 ../src/libs/collect.c:1085
@@ -1051,13 +1072,13 @@ msgstr ""
 msgid "red"
 msgstr "vörös"
 
-#: ../src/common/collection.c:857 ../src/develop/lightroom.c:791
+#: ../src/common/collection.c:857 ../src/develop/lightroom.c:820
 #: ../src/iop/temperature.c:1341 ../src/libs/collect.c:1089
 #: ../src/libs/collect.c:1090 ../src/libs/collect.c:1091
 msgid "yellow"
 msgstr "sárga"
 
-#: ../src/common/collection.c:859 ../src/develop/lightroom.c:793
+#: ../src/common/collection.c:859 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:452
 #: ../src/iop/channelmixer.c:468 ../src/iop/colorbalance.c:638
 #: ../src/iop/temperature.c:1338 ../src/iop/temperature.c:1351
@@ -1066,7 +1087,7 @@ msgstr "sárga"
 msgid "green"
 msgstr "zöld"
 
-#: ../src/common/collection.c:861 ../src/develop/lightroom.c:795
+#: ../src/common/collection.c:861 ../src/develop/lightroom.c:824
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
 #: ../src/iop/channelmixer.c:474 ../src/iop/colorbalance.c:645
 #: ../src/iop/temperature.c:1352 ../src/libs/collect.c:1097
@@ -1180,12 +1201,12 @@ msgstr "BRG (tesztelésre)"
 msgid "file `%s' to print not found for image %d on `%s'"
 msgstr "a nyomtatandó „%s” fájl nem található %d. képhez ezen: „%s”"
 
-#: ../src/common/cups_print.c:384
+#: ../src/common/cups_print.c:383
 #, c-format
 msgid "error while printing image %d on `%s'"
 msgstr "%d. kép nyomtatásakor hiba történt ezen „%s”"
 
-#: ../src/common/cups_print.c:386
+#: ../src/common/cups_print.c:385
 #, c-format
 msgid "printing image %d on `%s'"
 msgstr "%d kép nyomtatása ezen „%s”"
@@ -1205,7 +1226,7 @@ msgstr "könyvtár betöltése nem sikerült: „%s”"
 msgid "file `%s' has unknown format!"
 msgstr "„%s” fájl ismeretlen formátumú!"
 
-#: ../src/common/darktable.c:264 ../src/libs/import.c:821
+#: ../src/common/darktable.c:264 ../src/libs/import.c:839
 #, c-format
 msgid "error loading file `%s'"
 msgstr "„%s” fájl betöltése nem sikerült"
@@ -1213,7 +1234,7 @@ msgstr "„%s” fájl betöltése nem sikerült"
 #: ../src/common/database.c:1340
 #, c-format
 msgid ""
-"an error has occured while trying to open the database from\n"
+"an error has occurred while trying to open the database from\n"
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
@@ -1258,7 +1279,7 @@ msgstr "hiba történt az adatbázis zároló fájl olvasásra való megnyitása
 #: ../src/common/database.c:1649 ../src/common/database.c:1725
 #, c-format
 msgid ""
-"an error has occured while trying to open the database from\n"
+"an error has occurred while trying to open the database from\n"
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
@@ -1534,15 +1555,15 @@ msgstr "%s stílusfájlja már létezik"
 msgid "style %s was successfully imported"
 msgstr "%s stílus sikeresen importálva"
 
-#: ../src/common/utility.c:455
+#: ../src/common/utility.c:456
 msgid "above sea level"
 msgstr "tengerszint felett"
 
-#: ../src/common/utility.c:456
+#: ../src/common/utility.c:457
 msgid "below sea level"
 msgstr "tengerszint alatt"
 
-#: ../src/common/utility.c:507 ../src/iop/watermark.c:735
+#: ../src/common/utility.c:508 ../src/iop/watermark.c:735
 #: ../src/libs/metadata_view.c:550
 msgid "m"
 msgstr "m"
@@ -1955,7 +1976,7 @@ msgstr[1] "%d kép importálása"
 msgid "importing image %s"
 msgstr "%s kép importálása"
 
-#: ../src/control/jobs/image_jobs.c:104 ../src/libs/import.c:755
+#: ../src/control/jobs/image_jobs.c:104 ../src/libs/import.c:773
 msgid "import image"
 msgstr "kép importálása"
 
@@ -2520,35 +2541,35 @@ msgstr "paraméterek visszaállítása"
 msgid "presets"
 msgstr "tárolt beállítások"
 
-#: ../src/develop/lightroom.c:921
+#: ../src/develop/lightroom.c:965
 msgid "cannot find lightroom XMP!"
 msgstr "nem található az átvilágító XMP!"
 
-#: ../src/develop/lightroom.c:953 ../src/develop/lightroom.c:975
-#: ../src/develop/lightroom.c:995
+#: ../src/develop/lightroom.c:997 ../src/develop/lightroom.c:1019
+#: ../src/develop/lightroom.c:1039
 #, c-format
 msgid "`%s' not a lightroom XMP!"
 msgstr "„%s” nem egy átvilágító XMP!"
 
-#: ../src/develop/lightroom.c:1455 ../src/libs/import.c:594
+#: ../src/develop/lightroom.c:1499 ../src/libs/import.c:594
 msgid "tags"
 msgstr "címkék"
 
-#: ../src/develop/lightroom.c:1464 ../src/libs/tools/filter.c:141
+#: ../src/develop/lightroom.c:1508 ../src/libs/tools/filter.c:141
 msgid "rating"
 msgstr "értékelés"
 
-#: ../src/develop/lightroom.c:1473 ../src/libs/collect.h:38
+#: ../src/develop/lightroom.c:1517 ../src/libs/collect.h:38
 #: ../src/libs/geotagging.c:62
 msgid "geotagging"
 msgstr "geotaggelés"
 
-#: ../src/develop/lightroom.c:1482 ../src/libs/collect.h:34
+#: ../src/develop/lightroom.c:1526 ../src/libs/collect.h:34
 #: ../src/libs/tools/filter.c:143
 msgid "color label"
 msgstr "szín címke"
 
-#: ../src/develop/lightroom.c:1488
+#: ../src/develop/lightroom.c:1532
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -3388,7 +3409,7 @@ msgstr "importálandó fájl kiválasztása"
 
 #: ../src/gui/preferences.c:1086 ../src/libs/collect.c:241
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:477
-#: ../src/libs/import.c:756 ../src/libs/import.c:863 ../src/libs/styles.c:237
+#: ../src/libs/import.c:774 ../src/libs/import.c:881 ../src/libs/styles.c:237
 msgid "_open"
 msgstr "_megnyitás"
 
@@ -3826,7 +3847,7 @@ msgstr "bitmélység"
 msgid "bits per channel of the embedded images"
 msgstr "a beágyazott képek csatornánkénti bitmélysége"
 
-#: ../src/imageio/format/pdf.c:717 ../src/imageio/format/png.c:538
+#: ../src/imageio/format/pdf.c:717 ../src/imageio/format/png.c:543
 #: ../src/imageio/format/tiff.c:422 ../src/iop/graduatednd.c:1147
 msgid "compression"
 msgstr "tömörítés"
@@ -4839,22 +4860,22 @@ msgstr "lokális kontraszt"
 msgid "local laplacian: inconsistent output"
 msgstr "helyi laplace-szűrő: nem következetes kimenet"
 
-#: ../src/iop/bilat.c:507 ../src/iop/denoiseprofile.c:2056
+#: ../src/iop/bilat.c:516 ../src/iop/denoiseprofile.c:2056
 #: ../src/iop/exposure.c:849 ../src/iop/lens.c:2227 ../src/iop/levels.c:566
 #: ../src/libs/copy_history.c:310 ../src/libs/export.c:644
 #: ../src/libs/print_settings.c:1356 ../src/views/darkroom.c:1451
 msgid "mode"
 msgstr "mód"
 
-#: ../src/iop/bilat.c:509
+#: ../src/iop/bilat.c:518
 msgid "bilateral grid"
 msgstr "bilaterális rács"
 
-#: ../src/iop/bilat.c:510
+#: ../src/iop/bilat.c:519
 msgid "local laplacian filter"
 msgstr "helyi laplace-szűrő"
 
-#: ../src/iop/bilat.c:513
+#: ../src/iop/bilat.c:522
 msgid ""
 "the filter used for local contrast enhancement. bilateral is faster but can "
 "lead to artifacts around edges for extreme settings."
@@ -4862,52 +4883,52 @@ msgstr ""
 "ez a szűrő lokális kontraszt fokozásra való. a bilaterális szűrő gyorsabb, "
 "de szélsőséges beállításoknál fura éleket hoz létre."
 
-#: ../src/iop/bilat.c:517 ../src/iop/globaltonemap.c:723
+#: ../src/iop/bilat.c:526 ../src/iop/globaltonemap.c:723
 msgid "detail"
 msgstr "részletesség"
 
-#: ../src/iop/bilat.c:519
+#: ../src/iop/bilat.c:528
 msgid "changes the local contrast"
 msgstr "módosítja a lokális kontrasztot"
 
-#: ../src/iop/bilat.c:522 ../src/iop/grain.c:620
+#: ../src/iop/bilat.c:531 ../src/iop/grain.c:620
 msgid "coarseness"
 msgstr "durvaság"
 
-#: ../src/iop/bilat.c:524
+#: ../src/iop/bilat.c:533
 msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr "a helyi részletek mérete (a bilaterális szűrő térbeli szigmája)"
 
-#: ../src/iop/bilat.c:528 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:671
+#: ../src/iop/bilat.c:537 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:671
 msgid "contrast"
 msgstr "kontraszt"
 
-#: ../src/iop/bilat.c:529
+#: ../src/iop/bilat.c:538
 msgid "L difference to detect edges (range sigma of bilateral filter)"
 msgstr "éldetektáló L-különbség (a bilaterális szűrő tartomány szigmája)"
 
-#: ../src/iop/bilat.c:533 ../src/iop/monochrome.c:611 ../src/iop/shadhi.c:827
+#: ../src/iop/bilat.c:542 ../src/iop/monochrome.c:611 ../src/iop/shadhi.c:827
 #: ../src/iop/splittoning.c:537
 msgid "highlights"
 msgstr "csúcsfények"
 
-#: ../src/iop/bilat.c:535
+#: ../src/iop/bilat.c:544
 msgid "changes the local contrast of highlights"
 msgstr "módosítja a lokális kontraszt csúcsfényeit"
 
-#: ../src/iop/bilat.c:539 ../src/iop/shadhi.c:826 ../src/iop/splittoning.c:532
+#: ../src/iop/bilat.c:548 ../src/iop/shadhi.c:826 ../src/iop/splittoning.c:532
 msgid "shadows"
 msgstr "árnyékok"
 
-#: ../src/iop/bilat.c:540
+#: ../src/iop/bilat.c:549
 msgid "changes the local contrast of shadows"
 msgstr "módosítja a lokális kontraszt árnyékait"
 
-#: ../src/iop/bilat.c:545
+#: ../src/iop/bilat.c:554
 msgid "midtone range"
 msgstr "középtónus tartomány"
 
-#: ../src/iop/bilat.c:546
+#: ../src/iop/bilat.c:555
 msgid ""
 "defines what counts as midtones. lower for better dynamic range compression "
 "(reduce shadow and highlight contrast), increase for more powerful local "
@@ -5043,7 +5064,7 @@ msgid "15:10 postcard black"
 msgstr "15:10 képeslap fekete"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:911 ../src/libs/import.c:976
+#: ../src/iop/borders.c:911 ../src/libs/import.c:994
 msgid "image"
 msgstr "kép"
 
@@ -5964,7 +5985,7 @@ msgstr "árnyalat"
 
 #: ../src/iop/colorreconstruction.c:624 ../src/iop/colorreconstruction.c:1077
 #: ../src/iop/globaltonemap.c:181 ../src/iop/globaltonemap.c:342
-#: ../src/iop/hazeremoval.c:842 ../src/iop/levels.c:255
+#: ../src/iop/hazeremoval.c:852 ../src/iop/levels.c:255
 msgid "inconsistent output"
 msgstr "következetlen kimenet"
 
@@ -8645,7 +8666,7 @@ msgid "XMP sidecar files"
 msgstr "XMP kísérőfájlok"
 
 #: ../src/libs/copy_history.c:92 ../src/libs/geotagging.c:498
-#: ../src/libs/import.c:786 ../src/libs/styles.c:254
+#: ../src/libs/import.c:804 ../src/libs/styles.c:254
 msgid "all files"
 msgstr "összes fájl"
 
@@ -9243,37 +9264,37 @@ msgstr "néhány metaadat beállítása az újonnan importált képekre."
 msgid "comma separated list of tags"
 msgstr "vesszővel elválasztott címkék"
 
-#: ../src/libs/import.c:781
+#: ../src/libs/import.c:799
 msgid "supported images"
 msgstr "támogatott képek"
 
-#: ../src/libs/import.c:837
+#: ../src/libs/import.c:855
 msgid "file has unknown format!"
 msgstr "a fájl ismeretlen formátumú!"
 
-#: ../src/libs/import.c:862
+#: ../src/libs/import.c:880
 msgid "import film"
 msgstr "film importálása"
 
-#: ../src/libs/import.c:979
+#: ../src/libs/import.c:997
 msgid "select one or more images to import"
 msgstr "válassz egy vagy több importálandó képet"
 
 #. adding the import folder button
-#: ../src/libs/import.c:986
+#: ../src/libs/import.c:1004
 msgid "folder"
 msgstr "könyvtár"
 
-#: ../src/libs/import.c:989
+#: ../src/libs/import.c:1007
 msgid "select a folder to import as film roll"
 msgstr "válassz egy filmszalagként importálandó könyvtárat"
 
 #. add the rescan button
-#: ../src/libs/import.c:997
+#: ../src/libs/import.c:1015
 msgid "scan for devices"
 msgstr "eszközök keresése"
 
-#: ../src/libs/import.c:1000
+#: ../src/libs/import.c:1018
 msgid "scan for newly attached devices"
 msgstr "újonnan csatlakoztatott eszközök keresése"
 
