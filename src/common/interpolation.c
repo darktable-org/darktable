@@ -1133,7 +1133,7 @@ const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type t
 
 /** Prepares a 1D resampling plan
  *
- * This consists of the following informations
+ * This consists of the following information
  * <ul>
  * <li>A list of lengths that tell how many pixels are relevant for the
  *    next output</li>
@@ -1164,7 +1164,7 @@ const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type t
  * done with the plan.
  * @param pkernel [out] Array of filter kernel taps
  * @param pindex [out] Array of sample indexes to be used for applying each kernel tap
- * arrays of informations
+ * arrays of information
  * @param pmeta [out] Array of int triplets (length, kernel, index) telling where to start for an arbitrary
  *out position meta[3*out]
  * @return 0 for success, !0 for failure

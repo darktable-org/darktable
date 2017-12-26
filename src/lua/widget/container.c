@@ -141,7 +141,7 @@ static int container_numindex(lua_State*L)
       lua_widget widget;
       luaA_to(L, lua_widget,&widget,3);
       gtk_container_add(GTK_CONTAINER(container->widget),widget->widget);
-      // the following lines add the widget to the container's user_value to guarentee it's referenced on the lua side
+      // the following lines add the widget to the container's user_value to guarantee it's referenced on the lua side
       // they should be done by child_added, but 
       // there can be a race with lua's GC, so do it now.
       // child_added doing it a second time is harmless

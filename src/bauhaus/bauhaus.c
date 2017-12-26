@@ -567,7 +567,7 @@ void dt_bauhaus_init()
   // gtk_window_set_modal(GTK_WINDOW(c->popup_window), TRUE);
   // gtk_window_set_decorated(GTK_WINDOW(c->popup_window), FALSE);
 
-  // for pie menue:
+  // for pie menu:
   // gtk_window_set_position(GTK_WINDOW(c->popup_window), GTK_WIN_POS_MOUSE);// | GTK_WIN_POS_CENTER);
 
   // gtk_window_set_keep_above isn't enough on OS X

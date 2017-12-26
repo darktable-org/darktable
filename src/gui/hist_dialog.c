@@ -42,7 +42,7 @@ static GList *_gui_hist_get_active_items(dt_gui_hist_dialog_t *d)
 {
   GList *result = NULL;
 
-  /* run thru all items and add active ones to result */
+  /* run through all items and add active ones to result */
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->items));
   if(gtk_tree_model_get_iter_first(model, &iter))
@@ -61,7 +61,7 @@ static GList *_gui_hist_get_active_items(dt_gui_hist_dialog_t *d)
 
 static void _gui_hist_set_items(dt_gui_hist_dialog_t *d, gboolean active)
 {
-  /* run thru all items and set active status */
+  /* run through all items and set active status */
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->items));
   if(gtk_tree_model_get_iter_first(model, &iter))
