@@ -3,17 +3,17 @@
 #
 #  LIBSOUP2_FOUND                True if libsoup2 got found
 #  LIBSOUP2_INCLUDE_DIRS         Location of libsoup2 headers 
-#  LIBSOUP2_LIBRARIES            List of libaries to use libsoup2
+#  LIBSOUP2_LIBRARIES            List of libraries to use libsoup2
 #  LIBSOUP2_LIBRARY_DIRS         Location of libsoup2 library
 #
 #  LIBSOUP22_FOUND               True if libsoup2.2 got found
 #  LIBSOUP22_INCLUDE_DIRS        Location of libsoup2.2 headers 
-#  LIBSOUP22_LIBRARIES           List of libaries to use libsoup2.2
+#  LIBSOUP22_LIBRARIES           List of libraries to use libsoup2.2
 #  LIBSOUP22_LIBRARY_DIRS        Location of libsoup2.2 library
 #
 #  LIBSOUP24_FOUND               True if libsoup2.4 got found
 #  LIBSOUP24_INCLUDE_DIRS        Location of libsoup2.4 headers 
-#  LIBSOUP24_LIBRARIES           List of libaries to use libsoup2.4
+#  LIBSOUP24_LIBRARIES           List of libraries to use libsoup2.4
 #  LIBSOUP24_LIBRARY_DIRS        Location of libsoup2.4 library
 #
 #  Set LIBSOUP2_MIN_VERSION to find libsoup2.2 or libsoup2.4 if only 

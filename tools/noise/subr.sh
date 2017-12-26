@@ -331,7 +331,7 @@ get_image_iso() {
 			#     1. "Exif.NikonIi.*" are bytes, not even
 			#        shorts, so they're smaller than other
 			#        keys.
-			#     2. That looks like versionned nodes:
+			#     2. That looks like versioned nodes:
 			#        "Nikon2" vs. "Nikon3".
 			iso=$(get_exif_key "$file" Exif.Nikon3.ISOSpeed)
 			if [ -z "$iso" -o "$iso" = "0" ]; then

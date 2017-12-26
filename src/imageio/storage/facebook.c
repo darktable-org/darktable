@@ -588,7 +588,7 @@ static gboolean combobox_separator(GtkTreeModel *model, GtkTreeIter *iter, gpoin
 
 /**
  * @see https://developers.facebook.com/docs/authentication/
- * @returs NULL if the user cancel the operation or a valid token
+ * @returns NULL if the user cancels the operation or a valid token
  */
 static gboolean _open_browser(const char *callback_url)
 {

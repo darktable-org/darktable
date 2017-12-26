@@ -104,7 +104,7 @@ void dt_lua_goto_subtable(lua_State *L, const char *sub_name)
 
 /* LUA LOCKING
    Lua can only be run from a single thread at a time (the base lua engine
-   is not protected against concurent access) so we need a mutex to cover us
+   is not protected against concurrent access) so we need a mutex to cover us
 
    However there are cases in lua/call.c where we need to lock the lua access
    from a thread and unlock it from another thread. This is done to guarantee

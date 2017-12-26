@@ -67,7 +67,7 @@ typedef struct
 {
   lua_State *state;                  // main lua context
 
-  dt_pthread_mutex_t mutex;          // mutex protecting the lua condition variabe
+  dt_pthread_mutex_t mutex;          // mutex protecting the lua condition variable
   pthread_cond_t cond;               // condition variable to wait for the lua lock
   bool exec_lock;                    // true if some lua code is running. this is logically a mutex
 

@@ -163,7 +163,7 @@ secondly the resulting accuracy would not be improved significantly.
 It is now time to analyse the data and output the curves.
 
 
-### Analysing and outputing the curves
+### Analysing and outputting the curves
 
 
 So you gathered data in `$HOME/tmp/mycamera.dat`, that's perfect. Let's compute the
