@@ -332,7 +332,7 @@ static int full_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 
   if(luaL_getmetafield(L, -1, "__init"))
   {
-    lua_pushvalue(L, -2);                  // the new alocated object
+    lua_pushvalue(L, -2);                  // the new allocated object
     lua_pushlightuserdata(L, (void *)cin); // forced to cast..
     lua_call(L, 2, 0);
   }
@@ -369,7 +369,7 @@ static int int_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
     lua_settable(L, -4);
     if(luaL_getmetafield(L, -1, "__init"))
     {
-      lua_pushvalue(L, -2);                  // the new alocated object
+      lua_pushvalue(L, -2);                  // the new allocated object
       lua_pushlightuserdata(L, (void *)cin); // forced to cast..
       lua_call(L, 2, 0);
     }
@@ -413,7 +413,7 @@ static int gpointer_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
     lua_settable(L, -4);
     if(luaL_getmetafield(L, -1, "__init"))
     {
-      lua_pushvalue(L, -2);                  // the new alocated object
+      lua_pushvalue(L, -2);                  // the new allocated object
       lua_pushlightuserdata(L, (void *)cin); // forced to cast..
       lua_call(L, 2, 0);
     }
@@ -701,7 +701,7 @@ luaA_Type dt_lua_init_singleton(lua_State *L, const char *unique_name, void *dat
   lua_setfield(L, -3, "__singleton");
   if(luaL_getmetafield(L, -1, "__init"))
   {
-    lua_pushvalue(L, -2);                   // the new alocated object
+    lua_pushvalue(L, -2);                   // the new allocated object
     lua_pushlightuserdata(L, (void *)data); // forced to cast..
     lua_call(L, 2, 0);
   }

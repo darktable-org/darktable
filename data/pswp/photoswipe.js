@@ -133,7 +133,7 @@ var framework = {
 	 * {
 	 *  raf : request animation frame function
 	 *  caf : cancel animation frame function
-	 *  transfrom : transform property key (with vendor), or null if not supported
+	 *  transform : transform property key (with vendor), or null if not supported
 	 *  oldIE : IE8 or below
 	 * }
 	 * 

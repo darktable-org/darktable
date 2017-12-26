@@ -3345,7 +3345,7 @@ For more details of the member functions have a look at the cairo documentation 
 },
 },
 ["api_version_string"] = {
-["__text"] = [==[The version description of the lua API. This is a string compatible with the semantic versionning convention]==],
+["__text"] = [==[The version description of the lua API. This is a string compatible with the semantic versioning convention]==],
 ["__attributes"] = {
 ["reported_type"] = [==[string]==],
 },
@@ -5053,7 +5053,7 @@ You can removes entries by setting them to nil]==],
 },
 },
 ["shortcut"] = {
-["__text"] = [==[This event registers a new keyboad shortcut. The shortcut isn't bound to any key until the users does so in the preference panel.
+["__text"] = [==[This event registers a new keyboard shortcut. The shortcut isn't bound to any key until the users does so in the preference panel.
 
 	The event is triggered whenever the shortcut is triggered.
 
