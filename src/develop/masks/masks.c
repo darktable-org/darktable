@@ -1392,8 +1392,8 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
   if(!gui) return;
   if(!form) return;
   // if it's a spot in creation, nothing to draw
-  // add preview when creating a circle
-  if(((form->type & DT_MASKS_ELLIPSE) || (form->type & DT_MASKS_GRADIENT)) && gui->creation)
+  // add preview when creating a circle or ellipse
+  if((form->type & DT_MASKS_GRADIENT) && gui->creation)
     return;
   
   float wd = dev->preview_pipe->backbuf_width;
@@ -1419,8 +1419,8 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
   // we update the form if needed
-  // add preview when creating a circle
-  if ( !((form->type & DT_MASKS_CIRCLE) && gui->creation) )
+  // add preview when creating a circle or ellipse
+  if ( !(((form->type & DT_MASKS_CIRCLE) || (form->type & DT_MASKS_ELLIPSE)) && gui->creation) )
     dt_masks_gui_form_test_create(form, gui);
 
   // draw form
