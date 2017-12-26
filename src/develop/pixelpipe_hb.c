@@ -2057,7 +2057,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
       // calculate the waveform histogram. since this is drawn pixel by pixel we have to do it in the correct
       // size (thus the weird gui stuff :().
-      // this HAS to be done on the float input data, otherwise we get really ugly artefacts due to rounding
+      // this HAS to be done on the float input data, otherwise we get really ugly artifacts due to rounding
       // issues when putting colors into the bins.
       //       dt_pthread_mutex_lock(&dev->histogram_waveform_mutex);
       if(dev->histogram_waveform_width != 0 && input)

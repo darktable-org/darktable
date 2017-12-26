@@ -733,7 +733,7 @@ static const float complex point_at_arc_length (const float complex points[],
   warp depending from its distance from a central point.
 
   Boundary conditions: f(0) must be 1 and f(@a distance) must be 0.
-  f'(0) and f'(@a distance) must both be 0 or we'll get artefacts on
+  f'(0) and f'(@a distance) must both be 0 or we'll get artifacts on
   the picture.
 
   Implementation: a bezier curve with p0 = 0, 1 and p3 = 1, 0. p1 is

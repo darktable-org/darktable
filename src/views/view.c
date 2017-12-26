@@ -840,7 +840,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     /* clear and reset statements */
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
     DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
-    /* bind imgid to prepared statments */
+    /* bind imgid to prepared statements */
     DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, imgid);
     /* lets check if imgid is selected */
     if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = 1;
