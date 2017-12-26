@@ -45,7 +45,9 @@ IF(WIN32)
         process_file(\"\${filename}\")
       endforeach()
 
-      list(REMOVE_DUPLICATES EXTRA_DEPS)
+      if(EXTRA_DEPS)
+        list(REMOVE_DUPLICATES EXTRA_DEPS)
+      endif()
 
       # install(...) doesn't work in here, and file(INSTALL ...) doesn't put anything into installers,
       # so we have to go over the list of files and do it manually
