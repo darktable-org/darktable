@@ -32,7 +32,7 @@ typedef enum dt_lib_modulegroup_t
   DT_MODULEGROUP_CORRECT,
   DT_MODULEGROUP_EFFECT,
 
-  /* dont touch the following */
+  /* don't touch the following */
   DT_MODULEGROUP_SIZE,
 
   DT_MODULEGROUP_NONE

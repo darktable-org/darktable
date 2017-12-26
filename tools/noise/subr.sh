@@ -446,7 +446,7 @@ list_input_images() {
 		case "$image" in
 		*.[Jj][Pp][Gg]|*.[Jj][Pp][Ee][Gg])
 			# Skip jpeg files, if any. Other files don't
-			# have Exif and will be skept automatically.
+			# have Exif and will be skipped automatically.
 			continue
 			;;
 		esac

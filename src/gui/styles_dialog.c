@@ -76,7 +76,7 @@ static int _single_selected_imgid()
 
 void _gui_styles_get_active_items(dt_gui_styles_dialog_t *sd, GList **enabled, GList **update)
 {
-  /* run thru all items and add active ones to result */
+  /* run through all items and add active ones to result */
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(sd->items));
   int num = 0, update_num = 0;

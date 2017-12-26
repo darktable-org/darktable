@@ -3378,7 +3378,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
 {
   // first deal with all-zero parmameter sets, regardless of version number.
-  // these occured in previous
+  // these occurred in previous
   // darktable versions when modules
   // without blend support stored zero-initialized data in history stack. that's
   // no problem unless the module
