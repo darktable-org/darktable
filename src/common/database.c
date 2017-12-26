@@ -1555,6 +1555,9 @@ start:
     return db;
   }
 
+  /*  set the threading mode to Serialized */
+  sqlite3_config(SQLITE_CONFIG_SERIALIZED);
+
   /* opening / creating database */
   if(sqlite3_open(db->dbfilename_library, &db->handle))
   {
