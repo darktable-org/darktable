@@ -931,7 +931,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
   if(darktable.control->accel_remap_str)
   {
     // Change the accel map entry
-    if(gtk_accel_map_change_entry(darktable.control->accel_remap_str, event->keyval,
+    if(gtk_accel_map_change_entry(darktable.control->accel_remap_str, gdk_keyval_to_lower(event->keyval),
                                   event->state & KEY_STATE_MASK, TRUE))
     {
       // If it succeeded delete any conflicting accelerators
