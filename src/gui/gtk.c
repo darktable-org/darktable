@@ -809,12 +809,12 @@ static gboolean key_pressed_override(GtkWidget *w, GdkEventKey *event, gpointer 
 
 static gboolean key_pressed(GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  return dt_control_key_pressed(event->keyval, event->state & KEY_STATE_MASK);
+  return dt_control_key_pressed(gdk_keyval_to_lower(event->keyval), event->state & KEY_STATE_MASK);
 }
 
 static gboolean key_released(GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  return dt_control_key_released(event->keyval, event->state & KEY_STATE_MASK);
+  return dt_control_key_released(gdk_keyval_to_lower(event->keyval), event->state & KEY_STATE_MASK);
 }
 
 static gboolean button_pressed(GtkWidget *w, GdkEventButton *event, gpointer user_data)
