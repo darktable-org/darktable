@@ -183,6 +183,21 @@ if (WIN32)
       "${LENSFUN_DB}"
       DESTINATION share/lensfun/
       COMPONENT DTApplication)
+
+  # Add iso-codes
+  if(ISO_CODES_FOUND)
+    install(FILES
+        "${ISO_CODES_LOCATION}/iso_639-2.json"
+        DESTINATION share/iso-codes/json/
+        COMPONENT DTApplication
+    )
+    file(GLOB ISO_CODES_MO_FILES RELATIVE "${ISO_CODES_LOCALEDIR}" "${ISO_CODES_LOCALEDIR}/*/LC_MESSAGES/iso_639.mo")
+    foreach(MO ${ISO_CODES_MO_FILES})
+      string(REPLACE "iso_639.mo" "" MO_TARGET_DIR "${MO}")
+      install(FILES "${ISO_CODES_LOCALEDIR}/${MO}" DESTINATION "share/locale/${MO_TARGET_DIR}" COMPONENT DTApplication)
+    endforeach()
+  endif(ISO_CODES_FOUND)
+
 endif(WIN32)
 
 endfunction()
