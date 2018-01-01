@@ -47,6 +47,7 @@ FILE(GLOB SOURCE_FILES
   "common/interpolation.c"
   "common/locallaplacian.c"
   "common/locallaplaciancl.c"
+  "common/l10n.c"
   "common/metadata.c"
   "common/mipmap_cache.c"
   "common/module.c"
@@ -312,6 +313,13 @@ if(USE_OPENJPEG)
     list(APPEND LIBS ${OpenJPEG_LIBRARIES})
   endif(OpenJPEG_FOUND)
 endif(USE_OPENJPEG)
+
+find_package(IsoCodes)
+if(ISO_CODES_FOUND)
+  add_definitions("-DHAVE_ISO_CODES")
+else(ISO_CODES_FOUND)
+  message(STATUS "iso-codes not found, there will be no language names in the preferences")
+endif(ISO_CODES_FOUND)
 
 #
 # Detect compile of optional pwstorage backends

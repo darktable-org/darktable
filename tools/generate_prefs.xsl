@@ -5,7 +5,7 @@
 	<xsl:variable name="lowercase" select="'abcdefghijklmnopqrstuvwxyz'" />
 	<xsl:variable name="uppercase" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'" />
 	<!-- The start of the gui generating functions -->
-	<xsl:variable name="tab_start"> (GtkWidget *dialog, GtkWidget *tab, void (*hardcoded_part)(GtkWidget *grid))
+	<xsl:variable name="tab_start"> (GtkWidget *dialog, GtkWidget *tab, void (*hardcoded_part)(GtkWidget *grid, int *line))
 {
   GtkWidget *widget, *label, *labelev, *viewport;
   GtkWidget *grid = gtk_grid_new();
@@ -25,12 +25,12 @@
   gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
   gtk_container_add(GTK_CONTAINER(scroll), viewport);
   gtk_container_add(GTK_CONTAINER(viewport), grid);
+
+  if(hardcoded_part)
+    (*hardcoded_part)(grid, &amp;line);
 </xsl:variable>
 
   <xsl:variable name="tab_end">
-  if(hardcoded_part)
-    (*hardcoded_part)(grid);
-
   gtk_widget_show_all(tab);
 }
 </xsl:variable>
