@@ -67,7 +67,9 @@ static void get_language_names(GList *languages)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   char *filename = g_build_filename(datadir, "..",  "iso-codes", "json", "iso_639-2.json", NULL);
   // on windows we are shipping the translations of iso-codes along ours
-  bindtextdomain("iso_639", DARKTABLE_LOCALEDIR);
+  char *localedir = g_build_filename(datadir, "..", "locale", NULL);
+  bindtextdomain("iso_639", localedir);
+  g_free(localedir);
 #else
   char *filename = g_build_filename(ISO_CODES_LOCATION, "iso_639-2.json", NULL);
   bindtextdomain("iso_639", ISO_CODES_LOCALEDIR);
@@ -237,13 +239,20 @@ dt_l10n_t *dt_l10n_init(gboolean init_list)
 
     const gchar * const * default_languages = g_get_language_names();
 
-    GDir *dir = g_dir_open(DARKTABLE_LOCALEDIR, 0, NULL);
+#ifdef _WIN32
+    char datadir[PATH_MAX] = { 0 };
+    dt_loc_get_datadir(datadir, sizeof(datadir));
+    char *localedir = g_build_filename(datadir, "..", "locale", NULL);
+#else
+    char * localedir = g_strdup(DARKTABLE_LOCALEDIR);
+#endif
+    GDir *dir = g_dir_open(localedir, 0, NULL);
     if(dir)
     {
       const gchar *locale;
       while((locale = g_dir_read_name(dir)))
       {
-        gchar *testname = g_build_filename(DARKTABLE_LOCALEDIR, locale, "LC_MESSAGES", GETTEXT_PACKAGE ".mo", NULL);
+        gchar *testname = g_build_filename(localedir, locale, "LC_MESSAGES", GETTEXT_PACKAGE ".mo", NULL);
         if(g_file_test(testname, G_FILE_TEST_EXISTS))
         {
           language = (dt_l10n_language_t *)calloc(1, sizeof(dt_l10n_language_t));
@@ -287,6 +296,8 @@ dt_l10n_t *dt_l10n_init(gboolean init_list)
       }
       g_dir_close(dir) ;
     }
+    else
+      fprintf(stderr, "[l10n] error: can't open directory `%s'\n", localedir);
 
     // now try to find language names and translations!
     get_language_names(result->languages);
@@ -309,6 +320,8 @@ dt_l10n_t *dt_l10n_init(gboolean init_list)
 
     if(selected == NULL)
       result->selected = result->sys_default;
+
+    g_free(localedir);
   }
   else
     set_locale(ui_lang, old_env);
