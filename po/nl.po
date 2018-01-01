@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-10 09:22+0100\n"
-"PO-Revision-Date: 2017-12-10 09:33+0100\n"
+"POT-Creation-Date: 2018-01-01 21:36+0100\n"
+"PO-Revision-Date: 2018-01-01 21:52+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -935,6 +935,26 @@ msgstr ""
 "darktable ondersteunt van veel moderne camera's de raw-formaten en werkt met "
 "een zeer hoge precisie"
 
+#: ../data/darktable.appdata.xml.in.h:5
+msgid "Virtual light table, showing a collection"
+msgstr "virtuele bibliotheek, toont een collectie"
+
+#: ../data/darktable.appdata.xml.in.h:6
+msgid "Virtual dark room with an opened image"
+msgstr "virtuele ontwikkelaar met een geopende afbeelding"
+
+#: ../data/darktable.appdata.xml.in.h:7
+msgid "Virtual dark room, sharpening an image"
+msgstr "virtuele ontwikkelaar, verscherp een afbeelding"
+
+#: ../data/darktable.appdata.xml.in.h:8
+msgid "Show images on a map"
+msgstr "toon afbeeldingen op een kaart"
+
+#: ../data/darktable.appdata.xml.in.h:9
+msgid "Print your images"
+msgstr "de afbeeldingen printen"
+
 #: ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
 msgstr "virtuele bibliotheek  en donkere kamer"
@@ -951,7 +971,7 @@ msgstr "grafische vormgeving;fotografie;raw;"
 #: ../src/imageio/storage/disk.c:95 ../src/imageio/storage/gallery.c:107
 #: ../src/imageio/storage/latex.c:106 ../src/libs/collect.c:240
 #: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:476
-#: ../src/libs/import.c:755 ../src/libs/import.c:862 ../src/libs/lib.c:240
+#: ../src/libs/import.c:773 ../src/libs/import.c:880 ../src/libs/lib.c:240
 #: ../src/libs/styles.c:213 ../src/libs/styles.c:236 ../src/libs/tagging.c:374
 #: ../src/libs/tagging.c:414
 msgid "_cancel"
@@ -989,7 +1009,7 @@ msgstr "onbekende optie voor --opschalen"
 #: ../src/cli/main.c:188
 #, c-format
 msgid "error: output file is a directory. please specify file name"
-msgstr "error: uitgaand bestand is een map, geef een bestandsnaam"
+msgstr "fout: uitgaand bestand is een map, geef een bestandsnaam"
 
 #: ../src/cli/main.c:197
 msgid "output file already exists, it will get renamed"
@@ -1042,7 +1062,7 @@ msgstr ""
 "ophalen instellingen van de formaatmodule mislukt, exporteren is "
 "afgebroken ..."
 
-#: ../src/common/collection.c:855 ../src/develop/lightroom.c:789
+#: ../src/common/collection.c:855 ../src/develop/lightroom.c:818
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:451
 #: ../src/iop/channelmixer.c:462 ../src/iop/colorbalance.c:631
 #: ../src/iop/temperature.c:1350 ../src/libs/collect.c:1085
@@ -1050,13 +1070,13 @@ msgstr ""
 msgid "red"
 msgstr "rood"
 
-#: ../src/common/collection.c:857 ../src/develop/lightroom.c:791
+#: ../src/common/collection.c:857 ../src/develop/lightroom.c:820
 #: ../src/iop/temperature.c:1341 ../src/libs/collect.c:1089
 #: ../src/libs/collect.c:1090 ../src/libs/collect.c:1091
 msgid "yellow"
 msgstr "geel"
 
-#: ../src/common/collection.c:859 ../src/develop/lightroom.c:793
+#: ../src/common/collection.c:859 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:452
 #: ../src/iop/channelmixer.c:468 ../src/iop/colorbalance.c:638
 #: ../src/iop/temperature.c:1338 ../src/iop/temperature.c:1351
@@ -1065,7 +1085,7 @@ msgstr "geel"
 msgid "green"
 msgstr "groen"
 
-#: ../src/common/collection.c:861 ../src/develop/lightroom.c:795
+#: ../src/common/collection.c:861 ../src/develop/lightroom.c:824
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
 #: ../src/iop/channelmixer.c:474 ../src/iop/colorbalance.c:645
 #: ../src/iop/temperature.c:1352 ../src/libs/collect.c:1097
@@ -1179,12 +1199,12 @@ msgstr "BRG (om uit te proberen)"
 msgid "file `%s' to print not found for image %d on `%s'"
 msgstr "af te drukken bestand `%s' niet gevonden voor afbeelding %d op `%s'"
 
-#: ../src/common/cups_print.c:384
+#: ../src/common/cups_print.c:383
 #, c-format
 msgid "error while printing image %d on `%s'"
 msgstr "fout tijdens afdrukken afbeelding %d op `%s'"
 
-#: ../src/common/cups_print.c:386
+#: ../src/common/cups_print.c:385
 #, c-format
 msgid "printing image %d on `%s'"
 msgstr "afdrukken afbeelding %d op `%s'"
@@ -1204,21 +1224,21 @@ msgstr "fout bij het inladen van map `%s'"
 msgid "file `%s' has unknown format!"
 msgstr "bestand `%s' heeft een onbekend formaat!"
 
-#: ../src/common/darktable.c:264 ../src/libs/import.c:821
+#: ../src/common/darktable.c:264 ../src/libs/import.c:839
 #, c-format
 msgid "error loading file `%s'"
 msgstr "fout bij het inladen van bestand `%s'"
 
 #: ../src/common/database.c:1340
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"an error has occured while trying to open the database from\n"
+"an error has occurred while trying to open the database from\n"
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
 "%s\n"
 msgstr ""
-"een error heeft zich voorgedaan bij het openen van de database van\n"
+"een fout heeft zich voorgedaan bij het openen van de database van\n"
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
@@ -1228,8 +1248,8 @@ msgstr ""
 msgid "darktable - error locking database"
 msgstr "darktable - fout bij openen database"
 
-#: ../src/common/database.c:1347 ../src/common/database.c:1660
-#: ../src/common/database.c:1736
+#: ../src/common/database.c:1347 ../src/common/database.c:1663
+#: ../src/common/database.c:1739
 msgid "close darktable"
 msgstr "darktable afsluiten"
 
@@ -1254,10 +1274,10 @@ msgstr "inlezen van het database bestand geeft een foutmelding: %s"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:1649 ../src/common/database.c:1725
+#: ../src/common/database.c:1652 ../src/common/database.c:1728
 #, c-format
 msgid ""
-"an error has occured while trying to open the database from\n"
+"an error has occurred while trying to open the database from\n"
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
@@ -1265,19 +1285,19 @@ msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or start with a new one?"
 msgstr ""
-"er ging iets fout bij het openen van de database\n"
+"een fout heeft zich voorgedaan bij het openen van de database van\n"
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
-"het lijkt erop dat de de database is beschadigd\n"
+"het lijkt erop dat de database is beschadigd\n"
 "wilt u darktable sluiten voor een handmatig herstel vanuit\n"
-"een backup of moet gestart worden met een nieuwe exemplaar?"
+"een backup of moet een nieuwe database worden opgestart?"
 
-#: ../src/common/database.c:1659 ../src/common/database.c:1735
+#: ../src/common/database.c:1662 ../src/common/database.c:1738
 msgid "darktable - error opening database"
-msgstr "darktable - fout voor openen database"
+msgstr "darktable - fout bij openen database"
 
-#: ../src/common/database.c:1660 ../src/common/database.c:1736
+#: ../src/common/database.c:1663 ../src/common/database.c:1739
 msgid "delete database"
 msgstr "verwijder database"
 
@@ -1537,15 +1557,15 @@ msgstr "stijl bestand '%s' bestaat al"
 msgid "style %s was successfully imported"
 msgstr "stijl '%s' is geïmporteerd"
 
-#: ../src/common/utility.c:455
+#: ../src/common/utility.c:456
 msgid "above sea level"
 msgstr "boven zeeniveau"
 
-#: ../src/common/utility.c:456
+#: ../src/common/utility.c:457
 msgid "below sea level"
 msgstr "beneden zeeniveau"
 
-#: ../src/common/utility.c:507 ../src/iop/watermark.c:735
+#: ../src/common/utility.c:508 ../src/iop/watermark.c:735
 #: ../src/libs/metadata_view.c:550
 msgid "m"
 msgstr "m"
@@ -1700,11 +1720,11 @@ msgstr "stop bewerking"
 
 #: ../src/control/jobs/control_jobs.c:731
 msgid "trashing error"
-msgstr "prullenbak-fout"
+msgstr "prullenbak fout"
 
 #: ../src/control/jobs/control_jobs.c:732
 msgid "deletion error"
-msgstr "verwijder-fout"
+msgstr "verwijder fout"
 
 #: ../src/control/jobs/control_jobs.c:859
 #, c-format
@@ -1959,7 +1979,7 @@ msgstr[1] "importeren %d afbeeldingen"
 msgid "importing image %s"
 msgstr "importeren afbeelding %s"
 
-#: ../src/control/jobs/image_jobs.c:104 ../src/libs/import.c:755
+#: ../src/control/jobs/image_jobs.c:104 ../src/libs/import.c:773
 msgid "import image"
 msgstr "importeer afbeelding"
 
@@ -2526,35 +2546,35 @@ msgstr "reset"
 msgid "presets"
 msgstr "voorkeuren"
 
-#: ../src/develop/lightroom.c:921
+#: ../src/develop/lightroom.c:965
 msgid "cannot find lightroom XMP!"
 msgstr "ligthroom xmp niet gevonden!"
 
-#: ../src/develop/lightroom.c:953 ../src/develop/lightroom.c:975
-#: ../src/develop/lightroom.c:995
+#: ../src/develop/lightroom.c:997 ../src/develop/lightroom.c:1019
+#: ../src/develop/lightroom.c:1039
 #, c-format
 msgid "`%s' not a lightroom XMP!"
 msgstr "`%s' is geen lightroom xmp!"
 
-#: ../src/develop/lightroom.c:1455 ../src/libs/import.c:594
+#: ../src/develop/lightroom.c:1499 ../src/libs/import.c:594
 msgid "tags"
 msgstr "labels"
 
-#: ../src/develop/lightroom.c:1464 ../src/libs/tools/filter.c:141
+#: ../src/develop/lightroom.c:1508 ../src/libs/tools/filter.c:141
 msgid "rating"
 msgstr "classificatie"
 
-#: ../src/develop/lightroom.c:1473 ../src/libs/collect.h:38
+#: ../src/develop/lightroom.c:1517 ../src/libs/collect.h:38
 #: ../src/libs/geotagging.c:62
 msgid "geotagging"
 msgstr "geotagging"
 
-#: ../src/develop/lightroom.c:1482 ../src/libs/collect.h:34
+#: ../src/develop/lightroom.c:1526 ../src/libs/collect.h:34
 #: ../src/libs/tools/filter.c:143
 msgid "color label"
 msgstr "kleurlabel"
 
-#: ../src/develop/lightroom.c:1488
+#: ../src/develop/lightroom.c:1532
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -3400,7 +3420,7 @@ msgstr "kies bestand voor import"
 
 #: ../src/gui/preferences.c:1086 ../src/libs/collect.c:241
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:477
-#: ../src/libs/import.c:756 ../src/libs/import.c:863 ../src/libs/styles.c:237
+#: ../src/libs/import.c:774 ../src/libs/import.c:881 ../src/libs/styles.c:237
 msgid "_open"
 msgstr "_open"
 
@@ -3840,7 +3860,7 @@ msgstr "bitdiepte"
 msgid "bits per channel of the embedded images"
 msgstr "aantal bits per kanaal van de ingesloten afbeeldingen"
 
-#: ../src/imageio/format/pdf.c:717 ../src/imageio/format/png.c:538
+#: ../src/imageio/format/pdf.c:717 ../src/imageio/format/png.c:543
 #: ../src/imageio/format/tiff.c:422 ../src/iop/graduatednd.c:1147
 msgid "compression"
 msgstr "compressie"
@@ -4851,22 +4871,22 @@ msgstr "lokaal contrast"
 msgid "local laplacian: inconsistent output"
 msgstr "local laplacian: tegenstrijdige uitgang"
 
-#: ../src/iop/bilat.c:507 ../src/iop/denoiseprofile.c:2056
+#: ../src/iop/bilat.c:516 ../src/iop/denoiseprofile.c:2056
 #: ../src/iop/exposure.c:849 ../src/iop/lens.c:2227 ../src/iop/levels.c:566
 #: ../src/libs/copy_history.c:310 ../src/libs/export.c:644
 #: ../src/libs/print_settings.c:1356 ../src/views/darkroom.c:1451
 msgid "mode"
 msgstr "modus"
 
-#: ../src/iop/bilat.c:509
+#: ../src/iop/bilat.c:518
 msgid "bilateral grid"
 msgstr "bilateral raster"
 
-#: ../src/iop/bilat.c:510
+#: ../src/iop/bilat.c:519
 msgid "local laplacian filter"
 msgstr "local laplacian filter"
 
-#: ../src/iop/bilat.c:513
+#: ../src/iop/bilat.c:522
 msgid ""
 "the filter used for local contrast enhancement. bilateral is faster but can "
 "lead to artifacts around edges for extreme settings."
@@ -4874,54 +4894,54 @@ msgstr ""
 "het filter gebruikt voor lokale contrast verbeteringen. bilateral is sneller "
 "maar kan bij extreme waarden artefacten geven rond de randen"
 
-#: ../src/iop/bilat.c:517 ../src/iop/globaltonemap.c:723
+#: ../src/iop/bilat.c:526 ../src/iop/globaltonemap.c:723
 msgid "detail"
 msgstr "detail"
 
-#: ../src/iop/bilat.c:519
+#: ../src/iop/bilat.c:528
 msgid "changes the local contrast"
 msgstr "wijzigt het lokaal contrast"
 
-#: ../src/iop/bilat.c:522 ../src/iop/grain.c:620
+#: ../src/iop/bilat.c:531 ../src/iop/grain.c:620
 msgid "coarseness"
 msgstr "ruwheid"
 
-#: ../src/iop/bilat.c:524
+#: ../src/iop/bilat.c:533
 msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr ""
 "eigenschappen van afmeting lokale details (spatial sigma of bilateral filter)"
 
-#: ../src/iop/bilat.c:528 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:671
+#: ../src/iop/bilat.c:537 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:671
 msgid "contrast"
 msgstr "contrast"
 
-#: ../src/iop/bilat.c:529
+#: ../src/iop/bilat.c:538
 msgid "L difference to detect edges (range sigma of bilateral filter)"
 msgstr ""
 "L verschil voor het opsporen van randen  (range sigma of bilateral filter)"
 
-#: ../src/iop/bilat.c:533 ../src/iop/monochrome.c:611 ../src/iop/shadhi.c:827
+#: ../src/iop/bilat.c:542 ../src/iop/monochrome.c:611 ../src/iop/shadhi.c:827
 #: ../src/iop/splittoning.c:537
 msgid "highlights"
 msgstr "hooglichten"
 
-#: ../src/iop/bilat.c:535
+#: ../src/iop/bilat.c:544
 msgid "changes the local contrast of highlights"
 msgstr "wijzigt het lokaal contrast van de hooglichten"
 
-#: ../src/iop/bilat.c:539 ../src/iop/shadhi.c:826 ../src/iop/splittoning.c:532
+#: ../src/iop/bilat.c:548 ../src/iop/shadhi.c:826 ../src/iop/splittoning.c:532
 msgid "shadows"
 msgstr "schaduwen"
 
-#: ../src/iop/bilat.c:540
+#: ../src/iop/bilat.c:549
 msgid "changes the local contrast of shadows"
 msgstr "wijzigt het lokaal contrast van de schaduwen"
 
-#: ../src/iop/bilat.c:545
+#: ../src/iop/bilat.c:554
 msgid "midtone range"
 msgstr "middenkleuren gebied"
 
-#: ../src/iop/bilat.c:546
+#: ../src/iop/bilat.c:555
 msgid ""
 "defines what counts as midtones. lower for better dynamic range compression "
 "(reduce shadow and highlight contrast), increase for more powerful local "
@@ -5057,7 +5077,7 @@ msgid "15:10 postcard black"
 msgstr "15:10 briefkaart zwart"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:911 ../src/libs/import.c:976
+#: ../src/iop/borders.c:911 ../src/libs/import.c:994
 msgid "image"
 msgstr "afbeelding"
 
@@ -5985,7 +6005,7 @@ msgstr "tint"
 
 #: ../src/iop/colorreconstruction.c:624 ../src/iop/colorreconstruction.c:1077
 #: ../src/iop/globaltonemap.c:181 ../src/iop/globaltonemap.c:342
-#: ../src/iop/hazeremoval.c:842 ../src/iop/levels.c:255
+#: ../src/iop/hazeremoval.c:852 ../src/iop/levels.c:255
 msgid "inconsistent output"
 msgstr "tegenstrijdige uitgang"
 
@@ -8687,14 +8707,14 @@ msgid "XMP sidecar files"
 msgstr "xmp bestanden"
 
 #: ../src/libs/copy_history.c:92 ../src/libs/geotagging.c:498
-#: ../src/libs/import.c:786 ../src/libs/styles.c:254
+#: ../src/libs/import.c:804 ../src/libs/styles.c:254
 msgid "all files"
 msgstr "alle bestanden"
 
 #: ../src/libs/copy_history.c:104
 #, c-format
 msgid "error loading file '%s'"
-msgstr "fout bij het inladen van het bestand '%s"
+msgstr "fout bij het inladen van bestand '%s'"
 
 #: ../src/libs/copy_history.c:196
 #, c-format
@@ -9298,37 +9318,37 @@ msgstr "pas metadata  toe op alle nieuw geïmporteerde afbeeldingen"
 msgid "comma separated list of tags"
 msgstr "labels gescheiden door komma's"
 
-#: ../src/libs/import.c:781
+#: ../src/libs/import.c:799
 msgid "supported images"
 msgstr "ondersteunde afbeeldingen"
 
-#: ../src/libs/import.c:837
+#: ../src/libs/import.c:855
 msgid "file has unknown format!"
 msgstr "bestandsformaat onbekend!"
 
-#: ../src/libs/import.c:862
+#: ../src/libs/import.c:880
 msgid "import film"
 msgstr "importeer een map"
 
-#: ../src/libs/import.c:979
+#: ../src/libs/import.c:997
 msgid "select one or more images to import"
 msgstr "importeer nieuwe afbeelding(en)"
 
 #. adding the import folder button
-#: ../src/libs/import.c:986
+#: ../src/libs/import.c:1004
 msgid "folder"
 msgstr "mappen"
 
-#: ../src/libs/import.c:989
+#: ../src/libs/import.c:1007
 msgid "select a folder to import as film roll"
 msgstr "importeer nieuwe map(pen)"
 
 #. add the rescan button
-#: ../src/libs/import.c:997
+#: ../src/libs/import.c:1015
 msgid "scan for devices"
 msgstr "media"
 
-#: ../src/libs/import.c:1000
+#: ../src/libs/import.c:1018
 msgid "scan for newly attached devices"
 msgstr "zoek media"
 
@@ -10277,7 +10297,7 @@ msgstr "_importeren"
 
 #: ../src/libs/tagging.c:389
 msgid "error importing tags"
-msgstr "fout bij het importeren van labels"
+msgstr "fout bij importeren van labels"
 
 #: ../src/libs/tagging.c:391
 #, c-format
