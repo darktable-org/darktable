@@ -81,7 +81,7 @@ if [ ! -f "${library}" ]; then
 fi
 
 # the mipmap directory matching the selected library
-cache_dir="${cache_base}/mipmaps-$(echo "${library}" | sha1sum | cut --delimiter=" " --fields=1).d"
+cache_dir="${cache_base}/mipmaps-$(printf "%s" "${library}" | sha1sum | cut --delimiter=" " --fields=1).d"
 
 if [ ! -d "${cache_dir}" ]; then
   echo "cache directory '${cache_dir}' doesn't exist"
