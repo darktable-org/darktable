@@ -591,7 +591,7 @@ static GList *_get_full_pathname(char *imgs)
   sqlite3_stmt *stmt = NULL;
   GList *list = NULL;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT folder || '/' || filename FROM "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT folder || '" G_DIR_SEPARATOR_S "' || filename FROM "
                                                              "main.images i, main.film_rolls f "
                                                              "ON i.film_id = f.id WHERE i.id IN (?1)",
                               -1, &stmt, NULL);
