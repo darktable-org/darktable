@@ -195,6 +195,8 @@ static int dt_view_load_module(void *v, const char *libname, const char *module_
     view->key_released = NULL;
   if(!g_module_symbol(view->module, "configure", (gpointer) & (view->configure))) view->configure = NULL;
   if(!g_module_symbol(view->module, "scrolled", (gpointer) & (view->scrolled))) view->scrolled = NULL;
+  if(!g_module_symbol(view->module, "scrollbar_changed", (gpointer) & (view->scrollbar_changed)))
+    view->scrollbar_changed = NULL;
   if(!g_module_symbol(view->module, "init_key_accels", (gpointer) & (view->init_key_accels)))
     view->init_key_accels = NULL;
   if(!g_module_symbol(view->module, "connect_key_accels", (gpointer) & (view->connect_key_accels)))
@@ -465,6 +467,9 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   if(new_view->enter) new_view->enter(new_view);
   if(new_view->connect_key_accels) new_view->connect_key_accels(new_view);
 
+  /* update the scrollbars */
+  dt_ui_update_scrollbars(darktable.gui->ui);
+
   /* raise view changed signal */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
 
@@ -694,15 +699,29 @@ void dt_view_manager_scrolled(dt_view_manager_t *vm, double x, double y, int up,
   if(vm->current_view->scrolled) vm->current_view->scrolled(vm->current_view, x, y, up, state);
 }
 
-void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwinsize, float vpos, float vsize,
-                           float vwinsize)
+void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm, double x, double y)
 {
+  if(!vm->current_view) return;
+  if(vm->current_view->scrollbar_changed) vm->current_view->scrollbar_changed(vm->current_view, x, y);
+}
+
+void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hlower, float hsize, float hwinsize,
+                           float vpos, float vlower, float vsize,float vwinsize)
+{
+  if (view->vscroll_pos == vpos && view->vscroll_lower == vlower && view->vscroll_size == vsize &&
+      view->vscroll_viewport_size == vwinsize && view->hscroll_pos == hpos && view->hscroll_lower == hlower &&
+      view->hscroll_size == hsize && view->hscroll_viewport_size == hwinsize)
+    return;
+
   view->vscroll_pos = vpos;
+  view->vscroll_lower = vlower;
   view->vscroll_size = vsize;
   view->vscroll_viewport_size = vwinsize;
   view->hscroll_pos = hpos;
+  view->hscroll_lower = hlower;
   view->hscroll_size = hsize;
   view->hscroll_viewport_size = hwinsize;
+
   GtkWidget *widget;
   widget = darktable.gui->widgets.left_border;
   gtk_widget_queue_draw(widget);
@@ -712,6 +731,9 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
   gtk_widget_queue_draw(widget);
   widget = darktable.gui->widgets.top_border;
   gtk_widget_queue_draw(widget);
+
+  if (!darktable.gui->scrollbars.dragging) dt_ui_update_scrollbars(darktable.gui->ui);
+
 }
 
 static inline void dt_view_draw_altered(cairo_t *cr, const float x, const float y, const float r)
