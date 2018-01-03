@@ -1095,11 +1095,11 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   }
   else
   {
-    if(zoom_x < -wd * DT_LIBRARY_MAX_ZOOM / 2) zoom_x = -wd * DT_LIBRARY_MAX_ZOOM / 2;
+    if(zoom_x < -width + wd) zoom_x = -width + wd;
     if(zoom_x > wd * DT_LIBRARY_MAX_ZOOM - wd) zoom_x = wd * DT_LIBRARY_MAX_ZOOM - wd;
     if(zoom_y < -height + ht) zoom_y = -height + ht;
-    if(zoom_y > ht * lib->collection_count / MIN(DT_LIBRARY_MAX_ZOOM, zoom) - ht)
-      zoom_y = ht * lib->collection_count / MIN(DT_LIBRARY_MAX_ZOOM, zoom) - ht;
+    if(zoom_y > ht * ceilf((float)lib->collection_count / DT_LIBRARY_MAX_ZOOM) - ht)
+      zoom_y = ht * ceilf((float)lib->collection_count / DT_LIBRARY_MAX_ZOOM) - ht;
   }
 
 
