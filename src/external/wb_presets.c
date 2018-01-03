@@ -4927,6 +4927,12 @@ const wb_data wb_preset[] =
   { "Olympus", "XZ-10", Fluorescent, 0,		{ 1.781250, 1, 2.414063, 0 } },
   { "Olympus", "XZ-10", Flash, 0,		{ 2.289063, 1, 1.394531, 0 } },
 
+  { "Panasonic", "DC-G9", Daylight, 0,          { 2.242188, 1, 1.898438, 0 } },
+  { "Panasonic", "DC-G9", Cloudy, 0,            { 2.375000, 1, 1.773438, 0 } },
+  { "Panasonic", "DC-G9", Shade, 0,             { 2.507813, 1, 1.679688, 0 } },
+  { "Panasonic", "DC-G9", Incandescent, 0,      { 1.632813, 1, 2.839844, 0 } },
+  { "Panasonic", "DC-G9", Flash, 0,             { 2.566406, 1, 1.734375, 0 } },
+
   { "Panasonic", "DMC-FZ8", Daylight, 0,	{ 1.904943, 1, 1.596958, 0 } },
   { "Panasonic", "DMC-FZ8", Cloudy, 0,		{ 2.060836, 1, 1.498099, 0 } },
   { "Panasonic", "DMC-FZ8", Shade, 0,		{ 2.258555, 1, 1.391635, 0 } },
