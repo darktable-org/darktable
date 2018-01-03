@@ -596,7 +596,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   /* update scroll borders */
   int shown_rows = ceilf((float)lib->collection_count / iir);
   if(iir > 1) shown_rows += max_rows - 2;
-  dt_view_set_scrollbar(self, 0, 1, 1, offset, shown_rows * iir, (max_rows - 1) * iir);
+  dt_view_set_scrollbar(self, 0, 0, 1, 1, offset, 0, shown_rows * iir, (max_rows - 1) * iir);
 
   /* let's reset and reuse the main_query statement */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
@@ -1145,8 +1145,10 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
 
   int id;
 
-  dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM * offset_j,
-                        lib->collection_count, DT_LIBRARY_MAX_ZOOM * max_cols);
+  dt_view_set_scrollbar(self,
+                        zoom_x, -width + wd, wd * DT_LIBRARY_MAX_ZOOM - wd + width, width,
+                        zoom_y,  -height + ht,
+                        ht * ceilf((float)lib->collection_count / DT_LIBRARY_MAX_ZOOM) - ht + height, height);
 
   cairo_translate(cr, -offset_x * wd, -offset_y * ht);
   cairo_translate(cr, -MIN(offset_i * wd, 0.0), 0.0);
@@ -1673,6 +1675,8 @@ void enter(dt_view_t *self)
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE, FALSE);
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE, FALSE);
   }
+
+  dt_ui_scrollbars_show(darktable.gui->ui, TRUE);
 }
 
 void leave(dt_view_t *self)
@@ -1702,6 +1706,8 @@ void leave(dt_view_t *self)
     lib->full_preview = 0;
     lib->display_focus = 0;
   }
+
+  dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 }
 
 void reset(dt_view_t *self)
@@ -1744,6 +1750,28 @@ void mouse_leave(dt_view_t *self)
 }
 
 
+void scrollbar_changed(dt_view_t *self, double x, double y)
+{
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+
+  switch(layout)
+  {
+    case 1: // file manager
+    {
+      const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+      _set_position(self, round(y/iir)*iir);
+      break;
+    }
+    default: // zoomable
+    {
+      dt_library_t *lib = (dt_library_t *) self->data;
+      lib->zoom_x = x;
+      lib->zoom_y = y;
+      dt_control_queue_redraw_center();
+      break;
+    }
+  }
+}
 
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {

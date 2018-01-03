@@ -190,7 +190,7 @@ void expose(
   {
     float zx = zoom_x, zy = zoom_y, boxw = 1., boxh = 1.;
     dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, &boxw, &boxh);
-    dt_view_set_scrollbar(self, zx + .5 - boxw * .5, 1.0, boxw, zy + .5 - boxh * .5, 1.0, boxh);
+    dt_view_set_scrollbar(self, zx, -0.5 + boxw/2, 0.5, boxw/2, zy, -0.5+ boxh/2, 0.5, boxh/2);
   }
 
   if((dev->image_status == DT_DEV_PIXELPIPE_VALID)
@@ -2088,6 +2088,15 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   return 0;
 }
 
+void scrollbar_changed(dt_view_t *self, double x, double y)
+{
+  dt_control_set_dev_zoom_x(x);
+  dt_control_set_dev_zoom_y(y);
+
+  /* redraw pipe */
+  dt_dev_invalidate(darktable.develop);
+  dt_control_queue_redraw();
+}
 
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
