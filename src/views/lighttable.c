@@ -704,13 +704,13 @@ end_query_cache:
               // going into a non existing position. Do nothing
               mouse_over_id = before_mouse_over_id;
 
-            if (lib->key_jump_offset != 0) 
+            if (lib->key_jump_offset != 0)
             {
-              if (lib->key_select) 
+              if (lib->key_select)
               {
                 // managing shift + movement
                 int direction = (lib->key_jump_offset > 0) ? DIRECTION_RIGHT : DIRECTION_LEFT;
-                if (lib->key_select_direction != direction ) 
+                if (lib->key_select_direction != direction)
                 {
                   lib->key_select_direction =  direction;
                   dt_selection_toggle(darktable.selection, before_mouse_over_id);
@@ -720,7 +720,7 @@ end_query_cache:
                 while (loop_count--)
                 {
                   // ex shift + down toggle selection on images_in_row images
-                  to_toggle =  idx+(-1*lib->key_jump_offset/abs(lib->key_jump_offset)*loop_count);
+                  to_toggle = idx+(-1*lib->key_jump_offset/abs(lib->key_jump_offset)*loop_count);
                   if (query_ids[to_toggle])
                     dt_selection_toggle(darktable.selection, query_ids[to_toggle]);
                 }
@@ -1102,7 +1102,6 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
       zoom_y = ht * lib->collection_count / MIN(DT_LIBRARY_MAX_ZOOM, zoom) - ht;
   }
 
-
   int offset_i = (int)(zoom_x / wd);
   int offset_j = (int)(zoom_y / ht);
   if(lib->first_visible_filemanager >= 0)
@@ -1419,7 +1418,6 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
      should be done in the place where the layout was actually changed. */
   const int new_layout = dt_conf_get_int("plugins/lighttable/layout");
   if(lib->layout != new_layout) switch_layout_to(lib, new_layout);
-
   int missing_thumbnails = 0;
 
   if(lib->full_preview_id != -1)
@@ -1729,7 +1727,7 @@ void mouse_enter(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->current_thumb_num = -1;
   uint32_t id = dt_control_get_mouse_over_id();
-  if (lib->using_arrows == 0) 
+  if (lib->using_arrows == 0)
   {
     if(id == -1)
       dt_control_set_mouse_over_id(
@@ -2167,7 +2165,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   {
     if(lib->full_preview_id > -1)
       lib->track = +DT_LIBRARY_MAX_ZOOM;
-    else if(layout == 1) 
+    else if(layout == 1)
     {
       if (zoom == 1)
       {
