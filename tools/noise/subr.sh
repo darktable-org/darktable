@@ -339,6 +339,11 @@ get_image_iso() {
 			fi
 			if [ -z "$iso" -o "$iso" = "0" ]; then
 				iso=$(get_exif_key "$file" Exif.NikonIi.ISO)
+				# read hi/low iso setting
+				ciso=$(echo $iso | cut -d' ' -f2)
+				if [ "$ciso" = "Hi" -o "$ciso" = "Lo" ]; then
+					iso=$(echo $iso  | cut -d' '  -f1 )
+				fi
 			fi
 			;;
     [Cc][Aa][Nn][Oo][Nn]*)
