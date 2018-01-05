@@ -922,7 +922,6 @@ static gboolean colorzones_button_press(GtkWidget *widget, GdkEventButton *event
       p->equalizer_x[c->channel][k] = d->equalizer_x[c->channel][k];
       p->equalizer_y[c->channel][k] = d->equalizer_y[c->channel][k];
     }
-    p->strength = d->strength;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(self->widget);
   }
