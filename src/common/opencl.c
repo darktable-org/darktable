@@ -386,6 +386,9 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
                             (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
                             dt_opencl_get_vendor_by_id(vendor_id), escapedkerneldir);
   cl->dev[dev].options = strdup(options);
+
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] options for OpenCL compiler: %s\n", options);
+
   g_free(options);
   options = NULL;
   g_free(escapedkerneldir);
