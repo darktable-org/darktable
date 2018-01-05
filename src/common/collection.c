@@ -881,7 +881,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_LOCAL_COPY: // local copy
       query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images WHERE "
                                      "(flags & %d))) ",
-                              (strcmp(escaped_text, _("copied locally")) == 0) ? "" : "not",
+                              (strcmp(escaped_text, _("not copied locally")) == 0) ? "not" : "",
                               DT_IMAGE_LOCAL_COPY);
       break;
 
