@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/l10n.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "gui/accelerators.h"
@@ -136,113 +137,62 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
 
 static GtkWidget *_preferences_dialog;
 
-/*
-static GList *language_codes = NULL;
-static gint sys_default = -1;
+
+///////////// gui language selection
 
 static void language_callback(GtkWidget *widget, gpointer user_data)
 {
-  dt_conf_set_string("ui_last/gui_language", (gchar*)g_list_nth(language_codes,
-gtk_combo_box_get_active(GTK_COMBO_BOX(widget)))->data);
+  int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  dt_l10n_language_t *language = (dt_l10n_language_t *)g_list_nth(darktable.l10n->languages, selected)->data;
+  if(darktable.l10n->sys_default == selected)
+  {
+    dt_conf_set_string("ui_last/gui_language", "");
+    darktable.l10n->selected = darktable.l10n->sys_default;
+  }
+  else
+  {
+    dt_conf_set_string("ui_last/gui_language", language->code);
+    darktable.l10n->selected = selected;
+  }
 }
 
 static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
-    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), sys_default+1);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), darktable.l10n->sys_default);
     return TRUE;
   }
   return FALSE;
 }
 
-// TODO: sort the list of languages
-static void hardcoded_gui(GtkWidget *vbox1, GtkWidget *vbox2)
+static void hardcoded_gui(GtkWidget *grid, int *line)
 {
-  GtkWidget *label, *widget, *labelev;
-  GDir *dir;
-  const gchar *filename;
-  GList *languages = NULL, *iter;
-  const gchar * const * names = g_get_language_names();
-  gint selected = -1;
-  sys_default = -1;
-  gboolean store_codes = (language_codes == NULL);
-  gchar *ui_lang = dt_conf_get_string("ui_last/gui_language");
-  dir = g_dir_open(DARKTABLE_LOCALEDIR, 0, NULL);
-
-  if(store_codes)
-    language_codes = g_list_append(language_codes, g_strdup("C"));
-
-  if(dir)
-  {
-    int i = -1;
-    while((filename = g_dir_read_name(dir)))
-    {
-      gchar *testname =g_build_filename(DARKTABLE_LOCALEDIR, filename, NULL);
-      if(g_file_test(testname, G_FILE_TEST_IS_DIR))
-      {
-        gchar *entry = NULL;
-        i++;
-        if(sys_default == -1)
-        {
-          // check if this is the system default
-          const gchar * const * n = names;
-          while(*n)
-          {
-            if(g_strcmp0(*n, filename) == 0)
-            {
-              sys_default = i;
-              entry = g_strconcat(filename, " (", _("system default"), ")", NULL);
-              break;
-            }
-            n++;
-          }
-        }
-        if(g_strcmp0(ui_lang, filename) == 0)
-          selected = i;
-        languages = g_list_append(languages, entry?entry:g_strdup(filename));
-        if(store_codes)
-          language_codes = g_list_append(language_codes, g_strdup(filename));
-      }
-      g_free(testname);
-    }
-    g_dir_close(dir) ;
-  }
-  if(selected == -1 && g_strcmp0(ui_lang, "C") != 0)
-    selected = sys_default;
-
-  label = gtk_label_new(_("interface language"));
+  GtkWidget *label = gtk_label_new(_("interface language"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  labelev = gtk_event_box_new();
+  GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
-  widget = gtk_combo_box_text_new();
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("english"));
+  GtkWidget *widget = gtk_combo_box_text_new();
 
-  if((iter = g_list_first(languages)) != NULL)
+  for(GList *iter = darktable.l10n->languages; iter; iter = g_list_next(iter))
   {
-    do
-    {
-      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), iter->data);
-      g_free(iter->data);
-    }
-    while((iter=g_list_next(iter)) != NULL);
-    g_list_free(languages);
+    const char *name = dt_l10n_get_name(iter->data);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), name);
   }
 
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), selected + 1);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), darktable.l10n->selected);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(language_callback), 0);
   gtk_widget_set_tooltip_text(labelev,  _("double click to reset to the system language"));
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-  gtk_widget_set_tooltip_text(widget, _("set the language of the user interface (needs a restart)"));
-  gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_language_widget),
-(gpointer)widget);
-
-  g_free(ui_lang);
+  gtk_widget_set_tooltip_text(widget, _("set the language of the user interface. the system default is marked with an * (needs a restart)"));
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, (*line)++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_language_widget), (gpointer)widget);
 }
-*/
+
+///////////// end of gui language selection
+
 
 void dt_gui_preferences_show()
 {
@@ -264,8 +214,7 @@ void dt_gui_preferences_show()
   darktable.control->accel_remap_str = NULL;
   darktable.control->accel_remap_path = NULL;
 
-  //   init_tab_gui(notebook, &hardcoded_gui);
-  init_tab_gui(_preferences_dialog, notebook, NULL);
+  init_tab_gui(_preferences_dialog, notebook, &hardcoded_gui);
   init_tab_core(_preferences_dialog, notebook, NULL);
   init_tab_session(_preferences_dialog, notebook, NULL);
   init_tab_accels(notebook);
@@ -931,7 +880,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
   if(darktable.control->accel_remap_str)
   {
     // Change the accel map entry
-    if(gtk_accel_map_change_entry(darktable.control->accel_remap_str, event->keyval,
+    if(gtk_accel_map_change_entry(darktable.control->accel_remap_str, gdk_keyval_to_lower(event->keyval),
                                   event->state & KEY_STATE_MASK, TRUE))
     {
       // If it succeeded delete any conflicting accelerators

@@ -41,7 +41,7 @@
 #include "lua/view.h"
 #endif
 
-/** avilable views flags, a view should return it's type and
+/** available views flags, a view should return its type and
     is also used in modules flags available in src/libs to
     control which view the module should be available in also
     which placement in the panels the module have.
@@ -96,7 +96,7 @@ typedef struct dt_view_t
                  int32_t pointery);         // expose the module (gtk callback)
   int (*try_enter)(struct dt_view_t *self); // test if enter can succeed.
   void (*enter)(struct dt_view_t *self); // mode entered, this module got focus. return non-null on failure.
-  void (*leave)(struct dt_view_t *self); // mode left (is called after the new try_enter has succeded).
+  void (*leave)(struct dt_view_t *self); // mode left (is called after the new try_enter has succeeded).
   void (*reset)(struct dt_view_t *self); // reset default appearance
 
   // event callbacks:

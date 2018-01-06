@@ -808,7 +808,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   /* create cairo context and setup transformation/scale */
   cairo_t *cr = cairo_create(surface);
 
-  // rsvg (or some part of cairo whic is used underneath) isn't thread safe, for example when handling fonts
+  // rsvg (or some part of cairo which is used underneath) isn't thread safe, for example when handling fonts
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
   /* create the rsvghandle from parsed svg data */

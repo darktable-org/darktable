@@ -1633,7 +1633,7 @@ static int main_gui(dt_lut_t *self, int argc, char *argv[])
   gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
   g_signal_connect(GTK_WINDOW(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-  // resizeable container
+  // resizable container
   GtkWidget *vpaned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
   gtk_container_add(GTK_CONTAINER(window), vpaned);
 

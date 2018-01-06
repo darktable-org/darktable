@@ -617,7 +617,7 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
   g_match_info_free(match_info);
   g_regex_unref(regex);
 
-  // and we test the classic comparaison operators
+  // and we test the classic comparison operators
   regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*([0-9]+\\.?[0-9]*)\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   match_count = g_match_info_get_match_count(match_info);
@@ -730,7 +730,7 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
   g_match_info_free(match_info);
   g_regex_unref(regex);
 
-  // and we test the classic comparaison operators
+  // and we test the classic comparison operators
   // 2 elements : operator and date-time
   regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*(\\d{4}[:\\d\\s]*)?\\s*%?\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
@@ -876,6 +876,13 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images WHERE "
                                      "(longitude IS NOT NULL AND latitude IS NOT NULL))) ",
                               (strcmp(escaped_text, _("tagged")) == 0) ? "" : "not");
+      break;
+
+    case DT_COLLECTION_PROP_LOCAL_COPY: // local copy
+      query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images WHERE "
+                                     "(flags & %d))) ",
+                              (strcmp(escaped_text, _("not copied locally")) == 0) ? "not" : "",
+                              DT_IMAGE_LOCAL_COPY);
       break;
 
     case DT_COLLECTION_PROP_CAMERA: // camera

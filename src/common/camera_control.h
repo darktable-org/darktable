@@ -123,7 +123,7 @@ typedef enum dt_camera_error_t
 {
   /** Locking camera failed. \remarks This means that camera control is busy and locking failed. */
   CAMERA_LOCK_FAILED,
-  /**  Camera conenction is broken and unusable.
+  /**  Camera connection is broken and unusable.
   \remarks Beyond this message references to dt_camera_t pointer is invalid, which means that the host
   application should remove all references of camera pointer and disallow any operations onto it.
    */
@@ -161,7 +161,7 @@ typedef struct dt_camctl_t
 typedef struct dt_camctl_listener_t
 {
   void *data;
-  /** Invoked when a image is downloaded while in tethered mode or  by import. \see dt_camctl_status_t */
+  /** Invoked when a image is downloaded while in tethered mode or by import. \see dt_camctl_status_t */
   void (*control_status)(dt_camctl_status_t status, void *data);
 
   /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That
@@ -173,7 +173,7 @@ typedef struct dt_camctl_listener_t
   const char *(*request_image_filename)(const dt_camera_t *camera, const char *filename, time_t *exif_time,
                                         void *data);
 
-  /** Invoked when a image is downloaded while in tethered mode or  by import */
+  /** Invoked when a image is downloaded while in tethered mode or by import */
   void (*image_downloaded)(const dt_camera_t *camera, const char *filename, void *data);
 
   /** Invoked when a image is found on storage.. such as from dt_camctl_get_previews(), if 0 is returned the
@@ -202,7 +202,7 @@ typedef enum dt_camera_preview_flags_t
 {
   /** No image data */
   CAMCTL_IMAGE_NO_DATA = 0,
-  /**Get a image  preview. */
+  /**Get an image preview. */
   CAMCTL_IMAGE_PREVIEW_DATA = 1,
   /**Get the image exif */
   CAMCTL_IMAGE_EXIF_DATA = 2

@@ -133,7 +133,7 @@ var framework = {
 	 * {
 	 *  raf : request animation frame function
 	 *  caf : cancel animation frame function
-	 *  transfrom : transform property key (with vendor), or null if not supported
+	 *  transform : transform property key (with vendor), or null if not supported
 	 *  oldIE : IE8 or below
 	 * }
 	 * 
@@ -927,7 +927,7 @@ var publicMethods = {
 			if(_options.focus) {
 				// focus causes layout, 
 				// which causes lag during the animation, 
-				// that's why we delay it untill the initial zoom transition ends
+				// that's why we delay it until the initial zoom transition ends
 				template.focus();
 			}
 			 
@@ -1203,7 +1203,7 @@ var publicMethods = {
 		_shout('beforeResize'); // even may be used for example to switch image sources
 
 
-		// don't re-calculate size on inital size update
+		// don't re-calculate size on initial size update
 		if(_containerShiftIndex !== undefined) {
 
 			var holder,
@@ -3521,7 +3521,7 @@ var _historyUpdateTimeout,
 
 
 		if(_numAnimations || _isDragging) {
-			// changing browser URL forces layout/paint in some browsers, which causes noticable lag during animation
+			// changing browser URL forces layout/paint in some browsers, which causes noticeable lag during animation
 			// that's why we update hash only when no animations running
 			_hashAnimCheckTimeout = setTimeout(_updateHash, 500);
 			return;
@@ -3546,7 +3546,7 @@ var _historyUpdateTimeout,
 			if(_windowLoc.hash.indexOf(newHash) === -1) {
 				_urlChangedOnce = true;
 			}
-			// first time - add new hisory record, then just replace
+			// first time - add new history record, then just replace
 		}
 
 		var newURL = _windowLoc.href.split('#')[0] + '#' +  newHash;

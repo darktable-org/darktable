@@ -174,7 +174,7 @@ static LONG WINAPI dt_toplevel_exception_handler(PEXCEPTION_POINTERS pExceptionI
   }
   else
   {
-    gchar *exception_message = g_strdup_printf("An unhandled exception occured.\nBacktrace will be written to: %s "
+    gchar *exception_message = g_strdup_printf("An unhandled exception occurred.\nBacktrace will be written to: %s "
                                                "after you click on the OK button.\nIf you report this issue, "
                                                "please share this backtrace with the developers.\n",
                                                name_used);
@@ -248,7 +248,7 @@ void dt_set_signal_handlers()
   Set up exception handler for backtrace on Windows
   Works when there is NO SIGSEGV handler installed
 
-  SetUnhandledExceptionFilter handler must be saved on the first invokation
+  SetUnhandledExceptionFilter handler must be saved on the first invocation
   as GraphicsMagick is overwriting SetUnhandledExceptionFilter and all other signals in InitializeMagick()
   Eventually InitializeMagick() should be fixed upstream not to ignore existing exception handlers
   */

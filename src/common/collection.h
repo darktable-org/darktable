@@ -88,7 +88,8 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_ISO,
   DT_COLLECTION_PROP_APERTURE,
   DT_COLLECTION_PROP_FILENAME,
-  DT_COLLECTION_PROP_GEOTAGGING
+  DT_COLLECTION_PROP_GEOTAGGING,
+  DT_COLLECTION_PROP_LOCAL_COPY
 } dt_collection_properties_t;
 
 typedef enum dt_collection_rating_comperator_t
@@ -134,7 +135,7 @@ typedef struct dt_collection_t
 } dt_collection_t;
 
 
-/** instansiates a collection context, if clone equals NULL default query is constructed. */
+/** instantiates a collection context, if clone equals NULL default query is constructed. */
 const dt_collection_t *dt_collection_new(const dt_collection_t *clone);
 /** frees a collection context. */
 void dt_collection_free(const dt_collection_t *collection);

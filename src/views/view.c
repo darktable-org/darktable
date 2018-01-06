@@ -840,7 +840,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     /* clear and reset statements */
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
     DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
-    /* bind imgid to prepared statments */
+    /* bind imgid to prepared statements */
     DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, imgid);
     /* lets check if imgid is selected */
     if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = 1;
@@ -1541,7 +1541,7 @@ void dt_view_filmstrip_scroll_relative(const int diff, int offset)
 
 void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate)
 {
-  // g_return_if_fail(vm->proxy.filmstrip.module!=NULL); // This can happend here for debugging
+  // g_return_if_fail(vm->proxy.filmstrip.module!=NULL); // This can happen here for debugging
   // g_return_if_fail(vm->proxy.filmstrip.scroll_to_image!=NULL);
 
   if(vm->proxy.filmstrip.module && vm->proxy.filmstrip.scroll_to_image)
@@ -1550,7 +1550,7 @@ void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, g
 
 int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm)
 {
-  // g_return_val_if_fail(vm->proxy.filmstrip.module!=NULL, 0); // This can happend here for debugging
+  // g_return_val_if_fail(vm->proxy.filmstrip.module!=NULL, 0); // This can happen here for debugging
   // g_return_val_if_fail(vm->proxy.filmstrip.activated_image!=NULL, 0);
 
   if(vm->proxy.filmstrip.module && vm->proxy.filmstrip.activated_image)

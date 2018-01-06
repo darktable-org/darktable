@@ -45,6 +45,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
+#include "common/l10n.h"
 #include "common/mipmap_cache.h"
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
@@ -93,10 +94,6 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-#ifdef _WIN32
-#include "win/dtwin.h"
-#endif //_WIN32
 
 #ifdef USE_LUA
 #include "lua/configuration.h"
@@ -338,7 +335,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   int sse2_supported = 0;
 
 #ifdef HAVE_BUILTIN_CPU_SUPPORTS
-  // NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
+  // NOTE: _may_i_use_cpu_feature() looks better, but only available in ICC
   __builtin_cpu_init();
   sse2_supported = __builtin_cpu_supports("sse2");
 #else
@@ -706,7 +703,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // I doubt that connecting to dbus for darktable-cli makes sense
     darktable.dbus = dt_dbus_init();
 
-    // make sure that we have no stale global progress bar visible. thus it's run as early is possible
+    // make sure that we have no stale global progress bar visible. thus it's run as early as possible
     dt_control_progress_init(darktable.control);
   }
 
@@ -739,35 +736,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_conf_init(darktable.conf, darktablerc, config_override);
   g_slist_free_full(config_override, g_free);
 
-  // set the interface language
-  const gchar *lang = dt_conf_get_string("ui_last/gui_language");
-#if defined(_WIN32)
-  // get the default locale if no language preference was specified in the config file
-  if(lang == NULL || lang[0] == '\0')
-  {
-    const wchar_t *wcLocaleName = NULL;
-    wcLocaleName = dtwin_get_locale();
-    if(wcLocaleName != NULL)
-    {
-      gchar *langLocale;
-      langLocale = g_utf16_to_utf8(wcLocaleName, -1, NULL, NULL, NULL);
-      if(langLocale != NULL)
-      {
-        g_free((gchar *)lang);
-        lang = g_strdup(langLocale);
-      }
-    }
-  }
-#endif // defined (_WIN32)
-
-  if(lang != NULL && lang[0] != '\0')
-  {
-    g_setenv("LANGUAGE", lang, 1);
-    if(setlocale(LC_ALL, lang) != NULL) gtk_disable_setlocale();
-    setlocale(LC_MESSAGES, lang);
-    g_setenv("LANG", lang, 1);
-  }
-  g_free((gchar *)lang);
+  // set the interface language and prepare selection for prefs
+  darktable.l10n = dt_l10n_init(init_gui);
 
   // we need this REALLY early so that error messages can be shown, however after gtk_disable_setlocale
   if(init_gui)
