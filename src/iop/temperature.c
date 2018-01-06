@@ -115,18 +115,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-static int is_leica_monochrom(dt_image_t *img)
-{
-  if(strncmp(img->exif_maker, "Leica Camera AG", 15) != 0) return 0;
-
-  gchar *tmp_model = g_ascii_strdown(img->exif_model, -1);
-
-  const int res = strstr(tmp_model, "monochrom") != NULL;
-  g_free(tmp_model);
-
-  return res;
-}
-
 static int ignore_missing_wb(dt_image_t *img)
 {
   // Ignore files that end with "-hdr.dng" since these are broken files we
@@ -938,10 +926,17 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
 
+  const int is_raw = dt_image_is_raw(&module->dev->image_storage);
+
+  // White balance module doesn't need to be enabled for monochrome raws (like
+  // for leica monochrom cameras). prepare_matrices is a noop as well, as there
+  // isn't a color matrix, so we can skip that as well.
+  if(is_raw && dt_image_is_monochrome(&(module->dev->image_storage))) goto gui;
+
   if(module->gui_data) prepare_matrices(module);
 
   /* check if file is raw / hdr */
-  if(dt_image_is_raw(&module->dev->image_storage))
+  if(is_raw)
   {
     // raw images need wb:
     module->default_enabled = 1;
@@ -965,20 +960,12 @@ void reload_defaults(dt_iop_module_t *module)
     }
     else
     {
-      if(!is_leica_monochrom(&(module->dev->image_storage)))
+      if(!ignore_missing_wb(&(module->dev->image_storage)))
       {
-        if(!ignore_missing_wb(&(module->dev->image_storage)))
-        {
-          dt_control_log(_("failed to read camera white balance information from `%s'!"),
-                         module->dev->image_storage.filename);
-          fprintf(stderr, "[temperature] failed to read camera white balance information from `%s'!\n",
-                  module->dev->image_storage.filename);
-        }
-      }
-      else
-      {
-        // nop white balance is valid for monochrome sraws (like the leica monochrom produces)
-        goto gui;
+        dt_control_log(_("failed to read camera white balance information from `%s'!"),
+                       module->dev->image_storage.filename);
+        fprintf(stderr, "[temperature] failed to read camera white balance information from `%s'!\n",
+                module->dev->image_storage.filename);
       }
     }
 

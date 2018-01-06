@@ -4909,6 +4909,9 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
 
+  if(dt_image_is_monochrome(&module->dev->image_storage))
+    tmp.demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+
   // only on for raw images:
   if(dt_image_is_raw(&module->dev->image_storage))
     module->default_enabled = 1;

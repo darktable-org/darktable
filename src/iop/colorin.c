@@ -1262,19 +1262,6 @@ static void mat3mul(float *dst, const float *const m1, const float *const m2)
   }
 }
 
-
-static int is_leica_monochrom(dt_image_t *img)
-{
-  if(strncmp(img->exif_maker, "Leica Camera AG", 15) != 0) return 0;
-
-  gchar *tmp_model = g_ascii_strdown(img->exif_model, -1);
-
-  const int res = strstr(tmp_model, "monochrom") != NULL;
-  g_free(tmp_model);
-
-  return res;
-}
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1400,7 +1387,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
     if(isnan(cam_xyz[0]))
     {
-      if(dt_image_is_raw(&pipe->image) && !is_leica_monochrom(&pipe->image))
+      if(dt_image_is_raw(&pipe->image) && !dt_image_is_monochrome(&pipe->image))
       {
         fprintf(stderr, "[colorin] `%s' color matrix not found!\n", pipe->image.camera_makermodel);
         dt_control_log(_("`%s' color matrix not found!"), pipe->image.camera_makermodel);
