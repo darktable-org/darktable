@@ -222,9 +222,10 @@ class CameraSupportState
   end
 
   def matrix_listing
+    puts "<!-- valid as of #{Time.now.strftime("%Y/%m/%d")}, #{IO.popen("git describe").readlines[0]} -->"
     puts "<table class=\"smalltext altrows\">"
 
-    counts = [0, 0, 0, 0, 0]
+    counts = [0, 0, 0, 0]
     clist = ""
     i = 1
     camera_list.each do |camera, al|
@@ -232,7 +233,7 @@ class CameraSupportState
       i += 1
       clist << "  <tr>"
       clist << "<td>#{al}</td>"
-      [@samples_alias_cameras[al], @presets_cameras[camera],
+      [@presets_cameras[camera],
        @noiseprofiles_cameras[camera], @colormatrices_cameras[camera]].each_with_index do |value, num|
         counts[num+1] += 1 if value
         value = value ? "Yes" : "<strong>NO</strong>"
@@ -242,7 +243,7 @@ class CameraSupportState
     end
 
     puts "  <thead><tr>"
-    ["Camera", "Raw Sample", "WB Presets", "Noise Profile", "Custom Matrix"].each_with_index do |name, i|
+    ["Camera", "WB Presets", "Noise Profile", "Custom Matrix"].each_with_index do |name, i|
       $stdout.write "    <th><strong>#{name}</strong><br/>"
       $stdout.write "#{counts[i]} (#{(counts[i].to_f/counts[0].to_f*100).to_i}%)"
       $stdout.write "</th>\n"
