@@ -93,14 +93,19 @@ static void _import_session_migrate_old_config()
   /* TODO: check if old config exists, migrate to new and remove old */
 }
 
-
-static char *_import_session_path_pattern()
+static char *_import_session_path_pattern(struct dt_import_session_t *self)
 {
   char *res;
   char *base;
   char *sub;
+  char *baseexpanded = NULL;
+  char *subexpanded = NULL;
+  char *joined = NULL;
 
   res = NULL;
+  // We expect these session parmaters to contain '/' as directory separators
+  // And we expect to have '\' as variable escape characters
+  // They should NOT  contain '\' as directory separators
   base = dt_conf_get_string("session/base_directory_pattern");
   sub = dt_conf_get_string("session/sub_directory_pattern");
 
@@ -110,14 +115,31 @@ static char *_import_session_path_pattern()
     goto bail_out;
   }
 
-  res = g_build_path(G_DIR_SEPARATOR_S, base, sub, (char *)NULL);
+  // do variable expansion separately to avoid hassle with potential
+  // path separator clash with variable escape character
+  baseexpanded = dt_variables_expand(self->vp, base, FALSE);
+  subexpanded = dt_variables_expand(self->vp, sub, FALSE);
+
+  if(!subexpanded || !baseexpanded)
+  {
+    fprintf(stderr, "[import_session] Base or subpath variable expansion failed...\n");
+    goto bail_out;
+  }
+
+  joined = g_build_path(G_DIR_SEPARATOR_S, baseexpanded, subexpanded, (char *)NULL);
+
+  // That is NOT changing anything on Linux, but would make sure
+  // on Windows that no "/" left in the pathname.
+  res = dt_util_str_replace(joined, "/", G_DIR_SEPARATOR_S);
 
 bail_out:
   g_free(base);
   g_free(sub);
+  g_free(baseexpanded);
+  g_free(subexpanded);
+  g_free(joined);
   return res;
 }
-
 
 static char *_import_session_filename_pattern()
 {
@@ -291,21 +313,17 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
 
 const char *dt_import_session_path(struct dt_import_session_t *self, gboolean current)
 {
-  char *pattern;
   char *new_path;
 
   if(current && self->current_path != NULL) return self->current_path;
 
   /* check if expanded path differs from current */
-  pattern = _import_session_path_pattern();
-  if(pattern == NULL)
+  new_path = _import_session_path_pattern(self);
+  if(new_path == NULL)
   {
     fprintf(stderr, "[import_session] Failed to get session path pattern.\n");
     return NULL;
   }
-
-  new_path = dt_variables_expand(self->vp, pattern, FALSE);
-  g_free(pattern);
 
   /* did the session path change ? */
   if(self->current_path && strcmp(self->current_path, new_path) == 0)
