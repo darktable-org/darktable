@@ -211,6 +211,11 @@
               darktable and debugging of each of them can be activated separately. You can use
               this option multiple times if you want debugging output of more than one
               subsystem.
+            </para>
+            <para>
+            For the Windows version instead of a terminal debug info is logged to a debug log file which can be found at this location:
+            Windows 10: <quote>C:\Users\[username]\AppData\Local\Microsoft\Windows\INetCache\darktable\darktable-log.txt</quote>
+            Windows 7: <quote>C:\Users\[username]\AppData\Local\Microsoft\Windows\Temporary Internet Files\darktable\darktable-log.txt</quote>
             </para></listitem>
 
           </varlistentry>
@@ -258,7 +263,9 @@
             <listitem><para>
               darktable keeps image information in an sqlite database for fast access. The
               default location of that database file is
-              <quote>$HOME/.config/darktable/library.db</quote>. You may give an alternative
+              <quote>$HOME/.config/darktable/library.db</quote>
+              (on Windows: <quote>C:\Users\[username]\AppData\Local\darktable\library.db</quote>).
+              You may give an alternative
               location, e.g. if you want to do some experiments without compromising your
               original library.db. If the database file does not exist, darktable creates it for
               you. You may also give <quote>:memory:</quote> as a library file in which case the
@@ -284,7 +291,7 @@
               This option defines the directory where darktable finds its runtime data. The
               default place depends on your installation. Typical places are
               <quote>/opt/darktable/share/darktable/</quote> and
-              <quote>/usr/share/darktable/</quote>.
+              <quote>/usr/share/darktable/</quote> or <quote>C:\Program Files\darktable\</quote>.
             </para></listitem>
 
           </varlistentry>
@@ -298,7 +305,7 @@
               for loading at runtime. With this option you tell darktable where to look for its
               shared libraries. The default place depends on your installation; typical places
               are <quote>/opt/darktable/lib64/darktable/</quote> and
-              <quote>/usr/lib64/darktable/</quote>.
+              <quote>/usr/lib64/darktable/</quote> or <quote>C:\Program Files\darktable\lib\darktable</quote>.
             </para></listitem>
 
           </varlistentry>
@@ -320,7 +327,8 @@
 
             <listitem><para>
               This option defines the directory where darktable stores the user specific
-              configuration. The default place is <quote>$HOME/.config/darktable/</quote>.
+              configuration. The default place is <quote>$HOME/.config/darktable/</quote>
+              (On Windows: <quote>C:\Users\[username]\AppData\Local\darktable\library.db</quote>).
             </para></listitem>
 
           </varlistentry>
@@ -332,7 +340,9 @@
             <listitem><para>
               darktable keeps a cache of image thumbnails for fast image preview and of
               precompiled OpenCL binaries for fast startup. By default the cache is located in
-              <quote>$HOME/.cache/darktable/</quote>. There may exist multiple thumbnail caches
+              <quote>$HOME/.cache/darktable/</quote>
+              (On Windows: <quote>C:\Users\[username]\AppData\Local\Microsoft\Windows\INetCache\darktable</quote>).
+              There may exist multiple thumbnail caches
               in parallel&nbsp;&ndash; one for each library file.
             </para></listitem>
 
