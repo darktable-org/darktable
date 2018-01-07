@@ -99,8 +99,10 @@
       </para>
 
       <para>
-        Hover over any place on the slider with your mouse, then use your keyboard's arrow keys
-        (&larr;/&darr; and &rarr;/&uarr;) to adjust the value stepwise.
+        When the slider has keyboard focus you can hover over any place on the slider with your
+        mouse, then use your keyboard's arrow keys (&larr;/&darr; and &rarr;/&uarr;) to adjust
+        the value stepwise. In order to give focus to the widget without changing the current
+        value you can right-click, then right-click again.
       </para></listitem>
 
       <listitem><para>
