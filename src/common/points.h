@@ -22,7 +22,7 @@
 #ifndef __SSE2__
 
 #if !defined _XOPEN_SOURCE && !defined(__DragonFly__) && !defined(__FreeBSD__) && !defined(__NetBSD__)       \
-    && !defined(__OpenBSD__) && !defined(__WIN32__)
+    && !defined(__OpenBSD__) && !defined(_WIN32)
 #define _XOPEN_SOURCE
 #endif
 
