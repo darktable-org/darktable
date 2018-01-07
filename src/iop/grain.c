@@ -469,6 +469,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // filter width depends on world space (i.e. reverse wd norm and roi->scale, as well as buffer input to
   // pixelpipe iscale)
   const double filtermul = piece->iscale / (roi_out->scale * wd);
+  const float fib1 = 34.0, fib2 = 21.0;
+  const float fib1div2 = fib1 / fib2;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(data, hash)
 #endif
@@ -476,25 +479,25 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     float *in = ((float *)ivoid) + (size_t)roi_out->width * j * ch;
     float *out = ((float *)ovoid) + (size_t)roi_out->width * j * ch;
+    const double wy = (roi_out->y + j) / roi_out->scale;
+    const double y = wy / wd;
+    // y: normalized to shorter side of image, so with pixel aspect = 1.
+
     for(int i = 0; i < roi_out->width; i++)
     {
       // calculate x, y in a resolution independent way:
       // wx,wy: worldspace in full image pixel coords:
       const double wx = (roi_out->x + i) / roi_out->scale;
-      const double wy = (roi_out->y + j) / roi_out->scale;
-      // x, y: normalized to shorter side of image, so with pixel aspect = 1.
-      // printf("scale %f\n", wd);
+      // x: normalized to shorter side of image, so with pixel aspect = 1.
       const double x = wx / wd;
-      const double y = wy / wd;
       //  double noise=_perlin_2d_noise(x, y, octaves,0.25, zoom)*1.5;
       double noise = 0.0;
       if(filter)
       {
         // if zoomed out a lot, use rank-1 lattice downsampling
-        const float fib1 = 34.0, fib2 = 21.0;
         for(int l = 0; l < fib2; l++)
         {
-          float px = l / fib2, py = l * (fib1 / fib2);
+          float px = l / fib2, py = l * fib1div2;
           py -= (int)py;
           float dx = px * filtermul, dy = py * filtermul;
           noise += (1.0 / fib2) * _simplex_2d_noise(x + dx + hash, y + dy, octaves, 1.0, zoom);
