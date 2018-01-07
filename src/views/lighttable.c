@@ -1799,9 +1799,9 @@ static void _stop_audio(dt_library_t *lib)
   if(lib->audio_player_id == -1) return;
   // we don't want to trigger the callback due to a possible race condition
   g_source_remove(lib->audio_player_event_source);
-#ifdef __WIN32__
+#ifdef _WIN32
 // TODO: add Windows code to actually kill the process
-#else  // __WIN32__
+#else  // _WIN32
   if(lib->audio_player_id != -1)
   {
     if(getpgid(0) != getpgid(lib->audio_player_pid))
@@ -1809,7 +1809,7 @@ static void _stop_audio(dt_library_t *lib)
     else
       kill(lib->audio_player_pid, SIGKILL);
   }
-#endif // __WIN32__
+#endif // _WIN32
   g_spawn_close_pid(lib->audio_player_pid);
   lib->audio_player_id = -1;
 }
