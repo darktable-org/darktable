@@ -317,7 +317,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 {
   double start_wtime = dt_get_wtime();
 
-#ifndef __WIN32__
+#ifndef _WIN32
   if(getuid() == 0 || geteuid() == 0)
     printf(
         "WARNING: either your user id or the effective user id are 0. are you running darktable as root?\n");
@@ -1102,7 +1102,7 @@ void *dt_alloc_align(size_t alignment, size_t size)
 {
 #if defined(__FreeBSD_version) && __FreeBSD_version < 700013
   return malloc(size);
-#elif defined(__WIN32__)
+#elif defined(_WIN32)
   return _aligned_malloc(size, alignment);
 #else
   void *ptr = NULL;
@@ -1111,7 +1111,7 @@ void *dt_alloc_align(size_t alignment, size_t size)
 #endif
 }
 
-#ifdef __WIN32__
+#ifdef _WIN32
 void dt_free_align(void *mem)
 {
   _aligned_free(mem);

@@ -41,7 +41,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#ifndef __WIN32__
+#ifndef _WIN32
 #include <glob.h>
 #endif
 #include <glib/gstdio.h>
@@ -675,7 +675,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
     while(*c2 != '.' && c2 > filename) c2--;
     snprintf(c1 + strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp", c2);
 
-#ifdef __WIN32__
+#ifdef _WIN32
     wchar_t *wpattern = g_utf8_to_utf16(pattern, -1, NULL, NULL, NULL);
     WIN32_FIND_DATAW data;
     HANDLE handle = FindFirstFileW(wpattern, &data);
