@@ -7428,6 +7428,12 @@ const wb_data wb_preset[] =
   { "Sony", "SLT-A99", DaylightFluorescent, 0,	{ 2.63671875, 1, 1.37890625, 0 } },
   { "Sony", "SLT-A99", Flash, 0,		{ 2.70703125, 1, 1.32031250, 0 } },
 
+  // Firmware version 4.01.2
+  { "Leaf", "Credo 40", Daylight, 0,		{ 1.31208002567291, 1, 1.40452003479004, 0 } },
+  { "Leaf", "Credo 40", Fluorescent, 0,		{ 0.9466667343775486, 1, 2.272152602270239, 0 } },
+  { "Leaf", "Credo 40", Incandescent, 0,	{ 0.8719298739795124, 1, 2.202473677432417, 0 } },
+  { "Leaf", "Credo 40", Flash, 0,		{ 1.26238000392914, 1, 1.48148000240326, 0 } },
+
 };
 
 const int wb_preset_count = sizeof(wb_preset) / sizeof(wb_data);
