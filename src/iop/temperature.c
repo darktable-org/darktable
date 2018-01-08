@@ -938,10 +938,17 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
 
+  const int is_raw = dt_image_is_raw(&module->dev->image_storage);
+
+  // White balance module doesn't need to be enabled for monochrome raws (like
+  // for leica monochrom cameras). prepare_matrices is a noop as well, as there
+  // isn't a color matrix, so we can skip that as well.
+  if(is_raw && is_leica_monochrom(&(module->dev->image_storage))) goto gui;
+
   if(module->gui_data) prepare_matrices(module);
 
   /* check if file is raw / hdr */
-  if(dt_image_is_raw(&module->dev->image_storage))
+  if(is_raw)
   {
     // raw images need wb:
     module->default_enabled = 1;
@@ -965,20 +972,12 @@ void reload_defaults(dt_iop_module_t *module)
     }
     else
     {
-      if(!is_leica_monochrom(&(module->dev->image_storage)))
+      if(!ignore_missing_wb(&(module->dev->image_storage)))
       {
-        if(!ignore_missing_wb(&(module->dev->image_storage)))
-        {
-          dt_control_log(_("failed to read camera white balance information from `%s'!"),
-                         module->dev->image_storage.filename);
-          fprintf(stderr, "[temperature] failed to read camera white balance information from `%s'!\n",
-                  module->dev->image_storage.filename);
-        }
-      }
-      else
-      {
-        // nop white balance is valid for monochrome sraws (like the leica monochrom produces)
-        goto gui;
+        dt_control_log(_("failed to read camera white balance information from `%s'!"),
+                       module->dev->image_storage.filename);
+        fprintf(stderr, "[temperature] failed to read camera white balance information from `%s'!\n",
+                module->dev->image_storage.filename);
       }
     }
 
