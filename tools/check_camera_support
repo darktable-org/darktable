@@ -223,7 +223,7 @@ class CameraSupportState
 
   def matrix_listing
     puts "<!-- valid as of #{Time.now.strftime("%Y/%m/%d")}, #{IO.popen("git describe").readlines[0]} -->"
-    puts "<table class=\"smalltext altrows\">"
+    puts "<table class=\"smalltext altrows u-full-width\">"
 
     counts = [0, 0, 0, 0]
     clist = ""
