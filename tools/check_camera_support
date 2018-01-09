@@ -222,7 +222,7 @@ class CameraSupportState
   end
 
   def matrix_listing
-    puts "<table><tbody>"
+    puts "<table class=\"smalltext altrows\">"
 
     counts = [0, 0, 0, 0, 0]
     clist = ""
@@ -230,8 +230,7 @@ class CameraSupportState
     camera_list.each do |camera, al|
       counts[0] += 1
       i += 1
-      line_class = i%2 == 0 ? "even" : "odd"
-      clist << "  <tr class=\"#{line_class}\">"
+      clist << "  <tr>"
       clist << "<td>#{al}</td>"
       [@samples_alias_cameras[al], @presets_cameras[camera],
        @noiseprofiles_cameras[camera], @colormatrices_cameras[camera]].each_with_index do |value, num|
@@ -242,15 +241,15 @@ class CameraSupportState
       clist << "</tr>\n"
     end
 
-    puts "  <tr class=\"odd\">"
+    puts "  <thead><tr>"
     ["Camera", "Raw Sample", "WB Presets", "Noise Profile", "Custom Matrix"].each_with_index do |name, i|
       $stdout.write "    <th><strong>#{name}</strong><br/>"
       $stdout.write "#{counts[i]} (#{(counts[i].to_f/counts[0].to_f*100).to_i}%)"
       $stdout.write "</th>\n"
     end
-    puts "  </tr>"
+    puts "  </tr></thead>"
     $stdout.write clist
-    puts "</tbody></table>"
+    puts "</table>"
   end
 
   def camera_list
