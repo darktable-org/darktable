@@ -446,6 +446,7 @@ static gboolean list_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   if(strcmp(haystack, needle) == 0)
   {
     gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
+    gtk_tree_view_scroll_to_cell(d->view, path, NULL, FALSE, 0.2, 0);
   }
 
   g_free(haystack);
@@ -502,6 +503,7 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   {
     gtk_tree_view_expand_to_path(d->view, path);
     gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
+    gtk_tree_view_scroll_to_cell(d->view, path, NULL, FALSE, 0.2, 0);
   }
   else if(startwildcard && g_strrstr(haystack, needle+1) != NULL)
   {
