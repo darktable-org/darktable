@@ -278,7 +278,7 @@ size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n)
 
 off_t dt_util_get_file_size(const char *filename)
 {
-#ifdef __WIN32__
+#ifdef _WIN32
   struct _stati64 st;
   if(_stati64(filename, &st) == 0) return st.st_size;
 #else
@@ -371,7 +371,7 @@ dt_logo_season_t dt_util_get_logo_season(void)
     easter_sunday.tm_isdst = -1;
     time_t easter_sunday_sec = mktime(&easter_sunday);
     // we start at midnight, so it's basically +- 2 days
-    if(labs(easter_sunday_sec - now) <= 2 * 24 * 60 * 60) return DT_LOGO_SEASON_EASTER;
+    if(llabs(easter_sunday_sec - now) <= 2 * 24 * 60 * 60) return DT_LOGO_SEASON_EASTER;
   }
 
   return DT_LOGO_SEASON_NONE;

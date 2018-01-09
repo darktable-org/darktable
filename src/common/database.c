@@ -1360,7 +1360,7 @@ static gboolean pid_is_alive(int pid)
 {
   gboolean pid_is_alive;
 
-#ifdef __WIN32__
+#ifdef _WIN32
   pid_is_alive = FALSE;
   HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
   if(h)

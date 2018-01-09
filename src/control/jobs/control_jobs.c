@@ -940,7 +940,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
           do
           {
             char *xmp_filename = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
-            files = g_list_append(files, g_build_filename(dirname, xmp_filename));
+            files = g_list_append(files, g_build_filename(dirname, xmp_filename, NULL));
             g_free(xmp_filename);
           }
           while(FindNextFileW(handle, &data));
