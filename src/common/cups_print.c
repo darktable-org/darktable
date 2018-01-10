@@ -421,16 +421,37 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
     // ensure that intent is in the range, may happen if at some point we add new intent in the list
     const int intent = (pinfo->printer.intent < 4) ? pinfo->printer.intent : 0;
 
-    // start the turboprint dialog
-    char *tpcmd =
-      g_strdup_printf("turboprint --printer=%s --options --output=%s -o copies=1 -o PageSize=%s -o InputSlot=AutoSelect -o zedoIntent=%s -o MediaType=%s",
-                      pinfo->printer.name, tmpfile, pinfo->paper.common_name, tp_intent_name[intent], pinfo->medium.name);
-    dt_print(DT_DEBUG_PRINT, "[print]   cmd='%s'\n", tpcmd);
+    // spawn turboprint command
+    gchar * argv[15] = { 0 };
 
-    const int res = system(tpcmd);
-    g_free(tpcmd);
+    argv[0] = "turboprint";
+    argv[1] = g_strdup_printf("--printer=%s", pinfo->printer.name);
+    argv[2] = "--options";
+    argv[3] = g_strdup_printf("--output=%s", tmpfile);
+    argv[4] = "-o";
+    argv[5] = "copies=1";
+    argv[6] = "-o";
+    argv[7] = g_strdup_printf("PageSize=%s", pinfo->paper.common_name);
+    argv[8] = "-o";
+    argv[9] = "InputSlot=AutoSelect";
+    argv[10] = "-o";
+    argv[11] = g_strdup_printf("zedoIntent=%s", tp_intent_name[intent]);
+    argv[12] = "-o";
+    argv[13] = g_strdup_printf("MediaType=%s", pinfo->medium.name);
+    argv[14] = NULL;
 
-    if (res==0)
+    gint exit_status = 0;
+
+    g_spawn_sync (NULL, argv, NULL, G_SPAWN_SEARCH_PATH | G_SPAWN_STDOUT_TO_DEV_NULL | G_SPAWN_STDERR_TO_DEV_NULL,
+                  NULL, NULL, NULL, NULL, &exit_status, NULL);
+
+    g_free(argv[1]);
+    g_free(argv[3]);
+    g_free(argv[7]);
+    g_free(argv[11]);
+    g_free(argv[13]);
+
+    if (exit_status==0)
     {
       FILE *stream = g_fopen(tmpfile, "rb");
 
@@ -459,7 +480,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
     }
     else
     {
-      dt_print(DT_DEBUG_PRINT, "[print]   command fails with %d, cancel printing\n", res);
+      dt_print(DT_DEBUG_PRINT, "[print]   command fails with %d, cancel printing\n", exit_status);
       return;
     }
   }
