@@ -1170,14 +1170,12 @@ static void list_view(dt_lib_collect_rule_t *dr)
         break;
 
       case DT_COLLECTION_PROP_LOCAL_COPY: // local copy, 2 hardcoded alternatives
-        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("copied locally"),
-                           DT_LIB_COLLECT_COL_ID, 0, DT_LIB_COLLECT_COL_TOOLTIP, _("copied locally"),
-                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("copied locally"), -1);
-        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("not copied locally"),
-                           DT_LIB_COLLECT_COL_ID, 1, DT_LIB_COLLECT_COL_TOOLTIP, _("not copied locally"),
-                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("not copied locally"), -1);
+        g_snprintf(query, sizeof(query), "SELECT CASE "
+                           "WHEN (flags & %d) THEN '%s' ELSE '%s' END as lcp, 1, "
+                           "COUNT(*) AS count "
+                           "FROM main.images "
+                           "WHERE %s GROUP BY lcp ORDER BY lcp ASC",
+                   DT_IMAGE_LOCAL_COPY, _("copied locally"),  _("not copied locally"), where_ext);
         break;
 
       case DT_COLLECTION_PROP_COLORLABEL: // colorlabels
