@@ -69,7 +69,7 @@ void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo)
 
       if (attr)
       {
-        pinfo->is_turboprint = strstr(attr->value, "TurboPrint") == NULL ? FALSE : TRUE;
+        pinfo->is_turboprint = strstr(attr->value, "TurboPrint") != NULL;
       }
 
       // hardware margins
