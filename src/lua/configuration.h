@@ -21,8 +21,8 @@
 #include <lua/lua.h>
 
 /*
- * LUA API VERSIONNING
- * This API versionning follows semantic versionning as defined in
+ * LUA API VERSIONING
+ * This API versioning follows semantic versioning as defined in
  * http://semver.org
  * only stable releases are considered "released"
  *   => no need to increase API version with every commit,
