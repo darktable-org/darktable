@@ -423,10 +423,16 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
     const int intent = (pinfo->printer.intent < 4) ? pinfo->printer.intent : 0;
 
     // start the turboprint dialog
-    snprintf
-      (tpcmd, sizeof(tpcmd),
-       "turboprint --printer=%s --options --output=%s -o copies=1 -o PageSize=%s -o InputSlot=AutoSelect -o zedoIntent=%s -o MediaType=%s",
-       pinfo->printer.name, tmpfile, pinfo->paper.common_name, tp_intent_name[intent], pinfo->medium.name);
+    if (snprintf
+        (tpcmd, sizeof(tpcmd),
+         "turboprint --printer=%s --options --output=%s -o copies=1 -o PageSize=%s -o InputSlot=AutoSelect -o zedoIntent=%s -o MediaType=%s",
+         pinfo->printer.name, tmpfile, pinfo->paper.common_name, tp_intent_name[intent], pinfo->medium.name)
+        >= sizeof(tpcmd))
+    {
+      dt_control_log(_("failed to get turboprint options"));
+      fprintf(stderr, "failed to get turboprint options\n");
+      return;
+    }
 
     dt_print(DT_DEBUG_PRINT, "[print]   cmd='%s'\n", tpcmd);
 
