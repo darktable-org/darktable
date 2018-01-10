@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2015 pascal obry.
+    copyright (c) 2014-2017 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,6 +40,11 @@ typedef struct dt_paper_info_t
   double width, height;
 } dt_paper_info_t;
 
+typedef struct dt_medium_info_t
+{
+  char name[MAX_NAME], common_name[MAX_NAME];
+} dt_medium_info_t;
+
 typedef struct dt_page_setup_t
 {
   gboolean landscape;
@@ -54,6 +59,7 @@ typedef struct dt_printer_info_t
   double hw_margin_top, hw_margin_bottom, hw_margin_left, hw_margin_right;
   dt_iop_color_intent_t intent;
   char profile[256];
+  gboolean is_turboprint;
 } dt_printer_info_t;
 
 typedef struct dt_print_info_t
@@ -61,6 +67,7 @@ typedef struct dt_print_info_t
   dt_printer_info_t printer;
   dt_page_setup_t page;
   dt_paper_info_t paper;
+  dt_medium_info_t medium;
 } dt_print_info_t;
 
 // Asynchronous printer discovery, cb will be called for each printer found
@@ -71,13 +78,19 @@ void dt_printers_abort_discovery(void);
 void dt_init_print_info(dt_print_info_t *pinfo);
 
 // get printer information for the given printer name
-dt_printer_info_t *dt_get_printer_info(const char *printer_name);
+void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo);
 
 // get all available papers for the given printer
-GList *dt_get_papers(const char *printer_name);
+GList *dt_get_papers(const dt_printer_info_t *printer);
 
 // get paper information for the given paper name
 dt_paper_info_t *dt_get_paper(GList *papers, const char *name);
+
+// get all available media type for the given printer
+GList *dt_get_media_type(const dt_printer_info_t *printer);
+
+// get paper information for the given paper name
+dt_medium_info_t *dt_get_medium(GList *media, const char *name);
 
 // print filename using the printer and the page size and setup
 void dt_print_file(const int32_t imgid, const char *filename, const dt_print_info_t *pinfo);
