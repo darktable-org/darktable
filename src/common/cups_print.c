@@ -404,7 +404,6 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
   if (pinfo->printer.is_turboprint)
   {
     const char *tp_intent_name[] = { "perception_0", "colorimetric-relative_1", "saturation_1", "colorimetric-absolute_1" };
-    char tpcmd[1024];
     char tmpfile[PATH_MAX] = { 0 };
 
     dt_loc_get_tmp_dir(tmpfile, sizeof(tmpfile));
@@ -423,20 +422,13 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
     const int intent = (pinfo->printer.intent < 4) ? pinfo->printer.intent : 0;
 
     // start the turboprint dialog
-    if (snprintf
-        (tpcmd, sizeof(tpcmd),
-         "turboprint --printer=%s --options --output=%s -o copies=1 -o PageSize=%s -o InputSlot=AutoSelect -o zedoIntent=%s -o MediaType=%s",
-         pinfo->printer.name, tmpfile, pinfo->paper.common_name, tp_intent_name[intent], pinfo->medium.name)
-        >= sizeof(tpcmd))
-    {
-      dt_control_log(_("failed to get turboprint options"));
-      fprintf(stderr, "failed to get turboprint options\n");
-      return;
-    }
-
+    char *tpcmd =
+      g_strdup_printf("turboprint --printer=%s --options --output=%s -o copies=1 -o PageSize=%s -o InputSlot=AutoSelect -o zedoIntent=%s -o MediaType=%s",
+                      pinfo->printer.name, tmpfile, pinfo->paper.common_name, tp_intent_name[intent], pinfo->medium.name);
     dt_print(DT_DEBUG_PRINT, "[print]   cmd='%s'\n", tpcmd);
 
     const int res = system(tpcmd);
+    g_free(tpcmd);
 
     if (res==0)
     {
