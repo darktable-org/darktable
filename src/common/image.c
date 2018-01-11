@@ -326,6 +326,37 @@ void dt_image_set_location_and_elevation(const int32_t imgid, double lon, double
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
+gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
+{
+  dt_develop_t dev;
+
+  dt_dev_init(&dev, 0);
+  dt_dev_load_image(&dev, imgid);
+  const dt_image_t *img = &dev.image_storage;
+
+  dt_dev_pixelpipe_t pipe;
+  int wd = img->width, ht = img->height;
+  int res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
+  if(res)
+  {
+    // set mem pointer to 0, won't be used.
+    dt_dev_pixelpipe_set_input(&pipe, &dev, NULL, wd, ht, 1.0f);
+    dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+    dt_dev_pixelpipe_synch_all(&pipe, &dev);
+    dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
+                                    &pipe.processed_height);
+    wd = pipe.processed_width;
+    ht = pipe.processed_height;
+    res = TRUE;
+    dt_dev_pixelpipe_cleanup(&pipe);
+  }
+  dt_dev_cleanup(&dev);
+
+  *width = wd;
+  *height = ht;
+  return res;
+}
+
 void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orientation)
 {
   sqlite3_stmt *stmt;
