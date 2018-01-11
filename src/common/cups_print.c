@@ -549,35 +549,6 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
   cupsFreeOptions (num_options, options);
 }
 
-static void _get_image_dimension (int32_t imgid, int32_t *iwidth, int32_t *iheight)
-{
-  dt_develop_t dev;
-
-  dt_dev_init(&dev, 0);
-  dt_dev_load_image(&dev, imgid);
-  const dt_image_t *img = &dev.image_storage;
-
-  dt_dev_pixelpipe_t pipe;
-  int wd = img->width, ht = img->height;
-  int res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
-  if(res)
-  {
-    // set mem pointer to 0, won't be used.
-    dt_dev_pixelpipe_set_input(&pipe, &dev, NULL, wd, ht, 1.0f);
-    dt_dev_pixelpipe_create_nodes(&pipe, &dev);
-    dt_dev_pixelpipe_synch_all(&pipe, &dev);
-    dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
-                                    &pipe.processed_height);
-    wd = pipe.processed_width;
-    ht = pipe.processed_height;
-    dt_dev_pixelpipe_cleanup(&pipe);
-  }
-  dt_dev_cleanup(&dev);
-
-  *iwidth = wd;
-  *iheight = ht;
-}
-
 void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
                          const int32_t area_width, const int32_t area_height,
                          int32_t *iwpix, int32_t *ihpix,
@@ -689,7 +660,7 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
   // get the image dimensions if needed
 
   if (*iwpix <= 0 || *ihpix <= 0)
-    _get_image_dimension (imgid, iwpix, ihpix);
+    dt_image_get_final_size(imgid, iwpix, ihpix);
 
   // compute the scaling for the image to fit into the printable area
 
