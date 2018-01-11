@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-05 21:18+0100\n"
-"PO-Revision-Date: 2018-01-05 21:25+0100\n"
+"POT-Creation-Date: 2018-01-11 07:57+0100\n"
+"PO-Revision-Date: 2018-01-11 08:06+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1111,10 +1111,10 @@ msgstr "développées"
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:884 ../src/libs/collect.c:1085
-#: ../src/libs/collect.c:1086 ../src/libs/collect.c:1087
-msgid "copied locally"
-msgstr "copiée localement"
+#: ../src/common/collection.c:884 ../src/libs/collect.c:1089
+#: ../src/libs/collect.c:1090 ../src/libs/collect.c:1091
+msgid "not copied locally"
+msgstr "non copiée localement"
 
 #: ../src/common/collection.c:1249
 #, c-format
@@ -1135,7 +1135,7 @@ msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
 #: ../src/common/colorspaces.c:936 ../src/common/colorspaces.c:1158
-#: ../src/iop/colorin.c:1878 ../src/libs/print_settings.c:893
+#: ../src/iop/colorin.c:1878 ../src/libs/print_settings.c:958
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
@@ -1194,7 +1194,7 @@ msgstr "alternative à la matrice de couleur"
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (ex: JPG)"
 
-#: ../src/common/colorspaces.c:1153 ../src/libs/print_settings.c:886
+#: ../src/common/colorspaces.c:1153 ../src/libs/print_settings.c:951
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web)"
 
@@ -1202,17 +1202,22 @@ msgstr "sRGB (web)"
 msgid "BRG (for testing)"
 msgstr "BRG (pour test)"
 
-#: ../src/common/cups_print.c:322
+#: ../src/common/cups_print.c:396
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
 msgstr "fichier « %s » à imprimer non trouvé pour l'image %d sur « %s »"
 
-#: ../src/common/cups_print.c:383
+#: ../src/common/cups_print.c:415
+msgid "failed to create temporary file for printing options"
+msgstr ""
+"échec de la création du fichier temporaire pour les options d'impression"
+
+#: ../src/common/cups_print.c:545
 #, c-format
 msgid "error while printing image %d on `%s'"
 msgstr "erreur pendant l'impression de l'image %d sur « %s »"
 
-#: ../src/common/cups_print.c:385
+#: ../src/common/cups_print.c:547
 #, c-format
 msgid "printing image %d on `%s'"
 msgstr "impression de l'image %d sur « %s »"
@@ -1475,15 +1480,15 @@ msgid "opencl scheduling profile set to default."
 msgstr "profil de planification opencl par défaut positionné"
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.c:1739
-#: ../src/libs/print_settings.c:1133
+#: ../src/libs/print_settings.c:1208
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1134
+#: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1209
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1135
+#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1210
 msgid "inch"
 msgstr "pouce"
 
@@ -3788,7 +3793,7 @@ msgid "enter the title of the pdf"
 msgstr "entrer le titre du pdf"
 
 #. // papers
-#: ../src/imageio/format/pdf.c:603 ../src/libs/print_settings.c:1118
+#: ../src/imageio/format/pdf.c:603 ../src/libs/print_settings.c:1193
 msgid "paper size"
 msgstr "taille papier"
 
@@ -3807,12 +3812,12 @@ msgid "page orientation"
 msgstr "orientation de la page"
 
 #: ../src/imageio/format/pdf.c:619 ../src/iop/borders.c:994
-#: ../src/libs/print_settings.c:1127
+#: ../src/libs/print_settings.c:1202
 msgid "portrait"
 msgstr "portrait"
 
 #: ../src/imageio/format/pdf.c:620 ../src/iop/borders.c:995
-#: ../src/libs/print_settings.c:1128
+#: ../src/libs/print_settings.c:1203
 msgid "landscape"
 msgstr "paysage"
 
@@ -4868,7 +4873,7 @@ msgstr "fusion d'exposition"
 #: ../src/iop/colorreconstruction.c:1366 ../src/iop/lens.c:2079
 #: ../src/libs/export.c:492 ../src/libs/live_view.c:349
 #: ../src/libs/live_view.c:374 ../src/libs/live_view.c:383
-#: ../src/libs/print_settings.c:1042 ../src/libs/print_settings.c:1315
+#: ../src/libs/print_settings.c:1390
 msgid "none"
 msgstr "sans"
 
@@ -4921,7 +4926,7 @@ msgstr "laplacien local: résultat incohérent"
 #: ../src/iop/bilat.c:516 ../src/iop/denoiseprofile.c:2056
 #: ../src/iop/exposure.c:849 ../src/iop/lens.c:2227 ../src/iop/levels.c:566
 #: ../src/libs/copy_history.c:310 ../src/libs/export.c:644
-#: ../src/libs/print_settings.c:1356 ../src/views/darkroom.c:1451
+#: ../src/libs/print_settings.c:1431 ../src/views/darkroom.c:1451
 msgid "mode"
 msgstr "mode"
 
@@ -4949,7 +4954,7 @@ msgstr "détail"
 msgid "changes the local contrast"
 msgstr "change le contraste local"
 
-#: ../src/iop/bilat.c:531 ../src/iop/grain.c:620
+#: ../src/iop/bilat.c:531 ../src/iop/grain.c:619
 msgid "coarseness"
 msgstr "granularité"
 
@@ -5063,7 +5068,7 @@ msgctxt "accel"
 msgid "threshold"
 msgstr "seuil"
 
-#: ../src/iop/bloom.c:95 ../src/iop/grain.c:438 ../src/iop/hotpixels.c:86
+#: ../src/iop/bloom.c:95 ../src/iop/grain.c:434 ../src/iop/hotpixels.c:86
 msgctxt "accel"
 msgid "strength"
 msgstr "force"
@@ -5087,7 +5092,7 @@ msgid "the threshold of light"
 msgstr "seuil de lumière"
 
 #: ../src/iop/bloom.c:526 ../src/iop/denoiseprofile.c:2059
-#: ../src/iop/grain.c:628 ../src/iop/hazeremoval.c:186
+#: ../src/iop/grain.c:627 ../src/iop/hazeremoval.c:186
 #: ../src/iop/hotpixels.c:460 ../src/iop/nlmeans.c:849 ../src/iop/velvia.c:378
 msgid "strength"
 msgstr "force"
@@ -5216,7 +5221,7 @@ msgstr ""
 "d'entrer des dimensions personnalisées (l:h)"
 
 #: ../src/iop/borders.c:992 ../src/iop/flip.c:74
-#: ../src/libs/print_settings.c:1126
+#: ../src/libs/print_settings.c:1201
 msgid "orientation"
 msgstr "orientation"
 
@@ -5855,8 +5860,8 @@ msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "profil d'entrée non supporté, remplacé par linéaire RGB Rec709 !"
 
 #: ../src/iop/colorin.c:1855 ../src/iop/denoiseprofile.c:2055
-#: ../src/libs/export.c:603 ../src/libs/print_settings.c:1031
-#: ../src/libs/print_settings.c:1249
+#: ../src/libs/export.c:603 ../src/libs/print_settings.c:1106
+#: ../src/libs/print_settings.c:1324
 msgid "profile"
 msgstr "profil"
 
@@ -6000,26 +6005,26 @@ msgid "output intent"
 msgstr "rendu (sortie)"
 
 #: ../src/iop/colorout.c:779 ../src/libs/export.c:627
-#: ../src/libs/print_settings.c:1087 ../src/libs/print_settings.c:1300
+#: ../src/libs/print_settings.c:1162 ../src/libs/print_settings.c:1375
 #: ../src/views/darkroom.c:1601 ../src/views/lighttable.c:2384
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:780 ../src/libs/export.c:628
-#: ../src/libs/print_settings.c:1088 ../src/libs/print_settings.c:1301
+#: ../src/libs/print_settings.c:1163 ../src/libs/print_settings.c:1376
 #: ../src/views/darkroom.c:1602 ../src/views/lighttable.c:2385
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:781 ../src/libs/export.c:629
-#: ../src/libs/print_settings.c:1089 ../src/libs/print_settings.c:1302
+#: ../src/libs/print_settings.c:1164 ../src/libs/print_settings.c:1377
 #: ../src/views/darkroom.c:1603 ../src/views/lighttable.c:2386
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
 #: ../src/iop/colorout.c:782 ../src/libs/export.c:630
-#: ../src/libs/print_settings.c:1090 ../src/libs/print_settings.c:1303
+#: ../src/libs/print_settings.c:1165 ../src/libs/print_settings.c:1378
 #: ../src/views/darkroom.c:1604 ../src/views/lighttable.c:2387
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
@@ -6795,28 +6800,28 @@ msgstr "teinte du filtre"
 msgid "select the saturation of filter"
 msgstr "saturation du filtre"
 
-#: ../src/iop/grain.c:421
+#: ../src/iop/grain.c:417
 msgid "grain"
 msgstr "grain"
 
-#: ../src/iop/grain.c:437
+#: ../src/iop/grain.c:433
 msgctxt "accel"
 msgid "coarseness"
 msgstr "granularité"
 
-#: ../src/iop/grain.c:623
+#: ../src/iop/grain.c:622
 msgid "the grain size (~ISO of the film)"
 msgstr "taille du grain (~ISO du film)"
 
-#: ../src/iop/grain.c:631
+#: ../src/iop/grain.c:630
 msgid "the strength of applied grain"
 msgstr "force du grain à appliquer"
 
-#: ../src/iop/grain.c:636
+#: ../src/iop/grain.c:635
 msgid "midtones bias"
 msgstr "biais tons-moyens"
 
-#: ../src/iop/grain.c:639
+#: ../src/iop/grain.c:638
 msgid ""
 "amount of midtones bias from the photographic paper response modeling. the "
 "greater the bias, the more pronounced the fall off of the grain in shadows "
@@ -7653,7 +7658,7 @@ msgid "the fill-light in EV"
 msgstr "lumière d'appoint en IL"
 
 #: ../src/iop/relight.c:360 ../src/libs/metadata_view.c:111
-#: ../src/libs/print_settings.c:1151
+#: ../src/libs/print_settings.c:1226
 msgid "width"
 msgstr "largeur"
 
@@ -8377,7 +8382,7 @@ msgid "position"
 msgstr "position"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1383 ../src/libs/print_settings.c:1236
+#: ../src/iop/watermark.c:1383 ../src/libs/print_settings.c:1311
 msgid "alignment"
 msgstr "alignement"
 
@@ -8597,10 +8602,10 @@ msgstr "non développées"
 msgid "not tagged"
 msgstr "non positionnée"
 
-#: ../src/libs/collect.c:1089 ../src/libs/collect.c:1090
-#: ../src/libs/collect.c:1091
-msgid "not copied locally"
-msgstr "non copiée localement"
+#: ../src/libs/collect.c:1085 ../src/libs/collect.c:1086
+#: ../src/libs/collect.c:1087
+msgid "copied locally"
+msgstr "copiée localement"
 
 #: ../src/libs/collect.c:1338 ../src/libs/collect.c:1352
 #: ../src/libs/collect.c:1725
@@ -8985,21 +8990,21 @@ msgid "allow upscaling"
 msgstr "autorise l'agrandissement"
 
 #: ../src/libs/export.c:605 ../src/libs/export.c:626
-#: ../src/libs/print_settings.c:1252 ../src/libs/print_settings.c:1299
+#: ../src/libs/print_settings.c:1327 ../src/libs/print_settings.c:1374
 msgid "image settings"
 msgstr "paramètres d'image"
 
-#: ../src/libs/export.c:616 ../src/libs/print_settings.c:1288
+#: ../src/libs/export.c:616 ../src/libs/print_settings.c:1363
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr "profils ICC de sortie dans %s ou %s"
 
-#: ../src/libs/export.c:625 ../src/libs/print_settings.c:1086
-#: ../src/libs/print_settings.c:1297
+#: ../src/libs/export.c:625 ../src/libs/print_settings.c:1161
+#: ../src/libs/print_settings.c:1372
 msgid "intent"
 msgstr "rendu"
 
-#: ../src/libs/export.c:636 ../src/libs/print_settings.c:1313
+#: ../src/libs/export.c:636 ../src/libs/print_settings.c:1388
 msgid "style"
 msgstr "style"
 
@@ -9007,15 +9012,15 @@ msgstr "style"
 msgid "temporary style to use while exporting"
 msgstr "style temporaire à utiliser lors de l'exportation"
 
-#: ../src/libs/export.c:648 ../src/libs/print_settings.c:1358
+#: ../src/libs/export.c:648 ../src/libs/print_settings.c:1433
 msgid "replace history"
 msgstr "remplacer l'historique"
 
-#: ../src/libs/export.c:649 ../src/libs/print_settings.c:1359
+#: ../src/libs/export.c:649 ../src/libs/print_settings.c:1434
 msgid "append history"
 msgstr "ajouter à l'historique"
 
-#: ../src/libs/export.c:654 ../src/libs/print_settings.c:1366
+#: ../src/libs/export.c:654 ../src/libs/print_settings.c:1441
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
@@ -9839,7 +9844,7 @@ msgstr "mise au point"
 msgid "datetime"
 msgstr "date/heure"
 
-#: ../src/libs/metadata_view.c:112 ../src/libs/print_settings.c:1155
+#: ../src/libs/metadata_view.c:112 ../src/libs/print_settings.c:1230
 msgid "height"
 msgstr "hauteur"
 
@@ -10029,7 +10034,7 @@ msgid "200%"
 msgstr "200%"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1243
+#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1318
 msgid "print settings"
 msgstr "paramètres d'impression"
 
@@ -10055,53 +10060,70 @@ msgstr "préparation de l'impression de l'image %d sur « %s »"
 msgid "cannot open printer profile `%s'"
 msgstr "impossible d'ouvrir le profil d'impression « %s »"
 
+#: ../src/libs/print_settings.c:300
+#, c-format
+msgid "error getting output profile for image %d"
+msgstr "erreur de récupération du profil de sortie pour l'image %d"
+
 #: ../src/libs/print_settings.c:309
 #, c-format
 msgid "cannot apply printer profile `%s'"
 msgstr "impossible d'appliquer le profil d'impression « %s » !"
 
-#: ../src/libs/print_settings.c:552
+#: ../src/libs/print_settings.c:328
+msgid "failed to create temporary pdf for printing"
+msgstr "échec de la création du pdf temporaire pour l'impression"
+
+#: ../src/libs/print_settings.c:618
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (dpi:%d)"
 
-#: ../src/libs/print_settings.c:1020
+#: ../src/libs/print_settings.c:1086
 msgid "printer"
 msgstr "imprimante"
 
-#: ../src/libs/print_settings.c:1077
+#: ../src/libs/print_settings.c:1098
+msgid "media"
+msgstr "type papier"
+
+#: ../src/libs/print_settings.c:1117
+msgid "color management in printer driver"
+msgstr "gestion couleur par l'imprimante"
+
+#: ../src/libs/print_settings.c:1152
 #, c-format
 msgid "printer ICC profiles in %s or %s"
 msgstr "profils ICC d'imprimante dans %s ou %s"
 
-#: ../src/libs/print_settings.c:1098
+#: ../src/libs/print_settings.c:1174
 msgid "black point compensation"
 msgstr "compensation du point noir"
 
-#: ../src/libs/print_settings.c:1106
+#: ../src/libs/print_settings.c:1182
 msgid "activate black point compensation when applying the printer profile"
 msgstr ""
 "active la compensation du point noir lors de l'application du profil "
 "d'imprimante"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:1113
+#: ../src/libs/print_settings.c:1188
 msgid "page"
 msgstr "page"
 
-#: ../src/libs/print_settings.c:1149
+#: ../src/libs/print_settings.c:1224
 msgid "image width/height"
 msgstr "largeur/hauteur image"
 
-#: ../src/libs/print_settings.c:1153
+#: ../src/libs/print_settings.c:1228
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:1161
+#: ../src/libs/print_settings.c:1236
 msgid "scale factor"
 msgstr "facteur d'agrandissement"
 
-#: ../src/libs/print_settings.c:1166
+#: ../src/libs/print_settings.c:1241
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -10115,47 +10137,47 @@ msgstr ""
 "une valeur trop grande peut donner une qualité d'impression médiocre"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1180
+#: ../src/libs/print_settings.c:1255
 msgid "top margin"
 msgstr "marge haute"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1184
+#: ../src/libs/print_settings.c:1259
 msgid "left margin"
 msgstr "marge gauche"
 
-#: ../src/libs/print_settings.c:1187
+#: ../src/libs/print_settings.c:1262
 msgid "lock"
 msgstr "sync"
 
-#: ../src/libs/print_settings.c:1188
+#: ../src/libs/print_settings.c:1263
 msgid "change all margins uniformly"
 msgstr "change toutes les marges uniformément"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1192
+#: ../src/libs/print_settings.c:1267
 msgid "right margin"
 msgstr "marge droite"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1196
+#: ../src/libs/print_settings.c:1271
 msgid "bottom margin"
 msgstr "marge basse"
 
-#: ../src/libs/print_settings.c:1337
+#: ../src/libs/print_settings.c:1412
 msgid "temporary style to use while printing"
 msgstr "style temporaire à utiliser lors de l'exportation"
 
 #. Print button
-#: ../src/libs/print_settings.c:1374
+#: ../src/libs/print_settings.c:1449
 msgid "print"
 msgstr "impression"
 
-#: ../src/libs/print_settings.c:1376
+#: ../src/libs/print_settings.c:1451
 msgid "print with current settings"
 msgstr "imprime avec les réglages actuels"
 
-#: ../src/libs/print_settings.c:1832
+#: ../src/libs/print_settings.c:1937
 msgctxt "accel"
 msgid "print"
 msgstr "impression"
@@ -11798,10 +11820,6 @@ msgstr ""
 #~ msgctxt "accel"
 #~ msgid "expose statuses"
 #~ msgstr "afficher états"
-
-#~ msgid "failed to create import path `%s', import aborted."
-#~ msgstr ""
-#~ "échec de la création du chemin %s, abandon de l'importation des images"
 
 #~ msgid "failed to create filmroll for camera import, import aborted."
 #~ msgstr ""
