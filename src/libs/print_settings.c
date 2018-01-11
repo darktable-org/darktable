@@ -1570,7 +1570,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     }
 
     // in theory pprofile can't be srgb or adobergb, but checking for them won't hurt
-    if(*pprofile == '\0' || !g_strcmp0(pprofile, _("none")))
+    if(*pprofile == '\0')
     {
       pprofile_type = DT_COLORSPACE_NONE;
     }
