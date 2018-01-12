@@ -185,15 +185,19 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
 {
   dt_imageio_email_t *d = (dt_imageio_email_t *)params;
 
-  // All images are exported, generate a mailto uri and startup default mail client
-  gchar uri[4096] = { 0 };
-  gchar body[4096] = { 0 };
-  gchar attachments[4096] = { 0 };
-  gchar *uriFormat = "xdg-email --subject \"%s\" --body \"%s\" %s &"; // subject, body format
-  const gchar *subject = _("images exported from darktable");
-  const gchar *imageBodyFormat = " - %s (%s)\\n"; // filename, exif oneliner
-  gchar *attachmentFormat = " --attach \"%s\"";   // list of attachments format
-  gchar *attachmentSeparator = "";
+  const gchar *imageBodyFormat = " - %s (%s)\\n";      // filename, exif oneliner
+  const gint nb_images = g_list_length(d->images);
+  const gint argc = 5 + (2 * nb_images);
+
+  char **argv = g_malloc0(sizeof(char *) * (argc + 1));
+
+  gchar *body = "";
+
+  argv[0] = "xdg-email";
+  argv[1] = "--subject";
+  argv[2] = _("images exported from darktable");
+  argv[3] = "--body";
+  int n = 5;
 
   while(d->images)
   {
@@ -202,26 +206,42 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
     gchar *filename = g_path_get_basename(attachment->file);
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, attachment->imgid, 'r');
     dt_image_print_exif(img, exif, sizeof(exif));
-    g_snprintf(body + strlen(body), sizeof(body) - strlen(body), imageBodyFormat, filename, exif);
+
+    gchar *imgbody = g_strdup_printf(imageBodyFormat, filename, exif);
+    body = g_strconcat(body, imgbody, NULL);
+
+    g_free(imgbody);
     g_free(filename);
 
-    if(*attachments)
-      g_snprintf(attachments + strlen(attachments), sizeof(attachments) - strlen(attachments), "%s",
-                 attachmentSeparator);
+    argv[n]   = g_strdup("--attach");
+    // use attachment->file directly as we need to freed it, and this way it will be
+    // freed as part of the argument release after the spawn below.
+    argv[n+1] = attachment->file;
+    n += 2;
 
-    g_snprintf(attachments + strlen(attachments), sizeof(attachments) - strlen(attachments), attachmentFormat,
-               attachment->file);
     // Free attachment item and remove
     dt_image_cache_read_release(darktable.image_cache, img);
     g_free(d->images->data);
     d->images = g_list_remove(d->images, d->images->data);
   }
 
-  // build uri and launch before we quit...
-  g_snprintf(uri, sizeof(uri), uriFormat, subject, body, attachments);
+  argv[4] = body;
 
-  fprintf(stderr, "[email] launching `%s'\n", uri);
-  if(system(uri) < 0)
+  argv[argc] = NULL;
+
+  fprintf(stderr, "[email] launching '");
+  for (int k=0; k<argc; k++) fprintf(stderr, " %s", argv[k]);
+  fprintf(stderr, "'\n");
+
+  gint exit_status = 0;
+
+  g_spawn_sync (NULL, argv, NULL, G_SPAWN_SEARCH_PATH | G_SPAWN_STDOUT_TO_DEV_NULL | G_SPAWN_STDERR_TO_DEV_NULL,
+                NULL, NULL, NULL, NULL, &exit_status, NULL);
+
+  for (int k=4; k<argc; k++) g_free(argv[k]);
+  g_free(argv);
+
+  if(exit_status)
   {
     dt_control_log(_("could not launch email client!"));
   }
