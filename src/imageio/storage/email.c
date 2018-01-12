@@ -191,7 +191,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
 
   char **argv = g_malloc0(sizeof(char *) * (argc + 1));
 
-  gchar body[4096] = { 0 };
+  gchar *body = "";
 
   argv[0] = "xdg-email";
   argv[1] = "--subject";
@@ -207,7 +207,10 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, attachment->imgid, 'r');
     dt_image_print_exif(img, exif, sizeof(exif));
 
-    g_snprintf(body + strlen(body), sizeof(body) - strlen(body), imageBodyFormat, filename, exif);
+    gchar *imgbody = g_strdup_printf(imageBodyFormat, filename, exif);
+    body = g_strconcat(body, imgbody, NULL);
+
+    g_free(imgbody);
     g_free(filename);
 
     argv[n]   = g_strdup("--attach");
@@ -220,7 +223,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
     d->images = g_list_remove(d->images, d->images->data);
   }
 
-  argv[4] = g_strdup(body);
+  argv[4] = body;
 
   argv[argc] = NULL;
 
