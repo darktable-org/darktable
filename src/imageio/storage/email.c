@@ -214,7 +214,9 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
     g_free(filename);
 
     argv[n]   = g_strdup("--attach");
-    argv[n+1] = g_strdup(attachment->file);
+    // use attachment->file directly as we need to freed it, and this way it will be
+    // freed as part of the argument release after the spawn below.
+    argv[n+1] = attachment->file;
     n += 2;
 
     // Free attachment item and remove
