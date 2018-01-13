@@ -37,6 +37,16 @@ int main(int argc, char *argv[])
   gboolean redirect_output = ((out_type != FILE_TYPE_DISK && out_type != FILE_TYPE_PIPE) &&
                               (err_type != FILE_TYPE_DISK && err_type != FILE_TYPE_PIPE));
 
+  for(int k = 1; k < argc; k++)
+  {
+    if(argv[k][0] == '-')
+    {
+      // For simple arguments do not redirect stdout
+      if(!strcmp(argv[k], "--help") || !strcmp(argv[k], "-h") || !strcmp(argv[k], "--version"))
+        redirect_output = FALSE;
+    }
+  }
+
   if(redirect_output)
   {
     // something like C:\Users\username\AppData\Local\Microsoft\Windows\Temporary Internet Files\darktable\darktable-log.txt
