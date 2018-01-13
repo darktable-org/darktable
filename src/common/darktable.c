@@ -117,9 +117,6 @@ static int usage(const char *argv0)
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch, input,lighttable,\n");
   printf("      lua, masks,memory,nan,opencl, perf,pwstorage,print,sql}\n");
-#ifdef _WIN32
-  printf("     Note: debug log will be written to this file: %s\n", logfile);
-#endif
   printf("  --datadir <data directory>\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
@@ -135,6 +132,9 @@ static int usage(const char *argv0)
   printf("  -t <num openmp threads>\n");
   printf("  --tmpdir <tmp directory>\n");
   printf("  --version\n");
+#ifdef _WIN32
+  printf("  Note: debug log and output will be written to this file: %s\n", logfile);
+#endif
 
 #ifdef _WIN32
   g_free(logdir);
