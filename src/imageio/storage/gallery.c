@@ -322,13 +322,18 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   sprintf(sc, "/img_%d.html", num);
   snprintf(relsubfilename, sizeof(relsubfilename), "img_%d.html", num);
 
+  // escape special character and especially " which is used in <img> and below in src and msrc
+
+  gchar *esc_relfilename = g_strescape(relfilename, NULL);
+  gchar *esc_relthumbfilename = g_strescape(relthumbfilename, NULL);
+
   snprintf(pair->line, sizeof(pair->line),
            "\n"
            "      <div><div class=\"dia\">\n"
            "      <img src=\"%s\" alt=\"img%d\" class=\"img\" onclick=\"openSwipe(%d)\"/></div>\n"
            "      <h1>%s</h1>\n"
            "      %s</div>\n",
-           relthumbfilename,
+           esc_relthumbfilename,
            num, num-1, title ? title : "&nbsp;", description ? description : "&nbsp;");
 
   // export image to file. need this to be able to access meaningful
@@ -343,12 +348,15 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   snprintf(pair->item, sizeof(pair->item),
            "{\n"
-           "src: '%s',\n"
+           "src: \"%s\",\n"
            "w: %d,\n"
            "h: %d,\n"
-           "msrc: '%s',\n"
+           "msrc: \"%s\",\n"
            "},\n",
-           relfilename, fdata->width, fdata->height, relthumbfilename);
+           esc_relfilename, fdata->width, fdata->height, esc_relthumbfilename);
+
+  g_free(esc_relfilename);
+  g_free(esc_relthumbfilename);
 
   pair->pos = num;
   if(res_title) g_list_free_full(res_title, &g_free);
