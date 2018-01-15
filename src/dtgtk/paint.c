@@ -1030,6 +1030,71 @@ void dtgtk_cairo_paint_preferences(cairo_t *cr, gint x, gint y, gint w, gint h, 
   cairo_stroke(cr);
 }
 
+void dtgtk_cairo_paint_battery(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags)
+{
+  cairo_translate(cr, x, y);
+  cairo_scale(cr, w, h);
+
+  FILE *fd;
+  int energy_now = 1, energy_full = 1, voltage_now = 1;
+
+  fd = fopen("/sys/class/power_supply/BAT0/energy_now", "r");
+  if(fd)
+  {
+    fscanf(fd, "%d", &energy_now);
+    fclose(fd);
+  }
+
+  fd = fopen("/sys/class/power_supply/BAT0/energy_full", "r");
+  if(fd)
+  {
+    fscanf(fd, "%d", &energy_full);
+    fclose(fd);
+  }
+
+  fd = fopen("/sys/class/power_supply/BAT0/voltage_now", "r");
+  if(fd)
+  {
+    fscanf(fd, "%d", &voltage_now);
+    fclose(fd);
+  }
+
+  float fill = ((float)energy_now * 1000 / (float)voltage_now) * 100 / ((float)energy_full * 1000 / (float)voltage_now);
+
+  if(fill < 20)
+    cairo_set_source_rgb(cr, 1, 0, 0);
+
+  cairo_rectangle(cr, 0.05, 0.15, 0.9f*fill/100.0f, 0.7);
+  cairo_fill(cr);
+
+  cairo_set_line_width(cr, 0.04);
+  cairo_rectangle(cr, 0.01, 0.10, 0.88, 0.8);
+  cairo_stroke(cr);
+  cairo_rectangle(cr, 0.86, 0.3, 0.14, 0.4);
+  cairo_fill(cr);
+
+  PangoLayout *layout;
+  PangoRectangle ink;
+  // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
+  // leading to imprecise positioning
+  static const float grow = 10.0;
+  PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+  pango_font_description_set_absolute_size(desc, .48 * grow * PANGO_SCALE);
+  layout = pango_cairo_create_layout(cr);
+  pango_layout_set_font_description(layout, desc);
+  cairo_scale(cr, 1.0 / grow, 1.0 / grow);
+
+  char text[100];
+  snprintf(text, sizeof(text), "%d", (int)roundf(fill));
+  pango_layout_set_text(layout, text, -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  cairo_move_to(cr, 0.5*grow - ink.x - ink.width / 2.0, 0.5*grow - ink.y - ink.height / 2.0);
+  cairo_set_source_rgb(cr, 0, 0, 0);
+  pango_cairo_show_layout(cr, layout);
+  pango_font_description_free(desc);
+  g_object_unref(layout);
+}
+
 void dtgtk_cairo_paint_overlays(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags)
 {
   gint s = (w < h ? w : h);

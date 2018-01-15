@@ -75,6 +75,17 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
+  /* battery indicator */
+  FILE *fd = g_fopen("/sys/class/power_supply/BAT0/energy_now", "r");
+  if(fd)
+  {
+    fclose(fd);
+    GtkWidget *w = dtgtk_button_new(dtgtk_cairo_paint_battery, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    gtk_widget_set_size_request(w, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
+    gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, 2);
+    gtk_widget_set_tooltip_text(w, _("battery indicator"));
+  }
+
   /* create the grouping button */
   d->grouping_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, CPF_STYLE_FLAT);
   gtk_widget_set_size_request(d->grouping_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
