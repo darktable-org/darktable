@@ -1549,6 +1549,8 @@ start:
   char *library_path = g_path_get_dirname(db->dbfilename_library);
   g_mkdir_with_parents(data_path, 0750);
   g_mkdir_with_parents(library_path, 0750);
+  g_free(data_path);
+  g_free(library_path);
 
   /* having more than one instance of darktable using the same database is a bad idea */
   /* try to get locks for the databases */
