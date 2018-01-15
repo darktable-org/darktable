@@ -1544,6 +1544,12 @@ start:
   db->dbfilename_data = g_strdup(dbfilename_data);
   db->dbfilename_library = g_strdup(dbfilename_library);
 
+  /* make sure the folder exists. this might not be the case for new databases */
+  char *data_path = g_path_get_dirname(db->dbfilename_data);
+  char *library_path = g_path_get_dirname(db->dbfilename_library);
+  g_mkdir_with_parents(data_path, 0750);
+  g_mkdir_with_parents(library_path, 0750);
+
   /* having more than one instance of darktable using the same database is a bad idea */
   /* try to get locks for the databases */
   db->lock_acquired = _lock_databases(db);
