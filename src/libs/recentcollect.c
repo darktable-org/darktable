@@ -133,7 +133,7 @@ static void pretty_print(char *buf, char *out, size_t outsize)
       while(str[i] != '\0' && str[i] != '$') i++;
       if(str[i] == '$') str[i] = '\0';
 
-      c = snprintf(out, outsize, "%s %s", _(dt_lib_collect_string[item]),
+      c = snprintf(out, outsize, "%s %s", item < dt_lib_collect_string_cnt ? _(dt_lib_collect_string[item]) : "???",
                    item == 0 ? dt_image_film_roll_name(str) : str);
       out += c;
       outsize -= c;
