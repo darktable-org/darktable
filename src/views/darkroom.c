@@ -2261,10 +2261,10 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     // For each cursor press, move one screen by default
     float step_changex = dev->width / (procw * scale);
     float step_changey = dev->height / (proch * scale);
-    float factor = 1;
+    float factor = 0.2f;
 
-    if((state & modifiers) == GDK_MOD1_MASK) factor = 0.1f;
-    if((state & modifiers) == GDK_CONTROL_MASK) factor = 10.0f;
+    if((state & modifiers) == GDK_MOD1_MASK) factor = 0.02f;
+    if((state & modifiers) == GDK_CONTROL_MASK) factor = 1.0f;
 
     float old_zoom_x, old_zoom_y;
 
