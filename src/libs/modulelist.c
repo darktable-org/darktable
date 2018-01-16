@@ -230,6 +230,8 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   gtk_tree_view_insert_column_with_data_func(GTK_TREE_VIEW(view), 2, "name", text_renderer,
                                              text_renderer_function, NULL, NULL);
 
+  gtk_tree_view_set_search_column(GTK_TREE_VIEW(view), 2);
+
   /* go thru list of iop modules and add them to the list */
   GList *modules = g_list_last(darktable.iop);
 
