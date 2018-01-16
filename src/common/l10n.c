@@ -19,6 +19,7 @@
 #include "common/l10n.h"
 #include "control/conf.h"
 
+#include <locale.h>
 #include <gtk/gtk.h>
 #include <json-glib/json-glib.h>
 
