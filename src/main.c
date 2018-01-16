@@ -58,6 +58,10 @@ int main(int argc, char *argv[])
     g_freopen(logfile, "a", stdout);
     dup2(fileno(stdout), fileno(stderr));
 
+    // We don't need the console window anymore, free it
+    // This ensures that only darktable's main window will be visible
+    FreeConsole();
+
     g_free(logdir);
     g_free(logfile);
 
