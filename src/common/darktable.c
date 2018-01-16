@@ -132,7 +132,9 @@ static int usage(const char *argv0)
   printf("  --tmpdir <tmp directory>\n");
   printf("  --version\n");
 #ifdef _WIN32
-  printf("  Note: debug log and output will be written to this file: %s\n", logfile);
+  printf("\n");
+  printf("  note: debug log and output will be written to this file:\n");
+  printf("        %s\n", logfile);
 #endif
 
 #ifdef _WIN32
