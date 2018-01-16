@@ -104,8 +104,7 @@ darktable_t darktable;
 static int usage(const char *argv0)
 {
 #ifdef _WIN32
-  char *logdir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
-  char *logfile = g_build_filename(logdir, "darktable-log.txt", NULL);
+  char *logfile = g_build_filename(g_get_user_cache_dir(), "darktable", "darktable-log.txt", NULL);
 #endif
 
   printf("usage: %s [options] [IMG_1234.{RAW,..}|image_folder/]\n", argv0);
@@ -137,7 +136,6 @@ static int usage(const char *argv0)
 #endif
 
 #ifdef _WIN32
-  g_free(logdir);
   g_free(logfile);
 #endif
 
