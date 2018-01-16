@@ -103,6 +103,10 @@ darktable_t darktable;
 
 static int usage(const char *argv0)
 {
+#ifdef _WIN32
+  char *logfile = g_build_filename(g_get_user_cache_dir(), "darktable", "darktable-log.txt", NULL);
+#endif
+
   printf("usage: %s [options] [IMG_1234.{RAW,..}|image_folder/]\n", argv0);
   printf("\n");
   printf("options:\n");
@@ -127,6 +131,13 @@ static int usage(const char *argv0)
   printf("  -t <num openmp threads>\n");
   printf("  --tmpdir <tmp directory>\n");
   printf("  --version\n");
+#ifdef _WIN32
+  printf("  Note: debug log and output will be written to this file: %s\n", logfile);
+#endif
+
+#ifdef _WIN32
+  g_free(logfile);
+#endif
 
   return 1;
 }
