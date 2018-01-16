@@ -207,9 +207,9 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
   char filename[PATH_MAX] = { 0 };
-  char dirname[PATH_MAX] = { 0 };
+  char input_dir[PATH_MAX] = { 0 };
   gboolean from_cache = FALSE;
-  dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
+  dt_image_full_path(imgid, input_dir, sizeof(input_dir), &from_cache);
   int fail = 0;
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -229,7 +229,7 @@ try_again:
     g_strlcpy(d->filename, fixed_path, sizeof(d->filename));
     g_free(fixed_path);
 
-    d->vp->filename = dirname;
+    d->vp->filename = input_dir;
     d->vp->jobcode = "export";
     d->vp->imgid = imgid;
     d->vp->sequence = num;
@@ -240,68 +240,47 @@ try_again:
 
     // if filenamepattern is a directory just add ${FILE_NAME} as default..
     char last_char = *(filename + strlen(filename) - 1);
-    if(g_file_test(filename, G_FILE_TEST_IS_DIR) && (last_char == '/' || last_char == '\\'))
+    if(last_char == '/' || last_char == '\\')
     {
-      snprintf(d->filename, sizeof(d->filename), "%s/$(FILE_NAME)", original_filename);
+      snprintf(d->filename, sizeof(d->filename), "%s" G_DIR_SEPARATOR_S "$(FILE_NAME)", original_filename);
       goto try_again;
     }
 
     g_free(original_filename);
 
-    g_strlcpy(dirname, filename, sizeof(dirname));
+    char *output_dir = g_path_get_dirname(filename);
+
+    if(g_mkdir_with_parents(output_dir, 0755))
+    {
+      fprintf(stderr, "[imageio_storage_disk] could not create directory: `%s'!\n", output_dir);
+      dt_control_log(_("could not create directory `%s'!"), output_dir);
+      fail = 1;
+      goto failed;
+    }
+    if(g_access(output_dir, W_OK | X_OK) != 0)
+    {
+      fprintf(stderr, "[imageio_storage_disk] could not write to directory: `%s'!\n", output_dir);
+      dt_control_log(_("could not write to directory `%s'!"), output_dir);
+      fail = 1;
+      goto failed;
+    }
 
     const char *ext = format->extension(fdata);
-    char *c = dirname + strlen(dirname);
-    for(; c > dirname && *c != '/'; c--)
-      ;
-    if(*c == '/')
-    {
-      if(c > dirname) // /.../.../foo
-        c[0] = '\0';
-      else // /foo
-        c[1] = '\0';
-    }
-    else if(c == dirname) // foo
-    {
-      c[0] = '.';
-      c[1] = '\0';
-    }
-
-    if(g_mkdir_with_parents(dirname, 0755))
-    {
-      fprintf(stderr, "[imageio_storage_disk] could not create directory: `%s'!\n", dirname);
-      dt_control_log(_("could not create directory `%s'!"), dirname);
-      fail = 1;
-      goto failed;
-    }
-    if(g_access(dirname, W_OK | X_OK) != 0)
-    {
-      fprintf(stderr, "[imageio_storage_disk] could not write to directory: `%s'!\n", dirname);
-      dt_control_log(_("could not write to directory `%s'!"), dirname);
-      fail = 1;
-      goto failed;
-    }
-
-    c = filename + strlen(filename);
-    // remove everything after the last '.'. this destroys any file name with dots in it since $(FILE_NAME)
-    // already comes without the original extension.
-    //     for(; c>filename && *c != '.' && *c != '/' ; c--);
-    //     if(c <= filename || *c=='/') c = filename + strlen(filename);
-
-    sprintf(c, ".%s", ext);
+    char *c = filename + strlen(filename);
+    size_t filename_free_space = sizeof(filename) - (c - filename);
+    snprintf(c, filename_free_space, ".%s", ext);
 
   /* prevent overwrite of files */
   failed:
-    if(!d->overwrite)
+    g_free(output_dir);
+
+    if(!fail && !d->overwrite)
     {
       int seq = 1;
-      if(!fail && g_file_test(filename, G_FILE_TEST_EXISTS))
+      while(g_file_test(filename, G_FILE_TEST_EXISTS))
       {
-        do
-        {
-          sprintf(c, "_%.2d.%s", seq, ext);
-          seq++;
-        } while(g_file_test(filename, G_FILE_TEST_EXISTS));
+        snprintf(c, filename_free_space, "_%.2d.%s", seq, ext);
+        seq++;
       }
     }
   } // end of critical block
