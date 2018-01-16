@@ -27,6 +27,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "libs/modulegroups.h"
 #include <assert.h>
 #include <stdlib.h>
 
@@ -696,6 +697,19 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
   gtk_widget_queue_draw(module->widget);
 }
 
+
+static void menuitem_favourite_toggled(GtkCheckMenuItem *checkmenuitem, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  // the module is currently visible, otherwise we wouldn't show the popup. it should also stay visible.
+  dt_iop_module_state_t state = module->so->state;
+  if(state == dt_iop_state_FAVORITE) state = dt_iop_state_ACTIVE;
+  else state = dt_iop_state_FAVORITE;
+  dt_iop_gui_set_state(module, state);
+  if(state == dt_iop_state_FAVORITE)
+    dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
+}
+
 void dt_gui_favorite_presets_menu_show()
 {
   sqlite3_stmt *stmt;
@@ -914,6 +928,13 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
         g_free(markup);
       }
     }
+
+    // add a section to toggle favourite status of the module
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+    mi = gtk_check_menu_item_new_with_label(_("favourite"));
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), module->so->state == dt_iop_state_FAVORITE);
+    g_signal_connect(G_OBJECT(mi), "toggled", G_CALLBACK(menuitem_favourite_toggled), module);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
   }
 }
 
