@@ -314,11 +314,11 @@ if(USE_OPENJPEG)
   endif(OpenJPEG_FOUND)
 endif(USE_OPENJPEG)
 
-find_package(IsoCodes)
+find_package(IsoCodes 3.66)
 if(ISO_CODES_FOUND)
   add_definitions("-DHAVE_ISO_CODES")
 else(ISO_CODES_FOUND)
-  message(STATUS "iso-codes not found, there will be no language names in the preferences")
+  message(STATUS "no suitable iso-codes, there will be no language names in the preferences")
 endif(ISO_CODES_FOUND)
 
 #
