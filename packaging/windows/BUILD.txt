@@ -30,7 +30,8 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
 
     For usermanual
     $ pacman -S po4a
-    $ pacman -S mingw-w64-x86_64-{imagemagick,docbook-xsl,gnome-doc-utils}
+    $ pacman -S gnome-doc-utils
+    $ pacman -S mingw-w64-x86_64-{imagemagick,docbook-xsl}
 
     Manually Install JAVA runtime
     Manually install SAXON: https://sourceforge.net/projects/saxon/files/Saxon-HE/
@@ -41,7 +42,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
 
     Manually install FOP: http://www.apache.org/dyn/closer.cgi/xmlgraphics/fop
     Copy files to ~/java/fop
-    Copy fop.xconf to /etc/fop.conf
+    Copy fop.xconf to /etc/fop.xml
     change fop shell script in fop folder:
     from:
     if [ "$OS" = "Windows_NT" ] ; then
@@ -71,9 +72,11 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     Clone darktable git repository (in this example into ~/darktable):
         $ cd ~
         $ git clone git://github.com/darktable-org/darktable.git
+        $ cd darktable
+        $ git submodule init
+        $ git submodule update
 
     Finally build and install darktable:
-        $ cd darktable
         $ mkdir build
         $ cd build
         $ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ../.
