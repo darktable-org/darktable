@@ -69,31 +69,6 @@ gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module, const dt_view_t *vie
   return FALSE;
 }
 
-static gchar *get_preset_name(GtkMenuItem *menuitem)
-{
-  const gchar *name = gtk_label_get_label(GTK_LABEL(gtk_bin_get_child(GTK_BIN(menuitem))));
-  const gchar *c = name;
-
-  // move to marker < if it exists
-  while(*c && *c != '<') c++;
-  if(!*c) c = name;
-
-  // remove <-> markup tag at beginning.
-  if(*c == '<')
-  {
-    while(*c != '>') c++;
-    c++;
-  }
-  gchar *pn = g_strdup(c);
-  gchar *c2 = pn;
-  // possibly remove trailing <-> markup tag
-  while(*c2 != '<' && *c2 != '\0') c2++;
-  if(*c2 == '<') *c2 = '\0';
-  c2 = g_strrstr(pn, _("(default)"));
-  if(c2 && c2 > pn) *(c2 - 1) = '\0';
-  return pn;
-}
-
 /** calls module->cleanup and closes the dl connection. */
 static void dt_lib_unload_module(dt_lib_module_t *module);
 
@@ -288,7 +263,7 @@ static void edit_preset(const char *name_in, dt_lib_module_info_t *minfo)
 
 static void menuitem_update_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
 {
-  gchar *name = get_preset_name(menuitem);
+  char *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
   // commit all the module fields
   sqlite3_stmt *stmt;
@@ -377,7 +352,7 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
 static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
 {
   // apply preset via set_params
-  gchar *pn = get_preset_name(menuitem);
+  char *pn = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
@@ -423,7 +398,6 @@ static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
-  g_free(pn);
 }
 
 static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
@@ -475,6 +449,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
     {
       mi = gtk_menu_item_new_with_label((const char *)name);
     }
+    g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), minfo);
     gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
@@ -506,12 +481,11 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
 
     if(darktable.gui->last_preset && found)
     {
-      char label[128];
-      g_strlcpy(label, _("update preset"), sizeof(label));
-      g_strlcat(label, " <span weight=\"bold\">%s</span>", sizeof(label));
-      char *markup = g_markup_printf_escaped(label, darktable.gui->last_preset);
+      char *markup = g_markup_printf_escaped("%s <span weight=\"bold\">%s</span>", _("update preset"),
+                                             darktable.gui->last_preset);
       mi = gtk_menu_item_new_with_label("");
       gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
+      g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(darktable.gui->last_preset), g_free);
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_update_preset), minfo);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
       g_free(markup);
