@@ -121,31 +121,6 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const i
   sqlite3_finalize(stmt);
 }
 
-static gchar *get_preset_name(GtkMenuItem *menuitem)
-{
-  const gchar *name = gtk_label_get_label(GTK_LABEL(gtk_bin_get_child(GTK_BIN(menuitem))));
-  const gchar *c = name;
-
-  // move to marker < if it exists
-  while(*c && *c != '<') c++;
-  if(!*c) c = name;
-
-  // remove <-> markup tag at beginning.
-  if(*c == '<')
-  {
-    while(*c != '>') c++;
-    c++;
-  }
-  gchar *pn = g_strdup(c);
-  gchar *c2 = pn;
-  // possibly remove trailing <-> markup tag
-  while(*c2 != '<' && *c2 != '\0') c2++;
-  if(*c2 == '<') *c2 = '\0';
-  c2 = g_strrstr(pn, _("(default)"));
-  if(c2 && c2 > pn) *(c2 - 1) = '\0';
-  return pn;
-}
-
 static gchar *get_active_preset_name(dt_iop_module_t *module)
 {
   sqlite3_stmt *stmt;
@@ -604,7 +579,7 @@ static void menuitem_edit_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 
 static void menuitem_update_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
-  gchar *name = get_preset_name(menuitem);
+  gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
   // commit all the module fields
   sqlite3_stmt *stmt;
@@ -648,7 +623,7 @@ static void menuitem_new_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 
 static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
-  gchar *name = get_preset_name(menuitem);
+  gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT op_params, enabled, blendop_params, blendop_version, writeprotect FROM "
@@ -691,7 +666,6 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
     if(!writeprotect) dt_gui_store_last_preset(name);
   }
   sqlite3_finalize(stmt);
-  g_free(name);
   dt_iop_gui_update(module);
   dt_dev_add_history_item(darktable.develop, module, FALSE);
   gtk_widget_queue_draw(module->widget);
@@ -744,7 +718,9 @@ void dt_gui_favorite_presets_menu_show()
 
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
-          GtkMenuItem *mi = (GtkMenuItem *)gtk_menu_item_new_with_label((char *)sqlite3_column_text(stmt, 0));
+          char *name = (char *)sqlite3_column_text(stmt, 0);
+          GtkMenuItem *mi = (GtkMenuItem *)gtk_menu_item_new_with_label(name);
+          g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
           g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), iop);
           gtk_menu_shell_append(GTK_MENU_SHELL(sm), GTK_WIDGET(mi));
         }
@@ -886,6 +862,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
     }
     else
     {
+      g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
       if(module)
         g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), module);
       else if(pick_callback)
@@ -923,6 +900,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
                                                darktable.gui->last_preset);
         mi = gtk_menu_item_new_with_label("");
         gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
+        g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(darktable.gui->last_preset), g_free);
         g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_update_preset), module);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
         g_free(markup);
