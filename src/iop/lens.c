@@ -1134,6 +1134,8 @@ void reload_defaults(dt_iop_module_t *module)
   tmp.tca_b = 1.0;
   tmp.modified = 0;
 
+  if(dt_image_is_monochrome(img)) tmp.modify_flags &= ~LF_MODIFY_TCA;
+
   // init crop from db:
   char model[100]; // truncate often complex descriptions.
   g_strlcpy(model, img->exif_model, sizeof(model));
