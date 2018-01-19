@@ -547,9 +547,9 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
   dt_image_cache_read_release(darktable.image_cache, img);
 
   if (job_id == 0)
-    dt_control_log(_("error while printing image %d on `%s'"), imgid, pinfo->printer.name);
+    dt_control_log(_("error while printing `%s' on `%s'"), job_title, pinfo->printer.name);
   else
-    dt_control_log(_("printing image %d on `%s'"), imgid, pinfo->printer.name);
+    dt_control_log(_("printing `%s' on `%s'"), job_title, pinfo->printer.name);
 
   cupsFreeOptions (num_options, options);
 }
