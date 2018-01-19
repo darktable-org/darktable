@@ -2250,7 +2250,7 @@ double * LineSegmentDetection( int * n_out,
       if( region == NULL ) error("'region' should be a valid image.");
       *reg_img = region->data;
       if( region->xsize > (unsigned int) INT_MAX ||
-          region->xsize > (unsigned int) INT_MAX )
+          region->ysize > (unsigned int) INT_MAX )
         error("region image to big to fit in INT sizes.");
       *reg_x = (int) (region->xsize);
       *reg_y = (int) (region->ysize);
