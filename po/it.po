@@ -8806,9 +8806,9 @@ msgstr "Errore nel caricamento del file '%s'"
 msgid "do you really want to clear history of %d selected image?"
 msgid_plural "do you really want to clear history of %d selected images?"
 msgstr[0] ""
-"vuoi veramente cancellare la coda di sviluppo dell'immagine %s selezionata?"
+"vuoi veramente cancellare la coda di sviluppo dell'immagine %d selezionata?"
 msgstr[1] ""
-"vuoi veramente cancellare la coda di sviluppo delle immagini %s selezionate?"
+"vuoi veramente cancellare la coda di sviluppo delle immagini %d selezionate?"
 
 #: ../src/libs/copy_history.c:199
 msgid "delete images' history?"
