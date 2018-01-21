@@ -59,15 +59,30 @@ and the changelog as compared to 2.4.0 can be found below.
 
 ### Base Support
 
-# TODO
+- Panasonic DC-G9 (4:3)
+- Paralenz Dive Camera (chdk)
+- Pentax KP
+- Sjcam SJ6 LEGEND (chdk-b, chdk-c)
 
 ### White Balance Presets
 
-# TODO
+- Leaf Credo 40
+- Nikon D3400
+- Olympus E-M1MarkII
+- Panasonic DC-G9
+- Sony ILCE-7RM3
 
 ### Noise Profiles
 
-# TODO
+- Canon EOS 750D
+- Canon EOS Kiss X8i
+- Canon EOS Rebel T6i
+- Canon EOS 77D
+- Canon EOS 9000D
+- Canon EOS M100
+- Canon EOS M6
+- Sony DSC-RX100M4
+- YI TECHNOLOGY M1
 
 ## Translations
 
