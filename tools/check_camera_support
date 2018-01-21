@@ -28,12 +28,13 @@ class CameraSupportState
 
   def file_content(filename, rev)
     submodule,submodulerev=get_submodule(filename)
+    goodname = filename.dup
     if submodule
       Dir.chdir(submodule)
-      filename.gsub!("#{submodule}/",'')
+      goodname.gsub!("#{submodule}/",'')
       rev=submodulerev
     end
-    ret=IO.popen("git show #{rev}:#{filename}")
+    ret=IO.popen("git show #{rev}:#{goodname}")
     if submodule
       Dir.chdir(@basedir)
     end
