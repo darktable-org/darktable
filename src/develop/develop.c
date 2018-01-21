@@ -384,6 +384,15 @@ restart:
   scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
   window_width = dev->width * darktable.gui->ppd;
   window_height = dev->height * darktable.gui->ppd;
+
+  if (scale > 1)
+  {
+    float closeup2 = scale;
+    scale = 1;
+    window_width /= closeup2;
+    window_height /= closeup2;
+  }
+
   if(closeup)
   {
     window_width /= 2;

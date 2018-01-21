@@ -211,7 +211,21 @@ void expose(
     else
       dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
     cairo_paint(cr);
-    cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));
+
+    float closeup2 = 1.0;
+    const float scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
+
+    if (scale > 1)
+    {
+      closeup2 = scale;
+    }
+
+    cairo_translate(cr, .5f * (width - wd*closeup2), .5f * (height - ht*closeup2));
+    if(closeup2 > 1)
+    {
+      cairo_scale(cr, closeup2, closeup2);
+    }
+
     if(closeup)
     {
       cairo_scale(cr, 2.0, 2.0);
@@ -221,7 +235,7 @@ void expose(
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, 1.0);
+    cairo_set_line_width(cr, 1.0/closeup2);
     cairo_set_source_rgb(cr, .3, .3, .3);
     cairo_stroke(cr);
     cairo_surface_destroy(surface);
