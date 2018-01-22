@@ -1579,14 +1579,7 @@ static void menuitem_mode(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", active);
-    dt_lib_collect_mode_t mode = 0;
-    const gchar *label = gtk_menu_item_get_label (menuitem);
-    if(strcmp(label, _("narrow down search")) == 0)
-      mode = DT_LIB_COLLECT_MODE_AND;
-    else if(strcmp(label, _("add more images")) == 0)
-      mode = DT_LIB_COLLECT_MODE_OR;
-    else if(strcmp(label, _("exclude images")) == 0)
-      mode = DT_LIB_COLLECT_MODE_AND_NOT;
+    const dt_lib_collect_mode_t mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(menuitem), "menuitem_mode"));
     dt_conf_set_int(confname, mode);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", active);
     dt_conf_set_string(confname, "");
@@ -1606,14 +1599,7 @@ static void menuitem_mode_change(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", num);
-    dt_lib_collect_mode_t mode = 0;
-    const gchar *label = gtk_menu_item_get_label (menuitem);
-    if(strcmp(label, _("change to: and")) == 0)
-      mode = DT_LIB_COLLECT_MODE_AND;
-    else if(strcmp(label, _("change to: or")) == 0)
-      mode = DT_LIB_COLLECT_MODE_OR;
-    else if(strcmp(label, _("change to: except")) == 0)
-      mode = DT_LIB_COLLECT_MODE_AND_NOT;
+    const dt_lib_collect_mode_t mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(menuitem), "menuitem_mode"));
     dt_conf_set_int(confname, mode);
   }
   dt_lib_collect_t *c = get_collect(d);
@@ -1743,28 +1729,34 @@ static gboolean popup_button_callback(GtkWidget *widget, GdkEventButton *event, 
   if(d->num == active - 1)
   {
     mi = gtk_menu_item_new_with_label(_("narrow down search"));
+    g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode), d);
 
     mi = gtk_menu_item_new_with_label(_("add more images"));
+    g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_OR));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode), d);
 
     mi = gtk_menu_item_new_with_label(_("exclude images"));
+    g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND_NOT));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode), d);
   }
   else if(d->num < active - 1)
   {
     mi = gtk_menu_item_new_with_label(_("change to: and"));
+    g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode_change), d);
 
     mi = gtk_menu_item_new_with_label(_("change to: or"));
+    g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_OR));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode_change), d);
 
     mi = gtk_menu_item_new_with_label(_("change to: except"));
+    g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND_NOT));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode_change), d);
   }
