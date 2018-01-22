@@ -939,6 +939,60 @@ static void prepare_matrices(dt_iop_module_t *module)
   }
 }
 
+static void find_coeffs(dt_iop_module_t *module, float coeffs[4])
+{
+  const dt_image_t *img = &module->dev->image_storage;
+
+  // the raw should provide wb coeffs:
+  int ok = 1;
+  // Only check the first three values, the fourth is usually NAN for RGB
+  int num_coeffs = (img->flags & DT_IMAGE_4BAYER) ? 4 : 3;
+  for(int k = 0; ok && k < num_coeffs; k++)
+  {
+    if(!isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f) ok = 0;
+  }
+  if(ok)
+  {
+    for(int k = 0; k < 4; k++) coeffs[k] = img->wb_coeffs[k];
+    return;
+  }
+
+  if(!ignore_missing_wb(&(module->dev->image_storage)))
+  {
+    dt_control_log(_("failed to read camera white balance information from `%s'!"),
+                   img->filename);
+    fprintf(stderr, "[temperature] failed to read camera white balance information from `%s'!\n",
+            img->filename);
+  }
+
+  double bwb[4];
+  if(!calculate_bogus_daylight_wb(module, bwb))
+  {
+    // found camera matrix and used it to calculate bogus daylight wb
+    for(int c = 0; c < 4; c++) coeffs[c] = bwb[c];
+    return;
+  }
+
+  // no cam matrix??? try presets:
+  for(int i = 0; i < wb_preset_count; i++)
+  {
+    if(!strcmp(wb_preset[i].make, img->camera_maker)
+       && !strcmp(wb_preset[i].model, img->camera_model))
+    {
+      // just take the first preset we find for this camera
+      for(int k = 0; k < 3; k++) coeffs[k] = wb_preset[i].channel[k];
+      return;
+    }
+  }
+
+  // did not find preset either?
+  // final security net: hardcoded default that fits most cams.
+  coeffs[0] = 2.0f;
+  coeffs[1] = 1.0f;
+  coeffs[2] = 1.5f;
+  coeffs[3] = 1.0f;
+}
+
 void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_temperature_params_t tmp
@@ -958,88 +1012,26 @@ void reload_defaults(dt_iop_module_t *module)
   if(is_raw && dt_image_is_monochrome(&(module->dev->image_storage)))
   {
     module->hide_enable_button = 1;
-    goto gui;
   }
-  if(module->gui_data) prepare_matrices(module);
-
-  /* check if file is raw / hdr */
-  if(is_raw)
+  else
   {
-    // raw images need wb:
-    module->default_enabled = 1;
+    if(module->gui_data) prepare_matrices(module);
 
-    int found = 1;
+    /* check if file is raw / hdr */
+    if(is_raw)
+    {
+      // raw images need wb:
+      module->default_enabled = 1;
 
-    // Only check the first three values, the fourth is usually NAN for RGB
-    int num_coeffs = (module->dev->image_storage.flags & DT_IMAGE_4BAYER) ? 4 : 3;
-    for(int k = 0; k < num_coeffs; k++)
-    {
-      if(!isnormal(module->dev->image_storage.wb_coeffs[k]) || module->dev->image_storage.wb_coeffs[k] == 0.0f)
-      {
-        found = 0;
-        break;
-      }
-    }
-
-    if(found)
-    {
-      for(int k = 0; k < 4; k++) tmp.coeffs[k] = module->dev->image_storage.wb_coeffs[k];
-    }
-    else
-    {
-      if(!ignore_missing_wb(&(module->dev->image_storage)))
-      {
-        dt_control_log(_("failed to read camera white balance information from `%s'!"),
-                       module->dev->image_storage.filename);
-        fprintf(stderr, "[temperature] failed to read camera white balance information from `%s'!\n",
-                module->dev->image_storage.filename);
-      }
-    }
-
-    if(!found)
-    {
-      double bwb[4];
-      if(!calculate_bogus_daylight_wb(module, bwb))
-      {
-        // found camera matrix and used it to calculate bogus daylight wb
-        for(int c = 0; c < 4; c++) tmp.coeffs[c] = bwb[c];
-        found = 1;
-      }
-    }
-
-    // no cam matrix??? try presets:
-    if(!found)
-    {
-      for(int i = 0; i < wb_preset_count; i++)
-      {
-        if(!strcmp(wb_preset[i].make, module->dev->image_storage.camera_maker)
-           && !strcmp(wb_preset[i].model, module->dev->image_storage.camera_model))
-        {
-          // just take the first preset we find for this camera
-          for(int k = 0; k < 3; k++) tmp.coeffs[k] = wb_preset[i].channel[k];
-          found = 1;
-          break;
-        }
-      }
-    }
-
-    // did not find preset either?
-    if(!found)
-    {
-      // final security net: hardcoded default that fits most cams.
-      tmp.coeffs[0] = 2.0f;
+      // do best to find starting coeffs
+      find_coeffs(module, tmp.coeffs);
+      tmp.coeffs[0] /= tmp.coeffs[1];
+      tmp.coeffs[2] /= tmp.coeffs[1];
+      tmp.coeffs[3] /= tmp.coeffs[1];
       tmp.coeffs[1] = 1.0f;
-      tmp.coeffs[2] = 1.5f;
-      tmp.coeffs[3] = 1.0f;
     }
-
-    tmp.coeffs[0] /= tmp.coeffs[1];
-    tmp.coeffs[2] /= tmp.coeffs[1];
-    tmp.coeffs[3] /= tmp.coeffs[1];
-    tmp.coeffs[1] = 1.0f;
   }
 
-gui:
   // remember daylight wb used for temperature/tint conversion,
   // assuming it corresponds to CIE daylight (D65)
   if(module->gui_data)
