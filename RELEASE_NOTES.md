@@ -39,7 +39,7 @@ and the changelog as compared to 2.4.0 can be found below.
 - Fix export to non-existing path with `\` as the path separator on Windows
 - Don't insist on the db being locked when it doesn't even exist
 - Don't touch the mix slider when resetting the curve in color zones
-- Fix a bug in the exposure module that would only allow corrections of up to 10eV
+- Fix a bug in the exposure module that would only allow corrections of up to 10 stops
 - Fix custom shortcuts with `shift` modifier
 - Properly ellipsize text in the recently used collections list
 - Fix exported galeries with filenames containing a `'`
