@@ -946,12 +946,14 @@ void reload_defaults(dt_iop_module_t *module)
 
   const int is_raw = dt_image_is_raw(&module->dev->image_storage);
 
+  module->default_enabled = 0;
+  module->hide_enable_button = 0;
+
   // White balance module doesn't need to be enabled for monochrome raws (like
   // for leica monochrom cameras). prepare_matrices is a noop as well, as there
   // isn't a color matrix, so we can skip that as well.
   if(is_raw && dt_image_is_monochrome(&(module->dev->image_storage)))
   {
-    module->default_enabled = 0;
     module->hide_enable_button = 1;
     goto gui;
   }
