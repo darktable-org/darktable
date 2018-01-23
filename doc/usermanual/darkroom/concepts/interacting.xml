@@ -78,11 +78,13 @@
     <orderedlist>
 
       <listitem><para>
-        Triangular marker
+        Left-click
       </para>
 
       <para>
-        Left-click the slider's triangular marker and drag it to the left or right.
+        Click anywhere in the slider area to set the value. You can also click and drag to change it.
+        You don't have to aim for the small triangle or even the line, the whole height including the
+        label works as the active area.
       </para></listitem>
 
       <listitem><para>
