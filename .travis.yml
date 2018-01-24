@@ -33,7 +33,7 @@ notifications:
 language: generic
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then travis_retry travis_wait 5 docker pull darktable/darktable; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then travis_retry travis_wait 10 docker pull darktable/darktable; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update && brew tap Homebrew/bundle && cd .ci && brew bundle --verbose; fi
 
 env:
