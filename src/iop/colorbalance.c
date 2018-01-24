@@ -431,7 +431,7 @@ static void gain_blue_callback(GtkWidget *slider, dt_iop_module_t *self)
 static gboolean dt_iop_area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   float flt_bg = darktable.bauhaus->bg_normal;
-  if(gtk_widget_get_state(GTK_WIDGET(widget)) == GTK_STATE_SELECTED) flt_bg = darktable.bauhaus->bg_focus;
+  if(gtk_widget_get_state_flags(widget) & GTK_STATE_FLAG_SELECTED) flt_bg = darktable.bauhaus->bg_focus;
   float flt_dark = flt_bg / 1.5, flt_light = flt_bg * 1.5;
 
   uint32_t bg = ((255 << 24) | ((int)floor(flt_bg * 255 + 0.5) << 16) | ((int)floor(flt_bg * 255 + 0.5) << 8)
