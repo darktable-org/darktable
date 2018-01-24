@@ -34,9 +34,9 @@
 
 typedef struct dt_lib_module_info_t
 {
-  char plugin_name[128];
+  char *plugin_name;
   int32_t version;
-  char params[8192];
+  char *params;
   int params_size;
   dt_lib_module_t *module;
 } dt_lib_module_info_t;
@@ -52,6 +52,14 @@ typedef struct dt_lib_presets_edit_dialog_t
   dt_lib_module_t *module;
   gint old_id;
 } dt_lib_presets_edit_dialog_t;
+
+static void free_module_info(gpointer data)
+{
+  dt_lib_module_info_t *minfo = (dt_lib_module_info_t *)data;
+  g_free(minfo->plugin_name);
+  free(minfo->params);
+  free(minfo);
+}
 
 gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module, const dt_view_t *view)
 {
@@ -407,6 +415,8 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
   menu = darktable.gui->presets_popup_menu;
 
+  g_object_set_data_full(G_OBJECT(menu), "dt-module-info", minfo, free_module_info);
+
   GtkWidget *mi;
   int active_preset = -1, cnt = 0, writeprotect = 0;
   sqlite3_stmt *stmt;
@@ -476,7 +486,13 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   else
   {
     mi = gtk_menu_item_new_with_label(_("store new preset.."));
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_new_preset), minfo);
+    if(minfo->params_size == 0)
+    {
+      gtk_widget_set_sensitive(mi, FALSE);
+      gtk_widget_set_tooltip_text(mi, _("nothing to save"));
+    }
+    else
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_new_preset), minfo);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
     if(darktable.gui->last_preset && found)
@@ -484,6 +500,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       char *markup = g_markup_printf_escaped("%s <span weight=\"bold\">%s</span>", _("update preset"),
                                              darktable.gui->last_preset);
       mi = gtk_menu_item_new_with_label("");
+      gtk_widget_set_sensitive(mi, minfo->params_size > 0);
       gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
       g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(darktable.gui->last_preset), g_free);
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_update_preset), minfo);
@@ -755,26 +772,20 @@ static void _preset_popup_posistion(GtkMenu *menu, gint *x, gint *y, gboolean *p
 
 static void popup_callback(GtkButton *button, dt_lib_module_t *module)
 {
-  static dt_lib_module_info_t mi;
-  int size = 0;
-  g_strlcpy(mi.plugin_name, module->plugin_name, sizeof(mi.plugin_name));
-  mi.version = module->version(module);
-  mi.module = module;
-  void *params = module->get_params(module, &size);
+  dt_lib_module_info_t *mi = (dt_lib_module_info_t *)calloc(1, sizeof(dt_lib_module_info_t));
 
-  // make sure that we have enough space for params
-  if(params && (size <= sizeof(mi.params)))
+  mi->plugin_name = g_strdup(module->plugin_name);
+  mi->version = module->version(module);
+  mi->module = module;
+  mi->params = module->get_params(module, &mi->params_size);
+
+  if(!mi->params)
   {
-    memcpy(mi.params, params, size);
-    mi.params_size = size;
-    free(params);
+    // this is a valid case, for example in location.c when nothing got selected
+    // fprintf(stderr, "something went wrong: &params=%p, size=%i\n", mi->params, mi->params_size);
+    mi->params_size = 0;
   }
-  else
-  {
-    mi.params_size = 0;
-    fprintf(stderr, "something went wrong: &params=%p, size=%i\n", &params, size);
-  }
-  dt_lib_presets_popup_menu_show(&mi);
+  dt_lib_presets_popup_menu_show(mi);
 
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
