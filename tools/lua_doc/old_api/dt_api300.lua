@@ -256,7 +256,7 @@ A storage is a module that is responsible for handling images once they have bee
 ["__text"] = [==[The image object to export.]==],
 ["__attributes"] = {
 ["reported_type"] = {
-["__text"] = [==[Image objects represent an image in the database. This is slightly different from a file on disk since a file can have multiple developements.
+["__text"] = [==[Image objects represent an image in the database. This is slightly different from a file on disk since a file can have multiple developments.
 
 	Note that this is the real image object; changing the value of a field will immediately change it in darktable and will be reflected on any copy of that image object you may have kept.]==],
 ["__attributes"] = {
