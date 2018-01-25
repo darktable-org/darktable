@@ -83,7 +83,13 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   }
 
   // Create little endian tiff image
+#ifdef _WIN32
+  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
+  tif = TIFFOpenW(wfilename, "wl");
+  g_free(wfilename);
+#else
   tif = TIFFOpen(filename, "wl");
+#endif
   if(!tif)
   {
     rc = 1;

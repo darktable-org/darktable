@@ -174,7 +174,15 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   t.image = img;
 
-  if((t.tiff = TIFFOpen(filename, "rb")) == NULL) return DT_IMAGEIO_FILE_CORRUPTED;
+#ifdef _WIN32
+  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
+  t.tiff = TIFFOpenW(wfilename, "rb");
+  g_free(wfilename);
+#else
+  t.tiff = TIFFOpen(filename, "rb");
+#endif
+
+  if(t.tiff == NULL) return DT_IMAGEIO_FILE_CORRUPTED;
 
   TIFFGetField(t.tiff, TIFFTAG_IMAGEWIDTH, &t.width);
   TIFFGetField(t.tiff, TIFFTAG_IMAGELENGTH, &t.height);
@@ -260,7 +268,15 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
 
   if(!(filename && *filename && out)) return 0;
 
-  if((tiff = TIFFOpen(filename, "rb")) == NULL) return 0;
+#ifdef _WIN32
+  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
+  tiff = TIFFOpenW(wfilename, "rb");
+  g_free(wfilename);
+#else
+  tiff = TIFFOpen(filename, "rb");
+#endif
+
+  if(tiff == NULL) return 0;
 
   if(TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profile_len, &profile))
   {
