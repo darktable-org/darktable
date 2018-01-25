@@ -857,21 +857,25 @@ gboolean tree_count_childsum (GtkTreeModel *model, GtkTreePath *path, GtkTreeIte
   return FALSE;
 }
 
-gboolean tree_count_show (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+void tree_count_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter,
+                     gpointer data)
 {
   gchar *name;
-  guint  count;
+  guint count;
 
-  gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_TEXT, &name, DT_LIB_COLLECT_COL_COUNT, &count, -1);
-  if(!count) return FALSE;
-
-  gchar *coltext = g_strdup_printf("%s (%d)", name, count);
-  gtk_tree_store_set (GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_TEXT, coltext, -1);
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_TEXT, &name, DT_LIB_COLLECT_COL_COUNT, &count, -1);
+  if (!count)
+  {
+    g_object_set(renderer, "text", name, NULL);
+  }
+  else
+  {
+    gchar *coltext = g_strdup_printf("%s (%d)", name, count);
+    g_object_set(renderer, "text", coltext, NULL);
+    g_free(coltext);
+  }
 
   g_free(name);
-  g_free(coltext);
-
-  return FALSE;
 }
 
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
@@ -1067,7 +1071,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     g_list_free_full(sorted_names, free_tuple);
 
     if(folders || days || times)  gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)tree_count_childsum, NULL);
-    gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)tree_count_show, NULL);
 
     gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
 
@@ -1840,7 +1843,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_append_column(view, col);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
-  gtk_tree_view_column_add_attribute(col, renderer, "text", DT_LIB_COLLECT_COL_TEXT);
+  gtk_tree_view_column_set_cell_data_func(col, renderer, tree_count_show, NULL, NULL);
   g_object_set(renderer, "strikethrough", TRUE, (gchar *)0);
   gtk_tree_view_column_add_attribute(col, renderer, "strikethrough-set", DT_LIB_COLLECT_COL_UNREACHABLE);
 
