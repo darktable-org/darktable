@@ -53,14 +53,6 @@ typedef struct dt_lib_presets_edit_dialog_t
   gint old_id;
 } dt_lib_presets_edit_dialog_t;
 
-static void free_module_info(gpointer data)
-{
-  dt_lib_module_info_t *minfo = (dt_lib_module_info_t *)data;
-  g_free(minfo->plugin_name);
-  free(minfo->params);
-  free(minfo);
-}
-
 gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module, const dt_view_t *view)
 {
   if(!module->views)
@@ -408,6 +400,14 @@ static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
   }
 }
 
+static void free_module_info(GtkWidget *widget, gpointer user_data)
+{
+  dt_lib_module_info_t *minfo = (dt_lib_module_info_t *)user_data;
+  g_free(minfo->plugin_name);
+  free(minfo->params);
+  free(minfo);
+}
+
 static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
 {
   GtkMenu *menu = darktable.gui->presets_popup_menu;
@@ -415,7 +415,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
   menu = darktable.gui->presets_popup_menu;
 
-  g_object_set_data_full(G_OBJECT(menu), "dt-module-info", minfo, free_module_info);
+  g_signal_connect(G_OBJECT(menu), "destroy", G_CALLBACK(free_module_info), minfo);
 
   GtkWidget *mi;
   int active_preset = -1, cnt = 0, writeprotect = 0;
