@@ -35,6 +35,10 @@ set(MODULES ${MODULES} filmstrip)
 set(MODULES ${MODULES} hinter)
 set(MODULES ${MODULES} global_toolbox)
 
+if(BUILD_BATTERY_INDICATOR)
+  set(MODULES ${MODULES} battery_indicator)
+endif()
+
 # modules
 add_library(import MODULE "import.c")
 add_library(export MODULE "export.c")
@@ -73,6 +77,10 @@ add_library(module_toolbox MODULE "tools/module_toolbox.c")
 add_library(filmstrip MODULE "tools/filmstrip.c")
 add_library(hinter MODULE "tools/hinter.c")
 add_library(global_toolbox MODULE "tools/global_toolbox.c")
+
+if(BUILD_BATTERY_INDICATOR)
+  add_library(battery_indicator MODULE "tools/battery_indicator.c")
+endif()
 
 # check if gphoto2 found and add build of camera modules...
 if(GPHOTO2_FOUND)
