@@ -642,7 +642,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(hbox, _("click on a shape and drag on canvas.\nuse the mouse wheel "
                                       "to adjust size.\nright click to remove a shape."));
 
-  g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(_add_path), self);
   gtk_widget_set_tooltip_text(g->bt_path, _("add path"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
@@ -650,7 +650,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(hbox), g->bt_path, FALSE, FALSE, 0);
 
   g->bt_ellipse
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_signal_connect(G_OBJECT(g->bt_ellipse), "button-press-event", G_CALLBACK(_add_ellipse), self);
   gtk_widget_set_tooltip_text(g->bt_ellipse, _("add ellipse"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
@@ -658,7 +658,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(hbox), g->bt_ellipse, FALSE, FALSE, 0);
 
   g->bt_circle
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_signal_connect(G_OBJECT(g->bt_circle), "button-press-event", G_CALLBACK(_add_circle), self);
   gtk_widget_set_tooltip_text(g->bt_circle, _("add circle"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);

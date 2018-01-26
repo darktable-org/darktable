@@ -153,7 +153,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       cairo_set_line_width(cri, 0.5);
       double s = width * HANDLE_SIZE;
       dtgtk_cairo_paint_refresh(cri, (d->vertical ? width * d->vp_xpointer : width * 0.5) - (s * 0.5),
-                                (d->vertical ? height * 0.5 : height * d->vp_ypointer) - (s * 0.5), s, s, 0);
+                                (d->vertical ? height * 0.5 : height * d->vp_ypointer) - (s * 0.5), s, s, 0, NULL);
     }
   }
 }

@@ -1614,7 +1614,7 @@ static void dt_iop_gui_set_single_expanded(dt_iop_module_t *module, gboolean exp
   g_list_free(childs);
   if(!expanded) flags = CPF_DIRECTION_LEFT;
 
-  dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
+  dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags, NULL);
 
   /* store expanded state of module.
    * we do that first, so update_expanded won't think it should be visible
@@ -1699,7 +1699,7 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
   g_list_free(childs);
   if(!expanded) flags = CPF_DIRECTION_LEFT;
 
-  dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
+  dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags, NULL);
 
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
 }
@@ -1810,11 +1810,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   GtkWidget *hw[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
   /* add the expand indicator icon */
-  hw[idx] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
+  hw[idx] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
   /* add duplicate button */
-  /*hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_ACTIVE|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  /*hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_ACTIVE|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER, NULL);
   module->duplicate_button = GTK_WIDGET(hw[idx]);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("add new instance"));
   g_signal_connect (G_OBJECT (hw[idx]), "clicked",
@@ -1872,7 +1872,7 @@ got_image:
   }
   else
   {
-    hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+    hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     module->multimenu_button = GTK_WIDGET(hw[idx]);
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]),
                                 _("multiple instances actions\nmiddle-click creates new instance"));
@@ -1882,7 +1882,7 @@ got_image:
   }
 
   /* add reset button */
-  hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   module->reset_button = GTK_WIDGET(hw[idx]);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("reset parameters"));
   g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(dt_iop_gui_reset_callback), module);
@@ -1890,7 +1890,7 @@ got_image:
 
 
   /* add preset button if module has implementation */
-  hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   module->presets_button = GTK_WIDGET(hw[idx]);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets"));
   g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(popup_callback), module);
@@ -1902,7 +1902,7 @@ got_image:
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
   /* add enabled button */
-  hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT);
+  hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT, NULL);
   gtk_widget_set_no_show_all(hw[idx], TRUE);
   gchar *module_label = dt_history_item_get_name(module);
   snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
@@ -1919,7 +1919,7 @@ got_image:
     if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 2 ? TRUE : FALSE, i == 2 ? TRUE : FALSE, 2);
 
   gtk_widget_set_halign(hw[2], GTK_ALIGN_END);
-  dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
+  dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
 
   /* add the blending ui if supported */
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);

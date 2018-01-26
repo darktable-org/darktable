@@ -601,13 +601,13 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(autobutton, _("apply auto levels"));
   gtk_widget_set_size_request(autobutton, -1, DT_PIXEL_APPLY_DPI(24));
 
-  GtkWidget *blackpick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+  GtkWidget *blackpick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(blackpick, _("pick black point from image"));
 
-  GtkWidget *greypick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+  GtkWidget *greypick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(greypick, _("pick medium gray point from image"));
 
-  GtkWidget *whitepick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+  GtkWidget *whitepick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(whitepick, _("pick white point from image"));
 
   GdkRGBA color = { 0 };

@@ -2369,7 +2369,8 @@ void gui_init(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
 
   // create display profile button
-  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER,
+                                                     NULL);
   gtk_widget_set_tooltip_text(profile_button, _("set display profile"));
   dt_view_manager_module_toolbox_add(darktable.view_manager, profile_button, DT_VIEW_LIGHTTABLE);
 

@@ -559,11 +559,11 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
       if(mk & 0x01) /* filled */
         dtgtk_cairo_paint_solid_triangle(cr, (vx - DT_PIXEL_APPLY_DPI(sz) * 0.5),
                                          sz < 10 ? DT_PIXEL_APPLY_DPI(1) : DT_PIXEL_APPLY_DPI(-2),
-                                         DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_DOWN);
+                                         DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_DOWN, NULL);
       else
         dtgtk_cairo_paint_triangle(cr, (vx - DT_PIXEL_APPLY_DPI(sz) * 0.5),
                                    sz < 10 ? DT_PIXEL_APPLY_DPI(1) : DT_PIXEL_APPLY_DPI(-2),
-                                   DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_DOWN);
+                                   DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_DOWN, NULL);
     }
 
     if(mk & 0x02) /* lower arrow */
@@ -572,11 +572,11 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
         dtgtk_cairo_paint_solid_triangle(cr, (vx - DT_PIXEL_APPLY_DPI(sz) * 0.5),
                                          sz < 10 ? height - DT_PIXEL_APPLY_DPI(6) : height
                                                                                     - DT_PIXEL_APPLY_DPI(11),
-                                         DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_UP);
+                                         DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_UP, NULL);
       else
         dtgtk_cairo_paint_triangle(cr, (vx - DT_PIXEL_APPLY_DPI(sz) * 0.5),
                                    sz < 10 ? height - DT_PIXEL_APPLY_DPI(6) : height - DT_PIXEL_APPLY_DPI(11),
-                                   DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_UP);
+                                   DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_UP, NULL);
     }
   }
 

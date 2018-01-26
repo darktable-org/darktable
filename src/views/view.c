@@ -1248,7 +1248,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
         }
         cairo_save(cr);
         if(img && (imgid != img->group_id)) cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
-        dtgtk_cairo_paint_grouping(cr, _x, _y, s, s, 23);
+        dtgtk_cairo_paint_grouping(cr, _x, _y, s, s, 23, NULL);
         cairo_restore(cr);
         // mouse is over the grouping icon
         if(img && fabs(px - _x - .5 * s) <= .8 * s && fabs(py - _y - .5 * s) <= .8 * s)
@@ -1307,7 +1307,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
         cairo_save(cr);
         const int col = sqlite3_column_int(darktable.view_manager->statements.get_color, 0);
         // see src/dtgtk/paint.c
-        dtgtk_cairo_paint_label(cr, x + (3 * r * col) - 5 * r, y - r, r * 2, r * 2, col);
+        dtgtk_cairo_paint_label(cr, x + (3 * r * col) - 5 * r, y - r, r * 2, r * 2, col, NULL);
         cairo_restore(cr);
       }
     }
@@ -1324,7 +1324,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       const int xoffset = 6;
       const gboolean has_local_copy = (img && (img->flags & DT_IMAGE_LOCAL_COPY));
       cairo_save(cr);
-      dtgtk_cairo_paint_local_copy(cr, x + (3 * r * xoffset) - 5 * r, y - r, r * 2, r * 2, has_local_copy);
+      dtgtk_cairo_paint_local_copy(cr, x + (3 * r * xoffset) - 5 * r, y - r, r * 2, r * 2, has_local_copy, NULL);
       cairo_restore(cr);
     }
   }

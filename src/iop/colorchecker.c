@@ -1079,7 +1079,7 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
 
   dt_bauhaus_widget_set_quad_paint(
       g->combobox_patch, dtgtk_cairo_paint_colorpicker,
-      (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE ? CPF_ACTIVE : CPF_NONE));
+      (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE ? CPF_ACTIVE : CPF_NONE), NULL);
 
   // highlight patch that is closest to picked colour,
   // or the one selected in the combobox.
@@ -1275,7 +1275,7 @@ void gui_init(struct dt_iop_module_t *self)
     dt_bauhaus_combobox_add(g->combobox_patch, cboxentry);
   }
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  dt_bauhaus_widget_set_quad_paint(g->combobox_patch, dtgtk_cairo_paint_colorpicker, CPF_NONE);
+  dt_bauhaus_widget_set_quad_paint(g->combobox_patch, dtgtk_cairo_paint_colorpicker, CPF_NONE, NULL);
 
   g->scale_L = dt_bauhaus_slider_new_with_range(self, -100.0, 200.0, 1.0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_L, _("lightness offset"));

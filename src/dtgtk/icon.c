@@ -53,19 +53,21 @@ static gboolean _icon_draw(GtkWidget *widget, cairo_t *cr)
 
   /* draw icon */
   if(DTGTK_ICON(widget)->icon)
-    DTGTK_ICON(widget)->icon(cr, 0, 0, allocation.width, allocation.height, DTGTK_ICON(widget)->icon_flags);
+    DTGTK_ICON(widget)->icon(cr, 0, 0, allocation.width, allocation.height, DTGTK_ICON(widget)->icon_flags,
+                             DTGTK_ICON(widget)->icon_data);
 
   return FALSE;
 }
 
 // Public functions
-GtkWidget *dtgtk_icon_new(DTGTKCairoPaintIconFunc paint, gint paintflags)
+GtkWidget *dtgtk_icon_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata)
 {
   GtkDarktableIcon *icon;
   icon = g_object_new(dtgtk_icon_get_type(), NULL);
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(icon), FALSE);
   icon->icon = paint;
   icon->icon_flags = paintflags;
+  icon->icon_data = paintdata;
   return (GtkWidget *)icon;
 }
 
@@ -86,10 +88,11 @@ GType dtgtk_icon_get_type()
   return dtgtk_icon_type;
 }
 
-void dtgtk_icon_set_paint(GtkWidget *icon, DTGTKCairoPaintIconFunc paint, gint paintflags)
+void dtgtk_icon_set_paint(GtkWidget *icon, DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata)
 {
   DTGTK_ICON(icon)->icon = paint;
   DTGTK_ICON(icon)->icon_flags = paintflags;
+  DTGTK_ICON(icon)->icon_data = paintdata;
   gtk_widget_queue_draw(icon);
 }
 
