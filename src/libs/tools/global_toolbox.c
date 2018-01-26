@@ -76,7 +76,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
   /* create the grouping button */
-  d->grouping_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, CPF_STYLE_FLAT);
+  d->grouping_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_size_request(d->grouping_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   gtk_box_pack_start(GTK_BOX(self->widget), d->grouping_button, FALSE, FALSE, 2);
   if(darktable.gui->grouping)
@@ -88,7 +88,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->grouping_button), darktable.gui->grouping);
 
   /* create the "show/hide overlays" button */
-  d->overlays_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overlays, CPF_STYLE_FLAT);
+  d->overlays_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overlays, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_size_request(d->overlays_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   gtk_box_pack_start(GTK_BOX(self->widget), d->overlays_button, FALSE, FALSE, 2);
   if(darktable.gui->show_overlays)
@@ -99,7 +99,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overlays_button), darktable.gui->show_overlays);
 
   /* create the preference button */
-  d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
+  d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_size_request(d->preferences_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   gtk_box_pack_end(GTK_BOX(self->widget), d->preferences_button, FALSE, FALSE, 2);
   gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));

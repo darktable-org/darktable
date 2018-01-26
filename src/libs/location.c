@@ -179,7 +179,7 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib, _lib_lo
   gtk_box_pack_start(GTK_BOX(vb), w, FALSE, FALSE, 0);
 
   /* type icon */
-  GtkWidget *icon = dtgtk_icon_new(dtgtk_cairo_paint_triangle, CPF_DIRECTION_LEFT);
+  GtkWidget *icon = dtgtk_icon_new(dtgtk_cairo_paint_triangle, CPF_DIRECTION_LEFT, NULL);
   gtk_widget_set_size_request(icon, DT_PIXEL_APPLY_DPI(10), -1);
 
   /* setup layout */

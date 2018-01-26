@@ -644,6 +644,7 @@ static void dt_bauhaus_widget_init(dt_bauhaus_widget_t *w, dt_iop_module_t *self
 
   // no quad icon and no toggle button:
   w->quad_paint = 0;
+  w->quad_paint_data = NULL;
   w->quad_toggle = 0;
   w->combo_populate = NULL;
   gtk_widget_set_size_request(GTK_WIDGET(w), -1, get_line_height());
@@ -845,11 +846,12 @@ const char* dt_bauhaus_widget_get_label(GtkWidget *widget)
   return w->label;
 }
 
-void dt_bauhaus_widget_set_quad_paint(GtkWidget *widget, dt_bauhaus_quad_paint_f f, int paint_flags)
+void dt_bauhaus_widget_set_quad_paint(GtkWidget *widget, dt_bauhaus_quad_paint_f f, int paint_flags, void *paint_data)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   w->quad_paint = f;
   w->quad_paint_flags = paint_flags;
+  w->quad_paint_data = paint_data;
 }
 
 // make this quad a toggle button:
@@ -1235,9 +1237,10 @@ static void dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
   {
     cairo_save(cr);
     set_grid_color(cr, gtk_widget_is_sensitive(GTK_WIDGET(w)));
-    w->quad_paint(cr, width - height - 1, -1, height + 2, get_label_font_size() + 2, w->quad_paint_flags);
+    w->quad_paint(cr, width - height - 1, -1, height + 2, get_label_font_size() + 2, w->quad_paint_flags,
+                  w->quad_paint_data);
     set_indicator_color(cr, gtk_widget_is_sensitive(GTK_WIDGET(w)));
-    w->quad_paint(cr, width - height, 0, height, get_label_font_size(), w->quad_paint_flags);
+    w->quad_paint(cr, width - height, 0, height, get_label_font_size(), w->quad_paint_flags, w->quad_paint_data);
     cairo_restore(cr);
   }
   else
