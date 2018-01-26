@@ -31,6 +31,7 @@ typedef struct _GtkDarktableIcon
   GtkEventBox widget;
   DTGTKCairoPaintIconFunc icon;
   gint icon_flags;
+  void *icon_data;
 } GtkDarktableIcon;
 
 typedef struct _GtkDarktableIconClass
@@ -41,10 +42,10 @@ typedef struct _GtkDarktableIconClass
 GType dtgtk_icon_get_type(void);
 
 /** instantiate a new darktable icon control passing paint function as content */
-GtkWidget *dtgtk_icon_new(DTGTKCairoPaintIconFunc paint, gint paintflags);
+GtkWidget *dtgtk_icon_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);
 
 /** set the paint function for a icon */
-void dtgtk_icon_set_paint(GtkWidget *icon, DTGTKCairoPaintIconFunc paint, gint paintflags);
+void dtgtk_icon_set_paint(GtkWidget *icon, DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);
 
 G_END_DECLS
 

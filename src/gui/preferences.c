@@ -256,7 +256,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
                                                          DT_PIXEL_APPLY_DPI(ICON_SIZE));
   cairo_t *lock_cr = cairo_create(lock_cst);
   cairo_set_source_rgb(lock_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_lock(lock_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0);
+  dtgtk_cairo_paint_lock(lock_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0, NULL);
   cairo_surface_flush(lock_cst);
   guchar *data = cairo_image_surface_get_data(lock_cst);
   dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
@@ -270,7 +270,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
                                                           DT_PIXEL_APPLY_DPI(ICON_SIZE));
   cairo_t *check_cr = cairo_create(check_cst);
   cairo_set_source_rgb(check_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_check_mark(check_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0);
+  dtgtk_cairo_paint_check_mark(check_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0, NULL);
   cairo_surface_flush(check_cst);
   data = cairo_image_surface_get_data(check_cst);
   dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
