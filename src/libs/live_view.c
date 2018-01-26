@@ -274,14 +274,14 @@ void gui_init(dt_lib_module_t *self)
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
-  lib->live_view = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  lib->live_view = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   lib->live_view_zoom = dtgtk_button_new(
-      dtgtk_cairo_paint_zoom, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER); // TODO: see _zoom_live_view_clicked
-  lib->rotate_ccw = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+      dtgtk_cairo_paint_zoom, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL); // TODO: see _zoom_live_view_clicked
+  lib->rotate_ccw = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   lib->rotate_cw = dtgtk_button_new(dtgtk_cairo_paint_refresh,
-                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_UP);
+                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_UP, NULL);
   lib->flip = dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,
-                                     CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_UP);
+                                     CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_UP, NULL);
 
   gtk_box_pack_start(GTK_BOX(box), lib->live_view, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->live_view_zoom, TRUE, TRUE, 0);
@@ -305,14 +305,14 @@ void gui_init(dt_lib_module_t *self)
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
   lib->focus_in_big = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle,
-                                       CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT);
+                                       CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT, NULL);
   lib->focus_in_small
       = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER
-                                                  | CPF_DIRECTION_LEFT); // TODO icon not centered
+                                                  | CPF_DIRECTION_LEFT, NULL); // TODO icon not centered
   lib->focus_out_small = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER
-                                                                   | CPF_DIRECTION_RIGHT); // TODO same here
+                                                                   | CPF_DIRECTION_RIGHT, NULL); // TODO same here
   lib->focus_out_big = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle,
-                                        CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_RIGHT);
+                                        CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_RIGHT, NULL);
 
   gtk_box_pack_start(GTK_BOX(box), lib->focus_in_big, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->focus_in_small, TRUE, TRUE, 0);
@@ -656,7 +656,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
       {
         cairo_set_line_width(cr, 0.5);
         double s = width * HANDLE_SIZE;
-        dtgtk_cairo_paint_refresh(cr, sl_x - (s * 0.5), sl_y - (s * 0.5), s, s, 1);
+        dtgtk_cairo_paint_refresh(cr, sl_x - (s * 0.5), sl_y - (s * 0.5), s, s, 1, NULL);
       }
 
       cairo_restore(cr);

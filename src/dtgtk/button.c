@@ -101,15 +101,16 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   {
     int icon_width = text ? height - (border * 2) : width - (border * 2);
     int icon_height = height - (border * 2);
+    void *icon_data = DTGTK_BUTTON(widget)->icon_data;
 
     if(icon_width > 0 && icon_height > 0)
     {
       if(text)
         DTGTK_BUTTON(widget)
-            ->icon(cr, border, border, height - (border * 2), height - (border * 2), flags);
+            ->icon(cr, border, border, height - (border * 2), height - (border * 2), flags, icon_data);
       else
         DTGTK_BUTTON(widget)
-            ->icon(cr, border, border, width - (border * 2), height - (border * 2), flags);
+            ->icon(cr, border, border, width - (border * 2), height - (border * 2), flags, icon_data);
     }
   }
 
@@ -128,12 +129,13 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
 }
 
 // Public functions
-GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags)
+GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata)
 {
   GtkDarktableButton *button;
   button = g_object_new(dtgtk_button_get_type(), NULL);
   button->icon = paint;
   button->icon_flags = paintflags;
+  button->icon_data = paintdata;
   gtk_widget_set_size_request(GTK_WIDGET(button), DT_PIXEL_APPLY_DPI(17), DT_PIXEL_APPLY_DPI(17));
   return (GtkWidget *)button;
 }
@@ -155,10 +157,11 @@ GType dtgtk_button_get_type()
   return dtgtk_button_type;
 }
 
-void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc paint, gint paintflags)
+void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata)
 {
   button->icon = paint;
   button->icon_flags = paintflags;
+  button->icon_data = paintdata;
 }
 
 void dtgtk_button_set_active(GtkDarktableButton *button, gboolean active)
