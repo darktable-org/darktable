@@ -29,7 +29,7 @@ endmacro()
 
 function(InstallDependencyFiles)
 
-if (WIN32)
+if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
   # Dependency files (files which needs to be installed alongside the darktable binaries)
   # Please note these are ONLY the files which are not geing detected by fixup_bundle()
   # must be in the bin directory
@@ -198,6 +198,6 @@ if (WIN32)
     endforeach()
   endif(ISO_CODES_FOUND)
 
-endif(WIN32)
+endif(WIN32 AND NOT BUILD_MSYS2_INSTALL)
 
 endfunction()
