@@ -1,5 +1,5 @@
 
-IF(WIN32)
+IF(WIN32 AND NOT BUILD_MSYS2_INSTALL)
 
   set(plugin_dest_dir lib/darktable/plugins)
   set(APPS "\${CMAKE_INSTALL_PREFIX}/bin/darktable.exe")  # paths to executables
@@ -59,4 +59,4 @@ IF(WIN32)
 
   endif()
 
-ENDIF(WIN32)
+ENDIF(WIN32 AND NOT BUILD_MSYS2_INSTALL)
