@@ -359,7 +359,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   for(int i = 0; i < len; i++)
     if(isalnum(infostr[i])) devname[j++] = infostr[i];
   devname[j] = 0;
-  snprintf(cachedir, sizeof(cachedir), "%s/cached_kernels_for_%s", dtcache, devname);
+  snprintf(cachedir, sizeof(cachedir), "%s" G_DIR_SEPARATOR_S "cached_kernels_for_%s", dtcache, devname);
   if(g_mkdir_with_parents(cachedir, 0700) == -1)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to create directory `%s'!\n", cachedir);
@@ -372,9 +372,9 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   char confentry[PATH_MAX] = { 0 };
   char binname[PATH_MAX] = { 0 };
   dt_loc_get_datadir(dtpath, sizeof(dtpath));
-  snprintf(filename, sizeof(filename), "%s/kernels/programs.conf", dtpath);
+  snprintf(filename, sizeof(filename), "%s" G_DIR_SEPARATOR_S "kernels" G_DIR_SEPARATOR_S "programs.conf", dtpath);
   char kerneldir[PATH_MAX] = { 0 };
-  snprintf(kerneldir, sizeof(kerneldir), "%s/kernels", dtpath);
+  snprintf(kerneldir, sizeof(kerneldir), "%s" G_DIR_SEPARATOR_S "kernels", dtpath);
   char *escapedkerneldir = NULL;
 #ifndef __APPLE__
   escapedkerneldir = g_strdup_printf("\"%s\"", kerneldir);
@@ -446,8 +446,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
         continue;
       }
 
-      snprintf(filename, sizeof(filename), "%s/kernels/%s", dtpath, programname);
-      snprintf(binname, sizeof(binname), "%s/%s.bin", cachedir, programname);
+      snprintf(filename, sizeof(filename), "%s" G_DIR_SEPARATOR_S "kernels" G_DIR_SEPARATOR_S "%s", dtpath, programname);
+      snprintf(binname, sizeof(binname), "%s" G_DIR_SEPARATOR_S "%s.bin", cachedir, programname);
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
       int loaded_cached;
       char md5sum[33];
@@ -1457,7 +1457,7 @@ void dt_opencl_md5sum(const char **files, char **md5sums)
       continue;
     }
 
-    snprintf(filename, sizeof(filename), "%s/kernels/%s", dtpath, *files);
+    snprintf(filename, sizeof(filename), "%s" G_DIR_SEPARATOR_S "kernels" G_DIR_SEPARATOR_S "%s", dtpath, *files);
 
     struct stat filestat;
     FILE *f = fopen_stat(filename, &filestat);
@@ -1633,7 +1633,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
     if(linkedfile_len > 0)
     {
       char link_dest[PATH_MAX] = { 0 };
-      snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, linkedfile);
+      snprintf(link_dest, sizeof(link_dest), "%s" G_DIR_SEPARATOR_S "%s", cachedir, linkedfile);
       g_unlink(link_dest);
     }
     g_unlink(binname);
@@ -1759,7 +1759,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
         {
           // save opencl compiled binary as md5sum-named file
           char link_dest[PATH_MAX] = { 0 };
-          snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, md5sum);
+          snprintf(link_dest, sizeof(link_dest), "%s" G_DIR_SEPARATOR_S "%s", cachedir, md5sum);
           FILE *f = g_fopen(link_dest, "w");
           if(!f) goto ret;
           size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
@@ -1777,7 +1777,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
           //CreateSymbolicLink in Windows requires admin privileges, which we don't want/need
           //store has using a simple filerename
           char finalfilename[PATH_MAX] = { 0 };
-          snprintf(finalfilename, sizeof(finalfilename), "%s/%s.%s", cachedir, bname, md5sum);
+          snprintf(finalfilename, sizeof(finalfilename), "%s" G_DIR_SEPARATOR_S "%s.%s", cachedir, bname, md5sum);
           rename(link_dest, finalfilename);
 #else
           if(symlink(md5sum, bname) != 0) goto ret;
