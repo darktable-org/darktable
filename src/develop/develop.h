@@ -151,6 +151,8 @@ typedef struct dt_develop_t
   // operations pipeline
   int32_t iop_instance;
   GList *iop;
+  // iop's to be deleted
+  GList *alliop;
 
   // histogram for display.
   uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
