@@ -113,6 +113,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
   dev->iop_instance = 0;
   dev->iop = NULL;
+  dev->alliop = NULL;
 
   dev->proxy.exposure = NULL;
 
@@ -154,6 +155,12 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dt_iop_cleanup_module((dt_iop_module_t *)dev->iop->data);
     free(dev->iop->data);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
+  }
+  while(dev->alliop)
+  {
+    dt_iop_cleanup_module((dt_iop_module_t *)dev->alliop->data);
+    free(dev->alliop->data);
+    dev->alliop = g_list_delete_link(dev->alliop, dev->alliop);
   }
   dt_pthread_mutex_destroy(&dev->history_mutex);
   free(dev->histogram);
@@ -1712,7 +1719,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, i
                                   float *points, size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  GList *modules = g_list_first(dev->iop);
+  GList *modules = g_list_first(pipe->iop);
   GList *pieces = g_list_first(pipe->nodes);
   while(modules)
   {
@@ -1739,7 +1746,7 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
                                       float *points, size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  GList *modules = g_list_last(dev->iop);
+  GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
   while(modules)
   {
@@ -1787,7 +1794,7 @@ uint64_t dt_dev_hash_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, in
 {
   uint64_t hash = 5381;
   dt_pthread_mutex_lock(&dev->history_mutex);
-  GList *modules = g_list_last(dev->iop);
+  GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
   while(modules)
   {
@@ -1881,7 +1888,7 @@ uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *
 {
   uint64_t hash = 5381;
   dt_pthread_mutex_lock(&dev->history_mutex);
-  GList *modules = g_list_last(dev->iop);
+  GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
   while(modules)
   {
