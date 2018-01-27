@@ -1079,12 +1079,14 @@ void init_global(dt_iop_module_so_t *module)
   if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
 #endif
   {
-    char path[PATH_MAX] = { 0 };
-    dt_loc_get_datadir(path, sizeof(path));
-    char *c = path + strlen(path);
-    for(; c > path && *c != G_DIR_SEPARATOR; c--)
-      ;
-    *c = '\0';
+    char datadir[PATH_MAX] = { 0 };
+    dt_loc_get_datadir(datadir, sizeof(datadir));
+
+    // get parent directory
+    GFile *file = g_file_parse_name(datadir);
+    gchar *path = g_file_get_path(g_file_get_parent(file));
+    g_object_unref(file);
+
 #ifdef LF_MAX_DATABASE_VERSION
     g_free(dt_iop_lensfun_db->HomeDataDir);
     dt_iop_lensfun_db->HomeDataDir = g_build_filename(path, "lensfun", "version_" STR(LF_MAX_DATABASE_VERSION), NULL);
@@ -1099,6 +1101,8 @@ void init_global(dt_iop_module_so_t *module)
 #ifdef LF_MAX_DATABASE_VERSION
     }
 #endif
+
+    g_free(path);
   }
 }
 
