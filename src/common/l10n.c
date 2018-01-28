@@ -65,7 +65,7 @@ static void get_language_names(GList *languages)
   JsonParser *parser = NULL;
   GError *error = NULL;
 
-#ifdef _WIN32 // TODO: add osx?
+#if defined(_WIN32) && !defined(MSYS2_INSTALL) // TODO: add osx?
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   char *filename = g_build_filename(datadir, "..",  "iso-codes", "json", "iso_639-2.json", NULL);
@@ -80,7 +80,7 @@ static void get_language_names(GList *languages)
     goto end;
   }
 
-#ifdef _WIN32 // TODO: add osx?
+#if defined(_WIN32) && !defined(MSYS2_INSTALL) // TODO: add osx?
   // on windows we are shipping the translations of iso-codes along ours
   char *localedir = g_build_filename(datadir, "..", "locale", NULL);
   bindtextdomain("iso_639", localedir);
