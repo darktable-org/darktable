@@ -78,6 +78,7 @@ option(BUILD_SSE2_CODEPATHS "(EXPERIMENTAL OPTION, DO NOT DISABLE) Building SSE2
 option(VALIDATE_APPDATA_FILE "Use appstream-util (if found) to validate the .appdata file" OFF)
 option(BUILD_TESTS "Build tests in src/tests/, runnable from the build/ directory" OFF)
 option(BUILD_BATTERY_INDICATOR "Add an icon to the top toolbar showing the state of a laptop battery" OFF)
+option(BUILD_MSYS2_INSTALL "Build an MSYS2 version of the install, aka for Windows platform, but without dependency installs" OFF)
 
 if(USE_OPENCL)
   option(TESTBUILD_OPENCL_PROGRAMS "Test-compile opencl programs (needs llvm and clang 3.9+)" ON)
@@ -168,6 +169,9 @@ if(WIN32)
   set(BUILD_CMSTEST OFF)
   set(BUILD_PRINT OFF)
   set(TESTBUILD_OPENCL_PROGRAMS OFF)
+  if(BUILD_MSYS2_INSTALL)
+    add_definitions(-DMSYS2_INSTALL)
+  endif()
 endif(WIN32)
 
 
