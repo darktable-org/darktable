@@ -1925,7 +1925,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             for(int k = 0; k < 3; k++)
             {
               darktable.lib->proxy.colorpicker.picked_color_rgb_min[k]
-                  = MIN(darktable.lib->proxy.colorpicker.picked_color_rgb_min[2 - k],
+                  = MIN(darktable.lib->proxy.colorpicker.picked_color_rgb_min[k],
                         pixel[4 * (roi_out->width * j + i) + 2 - k]);
               darktable.lib->proxy.colorpicker.picked_color_rgb_max[k]
                   = MAX(darktable.lib->proxy.colorpicker.picked_color_rgb_max[k],
