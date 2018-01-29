@@ -793,18 +793,16 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 
 static void load_account_info_fill(gchar *key, gchar *value, GSList **accountlist)
 {
-  PicasaAccountInfo *info = picasa_account_info_init();
-  info->id = g_strdup(key);
-
   JsonParser *parser = json_parser_new();
   json_parser_load_from_data(parser, value, strlen(value), NULL);
   JsonNode *root = json_parser_get_root(parser);
-  JsonObject *obj;
 
   // defensive check, root can be null while parsing the account info
   if(root)
   {
-    obj = json_node_get_object(root);
+    JsonObject *obj = json_node_get_object(root);
+    PicasaAccountInfo *info = picasa_account_info_init();
+    info->id = g_strdup(key);
     info->token = g_strdup(json_object_get_string_member(obj, "token"));
     info->username = g_strdup(json_object_get_string_member(obj, "username"));
     info->id = g_strdup(json_object_get_string_member(obj, "userid"));

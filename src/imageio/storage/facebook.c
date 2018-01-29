@@ -747,17 +747,16 @@ static gboolean facebook_get_user_auth_token_from_server(dt_storage_facebook_gui
 
 static void load_account_info_fill(gchar *key, gchar *value, GSList **accountlist)
 {
-  FBAccountInfo *info = fb_account_info_init();
-  info->id = g_strdup(key);
-
   JsonParser *parser = json_parser_new();
   json_parser_load_from_data(parser, value, strlen(value), NULL);
   JsonNode *root = json_parser_get_root(parser);
-  JsonObject *obj = json_node_get_object(root);
 
   // root can be null while parsing the account info
   if(root)
   {
+    JsonObject *obj = json_node_get_object(root);
+    FBAccountInfo *info = fb_account_info_init();
+    info->id = g_strdup(key);
     info->token = g_strdup(json_object_get_string_member(obj, "token"));
     info->readablename = g_strdup(json_object_get_string_member(obj, "name"));
     *accountlist = g_slist_prepend(*accountlist, info);
