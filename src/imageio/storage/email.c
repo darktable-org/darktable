@@ -133,6 +133,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   {
     fprintf(stderr, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
     dt_control_log(_("could not export to file `%s'!"), attachment->file);
+    g_free(attachment->file);
     g_free(attachment);
     g_free(filename);
     return 1;
@@ -199,13 +200,14 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   argv[3] = "--body";
   int n = 5;
 
-  while(d->images)
+  for(GList *iter = d->images; iter; iter = g_list_next(iter))
   {
     gchar exif[256] = { 0 };
-    _email_attachment_t *attachment = (_email_attachment_t *)d->images->data;
+    _email_attachment_t *attachment = (_email_attachment_t *)iter->data;
     gchar *filename = g_path_get_basename(attachment->file);
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, attachment->imgid, 'r');
     dt_image_print_exif(img, exif, sizeof(exif));
+    dt_image_cache_read_release(darktable.image_cache, img);
 
     gchar *imgbody = g_strdup_printf(imageBodyFormat, filename, exif);
     body = g_strconcat(body, imgbody, NULL);
@@ -218,12 +220,9 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
     // freed as part of the argument release after the spawn below.
     argv[n+1] = attachment->file;
     n += 2;
-
-    // Free attachment item and remove
-    dt_image_cache_read_release(darktable.image_cache, img);
-    g_free(d->images->data);
-    d->images = g_list_remove(d->images, d->images->data);
   }
+  g_list_free_full(d->images, g_free);
+  d->images = NULL;
 
   argv[4] = body;
 
