@@ -42,8 +42,11 @@ int main(int argc, char *argv[])
     if(argv[k][0] == '-')
     {
       // For simple arguments do not redirect stdout
-      if(!strcmp(argv[k], "--help") || !strcmp(argv[k], "-h") || !strcmp(argv[k], "--version"))
+      if(!strcmp(argv[k], "--help") || !strcmp(argv[k], "-h") || !strcmp(argv[k], "/?") || !strcmp(argv[k], "--version"))
+      {
         redirect_output = FALSE;
+        break;
+      }
     }
   }
 
