@@ -115,11 +115,9 @@ void gui_init(dt_lib_module_t *self)
 
     surface = cairo_image_surface_create_from_png(filename);
     g_free(logo);
-    g_free(filename);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
       fprintf(stderr, "warning: can't load darktable logo from PNG file `%s'\n", filename);
-      d->image = NULL;
       goto done;
     }
     int png_width = cairo_image_surface_get_width(surface),
@@ -135,10 +133,10 @@ void gui_init(dt_lib_module_t *self)
         = dt_cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
     if(cairo_surface_status(d->image) != CAIRO_STATUS_SUCCESS)
     {
+      fprintf(stderr, "warning: can't load darktable logo from PNG file `%s'\n", filename);
       free(d->image_buffer);
       d->image_buffer = NULL;
-      cairo_surface_destroy(surface);
-      fprintf(stderr, "warning: can't load darktable logo from PNG file `%s'\n", filename);
+      cairo_surface_destroy(d->image);
       d->image = NULL;
       goto done;
     }
@@ -151,10 +149,11 @@ void gui_init(dt_lib_module_t *self)
     cairo_destroy(cr);
     cairo_surface_flush(d->image);
 
+done:
     cairo_surface_destroy(surface);
+    g_free(filename);
   }
 
-done:
   d->image_width = d->image ? dt_cairo_image_surface_get_width(d->image) : 0;
   d->image_height = d->image ? dt_cairo_image_surface_get_height(d->image) : 0;
 
