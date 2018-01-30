@@ -943,25 +943,23 @@ static void auto_apply_presets(dt_develop_t *dev)
 
         // update num accordingly
         int v = 0;
-        GList *r = rowids;
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "UPDATE memory.history SET num=?1 WHERE rowid=?2", -1, &stmt, NULL);
 
         // let's wrap this into a transaction, it might make it a little faster.
         sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
-        do
+        for(GList *r = rowids; r; r = g_list_next(r))
         {
           DT_DEBUG_SQLITE3_CLEAR_BINDINGS(stmt);
           DT_DEBUG_SQLITE3_RESET(stmt);
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, v);
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, GPOINTER_TO_INT(r->data));
 
-          sqlite3_step(stmt);
+          if(sqlite3_step(stmt) != SQLITE_DONE) break;
 
           v++;
-          r = g_list_next(r);
-        } while((sqlite3_step(stmt) == SQLITE_DONE) && r);
+        }
 
         sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 
