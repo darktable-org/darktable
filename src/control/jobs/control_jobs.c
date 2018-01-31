@@ -45,6 +45,9 @@
 #ifdef __APPLE__
 #include "osx/osx.h"
 #endif
+#ifdef _WIN32
+#include "win/dtwin.h"
+#endif
 
 typedef struct dt_control_time_offset_t
 {
@@ -779,11 +782,13 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename)
     GError *gerror = NULL;
     if (send_to_trash)
     {
-      #ifdef __APPLE__
+#ifdef __APPLE__
       delete_success = dt_osx_file_trash(filename, &gerror);
-      #else
+#elif defined(_WIN32)
+      delete_success = dt_win_file_trash(gfile, NULL /*cancellable*/, &gerror);
+#else
       delete_success = g_file_trash(gfile, NULL /*cancellable*/, &gerror);
-      #endif
+#endif
     }
     else
     {
