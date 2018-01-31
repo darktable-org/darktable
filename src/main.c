@@ -39,14 +39,11 @@ int main(int argc, char *argv[])
 
   for(int k = 1; k < argc; k++)
   {
-    if(argv[k][0] == '-')
+    // For simple arguments do not redirect stdout
+    if(!strcmp(argv[k], "--help") || !strcmp(argv[k], "-h") || !strcmp(argv[k], "/?") || !strcmp(argv[k], "--version"))
     {
-      // For simple arguments do not redirect stdout
-      if(!strcmp(argv[k], "--help") || !strcmp(argv[k], "-h") || !strcmp(argv[k], "/?") || !strcmp(argv[k], "--version"))
-      {
-        redirect_output = FALSE;
-        break;
-      }
+      redirect_output = FALSE;
+      break;
     }
   }
 
