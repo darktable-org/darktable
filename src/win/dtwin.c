@@ -336,7 +336,10 @@ void dtwin_set_thread_name(DWORD dwThreadID, const char *threadName)
   RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(DWORD), (const ULONG_PTR *)&info);
 }
 
-
+// This is taken from: https://git.gnome.org/browse/glib/tree/gio/glocalfile.c#n2269
+// The glib version of this function unfortunately shows always confirmation dialog boxes
+// This version does thrashing silently, without dialog boxes: FOF_SILENT | FOF_NOCONFIRMATION
+// When glib version on Windows will do silent trashing we can remove this function
 boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error)
 {
   SHFILEOPSTRUCTW op = { 0 };
