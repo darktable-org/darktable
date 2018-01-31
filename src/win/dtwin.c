@@ -336,6 +336,43 @@ void dtwin_set_thread_name(DWORD dwThreadID, const char *threadName)
   RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(DWORD), (const ULONG_PTR *)&info);
 }
 
+// This is taken from: https://git.gnome.org/browse/glib/tree/gio/glocalfile.c#n2269
+// The glib version of this function unfortunately shows always confirmation dialog boxes
+// This version does thrashing silently, without dialog boxes: FOF_SILENT | FOF_NOCONFIRMATION
+// When glib version on Windows will do silent trashing we can remove this function
+boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error)
+{
+  SHFILEOPSTRUCTW op = { 0 };
+  gboolean success;
+  wchar_t *wfilename;
+  long len;
+
+  wfilename = g_utf8_to_utf16(g_file_get_parse_name(file), -1, NULL, &len, NULL);
+  /* SHFILEOPSTRUCT.pFrom is double-zero-terminated */
+  wfilename = g_renew(wchar_t, wfilename, len + 2);
+  wfilename[len + 1] = 0;
+
+  op.wFunc = FO_DELETE;
+  op.pFrom = wfilename;
+  op.fFlags = FOF_ALLOWUNDO | FOF_SILENT | FOF_NOCONFIRMATION;
+
+  success = SHFileOperationW(&op) == 0;
+
+  if(success && op.fAnyOperationsAborted)
+  {
+    if(cancellable && !g_cancellable_is_cancelled(cancellable)) g_cancellable_cancel(cancellable);
+    g_set_error(error, G_IO_ERROR, g_io_error_from_errno(ECANCELED),
+                g_strdup_printf("Unable to trash file %s: %s", file, ECANCELED), g_file_get_parse_name(file),
+                g_strerror(ECANCELED));
+    success = FALSE;
+  }
+  else if(!success)
+    g_set_error(error, G_IO_ERROR, g_io_error_from_errno(0), g_strdup_printf("Unable to trash file %s", file),
+                g_file_get_parse_name(file), g_strerror(0));
+
+  g_free(wfilename);
+  return success;
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
