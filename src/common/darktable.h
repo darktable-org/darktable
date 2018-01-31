@@ -484,12 +484,6 @@ static inline int dt_get_num_atom_cores()
   }
 
   return hw_ncpu;
-#elif defined _WIN32
-
-  SYSTEM_INFO sysinfo;
-  GetSystemInfo(&sysinfo);
-  return sysinfo.dwNumberOfProcessors;
-
 #else
   return 0;
 #endif
