@@ -178,13 +178,13 @@ static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gcw->entry), TRUE, TRUE, 0);
 
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_store, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_store, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_tooltip_text(button, _("store value as default"));
   gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_gcw_store_callback), gcw);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  button = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_tooltip_text(button, _("reset value to default"));
   gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);

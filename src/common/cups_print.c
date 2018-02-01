@@ -172,15 +172,15 @@ void dt_printers_abort_discovery(void)
 
 void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data), void *user_data)
 {
-  dt_prtctl_t *prtctl = g_malloc0(sizeof(dt_prtctl_t));
-
-  prtctl->cb = cb;
-  prtctl->user_data = user_data;
-
   // asynchronously checks for available printers
   dt_job_t *job = dt_control_job_create(&_detect_printers_callback, "detect connected printers");
   if(job)
   {
+    dt_prtctl_t *prtctl = g_malloc0(sizeof(dt_prtctl_t));
+
+    prtctl->cb = cb;
+    prtctl->user_data = user_data;
+
     dt_control_job_set_params(job, prtctl, g_free);
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG, job);
   }
@@ -547,9 +547,9 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
   dt_image_cache_read_release(darktable.image_cache, img);
 
   if (job_id == 0)
-    dt_control_log(_("error while printing image %d on `%s'"), imgid, pinfo->printer.name);
+    dt_control_log(_("error while printing `%s' on `%s'"), job_title, pinfo->printer.name);
   else
-    dt_control_log(_("printing image %d on `%s'"), imgid, pinfo->printer.name);
+    dt_control_log(_("printing `%s' on `%s'"), job_title, pinfo->printer.name);
 
   cupsFreeOptions (num_options, options);
 }

@@ -120,7 +120,11 @@ static int usage(const char *argv0)
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
 #endif
-  printf("  -h, --help\n");
+  printf("  -h, --help");
+#ifdef _WIN32
+  printf(", /?");
+#endif
+  printf("\n");
   printf("  --library <library file>\n");
   printf("  --localedir <locale directory>\n");
 #ifdef USE_LUA
@@ -457,13 +461,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   GSList *config_override = NULL;
   for(int k = 1; k < argc; k++)
   {
+#ifdef _WIN32
+    if(!strcmp(argv[k], "/?"))
+    {
+      return usage(argv[0]);
+    }
+#endif
     if(argv[k][0] == '-')
     {
-      if(!strcmp(argv[k], "--help"))
-      {
-        return usage(argv[0]);
-      }
-      if(!strcmp(argv[k], "-h"))
+      if(!strcmp(argv[k], "--help") || !strcmp(argv[k], "-h"))
       {
         return usage(argv[0]);
       }

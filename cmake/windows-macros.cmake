@@ -29,7 +29,7 @@ endmacro()
 
 function(InstallDependencyFiles)
 
-if (WIN32)
+if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
   # Dependency files (files which needs to be installed alongside the darktable binaries)
   # Please note these are ONLY the files which are not geing detected by fixup_bundle()
   # must be in the bin directory
@@ -116,7 +116,7 @@ if (WIN32)
 
   install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin COMPONENT DTApplication)
 
-  # TODO: Add auxilliary files for openssl?
+  # TODO: Add auxiliary files for openssl?
 
   # Add pixbuf loader libraries
   # FILE(GLOB_RECURSE GDK_PIXBUF "${MINGW_PATH}/../lib/gdk-pixbuf-2.0/2.10.0/loaders/*.dll"  )
@@ -198,6 +198,6 @@ if (WIN32)
     endforeach()
   endif(ISO_CODES_FOUND)
 
-endif(WIN32)
+endif(WIN32 AND NOT BUILD_MSYS2_INSTALL)
 
 endfunction()

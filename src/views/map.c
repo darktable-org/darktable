@@ -309,7 +309,7 @@ static GdkPixbuf *init_image_pin()
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
   cairo_t *cr = cairo_create(cst);
   cairo_set_source_rgba(cr, r, g, b, a);
-  dtgtk_cairo_paint_map_pin(cr, 0, 0, w, h, 0);
+  dtgtk_cairo_paint_map_pin(cr, 0, 0, w, h, 0, NULL);
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);

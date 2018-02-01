@@ -2007,7 +2007,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->aspect_presets), "value-changed", G_CALLBACK(aspect_presets_changed), self);
   gtk_widget_set_tooltip_text(g->aspect_presets, _("set the aspect ratio\n"
                                                    "the list is sorted: from most square to least square"));
-  dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0);
+  dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0, NULL);
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(aspect_flip), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
 

@@ -103,40 +103,40 @@ void gui_init(dt_lib_module_t *self)
   dtgtk_cairo_paint_flags_t pf = CPF_STYLE_FLAT;
 
   /* favorites */
-  d->buttons[DT_MODULEGROUP_FAVORITES] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_favorites, pf);
+  d->buttons[DT_MODULEGROUP_FAVORITES] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_favorites, pf, NULL);
   g_signal_connect(d->buttons[DT_MODULEGROUP_FAVORITES], "toggled", G_CALLBACK(_lib_modulegroups_toggle),
                    self);
   gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_FAVORITES],
                               _("show only your favourite modules (selected in `more modules' below)"));
 
   /* active */
-  d->buttons[DT_MODULEGROUP_ACTIVE_PIPE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, pf);
+  d->buttons[DT_MODULEGROUP_ACTIVE_PIPE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, pf, NULL);
   g_signal_connect(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], "toggled", G_CALLBACK(_lib_modulegroups_toggle),
                    self);
   gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], _("show only active modules"));
 
   /* basic */
-  d->buttons[DT_MODULEGROUP_BASIC] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_basic, pf);
+  d->buttons[DT_MODULEGROUP_BASIC] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_basic, pf, NULL);
   g_signal_connect(d->buttons[DT_MODULEGROUP_BASIC], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_BASIC], _("basic group"));
 
   /* correct */
-  d->buttons[DT_MODULEGROUP_CORRECT] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_correct, pf);
+  d->buttons[DT_MODULEGROUP_CORRECT] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_correct, pf, NULL);
   g_signal_connect(d->buttons[DT_MODULEGROUP_CORRECT], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_CORRECT], _("correction group"));
 
   /* color */
-  d->buttons[DT_MODULEGROUP_COLOR] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_color, pf);
+  d->buttons[DT_MODULEGROUP_COLOR] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_color, pf, NULL);
   g_signal_connect(d->buttons[DT_MODULEGROUP_COLOR], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_COLOR], _("color group"));
 
   /* tone */
-  d->buttons[DT_MODULEGROUP_TONE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_tone, pf);
+  d->buttons[DT_MODULEGROUP_TONE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_tone, pf, NULL);
   g_signal_connect(d->buttons[DT_MODULEGROUP_TONE], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_TONE], _("tone group"));
 
   /* effect */
-  d->buttons[DT_MODULEGROUP_EFFECT] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_effect, pf);
+  d->buttons[DT_MODULEGROUP_EFFECT] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_effect, pf, NULL);
   g_signal_connect(d->buttons[DT_MODULEGROUP_EFFECT], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_EFFECT], _("effects group"));
 
