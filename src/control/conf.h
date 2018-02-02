@@ -250,7 +250,6 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     }
     fclose(f);
   }
-  if(defaults) dt_configure_defaults();
 
   if(override_entries)
   {

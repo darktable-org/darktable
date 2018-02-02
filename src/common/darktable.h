@@ -87,6 +87,11 @@ typedef unsigned int u_int;
 
 #define DT_MODULE_VERSION 18 // version of dt's module interface
 
+// version of current performance configuration version
+// if you want to run an updated version of the performance configuration later
+// bump this number and make sure you have an updated logic in dt_configure_performance()
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 1
+
 // every module has to define this:
 #ifdef _DEBUG
 #define DT_MODULE(MODVER)                                                                                    \
@@ -526,7 +531,7 @@ static inline size_t dt_get_total_memory()
 #endif
 }
 
-void dt_configure_defaults();
+void dt_configure_performance();
 
 // helper function which loads whatever image_to_load points to: single image files or whole directories
 // it tells you if it was a single image or a directory in single_image (when it's not NULL)
