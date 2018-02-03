@@ -154,19 +154,19 @@ static double _simplex_noise(double xin, double yin, double zin)
 {
   double n0, n1, n2, n3; // Noise contributions from the four corners
                          // Skew the input space to determine which simplex cell we're in
-  double F3 = 1.0 / 3.0;
-  double s = (xin + yin + zin) * F3; // Very nice and simple skew factor for 3D
-  int i = FASTFLOOR(xin + s);
-  int j = FASTFLOOR(yin + s);
-  int k = FASTFLOOR(zin + s);
-  double G3 = 1.0 / 6.0; // Very nice and simple unskew factor, too
-  double t = (i + j + k) * G3;
-  double X0 = i - t; // Unskew the cell origin back to (x,y,z) space
-  double Y0 = j - t;
-  double Z0 = k - t;
-  double x0 = xin - X0; // The x,y,z distances from the cell origin
-  double y0 = yin - Y0;
-  double z0 = zin - Z0;
+  const double F3 = 1.0 / 3.0;
+  const double s = (xin + yin + zin) * F3; // Very nice and simple skew factor for 3D
+  const int i = FASTFLOOR(xin + s);
+  const int j = FASTFLOOR(yin + s);
+  const int k = FASTFLOOR(zin + s);
+  const double G3 = 1.0 / 6.0; // Very nice and simple unskew factor, too
+  const double t = (i + j + k) * G3;
+  const double X0 = i - t; // Unskew the cell origin back to (x,y,z) space
+  const double Y0 = j - t;
+  const double Z0 = k - t;
+  const double x0 = xin - X0; // The x,y,z distances from the cell origin
+  const double y0 = yin - Y0;
+  const double z0 = zin - Z0;
   // For the 3D case, the simplex shape is a slightly irregular tetrahedron.
   // Determine which simplex we are in.
   int i1, j1, k1; // Offsets for second corner of simplex in (i,j,k) coords
@@ -235,23 +235,23 @@ static double _simplex_noise(double xin, double yin, double zin)
   //  a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
   //  a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
   //  c = 1/6.
-  double x1 = x0 - i1 + G3; // Offsets for second corner in (x,y,z) coords
-  double y1 = y0 - j1 + G3;
-  double z1 = z0 - k1 + G3;
-  double x2 = x0 - i2 + 2.0 * G3; // Offsets for third corner in (x,y,z) coords
-  double y2 = y0 - j2 + 2.0 * G3;
-  double z2 = z0 - k2 + 2.0 * G3;
-  double x3 = x0 - 1.0 + 3.0 * G3; // Offsets for last corner in (x,y,z) coords
-  double y3 = y0 - 1.0 + 3.0 * G3;
-  double z3 = z0 - 1.0 + 3.0 * G3;
+  const double x1 = x0 - i1 + G3; // Offsets for second corner in (x,y,z) coords
+  const double y1 = y0 - j1 + G3;
+  const double z1 = z0 - k1 + G3;
+  const double x2 = x0 - i2 + 2.0 * G3; // Offsets for third corner in (x,y,z) coords
+  const double y2 = y0 - j2 + 2.0 * G3;
+  const double z2 = z0 - k2 + 2.0 * G3;
+  const double x3 = x0 - 1.0 + 3.0 * G3; // Offsets for last corner in (x,y,z) coords
+  const double y3 = y0 - 1.0 + 3.0 * G3;
+  const double z3 = z0 - 1.0 + 3.0 * G3;
   // Work out the hashed gradient indices of the four simplex corners
-  int ii = i & 255;
-  int jj = j & 255;
-  int kk = k & 255;
-  int gi0 = perm[ii + perm[jj + perm[kk]]] % 12;
-  int gi1 = perm[ii + i1 + perm[jj + j1 + perm[kk + k1]]] % 12;
-  int gi2 = perm[ii + i2 + perm[jj + j2 + perm[kk + k2]]] % 12;
-  int gi3 = perm[ii + 1 + perm[jj + 1 + perm[kk + 1]]] % 12;
+  const int ii = i & 255;
+  const int jj = j & 255;
+  const int kk = k & 255;
+  const int gi0 = perm[ii + perm[jj + perm[kk]]] % 12;
+  const int gi1 = perm[ii + i1 + perm[jj + j1 + perm[kk + k1]]] % 12;
+  const int gi2 = perm[ii + i2 + perm[jj + j2 + perm[kk + k2]]] % 12;
+  const int gi3 = perm[ii + 1 + perm[jj + 1 + perm[kk + 1]]] % 12;
   // Calculate the contribution from the four corners
   double t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
   if(t0 < 0)
@@ -289,8 +289,6 @@ static double _simplex_noise(double xin, double yin, double zin)
   // The result is scaled to stay just inside [-1,1]
   return 32.0 * (n0 + n1 + n2 + n3);
 }
-
-
 
 #define PRIME_LEVELS 4
 // static uint64_t _low_primes[PRIME_LEVELS] ={ 12503,14029,15649, 11369 };
@@ -365,17 +363,15 @@ static double _simplex_2d_noise(double x, double y, uint32_t octaves, double per
 
 static float paper_resp(float exposure, float mb, float gp)
 {
-  float density;
-  float delta = GRAIN_LUT_DELTA_MAX * expf((mb / 100.0f) * logf(GRAIN_LUT_DELTA_MIN));
-  density = (1.0f + 2.0f * delta) / (1.0f + expf( (4.0f * gp * (0.5f - exposure)) / (1.0f + 2.0f * delta) )) - delta;
+  const float delta = GRAIN_LUT_DELTA_MAX * expf((mb / 100.0f) * logf(GRAIN_LUT_DELTA_MIN));
+  const float density = (1.0f + 2.0f * delta) / (1.0f + expf( (4.0f * gp * (0.5f - exposure)) / (1.0f + 2.0f * delta) )) - delta;
   return density;
 }
 
 static float paper_resp_inverse(float density, float mb, float gp)
 {
-  float exposure;
-  float delta = GRAIN_LUT_DELTA_MAX * expf((mb / 100.0f) * logf(GRAIN_LUT_DELTA_MIN));
-  exposure = -logf((1.0f + 2.0f * delta) / (density + delta) - 1.0f) * (1.0f + 2.0f * delta) / (4.0f * gp) + 0.5f;
+  const float delta = GRAIN_LUT_DELTA_MAX * expf((mb / 100.0f) * logf(GRAIN_LUT_DELTA_MIN));
+  const float exposure = -logf((1.0f + 2.0f * delta) / (density + delta) - 1.0f) * (1.0f + 2.0f * delta) / (4.0f * gp) + 0.5f;
   return exposure;
 }
 
@@ -385,8 +381,8 @@ static void evaluate_grain_lut(float *grain_lut, const float mb)
   {
     for(int j = 0; j < GRAIN_LUT_SIZE; j++)
     {
-      float gu = (float)i / (GRAIN_LUT_SIZE - 1) - 0.5;
-      float l = (float)j / (GRAIN_LUT_SIZE - 1);
+      const float gu = (float)i / (GRAIN_LUT_SIZE - 1) - 0.5;
+      const float l = (float)j / (GRAIN_LUT_SIZE - 1);
       grain_lut[j * GRAIN_LUT_SIZE + i] = 100.0f * (paper_resp(gu + paper_resp_inverse(l, mb, GRAIN_LUT_PAPER_GAMMA), mb, GRAIN_LUT_PAPER_GAMMA) - l);
     }
   }
@@ -475,6 +471,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // filter width depends on world space (i.e. reverse wd norm and roi->scale, as well as buffer input to
   // pixelpipe iscale)
   const double filtermul = piece->iscale / (roi_out->scale * wd);
+  const float fib1 = 34.0, fib2 = 21.0;
+  const float fib1div2 = fib1 / fib2;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(data, hash)
 #endif
@@ -482,25 +481,25 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     float *in = ((float *)ivoid) + (size_t)roi_out->width * j * ch;
     float *out = ((float *)ovoid) + (size_t)roi_out->width * j * ch;
+    const double wy = (roi_out->y + j) / roi_out->scale;
+    const double y = wy / wd;
+    // y: normalized to shorter side of image, so with pixel aspect = 1.
+
     for(int i = 0; i < roi_out->width; i++)
     {
       // calculate x, y in a resolution independent way:
       // wx,wy: worldspace in full image pixel coords:
-      double wx = (roi_out->x + i) / roi_out->scale;
-      double wy = (roi_out->y + j) / roi_out->scale;
-      // x, y: normalized to shorter side of image, so with pixel aspect = 1.
-      // printf("scale %f\n", wd);
-      double x = wx / wd;
-      double y = wy / wd;
+      const double wx = (roi_out->x + i) / roi_out->scale;
+      // x: normalized to shorter side of image, so with pixel aspect = 1.
+      const double x = wx / wd;
       //  double noise=_perlin_2d_noise(x, y, octaves,0.25, zoom)*1.5;
       double noise = 0.0;
       if(filter)
       {
         // if zoomed out a lot, use rank-1 lattice downsampling
-        const float fib1 = 34.0, fib2 = 21.0;
         for(int l = 0; l < fib2; l++)
         {
-          float px = l / fib2, py = l * (fib1 / fib2);
+          float px = l / fib2, py = l * fib1div2;
           py -= (int)py;
           float dx = px * filtermul, dy = py * filtermul;
           noise += (1.0 / fib2) * _simplex_2d_noise(x + dx + hash, y + dy, octaves, 1.0, zoom);
@@ -559,7 +558,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->scale = p->scale;
   d->strength = p->strength;
   d->midtones_bias = p->midtones_bias;
-  
+
   evaluate_grain_lut(d->grain_lut, d->midtones_bias);
 }
 

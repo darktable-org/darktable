@@ -103,6 +103,10 @@ darktable_t darktable;
 
 static int usage(const char *argv0)
 {
+#ifdef _WIN32
+  char *logfile = g_build_filename(g_get_user_cache_dir(), "darktable", "darktable-log.txt", NULL);
+#endif
+
   printf("usage: %s [options] [IMG_1234.{RAW,..}|image_folder/]\n", argv0);
   printf("\n");
   printf("options:\n");
@@ -116,7 +120,11 @@ static int usage(const char *argv0)
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
 #endif
-  printf("  -h, --help\n");
+  printf("  -h, --help");
+#ifdef _WIN32
+  printf(", /?");
+#endif
+  printf("\n");
   printf("  --library <library file>\n");
   printf("  --localedir <locale directory>\n");
 #ifdef USE_LUA
@@ -127,6 +135,15 @@ static int usage(const char *argv0)
   printf("  -t <num openmp threads>\n");
   printf("  --tmpdir <tmp directory>\n");
   printf("  --version\n");
+#ifdef _WIN32
+  printf("\n");
+  printf("  note: debug log and output will be written to this file:\n");
+  printf("        %s\n", logfile);
+#endif
+
+#ifdef _WIN32
+  g_free(logfile);
+#endif
 
   return 1;
 }
@@ -317,7 +334,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 {
   double start_wtime = dt_get_wtime();
 
-#ifndef __WIN32__
+#ifndef _WIN32
   if(getuid() == 0 || geteuid() == 0)
     printf(
         "WARNING: either your user id or the effective user id are 0. are you running darktable as root?\n");
@@ -444,13 +461,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   GSList *config_override = NULL;
   for(int k = 1; k < argc; k++)
   {
+#ifdef _WIN32
+    if(!strcmp(argv[k], "/?"))
+    {
+      return usage(argv[0]);
+    }
+#endif
     if(argv[k][0] == '-')
     {
-      if(!strcmp(argv[k], "--help"))
-      {
-        return usage(argv[0]);
-      }
-      if(!strcmp(argv[k], "-h"))
+      if(!strcmp(argv[k], "--help") || !strcmp(argv[k], "-h"))
       {
         return usage(argv[0]);
       }
@@ -1102,7 +1121,7 @@ void *dt_alloc_align(size_t alignment, size_t size)
 {
 #if defined(__FreeBSD_version) && __FreeBSD_version < 700013
   return malloc(size);
-#elif defined(__WIN32__)
+#elif defined(_WIN32)
   return _aligned_malloc(size, alignment);
 #else
   void *ptr = NULL;
@@ -1111,7 +1130,7 @@ void *dt_alloc_align(size_t alignment, size_t size)
 #endif
 }
 
-#ifdef __WIN32__
+#ifdef _WIN32
 void dt_free_align(void *mem)
 {
   _aligned_free(mem);

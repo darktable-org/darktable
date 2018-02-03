@@ -4491,6 +4491,15 @@ const wb_data wb_preset[] =
   { "Olympus", "E-M1", Underwater, 0,		{ 1.3984, 1, 2.2813, 0 } },
   { "Olympus", "E-M1", Flash, 0,		{ 2.3437, 1, 1.4219, 0 } },
 
+  // Firmware version 1.1
+  { "Olympus", "E-M1MarkII", Daylight, 0,       { 1.8203125, 1, 1.9140625, 0 } },
+  { "Olympus", "E-M1MarkII", Shade, 0,		{ 2.1328125, 1, 1.484375, 0 } },
+  { "Olympus", "E-M1MarkII", Cloudy, 0,		{ 1.953125, 1, 1.7265625, 0 } },
+  { "Olympus", "E-M1MarkII", Tungsten, 0,       { 1.1328125, 1, 3.546875, 0 } },
+  { "Olympus", "E-M1MarkII", Fluorescent, 0,    { 1.75, 1, 2.734375, 0 } },
+  { "Olympus", "E-M1MarkII", Underwater, 0,     { 1.828125, 1, 1.921875, 0 } },
+  { "Olympus", "E-M1MarkII", Flash, 0,		{ 2.0703125, 1, 1.6328125, 0 } },
+
   /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
   { "Olympus", "E-M5", Daylight, -7,		{ 1.8047, 1, 2.0547, 0 } },
   { "Olympus", "E-M5", Daylight, 0,		{ 2.1016, 1, 1.8047, 0 } },
@@ -7134,6 +7143,22 @@ const wb_data wb_preset[] =
   { "Sony", "ILCE-7RM2", Flash, 0,    { 2.65625, 1, 1.41015625, 0 } },
   { "Sony", "ILCE-7RM2", "5500K", 0,    { 2.45703125, 1, 1.52734375, 0 } },
 
+  // firmware ILCE-7RM3 Ver. 1.0
+  { "Sony", "ILCE-7RM3", Daylight                      , 0, { 2.41796875, 1, 1.609375, 0 } },
+  { "Sony", "ILCE-7RM3", Shade                         , 0, { 2.88671875, 1, 1.32421875, 0 } },
+  { "Sony", "ILCE-7RM3", Cloudy                        , 0, { 2.6171875, 1, 1.4765625, 0 } },
+  { "Sony", "ILCE-7RM3", Tungsten                      , 0, { 1.48046875, 1, 2.91015625, 0 } },
+  { "Sony", "ILCE-7RM3", WarmWhiteFluorescent          , 0, { 1.7421875, 1, 2.79296875, 0 } },
+  { "Sony", "ILCE-7RM3", CoolWhiteFluorescent          , 0, { 2.19140625, 1, 2.28125, 0 } },
+  { "Sony", "ILCE-7RM3", DayWhiteFluorescent           , 0, { 2.328125, 1, 1.6875, 0 } },
+  { "Sony", "ILCE-7RM3", DaylightFluorescent           , 0, { 2.61328125, 1, 1.55859375, 0 } },
+  { "Sony", "ILCE-7RM3", Flash                         , 0, { 2.65234375, 1, 1.4375, 0 } },
+  { "Sony", "ILCE-7RM3", "2500K"                       , 0, { 1.28515625, 1, 3.515625, 0 } },
+  { "Sony", "ILCE-7RM3", "3200K"                       , 0, { 1.65625, 1, 2.51953125, 0 } },
+  { "Sony", "ILCE-7RM3", "4500K"                       , 0, { 2.17578125, 1, 1.8125, 0 } },
+  { "Sony", "ILCE-7RM3", "6000K"                       , 0, { 2.59375, 1, 1.48828125, 0 } },
+  { "Sony", "ILCE-7RM3", "8500K"                       , 0, { 3.04296875, 1, 1.25390625, 0 } },
+
   { "Sony", "ILCE-7M2", Daylight, 0, { 2.27734375, 1, 1.48828125, 0 } },
   { "Sony", "ILCE-7M2", Shade, 0,     { 2.71484375, 1, 1.234375, 0 } },
   { "Sony", "ILCE-7M2", Cloudy, 0,   { 2.4609375, 1, 1.3671875, 0 } },
@@ -7427,6 +7452,12 @@ const wb_data wb_preset[] =
   { "Sony", "SLT-A99", DayWhiteFluorescent, 0,	{ 2.34375000, 1, 1.58984375, 0 } },
   { "Sony", "SLT-A99", DaylightFluorescent, 0,	{ 2.63671875, 1, 1.37890625, 0 } },
   { "Sony", "SLT-A99", Flash, 0,		{ 2.70703125, 1, 1.32031250, 0 } },
+
+  // Firmware version 4.01.2
+  { "Leaf", "Credo 40", Daylight, 0,		{ 1.31208002567291, 1, 1.40452003479004, 0 } },
+  { "Leaf", "Credo 40", Fluorescent, 0,		{ 0.9466667343775486, 1, 2.272152602270239, 0 } },
+  { "Leaf", "Credo 40", Incandescent, 0,	{ 0.8719298739795124, 1, 2.202473677432417, 0 } },
+  { "Leaf", "Credo 40", Flash, 0,		{ 1.26238000392914, 1, 1.48148000240326, 0 } },
 
 };
 

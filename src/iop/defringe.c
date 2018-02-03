@@ -341,7 +341,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
           int dy = *tmp++;
           int x = MAX(0, MIN(width - 1, t + dx));
           int y = MAX(0, MIN(height - 1, v + dy));
-          // inverse chroma weighted average of neigbouring pixels inside window
+          // inverse chroma weighted average of neighbouring pixels inside window
           // also taking average edge chromaticity into account (either global or local average)
           weight = 1.0 / (out[(size_t)y * width * ch + x * ch + 3] + avg_edge_chroma);
           atot += weight * in[(size_t)y * width * ch + x * ch + 1];

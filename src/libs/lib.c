@@ -34,9 +34,9 @@
 
 typedef struct dt_lib_module_info_t
 {
-  char plugin_name[128];
+  char *plugin_name;
   int32_t version;
-  char params[8192];
+  char *params;
   int params_size;
   dt_lib_module_t *module;
 } dt_lib_module_info_t;
@@ -67,31 +67,6 @@ gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module, const dt_view_t *vie
     if(!strcmp(*iter, "*") || !strcmp(*iter, view->module_name)) return TRUE;
   }
   return FALSE;
-}
-
-static gchar *get_preset_name(GtkMenuItem *menuitem)
-{
-  const gchar *name = gtk_label_get_label(GTK_LABEL(gtk_bin_get_child(GTK_BIN(menuitem))));
-  const gchar *c = name;
-
-  // move to marker < if it exists
-  while(*c && *c != '<') c++;
-  if(!*c) c = name;
-
-  // remove <-> markup tag at beginning.
-  if(*c == '<')
-  {
-    while(*c != '>') c++;
-    c++;
-  }
-  gchar *pn = g_strdup(c);
-  gchar *c2 = pn;
-  // possibly remove trailing <-> markup tag
-  while(*c2 != '<' && *c2 != '\0') c2++;
-  if(*c2 == '<') *c2 = '\0';
-  c2 = g_strrstr(pn, _("(default)"));
-  if(c2 && c2 > pn) *(c2 - 1) = '\0';
-  return pn;
 }
 
 /** calls module->cleanup and closes the dl connection. */
@@ -288,7 +263,7 @@ static void edit_preset(const char *name_in, dt_lib_module_info_t *minfo)
 
 static void menuitem_update_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
 {
-  gchar *name = get_preset_name(menuitem);
+  char *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
   // commit all the module fields
   sqlite3_stmt *stmt;
@@ -377,7 +352,7 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
 static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
 {
   // apply preset via set_params
-  gchar *pn = get_preset_name(menuitem);
+  char *pn = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
@@ -423,7 +398,14 @@ static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
-  g_free(pn);
+}
+
+static void free_module_info(GtkWidget *widget, gpointer user_data)
+{
+  dt_lib_module_info_t *minfo = (dt_lib_module_info_t *)user_data;
+  g_free(minfo->plugin_name);
+  free(minfo->params);
+  free(minfo);
 }
 
 static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
@@ -432,6 +414,8 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   if(menu) gtk_widget_destroy(GTK_WIDGET(menu));
   darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
   menu = darktable.gui->presets_popup_menu;
+
+  g_signal_connect(G_OBJECT(menu), "destroy", G_CALLBACK(free_module_info), minfo);
 
   GtkWidget *mi;
   int active_preset = -1, cnt = 0, writeprotect = 0;
@@ -475,6 +459,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
     {
       mi = gtk_menu_item_new_with_label((const char *)name);
     }
+    g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), minfo);
     gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
@@ -501,17 +486,23 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   else
   {
     mi = gtk_menu_item_new_with_label(_("store new preset.."));
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_new_preset), minfo);
+    if(minfo->params_size == 0)
+    {
+      gtk_widget_set_sensitive(mi, FALSE);
+      gtk_widget_set_tooltip_text(mi, _("nothing to save"));
+    }
+    else
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_new_preset), minfo);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
     if(darktable.gui->last_preset && found)
     {
-      char label[128];
-      g_strlcpy(label, _("update preset"), sizeof(label));
-      g_strlcat(label, " <span weight=\"bold\">%s</span>", sizeof(label));
-      char *markup = g_markup_printf_escaped(label, darktable.gui->last_preset);
+      char *markup = g_markup_printf_escaped("%s <span weight=\"bold\">%s</span>", _("update preset"),
+                                             darktable.gui->last_preset);
       mi = gtk_menu_item_new_with_label("");
+      gtk_widget_set_sensitive(mi, minfo->params_size > 0);
       gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
+      g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(darktable.gui->last_preset), g_free);
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_update_preset), minfo);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
       g_free(markup);
@@ -781,26 +772,20 @@ static void _preset_popup_posistion(GtkMenu *menu, gint *x, gint *y, gboolean *p
 
 static void popup_callback(GtkButton *button, dt_lib_module_t *module)
 {
-  static dt_lib_module_info_t mi;
-  int size = 0;
-  g_strlcpy(mi.plugin_name, module->plugin_name, sizeof(mi.plugin_name));
-  mi.version = module->version(module);
-  mi.module = module;
-  void *params = module->get_params(module, &size);
+  dt_lib_module_info_t *mi = (dt_lib_module_info_t *)calloc(1, sizeof(dt_lib_module_info_t));
 
-  // make sure that we have enough space for params
-  if(params && (size <= sizeof(mi.params)))
+  mi->plugin_name = g_strdup(module->plugin_name);
+  mi->version = module->version(module);
+  mi->module = module;
+  mi->params = module->get_params(module, &mi->params_size);
+
+  if(!mi->params)
   {
-    memcpy(mi.params, params, size);
-    mi.params_size = size;
-    free(params);
+    // this is a valid case, for example in location.c when nothing got selected
+    // fprintf(stderr, "something went wrong: &params=%p, size=%i\n", mi->params, mi->params_size);
+    mi->params_size = 0;
   }
-  else
-  {
-    mi.params_size = 0;
-    fprintf(stderr, "something went wrong: &params=%p, size=%i\n", &params, size);
-  }
-  dt_lib_presets_popup_menu_show(&mi);
+  dt_lib_presets_popup_menu_show(mi);
 
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
@@ -859,7 +844,7 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
 
   g_list_free(header_childs);
 
-  dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
+  dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags, NULL);
 
   /* show / hide plugin widget */
   if(expanded)
@@ -992,7 +977,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   GtkWidget *hw[5] = { NULL, NULL, NULL, NULL, NULL };
 
   /* add the expand indicator icon */
-  hw[idx] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
+  hw[idx] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
   /* add module label */
@@ -1007,7 +992,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   /* add reset button if module has implementation */
   if(module->gui_reset)
   {
-    hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+    hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     module->reset_button = GTK_WIDGET(hw[idx]);
     gtk_widget_set_tooltip_text(hw[idx], _("reset parameters"));
     g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(dt_lib_gui_reset_callback), module);
@@ -1019,7 +1004,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   /* add preset button if module has implementation */
   if(module->get_params)
   {
-    hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+    hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     module->presets_button = GTK_WIDGET(hw[idx]);
     gtk_widget_set_tooltip_text(hw[idx], _("presets"));
     g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(popup_callback), module);
@@ -1040,14 +1025,14 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
     for(int i = 0; i <= 4; i++)
       if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 2);
     gtk_widget_set_halign(hw[1], GTK_ALIGN_START);
-    dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_RIGHT);
+    dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_RIGHT, NULL);
   }
   else
   {
     for(int i = 4; i >= 0; i--)
       if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 2);
     gtk_widget_set_halign(hw[1], GTK_ALIGN_END);
-    dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
+    dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
   }
 
   /* add empty space around widget */

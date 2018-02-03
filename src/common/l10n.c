@@ -19,6 +19,7 @@
 #include "common/l10n.h"
 #include "control/conf.h"
 
+#include <locale.h>
 #include <gtk/gtk.h>
 #include <json-glib/json-glib.h>
 
@@ -61,24 +62,36 @@ static void get_language_names(GList *languages)
 #ifdef HAVE_ISO_CODES
 
   JsonReader *reader = NULL;
+  JsonParser *parser = NULL;
+  GError *error = NULL;
 
-#ifdef _WIN32 // TODO: add osx?
+#if defined(_WIN32) && !defined(MSYS2_INSTALL) // TODO: add osx?
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   char *filename = g_build_filename(datadir, "..",  "iso-codes", "json", "iso_639-2.json", NULL);
+#else
+  char *filename = g_build_filename(ISO_CODES_LOCATION, "iso_639-2.json", NULL);
+#endif
+
+  if(!g_file_test(filename, G_FILE_TEST_EXISTS))
+  {
+    fprintf(stderr, "[l10n] error: can't open iso-codes file `%s'\n"
+                    "       there won't be nicely translated language names in the preferences.\n", filename);
+    goto end;
+  }
+
+#if defined(_WIN32) && !defined(MSYS2_INSTALL) // TODO: add osx?
   // on windows we are shipping the translations of iso-codes along ours
   char *localedir = g_build_filename(datadir, "..", "locale", NULL);
   bindtextdomain("iso_639", localedir);
   g_free(localedir);
 #else
-  char *filename = g_build_filename(ISO_CODES_LOCATION, "iso_639-2.json", NULL);
   bindtextdomain("iso_639", ISO_CODES_LOCALEDIR);
 #endif
 
   bind_textdomain_codeset("iso_639", "UTF-8");
 
-  GError *error = NULL;
-  JsonParser *parser = json_parser_new();
+  parser = json_parser_new();
   if(!json_parser_load_from_file(parser, filename, &error))
   {
     fprintf(stderr, "[l10n] error: parsing json from `%s' failed\n%s\n", filename, error->message);

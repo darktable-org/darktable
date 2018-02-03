@@ -37,6 +37,16 @@ int main(int argc, char *argv[])
   gboolean redirect_output = ((out_type != FILE_TYPE_DISK && out_type != FILE_TYPE_PIPE) &&
                               (err_type != FILE_TYPE_DISK && err_type != FILE_TYPE_PIPE));
 
+  for(int k = 1; k < argc; k++)
+  {
+    // For simple arguments do not redirect stdout
+    if(!strcmp(argv[k], "--help") || !strcmp(argv[k], "-h") || !strcmp(argv[k], "/?") || !strcmp(argv[k], "--version"))
+    {
+      redirect_output = FALSE;
+      break;
+    }
+  }
+
   if(redirect_output)
   {
     // something like C:\Users\username\AppData\Local\Microsoft\Windows\Temporary Internet Files\darktable\darktable-log.txt
@@ -47,6 +57,10 @@ int main(int argc, char *argv[])
 
     g_freopen(logfile, "a", stdout);
     dup2(fileno(stdout), fileno(stderr));
+
+    // We don't need the console window anymore, free it
+    // This ensures that only darktable's main window will be visible
+    FreeConsole();
 
     g_free(logdir);
     g_free(logfile);

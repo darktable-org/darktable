@@ -1799,9 +1799,9 @@ static void _stop_audio(dt_library_t *lib)
   if(lib->audio_player_id == -1) return;
   // we don't want to trigger the callback due to a possible race condition
   g_source_remove(lib->audio_player_event_source);
-#ifdef __WIN32__
+#ifdef _WIN32
 // TODO: add Windows code to actually kill the process
-#else  // __WIN32__
+#else  // _WIN32
   if(lib->audio_player_id != -1)
   {
     if(getpgid(0) != getpgid(lib->audio_player_pid))
@@ -1809,7 +1809,7 @@ static void _stop_audio(dt_library_t *lib)
     else
       kill(lib->audio_player_pid, SIGKILL);
   }
-#endif // __WIN32__
+#endif // _WIN32
   g_spawn_close_pid(lib->audio_player_pid);
   lib->audio_player_id = -1;
 }
@@ -2197,6 +2197,25 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     lib->center = 1;
     return 1;
   }
+
+  if(key == accels->global_zoom_in.accel_key && state == accels->global_zoom_in.accel_mods)
+  {
+    zoom--;
+    if(zoom < 1) zoom = 1;
+
+    dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
+    return 1;
+  }
+
+  if(key == accels->global_zoom_out.accel_key && state == accels->global_zoom_out.accel_mods)
+  {
+    zoom++;
+    if(zoom > 2 * DT_LIBRARY_MAX_ZOOM) zoom = 2 * DT_LIBRARY_MAX_ZOOM;
+
+    dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
+    return 1;
+  }
+
   return 0;
 }
 
@@ -2350,7 +2369,8 @@ void gui_init(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
 
   // create display profile button
-  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER,
+                                                     NULL);
   gtk_widget_set_tooltip_text(profile_button, _("set display profile"));
   dt_view_manager_module_toolbox_add(darktable.view_manager, profile_button, DT_VIEW_LIGHTTABLE);
 

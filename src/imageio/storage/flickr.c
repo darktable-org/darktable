@@ -514,7 +514,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_widget_set_sensitive(ui->album_list, FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), ui->album_list, TRUE, TRUE, 0);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DO_NOT_USE_BORDER);
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_tooltip_text(button, _("refresh album list"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(flickr_button1_clicked), (gpointer)ui);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
@@ -738,9 +738,9 @@ void *get_params(dt_imageio_module_storage_t *self)
   // TODO: if a hash to encrypted data is stored here, return only this size and store it at the beginning of
   // the struct!
   dt_storage_flickr_gui_data_t *ui = (dt_storage_flickr_gui_data_t *)self->gui_data;
+  if(!ui) return NULL; // gui not initialized, CLI mode
   dt_storage_flickr_params_t *d = (dt_storage_flickr_params_t *)g_malloc0(sizeof(dt_storage_flickr_params_t));
   if(!d) return NULL;
-  if(!ui) return NULL; // gui not initialized, CLI mode
   d->hash = 1;
 
   // fill d from controls in ui

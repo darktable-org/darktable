@@ -80,7 +80,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *button;
   for(int k = 0; k < 6; k++)
   {
-    button = dtgtk_button_new(dtgtk_cairo_paint_label, (k | 8 | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER));
+    button = dtgtk_button_new(dtgtk_cairo_paint_label, (k | 8 | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER), NULL);
     d->buttons[k] = button;
     gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(16), DT_PIXEL_APPLY_DPI(16));
     gtk_widget_set_tooltip_text(button, d->tooltips[k]);

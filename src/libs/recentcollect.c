@@ -133,7 +133,7 @@ static void pretty_print(char *buf, char *out, size_t outsize)
       while(str[i] != '\0' && str[i] != '$') i++;
       if(str[i] == '$') str[i] = '\0';
 
-      c = snprintf(out, outsize, "%s %s", _(dt_lib_collect_string[item]),
+      c = snprintf(out, outsize, "%s %s", item < dt_lib_collect_string_cnt ? _(dt_lib_collect_string[item]) : "???",
                    item == 0 ? dt_image_film_roll_name(str) : str);
       out += c;
       outsize -= c;
@@ -255,41 +255,21 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
   for(int k = 0; k < NUM_LINES; k++)
   {
     char str[2048] = { 0 };
-    char str_cut[200] = { 0 };
-    char str_pretty[200] = { 0 };
-
     snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k);
     gchar *line2 = dt_conf_get_string(confname);
     if(line2 && line2[0] != '\0') pretty_print(line2, str, sizeof(str));
     g_free(line2);
     gtk_widget_set_tooltip_text(d->item[k].button, str);
-    const int cut = 45;
-    if(g_utf8_validate(str, -1, NULL))
-    {
-      if(g_utf8_strlen(str, -1) > cut)
-      {
-        g_utf8_strncpy(str_cut, str, cut);
-        snprintf(str_pretty, sizeof(str_pretty), "%s...", str_cut);
-        gtk_button_set_label(GTK_BUTTON(d->item[k].button), str_pretty);
-      }
-      else
-      {
-        gtk_button_set_label(GTK_BUTTON(d->item[k].button), str);
-      }
-    }
-    else if(strlen(str) > cut)
-    {
-      g_strlcpy(str_cut, str, cut);
-      snprintf(str_pretty, sizeof(str_pretty), "%s...", str_cut);
-      gtk_button_set_label(GTK_BUTTON(d->item[k].button), str_pretty);
-    }
-    else
-    {
-      gtk_button_set_label(GTK_BUTTON(d->item[k].button), str);
-    }
+    gtk_button_set_label(GTK_BUTTON(d->item[k].button), str);
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(d->item[k].button));
     if(child)
+    {
       gtk_widget_set_halign(child, GTK_ALIGN_START);
+#if GTK_CHECK_VERSION(3, 16, 0)
+      gtk_label_set_xalign(GTK_LABEL(child), 0.0); // without this the labels are not flush on the left
+#endif
+      gtk_label_set_ellipsize(GTK_LABEL(child), PANGO_ELLIPSIZE_END);
+    }
     gtk_widget_set_no_show_all(d->item[k].button, TRUE);
     gtk_widget_set_visible(d->item[k].button, FALSE);
   }
@@ -333,9 +313,6 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(d->item[k].button), "clicked", G_CALLBACK(_button_pressed), (gpointer)self);
     gtk_widget_set_no_show_all(d->item[k].button, TRUE);
     gtk_widget_set_visible(d->item[k].button, FALSE);
-    GtkWidget *child = gtk_bin_get_child(GTK_BIN(d->item[k].button));
-    if(child)
-      gtk_widget_set_halign(child, GTK_ALIGN_START);
   }
   _lib_recentcollection_updated(NULL, self);
 

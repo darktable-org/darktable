@@ -263,7 +263,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
 
     // last param was dropped (pixel type)
-    memcpy(new_params, old_params, sizeof(old_params_size));
+    memcpy(new_params, old_params, old_params_size);
     new_params->style_append = 0;
     new_params->compression = o->compression;
 

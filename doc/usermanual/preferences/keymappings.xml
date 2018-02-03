@@ -101,6 +101,22 @@
       </row>
       <row>
         <entry>
+          global/zoom in
+        </entry>
+        <entry>
+        &lt;Primary&gt;KP_plus
+        </entry>
+      </row>
+      <row>
+        <entry>
+          global/zoom out
+        </entry>
+        <entry>
+        &lt;Primary&gt;KP_minus
+        </entry>
+      </row>
+      <row>
+        <entry>
           image operations/clipping/commit
         </entry>
         <entry>

@@ -1038,7 +1038,7 @@ static gboolean _upgrade_library_schema(dt_database_t *db, int version)
  * _upgrade_data_schema_step() instead. */
 static gboolean _upgrade_data_schema(dt_database_t *db, int version)
 {
-  while(version < CURRENT_DATABASE_VERSION_LIBRARY)
+  while(version < CURRENT_DATABASE_VERSION_DATA)
   {
     int new_version = _upgrade_data_schema_step(db, version);
     if(new_version == version)
@@ -1360,7 +1360,7 @@ static gboolean pid_is_alive(int pid)
 {
   gboolean pid_is_alive;
 
-#ifdef __WIN32__
+#ifdef _WIN32
   pid_is_alive = FALSE;
   HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
   if(h)
@@ -1543,6 +1543,14 @@ start:
   dt_database_t *db = (dt_database_t *)g_malloc0(sizeof(dt_database_t));
   db->dbfilename_data = g_strdup(dbfilename_data);
   db->dbfilename_library = g_strdup(dbfilename_library);
+
+  /* make sure the folder exists. this might not be the case for new databases */
+  char *data_path = g_path_get_dirname(db->dbfilename_data);
+  char *library_path = g_path_get_dirname(db->dbfilename_library);
+  g_mkdir_with_parents(data_path, 0750);
+  g_mkdir_with_parents(library_path, 0750);
+  g_free(data_path);
+  g_free(library_path);
 
   /* having more than one instance of darktable using the same database is a bad idea */
   /* try to get locks for the databases */
