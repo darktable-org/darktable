@@ -755,10 +755,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_conf_init(darktable.conf, darktablerc, config_override);
   g_slist_free_full(config_override, g_free);
 
-  // perform a performance check and configuration if needed
-  int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
-  if(last_configure_version < DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION) dt_configure_performance();
-
   // set the interface language and prepare selection for prefs
   darktable.l10n = dt_l10n_init(init_gui);
 
@@ -773,6 +769,39 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
     gtk_init(&argc, &argv);
   }
+
+  // execute a performance check and configuration if needed
+  int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
+  if(last_configure_version < DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION)
+  {
+    // if this is the very first time -> run this configuration unconditionally
+    bool run_configure = TRUE;
+
+    // Don't ask if it is the very first run, eg. after a new install of dt
+    if (last_configure_version != 0)
+    {
+      // ask the user whether he/she would like
+      // dt to make changes in the settings
+      char *label_text = g_markup_printf_escaped(
+          _("We have an updated performance configuration logic - executing that might improve the "
+            "performance of darktable. This will potentially overwrite some your existing settings - escpecially in "
+            "case you have manually modified them to custom values.\n"
+            "Would you like to execute this performance configuration?\n"));
+
+      run_configure = dt_gui_show_standalone_yes_no_dialog(_("darktable - Run performance configuration?"),
+                                                          label_text, _("Yes"), _("No"));
+
+      g_free(label_text);
+    }
+
+    if(run_configure)
+      dt_configure_performance();
+  }
+
+  // store the current performance configure version as the last completed
+  // that would prevent further execution of previous performance configuration run
+  // at subsequent startups
+  dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
 
   // detect cpu features and decide which codepaths to enable
   dt_codepaths_init();
@@ -1178,20 +1207,16 @@ void dt_configure_performance()
 
   if(mem >= (8u << 20) && threads > 4 && bits == 64 && atom_cores == 0)
   {
-    // CONFIG 1: at least 8GB RAM, and at more than 4 CPU cores, no atom, 64 bit
+    // CONFIG 1: at least 8GB RAM, and more than 4 CPU cores, no atom, 64 bit
     // But respect if user has set higher values manually earlier
     fprintf(stderr, "[defaults] setting very high quality defaults\n");
 
-    if(dt_conf_get_int("worker_threads") < 8) dt_conf_set_int("worker_threads", 8);
-
+    dt_conf_set_int("worker_threads", MAX(8, dt_conf_get_int("worker_threads")));
     // if machine has at least 8GB RAM, use half of the total memory size
-    if(dt_conf_get_int("host_memory_limit") < (mem >> 11)) dt_conf_set_int("host_memory_limit", mem >> 11);
-
-    if(dt_conf_get_int("singlebuffer_limit") < 16) dt_conf_set_int("singlebuffer_limit", 16);
-
+    dt_conf_set_int("host_memory_limit", MAX(mem >> 11, dt_conf_get_int("host_memory_limit")));
+    dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
     if(demosaic_quality == NULL || !strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
-
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
   else if(mem > (2u << 20) && threads >= 4 && bits == 64 && atom_cores == 0)
@@ -1200,15 +1225,11 @@ void dt_configure_performance()
     // But respect if user has set higher values manually earlier
     fprintf(stderr, "[defaults] setting high quality defaults\n");
 
-    if(dt_conf_get_int("worker_threads") < 8) dt_conf_set_int("worker_threads", 8);
-
-    if(dt_conf_get_int("host_memory_limit") < 1500) dt_conf_set_int("host_memory_limit", 1500);
-
-    if(dt_conf_get_int("singlebuffer_limit") < 16) dt_conf_set_int("singlebuffer_limit", 16);
-
+    dt_conf_set_int("worker_threads", MAX(8, dt_conf_get_int("worker_threads")));
+    dt_conf_set_int("host_memory_limit", MAX(1500, dt_conf_get_int("host_memory_limit")));
+    dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
     if(demosaic_quality == NULL ||!strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
-
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
   else if(mem < (1u << 20) || threads <= 2 || bits == 32 || atom_cores > 0)
@@ -1235,11 +1256,6 @@ void dt_configure_performance()
   }
 
   g_free(demosaic_quality);
-
-  // store the current performance configure version as the last completed
-  // that would prevent further execution of this performance configuration
-  // at subsequent startups
-  dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
 }
 
 

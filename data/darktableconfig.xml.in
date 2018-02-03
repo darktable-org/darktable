@@ -1740,7 +1740,7 @@
     <name>performance_configuration_version_completed</name>
     <type>int</type>
     <default>0</default>
-    <shortdescription>latest version of performance configuration completed</shortdescription>
-    <longdescription>what was the latest version of performance configuration cycle which has been completed at last startup</longdescription>
+    <shortdescription>version of the last completed performance configuration</shortdescription>
+    <longdescription>what was the last performance configuration which has been completed</longdescription>
   </dtconfig>
 </dtconfiglist>
