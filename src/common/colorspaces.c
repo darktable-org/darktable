@@ -38,6 +38,9 @@
 #endif
 
 static const cmsCIEXYZ d65 = {0.95045471, 1.00000000, 1.08905029};
+
+static const cmsCIEXYZ d50 = {0.96420288, 1.00000000, 0.82490540};
+// these matrices are d50 adapted, so use them with the d50 white point and not the d65 one!
 static const cmsCIEXYZTRIPLE rec709_primaries_pre_quantized = {
   {0.43603516, 0.22248840, 0.01391602},
   {0.38511658, 0.71690369, 0.09706116},
@@ -270,7 +273,7 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
   cmsSetColorSpace(profile, cmsSigRgbData);
   cmsSetPCS(profile, cmsSigXYZData);
 
-  cmsWriteTag(profile, cmsSigMediaWhitePointTag, &d65);
+  cmsWriteTag(profile, cmsSigMediaWhitePointTag, &d50);
   cmsWriteTag(profile, cmsSigMediaBlackPointTag, &black);
 
   cmsWriteTag(profile, cmsSigRedColorantTag, (void *)&primaries->Red);
@@ -395,7 +398,7 @@ int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
   const float dn[3]
       = { preset->white[0] / (float)preset->white[1], 1.0f, preset->white[2] / (float)preset->white[1] };
   const float lam_rigg[9] = { 0.8951, 0.2664, -0.1614, -0.7502, 1.7135, 0.0367, 0.0389, -0.0685, 1.0296 };
-  const float d50[3] = { 0.9642, 1.0, 0.8249 };
+  const float _d50[3] = { d50.X, d50.Y, d50.Z };
 
 
   // adapt to d50
@@ -404,7 +407,7 @@ int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
 
   float cone_src_rgb[3], cone_dst_rgb[3];
   mat3mulv(cone_src_rgb, lam_rigg, dn);
-  mat3mulv(cone_dst_rgb, lam_rigg, d50);
+  mat3mulv(cone_dst_rgb, lam_rigg, _d50);
 
   const float cone[9]
       = { cone_dst_rgb[0] / cone_src_rgb[0], 0.0f, 0.0f, 0.0f, cone_dst_rgb[1] / cone_src_rgb[1], 0.0f, 0.0f,
