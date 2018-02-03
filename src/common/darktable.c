@@ -1171,6 +1171,7 @@ void dt_configure_performance()
   const int threads = dt_get_num_threads();
   const size_t mem = dt_get_total_memory();
   const int bits = (sizeof(void *) == 4) ? 32 : 64;
+  gchar *demosaic_quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
 
   fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores (%d atom based)\n", bits, mem,
           threads, atom_cores);
@@ -1188,7 +1189,7 @@ void dt_configure_performance()
 
     if(dt_conf_get_int("singlebuffer_limit") < 16) dt_conf_set_int("singlebuffer_limit", 16);
 
-    if(!strcmp(dt_conf_get_string("plugins/darkroom/demosaic/quality"), "always bilinear (fast)"))
+    if(demosaic_quality == NULL || !strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
 
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
@@ -1205,7 +1206,7 @@ void dt_configure_performance()
 
     if(dt_conf_get_int("singlebuffer_limit") < 16) dt_conf_set_int("singlebuffer_limit", 16);
 
-    if(!strcmp(dt_conf_get_string("plugins/darkroom/demosaic/quality"), "always bilinear (fast)"))
+    if(demosaic_quality == NULL ||!strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
 
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
@@ -1232,6 +1233,8 @@ void dt_configure_performance()
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
+
+  g_free(demosaic_quality);
 
   // store the current performance configure version as the last completed
   // that would prevent further execution of this performance configuration
