@@ -91,7 +91,7 @@ static int strinc(char *label, size_t buffer_size)
     else if(c == label)
     {
       if(label_len + 1 >= buffer_size) return 0;
-      memmove(c + 1, c, label_len);
+      memmove(c + 1, c, label_len + 1);
       *c = carry_over;
     }
     c--;
