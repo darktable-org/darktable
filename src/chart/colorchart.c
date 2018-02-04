@@ -294,7 +294,7 @@ chart_t *parse_cht(const char *filename)
           size_t lxs_len = strlen(lxs), lxe_len = strlen(lxe), lys_len = strlen(lys), lye_len = strlen(lye);
           if(lxs_len > lxe_len || lys_len > lye_len) ERROR;
 
-          // make sure there is enough space for the null character
+          // make sure there is enough room to add another char in the beginning
           const size_t x_label_size = lxe_len + 1;
           const size_t y_label_size = lye_len + 1;
 
