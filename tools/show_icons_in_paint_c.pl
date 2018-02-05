@@ -124,7 +124,7 @@ EOF
 		cairo_line_to(cr, textwidth+2*$BORDER+$column*($ICONWIDTH+$BORDER)+$ICONWIDTH, $BORDER+$row*($ICONHEIGHT+$BORDER)+0.5*$ICONHEIGHT);
 		cairo_stroke(cr);
 		cairo_set_source_rgb(cr, .79, .79, .79);
-		$code(cr, textwidth+3*$BORDER+$column*($ICONWIDTH+$BORDER), 2*$BORDER+$row*($ICONHEIGHT+$BORDER), $ICONWIDTH-2*$BORDER, $ICONHEIGHT-2*$BORDER, $direction);
+		$code(cr, textwidth+3*$BORDER+$column*($ICONWIDTH+$BORDER), 2*$BORDER+$row*($ICONHEIGHT+$BORDER), $ICONWIDTH-2*$BORDER, $ICONHEIGHT-2*$BORDER, $direction, NULL);
 		cairo_restore(cr);
 EOF
 		$column++;
