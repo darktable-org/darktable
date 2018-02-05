@@ -248,11 +248,13 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       {
         g_signal_connect(G_OBJECT(ib), "clicked", G_CALLBACK(_lib_import_from_camera_callback), camera);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_START);
+        g_object_set_data(G_OBJECT(ib), "dt-help-url", "lighttable_panels.html#import_from_camera");
       }
       if(tb)
       {
         g_signal_connect(G_OBJECT(tb), "clicked", G_CALLBACK(_lib_import_tethered_callback), camera);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_START);
+        g_object_set_data(G_OBJECT(tb), "dt-help-url", "lighttable_panels.html#import_from_camera");
       }
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     } while((citem = g_list_next(citem)) != NULL);
@@ -992,6 +994,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* add import single image buttons */
   GtkWidget *widget = gtk_button_new_with_label(_("image"));
+  g_object_set_data(G_OBJECT(widget), "dt-help-url", "lighttable_panels.html#import_from_fs");
   d->import_file = GTK_BUTTON(widget);
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
   gtk_widget_set_tooltip_text(widget, _("select one or more images to import"));
@@ -1002,6 +1005,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* adding the import folder button */
   widget = gtk_button_new_with_label(_("folder"));
+  g_object_set_data(G_OBJECT(widget), "dt-help-url", "lighttable_panels.html#import_from_fs");
   d->import_directory = GTK_BUTTON(widget);
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
   gtk_widget_set_tooltip_text(widget, _("select a folder to import as film roll"));
@@ -1013,6 +1017,7 @@ void gui_init(dt_lib_module_t *self)
 #ifdef HAVE_GPHOTO2
   /* add the rescan button */
   GtkButton *scan = GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
+  g_object_set_data(G_OBJECT(scan), "dt-help-url", "lighttable_panels.html#import_from_camera");
   d->scan_devices = scan;
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(scan)), GTK_ALIGN_START);
   gtk_widget_set_tooltip_text(GTK_WIDGET(scan), _("scan for newly attached devices"));
