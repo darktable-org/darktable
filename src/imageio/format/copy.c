@@ -34,25 +34,16 @@ int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void 
                 void *exif, int exif_len, int imgid, int num, int total)
 {
   int status = 1;
-  char *sourcefile = NULL;
+  gboolean from_cache = TRUE;
+  char sourcefile[PATH_MAX];
   char *targetfile = NULL;
   char *xmpfile = NULL;
   char *content = NULL;
   FILE *fin = NULL;
   FILE *fout = NULL;
-  sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT folder, filename FROM main.images i, main.film_rolls f ON i.film_id = f.id WHERE i.id = ?1", -1,
-      &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  dt_image_full_path(imgid, sourcefile, sizeof(sourcefile), &from_cache);
 
-  if(sqlite3_step(stmt) != SQLITE_ROW) goto END;
-
-  const char *sfolder = (char *)sqlite3_column_text(stmt, 0);
-  const char *sfilename = (char *)sqlite3_column_text(stmt, 1);
-  sourcefile = g_build_filename(sfolder, sfilename, NULL);
   char *extension = g_strrstr(sourcefile, ".");
   if(extension == NULL) goto END;
   targetfile = g_strconcat(filename, ++extension, NULL);
@@ -83,8 +74,6 @@ int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void 
 
   status = 0;
 END:
-  sqlite3_finalize(stmt);
-  g_free(sourcefile);
   g_free(targetfile);
   g_free(xmpfile);
   g_free(content);
