@@ -777,31 +777,22 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // if this is the very first time -> run this configuration unconditionally
     bool run_configure = TRUE;
 
-    // Don't ask if it is the very first run, eg. after a new install of dt
-    if (last_configure_version != 0)
-    {
-      // ask the user whether he/she would like
-      // dt to make changes in the settings
-      char *label_text = g_markup_printf_escaped(
-          _("We have an updated performance configuration logic - executing that might improve the "
-            "performance of darktable. This will potentially overwrite some your existing settings - escpecially in "
-            "case you have manually modified them to custom values.\n"
-            "Would you like to execute this performance configuration?\n"));
+    // ask the user whether he/she would like
+    // dt to make changes in the settings
+    char *label_text = g_markup_printf_escaped(
+        _("We have an updated performance configuration logic - executing that might improve the "
+          "performance of darktable.\nThis will potentially overwrite some your existing settings - escpecially in "
+          "case you have manually modified them to custom values.\n"
+          "Would you like to execute this performance configuration?\n"));
 
-      run_configure = dt_gui_show_standalone_yes_no_dialog(_("darktable - Run performance configuration?"),
-                                                          label_text, _("Yes"), _("No"));
+    run_configure = dt_gui_show_standalone_yes_no_dialog(_("darktable - Run performance configuration?"),
+                                                        label_text, _("No"), _("Yes"));
 
-      g_free(label_text);
-    }
+    g_free(label_text);
 
     if(run_configure)
       dt_configure_performance();
   }
-
-  // store the current performance configure version as the last completed
-  // that would prevent further execution of previous performance configuration run
-  // at subsequent startups
-  dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
 
   // detect cpu features and decide which codepaths to enable
   dt_codepaths_init();
@@ -1256,6 +1247,11 @@ void dt_configure_performance()
   }
 
   g_free(demosaic_quality);
+
+  // store the current performance configure version as the last completed
+  // that would prevent further execution of previous performance configuration run
+  // at subsequent startups
+  dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);  
 }
 
 
