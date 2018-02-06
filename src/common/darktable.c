@@ -774,21 +774,17 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
   if(last_configure_version < DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION)
   {
-    // if this is the very first time -> run this configuration unconditionally
     bool run_configure = TRUE;
 
     // ask the user whether he/she would like
     // dt to make changes in the settings
-    char *label_text = g_markup_printf_escaped(
-        _("We have an updated performance configuration logic - executing that might improve the "
-          "performance of darktable.\nThis will potentially overwrite some your existing settings - escpecially in "
-          "case you have manually modified them to custom values.\n"
-          "Would you like to execute this performance configuration?\n"));
-
-    run_configure = dt_gui_show_standalone_yes_no_dialog(_("darktable - Run performance configuration?"),
-                                                        label_text, _("No"), _("Yes"));
-
-    g_free(label_text);
+    run_configure = dt_gui_show_standalone_yes_no_dialog(
+        _("darktable - Run performance configuration?"),
+        _("We have an updated performance configuration logic - executing that might improve the performance of "
+          "darktable.\nThis will potentially overwrite some of your existing settings - especially in case you "
+          "have manually modified them to custom values.\nWould you like to execute this update of the "
+          "performance configuration?\n"),
+        _("No"), _("Yes"));
 
     if(run_configure)
       dt_configure_performance();
