@@ -505,22 +505,16 @@ void dt_bauhaus_init()
   GdkRGBA *tmpcolor;
 
   // Get the normal foreground color from the CSS stylesheet
-  tmpcolor = g_malloc0(sizeof(GdkRGBA));
-  gdk_rgba_parse(tmpcolor, "#3C3C3C"); // .792f;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "color", &tmpcolor, NULL);
   darktable.bauhaus->text = gdk_rgba_copy(tmpcolor);
   gdk_rgba_free(tmpcolor);
 
   // Get the normal background color from the CSS stylesheet
-  tmpcolor = g_malloc0(sizeof(GdkRGBA));
-  gdk_rgba_parse(tmpcolor, "#212121"); // 0.145098f;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "background-color", &tmpcolor, NULL);
   darktable.bauhaus->bg_normal = gdk_rgba_copy(tmpcolor);
   gdk_rgba_free(tmpcolor);
 
   // Get the selected background color from the CSS stylesheet
-  tmpcolor = g_malloc0(sizeof(GdkRGBA));
-  gdk_rgba_parse(tmpcolor, "#353535"); // 0.207843f;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_SELECTED, "background-color", &tmpcolor, NULL);
   darktable.bauhaus->bg_focus = gdk_rgba_copy(tmpcolor);
   gdk_rgba_free(tmpcolor);
