@@ -1136,19 +1136,16 @@ static void list_view(dt_lib_collect_rule_t *dr)
           char *exif_model = (char *)sqlite3_column_text(stmt, 1);
           const int count = sqlite3_column_int(stmt, 2);
 
-          gchar *makermodel =  dt_collection_get_makermodel(exif_maker, exif_model);
-
-          gchar *coltext = g_strdup_printf("%s (%d)", makermodel, count);
+          gchar *value =  dt_collection_get_makermodel(exif_maker, exif_model);
 
           gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-          gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, coltext,
-                             DT_LIB_COLLECT_COL_ID, index, DT_LIB_COLLECT_COL_TOOLTIP, makermodel,
-                             DT_LIB_COLLECT_COL_PATH, makermodel, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
+          gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, value,
+                             DT_LIB_COLLECT_COL_ID, index, DT_LIB_COLLECT_COL_TOOLTIP, value,
+                             DT_LIB_COLLECT_COL_PATH, value, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
                              DT_LIB_COLLECT_COL_COUNT, count,
                              -1);
 
-          g_free(makermodel);
-          g_free(coltext);
+          g_free(value);
           index++;
         }
         g_free(makermodel_query);
@@ -1284,18 +1281,16 @@ static void list_view(dt_lib_collect_rule_t *dr)
 
         // replace invalid utf8 characters if any
         gchar *text = g_strdup(value);
-        gchar *coltext = g_strdup_printf("%s (%d)", folder, count);
         gchar *ptr = text;
         while(!g_utf8_validate(ptr, -1, (const gchar **)&ptr)) ptr[0] = '?';
 
         gchar *escaped_text = g_markup_escape_text(text, -1);
 
-        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, coltext,
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, folder,
                            DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1), DT_LIB_COLLECT_COL_TOOLTIP,
                            escaped_text, DT_LIB_COLLECT_COL_PATH, value, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
                            DT_LIB_COLLECT_COL_COUNT, count,
                            -1);
-        g_free(coltext);
         g_free(text);
         g_free(escaped_text);
       }
