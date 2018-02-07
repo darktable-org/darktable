@@ -770,6 +770,26 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     gtk_init(&argc, &argv);
   }
 
+  // execute a performance check and configuration if needed
+  int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
+  if(last_configure_version < DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION)
+  {
+    bool run_configure = TRUE;
+
+    // ask the user whether he/she would like
+    // dt to make changes in the settings
+    run_configure = dt_gui_show_standalone_yes_no_dialog(
+        _("darktable - Run performance configuration?"),
+        _("We have an updated performance configuration logic - executing that might improve the performance of "
+          "darktable.\nThis will potentially overwrite some of your existing settings - especially in case you "
+          "have manually modified them to custom values.\nWould you like to execute this update of the "
+          "performance configuration?\n"),
+        _("No"), _("Yes"));
+
+    if(run_configure)
+      dt_configure_performance();
+  }
+
   // detect cpu features and decide which codepaths to enable
   dt_codepaths_init();
 
@@ -1161,30 +1181,48 @@ void dt_show_times(const dt_times_t *start, const char *prefix, const char *suff
   }
 }
 
-void dt_configure_defaults()
+void dt_configure_performance()
 {
   const int atom_cores = dt_get_num_atom_cores();
   const int threads = dt_get_num_threads();
   const size_t mem = dt_get_total_memory();
   const int bits = (sizeof(void *) == 4) ? 32 : 64;
-  fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores (%d atom based)\n", bits,
-          mem, threads, atom_cores);
-  if(mem >= (8u << 20) && threads > 4)
+  gchar *demosaic_quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
+
+  fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores (%d atom based)\n", bits, mem,
+          threads, atom_cores);
+
+  if(mem >= (8u << 20) && threads > 4 && bits == 64 && atom_cores == 0)
   {
+    // CONFIG 1: at least 8GB RAM, and more than 4 CPU cores, no atom, 64 bit
+    // But respect if user has set higher values manually earlier
     fprintf(stderr, "[defaults] setting very high quality defaults\n");
-    dt_conf_set_int("worker_threads", 8);
-    // if no less than 8Gb, half the total size
-    dt_conf_set_int("host_memory_limit", mem >> 11);
+
+    dt_conf_set_int("worker_threads", MAX(8, dt_conf_get_int("worker_threads")));
+    // if machine has at least 8GB RAM, use half of the total memory size
+    dt_conf_set_int("host_memory_limit", MAX(mem >> 11, dt_conf_get_int("host_memory_limit")));
+    dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
+    if(demosaic_quality == NULL || !strcmp(demosaic_quality, "always bilinear (fast)"))
+      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
-  else if(mem > (2u << 20) && threads > 4)
+  else if(mem > (2u << 20) && threads >= 4 && bits == 64 && atom_cores == 0)
   {
+    // CONFIG 2: at least 2GB RAM, and at least 4 CPU cores, no atom, 64 bit
+    // But respect if user has set higher values manually earlier
     fprintf(stderr, "[defaults] setting high quality defaults\n");
-    dt_conf_set_int("worker_threads", 8);
+
+    dt_conf_set_int("worker_threads", MAX(8, dt_conf_get_int("worker_threads")));
+    dt_conf_set_int("host_memory_limit", MAX(1500, dt_conf_get_int("host_memory_limit")));
+    dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
+    if(demosaic_quality == NULL ||!strcmp(demosaic_quality, "always bilinear (fast)"))
+      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
-  if(mem < (1u << 20) || threads <= 2 || bits < 64 || atom_cores > 0)
+  else if(mem < (1u << 20) || threads <= 2 || bits == 32 || atom_cores > 0)
   {
+    // CONFIG 3: For less than 1GB RAM or 2 or less cores, or 32-bit or for atom processors
+    // use very low/conservative settings
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("worker_threads", 1);
     dt_conf_set_int("host_memory_limit", 500);
@@ -1192,6 +1230,24 @@ void dt_configure_defaults()
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", TRUE);
   }
+  else
+  {
+    // CONFIG 4: for everything else use explicit defaults
+    fprintf(stderr, "[defaults] setting normal defaults\n");
+
+    dt_conf_set_int("worker_threads", 2);
+    dt_conf_set_int("host_memory_limit", 1500);
+    dt_conf_set_int("singlebuffer_limit", 16);
+    dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
+    dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
+  }
+
+  g_free(demosaic_quality);
+
+  // store the current performance configure version as the last completed
+  // that would prevent further execution of previous performance configuration run
+  // at subsequent startups
+  dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);  
 }
 
 
