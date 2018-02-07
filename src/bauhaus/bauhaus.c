@@ -66,23 +66,24 @@ static float get_label_font_size()
 
 static void set_bg_normal(cairo_t *cr)
 {
-  cairo_set_source_rgb(cr, darktable.bauhaus->bg_normal, darktable.bauhaus->bg_normal,
-                       darktable.bauhaus->bg_normal);
+  cairo_set_source_rgb(cr, darktable.bauhaus->bg_normal->red, darktable.bauhaus->bg_normal->green,
+                       darktable.bauhaus->bg_normal->blue);
 }
 
 static void set_bg_focus(cairo_t *cr)
 {
-  cairo_set_source_rgb(cr, darktable.bauhaus->bg_focus, darktable.bauhaus->bg_focus,
-                       darktable.bauhaus->bg_focus);
+  cairo_set_source_rgb(cr, darktable.bauhaus->bg_focus->red, darktable.bauhaus->bg_focus->green,
+                       darktable.bauhaus->bg_focus->blue);
 }
 
 static void set_text_color(cairo_t *cr, int sensitive)
 {
   if(sensitive)
-    cairo_set_source_rgb(cr, darktable.bauhaus->text, darktable.bauhaus->text, darktable.bauhaus->text);
+    cairo_set_source_rgb(cr, darktable.bauhaus->text->red, darktable.bauhaus->text->green,
+                         darktable.bauhaus->text->blue);
   else
-    cairo_set_source_rgba(cr, darktable.bauhaus->text, darktable.bauhaus->text, darktable.bauhaus->text,
-                          darktable.bauhaus->insensitive);
+    cairo_set_source_rgba(cr, darktable.bauhaus->text->red, darktable.bauhaus->text->green,
+                          darktable.bauhaus->text->blue, darktable.bauhaus->insensitive);
 }
 
 static void set_grid_color(cairo_t *cr, int sensitive)
@@ -488,9 +489,6 @@ void dt_bauhaus_init()
   darktable.bauhaus->value_font_size = 0.6f;
   g_strlcpy(darktable.bauhaus->label_font, "sans", sizeof(darktable.bauhaus->label_font));
   g_strlcpy(darktable.bauhaus->value_font, "sans", sizeof(darktable.bauhaus->value_font));
-  darktable.bauhaus->bg_normal = 0.145098f;
-  darktable.bauhaus->bg_focus = 0.207843f;
-  darktable.bauhaus->text = .792f;
   darktable.bauhaus->grid = .1f;
   darktable.bauhaus->indicator = .6f;
   darktable.bauhaus->insensitive = 0.2f;
@@ -504,25 +502,25 @@ void dt_bauhaus_init()
   gtk_style_context_set_path(ctx, path);
   gtk_style_context_set_screen (ctx, gtk_widget_get_screen(root_window));
 
-  GdkRGBA color, selected_color, bg_color, selected_bg_color;
-  gtk_style_context_get_color(ctx, GTK_STATE_FLAG_NORMAL, &color);
-  {
-    GdkRGBA *bc;
-    gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "background-color", &bc, NULL);
-    bg_color = *bc;
-    gdk_rgba_free(bc);
-  }
-  gtk_style_context_get_color(ctx, GTK_STATE_FLAG_SELECTED, &selected_color);
-  {
-    GdkRGBA *sbc;
-    gtk_style_context_get(ctx, GTK_STATE_FLAG_SELECTED, "background-color", &sbc, NULL);
-    selected_bg_color = *sbc;
-    gdk_rgba_free(sbc);
-  }
+  GdkRGBA *tmpcolor;
+
+  // Get the normal foreground color from the CSS stylesheet
+  gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "color", &tmpcolor, NULL);
+  darktable.bauhaus->text = gdk_rgba_copy(tmpcolor);
+  gdk_rgba_free(tmpcolor);
+
+  // Get the normal background color from the CSS stylesheet
+  gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "background-color", &tmpcolor, NULL);
+  darktable.bauhaus->bg_normal = gdk_rgba_copy(tmpcolor);
+  gdk_rgba_free(tmpcolor);
+
+  // Get the selected background color from the CSS stylesheet
+  gtk_style_context_get(ctx, GTK_STATE_FLAG_SELECTED, "background-color", &tmpcolor, NULL);
+  darktable.bauhaus->bg_focus = gdk_rgba_copy(tmpcolor);
+  gdk_rgba_free(tmpcolor);
+
   PangoFontDescription *pfont = 0;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
-  darktable.bauhaus->bg_normal = bg_color.red;
-  darktable.bauhaus->bg_focus = selected_bg_color.red;
   gtk_widget_path_free(path);
 
   darktable.bauhaus->pango_font_desc = pfont;
@@ -613,6 +611,10 @@ void dt_bauhaus_cleanup()
   // TODO: destroy keymap hash table!
   g_list_free_full(darktable.bauhaus->key_mod, (GDestroyNotify)g_free);
   g_list_free_full(darktable.bauhaus->key_val, (GDestroyNotify)g_free);
+
+  gdk_rgba_free(darktable.bauhaus->text);
+  gdk_rgba_free(darktable.bauhaus->bg_normal);
+  gdk_rgba_free(darktable.bauhaus->bg_focus);
 }
 
 // fwd declare a few callbacks
