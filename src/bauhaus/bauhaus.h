@@ -208,9 +208,9 @@ typedef struct dt_bauhaus_t
   int cursor_blink_counter;
 
   // colors:
-  float bg_normal;   // background without focus
-  float bg_focus;    // background with focus
-  float text;        // text color
+  GdkRGBA *bg_normal;   // background without focus
+  GdkRGBA *bg_focus;    // background with focus
+  GdkRGBA *text;        // text color
   float grid;        // background lines
   float indicator;   // meaningful lines
   float insensitive; // alpha for insensitive elements

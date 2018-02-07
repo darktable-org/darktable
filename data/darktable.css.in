@@ -90,6 +90,7 @@ combobox *:hover,
   border:0;
   margin:0;
   background-color: transparent;
+  color: @fg_color;
   outline-style:none;
 }
 /* buttons in plugins */
