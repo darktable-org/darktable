@@ -250,7 +250,11 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     }
     fclose(f);
   }
-  if(defaults) dt_configure_defaults();
+
+  // for the very first time after a fresh install
+  // execute performance configuration no matter what
+  if(defaults)
+    dt_configure_performance();
 
   if(override_entries)
   {
