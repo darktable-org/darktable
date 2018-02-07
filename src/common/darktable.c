@@ -774,11 +774,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
   if(last_configure_version < DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION)
   {
-    bool run_configure = TRUE;
-
     // ask the user whether he/she would like
     // dt to make changes in the settings
-    run_configure = dt_gui_show_standalone_yes_no_dialog(
+    gboolean run_configure = dt_gui_show_standalone_yes_no_dialog(
         _("darktable - Run performance configuration?"),
         _("We have an updated performance configuration logic - executing that might improve the performance of "
           "darktable.\nThis will potentially overwrite some of your existing settings - especially in case you "
@@ -788,6 +786,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     if(run_configure)
       dt_configure_performance();
+    else
+      // make sure to set this, otherwise the user will be nagged until he eventually agrees
+      dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
   }
 
   // detect cpu features and decide which codepaths to enable
