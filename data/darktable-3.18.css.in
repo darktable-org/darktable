@@ -618,7 +618,7 @@ GtkFileChooserDialog .sidebar-row:hover
   color: shade(@fg_color, 0.7);
 }
 
-#bauhaus-popup:disabled
+#bauhaus-popup:insensitive
 {
   /* insensitive */
   color: black;
