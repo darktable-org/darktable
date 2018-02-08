@@ -182,11 +182,10 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
-  dt_lib_print_job_t job;
 
-  job.imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+  const int imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
 
-  if (job.imgid == -1)
+  if (imgid == -1)
   {
     dt_control_log(_("cannot print until a picture is selected"));
     return;
@@ -202,53 +201,55 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
     return;
   }
 
-  memcpy(&job.prt, &ps->prt, sizeof(dt_print_info_t));
-  dt_control_log(_("prepare printing image %d on `%s'"), job.imgid, job.prt.printer.name);
+  dt_lib_print_job_t *job = (dt_lib_print_job_t*)malloc(sizeof(dt_lib_print_job_t));
+  job->imgid = imgid;
+  memcpy(&job->prt, &ps->prt, sizeof(dt_print_info_t));
+  dt_control_log(_("prepare printing image %d on `%s'"), imgid, job->prt.printer.name);
 
   // user margin are already in the proper orientation landscape/portrait
-  double margin_w = job.prt.page.margin_left + job.prt.page.margin_right;
-  double margin_h = job.prt.page.margin_top + job.prt.page.margin_bottom;
+  double margin_w = job->prt.page.margin_left + job->prt.page.margin_right;
+  double margin_h = job->prt.page.margin_top + job->prt.page.margin_bottom;
 
-  if (job.prt.page.landscape)
+  if (job->prt.page.landscape)
   {
-    job.width = job.prt.paper.height;
-    job.height = job.prt.paper.width;
-    margin_w += job.prt.printer.hw_margin_top + job.prt.printer.hw_margin_bottom;
-    margin_h += job.prt.printer.hw_margin_left + job.prt.printer.hw_margin_right;
+    job->width = job->prt.paper.height;
+    job->height = job->prt.paper.width;
+    margin_w += job->prt.printer.hw_margin_top + job->prt.printer.hw_margin_bottom;
+    margin_h += job->prt.printer.hw_margin_left + job->prt.printer.hw_margin_right;
   }
   else
   {
-    job.width = job.prt.paper.width;
-    job.height = job.prt.paper.height;
-    margin_w += job.prt.printer.hw_margin_left + job.prt.printer.hw_margin_right;
-    margin_h += job.prt.printer.hw_margin_top + job.prt.printer.hw_margin_bottom;
+    job->width = job->prt.paper.width;
+    job->height = job->prt.paper.height;
+    margin_w += job->prt.printer.hw_margin_left + job->prt.printer.hw_margin_right;
+    margin_h += job->prt.printer.hw_margin_top + job->prt.printer.hw_margin_bottom;
   }
 
-  const double pa_width  = (job.width  - margin_w) / 25.4;
-  const double pa_height = (job.height - margin_h) / 25.4;
+  const double pa_width  = (job->width  - margin_w) / 25.4;
+  const double pa_height = (job->height - margin_h) / 25.4;
 
-  dt_print(DT_DEBUG_PRINT, "[print] printable area for image %u : %3.2fin x %3.2fin\n", job.imgid, pa_width, pa_height);
+  dt_print(DT_DEBUG_PRINT, "[print] printable area for image %u : %3.2fin x %3.2fin\n", imgid, pa_width, pa_height);
 
   // compute the needed size for picture for the given printer resolution
 
-  job.max_width  = (pa_width  * job.prt.printer.resolution);
-  job.max_height = (pa_height * job.prt.printer.resolution);
+  job->max_width  = (pa_width  * job->prt.printer.resolution);
+  job->max_height = (pa_height * job->prt.printer.resolution);
 
-  dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n", job.max_width, job.max_height, job.prt.printer.resolution);
+  dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n", job->max_width, job->max_height, job->prt.printer.resolution);
 
   // FIXME: getting this from conf as w/prior code, but switch to getting from ps
-  job.style = dt_conf_get_string("plugins/print/print/style");
-  job.style_append = ps->v_style_append;
+  job->style = dt_conf_get_string("plugins/print/print/style");
+  job->style_append = ps->v_style_append;
 
   // FIXME: getting these from conf as w/prior code, but switch to getting them from ps
-  job.buf_icc_type = dt_conf_get_int("plugins/print/print/icctype");
-  job.buf_icc_profile = dt_conf_get_string("plugins/print/print/iccprofile");
-  job.buf_icc_intent = dt_conf_get_int("plugins/print/print/iccintent");
+  job->buf_icc_type = dt_conf_get_int("plugins/print/print/icctype");
+  job->buf_icc_profile = dt_conf_get_string("plugins/print/print/iccprofile");
+  job->buf_icc_intent = dt_conf_get_int("plugins/print/print/iccintent");
 
-  job.p_icc_type = ps->v_picctype;
-  job.p_profile = g_strdup(ps->v_piccprofile);
-  job.p_icc_intent = ps->v_pintent;
-  job.black_point_compensation = ps->v_black_point_compensation;
+  job->p_icc_type = ps->v_picctype;
+  job->p_profile = g_strdup(ps->v_piccprofile);
+  job->p_icc_intent = ps->v_pintent;
+  job->black_point_compensation = ps->v_black_point_compensation;
 
   /* ----------- from here will happen in the control job ------------ */
 
@@ -259,31 +260,31 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   buf.write_image = write_image;
 
   dt_print_format_t dat;
-  dat.max_width = job.max_width;
-  dat.max_height = job.max_height;
+  dat.max_width = job->max_width;
+  dat.max_height = job->max_height;
   dat.style[0] = '\0';
-  dat.style_append = job.style_append;
-  dat.bpp = *job.p_profile ? 16 : 8; // set to 16bit when a profile is to be applied
+  dat.style_append = job->style_append;
+  dat.bpp = *job->p_profile ? 16 : 8; // set to 16bit when a profile is to be applied
   dat.ps = ps;
 
-  if (job.style)
+  if (job->style)
   {
-    g_strlcpy(dat.style, job.style, sizeof(dat.style));
-    g_free(job.style);
+    g_strlcpy(dat.style, job->style, sizeof(dat.style));
+    g_free(job->style);
   }
 
   const int high_quality = 1;
   const int upscale = 1;
-  const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(job.imgid, job.buf_icc_type, job.buf_icc_profile);
+  const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(job->imgid, job->buf_icc_type, job->buf_icc_profile);
 
-  dt_imageio_export_with_flags(job.imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
-                               NULL, FALSE, job.buf_icc_type, job.buf_icc_profile, job.buf_icc_intent,  NULL, NULL, 1, 1);
-  g_free(job.buf_icc_profile);
+  dt_imageio_export_with_flags(job->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
+                               NULL, FALSE, job->buf_icc_type, job->buf_icc_profile, job->buf_icc_intent,  NULL, NULL, 1, 1);
+  g_free(job->buf_icc_profile);
 
   // after exporting we know the real size of the image, compute the layout
 
-  const int32_t width_pix = (job.width * job.prt.printer.resolution) / 25.4;
-  const int32_t height_pix = (job.height * job.prt.printer.resolution) / 25.4;
+  const int32_t width_pix = (job->width * job->prt.printer.resolution) / 25.4;
+  const int32_t height_pix = (job->height * job->prt.printer.resolution) / 25.4;
 
   // compute print-area (in inches)
   int32_t px=0, py=0, pwidth=0, pheight=0;
@@ -291,7 +292,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   int32_t ix=0, iy=0, iwidth=0, iheight=0;
   int32_t iwpix=dat.width, ihpix=dat.height;
 
-  dt_get_print_layout (job.imgid, &job.prt, width_pix, height_pix,
+  dt_get_print_layout (job->imgid, &job->prt, width_pix, height_pix,
                        &iwpix, &ihpix,
                        &px, &py, &pwidth, &pheight,
                        &ax, &ay, &awidth, &aheight,
@@ -307,16 +308,18 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   // we have the exported buffer, let's apply the printer profile
 
-  if (*job.p_profile)
+  if (*job->p_profile)
   {
-    const dt_colorspaces_color_profile_t *pprof = dt_colorspaces_get_profile(job.p_icc_type, job.p_profile,
+    const dt_colorspaces_color_profile_t *pprof = dt_colorspaces_get_profile(job->p_icc_type, job->p_profile,
                                                                              DT_PROFILE_DIRECTION_OUT);
-    g_free(job.p_profile);
+    g_free(job->p_profile);
 
     if (!pprof)
     {
-      dt_control_log(_("cannot open printer profile `%s'"), job.p_profile);
-      fprintf(stderr, "cannot open printer profile `%s'\n", job.p_profile);
+      free(dat.ps->buf);
+      free(job);
+      dt_control_log(_("cannot open printer profile `%s'"), job->p_profile);
+      fprintf(stderr, "cannot open printer profile `%s'\n", job->p_profile);
       dt_control_queue_redraw();
       return;
     }
@@ -325,25 +328,27 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
       if(!buf_profile || !buf_profile->profile)
       {
         free(dat.ps->buf);
-        dt_control_log(_("error getting output profile for image %d"), job.imgid);
-        fprintf(stderr, "error getting output profile for image %d\n", job.imgid);
+        free(job);
+        dt_control_log(_("error getting output profile for image %d"), job->imgid);
+        fprintf(stderr, "error getting output profile for image %d\n", job->imgid);
         dt_control_queue_redraw();
         return;
       }
       if (dt_apply_printer_profile((void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp, buf_profile->profile,
-                                   pprof->profile, job.p_icc_intent, job.black_point_compensation))
+                                   pprof->profile, job->p_icc_intent, job->black_point_compensation))
       {
         free(dat.ps->buf);
-        dt_control_log(_("cannot apply printer profile `%s'"), job.p_profile);
-        fprintf(stderr, "cannot apply printer profile `%s'\n", job.p_profile);
+        free(job);
+        dt_control_log(_("cannot apply printer profile `%s'"), job->p_profile);
+        fprintf(stderr, "cannot apply printer profile `%s'\n", job->p_profile);
         dt_control_queue_redraw();
         return;
       }
     }
   }
 
-  const float page_width  = dt_pdf_mm_to_point(job.width);
-  const float page_height = dt_pdf_mm_to_point(job.height);
+  const float page_width  = dt_pdf_mm_to_point(job->width);
+  const float page_height = dt_pdf_mm_to_point(job->height);
 
   char filename[PATH_MAX] = { 0 };
   dt_loc_get_tmp_dir(filename, sizeof(filename));
@@ -353,6 +358,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   if(fd == -1)
   {
     free(dat.ps->buf);
+    free(job);
     dt_control_log(_("failed to create temporary pdf for printing"));
     fprintf(stderr, "failed to create temporary pdf for printing\n");
     return;
@@ -361,7 +367,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   const int icc_id = 0;
 
-  dt_pdf_t *pdf = dt_pdf_start(filename, page_width, page_height, job.prt.printer.resolution, DT_PDF_STREAM_ENCODER_FLATE);
+  dt_pdf_t *pdf = dt_pdf_start(filename, page_width, page_height, job->prt.printer.resolution, DT_PDF_STREAM_ENCODER_FLATE);
 
 /*
   // ??? should a profile be embedded here?
@@ -371,12 +377,12 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_pdf_image_t *pdf_image = dt_pdf_add_image(pdf, (uint8_t *)dat.ps->buf, dat.width, dat.height, 8, icc_id, 0.0);
 
   //  PDF bounding-box has origin on bottom-left
-  pdf_image->bb_x      = dt_pdf_pixel_to_point((float)margin_left, job.prt.printer.resolution);
-  pdf_image->bb_y      = dt_pdf_pixel_to_point((float)margin_bottom, job.prt.printer.resolution);
-  pdf_image->bb_width  = dt_pdf_pixel_to_point((float)iwidth, job.prt.printer.resolution);
-  pdf_image->bb_height = dt_pdf_pixel_to_point((float)iheight, job.prt.printer.resolution);
+  pdf_image->bb_x      = dt_pdf_pixel_to_point((float)margin_left, job->prt.printer.resolution);
+  pdf_image->bb_y      = dt_pdf_pixel_to_point((float)margin_bottom, job->prt.printer.resolution);
+  pdf_image->bb_width  = dt_pdf_pixel_to_point((float)iwidth, job->prt.printer.resolution);
+  pdf_image->bb_height = dt_pdf_pixel_to_point((float)iheight, job->prt.printer.resolution);
 
-  if (job.prt.page.landscape && (dat.width > dat.height))
+  if (job->prt.page.landscape && (dat.width > dat.height))
     pdf_image->rotate_to_fit = TRUE;
   else
     pdf_image->rotate_to_fit = FALSE;
@@ -392,7 +398,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   // send to CUPS
 
-  dt_print_file (job.imgid, filename, &job.prt);
+  dt_print_file (job->imgid, filename, &job->prt);
 
   g_unlink(filename);
 
@@ -400,9 +406,11 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   char tag[256] = { 0 };
   guint tagid = 0;
-  snprintf (tag, sizeof(tag), "darktable|printed|%s", job.prt.printer.name);
+  snprintf (tag, sizeof(tag), "darktable|printed|%s", job->prt.printer.name);
   dt_tag_new(tag, &tagid);
-  dt_tag_attach(tagid, job.imgid);
+  dt_tag_attach(tagid, job->imgid);
+
+  free (job);
 }
 
 static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
