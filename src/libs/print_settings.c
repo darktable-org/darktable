@@ -68,7 +68,6 @@ typedef struct dt_lib_print_settings_t
   GList *paper_list, *media_list;
   gboolean lock_activated;
   dt_print_info_t prt;
-  uint16_t *buf;
   int32_t image_id;
   int32_t iwidth, iheight;
   int unit;
@@ -125,7 +124,7 @@ typedef struct dt_print_format_t
   char style[128];
   gboolean style_append;
   int bpp;
-  dt_lib_print_settings_t *ps;
+  uint16_t *buf;
 } dt_print_format_t;
 
 static int bpp(dt_imageio_module_data_t *data)
@@ -151,12 +150,12 @@ static int write_image(dt_imageio_module_data_t *data, const char *filename, con
 {
   dt_print_format_t *d = (dt_print_format_t *)data;
 
-  d->ps->buf = (uint16_t *)malloc(d->width * d->height * 3 * (d->bpp == 8?1:2));
+  d->buf = (uint16_t *)malloc(d->width * d->height * 3 * (d->bpp == 8?1:2));
 
   if (d->bpp == 8)
   {
     const uint8_t *in_ptr = (const uint8_t *)in;
-    uint8_t *out_ptr = (uint8_t *)d->ps->buf;
+    uint8_t *out_ptr = (uint8_t *)d->buf;
     for(int y = 0; y < d->height; y++)
     {
       for(int x = 0; x < d->width; x++, in_ptr += 4, out_ptr += 3)
@@ -166,7 +165,7 @@ static int write_image(dt_imageio_module_data_t *data, const char *filename, con
   else
   {
     const uint16_t *in_ptr = (const uint16_t *)in;
-    uint16_t *out_ptr = (uint16_t *)d->ps->buf;
+    uint16_t *out_ptr = (uint16_t *)d->buf;
     for(int y = 0; y < d->height; y++)
     {
       for(int x = 0; x < d->width; x++, in_ptr += 4, out_ptr += 3)
@@ -265,7 +264,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dat.style[0] = '\0';
   dat.style_append = job->style_append;
   dat.bpp = *job->p_profile ? 16 : 8; // set to 16bit when a profile is to be applied
-  dat.ps = ps;
+  dat.buf = NULL;
 
   if (job->style)
   {
@@ -316,7 +315,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
     if (!pprof)
     {
-      free(dat.ps->buf);
+      free(dat.buf);
       free(job);
       dt_control_log(_("cannot open printer profile `%s'"), job->p_profile);
       fprintf(stderr, "cannot open printer profile `%s'\n", job->p_profile);
@@ -327,17 +326,17 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
     {
       if(!buf_profile || !buf_profile->profile)
       {
-        free(dat.ps->buf);
+        free(dat.buf);
         free(job);
         dt_control_log(_("error getting output profile for image %d"), job->imgid);
         fprintf(stderr, "error getting output profile for image %d\n", job->imgid);
         dt_control_queue_redraw();
         return;
       }
-      if (dt_apply_printer_profile((void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp, buf_profile->profile,
+      if (dt_apply_printer_profile((void **)&(dat.buf), dat.width, dat.height, dat.bpp, buf_profile->profile,
                                    pprof->profile, job->p_icc_intent, job->black_point_compensation))
       {
-        free(dat.ps->buf);
+        free(dat.buf);
         free(job);
         dt_control_log(_("cannot apply printer profile `%s'"), job->p_profile);
         fprintf(stderr, "cannot apply printer profile `%s'\n", job->p_profile);
@@ -357,7 +356,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   gint fd = g_mkstemp(filename);
   if(fd == -1)
   {
-    free(dat.ps->buf);
+    free(dat.buf);
     free(job);
     dt_control_log(_("failed to create temporary pdf for printing"));
     fprintf(stderr, "failed to create temporary pdf for printing\n");
@@ -374,7 +373,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   if (*printer_profile)
     icc_id = dt_pdf_add_icc(pdf, printer_profile);
 */
-  dt_pdf_image_t *pdf_image = dt_pdf_add_image(pdf, (uint8_t *)dat.ps->buf, dat.width, dat.height, 8, icc_id, 0.0);
+  dt_pdf_image_t *pdf_image = dt_pdf_add_image(pdf, (uint8_t *)dat.buf, dat.width, dat.height, 8, icc_id, 0.0);
 
   //  PDF bounding-box has origin on bottom-left
   pdf_image->bb_x      = dt_pdf_pixel_to_point((float)margin_left, job->prt.printer.resolution);
@@ -392,7 +391,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   // free memory
 
-  free (dat.ps->buf);
+  free (dat.buf);
   free (pdf_image);
   free (pdf_page);
 
