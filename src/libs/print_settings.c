@@ -176,82 +176,8 @@ static int write_image(dt_imageio_module_data_t *data, const char *filename, con
   return 0;
 }
 
-static void
-_print_button_clicked (GtkWidget *widget, gpointer user_data)
+static void _do_print (dt_lib_print_job_t *job)
 {
-  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
-
-  const int imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
-
-  if (imgid == -1)
-  {
-    dt_control_log(_("cannot print until a picture is selected"));
-    return;
-  }
-  if (strlen(ps->prt.printer.name) == 0 || ps->prt.printer.resolution == 0)
-  {
-    dt_control_log(_("cannot print until a printer is selected"));
-    return;
-  }
-  if (ps->prt.paper.width == 0 || ps->prt.paper.height == 0)
-  {
-    dt_control_log(_("cannot print until a paper is selected"));
-    return;
-  }
-
-  dt_lib_print_job_t *job = (dt_lib_print_job_t*)malloc(sizeof(dt_lib_print_job_t));
-  job->imgid = imgid;
-  memcpy(&job->prt, &ps->prt, sizeof(dt_print_info_t));
-  dt_control_log(_("prepare printing image %d on `%s'"), imgid, job->prt.printer.name);
-
-  // user margin are already in the proper orientation landscape/portrait
-  double margin_w = job->prt.page.margin_left + job->prt.page.margin_right;
-  double margin_h = job->prt.page.margin_top + job->prt.page.margin_bottom;
-
-  if (job->prt.page.landscape)
-  {
-    job->width = job->prt.paper.height;
-    job->height = job->prt.paper.width;
-    margin_w += job->prt.printer.hw_margin_top + job->prt.printer.hw_margin_bottom;
-    margin_h += job->prt.printer.hw_margin_left + job->prt.printer.hw_margin_right;
-  }
-  else
-  {
-    job->width = job->prt.paper.width;
-    job->height = job->prt.paper.height;
-    margin_w += job->prt.printer.hw_margin_left + job->prt.printer.hw_margin_right;
-    margin_h += job->prt.printer.hw_margin_top + job->prt.printer.hw_margin_bottom;
-  }
-
-  const double pa_width  = (job->width  - margin_w) / 25.4;
-  const double pa_height = (job->height - margin_h) / 25.4;
-
-  dt_print(DT_DEBUG_PRINT, "[print] printable area for image %u : %3.2fin x %3.2fin\n", imgid, pa_width, pa_height);
-
-  // compute the needed size for picture for the given printer resolution
-
-  job->max_width  = (pa_width  * job->prt.printer.resolution);
-  job->max_height = (pa_height * job->prt.printer.resolution);
-
-  dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n", job->max_width, job->max_height, job->prt.printer.resolution);
-
-  // FIXME: getting this from conf as w/prior code, but switch to getting from ps
-  job->style = dt_conf_get_string("plugins/print/print/style");
-  job->style_append = ps->v_style_append;
-
-  // FIXME: getting these from conf as w/prior code, but switch to getting them from ps
-  job->buf_icc_type = dt_conf_get_int("plugins/print/print/icctype");
-  job->buf_icc_profile = dt_conf_get_string("plugins/print/print/iccprofile");
-  job->buf_icc_intent = dt_conf_get_int("plugins/print/print/iccintent");
-
-  job->p_icc_type = ps->v_picctype;
-  job->p_profile = g_strdup(ps->v_piccprofile);
-  job->p_icc_intent = ps->v_pintent;
-  job->black_point_compensation = ps->v_black_point_compensation;
-
-  /* ----------- from here will happen in the control job ------------ */
-
   dt_imageio_module_format_t buf;
   buf.mime = mime;
   buf.levels = levels;
@@ -410,6 +336,83 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_tag_attach(tagid, job->imgid);
 
   free (job);
+}
+
+static void
+_print_button_clicked (GtkWidget *widget, gpointer user_data)
+{
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  const int imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+
+  if (imgid == -1)
+  {
+    dt_control_log(_("cannot print until a picture is selected"));
+    return;
+  }
+  if (strlen(ps->prt.printer.name) == 0 || ps->prt.printer.resolution == 0)
+  {
+    dt_control_log(_("cannot print until a printer is selected"));
+    return;
+  }
+  if (ps->prt.paper.width == 0 || ps->prt.paper.height == 0)
+  {
+    dt_control_log(_("cannot print until a paper is selected"));
+    return;
+  }
+
+  dt_lib_print_job_t *job = (dt_lib_print_job_t*)malloc(sizeof(dt_lib_print_job_t));
+  job->imgid = imgid;
+  memcpy(&job->prt, &ps->prt, sizeof(dt_print_info_t));
+  dt_control_log(_("prepare printing image %d on `%s'"), imgid, job->prt.printer.name);
+
+  // user margin are already in the proper orientation landscape/portrait
+  double margin_w = job->prt.page.margin_left + job->prt.page.margin_right;
+  double margin_h = job->prt.page.margin_top + job->prt.page.margin_bottom;
+
+  if (job->prt.page.landscape)
+  {
+    job->width = job->prt.paper.height;
+    job->height = job->prt.paper.width;
+    margin_w += job->prt.printer.hw_margin_top + job->prt.printer.hw_margin_bottom;
+    margin_h += job->prt.printer.hw_margin_left + job->prt.printer.hw_margin_right;
+  }
+  else
+  {
+    job->width = job->prt.paper.width;
+    job->height = job->prt.paper.height;
+    margin_w += job->prt.printer.hw_margin_left + job->prt.printer.hw_margin_right;
+    margin_h += job->prt.printer.hw_margin_top + job->prt.printer.hw_margin_bottom;
+  }
+
+  const double pa_width  = (job->width  - margin_w) / 25.4;
+  const double pa_height = (job->height - margin_h) / 25.4;
+
+  dt_print(DT_DEBUG_PRINT, "[print] printable area for image %u : %3.2fin x %3.2fin\n", imgid, pa_width, pa_height);
+
+  // compute the needed size for picture for the given printer resolution
+
+  job->max_width  = (pa_width  * job->prt.printer.resolution);
+  job->max_height = (pa_height * job->prt.printer.resolution);
+
+  dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n", job->max_width, job->max_height, job->prt.printer.resolution);
+
+  // FIXME: getting this from conf as w/prior code, but switch to getting from ps
+  job->style = dt_conf_get_string("plugins/print/print/style");
+  job->style_append = ps->v_style_append;
+
+  // FIXME: getting these from conf as w/prior code, but switch to getting them from ps
+  job->buf_icc_type = dt_conf_get_int("plugins/print/print/icctype");
+  job->buf_icc_profile = dt_conf_get_string("plugins/print/print/iccprofile");
+  job->buf_icc_intent = dt_conf_get_int("plugins/print/print/iccintent");
+
+  job->p_icc_type = ps->v_picctype;
+  job->p_profile = g_strdup(ps->v_piccprofile);
+  job->p_icc_intent = ps->v_pintent;
+  job->black_point_compensation = ps->v_black_point_compensation;
+
+  _do_print(job);
 }
 
 static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
