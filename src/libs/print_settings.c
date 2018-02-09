@@ -87,7 +87,7 @@ typedef struct dt_lib_print_job_t
   char* style;
   gboolean style_append, black_point_compensation;
   dt_colorspaces_color_profile_type_t buf_icc_type, p_icc_type;
-  gchar *buf_icc_profile, *p_profile;
+  gchar *buf_icc_profile, *p_icc_profile;
   dt_iop_color_intent_t buf_icc_intent, p_icc_intent;
 } dt_lib_print_job_t;
 
@@ -192,7 +192,7 @@ static int _print_job_run(dt_job_t *job)
   dat.max_height = params->max_height;
   dat.style[0] = '\0';
   dat.style_append = params->style_append;
-  dat.bpp = *params->p_profile ? 16 : 8; // set to 16bit when a profile is to be applied
+  dat.bpp = *params->p_icc_profile ? 16 : 8; // set to 16bit when a profile is to be applied
   dat.buf = NULL;
 
   if (params->style)
@@ -236,17 +236,17 @@ static int _print_job_run(dt_job_t *job)
 
   // we have the exported buffer, let's apply the printer profile
 
-  if (*params->p_profile)
+  if (*params->p_icc_profile)
   {
-    const dt_colorspaces_color_profile_t *pprof = dt_colorspaces_get_profile(params->p_icc_type, params->p_profile,
+    const dt_colorspaces_color_profile_t *pprof = dt_colorspaces_get_profile(params->p_icc_type, params->p_icc_profile,
                                                                              DT_PROFILE_DIRECTION_OUT);
-    g_free(params->p_profile);
+    g_free(params->p_icc_profile);
 
     if (!pprof)
     {
       free(dat.buf);
-      dt_control_log(_("cannot open printer profile `%s'"), params->p_profile);
-      fprintf(stderr, "cannot open printer profile `%s'\n", params->p_profile);
+      dt_control_log(_("cannot open printer profile `%s'"), params->p_icc_profile);
+      fprintf(stderr, "cannot open printer profile `%s'\n", params->p_icc_profile);
       dt_control_queue_redraw();
       return 1;
     }
@@ -264,8 +264,8 @@ static int _print_job_run(dt_job_t *job)
                                    pprof->profile, params->p_icc_intent, params->black_point_compensation))
       {
         free(dat.buf);
-        dt_control_log(_("cannot apply printer profile `%s'"), params->p_profile);
-        fprintf(stderr, "cannot apply printer profile `%s'\n", params->p_profile);
+        dt_control_log(_("cannot apply printer profile `%s'"), params->p_icc_profile);
+        fprintf(stderr, "cannot apply printer profile `%s'\n", params->p_icc_profile);
         dt_control_queue_redraw();
         return 1;
       }
@@ -408,7 +408,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   params->buf_icc_intent = dt_conf_get_int("plugins/print/print/iccintent");
 
   params->p_icc_type = ps->v_picctype;
-  params->p_profile = g_strdup(ps->v_piccprofile);
+  params->p_icc_profile = g_strdup(ps->v_piccprofile);
   params->p_icc_intent = ps->v_pintent;
   params->black_point_compensation = ps->v_black_point_compensation;
 
