@@ -82,8 +82,6 @@ typedef struct dt_lib_print_job_t
 {
   int imgid;
   dt_print_info_t prt;
-  double width, height;
-  int max_width, max_height;
   char* style;
   gboolean style_append, black_point_compensation;
   dt_colorspaces_color_profile_type_t buf_icc_type, p_icc_type;
@@ -181,6 +179,41 @@ static int _print_job_run(dt_job_t *job)
 {
   dt_lib_print_job_t *params = dt_control_job_get_params(job);
 
+  // user margin are already in the proper orientation landscape/portrait
+  double width, height;
+  double margin_w = params->prt.page.margin_left + params->prt.page.margin_right;
+  double margin_h = params->prt.page.margin_top + params->prt.page.margin_bottom;
+
+  if (params->prt.page.landscape)
+  {
+    width = params->prt.paper.height;
+    height = params->prt.paper.width;
+    margin_w += params->prt.printer.hw_margin_top + params->prt.printer.hw_margin_bottom;
+    margin_h += params->prt.printer.hw_margin_left + params->prt.printer.hw_margin_right;
+  }
+  else
+  {
+    width = params->prt.paper.width;
+    height = params->prt.paper.height;
+    margin_w += params->prt.printer.hw_margin_left + params->prt.printer.hw_margin_right;
+    margin_h += params->prt.printer.hw_margin_top + params->prt.printer.hw_margin_bottom;
+  }
+
+  const int32_t width_pix = (width * params->prt.printer.resolution) / 25.4;
+  const int32_t height_pix = (height * params->prt.printer.resolution) / 25.4;
+
+  const double pa_width  = (width  - margin_w) / 25.4;
+  const double pa_height = (height - margin_h) / 25.4;
+
+  dt_print(DT_DEBUG_PRINT, "[print] printable area for image %u : %3.2fin x %3.2fin\n", params->imgid, pa_width, pa_height);
+
+  // compute the needed size for picture for the given printer resolution
+
+  const int max_width  = (pa_width  * params->prt.printer.resolution);
+  const int max_height = (pa_height * params->prt.printer.resolution);
+
+  dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n", max_width, max_height, params->prt.printer.resolution);
+
   dt_imageio_module_format_t buf;
   buf.mime = mime;
   buf.levels = levels;
@@ -188,8 +221,8 @@ static int _print_job_run(dt_job_t *job)
   buf.write_image = write_image;
 
   dt_print_format_t dat;
-  dat.max_width = params->max_width;
-  dat.max_height = params->max_height;
+  dat.max_width = max_width;
+  dat.max_height = max_height;
   dat.style[0] = '\0';
   dat.style_append = params->style_append;
   dat.bpp = *params->p_icc_profile ? 16 : 8; // set to 16bit when a profile is to be applied
@@ -210,9 +243,6 @@ static int _print_job_run(dt_job_t *job)
   g_free(params->buf_icc_profile);
 
   // after exporting we know the real size of the image, compute the layout
-
-  const int32_t width_pix = (params->width * params->prt.printer.resolution) / 25.4;
-  const int32_t height_pix = (params->height * params->prt.printer.resolution) / 25.4;
 
   // compute print-area (in inches)
   int32_t px=0, py=0, pwidth=0, pheight=0;
@@ -272,8 +302,8 @@ static int _print_job_run(dt_job_t *job)
     }
   }
 
-  const float page_width  = dt_pdf_mm_to_point(params->width);
-  const float page_height = dt_pdf_mm_to_point(params->height);
+  const float page_width  = dt_pdf_mm_to_point(width);
+  const float page_height = dt_pdf_mm_to_point(height);
 
   char filename[PATH_MAX] = { 0 };
   dt_loc_get_tmp_dir(filename, sizeof(filename));
@@ -366,37 +396,6 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   memcpy(&params->prt, &ps->prt, sizeof(dt_print_info_t));
   // FIXME: print this in the background job, and use the image filename not imgid, then pass that to dt_print_file()
   dt_control_log(_("preparing to print image %d on `%s'"), imgid, params->prt.printer.name);
-
-  // user margin are already in the proper orientation landscape/portrait
-  double margin_w = params->prt.page.margin_left + params->prt.page.margin_right;
-  double margin_h = params->prt.page.margin_top + params->prt.page.margin_bottom;
-
-  if (params->prt.page.landscape)
-  {
-    params->width = params->prt.paper.height;
-    params->height = params->prt.paper.width;
-    margin_w += params->prt.printer.hw_margin_top + params->prt.printer.hw_margin_bottom;
-    margin_h += params->prt.printer.hw_margin_left + params->prt.printer.hw_margin_right;
-  }
-  else
-  {
-    params->width = params->prt.paper.width;
-    params->height = params->prt.paper.height;
-    margin_w += params->prt.printer.hw_margin_left + params->prt.printer.hw_margin_right;
-    margin_h += params->prt.printer.hw_margin_top + params->prt.printer.hw_margin_bottom;
-  }
-
-  const double pa_width  = (params->width  - margin_w) / 25.4;
-  const double pa_height = (params->height - margin_h) / 25.4;
-
-  dt_print(DT_DEBUG_PRINT, "[print] printable area for image %u : %3.2fin x %3.2fin\n", imgid, pa_width, pa_height);
-
-  // compute the needed size for picture for the given printer resolution
-
-  params->max_width  = (pa_width  * params->prt.printer.resolution);
-  params->max_height = (pa_height * params->prt.printer.resolution);
-
-  dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n", params->max_width, params->max_height, params->prt.printer.resolution);
 
   // FIXME: getting this from conf as w/prior code, but switch to getting from ps
   params->style = dt_conf_get_string("plugins/print/print/style");
