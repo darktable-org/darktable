@@ -1962,13 +1962,14 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X-E1", Underwater, 0,		{ 1.821192, 1, 1.804636, 0 } },
   { "Fujifilm", "X-E1", "5000K", 0,		{ 1.814570, 1, 1.731788, 0 } },
 
-  { "Fujifilm", "X-E2", Daylight, 0,		{ 1.870861, 1, 1.582781, 0 } },
-  { "Fujifilm", "X-E2", Shade, 0,		{ 2.066225, 1, 1.374172, 0 } },
-  { "Fujifilm", "X-E2", DaylightFluorescent, 0,	{ 2.394040, 1, 1.370861, 0 } },
-  { "Fujifilm", "X-E2", WarmWhiteFluorescent, 0,{ 2.039735, 1, 1.612583, 0 } },
-  { "Fujifilm", "X-E2", CoolWhiteFluorescent, 0,{ 1.917219, 1, 2.006623, 0 } },
-  { "Fujifilm", "X-E2", Incandescent, 0,	{ 1.215232, 1, 2.400662, 0 } },
-  { "Fujifilm", "X-E2", Underwater, 0,		{ 1.864238, 1, 1.559603, 0 } },
+  /* Fujifilm X-E2 Firmware Version 4.10 */
+  { "Fujifilm", "X-E2", Daylight, 0,		{ 1.8576158940397351, 1, 1.5496688741721854, 0 } },
+  { "Fujifilm", "X-E2", Shade, 0,		{ 2.056291390728477, 1, 1.3410596026490067, 0 } },
+  { "Fujifilm", "X-E2", DaylightFluorescent, 0,	{ 2.3874172185430464, 1, 1.3377483443708609, 0 } },
+  { "Fujifilm", "X-E2", WarmWhiteFluorescent, 0,{ 2.0298013245033113, 1, 1.576158940397351, 0 } },
+  { "Fujifilm", "X-E2", CoolWhiteFluorescent, 0,{ 1.903973509933775, 1, 1.9701986754966887, 0 } },
+  { "Fujifilm", "X-E2", Incandescent, 0,	{ 1.1986754966887416, 1, 2.3642384105960264, 0 } },
+  { "Fujifilm", "X-E2", Underwater, 0,		{ 1.8576158940397351, 1, 1.5496688741721854, 0 } },
 
   /* Fujifilm X-T1 Firmware Version 1.10 */
   { "Fujifilm", "X-T1", Daylight, 0,          { 1.89404, 1, 1.569536, 0 } },
