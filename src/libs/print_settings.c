@@ -81,6 +81,7 @@ typedef struct dt_lib_print_settings_t
 typedef struct dt_lib_print_job_t
 {
   int imgid;
+  gchar job_title[128];
   dt_print_info_t prt;
   char* style;
   gboolean style_append, black_point_compensation;
@@ -178,20 +179,6 @@ static int write_image(dt_imageio_module_data_t *data, const char *filename, con
 static int _print_job_run(dt_job_t *job)
 {
   dt_lib_print_job_t *params = dt_control_job_get_params(job);
-
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
-  if(!img)
-  {
-    dt_control_log(_("cannot get image %d for printing"), params->imgid);
-    fprintf(stderr, "cannot get image %d for printing\n", params->imgid);
-    dt_control_queue_redraw();
-    return 1;
-  }
-  gchar job_title[64];
-  g_strlcpy(job_title, img->filename, sizeof(job_title));
-  dt_image_cache_read_release(darktable.image_cache, img);
-
-  dt_control_log(_("preparing to print `%s' on `%s'"), job_title, params->prt.printer.name);
 
   // user margin are already in the proper orientation landscape/portrait
   double width, height;
@@ -372,7 +359,7 @@ static int _print_job_run(dt_job_t *job)
 
   // send to CUPS
 
-  dt_print_file (params->imgid, filename, job_title, &params->prt);
+  dt_print_file (params->imgid, filename, params->job_title, &params->prt);
 
   g_unlink(filename);
   dt_control_job_set_progress(job, 1.0);
@@ -412,9 +399,28 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
     return;
   }
 
+  dt_job_t *job = dt_control_job_create(&_print_job_run, "print image %d", imgid);
+  if(!job) return;
+
   dt_lib_print_job_t *params = (dt_lib_print_job_t*)malloc(sizeof(dt_lib_print_job_t));
+  dt_control_job_set_params(job, params, free);
+
   params->imgid = imgid;
   memcpy(&params->prt, &ps->prt, sizeof(dt_print_info_t));
+
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
+  if(!img)
+  {
+    dt_control_log(_("cannot get image %d for printing"), imgid);
+    dt_control_job_dispose(job);
+    return;
+  }
+  g_strlcpy(params->job_title, img->filename, sizeof(params->job_title));
+  dt_image_cache_read_release(darktable.image_cache, img);
+
+  gchar message[256] = { 0 };
+  g_snprintf(message, sizeof(message) - 1, _("print `%s' on `%s'"), params->job_title, params->prt.printer.name);
+  dt_control_job_add_progress(job, message, FALSE);
 
   // FIXME: getting this from conf as w/prior code, but switch to getting from ps
   params->style = dt_conf_get_string("plugins/print/print/style");
@@ -430,10 +436,6 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   params->p_icc_intent = ps->v_pintent;
   params->black_point_compensation = ps->v_black_point_compensation;
 
-  dt_job_t *job = dt_control_job_create(&_print_job_run, "print image %d", imgid);
-  if(!job) return;
-  dt_control_job_set_params(job, params, free);
-  dt_control_job_add_progress(job, _("printing..."), FALSE);
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_EXPORT, job);
 }
 
