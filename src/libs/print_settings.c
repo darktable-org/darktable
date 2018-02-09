@@ -177,9 +177,9 @@ static int write_image(dt_imageio_module_data_t *data, const char *filename, con
   return 0;
 }
 
-static int _print_job_run(dt_job_t *print_job)
+static int _print_job_run(dt_job_t *job)
 {
-  dt_lib_print_job_t *job = dt_control_job_get_params(print_job);
+  dt_lib_print_job_t *params = dt_control_job_get_params(job);
 
   dt_imageio_module_format_t buf;
   buf.mime = mime;
@@ -188,31 +188,31 @@ static int _print_job_run(dt_job_t *print_job)
   buf.write_image = write_image;
 
   dt_print_format_t dat;
-  dat.max_width = job->max_width;
-  dat.max_height = job->max_height;
+  dat.max_width = params->max_width;
+  dat.max_height = params->max_height;
   dat.style[0] = '\0';
-  dat.style_append = job->style_append;
-  dat.bpp = *job->p_profile ? 16 : 8; // set to 16bit when a profile is to be applied
+  dat.style_append = params->style_append;
+  dat.bpp = *params->p_profile ? 16 : 8; // set to 16bit when a profile is to be applied
   dat.buf = NULL;
 
-  if (job->style)
+  if (params->style)
   {
-    g_strlcpy(dat.style, job->style, sizeof(dat.style));
-    g_free(job->style);
+    g_strlcpy(dat.style, params->style, sizeof(dat.style));
+    g_free(params->style);
   }
 
   const int high_quality = 1;
   const int upscale = 1;
-  const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(job->imgid, job->buf_icc_type, job->buf_icc_profile);
+  const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(params->imgid, params->buf_icc_type, params->buf_icc_profile);
 
-  dt_imageio_export_with_flags(job->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
-                               NULL, FALSE, job->buf_icc_type, job->buf_icc_profile, job->buf_icc_intent,  NULL, NULL, 1, 1);
-  g_free(job->buf_icc_profile);
+  dt_imageio_export_with_flags(params->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
+                               NULL, FALSE, params->buf_icc_type, params->buf_icc_profile, params->buf_icc_intent,  NULL, NULL, 1, 1);
+  g_free(params->buf_icc_profile);
 
   // after exporting we know the real size of the image, compute the layout
 
-  const int32_t width_pix = (job->width * job->prt.printer.resolution) / 25.4;
-  const int32_t height_pix = (job->height * job->prt.printer.resolution) / 25.4;
+  const int32_t width_pix = (params->width * params->prt.printer.resolution) / 25.4;
+  const int32_t height_pix = (params->height * params->prt.printer.resolution) / 25.4;
 
   // compute print-area (in inches)
   int32_t px=0, py=0, pwidth=0, pheight=0;
@@ -220,7 +220,7 @@ static int _print_job_run(dt_job_t *print_job)
   int32_t ix=0, iy=0, iwidth=0, iheight=0;
   int32_t iwpix=dat.width, ihpix=dat.height;
 
-  dt_get_print_layout (job->imgid, &job->prt, width_pix, height_pix,
+  dt_get_print_layout (params->imgid, &params->prt, width_pix, height_pix,
                        &iwpix, &ihpix,
                        &px, &py, &pwidth, &pheight,
                        &ax, &ay, &awidth, &aheight,
@@ -236,17 +236,17 @@ static int _print_job_run(dt_job_t *print_job)
 
   // we have the exported buffer, let's apply the printer profile
 
-  if (*job->p_profile)
+  if (*params->p_profile)
   {
-    const dt_colorspaces_color_profile_t *pprof = dt_colorspaces_get_profile(job->p_icc_type, job->p_profile,
+    const dt_colorspaces_color_profile_t *pprof = dt_colorspaces_get_profile(params->p_icc_type, params->p_profile,
                                                                              DT_PROFILE_DIRECTION_OUT);
-    g_free(job->p_profile);
+    g_free(params->p_profile);
 
     if (!pprof)
     {
       free(dat.buf);
-      dt_control_log(_("cannot open printer profile `%s'"), job->p_profile);
-      fprintf(stderr, "cannot open printer profile `%s'\n", job->p_profile);
+      dt_control_log(_("cannot open printer profile `%s'"), params->p_profile);
+      fprintf(stderr, "cannot open printer profile `%s'\n", params->p_profile);
       dt_control_queue_redraw();
       return 1;
     }
@@ -255,25 +255,25 @@ static int _print_job_run(dt_job_t *print_job)
       if(!buf_profile || !buf_profile->profile)
       {
         free(dat.buf);
-        dt_control_log(_("error getting output profile for image %d"), job->imgid);
-        fprintf(stderr, "error getting output profile for image %d\n", job->imgid);
+        dt_control_log(_("error getting output profile for image %d"), params->imgid);
+        fprintf(stderr, "error getting output profile for image %d\n", params->imgid);
         dt_control_queue_redraw();
         return 1;
       }
       if (dt_apply_printer_profile((void **)&(dat.buf), dat.width, dat.height, dat.bpp, buf_profile->profile,
-                                   pprof->profile, job->p_icc_intent, job->black_point_compensation))
+                                   pprof->profile, params->p_icc_intent, params->black_point_compensation))
       {
         free(dat.buf);
-        dt_control_log(_("cannot apply printer profile `%s'"), job->p_profile);
-        fprintf(stderr, "cannot apply printer profile `%s'\n", job->p_profile);
+        dt_control_log(_("cannot apply printer profile `%s'"), params->p_profile);
+        fprintf(stderr, "cannot apply printer profile `%s'\n", params->p_profile);
         dt_control_queue_redraw();
         return 1;
       }
     }
   }
 
-  const float page_width  = dt_pdf_mm_to_point(job->width);
-  const float page_height = dt_pdf_mm_to_point(job->height);
+  const float page_width  = dt_pdf_mm_to_point(params->width);
+  const float page_height = dt_pdf_mm_to_point(params->height);
 
   char filename[PATH_MAX] = { 0 };
   dt_loc_get_tmp_dir(filename, sizeof(filename));
@@ -291,7 +291,7 @@ static int _print_job_run(dt_job_t *print_job)
 
   const int icc_id = 0;
 
-  dt_pdf_t *pdf = dt_pdf_start(filename, page_width, page_height, job->prt.printer.resolution, DT_PDF_STREAM_ENCODER_FLATE);
+  dt_pdf_t *pdf = dt_pdf_start(filename, page_width, page_height, params->prt.printer.resolution, DT_PDF_STREAM_ENCODER_FLATE);
 
 /*
   // ??? should a profile be embedded here?
@@ -301,12 +301,12 @@ static int _print_job_run(dt_job_t *print_job)
   dt_pdf_image_t *pdf_image = dt_pdf_add_image(pdf, (uint8_t *)dat.buf, dat.width, dat.height, 8, icc_id, 0.0);
 
   //  PDF bounding-box has origin on bottom-left
-  pdf_image->bb_x      = dt_pdf_pixel_to_point((float)margin_left, job->prt.printer.resolution);
-  pdf_image->bb_y      = dt_pdf_pixel_to_point((float)margin_bottom, job->prt.printer.resolution);
-  pdf_image->bb_width  = dt_pdf_pixel_to_point((float)iwidth, job->prt.printer.resolution);
-  pdf_image->bb_height = dt_pdf_pixel_to_point((float)iheight, job->prt.printer.resolution);
+  pdf_image->bb_x      = dt_pdf_pixel_to_point((float)margin_left, params->prt.printer.resolution);
+  pdf_image->bb_y      = dt_pdf_pixel_to_point((float)margin_bottom, params->prt.printer.resolution);
+  pdf_image->bb_width  = dt_pdf_pixel_to_point((float)iwidth, params->prt.printer.resolution);
+  pdf_image->bb_height = dt_pdf_pixel_to_point((float)iheight, params->prt.printer.resolution);
 
-  if (job->prt.page.landscape && (dat.width > dat.height))
+  if (params->prt.page.landscape && (dat.width > dat.height))
     pdf_image->rotate_to_fit = TRUE;
   else
     pdf_image->rotate_to_fit = FALSE;
@@ -322,7 +322,7 @@ static int _print_job_run(dt_job_t *print_job)
 
   // send to CUPS
 
-  dt_print_file (job->imgid, filename, &job->prt);
+  dt_print_file (params->imgid, filename, &params->prt);
 
   g_unlink(filename);
 
@@ -330,9 +330,9 @@ static int _print_job_run(dt_job_t *print_job)
 
   char tag[256] = { 0 };
   guint tagid = 0;
-  snprintf (tag, sizeof(tag), "darktable|printed|%s", job->prt.printer.name);
+  snprintf (tag, sizeof(tag), "darktable|printed|%s", params->prt.printer.name);
   dt_tag_new(tag, &tagid);
-  dt_tag_attach(tagid, job->imgid);
+  dt_tag_attach(tagid, params->imgid);
 
   return 0;
 }
@@ -361,61 +361,61 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
     return;
   }
 
-  dt_lib_print_job_t *job = (dt_lib_print_job_t*)malloc(sizeof(dt_lib_print_job_t));
-  job->imgid = imgid;
-  memcpy(&job->prt, &ps->prt, sizeof(dt_print_info_t));
+  dt_lib_print_job_t *params = (dt_lib_print_job_t*)malloc(sizeof(dt_lib_print_job_t));
+  params->imgid = imgid;
+  memcpy(&params->prt, &ps->prt, sizeof(dt_print_info_t));
   // FIXME: print this in the background job, and use the image filename not imgid, then pass that to dt_print_file()
-  dt_control_log(_("preparing to print image %d on `%s'"), imgid, job->prt.printer.name);
+  dt_control_log(_("preparing to print image %d on `%s'"), imgid, params->prt.printer.name);
 
   // user margin are already in the proper orientation landscape/portrait
-  double margin_w = job->prt.page.margin_left + job->prt.page.margin_right;
-  double margin_h = job->prt.page.margin_top + job->prt.page.margin_bottom;
+  double margin_w = params->prt.page.margin_left + params->prt.page.margin_right;
+  double margin_h = params->prt.page.margin_top + params->prt.page.margin_bottom;
 
-  if (job->prt.page.landscape)
+  if (params->prt.page.landscape)
   {
-    job->width = job->prt.paper.height;
-    job->height = job->prt.paper.width;
-    margin_w += job->prt.printer.hw_margin_top + job->prt.printer.hw_margin_bottom;
-    margin_h += job->prt.printer.hw_margin_left + job->prt.printer.hw_margin_right;
+    params->width = params->prt.paper.height;
+    params->height = params->prt.paper.width;
+    margin_w += params->prt.printer.hw_margin_top + params->prt.printer.hw_margin_bottom;
+    margin_h += params->prt.printer.hw_margin_left + params->prt.printer.hw_margin_right;
   }
   else
   {
-    job->width = job->prt.paper.width;
-    job->height = job->prt.paper.height;
-    margin_w += job->prt.printer.hw_margin_left + job->prt.printer.hw_margin_right;
-    margin_h += job->prt.printer.hw_margin_top + job->prt.printer.hw_margin_bottom;
+    params->width = params->prt.paper.width;
+    params->height = params->prt.paper.height;
+    margin_w += params->prt.printer.hw_margin_left + params->prt.printer.hw_margin_right;
+    margin_h += params->prt.printer.hw_margin_top + params->prt.printer.hw_margin_bottom;
   }
 
-  const double pa_width  = (job->width  - margin_w) / 25.4;
-  const double pa_height = (job->height - margin_h) / 25.4;
+  const double pa_width  = (params->width  - margin_w) / 25.4;
+  const double pa_height = (params->height - margin_h) / 25.4;
 
   dt_print(DT_DEBUG_PRINT, "[print] printable area for image %u : %3.2fin x %3.2fin\n", imgid, pa_width, pa_height);
 
   // compute the needed size for picture for the given printer resolution
 
-  job->max_width  = (pa_width  * job->prt.printer.resolution);
-  job->max_height = (pa_height * job->prt.printer.resolution);
+  params->max_width  = (pa_width  * params->prt.printer.resolution);
+  params->max_height = (pa_height * params->prt.printer.resolution);
 
-  dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n", job->max_width, job->max_height, job->prt.printer.resolution);
+  dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n", params->max_width, params->max_height, params->prt.printer.resolution);
 
   // FIXME: getting this from conf as w/prior code, but switch to getting from ps
-  job->style = dt_conf_get_string("plugins/print/print/style");
-  job->style_append = ps->v_style_append;
+  params->style = dt_conf_get_string("plugins/print/print/style");
+  params->style_append = ps->v_style_append;
 
   // FIXME: getting these from conf as w/prior code, but switch to getting them from ps
-  job->buf_icc_type = dt_conf_get_int("plugins/print/print/icctype");
-  job->buf_icc_profile = dt_conf_get_string("plugins/print/print/iccprofile");
-  job->buf_icc_intent = dt_conf_get_int("plugins/print/print/iccintent");
+  params->buf_icc_type = dt_conf_get_int("plugins/print/print/icctype");
+  params->buf_icc_profile = dt_conf_get_string("plugins/print/print/iccprofile");
+  params->buf_icc_intent = dt_conf_get_int("plugins/print/print/iccintent");
 
-  job->p_icc_type = ps->v_picctype;
-  job->p_profile = g_strdup(ps->v_piccprofile);
-  job->p_icc_intent = ps->v_pintent;
-  job->black_point_compensation = ps->v_black_point_compensation;
+  params->p_icc_type = ps->v_picctype;
+  params->p_profile = g_strdup(ps->v_piccprofile);
+  params->p_icc_intent = ps->v_pintent;
+  params->black_point_compensation = ps->v_black_point_compensation;
 
-  dt_job_t *print_job = dt_control_job_create(&_print_job_run, "print image %d", imgid);
-  if(!print_job) return;
-  dt_control_job_set_params(print_job, job, free);
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_EXPORT, print_job);
+  dt_job_t *job = dt_control_job_create(&_print_job_run, "print image %d", imgid);
+  if(!job) return;
+  dt_control_job_set_params(job, params, free);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_EXPORT, job);
 }
 
 static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
