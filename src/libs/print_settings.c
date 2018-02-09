@@ -28,6 +28,7 @@
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/variables.h"
+#include "control/jobs.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -176,8 +177,10 @@ static int write_image(dt_imageio_module_data_t *data, const char *filename, con
   return 0;
 }
 
-static void _do_print (dt_lib_print_job_t *job)
+static int _print_job_run(dt_job_t *print_job)
 {
+  dt_lib_print_job_t *job = dt_control_job_get_params(print_job);
+
   dt_imageio_module_format_t buf;
   buf.mime = mime;
   buf.levels = levels;
@@ -242,32 +245,29 @@ static void _do_print (dt_lib_print_job_t *job)
     if (!pprof)
     {
       free(dat.buf);
-      free(job);
       dt_control_log(_("cannot open printer profile `%s'"), job->p_profile);
       fprintf(stderr, "cannot open printer profile `%s'\n", job->p_profile);
       dt_control_queue_redraw();
-      return;
+      return 1;
     }
     else
     {
       if(!buf_profile || !buf_profile->profile)
       {
         free(dat.buf);
-        free(job);
         dt_control_log(_("error getting output profile for image %d"), job->imgid);
         fprintf(stderr, "error getting output profile for image %d\n", job->imgid);
         dt_control_queue_redraw();
-        return;
+        return 1;
       }
       if (dt_apply_printer_profile((void **)&(dat.buf), dat.width, dat.height, dat.bpp, buf_profile->profile,
                                    pprof->profile, job->p_icc_intent, job->black_point_compensation))
       {
         free(dat.buf);
-        free(job);
         dt_control_log(_("cannot apply printer profile `%s'"), job->p_profile);
         fprintf(stderr, "cannot apply printer profile `%s'\n", job->p_profile);
         dt_control_queue_redraw();
-        return;
+        return 1;
       }
     }
   }
@@ -283,10 +283,9 @@ static void _do_print (dt_lib_print_job_t *job)
   if(fd == -1)
   {
     free(dat.buf);
-    free(job);
     dt_control_log(_("failed to create temporary pdf for printing"));
     fprintf(stderr, "failed to create temporary pdf for printing\n");
-    return;
+    return 1;
   }
   close(fd);
 
@@ -335,7 +334,7 @@ static void _do_print (dt_lib_print_job_t *job)
   dt_tag_new(tag, &tagid);
   dt_tag_attach(tagid, job->imgid);
 
-  free (job);
+  return 0;
 }
 
 static void
@@ -412,7 +411,10 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   job->p_icc_intent = ps->v_pintent;
   job->black_point_compensation = ps->v_black_point_compensation;
 
-  _do_print(job);
+  dt_job_t *print_job = dt_control_job_create(&_print_job_run, "print image %d", imgid);
+  if(!print_job) return;
+  dt_control_job_set_params(print_job, job, free);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_EXPORT, print_job);
 }
 
 static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
