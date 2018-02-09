@@ -364,7 +364,8 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_lib_print_job_t *job = (dt_lib_print_job_t*)malloc(sizeof(dt_lib_print_job_t));
   job->imgid = imgid;
   memcpy(&job->prt, &ps->prt, sizeof(dt_print_info_t));
-  dt_control_log(_("prepare printing image %d on `%s'"), imgid, job->prt.printer.name);
+  // FIXME: print this in the background job, and use the image filename not imgid, then pass that to dt_print_file()
+  dt_control_log(_("preparing to print image %d on `%s'"), imgid, job->prt.printer.name);
 
   // user margin are already in the proper orientation landscape/portrait
   double margin_w = job->prt.page.margin_left + job->prt.page.margin_right;
