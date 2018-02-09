@@ -252,6 +252,8 @@ static int _print_job_run(dt_job_t *job)
   const int upscale = 1;
   const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(params->imgid, params->buf_icc_type, params->buf_icc_profile);
 
+  dt_control_job_set_progress(job, 0.05);
+
   dt_imageio_export_with_flags(params->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
                                NULL, FALSE, params->buf_icc_type, params->buf_icc_profile, params->buf_icc_intent,  NULL, NULL, 1, 1);
   g_free(params->buf_icc_profile);
@@ -319,6 +321,8 @@ static int _print_job_run(dt_job_t *job)
   const float page_width  = dt_pdf_mm_to_point(width);
   const float page_height = dt_pdf_mm_to_point(height);
 
+  dt_control_job_set_progress(job, 0.9);
+
   char filename[PATH_MAX] = { 0 };
   dt_loc_get_tmp_dir(filename, sizeof(filename));
   g_strlcat(filename, "/pf.XXXXXX.pdf", sizeof(filename));
@@ -358,6 +362,8 @@ static int _print_job_run(dt_job_t *job)
   dt_pdf_page_t *pdf_page = dt_pdf_add_page(pdf, &pdf_image, 1);
   dt_pdf_finish(pdf, &pdf_page, 1);
 
+  dt_control_job_set_progress(job, 0.95);
+
   // free memory
 
   free (dat.buf);
@@ -369,6 +375,7 @@ static int _print_job_run(dt_job_t *job)
   dt_print_file (params->imgid, filename, job_title, &params->prt);
 
   g_unlink(filename);
+  dt_control_job_set_progress(job, 1.0);
 
   // add tag for this image
 
@@ -426,6 +433,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_job_t *job = dt_control_job_create(&_print_job_run, "print image %d", imgid);
   if(!job) return;
   dt_control_job_set_params(job, params, free);
+  dt_control_job_add_progress(job, _("printing..."), FALSE);
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_EXPORT, job);
 }
 
