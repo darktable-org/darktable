@@ -179,6 +179,20 @@ static int _print_job_run(dt_job_t *job)
 {
   dt_lib_print_job_t *params = dt_control_job_get_params(job);
 
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
+  if(!img)
+  {
+    dt_control_log(_("cannot get image %d for printing"), params->imgid);
+    fprintf(stderr, "cannot get image %d for printing\n", params->imgid);
+    dt_control_queue_redraw();
+    return 1;
+  }
+  gchar job_title[64];
+  g_strlcpy(job_title, img->filename, sizeof(job_title));
+  dt_image_cache_read_release(darktable.image_cache, img);
+
+  dt_control_log(_("preparing to print `%s' on `%s'"), job_title, params->prt.printer.name);
+
   // user margin are already in the proper orientation landscape/portrait
   double width, height;
   double margin_w = params->prt.page.margin_left + params->prt.page.margin_right;
@@ -352,7 +366,7 @@ static int _print_job_run(dt_job_t *job)
 
   // send to CUPS
 
-  dt_print_file (params->imgid, filename, &params->prt);
+  dt_print_file (params->imgid, filename, job_title, &params->prt);
 
   g_unlink(filename);
 
@@ -394,8 +408,6 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_lib_print_job_t *params = (dt_lib_print_job_t*)malloc(sizeof(dt_lib_print_job_t));
   params->imgid = imgid;
   memcpy(&params->prt, &ps->prt, sizeof(dt_print_info_t));
-  // FIXME: print this in the background job, and use the image filename not imgid, then pass that to dt_print_file()
-  dt_control_log(_("preparing to print image %d on `%s'"), imgid, params->prt.printer.name);
 
   // FIXME: getting this from conf as w/prior code, but switch to getting from ps
   params->style = dt_conf_get_string("plugins/print/print/style");
