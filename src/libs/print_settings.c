@@ -239,8 +239,6 @@ static int _print_job_run(dt_job_t *job)
   const int upscale = 1;
   const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(params->imgid, params->buf_icc_type, params->buf_icc_profile);
 
-  dt_control_job_set_progress(job, 0.05);
-
   dt_imageio_export_with_flags(params->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
                                NULL, FALSE, params->buf_icc_type, params->buf_icc_profile, params->buf_icc_intent,  NULL, NULL, 1, 1);
   g_free(params->buf_icc_profile);
@@ -308,6 +306,11 @@ static int _print_job_run(dt_job_t *job)
   const float page_width  = dt_pdf_mm_to_point(width);
   const float page_height = dt_pdf_mm_to_point(height);
 
+  if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
+  {
+    free(dat.buf);
+    return 0;
+  }
   dt_control_job_set_progress(job, 0.9);
 
   char filename[PATH_MAX] = { 0 };
@@ -349,20 +352,24 @@ static int _print_job_run(dt_job_t *job)
   dt_pdf_page_t *pdf_page = dt_pdf_add_page(pdf, &pdf_image, 1);
   dt_pdf_finish(pdf, &pdf_page, 1);
 
-  dt_control_job_set_progress(job, 0.95);
-
   // free memory
 
   free (dat.buf);
   free (pdf_image);
   free (pdf_page);
 
+  if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
+  {
+    g_unlink(filename);
+    return 0;
+  }
+  dt_control_job_set_progress(job, 0.95);
+
   // send to CUPS
 
   dt_print_file (params->imgid, filename, params->job_title, &params->prt);
 
   g_unlink(filename);
-  dt_control_job_set_progress(job, 1.0);
 
   // add tag for this image
 
@@ -420,7 +427,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   gchar message[256] = { 0 };
   g_snprintf(message, sizeof(message) - 1, _("print `%s' on `%s'"), params->job_title, params->prt.printer.name);
-  dt_control_job_add_progress(job, message, FALSE);
+  dt_control_job_add_progress(job, message, TRUE);
 
   // FIXME: getting this from conf as w/prior code, but switch to getting from ps
   params->style = dt_conf_get_string("plugins/print/print/style");
