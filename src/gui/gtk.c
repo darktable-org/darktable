@@ -168,6 +168,12 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
 
   dt_accel_path_global(path, sizeof(path), "toggle header");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_header);
+
+  dt_accel_path_global(path, sizeof(path), "zoom in");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_zoom_in);
+
+  dt_accel_path_global(path, sizeof(path), "zoom out");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_zoom_out);
 }
 
 static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
@@ -1092,6 +1098,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_accel_connect_global("switch view",
                           g_cclosure_new(G_CALLBACK(view_switch_key_accel_callback), NULL, NULL));
 
+  // Global zoom in & zoom out
+  dt_accel_register_global(NC_("accel", "zoom in"), GDK_KEY_plus, GDK_CONTROL_MASK);
+  dt_accel_register_global(NC_("accel", "zoom out"), GDK_KEY_minus, GDK_CONTROL_MASK);
+
   darktable.gui->reset = 0;
 
   GdkRGBA *c = darktable.gui->colors;
@@ -1901,6 +1911,12 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   gtk_main();
 
   return result.result == RESULT_YES;
+}
+
+// TODO: should that go to another place than gtk.c?
+void dt_gui_add_help_link(GtkWidget *widget, const char *link)
+{
+  g_object_set_data(G_OBJECT(widget), "dt-help-url", (void *)link);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -29,7 +29,7 @@ endmacro()
 
 function(InstallDependencyFiles)
 
-if (WIN32)
+if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
   # Dependency files (files which needs to be installed alongside the darktable binaries)
   # Please note these are ONLY the files which are not geing detected by fixup_bundle()
   # must be in the bin directory
@@ -116,7 +116,7 @@ if (WIN32)
 
   install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin COMPONENT DTApplication)
 
-  # TODO: Add auxilliary files for openssl?
+  # TODO: Add auxiliary files for openssl?
 
   # Add pixbuf loader libraries
   # FILE(GLOB_RECURSE GDK_PIXBUF "${MINGW_PATH}/../lib/gdk-pixbuf-2.0/2.10.0/loaders/*.dll"  )
@@ -183,6 +183,21 @@ if (WIN32)
       "${LENSFUN_DB}"
       DESTINATION share/lensfun/
       COMPONENT DTApplication)
-endif(WIN32)
+
+  # Add iso-codes
+  if(ISO_CODES_FOUND)
+    install(FILES
+        "${ISO_CODES_LOCATION}/iso_639-2.json"
+        DESTINATION share/iso-codes/json/
+        COMPONENT DTApplication
+    )
+    file(GLOB ISO_CODES_MO_FILES RELATIVE "${ISO_CODES_LOCALEDIR}" "${ISO_CODES_LOCALEDIR}/*/LC_MESSAGES/iso_639.mo")
+    foreach(MO ${ISO_CODES_MO_FILES})
+      string(REPLACE "iso_639.mo" "" MO_TARGET_DIR "${MO}")
+      install(FILES "${ISO_CODES_LOCALEDIR}/${MO}" DESTINATION "share/locale/${MO_TARGET_DIR}" COMPONENT DTApplication)
+    endforeach()
+  endif(ISO_CODES_FOUND)
+
+endif(WIN32 AND NOT BUILD_MSYS2_INSTALL)
 
 endfunction()

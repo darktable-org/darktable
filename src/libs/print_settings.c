@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2015 pascal obry.
+    copyright (c) 2014-2017 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
-DT_MODULE(2)
+DT_MODULE(3)
 
 static gboolean _bauhaus_combobox_set_active_text(GtkWidget *cb, const gchar *text);
 
@@ -56,7 +56,7 @@ uint32_t container(dt_lib_module_t *self)
 
 typedef struct dt_lib_print_settings_t
 {
-  GtkWidget *profile, *intent, *style, *style_mode, *papers;
+  GtkWidget *profile, *intent, *style, *style_mode, *papers, *media;
   GtkWidget *printers, *orientation, *pprofile, *pintent;
   GtkWidget *width, *height, *black_point_compensation;
   GtkWidget *info;
@@ -65,7 +65,7 @@ typedef struct dt_lib_print_settings_t
   GtkToggleButton *lock_button;
   GtkWidget *b_top, *b_bottom, *b_left, *b_right;
   GtkDarktableToggleButton *dtba[9];	                                   // Alignment buttons
-  GList *paper_list;
+  GList *paper_list, *media_list;
   gboolean lock_activated;
   dt_print_info_t prt;
   uint16_t *buf;
@@ -297,7 +297,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
       if(!buf_profile || !buf_profile->profile)
       {
         free(dat.ps->buf);
-        dt_control_log("error getting output profile for image %d", imgid);
+        dt_control_log(_("error getting output profile for image %d"), imgid);
         fprintf(stderr, "error getting output profile for image %d\n", imgid);
         dt_control_queue_redraw();
         return;
@@ -325,7 +325,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   if(fd == -1)
   {
     free(dat.ps->buf);
-    dt_control_log("failed to create temporary pdf for printing");
+    dt_control_log(_("failed to create temporary pdf for printing"));
     fprintf(stderr, "failed to create temporary pdf for printing\n");
     return;
   }
@@ -380,13 +380,13 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
-  dt_printer_info_t *printer = dt_get_printer_info (printer_name);
 
-  if (!printer) return;
+  dt_get_printer_info (printer_name, &ps->prt.printer);
 
-  memcpy(&ps->prt.printer, printer, sizeof(dt_printer_info_t));
-  free(printer);
-  printer = NULL;
+  // if this is a turboprint printer, disable the printer profile
+
+  if (ps->prt.printer.is_turboprint)
+    dt_bauhaus_combobox_set(ps->pprofile, 0);
 
   // if there is 0 hardware margins, set the user marging to 15mm
 
@@ -425,7 +425,7 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 
   if(ps->paper_list) g_list_free_full(ps->paper_list, free);
 
-  ps->paper_list = dt_get_papers (printer_name);
+  ps->paper_list = dt_get_papers (&ps->prt.printer);
   GList *papers = ps->paper_list;
   int np = 0;
   gboolean ispaperset = FALSE;
@@ -445,12 +445,58 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
     papers = g_list_next (papers);
   }
 
+  //  paper not found in this printer
+  if (!ispaperset) dt_bauhaus_combobox_set(ps->papers, 0);
+
   const dt_paper_info_t *paper = dt_get_paper(ps->paper_list, default_paper);
 
   if (paper)
     memcpy(&ps->prt.paper, paper, sizeof(dt_paper_info_t));
 
   g_free (default_paper);
+
+  // next add corresponding supported media
+
+  char *default_medium = dt_conf_get_string("plugins/print/print/medium");
+
+  // first clear current list
+
+  dt_bauhaus_combobox_clear(ps->media);
+
+  // then add papers for the given printer
+
+  if(ps->media_list) g_list_free_full(ps->media_list, free);
+
+  ps->media_list = dt_get_media_type (&ps->prt.printer);
+  GList *media = ps->media_list;
+  gboolean ismediaset = FALSE;
+
+  np = 0;
+
+  while (media)
+  {
+    const dt_medium_info_t *m = (dt_medium_info_t *)media->data;
+    dt_bauhaus_combobox_add(ps->media, m->common_name);
+
+    if (ismediaset == FALSE && (!g_strcmp0(default_medium, m->common_name) || default_medium[0] == '\0'))
+    {
+      dt_bauhaus_combobox_set(ps->media, np);
+      ismediaset = TRUE;
+    }
+
+    np++;
+    media = g_list_next (media);
+  }
+
+  //  media not found in this printer
+  if (!ismediaset) dt_bauhaus_combobox_set(ps->media, 0);
+
+  const dt_medium_info_t *medium = dt_get_medium(ps->media_list, default_medium);
+
+  if (medium)
+    memcpy(&ps->prt.medium, medium, sizeof(dt_medium_info_t));
+
+  g_free (default_medium);
 
   dt_view_print_settings(darktable.view_manager, &ps->prt);
 }
@@ -481,6 +527,26 @@ _paper_changed (GtkWidget *combo, const dt_lib_module_t *self)
   ps->iwidth = ps->iheight = 0;
 
   dt_conf_set_string("plugins/print/print/paper", paper_name);
+  dt_view_print_settings(darktable.view_manager, &ps->prt);
+
+  _update_slider(ps);
+}
+
+static void
+_media_changed (GtkWidget *combo, const dt_lib_module_t *self)
+{
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  const gchar *medium_name = dt_bauhaus_combobox_get_text(combo);
+
+  if (!medium_name) return;
+
+  const dt_medium_info_t *medium = dt_get_medium(ps->media_list, medium_name);
+
+  if (medium)
+    memcpy(&ps->prt.medium, medium, sizeof(dt_medium_info_t));
+
+  dt_conf_set_string("plugins/print/print/medium", medium_name);
   dt_view_print_settings(darktable.view_manager, &ps->prt);
 
   _update_slider(ps);
@@ -803,7 +869,6 @@ _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
       ps->v_piccprofile = g_strdup(pp->filename);
 
       // activate the black compensation and printer intent
-      gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), TRUE);
       gtk_widget_set_sensitive(GTK_WIDGET(ps->black_point_compensation), TRUE);
       return;
     }
@@ -814,7 +879,6 @@ _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
   g_free(ps->v_piccprofile);
   ps->v_picctype = DT_COLORSPACE_NONE;
   ps->v_piccprofile = g_strdup("");
-  gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->black_point_compensation), FALSE);
 }
 
@@ -825,6 +889,7 @@ _printer_intent_callback (GtkWidget *widget, dt_lib_module_t *self)
   const int pos = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/print/printer/iccintent", pos);
   ps->v_pintent = pos;
+  ps->prt.printer.intent = pos;
 }
 
 static void
@@ -981,6 +1046,7 @@ gui_init (dt_lib_module_t *self)
   GtkWidget *label;
 
   d->paper_list = NULL;
+  d->media_list = NULL;
   d->iwidth = d->iheight = 0;
   d->unit = 0;
   d->width = d->height = NULL;
@@ -1025,6 +1091,15 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->printers, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->printers), "value-changed", G_CALLBACK(_printer_changed), self);
 
+  //// media
+
+  d->media = dt_bauhaus_combobox_new(NULL);
+
+  dt_bauhaus_widget_set_label(d->media, NULL, _("media"));
+
+  g_signal_connect(G_OBJECT(d->media), "value-changed", G_CALLBACK(_media_changed), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->media), TRUE, TRUE, 0);
+
   //  Add printer profile combo
 
   d->pprofile = dt_bauhaus_combobox_new(NULL);
@@ -1039,7 +1114,7 @@ gui_init (dt_lib_module_t *self)
   combo_idx = -1;
   n = 0;
 
-  dt_bauhaus_combobox_add(d->pprofile, _("none"));
+  dt_bauhaus_combobox_add(d->pprofile, _("color management in printer driver"));
   while(l)
   {
     dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
@@ -1094,6 +1169,7 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->pintent, d->v_pintent);
 
   g_signal_connect (G_OBJECT (d->pintent), "value-changed", G_CALLBACK (_printer_intent_callback), (gpointer)self);
+  d->prt.printer.intent = d->v_pintent;
 
   d->black_point_compensation = gtk_check_button_new_with_label(_("black point compensation"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->black_point_compensation), TRUE, FALSE, 0);
@@ -1105,7 +1181,6 @@ gui_init (dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->black_point_compensation,
                               _("activate black point compensation when applying the printer profile"));
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->pintent), combo_idx==0?FALSE:TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(d->black_point_compensation), combo_idx==0?FALSE:TRUE);
 
   ////////////////////////// PAGE SETTINGS
@@ -1225,7 +1300,7 @@ gui_init (dt_lib_module_t *self)
   gtk_grid_set_column_spacing(bat, DT_PIXEL_APPLY_DPI(3));
   for(int i=0; i<9; i++)
   {
-    d->dtba[i] = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_alignment,CPF_STYLE_FLAT|(CPF_SPECIAL_FLAG<<i)));
+    d->dtba[i] = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_alignment,CPF_STYLE_FLAT|(CPF_SPECIAL_FLAG<<i), NULL));
     gtk_grid_attach (GTK_GRID (bat), GTK_WIDGET (d->dtba[i]), (i%3), i/3, 1, 1);
     g_signal_connect (G_OBJECT (d->dtba[i]), "toggled",G_CALLBACK (_alignment_callback), self);
   }
@@ -1495,7 +1570,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     }
 
     // in theory pprofile can't be srgb or adobergb, but checking for them won't hurt
-    if(*pprofile == '\0' || !g_strcmp0(pprofile, "none"))
+    if(*pprofile == '\0')
     {
       pprofile_type = DT_COLORSPACE_NONE;
     }
@@ -1554,13 +1629,27 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     *new_version = 2;
     return new_params;
   }
+  else if(old_version == 2)
+  {
+    // add upscale to params
+    size_t new_params_size = old_params_size + 1;
+    void *new_params = calloc(1, new_params_size);
+
+    memcpy(new_params, old_params, old_params_size);
+    // no media type specified
+    ((char *)new_params)[old_params_size] = '\0';
+
+    *new_size = new_params_size;
+    *new_version = 3;
+    return new_params;
+  }
 
   return NULL;
 }
 
 int set_params(dt_lib_module_t *self, const void *params, int size)
 {
-  const dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   if(!params) return 1;
 
@@ -1627,10 +1716,15 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(double);
 
   const int32_t alignment = *(int32_t *)buf;
-//   buf += sizeof(int32_t);
+  buf += sizeof(int32_t);
+
+  const char *media = buf;
+  if (!media) return 1;
+  const int32_t media_len = strlen(media) + 1;
+  // buf += media_len;
 
   // ensure that the size is correct
-  if(size != printer_len + paper_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double))
+  if(size != printer_len + paper_len + media_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double))
     return 1;
 
   // set the GUI with corresponding values
@@ -1639,6 +1733,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   if (paper[0] != '\0')
     _bauhaus_combobox_set_active_text(ps->papers, paper);
+
+  if (media[0] != '\0')
+    _bauhaus_combobox_set_active_text(ps->media, media);
 
   dt_bauhaus_combobox_set (ps->orientation, landscape);
 
@@ -1667,6 +1764,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   }
 
   dt_bauhaus_combobox_set (ps->pintent, pintent);
+  ps->prt.printer.intent = pintent;
 
   if (style[0] != '\0')
     _bauhaus_combobox_set_active_text(ps->style, style);
@@ -1690,6 +1788,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   // get the data
   const char *printer = dt_bauhaus_combobox_get_text(ps->printers);
   const char *paper = dt_bauhaus_combobox_get_text(ps->papers);
+  const char *media = dt_bauhaus_combobox_get_text(ps->media);
   const int32_t profile_pos = dt_bauhaus_combobox_get(ps->profile);
   const int32_t intent =  dt_bauhaus_combobox_get(ps->intent);
   const char *style = dt_bauhaus_combobox_get_text(ps->style);
@@ -1724,16 +1823,18 @@ void *get_params(dt_lib_module_t *self, int *size)
   // these will be NULL when no printer is connected/found
   if(!printer) printer = "";
   if(!paper) paper = "";
+  if(!media) media = "";
 
   // compute the size of individual items, always get the \0 for strings
   const int32_t printer_len = strlen (printer) + 1;
   const int32_t paper_len = strlen (paper) + 1;
+  const int32_t media_len = strlen (media) + 1;
   const int32_t profile_len = strlen (profile) + 1;
   const int32_t pprofile_len = strlen (pprofile) + 1;
   const int32_t style_len = strlen (style) + 1;
 
   // compute the size of all parameters
-  *size = printer_len + paper_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double);
+  *size = printer_len + paper_len + media_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double);
 
   // allocate the parameter buffer
   char *params = (char *)malloc(*size);
@@ -1774,6 +1875,8 @@ void *get_params(dt_lib_module_t *self, int *size)
   pos += sizeof(double);
   memcpy(params+pos, &alignment, sizeof(int32_t));
   pos += sizeof(int32_t);
+  memcpy(params+pos, media, media_len);
+  pos += media_len;
 
   g_assert(pos == *size);
 
@@ -1792,6 +1895,7 @@ gui_cleanup (dt_lib_module_t *self)
 
   g_list_free_full(ps->profiles, g_free);
   g_list_free_full(ps->paper_list, free);
+  g_list_free_full(ps->media_list, free);
 
   g_free(ps->v_iccprofile);
   g_free(ps->v_piccprofile);
@@ -1812,13 +1916,14 @@ gui_reset (dt_lib_module_t *self)
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), 15 * units[ps->unit]);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[ALIGNMENT_CENTER]), TRUE);
   ps->prt.page.alignment = ALIGNMENT_CENTER;
+  ps->prt.printer.intent = DT_INTENT_PERCEPTUAL;
   dt_bauhaus_combobox_set(ps->profile, 0);
   dt_bauhaus_combobox_set(ps->pprofile, 0);
   dt_bauhaus_combobox_set(ps->pintent, 0);
   dt_bauhaus_combobox_set(ps->style, 0);
   dt_bauhaus_combobox_set(ps->intent, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation), TRUE);
-  gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->black_point_compensation), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->style_mode), FALSE);
 

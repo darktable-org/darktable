@@ -41,7 +41,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#ifndef __WIN32__
+#ifndef _WIN32
 #include <glob.h>
 #endif
 #include <glib/gstdio.h>
@@ -94,6 +94,18 @@ int dt_image_is_raw(const dt_image_t *img)
   }
 
   return !isnonraw;
+}
+
+int dt_image_is_monochrome(const dt_image_t *img)
+{
+  if(strncmp(img->exif_maker, "Leica Camera AG", 15) != 0) return 0;
+
+  gchar *tmp_model = g_ascii_strdown(img->exif_model, -1);
+
+  const int res = strstr(tmp_model, "monochrom") != NULL;
+  g_free(tmp_model);
+
+  return res;
 }
 
 const char *dt_image_film_roll_name(const char *path)
@@ -179,7 +191,7 @@ void dt_image_full_path(const int imgid, char *pathname, size_t pathname_len, gb
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT folder || '/' || filename FROM main.images i, main.film_rolls f WHERE "
+                              "SELECT folder || '" G_DIR_SEPARATOR_S "' || filename FROM main.images i, main.film_rolls f WHERE "
                               "i.film_id = f.id and i.id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -207,7 +219,7 @@ static void _image_local_copy_full_path(const int imgid, char *pathname, size_t 
 
   *pathname = '\0';
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT folder || '/' || filename FROM main.images i, main.film_rolls f "
+                              "SELECT folder || '" G_DIR_SEPARATOR_S "' || filename FROM main.images i, main.film_rolls f "
                               "WHERE i.film_id = f.id AND i.id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -324,6 +336,37 @@ void dt_image_set_location_and_elevation(const int32_t imgid, double lon, double
 
   /* store */
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+}
+
+gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
+{
+  dt_develop_t dev;
+
+  dt_dev_init(&dev, 0);
+  dt_dev_load_image(&dev, imgid);
+  const dt_image_t *img = &dev.image_storage;
+
+  dt_dev_pixelpipe_t pipe;
+  int wd = img->width, ht = img->height;
+  int res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
+  if(res)
+  {
+    // set mem pointer to 0, won't be used.
+    dt_dev_pixelpipe_set_input(&pipe, &dev, NULL, wd, ht, 1.0f);
+    dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+    dt_dev_pixelpipe_synch_all(&pipe, &dev);
+    dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
+                                    &pipe.processed_height);
+    wd = pipe.processed_width;
+    ht = pipe.processed_height;
+    res = TRUE;
+    dt_dev_pixelpipe_cleanup(&pipe);
+  }
+  dt_dev_cleanup(&dev);
+
+  *width = wd;
+  *height = ht;
+  return res;
 }
 
 void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orientation)
@@ -675,7 +718,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
     while(*c2 != '.' && c2 > filename) c2--;
     snprintf(c1 + strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp", c2);
 
-#ifdef __WIN32__
+#ifdef _WIN32
     wchar_t *wpattern = g_utf8_to_utf16(pattern, -1, NULL, NULL, NULL);
     WIN32_FIND_DATAW data;
     HANDLE handle = FindFirstFileW(wpattern, &data);

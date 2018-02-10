@@ -33,6 +33,7 @@ typedef struct _GtkDarktableToggleButton
   GtkToggleButton widget;
   DTGTKCairoPaintIconFunc icon;
   gint icon_flags;
+  void *icon_data;
   GdkRGBA bg, fg;
 } GtkDarktableToggleButton;
 
@@ -44,11 +45,11 @@ typedef struct _GtkDarktableToggleButtonClass
 GType dtgtk_togglebutton_get_type(void);
 
 /** instantiate a new darktable toggle button */
-GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflag);
+GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflag, void *paintdata);
 
 /** Set the paint function and paint flags */
 void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button, DTGTKCairoPaintIconFunc paint,
-                                  gint paintflags);
+                                  gint paintflags, void *paintdata);
 /** overwrite the foreground color, or NULL to reset it */
 void dtgtk_togglebutton_override_color(GtkDarktableToggleButton *button, GdkRGBA *color);
 /** overwrite the background color, or NULL to reset it */

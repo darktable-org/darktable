@@ -67,6 +67,10 @@ enum
   md_exif_width,
   md_exif_height,
 
+  /* size of final image */
+  md_width,
+  md_height,
+
   /* xmp */
   md_xmp_title,
   md_xmp_creator,
@@ -110,6 +114,9 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_exif_datetime] = _("datetime");
   _md_labels[md_exif_width] = _("width");
   _md_labels[md_exif_height] = _("height");
+
+  _md_labels[md_width] = _("export width");
+  _md_labels[md_height] = _("export height");
 
   /* xmp */
   _md_labels[md_xmp_title] = _("title");
@@ -222,6 +229,12 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     char value[512];
     char pathname[PATH_MAX] = { 0 };
+
+    // get the size before locking the image!
+    // TODO: put that into dt_image_t and make sure it stays in sync
+    int width = 0, height = 0;
+//     dt_image_get_final_size(mouse_over_id, &width, &height); // kind of slow on some machines
+
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'r');
     if(!img) goto fill_minuses;
     if(img->film_id == -1)
@@ -458,6 +471,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value(d->metadata[md_exif_height], value);
     snprintf(value, sizeof(value), "%d", img->width);
     _metadata_update_value(d->metadata[md_exif_width], value);
+
+    snprintf(value, sizeof(value), "%d", height);
+    _metadata_update_value(d->metadata[md_height], value);
+    snprintf(value, sizeof(value), "%d", width);
+    _metadata_update_value(d->metadata[md_width], value);
 
     /* XMP */
     GList *res;

@@ -194,6 +194,8 @@ int dt_image_is_ldr(const dt_image_t *img);
 int dt_image_is_raw(const dt_image_t *img);
 /** returns non-zero if the image contains float data. */
 int dt_image_is_hdr(const dt_image_t *img);
+/** returns non-zero if this image was taken using a monochrome camera */
+int dt_image_is_monochrome(const dt_image_t *img);
 /** returns the full path name where the image was imported from. from_cache=TRUE check and return local
  * cached filename if any. */
 void dt_image_full_path(const int imgid, char *pathname, size_t pathname_len, gboolean *from_cache);
@@ -229,6 +231,8 @@ int32_t dt_image_duplicate(const int32_t imgid);
 void dt_image_flip(const int32_t imgid, const int32_t cw);
 void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t user_flip);
 dt_image_orientation_t dt_image_get_orientation(const int imgid);
+/** get max width and height of the final processed image with its current hisotry stack */
+gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height);
 /** set image location lon/lat */
 void dt_image_set_location(const int32_t imgid, double lon, double lat);
 /** set image location lon/lat/ele */

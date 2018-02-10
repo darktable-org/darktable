@@ -45,6 +45,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
+#include "common/l10n.h"
 #include "common/mipmap_cache.h"
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
@@ -94,10 +95,6 @@
 #include <omp.h>
 #endif
 
-#ifdef _WIN32
-#include "win/dtwin.h"
-#endif //_WIN32
-
 #ifdef USE_LUA
 #include "lua/configuration.h"
 #endif
@@ -106,6 +103,10 @@ darktable_t darktable;
 
 static int usage(const char *argv0)
 {
+#ifdef _WIN32
+  char *logfile = g_build_filename(g_get_user_cache_dir(), "darktable", "darktable-log.txt", NULL);
+#endif
+
   printf("usage: %s [options] [IMG_1234.{RAW,..}|image_folder/]\n", argv0);
   printf("\n");
   printf("options:\n");
@@ -113,13 +114,17 @@ static int usage(const char *argv0)
   printf("  --cachedir <user cache directory>\n");
   printf("  --conf <key>=<value>\n");
   printf("  --configdir <user config directory>\n");
-  printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch, input,lighttable,\n");
-  printf("      lua, masks,memory,nan,opencl, perf,pwstorage,print,sql}\n");
+  printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,\n");
+  printf("      lua, masks,memory,nan,opencl,perf,pwstorage,print,sql}\n");
   printf("  --datadir <data directory>\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
 #endif
-  printf("  -h, --help\n");
+  printf("  -h, --help");
+#ifdef _WIN32
+  printf(", /?");
+#endif
+  printf("\n");
   printf("  --library <library file>\n");
   printf("  --localedir <locale directory>\n");
 #ifdef USE_LUA
@@ -130,6 +135,15 @@ static int usage(const char *argv0)
   printf("  -t <num openmp threads>\n");
   printf("  --tmpdir <tmp directory>\n");
   printf("  --version\n");
+#ifdef _WIN32
+  printf("\n");
+  printf("  note: debug log and output will be written to this file:\n");
+  printf("        %s\n", logfile);
+#endif
+
+#ifdef _WIN32
+  g_free(logfile);
+#endif
 
   return 1;
 }
@@ -320,7 +334,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 {
   double start_wtime = dt_get_wtime();
 
-#ifndef __WIN32__
+#ifndef _WIN32
   if(getuid() == 0 || geteuid() == 0)
     printf(
         "WARNING: either your user id or the effective user id are 0. are you running darktable as root?\n");
@@ -447,13 +461,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   GSList *config_override = NULL;
   for(int k = 1; k < argc; k++)
   {
+#ifdef _WIN32
+    if(!strcmp(argv[k], "/?"))
+    {
+      return usage(argv[0]);
+    }
+#endif
     if(argv[k][0] == '-')
     {
-      if(!strcmp(argv[k], "--help"))
-      {
-        return usage(argv[0]);
-      }
-      if(!strcmp(argv[k], "-h"))
+      if(!strcmp(argv[k], "--help") || !strcmp(argv[k], "-h"))
       {
         return usage(argv[0]);
       }
@@ -706,7 +722,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // I doubt that connecting to dbus for darktable-cli makes sense
     darktable.dbus = dt_dbus_init();
 
-    // make sure that we have no stale global progress bar visible. thus it's run as early is possible
+    // make sure that we have no stale global progress bar visible. thus it's run as early as possible
     dt_control_progress_init(darktable.control);
   }
 
@@ -739,35 +755,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_conf_init(darktable.conf, darktablerc, config_override);
   g_slist_free_full(config_override, g_free);
 
-  // set the interface language
-  const gchar *lang = dt_conf_get_string("ui_last/gui_language");
-#if defined(_WIN32)
-  // get the default locale if no language preference was specified in the config file
-  if(lang == NULL || lang[0] == '\0')
-  {
-    const wchar_t *wcLocaleName = NULL;
-    wcLocaleName = dtwin_get_locale();
-    if(wcLocaleName != NULL)
-    {
-      gchar *langLocale;
-      langLocale = g_utf16_to_utf8(wcLocaleName, -1, NULL, NULL, NULL);
-      if(langLocale != NULL)
-      {
-        g_free((gchar *)lang);
-        lang = g_strdup(langLocale);
-      }
-    }
-  }
-#endif // defined (_WIN32)
-
-  if(lang != NULL && lang[0] != '\0')
-  {
-    g_setenv("LANGUAGE", lang, 1);
-    if(setlocale(LC_ALL, lang) != NULL) gtk_disable_setlocale();
-    setlocale(LC_MESSAGES, lang);
-    g_setenv("LANG", lang, 1);
-  }
-  g_free((gchar *)lang);
+  // set the interface language and prepare selection for prefs
+  darktable.l10n = dt_l10n_init(init_gui);
 
   // we need this REALLY early so that error messages can be shown, however after gtk_disable_setlocale
   if(init_gui)
@@ -779,6 +768,27 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     gdk_set_allowed_backends("x11,*");
 #endif
     gtk_init(&argc, &argv);
+  }
+
+  // execute a performance check and configuration if needed
+  int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
+  if(last_configure_version < DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION)
+  {
+    // ask the user whether he/she would like
+    // dt to make changes in the settings
+    gboolean run_configure = dt_gui_show_standalone_yes_no_dialog(
+        _("darktable - Run performance configuration?"),
+        _("We have an updated performance configuration logic - executing that might improve the performance of "
+          "darktable.\nThis will potentially overwrite some of your existing settings - especially in case you "
+          "have manually modified them to custom values.\nWould you like to execute this update of the "
+          "performance configuration?\n"),
+        _("No"), _("Yes"));
+
+    if(run_configure)
+      dt_configure_performance();
+    else
+      // make sure to set this, otherwise the user will be nagged until he eventually agrees
+      dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
   }
 
   // detect cpu features and decide which codepaths to enable
@@ -1132,7 +1142,7 @@ void *dt_alloc_align(size_t alignment, size_t size)
 {
 #if defined(__FreeBSD_version) && __FreeBSD_version < 700013
   return malloc(size);
-#elif defined(__WIN32__)
+#elif defined(_WIN32)
   return _aligned_malloc(size, alignment);
 #else
   void *ptr = NULL;
@@ -1141,7 +1151,7 @@ void *dt_alloc_align(size_t alignment, size_t size)
 #endif
 }
 
-#ifdef __WIN32__
+#ifdef _WIN32
 void dt_free_align(void *mem)
 {
   _aligned_free(mem);
@@ -1172,30 +1182,48 @@ void dt_show_times(const dt_times_t *start, const char *prefix, const char *suff
   }
 }
 
-void dt_configure_defaults()
+void dt_configure_performance()
 {
   const int atom_cores = dt_get_num_atom_cores();
   const int threads = dt_get_num_threads();
   const size_t mem = dt_get_total_memory();
   const int bits = (sizeof(void *) == 4) ? 32 : 64;
-  fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores (%d atom based)\n", bits,
-          mem, threads, atom_cores);
-  if(mem >= (8u << 20) && threads > 4)
+  gchar *demosaic_quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
+
+  fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores (%d atom based)\n", bits, mem,
+          threads, atom_cores);
+
+  if(mem >= (8u << 20) && threads > 4 && bits == 64 && atom_cores == 0)
   {
+    // CONFIG 1: at least 8GB RAM, and more than 4 CPU cores, no atom, 64 bit
+    // But respect if user has set higher values manually earlier
     fprintf(stderr, "[defaults] setting very high quality defaults\n");
-    dt_conf_set_int("worker_threads", 8);
-    // if no less than 8Gb, half the total size
-    dt_conf_set_int("host_memory_limit", mem >> 11);
+
+    dt_conf_set_int("worker_threads", MAX(8, dt_conf_get_int("worker_threads")));
+    // if machine has at least 8GB RAM, use half of the total memory size
+    dt_conf_set_int("host_memory_limit", MAX(mem >> 11, dt_conf_get_int("host_memory_limit")));
+    dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
+    if(demosaic_quality == NULL || !strcmp(demosaic_quality, "always bilinear (fast)"))
+      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
-  else if(mem > (2u << 20) && threads > 4)
+  else if(mem > (2u << 20) && threads >= 4 && bits == 64 && atom_cores == 0)
   {
+    // CONFIG 2: at least 2GB RAM, and at least 4 CPU cores, no atom, 64 bit
+    // But respect if user has set higher values manually earlier
     fprintf(stderr, "[defaults] setting high quality defaults\n");
-    dt_conf_set_int("worker_threads", 8);
+
+    dt_conf_set_int("worker_threads", MAX(8, dt_conf_get_int("worker_threads")));
+    dt_conf_set_int("host_memory_limit", MAX(1500, dt_conf_get_int("host_memory_limit")));
+    dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
+    if(demosaic_quality == NULL ||!strcmp(demosaic_quality, "always bilinear (fast)"))
+      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
-  if(mem < (1u << 20) || threads <= 2 || bits < 64 || atom_cores > 0)
+  else if(mem < (1u << 20) || threads <= 2 || bits == 32 || atom_cores > 0)
   {
+    // CONFIG 3: For less than 1GB RAM or 2 or less cores, or 32-bit or for atom processors
+    // use very low/conservative settings
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("worker_threads", 1);
     dt_conf_set_int("host_memory_limit", 500);
@@ -1203,6 +1231,24 @@ void dt_configure_defaults()
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", TRUE);
   }
+  else
+  {
+    // CONFIG 4: for everything else use explicit defaults
+    fprintf(stderr, "[defaults] setting normal defaults\n");
+
+    dt_conf_set_int("worker_threads", 2);
+    dt_conf_set_int("host_memory_limit", 1500);
+    dt_conf_set_int("singlebuffer_limit", 16);
+    dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
+    dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
+  }
+
+  g_free(demosaic_quality);
+
+  // store the current performance configure version as the last completed
+  // that would prevent further execution of previous performance configuration run
+  // at subsequent startups
+  dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);  
 }
 
 

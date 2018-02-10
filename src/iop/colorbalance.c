@@ -431,7 +431,7 @@ static void gain_blue_callback(GtkWidget *slider, dt_iop_module_t *self)
 static gboolean dt_iop_area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   float flt_bg = darktable.bauhaus->bg_normal;
-  if(gtk_widget_get_state(GTK_WIDGET(widget)) == GTK_STATE_SELECTED) flt_bg = darktable.bauhaus->bg_focus;
+  if(gtk_widget_get_state_flags(widget) & GTK_STATE_FLAG_SELECTED) flt_bg = darktable.bauhaus->bg_focus;
   float flt_dark = flt_bg / 1.5, flt_light = flt_bg * 1.5;
 
   uint32_t bg = ((255 << 24) | ((int)floor(flt_bg * 255 + 0.5) << 16) | ((int)floor(flt_bg * 255 + 0.5) << 8)
@@ -606,7 +606,7 @@ void gui_init(dt_iop_module_t *self)
 
 
 #define ADD_FACTOR(which) \
-  g->which##_factor = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->which[CHANNEL_FACTOR] - 1.0f, 3);\
+  g->which##_factor = dt_bauhaus_slider_new_with_range_and_feedback(self, -1.0, 1.0, 0.005, p->which[CHANNEL_FACTOR] - 1.0f, 3, 0);\
   dt_bauhaus_slider_set_stop(g->which##_factor, 0.0, 0.0, 0.0, 0.0);\
   dt_bauhaus_slider_set_stop(g->which##_factor, 1.0, 1.0, 1.0, 1.0);\
   gtk_widget_set_tooltip_text(g->which##_factor, _("factor of " #which));\
@@ -615,7 +615,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->which##_factor, TRUE, TRUE, 0);
 
 #define ADD_CHANNEL(which, c, n, N) \
-  g->which##_##c = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->which[CHANNEL_##N] - 1.0f, 3);\
+  g->which##_##c = dt_bauhaus_slider_new_with_range_and_feedback(self, -1.0, 1.0, 0.005, p->which[CHANNEL_##N] - 1.0f, 3, 0);\
   gtk_widget_set_tooltip_text(g->which##_##c, _("factor of " #n " for " #which));\
   dt_bauhaus_widget_set_label(g->which##_##c, _(#which), _(#n));\
   g_signal_connect(G_OBJECT(g->which##_##c), "value-changed", G_CALLBACK(which##_##n##_callback), self);\

@@ -878,6 +878,13 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
                               (strcmp(escaped_text, _("tagged")) == 0) ? "" : "not");
       break;
 
+    case DT_COLLECTION_PROP_LOCAL_COPY: // local copy
+      query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images WHERE "
+                                     "(flags & %d))) ",
+                              (strcmp(escaped_text, _("not copied locally")) == 0) ? "not" : "",
+                              DT_IMAGE_LOCAL_COPY);
+      break;
+
     case DT_COLLECTION_PROP_CAMERA: // camera
       if (!text || text[0] == '\0') // Optimize away the empty case
         query = dt_util_dstrcat(query, "(1=1)");

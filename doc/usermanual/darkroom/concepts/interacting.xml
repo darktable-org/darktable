@@ -78,11 +78,13 @@
     <orderedlist>
 
       <listitem><para>
-        Triangular marker
+        Left-click
       </para>
 
       <para>
-        Left-click the slider's triangular marker and drag it to the left or right.
+        Click anywhere in the slider area to set the value. You can also click and drag to change it.
+        You don't have to aim for the small triangle or even the line, the whole height including the
+        label works as the active area.
       </para></listitem>
 
       <listitem><para>
@@ -99,8 +101,10 @@
       </para>
 
       <para>
-        Hover over any place on the slider with your mouse, then use your keyboard's arrow keys
-        (&larr;/&darr; and &rarr;/&uarr;) to adjust the value stepwise.
+        When the slider has keyboard focus you can hover over any place on the slider with your
+        mouse, then use your keyboard's arrow keys (&larr;/&darr; and &rarr;/&uarr;) to adjust
+        the value stepwise. In order to give focus to the widget without changing the current
+        value you can right-click, then right-click again.
       </para></listitem>
 
       <listitem><para>

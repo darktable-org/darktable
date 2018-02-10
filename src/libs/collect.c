@@ -1080,6 +1080,17 @@ static void list_view(dt_lib_collect_rule_t *dr)
                            DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("not tagged"), -1);
         break;
 
+      case DT_COLLECTION_PROP_LOCAL_COPY: // local copy, 2 hardcoded alternatives
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("copied locally"),
+                           DT_LIB_COLLECT_COL_ID, 0, DT_LIB_COLLECT_COL_TOOLTIP, _("copied locally"),
+                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("copied locally"), -1);
+        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("not copied locally"),
+                           DT_LIB_COLLECT_COL_ID, 1, DT_LIB_COLLECT_COL_TOOLTIP, _("not copied locally"),
+                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, DT_LIB_COLLECT_COL_PATH, _("not copied locally"), -1);
+        break;
+
       case DT_COLLECTION_PROP_COLORLABEL: // colorlabels
         gtk_list_store_append(GTK_LIST_STORE(model), &iter);
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, _("red"),
@@ -1429,7 +1440,7 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
 
   if(item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS
      || item == DT_COLLECTION_PROP_COLORLABEL || item == DT_COLLECTION_PROP_GEOTAGGING
-     || item == DT_COLLECTION_PROP_HISTORY)
+     || item == DT_COLLECTION_PROP_HISTORY ||  item == DT_COLLECTION_PROP_LOCAL_COPY)
     set_properties(d->rule + active); // we just have to set the selection
   else
     update_view(d->rule + active); // we have to update visible items too
@@ -1798,7 +1809,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
 
-    w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+    w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     d->rule[i].button = w;
     gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(popup_button_callback), d->rule + i);
@@ -2043,6 +2054,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_APERTURE);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FILENAME);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GEOTAGGING);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_LOCAL_COPY);
 
 }
 #endif

@@ -28,12 +28,13 @@ class CameraSupportState
 
   def file_content(filename, rev)
     submodule,submodulerev=get_submodule(filename)
+    goodname = filename.dup
     if submodule
       Dir.chdir(submodule)
-      filename.gsub!("#{submodule}/",'')
+      goodname.gsub!("#{submodule}/",'')
       rev=submodulerev
     end
-    ret=IO.popen("git show #{rev}:#{filename}")
+    ret=IO.popen("git show #{rev}:#{goodname}")
     if submodule
       Dir.chdir(@basedir)
     end
@@ -222,18 +223,18 @@ class CameraSupportState
   end
 
   def matrix_listing
-    puts "<table><tbody>"
+    puts "<!-- valid as of #{Time.now.strftime("%Y/%m/%d")}, #{IO.popen("git describe").readlines[0]} -->"
+    puts "<table class=\"smalltext altrows u-full-width\">"
 
-    counts = [0, 0, 0, 0, 0]
+    counts = [0, 0, 0, 0]
     clist = ""
     i = 1
     camera_list.each do |camera, al|
       counts[0] += 1
       i += 1
-      line_class = i%2 == 0 ? "even" : "odd"
-      clist << "  <tr class=\"#{line_class}\">"
+      clist << "  <tr>"
       clist << "<td>#{al}</td>"
-      [@samples_alias_cameras[al], @presets_cameras[camera],
+      [@presets_cameras[camera],
        @noiseprofiles_cameras[camera], @colormatrices_cameras[camera]].each_with_index do |value, num|
         counts[num+1] += 1 if value
         value = value ? "Yes" : "<strong>NO</strong>"
@@ -242,15 +243,15 @@ class CameraSupportState
       clist << "</tr>\n"
     end
 
-    puts "  <tr class=\"odd\">"
-    ["Camera", "Raw Sample", "WB Presets", "Noise Profile", "Custom Matrix"].each_with_index do |name, i|
+    puts "  <thead><tr>"
+    ["Camera", "WB Presets", "Noise Profile", "Custom Matrix"].each_with_index do |name, i|
       $stdout.write "    <th><strong>#{name}</strong><br/>"
       $stdout.write "#{counts[i]} (#{(counts[i].to_f/counts[0].to_f*100).to_i}%)"
       $stdout.write "</th>\n"
     end
-    puts "  </tr>"
+    puts "  </tr></thead>"
     $stdout.write clist
-    puts "</tbody></table>"
+    puts "</table>"
   end
 
   def camera_list

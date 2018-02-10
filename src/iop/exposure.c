@@ -47,7 +47,7 @@
 #include "iop/iop_api.h"
 
 #define exposure2white(x) exp2f(-(x))
-#define white2exposure(x) -dt_log2f(fmaxf(0.001, x))
+#define white2exposure(x) -dt_log2f(fmaxf(1e-20f, x))
 
 DT_MODULE_INTROSPECTION(5, dt_iop_exposure_params_t)
 
@@ -883,7 +883,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->autoexpp, _("percentage of bright values clipped out, toggle color picker to activate"));
   dt_bauhaus_slider_set_format(g->autoexpp, "%.3f%%");
   dt_bauhaus_widget_set_label(g->autoexpp, NULL, _("clipping threshold"));
-  dt_bauhaus_widget_set_quad_paint(g->autoexpp, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE);
+  dt_bauhaus_widget_set_quad_paint(g->autoexpp, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(g->autoexpp), TRUE, TRUE, 0);
 
   gtk_widget_show_all(vbox_manual);

@@ -504,8 +504,13 @@ void reload_defaults(dt_iop_module_t *self)
   memcpy(self->default_params, &tmp, sizeof(dt_iop_invert_params_t));
 
   self->default_enabled = 0;
+  self->hide_enable_button = 0;
 
-  if(self->dev && self->dev->image_storage.flags & DT_IMAGE_4BAYER && self->gui_data)
+  if(!self->dev) return;
+
+  if(dt_image_is_monochrome(&self->dev->image_storage))
+    self->hide_enable_button = 1;
+  else if(self->dev->image_storage.flags & DT_IMAGE_4BAYER && self->gui_data)
   {
     dt_iop_invert_gui_data_t *g = self->gui_data;
 
@@ -568,6 +573,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   // 4Bayer images not implemented in OpenCL yet
   if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = 0;
+
+  if(self->hide_enable_button) piece->enabled = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -588,10 +595,17 @@ void gui_update(dt_iop_module_t *self)
 
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
 
-  gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
-  dtgtk_reset_label_set_text(g->label, _("color of film material"));
-
-  gui_update_from_coeffs(self);
+  if(!dt_image_is_monochrome(&self->dev->image_storage))
+  {
+    gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
+    dtgtk_reset_label_set_text(g->label, _("color of film material"));
+    gui_update_from_coeffs(self);
+  }
+  else
+  {
+    gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), FALSE);
+    dtgtk_reset_label_set_text(g->label, _("module disabled for monochrome image"));
+  }
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -616,7 +630,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->colorpicker), "color-set", G_CALLBACK(colorpicker_callback), self);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), GTK_WIDGET(g->colorpicker), TRUE, TRUE, 0);
 
-  g->picker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+  g->picker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->picker, _("pick color of film material from image"));
   gtk_widget_set_size_request(g->picker, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   g_signal_connect(G_OBJECT(g->picker), "toggled", G_CALLBACK(request_pick_toggled), self);

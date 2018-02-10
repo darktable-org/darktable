@@ -125,7 +125,7 @@ static gboolean sample_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer da
       gtk_style_context_get_color(gtk_widget_get_style_context(widget), gtk_widget_get_state_flags(widget), &fg_color);
 
       gdk_cairo_set_source_rgba(cr, &fg_color);
-      dtgtk_cairo_paint_lock(cr, border, border, icon_width, icon_height, 0);
+      dtgtk_cairo_paint_lock(cr, border, border, icon_width, icon_height, 0, NULL);
     }
   }
 
@@ -520,7 +520,7 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(data->size_selector), "changed", G_CALLBACK(_size_changed), (gpointer)self);
 
-  data->picker_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_BOX);
+  data->picker_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_BOX, NULL);
   gtk_widget_set_size_request(data->picker_button, DT_PIXEL_APPLY_DPI(50), -1);
   gtk_box_pack_start(GTK_BOX(picker_subrow), data->picker_button, FALSE, FALSE, 0);
 

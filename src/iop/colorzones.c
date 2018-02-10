@@ -922,7 +922,6 @@ static gboolean colorzones_button_press(GtkWidget *widget, GdkEventButton *event
       p->equalizer_x[c->channel][k] = d->equalizer_x[c->channel][k];
       p->equalizer_y[c->channel][k] = d->equalizer_y[c->channel][k];
     }
-    p->strength = d->strength;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(self->widget);
   }
@@ -1080,7 +1079,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
-  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT  | CPF_DO_NOT_USE_BORDER);
+  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT  | CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_size_request(GTK_WIDGET(tb), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
   gtk_widget_set_tooltip_text(tb, _("pick GUI color from image"));
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);

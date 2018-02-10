@@ -196,7 +196,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   cairo_surface_t *fav_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
   cairo_t *fav_cr = cairo_create(fav_cst);
   cairo_set_source_rgb(fav_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_modulegroup_favorites(fav_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
+  dtgtk_cairo_paint_modulegroup_favorites(fav_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0, NULL);
   cairo_destroy(fav_cr);
   guchar *data = cairo_image_surface_get_data(fav_cst);
   dt_draw_cairo_to_gdk_pixbuf(data, ICON_SIZE, ICON_SIZE);
@@ -229,6 +229,8 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   if(col) gtk_tree_view_remove_column(GTK_TREE_VIEW(view), col);
   gtk_tree_view_insert_column_with_data_func(GTK_TREE_VIEW(view), 2, "name", text_renderer,
                                              text_renderer_function, NULL, NULL);
+
+  gtk_tree_view_set_search_column(GTK_TREE_VIEW(view), 2);
 
   /* go thru list of iop modules and add them to the list */
   GList *modules = g_list_last(darktable.iop);

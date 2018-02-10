@@ -1401,14 +1401,14 @@ void gui_init(dt_view_t *self)
 
   /* create favorite plugin preset popup tool */
   GtkWidget *favorite_presets
-      = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+      = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets of your favorites"));
   g_signal_connect(G_OBJECT(favorite_presets), "clicked", G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
                    NULL);
   dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets, DT_VIEW_DARKROOM);
 
   /* create quick styles popup menu tool */
-  GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_signal_connect(G_OBJECT(styles), "clicked", G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
   gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
@@ -1419,7 +1419,7 @@ void gui_init(dt_view_t *self)
   {
     // the button
     dev->rawoverexposed.button
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(dev->rawoverexposed.button,
                                 _("toggle raw over exposed indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "clicked",
@@ -1487,7 +1487,7 @@ void gui_init(dt_view_t *self)
   {
     // the button
     dev->overexposed.button
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(dev->overexposed.button,
                                 _("toggle over/under exposed indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
@@ -1549,7 +1549,7 @@ void gui_init(dt_view_t *self)
   {
     // the softproof button
     dev->profile.softproof_button
-    = dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+    = dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(dev->profile.softproof_button,
                                 _("toggle softproofing\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
@@ -1562,7 +1562,7 @@ void gui_init(dt_view_t *self)
 
     // the gamut check button
     dev->profile.gamut_button
-    = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+    = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(dev->profile.gamut_button,
                  _("toggle gamut checking\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
@@ -2229,6 +2229,66 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     else
       return 0;
   }
+
+  if(key == accels->global_zoom_in.accel_key && state == accels->global_zoom_in.accel_mods)
+  {
+    dt_develop_t *dev = (dt_develop_t *)self->data;
+
+    scrolled(self, dev->width / 2, dev->height / 2, 1, state);
+    return 1;
+  }
+
+  if(key == accels->global_zoom_out.accel_key && state == accels->global_zoom_out.accel_mods)
+  {
+    dt_develop_t *dev = (dt_develop_t *)self->data;
+
+    scrolled(self, dev->width / 2, dev->height / 2, 0, state);
+    return 1;
+  }
+
+  if(key == GDK_KEY_Left || key == GDK_KEY_Right || key == GDK_KEY_Up || key == GDK_KEY_Down)
+  {
+    dt_develop_t *dev = (dt_develop_t *)self->data;
+    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    const int closeup = dt_control_get_dev_closeup();
+    float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2.0 : 1.0, 0);
+    int procw, proch;
+    dt_dev_get_processed_size(dev, &procw, &proch);
+
+    GdkModifierType modifiers;
+    modifiers = gtk_accelerator_get_default_mod_mask();
+
+    // For each cursor press, move one screen by default
+    float step_changex = dev->width / (procw * scale);
+    float step_changey = dev->height / (proch * scale);
+    float factor = 0.2f;
+
+    if((state & modifiers) == GDK_MOD1_MASK) factor = 0.02f;
+    if((state & modifiers) == GDK_CONTROL_MASK) factor = 1.0f;
+
+    float old_zoom_x, old_zoom_y;
+
+    old_zoom_x = dt_control_get_dev_zoom_x();
+    old_zoom_y = dt_control_get_dev_zoom_y();
+
+    float zx = old_zoom_x;
+    float zy = old_zoom_y;
+
+    if(key == GDK_KEY_Left) zx = zx - step_changex * factor;
+    if(key == GDK_KEY_Right) zx = zx + step_changex * factor;
+    if(key == GDK_KEY_Up) zy = zy - step_changey * factor;
+    if(key == GDK_KEY_Down) zy = zy + step_changey * factor;
+
+    dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
+    dt_control_set_dev_zoom_x(zx);
+    dt_control_set_dev_zoom_y(zy);
+
+    dt_dev_invalidate(dev);
+    dt_control_queue_redraw();
+
+    return 1;
+  }
+
   return 1;
 }
 

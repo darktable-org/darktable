@@ -115,11 +115,9 @@ void gui_init(dt_lib_module_t *self)
 
     surface = cairo_image_surface_create_from_png(filename);
     g_free(logo);
-    g_free(filename);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
       fprintf(stderr, "warning: can't load darktable logo from PNG file `%s'\n", filename);
-      d->image = NULL;
       goto done;
     }
     int png_width = cairo_image_surface_get_width(surface),
@@ -135,10 +133,10 @@ void gui_init(dt_lib_module_t *self)
         = dt_cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
     if(cairo_surface_status(d->image) != CAIRO_STATUS_SUCCESS)
     {
+      fprintf(stderr, "warning: can't load darktable logo from PNG file `%s'\n", filename);
       free(d->image_buffer);
       d->image_buffer = NULL;
-      cairo_surface_destroy(surface);
-      fprintf(stderr, "warning: can't load darktable logo from PNG file `%s'\n", filename);
+      cairo_surface_destroy(d->image);
       d->image = NULL;
       goto done;
     }
@@ -151,10 +149,11 @@ void gui_init(dt_lib_module_t *self)
     cairo_destroy(cr);
     cairo_surface_flush(d->image);
 
+done:
     cairo_surface_destroy(surface);
+    g_free(filename);
   }
 
-done:
   d->image_width = d->image ? dt_cairo_image_surface_get_width(d->image) : 0;
   d->image_height = d->image ? dt_cairo_image_surface_get_height(d->image) : 0;
 
@@ -185,6 +184,10 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   gtk_widget_get_allocation(widget, &allocation);
   gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
 
+  // Get the normal foreground color from the CSS stylesheet
+  GdkRGBA *tmpcolor;
+  gtk_style_context_get(context, GTK_STATE_FLAG_NORMAL, "color", &tmpcolor, NULL);
+
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
   PangoFontDescription *font_desc = NULL;
@@ -207,7 +210,7 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   pango_layout_set_font_description(layout, font_desc);
 
   pango_layout_set_text(layout, PACKAGE_NAME, -1);
-  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
+  cairo_set_source_rgba(cr, tmpcolor->red, tmpcolor->green, tmpcolor->blue, 0.7);
   cairo_move_to(cr, d->image_width + DT_PIXEL_APPLY_DPI(2.0), DT_PIXEL_APPLY_DPI(5.0));
   pango_cairo_show_layout(cr, layout);
 
@@ -216,10 +219,11 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   pango_layout_set_font_description(layout, font_desc);
   pango_layout_set_text(layout, darktable_package_version, -1);
   cairo_move_to(cr, d->image_width + DT_PIXEL_APPLY_DPI(4.0), DT_PIXEL_APPLY_DPI(30.0));
-  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
+  cairo_set_source_rgba(cr, tmpcolor->red, tmpcolor->green, tmpcolor->blue, 0.3);
   pango_cairo_show_layout(cr, layout);
 
   /* cleanup */
+  gdk_rgba_free(tmpcolor);
   g_object_unref(layout);
   pango_font_description_free(font_desc);
 

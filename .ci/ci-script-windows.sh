@@ -69,7 +69,19 @@ message() { local status="${1}"; local items=("${@:2}"); _status message "${stat
 
 # Install build environment and build
 PATH=/c/msys64/mingw64/bin:$PATH
-execute 'Installing base-devel and toolchain'  pacman -S --noconfirm mingw-w64-x86_64-{toolchain,cmake}
-execute 'Installing dependencies' pacman -S --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3}
+
+# reduce time required to install packages by disabling pacman's disk space checking
+sed -i 's/^CheckSpace/#CheckSpace/g' /etc/pacman.conf
+
+# write a custom fonts.conf to speed up fc-cache
+export FONTCONFIG_FILE=$(cygpath -a fonts.conf)
+cat > "$FONTCONFIG_FILE" <<EOF
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig><dir>$(cygpath -aw fonts)</dir></fontconfig>
+EOF
+
+execute 'Installing base-devel and toolchain'  pacman -S --noconfirm mingw-w64-x86_64-{toolchain,clang,cmake}
+execute 'Installing dependencies' pacman -S --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes}
 execute 'Updating lensfun databse' lensfun-update-data
 execute 'Building darktable' build_darktable

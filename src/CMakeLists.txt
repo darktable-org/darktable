@@ -47,6 +47,7 @@ FILE(GLOB SOURCE_FILES
   "common/interpolation.c"
   "common/locallaplacian.c"
   "common/locallaplaciancl.c"
+  "common/l10n.c"
   "common/metadata.c"
   "common/mipmap_cache.c"
   "common/module.c"
@@ -312,6 +313,13 @@ if(USE_OPENJPEG)
     list(APPEND LIBS ${OpenJPEG_LIBRARIES})
   endif(OpenJPEG_FOUND)
 endif(USE_OPENJPEG)
+
+find_package(IsoCodes 3.66)
+if(ISO_CODES_FOUND)
+  add_definitions("-DHAVE_ISO_CODES")
+else(ISO_CODES_FOUND)
+  message(STATUS "no suitable iso-codes, there will be no language names in the preferences")
+endif(ISO_CODES_FOUND)
 
 #
 # Detect compile of optional pwstorage backends
@@ -809,7 +817,7 @@ endif(APPLE)
 target_link_libraries(darktable lib_darktable)
 
 if (WIN32)
-  set_target_properties(darktable PROPERTIES LINK_FLAGS "-mwindows -Wl,-subsystem,windows")
+  set_target_properties(darktable PROPERTIES LINK_FLAGS "-mconsole -mwindows -Wl,-subsystem,console")
   _detach_debuginfo (darktable bin)
   _detach_debuginfo (lib_darktable bin)
 endif(WIN32)

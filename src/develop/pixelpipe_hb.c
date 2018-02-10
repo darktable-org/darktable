@@ -1581,7 +1581,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_CPU);
       pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
     }
-#else
+#else // HAVE_OPENCL
     // histogram collection for module
     if((dev->gui_attached || !(piece->request_histogram & DT_REQUEST_ONLY_IN_GUI))
        && (piece->request_histogram & DT_REQUEST_ON))
@@ -1664,7 +1664,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
     pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_CPU);
     pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
-#endif
+#endif // HAVE_OPENCL
 
     char histogram_log[32] = "";
     if(!(pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_NONE))
@@ -1791,7 +1791,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
     }
 
-  post_process_collect_info:
+post_process_collect_info:
 
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown)
@@ -1925,7 +1925,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             for(int k = 0; k < 3; k++)
             {
               darktable.lib->proxy.colorpicker.picked_color_rgb_min[k]
-                  = MIN(darktable.lib->proxy.colorpicker.picked_color_rgb_min[2 - k],
+                  = MIN(darktable.lib->proxy.colorpicker.picked_color_rgb_min[k],
                         pixel[4 * (roi_out->width * j + i) + 2 - k]);
               darktable.lib->proxy.colorpicker.picked_color_rgb_max[k]
                   = MAX(darktable.lib->proxy.colorpicker.picked_color_rgb_max[k],

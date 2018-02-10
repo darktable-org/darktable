@@ -7,15 +7,15 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     Install MSYS2 (instructions and prerequisites can be found on official website: https://msys2.github.io/).
     Update the base MSYS2 system until no further updates are available using:
     $ pacman -Syu
-    
+
     Install x64 developer tools and x86_64 toolchain and git from the MSYS2 prompt:
     $ pacman -S base-devel
     $ pacman -S mingw-w64-x86_64-{toolchain,cmake,nsis}
     $ pacman -S git
 
     Install required libraries and dependencies:
-    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3}
-    
+    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes}
+
     For gphoto2:
     You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables  properly set for LIBGPHOTO are available. You can check them with:
     $ echo $CAMLIBS
@@ -27,10 +27,11 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     Also use this program to install USB driver on Windows for your camera:
     http://zadig.akeo.ie/
     When you run it, replace current Windows camera driver with WinUSB driver
-    
-    For usermanual 
+
+    For usermanual
     $ pacman -S po4a
-    $ pacman -S mingw-w64-x86_64-{imagemagick,docbook-xsl,gnome-doc-utils}
+    $ pacman -S gnome-doc-utils
+    $ pacman -S mingw-w64-x86_64-{imagemagick,docbook-xsl}
 
     Manually Install JAVA runtime
     Manually install SAXON: https://sourceforge.net/projects/saxon/files/Saxon-HE/
@@ -41,7 +42,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
 
     Manually install FOP: http://www.apache.org/dyn/closer.cgi/xmlgraphics/fop
     Copy files to ~/java/fop
-    Copy fop.xconf to /etc/fop.conf
+    Copy fop.xconf to /etc/fop.xml
     change fop shell script in fop folder:
     from:
     if [ "$OS" = "Windows_NT" ] ; then
@@ -71,9 +72,11 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     Clone darktable git repository (in this example into ~/darktable):
         $ cd ~
         $ git clone git://github.com/darktable-org/darktable.git
-    
-    Finally build and install darktable:
         $ cd darktable
+        $ git submodule init
+        $ git submodule update
+
+    Finally build and install darktable:
         $ mkdir build
         $ cd build
         $ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ../.
@@ -84,7 +87,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
 
     For building the usermanual either add -DBUILD_USERMANUAL=ON flag to the cmake command line, or if you want to build only the usermanual (and not the application) use:
         $ cmake --build . --target usermanual
-        
+
     For building the installer image, which will  create darktable-<VERSION>.exe installer in current build directory, use:
         $ cmake --build . --target package
 
