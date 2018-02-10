@@ -241,7 +241,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   g_free(result_tmp_dir);
 
   // if filenamepattern is a directory just let att ${FILE_NAME} as default..
-  if(g_file_test(tmp_dir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)
+  if(g_file_test(tmp_dir, G_FILE_TEST_IS_DIR)
      || ((d->filename + strlen(d->filename) - 1)[0] == '/'
          || (d->filename + strlen(d->filename) - 1)[0] == '\\'))
     snprintf(d->filename + strlen(d->filename), sizeof(d->filename) - strlen(d->filename), "/$(FILE_NAME)");
