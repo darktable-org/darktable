@@ -133,7 +133,7 @@ static int show_pango_text(cairo_t *cr, char *text, float x_pos, float y_pos, fl
 
   if(right_aligned) x_pos -= text_width;
 
-  if(sensitive) set_text_color(cr, sensitive);
+  set_text_color(cr, sensitive);
   if(indicator) set_indicator_color(cr, 1);
   cairo_move_to(cr, x_pos, y_pos);
   pango_cairo_show_layout(cr, layout);
@@ -567,7 +567,7 @@ void dt_bauhaus_init()
   // gtk_window_set_modal(GTK_WINDOW(c->popup_window), TRUE);
   // gtk_window_set_decorated(GTK_WINDOW(c->popup_window), FALSE);
 
-  // for pie menue:
+  // for pie menu:
   // gtk_window_set_position(GTK_WINDOW(c->popup_window), GTK_WIN_POS_MOUSE);// | GTK_WIN_POS_CENTER);
 
   // gtk_window_set_keep_above isn't enough on OS X
@@ -1670,14 +1670,11 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
           = show_pango_text(cr, w->label, 2, 0, 0, FALSE, gtk_widget_is_sensitive(widget), FALSE);
       dt_bauhaus_draw_quad(w, cr);
 
-      if(gtk_widget_is_sensitive(widget))
-      {
-        dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-        gchar *text = d->text;
-        if(d->active >= 0) text = (gchar *)g_list_nth_data(d->labels, d->active);
-        show_pango_text(cr, text, width - 4 - height, 0, width - 4 - height - label_width - height, TRUE,
-                        TRUE, FALSE);
-      }
+      dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+      gchar *text = d->text;
+      if(d->active >= 0) text = (gchar *)g_list_nth_data(d->labels, d->active);
+      show_pango_text(cr, text, width - 4 - height, 0, width - 4 - height - label_width - height, TRUE,
+                      gtk_widget_is_sensitive(widget), FALSE);
       break;
     }
     case DT_BAUHAUS_SLIDER:

@@ -30,7 +30,7 @@ void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line)
   }
   else
   {
-    printf("(size %d),\n",lua_gettop(L)); //usefull to detect underflows
+    printf("(size %d),\n",lua_gettop(L)); //useful to detect underflows
   }
   for(int i = 1; i <= lua_gettop(L); i++)
   {
@@ -104,10 +104,10 @@ void dt_lua_goto_subtable(lua_State *L, const char *sub_name)
 
 /* LUA LOCKING
    Lua can only be run from a single thread at a time (the base lua engine
-   is not protected against concurent access) so we need a mutex to cover us
+   is not protected against concurrent access) so we need a mutex to cover us
 
    However there are cases in lua/call.c where we need to lock the lua access
-   from a thread and unlock it from another thread. This is done to guarentee
+   from a thread and unlock it from another thread. This is done to guarantee
    that the lua code from the first thread is followed from the lua code in the
    second thread with no other lua thread having a chance to run in the middle
 

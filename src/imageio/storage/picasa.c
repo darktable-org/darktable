@@ -82,7 +82,7 @@ typedef enum PicasaAlbumPrivacyPolicy
 } PicasaAlbumPrivacyPolicy;
 
 /**
- * Represents informations about an album
+ * Represents information about an album
  */
 typedef struct PicasaAlbum
 {
@@ -105,7 +105,7 @@ static void picasa_album_destroy(PicasaAlbum *album)
 }
 
 /**
- * Represents informations about an account
+ * Represents information about an account
  */
 typedef struct PicasaAccountInfo
 {
@@ -196,7 +196,7 @@ static gchar *picasa_get_user_refresh_token(PicasaContext *ctx);
 
 //////////////////////////// curl requests related functions
 
-/** Grow and fill _buffer_t with recieved data... */
+/** Grow and fill _buffer_t with received data... */
 static size_t _picasa_api_buffer_write_func(void *ptr, size_t size, size_t nmemb, void *stream)
 {
   _buffer_t *buffer = (_buffer_t *)stream;
@@ -629,7 +629,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
 
 /**
  * @see https://developers.google.com/accounts/docs/OAuth2InstalledApp#callinganapi
- * @return basic informations about the account
+ * @return basic information about the account
  */
 static PicasaAccountInfo *picasa_get_account_info(PicasaContext *ctx)
 {
@@ -695,7 +695,7 @@ static gchar *picasa_get_user_refresh_token(PicasaContext *ctx)
 
 /**
  * @see https://developers.google.com/accounts/docs/OAuth2InstalledApp
- * @returs NULL if the user cancel the operation or a valid token
+ * @returns NULL if the user cancels the operation or a valid token
  */
 static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 {

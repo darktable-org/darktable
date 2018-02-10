@@ -2031,7 +2031,7 @@ dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp, dt_masks_f
 
   if(!(grp->type & DT_MASKS_GROUP)) return NULL;
   // either the form to add is not a group, so no risk
-  // or we go throught all points of form to see if we find a ref to grp->formid
+  // or we go through all points of form to see if we find a ref to grp->formid
   if(!(form->type & DT_MASKS_GROUP) || _find_in_group(form, grp->formid) == 0)
   {
     dt_masks_point_group_t *grpt = malloc(sizeof(dt_masks_point_group_t));
@@ -2217,7 +2217,7 @@ static void _cleanup_unused_recurs(dt_develop_t *dev, int formid, int *used, int
     if(used[i] == formid) break;
   }
 
-  // if the form is a group, we iterate throught the sub-forms
+  // if the form is a group, we iterate through the sub-forms
   dt_masks_form_t *form = dt_masks_get_from_id(dev, formid);
   if(form && (form->type & DT_MASKS_GROUP))
   {
@@ -2237,7 +2237,7 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
   guint nbf = g_list_length(dev->forms);
   int *used = calloc(nbf, sizeof(int));
 
-  // now we iterate throught all iop to find used forms
+  // now we iterate through all iop to find used forms
   GList *iops = g_list_first(dev->iop);
   while(iops)
   {
@@ -2280,7 +2280,7 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
 
 int dt_masks_point_in_form_exact(float x, float y, float *points, int points_start, int points_count)
 {
-  // we use ray casting algorith
+  // we use ray casting algorithm
   // to avoid most problems with horizontal segments, y should be rounded as int
   // so that there's very little chance than y==points...
 
@@ -2309,7 +2309,7 @@ int dt_masks_point_in_form_exact(float x, float y, float *points, int points_sta
 
 int dt_masks_point_in_form_near(float x, float y, float *points, int points_start, int points_count, float distance, int *near)
 {
-  // we use ray casting algorith
+  // we use ray casting algorithm
   // to avoid most problems with horizontal segments, y should be rounded as int
   // so that there's very little chance than y==points...
 

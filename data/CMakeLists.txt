@@ -5,7 +5,7 @@ if(USE_OPENCL)
 endif(USE_OPENCL)
 
 #
-# Generate and instal darktable.css
+# Generate and install darktable.css
 #
 if ("${GTK3_VERSION}" VERSION_GREATER "3.19.0")
   if ("${GTK3_VERSION}" VERSION_GREATER "3.21.0")
@@ -46,6 +46,7 @@ endif(USE_LUA)
 #
 # Install (and generate when necessary) other system shares
 #
+if(NOT WIN32)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in)
 file(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po")
 add_custom_command(
@@ -67,6 +68,7 @@ if(${VALIDATE_DESKTOP_FILE})
   add_dependencies(darktable.desktop_file validate_darktable_desktop)
 endif()
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications COMPONENT DTApplication)
+endif(NOT WIN32)
 
 if(${VALIDATE_APPDATA_FILE})
   add_custom_command(
@@ -108,7 +110,7 @@ install(FILES gdb_commands DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable CO
 if(${VALIDATE_JSON})
   add_custom_target(
     validate_noiseprofiles_json ALL
-    COMMAND ${CMAKE_COMMAND} -E env LANG=C.UTF-8 LC_ALL=C.UTF-8 ${jsonschema_BIN} -i ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.json ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.schema
+    COMMAND ${jsonschema_BIN} -i ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.json ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.schema
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.json ${CMAKE_CURRENT_SOURCE_DIR}/noiseprofiles.schema
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
     COMMENT "Checking validity of noiseprofiles.json"

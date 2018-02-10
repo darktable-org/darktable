@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-11 09:38+0100\n"
-"PO-Revision-Date: 2017-12-11 09:49+0100\n"
+"POT-Creation-Date: 2017-12-22 09:37+0100\n"
+"PO-Revision-Date: 2017-12-22 13:14+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -941,6 +941,30 @@ msgstr ""
 "darktable unterstützt das Raw-Format der meisten modernen Kameras und führt "
 "seine Berechnungen mit sehr hoher Präzision durch."
 
+#: ../data/darktable.appdata.xml.in.h:5
+msgid "Virtual light table, showing a collection"
+msgstr "Der Leuchttisch zeigt eine Sammlung an"
+
+#: ../data/darktable.appdata.xml.in.h:6
+msgid "Virtual dark room with an opened image"
+msgstr "Die Dunkelkammer mit einem geöffneten Bild"
+
+#: ../data/darktable.appdata.xml.in.h:7
+msgid "Virtual dark room, sharpening an image"
+msgstr "Schärfen eines Bildes in der Dunkelkammer"
+
+#: ../data/darktable.appdata.xml.in.h:8
+msgid "Virtual dark room, split toning an image"
+msgstr "Split-Toning in der Dunkelkammer"
+
+#: ../data/darktable.appdata.xml.in.h:9
+msgid "Show images on a map"
+msgstr "Zeige Bilder auf der Karte an"
+
+#: ../data/darktable.appdata.xml.in.h:10
+msgid "Print your images"
+msgstr "Drucke deine Bilder"
+
 #: ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
 msgstr "Virtueller Leuchttisch und Dunkelkammer"
@@ -957,7 +981,7 @@ msgstr "Graphik;Grafik;Photographie;Fotografie;Raw;"
 #: ../src/imageio/storage/disk.c:95 ../src/imageio/storage/gallery.c:107
 #: ../src/imageio/storage/latex.c:106 ../src/libs/collect.c:240
 #: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:476
-#: ../src/libs/import.c:755 ../src/libs/import.c:862 ../src/libs/lib.c:240
+#: ../src/libs/import.c:757 ../src/libs/import.c:864 ../src/libs/lib.c:240
 #: ../src/libs/styles.c:213 ../src/libs/styles.c:236 ../src/libs/tagging.c:374
 #: ../src/libs/tagging.c:414
 msgid "_cancel"
@@ -1049,7 +1073,7 @@ msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "Konnte keine Einstellungen vom Format-Modul bekommen, breche Export ab …"
 
-#: ../src/common/collection.c:855 ../src/develop/lightroom.c:789
+#: ../src/common/collection.c:855 ../src/develop/lightroom.c:818
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:451
 #: ../src/iop/channelmixer.c:462 ../src/iop/colorbalance.c:631
 #: ../src/iop/temperature.c:1350 ../src/libs/collect.c:1085
@@ -1057,13 +1081,13 @@ msgstr ""
 msgid "red"
 msgstr "Rot"
 
-#: ../src/common/collection.c:857 ../src/develop/lightroom.c:791
+#: ../src/common/collection.c:857 ../src/develop/lightroom.c:820
 #: ../src/iop/temperature.c:1341 ../src/libs/collect.c:1089
 #: ../src/libs/collect.c:1090 ../src/libs/collect.c:1091
 msgid "yellow"
 msgstr "Gelb"
 
-#: ../src/common/collection.c:859 ../src/develop/lightroom.c:793
+#: ../src/common/collection.c:859 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:452
 #: ../src/iop/channelmixer.c:468 ../src/iop/colorbalance.c:638
 #: ../src/iop/temperature.c:1338 ../src/iop/temperature.c:1351
@@ -1072,7 +1096,7 @@ msgstr "Gelb"
 msgid "green"
 msgstr "Grün"
 
-#: ../src/common/collection.c:861 ../src/develop/lightroom.c:795
+#: ../src/common/collection.c:861 ../src/develop/lightroom.c:824
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
 #: ../src/iop/channelmixer.c:474 ../src/iop/colorbalance.c:645
 #: ../src/iop/temperature.c:1352 ../src/libs/collect.c:1097
@@ -1212,7 +1236,7 @@ msgstr "Fehler beim Laden von Verzeichnis ‚%s‘"
 msgid "file `%s' has unknown format!"
 msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
 
-#: ../src/common/darktable.c:264 ../src/libs/import.c:821
+#: ../src/common/darktable.c:264 ../src/libs/import.c:823
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei ‚%s‘"
@@ -1554,15 +1578,15 @@ msgstr "Stil-Datei für ‚%s‘ existiert bereits"
 msgid "style %s was successfully imported"
 msgstr "Stil ‚%s‘ erfolgreich importiert"
 
-#: ../src/common/utility.c:455
+#: ../src/common/utility.c:456
 msgid "above sea level"
 msgstr "über Null"
 
-#: ../src/common/utility.c:456
+#: ../src/common/utility.c:457
 msgid "below sea level"
 msgstr "unter Null"
 
-#: ../src/common/utility.c:507 ../src/iop/watermark.c:735
+#: ../src/common/utility.c:508 ../src/iop/watermark.c:735
 #: ../src/libs/metadata_view.c:550
 msgid "m"
 msgstr "m"
@@ -1986,7 +2010,7 @@ msgstr[1] "Importiere %d Bilder"
 msgid "importing image %s"
 msgstr "Bild %s importieren"
 
-#: ../src/control/jobs/image_jobs.c:104 ../src/libs/import.c:755
+#: ../src/control/jobs/image_jobs.c:104 ../src/libs/import.c:757
 msgid "import image"
 msgstr "Bild importieren"
 
@@ -2552,35 +2576,35 @@ msgstr "Einstellungen zurücksetzen"
 msgid "presets"
 msgstr "Voreinstellungen"
 
-#: ../src/develop/lightroom.c:921
+#: ../src/develop/lightroom.c:965
 msgid "cannot find lightroom XMP!"
 msgstr "Lightroom-XMP kann nicht gefunden werden!"
 
-#: ../src/develop/lightroom.c:953 ../src/develop/lightroom.c:975
-#: ../src/develop/lightroom.c:995
+#: ../src/develop/lightroom.c:997 ../src/develop/lightroom.c:1019
+#: ../src/develop/lightroom.c:1039
 #, c-format
 msgid "`%s' not a lightroom XMP!"
 msgstr "‚%s‘ ist kein Lightroom-XMP!"
 
-#: ../src/develop/lightroom.c:1455 ../src/libs/import.c:594
+#: ../src/develop/lightroom.c:1499 ../src/libs/import.c:594
 msgid "tags"
 msgstr "Tags"
 
-#: ../src/develop/lightroom.c:1464 ../src/libs/tools/filter.c:141
+#: ../src/develop/lightroom.c:1508 ../src/libs/tools/filter.c:141
 msgid "rating"
 msgstr "Bewertung"
 
-#: ../src/develop/lightroom.c:1473 ../src/libs/collect.h:38
+#: ../src/develop/lightroom.c:1517 ../src/libs/collect.h:38
 #: ../src/libs/geotagging.c:62
 msgid "geotagging"
 msgstr "Geotagging"
 
-#: ../src/develop/lightroom.c:1482 ../src/libs/collect.h:34
+#: ../src/develop/lightroom.c:1526 ../src/libs/collect.h:34
 #: ../src/libs/tools/filter.c:143
 msgid "color label"
 msgstr "Farbmarkierung"
 
-#: ../src/develop/lightroom.c:1488
+#: ../src/develop/lightroom.c:1532
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -3428,7 +3452,7 @@ msgstr "Datei zum importieren wählen"
 
 #: ../src/gui/preferences.c:1086 ../src/libs/collect.c:241
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:477
-#: ../src/libs/import.c:756 ../src/libs/import.c:863 ../src/libs/styles.c:237
+#: ../src/libs/import.c:758 ../src/libs/import.c:865 ../src/libs/styles.c:237
 msgid "_open"
 msgstr "Ö_ffnen"
 
@@ -4896,22 +4920,22 @@ msgstr "Lokaler Kontrast"
 msgid "local laplacian: inconsistent output"
 msgstr "lokaler Laplace-Filter: inkonsistente Ausgabe"
 
-#: ../src/iop/bilat.c:507 ../src/iop/denoiseprofile.c:2056
+#: ../src/iop/bilat.c:516 ../src/iop/denoiseprofile.c:2056
 #: ../src/iop/exposure.c:849 ../src/iop/lens.c:2227 ../src/iop/levels.c:566
 #: ../src/libs/copy_history.c:310 ../src/libs/export.c:644
 #: ../src/libs/print_settings.c:1356 ../src/views/darkroom.c:1451
 msgid "mode"
 msgstr "Modus"
 
-#: ../src/iop/bilat.c:509
+#: ../src/iop/bilat.c:518
 msgid "bilateral grid"
 msgstr "bilaterales Gitter"
 
-#: ../src/iop/bilat.c:510
+#: ../src/iop/bilat.c:519
 msgid "local laplacian filter"
 msgstr "lokaler Laplace-Filter"
 
-#: ../src/iop/bilat.c:513
+#: ../src/iop/bilat.c:522
 msgid ""
 "the filter used for local contrast enhancement. bilateral is faster but can "
 "lead to artifacts around edges for extreme settings."
@@ -4919,55 +4943,55 @@ msgstr ""
 "der Filter, welcher für den lokalen Kontrast genutzt wird. Bilateral ist "
 "schneller, kann aber bei extremen Werten zu Artefakten an Kanten führen."
 
-#: ../src/iop/bilat.c:517 ../src/iop/globaltonemap.c:723
+#: ../src/iop/bilat.c:526 ../src/iop/globaltonemap.c:723
 msgid "detail"
 msgstr "Detail"
 
-#: ../src/iop/bilat.c:519
+#: ../src/iop/bilat.c:528
 msgid "changes the local contrast"
 msgstr "ändert den lokalen Kontrast"
 
-#: ../src/iop/bilat.c:522 ../src/iop/grain.c:620
+#: ../src/iop/bilat.c:531 ../src/iop/grain.c:620
 msgid "coarseness"
 msgstr "Korngröße"
 
-#: ../src/iop/bilat.c:524
+#: ../src/iop/bilat.c:533
 msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr ""
 "Größe der lokalen Details (Sigma der Entfernung für den bilateralen Filter)"
 
-#: ../src/iop/bilat.c:528 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:671
+#: ../src/iop/bilat.c:537 ../src/iop/colisa.c:364 ../src/iop/lowpass.c:671
 msgid "contrast"
 msgstr "Kontrast"
 
-#: ../src/iop/bilat.c:529
+#: ../src/iop/bilat.c:538
 msgid "L difference to detect edges (range sigma of bilateral filter)"
 msgstr ""
 "L-Unterschied für die Kantenerkennung (Sigma des Farbabstands für den "
 "bilateralen Filter)"
 
-#: ../src/iop/bilat.c:533 ../src/iop/monochrome.c:611 ../src/iop/shadhi.c:827
+#: ../src/iop/bilat.c:542 ../src/iop/monochrome.c:611 ../src/iop/shadhi.c:827
 #: ../src/iop/splittoning.c:537
 msgid "highlights"
 msgstr "Spitzlichter"
 
-#: ../src/iop/bilat.c:535
+#: ../src/iop/bilat.c:544
 msgid "changes the local contrast of highlights"
 msgstr "ändert den lokalen Kontrast der Spitzlichter"
 
-#: ../src/iop/bilat.c:539 ../src/iop/shadhi.c:826 ../src/iop/splittoning.c:532
+#: ../src/iop/bilat.c:548 ../src/iop/shadhi.c:826 ../src/iop/splittoning.c:532
 msgid "shadows"
 msgstr "Schatten"
 
-#: ../src/iop/bilat.c:540
+#: ../src/iop/bilat.c:549
 msgid "changes the local contrast of shadows"
 msgstr "ändert den lokalen Kontrast der Schatten"
 
-#: ../src/iop/bilat.c:545
+#: ../src/iop/bilat.c:554
 msgid "midtone range"
 msgstr "Mittenbereich"
 
-#: ../src/iop/bilat.c:546
+#: ../src/iop/bilat.c:555
 msgid ""
 "defines what counts as midtones. lower for better dynamic range compression "
 "(reduce shadow and highlight contrast), increase for more powerful local "
@@ -5104,7 +5128,7 @@ msgid "15:10 postcard black"
 msgstr "15:10-Postkarte (schwarz)"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:911 ../src/libs/import.c:976
+#: ../src/iop/borders.c:911 ../src/libs/import.c:978
 msgid "image"
 msgstr "Bild"
 
@@ -6035,7 +6059,7 @@ msgstr "Farbton"
 
 #: ../src/iop/colorreconstruction.c:624 ../src/iop/colorreconstruction.c:1077
 #: ../src/iop/globaltonemap.c:181 ../src/iop/globaltonemap.c:342
-#: ../src/iop/hazeremoval.c:842 ../src/iop/levels.c:255
+#: ../src/iop/hazeremoval.c:852 ../src/iop/levels.c:255
 msgid "inconsistent output"
 msgstr "inkonsistente Ausgabe"
 
@@ -8754,7 +8778,7 @@ msgid "XMP sidecar files"
 msgstr "XMP-Begleitdateien"
 
 #: ../src/libs/copy_history.c:92 ../src/libs/geotagging.c:498
-#: ../src/libs/import.c:786 ../src/libs/styles.c:254
+#: ../src/libs/import.c:788 ../src/libs/styles.c:254
 msgid "all files"
 msgstr "alle Dateien"
 
@@ -9361,37 +9385,37 @@ msgstr "Metadaten zu allen neu importierten Bildern hinzufügen."
 msgid "comma separated list of tags"
 msgstr "Liste Komma-separierter Tags"
 
-#: ../src/libs/import.c:781
+#: ../src/libs/import.c:783
 msgid "supported images"
 msgstr "unterstütze Bilder"
 
-#: ../src/libs/import.c:837
+#: ../src/libs/import.c:839
 msgid "file has unknown format!"
 msgstr "Datei hat ein unbekanntes Format!"
 
-#: ../src/libs/import.c:862
+#: ../src/libs/import.c:864
 msgid "import film"
 msgstr "Film importieren"
 
-#: ../src/libs/import.c:979
+#: ../src/libs/import.c:981
 msgid "select one or more images to import"
 msgstr "Ein oder mehrere Bilder zum Import wählen"
 
 #. adding the import folder button
-#: ../src/libs/import.c:986
+#: ../src/libs/import.c:988
 msgid "folder"
 msgstr "Verzeichnis"
 
-#: ../src/libs/import.c:989
+#: ../src/libs/import.c:991
 msgid "select a folder to import as film roll"
 msgstr "Verzeichnis zum Import wählen"
 
 #. add the rescan button
-#: ../src/libs/import.c:997
+#: ../src/libs/import.c:999
 msgid "scan for devices"
 msgstr "Nach Geräten suchen"
 
-#: ../src/libs/import.c:1000
+#: ../src/libs/import.c:1002
 msgid "scan for newly attached devices"
 msgstr "Suche nach neu angeschlossenen Geräten"
 

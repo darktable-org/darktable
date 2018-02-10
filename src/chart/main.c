@@ -1633,7 +1633,7 @@ static int main_gui(dt_lut_t *self, int argc, char *argv[])
   gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
   g_signal_connect(GTK_WINDOW(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-  // resizeable container
+  // resizable container
   GtkWidget *vpaned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
   gtk_container_add(GTK_CONTAINER(window), vpaned);
 
@@ -1741,11 +1741,32 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   *target_b_ptr = target_b;
   *source_Lab_ptr = source_Lab;
 
+  char line[512];
   for(int i = 0; i < N; i++)
   {
-    char patchname[512];
-    r += fscanf(f, "%[^;];%lg;%lg;%lg;%lg;%lg;%lg\n", patchname, source_Lab + 3 * i, source_Lab + 3 * i + 1,
-                source_Lab + 3 * i + 2, target_L + i, target_a + i, target_b + i);
+    char *patchname = line, *iter = line, *endptr;
+    if(fgets(line, sizeof(line) / sizeof(*line), f) == 0) break;
+    while(*iter != ';') iter++;
+    *iter++ = '\0';
+
+    source_Lab[3 * i] = g_ascii_strtod(iter, &endptr);
+    if(iter == endptr || *endptr != ';') break;
+    iter = endptr + 1;
+    source_Lab[3 * i + 1] = g_ascii_strtod(iter, &endptr);
+    if(iter == endptr || *endptr != ';') break;
+    iter = endptr + 1;
+    source_Lab[3 * i + 2] = g_ascii_strtod(iter, &endptr);
+    if(iter == endptr || *endptr != ';') break;
+    iter = endptr + 1;
+    target_L[i] = g_ascii_strtod(iter, &endptr);
+    if(iter == endptr || *endptr != ';') break;
+    iter = endptr + 1;
+    target_a[i] = g_ascii_strtod(iter, &endptr);
+    if(iter == endptr || *endptr != ';') break;
+    iter = endptr + 1;
+    target_b[i] = g_ascii_strtod(iter, &endptr);
+    if(iter == endptr || *endptr != '\n') break;
+
     double d[3] = { target_L[i], target_a[i], target_b[i] };
     if(sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]) > thrs)
     {
@@ -1758,7 +1779,7 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
     }
   }
 
-  if(r == 0 || unused == EOF) fprintf(stderr, "just keeping compiler happy\n");
+  if(r != 0 || unused == EOF) fprintf(stderr, "just keeping compiler happy\n");
   fclose(f);
   return N;
 }

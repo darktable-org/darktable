@@ -114,7 +114,7 @@ typedef struct dt_library_t
   /* prepared and reusable statements */
   struct
   {
-    /* main query statment, should be update on listener signal of collection */
+    /* main query statement, should be update on listener signal of collection */
     sqlite3_stmt *main_query;
     /* select imgid from selected_images */
     sqlite3_stmt *select_imgid_in_selection;
@@ -348,7 +348,7 @@ static void _update_collected_images(dt_view_t *self)
     sqlite3_finalize(stmt);
   }
 
-  /* if we have a statment lets clean it */
+  /* if we have a statement lets clean it */
   if(lib->statements.main_query) sqlite3_finalize(lib->statements.main_query);
 
   /* prepare a new main query statement for collection */

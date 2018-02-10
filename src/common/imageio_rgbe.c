@@ -43,6 +43,9 @@ typedef struct
   float exposure;       /* a value of 1.0 in an image corresponds to
                          * <exposure> watts/steradian/m^2.
                          * defaults to 1.0 */
+  float primaries[8];   /* xy for R, G an B primaries plus white point
+                         * defaults to:
+                         * 0.640 0.330 0.290 0.600 0.150 0.060 0.333 0.333 */
 } rgbe_header_info;
 
 /* flags indicating which fields in an rgbe_header_info are valid */
@@ -167,14 +170,14 @@ int RGBE_WriteHeader(FILE *fp, int width, int height, rgbe_header_info *info)
 int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
 {
   char buf[128];
-  float tempf;
-  size_t i;
 
   if(info)
   {
     info->valid = 0;
     info->programtype[0] = 0;
     info->gamma = info->exposure = 1.0;
+    static const float default_primaries[] = { 0.640, 0.330, 0.290, 0.600, 0.150, 0.060, 0.333, 0.333 };
+    memcpy(info->primaries, default_primaries, sizeof(info->primaries));
   }
   if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == NULL) return rgbe_error(rgbe_read_error, NULL);
   if((buf[0] != '#') || (buf[1] != '?'))
@@ -185,6 +188,7 @@ int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
   else if(info)
   {
     info->valid |= RGBE_VALID_PROGRAMTYPE;
+    size_t i;
     for(i = 0; i < sizeof(info->programtype) - 1; i++)
     {
       if((buf[i + 2] == 0) || isspace(buf[i + 2])) break;
@@ -193,31 +197,60 @@ int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
     info->programtype[i] = 0;
     if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0) return rgbe_error(rgbe_read_error, NULL);
   }
+  gboolean format_is_rgbe = FALSE;
   for(;;)
   {
     if((buf[0] == 0) || (buf[0] == '\n'))
-      return rgbe_error(rgbe_format_error, "no FORMAT specifier found");
+      break;
     else if(strcmp(buf, "FORMAT=32-bit_rle_rgbe\n") == 0)
-      break; /* format found so break out of loop */
-    else if(info && (sscanf(buf, "GAMMA=%g", &tempf) == 1))
+      format_is_rgbe = TRUE;
+    else if(info)
     {
-      info->gamma = tempf;
-      info->valid |= RGBE_VALID_GAMMA;
+      if(g_str_has_prefix(buf, "GAMMA="))
+      {
+        char *startptr = buf + strlen("GAMMA="), *endptr;
+        float tmp = g_ascii_strtod(startptr, &endptr);
+        if(startptr != endptr)
+        {
+          info->gamma = tmp;
+          info->valid |= RGBE_VALID_GAMMA;
+        }
+      }
+      else if(g_str_has_prefix(buf, "EXPOSURE="))
+      {
+        char *startptr = buf + strlen("EXPOSURE="), *endptr;
+        float tmp = g_ascii_strtod(startptr, &endptr);
+        if(startptr != endptr)
+        {
+          info->exposure = tmp;
+          info->valid |= RGBE_VALID_EXPOSURE;
+        }
+      }
+      else if(g_str_has_prefix(buf, "PRIMARIES="))
+      {
+        float tmp[8];
+        gboolean all_ok = TRUE;
+        char *startptr = buf + strlen("PRIMARIES="), *endptr;
+        for(int i = 0; i < 8; i++)
+        {
+          tmp[i] = g_ascii_strtod(startptr, &endptr);
+          if(startptr == endptr)
+          {
+            all_ok = FALSE;
+            break;
+          }
+          startptr = endptr;
+        }
+        if(all_ok) memcpy(info->primaries, tmp, sizeof(info->primaries));
+      }
     }
-    else if(info && (sscanf(buf, "EXPOSURE=%g", &tempf) == 1))
-    {
-      info->exposure = tempf;
-      info->valid |= RGBE_VALID_EXPOSURE;
-    }
+
     if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0) return rgbe_error(rgbe_read_error, NULL);
   }
-  if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0) return rgbe_error(rgbe_read_error, NULL);
-  // if (strcmp(buf,"\n") != 0)
-  // return rgbe_error(rgbe_format_error,
-  // "missing blank line after FORMAT specifier");
-  while(strcmp(buf, "\n") != 0)
+  if(!format_is_rgbe)
+    return rgbe_error(rgbe_format_error, "no FORMAT specifier found or it's not 32-bit_rle_rgbe");
+  while(!strcmp(buf, "\n")) // be nice and accept more than one blank line
     if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0) return rgbe_error(rgbe_read_error, NULL);
-  if(fgets(buf, sizeof(buf) / sizeof(buf[0]), fp) == 0) return rgbe_error(rgbe_read_error, NULL);
   if(sscanf(buf, "-Y %d +X %d", height, width) < 2)
     return rgbe_error(rgbe_format_error, "missing image size specifier");
   return RGBE_RETURN_SUCCESS;
@@ -479,6 +512,83 @@ int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width, int num_scanl
 #undef RGBE_DATA_BLUE
 #undef RGBE_DATA_SIZE
 
+// this function is borrowed from OpenEXR code
+///////////////////////////////////////////////////////////////////////////
+//
+// Copyright (c) 2003, Industrial Light & Magic, a division of Lucas
+// Digital Ltd. LLC
+//
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+// *       Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+// *       Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+// *       Neither the name of Industrial Light & Magic nor the names of
+// its contributors may be used to endorse or promote products derived
+// from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+///////////////////////////////////////////////////////////////////////////
+static void _xy2matrix(const float r[2], const float g[2], const float b[2],
+                       const float w[2], const float Y, float M[4][4])
+{
+  float X = w[0] * Y / w[1];
+  float Z = (1 - w[0] - w[1]) * Y / w[1];
+
+  //
+  // Scale factors for matrix rows
+  //
+  float d = r[0]   * (b[1]  - g[1]) +
+  b[0]  * (g[1] - r[1]) +
+  g[0] * (r[1]   - b[1]);
+  float Sr = (X * (b[1] - g[1]) -
+  g[0] * (Y * (b[1] - 1) +
+  b[1]  * (X + Z)) +
+  b[0]  * (Y * (g[1] - 1) +
+  g[1] * (X + Z))) / d;
+  float Sg = (X * (r[1] - b[1]) +
+  r[0]   * (Y * (b[1] - 1) +
+  b[1]  * (X + Z)) -
+  b[0]  * (Y * (r[1] - 1) +
+  r[1]   * (X + Z))) / d;
+  float Sb = (X * (g[1] - r[1]) -
+  r[0]   * (Y * (g[1] - 1) +
+  g[1] * (X + Z)) +
+  g[0] * (Y * (r[1] - 1) +
+  r[1]   * (X + Z))) / d;
+
+  //
+  // Assemble the matrix
+  //
+  for(int i = 0; i < 4; i++) M[i][3] = M[3][i] = 0.0;
+  M[3][3] = 1.0;
+  M[0][0] = Sr * r[0];
+  M[0][1] = Sr * r[1];
+  M[0][2] = Sr * (1 - r[0] - r[1]);
+  M[1][0] = Sg * g[0];
+  M[1][1] = Sg * g[1];
+  M[1][2] = Sg * (1 - g[0] - g[1]);
+  M[2][0] = Sb * b[0];
+  M[2][1] = Sb * b[1];
+  M[2][2] = Sb * (1 - b[0] - b[1]);
+}
 
 dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
@@ -489,7 +599,8 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
   FILE *f = g_fopen(filename, "rb");
   if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
 
-  if(RGBE_ReadHeader(f, &img->width, &img->height, NULL)) goto error_corrupt;
+  rgbe_header_info info;
+  if(RGBE_ReadHeader(f, &img->width, &img->height, &info)) goto error_corrupt;
 
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) goto error_cache_full;
@@ -501,6 +612,21 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
   // repair nan/inf etc
   for(size_t i = (size_t)img->width * img->height; i > 0; i--)
     for(int c = 0; c < 3; c++) buf[4 * (i - 1) + c] = fmaxf(0.0f, fminf(10000.0, buf[3 * (i - 1) + c]));
+
+  // set the color matrix
+  float m[4][4];
+  _xy2matrix(&info.primaries[0], &info.primaries[2], &info.primaries[4], &info.primaries[6], 1.0, m);
+
+  float mat[3][3];
+
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+    {
+      mat[i][j] = m[j][i];
+    }
+
+  mat3inv((float *)img->d65_color_matrix, (float *)mat);
+
   return DT_IMAGEIO_OK;
 
 error_corrupt:

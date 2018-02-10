@@ -338,7 +338,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   int sse2_supported = 0;
 
 #ifdef HAVE_BUILTIN_CPU_SUPPORTS
-  // NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
+  // NOTE: _may_i_use_cpu_feature() looks better, but only available in ICC
   __builtin_cpu_init();
   sse2_supported = __builtin_cpu_supports("sse2");
 #else
@@ -418,6 +418,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
+  dt_pthread_mutex_init(&(darktable.exiv2_threadsafe), NULL);
   darktable.control = (dt_control_t *)calloc(1, sizeof(dt_control_t));
 
   // database
@@ -970,7 +971,16 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     time(&now);
     struct tm lt;
     localtime_r(&now, &lt);
-    if(lt.tm_mon == 3 && lt.tm_mday == 1) mode = "knight";
+    if(lt.tm_mon == 3 && lt.tm_mday == 1)
+    {
+      int current_year = lt.tm_year + 1900;
+      int last_year = dt_conf_get_int("ui_last/april1st");
+      if(last_year < current_year)
+      {
+        dt_conf_set_int("ui_last/april1st", current_year);
+        mode = "knight";
+      }
+    }
     // we have to call dt_ctl_switch_mode_to() here already to not run into a lua deadlock.
     // having another call later is ok
     dt_ctl_switch_mode_to(mode);
@@ -1089,6 +1099,7 @@ void dt_cleanup()
   dt_pthread_mutex_destroy(&(darktable.db_insert));
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.capabilities_threadsafe));
+  dt_pthread_mutex_destroy(&(darktable.exiv2_threadsafe));
 
   dt_exif_cleanup();
 }

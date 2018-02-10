@@ -56,7 +56,7 @@ DT_MODULE(1)
 
 
 #ifdef HAVE_GPHOTO2
-/** helper function to update ui with available cameras and ther actionbuttons */
+/** helper function to update ui with available cameras and their actionbuttons */
 static void _lib_import_ui_devices_update(dt_lib_module_t *self);
 #endif
 
@@ -665,10 +665,8 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
     no_preview_fallback = TRUE;
   }
 
-  // unfortunately we can not use following, because frequently it uses wrong orientation
-  // pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
-
-  have_preview = (pixbuf != NULL);
+  // Step 1: try to check whether the picture contains embedded thumbnail
+  // In case it has, we'll use that thumbnail to show on the dialog
   if(!have_preview && !no_preview_fallback)
   {
     uint8_t *buffer = NULL;
@@ -680,6 +678,9 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       GdkPixbuf *tmp;
       GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
       if (!gdk_pixbuf_loader_write(loader, buffer, size, NULL)) goto cleanup;
+      // Calling gdk_pixbuf_loader_close forces the data to be parsed by the
+      // loader. We must do this before calling gdk_pixbuf_loader_get_pixbuf.
+      if(!gdk_pixbuf_loader_close(loader, NULL)) goto cleanup;
       if (!(tmp = gdk_pixbuf_loader_get_pixbuf(loader))) goto cleanup;
       float ratio = 1.0 * gdk_pixbuf_get_height(tmp) / gdk_pixbuf_get_width(tmp);
       int width = 128, height = 128 * ratio;
@@ -694,8 +695,21 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       g_object_unref(loader); // This should clean up tmp as well
     }
   }
+
+  // Step 2: if we were not able to get a thumbnail at step 1,
+  // read the whole file to get a small size thumbnail
+  // this will not try to read DNG files at all
+  if(!have_preview && !no_preview_fallback)
+  {
+    pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
+    if(pixbuf != NULL) have_preview = TRUE;
+  }
+
+  // If we got a thumbnail (either embedded or reading the file directly)
+  // we need to find out the rotation as well
   if(have_preview && !no_preview_fallback)
   {
+
     // get image orientation
     dt_image_t img = { 0 };
     (void)dt_exif_read(&img, filename);
@@ -722,7 +736,11 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       pixbuf = tmp;
     }
   }
-  if(no_preview_fallback || !have_preview)
+
+  // if no thumbanail found or read failed for whatever reason
+  // or in case of DNG files
+  // just display the default darktable logo
+  if(!have_preview || no_preview_fallback)
   {
     /* load the dt logo as a brackground */
     cairo_surface_t *surface = dt_util_get_logo(128.0);

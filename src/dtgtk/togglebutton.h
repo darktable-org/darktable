@@ -43,7 +43,7 @@ typedef struct _GtkDarktableToggleButtonClass
 
 GType dtgtk_togglebutton_get_type(void);
 
-/** Instansiate a new darktable toggle button */
+/** instantiate a new darktable toggle button */
 GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflag);
 
 /** Set the paint function and paint flags */

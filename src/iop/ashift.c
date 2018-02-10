@@ -52,8 +52,8 @@
 
 #define ROTATION_RANGE 10                   // allowed min/max default range for rotation parameter
 #define ROTATION_RANGE_SOFT 20              // allowed min/max range for rotation parameter with manual adjustment
-#define LENSSHIFT_RANGE 0.5                 // allowed min/max default range for lensshift paramters
-#define LENSSHIFT_RANGE_SOFT 1              // allowed min/max range for lensshift paramters with manual adjustment
+#define LENSSHIFT_RANGE 0.5                 // allowed min/max default range for lensshift parameters
+#define LENSSHIFT_RANGE_SOFT 1              // allowed min/max range for lensshift parameters with manual adjustment
 #define SHEAR_RANGE 0.2                     // allowed min/max range for shear parameter
 #define SHEAR_RANGE_SOFT 0.5                // allowed min/max range for shear parameter with manual adjustment
 #define MIN_LINE_LENGTH 5                   // the minimum length of a line in pixels to be regarded as relevant
@@ -67,7 +67,7 @@
 #define LSD_DENSITY_TH 0.7                  // LSD: minimal density of region points in rectangle
 #define LSD_N_BINS 1024                     // LSD: number of bins in pseudo-ordering of gradient modulus
 #define LSD_GAMMA 0.45                      // gamma correction to apply on raw images prior to line detection
-#define RANSAC_RUNS 400                     // how many interations to run in ransac
+#define RANSAC_RUNS 400                     // how many iterations to run in ransac
 #define RANSAC_EPSILON 2                    // starting value for ransac epsilon (in -log10 units)
 #define RANSAC_EPSILON_STEP 1               // step size of epsilon optimization (log10 units)
 #define RANSAC_ELIMINATION_RATIO 60         // percentage of lines we try to eliminate as outliers
@@ -2126,7 +2126,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
   fit.lensshift_h = isnan(fit.lensshift_h) ? ilogit(params[pcount++], -fit.lensshift_h_range, fit.lensshift_h_range) : fit.lensshift_h;
   fit.shear = isnan(fit.shear) ? ilogit(params[pcount++], -fit.shear_range, fit.shear_range) : fit.shear;
 #ifdef ASHIFT_DEBUG
-  printf("params after optimization (%d interations): rotation %f, lensshift_v %f, lensshift_h %f, shear %f\n",
+  printf("params after optimization (%d iterations): rotation %f, lensshift_v %f, lensshift_h %f, shear %f\n",
          iter, fit.rotation, fit.lensshift_v, fit.lensshift_h, fit.shear);
 #endif
 
@@ -2246,7 +2246,7 @@ static void model_probe(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_i
 }
 #endif
 
-// function to keep crop fitting parameters within contraints
+// function to keep crop fitting parameters within constraints
 static void crop_constraint(double *params, int pcount)
 {
   if(pcount > 0) params[0] = fabs(params[0]);
@@ -2286,7 +2286,7 @@ static double crop_fitness(double *params, void *data)
   P[1] /= P[2];
   P[2] = 1.0f;
 
-  // two auxiliary points (some arbitrary distance away from P) to contruct the diagonals
+  // two auxiliary points (some arbitrary distance away from P) to construct the diagonals
   const float Pa[2][3] = { { P[0] + 10.0f * cos(alpha), P[1] + 10.0f * sin(alpha), 1.0f },
                            { P[0] + 10.0f * cos(alpha), P[1] - 10.0f * sin(alpha), 1.0f } };
 
@@ -2456,7 +2456,7 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   if(A == 0.0f) goto failed;
 
   // we need the half diagonal of that rectangle (this is in output image dimensions);
-  // no need to check for division by zero here as this case implies A == 0.0f, catched above
+  // no need to check for division by zero here as this case implies A == 0.0f, caught above
   const float d = sqrt(A / (2.0f * sin(2.0f * cropfit.alpha)));
 
   // the rectangle's center in input image (homogeneous) coordinates
@@ -3170,7 +3170,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   int closeup = dt_control_get_dev_closeup();
   float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
 
-  // we draw the cropping area; we need x_off/y_off/width/height which is only availabe
+  // we draw the cropping area; we need x_off/y_off/width/height which is only available
   // after g->buf has been processed
   if(g->buf  && (p->cropmode != ASHIFT_CROP_OFF) && self->enabled)
   {

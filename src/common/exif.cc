@@ -67,6 +67,22 @@ extern "C" {
 #include "develop/imageop.h"
 }
 
+// exiv2's readMetadata is not thread safe in 0.26. so we lock it. since readMetadata might throw an exception we
+// wrap it into some c++ magic to make sure we unlock in all cases. well, actually not magic but basic raii.
+// FIXME: check again once we rely on 0.27
+class Lock
+{
+public:
+  Lock() { dt_pthread_mutex_lock(&darktable.exiv2_threadsafe); }
+  ~Lock() { dt_pthread_mutex_unlock(&darktable.exiv2_threadsafe); }
+};
+
+#define read_metadata_threadsafe(image)                       \
+{                                                             \
+  Lock lock;                                                  \
+  image->readMetadata();                                      \
+}
+
 static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);
 
 // this array should contain all XmpBag and XmpSeq keys used by dt
@@ -82,85 +98,6 @@ const char *dt_xmp_keys[]
         "Xmp.xmpMM.DerivedFrom" };
 
 static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys); // the number of XmpBag XmpSeq keys that dt uses
-
-
-/* a few helper functions inspired by
-   https://projects.kde.org/projects/kde/kdegraphics/libs/libkexiv2/repository/revisions/master/entry/libkexiv2/kexiv2gps.cpp
-   */
-
-static double _gps_string_to_number(const gchar *input)
-{
-  double res = 0;
-  gchar *s = g_strdup(input);
-  gchar dir = toupper(s[strlen(s) - 1]);
-  gchar **list = g_strsplit(s, ",", 0);
-  if(list)
-  {
-    if(list[2] == NULL) // format DDD,MM.mm{N|S}
-      res = g_ascii_strtoll(list[0], NULL, 10) + (g_ascii_strtod(list[1], NULL) / 60.0);
-    else if(list[3] == NULL) // format DDD,MM,SS{N|S}
-      res = g_ascii_strtoll(list[0], NULL, 10) + (g_ascii_strtoll(list[1], NULL, 10) / 60.0)
-            + (g_ascii_strtoll(list[2], NULL, 10) / 3600.0);
-    if(dir == 'S' || dir == 'W') res *= -1.0;
-  }
-  g_strfreev(list);
-  g_free(s);
-  return res;
-}
-
-static gboolean _gps_rationale_to_number(const double r0_1, const double r0_2, const double r1_1,
-                                         const double r1_2, const double r2_1, const double r2_2, char sign,
-                                         double *result)
-{
-  if(!result) return FALSE;
-  double res = 0.0;
-  // Latitude decoding from Exif.
-  double num, den, min, sec;
-  num = r0_1;
-  den = r0_2;
-  if(den == 0) return FALSE;
-  res = num / den;
-
-  num = r1_1;
-  den = r1_2;
-  if(den == 0) return FALSE;
-  min = num / den;
-  if(min != -1.0) res += min / 60.0;
-
-  num = r2_1;
-  den = r2_2;
-  if(den == 0)
-  {
-    // be relaxed and accept 0/0 seconds. See #246077.
-    if(num == 0)
-      den = 1;
-    else
-      return FALSE;
-  }
-  sec = num / den;
-  if(sec != -1.0) res += sec / 3600.0;
-
-  if(sign == 'S' || sign == 'W') res *= -1.0;
-
-  *result = res;
-  return TRUE;
-}
-
-static gboolean _gps_elevation_to_number(const double r_1, const double r_2, char sign, double *result)
-{
-  if(!result) return FALSE;
-  double res = 0.0;
-  // Altitude decoding from Exif.
-  const double num = r_1;
-  const double den = r_2;
-  if(den == 0) return FALSE;
-  res = num / den;
-
-  if(sign != '0') res *= -1.0;
-
-  *result = res;
-  return TRUE;
-}
 
 // inspired by ufraw_exiv2.cc:
 
@@ -365,12 +302,12 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     /* read gps location */
     if(FIND_XMP_TAG("Xmp.exif.GPSLatitude"))
     {
-      img->latitude = _gps_string_to_number(pos->toString().c_str());
+      img->latitude = dt_util_gps_string_to_number(pos->toString().c_str());
     }
 
     if(FIND_XMP_TAG("Xmp.exif.GPSLongitude"))
     {
-      img->longitude = _gps_string_to_number(pos->toString().c_str());
+      img->longitude = dt_util_gps_string_to_number(pos->toString().c_str());
     }
 
     if(FIND_XMP_TAG("Xmp.exif.GPSAltitude"))
@@ -381,7 +318,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
         std::string sign_str = ref->toString();
         const char *sign = sign_str.c_str();
         double elevation = 0.0;
-        if(_gps_elevation_to_number(pos->toRational(0).first, pos->toRational(0).second, sign[0], &elevation))
+        if(dt_util_gps_elevation_to_number(pos->toRational(0).first, pos->toRational(0).second, sign[0], &elevation))
           img->elevation = elevation;
       }
     }
@@ -697,9 +634,9 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         std::string sign_str = ref->toString();
         const char *sign = sign_str.c_str();
         double latitude = 0.0;
-        if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
-                                    pos->toRational(1).first, pos->toRational(1).second,
-                                    pos->toRational(2).first, pos->toRational(2).second, sign[0], &latitude))
+        if(dt_util_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
+                                           pos->toRational(1).first, pos->toRational(1).second,
+                                           pos->toRational(2).first, pos->toRational(2).second, sign[0], &latitude))
           img->latitude = latitude;
       }
     }
@@ -712,9 +649,9 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         std::string sign_str = ref->toString();
         const char *sign = sign_str.c_str();
         double longitude = 0.0;
-        if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
-                                    pos->toRational(1).first, pos->toRational(1).second,
-                                    pos->toRational(2).first, pos->toRational(2).second, sign[0], &longitude))
+        if(dt_util_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
+                                           pos->toRational(1).first, pos->toRational(1).second,
+                                           pos->toRational(2).first, pos->toRational(2).second, sign[0], &longitude))
           img->longitude = longitude;
       }
     }
@@ -727,7 +664,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         std::string sign_str = ref->toString();
         const char *sign = sign_str.c_str();
         double elevation = 0.0;
-        if(_gps_elevation_to_number(pos->toRational(0).first, pos->toRational(0).second, sign[0], &elevation))
+        if(dt_util_gps_elevation_to_number(pos->toRational(0).first, pos->toRational(0).second, sign[0], &elevation))
           img->elevation = elevation;
       }
     }
@@ -990,7 +927,7 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
   {
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
     assert(image.get() != 0);
-    image->readMetadata();
+    read_metadata_threadsafe(image);
 
     // Get a list of preview images available in the image. The list is sorted
     // by the preview image pixel size, starting with the smallest preview.
@@ -1051,7 +988,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
   {
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
     assert(image.get() != 0);
-    image->readMetadata();
+    read_metadata_threadsafe(image);
     bool res = true;
 
     // EXIF metadata
@@ -1094,7 +1031,7 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
   {
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
     assert(image.get() != 0);
-    image->readMetadata();
+    read_metadata_threadsafe(image);
     Exiv2::ExifData &imgExifData = image->exifData();
     Exiv2::ExifData blobExifData;
     Exiv2::ExifParser::decode(blobExifData, blob + 6, size);
@@ -1154,7 +1091,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
   {
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(path)));
     assert(image.get() != 0);
-    image->readMetadata();
+    read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
 
     // get rid of thumbnails
@@ -1912,7 +1849,7 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
       {
         // AFAICT this can't happen with regular exiv2 parsed XMP data, but better safe than sorry.
         // it can happen though when constructing things in a unusual order and then passing it to us without
-        // serializing it inbetween
+        // serializing it in between
         current_entry = (history_entry_t *)g_list_nth_data(history_entries, n - 1); // XMP starts counting at 1!
       }
 
@@ -1988,7 +1925,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     // read xmp sidecar
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(filename)));
     assert(image.get() != 0);
-    image->readMetadata();
+    read_metadata_threadsafe(image);
     Exiv2::XmpData &xmpData = image->xmpData();
 
     sqlite3_stmt *stmt;
@@ -2615,7 +2552,7 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
     // unfortunately it seems we have to read the metadata, to not erase the exif (which we just wrote).
     // will make export slightly slower, oh well.
     // img->clearXmpPacket();
-    img->readMetadata();
+    read_metadata_threadsafe(img);
 
     try
     {
@@ -2623,7 +2560,7 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
       std::unique_ptr<Exiv2::Image> input_image(Exiv2::ImageFactory::open(WIDEN(input_filename)));
       if(input_image.get() != 0)
       {
-        input_image->readMetadata();
+        read_metadata_threadsafe(input_image);
         img->setIptcData(input_image->iptcData());
         img->setXmpData(input_image->xmpData());
       }
@@ -2808,7 +2745,7 @@ gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *da
   {
     Exiv2::ExifData::const_iterator pos;
     std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(data, size));
-    image->readMetadata();
+    read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
 
     char exif_datetime_taken[20];
@@ -2858,7 +2795,7 @@ void dt_exif_init()
   Exiv2::LogMsg::setHandler(&dt_exif_log_handler);
 
   Exiv2::XmpParser::initialize();
-  // this has te stay with the old url (namespace already propagated outside dt)
+  // this has to stay with the old url (namespace already propagated outside dt)
   Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
   Exiv2::XmpProperties::registerNs("http://ns.adobe.com/lightroom/1.0/", "lr");
   Exiv2::XmpProperties::registerNs("http://cipa.jp/exif/1.0/", "exifEX");

@@ -44,6 +44,7 @@ ALL_DEVELOPERS = [
     "Pascal Obry",
     "Pascal de Bruijn",
     "Pedro Côrte-Real",
+    "Peter Budai",
     "Roman Lebedev",
     "Simon Spannagel",
     "Stefan Schöfegger",
@@ -66,15 +67,13 @@ def get_shortlog(path="")
   return hash
 end
 
-Dir.chdir(File.dirname(__FILE__)+"/../")
-
 SHORTLOG = get_shortlog().keep_if{ |authorname, count| count >= SHORTLOG_THRESHOLD }
 
 # all developers, that made any changes in selected timeframe
 DEVELOPERS = SHORTLOG.select{ |authorname, count| ALL_DEVELOPERS.include?(authorname) }
 
 # all the people that changed PO files
-TRANSLATORS = get_shortlog("./po/*.po ./doc/man/po/*.po") \
+TRANSLATORS = get_shortlog("./po/*.po ./doc/man/po/*.po ./doc/usermanual/po/*.po") \
 # and keep only the ones with at least this much commits
   .keep_if { |authorname, count| count >= TRANSLATOR_THRESHOLD }
 

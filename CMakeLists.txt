@@ -332,11 +332,17 @@ endif(VALIDATE_APPDATA_FILE)
 if(TESTBUILD_OPENCL_PROGRAMS)
   set(TESTBUILD_OPENCL_PROGRAMS OFF)
 
+  macro(find_llvm versions)
+    foreach(version ${versions})
+      find_package(LLVM ${version} CONFIG)
+      if(LLVM_FOUND)
+        break()
+      endif()
+    endforeach()
+  endmacro()
+
   # 3.9 is the first version with which this works.
-  find_package(LLVM 4.0 CONFIG)
-  if (NOT LLVM_FOUND)
-    find_package(LLVM 3.9 CONFIG)
-  endif()
+  find_llvm("6.0;5.0;4.0;3.9")
 
   if (LLVM_FOUND)
     message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
@@ -529,7 +535,7 @@ endif(NOT WIN32)
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME DTApplication)
 
 # lets continue into build directories
-include(data/supported_extensions.cmake) # this file needs to be included first as it gets ammended in src/
+include(data/supported_extensions.cmake) # this file needs to be included first as it gets amended in src/
 add_subdirectory(src) # src/ needs to be before data/ so that the correct CSS file gets installed
 add_subdirectory(data)
 add_subdirectory(doc)
