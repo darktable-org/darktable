@@ -395,6 +395,7 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
        dt_pthread_mutex_unlock( &cam->config_lock);*/
       g_free(spj->name);
       g_free(spj->value);
+      gp_widget_free(config);
     }
     break;
 
@@ -429,6 +430,7 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
        dt_pthread_mutex_unlock( &cam->config_lock);*/
       dt_print(DT_DEBUG_CAMCTL, "\n");
       g_free(spj->name);
+      gp_widget_free(config);
     }
     break;
 
@@ -457,6 +459,7 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
 
        dt_pthread_mutex_unlock( &cam->config_lock);*/
       g_free(spj->name);
+      gp_widget_free(config);
     }
     break;
 
@@ -1584,6 +1587,7 @@ static void _camera_configuration_update(const dt_camctl_t *c, const dt_camera_t
   gp_camera_get_config(camera->gpcam, &remote, c->gpcontext);
   // merge remote copy with cache and notify on changed properties to host application
   _camera_configuration_merge(c, camera, remote, camera->configuration, FALSE);
+  gp_widget_free(remote);
   dt_pthread_mutex_unlock(&cam->config_lock);
 }
 
