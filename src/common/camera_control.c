@@ -1554,8 +1554,8 @@ void _camera_configuration_merge(const dt_camctl_t *c, const dt_camera_t *camera
     {
 
       // Get source and destination value to be compared
-      gp_widget_get_value(source, &stv);
-      gp_widget_get_value(dw, &dtv);
+      if(gp_widget_get_value(source, &stv) != GP_OK) stv = NULL;
+      if(gp_widget_get_value(dw, &dtv) != GP_OK)  dtv = NULL;
 
       if(((stv && dtv) && strcmp(stv, dtv) != 0) && (changed = TRUE))
       {
