@@ -1188,15 +1188,15 @@ const char *dt_camctl_camera_get_model(const dt_camctl_t *c, const dt_camera_t *
 void _camera_build_property_menu(CameraWidget *widget, GtkMenu *menu, GCallback item_activate,
                                  gpointer user_data)
 {
-  int num_childs = 0;
+  int num_children = 0;
   const char *sk;
   CameraWidgetType type;
 
   /* if widget has children lets add menutitem and recurse into container */
-  if((num_childs = gp_widget_count_children(widget)) > 0)
+  if((num_children = gp_widget_count_children(widget)) > 0)
   {
     CameraWidget *child = NULL;
-    for(int i = 0; i < num_childs; i++)
+    for(int i = 0; i < num_children; i++)
     {
       gp_widget_get_child(widget, i, &child);
       gp_widget_get_name(child, &sk);
@@ -1213,11 +1213,11 @@ void _camera_build_property_menu(CameraWidget *widget, GtkMenu *menu, GCallback 
                                     user_data);
 
         /* add submenu item to menu if not empty*/
-        GList *childs = gtk_container_get_children(GTK_CONTAINER(gtk_menu_item_get_submenu(item)));
-        if(childs)
+        GList *children = gtk_container_get_children(GTK_CONTAINER(gtk_menu_item_get_submenu(item)));
+        if(children)
         {
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(item));
-          g_list_free(childs);
+          g_list_free(children);
         }
       }
       else
@@ -1503,17 +1503,17 @@ void _camera_poll_events(const dt_camctl_t *c, const dt_camera_t *cam)
 void _camera_configuration_merge(const dt_camctl_t *c, const dt_camera_t *camera, CameraWidget *source,
                                  CameraWidget *destination, gboolean notify_all)
 {
-  int childs = 0;
-  const char *sk;
-  const char *stv;
-  CameraWidget *dw;
-  const char *dtv;
+  int children = 0;
+  const char *sk = NULL;
+  const char *stv = NULL;
+  CameraWidget *dw = NULL;
+  const char *dtv = NULL;
   CameraWidgetType type;
-  // If source widget has childs let's recurse into each children
-  if((childs = gp_widget_count_children(source)) > 0)
+  // If source widget has children let's recurse into each children
+  if((children = gp_widget_count_children(source)) > 0)
   {
     CameraWidget *child = NULL;
-    for(int i = 0; i < childs; i++)
+    for(int i = 0; i < children; i++)
     {
       gp_widget_get_child(source, i, &child);
       // gp_widget_get_name( source, &sk );
@@ -1527,7 +1527,7 @@ void _camera_configuration_merge(const dt_camctl_t *c, const dt_camera_t *camera
 
     // Get the two keys to compare
     gp_widget_get_name(source, &sk);
-    gp_widget_get_child_by_name(destination, sk, &dw);
+    int res = gp_widget_get_child_by_name(destination, sk, &dw);
 
     //
     // First of all check if widget has change accessibility
@@ -1550,7 +1550,7 @@ void _camera_configuration_merge(const dt_camctl_t *c, const dt_camera_t *camera
     //
     // Lets compare values and notify on change or by notifyAll flag
     //
-    if(type == GP_WIDGET_MENU || type == GP_WIDGET_TEXT || type == GP_WIDGET_RADIO)
+    if(res == GP_OK && (type == GP_WIDGET_MENU || type == GP_WIDGET_TEXT || type == GP_WIDGET_RADIO))
     {
 
       // Get source and destination value to be compared
