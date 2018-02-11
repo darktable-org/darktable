@@ -184,11 +184,13 @@ void gui_init(dt_iop_module_t *self)
 
   g->strength = dt_bauhaus_slider_new_with_range(self, -1, 1, 0.01, p->strength, 2);
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
+  gtk_widget_set_tooltip_text(g->strength, _("amount of haze reduction"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->strength), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
 
   g->distance = dt_bauhaus_slider_new_with_range(self, 0, 1, 0.005, p->distance, 3);
   dt_bauhaus_widget_set_label(g->distance, NULL, _("distance"));
+  gtk_widget_set_tooltip_text(g->distance, _("limit haze removal up to a specific spatial depth"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->distance), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->distance), "value-changed", G_CALLBACK(distance_callback), self);
 }
