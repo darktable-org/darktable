@@ -1498,31 +1498,29 @@ static void _camera_poll_events(const dt_camctl_t *c, const dt_camera_t *cam)
 static void _camera_configuration_merge(const dt_camctl_t *c, const dt_camera_t *camera, CameraWidget *source,
                                         CameraWidget *destination, gboolean notify_all)
 {
-  int children = 0;
-  const char *sk = NULL;
-  const char *stv = NULL;
-  CameraWidget *dw = NULL;
-  const char *dtv = NULL;
-  CameraWidgetType type;
+  const char *source_name = NULL;
+  if(gp_widget_get_name(source, &source_name) != GP_OK) return;
+
   // If source widget has children let's recurse into each children
-  if((children = gp_widget_count_children(source)) > 0)
+  int children = gp_widget_count_children(source);
+  if(children > 0)
   {
     CameraWidget *child = NULL;
     for(int i = 0; i < children; i++)
     {
-      gp_widget_get_child(source, i, &child);
-      // gp_widget_get_name( source, &sk );
-      _camera_configuration_merge(c, camera, child, destination, notify_all);
+      if(gp_widget_get_child(source, i, &child) == GP_OK)
+        _camera_configuration_merge(c, camera, child, destination, notify_all);
     }
   }
   else
   {
-    gboolean changed = TRUE;
-    gp_widget_get_type(source, &type);
+    CameraWidget *destination_child = NULL;
+    if(gp_widget_get_child_by_name(destination, source_name, &destination_child) != GP_OK) return;
 
-    // Get the two keys to compare
-    gp_widget_get_name(source, &sk);
-    int res = gp_widget_get_child_by_name(destination, sk, &dw);
+    CameraWidgetType source_type, destination_type;
+    if(gp_widget_get_type(source, &source_type) != GP_OK) return;
+    if(gp_widget_get_type(destination_child, &destination_type) != GP_OK) return;
+
 
     //
     // First of all check if widget has change accessibility
@@ -1531,36 +1529,65 @@ static void _camera_configuration_merge(const dt_camctl_t *c, const dt_camera_t 
     /*
     int sa,da;
     gp_widget_get_readonly( source, &sa );
-    gp_widget_get_readonly( dw, &da );
+    gp_widget_get_readonly( destination_child, &da );
 
     if(  notify_all || ( sa != da ) ) {
       // update destination widget to new accessibility if differ then notify of the change
       if( ( sa != da )  )
-        gp_widget_set_readonly( dw, sa );
+        gp_widget_set_readonly( destination_child, sa );
 
-      _dispatch_camera_property_accessibility_changed(c, camera,sk, ( sa == 1 ) ? TRUE: FALSE) ;
+      _dispatch_camera_property_accessibility_changed(c, camera,source_name, ( sa == 1 ) ? TRUE: FALSE) ;
     }
     */
 
     //
     // Lets compare values and notify on change or by notifyAll flag
     //
-    if(res == GP_OK && (type == GP_WIDGET_MENU || type == GP_WIDGET_TEXT || type == GP_WIDGET_RADIO))
+    if(source_type == GP_WIDGET_MENU || source_type == GP_WIDGET_TEXT || source_type == GP_WIDGET_RADIO ||
+       destination_type == GP_WIDGET_MENU || destination_type == GP_WIDGET_TEXT || destination_type == GP_WIDGET_RADIO)
     {
+      gboolean changed = FALSE;
+      char *source_value = NULL;
+      char *destination_value = NULL;
+
+      // gphoto2 has a "feature" that turns RANGE with a small value range and step size of 1 into a MENU.
+      // that can for example happen when detaching the lens. the focus range suddenly shrinks to 0 .. 0 and becomes
+      // a MENU. See https://redmine.darktable.org/issues/12004 for the crash resulting from that.
 
       // Get source and destination value to be compared
-      if(gp_widget_get_value(source, &stv) != GP_OK) stv = NULL;
-      if(gp_widget_get_value(dw, &dtv) != GP_OK)  dtv = NULL;
-
-      if(((stv && dtv) && strcmp(stv, dtv) != 0) && (changed = TRUE))
+      if(source_type == GP_WIDGET_RANGE)
       {
-        gp_widget_set_value(dw, stv);
+        float value;
+        if(gp_widget_get_value(source, &value) != GP_OK) goto end;
+        source_value = g_strdup_printf("%.0f", value);
+      }
+      else
+        if(gp_widget_get_value(source, &source_value) != GP_OK) goto end;
+
+      if(destination_type == GP_WIDGET_RANGE)
+      {
+        float value;
+        if(gp_widget_get_value(destination_child, &value) != GP_OK) goto end;
+        destination_value = g_strdup_printf("%.0f", value);
+      }
+      else
+        if(gp_widget_get_value(destination_child, &destination_value) != GP_OK) goto end;
+
+      if(strcmp(source_value, destination_value) != 0)
+      {
+        gp_widget_set_value(destination_child, source_value);
         // Don't flag this change as changed, otherwise a read-only widget might get tried
         // to update the camera configuration...
-        gp_widget_set_changed(dw, 0);
+        gp_widget_set_changed(destination_child, 0);
+        changed = TRUE;
       }
 
-      if((stv && dtv) && (notify_all || changed)) _dispatch_camera_property_value_changed(c, camera, sk, stv);
+      if(notify_all || changed)
+        _dispatch_camera_property_value_changed(c, camera, source_name, source_value);
+
+end:
+      if(source_type == GP_WIDGET_RANGE) g_free(source_value);
+      if(destination_type == GP_WIDGET_RANGE) g_free(destination_value);
     }
   }
 }
