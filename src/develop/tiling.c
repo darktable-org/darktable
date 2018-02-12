@@ -724,12 +724,13 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
 
   /* iterate over tiles */
   for(size_t tx = 0; tx < tiles_x; tx++)
+  {
+    const size_t wd = tx * tile_wd + width > roi_in->width ? roi_in->width - tx * tile_wd : width;
     for(size_t ty = 0; ty < tiles_y; ty++)
     {
       piece->pipe->tiling = 1;
 
-      size_t wd = tx * tile_wd + width > roi_in->width ? roi_in->width - tx * tile_wd : width;
-      size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height - ty * tile_ht : height;
+      const size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height - ty * tile_ht : height;
 
       /* no need to process end-tiles that are smaller than the total overlap area */
       if((wd <= 2 * overlap && tx > 0) || (ht <= 2 * overlap && ty > 0)) continue;
@@ -752,7 +753,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
 
 /* prepare input tile buffer */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(input, width, ioffs, wd, ht) schedule(static)
+#pragma omp parallel for default(none) shared(input, width, ioffs) schedule(static)
 #endif
       for(size_t j = 0; j < ht; j++)
         memcpy((char *)input + j * wd * in_bpp, (char *)ivoid + ioffs + j * ipitch, (size_t)wd * in_bpp);
@@ -793,12 +794,13 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
 
 /* copy "good" part of tile to output buffer */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ooffs, output, width, origin, region, wd) schedule(static)
+#pragma omp parallel for default(none) shared(ooffs, output, width, origin, region) schedule(static)
 #endif
       for(size_t j = 0; j < region[1]; j++)
         memcpy((char *)ovoid + ooffs + j * opitch,
                (char *)output + ((j + origin[1]) * wd + origin[0]) * out_bpp, (size_t)region[0] * out_bpp);
     }
+  }
 
   /* copy back final processed_maximum */
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_new[k];
