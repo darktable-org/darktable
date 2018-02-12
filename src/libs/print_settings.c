@@ -23,6 +23,7 @@
 #include "common/colorspaces.h"
 #include "common/cups_print.h"
 #include "common/image_cache.h"
+#include "common/metadata.h"
 #include "common/pdf.h"
 #include "common/printprof.h"
 #include "common/styles.h"
@@ -415,18 +416,29 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   params->imgid = imgid;
   memcpy(&params->prt, &ps->prt, sizeof(dt_print_info_t));
 
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
-  if(!img)
+  // what to call the image?
+  GList *res;
+  if((res = dt_metadata_get(params->imgid, "Xmp.dc.title", NULL)) != NULL)
   {
-    dt_control_log(_("cannot get image %d for printing"), imgid);
-    dt_control_job_dispose(job);
-    return;
+    // copying this cargo-cult style from metadata_view.c -- perhaps this works better with truncating unicode strings?
+    snprintf(params->job_title, sizeof(params->job_title), "%s", (char *)res->data);
+    // FIXME: in metadata_view.c, non-printables are filtered, should we do this here?
+    g_list_free_full(res, &g_free);
   }
-  g_strlcpy(params->job_title, img->filename, sizeof(params->job_title));
-  dt_image_cache_read_release(darktable.image_cache, img);
-
+  else
+  {
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
+    if(!img || img->film_id == -1)
+    {
+      dt_control_log(_("cannot get image %d for printing"), imgid);
+      dt_control_job_dispose(job);
+      return;
+    }
+    g_strlcpy(params->job_title, img->filename, sizeof(params->job_title));
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
   gchar message[256] = { 0 };
-  g_snprintf(message, sizeof(message) - 1, _("print `%s' on `%s'"), params->job_title, params->prt.printer.name);
+  g_snprintf(message, sizeof(message) - 1, _("processing `%s' for `%s'"), params->job_title, params->prt.printer.name);
   dt_control_job_add_progress(job, message, TRUE);
 
   // FIXME: getting this from conf as w/prior code, but switch to getting from ps
