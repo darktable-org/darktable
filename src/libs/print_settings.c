@@ -82,7 +82,7 @@ typedef struct dt_lib_print_settings_t
 typedef struct dt_lib_print_job_t
 {
   int imgid;
-  gchar job_title[128];
+  gchar *job_title;
   dt_print_info_t prt;
   char* style;
   gboolean style_append, black_point_compensation;
@@ -383,6 +383,14 @@ static int _print_job_run(dt_job_t *job)
   return 0;
 }
 
+static void _print_job_cleanup(void *p)
+{
+  dt_lib_print_job_t *params = p;
+
+  g_free(params->job_title);
+  free(params);
+}
+
 static void
 _print_button_clicked (GtkWidget *widget, gpointer user_data)
 {
@@ -410,8 +418,8 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_job_t *job = dt_control_job_create(&_print_job_run, "print image %d", imgid);
   if(!job) return;
 
-  dt_lib_print_job_t *params = (dt_lib_print_job_t*)malloc(sizeof(dt_lib_print_job_t));
-  dt_control_job_set_params(job, params, free);
+  dt_lib_print_job_t *params = calloc(1, sizeof(dt_lib_print_job_t));
+  dt_control_job_set_params(job, params, _print_job_cleanup);
 
   params->imgid = imgid;
   memcpy(&params->prt, &ps->prt, sizeof(dt_print_info_t));
@@ -420,9 +428,8 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   GList *res;
   if((res = dt_metadata_get(params->imgid, "Xmp.dc.title", NULL)) != NULL)
   {
-    // copying this cargo-cult style from metadata_view.c -- perhaps this works better with truncating unicode strings?
-    snprintf(params->job_title, sizeof(params->job_title), "%s", (char *)res->data);
     // FIXME: in metadata_view.c, non-printables are filtered, should we do this here?
+    params->job_title = g_strdup((gchar *)res->data);
     g_list_free_full(res, &g_free);
   }
   else
@@ -434,12 +441,12 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
       dt_control_job_dispose(job);
       return;
     }
-    g_strlcpy(params->job_title, img->filename, sizeof(params->job_title));
+    params->job_title = g_strdup(img->filename);
     dt_image_cache_read_release(darktable.image_cache, img);
   }
-  gchar message[256] = { 0 };
-  g_snprintf(message, sizeof(message) - 1, _("processing `%s' for `%s'"), params->job_title, params->prt.printer.name);
+  gchar *message = g_strdup_printf(_("processing `%s' for `%s'"), params->job_title, params->prt.printer.name);
   dt_control_job_add_progress(job, message, TRUE);
+  g_free(message);
 
   // FIXME: getting this from conf as w/prior code, but switch to getting from ps
   params->style = dt_conf_get_string("plugins/print/print/style");
