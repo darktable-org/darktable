@@ -236,6 +236,9 @@ static int _print_job_run(dt_job_t *job)
     g_free(params->style);
   }
 
+  // let the user know something is happening
+  dt_control_job_set_progress(job, 0.05);
+
   const int high_quality = 1;
   const int upscale = 1;
   const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(params->imgid, params->buf_icc_type, params->buf_icc_profile);
@@ -364,7 +367,7 @@ static int _print_job_run(dt_job_t *job)
     g_unlink(filename);
     return 0;
   }
-  dt_control_job_set_progress(job, 0.95);
+  dt_control_job_set_progress(job, 1.0);
 
   // send to CUPS
 
