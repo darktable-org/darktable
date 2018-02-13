@@ -83,6 +83,7 @@ typedef struct dt_lib_print_job_t
 {
   int imgid;
   gchar *job_title;
+  gchar *message;
   dt_print_info_t prt;
   gchar* style;
   gboolean style_append, black_point_compensation;
@@ -238,6 +239,7 @@ static int _print_job_run(dt_job_t *job)
 
   // let the user know something is happening
   dt_control_job_set_progress(job, 0.05);
+  dt_control_log("%s..", params->message);
 
   const int high_quality = 1;
   const int upscale = 1;
@@ -374,6 +376,7 @@ static void _print_job_cleanup(void *p)
   g_free(params->buf_icc_profile);
   g_free(params->p_icc_profile);
   g_free(params->job_title);
+  g_free(params->message);
   free(params);
 }
 
@@ -430,9 +433,9 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
     params->job_title = g_strdup(img->filename);
     dt_image_cache_read_release(darktable.image_cache, img);
   }
-  gchar *message = g_strdup_printf(_("processing `%s' for `%s'"), params->job_title, params->prt.printer.name);
-  dt_control_job_add_progress(job, message, TRUE);
-  g_free(message);
+  // FIXME: ellipsize title/printer as the export completed message is ellipsized
+  params->message = g_strdup_printf(_("processing `%s' for `%s'"), params->job_title, params->prt.printer.name);
+  dt_control_job_add_progress(job, params->message, TRUE);
 
   // FIXME: getting this from conf as w/prior code, but switch to getting from ps
   params->style = dt_conf_get_string("plugins/print/print/style");
