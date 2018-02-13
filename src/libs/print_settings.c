@@ -84,12 +84,15 @@ typedef struct dt_lib_print_job_t
   int imgid;
   gchar *job_title;
   dt_print_info_t prt;
-  char* style;
+  gchar* style;
   gboolean style_append, black_point_compensation;
   dt_colorspaces_color_profile_type_t buf_icc_type, p_icc_type;
   gchar *buf_icc_profile, *p_icc_profile;
   dt_iop_color_intent_t buf_icc_intent, p_icc_intent;
   uint16_t *buf;
+  dt_pdf_page_t *pdf_page;
+  dt_pdf_image_t *pdf_image;
+  char pdf_filename[PATH_MAX];
 } dt_lib_print_job_t;
 
 typedef struct dt_lib_export_profile_t
@@ -231,11 +234,7 @@ static int _print_job_run(dt_job_t *job)
   dat.bpp = *params->p_icc_profile ? 16 : 8; // set to 16bit when a profile is to be applied
   dat.params = params;
 
-  if (params->style)
-  {
-    g_strlcpy(dat.style, params->style, sizeof(dat.style));
-    g_free(params->style);
-  }
+  if (params->style) g_strlcpy(dat.style, params->style, sizeof(dat.style));
 
   // let the user know something is happening
   dt_control_job_set_progress(job, 0.05);
@@ -246,7 +245,6 @@ static int _print_job_run(dt_job_t *job)
 
   dt_imageio_export_with_flags(params->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
                                NULL, FALSE, params->buf_icc_type, params->buf_icc_profile, params->buf_icc_intent,  NULL, NULL, 1, 1);
-  g_free(params->buf_icc_profile);
 
   // after exporting we know the real size of the image, compute the layout
 
@@ -276,8 +274,6 @@ static int _print_job_run(dt_job_t *job)
   {
     const dt_colorspaces_color_profile_t *pprof = dt_colorspaces_get_profile(params->p_icc_type, params->p_icc_profile,
                                                                              DT_PROFILE_DIRECTION_OUT);
-    g_free(params->p_icc_profile);
-
     if (!pprof)
     {
       dt_control_log(_("cannot open printer profile `%s'"), params->p_icc_profile);
@@ -311,11 +307,10 @@ static int _print_job_run(dt_job_t *job)
   if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED) return 0;
   dt_control_job_set_progress(job, 0.9);
 
-  char filename[PATH_MAX] = { 0 };
-  dt_loc_get_tmp_dir(filename, sizeof(filename));
-  g_strlcat(filename, "/pf.XXXXXX.pdf", sizeof(filename));
+  dt_loc_get_tmp_dir(params->pdf_filename, sizeof(params->pdf_filename));
+  g_strlcat(params->pdf_filename, "/pf.XXXXXX.pdf", sizeof(params->pdf_filename));
 
-  gint fd = g_mkstemp(filename);
+  gint fd = g_mkstemp(params->pdf_filename);
   if(fd == -1)
   {
     dt_control_log(_("failed to create temporary pdf for printing"));
@@ -326,44 +321,36 @@ static int _print_job_run(dt_job_t *job)
 
   const int icc_id = 0;
 
-  dt_pdf_t *pdf = dt_pdf_start(filename, page_width, page_height, params->prt.printer.resolution, DT_PDF_STREAM_ENCODER_FLATE);
+  dt_pdf_t *pdf = dt_pdf_start(params->pdf_filename, page_width, page_height, params->prt.printer.resolution, DT_PDF_STREAM_ENCODER_FLATE);
 
 /*
   // ??? should a profile be embedded here?
   if (*printer_profile)
     icc_id = dt_pdf_add_icc(pdf, printer_profile);
 */
-  dt_pdf_image_t *pdf_image = dt_pdf_add_image(pdf, (uint8_t *)params->buf, dat.width, dat.height, 8, icc_id, 0.0);
+  params->pdf_image = dt_pdf_add_image(pdf, (uint8_t *)params->buf, dat.width, dat.height, 8, icc_id, 0.0);
 
   //  PDF bounding-box has origin on bottom-left
-  pdf_image->bb_x      = dt_pdf_pixel_to_point((float)margin_left, params->prt.printer.resolution);
-  pdf_image->bb_y      = dt_pdf_pixel_to_point((float)margin_bottom, params->prt.printer.resolution);
-  pdf_image->bb_width  = dt_pdf_pixel_to_point((float)iwidth, params->prt.printer.resolution);
-  pdf_image->bb_height = dt_pdf_pixel_to_point((float)iheight, params->prt.printer.resolution);
+  params->pdf_image->bb_x      = dt_pdf_pixel_to_point((float)margin_left, params->prt.printer.resolution);
+  params->pdf_image->bb_y      = dt_pdf_pixel_to_point((float)margin_bottom, params->prt.printer.resolution);
+  params->pdf_image->bb_width  = dt_pdf_pixel_to_point((float)iwidth, params->prt.printer.resolution);
+  params->pdf_image->bb_height = dt_pdf_pixel_to_point((float)iheight, params->prt.printer.resolution);
 
   if (params->prt.page.landscape && (dat.width > dat.height))
-    pdf_image->rotate_to_fit = TRUE;
+    params->pdf_image->rotate_to_fit = TRUE;
   else
-    pdf_image->rotate_to_fit = FALSE;
+    params->pdf_image->rotate_to_fit = FALSE;
 
-  dt_pdf_page_t *pdf_page = dt_pdf_add_page(pdf, &pdf_image, 1);
-  dt_pdf_finish(pdf, &pdf_page, 1);
+  params->pdf_page = dt_pdf_add_page(pdf, &params->pdf_image, 1);
+  dt_pdf_finish(pdf, &params->pdf_page, 1);
 
-  free (pdf_image);
-  free (pdf_page);
-
-  if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
-  {
-    g_unlink(filename);
-    return 0;
-  }
-  dt_control_job_set_progress(job, 1.0);
+  if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED) return 0;
+  dt_control_job_set_progress(job, 0.95);
 
   // send to CUPS
 
-  dt_print_file (params->imgid, filename, params->job_title, &params->prt);
-
-  g_unlink(filename);
+  dt_print_file (params->imgid, params->pdf_filename, params->job_title, &params->prt);
+  dt_control_job_set_progress(job, 1.0);
 
   // add tag for this image
 
@@ -379,7 +366,13 @@ static int _print_job_run(dt_job_t *job)
 static void _print_job_cleanup(void *p)
 {
   dt_lib_print_job_t *params = p;
+  if(params->pdf_filename[0]) g_unlink(params->pdf_filename);
+  free(params->pdf_image);
+  free(params->pdf_page);
   free(params->buf);
+  g_free(params->style);
+  g_free(params->buf_icc_profile);
+  g_free(params->p_icc_profile);
   g_free(params->job_title);
   free(params);
 }
