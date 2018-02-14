@@ -171,6 +171,25 @@ static void _lib_overlays_button_clicked(GtkWidget *widget, gpointer user_data)
 #endif // USE_LUA
 }
 
+// TODO: this doesn't work for all widgets. the reason being that the GtkEventBox we put libs/iops into catches events.
+static char *get_help_url(GtkWidget *widget)
+{
+  while(widget)
+  {
+    // if the widget doesn't have a help url set go up the widget hierarchy to find a parent that has an url
+    gchar *help_url = g_object_get_data(G_OBJECT(widget), "dt-help-url");
+
+    if(help_url)
+      return help_url;
+
+    // TODO: shall we cross from libs/iops to the core gui? if not, here is the place to break out of the loop
+
+    widget = gtk_widget_get_parent(widget);
+  }
+
+  return NULL;
+}
+
 static void _main_do_event(GdkEvent *event, gpointer data)
 {
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)data;
@@ -192,7 +211,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
       if(event_widget)
       {
         // TODO: When the widget doesn't have a help url set we should probably look at the parent(s)
-        gchar *help_url = g_object_get_data(G_OBJECT(event_widget), "dt-help-url");
+        gchar *help_url = get_help_url(event_widget);
         if(help_url && *help_url)
         {
           GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -242,7 +261,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
       GtkWidget *event_widget = gtk_get_event_widget(event);
       if(event_widget)
       {
-        gchar *help_url = g_object_get_data(G_OBJECT(event_widget), "dt-help-url");
+        gchar *help_url = get_help_url(event_widget);
         if(help_url)
         {
           // TODO: find a better way to tell the user that the hovered widget has a help link

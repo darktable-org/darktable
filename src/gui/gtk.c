@@ -1917,6 +1917,7 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
 void dt_gui_add_help_link(GtkWidget *widget, const char *link)
 {
   g_object_set_data(G_OBJECT(widget), "dt-help-url", (void *)link);
+  gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
