@@ -1316,6 +1316,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/imageio/format/tiff/compresslevel</name>
+    <type>int</type>
+    <default>5</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/format/png/bpp</name>
     <type>int</type>
     <default>8</default>
