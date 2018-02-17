@@ -165,6 +165,7 @@ static const char konica_minolta[] = N_("konica minolta like");
 static const char samsung[] = N_("samsung like");
 static const char fujifilm[] = N_("fujifilm like");
 static const char nokia[] = N_("nokia like");
+static const char leaf[] = N_("leaf like");
 
 typedef struct basecurve_preset_t
 {
@@ -234,6 +235,7 @@ static const basecurve_preset_t basecurve_presets[] = {
   { samsung,         "SAMSUNG", "",               0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.040323, 0.029677 }, { 0.133065, 0.232258 }, { 0.447581, 0.747581 }, { 0.842742, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
   { fujifilm,        "FUJIFILM", "",              0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.028226, 0.029677 }, { 0.104839, 0.232258 }, { 0.387097, 0.747581 }, { 0.754032, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
   { nokia,           "Nokia", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.041825, 0.020161 }, { 0.117871, 0.153226 }, { 0.319392, 0.500000 }, { 0.638783, 0.842742 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 1, 0 },
+  { leaf,            "LEAF", "",                  0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.005496, 0.002484 }, { 0.162565, 0.566878 }, { 0.421999, 0.946833 }, { 0.699305, 0.979992 }, { 1.000000, 1.000000 } } }, { 6 }, { m } }, 0, 1 },
   // clang-format on
 };
 #undef m
