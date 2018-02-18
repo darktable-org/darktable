@@ -136,8 +136,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
                  *blue_curve = NULL;
     cmsCIEXYZ *red_color = NULL,
               *green_color = NULL,
-              *blue_color = NULL,
-              *white_point = NULL;
+              *blue_color = NULL;
     cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
     float r[2], g[2], b[2], w[2];
     float sum;
@@ -152,9 +151,8 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
     red_color = (cmsCIEXYZ *)cmsReadTag(out_profile, cmsSigRedColorantTag);
     green_color = (cmsCIEXYZ *)cmsReadTag(out_profile, cmsSigGreenColorantTag);
     blue_color = (cmsCIEXYZ *)cmsReadTag(out_profile, cmsSigBlueColorantTag);
-    white_point = (cmsCIEXYZ *)cmsReadTag(out_profile, cmsSigMediaWhitePointTag);
 
-    if(!red_curve || !green_curve || !blue_curve || !red_color || !green_color || !blue_color || !white_point)
+    if(!red_curve || !green_curve || !blue_curve || !red_color || !green_color || !blue_color)
       goto icc_error;
 
     if(!cmsIsToneCurveLinear(red_curve) || !cmsIsToneCurveLinear(green_curve) || !cmsIsToneCurveLinear(blue_curve))
@@ -174,9 +172,11 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
     sum = blue_color->X + blue_color->Y + blue_color->Z;
     b[0] = blue_color->X / sum;
     b[1] = blue_color->Y / sum;
-    sum = white_point->X + white_point->Y + white_point->Z;
-    w[0] = white_point->X / sum;
-    w[1] = white_point->Y / sum;
+
+    // hard code the white point to D50 as the primaries from the ICC should be adapted to that
+    // calculated from D50 illuminant XYZ values in ICC specs
+    w[0] = 0.345702915;
+    w[1] = 0.358538597;
 
     chromaticities.red = Imath::V2f(r[0], r[1]);
     chromaticities.green = Imath::V2f(g[0], g[1]);
