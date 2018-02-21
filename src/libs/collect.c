@@ -59,7 +59,6 @@ typedef struct dt_lib_collect_t
 
   GtkTreeView *view;
   int view_rule;
-  gboolean skipnextupdate;
 
   GtkTreeModel *treefilter;
   GtkTreeModel *listfilter;
@@ -1494,7 +1493,6 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
   else
     update_view(d->rule + active); // we have to update visible items too
 
-  d->skipnextupdate = TRUE;
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
 }
@@ -1538,7 +1536,6 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
       }
     }
   }
-  c->skipnextupdate = TRUE;
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1611,11 +1608,6 @@ static void collection_updated(gpointer instance, gpointer self)
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
 
   // update tree
-  if (d->skipnextupdate)
-  {
-    d->skipnextupdate = FALSE;
-    return;
-  }
   d->view_rule = -1;
   d->rule[d->active_rule].typing = FALSE;
   _lib_collect_gui_update(self);
