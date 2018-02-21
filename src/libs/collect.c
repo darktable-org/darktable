@@ -219,7 +219,7 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
   GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser;
-
+  
   GtkTreeSelection *selection;
   GtkTreeIter iter, child;
   GtkTreeModel *model;
@@ -244,7 +244,6 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
 #endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-
   if(tree_path != NULL)
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), tree_path);
   else
@@ -375,7 +374,7 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_c
   g_signal_connect(menuitem, "activate", (GCallback)view_popup_menu_onRemove, treeview);
 
   gtk_widget_show_all(GTK_WIDGET(menu));
-
+  
 #if GTK_CHECK_VERSION(3, 22, 0)
   gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
 #else
@@ -1023,7 +1022,6 @@ static void list_view(dt_lib_collect_rule_t *dr)
   set_properties(dr);
 
   GtkTreeModel *model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(d->listfilter));
-
   if(d->view_rule != property)
   {
     sqlite3_stmt *stmt;
@@ -1336,11 +1334,13 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
       // only clear
       button->icon = dtgtk_cairo_paint_cancel;
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule"));
+      dt_gui_add_help_link(GTK_WIDGET(button), "collect_images.html#collect_images_usage");
     }
     else if(i == active)
     {
       button->icon = dtgtk_cairo_paint_dropdown;
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule or add new rules"));
+      dt_gui_add_help_link(GTK_WIDGET(button), "collect_images.html#collect_images_usage");
     }
     else
     {
@@ -1350,6 +1350,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
       if(mode == DT_LIB_COLLECT_MODE_OR) button->icon = dtgtk_cairo_paint_or;
       if(mode == DT_LIB_COLLECT_MODE_AND_NOT) button->icon = dtgtk_cairo_paint_andnot;
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule"));
+      dt_gui_add_help_link(GTK_WIDGET(button), "collect_images.html#collect_images_usage");
     }
   }
 
@@ -1391,17 +1392,20 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
      || property == DT_COLLECTION_PROP_ISO)
   {
     gtk_widget_set_tooltip_text(d->text, _("type your query, use <, <=, >, >=, <>, =, [;] as operators"));
+    dt_gui_add_help_link(d->text, "collect_images.html#collect_images_usage");
   }
   else if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
   {
     gtk_widget_set_tooltip_text(d->text,
                                 _("type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
                                   "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
+    dt_gui_add_help_link(d->text, "collect_images.html#collect_images_usage");
   }
   else
   {
     /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard"));
+    dt_gui_add_help_link(d->text, "collect_images.html#collect_images_usage");
   }
 
   update_view(d);
@@ -1772,7 +1776,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-
+  
   d->active_rule = 0;
   d->nb_rules = 0;
   d->params = (dt_lib_collect_params_t *)malloc(sizeof(dt_lib_collect_params_t));
@@ -1802,6 +1806,7 @@ void gui_init(dt_lib_module_t *self)
 
     /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(w, _("type your query, use `%' as wildcard"));
+    dt_gui_add_help_link(w, "collect_images.html#collect_images_usage");
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "insert-text", G_CALLBACK(entry_insert_text), d->rule + i);
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
@@ -1852,14 +1857,14 @@ void gui_init(dt_lib_module_t *self)
   g_object_unref(treemodel);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
-
+  
   GtkWidget *sw2 = gtk_scrolled_window_new(NULL, NULL);
   d->sw2 = GTK_SCROLLED_WINDOW(sw2);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw2), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw2), DT_PIXEL_APPLY_DPI(300));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw2), TRUE, TRUE, 0);
-
+  
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;
   darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
