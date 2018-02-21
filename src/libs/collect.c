@@ -109,6 +109,7 @@ static void entry_insert_text(GtkWidget *entry, gchar *new_text, gint new_length
                           dt_lib_collect_rule_t *d);
 static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr);
 static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d);
+static void collection_updated(gpointer instance, gpointer self);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -1493,7 +1494,11 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
   else
     update_view(d->rule + active); // we have to update visible items too
 
+  dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                  darktable.view_manager->proxy.module_collect.module);
   dt_collection_update_query(darktable.collection);
+  dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                    darktable.view_manager->proxy.module_collect.module);
   dt_control_queue_redraw_center();
 }
 
@@ -1536,7 +1541,11 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
       }
     }
   }
+  dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                  darktable.view_manager->proxy.module_collect.module);
   dt_collection_update_query(darktable.collection);
+  dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                    darktable.view_manager->proxy.module_collect.module);
 }
 
 static void entry_insert_text(GtkWidget *entry, gchar *new_text, gint new_length, gpointer *position,
