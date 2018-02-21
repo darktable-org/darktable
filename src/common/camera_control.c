@@ -94,10 +94,9 @@ static void _camctl_unlock(const dt_camctl_t *c);
 static void _camera_configuration_update(const dt_camctl_t *c, const dt_camera_t *camera);
 /** Commit the changes in cached configuration to the camera configuration */
 static void _camera_configuration_commit(const dt_camctl_t *c, const dt_camera_t *camera);
-/** Merges source with destination and notifies listeners of the changes. \param notify_all If true every
- * widget is notified as change */
-static void _camera_configuration_merge(const dt_camctl_t *c, const dt_camera_t *camera, CameraWidget *source,
-                                        CameraWidget *destination, gboolean notify_all);
+/** Compares new_config with old_config and notifies listeners of the changes. */
+static void _camera_configuration_notify_change(const dt_camctl_t *c, const dt_camera_t *camera,
+                                                CameraWidget *new_config, CameraWidget *old_config);
 /** Put a job on the queue */
 static void _camera_add_job(const dt_camctl_t *c, const dt_camera_t *camera, gpointer job);
 /** Get a job from the queue */
@@ -1495,31 +1494,31 @@ static void _camera_poll_events(const dt_camctl_t *c, const dt_camera_t *cam)
 }
 
 
-static void _camera_configuration_merge(const dt_camctl_t *c, const dt_camera_t *camera, CameraWidget *source,
-                                        CameraWidget *destination, gboolean notify_all)
+static void _camera_configuration_notify_change(const dt_camctl_t *c, const dt_camera_t *camera,
+                                                CameraWidget *new_config, CameraWidget *old_config)
 {
-  const char *source_name = NULL;
-  if(gp_widget_get_name(source, &source_name) != GP_OK) return;
+  const char *new_config_name = NULL;
+  if(gp_widget_get_name(new_config, &new_config_name) != GP_OK) return;
 
-  // If source widget has children let's recurse into each children
-  int children = gp_widget_count_children(source);
+  // If new_config widget has children let's recurse into each children
+  int children = gp_widget_count_children(new_config);
   if(children > 0)
   {
     CameraWidget *child = NULL;
     for(int i = 0; i < children; i++)
     {
-      if(gp_widget_get_child(source, i, &child) == GP_OK)
-        _camera_configuration_merge(c, camera, child, destination, notify_all);
+      if(gp_widget_get_child(new_config, i, &child) == GP_OK)
+        _camera_configuration_notify_change(c, camera, child, old_config);
     }
   }
   else
   {
-    CameraWidget *destination_child = NULL;
-    if(gp_widget_get_child_by_name(destination, source_name, &destination_child) != GP_OK) return;
+    CameraWidget *old_config_child = NULL;
+    if(gp_widget_get_child_by_name(old_config, new_config_name, &old_config_child) != GP_OK) return;
 
-    CameraWidgetType source_type, destination_type;
-    if(gp_widget_get_type(source, &source_type) != GP_OK) return;
-    if(gp_widget_get_type(destination_child, &destination_type) != GP_OK) return;
+    CameraWidgetType new_config_type, old_config_type;
+    if(gp_widget_get_type(new_config, &new_config_type) != GP_OK) return;
+    if(gp_widget_get_type(old_config_child, &old_config_type) != GP_OK) return;
 
 
     //
@@ -1528,66 +1527,56 @@ static void _camera_configuration_merge(const dt_camctl_t *c, const dt_camera_t 
     /// TODO: Resolve this 2.4.8 libgphoto2 dependency
     /*
     int sa,da;
-    gp_widget_get_readonly( source, &sa );
-    gp_widget_get_readonly( destination_child, &da );
+    gp_widget_get_readonly( new_config, &sa );
+    gp_widget_get_readonly( old_config_child, &da );
 
     if(  notify_all || ( sa != da ) ) {
-      // update destination widget to new accessibility if differ then notify of the change
+      // update old_config widget to new accessibility if differ then notify of the change
       if( ( sa != da )  )
-        gp_widget_set_readonly( destination_child, sa );
+        gp_widget_set_readonly( old_config_child, sa );
 
-      _dispatch_camera_property_accessibility_changed(c, camera,source_name, ( sa == 1 ) ? TRUE: FALSE) ;
+      _dispatch_camera_property_accessibility_changed(c, camera,new_config_name, ( sa == 1 ) ? TRUE: FALSE) ;
     }
     */
 
     //
     // Lets compare values and notify on change or by notifyAll flag
     //
-    if(source_type == GP_WIDGET_MENU || source_type == GP_WIDGET_TEXT || source_type == GP_WIDGET_RADIO ||
-       destination_type == GP_WIDGET_MENU || destination_type == GP_WIDGET_TEXT || destination_type == GP_WIDGET_RADIO)
+    if(new_config_type == GP_WIDGET_MENU || new_config_type == GP_WIDGET_TEXT || new_config_type == GP_WIDGET_RADIO ||
+       old_config_type == GP_WIDGET_MENU || old_config_type == GP_WIDGET_TEXT || old_config_type == GP_WIDGET_RADIO)
     {
-      gboolean changed = FALSE;
-      char *source_value = NULL;
-      char *destination_value = NULL;
+      char *new_config_value = NULL;
+      char *old_config_value = NULL;
 
       // gphoto2 has a "feature" that turns RANGE with a small value range and step size of 1 into a MENU.
       // that can for example happen when detaching the lens. the focus range suddenly shrinks to 0 .. 0 and becomes
       // a MENU. See https://redmine.darktable.org/issues/12004 for the crash resulting from that.
 
-      // Get source and destination value to be compared
-      if(source_type == GP_WIDGET_RANGE)
+      // Get new_config and old_config value to be compared
+      if(new_config_type == GP_WIDGET_RANGE)
       {
         float value;
-        if(gp_widget_get_value(source, &value) != GP_OK) goto end;
-        source_value = g_strdup_printf("%.0f", value);
+        if(gp_widget_get_value(new_config, &value) != GP_OK) goto end;
+        new_config_value = g_strdup_printf("%.0f", value);
       }
       else
-        if(gp_widget_get_value(source, &source_value) != GP_OK) goto end;
+        if(gp_widget_get_value(new_config, &new_config_value) != GP_OK) goto end;
 
-      if(destination_type == GP_WIDGET_RANGE)
+      if(old_config_type == GP_WIDGET_RANGE)
       {
         float value;
-        if(gp_widget_get_value(destination_child, &value) != GP_OK) goto end;
-        destination_value = g_strdup_printf("%.0f", value);
+        if(gp_widget_get_value(old_config_child, &value) != GP_OK) goto end;
+        old_config_value = g_strdup_printf("%.0f", value);
       }
       else
-        if(gp_widget_get_value(destination_child, &destination_value) != GP_OK) goto end;
+        if(gp_widget_get_value(old_config_child, &old_config_value) != GP_OK) goto end;
 
-      if(strcmp(source_value, destination_value) != 0)
-      {
-        gp_widget_set_value(destination_child, source_value);
-        // Don't flag this change as changed, otherwise a read-only widget might get tried
-        // to update the camera configuration...
-        gp_widget_set_changed(destination_child, 0);
-        changed = TRUE;
-      }
-
-      if(notify_all || changed)
-        _dispatch_camera_property_value_changed(c, camera, source_name, source_value);
+      if(strcmp(new_config_value, old_config_value) != 0)
+        _dispatch_camera_property_value_changed(c, camera, new_config_name, new_config_value);
 
 end:
-      if(source_type == GP_WIDGET_RANGE) g_free(source_value);
-      if(destination_type == GP_WIDGET_RANGE) g_free(destination_value);
+      if(new_config_type == GP_WIDGET_RANGE) g_free(new_config_value);
+      if(old_config_type == GP_WIDGET_RANGE) g_free(old_config_value);
     }
   }
 }
@@ -1613,8 +1602,9 @@ static void _camera_configuration_update(const dt_camctl_t *c, const dt_camera_t
   CameraWidget *remote; // Copy of remote configuration
   gp_camera_get_config(camera->gpcam, &remote, c->gpcontext);
   // merge remote copy with cache and notify on changed properties to host application
-  _camera_configuration_merge(c, camera, remote, camera->configuration, FALSE);
-  gp_widget_free(remote);
+  _camera_configuration_notify_change(c, camera, remote, camera->configuration);
+  gp_widget_free(cam->configuration);
+  cam->configuration = remote;
   dt_pthread_mutex_unlock(&cam->config_lock);
 }
 
