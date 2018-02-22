@@ -142,6 +142,7 @@ static void _update_picker_output(dt_lib_module_t *self)
     darktable.gui->reset = 1;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->picker_button),
                                  module->request_color_pick != DT_REQUEST_COLORPICK_OFF);
+    dt_gui_add_help_link(data->picker_button, "global_color_picker.html#global_color_picker");
     darktable.gui->reset = 0;
 
     int input_color = dt_conf_get_int("ui_last/colorpicker_model");
@@ -362,6 +363,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   gtk_widget_set_events(sample->color_patch, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_BUTTON_PRESS_MASK);
   gtk_widget_set_tooltip_text(sample->color_patch, _("hover to highlight sample on canvas, "
                                                        "click to lock sample"));
+  dt_gui_add_help_link(sample->color_patch, "global_color_picker.html#global_color_picker");
   gtk_box_pack_start(GTK_BOX(sample->container), sample->color_patch, FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(sample->color_patch), "enter-notify-event", G_CALLBACK(_live_sample_enter),
@@ -376,6 +378,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   gtk_box_pack_start(GTK_BOX(sample->container), sample->output_label, TRUE, TRUE, 0);
 
   sample->delete_button = gtk_button_new_with_label(_("remove"));
+  dt_gui_add_help_link(sample->delete_button, "global_color_picker.html#global_color_picker");
   gtk_box_pack_start(GTK_BOX(sample->container), sample->delete_button, FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(sample->delete_button), "clicked", G_CALLBACK(_remove_sample), sample);
@@ -513,7 +516,9 @@ void gui_init(dt_lib_module_t *self)
 
   data->size_selector = gtk_combo_box_text_new();
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->size_selector), _("point"));
+  dt_gui_add_help_link(data->size_selector, "global_color_picker.html#global_color_picker");
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->size_selector), _("area"));
+  dt_gui_add_help_link(data->size_selector, "global_color_picker.html#global_color_picker");
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->size_selector), dt_conf_get_int("ui_last/colorpicker_size"));
   gtk_widget_set_size_request(data->size_selector, DT_PIXEL_APPLY_DPI(30), -1);
   gtk_box_pack_start(GTK_BOX(picker_subrow), data->size_selector, TRUE, TRUE, 0);
@@ -525,6 +530,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(picker_subrow), data->picker_button, FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(data->picker_button), "toggled", G_CALLBACK(_picker_button_toggled), self);
+  dt_gui_add_help_link(data->picker_button, "global_color_picker.html#global_color_picker");
 
   gtk_box_pack_start(GTK_BOX(output_options), picker_subrow, TRUE, TRUE, 0);
 
@@ -538,6 +544,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(output_options), data->statistic_selector, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(data->statistic_selector), "changed", G_CALLBACK(_statistic_changed), self);
+  dt_gui_add_help_link(data->statistic_selector, "global_color_picker.html#global_color_picker");
 
   data->color_mode_selector = gtk_combo_box_text_new();
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->color_mode_selector), _("RGB"));
@@ -547,6 +554,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(output_options), data->color_mode_selector, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(data->color_mode_selector), "changed", G_CALLBACK(_color_mode_changed), self);
+  dt_gui_add_help_link(data->color_mode_selector, "global_color_picker.html#global_color_picker");
 
   data->output_label = gtk_label_new("");
   gtk_label_set_justify(GTK_LABEL(data->output_label), GTK_JUSTIFY_CENTER);
@@ -559,7 +567,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.restrict_histogram
       = dt_conf_get_int("ui_last/colorpicker_restrict_histogram");
   gtk_box_pack_start(GTK_BOX(container), restrict_button, TRUE, TRUE, 0);
-
+  dt_gui_add_help_link(restrict_button, "global_color_picker.html#global_color_picker");
   g_signal_connect(G_OBJECT(restrict_button), "toggled", G_CALLBACK(_restrict_histogram_changed), NULL);
 
   // Adding the live samples section
@@ -572,6 +580,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->samples_statistic_selector), _("max"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->samples_statistic_selector),
                            dt_conf_get_int("ui_last/colorsamples_mode"));
+  dt_gui_add_help_link(data->samples_statistic_selector, "global_color_picker.html#global_color_picker");
   gtk_box_pack_start(GTK_BOX(samples_options_row), data->samples_statistic_selector, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(data->samples_statistic_selector), "changed",
@@ -582,12 +591,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->samples_mode_selector), _("Lab"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->samples_mode_selector),
                            dt_conf_get_int("ui_last/colorsamples_model"));
+  dt_gui_add_help_link(data->samples_mode_selector, "global_color_picker.html#global_color_picker");
   gtk_box_pack_start(GTK_BOX(samples_options_row), data->samples_mode_selector, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(data->samples_mode_selector), "changed", G_CALLBACK(_samples_mode_changed), self);
 
   data->add_sample_button = gtk_button_new_with_label(_("add"));
   gtk_widget_set_sensitive(data->add_sample_button, FALSE);
+  dt_gui_add_help_link(data->add_sample_button, "global_color_picker.html#global_color_picker");
   gtk_box_pack_start(GTK_BOX(samples_options_row), data->add_sample_button, FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(data->add_sample_button), "clicked", G_CALLBACK(_add_sample), self);
@@ -596,6 +607,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(container), data->samples_container, TRUE, TRUE, 0);
 
   data->display_samples_check_box = gtk_check_button_new_with_label(_("display sample areas on image"));
+  dt_gui_add_help_link(data->display_samples_check_box, "global_color_picker.html#global_color_picker");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box),
                                dt_conf_get_int("ui_last/colorpicker_display_samples"));
   gtk_box_pack_start(GTK_BOX(container), data->display_samples_check_box, TRUE, TRUE, 0);
