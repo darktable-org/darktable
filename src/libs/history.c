@@ -112,6 +112,7 @@ void gui_init(dt_lib_module_t *self)
   d->compress_button = gtk_button_new_with_label(_("compress history stack"));
   gtk_label_set_xalign (GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->compress_button))), 0.0f);
   gtk_widget_set_tooltip_text(d->compress_button, _("create a minimal history stack which produces the same image"));
+  dt_gui_add_help_link(d->compress_button, "history.html#history");
   g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), NULL);
 
   /* add toolbar button for creating style */
@@ -120,6 +121,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->create_button), "clicked",
                    G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);
   gtk_widget_set_tooltip_text(d->create_button, _("create a style from the current history stack"));
+  dt_gui_add_help_link(d->create_button, "history.html#history");
 
   /* add buttons to buttonbox */
   gtk_box_pack_start(GTK_BOX(hhbox), d->compress_button, TRUE, TRUE, 0);
