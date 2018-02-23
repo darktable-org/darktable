@@ -838,24 +838,6 @@ static char *tag_collate_key(char *tag)
   return result;
 }
 
-gboolean tree_count_childsum (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
-{
-  guint  count, parentcount;
-
-  GtkTreeIter parent, child = *iter;
-
-  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_COUNT, &count, -1);
-  if(!count) return FALSE;
-
-  while(gtk_tree_model_iter_parent(model, &parent, &child))
-  {
-      gtk_tree_model_get(model, &parent, DT_LIB_COLLECT_COL_COUNT, &parentcount, -1);
-      gtk_tree_store_set(GTK_TREE_STORE(model), &parent, DT_LIB_COLLECT_COL_COUNT, count + parentcount, -1);
-      child = parent;
-  }
-
-  return FALSE;
-}
 
 void tree_count_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter,
                      gpointer data)
@@ -1050,6 +1032,20 @@ static void tree_view(dt_lib_collect_rule_t *dr)
             gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, *token,
                                DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
                                DT_LIB_COLLECT_COL_COUNT, (*(token + 1)?0:count), -1);
+
+            // also add the item count to parents
+            if((folders || days || times) && !*(token + 1)){
+              guint parentcount;
+              GtkTreeIter parent2, child = iter;
+
+              while(gtk_tree_model_iter_parent(model, &parent2, &child))
+              {
+                gtk_tree_model_get(model, &parent2, DT_LIB_COLLECT_COL_COUNT, &parentcount, -1);
+                gtk_tree_store_set(GTK_TREE_STORE(model), &parent2, DT_LIB_COLLECT_COL_COUNT, count + parentcount, -1);
+                child = parent2;
+              }
+            }
+
             if(folders)
               gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_UNREACHABLE,
                                  !(g_file_test(pth, G_FILE_TEST_IS_DIR)), -1);
@@ -1070,7 +1066,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     }
     g_list_free_full(sorted_names, free_tuple);
 
-    if(folders || days || times)  gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)tree_count_childsum, NULL);
 
     gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
 
