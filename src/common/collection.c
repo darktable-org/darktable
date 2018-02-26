@@ -277,10 +277,11 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection, int e
     char confname[200];
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", exclude);
     const int mode = dt_conf_get_int(confname);
-    if (mode != 1)
+    if (mode != 1) // don't limit the collection for OR
     {
-      for(int i = 0; collection->where_ext[i] != NULL; i++) {
-        // exclude rule from extended where
+      for(int i = 0; collection->where_ext[i] != NULL; i++)
+      {
+        // exclude the one rule from extended where
         if (i != exclude)
           complete_string = dt_util_dstrcat(complete_string, "%s", collection->where_ext[i]);
       }
