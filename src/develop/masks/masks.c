@@ -1233,7 +1233,7 @@ void dt_masks_free_form(dt_masks_form_t *form)
 int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double y, double pressure, int which)
 {
   // add an option to allow skip mouse events while editing masks
-  if (darktable.develop->darkroom_skip_mouse_events) return 0;
+  if(darktable.develop->darkroom_skip_mouse_events) return 0;
 
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
@@ -1282,7 +1282,7 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, do
                                     uint32_t state)
 {
   // add an option to allow skip mouse events while editing masks
-  if (darktable.develop->darkroom_skip_mouse_events) return 0;
+  if(darktable.develop->darkroom_skip_mouse_events) return 0;
 
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
@@ -1311,7 +1311,7 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
                                    int which, int type, uint32_t state)
 {
   // add an option to allow skip mouse events while editing masks
-  if (darktable.develop->darkroom_skip_mouse_events) return 0;
+  if(darktable.develop->darkroom_skip_mouse_events) return 0;
 
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
@@ -1359,7 +1359,7 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
 int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_t state)
 {
   // add an option to allow skip mouse events while editing masks
-  if (darktable.develop->darkroom_skip_mouse_events) return 0;
+  if(darktable.develop->darkroom_skip_mouse_events) return 0;
 
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
@@ -1420,7 +1420,7 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
 
   // we update the form if needed
   // add preview when creating a circle or ellipse
-  if ( !(((form->type & DT_MASKS_CIRCLE) || (form->type & DT_MASKS_ELLIPSE)) && gui->creation) )
+  if(!(((form->type & DT_MASKS_CIRCLE) || (form->type & DT_MASKS_ELLIPSE)) && gui->creation))
     dt_masks_gui_form_test_create(form, gui);
 
   // draw form

@@ -840,7 +840,8 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
                                          dt_masks_form_gui_t *gui, int index)
 {
   // resize a shape even if on a node or segment
-  if(gui->form_selected || gui->point_selected >= 0 || gui->feather_selected >= 0 || gui->seg_selected >= 0 || gui->point_border_selected >= 0)
+  if(gui->form_selected || gui->point_selected >= 0 || gui->feather_selected >= 0 || gui->seg_selected >= 0
+     || gui->point_border_selected >= 0)
   {
     // we register the current position
     if(gui->scrollx == 0.0f && gui->scrolly == 0.0f)
@@ -859,7 +860,7 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
       if(up) amount = 0.97f;
       guint nb = g_list_length(form->points);
       // resize don't care where the mouse is inside a shape
-      if ((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+      if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
         // do not exceed upper limit of 1.0
         for(int k = 0; k < nb; k++)
