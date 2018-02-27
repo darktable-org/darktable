@@ -422,11 +422,11 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   else
   {
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
-    if(!img || img->film_id == -1)
+    if(!img)
     {
+      // in this case no need to release from cache what we couldn't get
       dt_control_log(_("cannot get image %d for printing"), imgid);
       dt_control_job_dispose(job);
-      dt_image_cache_read_release(darktable.image_cache, img);
       return;
     }
     params->job_title = g_strdup(img->filename);
