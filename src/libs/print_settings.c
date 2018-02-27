@@ -426,6 +426,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
     {
       dt_control_log(_("cannot get image %d for printing"), imgid);
       dt_control_job_dispose(job);
+      dt_image_cache_read_release(darktable.image_cache, img);
       return;
     }
     params->job_title = g_strdup(img->filename);
