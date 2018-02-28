@@ -221,6 +221,7 @@ int dt_film_import(const char *dirname)
 {
   int rc;
   sqlite3_stmt *stmt;
+  GError *error = NULL;
 
   /* initialize a film object*/
   dt_film_t *film = (dt_film_t *)malloc(sizeof(dt_film_t));
@@ -282,7 +283,15 @@ int dt_film_import(const char *dirname)
   g_strlcpy(film->dirname, dirname, sizeof(film->dirname));
   char *last = &film->dirname[strlen(film->dirname) - 1];
   if(*last == '/' && last != film->dirname) *last = '\0'; // remove the closing /, unless it's also the start
-  film->dir = g_dir_open(film->dirname, 0, NULL);
+  film->dir = g_dir_open(film->dirname, 0, &error);
+  if(error)
+  {
+    fprintf(stderr, "[film_import] failed to open directory %s: %s\n", film->dirname, error->message);
+    g_error_free(error);
+    dt_film_cleanup(film);
+    free(film);
+    return 0;
+  }
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_film_import1_create(film));
 
   return filmid;
