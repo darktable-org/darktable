@@ -115,6 +115,7 @@ typedef enum dt_image_loader_t
   LOADER_PFM = 7,
   LOADER_GM = 8,
   LOADER_RAWSPEED = 9,
+  LOADER_PNM = 10,
 } dt_image_loader_t;
 
 struct dt_cache_entry_t;
