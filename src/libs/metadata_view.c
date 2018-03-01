@@ -396,7 +396,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         { N_("rgbe"), 'R'},
         { N_("pfm"), 'P'},
         { N_("GraphicsMagick"), 'g'},
-        { N_("rawspeed"), 'r'}
+        { N_("rawspeed"), 'r'},
+        { N_("netpnm"), 'n'},
       };
 
       int loader = (unsigned int)img->loader < sizeof(loaders) / sizeof(*loaders) ? img->loader : 0;

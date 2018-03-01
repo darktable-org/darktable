@@ -1,0 +1,204 @@
+/*
+    This file is part of darktable,
+    copyright (c) 2018 tobias ellinghaus.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "common/darktable.h"
+#include "common/imageio_pfm.h"
+
+#include <assert.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
+
+// pbm -- portable bit map. values are either 0 or 1, singel channel
+static dt_imageio_retval_t _read_pbm(dt_image_t *img, FILE*f, float *buf)
+{
+  int bytes_needed = (img->width >> 3) + (img->width & 0x07 ? 1 : 0);
+
+  uint8_t *line = calloc(bytes_needed, sizeof(uint8_t));
+
+  float *buf_iter = buf;
+  for(size_t y = 0; y < img->height; y++)
+  {
+    fread(line, sizeof(uint8_t), (size_t)bytes_needed, f);
+    for(size_t x = 0; x < bytes_needed; x++)
+    {
+      uint8_t byte = line[x] ^ 0xff;
+      for(int bit = 0; bit < 8 && x * 8 + bit < img->width; bit++)
+      {
+        float value = ((byte & 0x80) >> 7) * 1.0;
+        buf_iter[0] = buf_iter[1] = buf_iter[2] = value;
+        buf_iter[3] = 0.0;
+        buf_iter += 4;
+        byte <<= 1;
+      }
+    }
+  }
+
+  free(line);
+
+  return DT_IMAGEIO_OK;
+}
+
+// pgm -- portable gray map. values are between 0 and max, single channel
+static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
+{
+  unsigned int max;
+  int ret = fscanf(f, "%d ", &max);
+  if(ret != 1 || max > 65535) return DT_IMAGEIO_FILE_CORRUPTED;
+
+  if(max <= 255)
+  {
+    uint8_t *line = calloc(img->width, sizeof(uint8_t));
+
+    float *buf_iter = buf;
+    for(size_t y = 0; y < img->height; y++)
+    {
+      ret = fread(line, sizeof(uint8_t), (size_t)img->width, f);
+      for(size_t x = 0; x < img->width; x++)
+      {
+        float value = (float)line[x] / (float)max;
+        buf_iter[0] = buf_iter[1] = buf_iter[2] = value;
+        buf_iter[3] = 0.0;
+        buf_iter += 4;
+      }
+    }
+    free(line);
+  }
+  else
+  {
+    uint16_t *line = calloc(img->width, sizeof(uint16_t));
+
+    float *buf_iter = buf;
+    for(size_t y = 0; y < img->height; y++)
+    {
+      ret = fread(line, sizeof(uint16_t), (size_t)img->width, f);
+      for(size_t x = 0; x < img->width; x++)
+      {
+        float value = (float)line[x] / (float)max;
+        buf_iter[0] = buf_iter[1] = buf_iter[2] = value;
+        buf_iter[3] = 0.0;
+        buf_iter += 4;
+      }
+    }
+    free(line);
+  }
+
+  return DT_IMAGEIO_OK;
+}
+
+// ppm -- portable pix map. values are between 0 and max, three channels
+static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
+{
+  unsigned int max;
+  int ret = fscanf(f, "%d ", &max);
+  if(ret != 1 || max > 65535) return DT_IMAGEIO_FILE_CORRUPTED;
+
+  if(max <= 255)
+  {
+    uint8_t *line = calloc((size_t)3 * img->width, sizeof(uint8_t));
+
+    float *buf_iter = buf;
+    for(size_t y = 0; y < img->height; y++)
+    {
+      ret = fread(line, 3 * sizeof(uint8_t), (size_t)img->width, f);
+      for(size_t x = 0; x < img->width; x++)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          float value = (float)line[x * 3 + c] / (float)max;
+          *buf_iter++ = value;
+        }
+        *buf_iter++ = 0.0;
+      }
+    }
+    free(line);
+  }
+  else
+  {
+    uint16_t *line = calloc((size_t)3 * img->width, sizeof(uint16_t));
+
+    float *buf_iter = buf;
+    for(size_t y = 0; y < img->height; y++)
+    {
+      ret = fread(line, 3 * sizeof(uint16_t), (size_t)img->width, f);
+      for(size_t x = 0; x < img->width; x++)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          float value = (float)line[x * 3 + c] / (float)max;
+          *buf_iter++ = value;
+        }
+        *buf_iter++ = 0.0;
+      }
+    }
+    free(line);
+  }
+
+  return DT_IMAGEIO_OK;
+}
+
+dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+{
+  const char *ext = filename + strlen(filename);
+  while(*ext != '.' && ext > filename) ext--;
+  if(strcasecmp(ext, ".pbm") && strcasecmp(ext, ".pgm") && strcasecmp(ext, ".ppm")) return DT_IMAGEIO_FILE_CORRUPTED;
+  FILE *f = g_fopen(filename, "rb");
+  if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
+  int ret = 0;
+  dt_imageio_retval_t result = DT_IMAGEIO_FILE_CORRUPTED;
+
+  char head[2] = { 'X', 'X' };
+  ret = fscanf(f, "%c%c ", head, head + 1);
+  if(ret != 2 || head[0] != 'P') goto end;
+
+  ret = fscanf(f, "%d %d ", &img->width, &img->height);
+  if(ret != 2) goto end;
+
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
+
+  float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
+  if(!buf)
+  {
+    result = DT_IMAGEIO_CACHE_FULL;
+    goto end;
+  }
+
+  // we don't support ASCII variants or P7 anymaps! thanks to magic numbers those shouldn't reach us anyway.
+  if(head[1] == '4')
+    result = _read_pbm(img, f, buf);
+  else if(head[1] == '5')
+    result = _read_pgm(img, f, buf);
+  else if(head[1] == '6')
+    result = _read_ppm(img, f, buf);
+
+end:
+  fclose(f);
+  return result;
+}
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
