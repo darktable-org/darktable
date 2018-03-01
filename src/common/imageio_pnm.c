@@ -34,14 +34,19 @@
 // pbm -- portable bit map. values are either 0 or 1, singel channel
 static dt_imageio_retval_t _read_pbm(dt_image_t *img, FILE*f, float *buf)
 {
-  int bytes_needed = (img->width + 7) / 8;
+  dt_imageio_retval_t result = DT_IMAGEIO_OK;
 
+  int bytes_needed = (img->width + 7) / 8;
   uint8_t *line = calloc(bytes_needed, sizeof(uint8_t));
 
   float *buf_iter = buf;
   for(size_t y = 0; y < img->height; y++)
   {
-    fread(line, sizeof(uint8_t), (size_t)bytes_needed, f);
+    if(fread(line, sizeof(uint8_t), (size_t)bytes_needed, f) != bytes_needed)
+    {
+      result = DT_IMAGEIO_FILE_CORRUPTED;
+      break;
+    }
     for(size_t x = 0; x < bytes_needed; x++)
     {
       uint8_t byte = line[x] ^ 0xff;
@@ -58,12 +63,14 @@ static dt_imageio_retval_t _read_pbm(dt_image_t *img, FILE*f, float *buf)
 
   free(line);
 
-  return DT_IMAGEIO_OK;
+  return result;
 }
 
 // pgm -- portable gray map. values are between 0 and max, single channel
 static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
 {
+  dt_imageio_retval_t result = DT_IMAGEIO_OK;
+
   unsigned int max;
   int ret = fscanf(f, "%d ", &max);
   if(ret != 1 || max > 65535) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -75,7 +82,11 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
     float *buf_iter = buf;
     for(size_t y = 0; y < img->height; y++)
     {
-      ret = fread(line, sizeof(uint8_t), (size_t)img->width, f);
+      if(fread(line, sizeof(uint8_t), (size_t)img->width, f) != img->width)
+      {
+        result = DT_IMAGEIO_FILE_CORRUPTED;
+        break;
+      }
       for(size_t x = 0; x < img->width; x++)
       {
         float value = (float)line[x] / (float)max;
@@ -93,7 +104,11 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
     float *buf_iter = buf;
     for(size_t y = 0; y < img->height; y++)
     {
-      ret = fread(line, sizeof(uint16_t), (size_t)img->width, f);
+      if(fread(line, sizeof(uint16_t), (size_t)img->width, f) != img->width)
+      {
+        result = DT_IMAGEIO_FILE_CORRUPTED;
+        break;
+      }
       for(size_t x = 0; x < img->width; x++)
       {
         float value = (float)line[x] / (float)max;
@@ -105,12 +120,14 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
     free(line);
   }
 
-  return DT_IMAGEIO_OK;
+  return result;
 }
 
 // ppm -- portable pix map. values are between 0 and max, three channels
 static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
 {
+  dt_imageio_retval_t result = DT_IMAGEIO_OK;
+
   unsigned int max;
   int ret = fscanf(f, "%d ", &max);
   if(ret != 1 || max > 65535) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -122,7 +139,11 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
     float *buf_iter = buf;
     for(size_t y = 0; y < img->height; y++)
     {
-      ret = fread(line, 3 * sizeof(uint8_t), (size_t)img->width, f);
+      if(fread(line, 3 * sizeof(uint8_t), (size_t)img->width, f) != img->width)
+      {
+        result = DT_IMAGEIO_FILE_CORRUPTED;
+        break;
+      }
       for(size_t x = 0; x < img->width; x++)
       {
         for(int c = 0; c < 3; c++)
@@ -142,7 +163,11 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
     float *buf_iter = buf;
     for(size_t y = 0; y < img->height; y++)
     {
-      ret = fread(line, 3 * sizeof(uint16_t), (size_t)img->width, f);
+      if(fread(line, 3 * sizeof(uint16_t), (size_t)img->width, f) != img->width)
+      {
+        result = DT_IMAGEIO_FILE_CORRUPTED;
+        break;
+      }
       for(size_t x = 0; x < img->width; x++)
       {
         for(int c = 0; c < 3; c++)
@@ -156,7 +181,7 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
     free(line);
   }
 
-  return DT_IMAGEIO_OK;
+  return result;
 }
 
 dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
