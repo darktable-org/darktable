@@ -34,7 +34,7 @@
 // pbm -- portable bit map. values are either 0 or 1, singel channel
 static dt_imageio_retval_t _read_pbm(dt_image_t *img, FILE*f, float *buf)
 {
-  int bytes_needed = (img->width >> 3) + (img->width & 0x07 ? 1 : 0);
+  int bytes_needed = (img->width + 7) / 8;
 
   uint8_t *line = calloc(bytes_needed, sizeof(uint8_t));
 
