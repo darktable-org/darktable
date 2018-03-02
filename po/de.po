@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-21 18:53+0100\n"
-"PO-Revision-Date: 2018-01-21 18:54+0100\n"
+"POT-Creation-Date: 2018-03-02 19:34+0100\n"
+"PO-Revision-Date: 2018-03-02 19:35+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.0.5\n"
+"X-Generator: Poedit 2.0.6\n"
 
 #: ../build/src/preferences_gen.h:1620
 msgid "GUI options"
@@ -970,8 +970,8 @@ msgstr "Virtueller Leuchttisch und Dunkelkammer"
 msgid "graphics;photography;raw;"
 msgstr "Graphik;Grafik;Photographie;Fotografie;Raw;"
 
-#: ../src/chart/main.c:465 ../src/control/jobs/control_jobs.c:1468
-#: ../src/control/jobs/control_jobs.c:1525 ../src/gui/hist_dialog.c:140
+#: ../src/chart/main.c:465 ../src/control/jobs/control_jobs.c:1473
+#: ../src/control/jobs/control_jobs.c:1530 ../src/gui/hist_dialog.c:140
 #: ../src/gui/preferences.c:1009 ../src/gui/preferences.c:1035
 #: ../src/gui/presets.c:359 ../src/gui/styles_dialog.c:286
 #: ../src/imageio/storage/disk.c:95 ../src/imageio/storage/gallery.c:107
@@ -1222,25 +1222,53 @@ msgstr "Fehler beim Drucken von Bild %d auf ‚%s‘"
 msgid "printing image %d on `%s'"
 msgstr "drucke Bild %d auf ‚%s‘"
 
-#: ../src/common/darktable.c:221
+#: ../src/common/darktable.c:225
 #, c-format
 msgid "found strange path `%s'"
 msgstr "Ungewöhnlicher Pfad ‚%s‘ gefunden"
 
-#: ../src/common/darktable.c:238
+#: ../src/common/darktable.c:242
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "Fehler beim Laden von Verzeichnis ‚%s‘"
 
-#: ../src/common/darktable.c:261
+#: ../src/common/darktable.c:265
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
 
-#: ../src/common/darktable.c:274 ../src/libs/import.c:839
+#: ../src/common/darktable.c:278 ../src/libs/import.c:839
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei ‚%s‘"
+
+#: ../src/common/darktable.c:780
+#, fuzzy
+msgid "darktable - run performance configuration?"
+msgstr "darktable - Fehler beim Öffnen der Datenbank"
+
+#: ../src/common/darktable.c:781
+msgid ""
+"we have an updated performance configuration logic - executing that might "
+"improve the performance of darktable.\n"
+"this will potentially overwrite some of your existing settings - especially "
+"in case you have manually modified them to custom values.\n"
+"would you like to execute this update of the performance configuration?\n"
+msgstr ""
+
+#: ../src/common/darktable.c:785 ../src/imageio/format/pdf.c:666
+#: ../src/imageio/format/pdf.c:691 ../src/imageio/storage/flickr.c:492
+#: ../src/iop/clipping.c:1892 ../src/libs/export.c:591
+#: ../src/libs/metadata_view.c:257
+msgid "no"
+msgstr "nein"
+
+#: ../src/common/darktable.c:785 ../src/imageio/format/pdf.c:667
+#: ../src/imageio/format/pdf.c:692 ../src/imageio/storage/flickr.c:491
+#: ../src/iop/clipping.c:1893 ../src/libs/export.c:592
+#: ../src/libs/metadata_view.c:257
+msgid "yes"
+msgstr "ja"
 
 #: ../src/common/database.c:1340
 #, c-format
@@ -1317,23 +1345,23 @@ msgstr "darktable - Fehler beim Öffnen der Datenbank"
 msgid "delete database"
 msgstr "Datenbank löschen"
 
-#: ../src/common/film.c:301
+#: ../src/common/film.c:310
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
 msgstr[0] "Soll dieses leere Verzeichnis entfernt werden?"
 msgstr[1] "Sollen diese leeren Verzeichnisse entfernt werden?"
 
-#: ../src/common/film.c:305
+#: ../src/common/film.c:314
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
 msgstr[0] "leeres Verzeichnis entfernen?"
 msgstr[1] "leere Verzeichnisse entfernen?"
 
-#: ../src/common/film.c:328 ../src/gui/preferences.c:416
+#: ../src/common/film.c:337 ../src/gui/preferences.c:416
 msgid "name"
 msgstr "Name"
 
-#: ../src/common/film.c:426
+#: ../src/common/film.c:435
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -1349,7 +1377,7 @@ msgstr ""
 #: ../src/common/history.c:430 ../src/common/history.c:433
 #: ../src/common/history.c:449 ../src/common/styles.c:725
 #: ../src/common/styles.c:729 ../src/develop/blend_gui.c:2019
-#: ../src/develop/develop.c:1341 ../src/iop/ashift.c:4397
+#: ../src/develop/develop.c:1339 ../src/iop/ashift.c:4397
 #: ../src/libs/live_view.c:436
 msgid "on"
 msgstr "ein"
@@ -1357,7 +1385,7 @@ msgstr "ein"
 #: ../src/common/history.c:430 ../src/common/history.c:433
 #: ../src/common/history.c:449 ../src/common/styles.c:725
 #: ../src/common/styles.c:729 ../src/develop/blend_gui.c:1791
-#: ../src/develop/blend_gui.c:2016 ../src/develop/develop.c:1341
+#: ../src/develop/blend_gui.c:2016 ../src/develop/develop.c:1339
 #: ../src/imageio/format/exr.cc:360 ../src/imageio/format/j2k.c:663
 #: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1876
 #: ../src/iop/demosaic.c:5060 ../src/iop/vignette.c:1140
@@ -1398,7 +1426,7 @@ msgstr ""
 msgid "cannot create local copy."
 msgstr "lokale Kopie kann nicht erzeugt werden."
 
-#: ../src/common/image.c:1479 ../src/control/jobs/control_jobs.c:639
+#: ../src/common/image.c:1479 ../src/control/jobs/control_jobs.c:642
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "lokale Kopie kann nicht entfernt werden, wenn die Originaldatei nicht "
@@ -1411,12 +1439,12 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d lokale Kopie wurde synchronisiert"
 msgstr[1] "%d lokale Kopien wurden synchronisiert"
 
-#: ../src/common/imageio.c:579 ../src/common/mipmap_cache.c:1038
+#: ../src/common/imageio.c:597 ../src/common/mipmap_cache.c:1038
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Bild ‚%s‘ ist nicht verfügbar!"
 
-#: ../src/common/imageio.c:597
+#: ../src/common/imageio.c:615
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -1425,17 +1453,17 @@ msgstr ""
 "Fehler beim Reservieren von Speicher zum %s, bitte die Anzahl Threads für "
 "den Export herabsetzen oder mehr Speicher kaufen."
 
-#: ../src/common/imageio.c:598
+#: ../src/common/imageio.c:616
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "Exportieren der Vorschau"
 
-#: ../src/common/imageio.c:598
+#: ../src/common/imageio.c:616
 msgctxt "noun"
 msgid "export"
 msgstr "Exportieren"
 
-#: ../src/common/imageio.c:608
+#: ../src/common/imageio.c:626
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "Stil ‚%s‘ kann zum Exportieren nicht gefunden werden."
@@ -1588,7 +1616,7 @@ msgid "below sea level"
 msgstr "unter Null"
 
 #: ../src/common/utility.c:508 ../src/iop/watermark.c:735
-#: ../src/libs/metadata_view.c:550
+#: ../src/libs/metadata_view.c:551
 msgid "m"
 msgstr "m"
 
@@ -1669,184 +1697,184 @@ msgstr[1] "%d Bilder von Kamera importieren"
 msgid "import images from camera"
 msgstr "Bilder von Kamera importieren"
 
-#: ../src/control/jobs/control_jobs.c:137
+#: ../src/control/jobs/control_jobs.c:140
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "Fehler beim Erstellen einer Filmrolle für das Zielverzeichnis, Verschieben "
 "abgebrochen ..."
 
-#: ../src/control/jobs/control_jobs.c:330
+#: ../src/control/jobs/control_jobs.c:333
 msgid "exposure bracketing only works on raw images."
 msgstr "Belichtungsreihen funktionieren nur mit Raw-Bildern."
 
-#: ../src/control/jobs/control_jobs.c:337
+#: ../src/control/jobs/control_jobs.c:340
 msgid "images have to be of same size and orientation!"
 msgstr "Bilder müssen gleiche Größe und Ausrichtung haben!"
 
-#: ../src/control/jobs/control_jobs.c:429
+#: ../src/control/jobs/control_jobs.c:432
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "%d Bild zusammenfassen"
 msgstr[1] "%d Bilder zusammenfassen"
 
-#: ../src/control/jobs/control_jobs.c:490
+#: ../src/control/jobs/control_jobs.c:493
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "Zusammengefasstes HDR ‚%s‘ geschrieben"
 
-#: ../src/control/jobs/control_jobs.c:516
+#: ../src/control/jobs/control_jobs.c:519
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "Dupliziere %d Bild"
 msgstr[1] "Dupliziere %d Bilder"
 
-#: ../src/control/jobs/control_jobs.c:542
+#: ../src/control/jobs/control_jobs.c:545
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "%d Bild spiegeln"
 msgstr[1] "%d Bilder spiegeln"
 
-#: ../src/control/jobs/control_jobs.c:615
+#: ../src/control/jobs/control_jobs.c:618
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "%d Bild entfernen"
 msgstr[1] "%d Bilder entfernen"
 
-#: ../src/control/jobs/control_jobs.c:716
+#: ../src/control/jobs/control_jobs.c:719
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "Konnte %s nicht in den Papierkorb verschieben%s%s"
 
-#: ../src/control/jobs/control_jobs.c:717
+#: ../src/control/jobs/control_jobs.c:720
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "Konnte %s nicht physisch von der Festplatte löschen%s%s"
 
-#: ../src/control/jobs/control_jobs.c:723
+#: ../src/control/jobs/control_jobs.c:726
 msgid "physically delete"
 msgstr "physisch von der Festplatte löschen"
 
-#: ../src/control/jobs/control_jobs.c:724
+#: ../src/control/jobs/control_jobs.c:727
 msgid "only remove from the collection"
 msgstr "nur aus der Sammlung entfernen"
 
-#: ../src/control/jobs/control_jobs.c:725
+#: ../src/control/jobs/control_jobs.c:728
 msgid "skip to next file"
 msgstr "zur nächsten Datei gehen"
 
-#: ../src/control/jobs/control_jobs.c:726
+#: ../src/control/jobs/control_jobs.c:729
 msgid "stop process"
 msgstr "Prozess abbrechen"
 
-#: ../src/control/jobs/control_jobs.c:731
+#: ../src/control/jobs/control_jobs.c:734
 msgid "trashing error"
 msgstr "Fehler beim Verschieben in den Papierkorb"
 
-#: ../src/control/jobs/control_jobs.c:732
+#: ../src/control/jobs/control_jobs.c:735
 msgid "deletion error"
 msgstr "Fehler beim Löschen"
 
-#: ../src/control/jobs/control_jobs.c:859
+#: ../src/control/jobs/control_jobs.c:864
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "%d Bild in den Papierkorb verschieben"
 msgstr[1] "%d Bilder in den Papierkorb verschieben"
 
-#: ../src/control/jobs/control_jobs.c:861
+#: ../src/control/jobs/control_jobs.c:866
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "%d Bild löschen"
 msgstr[1] "%d Bilder löschen"
 
-#: ../src/control/jobs/control_jobs.c:1035
+#: ../src/control/jobs/control_jobs.c:1040
 msgid "failed to parse GPX file"
 msgstr "Fehler beim lesen der GPX-Datei"
 
-#: ../src/control/jobs/control_jobs.c:1095
+#: ../src/control/jobs/control_jobs.c:1100
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "passende GPX-Position auf %d Bild angewandt"
 msgstr[1] "passende GPX-Position auf %d Bilder angewandt"
 
-#: ../src/control/jobs/control_jobs.c:1110
+#: ../src/control/jobs/control_jobs.c:1115
 #, c-format
 msgid "moving %d image"
 msgstr "%d Bild verschieben"
 
-#: ../src/control/jobs/control_jobs.c:1111
+#: ../src/control/jobs/control_jobs.c:1116
 #, c-format
 msgid "moving %d images"
 msgstr "%d Bilder verschieben"
 
-#: ../src/control/jobs/control_jobs.c:1116
+#: ../src/control/jobs/control_jobs.c:1121
 #, c-format
 msgid "copying %d image"
 msgstr "%d Bild kopieren"
 
-#: ../src/control/jobs/control_jobs.c:1117
+#: ../src/control/jobs/control_jobs.c:1122
 #, c-format
 msgid "copying %d images"
 msgstr "%d Bilder kopieren"
 
-#: ../src/control/jobs/control_jobs.c:1133
+#: ../src/control/jobs/control_jobs.c:1138
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "lokale Kopie von %d Bild anlegen"
 msgstr[1] "lokale Kopien von %d Bildern anlegen"
 
-#: ../src/control/jobs/control_jobs.c:1136
+#: ../src/control/jobs/control_jobs.c:1141
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "lokale Kopie von %d Bild entfernen"
 msgstr[1] "lokale Kopien von %d Bildern entfernen"
 
-#: ../src/control/jobs/control_jobs.c:1210
+#: ../src/control/jobs/control_jobs.c:1215
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "Exportiere %d Bild …"
 msgstr[1] "Exportiere %d Bilder …"
 
-#: ../src/control/jobs/control_jobs.c:1212
+#: ../src/control/jobs/control_jobs.c:1217
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "%d Bild nach %s exportieren"
 msgstr[1] "%d Bilder nach %s exportieren"
 
-#: ../src/control/jobs/control_jobs.c:1255 ../src/views/darkroom.c:479
+#: ../src/control/jobs/control_jobs.c:1260 ../src/views/darkroom.c:479
 #: ../src/views/print.c:262
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
 
-#: ../src/control/jobs/control_jobs.c:1343
+#: ../src/control/jobs/control_jobs.c:1348
 msgid "merge hdr image"
 msgstr "HDR-Bild zusammenfassen"
 
-#: ../src/control/jobs/control_jobs.c:1357
+#: ../src/control/jobs/control_jobs.c:1362
 msgid "duplicate images"
 msgstr "Bilder duplizieren"
 
-#: ../src/control/jobs/control_jobs.c:1364
+#: ../src/control/jobs/control_jobs.c:1369
 msgid "flip images"
 msgstr "Bilder spiegeln"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1371
+#: ../src/control/jobs/control_jobs.c:1376
 msgid "remove images"
 msgstr "Bilder entfernen"
 
-#: ../src/control/jobs/control_jobs.c:1393
+#: ../src/control/jobs/control_jobs.c:1398
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1856,16 +1884,16 @@ msgstr[0] ""
 msgstr[1] ""
 "Sollen wirklich %d ausgewählte Bilder aus der Sammlung entfernt werden?"
 
-#: ../src/control/jobs/control_jobs.c:1397
+#: ../src/control/jobs/control_jobs.c:1402
 msgid "remove images?"
 msgstr "Bilder entfernen?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1413
+#: ../src/control/jobs/control_jobs.c:1418
 msgid "delete images"
 msgstr "Bilder löschen"
 
-#: ../src/control/jobs/control_jobs.c:1437
+#: ../src/control/jobs/control_jobs.c:1442
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
@@ -1874,7 +1902,7 @@ msgstr[0] ""
 msgstr[1] ""
 "Sollen wirklich %d ausgewählte Bilder in den Papierkorb verschoben werden?"
 
-#: ../src/control/jobs/control_jobs.c:1439
+#: ../src/control/jobs/control_jobs.c:1444
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1886,20 +1914,20 @@ msgstr[1] ""
 "Sollen wirklich %d ausgewählte Bilder physisch von der Festplatte gelöscht "
 "werden?"
 
-#: ../src/control/jobs/control_jobs.c:1443
+#: ../src/control/jobs/control_jobs.c:1448
 msgid "trash images?"
 msgstr "Bilder in den Papierkorb verschieben?"
 
-#: ../src/control/jobs/control_jobs.c:1443
+#: ../src/control/jobs/control_jobs.c:1448
 msgid "delete images?"
 msgstr "Bilder löschen?"
 
-#: ../src/control/jobs/control_jobs.c:1464
+#: ../src/control/jobs/control_jobs.c:1469
 msgid "move images"
 msgstr "Bilder verschieben"
 
-#: ../src/control/jobs/control_jobs.c:1468
-#: ../src/control/jobs/control_jobs.c:1525 ../src/imageio/storage/disk.c:95
+#: ../src/control/jobs/control_jobs.c:1473
+#: ../src/control/jobs/control_jobs.c:1530 ../src/imageio/storage/disk.c:95
 #: ../src/imageio/storage/disk.c:169 ../src/imageio/storage/gallery.c:107
 #: ../src/imageio/storage/gallery.c:178 ../src/imageio/storage/latex.c:106
 #: ../src/imageio/storage/latex.c:177 ../src/libs/styles.c:213
@@ -1907,12 +1935,12 @@ msgstr "Bilder verschieben"
 msgid "select directory"
 msgstr "Verzeichnis wählen"
 
-#: ../src/control/jobs/control_jobs.c:1469
-#: ../src/control/jobs/control_jobs.c:1526
+#: ../src/control/jobs/control_jobs.c:1474
+#: ../src/control/jobs/control_jobs.c:1531
 msgid "_select as destination"
 msgstr "als Ziel _wählen"
 
-#: ../src/control/jobs/control_jobs.c:1490
+#: ../src/control/jobs/control_jobs.c:1495
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1928,17 +1956,17 @@ msgstr[1] ""
 "werden?\n"
 "(alle nicht ausgewählten Duplikate werden auch verschoben)"
 
-#: ../src/control/jobs/control_jobs.c:1496
+#: ../src/control/jobs/control_jobs.c:1501
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "Bild verschieben?"
 msgstr[1] "Bilder verschieben?"
 
-#: ../src/control/jobs/control_jobs.c:1521
+#: ../src/control/jobs/control_jobs.c:1526
 msgid "copy images"
 msgstr "Bilder kopieren"
 
-#: ../src/control/jobs/control_jobs.c:1547
+#: ../src/control/jobs/control_jobs.c:1552
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -1947,47 +1975,47 @@ msgstr[0] ""
 msgstr[1] ""
 "Sollen die %d ausgewählten Bilder wirklich physisch nach %s kopiert werden?"
 
-#: ../src/control/jobs/control_jobs.c:1550
+#: ../src/control/jobs/control_jobs.c:1555
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "Bild kopieren?"
 msgstr[1] "Bilder kopieren?"
 
-#: ../src/control/jobs/control_jobs.c:1570
-#: ../src/control/jobs/control_jobs.c:1577
+#: ../src/control/jobs/control_jobs.c:1575
+#: ../src/control/jobs/control_jobs.c:1582
 msgid "local copy images"
 msgstr "Bilder lokal kopieren"
 
-#: ../src/control/jobs/control_jobs.c:1639
+#: ../src/control/jobs/control_jobs.c:1644
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "Konnte keine Einstellungen vom Speicher-Modul ‚%s‘ bekommen, breche Export "
 "ab …"
 
-#: ../src/control/jobs/control_jobs.c:1653
+#: ../src/control/jobs/control_jobs.c:1658
 msgid "export images"
 msgstr "Bilder exportieren"
 
-#: ../src/control/jobs/control_jobs.c:1678
+#: ../src/control/jobs/control_jobs.c:1683
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "füge Zeitversatz zu %d Bild hinzu"
 msgstr[1] "füge Zeitversatz zu %d Bildern hinzu"
 
-#: ../src/control/jobs/control_jobs.c:1693
+#: ../src/control/jobs/control_jobs.c:1698
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
 msgstr[0] "Zeitversatz zu %d Bild hinzugefügt"
 msgstr[1] "Zeitversatz zu %d Bildern hinzugefügt"
 
-#: ../src/control/jobs/control_jobs.c:1732 ../src/libs/geotagging.c:783
+#: ../src/control/jobs/control_jobs.c:1737 ../src/libs/geotagging.c:783
 msgid "time offset"
 msgstr "Zeitversatz"
 
-#: ../src/control/jobs/control_jobs.c:1756 ../src/libs/copy_history.c:324
+#: ../src/control/jobs/control_jobs.c:1761 ../src/libs/copy_history.c:324
 msgid "write sidecar files"
 msgstr "XMP schreiben"
 
@@ -2488,7 +2516,7 @@ msgstr ""
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "Maske des aktiven Moduls vorübergehend ausschalten"
 
-#: ../src/develop/develop.c:1144
+#: ../src/develop/develop.c:1142
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: Modul ‚%s‘ hat unpassende Version: %d != %d"
@@ -2530,7 +2558,7 @@ msgstr "%s ist ausgeschaltet"
 #: ../src/gui/accelerators.c:904 ../src/gui/presets.c:168
 #: ../src/gui/presets.c:275 ../src/gui/presets.c:617
 #: ../src/iop/temperature.c:1426 ../src/libs/import.c:574 ../src/libs/lib.c:311
-#: ../src/libs/lib.c:336 ../src/libs/lib.c:1146
+#: ../src/libs/lib.c:336 ../src/libs/lib.c:1157
 msgid "preset"
 msgstr "Voreinstellung"
 
@@ -2550,12 +2578,12 @@ msgctxt "accel"
 msgid "enable module"
 msgstr "Modul aktivieren"
 
-#: ../src/develop/imageop.c:1284 ../src/libs/lib.c:585
+#: ../src/develop/imageop.c:1284 ../src/libs/lib.c:602
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "Modul-Einstellungen zurücksetzen"
 
-#: ../src/develop/imageop.c:1285 ../src/libs/lib.c:589
+#: ../src/develop/imageop.c:1285 ../src/libs/lib.c:606
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "Voreinstellungs-Menü zeigen"
@@ -2568,12 +2596,12 @@ msgstr ""
 "Multi-Instanz-Optionen\n"
 "Mittelklick erzeugt neue Instanz"
 
-#: ../src/develop/imageop.c:1887 ../src/libs/lib.c:986
+#: ../src/develop/imageop.c:1887 ../src/libs/lib.c:997
 msgid "reset parameters"
 msgstr "Einstellungen zurücksetzen"
 
 #: ../src/develop/imageop.c:1895 ../src/gui/preferences.c:398
-#: ../src/libs/lib.c:998
+#: ../src/libs/lib.c:1009
 msgid "presets"
 msgstr "Voreinstellungen"
 
@@ -2728,7 +2756,7 @@ msgstr ""
 "darktable hat Probleme mit OpenCL festgestellt; OpenCL wird für diese "
 "Sitzung deaktiviert!"
 
-#: ../src/develop/tiling.c:812 ../src/develop/tiling.c:1147
+#: ../src/develop/tiling.c:814 ../src/develop/tiling.c:1149
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
@@ -3615,19 +3643,19 @@ msgstr "(Standard)"
 msgid "disabled: wrong module version"
 msgstr "deaktiviert: falsche Modul-Version"
 
-#: ../src/gui/presets.c:883 ../src/libs/lib.c:467
+#: ../src/gui/presets.c:883 ../src/libs/lib.c:477
 msgid "edit this preset.."
 msgstr "Diese Voreinstellung bearbeiten …"
 
-#: ../src/gui/presets.c:887 ../src/libs/lib.c:471
+#: ../src/gui/presets.c:887 ../src/libs/lib.c:481
 msgid "delete this preset"
 msgstr "Diese Voreinstellung löschen"
 
-#: ../src/gui/presets.c:893 ../src/libs/lib.c:478
+#: ../src/gui/presets.c:893 ../src/libs/lib.c:488
 msgid "store new preset.."
 msgstr "Neue Voreinstellung speichern …"
 
-#: ../src/gui/presets.c:899 ../src/libs/lib.c:484
+#: ../src/gui/presets.c:899 ../src/libs/lib.c:500
 msgid "update preset"
 msgstr "aktualisiere Voreinstellung"
 
@@ -3675,12 +3703,12 @@ msgstr "aktualisieren"
 msgid "can't create style out of unaltered image"
 msgstr "Kann keinen Stil aus unbearbeitetem Bild erzeugen"
 
-#: ../src/imageio/format/copy.c:135 ../src/libs/copy_history.c:277
+#: ../src/imageio/format/copy.c:124 ../src/libs/copy_history.c:277
 #: ../src/libs/image.c:203
 msgid "copy"
 msgstr "kopieren"
 
-#: ../src/imageio/format/copy.c:151
+#: ../src/imageio/format/copy.c:140
 msgid ""
 "do a 1:1 copy of the selected files.\n"
 "the global options below do not apply!"
@@ -3767,12 +3795,12 @@ msgid "JPEG (8-bit)"
 msgstr "JPEG (8 Bit)"
 
 #: ../src/imageio/format/pdf.c:77 ../src/imageio/format/png.c:530
-#: ../src/imageio/format/tiff.c:409
+#: ../src/imageio/format/tiff.c:470
 msgid "8 bit"
 msgstr "8 Bit"
 
 #: ../src/imageio/format/pdf.c:78 ../src/imageio/format/png.c:531
-#: ../src/imageio/format/tiff.c:410
+#: ../src/imageio/format/tiff.c:471
 msgid "16 bit"
 msgstr "16 Bit"
 
@@ -3785,9 +3813,9 @@ msgid "invalid border size, using 0"
 msgstr "ungültige Randgröße wurde durch 0 ersetzt"
 
 #: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:295
-#: ../src/imageio/storage/email.c:135 ../src/imageio/storage/facebook.c:1300
+#: ../src/imageio/storage/email.c:135 ../src/imageio/storage/facebook.c:1299
 #: ../src/imageio/storage/flickr.c:649 ../src/imageio/storage/gallery.c:345
-#: ../src/imageio/storage/gallery.c:383 ../src/imageio/storage/picasa.c:1289
+#: ../src/imageio/storage/gallery.c:383 ../src/imageio/storage/picasa.c:1296
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "Konnte nicht in Datei ‚%s‘ exportieren!"
@@ -3800,7 +3828,7 @@ msgstr "PDF"
 #. create labels
 #. clang-format off
 #. xmp
-#: ../src/imageio/format/pdf.c:580 ../src/imageio/storage/facebook.c:1112
+#: ../src/imageio/format/pdf.c:580 ../src/imageio/storage/facebook.c:1111
 #: ../src/imageio/storage/flickr.c:533 ../src/imageio/storage/gallery.c:184
 #: ../src/imageio/storage/latex.c:184 ../src/libs/collect.h:34
 #: ../src/libs/metadata.c:335 ../src/libs/metadata_view.c:115
@@ -3872,18 +3900,6 @@ msgstr "DPI der Bilder im PDF"
 msgid "rotate images"
 msgstr "Bilder drehen"
 
-#: ../src/imageio/format/pdf.c:666 ../src/imageio/format/pdf.c:691
-#: ../src/imageio/storage/flickr.c:492 ../src/iop/clipping.c:1892
-#: ../src/libs/export.c:591 ../src/libs/metadata_view.c:257
-msgid "no"
-msgstr "nein"
-
-#: ../src/imageio/format/pdf.c:667 ../src/imageio/format/pdf.c:692
-#: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1893
-#: ../src/libs/export.c:592 ../src/libs/metadata_view.c:257
-msgid "yes"
-msgstr "ja"
-
 #: ../src/imageio/format/pdf.c:670
 msgid ""
 "images can be rotated to match the pdf orientation to waste less space when "
@@ -3919,7 +3935,7 @@ msgid "images can be tagged with their icc profile"
 msgstr "Bilder können mit ihrem ICC-Profil versehen werden"
 
 #: ../src/imageio/format/pdf.c:701 ../src/imageio/format/png.c:529
-#: ../src/imageio/format/tiff.c:408
+#: ../src/imageio/format/tiff.c:469
 msgid "bit depth"
 msgstr "Farbtiefe"
 
@@ -3928,15 +3944,15 @@ msgid "bits per channel of the embedded images"
 msgstr "Bit pro Farbkanal der eingebetteten Bilder"
 
 #: ../src/imageio/format/pdf.c:717 ../src/imageio/format/png.c:543
-#: ../src/imageio/format/tiff.c:422 ../src/iop/graduatednd.c:1147
+#: ../src/imageio/format/tiff.c:484 ../src/iop/graduatednd.c:1147
 msgid "compression"
 msgstr "Kompression"
 
-#: ../src/imageio/format/pdf.c:718 ../src/imageio/format/tiff.c:423
+#: ../src/imageio/format/pdf.c:718 ../src/imageio/format/tiff.c:485
 msgid "uncompressed"
 msgstr "unkomprimiert"
 
-#: ../src/imageio/format/pdf.c:719 ../src/imageio/format/tiff.c:424
+#: ../src/imageio/format/pdf.c:719 ../src/imageio/format/tiff.c:486
 msgid "deflate"
 msgstr "Deflate"
 
@@ -3988,22 +4004,26 @@ msgstr "PNG (8/16 Bit)"
 msgid "PPM (16-bit)"
 msgstr "PPM (16 Bit)"
 
-#: ../src/imageio/format/tiff.c:364
+#: ../src/imageio/format/tiff.c:414
 msgid "TIFF (8/16/32-bit)"
 msgstr "TIFF (8/16/32 Bit)"
 
-#: ../src/imageio/format/tiff.c:411
+#: ../src/imageio/format/tiff.c:472
 msgid "32 bit (float)"
 msgstr "32 Bit (Fließkomma)"
 
-#: ../src/imageio/format/tiff.c:425
+#: ../src/imageio/format/tiff.c:487
 msgid "deflate with predictor"
 msgstr "Deflate mit Predictor"
 
 # Adobe übersetzt das als "Predictor", habe dazu sonst nichts gefunden
-#: ../src/imageio/format/tiff.c:426
+#: ../src/imageio/format/tiff.c:488
 msgid "deflate with predictor (float)"
 msgstr "Deflate mit Predictor (Fließkomma)"
+
+#: ../src/imageio/format/tiff.c:495
+msgid "compression level"
+msgstr "Kompressionsstärke"
 
 #: ../src/imageio/format/webp.c:269
 msgid "WebP (8-bit)"
@@ -4100,7 +4120,7 @@ msgstr "Konnte Verzeichnis ‚%s‘ nicht erstellen!"
 msgid "could not write to directory `%s'!"
 msgstr "Konnte nicht in Verzeichnis ‚%s‘ schreiben!"
 
-#: ../src/imageio/storage/disk.c:302 ../src/imageio/storage/email.c:144
+#: ../src/imageio/storage/disk.c:302 ../src/imageio/storage/email.c:145
 #: ../src/imageio/storage/gallery.c:393 ../src/imageio/storage/latex.c:363
 #, c-format
 msgid "%d/%d exported to `%s%s'"
@@ -4112,11 +4132,11 @@ msgstr[1] "%d/%d nach ‚%s%s‘ exportiert"
 msgid "send as email"
 msgstr "Email senden"
 
-#: ../src/imageio/storage/email.c:198
+#: ../src/imageio/storage/email.c:199
 msgid "images exported from darktable"
 msgstr "Aus darktable exportierte Bilder"
 
-#: ../src/imageio/storage/email.c:246
+#: ../src/imageio/storage/email.c:245
 msgid "could not launch email client!"
 msgstr "Konnte E-Mail-Programm nicht starten!"
 
@@ -4177,82 +4197,82 @@ msgstr ""
 "Loggen Sie sich dort nun in Ihren Facebook-Account ein und autorisieren Sie "
 "darktable Fotos hochzuladen, bevor Sie fortfahren."
 
-#: ../src/imageio/storage/facebook.c:843 ../src/imageio/storage/picasa.c:897
+#: ../src/imageio/storage/facebook.c:842 ../src/imageio/storage/picasa.c:904
 msgid "new account"
 msgstr "neuer Account"
 
-#: ../src/imageio/storage/facebook.c:848 ../src/imageio/storage/picasa.c:902
+#: ../src/imageio/storage/facebook.c:847 ../src/imageio/storage/picasa.c:909
 msgid "other account"
 msgstr "anderer Account"
 
-#: ../src/imageio/storage/facebook.c:877 ../src/imageio/storage/picasa.c:930
+#: ../src/imageio/storage/facebook.c:876 ../src/imageio/storage/picasa.c:937
 msgid "unable to retrieve the album list"
 msgstr "konnte Albenliste nicht holen"
 
-#: ../src/imageio/storage/facebook.c:885 ../src/imageio/storage/flickr.c:387
+#: ../src/imageio/storage/facebook.c:884 ../src/imageio/storage/flickr.c:387
 #: ../src/imageio/storage/flickr.c:414
 msgid "create new album"
 msgstr "Neues Album erstellen"
 
 # abmelden wäre besser, aber der andere Knopf heißt "einloggen" und nicht anmelden.
-#: ../src/imageio/storage/facebook.c:957 ../src/imageio/storage/picasa.c:979
-#: ../src/imageio/storage/picasa.c:1123
+#: ../src/imageio/storage/facebook.c:956 ../src/imageio/storage/picasa.c:986
+#: ../src/imageio/storage/picasa.c:1130
 msgid "logout"
 msgstr "logout"
 
 # "anmelden" ist zu lang
 #. Set default permission to private
-#: ../src/imageio/storage/facebook.c:963 ../src/imageio/storage/facebook.c:983
-#: ../src/imageio/storage/facebook.c:1030
-#: ../src/imageio/storage/facebook.c:1056
-#: ../src/imageio/storage/facebook.c:1175 ../src/imageio/storage/flickr.c:475
-#: ../src/imageio/storage/picasa.c:985 ../src/imageio/storage/picasa.c:1127
-#: ../src/imageio/storage/picasa.c:1140 ../src/imageio/storage/picasa.c:1198
+#: ../src/imageio/storage/facebook.c:962 ../src/imageio/storage/facebook.c:982
+#: ../src/imageio/storage/facebook.c:1029
+#: ../src/imageio/storage/facebook.c:1055
+#: ../src/imageio/storage/facebook.c:1174 ../src/imageio/storage/flickr.c:475
+#: ../src/imageio/storage/picasa.c:992 ../src/imageio/storage/picasa.c:1134
+#: ../src/imageio/storage/picasa.c:1147 ../src/imageio/storage/picasa.c:1205
 msgid "login"
 msgstr "login"
 
-#: ../src/imageio/storage/facebook.c:1091
+#: ../src/imageio/storage/facebook.c:1090
 msgid "facebook webalbum"
 msgstr "Facebook-Webalbum"
 
-#: ../src/imageio/storage/facebook.c:1113 ../src/imageio/storage/flickr.c:548
+#: ../src/imageio/storage/facebook.c:1112 ../src/imageio/storage/flickr.c:548
 msgid "summary"
 msgstr "Zusammenfassung"
 
-#: ../src/imageio/storage/facebook.c:1114
+#: ../src/imageio/storage/facebook.c:1113
 msgid "privacy"
 msgstr "Privatsphäre"
 
-#: ../src/imageio/storage/facebook.c:1160
+#: ../src/imageio/storage/facebook.c:1159
 msgid "only me"
 msgstr "nur Ich"
 
-#: ../src/imageio/storage/facebook.c:1163 ../src/imageio/storage/flickr.c:501
+#: ../src/imageio/storage/facebook.c:1162 ../src/imageio/storage/flickr.c:501
 msgid "friends"
 msgstr "Freunde"
 
-#: ../src/imageio/storage/facebook.c:1166
+#: ../src/imageio/storage/facebook.c:1165
 msgid "public"
 msgstr "öffentlich"
 
-#: ../src/imageio/storage/facebook.c:1169
+#: ../src/imageio/storage/facebook.c:1168
 msgid "friends of friends"
 msgstr "Freunde von Freunden"
 
-#: ../src/imageio/storage/facebook.c:1309
+#: ../src/imageio/storage/facebook.c:1308
 msgid "unable to create album, no title provided"
 msgstr "kann Album nicht anlegen, kein Titel angegeben"
 
-#: ../src/imageio/storage/facebook.c:1318
+#: ../src/imageio/storage/facebook.c:1317
 msgid "unable to create album"
 msgstr "kann Album nicht erstellen"
 
-#: ../src/imageio/storage/facebook.c:1328
+#: ../src/imageio/storage/facebook.c:1327
 msgid "unable to export photo to webalbum"
 msgstr "kann Foto nicht ins Webalbum exportieren"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/facebook.c:1340
+#: ../src/imageio/storage/facebook.c:1339
 #, c-format
 msgid "%d/%d exported to facebook webalbum"
 msgid_plural "%d/%d exported to facebook webalbum"
@@ -4383,7 +4403,7 @@ msgid "enter the title of the book"
 msgstr "den Titel für das Buch eingeben"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/picasa.c:718
+#: ../src/imageio/storage/picasa.c:727
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your google+ account there and authorize darktable to "
@@ -4393,7 +4413,7 @@ msgstr ""
 "haben. Loggen Sie sich dort nun in Ihren Google+-Account ein und "
 "autorisieren Sie darktable Fotos hochzuladen, bevor Sie fortfahren."
 
-#: ../src/imageio/storage/picasa.c:721
+#: ../src/imageio/storage/picasa.c:730
 msgid ""
 "step 2: paste the verification code shown to you in the browser and click "
 "the OK button once you are done."
@@ -4401,32 +4421,32 @@ msgstr ""
 "Schritt 2: Fügen Sie den Verifizierungs-Code, der im Browser angezeigt wird, "
 "hier ein und klicken Sie auf OK, sobald Sie fertig sind."
 
-#: ../src/imageio/storage/picasa.c:727
+#: ../src/imageio/storage/picasa.c:736
 msgid "google+ authentication"
 msgstr "Google+-Authentifizierung"
 
-#: ../src/imageio/storage/picasa.c:732
+#: ../src/imageio/storage/picasa.c:741
 msgid "verification code:"
 msgstr "Verifizierungscode:"
 
-#: ../src/imageio/storage/picasa.c:755
+#: ../src/imageio/storage/picasa.c:764
 msgid "please enter the verification code"
 msgstr "bitte den Verifizierungscode eingeben"
 
-#: ../src/imageio/storage/picasa.c:938
+#: ../src/imageio/storage/picasa.c:945
 msgid "drop box"
 msgstr "Drop Box"
 
-#: ../src/imageio/storage/picasa.c:1155
+#: ../src/imageio/storage/picasa.c:1162
 msgid "google+ photos"
 msgstr "Google+-Fotos"
 
-#: ../src/imageio/storage/picasa.c:1297
+#: ../src/imageio/storage/picasa.c:1304
 msgid "unable to export photo to google+ album"
 msgstr "kann Foto nicht ins Google+-Album exportieren"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1310
+#: ../src/imageio/storage/picasa.c:1317
 #, c-format
 msgid "%d/%d exported to google+ album"
 msgid_plural "%d/%d exported to google+ album"
@@ -6089,7 +6109,7 @@ msgstr "Farbton"
 
 #: ../src/iop/colorreconstruction.c:624 ../src/iop/colorreconstruction.c:1077
 #: ../src/iop/globaltonemap.c:181 ../src/iop/globaltonemap.c:342
-#: ../src/iop/hazeremoval.c:852 ../src/iop/levels.c:255
+#: ../src/iop/hazeremoval.c:854 ../src/iop/levels.c:255
 msgid "inconsistent output"
 msgstr "inkonsistente Ausgabe"
 
@@ -6858,9 +6878,17 @@ msgstr ""
 msgid "haze removal"
 msgstr "Dunstentfernung"
 
-#: ../src/iop/hazeremoval.c:191
+#: ../src/iop/hazeremoval.c:187
+msgid "amount of haze reduction"
+msgstr "Menge der Dunstentfernung"
+
+#: ../src/iop/hazeremoval.c:192
 msgid "distance"
 msgstr "Entfernung"
+
+#: ../src/iop/hazeremoval.c:193
+msgid "limit haze removal up to a specific spatial depth"
+msgstr "Dunstentfernung auf eine bestimmte räumliche Tiefe beschränken"
 
 #: ../src/iop/highlights.c:77
 msgid "highlight reconstruction"
@@ -9464,6 +9492,10 @@ msgstr "Suche nach neu angeschlossenen Geräten"
 msgid "edit `%s'"
 msgstr "‚%s‘ bearbeiten"
 
+#: ../src/libs/lib.c:492
+msgid "nothing to save"
+msgstr "nichts zu speichern"
+
 #: ../src/libs/live_view.c:140
 msgid "live view"
 msgstr "Live-View"
@@ -9640,7 +9672,7 @@ msgstr "Trennlinie"
 msgid "only draw part of the overlay"
 msgstr "zeige nur einen Teil der Überlagerung"
 
-#: ../src/libs/location.c:95
+#: ../src/libs/location.c:97
 msgid "find location"
 msgstr "Position finden"
 
@@ -9957,12 +9989,16 @@ msgstr "GraphicsMagick"
 msgid "rawspeed"
 msgstr "rawspeed"
 
-#: ../src/libs/metadata_view.c:391
+#: ../src/libs/metadata_view.c:387
+msgid "netpnm"
+msgstr "NetPNM"
+
+#: ../src/libs/metadata_view.c:392
 #, c-format
 msgid "loader: %s"
 msgstr "geladen mit: %s"
 
-#: ../src/libs/metadata_view.c:627
+#: ../src/libs/metadata_view.c:628
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "Zu Filmrolle springen"
@@ -10589,16 +10625,16 @@ msgstr "Farbmarkierungen entfernen"
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/tools/darktable.c:242
+#: ../src/libs/tools/darktable.c:241
 #, c-format
 msgid "copyright (c) the authors 2009-%s"
 msgstr "Copyright © die Urheber 2009–%s"
 
-#: ../src/libs/tools/darktable.c:246
+#: ../src/libs/tools/darktable.c:245
 msgid "organize and develop images from digital cameras"
 msgstr "Organisiere und entwickle Bilder von Digitalkameras"
 
-#: ../src/libs/tools/darktable.c:261
+#: ../src/libs/tools/darktable.c:260
 msgid "translator-credits"
 msgstr "Tobias Ellinghaus"
 
@@ -11278,6 +11314,49 @@ msgstr ""
 "Andernfalls werden sie GARANTIERT Probleme haben, die nicht behoben werden "
 "können.\n"
 
+#, fuzzy
+#~ msgid "failed to create temporary file for printing options"
+#~ msgstr "Fehler beim Überschreiben der Stil-Datei für %s"
+
+#~ msgid "printing `%s' on `%s'"
+#~ msgstr "drucke Bild ‚%s‘ auf ‚%s‘"
+
+#~ msgid "module disabled for monochrome image"
+#~ msgstr "Module für monochrome Bilder deaktiviert"
+
+#, fuzzy
+#~ msgid "white balance disabled for camera"
+#~ msgstr "aus den Weißabgleichsvorgaben der Kamera wählen"
+
+#, fuzzy
+#~ msgid "export width"
+#~ msgstr "Tags exportieren"
+
+#, fuzzy
+#~ msgid "export height"
+#~ msgstr "Bilder exportieren"
+
+#, fuzzy
+#~ msgid "error getting output profile for image %d"
+#~ msgstr "Fehler beim Öffnen der Datenbank-Lock-Datei zum Lesen: %s"
+
+#, fuzzy
+#~ msgid "failed to create temporary pdf for printing"
+#~ msgstr "Fehler beim Erstellen des Import-Pfades ‚%s‘, Import abgebrochen"
+
+#, fuzzy
+#~ msgid "media"
+#~ msgstr "mittel"
+
+#~ msgid "color management in printer driver"
+#~ msgstr "Farbverwaltung im Druckertreiber"
+
+#~ msgid "do you want to access https://www.darktable.org/?"
+#~ msgstr "Auf https://www.darktable.org/ zugreifen?"
+
+#~ msgid "access the online usermanual?"
+#~ msgstr "Auf das Online-Benutzerhandbuch zugreifen?"
+
 #~ msgid "Virtual dark room, split toning an image"
 #~ msgstr "Split-Toning in der Dunkelkammer"
 
@@ -11738,9 +11817,6 @@ msgstr ""
 #~ "Lege eine Markierung über die Vollbild-Voransicht des Leuchttischs (‚z‘-"
 #~ "Modus), die die Schärfe des Bildes anzeigt. Rot ist sehr scharf, Blau "
 #~ "etwas weniger."
-
-#~ msgid "failed to create import path `%s', import aborted."
-#~ msgstr "Fehler beim Erstellen des Import-Pfades ‚%s‘, Import abgebrochen"
 
 #~ msgid "failed to create filmroll for camera import, import aborted."
 #~ msgstr ""
