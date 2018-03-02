@@ -15,7 +15,10 @@
 @define-color brush_cursor alpha(white, .9);
 @define-color brush_trace alpha(black, .8);
 
-@define-color dark_bg_color #350000;
+@define-color bauhaus_fg #999;
+@define-color bauhaus_border #191919;
+@define-color bauhaus_bg alpha(@bauhaus_border, 0.2);
+@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.2);
 
 * {
   font: Sans 8;
@@ -594,4 +597,29 @@ GtkFileChooserDialog .sidebar-row:hover
 .cell:selected
 {
   background-color: shade(@selected_bg_color, 1.2);
+}
+
+#bauhaus-popup
+{
+  /* NORMAL */
+  background-color: @selected_bg_color;
+  color: @fg_color;
+}
+
+#bauhaus-popup:selected
+{
+  /* SELECTED */
+  color: shade(@fg_color, 1.5);
+}
+
+#bauhaus-popup:hover
+{
+  /* PRELIGHT */
+  color: shade(@fg_color, 0.7);
+}
+
+#bauhaus-popup:insensitive
+{
+  /* insensitive */
+  color: black;
 }

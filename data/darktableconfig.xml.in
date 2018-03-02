@@ -1316,6 +1316,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/imageio/format/tiff/compresslevel</name>
+    <type>int</type>
+    <default>5</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/format/png/bpp</name>
     <type>int</type>
     <default>8</default>
@@ -1735,5 +1742,12 @@
     <default>0.1</default>
     <shortdescription>the multiplier that is applied to any slider precise value change</shortdescription>
     <longdescription>any slider value change will be multiplied by this number, when changing slider while holding CTRL modifier</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>performance_configuration_version_completed</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>version of the last completed performance configuration</shortdescription>
+    <longdescription>what was the last performance configuration which has been completed</longdescription>
   </dtconfig>
 </dtconfiglist>

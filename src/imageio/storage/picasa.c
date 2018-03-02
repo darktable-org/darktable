@@ -505,9 +505,15 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, &buffer);
 
-  curl_easy_perform(ctx->curl_ctx);
+  int res = curl_easy_perform(ctx->curl_ctx);
 
   curl_slist_free_all(headers);
+
+  if(res != CURLE_OK)
+  {
+    fprintf(stderr, "[picasa] error uploading photo: %s\n", curl_easy_strerror(res));
+    return NULL;
+  }
 
 #ifdef picasa_EXTRA_VERBOSE
   printf("Uploading: %s\n", buffer.data);
@@ -607,7 +613,10 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_READFUNCTION, _picasa_api_buffer_read_func);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, &response);
-      curl_easy_perform(ctx->curl_ctx);
+      res = curl_easy_perform(ctx->curl_ctx);
+
+      if(res != CURLE_OK)
+        fprintf(stderr, "[picasa] error updating photo: %s\n", curl_easy_strerror(res));
 
 #ifdef picasa_EXTRA_VERBOSE
       printf("Uploading: %s\n", response.data);

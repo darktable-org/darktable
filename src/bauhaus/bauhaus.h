@@ -208,12 +208,7 @@ typedef struct dt_bauhaus_t
   int cursor_blink_counter;
 
   // colors:
-  float bg_normal;   // background without focus
-  float bg_focus;    // background with focus
-  float text;        // text color
-  float grid;        // background lines
-  float indicator;   // meaningful lines
-  float insensitive; // alpha for insensitive elements
+  GdkRGBA color_fg, color_fg_insensitive, color_bg, color_border;
 } dt_bauhaus_t;
 
 static inline int dt_bauhaus_get_widget_space()
