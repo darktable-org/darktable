@@ -777,12 +777,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // ask the user whether he/she would like
     // dt to make changes in the settings
     gboolean run_configure = dt_gui_show_standalone_yes_no_dialog(
-        _("darktable - Run performance configuration?"),
-        _("We have an updated performance configuration logic - executing that might improve the performance of "
-          "darktable.\nThis will potentially overwrite some of your existing settings - especially in case you "
-          "have manually modified them to custom values.\nWould you like to execute this update of the "
+        _("darktable - run performance configuration?"),
+        _("we have an updated performance configuration logic - executing that might improve the performance of "
+          "darktable.\nthis will potentially overwrite some of your existing settings - especially in case you "
+          "have manually modified them to custom values.\nwould you like to execute this update of the "
           "performance configuration?\n"),
-        _("No"), _("Yes"));
+        _("no"), _("yes"));
 
     if(run_configure)
       dt_configure_performance();
