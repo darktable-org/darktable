@@ -238,7 +238,7 @@ static int _print_job_run(dt_job_t *job)
 
   // let the user know something is happening
   dt_control_job_set_progress(job, 0.05);
-  dt_control_log(_("processing `%s' for `%s'.."), params->job_title, params->prt.printer.name);
+  dt_control_log(_("processing `%s' for `%s'"), params->job_title, params->prt.printer.name);
 
   const int high_quality = 1;
   const int upscale = 1;
