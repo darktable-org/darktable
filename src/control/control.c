@@ -264,8 +264,11 @@ void *dt_control_expose(void *voidptr)
     pango_layout_set_text(layout, darktable.control->log_message[darktable.control->log_ack], -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     const float pad = DT_PIXEL_APPLY_DPI(20.0f), xc = width / 2.0;
-    const float yc = height * 0.85 + DT_PIXEL_APPLY_DPI(10), wd = pad + ink.width * .5f;
+    const float yc = height * 0.85 + DT_PIXEL_APPLY_DPI(10), wd = MIN(pad + ink.width * .5f, width * .5f - pad);
     float rad = DT_PIXEL_APPLY_DPI(14);
+    // ellipsze the text if it does not fit on the screen
+    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
+    pango_layout_set_width(layout, (int)(PANGO_SCALE * wd * 2.0f));
     cairo_set_line_width(cr, 1.);
     cairo_move_to(cr, xc - wd, yc + rad);
     for(int k = 0; k < 5; k++)
