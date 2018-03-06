@@ -40,6 +40,9 @@
 #include "views/view.h"
 
 #include <gdk/gdkkeysyms.h>
+#ifdef GDK_WINDOWING_WAYLAND
+#include <gdk/gdkwayland.h>
+#endif
 #include <gtk/gtk.h>
 #include <math.h>
 #include <stdlib.h>
@@ -979,6 +982,14 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // Connecting the callback to update keyboard accels for key_pressed
   g_signal_connect(G_OBJECT(gtk_accel_map_get()), "changed", G_CALLBACK(key_accel_changed), NULL);
 
+  // smooth scrolling must be enabled for Wayland to handle
+  // trackpad/touch events, but due to problem reports for Quartz &
+  // X11, leave it off in other cases
+  gui->scroll_mask = GDK_SCROLL_MASK;
+#ifdef GDK_WINDOWING_WAYLAND
+  if (GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) gui->scroll_mask |= GDK_SMOOTH_SCROLL_MASK;
+#endif
+
   // Initializing widgets
   init_widgets(gui);
 
@@ -1399,7 +1410,7 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_app_paintable(cda, TRUE);
   gtk_widget_set_events(cda, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
                              | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                             | GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
+                             | darktable.gui->scroll_mask);
   gtk_widget_set_can_focus(cda, TRUE);
   gtk_widget_set_visible(cda, TRUE);
 
