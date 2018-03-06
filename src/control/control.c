@@ -177,7 +177,7 @@ void dt_control_cleanup(dt_control_t *s)
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
   darktable.control->tabborder = 8;
-  int tb = darktable.control->tabborder;
+  const int tb = darktable.control->tabborder;
   // re-configure all components:
   dt_view_manager_configure(darktable.view_manager, event->width - 2 * tb, event->height - 2 * tb);
   return TRUE;
@@ -185,10 +185,10 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
 
 void *dt_control_expose(void *voidptr)
 {
-  int width, height, pointerx, pointery;
+  int pointerx, pointery;
   if(!darktable.gui->surface) return NULL;
-  width = dt_cairo_image_surface_get_width(darktable.gui->surface);
-  height = dt_cairo_image_surface_get_height(darktable.gui->surface);
+  const int width = dt_cairo_image_surface_get_width(darktable.gui->surface);
+  const int height = dt_cairo_image_surface_get_height(darktable.gui->surface);
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
 #if GTK_CHECK_VERSION(3, 20, 0)
   gdk_window_get_device_position(gtk_widget_get_window(widget),
@@ -370,9 +370,9 @@ void dt_control_mouse_enter()
 
 void dt_control_mouse_moved(double x, double y, double pressure, int which)
 {
-  float tb = darktable.control->tabborder;
-  float wd = darktable.control->width;
-  float ht = darktable.control->height;
+  const float tb = darktable.control->tabborder;
+  const float wd = darktable.control->width;
+  const float ht = darktable.control->height;
 
   if(x > tb && x < wd - tb && y > tb && y < ht - tb)
     dt_view_manager_mouse_moved(darktable.view_manager, x - tb, y - tb, pressure, which);
@@ -382,7 +382,7 @@ void dt_control_button_released(double x, double y, int which, uint32_t state)
 {
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
-  float tb = darktable.control->tabborder;
+  const float tb = darktable.control->tabborder;
   // float wd = darktable.control->width;
   // float ht = darktable.control->height;
 
@@ -451,7 +451,7 @@ static gboolean _dt_ctl_log_message_timeout_callback(gpointer data)
 
 void dt_control_button_pressed(double x, double y, double pressure, int which, int type, uint32_t state)
 {
-  float tb = darktable.control->tabborder;
+  const float tb = darktable.control->tabborder;
   darktable.control->button_down = 1;
   darktable.control->button_down_which = which;
   darktable.control->button_type = type;
@@ -459,8 +459,8 @@ void dt_control_button_pressed(double x, double y, double pressure, int which, i
   darktable.control->button_y = y - tb;
   // adding pressure to this data structure is not needed right now. should the need ever arise: here is the
   // place to do it :)
-  float wd = darktable.control->width;
-  float ht = darktable.control->height;
+  const float wd = darktable.control->width;
+  const float ht = darktable.control->height;
 
   // ack log message:
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
@@ -636,7 +636,7 @@ int dt_control_key_pressed_override(guint key, guint state)
     else if(g_unichar_isprint(unichar)) // printable unicode character
     {
       gchar utf8[6];
-      gint char_width = g_unichar_to_utf8(unichar, utf8);
+      const gint char_width = g_unichar_to_utf8(unichar, utf8);
       if(darktable.control->vimkey_cnt + 1 + char_width < 256)
       {
         g_utf8_strncpy(darktable.control->vimkey + darktable.control->vimkey_cnt, utf8, 1);
@@ -691,7 +691,7 @@ int dt_control_key_pressed_override(guint key, guint state)
 
     /* toggle the header visibility state */
     g_snprintf(param, sizeof(param), "%s/ui/show_header", cv->module_name);
-    gboolean header = !dt_conf_get_bool(param);
+    const gboolean header = !dt_conf_get_bool(param);
     dt_conf_set_bool(param, header);
 
     /* show/hide the actual header panel */
@@ -704,7 +704,7 @@ int dt_control_key_pressed_override(guint key, guint state)
 
 int dt_control_key_pressed(guint key, guint state)
 {
-  int handled = dt_view_manager_key_pressed(darktable.view_manager, key, state);
+  const int handled = dt_view_manager_key_pressed(darktable.view_manager, key, state);
   if(handled) gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
   return handled;
 }
@@ -735,7 +735,7 @@ void dt_control_hinter_message(const struct dt_control_t *s, const char *message
 int32_t dt_control_get_mouse_over_id()
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
-  int32_t result = darktable.control->mouse_over_id;
+  const int32_t result = darktable.control->mouse_over_id;
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return result;
 }
@@ -756,7 +756,7 @@ void dt_control_set_mouse_over_id(int32_t value)
 float dt_control_get_dev_zoom_x()
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
-  float result = darktable.control->dev_zoom_x;
+  const float result = darktable.control->dev_zoom_x;
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return result;
 }
@@ -770,7 +770,7 @@ void dt_control_set_dev_zoom_x(float value)
 float dt_control_get_dev_zoom_y()
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
-  float result = darktable.control->dev_zoom_y;
+  const float result = darktable.control->dev_zoom_y;
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return result;
 }
@@ -784,7 +784,7 @@ void dt_control_set_dev_zoom_y(float value)
 float dt_control_get_dev_zoom_scale()
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
-  float result = darktable.control->dev_zoom_scale;
+  const float result = darktable.control->dev_zoom_scale;
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return result;
 }
@@ -798,7 +798,7 @@ void dt_control_set_dev_zoom_scale(float value)
 int dt_control_get_dev_closeup()
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
-  int result = darktable.control->dev_closeup;
+  const int result = darktable.control->dev_closeup;
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return result;
 }
@@ -812,7 +812,7 @@ void dt_control_set_dev_closeup(int value)
 dt_dev_zoom_t dt_control_get_dev_zoom()
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
-  dt_dev_zoom_t result = darktable.control->dev_zoom;
+  const dt_dev_zoom_t result = darktable.control->dev_zoom;
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return result;
 }
