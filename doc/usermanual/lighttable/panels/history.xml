@@ -108,12 +108,12 @@
       </para>
 
       <para>
-        <emphasis>Note: if you use <quote>overwrite</quote> mode to paste history stack
-        entries to the images that wasn't opened in darkroom previously, i.e. the automatic
-        module presets weren't already applied to the image, next time you open said image
-        in darkroom, the automatic presets will be applied to the image. So it may seem
-        as if the <quote>overwrite</quote> mode did not actually override the existing
-        history stack, but in fact it did override it, and the rest was added later.</emphasis>
+        <emphasis>Note: if you use <quote>overwrite</quote> mode to paste history stack entries
+        to the images that wasn't opened in darkroom previously, i.e. the automatic module
+        presets weren't already applied to the image, next time you open said image in darkroom,
+        the automatic presets will be applied to the image. So it may seem as if the
+        <quote>overwrite</quote> mode did not actually override the existing history stack, but
+        in fact it did override it, and the rest was added later.</emphasis>
       </para>
 
       <para>

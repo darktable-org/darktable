@@ -212,13 +212,13 @@
 
       <para>
         darktable reads raw files using the open source library
-        <ulink url="https://github.com/darktable-org/rawspeed">RawSpeed</ulink>,
-        originally developed by Klaus Post and now maintained within the darktable project
-        itself. The number of supported cameras and file formats is constantly increasing. It is
-        beyond the scope of this manual to give an exhaustive list. Most modern camera models
-        are supported, and new ones tend to get added very quickly. With the exception of
-        Fujifilm X-Trans cameras, darktable does not decode images from cameras with non-Bayer
-        sensors (e.g. Sigmas with the Foveon X3 sensor).
+        <ulink url="https://github.com/darktable-org/rawspeed">RawSpeed</ulink>, originally
+        developed by Klaus Post and now maintained within the darktable project itself. The
+        number of supported cameras and file formats is constantly increasing. It is beyond the
+        scope of this manual to give an exhaustive list. Most modern camera models are
+        supported, and new ones tend to get added very quickly. With the exception of Fujifilm
+        X-Trans cameras, darktable does not decode images from cameras with non-Bayer sensors
+        (e.g. Sigmas with the Foveon X3 sensor).
       </para>
 
     </sect4>

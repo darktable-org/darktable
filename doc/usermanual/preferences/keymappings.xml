@@ -104,7 +104,7 @@
           global/zoom in
         </entry>
         <entry>
-        &lt;Primary&gt;KP_plus
+          &lt;Primary&gt;KP_plus
         </entry>
       </row>
       <row>
@@ -112,7 +112,7 @@
           global/zoom out
         </entry>
         <entry>
-        &lt;Primary&gt;KP_minus
+          &lt;Primary&gt;KP_minus
         </entry>
       </row>
       <row>

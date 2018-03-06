@@ -82,9 +82,9 @@
       </para>
 
       <para>
-        Click anywhere in the slider area to set the value. You can also click and drag to change it.
-        You don't have to aim for the small triangle or even the line, the whole height including the
-        label works as the active area.
+        Click anywhere in the slider area to set the value. You can also click and drag to
+        change it. You don't have to aim for the small triangle or even the line, the whole
+        height including the label works as the active area.
       </para></listitem>
 
       <listitem><para>
@@ -253,8 +253,8 @@
     </para>
 
     <para>
-      Please note that changes to drawn masks (see <xref linkend="drawn_mask"/>) are not recorded
-      and thus cannot be undone.
+      Please note that changes to drawn masks (see <xref linkend="drawn_mask"/>) are not
+      recorded and thus cannot be undone.
     </para>
 
   </sect3>

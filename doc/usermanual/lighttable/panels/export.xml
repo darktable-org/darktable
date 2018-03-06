@@ -328,14 +328,14 @@
       </informaltable>
 
       <para>
-        All of the variables support basic string substitution inspired by bash.
-        The details differ however, for example all patterns are treated as simple
-        string comparisons. There is no regex support. For example you can do the
-        following:
-        <code>$(ROLL_NAME/search/replace)</code>. This means
-        if your roll name is e.g. <emphasis>1970-01-01_RAW_Time-Begins</emphasis>
-        and you use <code>$(ROLL_NAME/RAW/JPG)</code> it will
-        result in a roll name of: <emphasis>1970-01-01_JPG_Time-Begins</emphasis>
+        All of the variables support basic string substitution inspired by bash. The details
+        differ however, for example all patterns are treated as simple string comparisons. There
+        is no regex support. For example you can do the following:
+        <code>$(ROLL_NAME/search/replace)</code>
+        . This means if your roll name is e.g. <emphasis>1970-01-01_RAW_Time-Begins</emphasis>
+        and you use
+        <code>$(ROLL_NAME/RAW/JPG)</code>
+        it will result in a roll name of: <emphasis>1970-01-01_JPG_Time-Begins</emphasis>
       </para>
 
       <informaltable frame="none" width="80%">
@@ -346,7 +346,11 @@
                 <code>$(var-default)</code>
               </entry>
               <entry>
-                If <code>var</code> is empty, use <code>default</code>.
+                If
+                <code>var</code>
+                is empty, use
+                <code>default</code>
+                .
               </entry>
             </row>
             <row>
@@ -354,7 +358,11 @@
                 <code>$(var+alt_value)</code>
               </entry>
               <entry>
-                If <code>var</code> is set, use <code>alt_value</code>, else use empty string.
+                If
+                <code>var</code>
+                is set, use
+                <code>alt_value</code>
+                , else use empty string.
               </entry>
             </row>
             <row>
@@ -362,8 +370,12 @@
                 <code>$(var:offset)</code>
               </entry>
               <entry>
-                <code>var</code> starting from <code>offset</code>. If <code>offset</code> is
-                less than zero it is counted from the back of the string.
+                <code>var</code>
+                starting from
+                <code>offset</code>
+                . If
+                <code>offset</code>
+                is less than zero it is counted from the back of the string.
               </entry>
             </row>
             <row>
@@ -371,10 +383,21 @@
                 <code>$(var:offset:length)</code>
               </entry>
               <entry>
-                At most <code>length</code> characters of <code>var</code>, starting from
-                <code>offset</code>. If <code>offset</code> is less than zero it is counted from
-                the back of <code>var</code>. If <code>length</code> is less than zero it indicates
-                the end of the result, counted from the back of <code>var</code>, and not an actual length.
+                At most
+                <code>length</code>
+                characters of
+                <code>var</code>
+                , starting from
+                <code>offset</code>
+                . If
+                <code>offset</code>
+                is less than zero it is counted from the back of
+                <code>var</code>
+                . If
+                <code>length</code>
+                is less than zero it indicates the end of the result, counted from the back of
+                <code>var</code>
+                , and not an actual length.
               </entry>
             </row>
             <row>
@@ -382,7 +405,11 @@
                 <code>$(var#pattern)</code>
               </entry>
               <entry>
-                Remove <code>pattern</code> from the start of <code>var</code>.
+                Remove
+                <code>pattern</code>
+                from the start of
+                <code>var</code>
+                .
               </entry>
             </row>
             <row>
@@ -390,7 +417,11 @@
                 <code>$(var%pattern)</code>
               </entry>
               <entry>
-                Remove <code>pattern</code> from the end of <code>var</code>.
+                Remove
+                <code>pattern</code>
+                from the end of
+                <code>var</code>
+                .
               </entry>
             </row>
             <row>
@@ -398,9 +429,17 @@
                 <code>$(var/pattern/replacement)</code>
               </entry>
               <entry>
-                Replace the first occurrence of <code>pattern</code> in <code>var</code> with
-                <code>replacement</code>. If <code>replacement</code> is empty then
-                <code>pattern</code> will be removed.
+                Replace the first occurrence of
+                <code>pattern</code>
+                in
+                <code>var</code>
+                with
+                <code>replacement</code>
+                . If
+                <code>replacement</code>
+                is empty then
+                <code>pattern</code>
+                will be removed.
               </entry>
             </row>
             <row>
@@ -408,9 +447,17 @@
                 <code>$(var//pattern/replacement)</code>
               </entry>
               <entry>
-                Replace all occurrences of <code>pattern</code> in <code>var</code> with
-                <code>replacement</code>. If <code>replacement</code> is empty then
-                <code>pattern</code> will be removed.
+                Replace all occurrences of
+                <code>pattern</code>
+                in
+                <code>var</code>
+                with
+                <code>replacement</code>
+                . If
+                <code>replacement</code>
+                is empty then
+                <code>pattern</code>
+                will be removed.
               </entry>
             </row>
             <row>
@@ -418,8 +465,15 @@
                 <code>$(var/#pattern/replacement)</code>
               </entry>
               <entry>
-                If <code>var</code> starts with <code>pattern</code> then <code>pattern</code>
-                is replaced with <code>replacement</code>.
+                If
+                <code>var</code>
+                starts with
+                <code>pattern</code>
+                then
+                <code>pattern</code>
+                is replaced with
+                <code>replacement</code>
+                .
               </entry>
             </row>
             <row>
@@ -427,8 +481,15 @@
                 <code>$(var/%pattern/replacement)</code>
               </entry>
               <entry>
-                If <code>var</code> ends with <code>pattern</code> then <code>pattern</code>
-                is replaced with <code>replacement</code>.
+                If
+                <code>var</code>
+                ends with
+                <code>pattern</code>
+                then
+                <code>pattern</code>
+                is replaced with
+                <code>replacement</code>
+                .
               </entry>
             </row>
             <row>
@@ -436,7 +497,9 @@
                 <code>$(var^)</code>
               </entry>
               <entry>
-                Make the first character of <code>var</code> uppercase.
+                Make the first character of
+                <code>var</code>
+                uppercase.
               </entry>
             </row>
             <row>
@@ -444,7 +507,9 @@
                 <code>$(var^^)</code>
               </entry>
               <entry>
-                Make all characters of <code>var</code> uppercase.
+                Make all characters of
+                <code>var</code>
+                uppercase.
               </entry>
             </row>
             <row>
@@ -452,7 +517,9 @@
                 <code>$(var,)</code>
               </entry>
               <entry>
-                Make the first character of <code>var</code> lowercase.
+                Make the first character of
+                <code>var</code>
+                lowercase.
               </entry>
             </row>
             <row>
@@ -460,13 +527,14 @@
                 <code>$(var,,)</code>
               </entry>
               <entry>
-                Make all characters of <code>var</code> lowercase.
+                Make all characters of
+                <code>var</code>
+                lowercase.
               </entry>
             </row>
           </tbody>
         </tgroup>
       </informaltable>
-
 
     </sect4>
 

@@ -88,13 +88,14 @@
       <para>
         If your system's lensfun library has no correction profile for the automatically
         identified camera/lens combination the controls for the three photometric parameters are
-        not displayed, and you get a warning message instead. You may try to find the right profile
-        yourself by searching for it in the menu. If you can't find your lens, check if it is in the
-        <ulink url="http://lensfun.sourceforge.net/lenslist/">list of currently supported lenses</ulink>,
-        and refer to the <ulink url="http://lensfun.sourceforge.net/manual/lensfun-update-data.html">
-        lensfun-update-data tool</ulink>. If there is no matching profile for your lens, please visit
-        <ulink url="https://www.darktable.org/2013/07/have-your-lens-calibrated/">this lens
-        calibration service</ulink> offered by Torsten Bronger, one of darktable's users.
+        not displayed, and you get a warning message instead. You may try to find the right
+        profile yourself by searching for it in the menu. If you can't find your lens, check if
+        it is in the <ulink url="http://lensfun.sourceforge.net/lenslist/">list of currently
+        supported lenses</ulink>, and refer to the
+        <ulink url="http://lensfun.sourceforge.net/manual/lensfun-update-data.html">
+        lensfun-update-data tool</ulink>. If there is no matching profile for your lens, please
+        visit <ulink url="https://www.darktable.org/2013/07/have-your-lens-calibrated/">this
+        lens calibration service</ulink> offered by Torsten Bronger, one of darktable's users.
         Alternatively you may go to <ulink url="http://lensfun.sourceforge.net/">lensfun's home
         page</ulink> and learn how to generate your own set of correction parameters. Don't
         forget to share your profile with the lensfun team!

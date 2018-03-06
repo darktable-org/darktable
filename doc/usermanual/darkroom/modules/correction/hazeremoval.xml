@@ -42,13 +42,13 @@
 
     <para>
       The higher the haze density in the air and the longer the distance between the camera and
-      the photographed object the less colorful the object appears in the image.  Haze absorbs
+      the photographed object the less colorful the object appears in the image. Haze absorbs
       light approaching from the objects into the direction of the camera but it is also a
-      source of diffusive background light.  Thus the haze removal module estimates for each
+      source of diffusive background light. Thus the haze removal module estimates for each
       image region the amount of haze in the scene first and then removes the diffusive
       background light according to its local strength and recovers the original object light.
     </para>
-    
+
   </sect4>
 
   <sect4>
@@ -57,19 +57,19 @@
 
     <para>
       The haze removal module has two controls that determine the amount of haze reduction and
-      limit the distance up to which haze is removed.  Setting both controls to unity maximizes
-      the amount of haze removal but this is also likely to produce some artifacts.  Removing
-      the atmospheric light entirely may render the image flat and may result in an unnatural
-      looking style.  Optimal values are typically below unity and these are rather image
+      limit the distance up to which haze is removed. Setting both controls to unity maximizes
+      the amount of haze removal but this is also likely to produce some artifacts. Removing the
+      atmospheric light entirely may render the image flat and may result in an unnatural
+      looking style. Optimal values are typically below unity and these are rather image
       dependent but also a matter of personal aesthetic preferences.
     </para>
-    
+
     <sect5>
       <title>strength</title>
       <para>
-        The strength parameter controls the amount of haze removal.  Setting it to unity, the
+        The strength parameter controls the amount of haze removal. Setting it to unity, the
         module removes 100 percent of the detected haze between the camera and up to the
-        specified distance; see below.  Negative values for the strength increase the amount of
+        specified distance; see below. Negative values for the strength increase the amount of
         haze in the image.
       </para>
     </sect5>
@@ -77,10 +77,10 @@
     <sect5>
       <title>distance</title>
       <para>
-	This parameter limits the distance up to which haze is removed.  For small values, haze
-	removal is restricted to the foreground of the image.  Haze is removed from the
-	foreground to the far background if the distance parameter is set to unity.  In case of
-	a negative strength the distance control has no effect.
+        This parameter limits the distance up to which haze is removed. For small values, haze
+        removal is restricted to the foreground of the image. Haze is removed from the
+        foreground to the far background if the distance parameter is set to unity. In case of a
+        negative strength the distance control has no effect.
       </para>
     </sect5>
 
