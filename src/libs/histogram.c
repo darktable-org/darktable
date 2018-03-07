@@ -129,7 +129,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(self->widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
                                       | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
                                       //                         GDK_STRUCTURE_MASK |
-                                      GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
+                                      darktable.gui->scroll_mask);
 
   /* connect callbacks */
   gtk_widget_set_tooltip_text(self->widget, _("drag to change exposure,\ndoubleclick resets"));
