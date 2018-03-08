@@ -42,6 +42,8 @@
 #include <string.h>
 #include <strings.h>
 
+// font size used for the log message string
+#define _DT_CONTROL_MESSAGE_FONTSIZE (DT_PIXEL_APPLY_DPI(14))
 
 void dt_control_init(dt_control_t *s)
 {
@@ -256,12 +258,14 @@ void *dt_control_expose(void *voidptr)
     PangoRectangle ink;
     PangoLayout *layout;
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-    const float fontsize = DT_PIXEL_APPLY_DPI(14);
-    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+    pango_font_description_set_absolute_size(desc, _DT_CONTROL_MESSAGE_FONTSIZE * PANGO_SCALE);
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
     pango_layout_set_text(layout, darktable.control->log_message[darktable.control->log_ack], -1);
+    // ellipsze the text if it does not fit on the screen
+    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
+    pango_layout_set_width(layout, (int)(PANGO_SCALE * width + 0.5f));
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     const float pad = DT_PIXEL_APPLY_DPI(20.0f), xc = width / 2.0;
     const float yc = height * 0.85 + DT_PIXEL_APPLY_DPI(10), wd = pad + ink.width * .5f;
@@ -300,7 +304,7 @@ void *dt_control_expose(void *voidptr)
       color.alpha = 1.0;
     }
     gdk_cairo_set_source_rgba(cr, &color);
-    cairo_move_to(cr, xc - wd + .5f * pad, (yc + 1. / 3. * fontsize) - fontsize);
+    cairo_move_to(cr, xc - wd + .5f * pad, (yc + 1. / 3. * _DT_CONTROL_MESSAGE_FONTSIZE) - _DT_CONTROL_MESSAGE_FONTSIZE);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
     g_object_unref(layout);
@@ -311,15 +315,14 @@ void *dt_control_expose(void *voidptr)
     PangoRectangle ink;
     PangoLayout *layout;
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-    const float fontsize = DT_PIXEL_APPLY_DPI(14);
-    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+    pango_font_description_set_absolute_size(desc, _DT_CONTROL_MESSAGE_FONTSIZE * PANGO_SCALE);
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
     pango_layout_set_text(layout, _("working.."), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
-    cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
+    cairo_move_to(cr, xc - wd, yc + 1. / 3. * _DT_CONTROL_MESSAGE_FONTSIZE - _DT_CONTROL_MESSAGE_FONTSIZE);
     pango_cairo_layout_path(cr, layout);
     cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
     cairo_fill_preserve(cr);
@@ -494,11 +497,139 @@ static gboolean _redraw_center(gpointer user_data)
 
 void dt_control_log(const char *msg, ...)
 {
+  if(!darktable.gui->surface) return;
+
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
+
+  const int PANEL_WIDTH = dt_cairo_image_surface_get_width(darktable.gui->surface);
+
+  // the maximum number of characters that can be displayed on the central panel
+  const int MAX_LOGMSG_LEN = PANEL_WIDTH / (int)_DT_CONTROL_MESSAGE_FONTSIZE;
+
+  int nb_string = 0;
+  int unsupported_format = 0;
+
+  // count number of %s in the format string
+
+  {
+    char *fmt = (char *)msg;
+    while (*fmt)
+    {
+      if (*fmt == '%' && *(fmt+1) == 's')
+        nb_string++;
+      fmt++;
+    }
+  }
+
+  // now let's render the message and see if it fits on the central panel as-is.
+
+  char *log_msg = darktable.control->log_message[darktable.control->log_pos];
+
   va_list ap;
   va_start(ap, msg);
-  vsnprintf(darktable.control->log_message[darktable.control->log_pos], DT_CTL_LOG_MSG_SIZE, msg, ap);
+  const int msg_len = vsnprintf(log_msg, DT_CTL_LOG_MSG_SIZE, msg, ap);
   va_end(ap);
+
+  // check if the message fits on the central panel, and if we have some %s on the format string
+  // let's try to ellipsize those strings.
+
+  if ((msg_len > MAX_LOGMSG_LEN) && (nb_string > 0))
+  {
+    const int n_del = (msg_len - MAX_LOGMSG_LEN + 1) / nb_string + 2;
+    // the number of characters (+ 2 for the ellipsis) to remove per %s content
+
+    int log_len = DT_CTL_LOG_MSG_SIZE - 1;
+    // remaining free size in log_msg (final log message buffer)
+
+    char *fmt = (char *)msg;
+
+    va_start(ap, msg);
+    while (*fmt)
+    {
+      switch (*fmt)
+      {
+         case '%':
+           switch (*(fmt+1))
+           {
+              case 's':
+                {
+                  char *s = va_arg(ap, char *);
+                  int len = strlen(s);
+
+                  if (len > n_del + 5)
+                  {
+                    strncpy(log_msg, "..", log_len);
+                    log_msg += 2;
+                    s += n_del;
+                    len -= n_del;
+                    log_len += 2;
+                  }
+                  strncpy(log_msg, s, log_len);
+                  log_msg += len;
+                  log_len += len;
+                }
+                fmt++;
+                break;
+
+              case 'c':
+                {
+                  const char c = (char) va_arg(ap, int);
+                  *log_msg++ = c;
+                  log_len++;
+                }
+                fmt++;
+                break;
+
+              case 'd':
+                {
+                  const int d = va_arg(ap, int);
+                  char buf[20];
+                  snprintf(buf, 20, "%d", d);
+                  const int len = strlen(buf);
+                  strncpy(log_msg, buf, log_len);
+                  log_msg += len;
+                  log_len += len;
+                }
+                fmt++;
+                break;
+
+              case '%':
+                *log_msg++ = *fmt;
+                log_len++;
+                break;
+
+              default:
+                // not a supported format, does nothing and fall back to default message
+                // this could be a % with a number for width formatting. We don't want to
+                // be smarter here, we have only %zd in two messages. This would render the
+                // implementation more complex for a little gain.
+                unsupported_format=1;
+                break;
+           }
+           fmt++;
+           break;
+
+         default:
+           *log_msg++ = *fmt;
+           fmt++;
+           log_len++;
+      }
+      if (unsupported_format) break;
+    }
+
+    va_end(ap);
+
+    // finally an unsupported format has been found, create the original message and do not try to
+    // ellipsize it. This will be cut in the middle by PANGO while displaying it.
+
+    if (unsupported_format)
+    {
+      va_start(ap, msg);
+      vsnprintf(darktable.control->log_message[darktable.control->log_pos], DT_CTL_LOG_MSG_SIZE, msg, ap);
+      va_end(ap);
+    }
+  }
+
   if(darktable.control->log_message_timeout_id) g_source_remove(darktable.control->log_message_timeout_id);
   darktable.control->log_ack = darktable.control->log_pos;
   darktable.control->log_pos = (darktable.control->log_pos + 1) % DT_CTL_LOG_SIZE;
