@@ -1392,13 +1392,11 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
       // only clear
       button->icon = dtgtk_cairo_paint_cancel;
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule"));
-      dt_gui_add_help_link(GTK_WIDGET(button), "collect_images.html#collect_images_usage");
     }
     else if(i == active)
     {
       button->icon = dtgtk_cairo_paint_dropdown;
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule or add new rules"));
-      dt_gui_add_help_link(GTK_WIDGET(button), "collect_images.html#collect_images_usage");
     }
     else
     {
@@ -1408,7 +1406,6 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
       if(mode == DT_LIB_COLLECT_MODE_OR) button->icon = dtgtk_cairo_paint_or;
       if(mode == DT_LIB_COLLECT_MODE_AND_NOT) button->icon = dtgtk_cairo_paint_andnot;
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule"));
-      dt_gui_add_help_link(GTK_WIDGET(button), "collect_images.html#collect_images_usage");
     }
   }
 
@@ -1453,20 +1450,17 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
      || property == DT_COLLECTION_PROP_EXPOSURE)
   {
     gtk_widget_set_tooltip_text(d->text, _("type your query, use <, <=, >, >=, <>, =, [;] as operators"));
-    dt_gui_add_help_link(d->text, "collect_images.html#collect_images_usage");
   }
   else if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
   {
     gtk_widget_set_tooltip_text(d->text,
                                 _("type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
                                   "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
-    dt_gui_add_help_link(d->text, "collect_images.html#collect_images_usage");
   }
   else
   {
     /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard"));
-    dt_gui_add_help_link(d->text, "collect_images.html#collect_images_usage");
   }
 
   set_properties(d);
@@ -1821,7 +1815,6 @@ void gui_init(dt_lib_module_t *self)
 
     /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(w, _("type your query, use `%' as wildcard"));
-    dt_gui_add_help_link(w, "collect_images.html#collect_images_usage");
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "insert-text", G_CALLBACK(entry_insert_text), d->rule + i);
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
