@@ -1118,6 +1118,7 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...)
 {
   if(darktable.unmuted & thread)
   {
+    printf("%f ", dt_get_wtime() - darktable.start_wtime);
     va_list ap;
     va_start(ap, msg);
     vprintf(msg, ap);
