@@ -1350,6 +1350,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->hash = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, "modules.html#color_reconstruction");
 
   g->threshold = dt_bauhaus_slider_new_with_range(self, 50.0f, 150.0f, 0.1f, p->threshold, 2);
   g->spatial = dt_bauhaus_slider_new_with_range(self, 0.0f, 1000.0f, 1.0f, p->spatial, 2);

@@ -181,6 +181,7 @@ void gui_init(dt_iop_module_t *self)
   g->hash = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, "correction_group.html#haze_removal");
 
   g->strength = dt_bauhaus_slider_new_with_range(self, -1, 1, 0.01, p->strength, 2);
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
