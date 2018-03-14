@@ -99,6 +99,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  dt_gui_add_help_link(self->widget, "module_groups.html#module_groups");
 
   dtgtk_cairo_paint_flags_t pf = CPF_STYLE_FLAT;
 

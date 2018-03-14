@@ -354,6 +354,7 @@ void gui_init(dt_iop_module_t *self)
 {
   self->widget = gtk_label_new("");
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
+  dt_gui_add_help_link(self->widget, "correction_group.html#rotate_pixels");
 }
 
 void gui_cleanup(dt_iop_module_t *self)
