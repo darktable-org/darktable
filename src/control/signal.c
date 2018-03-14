@@ -271,6 +271,16 @@ void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCal
                                        0, NULL, cb, user_data);
 }
 
+void dt_control_signal_block_by_func(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data)
+{
+  g_signal_handlers_block_by_func(G_OBJECT(ctlsig->sink), cb, user_data);
+}
+
+void dt_control_signal_unblock_by_func(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data)
+{
+  g_signal_handlers_unblock_by_func(G_OBJECT(ctlsig->sink), cb, user_data);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
