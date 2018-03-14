@@ -1379,6 +1379,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  dt_gui_add_help_link(self->widget, "modules.html#whitebalance");
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   g->stack = gtk_stack_new();

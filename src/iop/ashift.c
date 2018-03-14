@@ -4369,6 +4369,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, "correction_group.html#perspective_correction");
 
   g->rotation = dt_bauhaus_slider_new_with_range(self, -ROTATION_RANGE, ROTATION_RANGE, 0.01*ROTATION_RANGE, p->rotation, 2);
   dt_bauhaus_widget_set_label(g->rotation, NULL, _("rotation"));

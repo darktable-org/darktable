@@ -457,6 +457,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  dt_gui_add_help_link(self->widget, "correction_group.html#raw_denoise");
 
   g->stack = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->stack), FALSE);
