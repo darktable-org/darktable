@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-04 12:18+0100\n"
-"PO-Revision-Date: 2018-03-04 12:18+0100\n"
+"POT-Creation-Date: 2018-03-15 18:16+0100\n"
+"PO-Revision-Date: 2018-03-15 18:15+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -967,7 +967,7 @@ msgstr "graphisme;photographie;raw;"
 #: ../src/gui/preferences.c:1009 ../src/gui/preferences.c:1035
 #: ../src/gui/presets.c:359 ../src/gui/styles_dialog.c:286
 #: ../src/imageio/storage/disk.c:95 ../src/imageio/storage/gallery.c:107
-#: ../src/imageio/storage/latex.c:106 ../src/libs/collect.c:240
+#: ../src/imageio/storage/latex.c:106 ../src/libs/collect.c:242
 #: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:476
 #: ../src/libs/import.c:775 ../src/libs/import.c:882 ../src/libs/lib.c:215
 #: ../src/libs/styles.c:213 ../src/libs/styles.c:236 ../src/libs/tagging.c:374
@@ -1065,63 +1065,55 @@ msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
 "abandonnée..."
 
-#: ../src/common/collection.c:855 ../src/develop/lightroom.c:818
+#: ../src/common/collection.c:865 ../src/develop/lightroom.c:818
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:451
 #: ../src/iop/channelmixer.c:462 ../src/iop/colorbalance.c:631
-#: ../src/iop/temperature.c:1361 ../src/libs/collect.c:1096
-#: ../src/libs/collect.c:1097 ../src/libs/collect.c:1098
+#: ../src/iop/temperature.c:1361 ../src/libs/collect.c:1183
 msgid "red"
 msgstr "rouge"
 
-#: ../src/common/collection.c:857 ../src/develop/lightroom.c:820
-#: ../src/iop/temperature.c:1352 ../src/libs/collect.c:1100
-#: ../src/libs/collect.c:1101 ../src/libs/collect.c:1102
+#: ../src/common/collection.c:867 ../src/develop/lightroom.c:820
+#: ../src/iop/temperature.c:1352 ../src/libs/collect.c:1183
 msgid "yellow"
 msgstr "jaune"
 
-#: ../src/common/collection.c:859 ../src/develop/lightroom.c:822
+#: ../src/common/collection.c:869 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:452
 #: ../src/iop/channelmixer.c:468 ../src/iop/colorbalance.c:638
 #: ../src/iop/temperature.c:1349 ../src/iop/temperature.c:1362
-#: ../src/libs/collect.c:1104 ../src/libs/collect.c:1105
-#: ../src/libs/collect.c:1106
+#: ../src/libs/collect.c:1183
 msgid "green"
 msgstr "vert"
 
-#: ../src/common/collection.c:861 ../src/develop/lightroom.c:824
+#: ../src/common/collection.c:871 ../src/develop/lightroom.c:824
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
 #: ../src/iop/channelmixer.c:474 ../src/iop/colorbalance.c:645
-#: ../src/iop/temperature.c:1363 ../src/libs/collect.c:1108
-#: ../src/libs/collect.c:1109 ../src/libs/collect.c:1110
+#: ../src/iop/temperature.c:1363 ../src/libs/collect.c:1183
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:863 ../src/libs/collect.c:1112
-#: ../src/libs/collect.c:1113 ../src/libs/collect.c:1114
+#: ../src/common/collection.c:873 ../src/libs/collect.c:1183
 msgid "purple"
 msgstr "violet"
 
-#: ../src/common/collection.c:872 ../src/libs/collect.c:1063
-#: ../src/libs/collect.c:1064 ../src/libs/collect.c:1065
+#: ../src/common/collection.c:882 ../src/libs/collect.c:1155
 msgid "altered"
 msgstr "développées"
 
-#: ../src/common/collection.c:878 ../src/libs/collect.c:1074
-#: ../src/libs/collect.c:1075 ../src/libs/collect.c:1076
+#: ../src/common/collection.c:888 ../src/libs/collect.c:1164
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:884 ../src/libs/collect.c:1089
-#: ../src/libs/collect.c:1090 ../src/libs/collect.c:1091
+#: ../src/common/collection.c:894 ../src/libs/collect.c:1173
 msgid "not copied locally"
 msgstr "non copiée localement"
 
-#: ../src/common/collection.c:1249
+#: ../src/common/collection.c:1252
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "« %d » image sur « %d » (#%d) sélectionnée dans la collection courante"
 
-#: ../src/common/collection.c:1255
+#: ../src/common/collection.c:1258
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -1212,15 +1204,15 @@ msgid "failed to create temporary file for printing options"
 msgstr ""
 "échec de la création du fichier temporaire pour les options d'impression"
 
-#: ../src/common/cups_print.c:552
+#: ../src/common/cups_print.c:545
 #, c-format
-msgid "error while printing `%s%s' on `%s%s'"
-msgstr "erreur pendant l'impression de l'image « %s%s » sur « %s%s »"
+msgid "error while printing `%s' on `%s'"
+msgstr "erreur pendant l'impression de l'image « %s » sur « %s »"
 
-#: ../src/common/cups_print.c:556
+#: ../src/common/cups_print.c:547
 #, c-format
-msgid "printing `%s%s' on `%s%s'"
-msgstr "impression de l'image « %s%s » sur « %s%s »"
+msgid "printing `%s' on `%s'"
+msgstr "impression de l'image « %s » sur « %s »"
 
 #: ../src/common/darktable.c:225
 #, c-format
@@ -1441,12 +1433,12 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/imageio.c:597 ../src/common/mipmap_cache.c:1038
+#: ../src/common/imageio.c:600 ../src/common/mipmap_cache.c:1038
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image « %s » non disponible!"
 
-#: ../src/common/imageio.c:615
+#: ../src/common/imageio.c:618
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -1455,17 +1447,17 @@ msgstr ""
 "échec de l'allocation de mémoire pour %s, merci de diminuer le nombre de "
 "fils utilisés pour l'exportation ou d'acheter de la mémoire."
 
-#: ../src/common/imageio.c:616
+#: ../src/common/imageio.c:619
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "l'aperçu"
 
-#: ../src/common/imageio.c:616
+#: ../src/common/imageio.c:619
 msgctxt "noun"
 msgid "export"
 msgstr "l'image"
 
-#: ../src/common/imageio.c:626
+#: ../src/common/imageio.c:629
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
@@ -1620,7 +1612,7 @@ msgstr "sous le niveau de la mer"
 msgid "m"
 msgstr "m"
 
-#: ../src/control/control.c:319
+#: ../src/control/control.c:322
 msgid "working.."
 msgstr "en cours..."
 
@@ -3088,78 +3080,78 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "utiliser AAAA-MM-JJ pour la surcharge de date"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:1048
+#: ../src/gui/gtk.c:1059
 msgctxt "accel"
 msgid "tethering view"
 msgstr "capture"
 
-#: ../src/gui/gtk.c:1049
+#: ../src/gui/gtk.c:1060
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "table lumineuse"
 
-#: ../src/gui/gtk.c:1050
+#: ../src/gui/gtk.c:1061
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "chambre noire"
 
-#: ../src/gui/gtk.c:1051
+#: ../src/gui/gtk.c:1062
 msgctxt "accel"
 msgid "map view"
 msgstr "vue carte"
 
-#: ../src/gui/gtk.c:1052
+#: ../src/gui/gtk.c:1063
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "diaporama"
 
-#: ../src/gui/gtk.c:1053
+#: ../src/gui/gtk.c:1064
 msgctxt "accel"
 msgid "print view"
 msgstr "impression"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:1076
+#: ../src/gui/gtk.c:1087
 msgctxt "accel"
 msgid "quit"
 msgstr "quitter"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:1081
+#: ../src/gui/gtk.c:1092
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "activer/désactiver le plein écran"
 
-#: ../src/gui/gtk.c:1082
+#: ../src/gui/gtk.c:1093
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "quitter le mode plein écran"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:1090
+#: ../src/gui/gtk.c:1101
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "activer/désactiver les panneaux latéraux"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:1093
+#: ../src/gui/gtk.c:1104
 msgctxt "accel"
 msgid "toggle header"
 msgstr "activer/désactiver le panneau supérieur"
 
 #. View-switch
-#: ../src/gui/gtk.c:1096
+#: ../src/gui/gtk.c:1107
 msgctxt "accel"
 msgid "switch view"
 msgstr "changer de vue"
 
 #. Global zoom in & zoom out
-#: ../src/gui/gtk.c:1102 ../src/libs/tools/lighttable.c:142
+#: ../src/gui/gtk.c:1113 ../src/libs/tools/lighttable.c:142
 msgctxt "accel"
 msgid "zoom in"
 msgstr "zoom"
 
-#: ../src/gui/gtk.c:1103 ../src/libs/tools/lighttable.c:143
+#: ../src/gui/gtk.c:1114 ../src/libs/tools/lighttable.c:143
 msgctxt "accel"
 msgid "zoom out"
 msgstr "dézoom"
@@ -3458,7 +3450,7 @@ msgid "focal length"
 msgstr "focale"
 
 #: ../src/gui/preferences.c:449 ../src/iop/borders.c:993
-#: ../src/iop/levels.c:600
+#: ../src/iop/levels.c:599
 msgid "auto"
 msgstr "auto"
 
@@ -3511,7 +3503,7 @@ msgstr "sélectionne le fichier à exporter"
 msgid "select file to import"
 msgstr "sélectionne le fichier à importer"
 
-#: ../src/gui/preferences.c:1035 ../src/libs/collect.c:241
+#: ../src/gui/preferences.c:1035 ../src/libs/collect.c:243
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:477
 #: ../src/libs/import.c:776 ../src/libs/import.c:883 ../src/libs/styles.c:237
 msgid "_open"
@@ -4118,23 +4110,23 @@ msgstr "impossible de créer le répertoire « %s » !"
 msgid "could not write to directory `%s'!"
 msgstr "impossible d'écrire dans le répertoire « %s » !"
 
-#: ../src/imageio/storage/disk.c:302 ../src/imageio/storage/email.c:145
-#: ../src/imageio/storage/gallery.c:393 ../src/imageio/storage/latex.c:363
+#: ../src/imageio/storage/disk.c:300 ../src/imageio/storage/email.c:142
+#: ../src/imageio/storage/gallery.c:391 ../src/imageio/storage/latex.c:361
 #, c-format
-msgid "%d/%d exported to `%s%s'"
-msgid_plural "%d/%d exported to `%s%s'"
-msgstr[0] "%d/%d exportée vers « %s%s »"
-msgstr[1] "%d/%d exportées vers « %s%s »"
+msgid "%d/%d exported to `%s'"
+msgid_plural "%d/%d exported to `%s'"
+msgstr[0] "%d/%d exportée vers « %s »"
+msgstr[1] "%d/%d exportées vers « %s »"
 
 #: ../src/imageio/storage/email.c:51
 msgid "send as email"
 msgstr "envoyer par e-mail"
 
-#: ../src/imageio/storage/email.c:199
+#: ../src/imageio/storage/email.c:196
 msgid "images exported from darktable"
 msgstr "images exportées depuis darktable"
 
-#: ../src/imageio/storage/email.c:245
+#: ../src/imageio/storage/email.c:242
 msgid "could not launch email client!"
 msgstr "impossible de lancer le client de messagerie!"
 
@@ -4787,12 +4779,12 @@ msgstr ""
 "change les halos de contour à chaque niveau de détail\n"
 "change uniquement les résultats des sections luma et chroma"
 
-#: ../src/iop/atrous.c:1699 ../src/iop/colorzones.c:1098
+#: ../src/iop/atrous.c:1698 ../src/iop/colorzones.c:1098
 #: ../src/iop/soften.c:729
 msgid "mix"
 msgstr "fusion"
 
-#: ../src/iop/atrous.c:1700 ../src/iop/colorzones.c:1100
+#: ../src/iop/atrous.c:1699 ../src/iop/colorzones.c:1100
 msgid "make effect stronger or weaker"
 msgstr "rend l'effet plus fort ou plus faible"
 
@@ -5008,7 +5000,7 @@ msgid "L difference to detect edges (range sigma of bilateral filter)"
 msgstr ""
 "différence L pour la détection des bords (étendue sigma du filtre bilatéral)"
 
-#: ../src/iop/bilat.c:542 ../src/iop/monochrome.c:611 ../src/iop/shadhi.c:827
+#: ../src/iop/bilat.c:542 ../src/iop/monochrome.c:610 ../src/iop/shadhi.c:827
 #: ../src/iop/splittoning.c:537
 msgid "highlights"
 msgstr "hautes lumières"
@@ -6594,7 +6586,7 @@ msgstr "automatique"
 msgid "adjust the black level"
 msgstr "ajuste les niveaux de noir"
 
-#: ../src/iop/exposure.c:865 ../src/iop/levels.c:635
+#: ../src/iop/exposure.c:865 ../src/iop/levels.c:634
 msgid "black"
 msgstr "noir"
 
@@ -7248,39 +7240,39 @@ msgstr ""
 "déplacer les barres pour régler les points noir, gris et blanc. agit sur le "
 "canal L."
 
-#: ../src/iop/levels.c:601
+#: ../src/iop/levels.c:600
 msgid "apply auto levels"
 msgstr "niveaux automatiques"
 
-#: ../src/iop/levels.c:605
+#: ../src/iop/levels.c:604
 msgid "pick black point from image"
 msgstr "choisir le point noir dans l'image"
 
-#: ../src/iop/levels.c:608
+#: ../src/iop/levels.c:607
 msgid "pick medium gray point from image"
 msgstr "choisir le point gris dans l'image"
 
-#: ../src/iop/levels.c:611
+#: ../src/iop/levels.c:610
 msgid "pick white point from image"
 msgstr "choisir le point blanc dans l'image"
 
-#: ../src/iop/levels.c:633
+#: ../src/iop/levels.c:632
 msgid "black percentile"
 msgstr "centile des noirs"
 
-#: ../src/iop/levels.c:638
+#: ../src/iop/levels.c:637
 msgid "gray percentile"
 msgstr "centile des gris"
 
-#: ../src/iop/levels.c:640
+#: ../src/iop/levels.c:639
 msgid "gray"
 msgstr "gris"
 
-#: ../src/iop/levels.c:643
+#: ../src/iop/levels.c:642
 msgid "white percentile"
 msgstr "centile des blancs"
 
-#: ../src/iop/levels.c:645
+#: ../src/iop/levels.c:644
 msgid "white"
 msgstr "blanc"
 
@@ -7451,11 +7443,11 @@ msgstr "vision de jour"
 msgid "night vision"
 msgstr "vision de nuit"
 
-#: ../src/iop/lowlight.c:853
+#: ../src/iop/lowlight.c:852
 msgid "blue shift"
 msgstr "bleu"
 
-#: ../src/iop/lowlight.c:855
+#: ../src/iop/lowlight.c:854
 msgid "blueness in shadows"
 msgstr "teinte bleue des ombres"
 
@@ -7539,7 +7531,7 @@ msgstr ""
 "pour modifier le filtre \n"
 "virtuel de couleurs"
 
-#: ../src/iop/monochrome.c:610
+#: ../src/iop/monochrome.c:609
 msgid "how much to keep highlights"
 msgstr "conserver les hautes lumières"
 
@@ -8617,63 +8609,60 @@ msgstr "vitesse d'obturation"
 msgid "WB"
 msgstr "BdB"
 
-#: ../src/libs/collect.c:114
+#: ../src/libs/collect.c:116
 msgid "collect images"
 msgstr "filtres de collection"
 
-#: ../src/libs/collect.c:240
+#: ../src/libs/collect.c:242
 msgid "search filmroll"
 msgstr "rechercher une pellicule"
 
-#: ../src/libs/collect.c:322
+#: ../src/libs/collect.c:324
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr ""
 "problème lors de la sélection d'un nouveau chemin pour la pellicule située "
 "dans %s"
 
-#: ../src/libs/collect.c:369
+#: ../src/libs/collect.c:371
 msgid "search filmroll..."
 msgstr "rechercher une pellicule"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/libs/collect.c:373
+#: ../src/libs/collect.c:375
 msgid "remove..."
 msgstr "enlever..."
 
-#: ../src/libs/collect.c:830
+#: ../src/libs/collect.c:863
 msgid "uncategorized"
 msgstr "sans catégorie"
 
-#: ../src/libs/collect.c:1067 ../src/libs/collect.c:1068
-#: ../src/libs/collect.c:1069
+#: ../src/libs/collect.c:1155
 msgid "not altered"
 msgstr "non développées"
 
-#: ../src/libs/collect.c:1078 ../src/libs/collect.c:1079
-#: ../src/libs/collect.c:1080
+#: ../src/libs/collect.c:1164
 msgid "not tagged"
 msgstr "non positionnée"
 
-#: ../src/libs/collect.c:1085 ../src/libs/collect.c:1086
-#: ../src/libs/collect.c:1087
+#: ../src/libs/collect.c:1173
 msgid "copied locally"
 msgstr "copiée localement"
 
-#: ../src/libs/collect.c:1338 ../src/libs/collect.c:1352
-#: ../src/libs/collect.c:1725
+#: ../src/libs/collect.c:1383 ../src/libs/collect.c:1397
+#: ../src/libs/collect.c:1719
 msgid "clear this rule"
 msgstr "supprimer cette condition"
 
-#: ../src/libs/collect.c:1343
+#: ../src/libs/collect.c:1388
 msgid "clear this rule or add new rules"
 msgstr "supprimer cette condition ou en ajouter une nouvelle"
 
-#: ../src/libs/collect.c:1393
+#: ../src/libs/collect.c:1440
 msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "entrer la requête, utiliser <, <=, >, >=, <>, =, [;] comme opérateurs"
 
-#: ../src/libs/collect.c:1398
+#: ../src/libs/collect.c:1445
 msgid ""
 "type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
 "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
@@ -8682,34 +8671,34 @@ msgstr ""
 "entrer les dates sous la forme : AAAA:MM:JJ HH:MM:SS (uniquement l'année est "
 "obligatoire)"
 
-#: ../src/libs/collect.c:1404 ../src/libs/collect.c:1804
+#: ../src/libs/collect.c:1451 ../src/libs/collect.c:1804
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr ""
 "saisissez votre requête,\n"
 "utilisez « % » en caractère joker"
 
-#: ../src/libs/collect.c:1731
+#: ../src/libs/collect.c:1725
 msgid "narrow down search"
 msgstr "affiner la recherche"
 
-#: ../src/libs/collect.c:1735
+#: ../src/libs/collect.c:1730
 msgid "add more images"
 msgstr "inclure des images"
 
-#: ../src/libs/collect.c:1739
+#: ../src/libs/collect.c:1735
 msgid "exclude images"
 msgstr "exclure des images"
 
-#: ../src/libs/collect.c:1745
+#: ../src/libs/collect.c:1742
 msgid "change to: and"
 msgstr "changer en « et »"
 
-#: ../src/libs/collect.c:1749
+#: ../src/libs/collect.c:1747
 msgid "change to: or"
 msgstr "changer en « ou »"
 
-#: ../src/libs/collect.c:1753
+#: ../src/libs/collect.c:1752
 msgid "change to: except"
 msgstr "changer en « sauf »"
 
