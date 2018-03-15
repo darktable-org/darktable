@@ -388,10 +388,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   fdata->max_height = max_height;
 
   printf("[export_job] exported to `%s'\n", filename);
-  char *trunc = filename + strlen(filename) - 32;
-  if(trunc < filename) trunc = filename;
-  dt_control_log(ngettext("%d/%d exported to `%s%s'", "%d/%d exported to `%s%s'", num),
-                 num, total, trunc != filename ? ".." : "", trunc);
+  dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
+                 num, total, filename);
   return 0;
 }
 
