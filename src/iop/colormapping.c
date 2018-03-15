@@ -1090,6 +1090,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_pthread_mutex_init(&g->lock, NULL);
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  dt_gui_add_help_link(self->widget, "effect_group.html#color_mapping");
 
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkWidget *source = gtk_label_new(_("source clusters:"));
