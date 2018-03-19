@@ -339,6 +339,32 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       free(adr);
     }
 
+    /* read timestamp from Xmp.exif.DateTimeOriginal */
+    if(FIND_XMP_TAG("Xmp.exif.DateTimeOriginal"))
+    {
+      char *datetime = strdup(pos->toString().c_str());
+
+      /*
+       * exiftool (but apparently not evix2) convert
+       * e.g. "2017:10:23 12:34:56" to "2017-10-23T12:34:54" (ISO)
+       * revert this to the format expected by exif and darktable
+       */
+
+      // replace 'T' by ' ' (space)
+      char *c ;
+      while ( ( c = strchr(datetime,'T') ) != NULL )
+      {
+	*c = ' ';
+      }
+      // replace '-' by ':'
+      while ( ( c = strchr(datetime,'-')) != NULL ) {
+	*c = ':';
+      }
+
+      g_strlcpy(img->exif_datetime_taken, datetime, sizeof(img->exif_datetime_taken));
+      free(datetime);
+    }
+
     return true;
   }
   catch(Exiv2::AnyError &e)
