@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-02 19:34+0100\n"
-"PO-Revision-Date: 2018-03-02 19:35+0100\n"
+"POT-Creation-Date: 2018-03-21 19:48+0100\n"
+"PO-Revision-Date: 2018-03-21 19:54+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -1243,9 +1243,8 @@ msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei ‚%s‘"
 
 #: ../src/common/darktable.c:780
-#, fuzzy
 msgid "darktable - run performance configuration?"
-msgstr "darktable - Fehler beim Öffnen der Datenbank"
+msgstr "darktable - Geschwindigkeitseinstellungen anpassen?"
 
 #: ../src/common/darktable.c:781
 msgid ""
@@ -1255,6 +1254,13 @@ msgid ""
 "in case you have manually modified them to custom values.\n"
 "would you like to execute this update of the performance configuration?\n"
 msgstr ""
+"Die Standardwerte einiger Einstellungen, die die Geschwindigkeit von "
+"darktable beeinflussen, wurden angepasst.\n"
+"Dies zu übernehmen kann unter Umständen die Geschwindigkeit von darktable "
+"verbessern.\n"
+"Dies wird allerdings einige der bestehenden Einstellungen überschreiben – "
+"insbesondere, wenn diese manuell geändert wurden.\n"
+"Sollen die Einstellungen angepasst werden?\n"
 
 #: ../src/common/darktable.c:785 ../src/imageio/format/pdf.c:666
 #: ../src/imageio/format/pdf.c:691 ../src/imageio/storage/flickr.c:492
@@ -1439,12 +1445,12 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d lokale Kopie wurde synchronisiert"
 msgstr[1] "%d lokale Kopien wurden synchronisiert"
 
-#: ../src/common/imageio.c:597 ../src/common/mipmap_cache.c:1038
+#: ../src/common/imageio.c:600 ../src/common/mipmap_cache.c:1038
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Bild ‚%s‘ ist nicht verfügbar!"
 
-#: ../src/common/imageio.c:615
+#: ../src/common/imageio.c:618
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -1453,17 +1459,17 @@ msgstr ""
 "Fehler beim Reservieren von Speicher zum %s, bitte die Anzahl Threads für "
 "den Export herabsetzen oder mehr Speicher kaufen."
 
-#: ../src/common/imageio.c:616
+#: ../src/common/imageio.c:619
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "Exportieren der Vorschau"
 
-#: ../src/common/imageio.c:616
+#: ../src/common/imageio.c:619
 msgctxt "noun"
 msgid "export"
 msgstr "Exportieren"
 
-#: ../src/common/imageio.c:626
+#: ../src/common/imageio.c:629
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "Stil ‚%s‘ kann zum Exportieren nicht gefunden werden."
@@ -1509,7 +1515,7 @@ msgstr ""
 msgid "opencl scheduling profile set to default."
 msgstr "OpenCL-Scheduler-Profil wurde auf den Standardwert gesetzt."
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.c:1739
+#: ../src/common/pdf.h:88 ../src/iop/lens.c:1743
 #: ../src/libs/print_settings.c:1133
 msgid "mm"
 msgstr "mm"
@@ -3082,78 +3088,78 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "Zum Überschreiben des Datums bitte als Format YYYY-MM-DD benutzen"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:1048
+#: ../src/gui/gtk.c:1059
 msgctxt "accel"
 msgid "tethering view"
 msgstr "Tethering-Ansicht"
 
-#: ../src/gui/gtk.c:1049
+#: ../src/gui/gtk.c:1060
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "Leuchttisch-Ansicht"
 
-#: ../src/gui/gtk.c:1050
+#: ../src/gui/gtk.c:1061
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "Dunkelkammer-Ansicht"
 
-#: ../src/gui/gtk.c:1051
+#: ../src/gui/gtk.c:1062
 msgctxt "accel"
 msgid "map view"
 msgstr "Karten-Ansicht"
 
-#: ../src/gui/gtk.c:1052
+#: ../src/gui/gtk.c:1063
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "Diashow-Ansicht"
 
-#: ../src/gui/gtk.c:1053
+#: ../src/gui/gtk.c:1064
 msgctxt "accel"
 msgid "print view"
 msgstr "Druck-Ansicht"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:1076
+#: ../src/gui/gtk.c:1087
 msgctxt "accel"
 msgid "quit"
 msgstr "Verlassen"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:1081
+#: ../src/gui/gtk.c:1092
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "Vollbild umschalten"
 
-#: ../src/gui/gtk.c:1082
+#: ../src/gui/gtk.c:1093
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "Vollbild verlassen"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:1090
+#: ../src/gui/gtk.c:1101
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "Seitenränder umschalten"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:1093
+#: ../src/gui/gtk.c:1104
 msgctxt "accel"
 msgid "toggle header"
 msgstr "Kopfbereich umschalten"
 
 #. View-switch
-#: ../src/gui/gtk.c:1096
+#: ../src/gui/gtk.c:1107
 msgctxt "accel"
 msgid "switch view"
 msgstr "Ansicht wechseln"
 
 #. Global zoom in & zoom out
-#: ../src/gui/gtk.c:1102 ../src/libs/tools/lighttable.c:142
+#: ../src/gui/gtk.c:1113 ../src/libs/tools/lighttable.c:142
 msgctxt "accel"
 msgid "zoom in"
 msgstr "Heranzoomen"
 
-#: ../src/gui/gtk.c:1103 ../src/libs/tools/lighttable.c:143
+#: ../src/gui/gtk.c:1114 ../src/libs/tools/lighttable.c:143
 msgctxt "accel"
 msgid "zoom out"
 msgstr "Herauszoomen"
@@ -3295,7 +3301,7 @@ msgid "golden spiral"
 msgstr "Goldene Spirale"
 
 #: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:678
-#: ../src/iop/lens.c:2085 ../src/libs/tools/filter.c:117
+#: ../src/iop/lens.c:2089 ../src/libs/tools/filter.c:117
 msgid "all"
 msgstr "alles"
 
@@ -3453,7 +3459,7 @@ msgid "focal length"
 msgstr "Brennweite"
 
 #: ../src/gui/preferences.c:449 ../src/iop/borders.c:993
-#: ../src/iop/levels.c:600
+#: ../src/iop/levels.c:599
 msgid "auto"
 msgstr "auto"
 
@@ -4796,12 +4802,12 @@ msgstr ""
 "dies ändert nur die Ergebnisse der Luminanz-\n"
 "und Chrominanz-Tabs"
 
-#: ../src/iop/atrous.c:1699 ../src/iop/colorzones.c:1098
+#: ../src/iop/atrous.c:1698 ../src/iop/colorzones.c:1098
 #: ../src/iop/soften.c:729
 msgid "mix"
 msgstr "einblenden"
 
-#: ../src/iop/atrous.c:1700 ../src/iop/colorzones.c:1100
+#: ../src/iop/atrous.c:1699 ../src/iop/colorzones.c:1100
 msgid "make effect stronger or weaker"
 msgstr "mache den Effekt stärker oder schwächer"
 
@@ -4887,7 +4893,7 @@ msgstr "Basiskurve"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "x-Wert: Eingabe, y-Wert: Ausgabe. Arbeitet auf den RGB-Kanälen."
 
-#: ../src/iop/basecurve.c:1917 ../src/iop/lens.c:2219
+#: ../src/iop/basecurve.c:1917 ../src/iop/lens.c:2223
 #: ../src/iop/vignette.c:1146 ../src/iop/watermark.c:1363
 msgid "scale"
 msgstr "Skalierung"
@@ -4916,7 +4922,7 @@ msgstr "Fusion"
 #: ../src/iop/basecurve.c:1927 ../src/iop/clipping.c:1574
 #: ../src/iop/clipping.c:1864 ../src/iop/clipping.c:1882
 #: ../src/iop/clipping.c:2022 ../src/iop/clipping.c:2049
-#: ../src/iop/colorreconstruction.c:1366 ../src/iop/lens.c:2079
+#: ../src/iop/colorreconstruction.c:1366 ../src/iop/lens.c:2083
 #: ../src/libs/export.c:492 ../src/libs/live_view.c:349
 #: ../src/libs/live_view.c:374 ../src/libs/live_view.c:383
 #: ../src/libs/print_settings.c:1042 ../src/libs/print_settings.c:1315
@@ -4971,7 +4977,7 @@ msgid "local laplacian: inconsistent output"
 msgstr "lokaler Laplace-Filter: inkonsistente Ausgabe"
 
 #: ../src/iop/bilat.c:516 ../src/iop/denoiseprofile.c:2056
-#: ../src/iop/exposure.c:849 ../src/iop/lens.c:2227 ../src/iop/levels.c:566
+#: ../src/iop/exposure.c:849 ../src/iop/lens.c:2231 ../src/iop/levels.c:566
 #: ../src/libs/copy_history.c:310 ../src/libs/export.c:644
 #: ../src/libs/print_settings.c:1356 ../src/views/darkroom.c:1451
 msgid "mode"
@@ -5020,7 +5026,7 @@ msgstr ""
 "L-Unterschied für die Kantenerkennung (Sigma des Farbabstands für den "
 "bilateralen Filter)"
 
-#: ../src/iop/bilat.c:542 ../src/iop/monochrome.c:611 ../src/iop/shadhi.c:827
+#: ../src/iop/bilat.c:542 ../src/iop/monochrome.c:610 ../src/iop/shadhi.c:827
 #: ../src/iop/splittoning.c:537
 msgid "highlights"
 msgstr "Spitzlichter"
@@ -6057,26 +6063,26 @@ msgstr "Ausgabevorsatz"
 
 #: ../src/iop/colorout.c:779 ../src/libs/export.c:627
 #: ../src/libs/print_settings.c:1087 ../src/libs/print_settings.c:1300
-#: ../src/views/darkroom.c:1601 ../src/views/lighttable.c:2403
+#: ../src/views/darkroom.c:1601 ../src/views/lighttable.c:2404
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
 #: ../src/iop/colorout.c:780 ../src/libs/export.c:628
 #: ../src/libs/print_settings.c:1088 ../src/libs/print_settings.c:1301
-#: ../src/views/darkroom.c:1602 ../src/views/lighttable.c:2404
+#: ../src/views/darkroom.c:1602 ../src/views/lighttable.c:2405
 msgid "relative colorimetric"
 msgstr "Kolorimetrisch (relativ)"
 
 #: ../src/iop/colorout.c:781 ../src/libs/export.c:629
 #: ../src/libs/print_settings.c:1089 ../src/libs/print_settings.c:1302
-#: ../src/views/darkroom.c:1603 ../src/views/lighttable.c:2405
+#: ../src/views/darkroom.c:1603 ../src/views/lighttable.c:2406
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
 
 #: ../src/iop/colorout.c:782 ../src/libs/export.c:630
 #: ../src/libs/print_settings.c:1090 ../src/libs/print_settings.c:1303
-#: ../src/views/darkroom.c:1604 ../src/views/lighttable.c:2406
+#: ../src/views/darkroom.c:1604 ../src/views/lighttable.c:2407
 msgid "absolute colorimetric"
 msgstr "Kolorimetrisch (absolut)"
 
@@ -6602,7 +6608,7 @@ msgstr "automatisch"
 msgid "adjust the black level"
 msgstr "Schwarzwert anpassen"
 
-#: ../src/iop/exposure.c:865 ../src/iop/levels.c:635
+#: ../src/iop/exposure.c:865 ../src/iop/levels.c:634
 msgid "black"
 msgstr "Schwarz"
 
@@ -7059,7 +7065,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "Korrekturen auswählen"
 
-#: ../src/iop/lens.c:1409
+#: ../src/iop/lens.c:1413
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -7072,15 +7078,15 @@ msgstr ""
 "Anschluss:\t%s\n"
 "Crop-Faktor:\t%.1f"
 
-#: ../src/iop/lens.c:1643
+#: ../src/iop/lens.c:1647
 msgid "camera/lens not found - please select manually"
 msgstr "Kamera/Objektiv bitte manuell auswählen"
 
-#: ../src/iop/lens.c:1646
+#: ../src/iop/lens.c:1650
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "Kamera/Objektiv nach Möglichkeit in den beiden oberen Menüs auswählen"
 
-#: ../src/iop/lens.c:1700
+#: ../src/iop/lens.c:1704
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -7099,143 +7105,143 @@ msgstr ""
 "Typ:\t\t\t%s\n"
 "Anschlüsse:\t%s"
 
-#: ../src/iop/lens.c:1740
+#: ../src/iop/lens.c:1744
 msgid "focal length (mm)"
 msgstr "Brennweite (mm)"
 
-#: ../src/iop/lens.c:1764
+#: ../src/iop/lens.c:1768
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1765
+#: ../src/iop/lens.c:1769
 msgid "f-number (aperture)"
 msgstr "Blendenzahl"
 
-#: ../src/iop/lens.c:1779
+#: ../src/iop/lens.c:1783
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1780
+#: ../src/iop/lens.c:1784
 msgid "distance to subject"
 msgstr "Entfernung"
 
-#: ../src/iop/lens.c:2091
+#: ../src/iop/lens.c:2095
 msgid "distortion & TCA"
 msgstr "Verzeichnung & TCA"
 
-#: ../src/iop/lens.c:2097
+#: ../src/iop/lens.c:2101
 msgid "distortion & vignetting"
 msgstr "Verzeichnung & Vignettierung"
 
-#: ../src/iop/lens.c:2103
+#: ../src/iop/lens.c:2107
 msgid "TCA & vignetting"
 msgstr "TCA & Vignettierung"
 
-#: ../src/iop/lens.c:2109
+#: ../src/iop/lens.c:2113
 msgid "only distortion"
 msgstr "nur Verzeichnung"
 
-#: ../src/iop/lens.c:2115
+#: ../src/iop/lens.c:2119
 msgid "only TCA"
 msgstr "nur TCA"
 
-#: ../src/iop/lens.c:2121
+#: ../src/iop/lens.c:2125
 msgid "only vignetting"
 msgstr "nur Vignettierung"
 
-#: ../src/iop/lens.c:2140
+#: ../src/iop/lens.c:2144
 msgid "find camera"
 msgstr "Kamera finden"
 
-#: ../src/iop/lens.c:2154
+#: ../src/iop/lens.c:2158
 msgid "find lens"
 msgstr "Objektiv finden"
 
-#: ../src/iop/lens.c:2185
+#: ../src/iop/lens.c:2189
 msgid "corrections"
 msgstr "Korrekturen"
 
-#: ../src/iop/lens.c:2187
+#: ../src/iop/lens.c:2191
 msgid "which corrections to apply"
 msgstr "welche Korrekturen sollen angewandt werden"
 
-#: ../src/iop/lens.c:2200
+#: ../src/iop/lens.c:2204
 msgid "geometry"
 msgstr "Geometrie"
 
-#: ../src/iop/lens.c:2202
+#: ../src/iop/lens.c:2206
 msgid "target geometry"
 msgstr "Zielgeometrie"
 
-#: ../src/iop/lens.c:2203
+#: ../src/iop/lens.c:2207
 msgid "rectilinear"
 msgstr "geradlinig"
 
-#: ../src/iop/lens.c:2204
+#: ../src/iop/lens.c:2208
 msgid "fish-eye"
 msgstr "Fischauge"
 
-#: ../src/iop/lens.c:2205
+#: ../src/iop/lens.c:2209
 msgid "panoramic"
 msgstr "Panorama"
 
-#: ../src/iop/lens.c:2206
+#: ../src/iop/lens.c:2210
 msgid "equirectangular"
 msgstr "equirectangular"
 
-#: ../src/iop/lens.c:2208
+#: ../src/iop/lens.c:2212
 msgid "orthographic"
 msgstr "orthografisch"
 
-#: ../src/iop/lens.c:2209
+#: ../src/iop/lens.c:2213
 msgid "stereographic"
 msgstr "winkeltreu"
 
-#: ../src/iop/lens.c:2210
+#: ../src/iop/lens.c:2214
 msgid "equisolid angle"
 msgstr "flächentreu"
 
-#: ../src/iop/lens.c:2211
+#: ../src/iop/lens.c:2215
 msgid "thoby fish-eye"
 msgstr "Thoby-Fischauge"
 
-#: ../src/iop/lens.c:2218
+#: ../src/iop/lens.c:2222
 msgid "auto scale"
 msgstr "automatisch skalieren"
 
-#: ../src/iop/lens.c:2229
+#: ../src/iop/lens.c:2233
 msgid "correct distortions or apply them"
 msgstr "Verzeichnung korrigieren oder hinzufügen"
 
-#: ../src/iop/lens.c:2230
+#: ../src/iop/lens.c:2234
 msgid "correct"
 msgstr "korrigieren"
 
-#: ../src/iop/lens.c:2231
+#: ../src/iop/lens.c:2235
 msgid "distort"
 msgstr "verzeichnen"
 
-#: ../src/iop/lens.c:2236
+#: ../src/iop/lens.c:2240
 msgid "Transversal Chromatic Aberration red"
 msgstr "transversale chromatische Aberration Rot"
 
-#: ../src/iop/lens.c:2237
+#: ../src/iop/lens.c:2241
 msgid "TCA red"
 msgstr "TCA Rot"
 
-#: ../src/iop/lens.c:2242
+#: ../src/iop/lens.c:2246
 msgid "Transversal Chromatic Aberration blue"
 msgstr "transversale chromatische Aberration Blau"
 
-#: ../src/iop/lens.c:2243
+#: ../src/iop/lens.c:2247
 msgid "TCA blue"
 msgstr "TCA Blau"
 
-#: ../src/iop/lens.c:2250
+#: ../src/iop/lens.c:2254
 msgid "corrections done: "
 msgstr "ausgeführte Korrekturen: "
 
-#: ../src/iop/lens.c:2251
+#: ../src/iop/lens.c:2255
 msgid "which corrections have actually been done"
 msgstr "welche Korrekturen wurden tatsächlich ausgeführt"
 
@@ -7250,42 +7256,42 @@ msgstr ""
 "Anfasser verschieben, um Schwarz-, Grau- und Weißpunkt zu setzen. Arbeitet "
 "auf dem L-Kanal."
 
-#: ../src/iop/levels.c:601
+#: ../src/iop/levels.c:600
 msgid "apply auto levels"
 msgstr "Werte automatisch setzen"
 
-#: ../src/iop/levels.c:605
+#: ../src/iop/levels.c:604
 msgid "pick black point from image"
 msgstr "Schwarzpunkt aus dem Bild übernehmen"
 
-#: ../src/iop/levels.c:608
+#: ../src/iop/levels.c:607
 msgid "pick medium gray point from image"
 msgstr "Mittleren Graupunkt aus dem Bild übernehmen"
 
-#: ../src/iop/levels.c:611
+#: ../src/iop/levels.c:610
 msgid "pick white point from image"
 msgstr "Weißpunkt aus dem Bild übernehmen"
 
 # das muss weg
-#: ../src/iop/levels.c:633
+#: ../src/iop/levels.c:632
 msgid "black percentile"
 msgstr "Schwarz-Perzentil"
 
 # das muss weg
-#: ../src/iop/levels.c:638
+#: ../src/iop/levels.c:637
 msgid "gray percentile"
 msgstr "Grau-Perzentil"
 
-#: ../src/iop/levels.c:640
+#: ../src/iop/levels.c:639
 msgid "gray"
 msgstr "Grau"
 
 # das muss weg
-#: ../src/iop/levels.c:643
+#: ../src/iop/levels.c:642
 msgid "white percentile"
 msgstr "Weiß-Perzentil"
 
-#: ../src/iop/levels.c:645
+#: ../src/iop/levels.c:644
 msgid "white"
 msgstr "Weiß"
 
@@ -7455,11 +7461,11 @@ msgstr "Tagessicht"
 msgid "night vision"
 msgstr "Nachtsicht"
 
-#: ../src/iop/lowlight.c:853
+#: ../src/iop/lowlight.c:852
 msgid "blue shift"
 msgstr "Blauverschiebung"
 
-#: ../src/iop/lowlight.c:855
+#: ../src/iop/lowlight.c:854
 msgid "blueness in shadows"
 msgstr "Blautönung in den Schatten"
 
@@ -7542,7 +7548,7 @@ msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr ""
 "ziehen und mit Mausrad scrollen, um den virtuellen Farbfilter einzustellen"
 
-#: ../src/iop/monochrome.c:610
+#: ../src/iop/monochrome.c:609
 msgid "how much to keep highlights"
 msgstr "wie sehr sollen Spitzlichter ausgenommen werden"
 
@@ -10999,7 +11005,7 @@ msgstr ""
 "Gamutüberprüfung umschalten\n"
 "Rechtsklick für Einstellungen"
 
-#: ../src/views/darkroom.c:1599 ../src/views/lighttable.c:2401
+#: ../src/views/darkroom.c:1599 ../src/views/lighttable.c:2402
 msgid "display intent"
 msgstr "Anzeigevorsatz"
 
@@ -11007,11 +11013,11 @@ msgstr "Anzeigevorsatz"
 msgid "softproof profile"
 msgstr "Softproof-Profil"
 
-#: ../src/views/darkroom.c:1615 ../src/views/lighttable.c:2409
+#: ../src/views/darkroom.c:1615 ../src/views/lighttable.c:2410
 msgid "display profile"
 msgstr "Anzeigeprofil"
 
-#: ../src/views/darkroom.c:1647 ../src/views/lighttable.c:2430
+#: ../src/views/darkroom.c:1647 ../src/views/lighttable.c:2431
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "Anzeige-ICC-Profile in %s oder %s"
@@ -11242,7 +11248,7 @@ msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "Vorschau beenden"
 
-#: ../src/views/lighttable.c:2373
+#: ../src/views/lighttable.c:2374
 msgid "set display profile"
 msgstr "Anzeigeprofil setzen"
 
