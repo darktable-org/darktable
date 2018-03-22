@@ -230,6 +230,7 @@ typedef struct darktable_t
   char *progname;
   char *datadir;
   char *plugindir;
+  char *localedir;
   char *tmpdir;
   char *configdir;
   char *cachedir;

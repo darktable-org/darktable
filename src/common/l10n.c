@@ -23,6 +23,10 @@
 #include <gtk/gtk.h>
 #include <json-glib/json-glib.h>
 
+#ifdef __APPLE__
+#include "osx/osx.h"
+#endif
+
 #ifdef _WIN32
 #include "win/dtwin.h"
 #include <windows.h>
@@ -64,13 +68,22 @@ static void get_language_names(GList *languages)
   JsonReader *reader = NULL;
   JsonParser *parser = NULL;
   GError *error = NULL;
+  char *filename;
+#ifdef __APPLE__
+  char *res_path = dt_osx_get_bundle_res_path();
+#endif
 
-#if defined(_WIN32) && !defined(MSYS2_INSTALL) // TODO: add osx?
+#if defined(_WIN32) && !defined(MSYS2_INSTALL)
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
-  char *filename = g_build_filename(datadir, "..",  "iso-codes", "json", "iso_639-2.json", NULL);
+  filename = g_build_filename(datadir, "..",  "iso-codes", "json", "iso_639-2.json", NULL);
 #else
-  char *filename = g_build_filename(ISO_CODES_LOCATION, "iso_639-2.json", NULL);
+#ifdef __APPLE__
+  if(res_path)
+    filename = g_build_filename(res_path, "share",  "iso-codes", "json", "iso_639-2.json", NULL);
+  else
+#endif
+  filename = g_build_filename(ISO_CODES_LOCATION, "iso_639-2.json", NULL);
 #endif
 
   if(!g_file_test(filename, G_FILE_TEST_EXISTS))
@@ -80,12 +93,21 @@ static void get_language_names(GList *languages)
     goto end;
   }
 
-#if defined(_WIN32) && !defined(MSYS2_INSTALL) // TODO: add osx?
+#if defined(_WIN32) && !defined(MSYS2_INSTALL)
   // on windows we are shipping the translations of iso-codes along ours
-  char *localedir = g_build_filename(datadir, "..", "locale", NULL);
+  char localedir[PATH_MAX] = { 0 };
+  dt_loc_get_localedir(localedir, sizeof(localedir));
   bindtextdomain("iso_639", localedir);
-  g_free(localedir);
 #else
+#ifdef __APPLE__
+  if(res_path)
+  {
+    char localedir[PATH_MAX] = { 0 };
+    dt_loc_get_localedir(localedir, sizeof(localedir));
+    bindtextdomain("iso_639", localedir);
+  }
+  else
+#endif
   bindtextdomain("iso_639", ISO_CODES_LOCALEDIR);
 #endif
 
@@ -199,6 +221,9 @@ static void get_language_names(GList *languages)
 
 end:
   // cleanup
+#ifdef __APPLE__
+  g_free(res_path);
+#endif
   g_free(filename);
   if(error) g_error_free(error);
   if(reader) g_object_unref(reader);
@@ -252,13 +277,8 @@ dt_l10n_t *dt_l10n_init(gboolean init_list)
 
     const gchar * const * default_languages = g_get_language_names();
 
-#ifdef _WIN32
-    char datadir[PATH_MAX] = { 0 };
-    dt_loc_get_datadir(datadir, sizeof(datadir));
-    char *localedir = g_build_filename(datadir, "..", "locale", NULL);
-#else
-    char * localedir = g_strdup(DARKTABLE_LOCALEDIR);
-#endif
+    char localedir[PATH_MAX] = { 0 };
+    dt_loc_get_localedir(localedir, sizeof(localedir));
     GDir *dir = g_dir_open(localedir, 0, NULL);
     if(dir)
     {
@@ -333,8 +353,6 @@ dt_l10n_t *dt_l10n_init(gboolean init_list)
 
     if(selected == NULL)
       result->selected = result->sys_default;
-
-    g_free(localedir);
   }
   else
     set_locale(ui_lang, old_env);
