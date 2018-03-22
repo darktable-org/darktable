@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <gtk/gtk.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -26,6 +28,7 @@ void dt_osx_autoset_dpi(GtkWidget *widget);
 float dt_osx_get_ppd();
 void dt_osx_disallow_fullscreen(GtkWidget *widget);
 gboolean dt_osx_file_trash(const char *filename, GError **error);
+char* dt_osx_get_bundle_res_path();
 
 #ifdef __cplusplus
 }

@@ -30,6 +30,10 @@
 #include <config.h>
 #endif
 
+#ifdef __APPLE__
+#include "osx/osx.h"
+#endif
+
 #include "darktable.h"
 #include "file_location.h"
 
@@ -93,44 +97,17 @@ void dt_loc_init_user_config_dir(const char *configdir)
   g_free(default_config_dir);
 }
 
-#if defined(__MACH__) || defined(__APPLE__)
+#ifdef __APPLE__
 char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
 {
-  gchar *curr = g_get_current_dir();
-  int contains = 0;
-  char tmp[PATH_MAX] = { 0 };
-  for(int k = 0; searchname[k] != 0; k++)
-    if(searchname[k] == '/')
-    {
-      contains = 1;
-      break;
-    }
-  if(searchname[0] == '/') // absolute path
-    snprintf(tmp, sizeof(tmp), "%s", searchname);
-  else if(contains) // relative path
-    snprintf(tmp, sizeof(tmp), "%s/%s", curr, searchname);
-  else
-  {
-    // no idea where we have been called. use compiled in path
-    g_free(curr);
-    return NULL;
-  }
-  size_t len = MIN(strlen(tmp), sizeof(tmp));
-  char *t = tmp + len; // strip off bin/darktable
-  for(; t > tmp && *t != '/'; t--)
-    ;
-  t--;
-  if(*t == '.' && *(t - 1) != '.')
-  {
-    for(; t > tmp && *t != '/'; t--)
-      ;
-    t--;
-  }
-  for(; t > tmp && *t != '/'; t--)
-    ;
-  g_strlcpy(t, suffix, sizeof(tmp) - (t - tmp));
-  g_free(curr);
-  return g_strdup(tmp);
+  char *result = NULL;
+  char *res_path = dt_osx_get_bundle_res_path();
+
+  if(res_path)
+    result = g_build_filename(res_path, suffix, NULL);
+  g_free(res_path);
+
+  return result;
 }
 #elif defined(_WIN32)
 char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
@@ -152,8 +129,9 @@ char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
   *slash = '\0';
 
   finaldir = g_build_filename(runtime_prefix, suffix, NULL);
+  g_free(runtime_prefix);
 
-  return g_strdup(finaldir);
+  return finaldir;
 }
 #endif
 
@@ -173,37 +151,38 @@ void dt_loc_init_user_cache_dir(const char *cachedir)
 
 void dt_loc_init_plugindir(const char *plugindir)
 {
-#if defined(__MACH__) || defined(__APPLE__) || defined(_WIN32)
+#if defined(__APPLE__) || defined(_WIN32)
   char *suffix = g_build_filename("lib", "darktable", NULL);
   char *directory = dt_loc_find_install_dir(suffix, darktable.progname);
   g_free(suffix);
-  if(plugindir || !directory)
-  {
-    darktable.plugindir = dt_loc_init_generic(plugindir, DARKTABLE_LIBDIR);
-  }
-  else
-  {
-    darktable.plugindir = directory;
-  }
+  darktable.plugindir = dt_loc_init_generic(plugindir, directory ? directory : DARKTABLE_LIBDIR);
+  g_free(directory);
 #else
   darktable.plugindir = dt_loc_init_generic(plugindir, DARKTABLE_LIBDIR);
 #endif
 }
 
+void dt_loc_init_localedir(const char *localedir)
+{
+#if defined(__APPLE__) || defined(_WIN32)
+  char *suffix = g_build_filename("share", "locale", NULL);
+  char *directory = dt_loc_find_install_dir(suffix, darktable.progname);
+  g_free(suffix);
+  darktable.localedir = dt_loc_init_generic(localedir, directory ? directory : DARKTABLE_LOCALEDIR);
+  g_free(directory);
+#else
+  darktable.localedir = dt_loc_init_generic(localedir, DARKTABLE_LOCALEDIR);
+#endif
+}
+
 void dt_loc_init_datadir(const char *datadir)
 {
-#if defined(__MACH__) || defined(__APPLE__) || defined(_WIN32)
+#if defined(__APPLE__) || defined(_WIN32)
   char *suffix = g_build_filename("share", "darktable", NULL);
   char *directory = dt_loc_find_install_dir(suffix, darktable.progname);
   g_free(suffix);
-  if(datadir || !directory)
-  {
-    darktable.datadir = dt_loc_init_generic(datadir, DARKTABLE_DATADIR);
-  }
-  else
-  {
-    darktable.datadir = directory;
-  }
+  darktable.datadir = dt_loc_init_generic(datadir, directory ? directory : DARKTABLE_DATADIR);
+  g_free(directory);
 #else
   darktable.datadir = dt_loc_init_generic(datadir, DARKTABLE_DATADIR);
 #endif
@@ -213,6 +192,11 @@ void dt_loc_init_datadir(const char *datadir)
 void dt_loc_get_plugindir(char *plugindir, size_t bufsize)
 {
   snprintf(plugindir, bufsize, "%s", darktable.plugindir);
+}
+
+void dt_loc_get_localedir(char *localedir, size_t bufsize)
+{
+  snprintf(localedir, bufsize, "%s", darktable.localedir);
 }
 
 void dt_loc_get_user_config_dir(char *configdir, size_t bufsize)

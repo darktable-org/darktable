@@ -22,6 +22,7 @@
   <binary>${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/immodules/*.so</binary>
   <binary>${prefix}/lib/gdk-pixbuf-2.0/${pkg:gdk-pixbuf-2.0:gdk_pixbuf_binary_version}/loaders/*.so</binary>
   <translations name="gtk30">${prefix}/share/locale</translations>
+  <translations name="iso_639">${prefix}/share/locale</translations>
   <translations name="darktable">${prefix:dt}/share/locale</translations>
   <data>${prefix:dt}/share/darktable</data>
   <data>${prefix}/share/glib-2.0/schemas/org.gtk.Settings.*.gschema.xml</data>
@@ -30,6 +31,7 @@
   <data dest="${bundle}/Contents/Resources/etc/gtk-3.0/settings.ini">${project}/settings.ini</data>
   <data>${prefix}/share/mime</data>
   <data>${prefix}/share/curl/curl-ca-bundle.crt</data>
+  <data>${prefix}/share/iso-codes/json/iso_639-2.json</data>
   <data dest="${bundle}/Contents/Resources/Icons.icns">${project}/Icons.icns</data>
   <data dest="${bundle}/Contents/Resources/share/applications/defaults.list">${project}/defaults.list</data>
   <data dest="${bundle}/Contents/Resources/share/applications/open.desktop">${project}/open.desktop</data>
