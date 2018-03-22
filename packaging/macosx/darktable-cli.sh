@@ -159,4 +159,4 @@ for arg in "$@"; do
 done
 unset arg
 
-exec $GTK_DEBUG_GDB "$bundle_contents"/MacOS/"$name"-bin "$@" $SPLIT_ARGS --datadir "$bundle_data"/darktable --moduledir "$bundle_lib"/darktable --localedir "$bundle_data"/locale $EXTRA_ARGS
+exec $GTK_DEBUG_GDB "$bundle_contents"/MacOS/"$name"-bin "$@" $SPLIT_ARGS $EXTRA_ARGS
