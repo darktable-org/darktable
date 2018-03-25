@@ -465,6 +465,12 @@ const wb_data wb_preset[] =
   { "Canon", "PowerShot SX1 IS", FluorescentHigh, 0, { 1.687500, 1, 2.025670, 0 } },
   { "Canon", "PowerShot SX1 IS", Flash, 0,	{ 1.909699, 1, 1.795987, 0 } },
 
+  { "Canon", "Canon PowerShot SX160 IS", Daylight, 0,		{ 1.725252, 1, 1.444444, 1 } },
+  { "Canon", "Canon PowerShot SX160 IS", Cloudy, 0,		{ 1.843781, 1, 1.359204, 1 } },
+  { "Canon", "Canon PowerShot SX160 IS", Tungsten, 0,		{ 1.103726, 1, 2.322256, 1 } },
+  { "Canon", "Canon PowerShot SX160 IS", Fluorescent, 0,	{ 1.704705, 1, 1.463463, 1 } },
+  { "Canon", "Canon PowerShot SX160 IS", FluorescentHigh, 0,	{ 1.848423, 1, 1.355036, 1 } },
+
   /* -9/+9 fine tuning is B9/A9 in blue-amber and zero in magenta-green */
   { "Canon", "PowerShot SX50 HS", Daylight, -9,	{ 1.260171, 1, 2.286938, 0 } },
   { "Canon", "PowerShot SX50 HS", Daylight, 0,	{ 1.502585, 1, 1.871768, 0 } },
