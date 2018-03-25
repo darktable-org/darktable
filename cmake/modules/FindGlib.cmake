@@ -34,7 +34,7 @@ find_library(Glib_LIBRARY
 )
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.
-# NOTE: Singular variables for this library, plural for libraries this this lib depends on.
+# NOTE: Singular variables for this library, plural for libraries this lib depends on.
 set(Glib_PROCESS_INCLUDES Glib_INCLUDE_DIR GlibConfig_INCLUDE_DIR)
 set(Glib_PROCESS_LIBS Glib_LIBRARY)
 libfind_process(Glib)

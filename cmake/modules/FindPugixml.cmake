@@ -24,7 +24,7 @@ elseif(Pugixml_INCLUDE_DIR)
 endif()
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.
-# NOTE: Singular variables for this library, plural for libraries this this lib depends on.
+# NOTE: Singular variables for this library, plural for libraries this lib depends on.
 set(Pugixml_PROCESS_INCLUDES Pugixml_INCLUDE_DIR)
 set(Pugixml_PROCESS_LIBS Pugixml_LIBRARY)
 libfind_process(Pugixml)

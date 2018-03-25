@@ -3,7 +3,7 @@
 #if !defined(_RELEASE) && !defined(__cplusplus) && !defined(_WIN32)
 
 //
-// We needed to poison certaion functions in order to disallow their usage
+// We needed to poison certain functions in order to disallow their usage
 // but not in bundled libs
 //
 
