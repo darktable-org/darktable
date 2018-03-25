@@ -861,7 +861,7 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor, const
   }
   else
   {
-    // invalide coordinate
+    // invalid coordinate
     r = 0.0f;
   }
   return r;
