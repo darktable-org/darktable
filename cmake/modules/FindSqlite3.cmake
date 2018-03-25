@@ -17,7 +17,7 @@ if (Sqlite3_PKGCONF_VERSION)
 endif()
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.
-# NOTE: Singular variables for this library, plural for libraries this this lib depends on.
+# NOTE: Singular variables for this library, plural for libraries this lib depends on.
 set(Sqlite3_PROCESS_INCLUDES Sqlite3_INCLUDE_DIR)
 set(Sqlite3_PROCESS_LIBS Sqlite3_LIBRARY)
 libfind_process(Sqlite3)
