@@ -23,6 +23,9 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkquartz.h>
 #include <glib.h>
+#ifdef MAC_INTEGRATION
+#include <gtkosxapplication.h>
+#endif
 #include "osx.h"
 
 void dt_osx_autoset_dpi(GtkWidget *widget)
@@ -98,6 +101,28 @@ gboolean dt_osx_file_trash(const char *filename, GError **error)
     }
   }
   return TRUE;
+}
+
+char* dt_osx_get_bundle_res_path()
+{
+  char *result = NULL;
+#ifdef MAC_INTEGRATION
+  gchar *bundle_id;
+
+#ifdef GTK_TYPE_OSX_APPLICATION
+  bundle_id = quartz_application_get_bundle_id();
+  if(bundle_id)
+    result = quartz_application_get_resource_path();
+#else
+  bundle_id = gtkosx_application_get_bundle_id();
+  if(bundle_id)
+    result = gtkosx_application_get_resource_path();
+#endif
+  g_free(bundle_id);
+
+#endif
+
+  return result;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

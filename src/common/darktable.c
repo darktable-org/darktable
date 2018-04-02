@@ -440,6 +440,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   char *noiseprofiles_from_command = NULL;
   char *datadir_from_command = NULL;
   char *moduledir_from_command = NULL;
+  char *localedir_from_command = NULL;
   char *tmpdir_from_command = NULL;
   char *configdir_from_command = NULL;
   char *cachedir_from_command = NULL;
@@ -587,7 +588,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
       else if(!strcmp(argv[k], "--localedir") && argc > k + 1)
       {
-        bindtextdomain(GETTEXT_PACKAGE, argv[++k]);
+        localedir_from_command = argv[++k];
+        bindtextdomain(GETTEXT_PACKAGE, localedir_from_command);
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
@@ -731,6 +733,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
   dt_loc_init_datadir(datadir_from_command);
   dt_loc_init_plugindir(moduledir_from_command);
+  dt_loc_init_localedir(localedir_from_command);
   if(dt_loc_init_tmp_dir(tmpdir_from_command))
   {
     fprintf(stderr, "error: invalid temporary directory: %s\n", darktable.tmpdir);
@@ -777,12 +780,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // ask the user whether he/she would like
     // dt to make changes in the settings
     gboolean run_configure = dt_gui_show_standalone_yes_no_dialog(
-        _("darktable - Run performance configuration?"),
-        _("We have an updated performance configuration logic - executing that might improve the performance of "
-          "darktable.\nThis will potentially overwrite some of your existing settings - especially in case you "
-          "have manually modified them to custom values.\nWould you like to execute this update of the "
+        _("darktable - run performance configuration?"),
+        _("we have an updated performance configuration logic - executing that might improve the performance of "
+          "darktable.\nthis will potentially overwrite some of your existing settings - especially in case you "
+          "have manually modified them to custom values.\nwould you like to execute this update of the "
           "performance configuration?\n"),
-        _("No"), _("Yes"));
+        _("no"), _("yes"));
 
     if(run_configure)
       dt_configure_performance();
@@ -1118,6 +1121,7 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...)
 {
   if(darktable.unmuted & thread)
   {
+    printf("%f ", dt_get_wtime() - darktable.start_wtime);
     va_list ap;
     va_start(ap, msg);
     vprintf(msg, ap);

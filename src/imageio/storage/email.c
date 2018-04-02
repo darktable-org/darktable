@@ -139,11 +139,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     return 1;
   }
 
-
-  char *trunc = attachment->file + strlen(attachment->file) - 32;
-  if(trunc < attachment->file) trunc = attachment->file;
-  dt_control_log(ngettext("%d/%d exported to `%s%s'", "%d/%d exported to `%s%s'", num),
-                 num, total, trunc != filename ? ".." : "", trunc);
+  dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
+                 num, total, attachment->file);
 
 #ifdef _OPENMP // store can be called in parallel, so synch access to shared memory
 #pragma omp critical
