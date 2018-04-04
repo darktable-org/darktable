@@ -56,7 +56,7 @@
       called Bayer pattern. Therefore each pixel of your image originally only has information
       about one color channel. Demosaic reconstructs the missing color channels by interpolation
       with data of the neighboring pixels. For further reading see the Wikipedia article on the
-      <ulink url="http://en.wikipedia.org/wiki/Bayer_filter">Bayer filter</ulink>.
+      <ulink url="https://en.wikipedia.org/wiki/Bayer_filter">Bayer filter</ulink>.
     </para>
 
     <para>

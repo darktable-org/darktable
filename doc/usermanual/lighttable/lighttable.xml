@@ -89,7 +89,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>ctrl-c</emphasis>
+                <emphasis>Ctrl + C</emphasis>
               </entry>
               <entry>
                 copy the history stack
@@ -97,7 +97,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>ctrl-v</emphasis>
+                <emphasis>Ctrl + V</emphasis>
               </entry>
               <entry>
                 paste the copied history stack
@@ -105,7 +105,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>d</emphasis>
+                <emphasis>D</emphasis>
               </entry>
               <entry>
                 open in darkroom view for developing
@@ -113,7 +113,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>z</emphasis>
+                <emphasis>Z</emphasis>
               </entry>
               <entry>
                 fully zoom into the image while the key is pressed
@@ -121,7 +121,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>ctrl-z</emphasis>
+                <emphasis>Ctrl + Z</emphasis>
               </entry>
               <entry>
                 fully zoom into the image and show areas in focus
@@ -186,18 +186,18 @@
 
     <para>
       In both modes you can navigate left/right/up/down through your collection using
-      &larr;/&rarr;/&uarr;/&darr;. Pressing <emphasis>g</emphasis> in filemanager mode goes to
-      the top, <emphasis>shift-g</emphasis> to the bottom, <emphasis>PageUp</emphasis> brings
-      you one page up and <emphasis>PageDown</emphasis> one page down.
+      &larr;/&rarr;/&uarr;/&darr;. Pressing <emphasis>G</emphasis> in filemanager mode goes to
+      the top, <emphasis>Shift + G</emphasis> to the bottom, <emphasis>Page Up</emphasis> brings
+      you one page up and <emphasis>Page Down</emphasis> one page down.
     </para>
 
     <para>
       You can select the image under the pointer by <emphasis>left-clicking</emphasis> on its
       thumbnail or by pressing <emphasis>return</emphasis>. A range of images is selected by
       <emphasis>clicking</emphasis> on the first one and then
-      <emphasis>shift-clicking</emphasis> on the last one. Images are added or removed from your
-      selection by <emphasis>ctrl-clicking</emphasis> on their thumbnails or pressing
-      <emphasis>space</emphasis>.
+      <emphasis>Shift-clicking</emphasis> on the last one. Images are added or removed from your
+      selection by <emphasis>Ctrl-clicking</emphasis> on their thumbnails or pressing
+      <emphasis>space bar</emphasis>.
     </para>
 
     <para>
@@ -208,7 +208,7 @@
     </para>
 
     <para>
-      While holding down the <emphasis>z</emphasis> key a fully zoomed preview of the image
+      While holding down the <emphasis>Z</emphasis> key a fully zoomed preview of the image
       under the mouse cursor is displayed. You can use this feature for a quick inspection of
       image quality while rating and selecting images.
     </para>
@@ -218,7 +218,7 @@
     </indexterm>
 
     <para>
-      Holding down the <emphasis>ctlr-z</emphasis> key fully zooms into the image and
+      Holding down the <emphasis>Ctlr + Z</emphasis> key fully zooms into the image and
       additionally activates an analysis for sharp regions, detecting those parts of the image
       that are in focus. Areas of high sharpness are indicated by a red border&nbsp;&ndash; the
       higher the color intensity the better the sharpness. In case that no area of
@@ -228,7 +228,7 @@
     </para>
 
     <para>
-      Sometimes pressing <emphasis>z</emphasis> or <emphasis>ctrl-z</emphasis> may not reveal an
+      Sometimes pressing <emphasis>Z</emphasis> or <emphasis>Ctrl + Z</emphasis> may not reveal an
       immediate effect&nbsp;&ndash; in that case please click into the center area and press the
       corresponding key again.
     </para>
@@ -240,7 +240,7 @@
         <tbody>
           <row>
             <entry>
-              Fully zoomed-in image view while holding down the <emphasis>ctrl-z</emphasis> key
+              Fully zoomed-in image view while holding down the <emphasis>Ctrl + Z</emphasis> key
               with indication of the sharp areas in focus. Sharpness detection is based on an
               embedded JPEG thumbnail of the original raw file independent of any processing
               steps within darktable.
