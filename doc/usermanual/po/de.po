@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
 "POT-Creation-Date: 2018-04-02 10:14+0200\n"
-"PO-Revision-Date: 2018-04-02 18:59+0100\n"
+"PO-Revision-Date: 2018-04-02 20:06+0100\n"
 "Last-Translator: Pierre Metzner <pierre_metzner@web.de>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -20890,7 +20890,7 @@ msgstr "Bildoperationen/spiegeln/90° im Uhrzeigersinn drehen"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19311(entry)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19743(entry)
 msgid "bracketright"
-msgstr "{"
+msgstr ")"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19316(entry)
 msgid "modules/copy_history/copy all"
