@@ -241,14 +241,10 @@ try_again:
     char last_char = *(filename + strlen(filename) - 1);
     if(last_char == '/' || last_char == '\\')
     {
-      // don't loop forever if there's no room to add a filename
-      if(strlen(pattern)-sizeof(pattern) > strlen("/$(FILE_NAME)"))
-      {
-        // add to the end of the original pattern without caring about a
-        // potentially added "_$(SEQUENCE)"
-        snprintf(pattern, sizeof(pattern), "%s" G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename);
+      // add to the end of the original pattern without caring about a
+      // potentially added "_$(SEQUENCE)"
+      if (snprintf(pattern, sizeof(pattern), "%s" G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename) < sizeof(pattern))
         goto try_again;
-      }
     }
 
     char *output_dir = g_path_get_dirname(filename);
