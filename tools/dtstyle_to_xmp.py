@@ -32,15 +32,15 @@ xmpmeta=ET.Element("x:xmpmeta",{"xmlns:x":"adobe:ns:meta/",
                                 "x:xmptk":"XMP Core 4.4.0-Exiv2"})
 rdf=ET.SubElement(xmpmeta,"rdf:RDF",{"xmlns:rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#"})
 description=ET.SubElement(rdf,"rdf:Description",{"rdf:about":"",
-                                         "xmlns:xmp":"http://ns.adobe.com/xap/1.0/",
-                                         "xmlns:xmpMM":"http://ns.adobe.com/xap/1.0/mm/",
-                                         "xmlns:dc":"http://purl.org/dc/elements/1.1/",
-                                         "xmlns:darktable":"http://darktable.sf.net/",
-                                         "xmp:Rating":"0",
-                                         "xmpMM:DerivedFrom":"PureAwesome.raw",
-                                         "darktable:xmp_version":"2",
-                                         "darktable:raw_params":"0",
-                                         "darktable:auto_presets_applied":"1"})
+                              "xmlns:xmp":"http://ns.adobe.com/xap/1.0/",
+                              "xmlns:xmpMM":"http://ns.adobe.com/xap/1.0/mm/",
+                              "xmlns:dc":"http://purl.org/dc/elements/1.1/",
+                              "xmlns:darktable":"http://darktable.sf.net/",
+                              "xmp:Rating":"0",
+                              "xmpMM:DerivedFrom":"PureAwesome.raw",
+                              "darktable:xmp_version":"2",
+                              "darktable:raw_params":"0",
+                              "darktable:auto_presets_applied":"1"})
 # darktable:history_end is not needed with a conversion, darktable will defaults to the topmost element in the history stack
 # "darktable:history_end":"8"})
 maskid=ET.SubElement(description,"darktable:mask_id")
