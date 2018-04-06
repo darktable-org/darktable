@@ -180,7 +180,7 @@
       mouse wheel to zoom in and out. Moving the mouse while <emphasis>pressing the left mouse
       button</emphasis> allows you to navigate through your collection. In filemanager view, you
       can can change the number of images in each row, using the slider next to the filemanager
-      option, or by using <emphasis>ctrl-(mouse wheel)</emphasis>. Use your mouse wheel to
+      option, or by using <emphasis>Ctrl + mouse wheel</emphasis>. Use your mouse wheel to
       navigate through your collection.
     </para>
 
@@ -195,8 +195,8 @@
       You can select the image under the pointer by <emphasis>left-clicking</emphasis> on its
       thumbnail or by pressing <emphasis>return</emphasis>. A range of images is selected by
       <emphasis>clicking</emphasis> on the first one and then
-      <emphasis>Shift-clicking</emphasis> on the last one. Images are added or removed from your
-      selection by <emphasis>Ctrl-clicking</emphasis> on their thumbnails or pressing
+      <emphasis>Shift + clicking</emphasis> on the last one. Images are added or removed from your
+      selection by <emphasis>Ctrl + clicking</emphasis> on their thumbnails or pressing
       <emphasis>space bar</emphasis>.
     </para>
 

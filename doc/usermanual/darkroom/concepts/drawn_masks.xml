@@ -78,7 +78,7 @@
     </para>
 
     <para>
-      If you <emphasis>Ctrl-click</emphasis> on the edit mode symbol you enter a restricted edit
+      If you <emphasis>Ctrl + click</emphasis> on the edit mode symbol you enter a restricted edit
       mode. Certain actions like dragging a complete shape or changing its size are blocked.
       Only finetuning changes like dragging a node are allowed.
     </para>
@@ -120,7 +120,7 @@
         while keeping the button pressed. The brush stroke is finalized once you release the
         mouse button. Brush size, hardness and opacity can be changed by
         <emphasis>scrolling</emphasis>, <emphasis>shift+scrolling</emphasis>, and
-        <emphasis>ctrl+scrolling</emphasis>, respectively, either before you start drawing or at
+        <emphasis>Ctrl + scrolling</emphasis>, respectively, either before you start drawing or at
         any time during the operation. Likewise you can use keys
         <emphasis>[&nbsp;|&nbsp;]</emphasis> to decrease/increase brush size,
         <emphasis>{&nbsp;|&nbsp;}</emphasis> to decrease/increase hardness, and
@@ -195,7 +195,7 @@
         Use the scroll wheel of your mouse while in the circle to change the diameter;
         <emphasis>scroll</emphasis> within the circle border to adjust the width of the gradual
         decay or <emphasis>Shift + Scroll</emphasis> anywhere in the shape for the same effect.
-        With <emphasis>Ctrl + Scroll</emphasis> you can adjust the opacity of the
+        With <emphasis>Ctrl + scroll</emphasis> you can adjust the opacity of the
         circle&nbsp;&ndash; this is best observed with the mask displayed by pressing the
         <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
         button.
@@ -242,7 +242,7 @@
       <para>
         The general principle is the same as for the circle shape. In addition you get four
         nodes on the ellipse line. <emphasis>Click</emphasis> on the nodes to adjust the
-        ellipse's eccentricity. <emphasis>Ctrl + Click</emphasis> on them to rotate the ellipse.
+        ellipse's eccentricity. <emphasis>Ctrl + click</emphasis> on them to rotate the ellipse.
         <emphasis>Shift + Click</emphasis> in the shape to toggle the gradual decay between
         equidistant and proportional mode.
       </para>
@@ -289,7 +289,7 @@
         <emphasis>Left-click</emphasis> into the canvas to define path nodes; terminate the path
         by <emphasis>right-clicking</emphasis> after having set the last point. Per default
         nodes are connected by smooth lines. If you want a node to define a sharp corner, you
-        can do so by creating it with <emphasis>Ctrl + Click</emphasis>.
+        can do so by creating it with <emphasis>Ctrl + click</emphasis>.
       </para>
 
       <para>
