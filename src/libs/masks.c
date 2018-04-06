@@ -1538,7 +1538,7 @@ static void _lib_masks_selection_change(dt_lib_module_t *self, int selectid, int
   gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
   while(valid)
   {
-    // we get the formid the the iter
+    // we get the formid from the iter
     GValue gv = {
       0,
     };

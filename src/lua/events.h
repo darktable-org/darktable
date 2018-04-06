@@ -46,7 +46,7 @@ void dt_lua_event_add(lua_State *L, const char *evt_name);
 
 /**
   Trigger an event that has been previously added
-  * event : the id the the event was registered under
+  * event : the id the event was registered under
   * nargs : the number of significant items on the stack.
     these items will be passed as extra parameters to the event's callback
   */

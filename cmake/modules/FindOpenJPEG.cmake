@@ -23,7 +23,7 @@ find_library(OpenJPEG_LIBRARY
 )
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.
-# NOTE: Singular variables for this library, plural for libraries this this lib depends on.
+# NOTE: Singular variables for this library, plural for libraries this lib depends on.
 set(OpenJPEG_PROCESS_INCLUDES OpenJPEG_INCLUDE_DIR)
 set(OpenJPEG_PROCESS_LIBS OpenJPEG_LIBRARY)
 libfind_process(OpenJPEG)

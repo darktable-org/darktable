@@ -163,7 +163,7 @@ class Runner
         puts "VERY BAD  file is now failing: #{values["name"]}"
         yield [:new_fail, values] if block_given?
       elsif !ret1 && !ret2
-        # Bummer we stil don't know what to do with the file
+        # Bummer we still don't know what to do with the file
         yield [:still_fail, values] if block_given?
         puts "BAD       file is still failing: #{values["name"]}"
       else
