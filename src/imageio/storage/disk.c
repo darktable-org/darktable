@@ -208,25 +208,23 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   char filename[PATH_MAX] = { 0 };
   char input_dir[PATH_MAX] = { 0 };
+  char pattern[DT_MAX_PATH_FOR_PARAMS];
+  g_strlcpy(pattern, d->filename, sizeof(pattern));
   gboolean from_cache = FALSE;
   dt_image_full_path(imgid, input_dir, sizeof(input_dir), &from_cache);
   int fail = 0;
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
-    // caching this allows to add "$(FILE_NAME)" to the end of the original string without caring
-    // about a potentially added "_$(SEQUENCE)"
-    char *original_filename = g_strdup(d->filename);
-
 try_again:
     // avoid braindead export which is bound to overwrite at random:
-    if(total > 1 && !g_strrstr(d->filename, "$"))
+    if(total > 1 && !g_strrstr(pattern, "$"))
     {
-      snprintf(d->filename + strlen(d->filename), sizeof(d->filename) - strlen(d->filename), "_$(SEQUENCE)");
+      snprintf(pattern + strlen(pattern), sizeof(pattern) - strlen(pattern), "_$(SEQUENCE)");
     }
 
-    gchar *fixed_path = dt_util_fix_path(d->filename);
-    g_strlcpy(d->filename, fixed_path, sizeof(d->filename));
+    gchar *fixed_path = dt_util_fix_path(pattern);
+    g_strlcpy(pattern, fixed_path, sizeof(pattern));
     g_free(fixed_path);
 
     d->vp->filename = input_dir;
@@ -234,19 +232,20 @@ try_again:
     d->vp->imgid = imgid;
     d->vp->sequence = num;
 
-    gchar *result_filename = dt_variables_expand(d->vp, d->filename, TRUE);
+    gchar *result_filename = dt_variables_expand(d->vp, pattern, TRUE);
     g_strlcpy(filename, result_filename, sizeof(filename));
     g_free(result_filename);
 
     // if filenamepattern is a directory just add ${FILE_NAME} as default..
+    // this can happen if the filename component of the pattern is an empty variable
     char last_char = *(filename + strlen(filename) - 1);
     if(last_char == '/' || last_char == '\\')
     {
-      snprintf(d->filename, sizeof(d->filename), "%s" G_DIR_SEPARATOR_S "$(FILE_NAME)", original_filename);
-      goto try_again;
+      // add to the end of the original pattern without caring about a
+      // potentially added "_$(SEQUENCE)"
+      if (snprintf(pattern, sizeof(pattern), "%s" G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename) < sizeof(pattern))
+        goto try_again;
     }
-
-    g_free(original_filename);
 
     char *output_dir = g_path_get_dirname(filename);
 
