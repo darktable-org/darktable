@@ -139,6 +139,14 @@
             </row>
             <row>
               <entry>
+                $(IMAGE.TAGS)
+              </entry>
+              <entry>
+                Comma-separated list of image tags
+              </entry>
+            </row>
+            <row>
+              <entry>
                 $(IMAGE.EXIF)
               </entry>
               <entry>
@@ -383,6 +391,14 @@
               </entry>
               <entry>
                 The rights assigned to the image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(Xmp.xmp.Rating)
+              </entry>
+              <entry>
+                The rating (zero to five stars or rejected) assigned to the image
               </entry>
             </row>
             <row>
