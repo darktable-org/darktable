@@ -24,6 +24,7 @@
 #include "common/debug.h"
 #include "common/ratings.h"
 #include "common/tags.h"
+#include "common/metadata.h"
 #include "control/control.h"
 
 #include <ctype.h>
@@ -429,6 +430,12 @@ typedef struct lr_data_t
   float crop_roundness;        // from lightroom
   int iwidth, iheight;         // image width / height
   int orientation;
+  
+  char title;       // dt metadata
+  char description;
+  char creator;
+  char publisher;
+  char rights;
 } lr_data_t;
 
 // three helper functions for parsing RetouchInfo entries. sscanf doesn't work due to floats.
@@ -912,6 +919,26 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
       tcNode = tcNode->next;
     }
   }
+  else if(!xmlStrcmp(name, (const xmlChar *)"title"))
+  {
+    data->title = (char *)value;
+  }
+  else if(!xmlStrcmp(name, (const xmlChar *)"description"))
+  {
+    data->description = (char *)value;
+  }
+  else if(!xmlStrcmp(name, (const xmlChar *)"creator"))
+  {
+    data->creator = (char *)value;
+  }
+  else if(!xmlStrcmp(name, (const xmlChar *)"publisher"))
+  {
+    data->publisher = (char *)value;
+  }
+  else if(!xmlStrcmp(name, (const xmlChar *)"rights"))
+  {
+    data->rights = (char *)value;
+  }
 }
 
 /* _has_list returns true if the node contains a list of value */
@@ -1088,6 +1115,11 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   data.iwidth = 0;
   data.iheight = 0;                 // image width / height
   data.orientation = 1;
+  data.title = "";
+  data.description = "";
+  data.creator = "";
+  data.publisher = "";
+  data.rights = "";
 
   // record the name-spaces needed for the parsing
   xmlXPathRegisterNs
@@ -1532,6 +1564,51 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     n_import++;
   }
 
+  if(dev == NULL && data.title != NULL && data.title[0] != '\0')
+  {
+    dt_metadata_set(imgid, "Xmp.dc.title", data.title);
+
+    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
+    g_strlcat(imported, _("title"), sizeof(imported));
+    n_import++;
+  }
+  
+  if(dev == NULL && data.description != NULL && data.description[0] != '\0')
+  {
+    dt_metadata_set(imgid, "Xmp.dc.description", data.description);
+
+    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
+    g_strlcat(imported, _("description"), sizeof(imported));
+    n_import++;
+  }
+  
+  if(dev == NULL && data.creator != NULL && data.creator[0] != '\0')
+  {
+    dt_metadata_set(imgid, "Xmp.dc.creator", data.creator);
+
+    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
+    g_strlcat(imported, _("creator"), sizeof(imported));
+    n_import++;
+  }
+  
+  if(dev == NULL && data.publisher != NULL && data.publisher[0] != '\0')
+  {
+    dt_metadata_set(imgid, "Xmp.dc.publisher", data.publisher);
+
+    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
+    g_strlcat(imported, _("publisher"), sizeof(imported));
+    n_import++;
+  }
+  
+  if(dev == NULL && data.rights != NULL && data.rights[0] != '\0')
+  {
+    dt_metadata_set(imgid, "Xmp.dc.rights", data.rights);
+
+    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
+    g_strlcat(imported, _("rights"), sizeof(imported));
+    n_import++;
+  }
+  
   if(dev != NULL && refresh_needed && dev->gui_attached)
   {
     dt_control_log(ngettext("%s has been imported", "%s have been imported", n_import), imported);
