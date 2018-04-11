@@ -685,7 +685,7 @@ static gint _compare_camera_by_port(gconstpointer a, gconstpointer b)
 {
   dt_camera_t *ca = (dt_camera_t *)a;
   dt_camera_t *cb = (dt_camera_t *)b;
-  return strcmp(ca->port, cb->port);
+  return g_strcmp0(ca->port, cb->port);
 }
 
 void dt_camctl_detect_cameras(const dt_camctl_t *c)
@@ -722,10 +722,10 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
     dt_pthread_mutex_init(&camera->live_view_pixbuf_mutex, NULL);
     dt_pthread_mutex_init(&camera->live_view_synch, NULL);
 
-    // if(strcmp(camera->port,"usb:")==0) { g_free(camera); continue; }
+    // if(g_strcmp0(camera->port,"usb:")==0) { g_free(camera); continue; }
     GList *citem;
     if((citem = g_list_find_custom(c->cameras, camera, _compare_camera_by_port)) == NULL
-       || strcmp(((dt_camera_t *)citem->data)->model, camera->model) != 0)
+       || g_strcmp0(((dt_camera_t *)citem->data)->model, camera->model) != 0)
     {
       if(citem == NULL)
       {
@@ -1571,7 +1571,7 @@ static void _camera_configuration_notify_change(const dt_camctl_t *c, const dt_c
       else
         if(gp_widget_get_value(old_config_child, &old_config_value) != GP_OK) goto end;
 
-      if(strcmp(new_config_value, old_config_value) != 0)
+      if(g_strcmp0(new_config_value, old_config_value) != 0)
         _dispatch_camera_property_value_changed(c, camera, new_config_name, new_config_value);
 
 end:
