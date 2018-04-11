@@ -123,7 +123,7 @@ profile_image() {
 	iso=$(get_image_iso "$image")
 
 	xmp="$scriptdir/profiling-shot.xmp"
-	noiseprofile="$scriptdir/noiseprofile"
+	noiseprofile="$scriptdir/darktable-noiseprofile"
 
 	echo
 	echo "===> Profile image for \"$maker - $model - $iso ISO\""
@@ -137,7 +137,7 @@ profile_image() {
 		echo "--> Skip $image (ISO $iso); output up-to-date"
 	fi
 
-	echo "--> Run noiseprofile"
+	echo "--> Run darktable-noiseprofile"
 	dat="${pfm%.pfm}.dat"
 	"$noiseprofile" "$pfm" > "$dat"
 
@@ -509,7 +509,7 @@ fi
 # Prepare a tarball ready to be sent to the darktable team.
 echo
 echo "===> Prepare final tarball"
-tarball="$profiling_dir"/dt-noiseprofile-$(date +'%Y%m%d').tar.gz
+tarball="$profiling_dir"/darktable-noiseprofile-$(date +'%Y%m%d').tar.gz
 cd "$profiling_dir"
 tar -cf - "$(basename "$presets_json")" $(cat "$(basename "$files_list")") "$(basename "$resultpdf")" | gzip > "$(basename "$tarball")"
 cd -
