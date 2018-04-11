@@ -134,6 +134,10 @@ profile_image() {
 
 	xmp="$scriptdir/profiling-shot.xmp"
 	noiseprofile="$scriptdir/darktable-noiseprofile"
+	if [ ! -x "$scriptdir/dt-noiseprofile" ]; then
+		echo "ERROR: Could not find darktable-noiseprofile tool in $scriptdir"
+		exit 1
+	fi
 
 	echo
 	echo "===> Profile image for \"$maker - $model - $iso ISO\""
