@@ -2,8 +2,21 @@
 
 set -e
 
-scriptname=$(basename $0)
-scriptdir=$(cd $(dirname $0) && pwd)
+script="$0"
+
+count=0
+while [ -L "${script}" ]
+do
+	script=$(readlink ${script})
+	count=$(expr ${count} + 1)
+	if [ ${count} -gt 100 ]
+	then
+		echo "Too many symbolic links"
+		exit 1
+	fi
+done
+scriptdir=$(dirname ${script})
+scriptname=$(basename ${script})
 
 . "$scriptdir/subr.sh"
 
