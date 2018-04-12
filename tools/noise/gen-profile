@@ -108,7 +108,7 @@ fi
 
 profile_image() {
 	local image preset files_list maker model iso xmp		\
-	 noiseprofile floatdump pfm dat title fit pdf			\
+	 noiseprofile pfm dat title fit pdf			\
 	 flat_dat curves_dat flat_pdf a0 a1 a2 b0 b1 b2
 
 	tool_installed darktable-cli
@@ -124,7 +124,6 @@ profile_image() {
 
 	xmp="$scriptdir/profiling-shot.xmp"
 	noiseprofile="$scriptdir/noiseprofile"
-	floatdump="$scriptdir/floatdump"
 
 	echo
 	echo "===> Profile image for \"$maker - $model - $iso ISO\""
