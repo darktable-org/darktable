@@ -430,12 +430,12 @@ typedef struct lr_data_t
   float crop_roundness;        // from lightroom
   int iwidth, iheight;         // image width / height
   int orientation;
-  
-  char title;       // dt metadata
-  char description;
-  char creator;
-  char publisher;
-  char rights;
+
+  char *title;       // dt metadata
+  char *description;
+  char *creator;
+  char *publisher;
+  char *rights;
 } lr_data_t;
 
 // three helper functions for parsing RetouchInfo entries. sscanf doesn't work due to floats.
@@ -1572,7 +1572,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     g_strlcat(imported, _("title"), sizeof(imported));
     n_import++;
   }
-  
+
   if(dev == NULL && data.description != NULL && data.description[0] != '\0')
   {
     dt_metadata_set(imgid, "Xmp.dc.description", data.description);
@@ -1581,7 +1581,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     g_strlcat(imported, _("description"), sizeof(imported));
     n_import++;
   }
-  
+
   if(dev == NULL && data.creator != NULL && data.creator[0] != '\0')
   {
     dt_metadata_set(imgid, "Xmp.dc.creator", data.creator);
@@ -1590,7 +1590,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     g_strlcat(imported, _("creator"), sizeof(imported));
     n_import++;
   }
-  
+
   if(dev == NULL && data.publisher != NULL && data.publisher[0] != '\0')
   {
     dt_metadata_set(imgid, "Xmp.dc.publisher", data.publisher);
@@ -1599,7 +1599,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     g_strlcat(imported, _("publisher"), sizeof(imported));
     n_import++;
   }
-  
+
   if(dev == NULL && data.rights != NULL && data.rights[0] != '\0')
   {
     dt_metadata_set(imgid, "Xmp.dc.rights", data.rights);
@@ -1608,7 +1608,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     g_strlcat(imported, _("rights"), sizeof(imported));
     n_import++;
   }
-  
+
   if(dev != NULL && refresh_needed && dev->gui_attached)
   {
     dt_control_log(ngettext("%s has been imported", "%s have been imported", n_import), imported);
