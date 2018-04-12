@@ -1,4 +1,4 @@
-PROGS = noiseprofile floatdump
+PROGS = noiseprofile
 
 CFLAGS = -g -std=c99 -Wall
 
@@ -9,8 +9,5 @@ clean:
 
 noiseprofile: noiseprofile.c
 	$(CC) $(CFLAGS) noiseprofile.c -lm -o $@
-
-floatdump: floatdump.c
-	$(CC) $(CFLAGS) floatdump.c -o $@
 
 .PHONY: all clean
