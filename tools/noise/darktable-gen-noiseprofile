@@ -87,9 +87,6 @@ fi
 if ! profiling_tools_installed; then
 	missing_tool=1
 fi
-if ! internal_tools_available; then
-	missing_tool=1
-fi
 if ! tethering_tools_installed; then
 	cat <<EOF
 
