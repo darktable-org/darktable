@@ -218,37 +218,6 @@ of the presets. Please install this command and re-run this script."; then
 	return $missing_tool
 }
 
-internal_tools_available() {
-	local missing_tool
-	missing_tool=0
-
-	echo "--> Check for internal tools availability"
-
-	  if ! tool_installed awk "
-awk is needed to prepare presets."; then
-    missing_tool=1
-  fi
-
-	if ! tool_installed make "
-make is required to build darktable tools dedicated to noise profiling.
-Please install this command and re-run this script."; then
-		missing_tool=1
-	fi
-
-	if ! tool_installed cc "
-A compilator (eg. gcc) is required to build darktable tools dedicated to
-noise profiling. Please install this command and re-run this script."; then
-		missing_tool=1
-	fi
-
-	if [ "$missing_tool" = "1" ]; then
-		return 1
-	fi
-
-	echo "--> Build profiling tools"
-	make -C "$scriptdir"
-}
-
 get_darktable_version() {
 	local version
 
