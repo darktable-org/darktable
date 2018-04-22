@@ -1382,7 +1382,7 @@ int dt_opencl_lock_device(const int pipetype)
 
       while(*prio != -1)
       {
-        if(!dt_pthread_mutex_trylock(&cl->dev[*prio].lock))
+        if(!dt_pthread_mutex_BAD_trylock(&cl->dev[*prio].lock))
         {
           int devid = *prio;
           free(priority);
@@ -1406,7 +1406,7 @@ int dt_opencl_lock_device(const int pipetype)
     for(int try_dev = 0; try_dev < cl->num_devs; try_dev++)
     {
       // get first currently unused processor
-      if(!dt_pthread_mutex_trylock(&cl->dev[try_dev].lock)) return try_dev;
+      if(!dt_pthread_mutex_BAD_trylock(&cl->dev[try_dev].lock)) return try_dev;
     }
   }
 
