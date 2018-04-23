@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/bin/sh
 
 #############################################################################
 # Copyright(C) 2014 Edouard Gomez
@@ -30,18 +30,18 @@ _dt_curve_tool=""
 print_help()
 {
 cat <<EOF
-usage: dt-curve-tool-helper [OPTIONS] <RAW> [JPEG]
+usage: darktable-curve-tool-helper [OPTIONS] <RAW> [JPEG]
 
 OPTIONS:
 
 Standard
--s, --state   dt-curve-tool state file path (default: program's default)
+-s, --state   darktable-curve-tool state file path (default: program's default)
 -q, --quiet   Quiet mode, do not print final message (default: no)
 -h, --help    Print this help message
 
 Advanced
 -k, --keep                      Keep intermediary PPM files (default: no)
-    --dt-curve-tool-path <PATH> Path to dt-curve-tool binary
+    --darktable-curve-tool-path <PATH> Path to darktable-curve-tool binary
                                 (default: either found in PATH or same dir
                                  as this script)
 EOF
@@ -65,7 +65,7 @@ parse_args()
             print_help
             exit 0
             ;;
-        --dt-curve-tool-path)
+        --darktable-curve-tool-path)
             shift
             _dt_curve_tool="$1"
             ;;
@@ -153,10 +153,10 @@ setup_dt_curve_tool()
     local _ret=0
 
     if [ -z "$_dt_curve_tool" -o ! -x "$_dt_curve_tool" ] ; then
-        if [ -x "$_script_dir/dt-curve-tool" ] ; then
-            _dt_curve_tool="$_script_dir/dt-curve-tool"
+        if [ -x "$_script_dir/darktable-curve-tool" ] ; then
+            _dt_curve_tool="$_script_dir/darktable-curve-tool"
         else
-            _tmp=$(which dt-curve-tool)
+            _tmp=$(which darktable-curve-tool)
             if [ $? -eq 0 ] ; then
                 _dt_curve_tool="$_tmp"
             else
@@ -192,7 +192,7 @@ setup_dt_curve_tool
 
 # bail out if tool not found
 if [ $? -ne 0 ] ; then
-    printf "error: dt-curve-tool not found\n"
+    printf "error: darktable-curve-tool not found\n"
     exit 1
 fi
 
@@ -240,7 +240,7 @@ if [ -n "$_jpegtmp" -a -f "$_jpegtmp" ] ; then
     rm -f "$_jpegtmp"
 fi
 
-# turn the state file to a valid option for dt-curve-tool
+# turn the state file to a valid option for darktable-curve-tool
 if [ -n "$_state" ] ; then
     _state="-s $_state"
 fi
@@ -253,5 +253,5 @@ fi
 
 if [ $_quiet -eq 0 ] ; then
     printf "if you accumulated enough data, you can now output the curves with\n"
-    printf "dt-curve-tool $_state -z -e "$_raw" -n 16\n"
+    printf "darktable-curve-tool $_state -z -e "$_raw" -n 16\n"
 fi
