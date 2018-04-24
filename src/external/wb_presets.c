@@ -3031,6 +3031,20 @@ const wb_data wb_preset[] =
   { "Nikon", "D810", SodiumVaporFluorescent         , 0, { 1.164062, 1, 2.320312, 0 } },
   { "Nikon", "D810", Flash                          , 0, { 2.183594, 1, 1.171875, 0 } },
 
+  /* Nikon D850 Firmware Version C: 1.01 LD: 2.017 */
+  { "Nikon", "D850", Incandescent                    , 0, { 1.205078125, 1, 2.206542969, 0 } },
+  { "Nikon", "D850", CoolWhiteFluorescent            , 0, { 1.721191406, 1, 2.064453125, 0 } },
+  { "Nikon", "D850", DirectSunlight                  , 0, { 1.900390625, 1, 1.375488281, 0 } },
+  { "Nikon", "D850", Flash                           , 0, { 2.1640625,   1, 1.204101562, 0 } },
+  { "Nikon", "D850", Cloudy                          , 0, { 2.049804688, 1, 1.244628906, 0 } },
+  { "Nikon", "D850", Shade                           , 0, { 2.396484375, 1, 1.114257812, 0 } },
+  { "Nikon", "D850", SodiumVaporFluorescent          , 0, { 1.121582031, 1, 2.477050781, 0 } },
+  { "Nikon", "D850", WarmWhiteFluorescent            , 0, { 1.208496094, 1, 1.979003906, 0 } },
+  { "Nikon", "D850", WhiteFluorescent                , 0, { 1.377929688, 1, 2.361328125, 0 } },
+  { "Nikon", "D850", DayWhiteFluorescent             , 0, { 1.76953125,  1, 1.3984375,   0 } },
+  { "Nikon", "D850", DaylightFluorescent             , 0, { 2.018066406, 1, 1.112304688, 0 } },
+  { "Nikon", "D850", HighTempMercuryVaporFluorescent , 0, { 2.379882812, 1, 1.3671875,   0 } },
+
   { "Nikon", "D40", Incandescent, -3,		{ 1.492188, 1, 2.164063, 0 } },
   { "Nikon", "D40", Incandescent, -2,		{ 1.437500, 1, 2.367188, 0 } },
   { "Nikon", "D40", Incandescent, -1,		{ 1.417969, 1, 2.414062, 0 } },
