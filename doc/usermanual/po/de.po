@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
 "POT-Creation-Date: 2018-04-26 16:33+0800\n"
-"PO-Revision-Date: 2018-04-27 11:45+0800\n"
+"PO-Revision-Date: 2018-04-27 16:45+0800\n"
 "Last-Translator: Pierre Metzner <pierre_metzner@web.de>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.0.6\n"
-"X-Poedit-Bookmarks: 52,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
+"X-Poedit-Bookmarks: 71,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
 msgid "darktable 2.4"
@@ -618,7 +618,8 @@ msgstr ""
 "als aktuelle Sammlung. Wenn darktable bereits läuft (und die gleiche "
 "Datenbank benutzt) dann werden die Bilder und Ordner in der bestehenden "
 "Instanz geöffnet, wobei D-Bus zur Kommunikation zwischen den Prozessen "
-"verwandt wird."
+"verwandt wird. # Hier wird mehr übersetzt als im englischen Quelltext da "
+"ist. Ist das so gewollt?"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:381(term)
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:744(term)
@@ -715,7 +716,8 @@ msgstr ""
 "Libraries, die zur Laufzeit geladen werden. Mit dieser Option können Sie "
 "darktable mitteilen, wo es nach diesen Bibliotheken suchen soll. Die "
 "Voreinstellung hängt von Ihrer Installation ab; typische Orte sind <quote>/"
-"opt/darktable/lib/darktable/</quote> und <quote>/usr/lib/darktable/</quote>."
+"opt/darktable/lib/darktable/</quote> und <quote>/usr/lib/darktable/</quote>. "
+"# Hier ist ein anderer Pfad angegeben als im englischen Original."
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:456(term)
 msgid "--tmpdir &lt;tmp directory&gt;"
@@ -14850,7 +14852,6 @@ msgid "warps and nodes count"
 msgstr "Anzahl der Verkettungen und Knoten"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12992(para)
-#, fuzzy
 msgid ""
 "This information field displays the number of warps (individual distortion "
 "object) and nodes currently used."
