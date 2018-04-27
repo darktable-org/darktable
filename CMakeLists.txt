@@ -79,6 +79,7 @@ option(VALIDATE_APPDATA_FILE "Use appstream-util (if found) to validate the .app
 option(BUILD_TESTS "Build tests in src/tests/, runnable from the build/ directory" OFF)
 option(BUILD_BATTERY_INDICATOR "Add an icon to the top toolbar showing the state of a laptop battery" OFF)
 option(BUILD_MSYS2_INSTALL "Build an MSYS2 version of the install, aka for Windows platform, but without dependency installs" OFF)
+option(BUILD_NOISE_TOOLS "Build tools for generating noise proifles" OFF)
 
 if(USE_OPENCL)
   option(TESTBUILD_OPENCL_PROGRAMS "Test-compile opencl programs (needs llvm and clang 3.9+)" ON)
@@ -544,6 +545,7 @@ include(data/supported_extensions.cmake) # this file needs to be included first 
 add_subdirectory(src) # src/ needs to be before data/ so that the correct CSS file gets installed
 add_subdirectory(data)
 add_subdirectory(doc)
+add_subdirectory(tools)
 
 # This contains fixup_bundle
 # And adding a separate subderectory as a last one will make sure
