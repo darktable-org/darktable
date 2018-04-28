@@ -8,7 +8,10 @@
           global/quit
         </entry>
         <entry>
-          Ctrl + Q
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Q</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -16,7 +19,7 @@
           global/lighttable view
         </entry>
         <entry>
-          L
+          <keycap>L</keycap>
         </entry>
       </row>
       <row>
@@ -24,7 +27,7 @@
           global/darkroom view
         </entry>
         <entry>
-          D
+          <keycap>D</keycap>
         </entry>
       </row>
       <row>
@@ -32,7 +35,7 @@
           global/tethering view
         </entry>
         <entry>
-          T
+          <keycap>T</keycap>
         </entry>
       </row>
       <row>
@@ -152,7 +155,11 @@
           modules/copy_history/copy
         </entry>
         <entry>
-          Ctrl + Shift + C
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Shift</keycap>
+                <keycap>C</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
