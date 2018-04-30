@@ -2,7 +2,7 @@
 # KostyaSha <gentoo.integer@gmail.com>, 2010
 # Serhii Marchuk, 2014.
 # Alexandre Prokoudine <alexandre.prokoudine@gmail.com>, 2010, 2011, 2012, 2014, 2015, 2016, 2017, 2018
-# Timur Davletshinov <timur.davletshin@gmail.com>, 2018
+# Timur Davletshin <timur.davletshin@gmail.com>, 2018
 #
 msgid ""
 msgstr ""
