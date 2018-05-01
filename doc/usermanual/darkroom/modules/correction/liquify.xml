@@ -98,7 +98,7 @@
       </para>
       <para>
         A point is formed by a single node. In a point the strength vector has three different
-        modes which are toggled using Ctrl + click over the arrowhead of the strength vector:
+        modes which are toggled using <keycombo action="simul"> <keycap>Ctrl</keycap> <mousebutton>click</mousebutton> </keycombo> over the arrowhead of the strength vector:
         <informaltable frame="none" width="80%">
           <tgroup cols="3" colsep="0" rowsep="0">
             <colspec colwidth='2*'/>
@@ -220,14 +220,14 @@
         </informaltable>
       </para>
       <para>
-        It is possible to add a control point on a line by Ctrl + click on a segment. You may
-        remove a control point from a line by Ctrl + right-click on the node center.
+          It is possible to add a control point on a line by <keycombo action="simul"> <keycap>Ctrl</keycap> <mousebutton>click</mousebutton> </keycombo> on a segment. You may
+          remove a control point from a line by <keycombo action="simul"> <keycap>Ctrl</keycap> <mousebutton>right-click</mousebutton> </keycombo> on the node center.
       </para>
       <para>
-        A right-click on a segment will remove the shape completely.
+          A <mousebutton>right-click</mousebutton> on a segment will remove the shape completely.
       </para>
       <para>
-        A Ctrl + Alt + click on a segment will change it to a curve segment.
+          A <keycombo action="simul"> <keycap>Ctrl</keycap> <keycap>Alt</keycap> <mousebutton>click</mousebutton> </keycombo> on a segment will change it to a curve segment.
       </para>
     </sect5>
 
@@ -236,9 +236,9 @@
       <para>
         Click the
         <inlinegraphic fileref="&icon_liquify_curve;" scalefit="1" width="2%" align="center" />
-        icon to activate the curve tool and left-click on the image to place the first point,
-        move and left-click to place another point and start forming the path. To end the line
-        just right-click anywhere.
+        icon to activate the curve tool and <mousebutton>left-click</mousebutton> on the image to place the first point,
+        move and <mousebutton>left-click</mousebutton> to place another point and start forming the path. To end the line
+        just <mousebutton>right-click</mousebutton> anywhere.
       </para>
       <para>
         <informaltable frame="none" width="80%">
@@ -260,18 +260,18 @@
         </informaltable>
       </para>
       <para>
-        It is possible to add a control point on a curve by Ctrl + click on a segment. You may
-        remove a control point from a curve by Ctrl + right- click on the node center.
+          It is possible to add a control point on a curve by <keycombo action="simul"> <keycap>Ctrl</keycap> <mousebutton>click</mousebutton> </keycombo> on a segment. You may
+          remove a control point from a curve by <keycombo action="simul"> <keycap>Ctrl</keycap> <mousebutton>right-click</mousebutton> </keycombo> on the node center.
       </para>
       <para>
-        A right-click on a segment will remove the shape completely.
+          A <mousebutton>right-click</mousebutton> on a segment will remove the shape completely.
       </para>
       <para>
-        A Ctrl + Alt + click on a segment will change it to a line segment.
+          A <keycombo action="simul"> <keycap>Ctrl</keycap> <keycap>Alt</keycap> <mousebutton>click</mousebutton> </keycombo> on a segment will change it to a line segment.
       </para>
       <para>
         It is possible to change the way the points of the curve are linked together by using
-        Ctrl + click on the center. There are four modes which correspond to different ways of
+        <keycombo action="simul"> <keycap>Ctrl</keycap> <mousebutton>click</mousebutton> </keycombo> on the center. There are four modes which correspond to different ways of
         handling the steepness of the bezier curve by control handles:
         <informaltable frame="none" width="80%">
           <tgroup cols="3" colsep="0" rowsep="0">
@@ -327,7 +327,7 @@
         Clicking the
         <inlinegraphic fileref="&icon_liquify_edit;" scalefit="1" width="2%" align="center" />
         icon activates or deactivates the node edit tool displaying all defined distortion
-        objects and their controls. Alternatively you can at any time right-click on the image
+        objects and their controls. Alternatively you can at any time <mousebutton>right-click</mousebutton> on the image
         for the same effect.
       </para>
     </sect5>

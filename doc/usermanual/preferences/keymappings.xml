@@ -43,7 +43,7 @@
           global/map view
         </entry>
         <entry>
-          M
+          <keycap>M</keycap>
         </entry>
       </row>
       <row>
@@ -51,7 +51,7 @@
           global/slideshow view
         </entry>
         <entry>
-          S
+          <keycap>S</keycap>
         </entry>
       </row>
       <row>
@@ -59,7 +59,7 @@
           global/print view
         </entry>
         <entry>
-          P
+          <keycap>P</keycap>
         </entry>
       </row>
       <row>
@@ -67,7 +67,7 @@
           global/switch view
         </entry>
         <entry>
-          .
+          <keycap>.</keycap>
         </entry>
       </row>
       <row>
@@ -75,7 +75,10 @@
           global/toggle header
         </entry>
         <entry>
-          Ctrl + H
+          <keycombo action="simul">
+              <keycap>Ctrl</keycap>
+              <keycap>H</keycap>
+          </keycombo>
         </entry>
       </row>
       <row>
@@ -83,7 +86,7 @@
           global/toggle side borders
         </entry>
         <entry>
-          Tab
+          <keycap>Tab</keycap>
         </entry>
       </row>
       <row>
@@ -91,7 +94,7 @@
           global/toggle fullscreen
         </entry>
         <entry>
-          F11
+          <keycap>F11</keycap>
         </entry>
       </row>
       <row>
@@ -99,7 +102,7 @@
           global/leave fullscreen
         </entry>
         <entry>
-          Escape
+          <keycap>Escape</keycap>
         </entry>
       </row>
       <row>
@@ -107,7 +110,10 @@
           global/zoom in
         </entry>
         <entry>
-          Ctrl + KP_plus
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>KP_plus</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -115,7 +121,10 @@
           global/zoom out
         </entry>
         <entry>
-          Ctrl + KP_minus
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>KP_minus</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -123,7 +132,7 @@
           image operations/clipping/commit
         </entry>
         <entry>
-          Return
+          <keycap>Return</keycap>
         </entry>
       </row>
       <row>
@@ -131,7 +140,7 @@
           image operations/flip/rotate 90 degrees CCW
         </entry>
         <entry>
-          (
+          <keycap>(</keycap>
         </entry>
       </row>
       <row>
@@ -139,7 +148,7 @@
           image operations/flip/rotate 90 degrees CW
         </entry>
         <entry>
-          )
+          <keycap>)</keycap>
         </entry>
       </row>
       <row>
@@ -147,7 +156,10 @@
           modules/copy_history/copy all
         </entry>
         <entry>
-          Ctrl + C
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>C</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -167,7 +179,10 @@
           modules/copy_history/paste all
         </entry>
         <entry>
-          Ctrl + V
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>V</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -175,7 +190,11 @@
           modules/copy_history/paste
         </entry>
         <entry>
-          Ctrl + Shift + V
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Shift</keycap>
+                <keycap>V</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -183,7 +202,10 @@
           modules/export/export
         </entry>
         <entry>
-          Ctrl + E
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>E</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -191,7 +213,7 @@
           modules/filmstrip/color blue
         </entry>
         <entry>
-          F4
+          <keycap>F4</keycap>
         </entry>
       </row>
       <row>
@@ -199,7 +221,7 @@
           modules/filmstrip/color green
         </entry>
         <entry>
-          F3
+          <keycap>F3</keycap>
         </entry>
       </row>
       <row>
@@ -207,7 +229,7 @@
           modules/filmstrip/color purple
         </entry>
         <entry>
-          F5
+          <keycap>F5</keycap>
         </entry>
       </row>
       <row>
@@ -215,7 +237,7 @@
           modules/filmstrip/color red
         </entry>
         <entry>
-          F1
+          <keycap>F1</keycap>
         </entry>
       </row>
       <row>
@@ -223,7 +245,7 @@
           modules/filmstrip/color yellow
         </entry>
         <entry>
-          F2
+          <keycap>F2</keycap>
         </entry>
       </row>
       <row>
@@ -231,7 +253,10 @@
           modules/filmstrip/copy history
         </entry>
         <entry>
-          Ctrl + C
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>C</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -239,7 +264,11 @@
           modules/filmstrip/copy history parts
         </entry>
         <entry>
-          Ctrl + Shift + C
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Shift</keycap>
+                <keycap>C</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -247,7 +276,10 @@
           modules/filmstrip/duplicate image
         </entry>
         <entry>
-          Ctrl + D
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>D</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -255,7 +287,10 @@
           modules/filmstrip/invert selection
         </entry>
         <entry>
-          Ctrl + I
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>I</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -263,7 +298,10 @@
           modules/filmstrip/paste history
         </entry>
         <entry>
-          Ctrl + V
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>V</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -271,7 +309,11 @@
           modules/filmstrip/paste history parts
         </entry>
         <entry>
-          Ctrl + Shift + V
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Shift</keycap>
+                <keycap>V</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -279,7 +321,7 @@
           modules/filmstrip/rate 0
         </entry>
         <entry>
-          0
+          <keycap>0</keycap>
         </entry>
       </row>
       <row>
@@ -287,7 +329,7 @@
           modules/filmstrip/rate 1
         </entry>
         <entry>
-          1
+          <keycap>1</keycap>
         </entry>
       </row>
       <row>
@@ -295,7 +337,7 @@
           modules/filmstrip/rate 2
         </entry>
         <entry>
-          2
+          <keycap>2</keycap>
         </entry>
       </row>
       <row>
@@ -303,7 +345,7 @@
           modules/filmstrip/rate 3
         </entry>
         <entry>
-          3
+          <keycap>3</keycap>
         </entry>
       </row>
       <row>
@@ -311,7 +353,7 @@
           modules/filmstrip/rate 4
         </entry>
         <entry>
-          4
+          <keycap>4</keycap>
         </entry>
       </row>
       <row>
@@ -319,7 +361,7 @@
           modules/filmstrip/rate 5
         </entry>
         <entry>
-          5
+          <keycap>5</keycap>
         </entry>
       </row>
       <row>
@@ -327,7 +369,7 @@
           modules/filmstrip/rate reject
         </entry>
         <entry>
-          R
+         <keycap>R</keycap>
         </entry>
       </row>
       <row>
@@ -335,7 +377,10 @@
           modules/filmstrip/select all
         </entry>
         <entry>
-          Ctrl + A
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>A</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -343,7 +388,11 @@
           modules/filmstrip/select none
         </entry>
         <entry>
-          Ctrl + Shift + A
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Shift</keycap>
+                <keycap>A</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -351,7 +400,10 @@
           modules/image/duplicate
         </entry>
         <entry>
-          Ctrl + D
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>D</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -359,7 +411,10 @@
           modules/image/group
         </entry>
         <entry>
-          Ctrl + G
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>G</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -367,7 +422,7 @@
           modules/image/remove from collection
         </entry>
         <entry>
-          Delete
+          <keycap>Delete</keycap>
         </entry>
       </row>
       <row>
@@ -375,7 +430,11 @@
           modules/image/ungroup
         </entry>
         <entry>
-          Ctrl + Shift + G
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Shift</keycap>
+                <keycap>G</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -383,7 +442,11 @@
           modules/import/import folder
         </entry>
         <entry>
-          Ctrl + Shift + I
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Shift</keycap>
+                <keycap>I</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -391,7 +454,10 @@
           modules/lighttable_mode/invert selection
         </entry>
         <entry>
-          Ctrl + I
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>I</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -399,7 +465,10 @@
           modules/lighttable_mode/select all
         </entry>
         <entry>
-          Ctrl + A
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>A</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -407,7 +476,11 @@
           modules/lighttable_mode/select none
         </entry>
         <entry>
-          Ctrl + Shift + A
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Shift</keycap>
+                <keycap>A</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -415,7 +488,10 @@
           modules/lighttable_mode/zoom in
         </entry>
         <entry>
-          Alt + 2
+            <keycombo action="simul">
+                <keycap>Alt</keycap>
+                <keycap>2</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -423,7 +499,10 @@
           modules/lighttable_mode/zoom max
         </entry>
         <entry>
-          Alt + 1
+            <keycombo action="simul">
+                <keycap>Alt</keycap>
+                <keycap>1</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -431,7 +510,10 @@
           modules/lighttable_mode/zoom min
         </entry>
         <entry>
-          Alt + 4
+            <keycombo action="simul">
+                <keycap>Alt</keycap>
+                <keycap>4</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -439,7 +521,10 @@
           modules/lighttable_mode/zoom out
         </entry>
         <entry>
-          Alt + 3
+            <keycombo action="simul">
+                <keycap>Alt</keycap>
+                <keycap>3</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -447,7 +532,7 @@
           modules/live_view/toggle live view
         </entry>
         <entry>
-          V
+          <keycap>V</keycap>
         </entry>
       </row>
       <row>
@@ -455,7 +540,10 @@
           modules/metadata_view/jump to film roll
         </entry>
         <entry>
-          Ctrl + J
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>J</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -463,7 +551,10 @@
           modules/recentcollect/jump back to previous collection
         </entry>
         <entry>
-          Ctrl + K
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>K</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -471,7 +562,10 @@
           modules/tagging/tag
         </entry>
         <entry>
-          Ctrl + T
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>T</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -479,7 +573,10 @@
           views/darkroom/undo
         </entry>
         <entry>
-          Ctrl + Z
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Z</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -487,7 +584,10 @@
           views/darkroom/redo
         </entry>
         <entry>
-            Ctrl + Y
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Y</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -495,7 +595,7 @@
           views/darkroom/decrease brush hardness
         </entry>
         <entry>
-          {
+          <keycap>{</keycap>
         </entry>
       </row>
       <row>
@@ -503,7 +603,7 @@
           views/darkroom/decrease brush opacity
         </entry>
         <entry>
-          &lt;
+          <keycap>&lt;</keycap>
         </entry>
       </row>
       <row>
@@ -511,7 +611,7 @@
           views/darkroom/decrease brush size
         </entry>
         <entry>
-          (
+          <keycap>(</keycap>
         </entry>
       </row>
       <row>
@@ -519,7 +619,10 @@
           views/darkroom/export
         </entry>
         <entry>
-          Ctrl + E
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>E</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -527,7 +630,7 @@
           views/darkroom/full preview
         </entry>
         <entry>
-          Z
+          <keycap>Z</keycap>
         </entry>
       </row>
       <row>
@@ -535,7 +638,10 @@
           views/darkroom/gamut check
         </entry>
         <entry>
-          Ctrl + G
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>G</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -543,7 +649,7 @@
           views/darkroom/image back
         </entry>
         <entry>
-          Backspace
+          <keycap>Backspace</keycap>
         </entry>
       </row>
       <row>
@@ -551,7 +657,7 @@
           views/darkroom/image forward
         </entry>
         <entry>
-          Space
+          <keycap>Space</keycap>
         </entry>
       </row>
       <row>
@@ -559,7 +665,7 @@
           views/darkroom/increase brush hardness
         </entry>
         <entry>
-          }
+          <keycap>}</keycap>
         </entry>
       </row>
       <row>
@@ -567,7 +673,7 @@
           views/darkroom/increase brush opacity
         </entry>
         <entry>
-          &gt;
+          <keycap>&gt;</keycap>
         </entry>
       </row>
       <row>
@@ -575,7 +681,7 @@
           views/darkroom/increase brush size
         </entry>
         <entry>
-          )
+          <keycap>)</keycap>
         </entry>
       </row>
       <row>
@@ -583,7 +689,7 @@
           views/darkroom/overexposed
         </entry>
         <entry>
-          O
+          <keycap>O</keycap>
         </entry>
       </row>
       <row>
@@ -591,7 +697,10 @@
           views/darkroom/softproof
         </entry>
         <entry>
-          Ctrl + S
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>S</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -599,7 +708,10 @@
           views/darkroom/toggle film strip
         </entry>
         <entry>
-          Ctrl + F
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>F</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -607,7 +719,10 @@
           views/darkroom/zoom close-up
         </entry>
         <entry>
-          Alt + 1
+            <keycombo action="simul">
+                <keycap>Alt</keycap>
+                <keycap>1</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -615,7 +730,10 @@
           views/darkroom/zoom fill
         </entry>
         <entry>
-          Alt + 2
+            <keycombo action="simul">
+                <keycap>Alt</keycap>
+                <keycap>2</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -623,7 +741,10 @@
           views/darkroom/zoom fit
         </entry>
         <entry>
-          Alt + 3
+            <keycombo action="simul">
+                <keycap>Alt</keycap>
+                <keycap>3</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -631,7 +752,7 @@
           views/lighttable/color blue
         </entry>
         <entry>
-          F4
+          <keycap>F4</keycap>
         </entry>
       </row>
       <row>
@@ -639,7 +760,7 @@
           views/lighttable/color green
         </entry>
         <entry>
-          F3
+          <keycap>F3</keycap>
         </entry>
       </row>
       <row>
@@ -647,7 +768,7 @@
           views/lighttable/color purple
         </entry>
         <entry>
-          F5
+          <keycap>F5</keycap>
         </entry>
       </row>
       <row>
@@ -655,7 +776,7 @@
           views/lighttable/color red
         </entry>
         <entry>
-          F1
+          <keycap>F1</keycap>
         </entry>
       </row>
       <row>
@@ -663,7 +784,7 @@
           views/lighttable/color yellow
         </entry>
         <entry>
-          F2
+          <keycap>F2</keycap>
         </entry>
       </row>
       <row>
@@ -671,7 +792,10 @@
           views/lighttable/navigate down
         </entry>
         <entry>
-          Shift + G
+            <keycombo action="simul">
+                <keycap>Shift</keycap>
+                <keycap>G</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -679,7 +803,7 @@
           views/lighttable/navigate page down
         </entry>
         <entry>
-          Page Down
+          <keycap>Page Down</keycap>
         </entry>
       </row>
       <row>
@@ -687,7 +811,7 @@
           views/lighttable/navigate page up
         </entry>
         <entry>
-          Page Up
+          <keycap>Page Up</keycap>
         </entry>
       </row>
       <row>
@@ -695,7 +819,7 @@
           views/lighttable/navigate up
         </entry>
         <entry>
-          G
+          <keycap>G</keycap>
         </entry>
       </row>
       <row>
@@ -703,7 +827,10 @@
           views/lighttable/preview with focus detection
         </entry>
         <entry>
-          Ctrl + Z
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Z</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -711,7 +838,7 @@
           views/lighttable/preview
         </entry>
         <entry>
-          Z
+          <keycap>Z</keycap>
         </entry>
       </row>
       <row>
@@ -719,7 +846,7 @@
           views/lighttable/rate 0
         </entry>
         <entry>
-          0
+          <keycap>0</keycap>
         </entry>
       </row>
       <row>
@@ -727,7 +854,7 @@
           views/lighttable/rate 1
         </entry>
         <entry>
-          1
+          <keycap>1</keycap>
         </entry>
       </row>
       <row>
@@ -735,7 +862,7 @@
           views/lighttable/rate 2
         </entry>
         <entry>
-          2
+          <keycap>2</keycap>
         </entry>
       </row>
       <row>
@@ -743,7 +870,7 @@
           views/lighttable/rate 3
         </entry>
         <entry>
-          3
+          <keycap>3</keycap>
         </entry>
       </row>
       <row>
@@ -751,7 +878,7 @@
           views/lighttable/rate 4
         </entry>
         <entry>
-          4
+          <keycap>4</keycap>
         </entry>
       </row>
       <row>
@@ -759,7 +886,7 @@
           views/lighttable/rate 5
         </entry>
         <entry>
-          5
+          <keycap>5</keycap>
         </entry>
       </row>
       <row>
@@ -767,7 +894,7 @@
           views/lighttable/rate reject
         </entry>
         <entry>
-          R
+          <keycap>R</keycap>
         </entry>
       </row>
       <row>
@@ -775,7 +902,7 @@
           views/lighttable/realign images to grid
         </entry>
         <entry>
-          L
+          <keycap>L</keycap>
         </entry>
       </row>
       <row>
@@ -783,7 +910,7 @@
           views/lighttable/scroll center
         </entry>
         <entry>
-          '
+          <keycap>'</keycap>
         </entry>
       </row>
       <row>
@@ -791,7 +918,7 @@
           views/lighttable/scroll down
         </entry>
         <entry>
-          &#8595;
+          <keycap>&#8595;</keycap>
         </entry>
       </row>
       <row>
@@ -799,7 +926,7 @@
           views/lighttable/scroll left
         </entry>
         <entry>
-          &#8592;
+          <keycap>&#8592;</keycap>
         </entry>
       </row>
       <row>
@@ -807,7 +934,7 @@
           views/lighttable/scroll right
         </entry>
         <entry>
-          &#8594;
+          <keycap>&#8594;</keycap>
         </entry>
       </row>
       <row>
@@ -815,7 +942,7 @@
           views/lighttable/scroll up
         </entry>
         <entry>
-          &#8593;
+          <keycap>&#8593;</keycap>
         </entry>
       </row>
       <row>
@@ -823,7 +950,7 @@
           views/lighttable/select single image
         </entry>
         <entry>
-          Return
+          <keycap>Return</keycap>
         </entry>
       </row>
       <row>
@@ -831,7 +958,7 @@
           views/lighttable/select toggle image
         </entry>
         <entry>
-          Space
+          <keycap>Space</keycap>
         </entry>
       </row>
       <row>
@@ -839,7 +966,10 @@
           views/map/undo
         </entry>
         <entry>
-          Ctrl + Z
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Z</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -847,7 +977,10 @@
           views/map/redo
         </entry>
         <entry>
-          Ctrl + Y
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Y</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -855,7 +988,10 @@
           views/map/toggle film strip
         </entry>
         <entry>
-          Ctrl + F
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>F</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -863,7 +999,10 @@
           views/map/undo
         </entry>
         <entry>
-          Ctrl + Z
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>Z</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -871,7 +1010,10 @@
           views/print/toggle film strip
         </entry>
         <entry>
-          Ctrl + F
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>F</keycap>
+            </keycombo>
         </entry>
       </row>
       <row>
@@ -879,7 +1021,7 @@
           views/slideshow/start and stop
         </entry>
         <entry>
-          Space
+          <keycap>Space</keycap>
         </entry>
       </row>
       <row>
@@ -887,7 +1029,10 @@
           views/tethering/toggle film strip
         </entry>
         <entry>
-          Ctrl + F
+            <keycombo action="simul">
+                <keycap>Ctrl</keycap>
+                <keycap>F</keycap>
+            </keycombo>
         </entry>
       </row>
     </tbody>

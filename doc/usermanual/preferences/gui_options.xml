@@ -222,19 +222,19 @@
   <para>
     Controls how lighttable panels are expanded. If this option is enabled, expanding a panel by
     <emphasis>clicking</emphasis> collapses any currently expanded panel. If you want to expand
-    a panel without collapsing the others you do so with <emphasis>Shift + click</emphasis>.
-    Disabling this option reverts the meaning of <emphasis>click</emphasis> and
-    <emphasis>Shift + click</emphasis> (default off).
+    a panel without collapsing the others you do so with <keycombo action="simul"> <keycap>Shift</keycap> <mousebutton>click</mousebutton> </keycombo>.
+    Disabling this option reverts the meaning of <mousebutton>click</mousebutton> and
+    <keycombo action="simul"> <keycap>Shift</keycap> <mousebutton>click</mousebutton> </keycombo> (default off).
   </para>
 
   <bridgehead renderas="sect4">expand a single darkroom module at a time</bridgehead>
 
   <para>
     Controls how darkroom modules are expanded. If this option is enabled, expanding a module by
-    <emphasis>clicking</emphasis> collapses any currently expanded module. If you want to expand
-    a module without collapsing the others you do so with <emphasis>Shift + click</emphasis>.
-    Disabling this option reverts the meaning of <emphasis>click</emphasis> and
-    <emphasis>Shift + click</emphasis> (default on).
+    <mousebutton>clicking</mousebutton> collapses any currently expanded module. If you want to expand
+    a module without collapsing the others you do so with <keycombo action="simul"> <keycap>Shift</keycap> <mousebutton>click</mousebutton> </keycombo>.
+    Disabling this option reverts the meaning of <mousebutton>click</mousebutton> and
+    <keycombo action="simul"> <keycap>Shift</keycap> <mousebutton>click</mousebutton> </keycombo> (default on).
   </para>
 
   <bridgehead renderas="sect4">scroll to lighttable modules when expanded/collapsed</bridgehead>

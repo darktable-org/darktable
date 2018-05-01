@@ -863,7 +863,7 @@
             <tbody>
               <row>
                 <entry>
-                  <emphasis>L</emphasis>
+                  <keycap>L</keycap>
                 </entry>
                 <entry>
                   switches to lighttable
@@ -871,7 +871,7 @@
               </row>
               <row>
                 <entry>
-                  <emphasis>D</emphasis>
+                  <keycap>D</keycap>
                 </entry>
                 <entry>
                   switches to darkroom
@@ -879,7 +879,7 @@
               </row>
               <row>
                 <entry>
-                  <emphasis>T</emphasis>
+                  <keycap>T</keycap>
                 </entry>
                 <entry>
                   switches to camera tethering
@@ -887,7 +887,7 @@
               </row>
               <row>
                 <entry>
-                  <emphasis>M</emphasis>
+                  <keycap>M</keycap>
                 </entry>
                 <entry>
                   switches to map
@@ -895,7 +895,7 @@
               </row>
               <row>
                 <entry>
-                  <emphasis>S</emphasis>
+                  <keycap>S</keycap>
                 </entry>
                 <entry>
                   switches to slideshow
@@ -903,7 +903,7 @@
               </row>
               <row>
                 <entry>
-                  <emphasis>P</emphasis>
+                  <keycap>P</keycap>
                 </entry>
                 <entry>
                   switches to print
@@ -1000,13 +1000,13 @@
       </para>
 
       <para>
-        By pressing the <emphasis>TAB</emphasis> key all panels get collapsed, allowing the
-        center area to occupy all available space. Pressing <emphasis>TAB</emphasis> again
+        By pressing the <keycap>TAB</keycap> key all panels get collapsed, allowing the
+        center area to occupy all available space. Pressing <keycap>TAB</keycap> again
         brings you back to the previous view.
       </para>
 
       <para>
-        Fullscreen view can be toggled by pressing <emphasis>F11</emphasis>.
+        Fullscreen view can be toggled by pressing <keycap>F11</keycap>.
       </para>
 
     </sect2>
@@ -1022,7 +1022,8 @@
       <para>
         The filmstrip along the bottom shows the same images as lighttable, with respect to
         filters and sort order. It is turned on/off with key accelerator
-        <emphasis>Ctrl + F</emphasis>. You can navigate along the filmstrip by scrolling with the
+        <keycombo action="simul"> <keycap>Ctrl</keycap> <keycap>F</keycap> </keycombo>.
+        You can navigate along the filmstrip by scrolling with the
         mouse wheel and change the height of the filmstrip panel by dragging its top. The
         filmstrip allows you to interact with images while you are not in lighttable mode. For
         example, you can, while developing an image in darkroom mode, switch to another image to

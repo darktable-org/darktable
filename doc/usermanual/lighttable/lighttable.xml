@@ -71,17 +71,17 @@
           <tbody>
             <row>
               <entry>
-                <emphasis>0&nbsp;&ndash; 5</emphasis>
+                <keycap>0&nbsp;&ndash; 5</keycap>
               </entry>
               <entry>
                 set the rating of the image; if an image has 1 star and you hit the
-                <emphasis>1</emphasis> key, the image will be unrated. Pressing
-                <emphasis>r</emphasis> rejects the image.
+                <keycap>1</keycap> key, the image will be unrated. Pressing
+                <keycap>R</keycap> rejects the image.
               </entry>
             </row>
             <row>
               <entry>
-                <emphasis>F1&nbsp;&ndash; F5</emphasis>
+                <keycap>F1&nbsp;&ndash; F5</keycap>
               </entry>
               <entry>
                 set a color label
@@ -89,7 +89,10 @@
             </row>
             <row>
               <entry>
-                <emphasis>Ctrl + C</emphasis>
+                  <keycombo action="simul">
+                      <keycap>Ctrl</keycap>
+                      <keycap>C</keycap>
+                  </keycombo>
               </entry>
               <entry>
                 copy the history stack
@@ -97,7 +100,10 @@
             </row>
             <row>
               <entry>
-                <emphasis>Ctrl + V</emphasis>
+                  <keycombo action="simul">
+                      <keycap>Ctrl</keycap>
+                      <keycap>V</keycap>
+                  </keycombo>
               </entry>
               <entry>
                 paste the copied history stack
@@ -105,7 +111,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>D</emphasis>
+                <keycap>D</keycap>
               </entry>
               <entry>
                 open in darkroom view for developing
@@ -113,7 +119,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>Z</emphasis>
+                <keycap>Z</keycap>
               </entry>
               <entry>
                 fully zoom into the image while the key is pressed
@@ -121,7 +127,10 @@
             </row>
             <row>
               <entry>
-                <emphasis>Ctrl + Z</emphasis>
+                  <keycombo action="simul">
+                      <keycap>Ctrl</keycap>
+                      <keycap>Z</keycap>
+                  </keycombo>
               </entry>
               <entry>
                 fully zoom into the image and show areas in focus
@@ -177,26 +186,26 @@
     <para>
       In the center of the bottom panel you have an option to choose between zoomable lighttable
       view or filemanager view of the thumbnails. In zoomable lighttable view, scroll with your
-      mouse wheel to zoom in and out. Moving the mouse while <emphasis>pressing the left mouse
-      button</emphasis> allows you to navigate through your collection. In filemanager view, you
+      mouse wheel to zoom in and out. Moving the mouse while <mousebutton>pressing the left mouse
+      button</mousebutton> allows you to navigate through your collection. In filemanager view, you
       can can change the number of images in each row, using the slider next to the filemanager
-      option, or by using <emphasis>Ctrl + mouse wheel</emphasis>. Use your mouse wheel to
+      option, or by using <keycombo action="simul"> <keycap>Ctrl</keycap> <mousebutton>mouse wheel</mousebutton> </keycombo>. Use your mouse wheel to
       navigate through your collection.
     </para>
 
     <para>
       In both modes you can navigate left/right/up/down through your collection using
-      &larr;/&rarr;/&uarr;/&darr;. Pressing <emphasis>G</emphasis> in filemanager mode goes to
-      the top, <emphasis>Shift + G</emphasis> to the bottom, <emphasis>Page Up</emphasis> brings
-      you one page up and <emphasis>Page Down</emphasis> one page down.
+      <keycap>&larr;</keycap>/<keycap>&rarr;</keycap>/<keycap>&uarr;</keycap>/<keycap>&darr;</keycap>. Pressing <keycap>G</keycap> in filemanager mode goes to
+      the top, <keycombo action="simul"> <keycap>Shift</keycap> <keycap>G</keycap> </keycombo>  to the bottom, <keycap>Page Up</keycap> brings
+      you one page up and <keycap>Page Down</keycap> one page down.
     </para>
 
     <para>
-      You can select the image under the pointer by <emphasis>left-clicking</emphasis> on its
-      thumbnail or by pressing <emphasis>return</emphasis>. A range of images is selected by
-      <emphasis>clicking</emphasis> on the first one and then
-      <emphasis>Shift + clicking</emphasis> on the last one. Images are added or removed from your
-      selection by <emphasis>Ctrl + clicking</emphasis> on their thumbnails or pressing
+      You can select the image under the pointer by <mousebutton>left-clicking</mousebutton> on its
+      thumbnail or by pressing <keycap>return</keycap>. A range of images is selected by
+      <mousebutton>clicking</mousebutton> on the first one and then
+      <keycombo action="simul"> <keycap>Shift</keycap> <mousebutton>clicking</mousebutton> </keycombo> on the last one. Images are added or removed from your
+      selection by <keycombo action="simul"> <keycap>Ctrl</keycap> <mousebutton>clicking</mousebutton> </keycombo> on their thumbnails or pressing
       <keycap>space</keycap>.
     </para>
 
@@ -208,7 +217,7 @@
     </para>
 
     <para>
-      While holding down the <emphasis>Z</emphasis> key a fully zoomed preview of the image
+      While holding down the <keycap>Z</keycap> key a fully zoomed preview of the image
       under the mouse cursor is displayed. You can use this feature for a quick inspection of
       image quality while rating and selecting images.
     </para>
@@ -218,7 +227,7 @@
     </indexterm>
 
     <para>
-      Holding down the <emphasis>Ctlr + Z</emphasis> key fully zooms into the image and
+        Holding down the <keycombo action="simul"> <keycap>Ctlr</keycap> <keycap>Z</keycap> </keycombo> key fully zooms into the image and
       additionally activates an analysis for sharp regions, detecting those parts of the image
       that are in focus. Areas of high sharpness are indicated by a red border&nbsp;&ndash; the
       higher the color intensity the better the sharpness. In case that no area of
@@ -228,7 +237,7 @@
     </para>
 
     <para>
-      Sometimes pressing <emphasis>Z</emphasis> or <emphasis>Ctrl + Z</emphasis> may not reveal an
+        Sometimes pressing <keycap>Z</keycap> or <keycombo action="simul"> <keycap>Ctrl</keycap> <keycap>Z</keycap> </keycombo> may not reveal an
       immediate effect&nbsp;&ndash; in that case please click into the center area and press the
       corresponding key again.
     </para>
@@ -240,7 +249,7 @@
         <tbody>
           <row>
             <entry>
-              Fully zoomed-in image view while holding down the <emphasis>Ctrl + Z</emphasis> key
+                Fully zoomed-in image view while holding down the <keycombo action="simul"> <keycap>Ctrl</keycap> <keycap>Z</keycap> </keycombo> key
               with indication of the sharp areas in focus. Sharpness detection is based on an
               embedded JPEG thumbnail of the original raw file independent of any processing
               steps within darktable.

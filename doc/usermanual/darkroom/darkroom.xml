@@ -49,16 +49,16 @@
     </indexterm>
 
     <para>
-      You can use <emphasis>middle-click</emphasis> to zoom 1:1. A double
-      <emphasis>middle-click</emphasis> takes you to 2:1. Alternatively you can zoom in and out
-      between 1:1 and fit-to-screen by mouse scrolling. Mouse scrolling while holding the
-      control key pressed gives an extended zoom range between 2:1 and 1:10.
+      You can use <mousebutton>middle-click</mousebutton> to zoom 1:1. A double
+      <mousebutton>middle-click</mousebutton> takes you to 2:1. Alternatively you can zoom in and out
+      between 1:1 and fit-to-screen by <mousebutton>mouse scrolling</mousebutton>. <mousebutton>Mouse scrolling</mousebutton> while holding the
+      <keysym>control</keysym> key pressed gives an extended zoom range between 2:1 and 1:10.
     </para>
 
     <para>
       You normally export multiple images from the lighttable view but you can also export the
       current image directly from the darkroom by using the shortcut
-      <emphasis>Ctrl + E</emphasis>. Export parameters are then those currently selected in the
+      <keycombo action="simul"> <keycap>Ctrl</keycap> <keycap>E</keycap> </keycombo>. Export parameters are then those currently selected in the
       lighttable.
     </para>
 

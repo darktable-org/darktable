@@ -86,7 +86,7 @@
         color space have data channels for L, a, b, C (chroma of LCh) and h (hue of LCh).
         Modules acting in RGB color space have data channels for g (gray), R, G, B, H (hue of
         HSL), S (saturation of HSL), and L (lightness of HSL). Consult for example
-        <ulink url="http://en.wikipedia.org/wiki/Color_space"> Wikipedia's article on color
+        <ulink url="https://en.wikipedia.org/wiki/Color_space"> Wikipedia's article on color
         spaces</ulink> for a deeper look.
       </para>
 
@@ -97,11 +97,11 @@
 
       <para>
         You can inspect the image data corresponding to an individual color channel by holding
-        down the <emphasis>shift</emphasis> key while entering the respective slider with the
+        down the <keycap>Shift</keycap> key while entering the respective slider with the
         mouse cursor. The center image changes to display the selected color channel either in
         graycale values or in false colors, depending on the corresponding preference setting in
         <quote>GUI options</quote> (see <xref linkend="gui_options"/>). You may additionally
-        hold down the <emphasis>ctrl</emphasis> key which lets you see the resulting mask
+        hold down the <keycap>Ctrl</keycap> key which lets you see the resulting mask
         overlaid to the image. When leaving the slider the image goes back to normal after a
         short delay.
       </para>
