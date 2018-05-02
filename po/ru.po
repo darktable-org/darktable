@@ -117,8 +117,7 @@ msgstr "Всегда запрашивать подтверждение на уд
 
 #: ../build/src/preferences_gen.h:1687
 msgid "ask before erasing images from disk / discarding history stack"
-msgstr ""
-"Подтверждение удаления снимков и удаления истории изменений"
+msgstr "Подтверждение удаления снимков и удаления истории изменений"
 
 #: ../build/src/preferences_gen.h:1699
 msgid ""
@@ -686,7 +685,7 @@ msgstr "Профиль планировщика OpenCL"
 #: ../src/gui/preferences.c:587
 msgctxt "preferences"
 msgid "default"
-msgstr "Вернуть исходные значения"
+msgstr "По умолчанию"
 
 #: ../build/src/preferences_gen.h:2833
 msgctxt "preferences"
@@ -706,11 +705,10 @@ msgid ""
 "parallel on two different GPUs; very fast GPU - process both pixelipes "
 "sequentially on the GPU."
 msgstr ""
-"defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
-"systems. default - GPU processes full and CPU processes preview pipe "
-"(adaptable by config parameters); multiple GPUs - process both pixelpipes in "
-"parallel on two different GPUs; very fast GPU - process both pixelipes "
-"sequentially on the GPU."
+"Определяет поведение планировщика на системах, поддерживающих OpenCL. "
+"По умолчанию — GPU обрабатывает полноразмерные изображения, а CPU предпросмотр. "
+"Несколько GPU — обработкой каждой задачи занимается выделенный GPU. "
+"Очень быстрый GPU — обе задачи выполняются на одном GPU параллельно."
 
 #: ../build/src/preferences_gen.h:2872
 msgid "always use LittleCMS 2 to apply output color profile"
@@ -895,18 +893,23 @@ msgid ""
 "them through a lighttable. It also enables you to develop raw images and "
 "enhance them in a darkroom."
 msgstr ""
+"darktable управляет цифровыми фотографиями в формате Raw, позволяя просматривать их, каталогизировать и редактировать."
 
 #: ../data/darktable.appdata.xml.in.h:3
 msgid ""
 "Other modes besides lighttable and darkroom are a map for geotagging, "
 "tethering, print and a slideshow."
 msgstr ""
+"Помимо этого darktable поддерживает геотеггинг, режим дистанционной съёмки, "
+"печать и слайдшоу."
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid ""
 "darktable supports most modern camera's raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
+"darktable поддерживает большой спектр современных камер и "
+"выполняет обработку снимков с очень большой точностью."
 
 #: ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -942,23 +945,25 @@ msgid ""
 "average dE: %.02f\n"
 "max dE: %.02f"
 msgstr ""
+"Средн. dE: %.02f\n"
+"Макс. dE: %.02f"
 
 #: ../src/cli/main.c:106
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
-msgstr ""
+msgstr "Извините, но из-за ограничений API установка BPP на данный момент не поддерживается"
 
 #: ../src/cli/main.c:118
 msgid "unknown option for --hq"
-msgstr ""
+msgstr "Неизвестный параметр для --hq"
 
 #: ../src/cli/main.c:134
 msgid "unknown option for --upscale"
-msgstr ""
+msgstr "Неизвестный параметр для --upscale"
 
 #: ../src/cli/main.c:188
 #, c-format
 msgid "error: output file is a directory. please specify file name"
-msgstr ""
+msgstr "Ошибка: Файл вывода не может быть каталогом. Укажите имя файла."
 
 #: ../src/cli/main.c:197
 msgid "output file already exists, it will get renamed"
@@ -1145,7 +1150,7 @@ msgstr "BRG (для тестирования)"
 #: ../src/common/cups_print.c:322
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
-msgstr ""
+msgstr "Не найден файл «%s» для печати снимка %d на «%s»"
 
 #: ../src/common/cups_print.c:383
 #, c-format
@@ -1155,12 +1160,12 @@ msgstr "Ошибка при печати снимка %d на «%s»"
 #: ../src/common/cups_print.c:385
 #, c-format
 msgid "printing image %d on `%s'"
-msgstr "Печать снимка %d на `%s'"
+msgstr "Печать снимка %d на «%s»"
 
 #: ../src/common/darktable.c:211
 #, c-format
 msgid "found strange path `%s'"
-msgstr "Найдено странное расположение `%s'"
+msgstr "Найдено странный путь «%s»"
 
 #: ../src/common/darktable.c:228
 #, c-format
@@ -1170,7 +1175,7 @@ msgstr "Ошибка при загрузке каталога «%s»"
 #: ../src/common/darktable.c:251
 #, c-format
 msgid "file `%s' has unknown format!"
-msgstr "У файла \"%s\" неизвестный формат!"
+msgstr "У файла «%s» неизвестный формат!"
 
 #: ../src/common/darktable.c:264 ../src/libs/import.c:821
 #, c-format
@@ -1186,10 +1191,15 @@ msgid ""
 "\n"
 "%s\n"
 msgstr ""
+"Произошла ошибка открытия базы данных из\n"
+"\n"
+"<span style=\"italic\">%s</span>\n"
+"\n"
+"%s\n"
 
 #: ../src/common/database.c:1347
 msgid "darktable - error locking database"
-msgstr ""
+msgstr "Ошибка получения монопольного доступа к базе данных"
 
 #: ../src/common/database.c:1347 ../src/common/database.c:1660
 #: ../src/common/database.c:1736
@@ -1202,16 +1212,18 @@ msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
 "%d"
 msgstr ""
+"Файл блокировки базы данных содержит PID, который является активным процессом в системе: "
+"%d"
 
 #: ../src/common/database.c:1464
 #, c-format
 msgid "the database lock file seems to be empty"
-msgstr ""
+msgstr "Файл блокировки базы данных пуст"
 
 #: ../src/common/database.c:1472
 #, c-format
 msgid "error opening the database lock file for reading: %s"
-msgstr ""
+msgstr "Ошибка чтения файла блокировки базы данных: %s"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
@@ -1226,10 +1238,17 @@ msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or start with a new one?"
 msgstr ""
+"Произошла ошибка открытия базы данных из\n"
+"\n"
+"<span style=\"italic\">%s</span>\n"
+"\n"
+"Похоже, что файл базы данных повреждён.\n"
+"Хотите ли вы закрыть darktable, чтобы вручную восстановить базу\n"
+"данных из резервной копии или создать новую?"
 
 #: ../src/common/database.c:1659 ../src/common/database.c:1735
 msgid "darktable - error opening database"
-msgstr ""
+msgstr "Ошибка открытия базы данных"
 
 #: ../src/common/database.c:1660 ../src/common/database.c:1736
 msgid "delete database"
@@ -1377,21 +1396,22 @@ msgstr "Файл шумового профиля «%s» некорректный
 #: ../src/common/opencl.c:746
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
-msgstr "Из-за медленного GPU ускорение через OpenCL отключено."
+msgstr "Из-за медленного GPU ускорение OpenCL отключено."
 
 #: ../src/common/opencl.c:753
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
 msgstr ""
+"Обнаружено несколько GPU — настройки планировщика OpenCL изменены соответствующим образом."
 
 #: ../src/common/opencl.c:760
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
-msgstr ""
+msgstr "Обнаружен очень быстрый GPU — настройки планировщика OpenCL изменены соответствующим образом."
 
 #: ../src/common/opencl.c:767
 msgid "opencl scheduling profile set to default."
-msgstr ""
+msgstr "Настройки планировщика OpenCL установлены по умолчанию."
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.c:1739
 #: ../src/libs/print_settings.c:1133
@@ -1497,7 +1517,7 @@ msgstr "над уровнем моря"
 
 #: ../src/common/utility.c:456
 msgid "below sea level"
-msgstr "под уровнем моря"
+msgstr "ниже уровня моря"
 
 #: ../src/common/utility.c:507 ../src/iop/watermark.c:735
 #: ../src/libs/metadata_view.c:550
@@ -1751,7 +1771,7 @@ msgstr[2] "Экспортируется %d снимков в «%s»"
 #: ../src/views/print.c:262
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr "Снимок \"%s\" сейчас недоступен"
+msgstr "Снимок «%s» сейчас недоступен"
 
 #: ../src/control/jobs/control_jobs.c:1343
 msgid "merge hdr image"
@@ -1759,12 +1779,11 @@ msgstr "Объединить в HDR"
 
 #: ../src/control/jobs/control_jobs.c:1357
 msgid "duplicate images"
-msgstr "Создание дупликатов снимков"
+msgstr "Создание дубликатов снимков"
 
 #: ../src/control/jobs/control_jobs.c:1364
-#, fuzzy
 msgid "flip images"
-msgstr "Публичные фотографии"
+msgstr "Отражение снимков"
 
 #. get all selected images now, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1371
@@ -2427,7 +2446,7 @@ msgstr "Временно отключить маску смешивания дл
 #: ../src/develop/develop.c:1144
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr "%s: несоответствие версии модуля `%s': %d != %d"
+msgstr "%s: несоответствие версии модуля «%s»: %d != %d"
 
 #: ../src/develop/imageop.c:883
 msgid "new instance"
@@ -2521,7 +2540,7 @@ msgstr "Не удалось найти XMP от Lightroom!"
 #: ../src/develop/lightroom.c:995
 #, c-format
 msgid "`%s' not a lightroom XMP!"
-msgstr "`%s' не является файлом XMP от Lightroom!"
+msgstr "«%s» не является файлом XMP от Lightroom!"
 
 #: ../src/develop/lightroom.c:1455 ../src/libs/import.c:594
 msgid "tags"
@@ -2808,12 +2827,12 @@ msgstr "Не удалось создать каталог «%s»!\n"
 #: ../src/generate-cache/main.c:78
 #, c-format
 msgid "warning: no images are matching the requested image id range\n"
-msgstr ""
+msgstr "ВНИМАНИЕ: Нет снимков соответствующих указанному диапазону ID\n"
 
 #: ../src/generate-cache/main.c:81
 #, c-format
 msgid "warning: did you want to swap these boundaries?\n"
-msgstr ""
+msgstr "ВНИМАНИЕ: Не хотите ли вы поменять критерии поиска местами?\n"
 
 #: ../src/generate-cache/main.c:211
 #, c-format
@@ -2823,16 +2842,18 @@ msgid ""
 "need to enable disk backend for thumbnail cache\n"
 "no thumbnails to be generated, done."
 msgstr ""
+"ВНИМАНИЕ: Опция записи миниатюр на диск отключена в настройках darktable.\n"
+"Включите её, если вы хотите сгенерировать миниатюры."
 
 #: ../src/generate-cache/main.c:221
 #, c-format
 msgid "error: ensure that min_mip <= max_mip\n"
-msgstr ""
+msgstr "ОШИБКА: убедитесь, что min_mip <= max_mip\n"
 
 #: ../src/generate-cache/main.c:226
 #, c-format
 msgid "creating complete lighttable thumbnail cache\n"
-msgstr ""
+msgstr "Генерирую полный набор миниатюр\n"
 
 #: ../src/gui/accelerators.c:32 ../src/gui/accelerators.c:69
 msgctxt "accel"
@@ -3963,7 +3984,7 @@ msgstr "Файлы на диске"
 #: ../src/imageio/storage/disk.c:96 ../src/imageio/storage/gallery.c:108
 #: ../src/imageio/storage/latex.c:107
 msgid "_select as output destination"
-msgstr ""
+msgstr "Выбрать"
 
 #: ../src/imageio/storage/disk.c:157 ../src/imageio/storage/gallery.c:170
 #: ../src/imageio/storage/latex.c:169
@@ -4316,7 +4337,7 @@ msgstr "Введите проверочный код"
 
 #: ../src/imageio/storage/picasa.c:938
 msgid "drop box"
-msgstr ""
+msgstr "drop box"
 
 #: ../src/imageio/storage/picasa.c:1155
 msgid "google+ photos"
@@ -4361,27 +4382,27 @@ msgstr "Наклон"
 
 #: ../src/iop/ashift.c:2498
 msgid "automatic cropping failed"
-msgstr "не удалось выполнить автокадрирование"
+msgstr "Не удалось выполнить автокадрирование"
 
 #: ../src/iop/ashift.c:2518
 msgid "data pending - please repeat"
-msgstr ""
+msgstr "Ожидается ввод данных, повторите"
 
 #: ../src/iop/ashift.c:2524
 msgid "could not detect structural data in image"
-msgstr ""
+msgstr "Не могу определить структуру линий в изображении"
 
 #: ../src/iop/ashift.c:2535
 msgid "could not run outlier removal"
-msgstr ""
+msgstr "could not run outlier removal"
 
 #: ../src/iop/ashift.c:2589
 msgid "not enough structure for automatic correction"
-msgstr ""
+msgstr "Недостаточно информации для автоматической коррекции"
 
 #: ../src/iop/ashift.c:2594
 msgid "automatic correction failed, please correct manually"
-msgstr ""
+msgstr "Ошибка автоматической коррекции, повторите вручную"
 
 #: ../src/iop/ashift.c:4173 ../src/iop/ashift.c:4174 ../src/iop/ashift.c:4273
 #: ../src/iop/ashift.c:4274
@@ -4453,7 +4474,7 @@ msgstr "Кроп-фактор"
 
 #: ../src/iop/ashift.c:4428
 msgid "lens dependence"
-msgstr ""
+msgstr "Зависимость от объектива"
 
 #: ../src/iop/ashift.c:4438
 msgid "aspect adjust"
@@ -4511,7 +4532,7 @@ msgstr ""
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
-msgstr ""
+msgstr "Уровень зависимости коррекции от параметров объектива"
 
 #: ../src/iop/ashift.c:4527
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
@@ -5742,7 +5763,7 @@ msgstr "ICC профиль ввода"
 #: ../src/iop/colorin.c:1406
 #, c-format
 msgid "`%s' color matrix not found!"
-msgstr "Цветовая матрица %s не найдена!"
+msgstr "Цветовая матрица «%s» не найдена!"
 
 #: ../src/iop/colorin.c:1440
 msgid "input profile could not be generated!"
@@ -6105,7 +6126,7 @@ msgid ""
 " - static: fast, only uses the threshold as a static limit"
 msgstr ""
 "Алгоритм устранения каймы:\n"
-"Глобальное среднее — быстрый. Может давать ошибки в предварительном просмотре на "
+"Глобальное среднее — быстрый. Может давать ошибки в предпросмотре на "
 "больших увеличениях или быть менее эффективен в сравнении с «Локальное среднее».\n"
 "Локальное среднее — медленнее. Может давать лучший результат в сравнении c "
 "«Глобальное среднее» из-за использования соседних пикселей в качестве опорных.\n"
@@ -6135,7 +6156,7 @@ msgstr "Краевой порог"
 #: ../src/iop/demosaic.c:4833
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
-msgstr "Цветовая матрица %s не найдена!"
+msgstr "Цветовая матрица «%s» не найдена!"
 
 #: ../src/iop/demosaic.c:5033 ../src/iop/demosaic.c:5042
 #: ../src/iop/dither.c:792 ../src/iop/highlights.c:1048
@@ -6420,7 +6441,7 @@ msgstr "Значения из Magic Lantern"
 #: ../src/iop/rawoverexposed.c:278
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr "Не удалось получить буфер Raw из снимка \"%s\""
+msgstr "Ошибка получения Raw буфера из снимка «%s»"
 
 #: ../src/iop/exposure.c:851 ../src/iop/levels.c:568
 msgctxt "mode"
@@ -6810,7 +6831,7 @@ msgstr ""
 #: ../src/iop/invert.c:96 ../src/iop/invert.c:518
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image"
-msgstr "Цветовая матрица %s не найдена!"
+msgstr "Цветовая матрица «%s» не найдена!"
 
 #: ../src/iop/invert.c:111
 msgid "invert"
@@ -7443,7 +7464,7 @@ msgstr "Ошибки экспозиции"
 
 #: ../src/iop/rawprepare.c:46
 msgid "crop x"
-msgstr ""
+msgstr "Обрезка X"
 
 #: ../src/iop/rawprepare.c:46
 msgid "crop from left border"
@@ -7451,7 +7472,7 @@ msgstr "Обрезка слева"
 
 #: ../src/iop/rawprepare.c:47
 msgid "crop y"
-msgstr ""
+msgstr "Обрезка Y"
 
 #: ../src/iop/rawprepare.c:47
 msgid "crop from top"
@@ -7820,7 +7841,7 @@ msgstr "Температура"
 #: ../src/iop/temperature.c:214
 msgctxt "accel"
 msgid "preset/camera"
-msgstr ""
+msgstr "Предустановки/Камера"
 
 #: ../src/iop/temperature.c:215
 msgctxt "accel"
@@ -7850,12 +7871,12 @@ msgstr "Пипетка"
 #: ../src/iop/temperature.c:929
 #, c-format
 msgid "`%s' color matrix not found for image"
-msgstr "Цветовая матрица %s не найдена!"
+msgstr "Цветовая матрица «%s» не найдена!"
 
 #: ../src/iop/temperature.c:972
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
-msgstr "Не удалось прочитать данные о балансе белого камеры из  `%s'!"
+msgstr "Не удалось прочитать данные о балансе белого камеры из  «%s»!"
 
 #: ../src/iop/temperature.c:1339
 msgid "magenta"
@@ -7888,7 +7909,7 @@ msgstr "Точная настройка"
 #: ../src/iop/temperature.c:1432
 #, c-format
 msgid "%.0f mired"
-msgstr ""
+msgstr "%.0f пунктов"
 
 #: ../src/iop/temperature.c:1436
 msgid "fine tune white balance preset"
@@ -8297,7 +8318,7 @@ msgstr "Параметры"
 #: ../src/libs/camera.c:104
 msgctxt "accel"
 msgid "capture image(s)"
-msgstr ""
+msgstr "Сделать снимок"
 
 #: ../src/libs/camera.c:144
 msgid "toggle view property in center view"
@@ -8305,8 +8326,7 @@ msgstr "Показывать значение этого параметра вв
 
 #: ../src/libs/camera.c:222
 msgid "connection with camera lost, exiting tethering mode"
-msgstr ""
-"Соединение с камерой потеряно, выход из режима дистанционной съёмки"
+msgstr "Соединение с камерой потеряно, выход из режима дистанционной съёмки"
 
 #: ../src/libs/camera.c:367
 msgid "battery"
@@ -8576,7 +8596,7 @@ msgstr "Добавить образец"
 
 #: ../src/libs/colorpicker.c:363
 msgid "hover to highlight sample on canvas, click to lock sample"
-msgstr ""
+msgstr "Мышь поверх образца отображает его на изображении (включите опцию ниже), щелчок блокирует его"
 
 #: ../src/libs/colorpicker.c:378 ../src/libs/image.c:181
 msgid "remove"
@@ -9131,7 +9151,7 @@ msgstr "Создать HDR"
 #: ../src/libs/image.c:299
 msgctxt "accel"
 msgid "duplicate"
-msgstr "Дупликат"
+msgstr "Дубликат"
 
 #: ../src/libs/image.c:300
 msgctxt "accel"
@@ -9286,22 +9306,22 @@ msgstr "Отразить по горизонтали"
 #: ../src/libs/live_view.c:171
 msgctxt "accel"
 msgid "move focus point in (big steps)"
-msgstr ""
+msgstr "Переместить точку фокусировки (большой шаг)"
 
 #: ../src/libs/live_view.c:172
 msgctxt "accel"
 msgid "move focus point in (small steps)"
-msgstr ""
+msgstr "Переместить точку фокусировки (малый шаг)"
 
 #: ../src/libs/live_view.c:173
 msgctxt "accel"
 msgid "move focus point out (small steps)"
-msgstr ""
+msgstr "Переместить точку фокусировки обратно (малый шаг)"
 
 #: ../src/libs/live_view.c:174
 msgctxt "accel"
 msgid "move focus point out (big steps)"
-msgstr ""
+msgstr "Переместить точку фокусировки обратно (большой шаг)"
 
 #: ../src/libs/live_view.c:292
 msgid "toggle live view"
@@ -9325,19 +9345,19 @@ msgstr "Отразить по горизонтали вид в Live View"
 
 #: ../src/libs/live_view.c:322
 msgid "move focus point in (big steps)"
-msgstr ""
+msgstr "Переместить точку фокусировки (большой шаг)"
 
 #: ../src/libs/live_view.c:323
 msgid "move focus point in (small steps)"
-msgstr ""
+msgstr "Переместить точку фокусировки (малый шаг)"
 
 #: ../src/libs/live_view.c:324
 msgid "move focus point out (small steps)"
-msgstr ""
+msgstr "Переместить точку фокусировки обратно (малый шаг)"
 
 #: ../src/libs/live_view.c:325
 msgid "move focus point out (big steps)"
-msgstr ""
+msgstr "Переместить точку фокусировки обратно (большой шаг)"
 
 #: ../src/libs/live_view.c:382
 msgid "overlay"
@@ -9762,7 +9782,7 @@ msgstr "Перейти к съёмке"
 
 #: ../src/libs/modulegroups.c:69
 msgid "modulegroups"
-msgstr ""
+msgstr "Группы модулей"
 
 #: ../src/libs/modulegroups.c:110
 msgid "show only your favourite modules (selected in `more modules' below)"
@@ -10109,11 +10129,11 @@ msgstr "Введите название стиля"
 
 #: ../src/libs/styles.c:344
 msgid "create duplicate"
-msgstr "Создать дупликат"
+msgstr "Создать дубликат"
 
 #: ../src/libs/styles.c:349
 msgid "creates a duplicate of the image before applying style"
-msgstr "Создать дупликат снимка перед применением стиля"
+msgstr "Создать дубликат снимка перед применением стиля"
 
 #: ../src/libs/styles.c:359
 msgid "create styles from history stack of selected images"
@@ -10531,7 +10551,7 @@ msgstr "Показать подсказки о снимках"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
-msgstr ""
+msgstr "hinter"
 
 #: ../src/libs/tools/lighttable.c:64 ../src/views/lighttable.c:139
 msgid "lighttable"
@@ -10568,7 +10588,7 @@ msgstr "Макс. удаление"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
-msgstr ""
+msgstr "module toolbox"
 
 #: ../src/libs/tools/ratings.c:54
 msgid "ratings"
@@ -10586,7 +10606,7 @@ msgstr "Прочее"
 
 #: ../src/libs/tools/view_toolbox.c:46
 msgid "view toolbox"
-msgstr ""
+msgstr "view toolbox"
 
 #: ../src/lua/lualib.c:295
 msgctxt "accel"
@@ -10890,19 +10910,19 @@ msgstr "Вернуть"
 
 #: ../src/views/knight.c:334
 msgid "good knight"
-msgstr ""
+msgstr "good knight"
 
 #: ../src/views/lighttable.c:528 ../src/views/slideshow.c:331
 msgid "there are no images in this collection"
-msgstr "В этой подборке нет фотографий"
+msgstr "В этой подборке нет снимков"
 
 #: ../src/views/lighttable.c:532
 msgid "if you have not imported any images yet"
-msgstr "Если вы ещё не импортировали изображения,"
+msgstr "Если вы ещё ничего не импортировали,"
 
 #: ../src/views/lighttable.c:536
 msgid "you can do so in the import module"
-msgstr "вы можете сделать это в модуле импорта."
+msgstr "вы можете сделать это в модуле импорта слева."
 
 #: ../src/views/lighttable.c:544
 msgid "try to relax the filter settings in the top panel"
@@ -10910,7 +10930,7 @@ msgstr "Попробуйте изменить фильтр перечисляе�
 
 #: ../src/views/lighttable.c:553
 msgid "or add images in the collection module in the left panel"
-msgstr "или добавить фото через модуль подборки слева."
+msgstr "или выбрать их через модуль коллекций слева."
 
 #. Navigation keys
 #: ../src/views/lighttable.c:2217
@@ -10965,16 +10985,14 @@ msgid "realign images to grid"
 msgstr "Заново выровнять фотографии по сетке"
 
 #: ../src/views/lighttable.c:2229
-#, fuzzy
 msgctxt "accel"
 msgid "select toggle image"
-msgstr "Выбранная фотография"
+msgstr "Инвертировать выбор"
 
 #: ../src/views/lighttable.c:2230
-#, fuzzy
 msgctxt "accel"
 msgid "select single image"
-msgstr "Выбранная фотография"
+msgstr "Выбрать один снимок"
 
 #. Preview key
 #: ../src/views/lighttable.c:2233
@@ -10990,22 +11008,21 @@ msgstr "Предпросмотр с определением фокуса"
 #: ../src/views/lighttable.c:2235
 msgctxt "accel"
 msgid "sticky preview"
-msgstr ""
+msgstr "Предпросмотр"
 
 #: ../src/views/lighttable.c:2236
 msgctxt "accel"
 msgid "sticky preview with focus detection"
-msgstr ""
+msgstr "Предпросмотр с определением фокуса"
 
 #: ../src/views/lighttable.c:2237
 msgctxt "accel"
 msgid "exit sticky preview"
-msgstr ""
+msgstr "Выйти из предпросмотра"
 
 #: ../src/views/lighttable.c:2354
-#, fuzzy
 msgid "set display profile"
-msgstr "Профиль монитора"
+msgstr "Установить профиль монитора"
 
 #: ../src/views/map.c:129
 msgid "map"
@@ -11045,7 +11062,7 @@ msgstr "Камеры с поддержкой дистанционной съём
 
 #: ../src/views/view.c:267
 msgid "you are making a mistake!"
-msgstr ""
+msgstr "Вы совершаете ошибку!"
 
 #: ../src/views/view.c:268
 msgid "_yes, i understood. please let me suffer by using 32-bit darktable."
@@ -11061,6 +11078,12 @@ msgid ""
 "we strongly recommend you switch to a proper 64-bit build.\n"
 "otherwise, you are GUARANTEED to experience issues which cannot be fixed.\n"
 msgstr ""
+"ВНИМАНИЕ!\n"
+"Вы используете 32-разрядную сборку darktable.\n"
+"32-разрядные системы имеют значительные ограничения виртуального адресного пространства.\n"
+"Мы имеет множественные сообщения о спорадических ошибках и падениях 32-разрядных сборок darktable.\n"
+"Мы настоятельно рекомендуем переход на 64-разрядную сборку.\n"
+"В противном случае мы можем ГАРАНТИРОВАТЬ наличие неустранимых ошибок.\n"
 
 #~ msgid "ICC profiles in %s/color/out or %s/color/out"
 #~ msgstr "Цветовые профили в %s/color/out или %s/color/out"
