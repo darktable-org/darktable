@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
 "POT-Creation-Date: 2018-04-29 11:26+0800\n"
-"PO-Revision-Date: 2018-05-04 20:41+0800\n"
+"PO-Revision-Date: 2018-05-04 21:11+0800\n"
 "Last-Translator: Julian Hofer <julian.hofer@mailbox.org>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.0.7\n"
-"X-Poedit-Bookmarks: 255,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
+"X-Poedit-Bookmarks: 298,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
 msgid "darktable 2.4"
@@ -2689,7 +2689,7 @@ msgid ""
 "profile to darktable. For more information on color management see <xref "
 "linkend=\"color_management\"/>."
 msgstr ""
-"Ab darktable 2.0 werden Vorschaubilder Farbtreu verwaltet, wenn die "
+"Ab darktable 2.0 werden Vorschaubilder farbtreu verwaltet, wenn die "
 "entsprechende Option in den <quote>zentralen Optionen</quote> aktiviert ist "
 "(siehe <xref linkend=\"core_options\"/>). Farben werden auf dem Bildschirm "
 "exakt wiedergegeben, solange Ihr System so eingestellt ist, dass es das "
@@ -2772,7 +2772,7 @@ msgstr "Bewertungen und Farbmarkierungen "
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2043(primary)
 msgid "star ratings"
-msgstr "Bewertung "
+msgstr "Bewertung"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2047(primary)
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2416(para)
