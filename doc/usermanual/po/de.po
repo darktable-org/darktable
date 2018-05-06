@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
 "POT-Creation-Date: 2018-04-29 11:26+0800\n"
-"PO-Revision-Date: 2018-05-04 21:11+0800\n"
+"PO-Revision-Date: 2018-05-06 10:18+0800\n"
 "Last-Translator: Julian Hofer <julian.hofer@mailbox.org>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -2323,7 +2323,6 @@ msgstr ""
 
 # Andere Tastenkombination als im Quelltext. Welche stimmt?
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1743(para)
-#, fuzzy
 msgid ""
 "In both modes you can navigate left/right/up/down through your collection "
 "using ←/→/↑/↓. Pressing <emphasis>g</emphasis> in filemanager mode goes to "
@@ -2333,10 +2332,10 @@ msgid ""
 msgstr ""
 "In beiden Modi ist es auch möglich mit den Pfeiltasten durch die Sammlung zu "
 "navigieren. Im Modus <emphasis>Dateiverwaltung</emphasis> gelangen Sie mit "
-"der Taste <emphasis>g</emphasis> an den Anfang der Sammlung bzw. mit der "
-"Tastenkombination <emphasis>Shift + g</emphasis> ans Ende. Die Taste "
-"<emphasis>Bild auf</emphasis> blättert eine Seite nach oben und "
-"<emphasis>Bild ab</emphasis> eine Seite nach unten."
+"der Taste <emphasis>G</emphasis> an den Anfang der Sammlung bzw. mit der "
+"Tastenkombination <emphasis>Shift + G</emphasis> ans Ende. Die Taste "
+"<emphasis>Bild Auf</emphasis> blättert eine Seite nach oben und "
+"<emphasis>Bild Ab</emphasis> eine Seite nach unten."
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1750(para)
 msgid ""
@@ -2476,8 +2475,8 @@ msgid ""
 "<emphasis>not</emphasis> a backup operation of that folder."
 msgstr ""
 "Zu beachten ist, dass das Importieren von Bildern in darktable kein Kopieren "
-"der Bilder importieren. Das Importieren eines Ordners in darktable "
-"entspricht daher <emphasis>keinem</emphasis> Backup dieses Ordners."
+"der Bilder bedeutet. Das Importieren eines Ordners in darktable entspricht "
+"daher <emphasis>keinem</emphasis> Backup dieses Ordners."
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1855(title)
 msgid "Collections"
@@ -2526,11 +2525,11 @@ msgstr ""
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1886(title)
 msgid "Thumbnails"
-msgstr "Vorschaubilder (Thumbnails)"
+msgstr "Thumbnails"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1889(primary)
 msgid "thumbnails"
-msgstr "Vorschaubilder (Thumbnails)"
+msgstr "Thumbnails"
 
 # Ich denke, dass es reicht Thumbnails einmal in der Überschrift zu erwähnen, alles weitere stört den Lesefluss
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1892(para)
