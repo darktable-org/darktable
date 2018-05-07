@@ -434,30 +434,27 @@ static void _zoom_preset_change(int val)
   float scale = 0;
   zoom_x = 0.0f; //+= (1.0/scale)*(x - .5f*dev->width )/procw;
   zoom_y = 0.0f; //+= (1.0/scale)*(y - .5f*dev->height)/proch;
-  if(val == 0)
-  {
+  switch(val) {
+  case 0:
     scale = 0.5 * dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
     zoom = DT_ZOOM_FREE;
-  }
-  else if(val == 1)
-  {
+    break;
+  case 1:
     zoom = DT_ZOOM_FIT;
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
-  }
-  else if(val == 2)
-  {
-    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-    zoom = DT_ZOOM_1;
-  }
-  else if(val == 3)
-  {
-    scale = 2.0f;
-    zoom = DT_ZOOM_FREE;
-  }
-  else if(val == 4)
-  {
+    break;
+  case 2:
     scale = 0.5f;
     zoom = DT_ZOOM_FREE;
+    break;
+  case 3:
+    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    zoom = DT_ZOOM_1;
+    break;
+  case 4:
+    scale = 2.0f;
+    zoom = DT_ZOOM_FREE;
+    break;
   }
 
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
@@ -470,7 +467,7 @@ static void _zoom_preset_change(int val)
   dt_control_queue_redraw();
 }
 
-static void _zoom_preset_mini(GtkButton *button, gpointer user_data)
+static void _zoom_preset_small(GtkButton *button, gpointer user_data)
 {
   _zoom_preset_change(0);
 }
@@ -478,15 +475,15 @@ static void _zoom_preset_fit(GtkButton *button, gpointer user_data)
 {
   _zoom_preset_change(1);
 }
-static void _zoom_preset_1(GtkButton *button, gpointer user_data)
+static void _zoom_preset_50(GtkButton *button, gpointer user_data)
 {
   _zoom_preset_change(2);
 }
-static void _zoom_preset_2(GtkButton *button, gpointer user_data)
+static void _zoom_preset_100(GtkButton *button, gpointer user_data)
 {
   _zoom_preset_change(3);
 }
-static void _zoom_preset_3(GtkButton *button, gpointer user_data)
+static void _zoom_preset_200(GtkButton *button, gpointer user_data)
 {
   _zoom_preset_change(4);
 }
@@ -509,7 +506,7 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
     GtkWidget *item;
 
     item = gtk_menu_item_new_with_label(_("small"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_mini), self);
+    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_small), self);
     gtk_menu_shell_append(menu, item);
 
     item = gtk_menu_item_new_with_label(_("fit to screen"));
@@ -517,15 +514,15 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
     gtk_menu_shell_append(menu, item);
 
     item = gtk_menu_item_new_with_label(_("50%"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_3), self);
+    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_50), self);
     gtk_menu_shell_append(menu, item);
 
     item = gtk_menu_item_new_with_label(_("100%"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_1), self);
+    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_100), self);
     gtk_menu_shell_append(menu, item);
 
     item = gtk_menu_item_new_with_label(_("200%"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_2), self);
+    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_200), self);
     gtk_menu_shell_append(menu, item);
 
     gtk_widget_show_all(GTK_WIDGET(menu));
