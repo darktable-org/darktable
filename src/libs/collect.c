@@ -1243,6 +1243,14 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    where_ext);
         break;
 
+      case DT_COLLECTION_PROP_EXPOSURE: // exposure
+        g_snprintf(query, sizeof(query), "SELECT CASE WHEN (exposure <= 0.5) "
+                              "THEN '1/' || CAST(1/exposure + 0.9 AS INTEGER) "
+                           "ELSE ROUND(exposure,2) || '\"' END as _exposure, 1, COUNT(*) AS count "
+                "FROM main.images WHERE %s GROUP BY _exposure ORDER BY exposure",
+                  where_ext);
+        break;
+
       case DT_COLLECTION_PROP_FILENAME: // filename
         g_snprintf(query, sizeof(query), "SELECT filename, 1, COUNT(*) AS count "
                 "FROM main.images WHERE %s GROUP BY filename ORDER BY filename", where_ext);
@@ -1435,7 +1443,7 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   }
 
   if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
-     || property == DT_COLLECTION_PROP_ISO)
+     || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_EXPOSURE)
   {
     gtk_widget_set_tooltip_text(d->text, _("type your query, use <, <=, >, >=, <>, =, [;] as operators"));
   }
@@ -2052,6 +2060,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FOCAL_LENGTH);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_ISO);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_APERTURE);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_EXPOSURE);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FILENAME);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GEOTAGGING);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_LOCAL_COPY);
