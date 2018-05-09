@@ -91,6 +91,7 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_FOCAL_LENGTH,
   DT_COLLECTION_PROP_ISO,
   DT_COLLECTION_PROP_APERTURE,
+  DT_COLLECTION_PROP_EXPOSURE,
   DT_COLLECTION_PROP_ASPECT_RATIO,
   DT_COLLECTION_PROP_FILENAME,
   DT_COLLECTION_PROP_GEOTAGGING,
@@ -221,6 +222,8 @@ int dt_collection_serialize(char *buf, int bufsize);
 /* splits an input string into a number part and an optional operator part */
 void dt_collection_split_operator_number(const gchar *input, char **number1, char **number2, char **operator);
 void dt_collection_split_operator_datetime(const gchar *input, char **number1, char **number2,
+                                           char **operator);
+void dt_collection_split_operator_exposure(const gchar *input, char **number1, char **number2,
                                            char **operator);
 
 int64_t dt_collection_get_image_position(const int32_t image_id);
