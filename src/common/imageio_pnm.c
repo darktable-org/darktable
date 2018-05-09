@@ -172,7 +172,11 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
       {
         for(int c = 0; c < 3; c++)
         {
-          float value = (float)line[x * 3 + c] / (float)max;
+          uint16_t intvalue = line[x * 3 + c];
+          // PPM files are big endian! http://netpbm.sourceforge.net/doc/ppm.html
+          if(G_BYTE_ORDER != G_BIG_ENDIAN)
+            intvalue = GUINT16_SWAP_LE_BE(intvalue);
+          float value = (float)intvalue / (float)max;
           *buf_iter++ = value;
         }
         *buf_iter++ = 0.0;
