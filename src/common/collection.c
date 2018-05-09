@@ -831,6 +831,74 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
   g_regex_unref(regex);
 }
 
+void dt_collection_split_operator_exposure(const gchar *input, char **number1, char **number2, char **operator)
+{
+  GRegex *regex;
+  GMatchInfo *match_info;
+  int match_count;
+
+  *number1 = *number2 = *operator= NULL;
+
+  // we test the range expression first
+  regex = g_regex_new("^\\s*\\[\\s*(1/)?([0-9]+\\.?[0-9]*)(\")?\\s*;\\s*(1/)?([0-9]+\\.?[0-9]*)(\")?\\s*\\]\\s*$", 0, 0, NULL);
+  g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
+  match_count = g_match_info_get_match_count(match_info);
+
+  if(match_count == 6 || match_count == 7)
+  {
+    *number1 = g_match_info_fetch(match_info, 2);
+    if(strstr(g_match_info_fetch(match_info, 1), "1/") != NULL)
+    {
+      float n1 = atof(*number1);
+      if(n1 != 0)
+        g_snprintf(*number1, sizeof(*number1), "%.5f", 1/n1);
+    }
+
+    *number2 = g_match_info_fetch(match_info, 5);
+    if(strstr(g_match_info_fetch(match_info, 4), "1/") != NULL)
+    {
+      float n1 = atof(*number2);
+      if(n1 != 0)
+        g_snprintf(*number2, sizeof(*number2), "%.5f", 1/n1);
+    }
+
+    *operator= g_strdup("[]");
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+    return;
+  }
+
+  g_match_info_free(match_info);
+  g_regex_unref(regex);
+
+  // and we test the classic comparison operators
+  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*(1/)?([0-9]+\\.?[0-9]*)(\")?\\s*$", 0, 0, NULL);
+  g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
+  match_count = g_match_info_get_match_count(match_info);
+  if(match_count == 4 || match_count == 5)
+  {
+    *operator= g_match_info_fetch(match_info, 1);
+
+    *number1 = g_match_info_fetch(match_info, 3);
+
+    if(strstr(g_match_info_fetch(match_info, 2), "1/") != NULL)
+    {
+      float n1 = atof(*number1);
+      if(n1 != 0)
+        g_snprintf(*number1, sizeof(*number1), "%.5f", 1/n1);
+    }
+
+    if(*operator&& strcmp(*operator, "") == 0)
+    {
+      g_free(*operator);
+      *operator= NULL;
+    }
+  }
+
+  g_match_info_free(match_info);
+  g_regex_unref(regex);
+}
+
 void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList **exif)
 {
   sqlite3_stmt *stmt;
@@ -1107,6 +1175,30 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         query = dt_util_dstrcat(query, "(ROUND(aperture,1) = %s)", number1);
       else
         query = dt_util_dstrcat(query, "(ROUND(aperture,1) LIKE '%%%s%%')", escaped_text);
+
+      g_free(operator);
+      g_free(number1);
+      g_free(number2);
+    }
+    break;
+
+    case DT_COLLECTION_PROP_EXPOSURE: // exposure
+    {
+      gchar *operator, *number1, *number2;
+      dt_collection_split_operator_exposure(escaped_text, &number1, &number2, &operator);
+
+      if(operator&& strcmp(operator, "[]") == 0)
+      {
+        if(number1 && number2)
+          query = dt_util_dstrcat(query, "((ROUND(exposure,5) >= %s) AND (ROUND(exposure,5) <= %s))", number1,
+                                  number2);
+      }
+      else if(operator&& number1)
+        query = dt_util_dstrcat(query, "(ROUND(exposure,5) %s %s)", operator, number1);
+      else if(number1)
+        query = dt_util_dstrcat(query, "(ROUND(exposure,5) = %s)", number1);
+      else
+        query = dt_util_dstrcat(query, "(exposure LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
