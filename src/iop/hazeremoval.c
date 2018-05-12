@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2017 Heiko Bauke.
+    copyright (c) 2017-2018 Heiko Bauke.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -524,6 +524,8 @@ static void transition_map(const const_rgb_image img1, const gray_image img2, co
 static void guided_filter_tiling(const_rgb_image imgg, gray_image img, gray_image img_out, tile target, int w,
                                  float eps)
 {
+  // to process the current tile also input data from the borders
+  // (of size 2*w) of the neighbouring tiles is required
   const tile source = { max_i(target.left - 2 * w, 0), min_i(target.right + 2 * w, imgg.width),
                         max_i(target.lower - 2 * w, 0), min_i(target.upper + 2 * w, imgg.height) };
   const int width = source.right - source.left;
@@ -553,13 +555,12 @@ static void guided_filter_tiling(const_rgb_image imgg, gray_image img, gray_imag
   gray_image cov_imgg_img_r = new_gray_image(width, height);
   gray_image cov_imgg_img_g = new_gray_image(width, height);
   gray_image cov_imgg_img_b = new_gray_image(width, height);
-  gray_image var_imgg_rr, var_imgg_rg, var_imgg_rb, var_imgg_gg, var_imgg_gb, var_imgg_bb;
-  var_imgg_rr = new_gray_image(width, height);
-  var_imgg_gg = new_gray_image(width, height);
-  var_imgg_bb = new_gray_image(width, height);
-  var_imgg_rg = new_gray_image(width, height);
-  var_imgg_rb = new_gray_image(width, height);
-  var_imgg_gb = new_gray_image(width, height);
+  gray_image var_imgg_rr = new_gray_image(width, height);
+  gray_image var_imgg_gg = new_gray_image(width, height);
+  gray_image var_imgg_bb = new_gray_image(width, height);
+  gray_image var_imgg_rg = new_gray_image(width, height);
+  gray_image var_imgg_rb = new_gray_image(width, height);
+  gray_image var_imgg_gb = new_gray_image(width, height);
   for(int j_imgg = source.lower; j_imgg < source.upper; j_imgg++)
   {
     size_t k = (size_t)(j_imgg - source.lower) * width;
@@ -655,11 +656,16 @@ static void guided_filter_tiling(const_rgb_image imgg, gray_image img, gray_imag
   box_mean(a_g, a_g, w);
   box_mean(a_b, a_b, w);
   box_mean(b, b, w);
-  for(int j_imgg = source.lower; j_imgg < source.upper; j_imgg++)
+  // finally calculate results for the curent tile
+  for(int j_imgg = target.lower; j_imgg < target.upper; j_imgg++)
   {
-    size_t k = (size_t)(j_imgg - source.lower) * width;
-    size_t l = source.left + (size_t)j_imgg * imgg.width;
-    for(int i_imgg = source.left; i_imgg < source.right; i_imgg++, k++, l++)
+    // index of the left most target pixel in the current row
+    size_t l = target.left + (size_t)j_imgg * imgg.width;
+    // index of the left most source pixel in the curent row of the
+    // smaller auxiliary gray-scale images a_r, a_g, a_b, and b
+    // excluding boundary data from neighboring tiles
+    size_t k = (target.left - source.left) + (size_t)(j_imgg - source.lower) * width;
+    for(int i_imgg = target.left; i_imgg < target.right; i_imgg++, k++, l++)
     {
       const float *pixel = imgg.data + l * imgg.stride;
       img_out.data[l] = a_r.data[k] * pixel[0] + a_g.data[k] * pixel[1] + a_b.data[k] * pixel[2] + b.data[k];
