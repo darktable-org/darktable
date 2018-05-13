@@ -447,7 +447,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
 #ifdef HAVE_OPENCL
   gboolean exclude_opencl = FALSE;
-  gboolean print_statistics = strcmp(argv[0], "darktable-cltest");
+  gboolean print_statistics = (strstr(argv[0], "darktable-cltest") == NULL);
 #endif
 
 #ifdef USE_LUA
