@@ -31,6 +31,10 @@ The tool has some known limitations:
    `dcraw.c::adobe_coeff::table` do match. If not, copy darktable's one. Beware
    both tables do not use the same camera names.
 
+## Requirements
+
+
+Utilities mentioned below require following dependencies to be installed: `dcraw`, `libexiv2-dev`, `sqlite3` and `gnuplot`.
 
 ## Building
 
@@ -83,7 +87,11 @@ curves, or submit them for final inclusion by the darktable developers
 
 
 The following command will inject the computed curves in your database.
-It is a highly recommended to first back it up (`$HOME/.config/darktable/data.db`)
+It is highly recommended to back it up first!
+
+    $ cp $HOME/.config/darktable/data.db $HOME/.config/darktable/data.db.bcp
+
+Now you can safely run the inject script:
 
     $ sh ./mycameracurves.sh
 
@@ -201,7 +209,7 @@ and the basecurve module presets. If you provided the _-e_ option to the final
 _dt-curve-tool_ command run, the preset should be named as your camera Model name.
 Otherwise, they will be named 'measured basecurve/tonecurve'
 
-### Applying the curves automatically
+### Applying the curves automatically
 
 Do not hesitate to setup the preset so that it is automatically applied when you
 import/edit photos from this camera model.
@@ -214,13 +222,13 @@ or the module preset little tiny button once you selected that preset->Edit pres
 On the final tool invocation (with _-z_ option) you may be interested in looking at
 what _dt-curve-tool_ munged and analysed for you.
 
-Two GNUPlot scripts are provided in the same source directory to do so. They
-suppose default filenames for the basecurve/tonecurve data/fit files have been
-used
+Two [GNUPlot](http://gnuplot.info/) scripts are provided in the same source directory to do so.
+They require files `basecurve.dat` and `basecurve.fit.dat` resp. `tonecurve.dat`
+and `tonecurve.fit.dat` to be present in the `$DARKATBLE_SRC_ROOT/tools/basecurve` directory.
 
-    $ gnuplot -e ${dt src}/tools/basecurve/gnuplot.tonecurve
-    $ gnuplot -e ${dt src}/tools/basecurve/gnuplot.basecurve
+    $ gnuplot -c "$DARKATBLE_SRC_ROOT/tools/basecurve/gnuplot.tonecurve"
+    $ gnuplot -c "$DARKATBLE_SRC_ROOT/tools/basecurve/gnuplot.basecurve"
 
-This generates a `basecurve.pdf`; resp `tonecurve.pdf` file with a graph of the 
-gathered data and the fitted curves. This can help you measuring how much of
+This generates a `basecurve.pdf` resp. `tonecurve.pdf` file with a graph of
+the gathered data and the fitted curves. This can help you measuring how much of
 the tonal range your sampling photos have covered.
