@@ -849,7 +849,8 @@ static inline int isneutral(dt_iop_ashift_data_t *data)
   return(fabs(data->rotation) < eps &&
          fabs(data->lensshift_v) < eps &&
          fabs(data->lensshift_h) < eps &&
-         fabs(data->shear) < eps);
+         fabs(data->shear) < eps &&
+         fabs(data->aspect - 1.0f) < eps);
 }
 
 
