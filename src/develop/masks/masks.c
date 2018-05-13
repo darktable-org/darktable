@@ -115,7 +115,7 @@ static _masks_undo_data_t *_create_snapshot(GList *forms, dt_masks_form_t *form,
   return data;
 }
 
-void _masks_free_undo(gpointer data)
+static void _masks_free_undo(gpointer data)
 {
   _masks_undo_data_t *udata = (_masks_undo_data_t *)data;
 
@@ -125,7 +125,7 @@ void _masks_free_undo(gpointer data)
   free(udata);
 }
 
-void _masks_do_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item)
+static void _masks_do_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item)
 {
   dt_develop_t *dev = (dt_develop_t *)user_data;
   _masks_undo_data_t *udata = (_masks_undo_data_t *)item;
@@ -290,7 +290,7 @@ void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *g
   }
 }
 
-void _check_id(dt_masks_form_t *form)
+static void _check_id(dt_masks_form_t *form)
 {
   GList *forms = g_list_first(darktable.develop->forms);
   int nid = 100;
@@ -1274,6 +1274,7 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
 
   return rep;
 }
+
 int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, double y, int which,
                                     uint32_t state)
 {
@@ -1472,7 +1473,6 @@ void dt_masks_reset_show_masks_icons(void)
   }
 }
 
-
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t value)
 {
   if(!module) return;
@@ -1528,6 +1528,7 @@ static void _menu_no_masks(struct dt_iop_module_t *module)
   dt_dev_add_history_item(darktable.develop, module, TRUE);
   dt_dev_masks_list_change(darktable.develop);
 }
+
 static void _menu_add_circle(struct dt_iop_module_t *module)
 {
   // we want to be sure that the iop has focus
@@ -1540,6 +1541,7 @@ static void _menu_add_circle(struct dt_iop_module_t *module)
   darktable.develop->form_gui->creation_module = module;
   dt_control_queue_redraw_center();
 }
+
 static void _menu_add_path(struct dt_iop_module_t *module)
 {
   // we want to be sure that the iop has focus
@@ -1551,6 +1553,7 @@ static void _menu_add_path(struct dt_iop_module_t *module)
   darktable.develop->form_gui->creation_module = module;
   dt_control_queue_redraw_center();
 }
+
 static void _menu_add_gradient(struct dt_iop_module_t *module)
 {
   // we want to be sure that the iop has focus
@@ -1563,6 +1566,7 @@ static void _menu_add_gradient(struct dt_iop_module_t *module)
   darktable.develop->form_gui->creation_module = module;
   dt_control_queue_redraw_center();
 }
+
 static void _menu_add_ellipse(struct dt_iop_module_t *module)
 {
   // we want to be sure that the iop has focus
@@ -1575,6 +1579,7 @@ static void _menu_add_ellipse(struct dt_iop_module_t *module)
   darktable.develop->form_gui->creation_module = module;
   dt_control_queue_redraw_center();
 }
+
 static void _menu_add_brush(struct dt_iop_module_t *module)
 {
   // we want to be sure that the iop has focus
@@ -1586,6 +1591,7 @@ static void _menu_add_brush(struct dt_iop_module_t *module)
   darktable.develop->form_gui->creation_module = module;
   dt_control_queue_redraw_center();
 }
+
 static void _menu_add_exist(dt_iop_module_t *module, int formid)
 {
   if(!module) return;
@@ -1617,6 +1623,7 @@ static void _menu_add_exist(dt_iop_module_t *module, int formid)
   dt_dev_masks_list_change(darktable.develop);
   dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
 }
+
 void dt_masks_iop_use_same_as(dt_iop_module_t *module, dt_iop_module_t *src)
 {
   if(!module || !src) return;
@@ -2354,6 +2361,7 @@ int dt_masks_point_in_form_near(float x, float y, float *points, int points_star
   }
   return 0;
 }
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
