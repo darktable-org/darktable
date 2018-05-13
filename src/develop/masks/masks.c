@@ -1875,6 +1875,19 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
     return;
   }
 
+  if(form->type & DT_MASKS_GROUP && form->type & DT_MASKS_CLONE)
+  {
+    // when removing a cloning group the children have to be removed, too, as they won't be shown in the mask manager
+    // and are thus not accessible afterwards.
+    while(form->points)
+    {
+      dt_masks_point_group_t *group_child = (dt_masks_point_group_t *)form->points->data;
+      dt_masks_form_t *child = dt_masks_get_from_id(darktable.develop, group_child->formid);
+      dt_masks_form_remove(module, form, child);
+      // no need to do anything to form->points, the recursive call will have removed child from the list
+    }
+  }
+
   // if we are here that mean we have to permanently delete this form
   // we drop the form from all modules
   GList *iops = g_list_first(darktable.develop->iop);
