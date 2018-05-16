@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
-"POT-Creation-Date: 2018-04-29 11:26+0800\n"
-"PO-Revision-Date: 2018-05-13 11:06+0800\n"
+"POT-Creation-Date: 2018-05-16 21:23+0800\n"
+"PO-Revision-Date: 2018-05-16 21:48+0800\n"
 "Last-Translator: Julian Hofer <julian.hofer@mailbox.org>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.0.7\n"
-"X-Poedit-Bookmarks: 330,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
+"X-Poedit-Bookmarks: 340,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
 msgid "darktable 2.4"
@@ -400,7 +400,7 @@ msgstr ""
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:231(para)
 msgid "Tethered shooting."
-msgstr "Tethering-Aufnahmen"
+msgstr "Tethering-Aufnahmen."
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:235(para)
 msgid ""
@@ -1116,7 +1116,7 @@ msgid ""
 msgstr ""
 "Legt über die interne Datenbank-ID fest, auf welchen Bildern gearbeitet "
 "werden soll. Wenn kein Bereich angegeben wird, dann erzeugt <quote>darktable-"
-"generate-cache</quote> Vorschauen für alle Bilder in der gesamten Sammlung. "
+"generate-cache</quote> Vorschauen für alle Bilder in der gesamten Sammlung."
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:727(para)
 msgid ""
@@ -2767,7 +2767,7 @@ msgstr ""
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2040(title)
 msgid "Star ratings and color labels"
-msgstr "Bewertungen und Farbmarkierungen "
+msgstr "Bewertungen und Farbmarkierungen"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2043(primary)
 msgid "star ratings"
@@ -2954,7 +2954,7 @@ msgid ""
 msgstr ""
 "Alternativ kann auch folgendes angezeigt werden: <quote>alles</quote>, "
 "<quote>kein Stern</quote>, <quote>abgelehnt</quote> und <quote>keine "
-"abgelehnten</quote>"
+"abgelehnten</quote>."
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2205(para)
 msgid ""
@@ -3263,8 +3263,8 @@ msgid ""
 "Lightroom generated sidecar files during the import phase: <placeholder-1/>"
 msgstr ""
 "Derzeit ist darktable in der Lage während der Import-Phase, folgende "
-"Metadaten aus Begleitdateien zu verarbeiten, die von Lightroom wurden: "
-"<placeholder-1/>"
+"Metadaten aus Begleitdateien zu verarbeiten, die von Lightroom erstellt "
+"wurden: <placeholder-1/>"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2431(para)
 msgid ""
@@ -3951,7 +3951,7 @@ msgstr "die Filmrolle, zu der das Bild gehört"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2936(para)
 msgid "the disk folder where the input image file is located"
-msgstr "Ordner auf der Festplatte in dem sich das Bild befindet."
+msgstr "Ordner auf der Festplatte in dem sich das Bild befindet"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2946(para)
 msgid "the Exif data entry describing the camera make and model"
@@ -3963,7 +3963,7 @@ msgid ""
 "known tags is displayed for quick selection"
 msgstr ""
 "Dem Bild zugeordnete Tags; eine hierarchische Liste der bekannten Tags wird "
-"zur schnellen Auswahl angezeigt."
+"zur schnellen Auswahl angezeigt"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2967(para)
 msgid ""
@@ -3984,8 +3984,7 @@ msgstr ""
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2989(para)
 msgid "choose images whose history stacks have been altered or not altered"
 msgstr ""
-"Wählen Sie Bilder, deren Verlaufsstapel verändert oder nicht verändert "
-"wurden."
+"Wählen Sie Bilder, deren Verlaufsstapel verändert oder nicht verändert wurden"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2999(para)
 msgid ""
@@ -4272,7 +4271,7 @@ msgstr ""
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3237(title)
 msgid "Recently used collections"
-msgstr "kürzlich benutze Sammlungen"
+msgstr "Kürzlich benutze Sammlungen"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3241(secondary)
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3245(primary)
@@ -4671,7 +4670,7 @@ msgid ""
 msgstr ""
 "Kopiert den Verlaufsstapel des ausgewählten Bildes, dabei werden alle "
 "Elemente des Verlaufstapel kopiert. Wenn mehr als ein Bild ausgewählt ist, "
-"wird der Verlaufsstapel des zuerst ausgewählten Bild verwendet. "
+"wird der Verlaufsstapel des zuerst ausgewählten Bild verwendet."
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3691(title)
 msgid "discard"
@@ -5115,7 +5114,7 @@ msgstr "Metadaten-Editor"
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4059(secondary)
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4063(primary)
 msgid "metadata editor"
-msgstr "Metadaten-Editor "
+msgstr "Metadaten-Editor"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4073(emphasis)
 msgid "title"
@@ -6764,8 +6763,7 @@ msgstr ""
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5423(para)
 msgid "The first two fields are used to name and describe the preset."
 msgstr ""
-"In den ersten beiden Feldern wird der Name sowie eine Beschreibung "
-"angegeben. "
+"In den ersten beiden Feldern wird der Name sowie eine Beschreibung angegeben."
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5427(para)
 msgid ""
@@ -9833,7 +9831,7 @@ msgstr "Im Folgenden werden die verfügbaren Modulgruppen beschrieben:"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7973(entry)
 msgid "Active"
-msgstr "eingeschaltete Module"
+msgstr "Eingeschaltete Module"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7976(entry)
 msgid "Modules you have activated and are using on the current image."
@@ -9934,7 +9932,7 @@ msgstr ""
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8068(title)
 msgid "More modules"
-msgstr "weitere Module"
+msgstr "Weitere Module"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8085(entry)
 msgid ""
@@ -10705,17 +10703,18 @@ msgstr "freies Ausformen des Rechtecks ohne jegliche Verhältnissbegrenzung"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8749(entry)
 msgid "this option constrains the ratio to be equal to image ratio"
-msgstr "diese Option schränkt das Verhältnis auf das Bildverhältnis ein."
+msgstr "diese Option schränkt das Verhältnis auf das Bildverhältnis ein"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8755(emphasis)
 msgid "golden cut"
 msgstr "goldener Schnitt"
 
+# I think the English part should be: "golden ratio".
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8757(entry)
 msgid "this option constrains the ratio to be equal the golden number"
 msgstr ""
-"diese Option schränkt das Verhältnis so ein, dass es gleich der goldenen "
-"Zahl ist."
+"diese Option schränkt das Verhältnis so ein, dass es gleich des goldenen "
+"Schnittes ist"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8763(emphasis)
 msgid "square"
@@ -10723,7 +10722,7 @@ msgstr "quadratisch"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8765(entry)
 msgid "this option constrains the ratio to be 1"
-msgstr "diese Option schränkt das Verhältnis auf 1 ein."
+msgstr "diese Option schränkt das Verhältnis auf 1 ein"
 
 #: /home/julian/Dokumente/darktable_fork_translation/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8773(para)
 msgid ""
