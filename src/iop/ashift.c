@@ -3645,7 +3645,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   return 0;
 }
 
-int scrolled(struct dt_iop_module_t *self, double pzx, double pzy, int up, uint32_t state)
+int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t state)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
@@ -3653,12 +3653,17 @@ int scrolled(struct dt_iop_module_t *self, double pzx, double pzy, int up, uint3
   if(g->lines_suppressed || g->lines == NULL)
     return FALSE;
 
-  const float wd = self->dev->preview_pipe->backbuf_width;
-  const float ht = self->dev->preview_pipe->backbuf_height;
-
   if(g->near_delta > 0 && (g->isdeselecting || g->isselecting))
   {
     int handled = 0;
+
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+    pzx += 0.5f;
+    pzy += 0.5f;
+
+    const float wd = self->dev->preview_pipe->backbuf_width;
+    const float ht = self->dev->preview_pipe->backbuf_height;
 
     float near_delta = dt_conf_get_float("plugins/darkroom/ashift/near_delta");
     const float amount = up ? 0.8f : 1.25f;
@@ -3667,7 +3672,7 @@ int scrolled(struct dt_iop_module_t *self, double pzx, double pzy, int up, uint3
     g->near_delta = near_delta;
 
     // gather information about "near"-ness in g->points_idx
-    get_near(g->points, g->points_idx, g->points_lines_count, (pzx + 0.5f) * wd, (pzy + 0.5f) * ht, g->near_delta);
+    get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta);
 
     // iterate over all lines close to the pointer and change "selected" state.
     for(int n = 0; g->selecting_lines_version == g->lines_version && n < g->points_lines_count; n++)
