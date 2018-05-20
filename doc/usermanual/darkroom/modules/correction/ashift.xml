@@ -128,9 +128,10 @@
       color pattern of the lines will look a bit different. You can manually change the status
       of line segments: left-clicking on a line selects it (turns the color to green or blue)
       while right-clicking deselects it (turns the color to red or yellow). Keeping the mouse
-      button pressed allows for a sweeping action to select/deselect multiple lines in a row.
-      Holding down the <emphasis>shift</emphasis> key and keeping the left or right mouse button
-      pressed while dragging selects or deselects all lines in the chosen rectangular area.
+      button pressed allows for a sweeping action to select/deselect multiple lines in a row;
+      the size of the select/deselect brush can be changed with the mouse wheel. Holding down
+      the <emphasis>shift</emphasis> key and keeping the left or right mouse button pressed
+      while dragging selects or deselects all lines in the chosen rectangular area.
     </para>
 
     <para>
