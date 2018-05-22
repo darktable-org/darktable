@@ -1706,7 +1706,7 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
                          "focal range:\t%s\n"
                          "aperture:\t\t%s\n"
                          "crop factor:\t%.1f\n"
-                         "type:\t\t\t%s\n"
+                         "type:\t\t%s\n"
                          "mounts:\t\t%s"),
                        maker ? maker : "?", model ? model : "?", focal, aperture, lens->CropFactor,
                        lf_get_lens_type_desc(lens->Type, NULL), mounts);
