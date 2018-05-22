@@ -374,7 +374,7 @@
                 $(Xmp.dc.description)
               </entry>
               <entry>
-                The description of the image.  Note: some cameras write user-specified text at shoot time to exif field 0x9286 a.k.a. 37510 or "User Comment" ("Exif.Photo.UserComment" as per exif2).  At image import time, darktable copies content from that field here.
+                The description of the image.  This is the field to use when you're looking for the user-specified text that some cameras add at shoot time to exif field "User Comment" (also called "Exif.Photo.UserComment").
               </entry>
             </row>
             <row>
