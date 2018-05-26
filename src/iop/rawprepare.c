@@ -810,21 +810,23 @@ void gui_init(dt_iop_module_t *self)
   for(int i = 0; i < 4; i++)
   {
     gchar *label = g_strdup_printf(_("black level %i"), i);
+    gchar *label_tool = g_strdup_printf(_("set the camera specific black level %i of the RGGB Bayer pattern"), i);
 
     g->black_level_separate[i]
         = dt_bauhaus_slider_new_with_range(self, 0, 16384, 1, p->raw_black_level_separate[i], 0);
     dt_bauhaus_widget_set_label(g->black_level_separate[i], NULL, label);
-    gtk_widget_set_tooltip_text(g->black_level_separate[i], label);
+    gtk_widget_set_tooltip_text(g->black_level_separate[i], label_tool);
     gtk_box_pack_start(GTK_BOX(g->box_raw), g->black_level_separate[i], FALSE, FALSE, 0);
     dt_bauhaus_slider_enable_soft_boundaries(g->black_level_separate[i], 0, UINT16_MAX);
     g_signal_connect(G_OBJECT(g->black_level_separate[i]), "value-changed", G_CALLBACK(callback), self);
 
     g_free(label);
+    g_free(label_tool);
   }
 
   g->white_point = dt_bauhaus_slider_new_with_range(self, 0, 16384, 1, p->raw_white_point, 0);
   dt_bauhaus_widget_set_label(g->white_point, NULL, _("white point"));
-  gtk_widget_set_tooltip_text(g->white_point, _("white point"));
+  gtk_widget_set_tooltip_text(g->white_point, _("set the camera specific white point"));
   gtk_box_pack_start(GTK_BOX(g->box_raw), g->white_point, FALSE, FALSE, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->white_point, 0, UINT16_MAX);
   g_signal_connect(G_OBJECT(g->white_point), "value-changed", G_CALLBACK(callback), self);
