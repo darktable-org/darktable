@@ -128,6 +128,12 @@ button:checked
   background-color: shade(@selected_bg_color, 1.4);
 }
 
+#lib-plugin-ui checkbutton *,
+#iop-plugin-ui checkbutton *
+{
+  margin-right:4pt;
+}
+
 /* frame around plugin boxes */
 #iop-plugin-ui
 {
