@@ -1755,6 +1755,14 @@ const wb_data wb_preset[] =
   { "Canon", "EOS M10", Shade           , 0, { 2.334441, 1, 1.330011, 0 } },
   { "Canon", "EOS M10", WhiteFluorescent, 0, { 1.809693, 1, 2.239953, 0 } },
 
+  // Canon EOS M100 Firmware Version 1.0.0
+  { "Canon", "EOS M100", Cloudy          , 0, { 1.70703125, 1, 1.181640625, 0 } },
+  { "Canon", "EOS M100", Daylight        , 0, { 1.5791015625, 1, 1.2734375, 0 } },
+  { "Canon", "EOS M100", Flash           , 0, { 1.9755859375, 1, 1.0107421875, 0 } },
+  { "Canon", "EOS M100", Tungsten        , 0, { 1.0810546875, 1, 1.8857421875, 0 } },
+  { "Canon", "EOS M100", Shade           , 0, { 1.8232421875, 1, 1.1015625, 0 } },
+  { "Canon", "EOS M100", Fluorescent     , 0, { 1.3544921875, 1, 1.7021484375, 0 } },
+
   { "Fujifilm", "FinePix E900", Daylight, 0,		{ 1.571875, 1, 1.128125, 0 } },
   { "Fujifilm", "FinePix E900", Shade, 0,		{ 1.668750, 1, 1.006250, 0 } },
   { "Fujifilm", "FinePix E900", DaylightFluorescent, 0,	{ 1.907609, 1, 1.016304, 0 } },
