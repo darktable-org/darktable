@@ -1,9 +1,18 @@
-<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
-                <!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
-                %darktable_dtd;
-                ]>
-<sect1 status="final" id="lighttable_panels">
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE sect1 [
+		<!ENTITY % darktable_ent SYSTEM "../../darktable.ent">
+		%darktable_ent;
+]>
+
+<sect1
+    version="5.0"
+    xmlns="http://docbook.org/ns/docbook" 
+    xmlns:xi="http://www.w3.org/2001/XInclude" 
+    xmlns:xlink="http://www.w3.org/1999/xlink" 
+    xml:lang="en"
+    status="final"
+    xml:id="lighttable_panels">
 
   <title>Lighttable panels</title>
 

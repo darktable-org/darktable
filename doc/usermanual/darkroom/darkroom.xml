@@ -1,4 +1,18 @@
-<chapter status="final" id="darkroom_chapter">
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE sect1 [
+		<!ENTITY % darktable_ent SYSTEM "../darktable.ent">
+		%darktable_ent;
+]>
+
+<chapter
+    version="5.0"
+    xmlns="http://docbook.org/ns/docbook" 
+    xmlns:xi="http://www.w3.org/2001/XInclude" 
+    xmlns:xlink="http://www.w3.org/1999/xlink" 
+    xml:lang="en"
+    status="final"
+    xml:id="darkroom_chapter">
 
   <chapterinfo>
     <keywordset>
@@ -74,10 +88,10 @@
 
 <!-- Modules -->
 
-  <xi:include href="modules/modules.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <!-- <xi:include href="modules/modules.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
 
 <!-- Examples -->
 
-  <xi:include href="examples/examples.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <!-- <xi:include href="examples/examples.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
 
 </chapter>
