@@ -343,8 +343,8 @@ static gboolean _lib_location_search(gpointer user_data)
   clear_search(lib);
 
   /* build the query url */
-  query = dt_util_dstrcat(query, "https://nominatim.openstreetmap.org/search/%s?format=xml&limit=%d&polygon_text=1", text,
-                          LIMIT_RESULT);
+  gchar *search_url = dt_conf_get_string("plugins/map/geotagging_search_url");
+  query = dt_util_dstrcat(query, search_url, text, LIMIT_RESULT);
   /* load url */
   curl = curl_easy_init();
   if(!curl) goto bail_out;
