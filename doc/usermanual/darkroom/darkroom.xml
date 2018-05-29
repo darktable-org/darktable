@@ -88,10 +88,10 @@
 
 <!-- Modules -->
 
-  <!-- <xi:include href="modules/modules.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+  <xi:include href="modules/modules.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- Examples -->
 
-  <!-- <xi:include href="examples/examples.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+  <xi:include href="examples/examples.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </chapter>

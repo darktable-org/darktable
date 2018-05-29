@@ -15,7 +15,7 @@
 
   <title>darktable 2.4</title>
 
-  <bookinfo>
+  <info>
 
     <legalnotice>
 
@@ -92,7 +92,7 @@
       <holder>J&eacute;r&eacute;my Rosen</holder>
     </copyright>
 
-  </bookinfo>
+  </info>
 
   <preface id="overview">
 
@@ -172,35 +172,35 @@
 
 <!-- Darkroom Chapter -->
 
-  <xi:include href="darkroom/darkroom.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+  <xi:include href="darkroom/darkroom.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- Tethering Chapter -->
 
-<!--  <xi:include href="tethering/tethering.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+  <xi:include href="tethering/tethering.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- Geotagging  Chapter -->
 
-<!--  <xi:include href="map/map.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+  <xi:include href="map/map.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- Slideshow  Chapter -->
 
-<!--  <xi:include href="slideshow/slideshow.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+  <xi:include href="slideshow/slideshow.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- Printing  Chapter -->
 
-<!--  <xi:include href="print/print.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+  <xi:include href="print/print.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- Preferences and Settings Chapter -->
 
-<!--  <xi:include href="preferences/preferences.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+  <xi:include href="preferences/preferences.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- Scripting with Lua -->
 
-<!--  <xi:include href="lua/lua.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+  <xi:include href="lua/lua.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- Special Topics Chapter -->
 
-<!--  <xi:include href="topics/topics.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+  <xi:include href="topics/topics.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- The Index -->
 

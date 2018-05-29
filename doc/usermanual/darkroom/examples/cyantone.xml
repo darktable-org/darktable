@@ -1,4 +1,18 @@
-<sect2 status="final" id="cyan_toned_images">
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE sect2 [
+		<!ENTITY % darktable_ent SYSTEM "../../darktable.ent">
+		%darktable_ent;
+]>
+
+<sect2
+    version="5.0"
+    xmlns="http://docbook.org/ns/docbook" 
+    xmlns:xi="http://www.w3.org/2001/XInclude" 
+    xmlns:xlink="http://www.w3.org/1999/xlink" 
+    xml:lang="en"
+    status="final"
+    xml:id="cyan_toned_images">
 
   <title>Cyan toned image</title>
 
