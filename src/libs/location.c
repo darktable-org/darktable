@@ -122,7 +122,7 @@ int position()
 }
 
 /*
-  http://nominatim.openstreetmap.org/search/norrköping?format=xml&limit=5
+  https://nominatim.openstreetmap.org/search/norrköping?format=xml&limit=5
  */
 void gui_init(dt_lib_module_t *self)
 {
@@ -343,7 +343,7 @@ static gboolean _lib_location_search(gpointer user_data)
   clear_search(lib);
 
   /* build the query url */
-  query = dt_util_dstrcat(query, "http://nominatim.openstreetmap.org/search/%s?format=xml&limit=%d&polygon_text=1", text,
+  query = dt_util_dstrcat(query, "https://nominatim.openstreetmap.org/search/%s?format=xml&limit=%d&polygon_text=1", text,
                           LIMIT_RESULT);
   /* load url */
   curl = curl_easy_init();
