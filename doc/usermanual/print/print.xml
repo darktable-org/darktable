@@ -88,7 +88,7 @@
     <para>
       It is important to note that ICC profiles provided by the paper and/or printer
       manufacturers cannot be used on GNU/Linux as they depend on the printer drivers. The
-      darktable print module is using <ulink url="http://www.cups.org/">CUPS</ulink> and there
+      darktable print module is using <link xl:href="http://www.cups.org/">CUPS</link> and there
       is no ready-to-use ICC profiles for this driver.
     </para>
 

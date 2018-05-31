@@ -144,8 +144,8 @@
         Create a high dynamic range image from the selected images, and store it as a new source
         file in DNG format. Images need to be properly aligned, which implies that they have
         been taken on a sturdy tripod. You can also generate HDRs with programs like
-        <ulink url="http://qtpfsgui.sourceforge.net/"><emphasis>Luminance
-        HDR</emphasis></ulink>, and later import them into darktable for further processing (see
+        <link xl:href="http://qtpfsgui.sourceforge.net/"><emphasis>Luminance
+        HDR</emphasis></link>, and later import them into darktable for further processing (see
         <xref linkend="supported_file_formats"/>). Note that darktable will only creates HDR
         images from raw files.
       </para>

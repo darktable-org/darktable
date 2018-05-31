@@ -100,7 +100,7 @@
     <para>
       If any of the steps above failed, there are problems with your specific camera and driver.
       Please report the issues to gphoto2 mailing list for further help. You can find the
-      mailing list at <ulink url="http://www.gphoto.org/mailinglists/">www.gphoto.org</ulink>.
+      mailing list at <link xl:href="http://www.gphoto.org/mailinglists/">www.gphoto.org</link>.
       Add the following flags to the failed command above for better support and attach the log
       output to your mail:
     </para>
@@ -113,7 +113,7 @@
     <para>
       If you successfully went through all the tests above, your camera will most likely be
       supported by darktable. Even if successful, if you stumble upon a problem in darktable,
-      please file a bug at <ulink url="https://www.darktable.org/redmine">redmine</ulink>.
+      please file a bug at <link xl:href="https://www.darktable.org/redmine">redmine</link>.
       Please attach the log outputs from the steps above and the log file output generated after
       starting darktable with the following command.
     </para>

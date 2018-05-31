@@ -39,7 +39,7 @@
             <entry>
               Raw denoise allows you to perform denoising on the data before it gets demosaiced.
               It is ported from
-              <ulink url="http://www.cybercom.net/~dcoffin/dcraw/"><emphasis>dcraw</emphasis></ulink>.
+              <link xl:href="http://www.cybercom.net/~dcoffin/dcraw/"><emphasis>dcraw</emphasis></link>.
             </entry>
             <entry>
               <graphic fileref="darkroom/modules/images/rawdenoise.png" scalefit="1" width="80%" align="center" />

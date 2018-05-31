@@ -68,7 +68,7 @@
       standard or enhanced color matrices. The correction curve is defined with a linear part
       extending from the shadows to some upper limit and a gamma curve covering mid-tones and
       highlights. For further reading please also have a look at darktable's neighbouring
-      project <ulink url="http://ufraw.sourceforge.net">UFRaw</ulink>.
+      project <link xl:href="http://ufraw.sourceforge.net">UFRaw</link>.
     </para>
 
     <sect5>

@@ -6,22 +6,20 @@
 ]>
 
 <chapter
-    version="5.0"
     xmlns="http://docbook.org/ns/docbook" 
     xmlns:xi="http://www.w3.org/2001/XInclude" 
-    xmlns:xlink="http://www.w3.org/1999/xlink" 
-    xml:lang="en"
-    status="final"
-    xml:id="lighttable_chapter">
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:lang="en"
+    xmlns:status="final">
 
-  <chapterinfo>
+  <info>
     <keywordset>
       <keyword>lighttable</keyword>
       <keyword>view</keyword>
     </keywordset>
-  </chapterinfo>
-
-  <title>Lighttable</title>
+ 
+    <title>Lighttable</title>
+  </info>
 
   <indexterm>
     <primary>lighttable view</primary>
@@ -34,14 +32,23 @@
   <para>
     <screenshot>
 
-      <screeninfo>The lighttable view</screeninfo>
-
-      <graphic fileref="images/lighttable_view.png" scalefit="1" width="80%"></graphic>
+      <!--
+      <info>
+	<bibliomisc role="The lighttable view">
+	</bibliomisc>  
+      </info>
+      -->
+      
+      <mediaobject>
+        <imageobject>
+	  <imagedata fileref="images/lighttable_view.png" scalefit="1" width="80%"/>
+	</imageobject>
+      </mediaobject>
 
     </screenshot>
   </para>
 
-  <sect1 status="final" id="lighttable_overview">
+  <sect1 status="final" xmlns:id="lighttable_overview">
 
     <title>Overview</title>
 
@@ -55,14 +62,22 @@
               In the central view, your images are shown as thumbnails, surrounded by a frame.
               When the mouse is over an image, its rating and color labels are shown in the
               frame, along with an indicator
-              <inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/>
+	      <inlinemediaobject>
+		<imageobject>
+		  <imagedata  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/>
+		</imageobject>  
+	      </inlinemediaobject>	
               of whether the image has already been altered in darkroom. Also, when the mouse
               hovers over an image frame, image information (EXIF data, metadata) is shown in
               the <link linkend="image_information"><emphasis>image
               information</emphasis></link> panel at the bottom left.
             </entry>
             <entry>
-              <graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />
+	      <mediaobject>
+		<imageobject>
+		  <imagedata fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -72,7 +87,7 @@
     <para>
       While the mouse is over an image frame, there are a number of actions you can perform.
       Here is a table of keyboard shortcuts and assigned actions.
-      <informaltable frame="none" width="80%">
+      <informaltable frame="none"> <!--  width="80%"> -->
         <tgroup cols="2" colsep="0" rowsep="0">
           <colspec colwidth='1*'/>
           <colspec colwidth='3*'/>
@@ -146,10 +161,18 @@
 
     <para>
       The overlay button
-      <inlinegraphic fileref="&icon_general_overlay;" scalefit="1" width="2%" align="center" />
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_general_overlay;" scalefit="1" width="2%" align="center" />
+	</imageobject>
+      </inlinemediaobject>
       located in the upper panel activates the permanent display of star ratings and
       image-changed indicator
-      <inlinegraphic fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/>
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/>
+	</imageobject>
+      </inlinemediaobject>
       on all thumbnails. By default these overlays are only visible on the thumbnail under the
       mouse cursor. An overlay button is also available in the other views where it affects the
       filmstrip accordingly (see <xref linkend="filmstrip_overview"/> and
@@ -171,7 +194,11 @@
 
     <para>
       Pressing the
-      <inlinegraphic fileref="&icon_lighttable_displayprofile;" scalefit="1" width="2%" align="center" />
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_lighttable_displayprofile;" scalefit="1" width="2%" align="center" />
+	</imageobject>  
+      </inlinemediaobject>
       button on the right side of the bottom panel lets you define the color profile of your
       monitor. You can either set this to <quote>system display profile</quote> (default) and
       let darktable enquire the system's display profile, or alternatively set it to one of the
@@ -254,7 +281,11 @@
               steps within darktable.
             </entry>
             <entry>
-              <graphic fileref="images/lighttable_focus_detection.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="images/lighttable_focus_detection.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -265,10 +296,10 @@
 
 <!-- Lighttable concepts -->
 
-  <xi:include href="concepts/concepts.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+<!--  <xi:include href="concepts/concepts.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
 
 <!-- Panels -->
 
-  <xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+<!--  <xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
 
 </chapter>

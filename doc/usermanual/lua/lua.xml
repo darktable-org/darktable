@@ -56,7 +56,7 @@
     </para>
 
     <para>
-      darktable uses <ulink url="http://www.lua.org/"><emphasis>Lua</emphasis></ulink>, which is
+      darktable uses <link xl:href="http://www.lua.org/"><emphasis>Lua</emphasis></link>, which is
       an independent project founded in 1993, providing a powerful, fast, lightweight,
       embeddable scripting language. Lua is widely used by many open source applications, in
       commercial programs, and for games programming.
@@ -65,7 +65,7 @@
     <para>
       darktable uses Lua version 5.2. Describing the principles and syntax of Lua is beyond the
       scope of this usermanual. For a detailed introduction see the
-      <ulink url="http://www.lua.org/manual/5.2/manual.html">Lua reference manual</ulink>.
+      <link xl:href="http://www.lua.org/manual/5.2/manual.html">Lua reference manual</link>.
     </para>
 
     <sect2 id="lua_basic_principles">
@@ -750,7 +750,7 @@ darktable.register_storage("scp_export","Export via scp",
         </itemizedlist>
         Once you have filled all the fields, checked your code, you can upload it to our script
         page
-        <ulink url="https://darktable.org/redmine/projects/darktable/wiki/LuaScripts">here</ulink>.
+        <link xl:href="https://darktable.org/redmine/projects/darktable/wiki/LuaScripts">here</link>.
       </para>
 
     </sect2>
@@ -846,7 +846,7 @@ end
     <para>
       darktable's Lua API is documented in its own manual with a detailed description of all
       data structures and functions. You can download the API manual from
-      <ulink url="https://www.darktable.org/resources/">darktable's webpage</ulink>.
+      <link xl:href="https://www.darktable.org/resources/">darktable's webpage</link>.
     </para>
 
   </sect1>

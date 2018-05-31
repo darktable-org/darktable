@@ -110,8 +110,8 @@
       In <quote>automatic</quote> mode the module automatically analyses the histogram of the
       image, detects the left and right histogram borders, and lets you define the black point,
       the gray point and the white point in terms of
-      <ulink url="http://en.wikipedia.org/wiki/Percentile">
-      <emphasis>percentiles</emphasis></ulink> relative to these borders.
+      <link xl:href="https://en.wikipedia.org/wiki/Percentile">
+      <emphasis>percentiles</emphasis></link> relative to these borders.
     </para>
 
     <para>

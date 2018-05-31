@@ -607,7 +607,7 @@
       <para>
         If you don't want to distribute history stack data with your images, there are various
         tools to delete embedded XMP tags. As an example you can use the program
-        <ulink url="http://www.sno.phy.queensu.ca/~phil/exiftool/"><emphasis>exiftool</emphasis></ulink>
+        <link xl:href="http://www.sno.phy.queensu.ca/~phil/exiftool/"><emphasis>exiftool</emphasis></link>
         with:
       </para>
 

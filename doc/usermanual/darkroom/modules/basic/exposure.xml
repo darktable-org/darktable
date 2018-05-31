@@ -126,8 +126,8 @@
 
     <para>
       Automatic adjustment is only available for raw images. A typical use case is deflickering
-      of <ulink url="http://en.wikipedia.org/wiki/Time-lapse_photography"><emphasis>time-lapse
-      photographs</emphasis></ulink>. You apply an automatic exposure correction with the same
+      of <link xl:href="http://en.wikipedia.org/wiki/Time-lapse_photography"><emphasis>time-lapse
+      photographs</emphasis></link>. You apply an automatic exposure correction with the same
       set of parameters to all images of the series&nbsp;&ndash; differences in lighting get
       compensated so that the final video sequence does not show any flickering.
     </para>
@@ -171,8 +171,8 @@
         Defines a location in the histogram for automatic exposure correction. A percentile of
         50% denotes a position in the histogram where 50% of pixel values are below and 50% of
         pixel values are above. For more details see
-        <ulink url="http://en.wikipedia.org/wiki/Percentile"><emphasis>percentile</emphasis>
-        </ulink>. Only available in <quote>automatic</quote> mode.
+        <link xl:href="http://en.wikipedia.org/wiki/Percentile"><emphasis>percentile</emphasis>
+        </link>. Only available in <quote>automatic</quote> mode.
       </para>
     </sect5>
 

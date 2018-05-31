@@ -102,8 +102,8 @@
       <title>fusion</title>
       <para>
         This control triggers the
-        <ulink url="https://en.wikipedia.org/wiki/Exposure_Fusion"><emphasis>exposure
-        fusion</emphasis></ulink> feature. You can choose to merge the image with one or two
+        <link xl:href="https://en.wikipedia.org/wiki/Exposure_Fusion"><emphasis>exposure
+        fusion</emphasis></link> feature. You can choose to merge the image with one or two
         copies of itself after applying the current base curve and boosting its exposure by a
         selectable number of ev units. The resulting image is thus a combination of two or three
         different exposures of the original image. Use this to compress dynamic range for

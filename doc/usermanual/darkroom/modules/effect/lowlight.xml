@@ -44,13 +44,13 @@
 
               <para>
                 The idea is to calculate a
-                <ulink url="http://en.wikipedia.org/wiki/Scotopic_vision">scotopic
-                vision</ulink> image which is perceived by rods rather than than cones in the
+                <link xl:href="http://en.wikipedia.org/wiki/Scotopic_vision">scotopic
+                vision</link> image which is perceived by rods rather than than cones in the
                 eye under low light. Scotopic lightness then is mixed with photopic value
                 (regular color image pixel) using some blending function. Also this module is
                 able to simulate the
-                <ulink url="http://en.wikipedia.org/wiki/Purkinje_effect">Purkinje
-                effect</ulink> by adding some blueness to the dark parts of the image.
+                <link xl:href="http://en.wikipedia.org/wiki/Purkinje_effect">Purkinje
+                effect</link> by adding some blueness to the dark parts of the image.
               </para>
             </entry>
             <entry>

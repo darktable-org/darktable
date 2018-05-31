@@ -216,7 +216,7 @@
       sure all modules are loaded is installing the <filename>nvidia-modprobe</filename> package
       (which, at the time of this writing, is only available for <quote>utopic</quote>, but
       works well with <quote>trusty</quote> and <quote>Mint 17</quote>). You can grab it at
-      <ulink url="http://packages.ubuntu.com/utopic/nvidia-modprobe">this site</ulink>.
+      <link xl:href="http://packages.ubuntu.com/utopic/nvidia-modprobe">this site</link>.
     </para>
 
     <para>

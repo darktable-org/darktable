@@ -39,7 +39,7 @@
               This module is designed to automatically correct for converging lines, a form of
               perspective distortions frequently seen in architectural photographs. The
               underlying mechanism is inspired by Markus Hebel's
-              <ulink url="http://www.shiftn.de/"><emphasis>ShiftN</emphasis></ulink> program.
+              <link xl:href="http://www.shiftn.de/"><emphasis>ShiftN</emphasis></link> program.
             </entry>
             <entry>
               <graphic fileref="darkroom/modules/images/ashift.png" scalefit="1" width="80%" align="center" />

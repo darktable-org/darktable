@@ -219,7 +219,7 @@
 
       <para>
         darktable reads raw files using the open source library
-        <ulink url="https://github.com/darktable-org/rawspeed">RawSpeed</ulink>, originally
+        <link xl:href="https://github.com/darktable-org/rawspeed">RawSpeed</link>, originally
         developed by Klaus Post and now maintained within the darktable project itself. The
         number of supported cameras and file formats is constantly increasing. It is beyond the
         scope of this manual to give an exhaustive list. Most modern camera models are
