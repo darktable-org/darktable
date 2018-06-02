@@ -35,18 +35,22 @@
             non-destructive.
           </entry>
           <entry>
-            <graphic fileref="lighttable/images/panel_historystack.png" scalefit="1" width="80%" align="center" />
+            <mediaobject>
+	      <imageobject>
+		<imagedata fileref="lighttable/images/panel_historystack.png" scalefit="1" width="80%" align="center" />
+	      </imageobject>
+	    </mediaobject>
           </entry>
         </row>
       </tbody>
     </tgroup>
   </informaltable>
 
-  <sect3 id="history_stack_usage">
+  <sect3 xml:id="history_stack_usage">
 
     <title>Usage</title>
 
-    <sect4 id="history_stack_usage_copy">
+    <sect4 xml:id="history_stack_usage_copy">
 
       <title>copy</title>
 
@@ -58,7 +62,7 @@
 
     </sect4>
 
-    <sect4 id="history_stack_usage_copy_all">
+    <sect4 xml:id="history_stack_usage_copy_all">
 
       <title>copy all</title>
 
@@ -70,7 +74,7 @@
 
     </sect4>
 
-    <sect4 id="history_stack_usage_discard">
+    <sect4 xml:id="history_stack_usage_discard">
 
       <title>discard</title>
 
@@ -81,7 +85,7 @@
 
     </sect4>
 
-    <sect4 id="history_stack_usage_paste">
+    <sect4 xml:id="history_stack_usage_paste">
 
       <title>paste</title>
 
@@ -93,7 +97,7 @@
 
     </sect4>
 
-    <sect4 id="history_stack_usage_paste_all">
+    <sect4 xml:id="history_stack_usage_paste_all">
 
       <title>paste all</title>
 
@@ -104,7 +108,7 @@
 
     </sect4>
 
-    <sect4 id="history_stack_usage_mode">
+    <sect4 xml:id="history_stack_usage_mode">
 
       <title>mode</title>
 
@@ -132,7 +136,7 @@
 
     </sect4>
 
-    <sect4 id="history_stack_usage_load_xmp">
+    <sect4 xml:id="history_stack_usage_load_xmp">
 
       <title>load sidecar file</title>
 
@@ -160,7 +164,7 @@
 
     </sect4>
 
-    <sect4 id="history_stack_usage_write_xmp">
+    <sect4 xml:id="history_stack_usage_write_xmp">
 
       <title>write sidecar files</title>
 

@@ -36,14 +36,18 @@
             lighttable panel, which allows you to create, apply, edit and delete styles.
           </entry>
           <entry>
-            <graphic fileref="lighttable/images/panel_styles.png" scalefit="1" width="80%" align="center" />
+            <mediaobject>
+	      <imageobject>
+		<imagedata fileref="lighttable/images/panel_styles.png" scalefit="1" width="80%" align="center" />
+	      </imageobject>
+	    </mediaobject>
           </entry>
         </row>
       </tbody>
     </tgroup>
   </informaltable>
 
-  <sect3 id="styles_usage">
+  <sect3 xml:id="styles_usage">
 
     <title>Usage</title>
 
@@ -57,7 +61,7 @@
       Double clicking on a style name applies the style to all selected images.
     </para>
 
-    <sect4 id="styles_usage_duplicate">
+    <sect4 xml:id="styles_usage_duplicate">
 
       <title>create duplicate</title>
 
@@ -70,7 +74,7 @@
 
     </sect4>
 
-    <sect4 id="styles_usage_create">
+    <sect4 xml:id="styles_usage_create">
 
       <title>create</title>
 
@@ -83,7 +87,7 @@
 
     </sect4>
 
-    <sect4 id="styles_usage_edit">
+    <sect4 xml:id="styles_usage_edit">
 
       <title>edit</title>
 
@@ -96,7 +100,7 @@
 
     </sect4>
 
-    <sect4 id="styles_usage_delete">
+    <sect4 xml:id="styles_usage_delete">
 
       <title>delete</title>
 
@@ -106,7 +110,7 @@
 
     </sect4>
 
-    <sect4 id="styles_usage_import">
+    <sect4 xml:id="styles_usage_import">
 
       <title>import</title>
 
@@ -117,7 +121,7 @@
 
     </sect4>
 
-    <sect4 id="styles_usage_export">
+    <sect4 xml:id="styles_usage_export">
 
       <title>export</title>
 

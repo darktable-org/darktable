@@ -88,7 +88,11 @@
               </para>
             </entry>
             <entry>
-              <graphic fileref="lighttable/concepts/images/local_copies_1.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="lighttable/concepts/images/local_copies_1.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

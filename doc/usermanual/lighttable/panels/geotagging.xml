@@ -35,14 +35,18 @@
             view (see <xref linkend="map_chapter"/>).
           </entry>
           <entry>
-            <graphic fileref="lighttable/images/panel_geotagging.png" scalefit="1" width="80%" align="center" />
+            <mediaobject>
+	      <imageobject>
+		<imagedata fileref="lighttable/images/panel_geotagging.png" scalefit="1" width="80%" align="center" />
+	      </imageobject>
+	    </mediaobject>
           </entry>
         </row>
       </tbody>
     </tgroup>
   </informaltable>
 
-  <sect3 id="geotagging_usage">
+  <sect3 xml:id="geotagging_usage">
 
     <title>Usage</title>
 
@@ -92,7 +96,11 @@
               </para>
             </entry>
             <entry>
-              <graphic fileref="lighttable/images/panel_geotagging_ex1.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="lighttable/images/panel_geotagging_ex1.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
           <row>
@@ -112,7 +120,11 @@
               </para>
             </entry>
             <entry>
-              <graphic fileref="lighttable/images/panel_geotagging_ex2.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="lighttable/images/panel_geotagging_ex2.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
           <row>
@@ -124,7 +136,11 @@
               </para>
             </entry>
             <entry>
-              <graphic fileref="lighttable/images/panel_geotagging_ex3.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="lighttable/images/panel_geotagging_ex3.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

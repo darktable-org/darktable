@@ -27,7 +27,7 @@
     dialog (see <xref linkend="core_options"/>).
   </para>
 
-  <sect3 status="final" id="thumbnail_creation">
+  <sect3 status="final" xml:id="thumbnail_creation">
 
     <title>Thumbnail creation</title>
 
@@ -102,7 +102,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="skulls">
+  <sect3 status="final" xml:id="skulls">
 
     <title>Skulls</title>
 
@@ -124,7 +124,11 @@
                 </para>
               </entry>
               <entry>
-                <graphic fileref="lighttable/concepts/images/thumbnails_1.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="lighttable/concepts/images/thumbnails_1.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>

@@ -36,7 +36,11 @@
               the top panel.
             </entry>
             <entry>
-              <graphic fileref="lighttable/concepts/images/filter_sort_panel.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="lighttable/concepts/images/filter_sort_panel.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

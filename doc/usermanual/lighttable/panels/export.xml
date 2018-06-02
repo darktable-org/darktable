@@ -40,7 +40,11 @@
             export.</emphasis>
           </entry>
           <entry>
-            <graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="80%" align="center" />
+            <mediaobject>
+	      <imageobject>
+		<imagedata fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="80%" align="center" />
+	      </imageobject>
+	    </mediaobject>
           </entry>
         </row>
       </tbody>
@@ -49,15 +53,19 @@
 
   <para>
     All settings in this panel can be saved for later reuse. Press the
-    <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" />
+    <inlinemediaobject>
+      <imageobject>
+	<imagedata fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" />
+      </imageobject>
+    </inlinemediaobject>
     button to manage your presets.
   </para>
 
-  <sect3 id="export_selected_usage">
+  <sect3 xml:id="export_selected_usage">
 
     <title>Usage</title>
 
-    <sect4 id="export_selected_usage_storage">
+    <sect4 xml:id="export_selected_usage_storage">
 
       <title>target storage</title>
 
@@ -70,7 +78,7 @@
 
     </sect4>
 
-    <sect4 id="export_selected_usage_filename">
+    <sect4 xml:id="export_selected_usage_filename">
 
       <title>filename template</title>
 
@@ -545,19 +553,23 @@
 
     </sect4>
 
-    <sect4 id="export_selected_usage_directory">
+    <sect4 xml:id="export_selected_usage_directory">
 
       <title>output directory</title>
 
       <para>
         Pressing button
-        <inlinegraphic fileref="&icon_directory;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_directory;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         opens a dialog to select the parent directory for export.
       </para>
 
     </sect4>
 
-    <sect4 id="export_selected_usage_conflict">
+    <sect4 xml:id="export_selected_usage_conflict">
 
       <title>on conflict</title>
 
@@ -572,7 +584,7 @@
 
     </sect4>
 
-    <sect4 id="export_selected_usage_format">
+    <sect4 xml:id="export_selected_usage_format">
 
       <title>file format</title>
 
@@ -607,7 +619,7 @@
       <para>
         If you don't want to distribute history stack data with your images, there are various
         tools to delete embedded XMP tags. As an example you can use the program
-        <link xl:href="http://www.sno.phy.queensu.ca/~phil/exiftool/"><emphasis>exiftool</emphasis></link>
+        <link xlink:href="http://www.sno.phy.queensu.ca/~phil/exiftool/"><emphasis>exiftool</emphasis></link>
         with:
       </para>
 
@@ -618,7 +630,7 @@
 
     </sect4>
 
-    <sect4 id="export_selected_usage_size">
+    <sect4 xml:id="export_selected_usage_size">
 
       <title>max size</title>
 
@@ -638,7 +650,7 @@
 
     </sect4>
 
-    <sect4 id="export_selected_usage_upscaling">
+    <sect4 xml:id="export_selected_usage_upscaling">
 
       <title>allow upscaling</title>
 
@@ -651,7 +663,7 @@
 
     </sect4>
 
-    <sect4 id="export_selected_usage_profile">
+    <sect4 xml:id="export_selected_usage_profile">
 
       <title>profile</title>
 
@@ -664,7 +676,7 @@
 
     </sect4>
 
-    <sect4 id="export_selected_usage_intent">
+    <sect4 xml:id="export_selected_usage_intent">
 
       <title>intent</title>
 
@@ -676,7 +688,7 @@
 
     </sect4>
 
-    <sect4 id="export_selected_usage_style">
+    <sect4 xml:id="export_selected_usage_style">
 
       <title>style</title>
 
@@ -693,7 +705,7 @@
 
     </sect4>
 
-    <sect4 id="export_selected_usage_mode">
+    <sect4 xml:id="export_selected_usage_mode">
 
       <title>mode</title>
 
@@ -710,7 +722,7 @@
 
     </sect4>
 
-    <sect4 id="export_selected_usage_export">
+    <sect4 xml:id="export_selected_usage_export">
 
       <title>export</title>
 
@@ -719,7 +731,11 @@
         bottom of the left side panel displays the progress. Furthermore a notification message
         pops up reporting the export progress. You may click on the pop-up to make it disappear.
         You may <emphasis>abort</emphasis> the export job by clicking on the
-        <inlinegraphic fileref="&icon_lighttable_abort;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_lighttable_abort;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         icon located close to the progress bar.
       </para>
 

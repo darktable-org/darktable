@@ -35,7 +35,11 @@
             collection.
           </entry>
           <entry>
-            <graphic fileref="lighttable/images/panel_recent_collections.png" scalefit="1" width="80%" align="center" />
+            <mediaobject>
+	      <imageobject>
+		<imagedata fileref="lighttable/images/panel_recent_collections.png" scalefit="1" width="80%" align="center" />
+	      </imageobject>
+	    </mediaobject>
           </entry>
         </row>
       </tbody>

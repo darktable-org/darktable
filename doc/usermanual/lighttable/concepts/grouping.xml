@@ -50,7 +50,11 @@
               </para>
             </entry>
             <entry>
-              <graphic fileref="lighttable/concepts/images/grouping_1.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="lighttable/concepts/images/grouping_1.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -60,7 +64,11 @@
 
   <para>
     The group button
-    <inlinegraphic  fileref="images/lighttable_icon_group.png" scalefit="1" width="2%"/>
+    <inlinemediaobject>
+      <imageobject>
+	<imagedata  fileref="images/lighttable_icon_group.png" scalefit="1" width="2%"/>
+      </imageobject>
+    </inlinemediaobject>
     in the top panel of the lightroom view toggles grouping mode on and off. If grouping is off,
     each image is displayed as an individual thumb. If grouping is on, images of a group are
     collapsed, which means they are represented by a single thumbnail. This thumbnail you see is
@@ -85,7 +93,11 @@
               </para>
             </entry>
             <entry>
-              <graphic fileref="lighttable/concepts/images/grouping_2.png" scalefit="1" width="80%" align="center" />
+	      <mediaobject>
+		<imageobject>
+		  <imagedata fileref="lighttable/concepts/images/grouping_2.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

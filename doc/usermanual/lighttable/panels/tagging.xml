@@ -38,7 +38,11 @@
             filtered in the text box above.
           </entry>
           <entry>
-            <graphic fileref="lighttable/images/panel_tagging.png" scalefit="1" width="80%" align="center" />
+            <mediaobject>
+	      <imageobject>
+		<imagedata fileref="lighttable/images/panel_tagging.png" scalefit="1" width="80%" align="center" />
+	      </imageobject>
+	    </mediaobject>
           </entry>
         </row>
       </tbody>
@@ -68,11 +72,11 @@
     tagging your selected images by typing a tag phrase and hitting return. </emphasis>
   </para>
 
-  <sect3 id="tagging_usage">
+  <sect3 xml:id="tagging_usage">
 
     <title>Usage</title>
 
-    <sect4 id="tagging_usage_attach">
+    <sect4 xml:id="tagging_usage_attach">
 
       <title>attach</title>
 
@@ -82,7 +86,7 @@
 
     </sect4>
 
-    <sect4 id="tagging_usage_detach">
+    <sect4 xml:id="tagging_usage_detach">
 
       <title>detach</title>
 
@@ -93,7 +97,7 @@
 
     </sect4>
 
-    <sect4 id="tagging_usage_new">
+    <sect4 xml:id="tagging_usage_new">
 
       <title>new</title>
 
@@ -103,7 +107,7 @@
 
     </sect4>
 
-    <sect4 id="tagging_usage_delete">
+    <sect4 xml:id="tagging_usage_delete">
 
       <title>delete</title>
 

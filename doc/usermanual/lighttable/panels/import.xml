@@ -46,7 +46,11 @@
             tethering mode.
           </entry>
           <entry>
-            <graphic fileref="lighttable/images/panel_import_1.png" scalefit="1" width="80%" align="center" />
+            <mediaobject>
+	      <imageobject>
+		<imagedata fileref="lighttable/images/panel_import_1.png" scalefit="1" width="80%" align="center" />
+	      </imageobject>
+	    </mediaobject>
           </entry>
         </row>
       </tbody>
@@ -64,7 +68,7 @@
     ones you have worked with.
   </para>
 
-  <sect3 status="final" id="import_from_fs">
+  <sect3 status="final" xml:id="import_from_fs">
 
     <title>Import from filesystem</title>
 
@@ -74,7 +78,11 @@
     </para>
 
     <para>
-      <graphic fileref="lighttable/images/panel_import_2.png" scalefit="1" width="60%" align="center"></graphic>
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="lighttable/images/panel_import_2.png" scalefit="1" width="60%" align="center"/>
+	</imageobject>
+      </mediaobject>
     </para>
 
     <para>
@@ -114,7 +122,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="import_from_camera">
+  <sect3 status="final" xml:id="import_from_camera">
 
     <title>Importing from a connected camera</title>
 
@@ -133,14 +141,18 @@
               <quote>tethered shoot</quote>.
             </entry>
             <entry>
-              <graphic fileref="lighttable/images/panel_import_3.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="lighttable/images/panel_import_3.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
       </tgroup>
     </informaltable>
 
-    <sect4 id="import_from_camera_import">
+    <sect4 xml:id="import_from_camera_import">
 
       <title>Import from camera</title>
 
@@ -157,7 +169,7 @@
 
     </sect4>
 
-    <sect4 id="import_from_camera_tethering">
+    <sect4 xml:id="import_from_camera_tethering">
 
       <title>Tethered shoot</title>
 
@@ -178,7 +190,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="supported_file_formats">
+  <sect3 status="final" xml:id="supported_file_formats">
 
     <title>Supported file formats</title>
 
@@ -208,7 +220,7 @@
       PGM, PNM, PPM.
     </para>
 
-    <sect4 id="supported_file_formats_raw">
+    <sect4 xml:id="supported_file_formats_raw">
 
       <title>Camera raw files</title>
 
@@ -219,7 +231,7 @@
 
       <para>
         darktable reads raw files using the open source library
-        <link xl:href="https://github.com/darktable-org/rawspeed">RawSpeed</link>, originally
+        <link xlink:href="https://github.com/darktable-org/rawspeed">RawSpeed</link>, originally
         developed by Klaus Post and now maintained within the darktable project itself. The
         number of supported cameras and file formats is constantly increasing. It is beyond the
         scope of this manual to give an exhaustive list. Most modern camera models are
@@ -230,7 +242,7 @@
 
     </sect4>
 
-    <sect4 id="supported_file_formats_ldr">
+    <sect4 xml:id="supported_file_formats_ldr">
 
       <title>LDR image files</title>
 
@@ -249,7 +261,7 @@
 
     </sect4>
 
-    <sect4 id="supported_file_formats_hdr">
+    <sect4 xml:id="supported_file_formats_hdr">
 
       <title>HDR image files</title>
 

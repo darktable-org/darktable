@@ -6,11 +6,12 @@
 ]>
 
 <chapter
-    xmlns="http://docbook.org/ns/docbook" 
+    xmlns="http://docbook.org/ns/docbook"
+    version="5.0"
     xmlns:xi="http://www.w3.org/2001/XInclude" 
     xmlns:xlink="http://www.w3.org/1999/xlink"
-    xmlns:lang="en"
-    xmlns:status="final">
+    xml:lang="en"
+    status="final">
 
   <info>
     <keywordset>
@@ -296,7 +297,7 @@
 
 <!-- Lighttable concepts -->
 
-<!--  <xi:include href="concepts/concepts.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+  <xi:include href="concepts/concepts.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- Panels -->
 

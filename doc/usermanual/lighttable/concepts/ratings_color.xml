@@ -35,7 +35,11 @@
     rating which you can define in <quote>GUI options</quote> (see
     <xref linkend="gui_options"/>). You can later revise the rating at any time. You can also
     mark an image as <quote>rejected</quote> by pressing the
-    <inlinegraphic fileref="&icon_lighttable_reject;" scalefit="1" width="2%" align="center"/>
+    <inlinemediaobject>
+      <imageobject>
+	<imagedata fileref="&icon_lighttable_reject;" scalefit="1" width="2%" align="center"/>
+      </imageobject>
+    </inlinemediaobject>
     icon or typing the <emphasis>R</emphasis> key. This will remove all stars. You can reverse
     the rejection by applying a new star rating.
   </para>
@@ -63,7 +67,11 @@
               <xref linkend="gui_options"/>).
             </entry>
             <entry>
-              <graphic fileref="lighttable/concepts/images/star_rating_thumbs.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="lighttable/concepts/images/star_rating_thumbs.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -85,7 +93,11 @@
               view.
             </entry>
             <entry>
-              <graphic fileref="lighttable/concepts/images/star_rating_panel.png" scalefit="1" width="80%" align="center" />
+	      <mediaobject>
+		<imageobject>
+		  <imagedata fileref="lighttable/concepts/images/star_rating_panel.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -119,7 +131,11 @@
               button.
             </entry>
             <entry>
-              <graphic fileref="lighttable/concepts/images/color_labels_panel.png" scalefit="1" width="80%" align="center" />
+	      <mediaobject>
+		<imageobject>
+		  <imagedata fileref="lighttable/concepts/images/color_labels_panel.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>	      
             </entry>
           </row>
         </tbody>

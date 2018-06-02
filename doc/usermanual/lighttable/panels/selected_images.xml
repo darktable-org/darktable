@@ -33,18 +33,22 @@
             This panel provides some actions that operate on selected images.
           </entry>
           <entry>
-            <graphic fileref="lighttable/images/panel_selectedimages.png" scalefit="1" width="80%" align="center" />
+            <mediaobject>
+	      <imageobject>
+		<imagedata fileref="lighttable/images/panel_selectedimages.png" scalefit="1" width="80%" align="center" />
+	      </imageobject>
+	    </mediaobject>
           </entry>
         </row>
       </tbody>
     </tgroup>
   </informaltable>
 
-  <sect3 id="selected_images_usage">
+  <sect3 xml:id="selected_images_usage">
 
     <title>Usage</title>
 
-    <sect4 id="selected_images_usage_remove">
+    <sect4 xml:id="selected_images_usage_remove">
 
       <title>remove</title>
 
@@ -65,7 +69,7 @@
 
     </sect4>
 
-    <sect4 id="selected_images_usage_delete">
+    <sect4 xml:id="selected_images_usage_delete">
 
       <title>delete/trash</title>
 
@@ -98,7 +102,7 @@
 
     </sect4>
 
-    <sect4 id="selected_images_usage_move">
+    <sect4 xml:id="selected_images_usage_move">
 
       <title>move</title>
 
@@ -115,7 +119,7 @@
 
     </sect4>
 
-    <sect4 id="selected_images_usage_copy">
+    <sect4 xml:id="selected_images_usage_copy">
 
       <title>copy</title>
 
@@ -132,7 +136,7 @@
 
     </sect4>
 
-    <sect4 id="selected_images_usage_hdr">
+    <sect4 xml:id="selected_images_usage_hdr">
 
       <title>create hdr</title>
 
@@ -144,7 +148,7 @@
         Create a high dynamic range image from the selected images, and store it as a new source
         file in DNG format. Images need to be properly aligned, which implies that they have
         been taken on a sturdy tripod. You can also generate HDRs with programs like
-        <link xl:href="http://qtpfsgui.sourceforge.net/"><emphasis>Luminance
+        <link xlink:href="http://qtpfsgui.sourceforge.net/"><emphasis>Luminance
         HDR</emphasis></link>, and later import them into darktable for further processing (see
         <xref linkend="supported_file_formats"/>). Note that darktable will only creates HDR
         images from raw files.
@@ -152,7 +156,7 @@
 
     </sect4>
 
-    <sect4 id="selected_images_usage_duplicate">
+    <sect4 xml:id="selected_images_usage_duplicate">
 
       <title>duplicate</title>
 
@@ -168,7 +172,7 @@
 
     </sect4>
 
-    <sect4 id="selected_images_usage_rotation">
+    <sect4 xml:id="selected_images_usage_rotation">
 
       <title>rotation</title>
 
@@ -181,7 +185,7 @@
 
     </sect4>
 
-    <sect4 id="selected_images_usage_copy_locally">
+    <sect4 xml:id="selected_images_usage_copy_locally">
 
       <title>copy locally</title>
 
@@ -197,7 +201,7 @@
 
     </sect4>
 
-    <sect4 id="selected_images_usage_resync">
+    <sect4 xml:id="selected_images_usage_resync">
 
       <title>resync local copy</title>
 
@@ -210,7 +214,7 @@
 
     </sect4>
 
-    <sect4 id="selected_images_usage_group">
+    <sect4 xml:id="selected_images_usage_group">
 
       <title>group</title>
 
@@ -224,7 +228,7 @@
 
     </sect4>
 
-    <sect4 id="selected_images_usage_ungroup">
+    <sect4 xml:id="selected_images_usage_ungroup">
 
       <title>ungroup</title>
 

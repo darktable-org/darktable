@@ -34,18 +34,22 @@
             criteria.
           </entry>
           <entry>
-            <graphic fileref="lighttable/images/panel_select.png" scalefit="1" width="80%" align="center" />
+            <mediaobject>
+	      <imageobject>
+		<imagedata fileref="lighttable/images/panel_select.png" scalefit="1" width="80%" align="center" />
+	      </imageobject>
+	    </mediaobject>
           </entry>
         </row>
       </tbody>
     </tgroup>
   </informaltable>
 
-  <sect3 id="select_usage">
+  <sect3 xml:id="select_usage">
 
     <title>Usage</title>
 
-    <sect4 id="select_usage_all">
+    <sect4 xml:id="select_usage_all">
 
       <title>select all</title>
 
@@ -55,7 +59,7 @@
 
     </sect4>
 
-    <sect4 id="select_usage_none">
+    <sect4 xml:id="select_usage_none">
 
       <title>select none</title>
 
@@ -65,7 +69,7 @@
 
     </sect4>
 
-    <sect4 id="select_usage_invert">
+    <sect4 xml:id="select_usage_invert">
 
       <title>invert selection</title>
 
@@ -75,7 +79,7 @@
 
     </sect4>
 
-    <sect4 id="select_usage_filmroll">
+    <sect4 xml:id="select_usage_filmroll">
 
       <title>select film roll</title>
 
@@ -85,7 +89,7 @@
 
     </sect4>
 
-    <sect4 id="select_usage_untouched">
+    <sect4 xml:id="select_usage_untouched">
 
       <title>select untouched</title>
 

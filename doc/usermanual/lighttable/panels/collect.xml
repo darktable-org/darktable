@@ -4,8 +4,8 @@
 ]>
 
 <sect2
+    xmlns="http://docbook.org/ns/docbook"
     version="5.0"
-    xmlns="http://docbook.org/ns/docbook" 
     xmlns:xi="http://www.w3.org/2001/XInclude" 
     xmlns:xlink="http://www.w3.org/1999/xlink" 
     xml:lang="en"
@@ -39,7 +39,11 @@
             ones you want to work with.
           </entry>
           <entry>
-            <graphic fileref="lighttable/images/panel_collectimages.png" scalefit="1" width="80%" align="center" />
+            <mediaobject>
+	      <imageobject>
+		<imagedata fileref="lighttable/images/panel_collectimages.png" scalefit="1" width="80%" align="center" />
+	      </imageobject>
+	    </mediaobject>
           </entry>
         </row>
       </tbody>
@@ -57,11 +61,11 @@
     images of the last imported film roll or any other film roll chosen.
   </para>
 
-  <sect3 id="collect_images_usage">
+  <sect3 xml:id="collect_images_usage">
 
     <title>Usage</title>
 
-    <sect4 id="collect_images_usage_attributes">
+    <sect4 xml:id="collect_images_usage_attributes">
 
       <title>image attributes</title>
 
@@ -277,7 +281,7 @@
 
     </sect4>
 
-    <sect4 id="collect_images_usage_rules">
+    <sect4 xml:id="collect_images_usage_rules">
 
       <title>search rules</title>
 
@@ -312,14 +316,14 @@
         them:
       </para>
 
-      <sect5 id="collect_images_usage_rules_clear">
+      <sect5 xml:id="collect_images_usage_rules_clear">
         <title>clear this rule</title>
         <para>
           Removes this rule&nbsp;&ndash; or resets to default if this is the only rule defined.
         </para>
       </sect5>
 
-      <sect5 id="collect_images_usage_rules_narrow">
+      <sect5 xml:id="collect_images_usage_rules_narrow">
         <title>narrow down search</title>
         <para>
           Adds a new rule which is combined with the previous rule(s) in a logical
@@ -328,7 +332,7 @@
         </para>
       </sect5>
 
-      <sect5 id="collect_images_usage_rules_more">
+      <sect5 xml:id="collect_images_usage_rules_more">
         <title>add more images</title>
         <para>
           Adds a new rule which is combined with the previous rule(s) in a logical
@@ -337,7 +341,7 @@
         </para>
       </sect5>
 
-      <sect5 id="collect_images_usage_rules_exclude">
+      <sect5 xml:id="collect_images_usage_rules_exclude">
         <title>exclude images</title>
         <para>
           Adds a new rule which is combined with the previous rule(s) in a logical
@@ -348,24 +352,36 @@
 
     </sect4>
 
-    <sect4 id="collect_images_usage_combining">
+    <sect4 xml:id="collect_images_usage_combining">
 
       <title>combining rules</title>
 
       <para>
         The logical operators defining the combination of rules are displayed to the right of
         the rule: <emphasis>AND</emphasis> by the
-        <inlinegraphic fileref="&icon_lighttable_and;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_lighttable_and;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         symbol, <emphasis>OR</emphasis> by the
-        <inlinegraphic fileref="&icon_lighttable_or;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_lighttable_or;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         symbol, and <emphasis>EXCEPT</emphasis> by the
-        <inlinegraphic fileref="&icon_lighttable_except;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_lighttable_except;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         symbol. Clicking on either symbol gives a choice to change the logical operation.
       </para>
 
     </sect4>
 
-    <sect4 id="collect_images_usage_update">
+    <sect4 xml:id="collect_images_usage_update">
 
       <title>updating folder path</title>
 
