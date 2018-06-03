@@ -164,7 +164,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     {
       for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
       {
-        n->x[c][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0);
+        n->x[c][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0f);
         n->y[c][b] = 0.5f;
       }
     }
@@ -185,7 +185,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     if(!memcmp(interpolated.a, o->a, sizeof(float) * 3) && !memcmp(interpolated.b, o->b, sizeof(float) * 3))
     {
       // set the param a[0] to -1.0 to signal the autodetection
-      n->a[0] = -1.0;
+      n->a[0] = -1.0f;
     }
     return 0;
   }
@@ -279,8 +279,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   if(d->mode == MODE_NLMEANS)
   {
     const int P
-        = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
-    const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // nbhood
+        = ceilf(d->radius * fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f)); // pixel filter size
+    const int K = ceilf(7 * fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f)); // nbhood
 
     tiling->factor = 4.0f + 0.25f * NUM_BUCKETS; // in + out + (2 + NUM_BUCKETS * 0.25) tmp
     tiling->maxbuf = 1.0f;
@@ -296,13 +296,13 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     const float scale = roi_in->scale / piece->iscale;
     // largest desired filter on input buffer (20% of input dim)
     const float supp0
-        = MIN(2 * (2 << (max_max_scale - 1)) + 1,
-              MAX(piece->buf_in.height * piece->iscale, piece->buf_in.width * piece->iscale) * 0.2f);
+        = fminf(2 * (2u << (max_max_scale - 1)) + 1,
+              fmaxf(piece->buf_in.height * piece->iscale, piece->buf_in.width * piece->iscale) * 0.2f);
     const float i0 = dt_log2f((supp0 - 1.0f) * .5f);
     for(; max_scale < max_max_scale; max_scale++)
     {
       // actual filter support on scaled buffer
-      const float supp = 2 * (2 << max_scale) + 1;
+      const float supp = 2 * (2u << max_scale) + 1;
       // approximates this filter size on unscaled input image:
       const float supp_in = supp * (1.0f / scale);
       const float i_in = dt_log2f((supp_in - 1) * .5f) - 1.0f;
@@ -311,7 +311,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
       if(t < 0.0f) break;
     }
 
-    const int max_filter_radius = (1 << max_scale); // 2 * 2^max_scale
+    const int max_filter_radius = (1u << max_scale); // 2 * 2^max_scale
 
     tiling->factor = 3.5f + max_scale; // in + out + tmp + reducebuffer + scale buffers
     tiling->maxbuf = 1.0f;
@@ -321,7 +321,6 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->yalign = 1;
   }
 
-  return;
 }
 
 static inline void precondition(const float *const in, float *const buf, const int wd, const int ht,
@@ -344,7 +343,7 @@ static inline void precondition(const float *const in, float *const buf, const i
       for(int c = 0; c < 3; c++)
       {
         buf2[c] = in2[c] / a[c];
-        const float d = fmaxf(0.0f, buf2[c] + 3. / 8. + sigma2[c]);
+        const float d = fmaxf(0.0f, buf2[c] + 3.f / 8.f + sigma2[c]);
         buf2[c] = 2.0f * sqrtf(d);
       }
       buf2 += 4;
@@ -376,8 +375,8 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
         if(x < .5f)
           buf2[c] = 0.0f;
         else
-          buf2[c] = 1. / 4. * x * x + 1. / 4. * sqrtf(3. / 2.) / x - 11. / 8. * 1.0 / (x * x)
-                    + 5. / 8. * sqrtf(3. / 2.) * 1.0 / (x * x * x) - 1. / 8. - sigma2[c];
+          buf2[c] = 1.f / 4.f * x * x + 1.f / 4.f * sqrtf(3.f / 2.f) / x - 11.f / 8.f * 1.f / (x * x)
+                    + 5.f / 8.f * sqrtf(3.f / 2.f) * 1.f / (x * x * x) - 1.f / 8.f - sigma2[c];
         // asymptotic form:
         // buf2[c] = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2[c]);
         buf2[c] *= a[c];
@@ -541,7 +540,7 @@ typedef void((*eaw_decompose_t)(float *const out, const float *const in, float *
 static void eaw_decompose(float *const out, const float *const in, float *const detail, const int scale,
                           const float inv_sigma2, const int32_t width, const int32_t height)
 {
-  const int mult = 1 << scale;
+  const int mult = 1u << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
 
 /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
@@ -656,7 +655,7 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 static void eaw_decompose_sse(float *const out, const float *const in, float *const detail, const int scale,
                               const float inv_sigma2, const int32_t width, const int32_t height)
 {
-  const int mult = 1 << scale;
+  const int mult = 1u << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
 
 /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
@@ -847,13 +846,13 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   int max_scale = 0;
   const float in_scale = roi_in->scale / piece->iscale;
   // largest desired filter on input buffer (20% of input dim)
-  const float supp0 = MIN(2 * (2 << (MAX_MAX_SCALE - 1)) + 1,
+  const float supp0 = MIN(2 * (2u << (MAX_MAX_SCALE - 1)) + 1,
                           MAX(piece->buf_in.height * piece->iscale, piece->buf_in.width * piece->iscale) * 0.2f);
   const float i0 = dt_log2f((supp0 - 1.0f) * .5f);
   for(; max_scale < MAX_MAX_SCALE; max_scale++)
   {
     // actual filter support on scaled buffer
-    const float supp = 2 * (2 << max_scale) + 1;
+    const float supp = 2 * (2u << max_scale) + 1;
     // approximates this filter size on unscaled input image:
     const float supp_in = supp * (1.0f / in_scale);
     const float i_in = dt_log2f((supp_in - 1) * .5f) - 1.0f;
@@ -1027,7 +1026,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
 
   // TODO: fixed K to use adaptive size trading variance and bias!
   // adjust to zoom size:
-  const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
+  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
   const int K = ceilf(7 * scale);         // nbhood
 
@@ -1175,7 +1174,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
 
   // TODO: fixed K to use adaptive size trading variance and bias!
   // adjust to zoom size:
-  const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
+  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
   const int K = ceilf(7 * scale);         // nbhood
 
@@ -1375,7 +1374,7 @@ static int bucket_next(unsigned int *state, unsigned int max)
 
 static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
                               cl_mem dev_out, const dt_iop_roi_t *const roi_in,
-                              const dt_iop_roi_t *const roi_out)
+                              const dt_iop_roi_t *const)
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->data;
@@ -1396,7 +1395,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   cl_int err = -999;
 
-  const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
+  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
   const int K = ceilf(7 * scale);         // nbhood
   const float norm = 0.015f / (2 * P + 1);
@@ -1426,7 +1425,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   dt_opencl_local_buffer_t hlocopt
     = (dt_opencl_local_buffer_t){ .xoffset = 2 * P, .xfactor = 1, .yoffset = 0, .yfactor = 1,
                                   .cellsize = sizeof(float), .overhead = 0,
-                                  .sizex = 1 << 16, .sizey = 1 };
+                                  .sizex = 1u << 16, .sizey = 1 };
 
   if(dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_horiz, &hlocopt))
     hblocksize = hlocopt.sizex;
@@ -1437,7 +1436,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   dt_opencl_local_buffer_t vlocopt
     = (dt_opencl_local_buffer_t){ .xoffset = 1, .xfactor = 1, .yoffset = 2 * P, .yfactor = 1,
                                   .cellsize = sizeof(float), .overhead = 0,
-                                  .sizex = 1, .sizey = 1 << 16 };
+                                  .sizex = 1, .sizey = 1u << 16 };
 
   if(dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_vert, &vlocopt))
     vblocksize = vlocopt.sizey;
@@ -1581,13 +1580,13 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   const float scale = roi_in->scale / piece->iscale;
   // largest desired filter on input buffer (20% of input dim)
   const float supp0
-      = MIN(2 * (2 << (max_max_scale - 1)) + 1,
+      = MIN(2 * (2u << (max_max_scale - 1)) + 1,
             MAX(piece->buf_in.height * piece->iscale, piece->buf_in.width * piece->iscale) * 0.2f);
   const float i0 = dt_log2f((supp0 - 1.0f) * .5f);
   for(; max_scale < max_max_scale; max_scale++)
   {
     // actual filter support on scaled buffer
-    const float supp = 2 * (2 << max_scale) + 1;
+    const float supp = 2 * (2u << max_scale) + 1;
     // approximates this filter size on unscaled input image:
     const float supp_in = supp * (1.0f / scale);
     const float i_in = dt_log2f((supp_in - 1) * .5f) - 1.0f;
@@ -1627,7 +1626,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   dt_opencl_local_buffer_t flocopt
     = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
                                   .cellsize = 4 * sizeof(float), .overhead = 0,
-                                  .sizex = 1 << 4, .sizey = 1 << 4 };
+                                  .sizex = 1u << 4, .sizey = 1u << 4 };
 
   if(!dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_reduce_first, &flocopt))
     goto error;
@@ -1640,7 +1639,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   dt_opencl_local_buffer_t slocopt
     = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
                                   .cellsize = 4 * sizeof(float), .overhead = 0,
-                                  .sizex = 1 << 16, .sizey = 1 };
+                                  .sizex = 1u << 16, .sizey = 1 };
 
   if(!dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_reduce_first, &slocopt))
     goto error;
@@ -1974,7 +1973,7 @@ void reload_defaults(dt_iop_module_t *module)
       {
         g->interpolated = *current;
         // signal later autodetection in commit_params:
-        g->interpolated.a[0] = -1.0;
+        g->interpolated.a[0] = -1.0f;
         snprintf(name, sizeof(name), _("found match for ISO %d"), iso);
         break;
       }
@@ -1982,7 +1981,7 @@ void reload_defaults(dt_iop_module_t *module)
       {
         dt_noiseprofile_interpolate(last, current, &g->interpolated);
         // signal later autodetection in commit_params:
-        g->interpolated.a[0] = -1.0;
+        g->interpolated.a[0] = -1.0f;
         snprintf(name, sizeof(name), _("interpolated from ISO %d and %d"), last->iso, current->iso);
         break;
       }
@@ -2023,7 +2022,7 @@ void init(dt_iop_module_t *module)
   {
     for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
     {
-      tmp.x[ch][k] = k / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0);
+      tmp.x[ch][k] = k / (DT_IOP_DENOISE_PROFILE_BANDS - 1.f);
       tmp.y[ch][k] = 0.5f;
     }
   }
@@ -2134,10 +2133,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
   {
-    dt_draw_curve_set_point(d->curve[ch], 0, p->x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0, p->y[ch][0]);
+    dt_draw_curve_set_point(d->curve[ch], 0, p->x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.f, p->y[ch][0]);
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
       dt_draw_curve_set_point(d->curve[ch], k, p->x[ch][k], p->y[ch][k]);
-    dt_draw_curve_set_point(d->curve[ch], DT_IOP_DENOISE_PROFILE_BANDS + 1, p->x[ch][1] + 1.0,
+    dt_draw_curve_set_point(d->curve[ch], DT_IOP_DENOISE_PROFILE_BANDS + 1, p->x[ch][1] + 1.f,
                             p->y[ch][DT_IOP_DENOISE_PROFILE_BANDS - 1]);
     dt_draw_curve_calc_values(d->curve[ch], 0.0, 1.0, DT_IOP_DENOISE_PROFILE_BANDS, NULL, d->force[ch]);
   }
@@ -2257,10 +2256,10 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
   dt_iop_denoiseprofile_params_t p = *(dt_iop_denoiseprofile_params_t *)self->params;
 
   int ch = (int)c->channel;
-  dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0, p.y[ch][0]);
+  dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.f, p.y[ch][0]);
   for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
     dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
-  dt_draw_curve_set_point(c->transition_curve, DT_IOP_DENOISE_PROFILE_BANDS + 1, p.x[ch][1] + 1.0,
+  dt_draw_curve_set_point(c->transition_curve, DT_IOP_DENOISE_PROFILE_BANDS + 1, p.x[ch][1] + 1.f,
                           p.y[ch][DT_IOP_DENOISE_PROFILE_BANDS - 1]);
 
   const int inset = DT_IOP_DENOISE_PROFILE_INSET;
@@ -2295,20 +2294,20 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
   {
     // draw min/max curves:
     dt_iop_denoiseprofile_get_params(&p, c->channel, c->mouse_x, 1., c->mouse_radius);
-    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0, p.y[ch][0]);
+    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.f, p.y[ch][0]);
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
       dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
-    dt_draw_curve_set_point(c->transition_curve, DT_IOP_DENOISE_PROFILE_BANDS + 1, p.x[ch][1] + 1.0,
+    dt_draw_curve_set_point(c->transition_curve, DT_IOP_DENOISE_PROFILE_BANDS + 1, p.x[ch][1] + 1.f,
                             p.y[ch][DT_IOP_DENOISE_PROFILE_BANDS - 1]);
     dt_draw_curve_calc_values(c->transition_curve, 0.0, 1.0, DT_IOP_DENOISE_PROFILE_RES, c->draw_min_xs,
                               c->draw_min_ys);
 
     p = *(dt_iop_denoiseprofile_params_t *)self->params;
     dt_iop_denoiseprofile_get_params(&p, c->channel, c->mouse_x, .0, c->mouse_radius);
-    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0, p.y[ch][0]);
+    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.f, p.y[ch][0]);
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
       dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
-    dt_draw_curve_set_point(c->transition_curve, DT_IOP_DENOISE_PROFILE_BANDS + 1, p.x[ch][1] + 1.0,
+    dt_draw_curve_set_point(c->transition_curve, DT_IOP_DENOISE_PROFILE_BANDS + 1, p.x[ch][1] + 1.f,
                             p.y[ch][DT_IOP_DENOISE_PROFILE_BANDS - 1]);
     dt_draw_curve_calc_values(c->transition_curve, 0.0, 1.0, DT_IOP_DENOISE_PROFILE_RES, c->draw_max_xs,
                               c->draw_max_ys);
@@ -2345,10 +2344,10 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
     }
 
     p = *(dt_iop_denoiseprofile_params_t *)self->params;
-    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0, p.y[ch][0]);
+    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0f, p.y[ch][0]);
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
       dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
-    dt_draw_curve_set_point(c->transition_curve, DT_IOP_DENOISE_PROFILE_BANDS + 1, p.x[ch][1] + 1.0,
+    dt_draw_curve_set_point(c->transition_curve, DT_IOP_DENOISE_PROFILE_BANDS + 1, p.x[ch][1] + 1.0f,
                             p.y[ch][DT_IOP_DENOISE_PROFILE_BANDS - 1]);
     dt_draw_curve_calc_values(c->transition_curve, 0.0, 1.0, DT_IOP_DENOISE_PROFILE_RES, c->draw_xs, c->draw_ys);
     cairo_move_to(cr, 0 * width / (float)(DT_IOP_DENOISE_PROFILE_RES - 1), -height * c->draw_ys[0]);
@@ -2545,7 +2544,7 @@ static gboolean denoiseprofile_scrolled(GtkWidget *widget, GdkEventScroll *event
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
-    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / DT_IOP_DENOISE_PROFILE_BANDS, 1.0);
+    c->mouse_radius = CLAMP(c->mouse_radius * (1.f + 0.1f * delta_y), 0.2f / DT_IOP_DENOISE_PROFILE_BANDS, 1.f);
     gtk_widget_queue_draw(widget);
   }
 
@@ -2572,7 +2571,7 @@ void gui_init(dt_iop_module_t *self)
   g->profiles = NULL;
   g->profile = dt_bauhaus_combobox_new(self);
   g->mode = dt_bauhaus_combobox_new(self);
-  g->radius = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 1.f, 0);
+  g->radius = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1.f, 1.f, 0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
   g->channel = dt_conf_get_int("plugins/darkroom/denoiseprofile/gui_channel");
 
@@ -2601,16 +2600,16 @@ void gui_init(dt_iop_module_t *self)
 
   const int ch = (int)g->channel;
   g->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
-  (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0,
+  (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0f,
                                 p->y[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2]);
   for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
     (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][k], p->y[ch][k]);
-  (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][1] + 1.0, p->y[ch][1]);
+  (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][1] + 1.0f, p->y[ch][1]);
 
   g->mouse_x = g->mouse_y = g->mouse_pick = -1.0;
   g->dragging = 0;
   g->x_move = -1;
-  g->mouse_radius = 1.0 / (DT_IOP_DENOISE_PROFILE_BANDS * 2);
+  g->mouse_radius = 1.0f / (DT_IOP_DENOISE_PROFILE_BANDS * 2);
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
 
