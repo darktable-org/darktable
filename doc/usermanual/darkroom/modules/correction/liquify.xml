@@ -120,7 +120,7 @@
       <para>
         A point is formed by a single node. In a point the strength vector has three different
         modes which are toggled using Ctrl + click over the arrowhead of the strength vector:
-        <informaltable frame="none" width="80%">
+        <informaltable frame="none"> <!-- width="80%"> -->
           <tgroup cols="3" colsep="0" rowsep="0">
             <colspec colwidth='2*'/>
             <colspec colwidth='4*'/>
@@ -185,7 +185,7 @@
         Note that the strength by default varies linearly from 0% to 100% between the center and
         the radius of the control point. It is possible to modify the feathering effect by
         clicking on the center of the circle:
-        <informaltable frame="none" width="80%">
+        <informaltable frame="none"> <!-- width="80%"> -->
           <tgroup cols="3" colsep="0" rowsep="0">
             <colspec colwidth='2*'/>
             <colspec colwidth='4*'/>
@@ -246,7 +246,7 @@
         just right-click anywhere.
       </para>
       <para>
-        <informaltable frame="none" width="80%">
+        <informaltable frame="none"> <!--  width="80%"> -->
           <tgroup cols="2" colsep="0" rowsep="0">
             <colspec colwidth='6*'/>
             <colspec colwidth='4*'/>
@@ -294,7 +294,7 @@
         just right-click anywhere.
       </para>
       <para>
-        <informaltable frame="none" width="80%">
+        <informaltable frame="none"> <!--  width="80%"> -->
           <tgroup cols="2" colsep="0" rowsep="0">
             <colspec colwidth='6*'/>
             <colspec colwidth='4*'/>
@@ -330,7 +330,7 @@
         It is possible to change the way the points of the curve are linked together by using
         Ctrl + click on the center. There are four modes which correspond to different ways of
         handling the steepness of the bezier curve by control handles:
-        <informaltable frame="none" width="80%">
+        <informaltable frame="none"> <!--  width="80%"> -->
           <tgroup cols="3" colsep="0" rowsep="0">
             <colspec colwidth='4*'/>
             <colspec colwidth='6*'/>

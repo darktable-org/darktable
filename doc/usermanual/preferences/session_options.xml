@@ -37,7 +37,7 @@
     Several pre-defined variables can be used in the pattern as placeholders:
   </para>
 
-  <informaltable frame="none" width="80%">
+  <informaltable frame="none"> <!-- width="80%"> -->
     <tgroup cols="2" colsep="0" rowsep="0">
       <tbody>
         <row>

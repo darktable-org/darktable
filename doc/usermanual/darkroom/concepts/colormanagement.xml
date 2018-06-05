@@ -39,15 +39,15 @@
 
       <listitem><para>
         Output files can be encoded in one of darktable's built-in profiles, like
-        <link xl:href="https://en.wikipedia.org/wiki/SRGB">sRGB</link> or
-        <link xl:href="https://en.wikipedia.org/wiki/Adobergb">AdobeRGB (compatible)</link>, or
+        <link xlink:href="https://en.wikipedia.org/wiki/SRGB">sRGB</link> or
+        <link xlink:href="https://en.wikipedia.org/wiki/Adobergb">AdobeRGB (compatible)</link>, or
         into any other output color space that the user supplies to darktable as an ICC profile.
       </para></listitem>
 
     </itemizedlist>
   </para>
 
-  <sect3 status="final" id="display_profile">
+  <sect3 status="final" xml:id="display_profile">
 
     <title>Display profile</title>
 
@@ -90,7 +90,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="rendering_method">
+  <sect3 status="final" xml:id="rendering_method">
 
     <title>Rendering method</title>
 
@@ -111,7 +111,7 @@
 
     <para>
       darktable can render colors either with its internal algorithms or by using the external
-      library <link xl:href="http://www.littlecms.com/"><emphasis>LittleCMS2</emphasis></link>.
+      library <link xlink:href="http://www.littlecms.com/"><emphasis>LittleCMS2</emphasis></link>.
       darktable's internal method is by an order of magnitude faster than the external one. The
       external option gives you a choice of the rendering intent and might offer a slightly
       higher accuracy in some cases.
@@ -125,7 +125,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="rendering_intent">
+  <sect3 status="final" xml:id="rendering_intent">
 
     <title>Rendering intent</title>
 
@@ -145,7 +145,7 @@
       color profile module (see <xref linkend="output_color_profile"/>), and the soft proof
       option (see <xref linkend="softproof"/>) gives you a choice of the following rendering
       intents:
-      <informaltable frame="none" width="80%">
+      <informaltable frame="none"> <!--  width="80%"> -->
         <tgroup cols="2" colsep="0" rowsep="0">
           <colspec colwidth='4*'/>
           <colspec colwidth='6*'/>
@@ -191,7 +191,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="darktable_color_spaces">
+  <sect3 status="final" xml:id="darktable_color_spaces">
 
     <title>darktable's color spaces</title>
 
@@ -202,7 +202,7 @@
     <para>
       darktable's input images are either RGB files (like JPEGs or TIFFs) or camera
       raws&nbsp;&ndash; both represent colors by a combination of red, green and blue. Most part
-      of our modules act in the <link xl:href="http://en.wikipedia.org/wiki/Lab_color_space">CIELAB
+      of our modules act in the <link xlink:href="http://en.wikipedia.org/wiki/Lab_color_space">CIELAB
       color space</link> (often just called <quote>Lab</quote>) which describes color as a
       combination of lightness data (L) and a point in the a-b color plane. The final output of
       the image processing pipeline is once again in RGB, either shaped for the monitor display
@@ -223,7 +223,7 @@
     </para>
 
     <para>
-      <informaltable frame="none" width="80%">
+      <informaltable frame="none"> <!-- width="80%"> -->
         <tgroup cols="3" colsep="0" rowsep="0">
           <colspec colwidth="3.5*"/>
           <colspec colwidth="0.5*"/>
@@ -281,7 +281,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="unbounded_colors">
+  <sect3 status="final" xml:id="unbounded_colors">
 
     <title>Unbounded colors</title>
 
@@ -321,7 +321,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="possible_color_artifacts">
+  <sect3 status="final" xml:id="possible_color_artifacts">
 
     <title>Possible color artifacts</title>
 

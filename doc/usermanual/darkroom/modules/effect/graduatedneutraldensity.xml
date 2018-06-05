@@ -85,7 +85,7 @@
         ND. So ND2 is 1 ev, ND4 is 2 ev, and so on. You can also express it in optical density
         or transmittance. The table below sums up the different approach for the most common
         filters:
-        <informaltable frame="none" width="80%">
+        <informaltable frame="none"> <!-- width="80%"> -->
           <tgroup cols="4" colsep="0" rowsep="0">
             <tbody>
               <row>

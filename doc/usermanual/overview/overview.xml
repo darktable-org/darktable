@@ -868,7 +868,7 @@
         described in this section. You can switch between views by clicking the view name at the
         top of the right panel&nbsp;&ndash; the active view is highlighted&nbsp;&ndash; or by
         using one of the key accelerators:
-        <informaltable frame="void" width="60%">
+        <informaltable frame="none"> <!-- width="60%"> -->
           <tgroup cols="2" colsep="0" rowsep="0">
             <colspec colwidth='1*'/>
             <colspec colwidth='9*'/>

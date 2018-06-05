@@ -87,7 +87,7 @@
         variables can be used as placeholders:
       </para>
 
-      <informaltable frame="none" width="80%">
+      <informaltable frame="none"> <!-- width="80%"> -->
         <tgroup cols="2" colsep="0" rowsep="0">
           <tbody>
             <row>
@@ -353,7 +353,7 @@
         it will result in a roll name of: <emphasis>1970-01-01_JPG_Time-Begins</emphasis>
       </para>
 
-      <informaltable frame="none" width="80%">
+      <informaltable frame="none"> <!-- width="80%"> -->
         <tgroup cols="2" colsep="0" rowsep="0">
           <tbody>
             <row>

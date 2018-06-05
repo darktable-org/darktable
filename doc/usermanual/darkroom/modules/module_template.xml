@@ -1,4 +1,18 @@
-<sect2 status="draft">
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE sect1 [
+    <!ENTITY % darktable_ent SYSTEM "../darktable.ent">
+    %darktable_ent;
+]>
+
+<sect2
+    xmlns="http://docbook.org/ns/docbook"
+    version="5.0"
+    xmlns:xi="http://www.w3.org/2001/XInclude" 
+    xmlns:xlink="http://www.w3.org/1999/xlink" 
+    xml:lang="en"
+    status="draft"
+    xml:id="insert_reference" >
 
   <title>MODULE NAME</title>
 
@@ -16,7 +30,11 @@
               SHORT AND CONSIST MODULE DESCRIPTION
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/soften.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/soften.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -77,7 +95,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/soften_ex1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/soften_ex1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 <para>
@@ -87,7 +109,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/soften_ex2.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/soften_ex2.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 <para>
