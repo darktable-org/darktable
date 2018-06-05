@@ -50,7 +50,11 @@
               colors and contrast.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/basecurve.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/basecurve.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -102,7 +106,7 @@
       <title>fusion</title>
       <para>
         This control triggers the
-        <link xl:href="https://en.wikipedia.org/wiki/Exposure_Fusion"><emphasis>exposure
+        <link xlink:href="https://en.wikipedia.org/wiki/Exposure_Fusion"><emphasis>exposure
         fusion</emphasis></link> feature. You can choose to merge the image with one or two
         copies of itself after applying the current base curve and boosting its exposure by a
         selectable number of ev units. The resulting image is thus a combination of two or three

@@ -44,17 +44,21 @@
 
               <para>
                 The idea is to calculate a
-                <link xl:href="http://en.wikipedia.org/wiki/Scotopic_vision">scotopic
+                <link xlink:href="http://en.wikipedia.org/wiki/Scotopic_vision">scotopic
                 vision</link> image which is perceived by rods rather than than cones in the
                 eye under low light. Scotopic lightness then is mixed with photopic value
                 (regular color image pixel) using some blending function. Also this module is
                 able to simulate the
-                <link xl:href="http://en.wikipedia.org/wiki/Purkinje_effect">Purkinje
+                <link xlink:href="http://en.wikipedia.org/wiki/Purkinje_effect">Purkinje
                 effect</link> by adding some blueness to the dark parts of the image.
               </para>
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/lowlight.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/lowlight.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -102,7 +106,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/lowlight_ex1_1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/lowlight_ex1_1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Image 1. This is the original image.
@@ -110,7 +118,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/lowlight_ex1_2.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/lowlight_ex1_2.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Image 1. With low light module on.
@@ -129,7 +141,11 @@
                 Image 2. This is the original image.
               </entry>
               <entry>
-                <graphic fileref="darkroom/modules/images/lowlight_ex2_1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/lowlight_ex2_1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
             <row>
@@ -137,7 +153,11 @@
                 Image 2. With low light module on.
               </entry>
               <entry>
-                <graphic fileref="darkroom/modules/images/lowlight_ex2_2.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/lowlight_ex2_2.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>

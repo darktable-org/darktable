@@ -41,7 +41,11 @@
             development.
           </entry>
           <entry>
-            <graphic fileref="darkroom/images/panel_snapshots.png" scalefit="1" width="80%" align="center" />
+            <mediaobject>
+	      <imageobject>
+		<imagedata fileref="darkroom/images/panel_snapshots.png" scalefit="1" width="80%" align="center" />
+	      </imageobject>
+	    </mediaobject>		  
           </entry>
         </row>
       </tbody>

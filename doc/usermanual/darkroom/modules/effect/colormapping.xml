@@ -42,7 +42,11 @@
               the target image.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/colormapping.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/colormapping.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -71,7 +75,11 @@
     <para>
       Next you open your target image in darkroom mode. darktable has remembered the previously
       collected source clusters; if they are not yet displayed, press the
-      <inlinegraphic fileref="&icon_module_reset;"  scalefit="1" width="2%" align="center"/>
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_module_reset;"  scalefit="1" width="2%" align="center"/>
+	</imageobject>
+      </inlinemediaobject>
       button. You now press the <quote>acquire as target</quote> button to generate a
       corresponding set of color clusters for your target image, which gets displayed in the
       <quote>target clusters</quote> area.
@@ -140,7 +148,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/colormapping_ex1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/colormapping_ex1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 The source image taken shortly after sunset under front lighting conditions.
@@ -148,7 +160,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/colormapping_ex2.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/colormapping_ex2.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 The target image taken in the afternoon with a partly clouded sky. Our goal is
@@ -157,7 +173,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/colormapping_ex3.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/colormapping_ex3.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 The target image with color mapping applied. A number of 2 clusters was used.

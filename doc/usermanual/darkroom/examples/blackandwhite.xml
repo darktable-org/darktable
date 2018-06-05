@@ -32,7 +32,11 @@
               manual, I will show you 4 ways to perform a black and white conversion.
             </entry>
             <entry>
-              <graphic fileref="darkroom/examples/images/blackandwhite.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/examples/images/blackandwhite.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

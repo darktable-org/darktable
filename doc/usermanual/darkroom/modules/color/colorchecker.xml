@@ -44,7 +44,11 @@
               <xref linkend="darktable_chart"/> for details.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/colorchecker.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/colorchecker.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

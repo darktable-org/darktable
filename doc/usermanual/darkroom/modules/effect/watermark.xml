@@ -38,10 +38,14 @@
             <entry>
               The watermark module provides a way to render a vector-based overlay onto your
               image. Watermarks are standard SVG documents and can be designed using
-              <link xl:href="http://www.inkscape.org"> <emphasis>Inkscape</emphasis></link>.
+              <link xlink:href="http://www.inkscape.org"> <emphasis>Inkscape</emphasis></link>.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/watermark.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/watermark.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

@@ -26,7 +26,7 @@
     delivering its output to the module above.
   </para>
 
-  <sect3 status="final" id="multiple_instances_use_cases">
+  <sect3 status="final" xml:id="multiple_instances_use_cases">
 
     <title>Typical use cases</title>
 
@@ -74,7 +74,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="multiple_instances_managing">
+  <sect3 status="final" xml:id="multiple_instances_managing">
 
     <title>Managing instances</title>
 
@@ -86,11 +86,19 @@
           <row>
             <entry>
               When clicking on the
-              <inlinegraphic fileref="&icon_module_instances;"  scalefit="1" width="4%" align="center"/>
+              <inlinemediaobject>
+		<imageobject>
+		  <imagedata fileref="&icon_module_instances;"  scalefit="1" width="4%" align="center"/>
+		</imageobject>
+	      </inlinemediaobject>
               icon a drop-down menu will appear.
             </entry>
             <entry>
-              <graphic fileref="darkroom/concepts/images/instances.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/concepts/images/instances.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

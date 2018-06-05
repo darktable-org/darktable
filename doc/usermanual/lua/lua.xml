@@ -14,14 +14,14 @@
     status="final"
     xml:id="lua_chapter">
 
-  <chapterinfo>
+  <info>
     <keywordset>
       <keyword>scripting</keyword>
       <keyword>lua</keyword>
     </keywordset>
-  </chapterinfo>
 
-  <title>Scripting with Lua</title>
+    <title>Scripting with Lua</title>
+  </info>
 
   <indexterm>
     <primary>Lua</primary>
@@ -38,14 +38,18 @@
   <para>
     <screenshot>
 
-      <screeninfo>Scipting with Lua</screeninfo>
+      <info>Scipting with Lua</info>
 
-      <graphic fileref="images/lua_view.png" scalefit="1" width="80%"></graphic>
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="images/lua_view.png" scalefit="1" width="80%" />
+	</imageobject>
+      </mediaobject>
 
     </screenshot>
   </para>
 
-  <sect1 id="lua_usage">
+  <sect1 xml:id="lua_usage">
 
     <title>Lua usage</title>
 
@@ -56,7 +60,7 @@
     </para>
 
     <para>
-      darktable uses <link xl:href="http://www.lua.org/"><emphasis>Lua</emphasis></link>, which is
+      darktable uses <link xlink:href="http://www.lua.org/"><emphasis>Lua</emphasis></link>, which is
       an independent project founded in 1993, providing a powerful, fast, lightweight,
       embeddable scripting language. Lua is widely used by many open source applications, in
       commercial programs, and for games programming.
@@ -65,10 +69,10 @@
     <para>
       darktable uses Lua version 5.2. Describing the principles and syntax of Lua is beyond the
       scope of this usermanual. For a detailed introduction see the
-      <link xl:href="http://www.lua.org/manual/5.2/manual.html">Lua reference manual</link>.
+      <link xlink:href="http://www.lua.org/manual/5.2/manual.html">Lua reference manual</link>.
     </para>
 
-    <sect2 id="lua_basic_principles">
+    <sect2 xml:id="lua_basic_principles">
 
       <title>Basic principles</title>
 
@@ -101,7 +105,7 @@
 
     </sect2>
 
-    <sect2 id="lua_hello_world">
+    <sect2 xml:id="lua_hello_world">
 
       <title>A simple lua example</title>
 
@@ -147,7 +151,7 @@ darktable.print_error("Hello World !")</programlisting>
 
     </sect2>
 
-    <sect2 id="lua_print_images">
+    <sect2 xml:id="lua_print_images">
 
       <title>Printing labeled images</title>
 
@@ -307,7 +311,7 @@ end</programlisting>
 
     </sect2>
 
-    <sect2 id="lua_simple_shortcut">
+    <sect2 xml:id="lua_simple_shortcut">
 
       <title>Adding a simple shortcut</title>
 
@@ -463,7 +467,7 @@ end,"Increase the rating of an image")</programlisting>
 
     </sect2>
 
-    <sect2 id="lua_storage_example">
+    <sect2 xml:id="lua_storage_example">
 
       <title>Exporting images with Lua</title>
 
@@ -564,7 +568,7 @@ end)</programlisting>
 
     </sect2>
 
-    <sect2 id="lua_gui_example">
+    <sect2 xml:id="lua_gui_example">
 
       <title>Building User Interface elements</title>
 
@@ -644,7 +648,7 @@ darktable.register_storage("scp_export","Export via scp",
 
     </sect2>
 
-    <sect2 id="lua_sharing_scripts">
+    <sect2 xml:id="lua_sharing_scripts">
 
       <title>Sharing scripts</title>
 
@@ -750,12 +754,12 @@ darktable.register_storage("scp_export","Export via scp",
         </itemizedlist>
         Once you have filled all the fields, checked your code, you can upload it to our script
         page
-        <link xl:href="https://darktable.org/redmine/projects/darktable/wiki/LuaScripts">here</link>.
+        <link xlink:href="https://darktable.org/redmine/projects/darktable/wiki/LuaScripts">here</link>.
       </para>
 
     </sect2>
 
-    <sect2 id="lua_dbus">
+    <sect2 xml:id="lua_dbus">
 
       <title>Calling Lua from DBus</title>
 
@@ -775,7 +779,7 @@ darktable.register_storage("scp_export","Export via scp",
 
     </sect2>
 
-    <sect2 id="lua_lib">
+    <sect2 xml:id="lua_lib">
 
       <title>Using darktable from a lua script</title>
 
@@ -835,7 +839,7 @@ end
 
   </sect1>
 
-  <sect1 status="final" id="lua_api">
+  <sect1 status="final" xml:id="lua_api">
 
     <title>Lua API</title>
 
@@ -846,7 +850,7 @@ end
     <para>
       darktable's Lua API is documented in its own manual with a detailed description of all
       data structures and functions. You can download the API manual from
-      <link xl:href="https://www.darktable.org/resources/">darktable's webpage</link>.
+      <link xlink:href="https://www.darktable.org/resources/">darktable's webpage</link>.
     </para>
 
   </sect1>

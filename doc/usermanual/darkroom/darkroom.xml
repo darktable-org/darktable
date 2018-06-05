@@ -14,15 +14,15 @@
     status="final"
     xml:id="darkroom_chapter">
 
-  <chapterinfo>
+  <info>
     <keywordset>
       <keyword>darkroom</keyword>
       <keyword>view</keyword>
     </keywordset>
-  </chapterinfo>
 
-  <title>Darkroom</title>
-
+    <title>Darkroom</title>
+  </info>
+  
   <indexterm>
     <primary>darkroom</primary>
   </indexterm>
@@ -34,14 +34,18 @@
   <para>
     <screenshot>
 
-      <screeninfo>The darkroom view</screeninfo>
+      <title>The darkroom view</title>
 
-      <graphic fileref="images/darkroom_view.png" scalefit="1" width="80%"></graphic>
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="images/darkroom_view.png" scalefit="1" width="80%" />
+	</imageobject>
+      </mediaobject>
 
     </screenshot>
   </para>
 
-  <sect1 status="final" id="darkroom_overview">
+  <sect1 status="final" xml:id="darkroom_overview">
 
     <title>Overview</title>
 

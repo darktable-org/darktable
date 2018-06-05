@@ -20,7 +20,7 @@
     <primary>blending</primary>
   </indexterm>
 
-  <sect3 status="final" id="blending_overview">
+  <sect3 status="final" xml:id="blending_overview">
 
     <title>Overview</title>
 
@@ -51,7 +51,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="blending_usage">
+  <sect3 status="final" xml:id="blending_usage">
 
     <title>Usage</title>
 
@@ -66,14 +66,18 @@
               at the bottom of their GUI.
             </entry>
             <entry>
-              <graphic fileref="darkroom/concepts/images/blending.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/concepts/images/blending.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
       </tgroup>
     </informaltable>
 
-    <sect4 id="blending_usage_blend">
+    <sect4 xml:id="blending_usage_blend">
 
       <title>blend</title>
 
@@ -82,7 +86,7 @@
         control elements will show up.
       </para>
 
-      <sect5 id="blending_usage_off">
+      <sect5 xml:id="blending_usage_off">
         <title>off</title>
         <para>
           module's output is passed to the next module in pixelpipe without additional
@@ -90,7 +94,7 @@
         </para>
       </sect5>
 
-      <sect5 id="blending_usage_uniform">
+      <sect5 xml:id="blending_usage_uniform">
         <title>uniformily</title>
         <para>
           reprocessing takes place with the chosen blend mode and opacity value&nbsp;&ndash; the
@@ -99,7 +103,7 @@
         </para>
       </sect5>
 
-      <sect5 id="blending_usage_drawn_mask">
+      <sect5 xml:id="blending_usage_drawn_mask">
         <title>drawn mask</title>
         <para>
           reprocessing takes place with the chosen blend mode and opacity. Additional controls
@@ -112,7 +116,7 @@
         </para>
       </sect5>
 
-      <sect5 id="blending_usage_parametric_mask">
+      <sect5 xml:id="blending_usage_parametric_mask">
         <title>parametric mask</title>
         <para>
           reprocessing takes place with the chosen blend mode and opacity. Additional controls
@@ -122,7 +126,7 @@
         </para>
       </sect5>
 
-      <sect5 id="blending_usage_drawn_parametric_mask">
+      <sect5 xml:id="blending_usage_drawn_parametric_mask">
         <title>drawn and parametric mask</title>
         <para>
           this option combines drawn and parametric masks and shows the full set of both
@@ -133,11 +137,11 @@
 
     </sect4>
 
-    <sect4 id="blending_usage_mask_combination_inversion">
+    <sect4 xml:id="blending_usage_mask_combination_inversion">
 
       <title>Mask combination and inversion</title>
 
-      <sect5 id="blending_usage_mask_combination_inversion_invert">
+      <sect5 xml:id="blending_usage_mask_combination_inversion_invert">
         <title>invert mask</title>
         <para>
           When <quote>drawn mask</quote> is selected there is an additional combobox to invert
@@ -145,7 +149,7 @@
         </para>
       </sect5>
 
-      <sect5 id="blending_usage_mask_combination_inversion_combine">
+      <sect5 xml:id="blending_usage_mask_combination_inversion_combine">
         <title>combine masks</title>
         <para>
           When either <quote>parametric masks</quote>, or <quote>drawn and parametric
@@ -157,7 +161,7 @@
 
     </sect4>
 
-    <sect4 id="blending_usage_additional_controls">
+    <sect4 xml:id="blending_usage_additional_controls">
 
       <title>Additional controls</title>
 
@@ -166,7 +170,7 @@
         you may blur the mask, temporarily disable it, or display it as an overlay image.
       </para>
 
-      <sect5 id="blending_usage_additional_controls_blur">
+      <sect5 xml:id="blending_usage_additional_controls_blur">
         <title>mask blur</title>
         <para>
           Blurring the mask creates a softer transition between blended and unblended parts of
@@ -176,23 +180,31 @@
         </para>
       </sect5>
 
-      <sect5 id="blending_usage_additional_controls_temp_off">
+      <sect5 xml:id="blending_usage_additional_controls_temp_off">
         <title>temporarily switch off mask</title>
         <para>
           Sometimes it is useful to visualize the module's effect without the mask taking
           action. You can do so by clicking on the
-          <inlinegraphic fileref="&icon_module_eye;" scalefit="1" width="2%" align="center"/>
+          <inlinemediaobject>
+	    <imageobject>
+	      <imagedata fileref="&icon_module_eye;" scalefit="1" width="2%" align="center"/>
+	    </imageobject>
+	  </inlinemediaobject>
           symbol, which will temporarily deactivate the mask&nbsp;&ndash; the selected blend
           mode and opacity remain in effect. Switch this button on and off to see if the mask is
           acting on the image as intended.
         </para>
       </sect5>
 
-      <sect5 id="blending_usage_additional_controls_display">
+      <sect5 xml:id="blending_usage_additional_controls_display">
         <title>display mask</title>
         <para>
           Clicking on the
-          <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
+          <inlinemediaobject>
+	    <imageobject>
+	      <imagedata fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
+	    </imageobject>
+	  </inlinemediaobject>
           symbol will display the current mask as a yellow overlay over a black-and-white
           version of your image. Solid yellow indicates an opacity of 100%; a fully visible gray
           background image without yellow overlay indicates an opacity of 0%.
@@ -203,13 +215,13 @@
 
   </sect3>
 
-  <sect3 status="final" id="blending_examples">
+  <sect3 status="final" xml:id="blending_examples">
 
     <title>Examples</title>
 
-    <sect4 id="blending_examples_texturing">
-
+    <sect4 xml:id="blending_examples_texturing">
       <title>Texturing an image</title>
+
 
       <para>
         The watermark module supports SVG files with embedded images that can be used as a
@@ -218,7 +230,7 @@
 
     </sect4>
 
-    <sect4 id="blending_examples_gritty_details">
+    <sect4 xml:id="blending_examples_gritty_details">
 
       <title>Gritty details</title>
 
@@ -236,7 +248,11 @@
                 workflow of other imaging software.
               </entry>
               <entry>
-                <graphic fileref="darkroom/concepts/images/blendop_highpass.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/concepts/images/blendop_highpass.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>
@@ -251,7 +267,11 @@
             <tbody>
               <row>
                 <entry>
-                  <graphic fileref="darkroom/concepts/images/blendop_highpass_ex1_1.png" scalefit="1" width="90%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/concepts/images/blendop_highpass_ex1_1.png" scalefit="1" width="90%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
                 <entry>
                   <para>
@@ -265,7 +285,11 @@
               </row>
               <row>
                 <entry>
-                  <graphic fileref="darkroom/concepts/images/blendop_highpass_ex1_2.png" scalefit="1" width="90%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/concepts/images/blendop_highpass_ex1_2.png" scalefit="1" width="90%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
                 <entry>
                   <para>

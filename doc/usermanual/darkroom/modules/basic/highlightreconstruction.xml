@@ -47,7 +47,11 @@
               blue channels are clipped, then your image will appear red in the clipped areas.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/highlightreconstruction.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/highlightreconstruction.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

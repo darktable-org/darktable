@@ -44,7 +44,11 @@
               model.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/spotremoval.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/spotremoval.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -102,7 +106,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/spotremoval_ex1_1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/spotremoval_ex1_1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Let's use this portrait as example; we want to remove some dirt and unwanted
@@ -111,7 +119,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/spotremoval_ex1_2.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/spotremoval_ex1_2.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 I have marked all the spots that I want to remove from the image with circle
@@ -120,7 +132,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/spotremoval_ex1_3.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/spotremoval_ex1_3.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 And here is the result image of the spotremoval.

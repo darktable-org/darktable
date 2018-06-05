@@ -43,7 +43,11 @@
               highlights.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/splittoning.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/splittoning.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -116,7 +120,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/splittoning_ex1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/splittoning_ex1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Original black and white image.
@@ -124,7 +132,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/splittoning_ex2.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/splittoning_ex2.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Splittoning with blue shadows and yellow highlights.

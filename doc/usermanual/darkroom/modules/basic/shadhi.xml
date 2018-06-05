@@ -46,7 +46,11 @@
               details in shadows and highlights by enhancing local contrast.
             </entry>
             <entry>
-              <graphic width="80%" fileref="darkroom/modules/images/shadhi.png" align="center" scalefit="1" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata width="80%" fileref="darkroom/modules/images/shadhi.png" align="center" scalefit="1" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -153,7 +157,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/shadhi_ex1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/shadhi_ex1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Original image exposed for the outer sunlit wall to avoid clipped highlights. As
@@ -162,7 +170,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/shadhi_ex2.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/shadhi_ex2.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Shadows get lightened; highlights are untouched; overall effect toned down a bit
@@ -172,7 +184,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/shadhi_ex3.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/shadhi_ex3.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Resulting image.

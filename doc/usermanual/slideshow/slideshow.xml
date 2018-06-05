@@ -14,14 +14,14 @@
     status="final"
     xml:id="slideshow_chapter">
 
-  <chapterinfo>
+  <info>
     <keywordset>
       <keyword>slideshow</keyword>
       <keyword>view</keyword>
     </keywordset>
-  </chapterinfo>
 
-  <title>Slideshow</title>
+    <title>Slideshow</title>
+  </info>
 
   <indexterm>
     <primary>slideshow view</primary>
@@ -34,14 +34,22 @@
   <para>
     <screenshot>
 
-      <screeninfo>The slideshow view</screeninfo>
+      <info>
+	<title>
+	  The slideshow view
+	</title>
+      </info>
 
-      <graphic fileref="images/slideshow_view.png" scalefit="1" width="80%"></graphic>
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="images/slideshow_view.png" scalefit="1" width="80%" />
+	</imageobject>
+      </mediaobject>
 
     </screenshot>
   </para>
 
-  <sect1 status="final" id="slideshow_overview">
+  <sect1 status="final" xml:id="slideshow_overview">
 
     <title>Overview</title>
 
@@ -61,7 +69,7 @@
 
   </sect1>
 
-  <sect1 status="final" id="slideshow_usage">
+  <sect1 status="final" xml:id="slideshow_usage">
 
     <title>Usage</title>
 

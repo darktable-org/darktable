@@ -39,7 +39,11 @@
               This module is an artistic feature which simulates the grain of a film.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/grain.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/grain.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

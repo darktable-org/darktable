@@ -50,7 +50,11 @@
               exposure module. The histogram simply acts as a view for the exposure module.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/exposure.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/exposure.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -126,7 +130,7 @@
 
     <para>
       Automatic adjustment is only available for raw images. A typical use case is deflickering
-      of <link xl:href="http://en.wikipedia.org/wiki/Time-lapse_photography"><emphasis>time-lapse
+      of <link xlink:href="http://en.wikipedia.org/wiki/Time-lapse_photography"><emphasis>time-lapse
       photographs</emphasis></link>. You apply an automatic exposure correction with the same
       set of parameters to all images of the series&nbsp;&ndash; differences in lighting get
       compensated so that the final video sequence does not show any flickering.
@@ -159,7 +163,11 @@
         darktable can calculate correct black level and exposure values for your image based on
         the content of a rectangular area. The adjustment slider lets you define what percentage
         of bright values are to be clipped out in the calculation. Pressing the
-        <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         icon starts the calculation and lets you draw a rectangular area of your choice using
         your mouse. This feature is only available in <quote>manual</quote> mode.
       </para>
@@ -171,7 +179,7 @@
         Defines a location in the histogram for automatic exposure correction. A percentile of
         50% denotes a position in the histogram where 50% of pixel values are below and 50% of
         pixel values are above. For more details see
-        <link xl:href="http://en.wikipedia.org/wiki/Percentile"><emphasis>percentile</emphasis>
+        <link xlink:href="http://en.wikipedia.org/wiki/Percentile"><emphasis>percentile</emphasis>
         </link>. Only available in <quote>automatic</quote> mode.
       </para>
     </sect5>

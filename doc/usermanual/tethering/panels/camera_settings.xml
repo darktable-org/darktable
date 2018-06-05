@@ -34,7 +34,11 @@
               settings such as focus mode, aperture, shutter speed, ISO and white balance.
             </entry>
             <entry>
-              <graphic fileref="tethering/images/panel_camera_settings.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="tethering/images/panel_camera_settings.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

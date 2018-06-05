@@ -43,7 +43,11 @@
               lesser resources.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/denoise_bilateral.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/denoise_bilateral.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

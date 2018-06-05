@@ -56,7 +56,11 @@
               and parameters can be tuned for each frequency band separately.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/atrous.png" scalefit="1" width="90%" align="right" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/atrous.png" scalefit="1" width="90%" align="right" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -90,7 +94,11 @@
               x-position of the spline nodes.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/atrous-1.png" scalefit="1" width="90%" align="right" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/atrous-1.png" scalefit="1" width="90%" align="right" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -110,7 +118,11 @@
               the grid. Pulling it down works, too.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/atrous-2.png" scalefit="1" width="90%" align="right" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/atrous-2.png" scalefit="1" width="90%" align="right" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -130,7 +142,11 @@
               is removed.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/atrous-4.png" scalefit="1" width="90%" align="right" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/atrous-4.png" scalefit="1" width="90%" align="right" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -150,7 +166,11 @@
               image.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/atrous-5.png" scalefit="1" width="90%" align="right" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/atrous-5.png" scalefit="1" width="90%" align="right" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -168,7 +188,11 @@
               in ugly gradient reversals near the ridge of the rock.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/atrous-6.png" scalefit="1" width="90%" align="right" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/atrous-6.png" scalefit="1" width="90%" align="right" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

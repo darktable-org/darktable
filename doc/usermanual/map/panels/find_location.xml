@@ -44,7 +44,11 @@
               </para>
             </entry>
             <entry>
-              <graphic fileref="map/images/find_location.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="map/images/find_location.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

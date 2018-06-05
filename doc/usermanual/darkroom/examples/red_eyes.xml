@@ -44,7 +44,11 @@
               </para>
             </entry>
             <entry>
-              <graphic fileref="darkroom/examples/images/red_eyes_01.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/examples/images/red_eyes_01.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -87,7 +91,11 @@
 
                 <para>
                   Clicking the
-                  <inlinegraphic fileref="&shape_circle;" scalefit="1" width="4%" align="center"/>
+                  <inlinemediaobject>
+		    <imageobject>
+		      <imagedata fileref="&shape_circle;" scalefit="1" width="4%" align="center"/>
+		    </imageobject>
+		  </inlinemediaobject>
                   symbol adds a circle shape.
                 </para>
 
@@ -109,7 +117,11 @@
 
                 <para>
                   Clicking the
-                  <inlinegraphic fileref="&shape_circle;" scalefit="1" width="4%" align="center"/>
+                  <inlinemediaobject>
+		    <imageobject>
+		      <imagedata fileref="&shape_circle;" scalefit="1" width="4%" align="center"/>
+		    </imageobject>
+		  </inlinemediaobject>
                   symbol adds another circle shape.
                 </para>
 
@@ -120,12 +132,20 @@
               </orderedlist>
             </entry>
             <entry>
-              <graphic fileref="darkroom/examples/images/red_eyes_02.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/examples/images/red_eyes_02.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
           <row>
             <entry colname="col2">
-              <graphic fileref="darkroom/examples/images/red_eyes_03.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/examples/images/red_eyes_03.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -181,12 +201,20 @@
               </orderedlist>
             </entry>
             <entry>
-              <graphic fileref="darkroom/examples/images/red_eyes_04.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/examples/images/red_eyes_04.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
           <row>
             <entry colname="col2">
-              <graphic fileref="darkroom/examples/images/red_eyes_05.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/examples/images/red_eyes_05.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -234,12 +262,20 @@
               </orderedlist>
             </entry>
             <entry>
-              <graphic fileref="darkroom/examples/images/red_eyes_06.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/examples/images/red_eyes_06.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
           <row>
             <entry colname="col2">
-              <graphic fileref="darkroom/examples/images/red_eyes_07.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/examples/images/red_eyes_07.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

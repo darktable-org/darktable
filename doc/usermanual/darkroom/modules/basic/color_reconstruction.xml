@@ -45,7 +45,11 @@
               highlights.
             </entry>
             <entry>
-              <graphic width="80%" fileref="darkroom/modules/images/color_reconstruction.png" align="center" scalefit="1" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata width="80%" fileref="darkroom/modules/images/color_reconstruction.png" align="center" scalefit="1" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -153,7 +157,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/color_reconstruction_ex1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/color_reconstruction_ex1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Original image with overexposed highlights on head, arm and shoulder of the
@@ -162,7 +170,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/color_reconstruction_ex2.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/color_reconstruction_ex2.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Color reconstruction with default settings of all module parameters.

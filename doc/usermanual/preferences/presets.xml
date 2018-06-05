@@ -47,7 +47,11 @@
   </para>
 
   <para>
-    <graphic fileref="preferences/images/presets.png" scalefit="1" width="60%" align="center" />
+    <mediaobject>
+      <imageobject>
+	<imagedata fileref="preferences/images/presets.png" scalefit="1" width="60%" align="center" />
+      </imageobject>
+    </mediaobject>
   </para>
 
   <bridgehead renderas="sect4">auto apply this preset to matching images</bridgehead>

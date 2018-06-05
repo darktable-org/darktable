@@ -41,7 +41,11 @@
               points, lines, and curves.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/liquify.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/liquify.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -75,7 +79,11 @@
               The basic elements of all tools in liquify are nodes.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/liquify_ex1.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/liquify_ex1.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -102,7 +110,11 @@
       <title>point tool</title>
       <para>
         Click the
-        <inlinegraphic fileref="&icon_liquify_point;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_liquify_point;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         icon to activate the point tool and left-click on the image to place it.
       </para>
       <para>
@@ -124,7 +136,11 @@
                   direction. This is the default mode.
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/modules/images/liquify_ex1.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/modules/images/liquify_ex1.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
               <row>
@@ -137,7 +153,11 @@
                   depicted by an additional circle with the arrow pointing outwards.
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/modules/images/liquify_ex4.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/modules/images/liquify_ex4.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
               <row>
@@ -150,7 +170,11 @@
                   is depicted by an additional circle with the arrow pointing inwards.
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/modules/images/liquify_ex3.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/modules/images/liquify_ex3.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
             </tbody>
@@ -175,7 +199,11 @@
                   Linear from the center to the radius.
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/modules/images/liquify_ex1.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/modules/images/liquify_ex1.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
               <row>
@@ -188,7 +216,11 @@
                   only hides the feathering controls but does not return to the default.
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/modules/images/liquify_ex2.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/modules/images/liquify_ex2.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
             </tbody>
@@ -204,7 +236,11 @@
       <title>line tool</title>
       <para>
         Click the
-        <inlinegraphic fileref="&icon_liquify_line;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_liquify_line;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>	    
         icon to activate the line tool and left-click on the image to place the first point,
         move and left-click to place another point and start forming the path. To end the line
         just right-click anywhere.
@@ -221,7 +257,11 @@
                   interpolated by a set of strength vectors.
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/modules/images/liquify_ex5.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/modules/images/liquify_ex5.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
             </tbody>
@@ -244,7 +284,11 @@
       <title>curve tool</title>
       <para>
         Click the
-        <inlinegraphic fileref="&icon_liquify_curve;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_liquify_curve;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         icon to activate the curve tool and left-click on the image to place the first point,
         move and left-click to place another point and start forming the path. To end the line
         just right-click anywhere.
@@ -261,7 +305,11 @@
                   interpolated as a bezier curve by a set of strength vectors.
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/modules/images/liquify_ex6.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/modules/images/liquify_ex6.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>		    
                 </entry>
               </row>
             </tbody>
@@ -334,7 +382,11 @@
       <title>node edit tool</title>
       <para>
         Clicking the
-        <inlinegraphic fileref="&icon_liquify_edit;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_liquify_edit;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         icon activates or deactivates the node edit tool displaying all defined distortion
         objects and their controls. Alternatively you can at any time right-click on the image
         for the same effect.

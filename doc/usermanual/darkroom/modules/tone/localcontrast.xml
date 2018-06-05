@@ -42,7 +42,11 @@
               bilateral filter. Both work exclusively on the L channel from Lab.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/localcontrast.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/localcontrast.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -111,7 +115,11 @@
     <para>
       To understand the parameters of the local laplacian filter, you can think of it as
       applying a curve to the image, similar to this picture:
-      <graphic fileref="darkroom/modules/images/locallaplacian-curve.png" scalefit="1" width="80%" align="center" />
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="darkroom/modules/images/locallaplacian-curve.png" scalefit="1" width="80%" align="center" />
+	</imageobject>
+      </mediaobject>
       It will then be applied to the image in a way that works locally and avoids halo
       artifacts.
     </para>
@@ -182,7 +190,11 @@
               Before
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/localcontrast_before.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/localcontrast_before.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
           <row>
@@ -191,7 +203,11 @@
               cheap, overprocessed look.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/localcontrast_after.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/localcontrast_after.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

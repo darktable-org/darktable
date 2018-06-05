@@ -29,7 +29,11 @@
     Presets are stored configurations for a module's parameters. Some modules already have
     internal pre-defined presets but you can also define your own. Both internal and
     user-defined presets are displayed by clicking the
-    <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/>
+    <inlinemediaobject>
+      <imageobject>
+	<imagedata fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/>
+      </imageobject>
+    </inlinemediaobject>
     icon with the currently activated preset shown in bold text.
   </para>
 
@@ -38,19 +42,27 @@
     length, ISO, camera model and other fields.
   </para>
 
-  <sect3 status="final" id="module_presets_new">
+  <sect3 status="final" xml:id="module_presets_new">
 
     <title>Creating a new preset</title>
 
     <para>
       First configure the module's parameters then click the
-      <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/>
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/>
+	</imageobject>
+      </inlinemediaobject>
       icon and select <quote>store new preset</quote>. The following dialog will be shown for
       configuring the preset:
     </para>
 
     <para>
-      <graphic fileref="darkroom/concepts/images/new_preset.png" scalefit="1" width="60%" align="center" />
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="darkroom/concepts/images/new_preset.png" scalefit="1" width="60%" align="center" />
+	</imageobject>
+      </mediaobject>
     </para>
 
     <para>
@@ -81,7 +93,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="module_presets_managing">
+  <sect3 status="final" xml:id="module_presets_managing">
 
     <title>Managing Presets</title>
 

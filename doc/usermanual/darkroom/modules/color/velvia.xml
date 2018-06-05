@@ -40,7 +40,11 @@
               saturation less on lower saturated pixels than on highly saturated pixels.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/velvia.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/velvia.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

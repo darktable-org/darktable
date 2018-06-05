@@ -56,7 +56,11 @@
               </para>
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/outputcolorprofile.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/outputcolorprofile.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

@@ -34,7 +34,7 @@
     all, darktable would like to see a minimum of about 4GB to run happily.
   </para>
 
-  <sect2 status="final" id="darktable_and_memory_system">
+  <sect2 status="final" xml:id="darktable_and_memory_system">
 
     <title>Total system memory</title>
 
@@ -55,7 +55,7 @@
 
   </sect2>
 
-  <sect2 status="final" id="darktable_and_memory_space">
+  <sect2 status="final" xml:id="darktable_and_memory_space">
 
     <title>Available address space</title>
 
@@ -77,7 +77,7 @@
 
   </sect2>
 
-  <sect2 status="final" id="darktable_and_memory_fragmentation">
+  <sect2 status="final" xml:id="darktable_and_memory_fragmentation">
 
     <title>Memory fragmentation</title>
 
@@ -96,7 +96,7 @@
 
   </sect2>
 
-  <sect2 status="final" id="darktable_and_memory_limitations">
+  <sect2 status="final" xml:id="darktable_and_memory_limitations">
 
     <title>Further limitations</title>
 
@@ -116,7 +116,7 @@
 
   </sect2>
 
-  <sect2 status="final" id="darktable_and_memory_32bit">
+  <sect2 status="final" xml:id="darktable_and_memory_32bit">
 
     <title>Setting up darktable on 32-bit systems</title>
 
@@ -217,7 +217,7 @@
 
   </sect2>
 
-  <sect2 status="final" id="darktable_and_memory_64bit">
+  <sect2 status="final" xml:id="darktable_and_memory_64bit">
 
     <title>darktable on 64-bit systems</title>
 

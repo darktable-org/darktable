@@ -28,7 +28,7 @@
     theoretical details just jump down where we describe two typical use cases.
   </para>
 
-  <sect3 id="combined_masks_overview">
+  <sect3 xml:id="combined_masks_overview">
 
     <title>Overview</title>
 
@@ -70,9 +70,17 @@
       These two combination methods alone would still be rather limiting. We gain maximum
       flexibility by allowing an additional inversion step for each individual mask. This is
       governed by the polarity buttons
-      <inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center"/>
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_module_plus;" scalefit="1" width="2%" align="center"/>
+	</imageobject>
+      </inlinemediaobject>
       and
-      <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center"/>
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_module_minus;" scalefit="1" width="2%" align="center"/>
+	</imageobject>
+      </inlinemediaobject>
       that you find close to the individual channels. Toggling the polarity button of a mask
       inverts its values, i.e. it recalculates the pixel values to 1.0 minus the original value.
     </para>
@@ -85,7 +93,7 @@
 
   </sect3>
 
-  <sect3 id="combined_masks_usage">
+  <sect3 xml:id="combined_masks_usage">
 
     <title>Usage</title>
 
@@ -104,7 +112,11 @@
               image that were previously included.
             </entry>
             <entry>
-              <graphic fileref="darkroom/concepts/images/combined_masks.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/concepts/images/combined_masks.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -115,7 +127,7 @@
       This gives two typical use cases:
     </para>
 
-    <sect4 id="combined_masks_usage_inclusive">
+    <sect4 xml:id="combined_masks_usage_inclusive">
 
       <title>Inclusive mode</title>
 
@@ -123,7 +135,11 @@
         For this mode you set the <quote>combine masks</quote> combobox to
         <emphasis>inclusive</emphasis> and make sure that all polarity buttons of all the
         individual channels and of the drawn mask are set to negative (
-        <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center"/>
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_module_minus;" scalefit="1" width="2%" align="center"/>
+	  </imageobject>
+	</inlinemediaobject>
         ). Your starting point is a mask where all pixels have a value of zero, i.e. no pixel is
         selected. You now adjust the parametric mask sliders to bring more and more pixels into
         the selection or you draw shapes on the canvas to select specific areas of your image.
@@ -131,7 +147,7 @@
 
     </sect4>
 
-    <sect4 id="combined_masks_usage_exclusive">
+    <sect4 xml:id="combined_masks_usage_exclusive">
 
       <title>Exclusive mode</title>
 
@@ -139,7 +155,11 @@
         In the opposite case you set the <quote>combine masks</quote> combobox to
         <emphasis>exclusive</emphasis> and make sure that all polarity buttons are set to
         positive (
-        <inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center"/>
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_module_plus;" scalefit="1" width="2%" align="center"/>
+	  </imageobject>
+	</inlinemediaobject>
         ). Your starting point is a mask with all values at 1.0, i.e. all pixels selected. You
         now gradually change the parametric mask sliders to exclude parts of your image as
         needed or you directly draw shapes on the canvas to specifically exclude these areas.
@@ -147,7 +167,11 @@
 
       <para>
         For your convenience you find in the parametric masks GUI a
-        <inlinegraphic fileref="&icon_module_invert;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_module_invert;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         toggle button that inverts all channel polarities and toggles between inclusive and
         exclusive mode in the <quote>combine masks</quote> combobox.
       </para>

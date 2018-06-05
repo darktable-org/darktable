@@ -32,7 +32,11 @@
               use&nbsp;&ndash; a rework is under way.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/colortransfer.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/colortransfer.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

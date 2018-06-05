@@ -42,7 +42,11 @@
               scenery lighting.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/bloom.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/bloom.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -95,7 +99,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/bloom_ex1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/bloom_ex1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 This is the original image, use it as reference for the changes below...
@@ -103,7 +111,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/bloom_ex2.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/bloom_ex2.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Here we have chosen to use a size of 10%, which is a rather small radius for the

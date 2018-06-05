@@ -48,7 +48,11 @@
               specifically profiled for certain camera models and ISO settings.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/denoise_profiled.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/denoise_profiled.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -73,7 +77,7 @@
       <filename>$DARKTABLE/share/darktable/noiseprofile.json</filename> where
       <filename>$DARKTABLE</filename> represents the darktable installation directory. The json
       format is quite straightforward and explained in depth in
-      <link xl:href="https://json.org/">json.org</link>. You can replace the default noise profiles
+      <link xlink:href="https://json.org/">json.org</link>. You can replace the default noise profiles
       by your own ones and specify that file on the command line when starting darktable. For
       more details see <xref linkend="darktable_commandline_parameters"/>. If you generate your
       own noise profiles don't forget to share your results with the darktable team!

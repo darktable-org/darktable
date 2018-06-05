@@ -14,15 +14,15 @@
     status="final"
     xml:id="map_chapter">
 
-  <chapterinfo>
+  <info>
     <keywordset>
       <keyword>geotagging</keyword>
       <keyword>map</keyword>
       <keyword>view</keyword>
     </keywordset>
-  </chapterinfo>
 
-  <title>Map</title>
+    <title>Map</title>
+  </info>
 
   <indexterm>
     <primary>map view</primary>
@@ -35,14 +35,17 @@
   <para>
     <screenshot>
 
-      <screeninfo>The map view</screeninfo>
+      <info>The map view</info>
 
-      <graphic fileref="images/map_view.png" scalefit="1" width="80%"></graphic>
-
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="images/map_view.png" scalefit="1" width="80%" />
+	</imageobject>
+      </mediaobject>
     </screenshot>
   </para>
 
-  <sect1 status="final" id="map_overview">
+  <sect1 status="final" xml:id="map_overview">
 
     <title>Overview</title>
 
@@ -61,7 +64,7 @@
       (see <xref linkend="geotagging"/>).
     </para>
 
-    <sect2 status="final" id="map_center_map_view">
+    <sect2 status="final" xml:id="map_center_map_view">
 
       <title>Center map view</title>
 
@@ -75,7 +78,11 @@
                 In the center of the map view you will see a map.
               </entry>
               <entry>
-                <graphic fileref="map/images/map_center_view.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="map/images/map_center_view.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>
@@ -124,7 +131,7 @@
 
     </sect2>
 
-    <sect2 id="map_undo_redo">
+    <sect2 xml:id="map_undo_redo">
 
       <title>Undo/redo</title>
 

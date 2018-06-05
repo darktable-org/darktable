@@ -42,7 +42,11 @@
               user-defined number of zones.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/zonesystem.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/zonesystem.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -92,7 +96,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/zonesystem_ex1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/zonesystem_ex1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 The original image.
@@ -100,12 +108,20 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/zonesystem_ex2.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/zonesystem_ex2.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Here, the darker and lighter zones were compressed to increase contrast, then
                 the upper parts of darker zones were expanded to increase their visual impact.
-                <graphic fileref="darkroom/modules/images/zonesystem_ex2_settings.png" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/zonesystem_ex2_settings.png" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>

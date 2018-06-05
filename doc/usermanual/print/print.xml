@@ -14,14 +14,14 @@
     status="final"
     xml:id="print_chapter">
 
-  <chapterinfo>
+  <info>
     <keywordset>
       <keyword>print</keyword>
       <keyword>view</keyword>
     </keywordset>
-  </chapterinfo>
 
-  <title>Print</title>
+    <title>Print</title>
+  </info>
 
   <indexterm>
     <primary>print view</primary>
@@ -34,14 +34,22 @@
   <para>
     <screenshot>
 
-      <screeninfo>The print view</screeninfo>
+      <info>
+	<title>
+	  The print view
+	</title>
+      </info>
 
-      <graphic fileref="images/print_view.png" scalefit="1" width="80%"></graphic>
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="images/print_view.png" scalefit="1" width="80%" />
+	</imageobject>
+      </mediaobject>
 
     </screenshot>
   </para>
 
-  <sect1 status="final" id="print_overview">
+  <sect1 status="final" xml:id="print_overview">
 
     <title>Overview</title>
 
@@ -88,13 +96,13 @@
     <para>
       It is important to note that ICC profiles provided by the paper and/or printer
       manufacturers cannot be used on GNU/Linux as they depend on the printer drivers. The
-      darktable print module is using <link xl:href="http://www.cups.org/">CUPS</link> and there
+      darktable print module is using <link xlink:href="http://www.cups.org/">CUPS</link> and there
       is no ready-to-use ICC profiles for this driver.
     </para>
 
   </sect1>
 
-  <sect1 status="final" id="print_usage">
+  <sect1 status="final" xml:id="print_usage">
 
     <title>Usage</title>
 
@@ -109,7 +117,11 @@
                 The print module has many options. We describe the panel in this section.
               </entry>
               <entry>
-                <graphic fileref="print/images/panel_printing.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="print/images/panel_printing.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>
@@ -117,7 +129,7 @@
       </informaltable>
     </para>
 
-    <sect2 id="print_printer_section">
+    <sect2 xml:id="print_printer_section">
 
       <title>Printer section</title>
 
@@ -153,7 +165,7 @@
 
     </sect2>
 
-    <sect2 id="print_page_section">
+    <sect2 xml:id="print_page_section">
 
       <title>Page section</title>
 
@@ -207,7 +219,7 @@
 
     </sect2>
 
-    <sect2 id="print_settings">
+    <sect2 xml:id="print_settings">
 
       <title>Print settings</title>
 
@@ -243,7 +255,7 @@
 
     </sect2>
 
-    <sect2 id="print_button">
+    <sect2 xml:id="print_button">
 
       <title>Print button</title>
 

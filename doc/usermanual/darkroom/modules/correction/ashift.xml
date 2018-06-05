@@ -39,10 +39,14 @@
               This module is designed to automatically correct for converging lines, a form of
               perspective distortions frequently seen in architectural photographs. The
               underlying mechanism is inspired by Markus Hebel's
-              <link xl:href="http://www.shiftn.de/"><emphasis>ShiftN</emphasis></link> program.
+              <link xlink:href="http://www.shiftn.de/"><emphasis>ShiftN</emphasis></link> program.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/ashift.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/ashift.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -75,7 +79,11 @@
 
     <para>
       Clicking the <quote>get structure</quote> icon (
-      <inlinegraphic fileref="&icon_ashift_structure;" scalefit="1" width="2%" align="center" />
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_ashift_structure;" scalefit="1" width="2%" align="center" />
+	</imageobject>
+      </inlinemediaobject>
       ) causes darktable to analyze the image for structural elements. Line segments are
       detected and evaluated. Only lines that form a set of either vertical or horizontal lines
       are used for further processing steps. The line segments are displayed as overlays on the
@@ -240,11 +248,23 @@
         Clicking on one of the icons starts an automatic fitting of the module parameters based
         on the selected vertical and/or horizontal lines. You can choose to correct only
         vertical distortions (
-        <inlinegraphic fileref="&icon_ashift_vertical;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_ashift_vertical;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         ), only horizontal distortions (
-        <inlinegraphic fileref="&icon_ashift_horizontal;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_ashift_horizontal;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         ), or both types of distortions simultaneously (
-        <inlinegraphic fileref="&icon_ashift_both;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_ashift_both;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         ). <emphasis>Ctrl + clicking</emphasis> on either icon only fits rotation.
         <emphasis>Shift + clicking</emphasis> on either icon only fits vertical and/or horizontal
         lens shift.
@@ -255,15 +275,27 @@
       <title>get structure</title>
       <para>
         Clicking on the
-        <inlinegraphic fileref="&icon_ashift_structure;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_ashift_structure;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         icon causes the image to be (re-)analyzed for suitable line segments.
         <emphasis>Shift + clicking</emphasis> applies a prior contrast enhancement step,
         <emphasis>Ctrl + clicking</emphasis> applies an edge enhancement step. Both variations can
         be used alone or in combination if the default is not able to detect a sufficient number
         of lines. Clicking on the
-        <inlinegraphic fileref="&icon_ashift_clear;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_ashift_clear;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         icon discards all collected structural data. By clicking on the
-        <inlinegraphic fileref="&icon_ashift_eye;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_ashift_eye;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         icon you can switch the overlay display of line segments on and off.
       </para>
     </sect5>
@@ -282,7 +314,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/ashift_ex1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/ashift_ex1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 An input image with a skewed horizon and converging lines caused by directing
@@ -291,7 +327,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/ashift_ex2.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/ashift_ex2.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 The image after having corrected for vertical and horizontal perspective

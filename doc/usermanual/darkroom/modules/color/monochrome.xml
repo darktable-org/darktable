@@ -50,7 +50,11 @@
               variable color filter for that conversion.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/monochrome.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/monochrome.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -69,7 +73,11 @@
 
     <para>
       A color picker is activated by pressing
-      <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+	</imageobject>
+      </inlinemediaobject>
       and will automatically set the position and size of the filter. You can switch between
       point and area sampling mode from within the global color picker panel (see
       <xref linkend="global_color_picker"/>).

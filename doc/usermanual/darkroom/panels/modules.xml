@@ -38,7 +38,11 @@
             modules you don't typically use.
           </entry>
           <entry>
-            <graphic fileref="darkroom/images/panel_moremodules.png" scalefit="1" width="80%" align="center" />
+            <mediaobject>
+	      <imageobject>
+		<imagedata fileref="darkroom/images/panel_moremodules.png" scalefit="1" width="80%" align="center" />
+	      </imageobject>
+	    </mediaobject>
           </entry>
         </row>
       </tbody>

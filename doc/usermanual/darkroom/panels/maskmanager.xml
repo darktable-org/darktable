@@ -54,7 +54,11 @@
               <xref linkend="drawn_mask"/> for more details).
             </entry>
             <entry>
-              <graphic fileref="darkroom/images/panel_maskmanager_1.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/panel_maskmanager_1.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -67,7 +71,11 @@
       are used. The list of masks is followed by a list of all individual shapes which have been
       generated in the context of the given image. If a shape is in use by any of the masks it
       is marked by the
-      <inlinegraphic fileref="&masks_used;" scalefit="1" width="2%" align="center"/>
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&masks_used;" scalefit="1" width="2%" align="center"/>
+	</imageobject>
+      </inlinemediaobject>
       symbol to the right of the shape name.
     </para>
 
@@ -134,7 +142,11 @@
               from that mask.
             </entry>
             <entry>
-              <graphic fileref="darkroom/images/panel_maskmanager_2.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/panel_maskmanager_2.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -153,7 +165,11 @@
 
     <para>
       Each shape before being added can be inverted and is then depicted by the
-      <inlinegraphic fileref="&masks_invert;" scalefit="1" width="2%" align="center"/>
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&masks_invert;" scalefit="1" width="2%" align="center"/>
+	</imageobject>
+      </inlinemediaobject>
       symbol.
     </para>
 
@@ -176,13 +192,21 @@
               value higher than zero.
             </entry>
             <entry>
-              <graphic fileref="darkroom/images/panel_maskmanager_ex1.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/panel_maskmanager_ex1.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
           <row>
             <entry></entry>
             <entry>
-              <graphic fileref="darkroom/images/panel_maskmanager_ex2.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/panel_maskmanager_ex2.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -201,14 +225,22 @@
             <row>
               <entry>
                 This is the default set operator. It is depicted by the
-                <inlinegraphic fileref="&masks_union;" scalefit="1" width="4%" align="center"/>
+                <inlinemediaobject>
+		  <imageobject>
+		    <imagedata fileref="&masks_union;" scalefit="1" width="4%" align="center"/>
+		  </imageobject>
+		</inlinemediaobject>		  
                 symbol left to the shape name. The shape adds to the existing mask in such a way
                 that the resulting mask contains the pixels that are either selected in the
                 existing mask or in the added shape. In overlapping areas the maximum value is
                 taken.
               </entry>
               <entry>
-                <graphic fileref="darkroom/images/panel_maskmanager_ex3.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/images/panel_maskmanager_ex3.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>
@@ -229,7 +261,11 @@
             <row>
               <entry>
                 This set operator is depicted by the
-                <inlinegraphic fileref="&masks_intersection;" scalefit="1" width="4%" align="center"/>
+                <inlinemediaobject>
+		  <imageobject>
+		    <imagedata fileref="&masks_intersection;" scalefit="1" width="4%" align="center"/>
+		  </imageobject>
+		</inlinemediaobject>
                 symbol left to the shape name. The shape adds to the existing mask in such a way
                 that the resulting mask contains only pixels that are selected in both, the
                 existing mask and the added shape. In overlapping areas the minimum value is
@@ -237,7 +273,11 @@
                 path with a gradient.
               </entry>
               <entry>
-                <graphic fileref="darkroom/images/panel_maskmanager_ex4.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/images/panel_maskmanager_ex4.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>
@@ -258,7 +298,11 @@
             <row>
               <entry>
                 This set operator is depicted by the
-                <inlinegraphic fileref="&masks_difference;" scalefit="1" width="4%" align="center"/>
+                <inlinemediaobject>
+		  <imageobject>
+		    <imagedata fileref="&masks_difference;" scalefit="1" width="4%" align="center"/>
+		  </imageobject>
+		</inlinemediaobject>
                 symbol. In the non-overlapping area the existing mask is unchanged. In the
                 resulting mask pixels get selected only if they are selected in the existing
                 mask but <emphasis>not</emphasis> in the added shape. This set operator can be
@@ -266,7 +310,11 @@
                 selection.
               </entry>
               <entry>
-                <graphic fileref="darkroom/images/panel_maskmanager_ex5.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/images/panel_maskmanager_ex5.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>
@@ -287,13 +335,21 @@
             <row>
               <entry>
                 This set operator is depicted by the
-                <inlinegraphic fileref="&masks_exclusion;" scalefit="1" width="4%" align="center"/>
+                <inlinemediaobject>
+		  <imageobject>
+		    <imagedata fileref="&masks_exclusion;" scalefit="1" width="4%" align="center"/>
+		  </imageobject>
+		</inlinemediaobject>
                 symbol. The resulting mask has all pixels selected that are either selected in
                 the existing mask and not in the added shape or vice versa. This is equivalent
                 to an <quote>exclusive or</quote>.
               </entry>
               <entry>
-                <graphic fileref="darkroom/images/panel_maskmanager_ex6.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/images/panel_maskmanager_ex6.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>

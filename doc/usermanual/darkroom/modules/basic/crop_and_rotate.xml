@@ -49,7 +49,11 @@
               using the tools.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/crop_and_rotate.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/crop_and_rotate.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -169,10 +173,18 @@
                   </para>
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/modules/images/crop_and_rotate_k_set.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/modules/images/crop_and_rotate_k_set.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/modules/images/crop_and_rotate_k_applied.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/modules/images/crop_and_rotate_k_applied.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
             </tbody>
@@ -284,7 +296,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/crop_and_rotate_ex1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/crop_and_rotate_ex1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 A cropped image in center view when module crop and rotate is in focus. The

@@ -39,7 +39,11 @@
               This module allows you to control how the demosaic is processed.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/demosaic.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/demosaic.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -65,7 +69,7 @@
       called Bayer pattern. Therefore each pixel of your image originally only has information
       about one color channel. Demosaic reconstructs the missing color channels by interpolation
       with data of the neighboring pixels. For further reading see the Wikipedia article on the
-      <link xl:href="https://en.wikipedia.org/wiki/Bayer_filter">Bayer filter</link>.
+      <link xlink:href="https://en.wikipedia.org/wiki/Bayer_filter">Bayer filter</link>.
     </para>
 
     <para>

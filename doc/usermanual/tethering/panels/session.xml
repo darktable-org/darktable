@@ -42,7 +42,11 @@
               </para>
             </entry>
             <entry>
-              <graphic fileref="tethering/images/panel_session.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="tethering/images/panel_session.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

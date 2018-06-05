@@ -41,7 +41,11 @@
               saturation and lightness channels.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/channelmixer.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/channelmixer.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -73,7 +77,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/channelmixer_ex1.png" scalefit="1" width="60%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/channelmixer_ex1.png" scalefit="1" width="60%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 For skin tones the blue channel tends to represent detail, with red tending to
@@ -83,7 +91,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/channelmixer_ex2.png" scalefit="1" width="60%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/channelmixer_ex2.png" scalefit="1" width="60%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Here a monochrome portrait is produced by simply selecting the grey channel as
@@ -95,7 +107,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/channelmixer_ex3.png" scalefit="1" width="60%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/channelmixer_ex3.png" scalefit="1" width="60%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 In this example an RGB mix of 0.4, 0.75, -0.15 uses more green than red,

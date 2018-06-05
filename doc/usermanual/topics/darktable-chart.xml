@@ -22,7 +22,7 @@
     <primary>darktable-chart</primary>
   </indexterm>
 
-  <sect2 status="final" id="darktable_chart_overview">
+  <sect2 status="final" xml:id="darktable_chart_overview">
 
     <title>Overview</title>
 
@@ -46,7 +46,7 @@
 
   </sect2>
 
-  <sect2 status="final" id="darktable_chart_usage">
+  <sect2 status="final" xml:id="darktable_chart_usage">
 
     <title>Usage</title>
 
@@ -62,7 +62,11 @@
                 in the lower part.
               </entry>
               <entry>
-                <graphic fileref="images/darktable_chart_overview.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="images/darktable_chart_overview.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>
@@ -78,7 +82,7 @@
 
   </sect2>
 
-  <sect2 status="final" id="darktable_chart_source_image">
+  <sect2 status="final" xml:id="darktable_chart_source_image">
 
     <title>Source image</title>
 
@@ -111,7 +115,11 @@
                 grid and image.
               </entry>
               <entry>
-                <graphic fileref="images/darktable_chart_source.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="images/darktable_chart_source.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>
@@ -129,7 +137,7 @@
 
   </sect2>
 
-  <sect2 status="final" id="darktable_chart_reference_values">
+  <sect2 status="final" xml:id="darktable_chart_reference_values">
 
     <title>Reference values</title>
 
@@ -162,7 +170,7 @@
 
   </sect2>
 
-  <sect2 status="final" id="darktable_chart_process">
+  <sect2 status="final" xml:id="darktable_chart_process">
 
     <title>Process</title>
 
@@ -178,7 +186,11 @@
                 values</quote> are ready you can move to the <quote>process</quote> tab.
               </entry>
               <entry>
-                <graphic fileref="images/darktable_chart_process.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="images/darktable_chart_process.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>
@@ -220,7 +232,11 @@
                 save the generated style.
               </entry>
               <entry>
-                <graphic fileref="images/darktable_chart_save.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="images/darktable_chart_save.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>
@@ -244,7 +260,7 @@
 
   </sect2>
 
-  <sect2 status="final" id="darktable_chart_making_input_images">
+  <sect2 status="final" xml:id="darktable_chart_making_input_images">
 
     <title>Making input images for <filename>darktable-chart</filename>
 

@@ -42,7 +42,11 @@
               control the geometry of your frame.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/framing.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/framing.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -125,7 +129,11 @@
       </para>
       <para>
         You can also activate a color picker by pressing
-        <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         and take a color probe from your image. You can switch between point and area sampling
         mode from within the global color picker panel (see
         <xref linkend="global_color_picker"/>).
@@ -141,7 +149,11 @@
       </para>
       <para>
         You can also activate a color picker by pressing
-        <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         and take a color probe from your image. You can switch between point and area sampling
         mode from within the global color picker panel (see
         <xref linkend="global_color_picker"/>).
@@ -162,7 +174,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/framing_ex1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/framing_ex1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Example image with a user defined frame.

@@ -38,7 +38,11 @@
             </para>
           </entry>
           <entry>
-            <graphic fileref="darkroom/images/panel_modulegroups.png" scalefit="1" width="80%" align="center" />
+            <mediaobject>
+	      <imageobject>
+		<imagedata fileref="darkroom/images/panel_modulegroups.png" scalefit="1" width="80%" align="center" />
+	      </imageobject>
+	    </mediaobject>
           </entry>
         </row>
       </tbody>
@@ -58,7 +62,11 @@
         <tbody>
           <row>
             <entry>
-              <graphic fileref="darkroom/images/darkroom_group_active.png" scalefit="1" width="20%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/darkroom_group_active.png" scalefit="1" width="20%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
             <entry>
               Active
@@ -69,7 +77,11 @@
           </row>
           <row>
             <entry>
-              <graphic fileref="darkroom/images/darkroom_group_favorites.png" scalefit="1" width="20%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/darkroom_group_favorites.png" scalefit="1" width="20%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
             <entry>
               Favorites
@@ -81,7 +93,11 @@
           </row>
           <row>
             <entry>
-              <graphic fileref="darkroom/images/darkroom_group_basic.png" scalefit="1" width="20%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/darkroom_group_basic.png" scalefit="1" width="20%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
             <entry>
               Basic
@@ -93,7 +109,11 @@
           </row>
           <row>
             <entry>
-              <graphic fileref="darkroom/images/darkroom_group_tone.png" scalefit="1" width="20%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/darkroom_group_tone.png" scalefit="1" width="20%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
             <entry>
               Tone
@@ -105,7 +125,11 @@
           </row>
           <row>
             <entry>
-              <graphic fileref="darkroom/images/darkroom_group_color.png" scalefit="1" width="20%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/darkroom_group_color.png" scalefit="1" width="20%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
             <entry>
               Color
@@ -117,7 +141,11 @@
           </row>
           <row>
             <entry>
-              <graphic fileref="darkroom/images/darkroom_group_correction.png" scalefit="1" width="20%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/darkroom_group_correction.png" scalefit="1" width="20%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
             <entry>
               Correction
@@ -129,7 +157,11 @@
           </row>
           <row>
             <entry>
-              <graphic fileref="darkroom/images/darkroom_group_effect.png" scalefit="1" width="20%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/darkroom_group_effect.png" scalefit="1" width="20%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
             <entry>
               Effect

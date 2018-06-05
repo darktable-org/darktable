@@ -39,7 +39,11 @@
               This module is an artistic feature that adds a solid layer of color to your image.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/colorize.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/colorize.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

@@ -14,29 +14,36 @@
     status="final"
     xml:id="special_topics_chapter">
 
-  <chapterinfo>
+  <info>
     <keywordset>
       <keyword>topics</keyword>
       <keyword>special</keyword>
     </keywordset>
-  </chapterinfo>
-
-  <title>Special topics</title>
+    
+    <title>Special topics</title>
+  </info>
 
   <para>
     This chapter touches several technical topics which might help you to get darktable running
     on specific hardware or optimize its performance. A lot of additional technical background
     information and many tips and tricks are also covered in an extensive blog section that you
-    can find on our <link xl:href="https://www.darktable.org">homepage</link>.
+    can find on our <link xlink:href="https://www.darktable.org">homepage</link>.
   </para>
 
   <para>
     <screenshot>
 
-      <screeninfo>The darktable blog</screeninfo>
+      <info>
+	<title>
+	  The darktable blog
+	</title>
+      </info>
 
-      <graphic fileref="images/darktable_blog.png" scalefit="1" width="80%"></graphic>
-
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="images/darktable_blog.png" scalefit="1" width="80%" />
+	</imageobject>
+      </mediaobject> 
     </screenshot>
   </para>
 

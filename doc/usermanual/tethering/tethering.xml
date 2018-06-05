@@ -14,14 +14,14 @@
     status="final"
     xml:id="tethering_chapter">
 
-  <chapterinfo>
+  <info>
     <keywordset>
       <keyword>tethering</keyword>
       <keyword>view</keyword>
     </keywordset>
-  </chapterinfo>
 
-  <title>Tethering</title>
+    <title>Tethering</title>
+  </info>
 
   <indexterm>
     <primary>tethering view</primary>
@@ -35,14 +35,17 @@
   <para>
     <screenshot>
 
-      <screeninfo>The tethering view</screeninfo>
+      <info>The tethering view</info>
 
-      <graphic fileref="images/tethering_view.png" scalefit="1" width="80%"></graphic>
-
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="images/tethering_view.png" scalefit="1" width="80%" />
+	</imageobject>
+      </mediaobject>
     </screenshot>
   </para>
 
-  <sect1 status="final" id="tethering_overview">
+  <sect1 status="final" xml:id="tethering_overview">
 
     <title>Overview</title>
 
@@ -67,7 +70,7 @@
       order to verify your camera has tethering support.
     </para>
 
-    <sect2 status="final" id="tethering_overview_tethering">
+    <sect2 status="final" xml:id="tethering_overview_tethering">
 
       <title>Tethering</title>
 
@@ -84,7 +87,11 @@
                 darktable's center view.
               </entry>
               <entry>
-                <graphic fileref="tethering/images/tethering_center_view.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="tethering/images/tethering_center_view.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>

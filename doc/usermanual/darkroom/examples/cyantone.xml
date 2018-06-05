@@ -32,7 +32,11 @@
               choose any tone of your like for this tutorial...
             </entry>
             <entry>
-              <graphic fileref="darkroom/examples/images/cyantone.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/examples/images/cyantone.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

@@ -33,7 +33,11 @@
 
     <para>
       Clicking the
-      <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/>
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/>
+	</imageobject>
+      </inlinemediaobject>
       icon opens a combobox that gives you quick access to your favorite module's presets. Click
       on the preset name to apply it to the image.
     </para>
@@ -46,7 +50,11 @@
 
     <para>
       Clicking the
-      <inlinegraphic fileref="&icon_styles;"  scalefit="1" width="2%" align="center"/>
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_styles;"  scalefit="1" width="2%" align="center"/>
+	</imageobject>
+      </inlinemediaobject>
       icon opens a combobox with your styles. Hovering with the mouse over a style name opens a
       tooltip showing the involved modules. Click on a style name to apply that style to the
       image.
@@ -54,7 +62,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="rawoverexposed">
+  <sect3 status="final" xml:id="rawoverexposed">
 
     <title>Raw overexposed warning</title>
 
@@ -69,7 +77,11 @@
 
     <para>
       Clicking the
-      <inlinegraphic fileref="&icon_module_rawoverexposed;" scalefit="1" width="2%" align="center" />
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_module_rawoverexposed;" scalefit="1" width="2%" align="center" />
+	</imageobject>
+      </inlinemediaobject>
       icon warns you about areas of your raw input image with clipped color channels. Clipped
       color channels imply an overexposed image with loss of information in the affected areas.
       You may use the <emphasis>highlight reconstruction</emphasis> module or the
@@ -87,7 +99,11 @@
               Right-clicking on the icon opens a dialog with configuration parameters.
             </entry>
             <entry>
-              <graphic fileref="darkroom/images/panel_rawoverexposed.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/panel_rawoverexposed.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -120,7 +136,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="overexposed">
+  <sect3 status="final" xml:id="overexposed">
 
     <title>Over/underexposed warning</title>
 
@@ -144,7 +160,11 @@
 
     <para>
       By clicking the
-      <inlinegraphic fileref="&icon_module_overexposed;" scalefit="1" width="2%" align="center" />
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_module_overexposed;" scalefit="1" width="2%" align="center" />
+	</imageobject>
+      </inlinemediaobject>
       icon an over/underexposed warning is toggled on or off. Pixels outside the dynamic range,
       close to pure white or close to pure black, are prominently displayed in a signal color.
       You can also activate the over/underexposure warning with the keyboard shortcut
@@ -161,7 +181,11 @@
               Right-clicking on the icon opens a dialog with configuration parameters.
             </entry>
             <entry>
-              <graphic fileref="darkroom/images/panel_overexposed.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/panel_overexposed.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -193,7 +217,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="softproof">
+  <sect3 status="final" xml:id="softproof">
 
     <title>Soft proof</title>
 
@@ -208,7 +232,11 @@
 
     <para>
       Clicking the
-      <inlinegraphic fileref="&icon_module_softproof;" scalefit="1" width="2%" align="center" />
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_module_softproof;" scalefit="1" width="2%" align="center" />
+	</imageobject>
+      </inlinemediaobject>
       icon activates the soft proof display mode of your image. Soft proof allows you to preview
       your image rendered using a printer profile so as to see how colors will end up on the
       final print. You can also activate soft proof with the keyboard shortcut
@@ -226,7 +254,11 @@
               Right-clicking on the icon opens a dialog with configuration parameters.
             </entry>
             <entry>
-              <graphic fileref="darkroom/images/panel_softproof.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/images/panel_softproof.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -263,7 +295,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="gamutcheck">
+  <sect3 status="final" xml:id="gamutcheck">
 
     <title>Gamut check</title>
 
@@ -278,7 +310,11 @@
 
     <para>
       Clicking the
-      <inlinegraphic fileref="&icon_module_gamutcheck;" scalefit="1" width="2%" align="center" />
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_module_gamutcheck;" scalefit="1" width="2%" align="center" />
+	</imageobject>
+      </inlinemediaobject>
       icon activates the gamut check display mode of your image. Gamut check highlights in cyan
       all pixels out of gamut with respect to the selected softproof profile. You can also
       activate gamut check with the keyboard shortcut <emphasis>Ctrl + G</emphasis>. An information
@@ -293,7 +329,7 @@
 
   </sect3>
 
-  <sect3 status="final" id="darkroom_filmstrip">
+  <sect3 status="final" xml:id="darkroom_filmstrip">
 
     <title>Filmstrip</title>
 
@@ -403,7 +439,11 @@
     </para>
 
     <para>
-      <graphic fileref="darkroom/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="darkroom/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+	</imageobject>
+      </mediaobject>
     </para>
 
   </sect3>

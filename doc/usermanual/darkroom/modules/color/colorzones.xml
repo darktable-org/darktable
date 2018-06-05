@@ -40,7 +40,11 @@
               and allows every transformation possible in the LCh colorspace.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/colorzones.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/colorzones.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -72,7 +76,11 @@
 
     <para>
       A color picker is activated by pressing
-      <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+	</imageobject>
+      </inlinemediaobject>
       and will show the picked values in the diagram. You can switch between point and area
       sampling mode from within the global color picker panel (see
       <xref linkend="global_color_picker"/>).

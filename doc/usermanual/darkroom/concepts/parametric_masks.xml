@@ -36,7 +36,7 @@
     The parametric mask is a powerful tool with a certain level of complexity.
   </para>
 
-  <sect3 status="final" id="parametric_mask_overview">
+  <sect3 status="final" xml:id="parametric_mask_overview">
 
     <title>Overview</title>
 
@@ -62,7 +62,7 @@
 
   </sect3>
 
-  <sect3 id="parametric_mask_usage">
+  <sect3 xml:id="parametric_mask_usage">
 
     <title>Usage</title>
 
@@ -78,7 +78,11 @@
                 <quote>blend</quote> an additional set of tabbed controls is shown.
               </entry>
               <entry>
-                <graphic fileref="darkroom/concepts/images/blendif_1.png" scalefit="1" width="80%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/concepts/images/blendif_1.png" scalefit="1" width="80%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>
@@ -86,7 +90,7 @@
       </informaltable>
     </para>
 
-    <sect4 id="parametric_mask_usage_tabs">
+    <sect4 xml:id="parametric_mask_usage_tabs">
 
       <title>Channel tabs</title>
 
@@ -95,7 +99,7 @@
         color space have data channels for L, a, b, C (chroma of LCh) and h (hue of LCh).
         Modules acting in RGB color space have data channels for g (gray), R, G, B, H (hue of
         HSL), S (saturation of HSL), and L (lightness of HSL). Consult for example
-        <link xl:href="http://en.wikipedia.org/wiki/Color_space"> Wikipedia's article on color
+        <link xlink:href="http://en.wikipedia.org/wiki/Color_space"> Wikipedia's article on color
         spaces</link> for a deeper look.
       </para>
 
@@ -117,7 +121,7 @@
 
     </sect4>
 
-    <sect4 id="parametric_mask_usage_sliders">
+    <sect4 xml:id="parametric_mask_usage_sliders">
 
       <title>Color channel sliders</title>
 
@@ -138,9 +142,17 @@
 
       <para>
         A polarity button (
-        <inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_module_plus;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         and
-        <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_module_minus;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         , respectively) to the right of the slider switches between <emphasis>range
         select</emphasis> and <emphasis>range de-select</emphasis> function modes with visual
         confirmation provided by exchanging the upper and the lower triangle markers. These two
@@ -167,18 +179,34 @@
               </row>
               <row>
                 <entry>
-                  <graphic fileref="darkroom/concepts/images/blendif_2a.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/concepts/images/blendif_2a.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/concepts/images/blendif_3a.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/concepts/images/blendif_3a.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
               <row>
                 <entry>
-                  <graphic fileref="darkroom/concepts/images/blendif_2b.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/concepts/images/blendif_2b.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/concepts/images/blendif_3b.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/concepts/images/blendif_3b.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
               <row>
@@ -219,7 +247,7 @@
 
     </sect4>
 
-    <sect4 id="parametric_mask_usage_buttons">
+    <sect4 xml:id="parametric_mask_usage_buttons">
 
       <title>Control buttons</title>
 
@@ -233,7 +261,11 @@
 
       <para>
         With the color picker button
-        <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         you can select a probe from your image. The corresponding values for the real and
         virtual data channels are then displayed within each color channel slider. You can
         switch between point and area sampling mode from within the global color picker panel
@@ -242,7 +274,11 @@
 
       <para>
         With the invert button
-        <inlinegraphic fileref="&icon_module_invert;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_module_invert;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         you can toggle the polarities of all channels (including a potentially activated drawn
         mask) and change the method how channels are combined into the final mask. More on that
         topic can be found in <xref linkend="combined_masks"/>.
@@ -250,7 +286,11 @@
 
       <para>
         With the reset button
-        <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_module_reset;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         you can put all settings back to their default state.
       </para>
 
@@ -258,11 +298,11 @@
 
   </sect3>
 
-  <sect3 status="final" id="parametric_mask_examples">
+  <sect3 status="final" xml:id="parametric_mask_examples">
 
     <title>Examples</title>
 
-    <sect4 id="parametric_mask_examples_colorkey">
+    <sect4 xml:id="parametric_mask_examples_colorkey">
 
       <title>Colorkey effect</title>
 
@@ -287,7 +327,11 @@
                   </para>
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/concepts/images/blendif_4.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/concepts/images/blendif_4.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
               <row>
@@ -300,7 +344,11 @@
                   </para>
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/concepts/images/blendif_5.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/concepts/images/blendif_5.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
               <row>
@@ -310,7 +358,11 @@
                   </para>
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/concepts/images/blendif_6.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/concepts/images/blendif_6.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
               <row>
@@ -320,7 +372,11 @@
                   </para>
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/concepts/images/blendif_7.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/concepts/images/blendif_7.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
             </tbody>

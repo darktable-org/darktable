@@ -14,7 +14,7 @@
     status="final"
     xml:id="preferences_chapter">
 
-  <chapterinfo>
+  <info>
     <keywordset>
       <keyword>preferences</keyword>
       <keyword>settings</keyword>
@@ -22,9 +22,9 @@
       <keyword>options</keyword>
       <keyword>accelerators</keyword>
     </keywordset>
-  </chapterinfo>
 
-  <title>Preferences and settings</title>
+    <title>Preferences and settings</title>
+  </info>
 
   <indexterm>
     <primary>preferences and settings</primary>
@@ -33,16 +33,26 @@
   <para>
     darktable comes with a number of settings that can be configured by users. You reach the
     configuration menu by clicking
-    <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" />
+    <inlinemediaobject>
+      <imageobject>
+	<imagedata fileref="&icon_preferences;" scalefit="1" width="2%" align="center" />
+      </imageobject>
+    </inlinemediaobject>
     at the top of the screen.
   </para>
 
   <para>
     <screenshot>
 
-      <screeninfo>The preferences window</screeninfo>
+      <info>
+	<title> The preferences window </title>
+      </info>
 
-      <graphic fileref="images/preferences_view.png" scalefit="1" width="80%"></graphic>
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="images/preferences_view.png" scalefit="1" width="80%" />
+	</imageobject>
+      </mediaobject>
 
     </screenshot>
   </para>

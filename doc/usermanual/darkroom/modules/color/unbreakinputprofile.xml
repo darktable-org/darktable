@@ -47,7 +47,11 @@
               profile</emphasis></link>.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/unbreakinputprofile.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/unbreakinputprofile.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -68,7 +72,7 @@
       standard or enhanced color matrices. The correction curve is defined with a linear part
       extending from the shadows to some upper limit and a gamma curve covering mid-tones and
       highlights. For further reading please also have a look at darktable's neighbouring
-      project <link xl:href="http://ufraw.sourceforge.net">UFRaw</link>.
+      project <link xlink:href="http://ufraw.sourceforge.net">UFRaw</link>.
     </para>
 
     <sect5>

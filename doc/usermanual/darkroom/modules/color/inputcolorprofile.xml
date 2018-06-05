@@ -60,7 +60,11 @@
               image's color space.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/inputcolorprofile.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/inputcolorprofile.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -136,7 +140,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/inputcolorprofile_ex1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/inputcolorprofile_ex1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 Close-up of a blue light source (LED) with gamut clipping off. The activated
@@ -145,7 +153,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/inputcolorprofile_ex2.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/inputcolorprofile_ex2.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 The same image and processing with gamut clipping set to <quote>linear Rec2020

@@ -41,7 +41,11 @@
               replaced by an average value of their neighbors.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/hotpixels.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/hotpixels.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>

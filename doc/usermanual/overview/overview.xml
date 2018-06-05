@@ -14,15 +14,15 @@
     status="final"
     xml:id="overview_chapter">
 
-  <chapterinfo>
+  <info>
     <keywordset>
       <keyword>darktable</keyword>
       <keyword>overview</keyword>
       <keyword>application</keyword>
     </keywordset>
-  </chapterinfo>
-
-  <title>Overview</title>
+    
+    <title>Overview</title>
+  </info>
 
   <para>
     darktable is an open source photography workflow application and raw developer, a virtual
@@ -156,7 +156,7 @@
 
   </itemizedlist>
 
-  <sect1 status="final" id="program_invocation">
+  <sect1 status="final" xml:id="program_invocation">
 
     <title>Program invocation</title>
 
@@ -175,7 +175,7 @@
       with some further binaries for special purposes.
     </para>
 
-    <sect2 status="final" id="darktable_commandline_parameters">
+    <sect2 status="final" xml:id="darktable_commandline_parameters">
 
       <title><filename>darktable</filename> binary</title>
 
@@ -405,7 +405,7 @@
 
     </sect2>
 
-    <sect2 status="final" id="darktable_cli_commandline_parameters">
+    <sect2 status="final" xml:id="darktable_cli_commandline_parameters">
 
       <title><filename>darktable-cli</filename> binary</title>
 
@@ -559,7 +559,7 @@
 
     </sect2>
 
-    <sect2 status="final" id="darktable_generate_cache_commandline_parameters">
+    <sect2 status="final" xml:id="darktable_generate_cache_commandline_parameters">
 
       <title><filename>darktable-generate-cache</filename> binary</title>
 
@@ -658,7 +658,7 @@
 
     </sect2>
 
-    <sect2 status="final" id="darktable_chart_commandline_parameters">
+    <sect2 status="final" xml:id="darktable_chart_commandline_parameters">
 
       <title><filename>darktable-chart</filename> binary</title>
 
@@ -786,7 +786,7 @@
 
     </sect2>
 
-    <sect2 status="final" id="darktable_cltest_commandline_parameters">
+    <sect2 status="final" xml:id="darktable_cltest_commandline_parameters">
 
       <title><filename>darktable-cltest</filename> binary</title>
 
@@ -808,7 +808,7 @@
 
     </sect2>
 
-    <sect2 status="final" id="darktable_cmstest_commandline_parameters">
+    <sect2 status="final" xml:id="darktable_cmstest_commandline_parameters">
 
       <title><filename>darktable-cmstest</filename> binary</title>
 
@@ -832,7 +832,7 @@
 
   </sect1>
 
-  <sect1 status="final" id="user_interface">
+  <sect1 status="final" xml:id="user_interface">
 
     <title>User interface</title>
 
@@ -848,14 +848,18 @@
               </para>
             </entry>
             <entry>
-              <graphic fileref="images/lighttable_view.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="images/lighttable_view.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
       </tgroup>
     </informaltable>
 
-    <sect2 status="final" id="views">
+    <sect2 status="final" xml:id="views">
 
       <title>Views</title>
 
@@ -864,7 +868,7 @@
         described in this section. You can switch between views by clicking the view name at the
         top of the right panel&nbsp;&ndash; the active view is highlighted&nbsp;&ndash; or by
         using one of the key accelerators:
-        <informaltable frame="none" width="60%">
+        <informaltable frame="void" width="60%">
           <tgroup cols="2" colsep="0" rowsep="0">
             <colspec colwidth='1*'/>
             <colspec colwidth='9*'/>
@@ -922,7 +926,7 @@
         </informaltable>
       </para>
 
-      <sect3 status="final" id="overview_lighttable">
+      <sect3 status="final" xml:id="overview_lighttable">
 
         <title>Lighttable</title>
 
@@ -934,7 +938,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="overview_darkroom">
+      <sect3 status="final" xml:id="overview_darkroom">
 
         <title>Darkroom</title>
 
@@ -945,7 +949,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="overview_tethering">
+      <sect3 status="final" xml:id="overview_tethering">
 
         <title>Tethering</title>
 
@@ -957,7 +961,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="overview_map">
+      <sect3 status="final" xml:id="overview_map">
 
         <title>Map</title>
 
@@ -968,7 +972,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="overview_slideshow">
+      <sect3 status="final" xml:id="overview_slideshow">
 
         <title>Slideshow</title>
 
@@ -979,7 +983,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="overview_print">
+      <sect3 status="final" xml:id="overview_print">
 
         <title>Print</title>
 
@@ -992,7 +996,7 @@
 
     </sect2>
 
-    <sect2 status="final" id="screen_layout">
+    <sect2 status="final" xml:id="screen_layout">
 
       <title>Screen layout</title>
 
@@ -1003,7 +1007,11 @@
         The right panel offers functions to modify an image. The top and bottom panel give
         access to several settings and shortcuts. Each of the panels can be collapsed or
         expanded by pressing a triangle like
-        <inlinegraphic fileref="&icon_general_collapse;" scalefit="1" width="2%"/>
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_general_collapse;" scalefit="1" width="2%"/>
+	  </imageobject>
+	</inlinemediaobject>
         , located close to the panel.
       </para>
 
@@ -1019,7 +1027,7 @@
 
     </sect2>
 
-    <sect2 status="final" id="filmstrip_overview">
+    <sect2 status="final" xml:id="filmstrip_overview">
 
       <title>Filmstrip</title>
 
@@ -1039,18 +1047,26 @@
       </para>
 
       <para>
-        <graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+        <mediaobject>
+	  <imageobject>
+	    <imagedata fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+	  </imageobject>
+	</mediaobject>
       </para>
 
     </sect2>
 
-    <sect2 status="final" id="preferences">
+    <sect2 status="final" xml:id="preferences">
 
       <title>Preferences</title>
 
       <para>
         A button
-        <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" />
+        <inlinemediaobject>
+	  <imageobject>
+	    <imagedata fileref="&icon_preferences;" scalefit="1" width="2%" align="center" />
+	  </imageobject>
+	</inlinemediaobject>
         located in the upper panel allows you to define various parameters which control
         darktable's behavior.
       </para>
@@ -1065,7 +1081,7 @@
 
   </sect1>
 
-  <sect1 status="final" id="darktable_basic_workflow">
+  <sect1 status="final" xml:id="darktable_basic_workflow">
 
     <title>darktable basic workflow</title>
 
@@ -1079,7 +1095,7 @@
       development workflow and how to export the final result.
     </para>
 
-    <sect2 status ="final" id="darktable_basic_workflow_importing">
+    <sect2 status ="final" xml:id="darktable_basic_workflow_importing">
 
       <title>Importing images</title>
 
@@ -1089,7 +1105,7 @@
         the filesystem or, if darktable supports your camera model, directly from camera.
       </para>
 
-      <sect3 status="final" id="darktable_basic_workflow_importing_from_fs">
+      <sect3 status="final" xml:id="darktable_basic_workflow_importing_from_fs">
 
         <title>Importing images from filesystem</title>
 
@@ -1101,7 +1117,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="darktable_basic_workflow_importing_from_camera">
+      <sect3 status="final" xml:id="darktable_basic_workflow_importing_from_camera">
 
         <title>Importing from camera</title>
 
@@ -1118,11 +1134,11 @@
 
     </sect2>
 
-    <sect2 status="final" id="basic_development_steps">
+    <sect2 status="final" xml:id="basic_development_steps">
 
       <title>Basic development steps</title>
 
-      <sect3 id="basic_development_steps_introduction">
+      <sect3 xml:id="basic_development_steps_introduction">
 
         <title>Introduction</title>
 
@@ -1175,7 +1191,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="basic_development_steps_wb">
+      <sect3 status="final" xml:id="basic_development_steps_wb">
 
         <title>White balance</title>
 
@@ -1190,7 +1206,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="basic_development_steps_exposure">
+      <sect3 status="final" xml:id="basic_development_steps_exposure">
 
         <title>Exposure correction</title>
 
@@ -1205,7 +1221,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="basic_development_steps_noise">
+      <sect3 status="final" xml:id="basic_development_steps_noise">
 
         <title>Noise reduction</title>
 
@@ -1231,7 +1247,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="basic_development_steps_spots">
+      <sect3 status="final" xml:id="basic_development_steps_spots">
 
         <title>Fixing spots</title>
 
@@ -1246,7 +1262,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="basic_development_steps_geometry">
+      <sect3 status="final" xml:id="basic_development_steps_geometry">
 
         <title>Geometrical corrections</title>
 
@@ -1265,7 +1281,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="basic_development_steps_details">
+      <sect3 status="final" xml:id="basic_development_steps_details">
 
         <title>Bringing back detail</title>
 
@@ -1285,7 +1301,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="basic_development_steps_tonality">
+      <sect3 status="final" xml:id="basic_development_steps_tonality">
 
         <title>Adjusting tonal values</title>
 
@@ -1303,7 +1319,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="basic_development_steps_local_contrast">
+      <sect3 status="final" xml:id="basic_development_steps_local_contrast">
 
         <title>Enhancing local contrast</title>
 
@@ -1320,7 +1336,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="basic_development_steps_colors">
+      <sect3 status="final" xml:id="basic_development_steps_colors">
 
         <title>Color adjustments</title>
 
@@ -1343,7 +1359,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="basic_development_steps_sharpening">
+      <sect3 status="final" xml:id="basic_development_steps_sharpening">
 
         <title>Sharpening</title>
 
@@ -1358,7 +1374,7 @@
 
       </sect3>
 
-      <sect3 status="final" id="basic_development_steps_effects">
+      <sect3 status="final" xml:id="basic_development_steps_effects">
 
         <title>Artistic effects</title>
 
@@ -1380,7 +1396,7 @@
 
     </sect2>
 
-    <sect2 status="final" id="exporting_images">
+    <sect2 status="final" xml:id="exporting_images">
 
       <title>Exporting images</title>
 

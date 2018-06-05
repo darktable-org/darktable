@@ -45,7 +45,11 @@
               exposure and color in a progressive manner.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/graduatedneutraldensity.png" scalefit="1" width="80%" align="center" />
+              <mediaobject>
+		<imageobject>
+		  <imagedata fileref="darkroom/modules/images/graduatedneutraldensity.png" scalefit="1" width="80%" align="center" />
+		</imageobject>
+	      </mediaobject>
             </entry>
           </row>
         </tbody>
@@ -197,7 +201,11 @@
                   values turn clockwise.
                 </entry>
                 <entry>
-                  <graphic fileref="darkroom/modules/images/graduatedneutraldensity_canvas.png" scalefit="1" width="80%" align="center" />
+                  <mediaobject>
+		    <imageobject>
+		      <imagedata fileref="darkroom/modules/images/graduatedneutraldensity_canvas.png" scalefit="1" width="80%" align="center" />
+		    </imageobject>
+		  </mediaobject>
                 </entry>
               </row>
             </tbody>
@@ -224,7 +232,11 @@
           <tbody>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/graduatedneutraldensity_ex1.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/graduatedneutraldensity_ex1.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 This is the original image with a pretty overexposed sky, use it as reference
@@ -233,7 +245,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/graduatedneutraldensity_ex2.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/graduatedneutraldensity_ex2.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 And now we have added a neutral ND8 filter which does a pretty good job on the
@@ -242,7 +258,11 @@
             </row>
             <row>
               <entry>
-                <graphic fileref="darkroom/modules/images/graduatedneutraldensity_ex3.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/graduatedneutraldensity_ex3.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
               <entry>
                 And at last, we added an orange colored filter rotating it -180 degrees,
@@ -275,7 +295,11 @@
                 brightness in the tree trunks from bottom to top.
               </entry>
               <entry>
-                <graphic fileref="darkroom/modules/images/graduatedneutraldensity_ex4.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/graduatedneutraldensity_ex4.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
             <row>
@@ -287,7 +311,11 @@
                 combine the module with a suited blend mask.
               </entry>
               <entry>
-                <graphic fileref="darkroom/modules/images/graduatedneutraldensity_ex5.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/graduatedneutraldensity_ex5.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
             <row>
@@ -295,7 +323,11 @@
                 The resulting image.
               </entry>
               <entry>
-                <graphic fileref="darkroom/modules/images/graduatedneutraldensity_ex6.png" scalefit="1" width="90%" align="center" />
+                <mediaobject>
+		  <imageobject>
+		    <imagedata fileref="darkroom/modules/images/graduatedneutraldensity_ex6.png" scalefit="1" width="90%" align="center" />
+		  </imageobject>
+		</mediaobject>
               </entry>
             </row>
           </tbody>
