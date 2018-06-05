@@ -24,16 +24,16 @@
     There are several blend modes implemented and more might be added in future. For now all of
     the most commonly used ones are included and you will recognize a few of them from other
     imaging software. A good introduction on many common blend modes is given in the
-    <link xl:href="http://docs.gimp.org/2.8/en/gimp-concepts-layer-modes.html"> <emphasis>GIMP
+    <link xlink:href="http://docs.gimp.org/2.8/en/gimp-concepts-layer-modes.html"> <emphasis>GIMP
     Manual (Chapter 8.2, <quote>Layer Modes</quote>)</emphasis></link>. Therefore we only
     discuss a few blend modes here in more detail.
   </para>
 
-  <sect3 id="blending_operators_modes">
+  <sect3 xml:id="blending_operators_modes">
 
     <title>blend modes</title>
 
-    <sect4 id="blending_operators_modes_normal">
+    <sect4 xml:id="blending_operators_modes_normal">
 
       <title>normal</title>
 
@@ -46,7 +46,7 @@
 
     </sect4>
 
-    <sect4 id="blending_operators_modes_bounded">
+    <sect4 xml:id="blending_operators_modes_bounded">
 
       <title>normal bounded</title>
 
@@ -63,7 +63,7 @@
 
     </sect4>
 
-    <sect4 id="blending_operators_modes_lightness">
+    <sect4 xml:id="blending_operators_modes_lightness">
 
       <title>lightness</title>
 
@@ -74,7 +74,7 @@
 
     </sect4>
 
-    <sect4 id="blending_operators_modes_chroma">
+    <sect4 xml:id="blending_operators_modes_chroma">
 
       <title>chroma</title>
 
@@ -85,7 +85,7 @@
 
     </sect4>
 
-    <sect4 id="blending_operators_modes_hue">
+    <sect4 xml:id="blending_operators_modes_hue">
 
       <title>hue</title>
 
@@ -98,7 +98,7 @@
 
     </sect4>
 
-    <sect4 id="blending_operators_modes_color">
+    <sect4 xml:id="blending_operators_modes_color">
 
       <title>color</title>
 
@@ -111,7 +111,7 @@
 
     </sect4>
 
-    <sect4 id="blending_operators_modes_lab_lightness">
+    <sect4 xml:id="blending_operators_modes_lab_lightness">
 
       <title>Lab lightness</title>
 
@@ -125,7 +125,7 @@
 
     </sect4>
 
-    <sect4 id="blending_operators_modes_lab_color">
+    <sect4 xml:id="blending_operators_modes_lab_color">
 
       <title>Lab color</title>
 
@@ -139,7 +139,7 @@
 
     </sect4>
 
-    <sect4 id="blending_operators_modes_hsv_lightness">
+    <sect4 xml:id="blending_operators_modes_hsv_lightness">
 
       <title>HSV lightness</title>
 
@@ -152,7 +152,7 @@
 
     </sect4>
 
-    <sect4 id="blending_operators_modes_hsv_color">
+    <sect4 xml:id="blending_operators_modes_hsv_color">
 
       <title>HSV color</title>
 
@@ -165,7 +165,7 @@
 
     </sect4>
 
-    <sect4 id="blending_operators_modes_color_adjustment">
+    <sect4 xml:id="blending_operators_modes_color_adjustment">
 
       <title>color adjustment</title>
 
