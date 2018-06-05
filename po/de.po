@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-21 19:48+0100\n"
-"PO-Revision-Date: 2018-03-21 19:54+0100\n"
+"POT-Creation-Date: 2018-06-05 22:46+0200\n"
+"PO-Revision-Date: 2018-06-05 22:48+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Poedit 2.0.7\n"
 
 #: ../build/src/preferences_gen.h:1620
 msgid "GUI options"
@@ -1242,11 +1242,11 @@ msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
 msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei ‚%s‘"
 
-#: ../src/common/darktable.c:780
+#: ../src/common/darktable.c:782
 msgid "darktable - run performance configuration?"
 msgstr "darktable - Geschwindigkeitseinstellungen anpassen?"
 
-#: ../src/common/darktable.c:781
+#: ../src/common/darktable.c:783
 msgid ""
 "we have an updated performance configuration logic - executing that might "
 "improve the performance of darktable.\n"
@@ -1262,14 +1262,14 @@ msgstr ""
 "insbesondere, wenn diese manuell geändert wurden.\n"
 "Sollen die Einstellungen angepasst werden?\n"
 
-#: ../src/common/darktable.c:785 ../src/imageio/format/pdf.c:666
+#: ../src/common/darktable.c:787 ../src/imageio/format/pdf.c:666
 #: ../src/imageio/format/pdf.c:691 ../src/imageio/storage/flickr.c:492
 #: ../src/iop/clipping.c:1892 ../src/libs/export.c:591
 #: ../src/libs/metadata_view.c:257
 msgid "no"
 msgstr "nein"
 
-#: ../src/common/darktable.c:785 ../src/imageio/format/pdf.c:667
+#: ../src/common/darktable.c:787 ../src/imageio/format/pdf.c:667
 #: ../src/imageio/format/pdf.c:692 ../src/imageio/storage/flickr.c:491
 #: ../src/iop/clipping.c:1893 ../src/libs/export.c:592
 #: ../src/libs/metadata_view.c:257
@@ -1383,7 +1383,7 @@ msgstr ""
 #: ../src/common/history.c:430 ../src/common/history.c:433
 #: ../src/common/history.c:449 ../src/common/styles.c:725
 #: ../src/common/styles.c:729 ../src/develop/blend_gui.c:2019
-#: ../src/develop/develop.c:1339 ../src/iop/ashift.c:4397
+#: ../src/develop/develop.c:1339 ../src/iop/ashift.c:4492
 #: ../src/libs/live_view.c:436
 msgid "on"
 msgstr "ein"
@@ -1393,7 +1393,7 @@ msgstr "ein"
 #: ../src/common/styles.c:729 ../src/develop/blend_gui.c:1791
 #: ../src/develop/blend_gui.c:2016 ../src/develop/develop.c:1339
 #: ../src/imageio/format/exr.cc:360 ../src/imageio/format/j2k.c:663
-#: ../src/iop/ashift.c:4396 ../src/iop/ashift.c:4402 ../src/iop/colorin.c:1876
+#: ../src/iop/ashift.c:4491 ../src/iop/ashift.c:4497 ../src/iop/colorin.c:1876
 #: ../src/iop/demosaic.c:5060 ../src/iop/vignette.c:1140
 #: ../src/libs/history.c:163 ../src/libs/live_view.c:435
 msgid "off"
@@ -1445,12 +1445,12 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d lokale Kopie wurde synchronisiert"
 msgstr[1] "%d lokale Kopien wurden synchronisiert"
 
-#: ../src/common/imageio.c:600 ../src/common/mipmap_cache.c:1038
+#: ../src/common/imageio.c:606 ../src/common/mipmap_cache.c:1038
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Bild ‚%s‘ ist nicht verfügbar!"
 
-#: ../src/common/imageio.c:618
+#: ../src/common/imageio.c:624
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -1459,17 +1459,17 @@ msgstr ""
 "Fehler beim Reservieren von Speicher zum %s, bitte die Anzahl Threads für "
 "den Export herabsetzen oder mehr Speicher kaufen."
 
-#: ../src/common/imageio.c:619
+#: ../src/common/imageio.c:625
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "Exportieren der Vorschau"
 
-#: ../src/common/imageio.c:619
+#: ../src/common/imageio.c:625
 msgctxt "noun"
 msgid "export"
 msgstr "Exportieren"
 
-#: ../src/common/imageio.c:629
+#: ../src/common/imageio.c:635
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "Stil ‚%s‘ kann zum Exportieren nicht gefunden werden."
@@ -1621,7 +1621,7 @@ msgstr "über Null"
 msgid "below sea level"
 msgstr "unter Null"
 
-#: ../src/common/utility.c:508 ../src/iop/watermark.c:735
+#: ../src/common/utility.c:508 ../src/iop/watermark.c:760
 #: ../src/libs/metadata_view.c:551
 msgid "m"
 msgstr "m"
@@ -2456,7 +2456,7 @@ msgstr "Überblendmodus"
 msgid "choose blending mode"
 msgstr "Modus des Überblendens wählen"
 
-#: ../src/develop/blend_gui.c:1984 ../src/iop/watermark.c:1359
+#: ../src/develop/blend_gui.c:1984 ../src/iop/watermark.c:1384
 msgid "opacity"
 msgstr "Deckkraft"
 
@@ -2742,15 +2742,15 @@ msgstr "Kopie von %s"
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: Maske hat unpassende Version: %d != %d"
 
-#: ../src/develop/masks/masks.c:1723 ../src/libs/masks.c:1038
+#: ../src/develop/masks/masks.c:1730 ../src/libs/masks.c:1038
 msgid "add existing shape"
 msgstr "bestehende Form hinzufügen"
 
-#: ../src/develop/masks/masks.c:1748
+#: ../src/develop/masks/masks.c:1755
 msgid "use same shapes as"
 msgstr "gleiche Form verwenden wie"
 
-#: ../src/develop/masks/masks.c:2047
+#: ../src/develop/masks/masks.c:2067
 msgid "masks can not contain themselves"
 msgstr "Masken können sich nicht selbst enthalten"
 
@@ -3453,13 +3453,13 @@ msgstr "Blende"
 
 #. focal length
 #: ../src/gui/preferences.c:444 ../src/gui/preferences.c:1306
-#: ../src/gui/presets.c:467 ../src/iop/ashift.c:4414 ../src/libs/camera.c:586
+#: ../src/gui/presets.c:467 ../src/iop/ashift.c:4509 ../src/libs/camera.c:586
 #: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:107
 msgid "focal length"
 msgstr "Brennweite"
 
 #: ../src/gui/preferences.c:449 ../src/iop/borders.c:993
-#: ../src/iop/levels.c:599
+#: ../src/iop/levels.c:602
 msgid "auto"
 msgstr "auto"
 
@@ -3818,7 +3818,7 @@ msgstr "ungültiges Papierformat"
 msgid "invalid border size, using 0"
 msgstr "ungültige Randgröße wurde durch 0 ersetzt"
 
-#: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:295
+#: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:294
 #: ../src/imageio/storage/email.c:135 ../src/imageio/storage/facebook.c:1299
 #: ../src/imageio/storage/flickr.c:649 ../src/imageio/storage/gallery.c:345
 #: ../src/imageio/storage/gallery.c:383 ../src/imageio/storage/picasa.c:1296
@@ -4115,18 +4115,18 @@ msgstr "umbenennen"
 msgid "overwrite"
 msgstr "überschreiben"
 
-#: ../src/imageio/storage/disk.c:256 ../src/imageio/storage/gallery.c:273
+#: ../src/imageio/storage/disk.c:255 ../src/imageio/storage/gallery.c:273
 #: ../src/imageio/storage/latex.c:272
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "Konnte Verzeichnis ‚%s‘ nicht erstellen!"
 
-#: ../src/imageio/storage/disk.c:263
+#: ../src/imageio/storage/disk.c:262
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr "Konnte nicht in Verzeichnis ‚%s‘ schreiben!"
 
-#: ../src/imageio/storage/disk.c:302 ../src/imageio/storage/email.c:145
+#: ../src/imageio/storage/disk.c:301 ../src/imageio/storage/email.c:145
 #: ../src/imageio/storage/gallery.c:393 ../src/imageio/storage/latex.c:363
 #, c-format
 msgid "%d/%d exported to `%s%s'"
@@ -4459,11 +4459,11 @@ msgid_plural "%d/%d exported to google+ album"
 msgstr[0] "%d/%d ins Google+-Album exportiert"
 msgstr[1] "%d/%d ins Google+-Album exportiert"
 
-#: ../src/iop/ashift.c:111
+#: ../src/iop/ashift.c:110
 msgid "perspective correction"
 msgstr "Perspektivkorrektur"
 
-#: ../src/iop/ashift.c:509 ../src/iop/watermark.c:254
+#: ../src/iop/ashift.c:509 ../src/iop/watermark.c:256
 msgctxt "accel"
 msgid "rotation"
 msgstr "Drehung"
@@ -4483,136 +4483,136 @@ msgctxt "accel"
 msgid "shear"
 msgstr "Scherung"
 
-#: ../src/iop/ashift.c:2498
+#: ../src/iop/ashift.c:2499
 msgid "automatic cropping failed"
 msgstr "automatisches Zuschneiden fehlgeschlagen"
 
-#: ../src/iop/ashift.c:2518
+#: ../src/iop/ashift.c:2519
 msgid "data pending - please repeat"
 msgstr "Daten noch nicht bereit – bitte wiederholen"
 
-#: ../src/iop/ashift.c:2524
+#: ../src/iop/ashift.c:2525
 msgid "could not detect structural data in image"
 msgstr "konnte keine Strukturen im Bild finden"
 
-#: ../src/iop/ashift.c:2535
+#: ../src/iop/ashift.c:2536
 msgid "could not run outlier removal"
 msgstr "konnte Ausreißer nicht entfernen"
 
-#: ../src/iop/ashift.c:2589
+#: ../src/iop/ashift.c:2590
 msgid "not enough structure for automatic correction"
 msgstr "nicht genügend Strukturen für automatische Korrektur"
 
-#: ../src/iop/ashift.c:2594
+#: ../src/iop/ashift.c:2595
 msgid "automatic correction failed, please correct manually"
 msgstr "automatische Korrektur fehlgeschlagen, bitte manuell korrigieren"
 
-#: ../src/iop/ashift.c:4173 ../src/iop/ashift.c:4174 ../src/iop/ashift.c:4273
-#: ../src/iop/ashift.c:4274
+#: ../src/iop/ashift.c:4266 ../src/iop/ashift.c:4267 ../src/iop/ashift.c:4367
+#: ../src/iop/ashift.c:4368
 #, c-format
 msgid "lens shift (%s)"
 msgstr "Objektivverschiebung (%s)"
 
-#: ../src/iop/ashift.c:4173 ../src/iop/ashift.c:4174 ../src/iop/ashift.c:4273
-#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1576
+#: ../src/iop/ashift.c:4266 ../src/iop/ashift.c:4267 ../src/iop/ashift.c:4367
+#: ../src/iop/ashift.c:4368 ../src/iop/clipping.c:1576
 #: ../src/iop/clipping.c:1865 ../src/iop/clipping.c:1884
 msgid "horizontal"
 msgstr "horizontal"
 
-#: ../src/iop/ashift.c:4173 ../src/iop/ashift.c:4174 ../src/iop/ashift.c:4273
-#: ../src/iop/ashift.c:4274 ../src/iop/clipping.c:1575
+#: ../src/iop/ashift.c:4266 ../src/iop/ashift.c:4267 ../src/iop/ashift.c:4367
+#: ../src/iop/ashift.c:4368 ../src/iop/clipping.c:1575
 #: ../src/iop/clipping.c:1866 ../src/iop/clipping.c:1883
 msgid "vertical"
 msgstr "vertikal"
 
-#: ../src/iop/ashift.c:4374 ../src/iop/graduatednd.c:1154
-#: ../src/iop/watermark.c:1366
+#: ../src/iop/ashift.c:4469 ../src/iop/graduatednd.c:1154
+#: ../src/iop/watermark.c:1391
 msgid "rotation"
 msgstr "Drehung"
 
-#: ../src/iop/ashift.c:4380
+#: ../src/iop/ashift.c:4475
 msgid "lens shift (vertical)"
 msgstr "Objektivverschiebung (vertikal)"
 
-#: ../src/iop/ashift.c:4385
+#: ../src/iop/ashift.c:4480
 msgid "lens shift (horizontal)"
 msgstr "Objektivverschiebung (horizontal)"
 
-#: ../src/iop/ashift.c:4390
+#: ../src/iop/ashift.c:4485
 msgid "shear"
 msgstr "Scherung"
 
-#: ../src/iop/ashift.c:4395 ../src/iop/clipping.c:2015
+#: ../src/iop/ashift.c:4490 ../src/iop/clipping.c:2015
 #: ../src/libs/live_view.c:342
 msgid "guides"
 msgstr "Hilfslinien"
 
-#: ../src/iop/ashift.c:4401 ../src/iop/clipping.c:1891
+#: ../src/iop/ashift.c:4496 ../src/iop/clipping.c:1891
 msgid "automatic cropping"
 msgstr "automatisch Zuschneiden"
 
-#: ../src/iop/ashift.c:4403
+#: ../src/iop/ashift.c:4498
 msgid "largest area"
 msgstr "größte Fläche"
 
-#: ../src/iop/ashift.c:4404
+#: ../src/iop/ashift.c:4499
 msgid "original format"
 msgstr "Originalformat"
 
-#: ../src/iop/ashift.c:4408
+#: ../src/iop/ashift.c:4503
 msgid "lens model"
 msgstr "Objektiv-Modell"
 
-#: ../src/iop/ashift.c:4409
+#: ../src/iop/ashift.c:4504
 msgid "generic"
 msgstr "generisch"
 
-#: ../src/iop/ashift.c:4410
+#: ../src/iop/ashift.c:4505
 msgid "specific"
 msgstr "spezifisch"
 
-#: ../src/iop/ashift.c:4423
+#: ../src/iop/ashift.c:4518
 msgid "crop factor"
 msgstr "Crop-Faktor"
 
-#: ../src/iop/ashift.c:4428
+#: ../src/iop/ashift.c:4523
 msgid "lens dependence"
 msgstr "Objektivabhängigkeit"
 
-#: ../src/iop/ashift.c:4438
+#: ../src/iop/ashift.c:4533
 msgid "aspect adjust"
 msgstr "Seitenverhältnis anpassen"
 
-#: ../src/iop/ashift.c:4448
+#: ../src/iop/ashift.c:4543
 msgid "automatic fit"
 msgstr "automatisch anpassen"
 
 # etwas zu frei übersetzt?
-#: ../src/iop/ashift.c:4467
+#: ../src/iop/ashift.c:4562
 msgid "get structure"
 msgstr "Strukturen finden"
 
-#: ../src/iop/ashift.c:4512
+#: ../src/iop/ashift.c:4607
 msgid "rotate image"
 msgstr "Bild drehen"
 
-#: ../src/iop/ashift.c:4513 ../src/iop/ashift.c:4514
+#: ../src/iop/ashift.c:4608 ../src/iop/ashift.c:4609
 msgid "apply lens shift correction in one direction"
 msgstr "Objektivverschiebung in eine Richtung korrigieren"
 
-#: ../src/iop/ashift.c:4515
+#: ../src/iop/ashift.c:4610
 msgid "shear the image along one diagonal"
 msgstr "Bild entlang einer Diagonalen scheren"
 
-#: ../src/iop/ashift.c:4516
+#: ../src/iop/ashift.c:4611
 msgid "display guide lines overlay"
 msgstr "Hilfslinien anzeigen"
 
-#: ../src/iop/ashift.c:4517 ../src/iop/clipping.c:1894
+#: ../src/iop/ashift.c:4612 ../src/iop/clipping.c:1894
 msgid "automatically crop to avoid black edges"
 msgstr "Automatisch zuschneiden um schwarze Ränder zu vermeiden"
 
-#: ../src/iop/ashift.c:4518
+#: ../src/iop/ashift.c:4613
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -4620,13 +4620,13 @@ msgstr ""
 "Objektiv-Modell der perspektivischen Korrektur: generisch oder in "
 "Abhängigkeit von der Brennweite"
 
-#: ../src/iop/ashift.c:4520
+#: ../src/iop/ashift.c:4615
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "Brennweite des Objektivs, standardmäßig auf den Werten der EXIF-Daten so "
 "weit verfügbar"
 
-#: ../src/iop/ashift.c:4522
+#: ../src/iop/ashift.c:4617
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -4634,7 +4634,7 @@ msgstr ""
 "Crop-Faktor des Sensors, standardmäßig auf den Werten der EXIF-Daten so weit "
 "vorhanden. Häufig muss dieser Wert angepasst werden"
 
-#: ../src/iop/ashift.c:4525
+#: ../src/iop/ashift.c:4620
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -4642,13 +4642,13 @@ msgstr ""
 "der Anteil der Objektivabhängigkeit der Korrektur, auf maximum setzen für "
 "volle Abhängigkeit, oder auf Null für den generischen Fall"
 
-#: ../src/iop/ashift.c:4527
+#: ../src/iop/ashift.c:4622
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "Seitenverhältnis des Bildes durch horizontales und vertikales Skalieren "
 "anpassen"
 
-#: ../src/iop/ashift.c:4528
+#: ../src/iop/ashift.c:4623
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4658,7 +4658,7 @@ msgstr ""
 "Strg-Klick um nur die Drehung anzupassen\n"
 "Umschalt-Klick um nur die Objektivverschiebung anzupassen"
 
-#: ../src/iop/ashift.c:4531
+#: ../src/iop/ashift.c:4626
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4668,7 +4668,7 @@ msgstr ""
 "Strg-Klick um nur die Drehung anzupassen\n"
 "Umschalt-Klick um nur die Objektivverschiebung anzupassen"
 
-#: ../src/iop/ashift.c:4534
+#: ../src/iop/ashift.c:4629
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -4683,7 +4683,7 @@ msgstr ""
 "Umschalt-Klick um nur die Objektivverschiebung anzupassen\n"
 "Strg-Umschalt-Klick um nur Drehung und Objektivverschiebung anzupassen"
 
-#: ../src/iop/ashift.c:4540
+#: ../src/iop/ashift.c:4635
 msgid ""
 "analyse line structure in image\n"
 "ctrl-click for an additional edge enhancement\n"
@@ -4695,11 +4695,11 @@ msgstr ""
 "Umschalt-Klick für eine zusätzliche Detail-Verbesserung\n"
 "Strg-Umschalt-Klick für eine Kombination beider Methoden"
 
-#: ../src/iop/ashift.c:4544
+#: ../src/iop/ashift.c:4639
 msgid "remove line structure information"
 msgstr "Informationen über Linienstrukturen entfernen"
 
-#: ../src/iop/ashift.c:4545
+#: ../src/iop/ashift.c:4640
 msgid "toggle visibility of structure lines"
 msgstr "Sichtbarkeit der Struktur-Linien umschalten"
 
@@ -4894,7 +4894,7 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "x-Wert: Eingabe, y-Wert: Ausgabe. Arbeitet auf den RGB-Kanälen."
 
 #: ../src/iop/basecurve.c:1917 ../src/iop/lens.c:2223
-#: ../src/iop/vignette.c:1146 ../src/iop/watermark.c:1363
+#: ../src/iop/vignette.c:1146 ../src/iop/watermark.c:1388
 msgid "scale"
 msgstr "Skalierung"
 
@@ -4977,7 +4977,7 @@ msgid "local laplacian: inconsistent output"
 msgstr "lokaler Laplace-Filter: inkonsistente Ausgabe"
 
 #: ../src/iop/bilat.c:516 ../src/iop/denoiseprofile.c:2056
-#: ../src/iop/exposure.c:849 ../src/iop/lens.c:2231 ../src/iop/levels.c:566
+#: ../src/iop/exposure.c:849 ../src/iop/lens.c:2231 ../src/iop/levels.c:569
 #: ../src/libs/copy_history.c:310 ../src/libs/export.c:644
 #: ../src/libs/print_settings.c:1356 ../src/views/darkroom.c:1451
 msgid "mode"
@@ -6115,7 +6115,7 @@ msgstr "Farbton"
 
 #: ../src/iop/colorreconstruction.c:624 ../src/iop/colorreconstruction.c:1077
 #: ../src/iop/globaltonemap.c:181 ../src/iop/globaltonemap.c:342
-#: ../src/iop/hazeremoval.c:854 ../src/iop/levels.c:255
+#: ../src/iop/hazeremoval.c:860 ../src/iop/levels.c:258
 msgid "inconsistent output"
 msgstr "inkonsistente Ausgabe"
 
@@ -6594,12 +6594,12 @@ msgstr "Magic Lantern-Standard"
 msgid "failed to get raw buffer from image `%s'"
 msgstr "Fehler beim Laden der Raw-Daten für Bild ‚%s‘"
 
-#: ../src/iop/exposure.c:851 ../src/iop/levels.c:568
+#: ../src/iop/exposure.c:851 ../src/iop/levels.c:571
 msgctxt "mode"
 msgid "manual"
 msgstr "manuell"
 
-#: ../src/iop/exposure.c:854 ../src/iop/levels.c:571 ../src/iop/tonecurve.c:965
+#: ../src/iop/exposure.c:854 ../src/iop/levels.c:574 ../src/iop/tonecurve.c:965
 #: ../src/iop/vignette.c:1137
 msgid "automatic"
 msgstr "automatisch"
@@ -6608,7 +6608,7 @@ msgstr "automatisch"
 msgid "adjust the black level"
 msgstr "Schwarzwert anpassen"
 
-#: ../src/iop/exposure.c:865 ../src/iop/levels.c:634
+#: ../src/iop/exposure.c:865 ../src/iop/levels.c:637
 msgid "black"
 msgstr "Schwarz"
 
@@ -7020,7 +7020,7 @@ msgstr "Farbe des Filmmaterials aus dem Bild übernehmen"
 msgid "lens correction"
 msgstr "Objektivkorrektur"
 
-#: ../src/iop/lens.c:152 ../src/iop/vignette.c:168 ../src/iop/watermark.c:253
+#: ../src/iop/lens.c:152 ../src/iop/vignette.c:168 ../src/iop/watermark.c:255
 msgctxt "accel"
 msgid "scale"
 msgstr "Skalierung"
@@ -7075,7 +7075,7 @@ msgid ""
 msgstr ""
 "Hersteller:\t\t%s\n"
 "Modell:\t\t%s%s\n"
-"Anschluss:\t%s\n"
+"Anschluss:\t\t%s\n"
 "Crop-Faktor:\t%.1f"
 
 #: ../src/iop/lens.c:1647
@@ -7094,7 +7094,7 @@ msgid ""
 "focal range:\t%s\n"
 "aperture:\t\t%s\n"
 "crop factor:\t%.1f\n"
-"type:\t\t\t%s\n"
+"type:\t\t%s\n"
 "mounts:\t\t%s"
 msgstr ""
 "Hersteller:\t\t%s\n"
@@ -7249,49 +7249,49 @@ msgstr "welche Korrekturen wurden tatsächlich ausgeführt"
 msgid "levels"
 msgstr "Werte"
 
-#: ../src/iop/levels.c:586
+#: ../src/iop/levels.c:589
 msgid ""
 "drag handles to set black, gray, and white points. operates on L channel."
 msgstr ""
 "Anfasser verschieben, um Schwarz-, Grau- und Weißpunkt zu setzen. Arbeitet "
 "auf dem L-Kanal."
 
-#: ../src/iop/levels.c:600
+#: ../src/iop/levels.c:603
 msgid "apply auto levels"
 msgstr "Werte automatisch setzen"
 
-#: ../src/iop/levels.c:604
+#: ../src/iop/levels.c:607
 msgid "pick black point from image"
 msgstr "Schwarzpunkt aus dem Bild übernehmen"
 
-#: ../src/iop/levels.c:607
+#: ../src/iop/levels.c:610
 msgid "pick medium gray point from image"
 msgstr "Mittleren Graupunkt aus dem Bild übernehmen"
 
-#: ../src/iop/levels.c:610
+#: ../src/iop/levels.c:613
 msgid "pick white point from image"
 msgstr "Weißpunkt aus dem Bild übernehmen"
 
 # das muss weg
-#: ../src/iop/levels.c:632
+#: ../src/iop/levels.c:635
 msgid "black percentile"
 msgstr "Schwarz-Perzentil"
 
 # das muss weg
-#: ../src/iop/levels.c:637
+#: ../src/iop/levels.c:640
 msgid "gray percentile"
 msgstr "Grau-Perzentil"
 
-#: ../src/iop/levels.c:639
+#: ../src/iop/levels.c:642
 msgid "gray"
 msgstr "Grau"
 
 # das muss weg
-#: ../src/iop/levels.c:642
+#: ../src/iop/levels.c:645
 msgid "white percentile"
 msgstr "Weiß-Perzentil"
 
-#: ../src/iop/levels.c:644
+#: ../src/iop/levels.c:647
 msgid "white"
 msgstr "Weiß"
 
@@ -8328,49 +8328,49 @@ msgid "add some level of random noise to prevent banding"
 msgstr ""
 "füge ein gewisses Maß an zufälligem Rauschen hinzu um Banding zu vermeiden"
 
-#: ../src/iop/watermark.c:231
+#: ../src/iop/watermark.c:233
 msgid "watermark"
 msgstr "Wasserzeichen"
 
-#: ../src/iop/watermark.c:251
+#: ../src/iop/watermark.c:253
 msgctxt "accel"
 msgid "refresh"
 msgstr "Neu laden"
 
-#: ../src/iop/watermark.c:252
+#: ../src/iop/watermark.c:254
 msgctxt "accel"
 msgid "opacity"
 msgstr "Deckkraft"
 
-#: ../src/iop/watermark.c:255
+#: ../src/iop/watermark.c:257
 msgctxt "accel"
 msgid "x offset"
 msgstr "X-Versatz"
 
-#: ../src/iop/watermark.c:256
+#: ../src/iop/watermark.c:258
 msgctxt "accel"
 msgid "y offset"
 msgstr "Y-Versatz"
 
-#: ../src/iop/watermark.c:1291
+#: ../src/iop/watermark.c:1316
 msgid "content"
 msgstr "Inhalt"
 
 # nicht so wirklich schön
-#: ../src/iop/watermark.c:1298
+#: ../src/iop/watermark.c:1323
 msgid "marker"
 msgstr "Zeichen"
 
-#: ../src/iop/watermark.c:1301
+#: ../src/iop/watermark.c:1326
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "SVG-Wasserzeichen in %s/watermarks oder %s/watermarks"
 
-#: ../src/iop/watermark.c:1316
+#: ../src/iop/watermark.c:1341
 msgid "color"
 msgstr "Farbe"
 
-#: ../src/iop/watermark.c:1318
+#: ../src/iop/watermark.c:1343
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -8378,16 +8378,16 @@ msgstr ""
 "Wasserzeichenfarbe, Platzhalter:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1321
+#: ../src/iop/watermark.c:1346
 msgid "select watermark color"
 msgstr "Wasserzeichen-Farbton wählen"
 
 #. Simple text
-#: ../src/iop/watermark.c:1327
+#: ../src/iop/watermark.c:1352
 msgid "text"
 msgstr "Text"
 
-#: ../src/iop/watermark.c:1331
+#: ../src/iop/watermark.c:1356
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -8396,11 +8396,11 @@ msgstr ""
 "$(WATERMARK_TEXT)"
 
 #. Text font
-#: ../src/iop/watermark.c:1341
+#: ../src/iop/watermark.c:1366
 msgid "font"
 msgstr "Schriftart"
 
-#: ../src/iop/watermark.c:1347
+#: ../src/iop/watermark.c:1372
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -8413,58 +8413,58 @@ msgstr ""
 "$(WATERMARK_FONT_WEIGHT)"
 
 #. Camera settings
-#: ../src/iop/watermark.c:1354 ../src/libs/camera.c:516
+#: ../src/iop/watermark.c:1379 ../src/libs/camera.c:516
 msgid "properties"
 msgstr "Eigenschaften"
 
-#: ../src/iop/watermark.c:1372
+#: ../src/iop/watermark.c:1397
 msgctxt "size"
 msgid "image"
 msgstr "Bild"
 
-#: ../src/iop/watermark.c:1373
+#: ../src/iop/watermark.c:1398
 msgid "larger border"
 msgstr "langer Seite"
 
-#: ../src/iop/watermark.c:1374
+#: ../src/iop/watermark.c:1399
 msgid "smaller border"
 msgstr "kurzer Seite"
 
-#: ../src/iop/watermark.c:1376
+#: ../src/iop/watermark.c:1401
 msgid "scale on"
 msgstr "Skalierung nach"
 
-#: ../src/iop/watermark.c:1377
+#: ../src/iop/watermark.c:1402
 msgid "size is relative to"
 msgstr "Größe ist relativ zu"
 
-#: ../src/iop/watermark.c:1380
+#: ../src/iop/watermark.c:1405
 msgid "position"
 msgstr "Position"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1383 ../src/libs/print_settings.c:1236
+#: ../src/iop/watermark.c:1408 ../src/libs/print_settings.c:1236
 msgid "alignment"
 msgstr "Position"
 
-#: ../src/iop/watermark.c:1400
+#: ../src/iop/watermark.c:1425
 msgid "x offset"
 msgstr "X-Versatz"
 
-#: ../src/iop/watermark.c:1403
+#: ../src/iop/watermark.c:1428
 msgid "y offset"
 msgstr "Y-Versatz"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1408
+#: ../src/iop/watermark.c:1433
 msgid "the opacity of the watermark"
 msgstr "Deckkraft des Wasserzeichens"
 
-#: ../src/iop/watermark.c:1409
+#: ../src/iop/watermark.c:1434
 msgid "the scale of the watermark"
 msgstr "Größe des Wasserzeichens"
 
-#: ../src/iop/watermark.c:1410
+#: ../src/iop/watermark.c:1435
 msgid "the rotation of the watermark"
 msgstr "Drehung des Wasserzeichens"
 
@@ -10049,19 +10049,23 @@ msgstr "weitere Module"
 msgid "navigation"
 msgstr "Navigation"
 
-#: ../src/libs/navigation.c:502
+#: ../src/libs/navigation.c:511
 msgid "small"
 msgstr "klein"
 
-#: ../src/libs/navigation.c:506
+#: ../src/libs/navigation.c:515
 msgid "fit to screen"
 msgstr "einpassen"
 
-#: ../src/libs/navigation.c:510
+#: ../src/libs/navigation.c:519
+msgid "50%"
+msgstr "50%"
+
+#: ../src/libs/navigation.c:523
 msgid "100%"
 msgstr "100%"
 
-#: ../src/libs/navigation.c:514
+#: ../src/libs/navigation.c:527
 msgid "200%"
 msgstr "200%"
 
