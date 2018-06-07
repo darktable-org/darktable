@@ -12,7 +12,7 @@
     xmlns:xlink="http://www.w3.org/1999/xlink" 
     xml:lang="en"
     status="final"
-    id="tethering_examples">
+    xml:id="tethering_examples">
 
   <title>Examples</title>
 
@@ -20,7 +20,7 @@
     This section contains examples of typical usages of tethering.
   </para>
 
-  <sect2 id="tethering_examples_studio">
+  <sect2 xml:id="tethering_examples_studio">
 
     <title>Studio setup with screening</title>
 
@@ -46,7 +46,7 @@
 
   </sect2>
 
-  <sect2 id="tethering_examples_timelapse">
+  <sect2 xml:id="tethering_examples_timelapse">
 
     <title>Capturing a timelapse</title>
 
