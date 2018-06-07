@@ -614,8 +614,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // check how far we are zoomed-in
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     int closeup = dt_control_get_dev_closeup();
-    const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
-    const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2.0 : 1.0, 0);
+    const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, 1<<closeup, 0);
+    const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 0);
 
     // if we are zoomed in more than just a little bit, we try to use the canned grid of the preview pipeline
     if(cur_scale > 1.05f * min_scale)
@@ -1067,8 +1067,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // check how far we are zoomed-in
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     int closeup = dt_control_get_dev_closeup();
-    const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
-    const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2.0 : 1.0, 0);
+    const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, 1<<closeup, 0);
+    const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 0);
 
     // if we are zoomed in more than just a little bit, we try to use the canned grid of the preview pipeline
     if(cur_scale > 1.05f * min_scale)

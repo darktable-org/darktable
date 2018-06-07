@@ -229,8 +229,8 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     int closeup = dt_control_get_dev_closeup();
     float zoom_x = dt_control_get_dev_zoom_x();
     float zoom_y = dt_control_get_dev_zoom_y();
-    const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
-    const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2.0 : 1.0, 0);
+    const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1<<closeup, 0);
+    const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
     // avoid numerical instability for small resolutions:
     double h, w;
     if(cur_scale > min_scale)
@@ -418,7 +418,7 @@ static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget, GdkEve
   return TRUE;
 }
 
-static void _zoom_preset_change(int val)
+static void _zoom_preset_change(uint64_t val)
 {
   // dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_develop_t *dev = darktable.develop;
@@ -432,33 +432,42 @@ static void _zoom_preset_change(int val)
   zoom_y = dt_control_get_dev_zoom_y();
   dt_dev_get_processed_size(dev, &procw, &proch);
   float scale = 0;
-  zoom_x = 0.0f; //+= (1.0/scale)*(x - .5f*dev->width )/procw;
-  zoom_y = 0.0f; //+= (1.0/scale)*(y - .5f*dev->height)/proch;
-  if(val == 0)
+  closeup = 0;
+  if(val == 0u)
   {
     scale = 0.5 * dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
     zoom = DT_ZOOM_FREE;
   }
-  else if(val == 1)
+  else if(val == 1u)
   {
     zoom = DT_ZOOM_FIT;
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
   }
-  else if(val == 2)
+  else if(val == 2u)
   {
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
   }
-  else if(val == 3)
+  else if(val == 3u)
   {
-    scale = 2.0f;
-    zoom = DT_ZOOM_FREE;
+    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    zoom = DT_ZOOM_1;
+    closeup = 1;
   }
-  else if(val == 4)
+  else if(val == 4u)
   {
     scale = 0.5f;
     zoom = DT_ZOOM_FREE;
   }
+  else if(val == 5u)
+  {
+    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    zoom = DT_ZOOM_1;
+    closeup = 4;
+  }
+
+  // zoom_x = (1.0/(scale*(1<<closeup)))*(zoom_x - .5f*dev->width )/procw;
+  // zoom_y = (1.0/(scale*(1<<closeup)))*(zoom_y - .5f*dev->height)/proch;
 
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
   dt_control_set_dev_zoom_scale(scale);
@@ -470,25 +479,9 @@ static void _zoom_preset_change(int val)
   dt_control_queue_redraw();
 }
 
-static void _zoom_preset_mini(GtkButton *button, gpointer user_data)
+static void _zoom_preset_callback(GtkButton *button, gpointer user_data)
 {
-  _zoom_preset_change(0);
-}
-static void _zoom_preset_fit(GtkButton *button, gpointer user_data)
-{
-  _zoom_preset_change(1);
-}
-static void _zoom_preset_1(GtkButton *button, gpointer user_data)
-{
-  _zoom_preset_change(2);
-}
-static void _zoom_preset_2(GtkButton *button, gpointer user_data)
-{
-  _zoom_preset_change(3);
-}
-static void _zoom_preset_3(GtkButton *button, gpointer user_data)
-{
-  _zoom_preset_change(4);
+  _zoom_preset_change((uint64_t)user_data);
 }
 
 static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEventButton *event,
@@ -509,23 +502,27 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
     GtkWidget *item;
 
     item = gtk_menu_item_new_with_label(_("small"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_mini), self);
+    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)0);
     gtk_menu_shell_append(menu, item);
 
     item = gtk_menu_item_new_with_label(_("fit to screen"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_fit), self);
+    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)1);
     gtk_menu_shell_append(menu, item);
 
     item = gtk_menu_item_new_with_label(_("50%"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_3), self);
+    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)4);
     gtk_menu_shell_append(menu, item);
 
     item = gtk_menu_item_new_with_label(_("100%"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_1), self);
+    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)2);
     gtk_menu_shell_append(menu, item);
 
     item = gtk_menu_item_new_with_label(_("200%"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_2), self);
+    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)3);
+    gtk_menu_shell_append(menu, item);
+
+    item = gtk_menu_item_new_with_label(_("1600%"));
+    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)5);
     gtk_menu_shell_append(menu, item);
 
     gtk_widget_show_all(GTK_WIDGET(menu));
