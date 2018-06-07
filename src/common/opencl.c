@@ -831,8 +831,8 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
 
       if(cl->print_statistics && (darktable.unmuted & DT_DEBUG_MEMORY))
       {
-        dt_print(DT_DEBUG_OPENCL, "[opencl_summary_statistics] device '%s' (%d): peak memory usage %zu bytes\n",
-                   cl->dev[i].name, i, cl->dev[i].peak_memory);
+        dt_print(DT_DEBUG_OPENCL, "[opencl_summary_statistics] device '%s' (%d): peak memory usage %zu bytes (%.1f MB)\n",
+                   cl->dev[i].name, i, cl->dev[i].peak_memory, (float)cl->dev[i].peak_memory/(1024*1024));
       }
 
       if(cl->print_statistics && cl->use_events)
@@ -2327,7 +2327,8 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
 
   if(darktable.unmuted & DT_DEBUG_MEMORY)
     dt_print(DT_DEBUG_OPENCL,
-              "[opencl memory] device %d: %zu bytes in use\n", devid, darktable.opencl->dev[devid].memory_in_use);
+              "[opencl memory] device %d: %zu bytes (%.1f MB) in use\n", devid, darktable.opencl->dev[devid].memory_in_use,
+                                      (float)darktable.opencl->dev[devid].memory_in_use/(1024*1024));
 }
 
 /** check if image size fit into limits given by OpenCL runtime */
