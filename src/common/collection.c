@@ -919,7 +919,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
     case DT_COLLECTION_PROP_TAG: // tag
       query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
-                                     "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%1$s' OR name like '%1$s|%%'))",
+                                     "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%s'))",
                               escaped_text);
       break;
 

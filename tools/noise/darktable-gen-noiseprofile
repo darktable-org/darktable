@@ -2,8 +2,21 @@
 
 set -e
 
-scriptname=$(basename $0)
-scriptdir=$(cd $(dirname $0) && pwd)
+script="$0"
+
+count=0
+while [ -L "${script}" ]
+do
+	script=$(readlink ${script})
+	count=$(expr ${count} + 1)
+	if [ ${count} -gt 100 ]
+	then
+		echo "Too many symbolic links"
+		exit 1
+	fi
+done
+scriptdir=$(dirname ${script})
+scriptname=$(basename ${script})
 
 . "$scriptdir/subr.sh"
 
@@ -74,9 +87,6 @@ fi
 if ! profiling_tools_installed; then
 	missing_tool=1
 fi
-if ! internal_tools_available; then
-	missing_tool=1
-fi
 if ! tethering_tools_installed; then
 	cat <<EOF
 
@@ -108,7 +118,7 @@ fi
 
 profile_image() {
 	local image preset files_list maker model iso xmp		\
-	 noiseprofile floatdump pfm dat title fit pdf			\
+	 noiseprofile pfm dat title fit pdf			\
 	 flat_dat curves_dat flat_pdf a0 a1 a2 b0 b1 b2
 
 	tool_installed darktable-cli
@@ -123,8 +133,11 @@ profile_image() {
 	iso=$(get_image_iso "$image")
 
 	xmp="$scriptdir/profiling-shot.xmp"
-	noiseprofile="$scriptdir/noiseprofile"
-	floatdump="$scriptdir/floatdump"
+	noiseprofile="$scriptdir/darktable-noiseprofile"
+	if [ ! -x "$scriptdir/darktable-noiseprofile" ]; then
+		echo "ERROR: Could not find darktable-noiseprofile tool in $scriptdir"
+		exit 1
+	fi
 
 	echo
 	echo "===> Profile image for \"$maker - $model - $iso ISO\""
@@ -138,7 +151,7 @@ profile_image() {
 		echo "--> Skip $image (ISO $iso); output up-to-date"
 	fi
 
-	echo "--> Run noiseprofile"
+	echo "--> Run darktable-noiseprofile"
 	dat="${pfm%.pfm}.dat"
 	"$noiseprofile" "$pfm" > "$dat"
 
@@ -510,7 +523,7 @@ fi
 # Prepare a tarball ready to be sent to the darktable team.
 echo
 echo "===> Prepare final tarball"
-tarball="$profiling_dir"/dt-noiseprofile-$(date +'%Y%m%d').tar.gz
+tarball="$profiling_dir"/darktable-noiseprofile-$(date +'%Y%m%d').tar.gz
 cd "$profiling_dir"
 tar -cf - "$(basename "$presets_json")" $(cat "$(basename "$files_list")") "$(basename "$resultpdf")" | gzip > "$(basename "$tarball")"
 cd -

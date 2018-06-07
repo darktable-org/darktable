@@ -20,6 +20,6 @@ find_library(GIO_LIBRARY
 )
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.
-# NOTE: Singular variables for this library, plural for libraries this this lib depends on.
+# NOTE: Singular variables for this library, plural for libraries this lib depends on.
 libfind_process(GIO)
 

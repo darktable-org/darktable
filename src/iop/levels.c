@@ -206,6 +206,9 @@ static void dt_iop_levels_compute_levels_automatic(dt_dev_pixelpipe_iop_t *piece
       }
     }
   }
+  // for numerical reasons sometimes the threshold is sharp but in float and n is size_t.
+  // in this case we want to make sure we don't keep nan:
+  if(isnan(d->levels[2])) d->levels[2] = 1.0f;
 
   // compute middle level from min and max levels
   float center = d->percentiles[1] / 100.0f;
