@@ -15,7 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
+#include "common/tags.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -716,6 +718,29 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     if(res)
     {
       g_list_free_full(res, &g_free);
+    }
+
+    res = dt_tag_get_list(image->id);
+    gchar *keywords = dt_util_glist_to_str(", ", res);
+    svgdoc = _string_substitute(svgdata, "$(IMAGE.TAGS)", (keywords ? keywords : ""));
+    if(svgdoc != svgdata)
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    g_free(keywords);
+    if(res)
+    {
+      g_list_free_full(res, &g_free);
+    }
+
+    const int stars = image->flags & 0x7;
+    const char *const rating_str[] = { "☆☆☆☆☆", "★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★", "❌", "" };
+    svgdoc = _string_substitute(svgdata, "$(Xmp.xmp.Rating)", rating_str[stars]);
+    if(svgdoc != svgdata)
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
     }
 
     // geolocation

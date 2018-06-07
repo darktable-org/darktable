@@ -101,7 +101,7 @@
     <sect5>
       <title>warps and nodes count</title>
       <para>
-        This information field displays the the number of warps (individual distortion object)
+        This information field displays the number of warps (individual distortion object)
         and nodes currently used.
       </para>
     </sect5>
