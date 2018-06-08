@@ -126,7 +126,7 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module, float pzx
 {
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
+  float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
   float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
 
   // we first don't do anything if we are inside a scrolling session

@@ -1374,7 +1374,7 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
   float zoom_x = dt_control_get_dev_zoom_x();
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 1);
 
   cairo_save(cr);
   cairo_set_source_rgb(cr, .3, .3, .3);

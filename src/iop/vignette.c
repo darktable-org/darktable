@@ -388,7 +388,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   float zoom_x = dt_control_get_dev_zoom_x();
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 1);
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
   pzx += 0.5f;
@@ -478,7 +478,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   }
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 1);
+  float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1 << closeup, 1);
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;

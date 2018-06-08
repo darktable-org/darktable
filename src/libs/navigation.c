@@ -229,8 +229,8 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     int closeup = dt_control_get_dev_closeup();
     float zoom_x = dt_control_get_dev_zoom_x();
     float zoom_y = dt_control_get_dev_zoom_y();
-    const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1<<closeup, 0);
-    const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+    const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1 << closeup, 0);
+    const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 0);
     // avoid numerical instability for small resolutions:
     double h, w;
     if(cur_scale > min_scale)

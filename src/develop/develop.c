@@ -386,8 +386,8 @@ restart:
   window_height = dev->height * darktable.gui->ppd;
   if(closeup)
   {
-    window_width /= 1<<closeup;
-    window_height /= 1<<closeup;
+    window_width /= 1 << closeup;
+    window_height /= 1 << closeup;
   }
   const int wd = MIN(window_width, dev->pipe->processed_width * scale);
   const int ht = MIN(window_height, dev->pipe->processed_height * scale);
@@ -1267,7 +1267,7 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
   }
   else
   {
-    const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+    const float scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 0);
     const float imgw = procw;
     const float imgh = proch;
     const float devw = dev->width;
@@ -1324,7 +1324,7 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
   zoom2_x = dt_control_get_dev_zoom_x();
   zoom2_y = dt_control_get_dev_zoom_y();
   dt_dev_get_processed_size(dev, &procw, &proch);
-  const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+  const float scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 0);
   // offset from center now (current zoom_{x,y} points there)
   const float mouse_off_x = px - .5 * dev->width, mouse_off_y = py - .5 * dev->height;
   zoom2_x += mouse_off_x / (procw * scale);

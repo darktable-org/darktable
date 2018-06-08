@@ -2517,7 +2517,7 @@ static float get_zoom_scale (dt_develop_t *develop)
 {
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom ();
   const int closeup = dt_control_get_dev_closeup ();
-  return dt_dev_get_zoom_scale (develop, zoom, 1<<closeup, 1);
+  return dt_dev_get_zoom_scale(develop, zoom, 1 << closeup, 1);
 }
 
 void gui_post_expose (struct dt_iop_module_t *module,
