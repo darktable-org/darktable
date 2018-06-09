@@ -83,7 +83,6 @@ void dt_gui_presets_init()
 void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const int32_t version,
                                 const void *params, const int32_t params_size, const int32_t enabled)
 {
-  sqlite3_stmt *stmt;
   dt_develop_blend_params_t default_blendop_params
       = { DEVELOP_MASK_DISABLED,
           DEVELOP_BLEND_NORMAL2,
@@ -97,6 +96,18 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const i
             0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
             0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
             0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f } };
+  dt_gui_presets_add_with_blendop(
+      name, op, version, params, params_size,
+      &default_blendop_params, enabled);
+}
+
+
+void dt_gui_presets_add_with_blendop(
+    const char *name, dt_dev_operation_t op, const int32_t version,
+    const void *params, const int32_t params_size,
+    const void *blend_params, const int32_t enabled)
+{
+  sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
@@ -114,7 +125,7 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const i
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, params, params_size, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, enabled);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, &default_blendop_params, sizeof(dt_develop_blend_params_t),
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, blend_params, sizeof(dt_develop_blend_params_t),
                              SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, dt_develop_blend_version());
   sqlite3_step(stmt);
