@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
+#include "common/exif.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -143,6 +144,35 @@ int groups()
 int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+}
+
+void init_presets(dt_iop_module_so_t *self)
+{
+  int len, blen;
+  // this blob was exported as dtstyle and copied from there:
+  const char *p0i  = "0000803f0000803f000080bf05a32a3636106236c01b58341f1609b446faddb301000000";
+  const char *bp0i = "gz12eJxjZGBgEGYAgRNODESDBnsIHll8AM62GP8=";
+  uint8_t *p0  = dt_exif_xmp_decode(p0i, strlen(p0i), &len);
+  assert(len == sizeof(dt_iop_denoiseprofile_params_t));
+  uint8_t *bp0 = dt_exif_xmp_decode(bp0i, strlen(bp0i), &blen);
+  assert(blen == sizeof(dt_develop_blend_params_t));
+  dt_gui_presets_add_with_blendop(
+      _("chroma (use on 1st instance)"), self->op, self->version(),
+      p0, len, bp0, 1);
+  free(bp0);
+  free(p0);
+  
+  const char *p1i = "000080400000003f000080bf38c54438c0d7b83828ff8934230e0c344a216d3400000000";
+  const char *bp1i = "gz12eJxjZGBgEGAAgWlODESDBnsIHll8AJKaGMo=";
+  uint8_t *p1  = dt_exif_xmp_decode(p1i, strlen(p1i), &len);
+  assert(len == sizeof(dt_iop_denoiseprofile_params_t));
+  uint8_t *bp1 = dt_exif_xmp_decode(bp1i, strlen(bp1i), &blen);
+  assert(blen == sizeof(dt_develop_blend_params_t));
+  dt_gui_presets_add_with_blendop(
+      _("luma (use on 2nd instance)"), self->op, self->version(),
+      p1, len, bp1, 1);
+  free(bp1);
+  free(p1);
 }
 
 typedef union floatint_t
