@@ -3196,10 +3196,10 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
 void init_key_accels(dt_iop_module_so_t *module)
 {
-  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch circle tool"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch elipse tool"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch path tool"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch brush tool"), 0, 0);
+  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool circle"), 0, 0);
+  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool elipse"), 0, 0);
+  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool path"), 0, 0);
+  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool brush"), 0, 0);
 }
 
 static gboolean _add_circle_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -3275,16 +3275,16 @@ void connect_key_accels(dt_iop_module_t *module)
   GClosure *closure;
 
   closure = g_cclosure_new(G_CALLBACK(_add_circle_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "circle tool", closure);
+  dt_accel_connect_iop(module, "retouch tool circle", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_add_ellipse_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "elipse tool", closure);
+  dt_accel_connect_iop(module, "retouch tool elipse", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_add_brush_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "brush tool", closure);
+  dt_accel_connect_iop(module, "retouch tool brush", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_add_path_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "path tool", closure);
+  dt_accel_connect_iop(module, "retouch tool path", closure);
 }
 
 //--------------------------------------------------------------------------------------------------
