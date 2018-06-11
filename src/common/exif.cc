@@ -2073,8 +2073,7 @@ static void add_non_clone_mask_entries_to_db(gpointer key, gpointer value, gpoin
 {
   int imgid = *(int *)user_data;
   mask_entry_t *entry = (mask_entry_t *)value;
-  if(!(entry->mask_type & DT_MASKS_CLONE))
-    add_mask_entry_to_db(imgid, entry);
+  if(!(entry->mask_type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))) add_mask_entry_to_db(imgid, entry);
 }
 
 static void add_mask_entries_to_db(int imgid, GHashTable *mask_entries, int mask_id)
