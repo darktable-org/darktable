@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!DOCTYPE book [
-   <!ENTITY % darktable_ent SYSTEM "darktable.ent">
+   <!ENTITY % darktable_ent SYSTEM "./darktable.ent">
    %darktable_ent;
 ]>
 
@@ -90,7 +90,7 @@
 
     <copyright>
       <year>2013-2017</year>
-      <holder>J&eacute;r&eacute;my Rosen</holder>
+      <!-- <holder>J&eacute;r&eacute;my Rosen</holder> -->
     </copyright>
 
   </info>
@@ -151,13 +151,13 @@
 
     <para>
       Translations of this manual to local languages are brought to you by Federico Bruni,
-      Maurizio Paglia, Victor Lamoine, Michel Leblond, and Mar&iacute;a Gracia Leandro.
+      <!--Maurizio Paglia, Victor Lamoine, Michel Leblond, and Mar&iacute;a Gracia Leandro. -->
     </para>
 
     <para>
       Many thanks to all contributors to this user manual. Special thanks for proof reading,
       style improvement, constructive criticism, and valuable contributions go to Colin Adams,
-      Mark Garrow, Simon Harhues, Istv&aacute;n Kov&aacute;cs, Jean-Luc Coulon, Rudolf Martin,
+      <!-- Mark Garrow, Simon Harhues, Istv&aacute;n Kov&aacute;cs, Jean-Luc Coulon, Rudolf Martin,-->
       Ammon Riley, Rob Z. Smith, Andrew Toskin, and David Vincent-Jones.
     </para>
 
@@ -177,31 +177,31 @@
 
 <!-- Tethering Chapter -->
 
-  <xi:include href="tethering/tethering.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="tethering/tethering.xml"/>
 
 <!-- Geotagging  Chapter -->
 
-  <xi:include href="map/map.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="map/map.xml"/>
 
 <!-- Slideshow  Chapter -->
 
-  <xi:include href="slideshow/slideshow.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="slideshow/slideshow.xml"/>
 
 <!-- Printing  Chapter -->
 
-  <xi:include href="print/print.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="print/print.xml"/>
 
 <!-- Preferences and Settings Chapter -->
 
-  <xi:include href="preferences/preferences.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="preferences/preferences.xml"/>
 
 <!-- Scripting with Lua -->
 
-  <xi:include href="lua/lua.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="lua/lua.xml"/>
 
 <!-- Special Topics Chapter -->
 
-  <xi:include href="topics/topics.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="topics/topics.xml"/>
 
 <!-- The Index -->
 

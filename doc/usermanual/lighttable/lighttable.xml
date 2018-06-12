@@ -11,7 +11,8 @@
     xmlns:xi="http://www.w3.org/2001/XInclude" 
     xmlns:xlink="http://www.w3.org/1999/xlink"
     xml:lang="en"
-    status="final">
+    status="final"
+    xml:id="lighttable_chapter">
 
   <info>
     <keywordset>
@@ -44,7 +45,7 @@
     </screenshot>
   </para>
 
-  <sect1 status="final" xmlns:id="lighttable_overview">
+  <sect1 status="final" xml:id="lighttable_overview">
 
     <title>Overview</title>
 
@@ -296,6 +297,6 @@
 
 <!-- Panels -->
 
-<!--  <xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+  <xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </chapter>

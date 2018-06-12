@@ -32,20 +32,20 @@
 
 <!-- Right panel -->
 
-  <xi:include href="select.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="select.xml" />
 
-  <xi:include href="selected_images.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="selected_images.xml" />
 
-  <xi:include href="history.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="history.xml" />
 
-  <xi:include href="styles.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="styles.xml" />
 
-  <xi:include href="geotagging.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="geotagging.xml" />
 
-  <xi:include href="metadata_editor.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="metadata_editor.xml" />
 
-  <xi:include href="tagging.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="tagging.xml" />
 
-  <xi:include href="export.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="export.xml" />
 
 </sect1>

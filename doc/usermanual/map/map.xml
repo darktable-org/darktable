@@ -35,7 +35,11 @@
   <para>
     <screenshot>
 
-      <info>The map view</info>
+      <info>
+	<title>
+	  The map view
+	</title>
+      </info>
 
       <mediaobject>
 	<imageobject>
@@ -171,6 +175,6 @@
 
 <!-- Panels -->
 
-  <xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="panels/panels.xml"/>
 
 </chapter>
