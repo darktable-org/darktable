@@ -54,12 +54,6 @@ typedef enum dt_iop_retouch_drag_types_t {
   dt_iop_retouch_lvlbar_drag_right = 5
 } dt_iop_retouch_drag_types_t;
 
-typedef enum dt_iop_retouch_preview_types_t {
-  dt_iop_retouch_preview_final_image = 1,
-  dt_iop_retouch_preview_current_scale = 2,
-  dt_iop_retouch_preview_keep_current_scale = 3
-} dt_iop_retouch_preview_types_t;
-
 typedef enum dt_iop_retouch_fill_modes_t {
   dt_iop_retouch_fill_erase = 0,
   dt_iop_retouch_fill_color = 1
@@ -111,7 +105,6 @@ typedef struct dt_iop_retouch_params_t
   int curr_scale; // current wavelet scale
   int merge_from_scale;
 
-  dt_iop_retouch_preview_types_t preview_type; // final image, current scale...
   float preview_levels[3];
 
   int blur_type;     // gaussian, bilateral
@@ -127,11 +120,12 @@ typedef struct dt_iop_retouch_gui_data_t
   dt_pthread_mutex_t lock;
 
   int copied_scale; // scale to be copied to another scale
-  int mask_display;
-  int suppress_mask;
-  int preview_auto_levels;
-  float preview_levels[3];
-  int first_scale_visible;
+  int mask_display; // should we expose masks?
+  int suppress_mask;         // do not process masks
+  int display_wavelet_scale; // display current wavelet scale
+  int preview_auto_levels;   // should we calculate levels automatically?
+  float preview_levels[3];   // values for the levels
+  int first_scale_visible;   // 1st scale visible at current zoom level
 
   GtkLabel *label_form;                                                   // display number of forms
   GtkLabel *label_form_selected;                                          // display number of forms selected
@@ -146,9 +140,7 @@ typedef struct dt_iop_retouch_gui_data_t
   float wdbar_mouse_x, wdbar_mouse_y;
   gboolean is_dragging;
 
-  GtkWidget *bt_show_final_image;   // show recoposed image
-  GtkWidget *bt_show_current_scale; // show decomposed scale
-  GtkWidget *bt_keep_current_scale; // keep showing decomposed scale even if module is not active
+  GtkWidget *bt_display_wavelet_scale; // show decomposed scale
 
   GtkWidget *bt_copy_scale; // copy all shapes from one scale to another
   GtkWidget *bt_paste_scale;
@@ -303,7 +295,7 @@ static void _retouch_cairo_paint_paste_forms(cairo_t *cr, const gint x, const gi
 {
   PREAMBLE;
 
-  if((flags & CPF_ACTIVE))
+  if(flags & CPF_ACTIVE)
   {
     cairo_set_source_rgba(cr, .75, 0.75, 0.75, 1.0);
     cairo_arc(cr, 0.5, 0.5, 0.40, 0, 2 * M_PI);
@@ -342,7 +334,7 @@ static void _retouch_cairo_paint_cut_forms(cairo_t *cr, const gint x, const gint
 {
   PREAMBLE;
 
-  if((flags & CPF_ACTIVE))
+  if(flags & CPF_ACTIVE)
   {
     cairo_move_to(cr, 0.11, 0.25);
     cairo_line_to(cr, 0.89, 0.75);
@@ -374,72 +366,45 @@ static void _retouch_cairo_paint_cut_forms(cairo_t *cr, const gint x, const gint
   POSTAMBLE;
 }
 
-static void _retouch_cairo_paint_show_final_image(cairo_t *cr, const gint x, const gint y, const gint w,
-                                                  const gint h, const gint flags, void *data)
+static void _retouch_cairo_paint_display_wavelet_scale(cairo_t *cr, const gint x, const gint y, const gint w,
+                                                       const gint h, const gint flags, void *data)
 {
   PREAMBLE;
 
-  cairo_move_to(cr, 0.08, 1.);
-  cairo_curve_to(cr, 0.4, 0.05, 0.6, 0.05, 1., 1.);
-  cairo_line_to(cr, 0.08, 1.);
-  cairo_fill(cr);
-
-  cairo_set_line_width(cr, 0.1);
-  cairo_rectangle(cr, 0., 0., 1., 1.);
-  cairo_stroke(cr);
-
-  POSTAMBLE;
-}
-
-static void _retouch_cairo_paint_show_current_scale(cairo_t *cr, const gint x, const gint y, const gint w,
-                                                    const gint h, const gint flags, void *data)
-{
-  PREAMBLE;
-
-  float x1 = 0.0f;
-  float y1 = 1.f;
-
-  cairo_move_to(cr, x1, y1);
-
-  const int steps = 3;
-  const float delta = 1. / (float)steps;
-  for(int i = 0; i < steps; i++)
+  if(flags & CPF_ACTIVE)
   {
-    y1 -= delta;
-    cairo_line_to(cr, x1, y1);
-    x1 += delta;
-    cairo_line_to(cr, x1, y1);
+    float x1 = 0.2f;
+    float y1 = 1.f;
+
+    cairo_move_to(cr, x1, y1);
+
+    const int steps = 4;
+    const float delta = 1. / (float)steps;
+    for(int i = 0; i < steps; i++)
+    {
+      y1 -= delta;
+      cairo_line_to(cr, x1, y1);
+      x1 += delta;
+      if(x1 > .9) x1 = .9;
+      cairo_line_to(cr, x1, y1);
+    }
+    cairo_stroke(cr);
+
+    cairo_set_line_width(cr, 0.1);
+    cairo_rectangle(cr, 0., 0., 1., 1.);
+    cairo_stroke(cr);
   }
-  cairo_stroke(cr);
-
-  POSTAMBLE;
-}
-
-static void _retouch_cairo_paint_keep_current_scale(cairo_t *cr, const gint x, const gint y, const gint w,
-                                                    const gint h, const gint flags, void *data)
-{
-  PREAMBLE;
-
-  float x1 = 0.2f;
-  float y1 = 1.f;
-
-  cairo_move_to(cr, x1, y1);
-
-  const int steps = 4;
-  const float delta = 1. / (float)steps;
-  for(int i = 0; i < steps; i++)
+  else
   {
-    y1 -= delta;
-    cairo_line_to(cr, x1, y1);
-    x1 += delta;
-    if(x1 > .9) x1 = .9;
-    cairo_line_to(cr, x1, y1);
-  }
-  cairo_stroke(cr);
+    cairo_move_to(cr, 0.08, 1.);
+    cairo_curve_to(cr, 0.4, 0.05, 0.6, 0.05, 1., 1.);
+    cairo_line_to(cr, 0.08, 1.);
+    cairo_fill(cr);
 
-  cairo_set_line_width(cr, 0.1);
-  cairo_rectangle(cr, 0., 0., 1., 1.);
-  cairo_stroke(cr);
+    cairo_set_line_width(cr, 0.1);
+    cairo_rectangle(cr, 0., 0., 1., 1.);
+    cairo_stroke(cr);
+  }
 
   POSTAMBLE;
 }
@@ -555,7 +520,8 @@ static void rt_display_selected_fill_color(dt_iop_retouch_gui_data_t *g, dt_iop_
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &c);
 }
 
-static void rt_show_hide_controls(dt_iop_module_t *self, dt_iop_retouch_gui_data_t *d, dt_iop_retouch_params_t *p)
+static void rt_show_hide_controls(dt_iop_module_t *self, dt_iop_retouch_gui_data_t *d, dt_iop_retouch_params_t *p,
+                                  dt_iop_retouch_gui_data_t *g)
 {
   switch(p->algorithm)
   {
@@ -582,8 +548,7 @@ static void rt_show_hide_controls(dt_iop_module_t *self, dt_iop_retouch_gui_data
       break;
   }
 
-  if(p->preview_type == dt_iop_retouch_preview_current_scale
-     || p->preview_type == dt_iop_retouch_preview_keep_current_scale)
+  if(g->display_wavelet_scale)
     gtk_widget_show(GTK_WIDGET(d->vbox_preview_scale));
   else
     gtk_widget_hide(GTK_WIDGET(d->vbox_preview_scale));
@@ -661,7 +626,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
       selection_changed = 1;
     }
 
-    if(selection_changed) rt_show_hide_controls(self, g, p);
+    if(selection_changed) rt_show_hide_controls(self, g, p, g);
   }
 
   rt_display_selected_shapes_lbl(g);
@@ -1869,35 +1834,20 @@ static void rt_copypaste_scale_callback(GtkToggleButton *togglebutton, dt_iop_mo
   if(scale_copied) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void rt_preview_image_callback(GtkToggleButton *togglebutton, dt_iop_module_t *module)
+static void rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
+  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)module->params;
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
+  dt_pthread_mutex_lock(&g->lock);
+  g->display_wavelet_scale = gtk_toggle_button_get_active(togglebutton);
+  dt_pthread_mutex_unlock(&g->lock);
 
-  if(togglebutton == (GtkToggleButton *)g->bt_show_final_image)
-    p->preview_type = dt_iop_retouch_preview_final_image;
-  else if(togglebutton == (GtkToggleButton *)g->bt_show_current_scale)
-    p->preview_type = dt_iop_retouch_preview_current_scale;
-  else if(togglebutton == (GtkToggleButton *)g->bt_keep_current_scale)
-    p->preview_type = dt_iop_retouch_preview_keep_current_scale;
+  rt_show_hide_controls(self, g, p, g);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_show_final_image),
-                               (p->preview_type == dt_iop_retouch_preview_final_image));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_show_current_scale),
-                               (p->preview_type == dt_iop_retouch_preview_current_scale));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_keep_current_scale),
-                               (p->preview_type == dt_iop_retouch_preview_keep_current_scale));
-
-  rt_show_hide_controls(module, g, p);
-
-  darktable.gui->reset = reset;
-
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
+  dt_dev_reprocess_all(self->dev);
 }
 
 static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
@@ -2116,7 +2066,7 @@ static void rt_select_algorithm_callback(GtkToggleButton *togglebutton, dt_iop_m
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_blur), (p->algorithm == dt_iop_retouch_blur));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_fill), (p->algorithm == dt_iop_retouch_fill));
 
-  rt_show_hide_controls(self, g, p);
+  rt_show_hide_controls(self, g, p, g);
 
   if(darktable.develop->form_gui->creation && (darktable.develop->form_gui->creation_module == self))
   {
@@ -2235,7 +2185,7 @@ static void rt_fill_mode_callback(GtkComboBox *combo, dt_iop_module_t *self)
     }
   }
 
-  rt_show_hide_controls(self, g, p);
+  rt_show_hide_controls(self, g, p, g);
 
   darktable.gui->reset = reset;
 
@@ -2300,8 +2250,6 @@ void init(dt_iop_module_t *module)
   tmp.preview_levels[1] = 0.f;
   tmp.preview_levels[2] = RETOUCH_PREVIEW_LVL_MAX;
 
-  tmp.preview_type = dt_iop_retouch_preview_final_image;
-
   tmp.blur_type = dt_iop_retouch_blur_gaussian;
   tmp.blur_radius = 10.0f;
 
@@ -2363,6 +2311,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   if(self->enabled && !darktable.develop->image_loading)
   {
+    dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
+
     if(in)
     {
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
@@ -2373,7 +2323,6 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 
         rt_show_forms_for_current_scale(self);
 
-        dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks),
                                      (bd->masks_shown != DT_MASKS_EDIT_OFF)
                                          && (darktable.develop->gui_module == self));
@@ -2385,8 +2334,6 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       if(darktable.develop->form_gui->creation && darktable.develop->form_gui->creation_module == self)
         dt_masks_change_form_gui(NULL);
 
-      dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
@@ -2395,6 +2342,9 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 
       dt_masks_set_edit_mode(self, DT_MASKS_EDIT_OFF);
     }
+
+    // if we are switching between display modes we have to reprocess all pipes
+    if(g->display_wavelet_scale) dt_dev_reprocess_all(self->dev);
   }
 }
 
@@ -2465,17 +2415,12 @@ void gui_update(dt_iop_module_t *self)
 
   rt_display_selected_fill_color(g, p);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_show_final_image),
-                               p->preview_type == dt_iop_retouch_preview_final_image);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_show_current_scale),
-                               p->preview_type == dt_iop_retouch_preview_current_scale);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_keep_current_scale),
-                               p->preview_type == dt_iop_retouch_preview_keep_current_scale);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_display_wavelet_scale), g->display_wavelet_scale);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_copy_scale), g->copied_scale >= 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_paste_scale), g->copied_scale < 0);
 
   // show/hide some fields
-  rt_show_hide_controls(self, g, p);
+  rt_show_hide_controls(self, g, p, g);
 
   // update edit shapes status
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
@@ -2502,6 +2447,7 @@ void gui_init(dt_iop_module_t *self)
   g->copied_scale = -1;
   g->mask_display = 0;
   g->suppress_mask = 0;
+  g->display_wavelet_scale = 0;
   g->first_scale_visible = RETOUCH_MAX_SCALES + 1;
 
   g->preview_auto_levels = 0;
@@ -2671,26 +2617,13 @@ void gui_init(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_suppress), FALSE);
 
   // display final image/current scale
-  g->bt_show_final_image = dtgtk_togglebutton_new(_retouch_cairo_paint_show_final_image,
-                                                  CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g_object_set(G_OBJECT(g->bt_show_final_image), "tooltip-text", _("display final image"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->bt_show_final_image), "toggled", G_CALLBACK(rt_preview_image_callback), self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_show_final_image), bs, bs);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_show_final_image), FALSE);
-
-  g->bt_show_current_scale = dtgtk_togglebutton_new(_retouch_cairo_paint_show_current_scale,
-                                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g_object_set(G_OBJECT(g->bt_show_current_scale), "tooltip-text", _("preview current scale"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->bt_show_current_scale), "toggled", G_CALLBACK(rt_preview_image_callback), self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_show_current_scale), bs, bs);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_show_current_scale), FALSE);
-
-  g->bt_keep_current_scale = dtgtk_togglebutton_new(_retouch_cairo_paint_keep_current_scale,
-                                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g_object_set(G_OBJECT(g->bt_keep_current_scale), "tooltip-text", _("keep current scale"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->bt_keep_current_scale), "toggled", G_CALLBACK(rt_preview_image_callback), self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_keep_current_scale), bs, bs);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_keep_current_scale), FALSE);
+  g->bt_display_wavelet_scale = dtgtk_togglebutton_new(_retouch_cairo_paint_display_wavelet_scale,
+                                                       CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g_object_set(G_OBJECT(g->bt_display_wavelet_scale), "tooltip-text", _("display wavelet scale"), (char *)NULL);
+  g_signal_connect(G_OBJECT(g->bt_display_wavelet_scale), "toggled", G_CALLBACK(rt_display_wavelet_scale_callback),
+                   self);
+  gtk_widget_set_size_request(GTK_WIDGET(g->bt_display_wavelet_scale), bs, bs);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_display_wavelet_scale), FALSE);
 
   // copy/paste shapes
   g->bt_copy_scale
@@ -2722,9 +2655,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_label_set_width_chars(GTK_LABEL(lbl_scale_sep1), 1);
   gtk_box_pack_end(GTK_BOX(hbox_scale), GTK_WIDGET(lbl_scale_sep1), FALSE, FALSE, 0);
 
-  gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_keep_current_scale, FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_show_current_scale, FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_show_final_image, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_display_wavelet_scale, FALSE, FALSE, 0);
 
   // preview single scale
   g->vbox_preview_scale = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -2895,7 +2826,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_show_all(g->vbox_preview_scale);
   gtk_widget_set_no_show_all(g->vbox_preview_scale, TRUE);
 
-  rt_show_hide_controls(self, g, p);
+  rt_show_hide_controls(self, g, p, g);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
@@ -4103,12 +4034,9 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const int ch = piece->colors;
   retouch_user_data_t usr_data = { 0 };
   dwt_params_t *dwt_p = NULL;
-  dt_iop_retouch_preview_types_t preview_type = p->preview_type;
 
-  int gui_active = 0;
-  if(self->dev) gui_active = (self == self->dev->gui_module);
-  if(!gui_active && preview_type == dt_iop_retouch_preview_current_scale)
-    preview_type = dt_iop_retouch_preview_final_image;
+  const int gui_active = (self->dev) ? (self == self->dev->gui_module) : 0;
+  const int display_wavelet_scale = (g && gui_active) ? g->display_wavelet_scale : 0;
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
@@ -4128,8 +4056,8 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   // init the decompose routine
   dwt_p = dt_dwt_init(in_retouch, roi_rt->width, roi_rt->height, ch, p->num_scales,
-                      (preview_type == dt_iop_retouch_preview_final_image) ? 0 : p->curr_scale,
-                      p->merge_from_scale, &usr_data, roi_in->scale / piece->iscale, use_sse);
+                      (!display_wavelet_scale) ? 0 : p->curr_scale, p->merge_from_scale, &usr_data,
+                      roi_in->scale / piece->iscale, use_sse);
   if(dwt_p == NULL) goto cleanup;
 
   // check if this module should expose mask.
@@ -4947,12 +4875,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int ch = piece->colors;
   retouch_user_data_t usr_data = { 0 };
   dwt_params_cl_t *dwt_p = NULL;
-  dt_iop_retouch_preview_types_t preview_type = p->preview_type;
 
-  int gui_active = 0;
-  if(self->dev) gui_active = (self == self->dev->gui_module);
-  if(!gui_active && preview_type == dt_iop_retouch_preview_current_scale)
-    preview_type = dt_iop_retouch_preview_final_image;
+  const int gui_active = (self->dev) ? (self == self->dev->gui_module) : 0;
+  const int display_wavelet_scale = (g && gui_active) ? g->display_wavelet_scale : 0;
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
@@ -4983,8 +4908,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // init the decompose routine
   dwt_p = dt_dwt_init_cl(devid, in_retouch, roi_rt->width, roi_rt->height, p->num_scales,
-                         (preview_type == dt_iop_retouch_preview_final_image) ? 0 : p->curr_scale,
-                         p->merge_from_scale, &usr_data, roi_in->scale / piece->iscale);
+                         (!display_wavelet_scale) ? 0 : p->curr_scale, p->merge_from_scale, &usr_data,
+                         roi_in->scale / piece->iscale);
   if(dwt_p == NULL)
   {
     fprintf(stderr, "process_internal: error initializing wavelet decompose\n");
