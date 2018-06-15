@@ -7,5 +7,5 @@
      exclude-result-prefixes="d"
      version="1.0">
 
-<xsl:import href="http://docbook.sourceforge.net/release/xsl-ns/current/profiling/profile.xsl"/>
+<xsl:import href="http://docbook.sourceforge.net/release/xsl/current/profiling/profile.xsl"/>
 </xsl:stylesheet>

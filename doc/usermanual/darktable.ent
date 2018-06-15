@@ -1,26 +1,26 @@
-<!-- Oasis XML Character Entities -->
-<!ENTITY % isolat1 PUBLIC
-    "ISO 8879:1986//ENTITIES Added Latin 1//EN//XML"
-    "http://www.w3.org/2003/entities/iso8879/isolat1.ent">
-  %isolat1;
+<!-- Character Entities -->
+<!ENTITY aacute "&#x000E1;"> <!--LATIN SMALL LETTER A WITH ACUTE -->
+<!ENTITY agrave "&#x000E0;"> <!--LATIN SMALL LETTER A WITH GRAVE -->
+<!ENTITY ccedil "&#x000E7;"> <!--LATIN SMALL LETTER C WITH CEDILLA -->
+<!ENTITY darr "&#x02193;">   <!--DOWNWARDS ARROW -->
+<!ENTITY eacute "&#x000E9;"> <!--LATIN SMALL LETTER E WITH ACUTE -->
+<!ENTITY ge "&#x02265;">     <!--GREATER-THAN OR EQUAL TO -->
+<!ENTITY iacute "&#x000ED;"> <!--LATIN SMALL LETTER I WITH ACUTE -->
+<!ENTITY larr "&#x02190;">   <!--LEFTWARDS ARROW -->
+<!ENTITY le "&#x02264;">     <!--LESS-THAN OR EQUAL TO -->
+<!ENTITY nbsp "&#x000A0;">   <!--NO-BREAK SPACE -->
+<!ENTITY ndash "&#x02013;">  <!--EN DASH -->
+<!ENTITY ne "&#x02260;">     <!--NOT EQUAL TO -->
+<!ENTITY rarr "&#x02192;">   <!--RIGHTWARDS ARROW -->
+<!ENTITY trade "&#x02122;">  <!--TRADE MARK SIGN -->
+<!ENTITY Ocirc "&#x000D4;">  <!--LATIN CAPITAL LETTER O WITH CIRCUMFLEX -->
+<!ENTITY ocirc "&#x000F4;">  <!--LATIN SMALL LETTER O WITH CIRCUMFLEX -->
+<!ENTITY Ouml "&#x000D6;">   <!--LATIN CAPITAL LETTER O WITH DIAERESIS -->
+<!ENTITY ouml "&#x000F6;">   <!--LATIN SMALL LETTER O WITH DIAERESIS -->
+<!ENTITY uarr "&#x02191;">   <!--UPWARDS ARROW -->
 
-<!ENTITY % isonum PUBLIC
-    "ISO 8879:1986//ENTITIES Numeric and Special Graphic//EN//XML"
-    "http://www.w3.org/2003/entities/iso8879/isonum.ent">
-  %isonum;
 
-<!ENTITY % isopub PUBLIC
-    "ISO 8879:1986//ENTITIES Numeric and Special Graphic//EN//XML"
-    "http://www.w3.org/2003/entities/iso8879/isopub.ent">
-  %isopub;  
-
-<!ENTITY % isotech PUBLIC
-    "ISO 8879:1986//ENTITIES Numeric and Special Graphic//EN//XML"
-    "http://www.w3.org/2003/entities/iso8879/isotech.ent">
-  %isotech; 
-  
 <!-- darktable's defined Entities -->   
-
 <!ENTITY author_firstname "Henrik">
 <!ENTITY author_surname "Andersson">
 
