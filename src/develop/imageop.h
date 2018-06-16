@@ -264,6 +264,9 @@ typedef struct dt_iop_module_t
   int request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
   int32_t suppress_mask;
+  /** set to 1 if you want the blendif to be completely suppressed in the module in focus. only when the module has
+   * the focus. */
+  int32_t bypass_blendif;
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
   /** single point to pick if in point mode */
