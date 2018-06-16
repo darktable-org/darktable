@@ -190,21 +190,3 @@ retouch_image_lab2rgb(global float4 *in, int width, int height)
 
   in[idx] = XYZ_to_sRGB(Lab_to_XYZ(in[idx]));
 }
-
-kernel void
-retouch_display_mask(global float4 *in, int width, int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  const int idx = mad24(y, width, x);
-  const float4 yellow = (float4)(1.0f, 1.0f, 0.0f, 0.0f);
-  const float gray = 0.3f * in[idx].x + 0.59f * in[idx].y + 0.11f * in[idx].z;
-  const float alpha = in[idx].w;
-  const float4 value = gray * (1.0f - alpha) + yellow * alpha;
-
-  in[idx] = value;
-  in[idx].w = alpha;
-}

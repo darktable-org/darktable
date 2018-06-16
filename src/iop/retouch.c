@@ -178,7 +178,6 @@ typedef struct dt_iop_retouch_global_data_t
   int kernel_retouch_copy_buffer_to_buffer_masked;
   int kernel_retouch_image_rgb2lab;
   int kernel_retouch_image_lab2rgb;
-  int kernel_retouch_display_mask;
   int kernel_retouch_copy_mask_to_alpha;
 } dt_iop_retouch_global_data_t;
 
@@ -1841,9 +1840,21 @@ static void rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, dt_
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-  dt_pthread_mutex_lock(&g->lock);
+  // if blend module is displaying mask do not display wavelet scales
+  if(self->request_mask_display && !g->mask_display)
+  {
+    const int reset = darktable.gui->reset;
+    darktable.gui->reset = 1;
+    gtk_toggle_button_set_active(togglebutton, FALSE);
+    darktable.gui->reset = reset;
+    return;
+  }
+
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  dt_iop_request_focus(self);
+
   g->display_wavelet_scale = gtk_toggle_button_get_active(togglebutton);
-  dt_pthread_mutex_unlock(&g->lock);
+  self->bypass_blendif = (g->mask_display || g->display_wavelet_scale);
 
   rt_show_hide_controls(self, g, p, g);
 
@@ -2105,7 +2116,18 @@ static void rt_showmask_callback(GtkToggleButton *togglebutton, dt_iop_module_t 
 
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
 
+  // if blend module is displaying mask do not display it here
+  if(module->request_mask_display && !g->mask_display)
+  {
+    const int reset = darktable.gui->reset;
+    darktable.gui->reset = 1;
+    gtk_toggle_button_set_active(togglebutton, FALSE);
+    darktable.gui->reset = reset;
+    return;
+  }
+
   g->mask_display = gtk_toggle_button_get_active(togglebutton);
+  module->bypass_blendif = (g->mask_display || g->display_wavelet_scale);
 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
@@ -2283,7 +2305,6 @@ void init_global(dt_iop_module_so_t *module)
       = dt_opencl_create_kernel(program, "retouch_copy_buffer_to_buffer_masked");
   gd->kernel_retouch_image_rgb2lab = dt_opencl_create_kernel(program, "retouch_image_rgb2lab");
   gd->kernel_retouch_image_lab2rgb = dt_opencl_create_kernel(program, "retouch_image_lab2rgb");
-  gd->kernel_retouch_display_mask = dt_opencl_create_kernel(program, "retouch_display_mask");
   gd->kernel_retouch_copy_mask_to_alpha = dt_opencl_create_kernel(program, "retouch_copy_mask_to_alpha");
 }
 
@@ -2300,7 +2321,6 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_retouch_copy_buffer_to_buffer_masked);
   dt_opencl_free_kernel(gd->kernel_retouch_image_rgb2lab);
   dt_opencl_free_kernel(gd->kernel_retouch_image_lab2rgb);
-  dt_opencl_free_kernel(gd->kernel_retouch_display_mask);
   dt_opencl_free_kernel(gd->kernel_retouch_copy_mask_to_alpha);
 
   free(module->data);
@@ -2344,7 +2364,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
 
     // if we are switching between display modes we have to reprocess all pipes
-    if(g->display_wavelet_scale) dt_dev_reprocess_all(self->dev);
+    if(g->display_wavelet_scale || g->mask_display || g->suppress_mask) dt_dev_reprocess_all(self->dev);
   }
 }
 
@@ -3416,17 +3436,10 @@ static void rt_adjust_levels(float *img_src, const int width, const int height, 
       {
         img_src[i + c] = 0.f;
       }
-      else if(L_in >= right)
+      else
       {
         const float percentage = (L_in - left) / (right - left);
         img_src[i + c] = 100.0f * powf(percentage, in_inv_gamma);
-      }
-      else
-      {
-        // TODO: Within the expected input range we can use the lookup table
-        const float percentage = (L_in - left) / (right - left);
-        img_src[i + c] = 100.0f * pow(percentage, in_inv_gamma);
-        // out[0] = d->lut[CLAMP((int)(percentage * 0x10000ul), 0, 0xffff)];
       }
     }
 
@@ -3999,26 +4012,6 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
   }
 }
 
-static void rt_display_mask(float *in, const int width, const int height, const int ch)
-{
-  const int size = width * height * ch;
-  const float yellow[3] = { 1.0f, 1.0f, 0.0f };
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in) schedule(static)
-#endif
-  for(int i = 0; i < size; i += ch)
-  {
-    const float gray = 0.3f * in[i] + 0.59f * in[i + 1] + 0.11f * in[i + 2];
-    const float alpha = in[i + 3];
-    for(int c = 0; c < 3; c++)
-    {
-      const float value = gray * (1.0f - alpha) + yellow[c] * alpha;
-      in[i + c] = value;
-    }
-  }
-}
-
 static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                              void *const ovoid, const dt_iop_roi_t *const roi_in,
                              const dt_iop_roi_t *const roi_out, const int use_sse)
@@ -4061,11 +4054,12 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   if(dwt_p == NULL) goto cleanup;
 
   // check if this module should expose mask.
-  if(!(self->request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) && self->dev->gui_attached
-     && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && g && g->mask_display)
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && g && g->mask_display && self->dev->gui_attached
+     && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
   {
     for(size_t j = 0; j < roi_rt->width * roi_rt->height * ch; j += ch) in_retouch[j + 3] = 0.f;
 
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
     usr_data.mask_display = 1;
   }
 
@@ -4123,13 +4117,9 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   }
 
   // copy alpha channel if nedded
-  if((piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK))
+  if((piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) && g && !g->mask_display)
   {
     dt_iop_alpha_copy(ivoid, in_retouch, roi_rt->width, roi_rt->height);
-  }
-  else if(usr_data.mask_display)
-  {
-    rt_display_mask(in_retouch, roi_rt->width, roi_rt->height, ch);
   }
 
   // return final image
@@ -4918,8 +4908,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   // check if this module should expose mask.
-  if(!(self->request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) && self->dev->gui_attached
-     && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && g && g->mask_display)
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && g && g->mask_display && self->dev->gui_attached
+     && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
   {
     const int kernel = gd->kernel_retouch_clear_alpha;
     size_t sizes[] = { ROUNDUPWD(roi_rt->width), ROUNDUPHT(roi_rt->height), 1 };
@@ -4930,6 +4920,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto cleanup;
 
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
     usr_data.mask_display = 1;
   }
 
@@ -4991,7 +4982,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   // copy alpha channel if nedded
-  if((piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK))
+  if((piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) && g && !g->mask_display)
   {
     const int kernel = gd->kernel_retouch_copy_alpha;
     size_t sizes[] = { ROUNDUPWD(roi_rt->width), ROUNDUPHT(roi_rt->height), 1 };
@@ -5000,17 +4991,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&in_retouch);
     dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(roi_rt->width));
     dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&(roi_rt->height));
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
-    if(err != CL_SUCCESS) goto cleanup;
-  }
-  else if(usr_data.mask_display)
-  {
-    const int kernel = gd->kernel_retouch_display_mask;
-    size_t sizes[] = { ROUNDUPWD(roi_rt->width), ROUNDUPHT(roi_rt->height), 1 };
-
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&in_retouch);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&(roi_rt->width));
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(roi_rt->height));
     err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto cleanup;
   }
