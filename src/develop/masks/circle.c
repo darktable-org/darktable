@@ -71,7 +71,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
       else
         masks_border = dt_conf_get_float("plugins/darkroom/masks/circle/border");
 
-      if(up && masks_border > 0.001f)
+      if(up && masks_border > 0.0005f)
         masks_border *= 0.97f;
       else if(!up && masks_border < 1.0f)
         masks_border *= 1.0f / 0.97f;
@@ -123,7 +123,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
       if(((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
          && (gui->border_selected || gui->edit_mode == DT_MASKS_EDIT_FULL))
       {
-        if(up && circle->border > 0.001f)
+        if(up && circle->border > 0.0005f)
           circle->border *= 0.97f;
         else if(!up && circle->border < 1.0f)
           circle->border *= 1.0f / 0.97f;
@@ -228,8 +228,8 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
     {
       const float circle_size = MIN(0.5f, dt_conf_get_float("plugins/darkroom/masks/circle/size"));
       const float circle_border = MIN(0.5f, dt_conf_get_float("plugins/darkroom/masks/circle/border"));
-      circle->radius = MAX(0.01f, circle_size);
-      circle->border = MAX(0.005f, circle_border);
+      circle->radius = MAX(0.001f, circle_size);
+      circle->border = MAX(0.0005f, circle_border);
       // not used for masks
       form->source[0] = form->source[1] = 0.0f;
     }
