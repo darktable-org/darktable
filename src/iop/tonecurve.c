@@ -1112,6 +1112,11 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_set_source_rgb(cr, .1, .1, .1);
   dt_draw_grid(cr, 4, 0, 0, width, height);
 
+  // draw identity line
+  cairo_move_to(cr, 0, height);
+  cairo_line_to(cr, width, 0);
+  cairo_stroke(cr);
+
   // if autoscale_ab is on: do not display a and b curves
   if((autoscale_ab != s_scale_manual) && ch != ch_L) goto finally;
 
