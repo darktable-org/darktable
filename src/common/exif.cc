@@ -1675,6 +1675,7 @@ typedef struct mask_entry_t
   int mask_nb;
   unsigned char *mask_src;
   int mask_src_len;
+  gboolean already_added;
 } mask_entry_t;
 
 static void print_history_entry(history_entry_t *entry) __attribute__((unused));
@@ -2025,7 +2026,11 @@ static GHashTable *read_masks(Exiv2::XmpData &xmpData, const char *filename)
 
 static void add_mask_entry_to_db(int imgid, mask_entry_t *entry)
 {
-  // add the mask entry
+  // add the mask entry only once
+  if(entry->already_added)
+    return;
+  entry->already_added = TRUE;
+
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
     dt_database_get(darktable.db),
