@@ -1211,7 +1211,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
             x = (.04 + 8 * 0.04 - 1.9 * .04) * fscale;
           dt_view_draw_audio(cr, x, y, s);
           // mouse is over the audio icon
-          if(fabsf(px - x) <= 1.2 * s && fabsf(-y) <= 1.2 * s) *image_over = DT_VIEW_AUDIO;
+          if(fabsf(px - x) <= 1.2 * s && fabsf(py - y) <= 1.2 * s) *image_over = DT_VIEW_AUDIO;
         }
       }
 
