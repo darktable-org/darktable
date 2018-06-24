@@ -4998,6 +4998,20 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-FZ200", "5500K", 0,	{ 2.015094, 1, 1.758491, 0 } },
   { "Panasonic", "DMC-FZ200", "6500K", 0,	{ 2.203774, 1, 1.577358, 0 } },
 
+  /* Firmware version 2.2 */
+  /* Daylight is called "Fine Weather" in the EXIF tags and "Clear Sky" in the manual. */
+  { "Panasonic", "DMC-FZ300", Daylight, 0,  { 2.144531, 1, 1.859375, 0 } }, /*5500K*/
+  { "Panasonic", "DMC-FZ300", Cloudy, 0,  { 2.304688, 1, 1.707031, 0 } },
+  { "Panasonic", "DMC-FZ300", Shade, 0,	  { 2.429688, 1, 1.609375, 0 } },
+  { "Panasonic", "DMC-FZ300", Incandescent, 0,  { 1.5, 1, 2.722656, 0 } },
+  { "Panasonic", "DMC-FZ300", Flash, 0,   { 2.304688, 1, 1.761719, 0 } },
+  { "Panasonic", "DMC-FZ300", "2500K", 0, { 1.300781, 1, 3.214844, 0 } },
+  { "Panasonic", "DMC-FZ300", "3000K", 0, { 1.480469, 1, 2.808594, 0 } },
+  { "Panasonic", "DMC-FZ300", "5000K", 0, { 1.996094, 1, 2.0, 0 } },
+  { "Panasonic", "DMC-FZ300", "6500K", 0, { 2.332031, 1, 1.6875, 0 } },
+  { "Panasonic", "DMC-FZ300", "8500K", 0, { 2.574219, 1, 1.496094, 0 } },
+  { "Panasonic", "DMC-FZ300", "10000K", 0, { 2.703125, 1, 1.390625, 0 } },
+
   // Panasonic DMC-FZ1000 Firmware 2.0.0
   { "Panasonic", "DMC-FZ1000", Daylight, 0,	{ 2.425781, 1, 1.886719, 0 } },
   { "Panasonic", "DMC-FZ1000", Cloudy, 0,	{ 2.621094, 1, 1.714844, 0 } },
