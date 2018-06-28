@@ -111,7 +111,10 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
       }
       for(size_t x = 0; x < img->width; x++)
       {
-        float value = (float)line[x] / (float)max;
+        uint16_t intvalue = line[x];
+        if(G_BYTE_ORDER != G_BIG_ENDIAN)
+          intvalue = GUINT16_SWAP_LE_BE(intvalue);
+        float value = (float)intvalue / (float)max;
         buf_iter[0] = buf_iter[1] = buf_iter[2] = value;
         buf_iter[3] = 0.0;
         buf_iter += 4;
