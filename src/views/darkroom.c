@@ -815,6 +815,7 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
       dt_dev_invalidate(dev);
       break;
     case 2:
+      zoom_x = zoom_y = 0.0f;
       dt_control_set_dev_zoom(DT_ZOOM_FILL);
       dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FILL, 0, NULL, NULL);
       dt_control_set_dev_zoom_x(zoom_x);
