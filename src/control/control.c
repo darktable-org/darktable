@@ -291,7 +291,7 @@ void *dt_control_expose(void *voidptr)
     g_object_unref(layout);
   }
   // draw busy indicator
-  if(darktable.control->log_busy > 0 || 1)
+  if(darktable.control->log_busy > 0)
   {
     PangoRectangle ink;
     PangoLayout *layout;
