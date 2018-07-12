@@ -58,7 +58,6 @@
 #define SHEAR_RANGE_SOFT 0.5                // allowed min/max range for shear parameter with manual adjustment
 #define MIN_LINE_LENGTH 5                   // the minimum length of a line in pixels to be regarded as relevant
 #define MAX_TANGENTIAL_DEVIATION 30         // by how many degrees a line may deviate from the +/-180 and +/-90 to be regarded as relevant
-#define POINTS_NEAR_DELTA 4                 // distance of mouse pointer to line for "near" detection
 #define LSD_SCALE 0.99                      // LSD: scaling factor for line detection
 #define LSD_SIGMA_SCALE 0.6                 // LSD: sigma for Gaussian filter is computed as sigma = sigma_scale/scale
 #define LSD_QUANT 2.0                       // LSD: bound to the quantization error on the gradient norm
@@ -374,6 +373,7 @@ typedef struct dt_iop_ashift_gui_data_t
   int isselecting;
   int isdeselecting;
   dt_iop_ashift_bounding_t isbounding;
+  float near_delta;
   int selecting_lines_version;
   float rotation_range;
   float lensshift_v_range;
@@ -849,7 +849,8 @@ static inline int isneutral(dt_iop_ashift_data_t *data)
   return(fabs(data->rotation) < eps &&
          fabs(data->lensshift_v) < eps &&
          fabs(data->lensshift_h) < eps &&
-         fabs(data->shear) < eps);
+         fabs(data->shear) < eps &&
+         fabs(data->aspect - 1.0f) < eps);
 }
 
 
@@ -3168,7 +3169,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   float zoom_x = dt_control_get_dev_zoom_x();
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 
   // we draw the cropping area; we need x_off/y_off/width/height which is only available
   // after g->buf has been processed
@@ -3387,6 +3388,30 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_stroke(cr);
   }
 
+  // indicate which area is used for "near"-ness detection when selecting/deselecting lines
+  if(g->near_delta > 0)
+  {
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
+    pzx += 0.5f;
+    pzy += 0.5f;
+
+    double dashed[] = { 4.0, 4.0 };
+    dashed[0] /= zoom_scale;
+    dashed[1] /= zoom_scale;
+    int len = sizeof(dashed) / sizeof(dashed[0]);
+
+    cairo_arc(cr, pzx * wd, pzy * ht, g->near_delta, 0, 2.0 * M_PI);
+
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    cairo_set_line_width(cr, 1.0 / zoom_scale);
+    cairo_set_dash(cr, dashed, len, 0);
+    cairo_stroke_preserve(cr);
+    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    cairo_set_dash(cr, dashed, len, 4);
+    cairo_stroke(cr);
+  }
+
   cairo_restore(cr);
 }
 
@@ -3439,7 +3464,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   }
 
   // gather information about "near"-ness in g->points_idx
-  get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, POINTS_NEAR_DELTA);
+  get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta);
 
   // if we are in sweeping mode iterate over lines as we move the pointer and change "selected" state.
   if(g->isdeselecting || g->isselecting)
@@ -3477,6 +3502,16 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   int handled = 0;
 
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+  pzx += 0.5f;
+  pzy += 0.5f;
+
+  float wd = self->dev->preview_pipe->backbuf_width;
+  float ht = self->dev->preview_pipe->backbuf_height;
+  if(wd < 1.0 || ht < 1.0) return 1;
+
+
   // do nothing if visibility of lines is switched off or no lines available
   if(g->lines_suppressed || g->lines == NULL)
     return FALSE;
@@ -3489,11 +3524,6 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   // in a rectangle area)
   if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
   {
-    float pzx, pzy;
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-    pzx += 0.5f;
-    pzy += 0.5f;
-
     g->lastx = pzx;
     g->lasty = pzy;
 
@@ -3505,11 +3535,16 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
-  const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
-  const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2.0 : 1.0, 0);
+  const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, 1<<closeup, 0);
+  const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 0);
 
   // if we are zoomed out (no panning possible) and we have lines to display we take control
   int take_control = (cur_scale == min_scale) && (g->points_lines_count > 0);
+
+  g->near_delta = dt_conf_get_float("plugins/darkroom/ashift/near_delta");
+
+  // gather information about "near"-ness in g->points_idx
+  get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta);
 
   // iterate over all lines close to the pointer and change "selected" state.
   // left-click selects and right-click deselects the line
@@ -3604,9 +3639,67 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   dt_control_change_cursor(GDK_LEFT_PTR);
   g->isselecting = g->isdeselecting = 0;
   g->isbounding = ASHIFT_BOUNDING_OFF;
+  g->near_delta = 0;
   g->lastx = g->lasty = -1;
 
   return 0;
+}
+
+int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t state)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  // do nothing if visibility of lines is switched off or no lines available
+  if(g->lines_suppressed || g->lines == NULL)
+    return FALSE;
+
+  if(g->near_delta > 0 && (g->isdeselecting || g->isselecting))
+  {
+    int handled = 0;
+
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+    pzx += 0.5f;
+    pzy += 0.5f;
+
+    const float wd = self->dev->preview_pipe->backbuf_width;
+    const float ht = self->dev->preview_pipe->backbuf_height;
+
+    float near_delta = dt_conf_get_float("plugins/darkroom/ashift/near_delta");
+    const float amount = up ? 0.8f : 1.25f;
+    near_delta = MAX(4.0f, MIN(near_delta * amount, 100.0f));
+    dt_conf_set_float("plugins/darkroom/ashift/near_delta", near_delta);
+    g->near_delta = near_delta;
+
+    // gather information about "near"-ness in g->points_idx
+    get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta);
+
+    // iterate over all lines close to the pointer and change "selected" state.
+    for(int n = 0; g->selecting_lines_version == g->lines_version && n < g->points_lines_count; n++)
+    {
+      if(g->points_idx[n].near == 0)
+        continue;
+
+      if(g->isdeselecting)
+        g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
+      else if(g->isselecting)
+        g->lines[n].type |= ASHIFT_LINE_SELECTED;
+
+      handled = 1;
+    }
+
+    if(handled)
+    {
+      update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
+      g->lines_version++;
+      g->selecting_lines_version++;
+    }
+
+    dt_control_queue_redraw_center();
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
 static void rotation_callback(GtkWidget *slider, gpointer user_data)
@@ -4210,6 +4303,7 @@ void reload_defaults(dt_iop_module_t *module)
     g->isselecting = 0;
     g->isdeselecting = 0;
     g->isbounding = ASHIFT_BOUNDING_OFF;
+    g->near_delta = 0;
     g->selecting_lines_version = 0;
 
     free(g->points);
@@ -4362,6 +4456,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->isselecting = 0;
   g->isdeselecting = 0;
   g->isbounding = ASHIFT_BOUNDING_OFF;
+  g->near_delta = 0;
   g->selecting_lines_version = 0;
 
   g->jobcode = ASHIFT_JOBCODE_NONE;
