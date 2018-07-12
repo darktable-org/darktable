@@ -34,13 +34,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DT_BAUHAUS_WIDGET_TYPE (dt_bh_get_type())
-#define DT_BAUHAUS_WIDGET(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauhausWidget))
-#define DT_BAUHAUS_WIDGET_CLASS(obj) (G_TYPE_CHECK_CLASS_CAST((obj), DT_BAUHAUS_WIDGET, DtBauhausWidgetClass))
-#define DT_IS_BAUHAUS_WIDGET(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), DT_BAUHAUS_WIDGET_TYPE))
-#define DT_IS_BAUHAUS_WIDGET_CLASS(obj) (G_TYPE_CHECK_CLASS_TYPE((obj), DT_BAUHAUS_WIDGET_TYPE))
+#define DT_BAUHAUS_WIDGET_TYPE dt_bh_get_type()
+#define DT_BAUHAUS_WIDGET(obj) G_TYPE_CHECK_INSTANCE_CAST((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauhausWidget)
+#define DT_BAUHAUS_WIDGET_CLASS(obj) G_TYPE_CHECK_CLASS_CAST((obj), DT_BAUHAUS_WIDGET, DtBauhausWidgetClass)
+#define DT_IS_BAUHAUS_WIDGET(obj) G_TYPE_CHECK_INSTANCE_TYPE((obj), DT_BAUHAUS_WIDGET_TYPE)
+#define DT_IS_BAUHAUS_WIDGET_CLASS(obj) G_TYPE_CHECK_CLASS_TYPE((obj), DT_BAUHAUS_WIDGET_TYPE)
 #define DT_BAUHAUS_WIDGET_GET_CLASS                                                                          \
-  (G_TYPE_INSTANCE_GET_CLASS((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauhausWidgetClass))
+  G_TYPE_INSTANCE_GET_CLASS((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauhausWidgetClass)
 
 extern GType DT_BAUHAUS_WIDGET_TYPE;
 

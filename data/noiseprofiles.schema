@@ -50,7 +50,7 @@
                   "type": "string",
                   "pattern": "^[a-zA-Z0-9\\- \\*]+$",
                   "minLength": 2,
-                  "maxLength": 22
+                  "maxLength": 23
                 },
                 "profiles": {
                   "type": "array",
@@ -60,14 +60,14 @@
                     "properties": {
                       "name": {
                         "type": "string",
-                        "pattern": "^[a-zA-Z0-9\\- \\*]+ iso [0-9]{2,6}$",
+                        "pattern": "^[a-zA-Z0-9\\- \\*]+ iso [0-9]{2,7}$",
                         "minLength": 9,
-                        "maxLength": 32
+                        "maxLength": 33
                       },
                       "iso": {
                         "type": "integer",
                         "minimum": 31,
-                        "maximum": 256000
+                        "maximum": 2048000
                       },
                       "a": {
                         "type": "array",
