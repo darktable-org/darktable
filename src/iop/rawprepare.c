@@ -169,6 +169,26 @@ void connect_key_accels(dt_iop_module_t *self)
   }
 }
 
+// value to round,   reference on how to round:
+//  if ref was even, returned value will be even
+//  if ref was odd,  returned value will be odd
+static int round_smart(float val, int ref)
+{
+  // first, just round it
+  int round = (int)roundf(val);
+
+  if((ref & 1) ^ (round & 1)) round++;
+
+  return round;
+}
+
+static int compute_proper_crop(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in, int value)
+{
+  const float scale = roi_in->scale / piece->iscale;
+
+  return round_smart((float)value * scale, value);
+}
+
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
@@ -216,8 +236,8 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   int32_t x = d->x + d->width, y = d->y + d->height;
 
   const float scale = roi_in->scale / piece->iscale;
-  roi_out->width -= (int)roundf((float)x * scale);
-  roi_out->height -= (int)roundf((float)y * scale);
+  roi_out->width -= round_smart((float)x * scale, x);
+  roi_out->height -= round_smart((float)y * scale, y);
 }
 
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
@@ -229,8 +249,8 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   int32_t x = d->x + d->width, y = d->y + d->height;
 
   const float scale = roi_in->scale / piece->iscale;
-  roi_in->width += (int)roundf((float)x * scale);
-  roi_in->height += (int)roundf((float)y * scale);
+  roi_in->width += round_smart((float)x * scale, x);
+  roi_in->height += round_smart((float)y * scale, y);
 }
 
 void output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
@@ -254,26 +274,6 @@ static void adjust_xtrans_filters(dt_dev_pixelpipe_t *pipe,
       pipe->dsc.xtrans[j][i] = pipe->image.buf_dsc.xtrans[(j + crop_y) % 6][(i + crop_x) % 6];
     }
   }
-}
-
-// value to round,   reference on how to round:
-//  if ref was even, returned value will be even
-//  if ref was odd,  returned value will be odd
-static int round_smart(float val, int ref)
-{
-  // first, just round it
-  int round = (int)roundf(val);
-
-  if((ref & 1) ^ (round & 1)) round++;
-
-  return round;
-}
-
-static int compute_proper_crop(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in, int value)
-{
-  const float scale = roi_in->scale / piece->iscale;
-
-  return round_smart((float)value * scale, value);
 }
 
 static int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t *const d, const int row,
