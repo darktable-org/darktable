@@ -47,6 +47,7 @@
       <_caption>Print your images</_caption>
     </screenshot>
   </screenshots>
+  <content_rating type="oars-1.1" />
   <url type="homepage">https://www.darktable.org/</url>
   <url type="bugtracker">https://redmine.darktable.org/projects/darktable/issues</url>
   <url type="help">https://www.darktable.org/usermanual/</url>
