@@ -332,7 +332,7 @@ static gboolean _lib_location_search(gpointer user_data)
 
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
-  gchar *query = NULL, *text = NULL;
+  gchar *query = NULL, *text = NULL, *search_url = NULL;
 
   /* get escaped search text */
   text = g_uri_escape_string(gtk_entry_get_text(lib->search), NULL, FALSE);
@@ -343,7 +343,7 @@ static gboolean _lib_location_search(gpointer user_data)
   clear_search(lib);
 
   /* build the query url */
-  gchar *search_url = dt_conf_get_string("plugins/map/geotagging_search_url");
+  search_url = dt_conf_get_string("plugins/map/geotagging_search_url");
   query = dt_util_dstrcat(query, search_url, text, LIMIT_RESULT);
   /* load url */
   curl = curl_easy_init();
