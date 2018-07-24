@@ -389,6 +389,7 @@ bail_out:
 
   g_free(text);
   g_free(query);
+  g_free(search_url);
 
   if(ctx) g_markup_parse_context_free(ctx);
 
