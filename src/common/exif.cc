@@ -1290,8 +1290,8 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
     int resolution = dt_conf_get_int("metadata/resolution");
     if(resolution > 0)
     {
-      exifData["Exif.Image.XResolution"] = resolution;
-      exifData["Exif.Image.YResolution"] = resolution;
+      exifData["Exif.Image.XResolution"] = Exiv2::Rational(resolution, 1);
+      exifData["Exif.Image.YResolution"] = Exiv2::Rational(resolution, 1);
       exifData["Exif.Image.ResolutionUnit"] = uint16_t(2); /* inches */
     }
     else
