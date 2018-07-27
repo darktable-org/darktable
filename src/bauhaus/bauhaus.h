@@ -142,7 +142,7 @@ typedef struct dt_bauhaus_widget_t
   int quad_toggle;
 
   // function to populate the combo list on the fly
-  void (*combo_populate)(struct dt_iop_module_t **module);
+  void (*combo_populate)(GtkWidget *w, struct dt_iop_module_t **module);
 
   // goes last, might extend past the end:
   dt_bauhaus_data_t data;
