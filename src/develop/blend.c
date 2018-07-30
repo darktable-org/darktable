@@ -3545,6 +3545,35 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
   return 1;
 }
 
+int dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so, const void *const old_params,
+                                           const int old_version, void *new_params, const int new_version,
+                                           const int length)
+{
+  // we need a dt_iop_module_t for dt_develop_blend_legacy_params()
+  dt_iop_module_t *module;
+  module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+  if(dt_iop_load_module_by_so(module, module_so, NULL))
+  {
+    free(module);
+    return 1;
+  }
+
+  if(module->params_size == 0)
+  {
+    dt_iop_cleanup_module(module);
+    free(module);
+    return 1;
+  }
+
+  // convert the old blend params to new
+  int res = dt_develop_blend_legacy_params(module, old_params, old_version,
+                                           new_params, dt_develop_blend_version(),
+                                           length);
+  dt_iop_cleanup_module(module);
+  free(module);
+  return res;
+}
+
 // tools/update_modelines.sh
 // remove-trailing-space on;
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
