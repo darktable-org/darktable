@@ -1497,6 +1497,8 @@ static gboolean _lock_databases(dt_database_t *db)
 
 dt_database_t *dt_database_init(const char *alternative, const gboolean load_data)
 {
+  sqlite3_initialize();
+
 start:
   /* migrate default database location to new default */
   _database_migrate_to_xdg_structure();
@@ -1850,6 +1852,8 @@ void dt_database_destroy(const dt_database_t *db)
   g_free(db->dbfilename_data);
   g_free(db->dbfilename_library);
   g_free((dt_database_t *)db);
+
+  sqlite3_shutdown();
 }
 
 sqlite3 *dt_database_get(const dt_database_t *db)
