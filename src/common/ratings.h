@@ -27,6 +27,9 @@ void dt_ratings_apply_to_selection(int rating);
 /** apply rating to the specified image */
 void dt_ratings_apply_to_image(int imgid, int rating);
 
+/** apply rating to the specified image, or any image in a collapsed group */
+void dt_ratings_apply_to_image_or_group(int imgid, int rating);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

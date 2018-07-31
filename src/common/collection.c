@@ -52,9 +52,9 @@ static const char *comparators[] = {
 };
 
 /* Stores the collection query, returns 1 if changed.. */
-static int _dt_collection_store(const dt_collection_t *collection, gchar *query);
+static int _dt_collection_store(const dt_collection_t *collection, gchar *query, gchar *query_no_group);
 /* Counts the number of images in the current collection */
-static uint32_t _dt_collection_compute_count(const dt_collection_t *collection);
+static uint32_t _dt_collection_compute_count(const dt_collection_t *collection, bool no_group);
 /* signal handlers to update the cached count when something interesting might have happened.
  * we need 2 different since there are different kinds of signals we need to listen to. */
 static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_data);
@@ -76,8 +76,10 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
     memcpy(&collection->store, &clone->store, sizeof(dt_collection_params_t));
     collection->where_ext = g_strdupv(clone->where_ext);
     collection->query = g_strdup(clone->query);
+    collection->query_no_group = g_strdup(clone->query_no_group);
     collection->clone = 1;
     collection->count = clone->count;
+    collection->count_no_group = clone->count_no_group;
   }
   else /* else we just initialize using the reset */
     dt_collection_reset(collection);
@@ -107,6 +109,7 @@ void dt_collection_free(const dt_collection_t *collection)
                                (gpointer)collection);
 
   g_free(collection->query);
+  g_free(collection->query_no_group);
   g_strfreev(collection->where_ext);
   g_free((dt_collection_t *)collection);
 }
@@ -119,8 +122,8 @@ const dt_collection_params_t *dt_collection_params(const dt_collection_t *collec
 int dt_collection_update(const dt_collection_t *collection)
 {
   uint32_t result;
-  gchar *wq, *sq, *selq, *query;
-  wq = sq = selq = query = NULL;
+  gchar *wq, *wq_no_group, *sq, *selq_pre, *selq_post, *query, *query_no_group;
+  wq = wq_no_group = sq = selq_pre = selq_post = query = query_no_group = NULL;
 
   /* build where part */
   gchar *where_ext = dt_collection_get_extended_where(collection, -1);
@@ -168,27 +171,46 @@ int dt_collection_update(const dt_collection_t *collection)
 
   g_free(where_ext);
 
+  wq_no_group = g_strdup(wq);
+
   /* grouping */
   if(darktable.gui && darktable.gui->grouping)
   {
-    wq = dt_util_dstrcat(wq, " AND (group_id = id OR group_id = %d)", darktable.gui->expanded_group_id);
+    /* Show the expanded group... */
+    wq = dt_util_dstrcat(wq, " AND (group_id = %d OR "
+                             /* ...and, in unexpanded groups, show the representative image.
+                              * It's possible that the above WHERE clauses will filter out the representative
+                              * image, so we have some logic here to pick the image id closest to the
+                              * representative image.
+                              * The *2+CASE statement are to break ties, so that when id < group_id, it's
+                              * weighted a little higher than when id > group_id. */
+                             "(ABS(id-group_id)*2 + CASE WHEN (id-group_id) < 0 THEN 1 ELSE 0 END) IN "
+                             "(SELECT MIN(ABS(id-group_id)*2 + CASE WHEN (id-group_id) < 0 THEN 1 ELSE 0 END) "
+                             "FROM main.images WHERE %s GROUP BY group_id))",
+                         darktable.gui->expanded_group_id, wq_no_group);
+
+    /* Additionally, when a group is expanded, make sure the representative image wasn't filtered out.
+     * This is important, because otherwise it may be impossible to collapse the group again. */
+    wq = dt_util_dstrcat(wq, " OR (id = %d)", darktable.gui->expanded_group_id);
   }
 
   /* build select part includes where */
   if(collection->params.sort == DT_COLLECTION_SORT_COLOR
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    selq = dt_util_dstrcat(selq, "SELECT DISTINCT id FROM (SELECT * FROM main.images WHERE %s) AS a LEFT OUTER "
-                                 "JOIN main.color_labels AS b ON a.id = b.imgid",
-                           wq);
+  {
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT id FROM (SELECT * FROM main.images WHERE ");
+    selq_post = dt_util_dstrcat(selq_post, ") AS a LEFT OUTER JOIN main.color_labels AS b ON a.id = b.imgid");
+  }
   else if(collection->params.sort == DT_COLLECTION_SORT_PATH
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    selq = dt_util_dstrcat(selq, "SELECT DISTINCT id FROM (SELECT * FROM main.images WHERE %s) JOIN (SELECT id AS "
-                                 "film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id",
-                           wq);
+  {
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT id FROM (SELECT * FROM main.images WHERE ");
+    selq_post = dt_util_dstrcat(selq_post, ") JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id");
+  }
   else if(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT)
-    selq = dt_util_dstrcat(selq, "SELECT DISTINCT images.id FROM main.images %s", wq);
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT images.id FROM main.images ");
   else
-    selq = dt_util_dstrcat(selq, "SELECT DISTINCT id FROM main.images WHERE %s", wq);
+    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT id FROM main.images WHERE ");
 
   /* build sort order part */
   if(!(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT)
@@ -199,19 +221,26 @@ int dt_collection_update(const dt_collection_t *collection)
 
   /* store the new query */
   query
-      = dt_util_dstrcat(query, "%s %s%s", selq, sq ? sq : "",
+      = dt_util_dstrcat(query, "%s%s%s %s%s", selq_pre, wq, selq_post ? selq_post : "", sq ? sq : "",
                         (collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT) ? " " LIMIT_QUERY : "");
-  result = _dt_collection_store(collection, query);
+  query_no_group
+      = dt_util_dstrcat(query_no_group, "%s%s%s %s%s", selq_pre, wq_no_group, selq_post ? selq_post : "", sq ? sq : "",
+                        (collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT) ? " " LIMIT_QUERY : "");
+  result = _dt_collection_store(collection, query, query_no_group);
 
   /* free memory used */
   g_free(sq);
   g_free(wq);
-  g_free(selq);
+  g_free(wq_no_group);
+  g_free(selq_pre);
+  g_free(selq_post);
   g_free(query);
+  g_free(query_no_group);
 
   /* update the cached count. collection isn't a real const anyway, we are writing to it in
    * _dt_collection_store, too. */
-  ((dt_collection_t *)collection)->count = _dt_collection_compute_count(collection);
+  ((dt_collection_t *)collection)->count = _dt_collection_compute_count(collection, false);
+  ((dt_collection_t *)collection)->count_no_group = _dt_collection_compute_count(collection, true);
   dt_collection_hint_message(collection);
 
   _collection_update_aspect_ratio(collection);
@@ -247,6 +276,13 @@ const gchar *dt_collection_get_query(const dt_collection_t *collection)
   return collection->query;
 }
 
+const gchar *dt_collection_get_query_no_group(const dt_collection_t *collection)
+{
+  /* ensure there is a query string for collection */
+  if(!collection->query_no_group) dt_collection_update(collection);
+
+  return collection->query_no_group;
+}
 uint32_t dt_collection_get_filter_flags(const dt_collection_t *collection)
 {
   return collection->params.filter_flags;
@@ -510,7 +546,7 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 }
 
 
-static int _dt_collection_store(const dt_collection_t *collection, gchar *query)
+static int _dt_collection_store(const dt_collection_t *collection, gchar *query, gchar *query_no_group)
 {
   /* store flags to conf */
   if(collection == darktable.collection)
@@ -526,17 +562,19 @@ static int _dt_collection_store(const dt_collection_t *collection, gchar *query)
 
   /* store query in context */
   g_free(collection->query);
+  g_free(collection->query_no_group);
 
   ((dt_collection_t *)collection)->query = g_strdup(query);
+  ((dt_collection_t *)collection)->query_no_group = g_strdup(query_no_group);
 
   return 1;
 }
 
-static uint32_t _dt_collection_compute_count(const dt_collection_t *collection)
+static uint32_t _dt_collection_compute_count(const dt_collection_t *collection, bool no_group)
 {
   sqlite3_stmt *stmt = NULL;
   uint32_t count = 1;
-  const gchar *query = dt_collection_get_query(collection);
+  const gchar *query = no_group ? dt_collection_get_query_no_group(collection) : dt_collection_get_query(collection);
   gchar *count_query = NULL;
 
   gchar *fq = g_strstr_len(query, strlen(query), "FROM");
@@ -566,6 +604,11 @@ static uint32_t _dt_collection_compute_count(const dt_collection_t *collection)
 uint32_t dt_collection_get_count(const dt_collection_t *collection)
 {
   return collection->count;
+}
+
+uint32_t dt_collection_get_count_no_group(const dt_collection_t *collection)
+{
+  return collection->count_no_group;
 }
 
 uint32_t dt_collection_get_selected_count(const dt_collection_t *collection)
@@ -1239,6 +1282,10 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     }
     break;
 
+    case DT_COLLECTION_PROP_GROUPING: // grouping
+      query = dt_util_dstrcat(query, "(id %s group_id)", (strcmp(escaped_text, _("group leaders")) == 0) ? "=" : "!=");
+      break;
+
     default:
       // we shouldn't be here
       break;
@@ -1387,7 +1434,7 @@ void dt_collection_update_query(const dt_collection_t *collection)
 
   // remove from selected images where not in this query.
   sqlite3_stmt *stmt = NULL;
-  const gchar *cquery = dt_collection_get_query(collection);
+  const gchar *cquery = dt_collection_get_query_no_group(collection);
   gchar *complete_query = NULL;
   if(cquery && cquery[0] != '\0')
   {
@@ -1429,7 +1476,7 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   /* collection hinting */
   gchar *message;
 
-  int c = dt_collection_get_count(collection);
+  int c = dt_collection_get_count_no_group(collection);
   int cs = dt_collection_get_selected_count(collection);
 
   if(cs == 1)
@@ -1496,7 +1543,8 @@ static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_da
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
   int old_count = collection->count;
-  collection->count = _dt_collection_compute_count(collection);
+  collection->count = _dt_collection_compute_count(collection, false);
+  collection->count_no_group = _dt_collection_compute_count(collection, true);
   if(!collection->clone)
   {
     if(old_count != collection->count) dt_collection_hint_message(collection);
@@ -1508,7 +1556,8 @@ static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpo
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
   int old_count = collection->count;
-  collection->count = _dt_collection_compute_count(collection);
+  collection->count = _dt_collection_compute_count(collection, false);
+  collection->count_no_group = _dt_collection_compute_count(collection, true);
   if(!collection->clone)
   {
     if(old_count != collection->count) dt_collection_hint_message(collection);

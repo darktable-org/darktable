@@ -30,6 +30,10 @@ void dt_selection_free(struct dt_selection_t *selection);
 void dt_selection_invert(struct dt_selection_t *selection);
 /** clears the selection */
 void dt_selection_clear(struct dt_selection_t *selection);
+/** adds imgid to the current selection */
+void dt_selection_select(struct dt_selection_t *selection, uint32_t imgid);
+/** removes imgid from the current selection */
+void dt_selection_deselect(struct dt_selection_t *selection, uint32_t imgid);
 /** clears current selection and adds imgid */
 void dt_selection_select_single(struct dt_selection_t *selection, uint32_t imgid);
 /** toggles selection of image in the current selection */
