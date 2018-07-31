@@ -442,10 +442,10 @@ void dt_bauhaus_init()
   gtk_widget_set_name(darktable.bauhaus->popup_area, "bauhaus-popup");
 
   darktable.bauhaus->line_space = 2;
-  darktable.bauhaus->line_height = 11;
-  darktable.bauhaus->marker_size = 0.3f;
-  darktable.bauhaus->label_font_size = 0.6f;
-  darktable.bauhaus->value_font_size = 0.6f;
+  darktable.bauhaus->line_height = 13;
+  darktable.bauhaus->marker_size = 0.25f;
+  darktable.bauhaus->label_font_size = 0.65f;
+  darktable.bauhaus->value_font_size = 0.65f;
   g_strlcpy(darktable.bauhaus->label_font, "sans", sizeof(darktable.bauhaus->label_font));
   g_strlcpy(darktable.bauhaus->value_font, "sans", sizeof(darktable.bauhaus->value_font));
 
@@ -650,7 +650,7 @@ void dt_bauhaus_slider_set_hard_min(GtkWidget* widget, float val)
   {
     dt_bauhaus_slider_set_soft(widget,val);
   }
-  else 
+  else
   {
     dt_bauhaus_slider_set_soft(widget,pos);
   }
@@ -676,8 +676,8 @@ void dt_bauhaus_slider_set_hard_max(GtkWidget* widget, float val)
   if(pos > val) {
 
     dt_bauhaus_slider_set_soft(widget,val);
-  } 
-  else 
+  }
+  else
   {
     dt_bauhaus_slider_set_soft(widget,pos);
   }
@@ -701,11 +701,11 @@ void dt_bauhaus_slider_set_soft_min(GtkWidget* widget, float val)
   d->min =  d->soft_min;
   if(rawval > d->soft_max) dt_bauhaus_slider_set_soft_max(widget,val);
   if(rawval > d->hard_max) dt_bauhaus_slider_set_hard_max(widget,val);
-  if(pos < val) 
+  if(pos < val)
   {
     dt_bauhaus_slider_set_soft(widget,val);
-  } 
-  else 
+  }
+  else
   {
     dt_bauhaus_slider_set_soft(widget,pos);
   }
@@ -1189,7 +1189,7 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
   const float r = 1.0f - (ht + 4.0f) / wd;
   set_color(cr, darktable.bauhaus->color_fg);
   cairo_translate(cr, (l + pos * (r - l)) * wd,
-                  get_line_height() * (darktable.bauhaus->label_font_size + 0.25f));
+                  get_line_height() * (darktable.bauhaus->label_font_size + 0.2f));
   cairo_scale(cr, 1.0f, -1.0f);
   draw_equilateral_triangle(cr, ht * get_marker_size());
   cairo_fill_preserve(cr);
@@ -1267,8 +1267,8 @@ static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   dt_bauhaus_slider_data_t *d = &w->data.slider;
 
   // pos of baseline
-  const float htm = ht * (darktable.bauhaus->label_font_size + 0.15f);
-  const float htM = ht * 0.2f; // thickness of baseline
+  const float htm = ht * (darktable.bauhaus->label_font_size + 0.1f);
+  const float htM = ht * 0.17f; // thickness of baseline
 
   // the background of the line
   cairo_pattern_t *gradient = NULL;
