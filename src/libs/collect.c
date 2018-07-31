@@ -1267,6 +1267,15 @@ static void list_view(dt_lib_collect_rule_t *dr)
                 "(SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id "
                 "WHERE %s GROUP BY folder ORDER BY folder DESC", where_ext);
         break;
+
+      case DT_COLLECTION_PROP_GROUPING: // Grouping, 2 hardcoded alternatives
+        g_snprintf(query, sizeof(query), "SELECT CASE "
+                           "WHEN id = group_id THEN '%s' ELSE '%s' END as group_leader, 1, "
+                           "COUNT(*) AS count "
+                           "FROM main.images "
+                           "WHERE %s GROUP BY group_leader ORDER BY group_leader ASC",
+                   _("group leaders"),  _("group followers"), where_ext);
+        break;
     }
 
     g_free(where_ext);
@@ -1516,7 +1525,8 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   if(item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS
      || item == DT_COLLECTION_PROP_DAY || item == DT_COLLECTION_PROP_TIME
      || item == DT_COLLECTION_PROP_COLORLABEL || item == DT_COLLECTION_PROP_GEOTAGGING
-     || item == DT_COLLECTION_PROP_HISTORY ||  item == DT_COLLECTION_PROP_LOCAL_COPY)
+     || item == DT_COLLECTION_PROP_HISTORY ||  item == DT_COLLECTION_PROP_LOCAL_COPY
+     || item == DT_COLLECTION_PROP_GROUPING)
     set_properties(d->rule + active); // we just have to set the selection
   else
     update_view(d->rule + active); // we have to update visible items too
@@ -2089,6 +2099,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FILENAME);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GEOTAGGING);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_LOCAL_COPY);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GROUPING);
 
 }
 #endif
