@@ -300,7 +300,11 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         dt_pthread_mutex_lock(&g->lock);
         const uint64_t hash = g->hash;
         dt_pthread_mutex_unlock(&g->lock);
-        if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+        if(hash == 0)
+        {
+          // Don't try grabbing anything from preview pipe.
+        }
+        else if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
         {
           // TODO: remove this debug output at some point:
           dt_control_log(_("local laplacian: inconsistent output"));
