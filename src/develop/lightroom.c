@@ -431,11 +431,6 @@ typedef struct lr_data_t
   int iwidth, iheight;         // image width / height
   int orientation;
 
-  char *title;       // dt metadata
-  char *description;
-  char *creator;
-  char *publisher;
-  char *rights;
 } lr_data_t;
 
 // three helper functions for parsing RetouchInfo entries. sscanf doesn't work due to floats.
@@ -921,23 +916,75 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
   }
   else if(!xmlStrcmp(name, (const xmlChar *)"title"))
   {
-    data->title = (char *)value;
+	xmlNodePtr ttlNode = node;
+    while(ttlNode)
+    {
+      if(!xmlStrncmp(ttlNode->name, (const xmlChar *)"li", 2))
+      {
+        xmlChar *cvalue = xmlNodeListGetString(doc, ttlNode->xmlChildrenNode, 1);
+		dt_metadata_set(imgid, "Xmp.dc.title", (char *)cvalue);
+        xmlFree(cvalue);
+      }
+      ttlNode = ttlNode->next;
+   }
   }
   else if(!xmlStrcmp(name, (const xmlChar *)"description"))
   {
-    data->description = (char *)value;
+	xmlNodePtr desNode = node;
+    while(desNode)
+    {
+      if(!xmlStrncmp(desNode->name, (const xmlChar *)"li", 2))
+      {
+		xmlChar *cvalue = xmlNodeListGetString(doc, desNode->xmlChildrenNode, 1);
+		dt_metadata_set(imgid, "Xmp.dc.description", (char *)cvalue);
+        xmlFree(cvalue);
+      }
+      desNode = desNode->next;
+    }
   }
   else if(!xmlStrcmp(name, (const xmlChar *)"creator"))
   {
-    data->creator = (char *)value;
+	xmlNodePtr creNode = node;
+    while(creNode)
+    {
+      if(!xmlStrncmp(creNode->name, (const xmlChar *)"li", 2))
+      {
+		xmlChar *cvalue = xmlNodeListGetString(doc, creNode->xmlChildrenNode, 1);
+		dt_metadata_set(imgid, "Xmp.dc.creator", (char *)cvalue);
+        xmlFree(cvalue);
+      }
+      creNode = creNode->next;
+    }
   }
+  /* Publisher (Dublin Core Schema not supported by Lightroom
   else if(!xmlStrcmp(name, (const xmlChar *)"publisher"))
   {
-    data->publisher = (char *)value;
+	xmlNodePtr pubNode = node;
+    while(pubNode)
+    {
+      if(!xmlStrncmp(pubNode->name, (const xmlChar *)"li", 2))
+      {
+		xmlChar *cvalue = xmlNodeListGetString(doc, pubNode->xmlChildrenNode, 1);
+		dt_metadata_set(imgid, "Xmp.dc.publisher", (char *)cvalue);
+        xmlFree(cvalue);
+      }
+      pubNode = pubNode->next;
+    }
   }
+  */
   else if(!xmlStrcmp(name, (const xmlChar *)"rights"))
   {
-    data->rights = (char *)value;
+	xmlNodePtr rigNode = node;
+    while(rigNode)
+    {
+      if(!xmlStrncmp(rigNode->name, (const xmlChar *)"li", 2))
+      {
+		xmlChar *cvalue = xmlNodeListGetString(doc, rigNode->xmlChildrenNode, 1);
+		dt_metadata_set(imgid, "Xmp.dc.rights", (char *)cvalue);
+        xmlFree(cvalue);
+      }
+      rigNode = rigNode->next;
+    }
   }
 }
 
@@ -947,7 +994,13 @@ static int _has_list(char *name)
   return !strcmp(name, "subject")
     || !strcmp(name, "hierarchicalSubject")
     || !strcmp(name, "RetouchInfo")
-    || !strcmp(name, "ToneCurvePV2012");
+    || !strcmp(name, "ToneCurvePV2012")
+	|| !strcmp(name, "title")
+	|| !strcmp(name, "description")
+	|| !strcmp(name, "creator")
+	|| !strcmp(name, "publisher")
+	|| !strcmp(name, "rights")
+	;
 };
 
 /* handle a specific xpath */
@@ -1115,11 +1168,6 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   data.iwidth = 0;
   data.iheight = 0;                 // image width / height
   data.orientation = 1;
-  data.title = "";
-  data.description = "";
-  data.creator = "";
-  data.publisher = "";
-  data.rights = "";
 
   // record the name-spaces needed for the parsing
   xmlXPathRegisterNs
@@ -1561,51 +1609,6 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
     if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
     g_strlcat(imported, _("color label"), sizeof(imported));
-    n_import++;
-  }
-
-  if(dev == NULL && data.title != NULL && data.title[0] != '\0')
-  {
-    dt_metadata_set(imgid, "Xmp.dc.title", data.title);
-
-    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
-    g_strlcat(imported, _("title"), sizeof(imported));
-    n_import++;
-  }
-
-  if(dev == NULL && data.description != NULL && data.description[0] != '\0')
-  {
-    dt_metadata_set(imgid, "Xmp.dc.description", data.description);
-
-    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
-    g_strlcat(imported, _("description"), sizeof(imported));
-    n_import++;
-  }
-
-  if(dev == NULL && data.creator != NULL && data.creator[0] != '\0')
-  {
-    dt_metadata_set(imgid, "Xmp.dc.creator", data.creator);
-
-    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
-    g_strlcat(imported, _("creator"), sizeof(imported));
-    n_import++;
-  }
-
-  if(dev == NULL && data.publisher != NULL && data.publisher[0] != '\0')
-  {
-    dt_metadata_set(imgid, "Xmp.dc.publisher", data.publisher);
-
-    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
-    g_strlcat(imported, _("publisher"), sizeof(imported));
-    n_import++;
-  }
-
-  if(dev == NULL && data.rights != NULL && data.rights[0] != '\0')
-  {
-    dt_metadata_set(imgid, "Xmp.dc.rights", data.rights);
-
-    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
-    g_strlcat(imported, _("rights"), sizeof(imported));
     n_import++;
   }
 
