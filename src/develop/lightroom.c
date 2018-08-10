@@ -430,7 +430,6 @@ typedef struct lr_data_t
   float crop_roundness;        // from lightroom
   int iwidth, iheight;         // image width / height
   int orientation;
-
 } lr_data_t;
 
 // three helper functions for parsing RetouchInfo entries. sscanf doesn't work due to floats.
@@ -916,27 +915,27 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
   }
   else if(!xmlStrcmp(name, (const xmlChar *)"title"))
   {
-	xmlNodePtr ttlNode = node;
+    xmlNodePtr ttlNode = node;
     while(ttlNode)
     {
       if(!xmlStrncmp(ttlNode->name, (const xmlChar *)"li", 2))
       {
         xmlChar *cvalue = xmlNodeListGetString(doc, ttlNode->xmlChildrenNode, 1);
-		dt_metadata_set(imgid, "Xmp.dc.title", (char *)cvalue);
+        dt_metadata_set(imgid, "Xmp.dc.title", (char *)cvalue);
         xmlFree(cvalue);
       }
       ttlNode = ttlNode->next;
-   }
+    }
   }
   else if(!xmlStrcmp(name, (const xmlChar *)"description"))
   {
-	xmlNodePtr desNode = node;
+    xmlNodePtr desNode = node;
     while(desNode)
     {
       if(!xmlStrncmp(desNode->name, (const xmlChar *)"li", 2))
       {
-		xmlChar *cvalue = xmlNodeListGetString(doc, desNode->xmlChildrenNode, 1);
-		dt_metadata_set(imgid, "Xmp.dc.description", (char *)cvalue);
+        xmlChar *cvalue = xmlNodeListGetString(doc, desNode->xmlChildrenNode, 1);
+        dt_metadata_set(imgid, "Xmp.dc.description", (char *)cvalue);
         xmlFree(cvalue);
       }
       desNode = desNode->next;
@@ -944,43 +943,27 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
   }
   else if(!xmlStrcmp(name, (const xmlChar *)"creator"))
   {
-	xmlNodePtr creNode = node;
+    xmlNodePtr creNode = node;
     while(creNode)
     {
       if(!xmlStrncmp(creNode->name, (const xmlChar *)"li", 2))
       {
-		xmlChar *cvalue = xmlNodeListGetString(doc, creNode->xmlChildrenNode, 1);
-		dt_metadata_set(imgid, "Xmp.dc.creator", (char *)cvalue);
+        xmlChar *cvalue = xmlNodeListGetString(doc, creNode->xmlChildrenNode, 1);
+        dt_metadata_set(imgid, "Xmp.dc.creator", (char *)cvalue);
         xmlFree(cvalue);
       }
       creNode = creNode->next;
     }
   }
-  /* Publisher (Dublin Core Schema not supported by Lightroom
-  else if(!xmlStrcmp(name, (const xmlChar *)"publisher"))
-  {
-	xmlNodePtr pubNode = node;
-    while(pubNode)
-    {
-      if(!xmlStrncmp(pubNode->name, (const xmlChar *)"li", 2))
-      {
-		xmlChar *cvalue = xmlNodeListGetString(doc, pubNode->xmlChildrenNode, 1);
-		dt_metadata_set(imgid, "Xmp.dc.publisher", (char *)cvalue);
-        xmlFree(cvalue);
-      }
-      pubNode = pubNode->next;
-    }
-  }
-  */
   else if(!xmlStrcmp(name, (const xmlChar *)"rights"))
   {
-	xmlNodePtr rigNode = node;
+    xmlNodePtr rigNode = node;
     while(rigNode)
     {
       if(!xmlStrncmp(rigNode->name, (const xmlChar *)"li", 2))
       {
-		xmlChar *cvalue = xmlNodeListGetString(doc, rigNode->xmlChildrenNode, 1);
-		dt_metadata_set(imgid, "Xmp.dc.rights", (char *)cvalue);
+        xmlChar *cvalue = xmlNodeListGetString(doc, rigNode->xmlChildrenNode, 1);
+        dt_metadata_set(imgid, "Xmp.dc.rights", (char *)cvalue);
         xmlFree(cvalue);
       }
       rigNode = rigNode->next;
@@ -995,12 +978,11 @@ static int _has_list(char *name)
     || !strcmp(name, "hierarchicalSubject")
     || !strcmp(name, "RetouchInfo")
     || !strcmp(name, "ToneCurvePV2012")
-	|| !strcmp(name, "title")
-	|| !strcmp(name, "description")
-	|| !strcmp(name, "creator")
-	|| !strcmp(name, "publisher")
-	|| !strcmp(name, "rights")
-	;
+    || !strcmp(name, "title")
+    || !strcmp(name, "description")
+    || !strcmp(name, "creator")
+    || !strcmp(name, "publisher")
+    || !strcmp(name, "rights");
 };
 
 /* handle a specific xpath */
