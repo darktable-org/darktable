@@ -910,6 +910,11 @@ static void dt_bauhaus_combobox_destroy(dt_bauhaus_widget_t *widget, gpointer us
   g_list_free(d->alignments);
   d->alignments = NULL;
   d->num_labels = 0;
+  if(d->free_func)
+    g_list_free_full(d->data, d->free_func);
+  else
+    g_list_free(d->data);
+  d->data = NULL;
 }
 
 GtkWidget *dt_bauhaus_combobox_new(dt_iop_module_t *self)
@@ -930,6 +935,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   d->defpos = 0;
   d->active = d->defpos;
   d->editable = 0;
+  d->data = NULL;
   memset(d->text, 0, sizeof(d->text));
 
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_PRESS_MASK);
@@ -944,7 +950,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   g_signal_connect(G_OBJECT(w), "destroy", G_CALLBACK(dt_bauhaus_combobox_destroy), (gpointer)NULL);
 }
 
-void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(struct dt_iop_module_t **module))
+void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidget *w, struct dt_iop_module_t **module))
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
@@ -953,10 +959,16 @@ void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(struct 
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
 {
-  dt_bauhaus_combobox_add_aligned(widget, text, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT);
+  dt_bauhaus_combobox_add_full(widget, text, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, NULL, NULL);
 }
 
 void dt_bauhaus_combobox_add_aligned(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align)
+{
+  dt_bauhaus_combobox_add_full(widget, text, align, NULL, NULL);
+}
+
+void dt_bauhaus_combobox_add_full(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align,
+                                  gpointer data, void (free_func)(void *data))
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
@@ -964,6 +976,8 @@ void dt_bauhaus_combobox_add_aligned(GtkWidget *widget, const char *text, dt_bau
   d->num_labels++;
   d->labels = g_list_append(d->labels, g_strdup(text));
   d->alignments = g_list_append(d->alignments, GINT_TO_POINTER(align));
+  d->data = g_list_append(d->data, data);
+  d->free_func = free_func;
 }
 
 void dt_bauhaus_combobox_set_editable(GtkWidget *widget, int editable)
@@ -997,17 +1011,28 @@ void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos)
   rm = g_list_nth(d->alignments, pos);
   d->alignments = g_list_delete_link(d->alignments, rm);
 
+  rm = g_list_nth(d->data, pos);
+  if(d->free_func) d->free_func(rm->data);
+  d->data = g_list_delete_link(d->data, rm);
+
   d->num_labels--;
 }
 
 void dt_bauhaus_combobox_insert(GtkWidget *widget, const char *text,int pos)
+{
+  dt_bauhaus_combobox_insert_full(widget, text, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, NULL, pos);
+}
+
+void dt_bauhaus_combobox_insert_full(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align,
+                                     gpointer data, int pos)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->num_labels++;
   d->labels = g_list_insert(d->labels, g_strdup(text), pos);
-  d->alignments = g_list_insert(d->alignments, GINT_TO_POINTER(DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT), pos);
+  d->alignments = g_list_insert(d->alignments, GINT_TO_POINTER(align), pos);
+  d->data = g_list_insert(d->data, data, pos);
 }
 
 int dt_bauhaus_combobox_length(GtkWidget *widget)
@@ -1037,6 +1062,14 @@ const char *dt_bauhaus_combobox_get_text(GtkWidget *widget)
   return NULL;
 }
 
+gpointer dt_bauhaus_combobox_get_data(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return NULL;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  return g_list_nth_data(d->data, d->active);
+}
+
 void dt_bauhaus_combobox_clear(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
@@ -1047,6 +1080,11 @@ void dt_bauhaus_combobox_clear(GtkWidget *widget)
   d->labels = NULL;
   g_list_free(d->alignments);
   d->alignments = NULL;
+  if(d->free_func)
+    g_list_free_full(d->data, d->free_func);
+  else
+    g_list_free(d->data);
+  d->data = NULL;
   d->num_labels = 0;
 }
 
@@ -1711,7 +1749,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
     case DT_BAUHAUS_COMBOBOX:
     {
       // we launch the dynamic populate fct if any
-      if(w->combo_populate) w->combo_populate(&w->module);
+      if(w->combo_populate) w->combo_populate(GTK_WIDGET(w), &w->module);
       // comboboxes change immediately
       darktable.bauhaus->change_active = 1;
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;

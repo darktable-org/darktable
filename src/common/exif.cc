@@ -162,6 +162,26 @@ static void dt_remove_exif_keys(Exiv2::ExifData &exif, const char *keys[], unsig
   }
 }
 
+static void dt_remove_xmp_keys(Exiv2::XmpData &xmp, const char *keys[], unsigned int n_keys)
+{
+  for(unsigned int i = 0; i < n_keys; i++)
+  {
+    try
+    {
+      Exiv2::XmpData::iterator pos;
+      while((pos = xmp.findKey(Exiv2::XmpKey(keys[i]))) != xmp.end())
+        xmp.erase(pos);
+    }
+    catch(Exiv2::AnyError &e)
+    {
+      // the only exception we may get is "invalid" tag, which is not
+      // important enough to either stop the function, or even display
+      // a message (it's probably the tag is not implemented in the
+      // exiv2 version used)
+    }
+  }
+}
+
 static bool dt_exif_read_xmp_tag(Exiv2::XmpData &xmpData, Exiv2::XmpData::iterator *pos, string key)
 {
   try
@@ -1264,14 +1284,14 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
 
     /* Replace RAW dimension with output dimensions (for example after crop/scale, or orientation for dng
      * mode) */
-    if(out_width > 0) exifData["Exif.Photo.PixelXDimension"] = out_width;
-    if(out_height > 0) exifData["Exif.Photo.PixelYDimension"] = out_height;
+    if(out_width > 0) exifData["Exif.Photo.PixelXDimension"] = (uint32_t)out_width;
+    if(out_height > 0) exifData["Exif.Photo.PixelYDimension"] = (uint32_t)out_height;
 
     int resolution = dt_conf_get_int("metadata/resolution");
     if(resolution > 0)
     {
-      exifData["Exif.Image.XResolution"] = resolution;
-      exifData["Exif.Image.YResolution"] = resolution;
+      exifData["Exif.Image.XResolution"] = Exiv2::Rational(resolution, 1);
+      exifData["Exif.Image.YResolution"] = Exiv2::Rational(resolution, 1);
       exifData["Exif.Image.ResolutionUnit"] = uint16_t(2); /* inches */
     }
     else
@@ -2709,6 +2729,17 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
     }
 
     dt_remove_known_keys(xmpData); // is this needed?
+
+    {
+      // We also want to make sure to not have some tags that might
+      // have come in from XMP files created by digikam or similar
+      static const char *keys[] = {
+        "Xmp.tiff.Orientation"
+      };
+      static const guint n_keys = G_N_ELEMENTS(keys);
+      dt_remove_xmp_keys(xmpData, keys, n_keys);
+    }
+
     // last but not least attach what we have in DB to the XMP. in theory that should be
     // the same as what we just copied over from the sidecar file, but you never know ...
     dt_exif_xmp_read_data(xmpData, imgid);

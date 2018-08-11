@@ -1669,7 +1669,7 @@ void dt_masks_iop_use_same_as(dt_iop_module_t *module, dt_iop_module_t *src)
   dt_masks_write_form(grp, darktable.develop);
 }
 
-void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
+void dt_masks_iop_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
 {
   // we ensure that the module has focus
   dt_iop_module_t *module = *m;

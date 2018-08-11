@@ -316,9 +316,50 @@ static gint _lib_modulelist_gui_sort(GtkTreeModel *model, GtkTreeIter *a, GtkTre
   return g_utf8_collate(modulea->name(), moduleb->name());
 }
 
+static char *gen_params(char state, int *size)
+{
+  int len = 0;
+  char *params = NULL;
+  for(GList *iter = g_list_first(darktable.iop); iter; iter = g_list_next(iter))
+  {
+    dt_iop_module_so_t *module = (dt_iop_module_so_t *)iter->data;
+    // skip modules not in the list
+    if(dt_iop_so_is_hidden(module) || (module->flags() & IOP_FLAGS_DEPRECATED)) continue;
+    int op_len = strlen(module->op) + 1;
+    int new_len = len + 1 + op_len;
+    char *tmp = realloc(params, new_len);
+    if(!tmp)
+    {
+      free(params);
+      params = NULL;
+      len = 0;
+      break;
+    }
+    else
+    {
+      params = tmp;
+    }
+    memcpy(params + len, module->op, op_len);
+    params[new_len - 1] = state;
+    len = new_len;
+  }
+
+  *size = len;
+  return params;
+}
+
 void init_presets(dt_lib_module_t *self)
 {
-  // we could have a "show all" preset, or "show simple set" but I don't think we need that.
+  // add "none" and "all" presets
+  int len;
+  char *params_none = gen_params(0, &len);
+  char *params_all = gen_params(1, &len);
+
+  dt_lib_presets_add(_("show none"), self->plugin_name, self->version(), params_none, len);
+  dt_lib_presets_add(_("show all"), self->plugin_name, self->version(), params_all, len);
+
+  free(params_none);
+  free(params_all);
 }
 
 void *get_params(dt_lib_module_t *self, int *size)
