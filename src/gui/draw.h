@@ -224,30 +224,30 @@ static inline int dt_draw_curve_add_point(dt_draw_curve_t *c, const float x, con
   return 0;
 }
 
-static inline void dt_draw_histogram_8_linear(cairo_t *cr, uint32_t *hist, int32_t channel)
+static inline void dt_draw_histogram_8_linear(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
-  for(int k = 0; k < 256; k++) cairo_line_to(cr, k, hist[4 * k + channel]);
+  for(int k = 0; k < 256; k++) cairo_line_to(cr, k, hist[channels * k + channel]);
   cairo_line_to(cr, 255, 0);
   cairo_close_path(cr);
   cairo_fill(cr);
 }
 
-static inline void dt_draw_histogram_8_log(cairo_t *cr, uint32_t *hist, int32_t channel)
+static inline void dt_draw_histogram_8_log(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
-  for(int k = 0; k < 256; k++) cairo_line_to(cr, k, logf(1.0 + hist[4 * k + channel]));
+  for(int k = 0; k < 256; k++) cairo_line_to(cr, k, logf(1.0 + hist[channels * k + channel]));
   cairo_line_to(cr, 255, 0);
   cairo_close_path(cr);
   cairo_fill(cr);
 }
 
-static inline void dt_draw_histogram_8(cairo_t *cr, uint32_t *hist, int32_t channel, gboolean linear)
+static inline void dt_draw_histogram_8(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel, gboolean linear)
 {
   if(linear)
-    dt_draw_histogram_8_linear(cr, hist, channel);
+    dt_draw_histogram_8_linear(cr, hist, channels, channel);
   else
-    dt_draw_histogram_8_log(cr, hist, channel);
+    dt_draw_histogram_8_log(cr, hist, channels, channel);
 }
 
 /** transform a data blob from cairo's premultiplied rgba/bgra to GdkPixbuf's un-premultiplied bgra/rgba */
