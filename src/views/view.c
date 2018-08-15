@@ -1138,6 +1138,68 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       const gboolean image_is_rejected = (img && ((img->flags & 0x7) == 6));
 
       if(img)
+      {
+        if ( zoom != 1)
+        {
+          const double overlay_height = 0.33 * height;
+          const int exif_offset = DT_PIXEL_APPLY_DPI(5);
+          const int fontsize = 0.17 * overlay_height;
+          const double line_offs = 1.2 * fontsize;
+
+
+          double x0 = DT_PIXEL_APPLY_DPI(1);
+          double y0 = height - overlay_height;
+          double rect_width = width - DT_PIXEL_APPLY_DPI(2);
+          double rect_height = overlay_height - DT_PIXEL_APPLY_DPI(2);
+          double radius = DT_PIXEL_APPLY_DPI(5);
+          double x1, y1, off, off1;
+
+          x1 = x0 + rect_width;
+          y1 = y0 + rect_height;
+          off = radius * 0.666;
+          off1 = radius - off;
+          cairo_save(cr);
+          cairo_move_to(cr, x0, y0 + radius);
+          cairo_curve_to(cr, x0, y0 + off1, x0 + off1, y0, x0 + radius, y0);
+          cairo_line_to(cr, x1 - radius, y0);
+          cairo_curve_to(cr, x1 - off1, y0, x1, y0 + off1, x1, y0 + radius);
+          cairo_line_to(cr, x1, y1 - radius);
+          cairo_curve_to(cr, x1, y1 - off1, x1 - off1, y1, x1 - radius, y1);
+          cairo_line_to(cr, x0 + radius, y1);
+          cairo_curve_to(cr, x0 + off1, y1, x0, y1 - off1, x0, y1 - radius);
+          cairo_close_path(cr);
+          cairo_set_source_rgb(cr, bgcol, bgcol, bgcol);
+          cairo_fill_preserve(cr);
+          cairo_set_line_width(cr, 0.005 * width);
+          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+          cairo_stroke(cr);
+
+          // some exif data
+          PangoLayout *layout;
+          PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+          pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+          layout = pango_cairo_create_layout(cr);
+          pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+          pango_layout_set_font_description(layout, desc);
+          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+
+          cairo_move_to(cr, x0 + exif_offset, y0 + exif_offset);
+          pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
+          pango_layout_set_width(layout, (int)(PANGO_SCALE * (width - 2 * exif_offset)));
+          pango_layout_set_text(layout, img->filename, -1);
+          pango_cairo_show_layout(cr, layout);
+          char exifline[50];
+          cairo_move_to(cr, x0 + exif_offset, y0 + exif_offset + line_offs);
+          dt_image_print_exif(img, exifline, sizeof(exifline));
+          pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
+          pango_layout_set_text(layout, exifline, -1);
+          pango_cairo_show_layout(cr, layout);
+
+          pango_font_description_free(desc);
+          g_object_unref(layout);
+          cairo_restore(cr);
+        }
+
         for(int k = 0; k < 5; k++)
         {
           if(zoom != 1)
@@ -1166,6 +1228,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
               cairo_stroke(cr);
           }
         }
+      }
 
       // Image rejected?
       if(zoom != 1)
