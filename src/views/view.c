@@ -1292,16 +1292,15 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     if(width > DECORATION_SIZE_LIMIT)
     {
       // color labels:
-      // const float x = zoom == 1 ? (0.07) * fscale : .21 * width;
-      // const float y = zoom == 1 ? 0.17 * fscale : 0.1 * height;
       const float x[] = {0.84, 0.92, 0.88, 0.84, 0.92};
       const float y[] = {0.84, 0.84, 0.88, 0.92, 0.92};
       const float x_zoom[] = {0.27, 0.30, 0.285, 0.27, 0.30};
       const float y_zoom[] = {0.095, 0.095, 0.11, 0.125, 0.125};
       const int max_col = sizeof(x) / sizeof(x[0]);
-
-
       const float r = zoom == 1 ? 0.01 * fscale : 0.03 * width;
+
+      gboolean colorlabel_painted = FALSE;
+      gboolean painted_col[] = {FALSE, FALSE, FALSE, FALSE, FALSE};
 
       /* clear and reset prepared statement */
       DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_color);
@@ -1313,16 +1312,33 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       {
         cairo_save(cr);
         const int col = sqlite3_column_int(darktable.view_manager->statements.get_color, 0);
-        // see src/dtgtk/paint.c
-        // dtgtk_cairo_paint_label(cr, x + (3 * r * col) - 5 * r, y - r, r * 2, r * 2, col, NULL);
         if ( col < max_col )
         {
+          // see src/dtgtk/paint.c
           if ( zoom != 1 )
             dtgtk_cairo_paint_label(cr, x[col]  * width, y[col] * height, r * 2, r * 2, col, NULL);
           else
             dtgtk_cairo_paint_label(cr, x_zoom[col]  * fscale, y_zoom[col] * fscale, r * 2, r * 2, col, NULL);
+          colorlabel_painted = colorlabel_painted || TRUE;
+          painted_col[col] = TRUE;
         }
         cairo_restore(cr);
+      }
+      if (colorlabel_painted)
+      {
+        const int dont_fill_col = 7;
+        for(int i = 0; i < max_col; i++)
+        {
+          if (!painted_col[i])
+          {
+            cairo_save(cr);
+            if ( zoom != 1 )
+              dtgtk_cairo_paint_label(cr, x[i]  * width, y[i] * height, r * 2, r * 2, dont_fill_col, NULL);
+            else
+              dtgtk_cairo_paint_label(cr, x_zoom[i]  * fscale, y_zoom[i] * fscale, r * 2, r * 2, dont_fill_col, NULL);
+            cairo_restore(cr);
+          }
+        }
       }
     }
   }
