@@ -774,7 +774,7 @@ GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
     labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
     gtk_container_add(GTK_CONTAINER(labelev), label);
-    cur_elt->update_widget(cur_elt,dialog,label);
+    cur_elt->update_widget(cur_elt,dialog,labelev);
     gtk_widget_set_tooltip_text(labelev, cur_elt->tooltip_reset);
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
     gtk_widget_set_tooltip_text(cur_elt->widget, cur_elt->tooltip);
