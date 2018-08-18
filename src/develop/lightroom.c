@@ -913,7 +913,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
       tcNode = tcNode->next;
     }
   }
-  else if(!xmlStrcmp(name, (const xmlChar *)"title"))
+  else if(dev == NULL && !xmlStrcmp(name, (const xmlChar *)"title"))
   {
     xmlNodePtr ttlNode = node;
     while(ttlNode)
@@ -927,7 +927,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
       ttlNode = ttlNode->next;
     }
   }
-  else if(!xmlStrcmp(name, (const xmlChar *)"description"))
+  else if(dev == NULL && !xmlStrcmp(name, (const xmlChar *)"description"))
   {
     xmlNodePtr desNode = node;
     while(desNode)
@@ -941,7 +941,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
       desNode = desNode->next;
     }
   }
-  else if(!xmlStrcmp(name, (const xmlChar *)"creator"))
+  else if(dev == NULL && !xmlStrcmp(name, (const xmlChar *)"creator"))
   {
     xmlNodePtr creNode = node;
     while(creNode)
@@ -955,7 +955,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
       creNode = creNode->next;
     }
   }
-  else if(!xmlStrcmp(name, (const xmlChar *)"rights"))
+  else if(dev == NULL && !xmlStrcmp(name, (const xmlChar *)"rights"))
   {
     xmlNodePtr rigNode = node;
     while(rigNode)
