@@ -32,7 +32,7 @@
       </enum>
     </type>
     <default>default</default>
-    <shortdescription>Alternativ module slider style</shortdescription>
+    <shortdescription>alternative module slider style</shortdescription>
     <longdescription>default - standard darktable style, slider between label and value - requires wider right panel (see next option), increase vertical gap between text and slider - slightly enlarges the gap between label/value and the slider (needs a restart)</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
