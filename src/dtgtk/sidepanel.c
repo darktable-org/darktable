@@ -20,6 +20,8 @@
 #include "develop/imageop.h"
 
 #include <gtk/gtk.h>
+#include <string.h>
+
 
 G_DEFINE_TYPE(GtkDarktableSidePanel, dtgtk_side_panel, GTK_TYPE_BOX);
 
@@ -27,8 +29,12 @@ static void dtgtk_side_panel_get_preferred_width(GtkWidget *widget, gint *minimu
 {
   GtkDarktableSidePanelClass *class = DTGTK_SIDE_PANEL_GET_CLASS(widget);
 
-  *minimum_size = *natural_size = class->width;
+  if ( strcmp(gtk_widget_get_name(widget), "right") == 0 )
+    *minimum_size = *natural_size = class->right_width;
+  else
+    *minimum_size = *natural_size = class->width;
 }
+
 
 static void dtgtk_side_panel_class_init(GtkDarktableSidePanelClass *class)
 {
@@ -37,6 +43,11 @@ static void dtgtk_side_panel_class_init(GtkDarktableSidePanelClass *class)
   widget_class->get_preferred_width = dtgtk_side_panel_get_preferred_width;
 
   class->width = dt_conf_get_int("panel_width");
+  class->right_width = class->width + dt_conf_get_int("wider_right_panel");
+  if (class->right_width > 1000 )
+  {
+    class->right_width = 1000;
+  }
 }
 
 static void dtgtk_side_panel_init(GtkDarktableSidePanel *panel)

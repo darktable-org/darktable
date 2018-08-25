@@ -30,6 +30,71 @@
 #include <math.h>
 #include <pango/pangocairo.h>
 
+typedef enum bh_module_slider_style_t
+{
+  DT_SLIDER_STYLE_DEFAULT,
+  DT_SLIDER_STYLE_BETWEEN_TEXT,
+  DT_SLIDER_STYLE_INCREASE_VERT_GAP
+} bh_module_slider_style_t;
+
+static struct
+{
+  bh_module_slider_style_t draw_style;
+  const int required_panel_width;   //minimum required right panel width to be usable
+  const int line_height;            //slider widget height in pixel
+  const float label_font_size;      //line_height factor
+  const float value_font_size;      //line_height factor
+  const float slider_top_offset;    //line_height factor
+  const float marker_size;          //line_height factor
+  const float increase_label_width; //needed for adaptive label_width calculation
+  const int label_max_width;        //in pixel
+  const int label_min_width;        //in pixel
+  int panel_width;                  //DPI scaled: in pixel
+  int label_width;                  //DPI scaled: adaptive label width in pixel
+                                    //DPI scaled: Calc ==> label_min_width + (panel_width - requrired_panel_width) * increase_label_width
+  int value_width;                  //DPI scaled: in pixel
+  int slider_text_gap;              //DPI scaled: gap between slider and label/value in pixel
+} bh_alt_slider_style =
+{
+  DT_SLIDER_STYLE_DEFAULT,  //draw_style
+  240,    //required_panel_width
+  9,      //line_height
+  0.8,    //label_font_size
+  0.8,    //value_font_size
+  0.55,   //slider_top_offset
+  0.4,    //marker_size
+  0.15,   //increase_label_width
+  140,    //label_max_width
+  70,     //label_min_width
+  0,      //panel_width
+  70,     //label_width
+  50,     //value_width
+  3,      //slider_text_gap
+};
+
+#define IS_DRAW_STYLE(x) (bh_alt_slider_style.draw_style == (x))
+
+static float dt_bauhaus_slider_normalized_left(const float width, const float ht)
+{
+  float l;
+  if (IS_DRAW_STYLE(DT_SLIDER_STYLE_BETWEEN_TEXT))
+    l = (4.0f + (bh_alt_slider_style.label_width + bh_alt_slider_style.slider_text_gap)) / width;
+  else
+    l = 4.0f / width;
+  return l;
+}
+
+static float dt_bauhaus_slider_normalized_right(const float width, const float ht)
+{
+  float r;
+  if (IS_DRAW_STYLE(DT_SLIDER_STYLE_BETWEEN_TEXT))
+    r = 1.0f - (ht + 4.0f + (bh_alt_slider_style.value_width + bh_alt_slider_style.slider_text_gap)) / width;
+  else
+    r = 1.0f - (ht + 4.0f) / width;
+  return r;
+}
+
+
 G_DEFINE_TYPE(DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA)
 
 // fwd declare
@@ -66,7 +131,7 @@ static inline void set_color(cairo_t *cr, GdkRGBA color)
   cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
 }
 
-static int show_pango_text(cairo_t *cr, char *text, float x_pos, float y_pos, float max_width, gboolean right_aligned)
+static int show_pango_text(cairo_t *cr, char *text, float x_pos, float y_pos, float max_width, gboolean right_aligned, gboolean ellipsize_end)
 {
   PangoLayout *layout;
 
@@ -74,7 +139,7 @@ static int show_pango_text(cairo_t *cr, char *text, float x_pos, float y_pos, fl
 
   if(max_width > 0)
   {
-    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
+    pango_layout_set_ellipsize(layout, ellipsize_end ? PANGO_ELLIPSIZE_END : PANGO_ELLIPSIZE_MIDDLE);
     pango_layout_set_width(layout, (int)(PANGO_SCALE * max_width + 0.5f));
   }
 
@@ -142,8 +207,8 @@ static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos);
 static float get_slider_line_offset(float pos, float scale, float x, float y, float ht, const int width)
 {
   // ht is in [0,1] scale here
-  const float l = 4.0f / width;
-  const float r = 1.0f - 4.0f / width - ht;
+  const float l = dt_bauhaus_slider_normalized_left(width, ht);
+  const float r = dt_bauhaus_slider_normalized_right(width, ht);
 
   float offset = 0.0f;
   // handle linear startup and rescale y to fit the whole range again
@@ -177,8 +242,8 @@ static void draw_slider_line(cairo_t *cr, float pos, float off, float scale, con
 {
   // pos is normalized position [0,1], offset is on that scale.
   // ht is in pixels here
-  const float l = 4.0f / width;
-  const float r = 1.0f - (ht + 4.0f) / width;
+  const float l = dt_bauhaus_slider_normalized_left(width, ht);
+  const float r = dt_bauhaus_slider_normalized_right(width, ht);
 
   const int steps = 64;
   cairo_move_to(cr, width * (l + (pos + off) * (r - l)), ht * .7f);
@@ -441,11 +506,57 @@ void dt_bauhaus_init()
   darktable.bauhaus->popup_area = gtk_drawing_area_new();
   gtk_widget_set_name(darktable.bauhaus->popup_area, "bauhaus-popup");
 
+  const char* pstr = dt_conf_get_string("alt_module_style");
+
+  if (strcmp(pstr, "slider between label and value") == 0)
+    bh_alt_slider_style.draw_style = DT_SLIDER_STYLE_BETWEEN_TEXT;
+  else if (strcmp(pstr, "increase vertical gap between text and slider") == 0)
+    bh_alt_slider_style.draw_style = DT_SLIDER_STYLE_INCREASE_VERT_GAP;
+  else
+    bh_alt_slider_style.draw_style = DT_SLIDER_STYLE_DEFAULT;
+
+  const int panel_width = dt_conf_get_int("panel_width");
+  int right_panel_width = panel_width + dt_conf_get_int("wider_right_panel");
+  right_panel_width = MIN(right_panel_width, 1000 );
+
+  if (right_panel_width < DT_PIXEL_APPLY_DPI(bh_alt_slider_style.required_panel_width))
+    bh_alt_slider_style.draw_style = DT_SLIDER_STYLE_DEFAULT;
+
+  if ( IS_DRAW_STYLE(DT_SLIDER_STYLE_BETWEEN_TEXT) )
+  {
+    bh_alt_slider_style.label_width = bh_alt_slider_style.label_min_width
+                                      +(right_panel_width - DT_PIXEL_APPLY_DPI(bh_alt_slider_style.required_panel_width))
+                                      * bh_alt_slider_style.increase_label_width;
+    bh_alt_slider_style.label_width = MIN(bh_alt_slider_style.label_width, bh_alt_slider_style.label_max_width);
+
+    bh_alt_slider_style.label_width = DT_PIXEL_APPLY_DPI(bh_alt_slider_style.label_width);
+    bh_alt_slider_style.value_width = DT_PIXEL_APPLY_DPI(bh_alt_slider_style.value_width);
+    bh_alt_slider_style.slider_text_gap = DT_PIXEL_APPLY_DPI(bh_alt_slider_style.slider_text_gap);
+  }
+
+
   darktable.bauhaus->line_space = 2;
-  darktable.bauhaus->line_height = 11;
-  darktable.bauhaus->marker_size = 0.3f;
-  darktable.bauhaus->label_font_size = 0.6f;
-  darktable.bauhaus->value_font_size = 0.6f;
+  if (IS_DRAW_STYLE(DT_SLIDER_STYLE_BETWEEN_TEXT))
+  {
+    darktable.bauhaus->line_height = bh_alt_slider_style.line_height;
+    darktable.bauhaus->marker_size = bh_alt_slider_style.marker_size;
+    darktable.bauhaus->label_font_size = bh_alt_slider_style.label_font_size;
+    darktable.bauhaus->value_font_size = bh_alt_slider_style.value_font_size;
+  }
+  else if (IS_DRAW_STYLE(DT_SLIDER_STYLE_INCREASE_VERT_GAP))
+  {
+    darktable.bauhaus->line_height = 13;
+    darktable.bauhaus->marker_size = 0.25f;
+    darktable.bauhaus->label_font_size = 0.65f;
+    darktable.bauhaus->value_font_size = 0.65f;
+  }
+  else
+  {
+    darktable.bauhaus->line_height = 11;
+    darktable.bauhaus->marker_size = 0.3f;
+    darktable.bauhaus->label_font_size = 0.6f;
+    darktable.bauhaus->value_font_size = 0.6f;
+  }
   g_strlcpy(darktable.bauhaus->label_font, "sans", sizeof(darktable.bauhaus->label_font));
   g_strlcpy(darktable.bauhaus->value_font, "sans", sizeof(darktable.bauhaus->value_font));
 
@@ -650,7 +761,7 @@ void dt_bauhaus_slider_set_hard_min(GtkWidget* widget, float val)
   {
     dt_bauhaus_slider_set_soft(widget,val);
   }
-  else 
+  else
   {
     dt_bauhaus_slider_set_soft(widget,pos);
   }
@@ -676,8 +787,8 @@ void dt_bauhaus_slider_set_hard_max(GtkWidget* widget, float val)
   if(pos > val) {
 
     dt_bauhaus_slider_set_soft(widget,val);
-  } 
-  else 
+  }
+  else
   {
     dt_bauhaus_slider_set_soft(widget,pos);
   }
@@ -701,11 +812,11 @@ void dt_bauhaus_slider_set_soft_min(GtkWidget* widget, float val)
   d->min =  d->soft_min;
   if(rawval > d->soft_max) dt_bauhaus_slider_set_soft_max(widget,val);
   if(rawval > d->hard_max) dt_bauhaus_slider_set_hard_max(widget,val);
-  if(pos < val) 
+  if(pos < val)
   {
     dt_bauhaus_slider_set_soft(widget,val);
-  } 
-  else 
+  }
+  else
   {
     dt_bauhaus_slider_set_soft(widget,pos);
   }
@@ -1185,11 +1296,13 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
   const int ht = allocation.height;
   cairo_save(cr);
 
-  const float l = 4.0f / wd;
-  const float r = 1.0f - (ht + 4.0f) / wd;
+  const float l = dt_bauhaus_slider_normalized_left(wd, ht);
+  const float r = dt_bauhaus_slider_normalized_right(wd, ht);
   set_color(cr, darktable.bauhaus->color_fg);
   cairo_translate(cr, (l + pos * (r - l)) * wd,
-                  get_line_height() * (darktable.bauhaus->label_font_size + 0.25f));
+                  get_line_height() * (IS_DRAW_STYLE(DT_SLIDER_STYLE_BETWEEN_TEXT) ? bh_alt_slider_style.slider_top_offset : 1)
+                                    * (darktable.bauhaus->label_font_size
+                                    + (IS_DRAW_STYLE(DT_SLIDER_STYLE_INCREASE_VERT_GAP) ? 0.2f : 0.25f)));
   cairo_scale(cr, 1.0f, -1.0f);
   draw_equilateral_triangle(cr, ht * get_marker_size());
   cairo_fill_preserve(cr);
@@ -1260,15 +1373,20 @@ static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   GtkWidget *widget = GTK_WIDGET(w);
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
+
   if(w->type != DT_BAUHAUS_SLIDER) return;
   const int wd = allocation.width;
   const int ht = allocation.height;
   cairo_save(cr);
   dt_bauhaus_slider_data_t *d = &w->data.slider;
 
+  const gboolean draw_between_text = IS_DRAW_STYLE(DT_SLIDER_STYLE_BETWEEN_TEXT);
+
   // pos of baseline
-  const float htm = ht * (darktable.bauhaus->label_font_size + 0.15f);
-  const float htM = ht * 0.2f; // thickness of baseline
+  const float htm = ht * (draw_between_text ? (darktable.bauhaus->label_font_size * bh_alt_slider_style.slider_top_offset)
+                                            : (darktable.bauhaus->label_font_size + (IS_DRAW_STYLE(DT_SLIDER_STYLE_INCREASE_VERT_GAP) ? 0.1f : 0.15f)));
+
+  const float htM = ht * (IS_DRAW_STYLE(DT_SLIDER_STYLE_INCREASE_VERT_GAP) ? 0.17f : 0.2f); // thickness of baseline
 
   // the background of the line
   cairo_pattern_t *gradient = NULL;
@@ -1287,7 +1405,12 @@ static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
     set_color(cr, darktable.bauhaus->color_bg);
   }
 
-  cairo_rectangle(cr, 2, htm, wd - 4 - ht - 2, htM);
+  if ( draw_between_text )
+    cairo_rectangle(cr, 4 + bh_alt_slider_style.label_width + bh_alt_slider_style.slider_text_gap, htm,
+                        wd - 4 - ht - 4 - (bh_alt_slider_style.label_width
+                        + bh_alt_slider_style.value_width + 2 * bh_alt_slider_style.slider_text_gap), htM);
+  else
+    cairo_rectangle(cr, 2, htm, wd - 4 - ht - 2, htM);
   cairo_fill(cr);
 
   // have a `fill ratio feel'
@@ -1297,13 +1420,23 @@ static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
     // only brighten, useful for colored sliders to not get too faint:
     cairo_set_operator(cr, CAIRO_OPERATOR_SCREEN);
     cairo_set_source_rgb(cr, .3, .3, .3);
-    cairo_rectangle(cr, 2, htm, d->pos * (wd - 4 - ht - 2), htM);
+    if ( draw_between_text )
+      cairo_rectangle(cr, 4 + bh_alt_slider_style.label_width + bh_alt_slider_style.slider_text_gap, htm,
+                          d->pos * (wd - 4 - ht - 4 - (bh_alt_slider_style.label_width
+                          + bh_alt_slider_style.value_width + 2 * bh_alt_slider_style.slider_text_gap)), htM);
+    else
+      cairo_rectangle(cr, 2, htm, d->pos * (wd - 4 - ht - 2), htM);
     cairo_fill(cr);
     // change back to default cairo operator:
     cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   }
 
-  cairo_rectangle(cr, 2, htm, wd - 4 - ht - 2, htM);
+  if ( draw_between_text )
+    cairo_rectangle(cr, 2 + bh_alt_slider_style.label_width + bh_alt_slider_style.slider_text_gap, htm,
+                        wd - 4 - ht - 2 - (bh_alt_slider_style.label_width
+                        + bh_alt_slider_style.value_width + 2 * bh_alt_slider_style.slider_text_gap), htM);
+  else
+    cairo_rectangle(cr, 2, htm, wd - 4 - ht - 2, htM);
   cairo_set_line_width(cr, 1.);
   set_color(cr, darktable.bauhaus->color_border);
   cairo_stroke(cr);
@@ -1494,7 +1627,11 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       }
       cairo_restore(cr);
       set_color(cr, text_color);
-      show_pango_text(cr, w->label, 2, 0, 0, FALSE);
+      if (IS_DRAW_STYLE(DT_SLIDER_STYLE_BETWEEN_TEXT))
+        show_pango_text(cr, w->label, bh_alt_slider_style.label_width - bh_alt_slider_style.slider_text_gap, 0,
+                        bh_alt_slider_style.label_width - bh_alt_slider_style.slider_text_gap, TRUE, TRUE);
+      else
+        show_pango_text(cr, w->label, 2, 0, 0, FALSE, FALSE);
 
       // draw mouse over indicator line
       cairo_save(cr);
@@ -1519,7 +1656,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       const float fc = d->callback(widget, f, DT_BAUHAUS_GET);
       snprintf(text, sizeof(text), d->format, fc);
       set_color(cr, text_color);
-      show_pango_text(cr, text, wd - 4 - ht, 0, 0, TRUE);
+      show_pango_text(cr, text, wd - 4 - ht, 0, 0, TRUE, FALSE);
 
       cairo_restore(cr);
     }
@@ -1553,9 +1690,9 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
             set_color(cr, text_color);
 
           if(align == DT_BAUHAUS_COMBOBOX_ALIGN_LEFT)
-            label_width = show_pango_text(cr, text, 2, (get_line_space() + ht) * k, max_width, FALSE);
+            label_width = show_pango_text(cr, text, 2, (get_line_space() + ht) * k, max_width, FALSE, FALSE);
           else
-            label_width = show_pango_text(cr, text, wd - 4 - ht, (get_line_space() + ht) * k, max_width, TRUE);
+            label_width = show_pango_text(cr, text, wd - 4 - ht, (get_line_space() + ht) * k, max_width, TRUE, FALSE);
 
           // prefer the entry over the label wrt. ellipsization when expanded
           if(first_label)
@@ -1573,7 +1710,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       // left aligned box label. add it to the gui after the entries so we can ellipsize it if needed
       set_color(cr, text_color);
-      show_pango_text(cr, w->label, 2, 0, wd - 8 - ht - first_label_width, FALSE);
+      show_pango_text(cr, w->label, 2, 0, wd - 8 - ht - first_label_width, FALSE, FALSE);
 
       g_free(keys);
     }
@@ -1658,7 +1795,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
       // draw label and quad area at right end
       set_color(cr, text_color);
       float label_width
-          = show_pango_text(cr, w->label, 2, 0, 0, FALSE);
+          = show_pango_text(cr, w->label, 2, 0, 0, FALSE, FALSE);
       dt_bauhaus_draw_quad(w, cr);
 
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
@@ -1666,7 +1803,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
       if(d->active >= 0) text = (gchar *)g_list_nth_data(d->labels, d->active);
       set_color(cr, text_color);
       show_pango_text(cr, text, width - 4 - height, 0, width - 4 - height - label_width - height, TRUE/*,
-                      gtk_widget_is_sensitive(widget), FALSE*/);
+                      gtk_widget_is_sensitive(widget), FALSE*/, FALSE);
       break;
     }
     case DT_BAUHAUS_SLIDER:
@@ -1679,7 +1816,8 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
 
       if(gtk_widget_is_sensitive(widget))
       {
-        dt_bauhaus_draw_indicator(w, d->pos, cr);
+        if (IS_DRAW_STYLE(DT_SLIDER_STYLE_DEFAULT))
+          dt_bauhaus_draw_indicator(w, d->pos, cr);
 
         // TODO: merge that text with combo
         char text[256];
@@ -1687,11 +1825,18 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
         const float fc = d->callback(widget, f, DT_BAUHAUS_GET);
         snprintf(text, sizeof(text), d->format, fc);
         set_color(cr, text_color);
-        show_pango_text(cr, text, width - 4 - height, 0, 0, TRUE);
+        show_pango_text(cr, text, width - 4 - height, 0, 0, TRUE, FALSE);
       }
       // label on top of marker:
       set_color(cr, text_color);
-      show_pango_text(cr, w->label, 2, 0, 0, FALSE/*, gtk_widget_is_sensitive(widget), FALSE*/);
+      if (IS_DRAW_STYLE(DT_SLIDER_STYLE_BETWEEN_TEXT))
+        show_pango_text(cr, w->label, bh_alt_slider_style.label_width - bh_alt_slider_style.slider_text_gap, 0,
+                        bh_alt_slider_style.label_width - bh_alt_slider_style.slider_text_gap, TRUE, TRUE);
+      else
+        show_pango_text(cr, w->label, 2, 0, 0, FALSE, FALSE);
+
+      if (!IS_DRAW_STYLE(DT_SLIDER_STYLE_DEFAULT))
+        dt_bauhaus_draw_indicator(w, d->pos, cr);
     }
     break;
     default:
@@ -2243,8 +2388,8 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
     }
     else
     {
-      const float l = 4.0f / tmp.width;
-      const float r = 1.0f - (tmp.height + 4.0f) / tmp.width;
+      const float l = dt_bauhaus_slider_normalized_left(tmp.width, tmp.height);
+      const float r = dt_bauhaus_slider_normalized_right(tmp.width, tmp.height);
       dt_bauhaus_slider_set_normalized(w, (event->x / tmp.width - l) / (r - l));
       dt_bauhaus_slider_data_t *d = &w->data.slider;
       d->is_dragging = 1;
@@ -2272,8 +2417,8 @@ static gboolean dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButt
     d->is_dragging = 0;
     if(d->timeout_handle) g_source_remove(d->timeout_handle);
     d->timeout_handle = 0;
-    const float l = 4.0f / tmp.width;
-    const float r = 1.0f - (tmp.height + 4.0f) / tmp.width;
+    const float l = dt_bauhaus_slider_normalized_left(tmp.width, tmp.height);
+    const float r = dt_bauhaus_slider_normalized_right(tmp.width, tmp.height);
     dt_bauhaus_slider_set_normalized(w, (event->x / tmp.width - l) / (r - l));
 
     return TRUE;
@@ -2289,8 +2434,8 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
     dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
     GtkAllocation tmp;
     gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
-    const float l = 4.0f / tmp.width;
-    const float r = 1.0f - (tmp.height + 4.0f) / tmp.width;
+    const float l = dt_bauhaus_slider_normalized_left(tmp.width, tmp.height);
+    const float r = dt_bauhaus_slider_normalized_right(tmp.width, tmp.height);
     dt_bauhaus_slider_set_normalized(w, (event->x / tmp.width - l) / (r - l));
   }
   // not sure if needed:

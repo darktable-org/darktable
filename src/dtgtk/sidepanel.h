@@ -44,6 +44,7 @@ typedef struct _GtkDarktableSidePanelClass
 
   /*< private >*/
   gint width;
+  gint right_width;
 } GtkDarktableSidePanelClass;
 
 GType dtgtk_side_panel_get_type(void);
