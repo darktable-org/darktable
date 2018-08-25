@@ -214,6 +214,7 @@ static void dt_dcraw_adobe_coeff(const char *name, float cam_xyz[1][12])
     { "GITUP GIT2", { 8489,-2583,-1036,-8051,15583,2643,-1307,1407,7354 } }, /* Not adobe matrix, from raw2dng, looks like copied from "Nikon E8700" */
     { "GITUP GIT2P", { 8489,-2583,-1036,-8051,15583,2643,-1307,1407,7354 } }, /* Not adobe matrix, copied from "Nikon E8700" */
     { "Hasselblad H3D", { 3857,452,-46,-6008,14477,1596,-2627,4481,5718 } },
+    { "Hasselblad H4D", { 9662,-684,-279,-4903,12293,2950,-344,1669,6024 } },
     { "Hasselblad CFV",   {8519,-3260,-280,-5081,13459,1738,-1449,2960,7809} },
     { "Hasselblad CFV-50", { 5656,-659,-346,-3923,12306,1791,-1602,3509,5442 } },
     { "Hasselblad CF132", {8519,-3260,-280,-5081,13459,1738,-1449,2960,7809} },
