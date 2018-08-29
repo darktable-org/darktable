@@ -250,6 +250,29 @@ int dt_lua_tag_get_attached(lua_State *L)
 }
 
 
+int dt_lua_tag_get_tagged_images(lua_State *L)
+{
+  dt_lua_tag_t tagid;
+  luaA_to(L, dt_lua_tag_t, &tagid, 1);
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.tagged_images WHERE tagid=?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+  int rv = sqlite3_step(stmt);
+  lua_newtable(L);
+  while(rv == SQLITE_ROW)
+  {
+    int imgid = sqlite3_column_int(stmt, 0);
+    luaA_push(L, dt_lua_image_t, &imgid);
+    luaL_ref(L, -2);
+    rv = sqlite3_step(stmt);
+  }
+  sqlite3_finalize(stmt);
+  return 1;
+}
+
+
 int dt_lua_init_tags(lua_State *L)
 {
   dt_lua_init_int_type(L, dt_lua_tag_t);
@@ -297,6 +320,9 @@ int dt_lua_init_tags(lua_State *L)
   lua_pushcfunction(L, dt_lua_tag_get_attached);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "get_tags");
+  lua_pushcfunction(L, dt_lua_tag_get_tagged_images);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "get_tagged_images");
 
 
   return 0;
