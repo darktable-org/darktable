@@ -25,6 +25,7 @@ typedef unsigned int dt_lua_tag_t;
 int dt_lua_tag_attach(lua_State *L);
 int dt_lua_tag_detach(lua_State *L);
 int dt_lua_tag_get_attached(lua_State *L);
+int dt_lua_tag_get_tagged_images(lua_State *L);
 
 int dt_lua_init_tags(lua_State *L);
 
