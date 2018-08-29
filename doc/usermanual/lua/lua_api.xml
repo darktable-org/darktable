@@ -2451,6 +2451,34 @@ end</programlisting></para>
 </variablelist>
 </section>
 
+<section status="final" id="darktable_tags_get_tagged_images">
+<title>darktable.tags.get_tagged_images</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>get_tagged_images</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_tags_get_tagged_images_tag">tag</link></emphasis> : <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link>
+) : table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Gets all images with the attached tag.</para>
+
+<variablelist>
+<varlistentry id="darktable_tags_get_tagged_images_tag"><term>tag</term><listitem>
+<synopsis><link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
+<para>The tag to search images for.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>A table of images that have the tag attached.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_configuration">
