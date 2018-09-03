@@ -66,7 +66,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
     {
       float masks_border;
 
-      if(form->type & (DT_MASKS_CLONE /*|DT_MASKS_NON_CLONE*/)) // TODO: enable this when the option is created
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
         masks_border = dt_conf_get_float("plugins/darkroom/spots/circle_border");
       else
         masks_border = dt_conf_get_float("plugins/darkroom/masks/circle/border");
@@ -76,7 +76,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
       else if(!up && masks_border < 1.0f)
         masks_border *= 1.0f / 0.97f;
 
-      if(form->type & (DT_MASKS_CLONE /*|DT_MASKS_NON_CLONE*/)) // TODO: enable this when the option is created
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
         dt_conf_set_float("plugins/darkroom/spots/circle_border", masks_border);
       else
         dt_conf_set_float("plugins/darkroom/masks/circle/border", masks_border);
@@ -85,7 +85,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
     {
       float masks_size;
 
-      if(form->type & (DT_MASKS_CLONE /*|DT_MASKS_NON_CLONE*/)) // TODO: enable this when the option is created
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
         masks_size = dt_conf_get_float("plugins/darkroom/spots/circle_size");
       else
         masks_size = dt_conf_get_float("plugins/darkroom/masks/circle/size");
@@ -95,7 +95,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
       else if(!up && masks_size < 1.0f)
         masks_size *= 1.0f / 0.97f;
 
-      if(form->type & (DT_MASKS_CLONE /*|DT_MASKS_NON_CLONE*/)) // TODO: enable this when the option is created
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
         dt_conf_set_float("plugins/darkroom/spots/circle_size", masks_size);
       else
         dt_conf_set_float("plugins/darkroom/masks/circle/size", masks_size);
@@ -475,7 +475,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       if(!form) return;
 
       float radius1, radius2;
-      if(form->type & (DT_MASKS_CLONE /*|DT_MASKS_NON_CLONE*/)) // TODO: enable this when the option is created
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
         radius1 = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_size"));
         radius2 = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_border"));

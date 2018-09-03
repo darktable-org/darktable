@@ -344,7 +344,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
     {
       float rotation;
 
-      if(form->type & DT_MASKS_CLONE)
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
         rotation = dt_conf_get_float("plugins/darkroom/spots/ellipse_rotation");
       else
         rotation = dt_conf_get_float("plugins/darkroom/masks/ellipse/rotation");
@@ -355,7 +355,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
         rotation += 10.f;
       rotation = fmodf(rotation, 360.0f);
 
-      if(form->type & DT_MASKS_CLONE)
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
         dt_conf_set_float("plugins/darkroom/spots/ellipse_rotation", rotation);
       else
         dt_conf_set_float("plugins/darkroom/masks/ellipse/rotation", rotation);
@@ -367,7 +367,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
       float radius_a;
       float radius_b;
 
-      if(form->type & (DT_MASKS_CLONE /*|DT_MASKS_NON_CLONE*/)) // TODO: enable this when the option is created
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
         masks_border = dt_conf_get_float("plugins/darkroom/spots/ellipse_border");
         flags = dt_conf_get_int("plugins/darkroom/spots/ellipse_flags");
@@ -391,7 +391,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
         return 1;
       masks_border = CLAMP(masks_border, 0.001f * reference, reference);
 
-      if(form->type & (DT_MASKS_CLONE /*|DT_MASKS_NON_CLONE*/)) // TODO: enable this when the option is created
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
         dt_conf_set_float("plugins/darkroom/spots/ellipse_border", masks_border);
       else
         dt_conf_set_float("plugins/darkroom/masks/ellipse/border", masks_border);
@@ -401,7 +401,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
       float radius_a;
       float radius_b;
 
-      if(form->type & (DT_MASKS_CLONE /*|DT_MASKS_NON_CLONE*/)) // TODO: enable this when the option is created
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
         radius_a = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_a");
         radius_b = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_b");
@@ -426,7 +426,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
       const float factor = radius_a / oldradius;
       radius_b *= factor;
 
-      if(form->type & (DT_MASKS_CLONE /*|DT_MASKS_NON_CLONE*/)) // TODO: enable this when the option is created
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
         dt_conf_set_float("plugins/darkroom/spots/ellipse_radius_a", radius_a);
         dt_conf_set_float("plugins/darkroom/spots/ellipse_radius_b", radius_b);
@@ -469,7 +469,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
         dt_masks_write_form(form, darktable.develop);
         dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index);
-        if(form->type & DT_MASKS_CLONE)
+        if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
           dt_conf_set_float("plugins/darkroom/spots/ellipse_rotation", ellipse->rotation);
         else
           dt_conf_set_float("plugins/darkroom/masks/ellipse/rotation", ellipse->rotation);
@@ -1064,7 +1064,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
       float radius_b;
       float rotation;
 
-      if(form->type & (DT_MASKS_CLONE /*|DT_MASKS_NON_CLONE*/)) // TODO: enable this when the option is created
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
         masks_border = dt_conf_get_float("plugins/darkroom/spots/ellipse_border");
         flags = dt_conf_get_int("plugins/darkroom/spots/ellipse_flags");
