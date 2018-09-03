@@ -122,6 +122,7 @@ def add_edges(gr):
   gr.add_edge(('flip', 'rotatepixels'))
   gr.add_edge(('flip', 'lens'))
   gr.add_edge(('flip', 'spots'))
+  gr.add_edge(('flip', 'retouch'))
   gr.add_edge(('flip', 'liquify'))
   gr.add_edge(('flip', 'ashift'))
   
@@ -238,8 +239,17 @@ def add_edges(gr):
   gr.add_edge(('borders', 'spots'))
   gr.add_edge(('clipping', 'spots'))
 
-  # liquify immediately after spot removal
+  # retouch as well:
+  gr.add_edge(('retouch', 'demosaic'))
+  gr.add_edge(('scalepixels', 'retouch'))
+  gr.add_edge(('rotatepixels', 'retouch'))
+  gr.add_edge(('lens', 'retouch'))
+  gr.add_edge(('borders', 'retouch'))
+  gr.add_edge(('clipping', 'retouch'))
+
+  # liquify immediately after spot removal / retouch
   gr.add_edge(('liquify', 'spots'))
+  gr.add_edge(('liquify', 'retouch'))
   gr.add_edge(('liquify', 'lens'))
   gr.add_edge(('rotatepixels', 'liquify'))
   gr.add_edge(('scalepixels', 'liquify'))
@@ -540,6 +550,7 @@ gr.add_nodes([
 'soften',
 'splittoning',
 'spots',
+'retouch',
 'temperature',
 'tonecurve',
 'tonemap',
