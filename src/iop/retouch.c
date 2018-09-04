@@ -565,7 +565,7 @@ static void rt_display_selected_shapes_lbl(dt_iop_retouch_gui_data_t *g)
   if(form)
     gtk_label_set_text(g->label_form_selected, form->name);
   else
-    gtk_label_set_text(g->label_form_selected, _(" "));
+    gtk_label_set_text(g->label_form_selected, _("none"));
 }
 
 static int rt_get_selected_shape_index(dt_iop_retouch_params_t *p)
@@ -2491,7 +2491,7 @@ void gui_init(dt_iop_module_t *self)
   g->label_form = GTK_LABEL(gtk_label_new("-1"));
   g_object_set(G_OBJECT(hbox_shapes), "tooltip-text",
                _("to add a shape select an algorithm and a shape type and click on the image.\n"
-                 "shapes are added to the current scale."),
+                 "shapes are added to the current scale"),
                (char *)NULL);
 
   g->bt_brush
@@ -2648,14 +2648,14 @@ void gui_init(dt_iop_module_t *self)
   // copy/paste shapes
   g->bt_copy_scale
       = dtgtk_togglebutton_new(_retouch_cairo_paint_cut_forms, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g_object_set(G_OBJECT(g->bt_copy_scale), "tooltip-text", _("cut shapes from current scale."), (char *)NULL);
+  g_object_set(G_OBJECT(g->bt_copy_scale), "tooltip-text", _("cut shapes from current scale"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_copy_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_copy_scale), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_copy_scale), FALSE);
 
   g->bt_paste_scale
       = dtgtk_togglebutton_new(_retouch_cairo_paint_paste_forms, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g_object_set(G_OBJECT(g->bt_paste_scale), "tooltip-text", _("paste cutted shapes to current scale."),
+  g_object_set(G_OBJECT(g->bt_paste_scale), "tooltip-text", _("paste cutted shapes to current scale"),
                (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_paste_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_paste_scale), bs, bs);
@@ -2687,7 +2687,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->preview_levels_bar = gtk_drawing_area_new();
 
-  gtk_widget_set_tooltip_text(g->preview_levels_bar, _("adjust preview levels."));
+  gtk_widget_set_tooltip_text(g->preview_levels_bar, _("adjust preview levels"));
   g_signal_connect(G_OBJECT(g->preview_levels_bar), "draw", G_CALLBACK(rt_levelsbar_draw), self);
   g_signal_connect(G_OBJECT(g->preview_levels_bar), "motion-notify-event", G_CALLBACK(rt_levelsbar_motion_notify),
                    self);
@@ -2706,7 +2706,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->bt_auto_levels
       = dtgtk_togglebutton_new(_retouch_cairo_paint_auto_levels, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g_object_set(G_OBJECT(g->bt_auto_levels), "tooltip-text", _("auto levels."), (char *)NULL);
+  g_object_set(G_OBJECT(g->bt_auto_levels), "tooltip-text", _("auto levels"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_auto_levels), "toggled", G_CALLBACK(rt_auto_levels_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_auto_levels), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_auto_levels), FALSE);
@@ -2722,7 +2722,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox_shape_sel), label1, FALSE, TRUE, 0);
   g->label_form_selected = GTK_LABEL(gtk_label_new("-1"));
   g_object_set(G_OBJECT(hbox_shape_sel), "tooltip-text",
-               _("click on a shape to select it,\nto unselect click on an empty space."), (char *)NULL);
+               _("click on a shape to select it,\nto unselect click on an empty space"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox_shape_sel), GTK_WIDGET(g->label_form_selected), FALSE, TRUE, 0);
 
   // fill properties
@@ -2732,7 +2732,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->cmb_fill_mode, NULL, _("fill mode"));
   dt_bauhaus_combobox_add(g->cmb_fill_mode, _("erase"));
   dt_bauhaus_combobox_add(g->cmb_fill_mode, _("color"));
-  g_object_set(g->cmb_fill_mode, "tooltip-text", _("erase the detail or fills with choosen color."), (char *)NULL);
+  g_object_set(g->cmb_fill_mode, "tooltip-text", _("erase the detail or fills with choosen color"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->cmb_fill_mode), "value-changed", G_CALLBACK(rt_fill_mode_callback), self);
 
   // color for fill algorithm
@@ -2745,13 +2745,13 @@ void gui_init(dt_iop_module_t *self)
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), bs, bs);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select fill color"));
-  g_object_set(G_OBJECT(g->colorpick), "tooltip-text", _("select fill color."), (char *)NULL);
+  g_object_set(G_OBJECT(g->colorpick), "tooltip-text", _("select fill color"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(rt_colorpick_color_set_callback), self);
 
   g->color_picker = GTK_TOGGLE_BUTTON(
       dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL));
-  g_object_set(G_OBJECT(g->color_picker), "tooltip-text", _("pick fill color from image."), (char *)NULL);
+  g_object_set(G_OBJECT(g->color_picker), "tooltip-text", _("pick fill color from image"), (char *)NULL);
   gtk_widget_set_size_request(GTK_WIDGET(g->color_picker), bs, bs);
   g_signal_connect(G_OBJECT(g->color_picker), "toggled", G_CALLBACK(rt_request_pick_toggled_callback), self);
 
@@ -2760,7 +2760,7 @@ void gui_init(dt_iop_module_t *self)
   g->sl_fill_brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .0005, .0, 4);
   dt_bauhaus_widget_set_label(g->sl_fill_brightness, _("brightness"), _("brightness"));
   g_object_set(g->sl_fill_brightness, "tooltip-text",
-               _("adjsts color brightness to fine tune it. works with erase as well."), (char *)NULL);
+               _("adjsts color brightness to fine tune it. works with erase as well"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->sl_fill_brightness), "value-changed", G_CALLBACK(rt_fill_brightness_callback), self);
 
   gtk_box_pack_end(GTK_BOX(g->hbox_color_pick), GTK_WIDGET(g->color_picker), FALSE, FALSE, 0);
@@ -2777,14 +2777,14 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->cmb_blur_type, NULL, _("blur type"));
   dt_bauhaus_combobox_add(g->cmb_blur_type, _("gaussian"));
   dt_bauhaus_combobox_add(g->cmb_blur_type, _("bilateral"));
-  g_object_set(g->cmb_blur_type, "tooltip-text", _("type for the blur algorithm."), (char *)NULL);
+  g_object_set(g->cmb_blur_type, "tooltip-text", _("type for the blur algorithm"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->cmb_blur_type), "value-changed", G_CALLBACK(rt_blur_type_callback), self);
 
   gtk_box_pack_start(GTK_BOX(g->vbox_blur), g->cmb_blur_type, TRUE, TRUE, 0);
 
   g->sl_blur_radius = dt_bauhaus_slider_new_with_range(self, 0.1, 200.0, 0.1, 10., 2);
   dt_bauhaus_widget_set_label(g->sl_blur_radius, _("blur radius"), _("blur radius"));
-  g_object_set(g->sl_blur_radius, "tooltip-text", _("radius of the selected blur type."), (char *)NULL);
+  g_object_set(g->sl_blur_radius, "tooltip-text", _("radius of the selected blur type"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->sl_blur_radius), "value-changed", G_CALLBACK(rt_blur_radius_callback), self);
 
   gtk_box_pack_start(GTK_BOX(g->vbox_blur), g->sl_blur_radius, TRUE, TRUE, 0);
@@ -2792,7 +2792,7 @@ void gui_init(dt_iop_module_t *self)
   // mask opacity
   g->sl_mask_opacity = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.05, 1., 3);
   dt_bauhaus_widget_set_label(g->sl_mask_opacity, _("mask opacity"), _("mask opacity"));
-  g_object_set(g->sl_mask_opacity, "tooltip-text", _("set the opacity on the selected shape."), (char *)NULL);
+  g_object_set(g->sl_mask_opacity, "tooltip-text", _("set the opacity on the selected shape"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->sl_mask_opacity), "value-changed", G_CALLBACK(rt_mask_opacity_callback), self);
 
   // add all the controls to the iop
