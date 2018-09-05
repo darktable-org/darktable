@@ -1023,8 +1023,8 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
     {
       float masks_hardness;
-      float amount = 1.25f;
-      if(up) amount = 0.8f;
+      float amount = 1.03f;
+      if(up) amount = 0.97f;
 
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
       {
@@ -1047,8 +1047,8 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     else if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
     {
       float masks_density;
-      float amount = 1.25f;
-      if(up) amount = 0.8f;
+      float amount = 1.03f;
+      if(up) amount = 0.97f;
 
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
       {
@@ -1078,7 +1078,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
       {
         masks_border = dt_conf_get_float("plugins/darkroom/spots/brush_border");
-        masks_border = MAX(0.005f, MIN(masks_border * amount, 0.5f));
+        masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
         dt_conf_set_float("plugins/darkroom/spots/brush_border", masks_border);
       }
       else
@@ -1113,7 +1113,8 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     else
     {
       guint nb = g_list_length(form->points);
-      if(gui->border_selected || (state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+      // resize don't care where the mouse is inside a shape
+      if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
         float amount = 1.03f;
         if(up) amount = 0.97f;
@@ -1144,8 +1145,8 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       }
       else
       {
-        float amount = 1.25f;
-        if(up) amount = 0.8f;
+        float amount = 1.03f;
+        if(up) amount = 0.97f;
         for(int k = 0; k < nb; k++)
         {
           dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
