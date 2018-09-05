@@ -59,6 +59,50 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
                                            uint32_t state, dt_masks_form_t *form, int parentid,
                                            dt_masks_form_gui_t *gui, int index)
 {
+  // add a preview when creating a circle
+  if(gui->creation)
+  {
+    if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    {
+      float masks_border;
+
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
+        masks_border = dt_conf_get_float("plugins/darkroom/spots/circle_border");
+      else
+        masks_border = dt_conf_get_float("plugins/darkroom/masks/circle/border");
+
+      if(up && masks_border > 0.0005f)
+        masks_border *= 0.97f;
+      else if(!up && masks_border < 1.0f)
+        masks_border *= 1.0f / 0.97f;
+
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
+        dt_conf_set_float("plugins/darkroom/spots/circle_border", masks_border);
+      else
+        dt_conf_set_float("plugins/darkroom/masks/circle/border", masks_border);
+    }
+    else if(state == 0)
+    {
+      float masks_size;
+
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
+        masks_size = dt_conf_get_float("plugins/darkroom/spots/circle_size");
+      else
+        masks_size = dt_conf_get_float("plugins/darkroom/masks/circle/size");
+
+      if(up && masks_size > 0.001f)
+        masks_size *= 0.97f;
+      else if(!up && masks_size < 1.0f)
+        masks_size *= 1.0f / 0.97f;
+
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
+        dt_conf_set_float("plugins/darkroom/spots/circle_size", masks_size);
+      else
+        dt_conf_set_float("plugins/darkroom/masks/circle/size", masks_size);
+    }
+    return 1;
+  }
+
   if(gui->form_selected)
   {
     // we register the current position
@@ -395,6 +439,15 @@ static int dt_circle_events_mouse_moved(struct dt_iop_module_t *module, float pz
     if(gui->edit_mode != DT_MASKS_EDIT_FULL) return 0;
     return 1;
   }
+  // add a preview when creating a circle
+  else if(gui->creation)
+  {
+    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
+    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+
+    dt_control_queue_redraw_center();
+    return 1;
+  }
 
   return 0;
 }
@@ -406,6 +459,82 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   dashed[1] /= zoom_scale;
   int len = sizeof(dashed) / sizeof(dashed[0]);
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+
+  // add a preview when creating a circle
+  // in creation mode
+  if(gui->creation)
+  {
+    float wd = darktable.develop->preview_pipe->iwidth;
+    float ht = darktable.develop->preview_pipe->iheight;
+
+    if(gui->guipoints_count == 0)
+    {
+      dt_masks_form_t *form = darktable.develop->form_visible;
+      if(!form) return;
+
+      float radius1, radius2;
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
+      {
+        radius1 = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_size"));
+        radius2 = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_border"));
+      }
+      else
+      {
+        radius1 = MIN(0.5f, dt_conf_get_float("plugins/darkroom/masks/circle/size"));
+        radius2 = MIN(0.5f, dt_conf_get_float("plugins/darkroom/masks/circle/border"));
+      }
+      radius2 += radius1;
+      radius1 *= MIN(wd, ht);
+      radius2 *= MIN(wd, ht);
+
+      float xpos, ypos;
+      if(gui->posx == 0 && gui->posy == 0)
+      {
+        float zoom_x, zoom_y;
+        zoom_y = dt_control_get_dev_zoom_y();
+        zoom_x = dt_control_get_dev_zoom_x();
+        xpos = (.5f + zoom_x) * wd;
+        ypos = (.5f + zoom_y) * ht;
+      }
+      else
+      {
+        xpos = gui->posx;
+        ypos = gui->posy;
+      }
+
+      cairo_save(cr);
+
+      // draw circle
+      cairo_set_dash(cr, dashed, 0, 0);
+      cairo_set_line_width(cr, 3.0 / zoom_scale);
+      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+
+      cairo_arc(cr, xpos, ypos, radius1, 0, 2.0 * M_PI);
+
+      cairo_stroke_preserve(cr);
+      cairo_set_line_width(cr, 1.0 / zoom_scale);
+      cairo_set_source_rgba(cr, .8, .8, .8, .8);
+      cairo_stroke(cr);
+
+      // draw border
+      cairo_set_dash(cr, dashed, len, 0);
+      cairo_set_line_width(cr, 1.0 / zoom_scale);
+      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+
+      cairo_arc(cr, xpos, ypos, radius2, 0, 2.0 * M_PI);
+
+      cairo_stroke_preserve(cr);
+      cairo_set_line_width(cr, 1.0 / zoom_scale);
+      cairo_set_source_rgba(cr, .8, .8, .8, .8);
+      cairo_set_dash(cr, dashed, len, 4);
+      cairo_stroke(cr);
+
+      cairo_restore(cr);
+    }
+
+    return;
+  }
+
   if(!gpt) return;
   float dx = 0, dy = 0, dxs = 0, dys = 0;
   if((gui->group_selected == index) && gui->form_dragging)
