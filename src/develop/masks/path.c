@@ -839,7 +839,9 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
                                          uint32_t state, dt_masks_form_t *form, int parentid,
                                          dt_masks_form_gui_t *gui, int index)
 {
-  if(gui->form_selected)
+  // resize a shape even if on a node or segment
+  if(gui->form_selected || gui->point_selected >= 0 || gui->feather_selected >= 0 || gui->seg_selected >= 0
+     || gui->point_border_selected >= 0)
   {
     // we register the current position
     if(gui->scrollx == 0.0f && gui->scrolly == 0.0f)
