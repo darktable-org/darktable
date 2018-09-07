@@ -123,6 +123,7 @@ typedef struct dt_iop_retouch_gui_data_t
   int mask_display; // should we expose masks?
   int suppress_mask;         // do not process masks
   int display_wavelet_scale; // display current wavelet scale
+  int displayed_wavelet_scale; // was display wavelet scale already used?
   int preview_auto_levels;   // should we calculate levels automatically?
   float preview_levels[3];   // values for the levels
   int first_scale_visible;   // 1st scale visible at current zoom level
@@ -1858,6 +1859,18 @@ static void rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, dt_
 
   rt_show_hide_controls(self, g, p, g);
 
+  // compute auto levels only the first time display wavelet scale is used
+  // and only if levels values are the default
+  dt_pthread_mutex_lock(&g->lock);
+  if(g->displayed_wavelet_scale == 0 && g->preview_levels[0] == RETOUCH_PREVIEW_LVL_MIN
+     && g->preview_levels[1] == 0.f && g->preview_levels[2] == RETOUCH_PREVIEW_LVL_MAX
+     && g->preview_auto_levels == 0)
+  {
+    g->preview_auto_levels = 1;
+    g->displayed_wavelet_scale = 1;
+  }
+  dt_pthread_mutex_unlock(&g->lock);
+
   dt_dev_reprocess_all(self->dev);
 }
 
@@ -2468,6 +2481,7 @@ void gui_init(dt_iop_module_t *self)
   g->mask_display = 0;
   g->suppress_mask = 0;
   g->display_wavelet_scale = 0;
+  g->displayed_wavelet_scale = 0;
   g->first_scale_visible = RETOUCH_MAX_SCALES + 1;
 
   g->preview_auto_levels = 0;
@@ -4081,6 +4095,11 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // decompose it
   dwt_decompose(dwt_p, rt_process_forms);
 
+  float levels[3] = { 0.f };
+  levels[0] = p->preview_levels[0];
+  levels[1] = p->preview_levels[1];
+  levels[2] = p->preview_levels[2];
+
   // process auto levels
   if(g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
@@ -4091,8 +4110,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
       dt_pthread_mutex_unlock(&g->lock);
 
-      float levels[3] = { 0 };
-
+      levels[0] = levels[1] = levels[2] = 0;
       rt_process_stats(in_retouch, roi_rt->width, roi_rt->height, ch, levels, use_sse);
       rt_clamp_minmax(levels, levels);
 
@@ -4113,7 +4131,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // if user wants to preview a detail scale adjust levels
   if(dwt_p->return_layer > 0 && dwt_p->return_layer < dwt_p->scales + 1)
   {
-    rt_adjust_levels(in_retouch, roi_rt->width, roi_rt->height, ch, p->preview_levels, use_sse);
+    rt_adjust_levels(in_retouch, roi_rt->width, roi_rt->height, ch, levels, use_sse);
   }
 
   // copy alpha channel if nedded
@@ -4943,6 +4961,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dwt_decompose_cl(dwt_p, rt_process_forms_cl);
   if(err != CL_SUCCESS) goto cleanup;
 
+  float levels[3] = { 0.f };
+  levels[0] = p->preview_levels[0];
+  levels[1] = p->preview_levels[1];
+  levels[2] = p->preview_levels[2];
+
   // process auto levels
   if(g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
@@ -4953,8 +4976,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
       dt_pthread_mutex_unlock(&g->lock);
 
-      float levels[3] = { 0 };
-
+      levels[0] = levels[1] = levels[2] = 0;
       err = rt_process_stats_cl(devid, in_retouch, roi_rt->width, roi_rt->height, levels);
       if(err != CL_SUCCESS) goto cleanup;
 
@@ -4977,7 +4999,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // if user wants to preview a detail scale adjust levels
   if(dwt_p->return_layer > 0 && dwt_p->return_layer < dwt_p->scales + 1)
   {
-    err = rt_adjust_levels_cl(devid, in_retouch, roi_rt->width, roi_rt->height, p->preview_levels);
+    err = rt_adjust_levels_cl(devid, in_retouch, roi_rt->width, roi_rt->height, levels);
     if(err != CL_SUCCESS) goto cleanup;
   }
 
