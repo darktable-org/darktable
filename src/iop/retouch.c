@@ -2774,7 +2774,7 @@ void gui_init(dt_iop_module_t *self)
   g->sl_fill_brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .0005, .0, 4);
   dt_bauhaus_widget_set_label(g->sl_fill_brightness, _("brightness"), _("brightness"));
   g_object_set(g->sl_fill_brightness, "tooltip-text",
-               _("adjsts color brightness to fine tune it. works with erase as well"), (char *)NULL);
+               _("adjusts color brightness to fine-tune it. works with erase as well"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->sl_fill_brightness), "value-changed", G_CALLBACK(rt_fill_brightness_callback), self);
 
   gtk_box_pack_end(GTK_BOX(g->hbox_color_pick), GTK_WIDGET(g->color_picker), FALSE, FALSE, 0);
@@ -3162,7 +3162,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 void init_key_accels(dt_iop_module_so_t *module)
 {
   dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool circle"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool elipse"), 0, 0);
+  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool ellipse"), 0, 0);
   dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool path"), 0, 0);
   dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool brush"), 0, 0);
 }
