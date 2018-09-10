@@ -122,7 +122,7 @@ int position()
 }
 
 /*
-  http://nominatim.openstreetmap.org/search/norrköping?format=xml&limit=5
+  https://nominatim.openstreetmap.org/search/norrköping?format=xml&limit=5
  */
 void gui_init(dt_lib_module_t *self)
 {
@@ -332,7 +332,7 @@ static gboolean _lib_location_search(gpointer user_data)
 
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
-  gchar *query = NULL, *text = NULL;
+  gchar *query = NULL, *text = NULL, *search_url = NULL;
 
   /* get escaped search text */
   text = g_uri_escape_string(gtk_entry_get_text(lib->search), NULL, FALSE);
@@ -343,8 +343,8 @@ static gboolean _lib_location_search(gpointer user_data)
   clear_search(lib);
 
   /* build the query url */
-  query = dt_util_dstrcat(query, "http://nominatim.openstreetmap.org/search/%s?format=xml&limit=%d&polygon_text=1", text,
-                          LIMIT_RESULT);
+  search_url = dt_conf_get_string("plugins/map/geotagging_search_url");
+  query = dt_util_dstrcat(query, search_url, text, LIMIT_RESULT);
   /* load url */
   curl = curl_easy_init();
   if(!curl) goto bail_out;
@@ -354,6 +354,8 @@ static gboolean _lib_location_search(gpointer user_data)
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, lib);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _lib_location_curl_write_data);
   curl_easy_setopt(curl, CURLOPT_USERAGENT, (char *)darktable_package_string);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20L);
 
   res = curl_easy_perform(curl);
   if(res != 0) goto bail_out;
@@ -388,6 +390,7 @@ bail_out:
 
   g_free(text);
   g_free(query);
+  g_free(search_url);
 
   if(ctx) g_markup_parse_context_free(ctx);
 
