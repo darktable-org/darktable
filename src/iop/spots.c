@@ -511,7 +511,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
               if(xx - dx < roi_in->x || xx - dx >= roi_in->x + roi_in->width) continue;
 
               float f = mask[((int)((yy - fts) / roi_in->scale)) * width
-                             + (int)((xx - fls) / roi_in->scale)]; // we can add the opacity here
+                             + (int)((xx - fls) / roi_in->scale)] * grpt->opacity;
 
               for(int c = 0; c < ch; c++)
                 out[4 * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c]
