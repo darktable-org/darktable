@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-07 19:35+0200\n"
-"PO-Revision-Date: 2018-09-08 17:21+0200\n"
+"POT-Creation-Date: 2018-09-11 10:54+0200\n"
+"PO-Revision-Date: 2018-09-11 11:04+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1423,12 +1423,12 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d lokale kopie is gesynchroniseerd"
 msgstr[1] "%d lokale kopieën zijn gesynchroniseerd"
 
-#: ../src/common/imageio.c:606 ../src/common/mipmap_cache.c:1038
+#: ../src/common/imageio.c:609 ../src/common/mipmap_cache.c:1038
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "afbeelding `%s' is niet beschikbaar!"
 
-#: ../src/common/imageio.c:624
+#: ../src/common/imageio.c:627
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -1437,17 +1437,17 @@ msgstr ""
 "geheugen toewijzing voor %s mislukt, verlaag het aantal exporteer stappen of "
 "koop meer geheugen"
 
-#: ../src/common/imageio.c:625
+#: ../src/common/imageio.c:628
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "miniatuur exporteren"
 
-#: ../src/common/imageio.c:625
+#: ../src/common/imageio.c:628
 msgctxt "noun"
 msgid "export"
 msgstr "exporteren"
 
-#: ../src/common/imageio.c:635
+#: ../src/common/imageio.c:638
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "toe te passen stijl '%s' bij het exporteren is niet gevonden"
@@ -2198,25 +2198,25 @@ msgstr "keer getekend masker om"
 msgid "add gradient"
 msgstr "kleurverloop toevoegen"
 
-#: ../src/develop/blend_gui.c:1469 ../src/iop/retouch.c:2507
+#: ../src/develop/blend_gui.c:1469 ../src/iop/retouch.c:2521
 #: ../src/iop/spots.c:647 ../src/libs/masks.c:991 ../src/libs/masks.c:1030
 #: ../src/libs/masks.c:1647
 msgid "add path"
 msgstr "pad toevoegen"
 
-#: ../src/develop/blend_gui.c:1478 ../src/iop/retouch.c:2515
+#: ../src/develop/blend_gui.c:1478 ../src/iop/retouch.c:2529
 #: ../src/iop/spots.c:655 ../src/libs/masks.c:987 ../src/libs/masks.c:1026
 #: ../src/libs/masks.c:1655
 msgid "add ellipse"
 msgstr "ellips toevoegen"
 
-#: ../src/develop/blend_gui.c:1487 ../src/iop/retouch.c:2523
+#: ../src/develop/blend_gui.c:1487 ../src/iop/retouch.c:2537
 #: ../src/iop/spots.c:663 ../src/libs/masks.c:983 ../src/libs/masks.c:1022
 #: ../src/libs/masks.c:1663
 msgid "add circle"
 msgstr "cirkel toevoegen"
 
-#: ../src/develop/blend_gui.c:1496 ../src/iop/retouch.c:2500
+#: ../src/develop/blend_gui.c:1496 ../src/iop/retouch.c:2514
 #: ../src/libs/masks.c:1018 ../src/libs/masks.c:1670
 msgid "add brush"
 msgstr "penseel toevoegen"
@@ -2842,7 +2842,7 @@ msgstr "avondzon"
 msgid "underwater"
 msgstr "onderwater"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1521
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1522
 msgid "black & white"
 msgstr "zwart en wit"
 
@@ -4876,7 +4876,7 @@ msgstr "fusion"
 #: ../src/iop/clipping.c:1864 ../src/iop/clipping.c:1882
 #: ../src/iop/clipping.c:2022 ../src/iop/clipping.c:2049
 #: ../src/iop/colorreconstruction.c:1366 ../src/iop/lens.c:2085
-#: ../src/iop/retouch.c:568 ../src/libs/export.c:492
+#: ../src/iop/retouch.c:569 ../src/libs/export.c:492
 #: ../src/libs/live_view.c:349 ../src/libs/live_view.c:374
 #: ../src/libs/live_view.c:383 ../src/libs/print_settings.c:1467
 msgid "none"
@@ -4931,7 +4931,7 @@ msgstr "local laplacian: tegenstrijdige uitgang"
 #: ../src/iop/bilat.c:516 ../src/iop/denoiseprofile.c:2104
 #: ../src/iop/exposure.c:849 ../src/iop/lens.c:2233 ../src/iop/levels.c:569
 #: ../src/libs/copy_history.c:310 ../src/libs/export.c:644
-#: ../src/libs/print_settings.c:1508 ../src/views/darkroom.c:1452
+#: ../src/libs/print_settings.c:1508 ../src/views/darkroom.c:1453
 msgid "mode"
 msgstr "modus"
 
@@ -5601,7 +5601,7 @@ msgctxt "accel"
 msgid "saturation"
 msgstr "verzadiging"
 
-#: ../src/iop/colisa.c:365 ../src/iop/retouch.c:2761 ../src/iop/soften.c:721
+#: ../src/iop/colisa.c:365 ../src/iop/retouch.c:2775 ../src/iop/soften.c:721
 #: ../src/iop/vignette.c:1148
 msgid "brightness"
 msgstr "helderheid"
@@ -6008,26 +6008,26 @@ msgstr "voorgenomen output"
 
 #: ../src/iop/colorout.c:779 ../src/libs/export.c:627
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1452
-#: ../src/views/darkroom.c:1602 ../src/views/lighttable.c:2404
+#: ../src/views/darkroom.c:1603 ../src/views/lighttable.c:2404
 msgid "perceptual"
 msgstr "perceptueel"
 
 #: ../src/iop/colorout.c:780 ../src/libs/export.c:628
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1453
-#: ../src/views/darkroom.c:1603 ../src/views/lighttable.c:2405
+#: ../src/views/darkroom.c:1604 ../src/views/lighttable.c:2405
 msgid "relative colorimetric"
 msgstr "relatieve colorimetrie"
 
 #: ../src/iop/colorout.c:781 ../src/libs/export.c:629
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1454
-#: ../src/views/darkroom.c:1604 ../src/views/lighttable.c:2406
+#: ../src/views/darkroom.c:1605 ../src/views/lighttable.c:2406
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "verzadiging"
 
 #: ../src/iop/colorout.c:782 ../src/libs/export.c:630
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1455
-#: ../src/views/darkroom.c:1605 ../src/views/lighttable.c:2407
+#: ../src/views/darkroom.c:1606 ../src/views/lighttable.c:2407
 msgid "absolute colorimetric"
 msgstr "absolute colorimetrie"
 
@@ -6577,7 +6577,7 @@ msgstr ""
 "schakelen"
 
 #: ../src/iop/exposure.c:885 ../src/iop/highlights.c:1057
-#: ../src/views/darkroom.c:1480
+#: ../src/views/darkroom.c:1481
 msgid "clipping threshold"
 msgstr "drempel clipping"
 
@@ -7457,7 +7457,7 @@ msgstr "helderheid"
 msgid "soften with"
 msgstr "verzachten met"
 
-#: ../src/iop/lowpass.c:677 ../src/iop/retouch.c:2778 ../src/iop/shadhi.c:820
+#: ../src/iop/lowpass.c:677 ../src/iop/retouch.c:2792 ../src/iop/shadhi.c:820
 msgid "gaussian"
 msgstr "gaussian"
 
@@ -7645,15 +7645,15 @@ msgstr ""
 "raw zwart/witpuntcorrectie\n"
 "werkt alleen bij sensoren die dat nodig hebben"
 
-#: ../src/iop/retouch.c:187
+#: ../src/iop/retouch.c:188
 msgid "retouch"
 msgstr "retoucheren"
 
-#: ../src/iop/retouch.c:2489
+#: ../src/iop/retouch.c:2503
 msgid "# shapes:"
 msgstr "# vormen:"
 
-#: ../src/iop/retouch.c:2493
+#: ../src/iop/retouch.c:2507
 msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
@@ -7662,43 +7662,43 @@ msgstr ""
 "afbeelding\n"
 "vormen worden aan de huidige schaal toegevoegd"
 
-#: ../src/iop/retouch.c:2531
+#: ../src/iop/retouch.c:2545
 msgid "show and edit shapes on the current scale"
 msgstr "toon en bewerk vormen in huidege schaal"
 
-#: ../src/iop/retouch.c:2542
+#: ../src/iop/retouch.c:2556
 msgid "algorithms:"
 msgstr "algoritmen:"
 
-#: ../src/iop/retouch.c:2547
-msgid "activates fill tool"
-msgstr "activeert vul gereedschap"
-
-#: ../src/iop/retouch.c:2554
-msgid "activates blur tool"
-msgstr "activeert gereedschap verdoezelen"
-
 #: ../src/iop/retouch.c:2561
-msgid "activates healing tool"
-msgstr "activeert gereedschap herstellen"
+msgid "activates fill tool"
+msgstr "activeer vul gereedschap"
 
 #: ../src/iop/retouch.c:2568
-msgid "activates cloning tool"
-msgstr "activeert gereedschap klonen"
+msgid "activates blur tool"
+msgstr "activeer gereedschap verdoezelen"
 
-#: ../src/iop/retouch.c:2581
+#: ../src/iop/retouch.c:2575
+msgid "activates healing tool"
+msgstr "activeer gereedschap herstellen"
+
+#: ../src/iop/retouch.c:2582
+msgid "activates cloning tool"
+msgstr "activeer gereedschap klonen"
+
+#: ../src/iop/retouch.c:2595
 msgid "# scales:"
 msgstr "# schalen:"
 
-#: ../src/iop/retouch.c:2588
+#: ../src/iop/retouch.c:2602
 msgid "current:"
 msgstr "huidige:"
 
-#: ../src/iop/retouch.c:2595
+#: ../src/iop/retouch.c:2609
 msgid "merge from:"
 msgstr "samenvoegen met:"
 
-#: ../src/iop/retouch.c:2605
+#: ../src/iop/retouch.c:2619
 msgid ""
 "top slider adjusts where the merge scales start\n"
 "bottom slider adjusts the number of scales\n"
@@ -7707,46 +7707,46 @@ msgid ""
 msgstr ""
 "bovenste schuifregelaar past aan waar de samenvoeging van schalen begint\n"
 "onderste schuifregelaar past het aantal schalen aan\n"
-"rode boxen toont de huidige schalen\n"
+"rode boxen tonen de huidige schalen\n"
 "groene lijnen geven aan dat de schalen vormen bezit"
 
-#: ../src/iop/retouch.c:2627
+#: ../src/iop/retouch.c:2641
 msgid "display masks"
 msgstr "toon maskers"
 
-#: ../src/iop/retouch.c:2634
+#: ../src/iop/retouch.c:2648
 msgid "temporarily switch off shapes"
 msgstr "vormen tijdelijk uitschakelen"
 
-#: ../src/iop/retouch.c:2642
+#: ../src/iop/retouch.c:2656
 msgid "display wavelet scale"
 msgstr "toon wavelet schaal"
 
-#: ../src/iop/retouch.c:2651
+#: ../src/iop/retouch.c:2665
 msgid "cut shapes from current scale"
 msgstr "knip vormen van huidige schaal"
 
-#: ../src/iop/retouch.c:2658
+#: ../src/iop/retouch.c:2672
 msgid "paste cutted shapes to current scale"
 msgstr "plak geknipte vormen aan huidige schaal"
 
-#: ../src/iop/retouch.c:2683
+#: ../src/iop/retouch.c:2697
 msgid "preview single scale"
 msgstr "preview enkele schaal"
 
-#: ../src/iop/retouch.c:2690
+#: ../src/iop/retouch.c:2704
 msgid "adjust preview levels"
 msgstr "aanpassen preview niveaus"
 
-#: ../src/iop/retouch.c:2709
+#: ../src/iop/retouch.c:2723
 msgid "auto levels"
 msgstr "automatisch niveaus"
 
-#: ../src/iop/retouch.c:2721
+#: ../src/iop/retouch.c:2735
 msgid "shape selected:"
 msgstr "geselecteerde vorm"
 
-#: ../src/iop/retouch.c:2725
+#: ../src/iop/retouch.c:2739
 msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
@@ -7754,104 +7754,102 @@ msgstr ""
 "klik om een vorm te selecteren,\n"
 "of deselecteer door met een klik in een leeg ruimte"
 
-#: ../src/iop/retouch.c:2732
+#: ../src/iop/retouch.c:2746
 msgid "fill mode"
 msgstr "vul modus"
 
-#: ../src/iop/retouch.c:2733
+#: ../src/iop/retouch.c:2747
 msgid "erase"
 msgstr "wissen"
 
-#: ../src/iop/retouch.c:2734 ../src/iop/watermark.c:1341
+#: ../src/iop/retouch.c:2748 ../src/iop/watermark.c:1341
 msgid "color"
 msgstr "kleur"
 
-#: ../src/iop/retouch.c:2735
+#: ../src/iop/retouch.c:2749
 msgid "erase the detail or fills with choosen color"
 msgstr "wis de details of vullingen met gekozen kleur"
 
-#: ../src/iop/retouch.c:2747 ../src/iop/retouch.c:2748
+#: ../src/iop/retouch.c:2761 ../src/iop/retouch.c:2762
 msgid "select fill color"
 msgstr "selecteer vul kleur"
 
-#: ../src/iop/retouch.c:2754
+#: ../src/iop/retouch.c:2768
 msgid "pick fill color from image"
 msgstr "kies kleur van afbeelding"
 
-#: ../src/iop/retouch.c:2758
+#: ../src/iop/retouch.c:2772
 msgid "fill color: "
 msgstr "vul kleur:"
 
-#: ../src/iop/retouch.c:2763
-msgid "adjsts color brightness to fine tune it. works with erase as well"
-msgstr "aanpassen kleur helderheid voor fine-tuning, werkt ook met wissen"
-
 #: ../src/iop/retouch.c:2777
+msgid "adjusts color brightness to fine-tune it. works with erase as well"
+msgstr "kleur helderheid fine-tuning, dit werkt ook met wissen"
+
+#: ../src/iop/retouch.c:2791
 msgid "blur type"
 msgstr "type verdoezeling"
 
-#: ../src/iop/retouch.c:2779
-#| msgid "bilateral grid"
+#: ../src/iop/retouch.c:2793
 msgid "bilateral"
 msgstr "bilateral"
 
-#: ../src/iop/retouch.c:2780
+#: ../src/iop/retouch.c:2794
 msgid "type for the blur algorithm"
 msgstr "algoritme voor het type verdoezeling"
 
-#: ../src/iop/retouch.c:2786
+#: ../src/iop/retouch.c:2800
 msgid "blur radius"
 msgstr "straal verdoezeling"
 
-#: ../src/iop/retouch.c:2787
+#: ../src/iop/retouch.c:2801
 msgid "radius of the selected blur type"
 msgstr "straal van geselecteerd type verdoezeling"
 
-#: ../src/iop/retouch.c:2794
+#: ../src/iop/retouch.c:2808
 msgid "mask opacity"
 msgstr "masker bedekking"
 
-#: ../src/iop/retouch.c:2795
+#: ../src/iop/retouch.c:2809
 msgid "set the opacity on the selected shape"
 msgstr "bepaal bedekking op geselecteerde vorm"
 
 #. add all the controls to the iop
-#: ../src/iop/retouch.c:2799
+#: ../src/iop/retouch.c:2813
 msgid "retouch tools"
 msgstr "retouch gereedschappen"
 
 #. wavelet decompose
-#: ../src/iop/retouch.c:2808
-#| msgid "wavelets"
+#: ../src/iop/retouch.c:2822
 msgid "wavelet decompose"
 msgstr "wavelet decompose"
 
 #. shapes
-#: ../src/iop/retouch.c:2822
+#: ../src/iop/retouch.c:2836
 msgid "shapes"
 msgstr "vormen"
 
-#: ../src/iop/retouch.c:3150
+#: ../src/iop/retouch.c:3164
 msgctxt "accel"
 msgid "retouch tool circle"
 msgstr "retoucheer gereedschap cirkel"
 
-#: ../src/iop/retouch.c:3151
+#: ../src/iop/retouch.c:3165
 msgctxt "accel"
-msgid "retouch tool elipse"
+msgid "retouch tool ellipse"
 msgstr "retoucheer gereedschap elipse"
 
-#: ../src/iop/retouch.c:3152
+#: ../src/iop/retouch.c:3166
 msgctxt "accel"
 msgid "retouch tool path"
 msgstr "retoucheer gereedschap pad"
 
-#: ../src/iop/retouch.c:3153
+#: ../src/iop/retouch.c:3167
 msgctxt "accel"
 msgid "retouch tool brush"
 msgstr "retoucheer gereedschap penseel"
 
-#: ../src/iop/retouch.c:4074 ../src/iop/retouch.c:4920
+#: ../src/iop/retouch.c:4088 ../src/iop/retouch.c:4938
 #, c-format
 msgid "max scale is %i for this image size"
 msgstr "maximale schaal %i voor deze afbeeldings groote"
@@ -9229,7 +9227,7 @@ msgstr "exporteer met huidige instellingen"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1191 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:2327
+#: ../src/views/darkroom.c:2328
 msgctxt "accel"
 msgid "export"
 msgstr "exporteer"
@@ -11069,29 +11067,29 @@ msgstr "gammacontrole"
 msgid "soft proof"
 msgstr "soft proof"
 
-#: ../src/views/darkroom.c:918
+#: ../src/views/darkroom.c:919
 msgid "no userdefined presets for favorite modules were found"
 msgstr ""
 "voorkeuren, door gebruiker gedefinieerd, voor favoriete modules ontbreken"
 
-#: ../src/views/darkroom.c:923
+#: ../src/views/darkroom.c:924
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "stijl '%s\" is toegepast op de huidige afbeelding"
 
-#: ../src/views/darkroom.c:982
+#: ../src/views/darkroom.c:983
 msgid "no styles have been created yet"
 msgstr "er is nog niet eerder een stijl aangemaakt"
 
-#: ../src/views/darkroom.c:1406
+#: ../src/views/darkroom.c:1407
 msgid "quick access to presets of your favorites"
 msgstr "snelle toegang tot de voorkeuren van uw favorieten"
 
-#: ../src/views/darkroom.c:1414
+#: ../src/views/darkroom.c:1415
 msgid "quick access for applying any of your styles"
 msgstr "snelle toegang om een stijl toe te passen"
 
-#: ../src/views/darkroom.c:1425
+#: ../src/views/darkroom.c:1426
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -11099,47 +11097,47 @@ msgstr ""
 "raw overbelichtingsindicator in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
-#: ../src/views/darkroom.c:1453
+#: ../src/views/darkroom.c:1454
 msgid "mark with CFA color"
 msgstr "markeer met CFA kleur"
 
-#: ../src/views/darkroom.c:1454
+#: ../src/views/darkroom.c:1455
 msgid "mark with solid color"
 msgstr "markeer met een vastgestelde kleur"
 
-#: ../src/views/darkroom.c:1455
+#: ../src/views/darkroom.c:1456
 msgid "false color"
 msgstr "fout gekleurde pixels"
 
-#: ../src/views/darkroom.c:1457
+#: ../src/views/darkroom.c:1458
 msgid "select how to mark the clipped pixels"
 msgstr "bepaal hoe geclipte pixels worden gemarkeerd"
 
-#: ../src/views/darkroom.c:1464 ../src/views/darkroom.c:1520
+#: ../src/views/darkroom.c:1465 ../src/views/darkroom.c:1521
 msgid "color scheme"
 msgstr "kleurenschema"
 
-#: ../src/views/darkroom.c:1465
+#: ../src/views/darkroom.c:1466
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rood"
 
-#: ../src/views/darkroom.c:1466
+#: ../src/views/darkroom.c:1467
 msgctxt "solidcolor"
 msgid "green"
 msgstr "groen"
 
-#: ../src/views/darkroom.c:1467
+#: ../src/views/darkroom.c:1468
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "blauw"
 
-#: ../src/views/darkroom.c:1468
+#: ../src/views/darkroom.c:1469
 msgctxt "solidcolor"
 msgid "black"
 msgstr "zwart"
 
-#: ../src/views/darkroom.c:1472
+#: ../src/views/darkroom.c:1473
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -11147,7 +11145,7 @@ msgstr ""
 "kies een vaste kleur voor indicatie van overbelichting\n"
 "werkt alleen in de stand: markeer met een vaste kleur"
 
-#: ../src/views/darkroom.c:1482
+#: ../src/views/darkroom.c:1483
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -11157,7 +11155,7 @@ msgstr ""
 "1.0 - wit niveau\n"
 "0.0 - zwart niveau"
 
-#: ../src/views/darkroom.c:1493
+#: ../src/views/darkroom.c:1494
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -11165,35 +11163,35 @@ msgstr ""
 "over- en onderbelichtingsindicator in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
-#: ../src/views/darkroom.c:1522
+#: ../src/views/darkroom.c:1523
 msgid "red & blue"
 msgstr "rood en blauw"
 
-#: ../src/views/darkroom.c:1523
+#: ../src/views/darkroom.c:1524
 msgid "purple & green"
 msgstr "paars en groen"
 
-#: ../src/views/darkroom.c:1525
+#: ../src/views/darkroom.c:1526
 msgid "select colors to indicate over/under exposure"
 msgstr "kies kleuren voor weergave over/onderbelichting"
 
-#: ../src/views/darkroom.c:1534
+#: ../src/views/darkroom.c:1535
 msgid "lower threshold"
 msgstr "drempel onderkant"
 
-#: ../src/views/darkroom.c:1535
+#: ../src/views/darkroom.c:1536
 msgid "threshold of what shall be considered underexposed"
 msgstr "drempel voor wat moet worden beschouwd als onderbelicht"
 
-#: ../src/views/darkroom.c:1543
+#: ../src/views/darkroom.c:1544
 msgid "upper threshold"
 msgstr "drempel bovenkant"
 
-#: ../src/views/darkroom.c:1544
+#: ../src/views/darkroom.c:1545
 msgid "threshold of what shall be considered overexposed"
 msgstr "drempel voor wat moet worden beschouwd als overbelicht"
 
-#: ../src/views/darkroom.c:1555
+#: ../src/views/darkroom.c:1556
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -11201,7 +11199,7 @@ msgstr ""
 "softproofing in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
-#: ../src/views/darkroom.c:1568
+#: ../src/views/darkroom.c:1569
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -11209,141 +11207,141 @@ msgstr ""
 "gamma controle in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
-#: ../src/views/darkroom.c:1600 ../src/views/lighttable.c:2402
+#: ../src/views/darkroom.c:1601 ../src/views/lighttable.c:2402
 msgid "display intent"
 msgstr "toon voornemen"
 
-#: ../src/views/darkroom.c:1615
+#: ../src/views/darkroom.c:1616
 msgid "softproof profile"
 msgstr "softproofprofiel"
 
-#: ../src/views/darkroom.c:1616 ../src/views/lighttable.c:2410
+#: ../src/views/darkroom.c:1617 ../src/views/lighttable.c:2410
 msgid "display profile"
 msgstr "weergaveprofiel"
 
-#: ../src/views/darkroom.c:1648 ../src/views/lighttable.c:2431
+#: ../src/views/darkroom.c:1649 ../src/views/lighttable.c:2431
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "toon ICC profielen in %s of %s"
 
-#: ../src/views/darkroom.c:1651
+#: ../src/views/darkroom.c:1652
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "softproof ICC profielen in %s of  %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2319 ../src/views/map.c:859 ../src/views/print.c:329
+#: ../src/views/darkroom.c:2320 ../src/views/map.c:859 ../src/views/print.c:329
 #: ../src/views/tethering.c:388
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "wissel fotoreeks"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2322
+#: ../src/views/darkroom.c:2323
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "maximaal inzoomen"
 
-#: ../src/views/darkroom.c:2323
+#: ../src/views/darkroom.c:2324
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoom vullen"
 
-#: ../src/views/darkroom.c:2324
+#: ../src/views/darkroom.c:2325
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom passend"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2330
+#: ../src/views/darkroom.c:2331
 msgctxt "accel"
 msgid "image forward"
 msgstr "volgende afbeelding"
 
-#: ../src/views/darkroom.c:2331
+#: ../src/views/darkroom.c:2332
 msgctxt "accel"
 msgid "image back"
 msgstr "vorige afbeelding"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:2334
+#: ../src/views/darkroom.c:2335
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw overbelicht"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:2337
+#: ../src/views/darkroom.c:2338
 msgctxt "accel"
 msgid "overexposed"
 msgstr "overbelicht"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2341
 msgctxt "accel"
 msgid "softproof"
 msgstr "soft proof"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:2343
+#: ../src/views/darkroom.c:2344
 msgctxt "accel"
 msgid "gamut check"
 msgstr "gammacontrole"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2346
+#: ../src/views/darkroom.c:2347
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "verhoog penseeldikte"
 
 # Eventueel kan ook gebruikt worden:
 # 'penseeldikte verminderen' (geldt voor alle penseel-combinaties, bv 'penseelhardheid verminderen')
-#: ../src/views/darkroom.c:2347
+#: ../src/views/darkroom.c:2348
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "verminder penseeldikte"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2350
+#: ../src/views/darkroom.c:2351
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "verhoog penseelhardheid"
 
-#: ../src/views/darkroom.c:2351
+#: ../src/views/darkroom.c:2352
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "verminder penseelhardheid"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2354
+#: ../src/views/darkroom.c:2355
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "verhoog penseeldekking"
 
-#: ../src/views/darkroom.c:2355
+#: ../src/views/darkroom.c:2356
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "verminder penseeldekking"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:2358
+#: ../src/views/darkroom.c:2359
 msgctxt "accel"
 msgid "full preview"
 msgstr "voorbeeld"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2361 ../src/views/map.c:856
+#: ../src/views/darkroom.c:2362 ../src/views/map.c:856
 msgctxt "accel"
 msgid "undo"
 msgstr "herstel"
 
-#: ../src/views/darkroom.c:2362 ../src/views/map.c:857
+#: ../src/views/darkroom.c:2363 ../src/views/map.c:857
 msgctxt "accel"
 msgid "redo"
 msgstr "opnieuw"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:2365
+#: ../src/views/darkroom.c:2366
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "sta tijdens het bewerken van maskers herschalen en zoomen toe"
