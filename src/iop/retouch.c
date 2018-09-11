@@ -1126,6 +1126,19 @@ static void rt_curr_scale_update(const int _curr_scale, dt_iop_module_t *self)
 
   rt_show_forms_for_current_scale(self);
 
+  // compute auto levels only the first time display wavelet scale is used,
+  // only if levels values are the default
+  // and a detail scale is displayed
+  dt_pthread_mutex_lock(&g->lock);
+  if(g->displayed_wavelet_scale == 0 && p->preview_levels[0] == RETOUCH_PREVIEW_LVL_MIN
+     && p->preview_levels[1] == 0.f && p->preview_levels[2] == RETOUCH_PREVIEW_LVL_MAX
+     && g->preview_auto_levels == 0 && p->curr_scale > 0 && p->curr_scale <= p->num_scales)
+  {
+    g->preview_auto_levels = 1;
+    g->displayed_wavelet_scale = 1;
+  }
+  dt_pthread_mutex_unlock(&g->lock);
+
   rt_update_wd_bar_labels(p, g);
   gtk_widget_queue_draw(g->wd_bar);
 
@@ -1859,12 +1872,13 @@ static void rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, dt_
 
   rt_show_hide_controls(self, g, p, g);
 
-  // compute auto levels only the first time display wavelet scale is used
-  // and only if levels values are the default
+  // compute auto levels only the first time display wavelet scale is used,
+  // only if levels values are the default
+  // and a detail scale is displayed
   dt_pthread_mutex_lock(&g->lock);
-  if(g->displayed_wavelet_scale == 0 && g->preview_levels[0] == RETOUCH_PREVIEW_LVL_MIN
-     && g->preview_levels[1] == 0.f && g->preview_levels[2] == RETOUCH_PREVIEW_LVL_MAX
-     && g->preview_auto_levels == 0)
+  if(g->displayed_wavelet_scale == 0 && p->preview_levels[0] == RETOUCH_PREVIEW_LVL_MIN
+     && p->preview_levels[1] == 0.f && p->preview_levels[2] == RETOUCH_PREVIEW_LVL_MAX
+     && g->preview_auto_levels == 0 && p->curr_scale > 0 && p->curr_scale <= p->num_scales)
   {
     g->preview_auto_levels = 1;
     g->displayed_wavelet_scale = 1;
