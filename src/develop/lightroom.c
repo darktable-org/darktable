@@ -24,6 +24,7 @@
 #include "common/debug.h"
 #include "common/ratings.h"
 #include "common/tags.h"
+#include "common/metadata.h"
 #include "control/control.h"
 
 #include <ctype.h>
@@ -475,364 +476,369 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
   const float hfactor = 3.0 / 9.0; // hue factor adjustment (use 3 out of 9 boxes in colorzones)
   const float lfactor = 4.0 / 9.0; // lightness factor adjustment (use 4 out of 9 boxes in colorzones)
 
-  if(!xmlStrcmp(name, (const xmlChar *)"CropTop"))
-    data->pc.cy = g_ascii_strtod((char *)value, NULL);
-  else if(!xmlStrcmp(name, (const xmlChar *)"CropRight"))
-    data->pc.cw = g_ascii_strtod((char *)value, NULL);
-  else if(!xmlStrcmp(name, (const xmlChar *)"CropLeft"))
-    data->pc.cx = g_ascii_strtod((char *)value, NULL);
-  else if(!xmlStrcmp(name, (const xmlChar *)"CropBottom"))
-    data->pc.ch = g_ascii_strtod((char *)value, NULL);
-  else if(!xmlStrcmp(name, (const xmlChar *)"CropAngle"))
-    data->pc.angle = -g_ascii_strtod((char *)value, NULL);
-  else if(!xmlStrcmp(name, (const xmlChar *)"ImageWidth"))
-    data->iwidth = atoi((char *)value);
-  else if(!xmlStrcmp(name, (const xmlChar *)"ImageLength"))
-    data->iheight = atoi((char *)value);
-  else if(!xmlStrcmp(name, (const xmlChar *)"Orientation"))
+  if(value)
   {
-    data->orientation = atoi((char *)value);
-    if(dev != NULL && ((dev->image_storage.orientation == 6 && data->orientation != 6)
-                       || (dev->image_storage.orientation == 5 && data->orientation != 8)
-                       || (dev->image_storage.orientation == 0 && data->orientation != 1)))
-      data->has_flip = TRUE;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"HasCrop"))
-  {
-    if(!xmlStrcmp(value, (const xmlChar *)"True")) data->has_crop = TRUE;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"Blacks2012"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0)
+    if(!xmlStrcmp(name, (const xmlChar *)"CropTop"))
+      data->pc.cy = g_ascii_strtod((char *)value, NULL);
+    else if(!xmlStrcmp(name, (const xmlChar *)"CropRight"))
+      data->pc.cw = g_ascii_strtod((char *)value, NULL);
+    else if(!xmlStrcmp(name, (const xmlChar *)"CropLeft"))
+      data->pc.cx = g_ascii_strtod((char *)value, NULL);
+    else if(!xmlStrcmp(name, (const xmlChar *)"CropBottom"))
+      data->pc.ch = g_ascii_strtod((char *)value, NULL);
+    else if(!xmlStrcmp(name, (const xmlChar *)"CropAngle"))
+      data->pc.angle = -g_ascii_strtod((char *)value, NULL);
+    else if(!xmlStrcmp(name, (const xmlChar *)"ImageWidth"))
+      data->iwidth = atoi((char *)value);
+    else if(!xmlStrcmp(name, (const xmlChar *)"ImageLength"))
+      data->iheight = atoi((char *)value);
+    else if(!xmlStrcmp(name, (const xmlChar *)"Orientation"))
     {
-      data->has_exposure = TRUE;
-      data->pe.black = lr2dt_blacks((float)v);
+      data->orientation = atoi((char *)value);
+      if(dev != NULL && ((dev->image_storage.orientation == 6 && data->orientation != 6)
+                        || (dev->image_storage.orientation == 5 && data->orientation != 8)
+                        || (dev->image_storage.orientation == 0 && data->orientation != 1)))
+        data->has_flip = TRUE;
     }
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"Exposure2012"))
-  {
-    float v = g_ascii_strtod((char *)value, NULL);
-    if(v != 0.0)
+    else if(!xmlStrcmp(name, (const xmlChar *)"HasCrop"))
     {
-      data->has_exposure = TRUE;
-      data->pe.exposure = v;
+      if(!xmlStrcmp(value, (const xmlChar *)"True")) data->has_crop = TRUE;
     }
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteAmount"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0)
+    else if(!xmlStrcmp(name, (const xmlChar *)"Blacks2012"))
     {
-      data->has_vignette = TRUE;
-      data->pv.brightness = lr2dt_vignette_gain((float)v);
+      int v = atoi((char *)value);
+      if(v != 0)
+      {
+        data->has_exposure = TRUE;
+        data->pe.black = lr2dt_blacks((float)v);
+      }
     }
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteMidpoint"))
-  {
-    int v = atoi((char *)value);
-    data->pv.scale = lr2dt_vignette_midpoint((float)v);
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteStyle"))
-  {
-    int v = atoi((char *)value);
-    if(v == 1) // Highlight Priority
-      data->pv.saturation = -0.300;
-    else // Color Priority & Paint Overlay
-      data->pv.saturation = -0.200;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteFeather"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->pv.falloff_scale = (float)v;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteRoundness"))
-  {
-    int v = atoi((char *)value);
-    data->crop_roundness = (float)v;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"GrainAmount"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0)
+    else if(!xmlStrcmp(name, (const xmlChar *)"Exposure2012"))
     {
-      data->has_grain = TRUE;
-      data->pg.strength = lr2dt_grain_amount((float)v);
+      float v = g_ascii_strtod((char *)value, NULL);
+      if(v != 0.0)
+      {
+        data->has_exposure = TRUE;
+        data->pe.exposure = v;
+      }
     }
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"GrainFrequency"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->pg.scale = lr2dt_grain_frequency((float)v);
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"ParametricShadows"))
-  {
-    data->ptc_value[0] = atoi((char *)value);
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"ParametricDarks"))
-  {
-    data->ptc_value[1] = atoi((char *)value);
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"ParametricLights"))
-  {
-    data->ptc_value[2] = atoi((char *)value);
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"ParametricHighlights"))
-  {
-    data->ptc_value[3] = atoi((char *)value);
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"ParametricShadowSplit"))
-  {
-    data->ptc_split[0] = g_ascii_strtod((char *)value, NULL) / 100.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"ParametricMidtoneSplit"))
-  {
-    data->ptc_split[1] = g_ascii_strtod((char *)value, NULL) / 100.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"ParametricHighlightSplit"))
-  {
-    data->ptc_split[2] = g_ascii_strtod((char *)value, NULL) / 100.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"ToneCurveName2012"))
-  {
-    if(!xmlStrcmp(value, (const xmlChar *)"Linear"))
-      data->curve_kind = linear;
-    else if(!xmlStrcmp(value, (const xmlChar *)"Medium Contrast"))
-      data->curve_kind = medium_contrast;
-    else if(!xmlStrcmp(value, (const xmlChar *)"Strong Contrast"))
-      data->curve_kind = strong_contrast;
-    else if(!xmlStrcmp(value, (const xmlChar *)"Custom"))
-      data->curve_kind = custom;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentRed"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[1][0] = 0.5 + (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentOrange"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[1][1] = 0.5 + (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentYellow"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[1][2] = 0.5 + (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentGreen"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[1][3] = 0.5 + (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentAqua"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[1][4] = 0.5 + (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentBlue"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[1][5] = 0.5 + (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentPurple"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[1][6] = 0.5 + (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentMagenta"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[1][7] = 0.5 + (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentRed"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[0][0] = 0.5 + lfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentOrange"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[0][1] = 0.5 + lfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentYellow"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[0][2] = 0.5 + lfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentGreen"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[0][3] = 0.5 + lfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentAqua"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[0][4] = 0.5 + lfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentBlue"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[0][5] = 0.5 + lfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentPurple"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[0][6] = 0.5 + lfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentMagenta"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[0][7] = 0.5 + lfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentRed"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[2][0] = 0.5 + hfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentOrange"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[2][1] = 0.5 + hfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentYellow"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[2][2] = 0.5 + hfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentGreen"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[2][3] = 0.5 + hfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentAqua"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[2][4] = 0.5 + hfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentBlue"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[2][5] = 0.5 + hfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentPurple"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[2][6] = 0.5 + hfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentMagenta"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_colorzones = TRUE;
-    data->pcz.equalizer_y[2][7] = 0.5 + hfactor * (float)v / 200.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningShadowHue"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_splittoning = TRUE;
-    data->pst.shadow_hue = (float)v / 255.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningShadowSaturation"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_splittoning = TRUE;
-    data->pst.shadow_saturation = (float)v / 100.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningHighlightHue"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_splittoning = TRUE;
-    data->pst.highlight_hue = (float)v / 255.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningHighlightSaturation"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0) data->has_splittoning = TRUE;
-    data->pst.highlight_saturation = (float)v / 100.0;
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningBalance"))
-  {
-    float v = g_ascii_strtod((char *)value, NULL);
-    data->pst.balance = lr2dt_splittoning_balance(v);
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"Clarity2012"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0)
+    else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteAmount"))
     {
-      data->has_bilat = TRUE;
-      data->pbl.detail = lr2dt_clarity((float)v);
+      int v = atoi((char *)value);
+      if(v != 0)
+      {
+        data->has_vignette = TRUE;
+        data->pv.brightness = lr2dt_vignette_gain((float)v);
+      }
     }
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"Rating"))
-  {
-    int v = atoi((char *)value);
-    if(v != 0)
+    else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteMidpoint"))
     {
-      data->rating = v;
-      data->has_rating = TRUE;
+      int v = atoi((char *)value);
+      data->pv.scale = lr2dt_vignette_midpoint((float)v);
     }
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"GPSLatitude"))
-  {
-    double latitude = dt_util_gps_string_to_number((const char *)value);
-    if(!isnan(latitude))
+    else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteStyle"))
     {
-      data->lat = latitude;
-      data->has_gps = TRUE;
+      int v = atoi((char *)value);
+      if(v == 1) // Highlight Priority
+        data->pv.saturation = -0.300;
+      else // Color Priority & Paint Overlay
+        data->pv.saturation = -0.200;
     }
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"GPSLongitude"))
-  {
-    double longitude = dt_util_gps_string_to_number((const char *)value);
-    if(!isnan(longitude))
+    else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteFeather"))
     {
-      data->lon = longitude;
-      data->has_gps = TRUE;
+      int v = atoi((char *)value);
+      if(v != 0) data->pv.falloff_scale = (float)v;
     }
-  }
-  else if(!xmlStrcmp(name, (const xmlChar *)"Label"))
-  {
-    if(!strcasecmp((char *)value, _("red")))
-      data->color = 0;
-    else if(!strcasecmp((char *)value, _("yellow")))
-      data->color = 1;
-    else if(!strcasecmp((char *)value, _("green")))
-      data->color = 2;
-    else if(!strcasecmp((char *)value, _("blue")))
-      data->color = 3;
-    else
-      // just an else here to catch all other cases as on lightroom one can
-      // change the names of labels. So purple and the user's defined labels
-      // will be mapped to purple on darktable.
-      data->color = 4;
+    else if(!xmlStrcmp(name, (const xmlChar *)"PostCropVignetteRoundness"))
+    {
+      int v = atoi((char *)value);
+      data->crop_roundness = (float)v;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"GrainAmount"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0)
+      {
+        data->has_grain = TRUE;
+        data->pg.strength = lr2dt_grain_amount((float)v);
+      }
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"GrainFrequency"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->pg.scale = lr2dt_grain_frequency((float)v);
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"ParametricShadows"))
+    {
+      data->ptc_value[0] = atoi((char *)value);
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"ParametricDarks"))
+    {
+      data->ptc_value[1] = atoi((char *)value);
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"ParametricLights"))
+    {
+      data->ptc_value[2] = atoi((char *)value);
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"ParametricHighlights"))
+    {
+      data->ptc_value[3] = atoi((char *)value);
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"ParametricShadowSplit"))
+    {
+      data->ptc_split[0] = g_ascii_strtod((char *)value, NULL) / 100.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"ParametricMidtoneSplit"))
+    {
+      data->ptc_split[1] = g_ascii_strtod((char *)value, NULL) / 100.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"ParametricHighlightSplit"))
+    {
+      data->ptc_split[2] = g_ascii_strtod((char *)value, NULL) / 100.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"ToneCurveName2012"))
+    {
+      if(!xmlStrcmp(value, (const xmlChar *)"Linear"))
+        data->curve_kind = linear;
+      else if(!xmlStrcmp(value, (const xmlChar *)"Medium Contrast"))
+        data->curve_kind = medium_contrast;
+      else if(!xmlStrcmp(value, (const xmlChar *)"Strong Contrast"))
+        data->curve_kind = strong_contrast;
+      else if(!xmlStrcmp(value, (const xmlChar *)"Custom"))
+        data->curve_kind = custom;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentRed"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[1][0] = 0.5 + (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentOrange"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[1][1] = 0.5 + (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentYellow"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[1][2] = 0.5 + (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentGreen"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[1][3] = 0.5 + (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentAqua"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[1][4] = 0.5 + (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentBlue"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[1][5] = 0.5 + (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentPurple"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[1][6] = 0.5 + (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"SaturationAdjustmentMagenta"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[1][7] = 0.5 + (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentRed"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[0][0] = 0.5 + lfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentOrange"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[0][1] = 0.5 + lfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentYellow"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[0][2] = 0.5 + lfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentGreen"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[0][3] = 0.5 + lfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentAqua"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[0][4] = 0.5 + lfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentBlue"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[0][5] = 0.5 + lfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentPurple"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[0][6] = 0.5 + lfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"LuminanceAdjustmentMagenta"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[0][7] = 0.5 + lfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentRed"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[2][0] = 0.5 + hfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentOrange"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[2][1] = 0.5 + hfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentYellow"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[2][2] = 0.5 + hfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentGreen"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[2][3] = 0.5 + hfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentAqua"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[2][4] = 0.5 + hfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentBlue"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[2][5] = 0.5 + hfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentPurple"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[2][6] = 0.5 + hfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"HueAdjustmentMagenta"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_colorzones = TRUE;
+      data->pcz.equalizer_y[2][7] = 0.5 + hfactor * (float)v / 200.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningShadowHue"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_splittoning = TRUE;
+      data->pst.shadow_hue = (float)v / 255.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningShadowSaturation"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_splittoning = TRUE;
+      data->pst.shadow_saturation = (float)v / 100.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningHighlightHue"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_splittoning = TRUE;
+      data->pst.highlight_hue = (float)v / 255.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningHighlightSaturation"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0) data->has_splittoning = TRUE;
+      data->pst.highlight_saturation = (float)v / 100.0;
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"SplitToningBalance"))
+    {
+      float v = g_ascii_strtod((char *)value, NULL);
+      data->pst.balance = lr2dt_splittoning_balance(v);
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"Clarity2012"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0)
+      {
+        data->has_bilat = TRUE;
+        data->pbl.detail = lr2dt_clarity((float)v);
+      }
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"Rating"))
+    {
+      int v = atoi((char *)value);
+      if(v != 0)
+      {
+        data->rating = v;
+        data->has_rating = TRUE;
+      }
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"GPSLatitude"))
+    {
+      double latitude = dt_util_gps_string_to_number((const char *)value);
+      if(!isnan(latitude))
+      {
+        data->lat = latitude;
+        data->has_gps = TRUE;
+      }
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"GPSLongitude"))
+    {
+      double longitude = dt_util_gps_string_to_number((const char *)value);
+      if(!isnan(longitude))
+      {
+        data->lon = longitude;
+        data->has_gps = TRUE;
+      }
+    }
+    else if(!xmlStrcmp(name, (const xmlChar *)"Label"))
+    {
+      char *v = g_utf8_casefold((char *)value, -1);
+      if(!g_strcmp0(v, _("red")))
+        data->color = 0;
+      else if(!g_strcmp0(v, _("yellow")))
+        data->color = 1;
+      else if(!g_strcmp0(v, _("green")))
+        data->color = 2;
+      else if(!g_strcmp0(v, _("blue")))
+        data->color = 3;
+      else
+        // just an else here to catch all other cases as on lightroom one can
+        // change the names of labels. So purple and the user's defined labels
+        // will be mapped to purple on darktable.
+        data->color = 4;
 
-    data->has_colorlabel = TRUE;
+      data->has_colorlabel = TRUE;
+      g_free(v);
+    }
   }
-  else if(dev == NULL && (!xmlStrcmp(name, (const xmlChar *)"subject")
-                          || !xmlStrcmp(name, (const xmlChar *)"hierarchicalSubject")))
+  if(dev == NULL && (!xmlStrcmp(name, (const xmlChar *)"subject")
+                     || !xmlStrcmp(name, (const xmlChar *)"hierarchicalSubject")))
   {
     xmlNodePtr tagNode = node;
 
@@ -907,6 +913,62 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
       tcNode = tcNode->next;
     }
   }
+  else if(dev == NULL && !xmlStrcmp(name, (const xmlChar *)"title"))
+  {
+    xmlNodePtr ttlNode = node;
+    while(ttlNode)
+    {
+      if(!xmlStrncmp(ttlNode->name, (const xmlChar *)"li", 2))
+      {
+        xmlChar *cvalue = xmlNodeListGetString(doc, ttlNode->xmlChildrenNode, 1);
+        dt_metadata_set(imgid, "Xmp.dc.title", (char *)cvalue);
+        xmlFree(cvalue);
+      }
+      ttlNode = ttlNode->next;
+    }
+  }
+  else if(dev == NULL && !xmlStrcmp(name, (const xmlChar *)"description"))
+  {
+    xmlNodePtr desNode = node;
+    while(desNode)
+    {
+      if(!xmlStrncmp(desNode->name, (const xmlChar *)"li", 2))
+      {
+        xmlChar *cvalue = xmlNodeListGetString(doc, desNode->xmlChildrenNode, 1);
+        dt_metadata_set(imgid, "Xmp.dc.description", (char *)cvalue);
+        xmlFree(cvalue);
+      }
+      desNode = desNode->next;
+    }
+  }
+  else if(dev == NULL && !xmlStrcmp(name, (const xmlChar *)"creator"))
+  {
+    xmlNodePtr creNode = node;
+    while(creNode)
+    {
+      if(!xmlStrncmp(creNode->name, (const xmlChar *)"li", 2))
+      {
+        xmlChar *cvalue = xmlNodeListGetString(doc, creNode->xmlChildrenNode, 1);
+        dt_metadata_set(imgid, "Xmp.dc.creator", (char *)cvalue);
+        xmlFree(cvalue);
+      }
+      creNode = creNode->next;
+    }
+  }
+  else if(dev == NULL && !xmlStrcmp(name, (const xmlChar *)"rights"))
+  {
+    xmlNodePtr rigNode = node;
+    while(rigNode)
+    {
+      if(!xmlStrncmp(rigNode->name, (const xmlChar *)"li", 2))
+      {
+        xmlChar *cvalue = xmlNodeListGetString(doc, rigNode->xmlChildrenNode, 1);
+        dt_metadata_set(imgid, "Xmp.dc.rights", (char *)cvalue);
+        xmlFree(cvalue);
+      }
+      rigNode = rigNode->next;
+    }
+  }
 }
 
 /* _has_list returns true if the node contains a list of value */
@@ -915,7 +977,12 @@ static int _has_list(char *name)
   return !strcmp(name, "subject")
     || !strcmp(name, "hierarchicalSubject")
     || !strcmp(name, "RetouchInfo")
-    || !strcmp(name, "ToneCurvePV2012");
+    || !strcmp(name, "ToneCurvePV2012")
+    || !strcmp(name, "title")
+    || !strcmp(name, "description")
+    || !strcmp(name, "creator")
+    || !strcmp(name, "publisher")
+    || !strcmp(name, "rights");
 };
 
 /* handle a specific xpath */

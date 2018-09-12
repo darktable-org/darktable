@@ -163,7 +163,9 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   // darkroom
   dt_accel_path_view(path, sizeof(path), "darkroom", "full preview");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_preview);
-
+  // add an option to allow skip mouse events while editing masks
+  dt_accel_path_view(path, sizeof(path), "darkroom", "allow to pan & zoom while editing masks");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_skip_mouse_events);
 
   // Global
   dt_accel_path_global(path, sizeof(path), "toggle side borders");

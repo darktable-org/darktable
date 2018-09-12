@@ -1962,13 +1962,14 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X-E1", Underwater, 0,		{ 1.821192, 1, 1.804636, 0 } },
   { "Fujifilm", "X-E1", "5000K", 0,		{ 1.814570, 1, 1.731788, 0 } },
 
-  { "Fujifilm", "X-E2", Daylight, 0,		{ 1.870861, 1, 1.582781, 0 } },
-  { "Fujifilm", "X-E2", Shade, 0,		{ 2.066225, 1, 1.374172, 0 } },
-  { "Fujifilm", "X-E2", DaylightFluorescent, 0,	{ 2.394040, 1, 1.370861, 0 } },
-  { "Fujifilm", "X-E2", WarmWhiteFluorescent, 0,{ 2.039735, 1, 1.612583, 0 } },
-  { "Fujifilm", "X-E2", CoolWhiteFluorescent, 0,{ 1.917219, 1, 2.006623, 0 } },
-  { "Fujifilm", "X-E2", Incandescent, 0,	{ 1.215232, 1, 2.400662, 0 } },
-  { "Fujifilm", "X-E2", Underwater, 0,		{ 1.864238, 1, 1.559603, 0 } },
+  /* Fujifilm X-E2 Firmware Version 4.10 */
+  { "Fujifilm", "X-E2", Daylight, 0,		{ 1.8576158940397351, 1, 1.5496688741721854, 0 } },
+  { "Fujifilm", "X-E2", Shade, 0,		{ 2.056291390728477, 1, 1.3410596026490067, 0 } },
+  { "Fujifilm", "X-E2", DaylightFluorescent, 0,	{ 2.3874172185430464, 1, 1.3377483443708609, 0 } },
+  { "Fujifilm", "X-E2", WarmWhiteFluorescent, 0,{ 2.0298013245033113, 1, 1.576158940397351, 0 } },
+  { "Fujifilm", "X-E2", CoolWhiteFluorescent, 0,{ 1.903973509933775, 1, 1.9701986754966887, 0 } },
+  { "Fujifilm", "X-E2", Incandescent, 0,	{ 1.1986754966887416, 1, 2.3642384105960264, 0 } },
+  { "Fujifilm", "X-E2", Underwater, 0,		{ 1.8576158940397351, 1, 1.5496688741721854, 0 } },
 
   /* Fujifilm X-T1 Firmware Version 1.10 */
   { "Fujifilm", "X-T1", Daylight, 0,          { 1.89404, 1, 1.569536, 0 } },
@@ -3030,6 +3031,20 @@ const wb_data wb_preset[] =
   { "Nikon", "D810", HighTempMercuryVaporFluorescent, 0, { 2.414062, 1, 1.320312, 0 } },
   { "Nikon", "D810", SodiumVaporFluorescent         , 0, { 1.164062, 1, 2.320312, 0 } },
   { "Nikon", "D810", Flash                          , 0, { 2.183594, 1, 1.171875, 0 } },
+
+  /* Nikon D850 Firmware Version C: 1.01 LD: 2.017 */
+  { "Nikon", "D850", Incandescent                    , 0, { 1.205078125, 1, 2.206542969, 0 } },
+  { "Nikon", "D850", CoolWhiteFluorescent            , 0, { 1.721191406, 1, 2.064453125, 0 } },
+  { "Nikon", "D850", DirectSunlight                  , 0, { 1.900390625, 1, 1.375488281, 0 } },
+  { "Nikon", "D850", Flash                           , 0, { 2.1640625,   1, 1.204101562, 0 } },
+  { "Nikon", "D850", Cloudy                          , 0, { 2.049804688, 1, 1.244628906, 0 } },
+  { "Nikon", "D850", Shade                           , 0, { 2.396484375, 1, 1.114257812, 0 } },
+  { "Nikon", "D850", SodiumVaporFluorescent          , 0, { 1.121582031, 1, 2.477050781, 0 } },
+  { "Nikon", "D850", WarmWhiteFluorescent            , 0, { 1.208496094, 1, 1.979003906, 0 } },
+  { "Nikon", "D850", WhiteFluorescent                , 0, { 1.377929688, 1, 2.361328125, 0 } },
+  { "Nikon", "D850", DayWhiteFluorescent             , 0, { 1.76953125,  1, 1.3984375,   0 } },
+  { "Nikon", "D850", DaylightFluorescent             , 0, { 2.018066406, 1, 1.112304688, 0 } },
+  { "Nikon", "D850", HighTempMercuryVaporFluorescent , 0, { 2.379882812, 1, 1.3671875,   0 } },
 
   { "Nikon", "D40", Incandescent, -3,		{ 1.492188, 1, 2.164063, 0 } },
   { "Nikon", "D40", Incandescent, -2,		{ 1.437500, 1, 2.367188, 0 } },
@@ -7081,6 +7096,22 @@ const wb_data wb_preset[] =
   { "Sony", "ILCE-6300", Flash, 0, { 2.9140625, 1, 1.63671875, 0 } },
   { "Sony", "ILCE-6300", Underwater, 0, { 2.8125, 1, 1.875, 0 } },
   { "Sony", "ILCE-6300", "5500k", 0, { 2.65234375, 1, 1.74609375, 0 } },
+
+  // Sony ILCE-6500 Firmware Version 1.05
+  { "Sony", "ILCE-6500", Daylight, 0, { 2.6171875, 1, 1.74609375, 0 } },
+  { "Sony", "ILCE-6500", Shade, 0, { 3.08203125, 1, 1.4375, 0 } },
+  { "Sony", "ILCE-6500", Cloudy, 0, { 2.81640625, 1, 1.6015625, 0 } },
+  { "Sony", "ILCE-6500", Tungsten, 0, { 1.65625, 1, 3.16796875, 0 } },
+  { "Sony", "ILCE-6500", WarmWhiteFluorescent, 0, { 1.921875, 1, 3.12109375, 0 } },
+  { "Sony", "ILCE-6500", CoolWhiteFluorescent, 0, { 2.4453125, 1, 2.57421875, 0 } },
+  { "Sony", "ILCE-6500", DayWhiteFluorescent, 0, { 2.546875, 1, 1.84375, 0 } },
+  { "Sony", "ILCE-6500", DaylightFluorescent, 0, { 2.83203125, 1, 1.67578125, 0 } },
+  { "Sony", "ILCE-6500", Flash, 0, { 2.93359375, 1, 1.59765625, 0 } },
+  { "Sony", "ILCE-6500", "2500K", 0, { 1.4453125, 1, 3.83203125, 0 } },
+  { "Sony", "ILCE-6500", "3200K", 0, { 1.83984375, 1, 2.7421875, 0 } },
+  { "Sony", "ILCE-6500", "4500K", 0, { 2.375, 1, 1.96875, 0 } },
+  { "Sony", "ILCE-6500", "6000K", 0, { 2.79296875, 1, 1.6171875, 0 } },
+  { "Sony", "ILCE-6500", "8500K", 0, { 3.23046875, 1, 1.36328125, 0 } },
 
   { "Sony", "ILCA-77M2", Daylight, 0,{ 2.78515625, 1, 1.6796875, 0 } },
   { "Sony", "ILCA-77M2", Shade, 0,    { 3.28515625, 1, 1.38671875, 0 } },

@@ -1616,6 +1616,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/ashift/near_delta</name>
+    <type>float</type>
+    <default>20.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/print/print/black_point_compensation</name>
     <type>bool</type>
     <default>true</default>
@@ -1718,6 +1725,13 @@
     <default>false</default>
     <shortdescription>allow editing raw cropping boundaries</shortdescription>
     <longdescription>this is mainly useful for debugging and to add new camera support.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/map/geotagging_search_url</name>
+    <type>string</type>
+    <default>https://nominatim.openstreetmap.org/search/%s?format=xml&amp;limit=%d&amp;polygon_text=1</default>
+    <shortdescription>Geotagging search URL</shortdescription>
+    <longdescription>this can be changed when the default OpenStreetMap search URL is broken</longdescription>
   </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@

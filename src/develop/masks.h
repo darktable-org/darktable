@@ -37,7 +37,8 @@ typedef enum dt_masks_type_t
   DT_MASKS_CLONE = 1 << 3,
   DT_MASKS_GRADIENT = 1 << 4,
   DT_MASKS_ELLIPSE = 1 << 5,
-  DT_MASKS_BRUSH = 1 << 6
+  DT_MASKS_BRUSH = 1 << 6,
+  DT_MASKS_NON_CLONE = 1 << 7
 } dt_masks_type_t;
 
 /**masts states */
@@ -302,7 +303,7 @@ void dt_masks_iop_edit_toggle_callback(GtkToggleButton *togglebutton, struct dt_
 void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module_t *module);
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t value);
 void dt_masks_iop_update(struct dt_iop_module_t *module);
-void dt_masks_iop_combo_populate(struct dt_iop_module_t **m);
+void dt_masks_iop_combo_populate(GtkWidget *w, struct dt_iop_module_t **m);
 void dt_masks_iop_use_same_as(struct dt_iop_module_t *module, struct dt_iop_module_t *src);
 int dt_masks_group_get_hash_buffer_length(dt_masks_form_t *form);
 char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str);
@@ -316,6 +317,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid);
 int dt_masks_point_in_form_exact(float x, float y, float *points, int points_start, int points_count);
 int dt_masks_point_in_form_near(float x, float y, float *points, int points_start, int points_count, float distance, int *near);
 
+void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel);
 
 /** code for dynamic handling of intermediate buffers */
 static inline

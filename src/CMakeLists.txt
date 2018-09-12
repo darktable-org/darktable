@@ -86,6 +86,8 @@ FILE(GLOB SOURCE_FILES
   "develop/blend.c"
   "develop/blend_gui.c"
   "develop/tiling.c"
+  "common/dwt.c"
+  "common/heal.c"
   "develop/masks/masks.c"
   "develop/format.c"
   "dtgtk/button.c"
@@ -169,10 +171,24 @@ if(NOT COMPILER_SUPPORTS_C11)
   message(FATAL_ERROR "The compiler ${CMAKE_C_COMPILER} has no C11 support. Please use a different C compiler.")
 endif()
 
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-if(NOT COMPILER_SUPPORTS_CXX11)
-        message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+# yes, need to keep both the CMAKE_CXX_FLAGS and CMAKE_CXX_STANDARD.
+# with just the CMAKE_CXX_STANDARD, try_compile() breaks:
+#   https://gitlab.kitware.com/cmake/cmake/issues/16456
+# with just the CMAKE_CXX_FLAGS, 'bundled' pugixml breaks tests
+#   https://github.com/darktable-org/rawspeed/issues/112#issuecomment-321517003
+
+message(STATUS "Checking for -std=c++14 support")
+CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX14)
+if(NOT COMPILER_SUPPORTS_CXX14)
+  message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+  message(STATUS "Checking for -std=c++14 support - works")
 endif()
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")

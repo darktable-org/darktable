@@ -206,6 +206,9 @@ static void dt_iop_levels_compute_levels_automatic(dt_dev_pixelpipe_iop_t *piece
       }
     }
   }
+  // for numerical reasons sometimes the threshold is sharp but in float and n is size_t.
+  // in this case we want to make sure we don't keep nan:
+  if(isnan(d->levels[2])) d->levels[2] = 1.0f;
 
   // compute middle level from min and max levels
   float center = d->percentiles[1] / 100.0f;
@@ -859,7 +862,7 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
       cairo_save(cr);
       cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-      dt_draw_histogram_8(cr, hist, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw
+      dt_draw_histogram_8(cr, hist, 4, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw
                                                                                         // handle waveform
                                                                                         // histograms
       cairo_restore(cr);

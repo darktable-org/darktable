@@ -183,6 +183,14 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
   return TRUE;
 }
 
+static GdkRGBA lookup_color(GtkStyleContext *context, const char *name)
+{
+  GdkRGBA color, fallback = {1.0, 0.0, 0.0, 1.0};
+  if(!gtk_style_context_lookup_color (context, name, &color))
+    color = fallback;
+  return color;
+}
+
 void *dt_control_expose(void *voidptr)
 {
   int pointerx, pointery;
@@ -211,31 +219,21 @@ void *dt_control_expose(void *voidptr)
   darktable.control->width = width;
   darktable.control->height = height;
 
-  GdkRGBA color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gboolean color_found = gtk_style_context_lookup_color (context, "bg_color", &color);
-  if(!color_found)
-  {
-    color.red = 1.0;
-    color.green = 0.0;
-    color.blue = 0.0;
-    color.alpha = 1.0;
-  }
-  gdk_cairo_set_source_rgba(cr, &color);
+
+  // look up some colors once
+  GdkRGBA bg_color = lookup_color(context, "bg_color");
+  GdkRGBA really_dark_bg_color = lookup_color(context, "really_dark_bg_color");
+  GdkRGBA selected_bg_color = lookup_color(context, "selected_bg_color");
+  GdkRGBA fg_color = lookup_color(context, "fg_color");
+
+  gdk_cairo_set_source_rgba(cr, &bg_color);
 
   cairo_set_line_width(cr, tb);
   cairo_rectangle(cr, tb / 2., tb / 2., width - tb, height - tb);
   cairo_stroke(cr);
   cairo_set_line_width(cr, 1.5);
-  color_found = gtk_style_context_lookup_color (context, "really_dark_bg_color", &color);
-  if(!color_found)
-  {
-    color.red = 1.0;
-    color.green = 0.0;
-    color.blue = 0.0;
-    color.alpha = 1.0;
-  }
-  gdk_cairo_set_source_rgba(cr, &color);
+  gdk_cairo_set_source_rgba(cr, &really_dark_bg_color);
   cairo_rectangle(cr, tb, tb, width - 2 * tb, height - 2 * tb);
   cairo_stroke(cr);
 
@@ -279,30 +277,14 @@ void *dt_control_expose(void *voidptr)
       cairo_line_to(cr, xc - wd, yc + rad);
       if(k == 0)
       {
-        color_found = gtk_style_context_lookup_color (context, "selected_bg_color", &color);
-        if(!color_found)
-        {
-          color.red = 1.0;
-          color.green = 0.0;
-          color.blue = 0.0;
-          color.alpha = 1.0;
-        }
-        gdk_cairo_set_source_rgba(cr, &color);
+        gdk_cairo_set_source_rgba(cr, &selected_bg_color);
         cairo_fill_preserve(cr);
       }
       cairo_set_source_rgba(cr, 0., 0., 0., 1.0 / (1 + k));
       cairo_stroke(cr);
       rad += .5f;
     }
-    color_found = gtk_style_context_lookup_color (context, "fg_color", &color);
-    if(!color_found)
-    {
-      color.red = 1.0;
-      color.green = 0.0;
-      color.blue = 0.0;
-      color.alpha = 1.0;
-    }
-    gdk_cairo_set_source_rgba(cr, &color);
+    gdk_cairo_set_source_rgba(cr, &fg_color);
     cairo_move_to(cr, xc - wd + .5f * pad, (yc + 1. / 3. * fontsize) - fontsize);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
@@ -324,11 +306,11 @@ void *dt_control_expose(void *voidptr)
     const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
     cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
     pango_cairo_layout_path(cr, layout);
-    cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-    cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, 0.7);
-    cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-    cairo_stroke(cr);
+    cairo_set_line_width(cr, 2.0);
+    gdk_cairo_set_source_rgba(cr, &selected_bg_color);
+    cairo_stroke_preserve(cr);
+    gdk_cairo_set_source_rgba(cr, &fg_color);
+    cairo_fill(cr);
     pango_font_description_free(desc);
     g_object_unref(layout);
   }
@@ -700,6 +682,12 @@ int dt_control_key_pressed_override(guint key, guint state)
     /* show/hide the actual header panel */
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, header, TRUE);
     gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+    return 1;
+  }
+  // add an option to allow skip mouse events while editing masks
+  else if(key == accels->darkroom_skip_mouse_events.accel_key && state == accels->darkroom_skip_mouse_events.accel_mods)
+  {
+    darktable.develop->darkroom_skip_mouse_events = TRUE;
     return 1;
   }
   return 0;

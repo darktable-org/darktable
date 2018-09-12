@@ -214,8 +214,9 @@ void expose(
     cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));
     if(closeup)
     {
-      cairo_scale(cr, 2.0, 2.0);
-      cairo_translate(cr, -.25f * wd, -.25f * ht);
+      const double scale = 1<<closeup;
+      cairo_scale(cr, scale, scale);
+      cairo_translate(cr, -(.5 - 0.5/scale) * wd, -(.5 - 0.5/scale) * ht);
     }
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
@@ -237,7 +238,7 @@ void expose(
 
     const float wd = dev->preview_pipe->backbuf_width;
     const float ht = dev->preview_pipe->backbuf_height;
-    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
     cairo_paint(cr);
     cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
@@ -296,7 +297,7 @@ void expose(
 
     const float wd = dev->preview_pipe->backbuf_width;
     const float ht = dev->preview_pipe->backbuf_height;
-    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 
     cairo_translate(cri, width / 2.0, height / 2.0f);
     cairo_scale(cri, zoom_scale, zoom_scale);
@@ -357,7 +358,7 @@ void expose(
   {
     const float wd = dev->preview_pipe->backbuf_width;
     const float ht = dev->preview_pipe->backbuf_height;
-    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 
     cairo_translate(cri, width / 2.0, height / 2.0f);
     cairo_scale(cri, zoom_scale, zoom_scale);
@@ -805,7 +806,7 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
       zoom_x = dt_control_get_dev_zoom_x();
       zoom_y = dt_control_get_dev_zoom_y();
       closeup = dt_control_get_dev_closeup();
-      if(zoom == DT_ZOOM_1) closeup ^= 1;
+      if(zoom == DT_ZOOM_1) closeup = (closeup > 0) ^ 1; // flip closeup/no closeup, no difference whether it was 1 or larger
       dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_1, closeup, NULL, NULL);
       dt_control_set_dev_zoom(DT_ZOOM_1);
       dt_control_set_dev_zoom_x(zoom_x);
@@ -814,6 +815,7 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
       dt_dev_invalidate(dev);
       break;
     case 2:
+      zoom_x = zoom_y = 0.0f;
       dt_control_set_dev_zoom(DT_ZOOM_FILL);
       dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FILL, 0, NULL, NULL);
       dt_control_set_dev_zoom_x(zoom_x);
@@ -1860,6 +1862,7 @@ void leave(dt_view_t *self)
   // cleanup visible masks
   if(dev->form_gui)
   {
+    dev->gui_module = NULL; // modules have already been free()
     dt_masks_clear_form_gui(dev);
     free(dev->form_gui);
     dev->form_gui = NULL;
@@ -1948,7 +1951,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     const int closeup = dt_control_get_dev_closeup();
     int procw, proch;
     dt_dev_get_processed_size(dev, &procw, &proch);
-    const float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 0);
+    const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
     float old_zoom_x, old_zoom_y;
     old_zoom_x = dt_control_get_dev_zoom_x();
     old_zoom_y = dt_control_get_dev_zoom_y();
@@ -2048,7 +2051,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
     zoom_x = dt_control_get_dev_zoom_x();
     zoom_y = dt_control_get_dev_zoom_y();
     dt_dev_get_processed_size(dev, &procw, &proch);
-    const float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 0);
+    const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
     zoom_x += (1.0 / scale) * (x - .5f * dev->width) / procw;
     zoom_y += (1.0 / scale) * (y - .5f * dev->height) / proch;
     if(zoom == DT_ZOOM_1)
@@ -2104,7 +2107,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   zoom_x = dt_control_get_dev_zoom_x();
   zoom_y = dt_control_get_dev_zoom_y();
   dt_dev_get_processed_size(dev, &procw, &proch);
-  float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2.0 : 1.0, 0);
+  float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
   const float fitscale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
   float oldscale = scale;
 
@@ -2184,6 +2187,11 @@ int key_released(dt_view_t *self, guint key, guint state)
     dt_dev_invalidate(darktable.develop);
     dt_control_queue_redraw_center();
   }
+  // add an option to allow skip mouse events while editing masks
+  if(key == accels->darkroom_skip_mouse_events.accel_key && state == accels->darkroom_skip_mouse_events.accel_mods)
+  {
+    darktable.develop->darkroom_skip_mouse_events = FALSE;
+  }
 
   return 1;
 }
@@ -2251,7 +2259,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     dt_develop_t *dev = (dt_develop_t *)self->data;
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
-    float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2.0 : 1.0, 0);
+    float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
     int procw, proch;
     dt_dev_get_processed_size(dev, &procw, &proch);
 
@@ -2286,6 +2294,13 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     dt_dev_invalidate(dev);
     dt_control_queue_redraw();
 
+    return 1;
+  }
+
+  // add an option to allow skip mouse events while editing masks
+  if(key == accels->darkroom_skip_mouse_events.accel_key && state == accels->darkroom_skip_mouse_events.accel_mods)
+  {
+    darktable.develop->darkroom_skip_mouse_events = TRUE;
     return 1;
   }
 
@@ -2347,6 +2362,8 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
   dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_y, GDK_CONTROL_MASK);
 
+  // add an option to allow skip mouse events while editing masks
+  dt_accel_register_view(self, NC_("accel", "allow to pan & zoom while editing masks"), GDK_KEY_a, 0);
 }
 
 static gboolean _darkroom_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,

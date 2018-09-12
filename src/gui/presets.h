@@ -15,6 +15,12 @@ void dt_gui_presets_init();
 void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const int32_t version,
                                 const void *params, const int32_t params_size, const int32_t enabled);
 
+/** same as add_generic but also supply blendop parameters for the presets. */
+void dt_gui_presets_add_with_blendop(
+    const char *name, dt_dev_operation_t op, const int32_t version,
+    const void *params, const int32_t params_size,
+    const void *blend_params, const int32_t enabled);
+
 /** update match strings for maker, model, lens. */
 void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const int32_t version,
                                const char *maker, const char *model, const char *lens);
