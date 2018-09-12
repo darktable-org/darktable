@@ -31,18 +31,33 @@
 #include <stdlib.h>
 #include <string.h>
 
-DT_MODULE_INTROSPECTION(1, dt_iop_profilegamma_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_profilegamma_params_t)
+
+typedef enum dt_iop_profilegamma_mode_t
+{
+  DT_IOP_PROFILEGAMMA_GAMMA,
+  DT_IOP_PROFILEGAMMA_ASCCDL,
+} dt_iop_profilegamma_mode_t;
 
 typedef struct dt_iop_profilegamma_params_t
 {
   float linear;
-  float gamma;
+  float gamma;  
+  float offset;
+  float power;
+  float slope;
+  dt_iop_profilegamma_mode_t method;
 } dt_iop_profilegamma_params_t;
 
 typedef struct dt_iop_profilegamma_gui_data_t
 {
   GtkWidget *linear;
   GtkWidget *gamma;
+  GtkWidget *slope;
+  GtkWidget *offset;
+  GtkWidget *power;
+  GtkWidget *method;
+  GList *methods;
 } dt_iop_profilegamma_gui_data_t;
 
 typedef struct dt_iop_profilegamma_data_t
@@ -51,6 +66,10 @@ typedef struct dt_iop_profilegamma_data_t
   float gamma;
   float table[0x10000];      // precomputed look-up table
   float unbounded_coeffs[3]; // approximation for extrapolation of curve
+  float offset;
+  float power;
+  float slope;
+  dt_iop_profilegamma_mode_t method;
 } dt_iop_profilegamma_data_t;
 
 typedef struct dt_iop_profilegamma_global_data_t
@@ -77,6 +96,9 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "linear"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "gamma"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "slope"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "offset"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "power"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -85,8 +107,12 @@ void connect_key_accels(dt_iop_module_t *self)
 
   dt_accel_connect_slider_iop(self, "linear", GTK_WIDGET(g->linear));
   dt_accel_connect_slider_iop(self, "gamma", GTK_WIDGET(g->gamma));
+  dt_accel_connect_slider_iop(self, "slope", GTK_WIDGET(g->slope));
+  dt_accel_connect_slider_iop(self, "offset", GTK_WIDGET(g->offset));
+  dt_accel_connect_slider_iop(self, "power", GTK_WIDGET(g->power));
 }
 
+#if 0
 #ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -134,6 +160,7 @@ error:
   return FALSE;
 }
 #endif
+#endif
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -142,28 +169,57 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   const int ch = piece->colors;
 
+  switch (data->method) 
+  {
+    case DT_IOP_PROFILEGAMMA_GAMMA:
+    {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(data) schedule(static)
 #endif
-  for(int k = 0; k < roi_out->height; k++)
-  {
-    const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-    float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
-
-    for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
-    {
-      for(int i = 0; i < 3; i++)
+      for(int k = 0; k < roi_out->height; k++)
       {
-        // use base curve for values < 1, else use extrapolation.
-        if(in[i] < 1.0f)
-          out[i] = data->table[CLAMP((int)(in[i] * 0x10000ul), 0, 0xffff)];
+        const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
+        float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
+
+        for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
+        {
+          for(int i = 0; i < 3; i++)
+          {
+            // use base curve for values < 1, else use extrapolation.
+            if(in[i] < 1.0f)
+              out[i] = data->table[CLAMP((int)(in[i] * 0x10000ul), 0, 0xffff)];
+            else
+              out[i] = dt_iop_eval_exp(data->unbounded_coeffs, in[i]);
+          }
+        }
+      }
+    }
+    
+    case DT_IOP_PROFILEGAMMA_ASCCDL:
+    { 
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) shared(data) schedule(static)
+#endif
+      for(size_t k = 1; k < (size_t)ch * roi_out->width * roi_out->height; k++)
+      {
+        // https://en.wikipedia.org/wiki/ASC_CDL
+        float pixel = ((float *)ivoid)[k] * data->slope + data->offset;
+        
+        // ensure we dont take apply power < 1 on negative values
+        if (pixel >= 0.)
+        {
+          ((float *)ovoid)[k] = powf(pixel, data->power);
+        }
         else
-          out[i] = dt_iop_eval_exp(data->unbounded_coeffs, in[i]);
+        {
+          ((float *)ovoid)[k] = pixel * fabsf(data->offset);
+        }
       }
     }
   }
-
+  
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  
 }
 
 static void linear_callback(GtkWidget *slider, gpointer user_data)
@@ -184,71 +240,145 @@ static void gamma_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void power_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
+  p->power = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void offset_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
+  p->offset = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void slope_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
+  p->slope = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void method_callback(GtkWidget *combo, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
+  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+  
+  const dt_iop_profilegamma_mode_t new_mode
+      = GPOINTER_TO_UINT(g_list_nth_data(g->methods, dt_bauhaus_combobox_get(combo)));
+  
+  switch (new_mode) 
+  {
+    case DT_IOP_PROFILEGAMMA_GAMMA:
+    {
+      p->method = DT_IOP_PROFILEGAMMA_GAMMA;
+      gtk_widget_set_visible(g->slope, FALSE);
+      gtk_widget_set_visible(g->offset, FALSE);
+      gtk_widget_set_visible(g->power, FALSE);
+      
+      gtk_widget_set_visible(g->linear, TRUE);
+      gtk_widget_set_visible(g->gamma, TRUE);
+    }
+    
+    case DT_IOP_PROFILEGAMMA_ASCCDL:
+    {
+      p->method = DT_IOP_PROFILEGAMMA_ASCCDL;
+      gtk_widget_set_visible(g->slope, TRUE);
+      gtk_widget_set_visible(g->offset, TRUE);
+      gtk_widget_set_visible(g->power, TRUE);
+      
+      gtk_widget_set_visible(g->linear, FALSE);
+      gtk_widget_set_visible(g->gamma, FALSE);
+    }
+  }
+  
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)p1;
   dt_iop_profilegamma_data_t *d = (dt_iop_profilegamma_data_t *)piece->data;
 
-  const float linear = p->linear;
-  const float gamma = p->gamma;
-
   d->linear = p->linear;
   d->gamma = p->gamma;
+  d->offset = p->offset;
+  d->slope = p->slope;
+  d->power = p->power;
+  d->method = p->method;
+  
+  if (p-> method == DT_IOP_PROFILEGAMMA_GAMMA)
+  {
+    const float linear = p->linear;
+    const float gamma = p->gamma;
 
-  float a, b, c, g;
-  if(gamma == 1.0)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
-#endif
-    for(int k = 0; k < 0x10000; k++) d->table[k] = 1.0 * k / 0x10000;
-  }
-  else
-  {
-    if(linear == 0.0)
+    float a, b, c, g;
+    if(gamma == 1.0)
     {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(d) schedule(static)
 #endif
-      for(int k = 0; k < 0x10000; k++) d->table[k] = powf(1.00 * k / 0x10000, gamma);
+      for(int k = 0; k < 0x10000; k++) d->table[k] = 1.0 * k / 0x10000;
     }
     else
     {
-      if(linear < 1.0)
+      if(linear == 0.0)
       {
-        g = gamma * (1.0 - linear) / (1.0 - gamma * linear);
-        a = 1.0 / (1.0 + linear * (g - 1));
-        b = linear * (g - 1) * a;
-        c = powf(a * linear + b, g) / linear;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(d) schedule(static)
+#endif
+        for(int k = 0; k < 0x10000; k++) d->table[k] = powf(1.00 * k / 0x10000, gamma);
       }
       else
       {
-        a = b = g = 0.0;
-        c = 1.0;
-      }
+        if(linear < 1.0)
+        {
+          g = gamma * (1.0 - linear) / (1.0 - gamma * linear);
+          a = 1.0 / (1.0 + linear * (g - 1));
+          b = linear * (g - 1) * a;
+          c = powf(a * linear + b, g) / linear;
+        }
+        else
+        {
+          a = b = g = 0.0;
+          c = 1.0;
+        }
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(d, a, b, c, g) schedule(static)
 #endif
-      for(int k = 0; k < 0x10000; k++)
-      {
-        float tmp;
-        if(k < 0x10000 * linear)
-          tmp = c * k / 0x10000;
-        else
-          tmp = powf(a * k / 0x10000 + b, g);
-        d->table[k] = tmp;
+        for(int k = 0; k < 0x10000; k++)
+        {
+          float tmp;
+          if(k < 0x10000 * linear)
+            tmp = c * k / 0x10000;
+          else
+            tmp = powf(a * k / 0x10000 + b, g);
+          d->table[k] = tmp;
+        }
       }
     }
-  }
 
-  // now the extrapolation stuff:
-  const float x[4] = { 0.7f, 0.8f, 0.9f, 1.0f };
-  const float y[4] = { d->table[CLAMP((int)(x[0] * 0x10000ul), 0, 0xffff)],
-                       d->table[CLAMP((int)(x[1] * 0x10000ul), 0, 0xffff)],
-                       d->table[CLAMP((int)(x[2] * 0x10000ul), 0, 0xffff)],
-                       d->table[CLAMP((int)(x[3] * 0x10000ul), 0, 0xffff)] };
-  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
+    // now the extrapolation stuff:
+    const float x[4] = { 0.7f, 0.8f, 0.9f, 1.0f };
+    const float y[4] = { d->table[CLAMP((int)(x[0] * 0x10000ul), 0, 0xffff)],
+                         d->table[CLAMP((int)(x[1] * 0x10000ul), 0, 0xffff)],
+                         d->table[CLAMP((int)(x[2] * 0x10000ul), 0, 0xffff)],
+                         d->table[CLAMP((int)(x[3] * 0x10000ul), 0, 0xffff)] };
+                         
+    dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
+  }
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -263,6 +393,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
+
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
@@ -270,6 +401,9 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)module->params;
   dt_bauhaus_slider_set(g->linear, p->linear);
   dt_bauhaus_slider_set(g->gamma, p->gamma);
+  dt_bauhaus_slider_set(g->offset, p->offset);
+  dt_bauhaus_slider_set(g->slope, p->slope);
+  dt_bauhaus_slider_set(g->power, p->power);
 }
 
 void init(dt_iop_module_t *module)
@@ -280,18 +414,15 @@ void init(dt_iop_module_t *module)
   module->priority = 323; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_profilegamma_params_t);
   module->gui_data = NULL;
-  dt_iop_profilegamma_params_t tmp = (dt_iop_profilegamma_params_t){ 0.1, 0.45 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_profilegamma_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_profilegamma_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
 {
-  const int program = 2; // basic.cl, from programs.conf
-  dt_iop_profilegamma_global_data_t *gd
-      = (dt_iop_profilegamma_global_data_t *)malloc(sizeof(dt_iop_profilegamma_global_data_t));
-  module->data = gd;
-  gd->kernel_profilegamma = dt_opencl_create_kernel(program, "profilegamma");
+  //const int program = 2; // basic.cl, from programs.conf
+  //dt_iop_profilegamma_global_data_t *gd
+  //    = (dt_iop_profilegamma_global_data_t *)malloc(sizeof(dt_iop_profilegamma_global_data_t));
+  //module->data = gd;
+  //gd->kernel_profilegamma = dt_opencl_create_kernel(program, "profilegamma");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -307,6 +438,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   free(module->data);
   module->data = NULL;
 }
+
 void gui_init(dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_profilegamma_gui_data_t));
@@ -314,21 +446,71 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  
+  g->methods = NULL;
+  
+  g->method = dt_bauhaus_combobox_new(self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->method), TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->method, NULL, _("method"));
+  dt_bauhaus_combobox_add(g->method, _("gamma correction (legacy)"));
+  g->methods = g_list_append(g->methods, GUINT_TO_POINTER(DT_IOP_PROFILEGAMMA_GAMMA));
+  dt_bauhaus_combobox_add(g->method, _("ASC color decision list"));
+  g->methods = g_list_append(g->methods, GUINT_TO_POINTER(DT_IOP_PROFILEGAMMA_ASCCDL));
+  gtk_widget_set_tooltip_text(g->method, _("profile correction method"));
+  dt_bauhaus_combobox_set_default(g->method, 0);
+  dt_bauhaus_combobox_set(g->method, g_list_index(g->methods, GUINT_TO_POINTER(p->method)));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->method), TRUE, TRUE, 1);
 
-  g->linear = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.0001, p->linear, 4);
-  g->gamma = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.0001, p->gamma, 4);
+  g->linear = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.005, p->linear, 4);
+  g->gamma = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.005, p->gamma, 4);
+  g->offset = dt_bauhaus_slider_new_with_range(self, -0.002, 0.002, 0.0001, p->offset, 4);
+  dt_bauhaus_slider_enable_soft_boundaries(g->offset, -1., 1.);
+  g->slope = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.005, p->slope, 4);
+  dt_bauhaus_slider_enable_soft_boundaries(g->slope, 0., 4.0);
+  g->power = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.005, p->power, 4);
+  dt_bauhaus_slider_enable_soft_boundaries(g->power, 0., 2.0);
 
   dt_bauhaus_widget_set_label(g->linear, NULL, _("linear"));
   dt_bauhaus_widget_set_label(g->gamma, NULL, _("gamma"));
+  dt_bauhaus_widget_set_label(g->offset, NULL, _("offset"));
+  dt_bauhaus_widget_set_label(g->slope, NULL, _("slope"));
+  dt_bauhaus_widget_set_label(g->power, NULL, _("power"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->linear, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->gamma, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->offset, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->power, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->slope, TRUE, TRUE, 0);
 
   gtk_widget_set_tooltip_text(g->linear, _("linear part"));
   gtk_widget_set_tooltip_text(g->gamma, _("gamma exponential factor"));
+  gtk_widget_set_tooltip_text(g->offset, _("constant offset, for dark tones"));
+  gtk_widget_set_tooltip_text(g->slope, _("proportionnal slope, for highlights"));
+  gtk_widget_set_tooltip_text(g->power, _("gamma power, for midtones"));
+  gtk_widget_set_tooltip_text(g->method, _("the gamma correction is the traditionnal midtones correction"));
 
   g_signal_connect(G_OBJECT(g->linear), "value-changed", G_CALLBACK(linear_callback), self);
   g_signal_connect(G_OBJECT(g->gamma), "value-changed", G_CALLBACK(gamma_callback), self);
+  g_signal_connect(G_OBJECT(g->offset), "value-changed", G_CALLBACK(offset_callback), self);
+  g_signal_connect(G_OBJECT(g->slope), "value-changed", G_CALLBACK(slope_callback), self);
+  g_signal_connect(G_OBJECT(g->power), "value-changed", G_CALLBACK(power_callback), self);
+  g_signal_connect(G_OBJECT(g->method), "value-changed", G_CALLBACK(method_callback), self);
+  
+  switch (p->method) 
+  {
+    case DT_IOP_PROFILEGAMMA_GAMMA:
+    {
+      gtk_widget_set_visible(g->slope, FALSE);
+      gtk_widget_set_visible(g->offset, FALSE);
+      gtk_widget_set_visible(g->power, FALSE);
+    }
+    
+    case DT_IOP_PROFILEGAMMA_ASCCDL:
+    {
+      gtk_widget_set_visible(g->linear, FALSE);
+      gtk_widget_set_visible(g->gamma, FALSE);
+    }
+  }
 }
 
 void gui_cleanup(dt_iop_module_t *self)
