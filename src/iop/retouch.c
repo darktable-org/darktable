@@ -1857,6 +1857,8 @@ static void rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, dt_
   // if blend module is displaying mask do not display wavelet scales
   if(self->request_mask_display && !g->mask_display)
   {
+    dt_control_log(_("cannot display scales when the blending mask is displayed"));
+
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     gtk_toggle_button_set_active(togglebutton, FALSE);
@@ -2146,6 +2148,8 @@ static void rt_showmask_callback(GtkToggleButton *togglebutton, dt_iop_module_t 
   // if blend module is displaying mask do not display it here
   if(module->request_mask_display && !g->mask_display)
   {
+    dt_control_log(_("cannot display masks when the blending mask is displayed"));
+
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     gtk_toggle_button_set_active(togglebutton, FALSE);

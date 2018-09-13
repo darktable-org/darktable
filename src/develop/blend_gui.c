@@ -544,6 +544,8 @@ static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton 
   // if blendif is bypassed don't allow to set this button on
   if(module->bypass_blendif)
   {
+    dt_control_log(_("display mask is currently disabled by another module"));
+
     if(darktable.gui->reset) return;
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
