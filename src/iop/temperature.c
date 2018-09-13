@@ -60,6 +60,9 @@ DT_MODULE_INTROSPECTION(3, dt_iop_temperature_params_t)
 
 #define COLORED_SLIDERS 0
 
+//storing the last picked color (if any)
+static float old[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
 static void gui_sliders_update(struct dt_iop_module_t *self);
 
 typedef struct dt_iop_temperature_params_t
@@ -1152,8 +1155,8 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   if(darktable.gui->reset) return FALSE;
   if(self->picked_color_max[0] < self->picked_color_min[0]) return FALSE;
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF) return FALSE;
-  static float old[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
   const float *grayrgb = self->picked_color;
+  //test the newly picked color: if the same as the last, do not process further
   if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2] && grayrgb[3] == old[3]) return FALSE;
   for(int k = 0; k < 4; k++) old[k] = grayrgb[k];
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
@@ -1258,7 +1261,10 @@ static void apply_preset(dt_iop_module_t *self)
       for(int k = 0; k < 4; k++) p->coeffs[k] = g->daylight_wb[k];
       break;
     case 2: // spot wb, expose callback will set p->coeffs.
-      for(int k = 0; k < 4; k++) p->coeffs[k] = fp->coeffs[k];
+
+      //reset previously stored color picker information
+      for(int k = 0; k < 4; k++) old[k] = 0.0f;
+
       dt_iop_request_focus(self);
       self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
 
