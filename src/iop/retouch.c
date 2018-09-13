@@ -2146,6 +2146,8 @@ static void rt_showmask_callback(GtkToggleButton *togglebutton, dt_iop_module_t 
   // if blend module is displaying mask do not display it here
   if(module->request_mask_display && !g->mask_display)
   {
+    dt_control_log(_("display masks cannot be set when mask is being displayed on blend module"));
+
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     gtk_toggle_button_set_active(togglebutton, FALSE);
