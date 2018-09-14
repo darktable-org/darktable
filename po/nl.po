@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-09-11 10:54+0200\n"
-"PO-Revision-Date: 2018-09-11 11:04+0200\n"
+"PO-Revision-Date: 2018-09-14 22:13+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -7664,7 +7664,7 @@ msgstr ""
 
 #: ../src/iop/retouch.c:2545
 msgid "show and edit shapes on the current scale"
-msgstr "toon en bewerk vormen in huidege schaal"
+msgstr "toon en bewerk vormen in huidige schaal"
 
 #: ../src/iop/retouch.c:2556
 msgid "algorithms:"
@@ -7705,10 +7705,10 @@ msgid ""
 "red box indicates the current scale\n"
 "green line indicates that the scale has shapes on it"
 msgstr ""
-"bovenste schuifregelaar past aan waar de samenvoeging van schalen begint\n"
-"onderste schuifregelaar past het aantal schalen aan\n"
-"rode boxen tonen de huidige schalen\n"
-"groene lijnen geven aan dat de schalen vormen bezit"
+"bepaal met bovenste schuifregelaar het begin van samenvoegen\n"
+"kies met onderste schuifregelaar het aantal schalen\n"
+"de rode box toont de huidige schaal\n"
+"groene lijnen geven aan dat schalen vormen bezitten"
 
 #: ../src/iop/retouch.c:2641
 msgid "display masks"
