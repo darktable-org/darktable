@@ -50,7 +50,7 @@ static void remove_preset_flag(const int imgid)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
-static void _dt_history_cleanup_multi_instance(int imgid, int minnum)
+static void _dt_history_cleanup_multi_instance()
 {
   /* as we let the user decide which history item to copy, we can end with some gaps in multi-instance
      numbering.
@@ -77,28 +77,27 @@ static void _dt_history_cleanup_multi_instance(int imgid, int minnum)
   // we first reload all the newly added history item
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT num, operation, multi_priority FROM "
-                                                             "main.history WHERE imgid=?1 AND num>=?2 ORDER BY "
+                                                             "memory.style_items ORDER BY "
                                                              "operation, multi_priority",
                               -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minnum);
   GList *hitems = NULL;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const char *op = (const char *)sqlite3_column_text(stmt, 1);
     GList *modules = darktable.iop;
-    while (modules)
+    while(modules)
     {
       dt_iop_module_so_t *find_op = (dt_iop_module_so_t *)(modules->data);
-      if (!strcmp(find_op->op, op))
+      if(!strcmp(find_op->op, op))
       {
         break;
       }
       modules = g_list_next(modules);
     }
-    if (modules && (((dt_iop_module_so_t *)(modules->data))->flags() & IOP_FLAGS_ONE_INSTANCE))
+    if(modules && (((dt_iop_module_so_t *)(modules->data))->flags() & IOP_FLAGS_ONE_INSTANCE))
     {
-      // the current module is a single-instance one, so there's no point in trying to mess up our multi_priority value
+      // the current module is a single-instance one, so there's no point in trying
+      // to mess up our multi_priority value
       continue;
     }
 
@@ -139,7 +138,7 @@ static void _dt_history_cleanup_multi_instance(int imgid, int minnum)
 
   // and we update the history items
   char *req = NULL;
-  req = dt_util_dstrcat(req, "%s", "UPDATE main.history SET multi_priority = CASE num ");
+  req = dt_util_dstrcat(req, "%s", "UPDATE memory.style_items SET multi_priority = CASE num ");
   items = g_list_first(hitems);
   while(items)
   {
@@ -150,15 +149,180 @@ static void _dt_history_cleanup_multi_instance(int imgid, int minnum)
     }
     items = g_list_next(items);
   }
-  req = dt_util_dstrcat(req, "%s", "else multi_priority end where imgid=?1 and num>=?2");
+  req = dt_util_dstrcat(req, "%s", "else multi_priority end");
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), req, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minnum);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
   g_free(req);
   g_list_free_full(hitems, free);
+}
+
+static void _history_rebuild_multi_priority_append(const int dest_imgid)
+{
+  sqlite3_stmt *stmt = NULL;
+
+  // we have to shift the multi_priority on history for the copied entries
+  // go through memory.style_items and shift one at the time
+  // we can't do it in a single statment because single-instance modules
+  // can't be duplicated
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT operation FROM memory.style_items",
+                              -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *op_old = (const char *)sqlite3_column_text(stmt, 0);
+
+    // if the module is a single-instance, do nothing
+    GList *modules = darktable.iop;
+    while(modules)
+    {
+      dt_iop_module_so_t *find_op = (dt_iop_module_so_t *)(modules->data);
+      if(!strcmp(find_op->op, op_old))
+      {
+        break;
+      }
+      modules = g_list_next(modules);
+    }
+    if(modules && (((dt_iop_module_so_t *)(modules->data))->flags() & IOP_FLAGS_ONE_INSTANCE)) continue;
+
+    sqlite3_stmt *stmt2 = NULL;
+
+    // shift the priority on history
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE main.history SET multi_priority = multi_priority + "
+                                "(SELECT IFNULL(MAX(multi_priority), -1)+1 "
+                                "FROM memory.style_items "
+                                "WHERE memory.style_items.operation = main.history.operation) "
+                                "WHERE imgid = ?1 AND operation = ?2",
+                                -1, &stmt2, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, dest_imgid);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 2, op_old, -1, SQLITE_TRANSIENT);
+    sqlite3_step(stmt2);
+    sqlite3_finalize(stmt2);
+  }
+  sqlite3_finalize(stmt);
+}
+
+void dt_history_rebuild_multi_priority_merge(const int dest_imgid)
+{
+  sqlite3_stmt *stmt = NULL;
+
+  char operation_prev[257] = { 0 };
+  int multi_priority_next = -1;
+
+  // first make as if copied items will be appended to history
+  // we'll merge it in the next step
+  _history_rebuild_multi_priority_append(dest_imgid);
+
+  // select the last entry in history for each operation that we are about to copy
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT MAX(num), operation, multi_priority, multi_name FROM "
+      "main.history WHERE imgid = ?1 AND "
+      "EXISTS (SELECT * FROM memory.style_items WHERE main.history.operation=memory.style_items.operation) "
+      "GROUP BY operation, multi_priority "
+      "ORDER BY operation, multi_priority",
+      -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *op_old = (const char *)sqlite3_column_text(stmt, 1);
+    const int multi_priority_old = sqlite3_column_int(stmt, 2);
+    const char *multi_name_old = (const char *)sqlite3_column_text(stmt, 3);
+
+    sqlite3_stmt *stmt2 = NULL;
+
+    // if the module is a single-instance, do nothing
+    GList *modules = darktable.iop;
+    while(modules)
+    {
+      dt_iop_module_so_t *find_op = (dt_iop_module_so_t *)(modules->data);
+      if(!strcmp(find_op->op, op_old))
+      {
+        break;
+      }
+      modules = g_list_next(modules);
+    }
+    if(modules && (((dt_iop_module_so_t *)(modules->data))->flags() & IOP_FLAGS_ONE_INSTANCE)) continue;
+
+    // we start a new operation, get the next priority
+    if(strcmp(op_old, operation_prev) != 0)
+    {
+      snprintf(operation_prev, sizeof(operation_prev), "%s", op_old);
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT MAX(multi_priority) FROM memory.style_items "
+                                  "WHERE operation=?1",
+                                  -1, &stmt2, NULL);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 1, op_old, -1, SQLITE_TRANSIENT);
+      if(sqlite3_step(stmt2) == SQLITE_ROW)
+        multi_priority_next = sqlite3_column_int(stmt2, 0);
+      else
+        multi_priority_next = -1;
+      sqlite3_finalize(stmt2);
+    }
+
+    // if this (operation, multi_name) exists on memory.style_items it should be replaced on dest_imgid
+    // we also check that it hasn't been used to replace another instance already
+    int multi_priority_new = -1;
+    int num_new = -1;
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT num, operation, multi_name, multi_priority FROM memory.style_items "
+                                "WHERE operation=?1 AND multi_name=?2 AND num >= 0",
+                                -1, &stmt2, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 1, op_old, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 2, multi_name_old, -1, SQLITE_TRANSIENT);
+    if(sqlite3_step(stmt2) == SQLITE_ROW)
+    {
+      num_new = sqlite3_column_int(stmt2, 0);
+      multi_priority_new = sqlite3_column_int(stmt2, 3);
+    }
+    sqlite3_finalize(stmt2);
+
+    if(multi_priority_new >= 0)
+    {
+      // if this (operation, multi_name) exists in memory.style_items it should replace the one in history
+      // so we update the multi_priority in history with the new one from memory.style_items
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE main.history SET multi_priority = ?1"
+                                  "WHERE imgid=?2 AND operation=?3 AND multi_priority=?4",
+                                  -1, &stmt2, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, multi_priority_new);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, dest_imgid);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, op_old, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 4, multi_priority_old);
+      sqlite3_step(stmt2);
+      sqlite3_finalize(stmt2);
+
+      // and flag this instance as used
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE memory.style_items SET num = -1 "
+                                                                 "WHERE num = ?1",
+                                  -1, &stmt2, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, num_new);
+      sqlite3_step(stmt2);
+      sqlite3_finalize(stmt2);
+    }
+    else
+    {
+      // if this (operation, multi_name) do not exists in memory.style_items it should be
+      // pushed back in the pipe, so copied operation are last in the pipe
+      // we shift the multi_priority in history
+      multi_priority_next++;
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE main.history SET multi_priority = ?4 "
+                                  "WHERE imgid=?1 AND operation=?2 AND multi_priority=?3",
+                                  -1, &stmt2, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, dest_imgid);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 2, op_old, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 3, multi_priority_old);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 4, multi_priority_next);
+      sqlite3_step(stmt2);
+      sqlite3_finalize(stmt2);
+    }
+  }
+  sqlite3_finalize(stmt);
 }
 
 void dt_history_delete_on_image(int32_t imgid)
@@ -289,38 +453,65 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   /* copy history items from styles onto temp table */
 
   //  prepare SQL request
-  char req[2048];
-  g_strlcpy(req, "INSERT INTO memory.style_items (num, module, operation, op_params, enabled, blendop_params, "
-                 "blendop_version, multi_name, multi_priority) SELECT num, module, operation, "
-                 "op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority FROM "
-                 "main.history WHERE imgid = ?1",
-            sizeof(req));
-
-  //  Add ops selection if any format: ... and num in (val1, val2)
-  if(ops)
+  if(merge && !ops)
   {
-    GList *l = ops;
-    int first = 1;
-    g_strlcat(req, " AND num IN (", sizeof(req));
+    // the user has selected copy all and append
+    // select only the last entry in history for each (operation, multi_priority)
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+        dt_database_get(darktable.db),
+        "INSERT INTO memory.style_items (num, module, operation, op_params, enabled, blendop_params, "
+        "blendop_version, multi_name, multi_priority) SELECT MAX(num) AS max_num, module, operation, "
+        "op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority FROM "
+        "main.history WHERE imgid = ?1"
+        "GROUP BY operation, multi_priority "
+        "ORDER BY max_num",
+        -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
+  else
+  {
+    // in any other case we select all items in history or only the ones selected by the user
+    char req[2048];
+    g_strlcpy(req, "INSERT INTO memory.style_items (num, module, operation, op_params, enabled, blendop_params, "
+                   "blendop_version, multi_name, multi_priority) SELECT num, module, operation, "
+                   "op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority FROM "
+                   "main.history WHERE imgid = ?1",
+              sizeof(req));
 
-    while(l)
+    //  Add ops selection if any format: ... and num in (val1, val2)
+    if(ops)
     {
-      unsigned int value = GPOINTER_TO_UINT(l->data);
-      char v[30];
+      GList *l = ops;
+      int first = 1;
+      g_strlcat(req, " AND num IN (", sizeof(req));
 
-      if(!first) g_strlcat(req, ",", sizeof(req));
-      snprintf(v, sizeof(v), "%u", value);
-      g_strlcat(req, v, sizeof(req));
-      first = 0;
-      l = g_list_next(l);
+      while(l)
+      {
+        unsigned int value = GPOINTER_TO_UINT(l->data);
+        char v[30];
+
+        if(!first) g_strlcat(req, ",", sizeof(req));
+        snprintf(v, sizeof(v), "%u", value);
+        g_strlcat(req, v, sizeof(req));
+        first = 0;
+        l = g_list_next(l);
+      }
+      g_strlcat(req, ")", sizeof(req));
     }
-    g_strlcat(req, ")", sizeof(req));
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), req, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
   }
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), req, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  if(merge)
+  {
+    _dt_history_cleanup_multi_instance();
+    dt_history_rebuild_multi_priority_merge(dest_imgid);
+  }
 
   /* copy the history items into the history of the dest image */
   /* note: rowid starts at 1 while num has to start at 0! */
@@ -335,8 +526,6 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offs);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-
-  if(merge && ops) _dt_history_cleanup_multi_instance(dest_imgid, offs);
 
   // we have to copy masks too
   // what to do with existing masks ?
@@ -357,10 +546,11 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   }
 
   // let's copy now
-  g_strlcpy(req, "INSERT INTO main.mask (imgid, formid, form, name, version, points, points_count, source) SELECT "
-                 "?1, formid, form, name, version, points, points_count, source FROM main.mask WHERE imgid = ?2",
-            sizeof(req));
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), req, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "INSERT INTO main.mask (imgid, formid, form, name, version, points, points_count, source) SELECT "
+      "?1, formid, form, name, version, points, points_count, source FROM main.mask WHERE imgid = ?2",
+      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   sqlite3_step(stmt);
