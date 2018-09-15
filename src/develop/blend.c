@@ -2824,6 +2824,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
                               const void *const ivoid, void *const ovoid, const struct dt_iop_roi_t *const roi_in,
                               const struct dt_iop_roi_t *const roi_out)
 {
+  if(self->bypass_blendif && self->dev->gui_attached && (self == self->dev->gui_module)) return;
+
   const int ch = piece->colors;           // the number of channels in the buffer
   const int bch = (ch == 1) ? 1 : ch - 1; // the number of channels to blend (all but alpha)
 
@@ -3037,6 +3039,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
                                 cl_mem dev_in, cl_mem dev_out, const struct dt_iop_roi_t *roi_in,
                                 const struct dt_iop_roi_t *roi_out)
 {
+  if(self->bypass_blendif && self->dev->gui_attached && (self == self->dev->gui_module)) return TRUE;
+
   dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
   cl_int err = -999;
   cl_mem dev_tmp = NULL;

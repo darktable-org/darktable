@@ -315,6 +315,9 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
     module->modify_roi_out = dt_iop_modify_roi_out;
   if(!g_module_symbol(module->module, "legacy_params", (gpointer) & (module->legacy_params)))
     module->legacy_params = NULL;
+  // allow to select a shape inside an iop
+  if(!g_module_symbol(module->module, "masks_selection_changed", (gpointer) & (module->masks_selection_changed)))
+    module->masks_selection_changed = NULL;
 
   // the introspection api
   module->have_introspection = FALSE;
@@ -373,6 +376,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
       = 0;
   module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   module->suppress_mask = 0;
+  module->bypass_blendif = 0;
   module->enabled = module->default_enabled = 0; // all modules disabled by default.
   g_strlcpy(module->op, so->op, 20);
 
@@ -422,7 +426,9 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->modify_roi_in = so->modify_roi_in;
   module->modify_roi_out = so->modify_roi_out;
   module->legacy_params = so->legacy_params;
-
+  // allow to select a shape inside an iop
+  module->masks_selection_changed = so->masks_selection_changed;
+  
   module->connect_key_accels = so->connect_key_accels;
   module->disconnect_key_accels = so->disconnect_key_accels;
 
@@ -1374,6 +1380,10 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
 {
   uint64_t hash = 5381;
   piece->hash = 0;
+
+  // this should be redundant! (but is not)
+  memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+
   if(piece->enabled)
   {
     /* construct module params data for hash calc */
@@ -1392,8 +1402,6 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
       pos += sizeof(dt_develop_blend_params_t);
     }
     memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
-    // this should be redundant! (but is not)
-    memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
     /* and we add masks */
     dt_masks_group_get_hash_buffer(grp, str + pos);
 
