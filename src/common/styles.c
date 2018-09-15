@@ -558,6 +558,9 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+    // rebuild multi-priority
+    if(!duplicate) dt_history_rebuild_multi_priority_merge(newimgid);
+
     /* copy the style items into the history */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT INTO main.history "
