@@ -4754,6 +4754,13 @@ const wb_data wb_preset[] =
   { "Olympus", "E-M10 Mark II", Underwater, 0, { 1.890625, 1, 2.257813, 0 } },
   { "Olympus", "E-M10 Mark II", Flash, 0, { 2.148438, 1, 1.601563, 0 } },
 
+  { "Olympus", "E-M10 Mark III", Daylight, 0, { 1.8828125, 1, 1.8125, 0 } },
+  { "Olympus", "E-M10 Mark III", Shade, 0, { 2.1953125, 1, 1.421875, 0 } },
+  { "Olympus", "E-M10 Mark III", Cloudy, 0, { 2.015625, 1, 1.640625, 0 } },
+  { "Olympus", "E-M10 Mark III", Tungsten, 0, { 1.15625, 1, 3.4140625, 0 } },
+  { "Olympus", "E-M10 Mark III", CoolWhiteFluorescent, 0, { 1.875, 1, 2.6328125, 0 } },
+  { "Olympus", "E-M10 Mark III", Flash, 0, { 2.140625, 1, 1.546875, 0 } },
+
   { "Olympus", "E-P1", Daylight, 0,		{ 1.835938, 1, 1.351563, 0 } },
   { "Olympus", "E-P1", Shade, 0,		{ 2.195313, 1, 1.046875, 0 } },
   { "Olympus", "E-P1", Cloudy, 0,		{ 2.031250, 1, 1.203125, 0 } },
