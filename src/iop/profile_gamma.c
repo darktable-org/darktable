@@ -193,10 +193,10 @@ static void autofix_callback(GtkWidget *button, gpointer user_data)
     float EVmin = Log2( p->camera_factor * (LABmin[0] / p->grey_point ) );
 
     
-    //int stops =0;
+    int stops =0;
     
-    //while (EVmin != -(fabsf(EVmax) + fabsf(EVmin)) /2. && stops < 500)
-    //{
+    while (EVmin != -(fabsf(EVmax) + fabsf(EVmin)) /2. && stops < 500)
+    {
       //EVmax = ThresLog2( p->camera_factor * (LABmax[0] + p->black_level) / (p->grey_point + p->black_level), powf(2, p->black_level) );
       //EVmin = ThresLog2( p->camera_factor * (LABmin[0] + p->black_level) / (p->grey_point + p->black_level), powf(2, p->black_level) );
       EVmax = Log2( p->camera_factor * (LABmax[0]) / (p->grey_point) );
@@ -209,9 +209,9 @@ static void autofix_callback(GtkWidget *button, gpointer user_data)
       if (p->camera_factor  > 4.) p->camera_factor = 4.;
       if (p->camera_factor  < 1.) p->camera_factor = 1.;
 
-    //  ++stops;
+      ++stops;
 
-    //}
+    }
     
     p->black_EV = EVmin;
     p->black_level = Log2(((p->grey_point /100.) * powf(2, EVmin) - p->camera_factor * Min) / (p->camera_factor - powf(2, EVmin)));  
