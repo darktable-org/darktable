@@ -3556,6 +3556,20 @@ const wb_data wb_preset[] =
   { "Nikon", "D5500", SodiumVaporFluorescent         , 0, { 1.210938, 1, 2.437500, 0 } },
   { "Nikon", "D5500", Flash                          , 0, { 2.285156, 1, 1.226562, 0 } },
 
+  /* Nikon D5600 Firmware Version 1.03 */
+  { "Nikon", "D5600", DirectSunlight                 , 0, { 2.050781, 1, 1.402344, 0 } },
+  { "Nikon", "D5600", Shade                          , 0, { 2.527344, 1, 1.144531, 0 } },
+  { "Nikon", "D5600", Cloudy                         , 0, { 2.191406, 1, 1.281250, 0 } },
+  { "Nikon", "D5600", Incandescent                   , 0, { 1.308594, 1, 2.214844, 0 } },
+  { "Nikon", "D5600", WarmWhiteFluorescent           , 0, { 1.289063, 1, 1.984375, 0 } },
+  { "Nikon", "D5600", CoolWhiteFluorescent           , 0, { 1.863281, 1, 2.046875, 0 } },
+  { "Nikon", "D5600", DayWhiteFluorescent            , 0, { 1.890625, 1, 1.406250, 0 } },
+  { "Nikon", "D5600", DaylightFluorescent            , 0, { 2.148438, 1, 1.140625, 0 } },
+  { "Nikon", "D5600", WhiteFluorescent               , 0, { 1.511719, 1, 2.332031, 0 } },
+  { "Nikon", "D5600", HighTempMercuryVaporFluorescent, 0, { 2.519531, 1, 1.378906, 0 } },
+  { "Nikon", "D5600", SodiumVaporFluorescent         , 0, { 1.210938, 1, 2.437500, 0 } },
+  { "Nikon", "D5600", Flash                          , 0, { 2.285156, 1, 1.226563, 0 } },
+
   { "Nikon", "D7000", DirectSunlight, -6,	{ 2.199219, 1, 1.242187, 0 } },
   { "Nikon", "D7000", DirectSunlight, 0,	{ 2.027344, 1, 1.390625, 0 } },
   { "Nikon", "D7000", DirectSunlight, 6,	{ 1.847656, 1, 1.542969, 0 } },
