@@ -223,10 +223,10 @@ static void black_target_callback(GtkWidget *slider, gpointer user_data)
     // Convert the black level from EV to luminance % to scale for the LAB readings
     float black_level_L = powf(2., -p->dynamic_range) * 100.;
 
-    int stops =0;
+    //int stops =0;
     
-    while (fabsf(EVmin - (fabsf(EVmax - EVmin) / 2.)) > 1e-6 && stops < 1000)
-    {
+    //while (fabsf(EVmin - (fabsf(EVmax - EVmin) / 2.)) > 1e-6 && stops < 1000)
+    //{
       black_level_L = (RGBmax - RGBmin * powf(2., p->dynamic_range)) / (powf(2, p->dynamic_range) - 1.) * 100. ;
       
       if (black_level_L > p->grey_point ) { black_level_L = p->grey_point;}
@@ -239,10 +239,10 @@ static void black_target_callback(GtkWidget *slider, gpointer user_data)
       
       if (p->camera_factor > 3.) p->camera_factor = 3.;
       if (p->camera_factor < 1.) p->camera_factor = 1.;
-      
-      ++stops;
+        
+      //  ++stops;
 
-    }
+    //}
 
     p->black_EV = EVmin - (p->camera_factor * (p->black_target/100.) * fabsf(EVmax - EVmin) );
     p->dynamic_range = fabsf(EVmax - fminf(p->black_EV, EVmin));
