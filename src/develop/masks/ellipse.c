@@ -333,6 +333,54 @@ static int dt_ellipse_get_points(dt_develop_t *dev, float xx, float yy, float ra
   return 0;
 }
 
+// set the initial source position value for a clone mask
+static void dt_ellipse_set_source_pos_initial_value(dt_masks_form_gui_t *gui, dt_masks_form_t *form,
+                                                    dt_masks_point_ellipse_t *ellipse)
+{
+  // if this is the first time the relative pos is used
+  if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE_TEMP)
+  {
+    // if is has not been defined by the user, set some default
+    if(gui->posx_source == -1.f && gui->posy_source == -1.f)
+    {
+      form->source[0] = ellipse->center[0] + ellipse->radius[0];
+      form->source[1] = ellipse->center[1] - ellipse->radius[1];
+    }
+    else
+    {
+      // if a position was defined by the user, use the absolute value the first time
+      float pts_src[2] = { gui->posx_source, gui->posy_source };
+      dt_dev_distort_backtransform(darktable.develop, pts_src, 1);
+
+      form->source[0] = pts_src[0] / darktable.develop->preview_pipe->iwidth;
+      form->source[1] = pts_src[1] / darktable.develop->preview_pipe->iheight;
+    }
+
+    // save the relative value for the next time
+    gui->posx_source = form->source[0] - ellipse->center[0];
+    gui->posy_source = form->source[1] - ellipse->center[1];
+
+    gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE;
+  }
+  else if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE)
+  {
+    // original pos was already defined and relative value calculated, just use it
+    form->source[0] = ellipse->center[0] + gui->posx_source;
+    form->source[1] = ellipse->center[1] + gui->posy_source;
+  }
+  else if(gui->source_pos_type == DT_MASKS_SOURCE_POS_ABSOLUTE)
+  {
+    // an absolute position was defined by the user
+    float pts_src[2] = { gui->posx_source, gui->posy_source };
+    dt_dev_distort_backtransform(darktable.develop, pts_src, 1);
+
+    form->source[0] = pts_src[0] / darktable.develop->preview_pipe->iwidth;
+    form->source[1] = pts_src[1] / darktable.develop->preview_pipe->iheight;
+  }
+  else
+    fprintf(stderr, "unknown source position type\n");
+}
+
 static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
                                             uint32_t state, dt_masks_form_t *form, int parentid,
                                             dt_masks_form_gui_t *gui, int index)
@@ -593,6 +641,13 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
     dt_control_queue_redraw_center();
     return 1;
   }
+  else if(gui->creation && (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
+  {
+    // set some absolute or relative position for the source of the clone mask
+    if(form->type & DT_MASKS_CLONE) dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
+
+    return 1;
+  }
   else if(gui->creation)
   {
     dt_iop_module_t *crea_module = gui->creation_module;
@@ -624,8 +679,7 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
       ellipse->border = MAX(0.005f * reference, MIN(0.5f * reference, ellipse_border));
       if(form->type & DT_MASKS_CLONE)
       {
-        form->source[0] = ellipse->center[0] + 0.02f;
-        form->source[1] = ellipse->center[1] + 0.02f;
+        dt_ellipse_set_source_pos_initial_value(gui, form, ellipse);
       }
       else
       {
@@ -821,7 +875,6 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module, flo
   }
   else if(gui->form_rotating && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
-
     // we get the ellipse
     dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
 
@@ -920,10 +973,11 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module, flo
     gui->source_dragging = FALSE;
     if(gui->scrollx != 0.0 || gui->scrolly != 0.0)
     {
-      dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+      // if there's no dragging the source is calculated in dt_ellipse_events_button_pressed()
+      /* dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
       form->source[0] = ellipse->center[0] + ellipse->radius[0];
       form->source[1] = ellipse->center[1] - ellipse->radius[1];
-      gui->scrollx = gui->scrolly = 0.0;
+      gui->scrollx = gui->scrolly = 0.0; */
     }
     else
     {
@@ -1128,6 +1182,14 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
 
         dt_ellipse_draw_border(cr, dashed, len, 0, zoom_scale, dx, dy, xref, yref, sinv, cosv, scaleab, scalebb,
                                border, border_count);
+      }
+
+      // draw a cross where the source will be created
+      if(form->type & DT_MASKS_CLONE)
+      {
+        float x = 0.f, y = 0.f;
+        dt_masks_calculate_source_pos_value(gui, DT_MASKS_ELLIPSE, pzx, pzy, &x, &y);
+        dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
 
       if(points) free(points);
