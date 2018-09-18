@@ -152,7 +152,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_profilegamma] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_profilegamma_log] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
@@ -209,8 +209,14 @@ static void optimize(dt_iop_module_t *self)
   float LABmin[3];
   float LABmax[3];
   
-  const float RGBmin = fminf(fminf(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
+  const float RGBmin = fmin(fminf(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
   const float RGBmax = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
+
+  if (RGBmin < 0.)
+  {
+    dt_control_log(_("some pixels have negative values. decrease the black level in the exposure module first."));
+    return; 
+  }
   
   dt_prophotorgb_to_Lab((const float *)min, (float *)LABmin);
   dt_prophotorgb_to_Lab((const float *)max, (float *)LABmax);
@@ -228,6 +234,8 @@ static void optimize(dt_iop_module_t *self)
   //while (fabsf(EVmin - (fabsf(EVmax - EVmin) / 2.)) > 1e-6 && stops < 1000)
   //{
     black_level_L = (RGBmax - RGBmin * powf(2., p->dynamic_range)) / (powf(2, p->dynamic_range) - 1.) * 100. ;
+    
+    //black_level_L = ((LABmax[0] / 100.) - (LABmin[0]/100.) * powf(2., p->dynamic_range)) / (powf(2, p->dynamic_range) - 1.) * 100. ;
     
     if (black_level_L > p->grey_point ) { black_level_L = p->grey_point;}
     //if (black_level_L < powf(2., -p->dynamic_range) * 100. ) { black_level_L = powf(2., -p->dynamic_range) * 100.;}
@@ -248,7 +256,7 @@ static void optimize(dt_iop_module_t *self)
   p->black_EV = EVmin - (p->camera_factor * (p->black_target/100.) * fabsf(EVmax - EVmin) );
   p->dynamic_range = fabsf(EVmax - fminf(p->black_EV, EVmin));
 
-  if (p->black_EV > -p->dynamic_range / 2.) p->black_EV = -p->dynamic_range / 2.;
+  //if (p->black_EV > -p->dynamic_range / 2.) p->black_EV = -p->dynamic_range / 2.;
   if (p->black_EV < -16.) p->black_EV = -16.;
   if (p->dynamic_range < 0.5) p->dynamic_range = 0.5;
   if (p->dynamic_range > 16.) p->dynamic_range = 16.;
@@ -269,37 +277,35 @@ static void black_target_callback(GtkWidget *slider, gpointer user_data)
   
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
   
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
   {
-    dt_control_log(_("select a sampling area before using the auto-optimization tool."));
-    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-    dt_control_queue_redraw();
-    return;
-  }
-  else {
     dt_iop_request_focus(self);
     dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     dt_dev_reprocess_all(self->dev);
-    
-    const float RGBmin = fminf(fminf(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
-
-    if (RGBmin < 0.)
-    {
-      dt_control_log(_("some pixels have negative values. decrease the black level in the exposure module first."));
-      return; 
-    }
-    
+  }
+  else
+  {
+    dt_control_queue_redraw();
+    return;
+  }
+  
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+  else
+  {
     optimize(self);
 
     darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->dynamic_range, p->dynamic_range);
-    dt_bauhaus_slider_set(g->black_EV, p->black_EV);
-    dt_bauhaus_slider_set(g->black_level, p->black_level);
+    dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
+    dt_bauhaus_slider_set_soft(g->black_EV, p->black_EV);
+    dt_bauhaus_slider_set_soft(g->black_level, p->black_level);
     //dt_bauhaus_slider_set_soft(g->camera_factor, p->camera_factor);
     //dt_bauhaus_slider_set_soft(g->black_target, p->black_target);
     darktable.gui->reset = 0;
+    
+    dt_control_queue_redraw();
+    
   }
-  
     
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   
@@ -432,14 +438,6 @@ static void autofix_callback(GtkWidget *button, gpointer user_data)
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
   else
   {
-    const float RGBmin = fminf(fminf(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
-
-    if (RGBmin < 0.)
-    {
-      dt_control_log(_("some pixels have negative values. decrease the black level in the exposure module first."));
-      return; 
-    }
-    
     optimize(self);
 
     darktable.gui->reset = 1;
@@ -562,7 +560,7 @@ void gui_init(dt_iop_module_t *self)
   g->black_level = dt_bauhaus_slider_new_with_range(self, -16., 0., 0.1, p->black_level, 1);
   dt_bauhaus_slider_enable_soft_boundaries(g->black_level, -32., 32.0);
   dt_bauhaus_slider_set_format(g->black_level, "%.1f EV");
-  dt_bauhaus_widget_set_label(g->black_level, NULL, _("black level correction"));
+  dt_bauhaus_widget_set_label(g->black_level, NULL, _("noise/black level"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->black_level, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->black_level, _("exposure value of the black level relative to the middle gray" "used to threshold the logarithmic function and dampen the noise"));
   g_signal_connect(G_OBJECT(g->black_level), "value-changed", G_CALLBACK(black_level_callback), self);
