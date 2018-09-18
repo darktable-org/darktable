@@ -390,6 +390,14 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "folder DESC, filename DESC, version DESC");
         break;
 
+      case DT_COLLECTION_SORT_TITLE:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "caption DESC, filename DESC, version DESC");
+        break;
+
+      case DT_COLLECTION_SORT_DESCRIPTION:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "description DESC, filename DESC, version DESC");
+        break;
+
       case DT_COLLECTION_SORT_NONE:
         // shouldn't happen
         break;
@@ -425,6 +433,14 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 
       case DT_COLLECTION_SORT_PATH:
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "folder, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_TITLE:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "caption, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_DESCRIPTION:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "description, filename, version");
         break;
 
       case DT_COLLECTION_SORT_NONE:
