@@ -465,6 +465,18 @@ static void _zoom_preset_change(uint64_t val)
     zoom = DT_ZOOM_1;
     closeup = 4;
   }
+  else if(val == 6u)
+  {
+    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    zoom = DT_ZOOM_1;
+    closeup = 2;
+  }
+  else if(val == 7u)
+  {
+    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    zoom = DT_ZOOM_1;
+    closeup = 3;
+  }
 
   // zoom_x = (1.0/(scale*(1<<closeup)))*(zoom_x - .5f*dev->width )/procw;
   // zoom_y = (1.0/(scale*(1<<closeup)))*(zoom_y - .5f*dev->height)/proch;
@@ -519,6 +531,14 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
 
     item = gtk_menu_item_new_with_label(_("200%"));
     g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)3);
+    gtk_menu_shell_append(menu, item);
+
+    item = gtk_menu_item_new_with_label(_("400%"));
+    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)6);
+    gtk_menu_shell_append(menu, item);
+
+    item = gtk_menu_item_new_with_label(_("800%"));
+    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)7);
     gtk_menu_shell_append(menu, item);
 
     item = gtk_menu_item_new_with_label(_("1600%"));
