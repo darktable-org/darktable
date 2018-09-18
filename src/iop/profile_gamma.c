@@ -210,12 +210,11 @@ static void optimize(dt_iop_module_t *self)
   float LABmax[3];
   
   const float RGBmin = fmin(fminf(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
-  const float RGBmax = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
+  //const float RGBmax = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
 
   if (RGBmin < 0.)
   {
     dt_control_log(_("some pixels have negative values. decrease the black level in the exposure module first."));
-    return; 
   }
   
   dt_prophotorgb_to_Lab((const float *)min, (float *)LABmin);
@@ -233,11 +232,11 @@ static void optimize(dt_iop_module_t *self)
   
   //while (fabsf(EVmin - (fabsf(EVmax - EVmin) / 2.)) > 1e-6 && stops < 1000)
   //{
-    black_level_L = (RGBmax - RGBmin * powf(2., p->dynamic_range)) / (powf(2, p->dynamic_range) - 1.) * 100. ;
-    
+    //black_level_L = (RGBmax - RGBmin * powf(2., p->dynamic_range)) / (powf(2, p->dynamic_range) - 1.) * 100. ;
+
     //black_level_L = ((LABmax[0] / 100.) - (LABmin[0]/100.) * powf(2., p->dynamic_range)) / (powf(2, p->dynamic_range) - 1.) * 100. ;
     
-    if (black_level_L > p->grey_point ) { black_level_L = p->grey_point;}
+    //if (black_level_L > p->grey_point ) { black_level_L = p->grey_point;}
     //if (black_level_L < powf(2., -p->dynamic_range) * 100. ) { black_level_L = powf(2., -p->dynamic_range) * 100.;}
     
     //p->camera_factor = (p->grey_point + black_level_L) / powf((((RGBmax * 100.) + black_level_L) *( (RGBmin * 100.) + black_level_L)), 0.5);
@@ -261,7 +260,8 @@ static void optimize(dt_iop_module_t *self)
   if (p->dynamic_range < 0.5) p->dynamic_range = 0.5;
   if (p->dynamic_range > 16.) p->dynamic_range = 16.;
   
-  p->black_level = Log2(black_level_L/100.) + (p->camera_factor * (p->black_target/100.) * fabsf(EVmax - EVmin)  );
+  //p->black_level = Log2(black_level_L/100.) + (p->camera_factor * (p->black_target/100.) * fabsf(EVmax - EVmin)  );
+  p->black_level = -p->dynamic_range;
   if (p->black_level > 0.) p->black_level = 0.;
   if (p->black_level < -16. ) p->black_level = -16.;
 }
@@ -350,7 +350,7 @@ static void autogrey_point_callback(GtkWidget *button, gpointer user_data)
     dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
     darktable.gui->reset = 1;
-    dt_bauhaus_slider_set_soft(g->grey_point, p->grey_point);
+    dt_bauhaus_slider_set(g->grey_point, p->grey_point);
     darktable.gui->reset = 0;
     
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
@@ -447,6 +447,8 @@ static void autofix_callback(GtkWidget *button, gpointer user_data)
     //dt_bauhaus_slider_set_soft(g->camera_factor, p->camera_factor);
     //dt_bauhaus_slider_set_soft(g->black_target, p->black_target);
     darktable.gui->reset = 0;
+    
+    dt_control_queue_redraw();
     
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }
