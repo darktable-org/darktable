@@ -2660,7 +2660,7 @@ end</programlisting></para>
 	[<emphasis><link linkend="darktable_preferences_register_max">max</link></emphasis> : int or float], 
 	[<emphasis><link linkend="darktable_preferences_register_step">step</link></emphasis> : float], 
 	[<emphasis><link linkend="darktable_preferences_register_values">values</link></emphasis> : string...], 
-	[<emphasis><link linkend="darktable_preferences_register_wiget">wiget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>], 
+	[<emphasis><link linkend="darktable_preferences_register_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>], 
 	[<emphasis><link linkend="darktable_preferences_register_set_callback">set_callback</link></emphasis> : function]
 )</synopsis>
 <para>Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the user (you can still read and write invisible preferences).</para>
@@ -2727,7 +2727,7 @@ end</programlisting></para>
 
 </listitem></varlistentry>
 
-<varlistentry id="darktable_preferences_register_wiget"><term>[wiget]</term><listitem>
+<varlistentry id="darktable_preferences_register_widget"><term>[widget]</term><listitem>
 <synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
 <para>The widget to use in preference(lua preferences only)</para>
 
