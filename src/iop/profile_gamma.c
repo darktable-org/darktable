@@ -201,6 +201,8 @@ static void optimize(dt_iop_module_t *self)
   IT 8 and data-color charts have L values between 17 % and 96 %, hence 2.5 EV of dynamic range.
   ***********************/
   
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) return;
+  
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   
   const float min[3] = { self->picked_color_min[0], self->picked_color_min[1], self->picked_color_min[2] };
@@ -211,6 +213,12 @@ static void optimize(dt_iop_module_t *self)
   
   const float RGBmin = fmin(fminf(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
   //const float RGBmax = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
+  
+  /* Save previous params */
+  float o_dynamic_range = p->dynamic_range;
+  float o_black_EV = p->black_EV;
+  float o_camera_factor = p->camera_factor;
+  
 
   if (RGBmin < 0.)
   {
@@ -233,37 +241,27 @@ static void optimize(dt_iop_module_t *self)
   //while (fabsf(EVmin - (fabsf(EVmax - EVmin) / 2.)) > 1e-6 && stops < 1000)
   //{
     //black_level_L = (RGBmax - RGBmin * powf(2., p->dynamic_range)) / (powf(2, p->dynamic_range) - 1.) * 100. ;
-
     //black_level_L = ((LABmax[0] / 100.) - (LABmin[0]/100.) * powf(2., p->dynamic_range)) / (powf(2, p->dynamic_range) - 1.) * 100. ;
     
-    //if (black_level_L > p->grey_point ) { black_level_L = p->grey_point;}
-    //if (black_level_L < powf(2., -p->dynamic_range) * 100. ) { black_level_L = powf(2., -p->dynamic_range) * 100.;}
-    
-    //p->camera_factor = (p->grey_point + black_level_L) / powf((((RGBmax * 100.) + black_level_L) *( (RGBmin * 100.) + black_level_L)), 0.5);
+    p->camera_factor = (p->grey_point + black_level_L) / powf((((LABmax[0]) + black_level_L) *( (LABmin[0]) + black_level_L)), 0.5);
 
     EVmin = Log2( p->camera_factor * (LABmin[0] + black_level_L) / (p->grey_point + black_level_L) );
     EVmax = Log2( p->camera_factor * (LABmax[0] + black_level_L) / (p->grey_point + black_level_L) );
     
-    //p->dynamic_range = fabsf(EVmax - EVmin);
-    //if (p->camera_factor > 3.) p->camera_factor = 3.;
-    //if (p->camera_factor < 1.) p->camera_factor = 1.;
-      
     //++stops;
 
   //}
 
   p->black_EV = EVmin - (p->camera_factor * (p->black_target/100.) * fabsf(EVmax - EVmin) );
   p->dynamic_range = fabsf(EVmax - fminf(p->black_EV, EVmin));
-
-  //if (p->black_EV > -p->dynamic_range / 2.) p->black_EV = -p->dynamic_range / 2.;
-  if (p->black_EV < -16.) p->black_EV = -16.;
-  if (p->dynamic_range < 0.5) p->dynamic_range = 0.5;
-  if (p->dynamic_range > 16.) p->dynamic_range = 16.;
   
-  //p->black_level = Log2(black_level_L/100.) + (p->camera_factor * (p->black_target/100.) * fabsf(EVmax - EVmin)  );
+  /* Sanitize the values */
+  if (p->dynamic_range < 0.5 || p->dynamic_range > 16.) p->dynamic_range = o_dynamic_range;
+  if (p->black_EV > 0. || p->black_EV < -32.) p->black_EV = o_black_EV;
+  if (p->camera_factor < 1. || p->camera_factor > 16.) p->camera_factor = o_camera_factor;
+
   p->black_level = -p->dynamic_range;
-  if (p->black_level > 0.) p->black_level = 0.;
-  if (p->black_level < -16. ) p->black_level = -16.;
+
 }
 
 
@@ -299,11 +297,9 @@ static void black_target_callback(GtkWidget *slider, gpointer user_data)
     dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
     dt_bauhaus_slider_set_soft(g->black_EV, p->black_EV);
     dt_bauhaus_slider_set_soft(g->black_level, p->black_level);
-    //dt_bauhaus_slider_set_soft(g->camera_factor, p->camera_factor);
+    dt_bauhaus_slider_set_soft(g->camera_factor, p->camera_factor);
     //dt_bauhaus_slider_set_soft(g->black_target, p->black_target);
     darktable.gui->reset = 0;
-    
-    dt_control_queue_redraw();
     
   }
     
@@ -438,17 +434,16 @@ static void autofix_callback(GtkWidget *button, gpointer user_data)
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
   else
   {
+
     optimize(self);
 
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
     dt_bauhaus_slider_set_soft(g->black_EV, p->black_EV);
     dt_bauhaus_slider_set_soft(g->black_level, p->black_level);
-    //dt_bauhaus_slider_set_soft(g->camera_factor, p->camera_factor);
+    dt_bauhaus_slider_set_soft(g->camera_factor, p->camera_factor);
     //dt_bauhaus_slider_set_soft(g->black_target, p->black_target);
     darktable.gui->reset = 0;
-    
-    dt_control_queue_redraw();
     
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }
