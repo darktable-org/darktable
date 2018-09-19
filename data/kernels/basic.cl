@@ -2158,7 +2158,8 @@ colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, un
   write_imagef(out, (int2)(x, y), o);
 }
 
-/* kernel for the unbreak input profile module */
+/* kernel for the unbreak input profile module - gamma version */
+
 kernel void
 profilegamma (read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height,
         read_only image2d_t table, global const float *ta)
@@ -2177,6 +2178,50 @@ profilegamma (read_only image2d_t in, write_only image2d_t out, unsigned int wid
   o.w = i.w;
 
   write_imagef(out, (int2)(x, y), o);
+}
+
+float LogProfile( const float x, const float factor, const float range, const float noise_level, 
+         const float shadows_range, const float grey, const float Logmin_val)
+{
+  float lg2 = factor * ( (x + noise_level) / ( grey + noise_level));
+  
+  if ( lg2 < noise_level ) 
+  { 
+    lg2 = Logmin_val; 
+  }
+  else { 
+    lg2 = log2(lg2);
+  }
+  lg2 = (lg2 - shadows_range ) / range ;
+  lg2 = (lg2 - noise_level) / (1.f - noise_level);
+  
+  return lg2;
+}
+
+/* kernel for the unbreak input profile module - log version */
+kernel void
+profilegamma_log (read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height,
+                  const float factor, 
+                  const float range, 
+                  const float noise_level, 
+                  const float shadows_range, 
+                  const float grey)
+{
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
+
+  if(x >= height || y >= width) return;
+  
+  float4 i = read_imagef(in, sampleri, (int2)(x, y));
+ 
+  const float Logmin_val = log2(noise_level);
+  
+  i.x = i.x;//LogProfile(i.x, factor, range, noise_level, shadows_range, grey, Logmin_val);
+  i.y = i.y;//LogProfile(i.x, factor, range, noise_level, shadows_range, grey, Logmin_val);
+  i.z = i.z;//LogProfile(i.z, factor, range, noise_level, shadows_range, grey, Logmin_val);
+
+  write_imagef(out, (int2)(x, y), i);
+
 }
 
 /* kernel for the interpolation resample helper */
