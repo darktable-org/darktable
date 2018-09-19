@@ -206,6 +206,8 @@ typedef struct dt_iop_module_so_t
                          struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
   int (*legacy_params)(struct dt_iop_module_t *self, const void *const old_params, const int old_version,
                        void *new_params, const int new_version);
+  // allow to select a shape inside an iop
+  void (*masks_selection_changed)(struct dt_iop_module_t *self, const int form_selected_id);
 
   void (*process)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
                   void *const o, const struct dt_iop_roi_t *const roi_in,
@@ -262,6 +264,9 @@ typedef struct dt_iop_module_t
   int request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
   int32_t suppress_mask;
+  /** set to 1 if you want the blendif to be completely suppressed in the module in focus. only when the module has
+   * the focus. */
+  int32_t bypass_blendif;
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
   /** single point to pick if in point mode */
@@ -398,7 +403,9 @@ typedef struct dt_iop_module_t
                          struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
   int (*legacy_params)(struct dt_iop_module_t *self, const void *const old_params, const int old_version,
                        void *new_params, const int new_version);
-
+  // allow to select a shape inside an iop
+  void (*masks_selection_changed)(struct dt_iop_module_t *self, const int form_selected_id);
+  
   /** this is the temp homebrew callback to operations.
     * x,y, and scale are just given for orientation in the framebuffer. i and o are
     * scaled to the same size width*height and contain a max of 3 floats. other color

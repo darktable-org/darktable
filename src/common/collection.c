@@ -363,15 +363,15 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
     switch(collection->params.sort)
     {
       case DT_COLLECTION_SORT_DATETIME:
-        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken DESC, filename, version");
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken DESC, filename DESC, version DESC");
         break;
 
       case DT_COLLECTION_SORT_RATING:
-        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7, filename, version");
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7, filename DESC, version DESC");
         break;
 
       case DT_COLLECTION_SORT_FILENAME:
-        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename DESC, version");
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename DESC, version DESC");
         break;
 
       case DT_COLLECTION_SORT_ID:
@@ -379,7 +379,7 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         break;
 
       case DT_COLLECTION_SORT_COLOR:
-        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color, filename, version");
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color, filename DESC, version DESC");
         break;
 
       case DT_COLLECTION_SORT_GROUP:
@@ -387,7 +387,15 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         break;
 
       case DT_COLLECTION_SORT_PATH:
-        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "folder DESC, filename DESC, version");
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "folder DESC, filename DESC, version DESC");
+        break;
+
+      case DT_COLLECTION_SORT_TITLE:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "caption DESC, filename DESC, version DESC");
+        break;
+
+      case DT_COLLECTION_SORT_DESCRIPTION:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "description DESC, filename DESC, version DESC");
         break;
 
       case DT_COLLECTION_SORT_NONE:
@@ -425,6 +433,14 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 
       case DT_COLLECTION_SORT_PATH:
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "folder, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_TITLE:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "caption, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_DESCRIPTION:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "description, filename, version");
         break;
 
       case DT_COLLECTION_SORT_NONE:
