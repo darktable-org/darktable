@@ -154,6 +154,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     n->linear = o->linear;
     n->gamma = o->gamma;
+    n->mode = PROFILEGAMMA_GAMMA;
     return 0;
   }
   return 1;
@@ -168,6 +169,18 @@ static inline float Log2(float x)
   else
   {
     return x;
+  }
+}
+
+static inline float Log2Thres(float x, float Thres)
+{
+  if(x > Thres)
+  {
+    return logf(x) / logf(2.f);
+  }
+  else
+  {
+    return logf(Thres) / logf(2.f);
   }
 }
 
@@ -250,8 +263,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   {
     case PROFILEGAMMA_LOG:
     {
-      const float noise = powf(2, data->noise_level);
-      const float grey = data->grey_point / 100.;
+      const float LABgrey[3] = { data->grey_point, 0., 0. };
+      float RGBgrey[3];
+      dt_Lab_to_prophotorgb(LABgrey, RGBgrey);
+      const float grey = (RGBgrey[0] + RGBgrey[1] + RGBgrey[2]) / 3.;
+      const float offset = powf(2, data->noise_level);
+      const float noise = offset / (grey + offset);
       const float Logmin = Log2(noise);
 
 #ifdef _OPENMP
@@ -260,7 +277,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
       {
         const float pixel = ((float *)ivoid)[k];
-        float lg2 = data->camera_factor * ((pixel + noise) / (grey + noise));
+        float lg2 = data->camera_factor * ((pixel + offset)/ (grey + offset));
 
         if(lg2 < noise)
         {
@@ -272,7 +289,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         }
 
         lg2 = ((lg2 - data->shadows_range) / (data->dynamic_range));
-        lg2 = (lg2 - noise) / (1.f - noise);
+        lg2 = (lg2 - offset) / (1. - offset);
         ((float *)ovoid)[k] = lg2;
       }
       break;
@@ -350,77 +367,54 @@ static void optimize(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
-  float min[3] = { self->picked_color_min[0], self->picked_color_min[1], self->picked_color_min[2] };
-  float max[3] = { self->picked_color_max[0], self->picked_color_max[1], self->picked_color_max[2] };
+  float RGBgrey[3];
+  const float LABgrey[3] = { p->grey_point, 0.0, 0.0 };
+  
+  dt_Lab_to_prophotorgb(LABgrey, RGBgrey);
+  
+  float grey = (RGBgrey[0] + RGBgrey[1] + RGBgrey[2]) / 3.0 * 100.0;
+  float min = (self->picked_color_min[0] + self->picked_color_min[1] + self->picked_color_min[2]) / 3.0f;
+  float max = (self->picked_color_max[0] + self->picked_color_max[1] + self->picked_color_max[2]) / 3.0f;
+  
   const float RGBmin
-      = fmin(fminf(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
-  // const float RGBmax = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]),
-  // self->picked_color_max[2]);
-
-  /* Save previous params */
-  float o_dynamic_range = p->dynamic_range;
-  float o_shadows_range = p->shadows_range;
-  float o_camera_factor = p->camera_factor;
-
-  if(RGBmin < 0.)
+    = fmin(fmin(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
+  
+  /*
+  const float RGBmax 
+    = fmax(fmax(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
+  */
+  if( RGBmin < 0.0 && -RGBmin > powf(2.0, p->noise_level) )
   {
     dt_control_log(_(
-        "some pixels have negative values. decrease the black level in the exposure module for better results."));
-
-    // Adjust the values to avoid taking the log of a negative number
-    min[0] -= RGBmin;
-    min[1] -= RGBmin;
-    min[2] -= RGBmin;
-    max[0] -= RGBmin;
-    max[1] -= RGBmin;
-    max[2] -= RGBmin;
+        "some pixels may have negative or very low values. the black/noise level has been updated accordingly."));
+    p->noise_level = Log2( - RGBmin );
   }
 
-  float LABmin[3];
-  float LABmax[3];
+  float noise_level_L = powf(2.0, p->noise_level) * 100.0; 
+  
+  // Adjust the camera factor in such that the middle grey is in the center of the dynamic range
+  // that is log2( factor * Lmax / grey) = - log2( factor * Lmin / grey) =  dynamic range / 2
+  float camera_factor = (grey) / powf((max * 100.0) * (min * 100.0), 0.5);
+  
+  // Recompute the real dynamic range in RGB
+  float RGBEVmin = Log2Thres( p->camera_factor * (min * 100.) / grey, noise_level_L / (grey + noise_level_L));
+  float RGBEVmax = Log2Thres( p->camera_factor * (max * 100.) / grey, noise_level_L / (grey + noise_level_L));
+  float dynamic_range = fabsf(RGBEVmax - RGBEVmin);
 
-  dt_prophotorgb_to_Lab((const float *)min, (float *)LABmin);
-  dt_prophotorgb_to_Lab((const float *)max, (float *)LABmax);
-
-  float EVmax = Log2((LABmax[0]) / (p->grey_point));
-  float EVmin = Log2((LABmin[0]) / (p->grey_point));
-
-  p->dynamic_range = fabsf(EVmax - EVmin);
-
-  // Convert the black level from EV to luminance % to scale for the LAB readings
-  float noise_level_L = powf(2., -p->dynamic_range) * 100.;
-
-  // int stops =0;
-  // while (fabsf(EVmin - (fabsf(EVmax - EVmin) / 2.)) > 1e-6 && stops < 1000)
-  //{
-  // noise_level_L = (RGBmax - RGBmin * powf(2., p->dynamic_range)) / (powf(2, p->dynamic_range) - 1.) * 100. ;
-  // noise_level_L = ((LABmax[0] / 100.) - (LABmin[0]/100.) * powf(2., p->dynamic_range)) / (powf(2,
-  // p->dynamic_range) - 1.) * 100. ;
-
-  p->camera_factor = (p->grey_point + noise_level_L)
-                     / powf((((LABmax[0]) + noise_level_L) * ((LABmin[0]) + noise_level_L)), 0.5);
-
-  EVmin = Log2(p->camera_factor * (LABmin[0] + noise_level_L) / (p->grey_point + noise_level_L));
-  EVmax = Log2(p->camera_factor * (LABmax[0] + noise_level_L) / (p->grey_point + noise_level_L));
-
-  //++stops;
-  //}
-
-  p->shadows_range = EVmin - (p->camera_factor * (p->black_target / 100.) * fabsf(EVmax - EVmin));
-  p->dynamic_range = fabsf(EVmax - fminf(p->shadows_range, EVmin));
-
-  /* Sanitize the values */
-  if(p->dynamic_range < 0.5 || p->dynamic_range > 16.) p->dynamic_range = o_dynamic_range;
-  if(p->shadows_range > 0. || p->shadows_range < -32.) p->shadows_range = o_shadows_range;
-  if(p->camera_factor < 1. || p->camera_factor > 16.) p->camera_factor = o_camera_factor;
-
-  p->noise_level = -p->dynamic_range;
+  /* Rescale the dynamic range with user input */
+  // at this point, we assume the camera factor has successfuly split the LAB dynamic range in 2 equal halfs
+  // so EVmin = -EVmax = 0.5 * (EVmin - EVmax)
+  float shadows_range = RGBEVmin * ( 1. + (p->black_target / 100.));
+  dynamic_range = dynamic_range * ( 1. + (p->black_target / 100.));
 
   /* belt and suspenders sanitization */
-  if(p->dynamic_range < 0.5 || p->dynamic_range > 16.) p->dynamic_range = 12.;
-  if(p->shadows_range > 0. || p->shadows_range < -32.) p->shadows_range = -6.;
-  if(p->camera_factor < 1. || p->camera_factor > 16.) p->camera_factor = 1.8;
-  if(p->noise_level < -32. || p->noise_level >= 0.) p->noise_level = -6.;
+  if(dynamic_range < 0.5 || dynamic_range > 32.) goto error;
+  if(shadows_range > 16. || shadows_range < -16.) goto error;
+  if(camera_factor < 1. || camera_factor > 16.) goto error;
+  
+  p->dynamic_range = dynamic_range;
+  p->shadows_range = shadows_range;
+  p->camera_factor = camera_factor;
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
@@ -428,6 +422,10 @@ static void optimize(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->noise_level, p->noise_level);
   dt_bauhaus_slider_set_soft(g->camera_factor, p->camera_factor);
   darktable.gui->reset = 0;
+  
+error:
+  //dt_control_log(_("the optimization has returned inconsistent parameters. aborting…"));
+  return;
 }
 
 
@@ -504,8 +502,6 @@ static void autogrey_point_callback(GtkWidget *button, gpointer user_data)
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->grey_point, p->grey_point);
     darktable.gui->reset = 0;
-
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -754,7 +750,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_profilegamma_params_t);
   module->gui_data = NULL;
   dt_iop_profilegamma_params_t tmp
-      = (dt_iop_profilegamma_params_t){ PROFILEGAMMA_LOG, 0.1, 0.45, 2.5, 5., 50., -5., -2.5, 0. };
+      = (dt_iop_profilegamma_params_t){ 0, 0.1, 0.45, 1.5, 5., 50., -16., -2.5, 0. };
   memcpy(module->params, &tmp, sizeof(dt_iop_profilegamma_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_profilegamma_params_t));
 }
@@ -874,7 +870,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->grey_point), "quad-pressed", G_CALLBACK(autogrey_point_callback), self);
 
   // Dynamic range slider
-  g->dynamic_range = dt_bauhaus_slider_new_with_range(self, 4.0, 16.0, 0.5, p->dynamic_range, 1);
+  g->dynamic_range = dt_bauhaus_slider_new_with_range(self, 4.0, 16.0, 0.1, p->dynamic_range, 1);
   dt_bauhaus_slider_enable_soft_boundaries(g->dynamic_range, 0.01, 32.0);
   dt_bauhaus_widget_set_label(g->dynamic_range, NULL, _("dynamic range"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->dynamic_range, TRUE, TRUE, 0);
@@ -883,7 +879,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->dynamic_range), "value-changed", G_CALLBACK(dynamic_range_callback), self);
 
   // Shadows range slider
-  g->shadows_range = dt_bauhaus_slider_new_with_range(self, -8.0, -0., 0.5, p->shadows_range, 1);
+  g->shadows_range = dt_bauhaus_slider_new_with_range(self, -8.0, -0., 0.1, p->shadows_range, 1);
   dt_bauhaus_slider_enable_soft_boundaries(g->shadows_range, -16., 16.0);
   dt_bauhaus_widget_set_label(g->shadows_range, NULL, _("black relative exposure"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->shadows_range, TRUE, TRUE, 0);
