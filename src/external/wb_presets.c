@@ -4938,11 +4938,12 @@ const wb_data wb_preset[] =
   { "Olympus", "XZ-10", Flash, 0,		{ 2.289063, 1, 1.394531, 0 } },
 
   /* Firmware Version 1.1 */
-  { "Panasonic", "DC-GX9", Daylight, 0,         { 2.230469, 1, 1.898438, 0 } },
-  { "Panasonic", "DC-GX9", Cloudy, 0,           { 2.367188, 1, 1.769531, 0 } },
-  { "Panasonic", "DC-GX9", Shade, 0,            { 2.511719, 1, 1.664063, 0 } },
-  { "Panasonic", "DC-GX9", Incandescent, 0,     { 1.609375, 1, 2.902344, 0 } },
-  { "Panasonic", "DC-GX9", Flash, 0,            { 2.320313, 1, 1.804688, 0 } },
+  { "Panasonic", "DC-GX9", Daylight, 0,     { 2.23046875, 1, 1.8984375,  0 } },
+  { "Panasonic", "DC-GX9", Cloudy, 0,       { 2.3671875,  1, 1.76953125, 0 } },
+  { "Panasonic", "DC-GX9", Shade, 0,        { 2.51171875, 1, 1.6640625,  0 } },
+  { "Panasonic", "DC-GX9", Incandescent, 0, { 1.609375,   1, 2.90234375, 0 } },
+  { "Panasonic", "DC-GX9", Flash, 0,        { 2.3203125,  1, 1.8046875,  0 } },
+
 
   { "Panasonic", "DC-G9", Daylight, 0,          { 2.242188, 1, 1.898438, 0 } },
   { "Panasonic", "DC-G9", Cloudy, 0,            { 2.375000, 1, 1.773438, 0 } },
