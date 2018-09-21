@@ -418,8 +418,9 @@ static void black_target_callback(GtkWidget *slider, gpointer user_data)
   else
   {
     dt_control_queue_redraw();
-    return;
   }
+  
+  dt_iop_request_focus(self);
 
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
@@ -461,6 +462,8 @@ static void autogrey_point_callback(GtkWidget *button, gpointer user_data)
   {
     dt_control_queue_redraw();
   }
+  
+  dt_iop_request_focus(self);
 
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
@@ -493,6 +496,8 @@ static void shadows_pick_callback(GtkWidget *button, gpointer user_data)
   {
     dt_control_queue_redraw();
   }
+  
+  dt_iop_request_focus(self);
 
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
@@ -500,7 +505,7 @@ static void shadows_pick_callback(GtkWidget *button, gpointer user_data)
   {
     if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) return;
     
-      dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
+    dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
     dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
     const float RGBavg[3] = { self->picked_color[0], self->picked_color[1], self->picked_color[2] };
@@ -817,7 +822,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->grey_point, "%.2f %%");
   gtk_widget_set_tooltip_text(
       g->grey_point,
-      _("adjust to match a neutral tone\nthis will become the new 50 % grey after log correction\nuse 100 % to disable the tone-mapping"));
+      _("adjust to match a neutral tone\nuse 100 % to disable the tone-mapping"));
   g_signal_connect(G_OBJECT(g->grey_point), "value-changed", G_CALLBACK(grey_point_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->grey_point, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
   g_signal_connect(G_OBJECT(g->grey_point), "quad-pressed", G_CALLBACK(autogrey_point_callback), self);
