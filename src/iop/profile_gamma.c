@@ -49,10 +49,8 @@ typedef struct dt_iop_profilegamma_params_t
   dt_iop_profilegamma_mode_t mode;
   float linear;
   float gamma;
-  float camera_factor;
   float dynamic_range;
   float grey_point;
-  float noise_level;
   float shadows_range;
   float black_target;
 } dt_iop_profilegamma_params_t;
@@ -63,10 +61,8 @@ typedef struct dt_iop_profilegamma_gui_data_t
   GtkWidget *mode_stack;
   GtkWidget *linear;
   GtkWidget *gamma;
-  GtkWidget *camera_factor;
   GtkWidget *dynamic_range;
   GtkWidget *grey_point;
-  GtkWidget *noise_level;
   GtkWidget *shadows_range;
   GtkWidget *black_target;
 } dt_iop_profilegamma_gui_data_t;
@@ -78,10 +74,8 @@ typedef struct dt_iop_profilegamma_data_t
   float gamma;
   float table[0x10000];      // precomputed look-up table
   float unbounded_coeffs[3]; // approximation for extrapolation of curve
-  float camera_factor;
   float dynamic_range;
   float grey_point;
-  float noise_level;
   float shadows_range;
   float black_target;
 } dt_iop_profilegamma_data_t;
@@ -116,8 +110,6 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "dynamic_range"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "grey_point"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows_range"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "noise_level"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "camera_factor"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -129,9 +121,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "gamma", GTK_WIDGET(g->gamma));
   dt_accel_connect_slider_iop(self, "dynamic_range", GTK_WIDGET(g->dynamic_range));
   dt_accel_connect_slider_iop(self, "grey_point", GTK_WIDGET(g->grey_point));
-  dt_accel_connect_slider_iop(self, "noise_level", GTK_WIDGET(g->noise_level));
   dt_accel_connect_slider_iop(self, "shadows_range", GTK_WIDGET(g->shadows_range));
-  dt_accel_connect_slider_iop(self, "camera_factor", GTK_WIDGET(g->camera_factor));
 }
 
 
@@ -199,7 +189,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_table = NULL;
   cl_mem dev_coeffs = NULL;
 
-  const float noise = powf(2., d->noise_level);
   const float grey = d->grey_point / 100.;
 
   size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
@@ -210,9 +199,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_profilegamma_log, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_profilegamma_log, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_profilegamma_log, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_profilegamma_log, 4, sizeof(float), (void *)&(d->camera_factor));
     dt_opencl_set_kernel_arg(devid, gd->kernel_profilegamma_log, 5, sizeof(float), (void *)&(d->dynamic_range));
-    dt_opencl_set_kernel_arg(devid, gd->kernel_profilegamma_log, 6, sizeof(float), (void *)&noise);
     dt_opencl_set_kernel_arg(devid, gd->kernel_profilegamma_log, 7, sizeof(float), (void *)&(d->shadows_range));
     dt_opencl_set_kernel_arg(devid, gd->kernel_profilegamma_log, 8, sizeof(float), (void *)&grey);
 
@@ -263,12 +250,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   {
     case PROFILEGAMMA_LOG:
     {
-      const float LABgrey[3] = { data->grey_point, 0., 0. };
-      float RGBgrey[3];
-      dt_Lab_to_prophotorgb(LABgrey, RGBgrey);
-      const float grey = (RGBgrey[0] + RGBgrey[1] + RGBgrey[2]) / 3.;
-      const float offset = powf(2, data->noise_level);
-      const float noise = offset / (grey + offset);
+      const float grey = 1. - (data->grey_point / 100.);
+      const float noise = powf(2, -data->dynamic_range);
       const float Logmin = Log2(noise);
 
 #ifdef _OPENMP
@@ -277,7 +260,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
       {
         const float pixel = ((float *)ivoid)[k];
-        float lg2 = data->camera_factor * ((pixel + offset)/ (grey + offset));
+        float lg2 = data->dynamic_range * ((pixel + noise)/ (grey + noise));
 
         if(lg2 < noise)
         {
@@ -289,7 +272,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         }
 
         lg2 = ((lg2 - data->shadows_range) / (data->dynamic_range));
-        lg2 = (lg2 - offset) / (1. - offset);
+        lg2 = (lg2 - noise) / (1. - noise);
         ((float *)ovoid)[k] = lg2;
       }
       break;
@@ -366,65 +349,55 @@ static void optimize(dt_iop_module_t *self)
 
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-
-  float RGBgrey[3];
-  const float LABgrey[3] = { p->grey_point, 0.0, 0.0 };
   
-  dt_Lab_to_prophotorgb(LABgrey, RGBgrey);
+  float grey = 1. - (p->grey_point /100.); 
+  float min = (self->picked_color_min[0] + self->picked_color_min[1] + self->picked_color_min[2]) / 3.;
+  float max = (self->picked_color_max[0] + self->picked_color_max[1] + self->picked_color_max[2]) / 3.;
   
-  float grey = (RGBgrey[0] + RGBgrey[1] + RGBgrey[2]) / 3.0 * 100.0;
-  float min = (self->picked_color_min[0] + self->picked_color_min[1] + self->picked_color_min[2]) / 3.0f;
-  float max = (self->picked_color_max[0] + self->picked_color_max[1] + self->picked_color_max[2]) / 3.0f;
+  float noise = powf(2., -p->dynamic_range);
+  float dynamic_range = p->dynamic_range;
   
   const float RGBmin
     = fmin(fmin(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
   
-  /*
-  const float RGBmax 
-    = fmax(fmax(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
-  */
-  if( RGBmin < 0.0 && -RGBmin > powf(2.0, p->noise_level) )
-  {
-    dt_control_log(_(
-        "some pixels may have negative or very low values. the black/noise level has been updated accordingly."));
-    p->noise_level = Log2( - RGBmin );
-  }
+  if( RGBmin < noise ) {noise = fabsf(RGBmin);}
+  
+  float EVmin, EVmax, temp;
 
-  float noise_level_L = powf(2.0, p->noise_level) * 100.0; 
-  
-  // Adjust the camera factor in such that the middle grey is in the center of the dynamic range
-  // that is log2( factor * Lmax / grey) = - log2( factor * Lmin / grey) =  dynamic range / 2
-  float camera_factor = (grey) / powf((max * 100.0) * (min * 100.0), 0.5);
-  
   // Recompute the real dynamic range in RGB
-  float RGBEVmin = Log2Thres( p->camera_factor * (min * 100.) / grey, noise_level_L / (grey + noise_level_L));
-  float RGBEVmax = Log2Thres( p->camera_factor * (max * 100.) / grey, noise_level_L / (grey + noise_level_L));
-  float dynamic_range = fabsf(RGBEVmax - RGBEVmin);
-
+  int i = 0;
+  while ( i < 200000) // TODO: write a stopping criterion
+  {
+    EVmin = Log2Thres( dynamic_range * (min + noise) / (grey + noise), noise );
+    EVmax = Log2Thres( dynamic_range * (max + noise) / (grey + noise), noise );
+    dynamic_range = fabsf(EVmax - EVmin);
+    temp = dynamic_range * powf(2., dynamic_range / 2.);
+    noise = (min * temp - grey) / (1. - temp);
+    ++i;
+  }
+  
   /* Rescale the dynamic range with user input */
   // at this point, we assume the camera factor has successfuly split the LAB dynamic range in 2 equal halfs
   // so EVmin = -EVmax = 0.5 * (EVmin - EVmax)
-  float shadows_range = RGBEVmin * ( 1. + (p->black_target / 100.));
+  float shadows_range = EVmin * ( 1. + (p->black_target / 100.));
   dynamic_range = dynamic_range * ( 1. + (p->black_target / 100.));
 
   /* belt and suspenders sanitization */
-  if(dynamic_range < 0.5 || dynamic_range > 32.) goto error;
+  
+  if(dynamic_range < 0.1 || dynamic_range > 32.) goto error;
   if(shadows_range > 16. || shadows_range < -16.) goto error;
-  if(camera_factor < 1. || camera_factor > 16.) goto error;
   
   p->dynamic_range = dynamic_range;
   p->shadows_range = shadows_range;
-  p->camera_factor = camera_factor;
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
   dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
-  dt_bauhaus_slider_set_soft(g->noise_level, p->noise_level);
-  dt_bauhaus_slider_set_soft(g->camera_factor, p->camera_factor);
   darktable.gui->reset = 0;
   
+
 error:
-  //dt_control_log(_("the optimization has returned inconsistent parameters. aborting…"));
+  dt_control_log(_("the optimization has returned inconsistent parameters. aborting…"));
   return;
 }
 
@@ -504,24 +477,6 @@ static void autogrey_point_callback(GtkWidget *button, gpointer user_data)
     darktable.gui->reset = 0;
   }
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void noise_level_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  p->noise_level = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void camera_factor_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  p->camera_factor = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -685,8 +640,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   d->dynamic_range = p->dynamic_range;
   d->grey_point = p->grey_point;
-  d->camera_factor = p->camera_factor;
-  d->noise_level = p->noise_level;
   d->shadows_range = p->shadows_range;
   d->black_target = p->black_target;
   d->mode = p->mode;
@@ -730,13 +683,12 @@ void gui_update(dt_iop_module_t *self)
       gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "log");
       break;
   }
-
+  
+  dt_bauhaus_combobox_set(g->mode, p->mode);
   dt_bauhaus_slider_set(g->linear, p->linear);
   dt_bauhaus_slider_set(g->gamma, p->gamma);
   dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
   dt_bauhaus_slider_set_soft(g->grey_point, p->grey_point);
-  dt_bauhaus_slider_set_soft(g->camera_factor, p->camera_factor);
-  dt_bauhaus_slider_set_soft(g->noise_level, p->noise_level);
   dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
   dt_bauhaus_slider_set_soft(g->black_target, p->black_target);
 }
@@ -750,7 +702,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_profilegamma_params_t);
   module->gui_data = NULL;
   dt_iop_profilegamma_params_t tmp
-      = (dt_iop_profilegamma_params_t){ 0, 0.1, 0.45, 1.5, 5., 50., -16., -2.5, 0. };
+      = (dt_iop_profilegamma_params_t){ 0, 0.1, 0.45, 5., 50., -2.5, 0. };
   memcpy(module->params, &tmp, sizeof(dt_iop_profilegamma_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_profilegamma_params_t));
 }
@@ -831,32 +783,6 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *vbox_log = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  // header
-  gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("camera & signal properties")), FALSE, FALSE, 5);
-
-  // camera factor slider
-  g->camera_factor = dt_bauhaus_slider_new_with_range(self, 1., 3., 0.01, p->camera_factor, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->camera_factor, 0.01, 32.0);
-  dt_bauhaus_widget_set_label(g->camera_factor, NULL, _("exposure linear factor"));
-  gtk_box_pack_start(GTK_BOX(vbox_log), g->camera_factor, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->camera_factor,
-                              _("utility parameter so that the dynamic range is centered in 0."));
-  g_signal_connect(G_OBJECT(g->camera_factor), "value-changed", G_CALLBACK(camera_factor_callback), self);
-
-  // black level input slider
-  g->noise_level = dt_bauhaus_slider_new_with_range(self, -16., 0., 0.1, p->noise_level, 1);
-  dt_bauhaus_slider_enable_soft_boundaries(g->noise_level, -32., 32.0);
-  dt_bauhaus_slider_set_format(g->noise_level, "%.1f EV");
-  dt_bauhaus_widget_set_label(g->noise_level, NULL, _("noise/black level"));
-  gtk_box_pack_start(GTK_BOX(vbox_log), g->noise_level, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->noise_level,
-                              _("exposure value of the true black level, relative to the middle gray\neverything "
-                                "beyond this value will be assumed to be noise and clamped"));
-  g_signal_connect(G_OBJECT(g->noise_level), "value-changed", G_CALLBACK(noise_level_callback), self);
-
-  // header
-  gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("scene & lighting properties")), FALSE, FALSE, 5);
-
   // grey_point slider
   g->grey_point = dt_bauhaus_slider_new_with_range(self, 0.1, 100., 0.5, p->grey_point, 2);
   dt_bauhaus_widget_set_label(g->grey_point, NULL, _("middle grey target value"));
@@ -887,15 +813,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between the new 50 % grey and 0 % black"));
   g_signal_connect(G_OBJECT(g->shadows_range), "value-changed", G_CALLBACK(shadows_range_callback), self);
 
-  // header
-  gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("optimize automatically")), FALSE, FALSE, 5);
-
   // Auto tune slider
   g->black_target = dt_bauhaus_slider_new_with_range(self, -100., 100., 0.1, p->black_target, 1);
-  dt_bauhaus_widget_set_label(g->black_target, NULL, _("black point offset"));
+  dt_bauhaus_widget_set_label(g->black_target, NULL, _("contrast correction"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->black_target, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->black_target, "%.1f %%");
-  gtk_widget_set_tooltip_text(g->black_target, _("adjust to match a deep black"));
+  gtk_widget_set_tooltip_text(g->black_target, _("resize the dynamic range to recover blacks"));
   g_signal_connect(G_OBJECT(g->black_target), "value-changed", G_CALLBACK(black_target_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->black_target, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
   g_signal_connect(G_OBJECT(g->black_target), "quad-pressed", G_CALLBACK(autofix_callback), self);
