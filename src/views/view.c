@@ -874,6 +874,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     img = &buffered_image;
   }
 
+  gboolean draw_thumb_background = FALSE;
   float imgwd = 0.90f;
   if (image_only)
   {
@@ -885,6 +886,16 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     // cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
   }
   else
+  {
+    draw_thumb_background = TRUE;
+  }
+
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_size_t mip
+      = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * width, imgwd * height);
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
+
+  if(draw_thumb_background)
   {
     double x0 = DT_PIXEL_APPLY_DPI(1), y0 = DT_PIXEL_APPLY_DPI(1), rect_width = width - DT_PIXEL_APPLY_DPI(2),
            rect_height = height - DT_PIXEL_APPLY_DPI(2), radius = DT_PIXEL_APPLY_DPI(5);
@@ -924,11 +935,9 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       ext++;
       cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
 
-
-      const int isportrait = ((img->orientation & ORIENTATION_SWAP_XY) != 0) != (img->height > img->width);
       char* upcase_ext = g_ascii_strup(ext, -1);  // extension in capital letters to avoid character descenders
 
-      if ( isportrait )
+      if (buf.height > buf.width)
       {
         int max_chr_width = 0;
         for (int i = 0; upcase_ext[i] != 0; i++)
@@ -960,10 +969,6 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     }
   }
 
-  dt_mipmap_buffer_t buf;
-  dt_mipmap_size_t mip
-      = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * width, imgwd * height);
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
   // if we got a different mip than requested, and it's not a skull (8x8 px), we count
   // this thumbnail as missing (to trigger re-exposure)
   if(buf.size != mip && buf.width != 8 && buf.height != 8) missing = 1;
