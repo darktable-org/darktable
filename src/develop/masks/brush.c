@@ -1307,12 +1307,6 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
       gui->guipoints_count = 1;
 
       // add support for clone masks
-      /* float pts[2] = { pzx * wd, pzy * ht };
-      dt_dev_distort_backtransform(darktable.develop, pts, 1);
-      pts[0] /= darktable.develop->preview_pipe->iwidth;
-      pts[1] /= darktable.develop->preview_pipe->iheight;
-      form->source[0] = pts[0] + 0.01f;
-      form->source[1] = pts[1] + 0.01f; */
       if(form->type & DT_MASKS_CLONE)
       {
         dt_brush_set_source_pos_initial_value(gui, form, dt_masks_dynbuf_buffer(gui->guipoints), pzx, pzy);
@@ -1476,6 +1470,10 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
     gui->guipoints = NULL;
     gui->guipoints_payload = NULL;
     gui->guipoints_count = 0;
+
+    gui->creation_continuous = FALSE;
+    gui->creation_continuous_module = NULL;
+
     dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
     dt_masks_iop_update(module);
     dt_control_queue_redraw_center();
@@ -1617,7 +1615,6 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
 
     if(gui->guipoints && gui->guipoints_count > 0)
     {
-
       // if the path consists only of one x/y pair we add a second one close so we don't need to deal with
       // this special case later
       if(gui->guipoints_count == 1)
@@ -1712,11 +1709,15 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
 
       // we save the form and quit creation mode
       dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
+
       if(crea_module)
       {
         dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
         // and we switch in edit mode to show all the forms
-        dt_masks_set_edit_mode(crea_module, TRUE);
+        if(gui->creation_continuous)
+          dt_masks_set_edit_mode_single_form(crea_module, form->formid, DT_MASKS_EDIT_FULL);
+        else
+          dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
         dt_masks_iop_update(crea_module);
         gui->creation_module = NULL;
       }
@@ -1725,7 +1726,18 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
         dt_dev_masks_selection_change(darktable.develop, form->formid, TRUE);
       }
 
-      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
+      if(gui->creation_continuous)
+      {
+        dt_masks_form_t *form_new = dt_masks_create(form->type);
+        dt_masks_change_form_gui(form_new);
+
+        darktable.develop->form_gui->creation = TRUE;
+        darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
+
+        gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
+        gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+      }
+      else if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
         dt_masks_form_t *grp = darktable.develop->form_visible;
         if(!grp || !(grp->type & DT_MASKS_GROUP)) return 1;
@@ -1758,6 +1770,9 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
       gui->guipoints = NULL;
       gui->guipoints_payload = NULL;
       gui->guipoints_count = 0;
+
+      gui->creation_continuous = FALSE;
+      gui->creation_continuous_module = NULL;
 
       dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
       dt_masks_iop_update(module);

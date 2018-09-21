@@ -242,6 +242,8 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
   }
   else if(gui->creation && (which == 3))
   {
+    gui->creation_continuous = FALSE;
+    gui->creation_continuous_module = NULL;
     dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
     dt_masks_iop_update(module);
     dt_control_queue_redraw_center();
@@ -303,7 +305,10 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
       // we save the move
       dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
       // and we switch in edit mode to show all the forms
-      dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
+      if(gui->creation_continuous)
+        dt_masks_set_edit_mode_single_form(crea_module, form->formid, DT_MASKS_EDIT_FULL);
+      else
+        dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
       dt_masks_iop_update(crea_module);
       gui->creation_module = NULL;
     }
@@ -413,6 +418,17 @@ static int dt_circle_events_button_released(struct dt_iop_module_t *module, floa
     // we save the move
     dt_masks_update_image(darktable.develop);
 
+    if(gui->creation_continuous)
+    {
+      dt_masks_form_t *form_new = dt_masks_create(form->type);
+      dt_masks_change_form_gui(form_new);
+
+      darktable.develop->form_gui->creation = TRUE;
+      darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
+
+      gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
+      gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+    }
     return 1;
   }
   else if(gui->source_dragging)
@@ -422,10 +438,6 @@ static int dt_circle_events_button_released(struct dt_iop_module_t *module, floa
     if(gui->scrollx != 0.0 || gui->scrolly != 0.0)
     {
       // if there's no dragging the source is calculated in dt_circle_events_button_pressed()
-      /* dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
-      form->source[0] = circle->center[0] + circle->radius;
-      form->source[1] = circle->center[1] - circle->radius;
-      gui->scrollx = gui->scrolly = 0.0; */
     }
     else
     {
@@ -448,6 +460,17 @@ static int dt_circle_events_button_released(struct dt_iop_module_t *module, floa
     // we save the move
     dt_masks_update_image(darktable.develop);
 
+    if(gui->creation_continuous)
+    {
+      dt_masks_form_t *form_new = dt_masks_create(form->type);
+      dt_masks_change_form_gui(form_new);
+
+      darktable.develop->form_gui->creation = TRUE;
+      darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
+
+      gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
+      gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+    }
     return 1;
   }
   return 0;
