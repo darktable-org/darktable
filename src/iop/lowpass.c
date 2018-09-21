@@ -662,7 +662,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(hbox, GTK_WIDGET(g->order), TRUE, TRUE, 0);
 #endif
 
-  g->radius = dt_bauhaus_slider_new_with_range(self, 0.1, 200.0, 0.1, p->radius, 2);
+  g->radius = dt_bauhaus_slider_new_with_range(self, 0.1, 500.0, 0.1, p->radius, 2);
   g->contrast = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, 0.01, p->contrast, 2);
   g->brightness = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, 0.01, p->brightness, 2);
   g->saturation = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, 0.01, p->saturation, 2);
