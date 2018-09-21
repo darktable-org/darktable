@@ -1139,7 +1139,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 
       if(img)
       {
-        if ( zoom != 1 && (!darktable.gui->show_overlays || imgsel == imgid) )
+        if (zoom != 1 && (!darktable.gui->show_overlays || imgsel == imgid))
         {
           const double overlay_height = 0.33 * height;
           const int exif_offset = DT_PIXEL_APPLY_DPI(5);
