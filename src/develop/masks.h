@@ -223,8 +223,10 @@ typedef struct dt_masks_form_gui_t
 
 
   gboolean creation;
+  gboolean creation_continuous;
   gboolean creation_closing_form;
   dt_iop_module_t *creation_module;
+  dt_iop_module_t *creation_continuous_module;
 
   dt_masks_pressure_sensitivity_t pressure_sensitivity;
 
@@ -313,6 +315,8 @@ dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp, dt_masks_f
 void dt_masks_iop_edit_toggle_callback(GtkToggleButton *togglebutton, struct dt_iop_module_t *module);
 void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module_t *module);
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t value);
+void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module, const int formid,
+                                        dt_masks_edit_mode_t value);
 void dt_masks_iop_update(struct dt_iop_module_t *module);
 void dt_masks_iop_combo_populate(GtkWidget *w, struct dt_iop_module_t **m);
 void dt_masks_iop_use_same_as(struct dt_iop_module_t *module, struct dt_iop_module_t *src);
@@ -332,7 +336,7 @@ int dt_masks_point_in_form_near(float x, float y, float *points, int points_star
 void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel);
 
 /** utils for selecting the source of a clone mask while creating it */
-void dt_masks_draw_clone_source_pos(cairo_t *cr, float zoom_scale, const float x, const float y);
+void dt_masks_draw_clone_source_pos(cairo_t *cr, const float zoom_scale, const float x, const float y);
 void dt_masks_set_source_pos_initial_state(dt_masks_form_gui_t *gui, const uint32_t state, const float pzx,
                                            const float pzy);
 void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mask_type, const float xpos,
