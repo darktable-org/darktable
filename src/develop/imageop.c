@@ -931,11 +931,11 @@ static void _iop_gui_rename_module(dt_iop_module_t *module)
   GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
   GtkWidget *label = g_list_nth_data(childs, 5);
   gdk_window_get_origin(gtk_widget_get_window(label), &px, &py);
-  gint w = gdk_window_get_width(gtk_widget_get_window(label)) - bs * 8 - bs * 1.7;
-  gint h = gdk_window_get_height(gtk_widget_get_window(label));
+  const gint w = gdk_window_get_width(gtk_widget_get_window(label)) - bs * 8 - bs * 1.7;
+  const gint h = gdk_window_get_height(gtk_widget_get_window(label));
 
-  gint x = px + bs * 6;
-  gint y = py;
+  const gint x = px + bs * 6;
+  const gint y = py;
 
   d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #ifdef GDK_WINDOWING_QUARTZ
