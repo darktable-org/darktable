@@ -868,73 +868,106 @@ static void dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
   dt_iop_gui_duplicate(user_data, TRUE);
 }
 
-typedef struct dt_iop_gui_rename_module_dialog_t
+typedef struct dt_iop_gui_rename_module_t
 {
+  GtkWidget *floating_window;
   dt_iop_module_t *module;
-  GtkEntry *name;
-  gchar *original_name;
-} dt_iop_gui_rename_module_dialog_t;
+} dt_iop_gui_rename_module_t;
 
-static void _iop_gui_rename_module_response(GtkDialog *dialog, gint response_id,
-                                            dt_iop_gui_rename_module_dialog_t *g)
+// http://stackoverflow.com/questions/4631388/transparent-floating-gtkentry
+static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, dt_iop_gui_rename_module_t *d)
 {
-  if(response_id == GTK_RESPONSE_ACCEPT)
+  int ended = 0;
+
+  switch(event->keyval)
   {
-    const gchar *name = gtk_entry_get_text(g->name);
-    if(strcmp(g->original_name, name) != 0)
+    case GDK_KEY_Escape:
+      ended = 1;
+      break;
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
     {
-      g_strlcpy(g->module->multi_name, name, sizeof(g->module->multi_name) - 1);
-      dt_dev_add_history_item(g->module->dev, g->module, TRUE);
-      dt_iop_gui_update_header(g->module);
+      const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
+      if(strcmp(d->module->multi_name, name) != 0)
+      {
+        g_strlcpy(d->module->multi_name, name, sizeof(d->module->multi_name) - 1);
+        d->module->multi_name[sizeof(d->module->multi_name) - 1] = 0;
+        dt_dev_add_history_item(d->module->dev, d->module, TRUE);
+        dt_iop_gui_update_header(d->module);
+      }
+
+      ended = 1;
     }
+    break;
   }
 
-  gtk_widget_destroy(GTK_WIDGET(dialog));
-  g_free(g->original_name);
-  free(g);
+  if(ended)
+  {
+    gtk_widget_destroy(d->floating_window);
+    free(d);
+    return TRUE;
+  }
+  return FALSE; /* event not handled */
 }
 
-static void _iop_gui_rename_module(const char *name_in, dt_iop_module_t *module)
+static gboolean _rename_module_destroy(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
-  gchar *name = NULL;
-  name = g_strdup(name_in);
+  gtk_widget_destroy(GTK_WIDGET(user_data));
+  return FALSE;
+}
 
-  /* Create the widgets */
-  char title[1024];
+static void _iop_gui_rename_module(dt_iop_module_t *module)
+{
+  // we don't want to rename one-instance modules
+  if(module->flags() & IOP_FLAGS_ONE_INSTANCE) return;
+
+  const int bs = DT_PIXEL_APPLY_DPI(12);
+  gint px = 0, py = 0;
+
+  dt_iop_gui_rename_module_t *d = (dt_iop_gui_rename_module_t *)calloc(1, sizeof(dt_iop_gui_rename_module_t));
+  d->module = module;
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  snprintf(title, sizeof(title), _("rename module `%s'"), module->name());
-  GtkWidget *dialog
-      = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, _("_ok"),
-                                    GTK_RESPONSE_ACCEPT, _("_cancel"), GTK_RESPONSE_REJECT, NULL);
-  GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_container_add(content_area, GTK_WIDGET(box));
 
-  dt_iop_gui_rename_module_dialog_t *g
-      = (dt_iop_gui_rename_module_dialog_t *)malloc(sizeof(dt_iop_gui_rename_module_dialog_t));
-  g->original_name = name;
-  g->module = module;
+  GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
+  GtkWidget *label = g_list_nth_data(childs, 5);
+  gdk_window_get_origin(gtk_widget_get_window(label), &px, &py);
+  gint w = gdk_window_get_width(gtk_widget_get_window(label)) - bs * 8 - bs * 1.7;
+  gint h = gdk_window_get_height(gtk_widget_get_window(label));
 
-  snprintf(title, sizeof(title), _("enter the new name for the module `%s'"), module->name());
-  GtkWidget *label = gtk_label_new(title);
-  gtk_box_pack_start(box, GTK_WIDGET(label), FALSE, FALSE, 0);
+  gint x = px + bs * 6;
+  gint y = py;
 
-  g->name = GTK_ENTRY(gtk_entry_new());
-  gtk_entry_set_text(g->name, name);
-  gtk_box_pack_start(box, GTK_WIDGET(g->name), FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->name), _("name for the module"));
+  d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(d->floating_window);
+#endif
+  /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
+  gtk_widget_set_can_focus(d->floating_window, TRUE);
+  gtk_window_set_decorated(GTK_WINDOW(d->floating_window), FALSE);
+  gtk_window_set_type_hint(GTK_WINDOW(d->floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+  gtk_window_set_transient_for(GTK_WINDOW(d->floating_window), GTK_WINDOW(window));
+  gtk_widget_set_opacity(d->floating_window, 0.8);
+  gtk_window_move(GTK_WINDOW(d->floating_window), x, y);
 
-  g_signal_connect(dialog, "response", G_CALLBACK(_iop_gui_rename_module_response), g);
-  gtk_widget_show_all(dialog);
+  GtkWidget *entry = gtk_entry_new();
+  gtk_widget_set_size_request(entry, w, h);
+  gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
+
+  gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
+  gtk_container_add(GTK_CONTAINER(d->floating_window), entry);
+  g_signal_connect(entry, "focus-out-event", G_CALLBACK(_rename_module_destroy), d->floating_window);
+  g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), d);
+
+  gtk_entry_set_text(GTK_ENTRY(entry), module->multi_name);
+
+  gtk_widget_show_all(d->floating_window);
+  gtk_widget_grab_focus(entry);
+  gtk_window_present(GTK_WINDOW(d->floating_window));
 }
 
 static void dt_iop_gui_rename_callback(GtkButton *button, dt_iop_module_t *module)
 {
-  _iop_gui_rename_module(module->multi_name, module);
+  _iop_gui_rename_module(module);
 }
 
 static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton *event, gpointer user_data)
