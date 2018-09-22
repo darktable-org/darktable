@@ -891,7 +891,6 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
       if(strcmp(d->module->multi_name, name) != 0)
       {
         g_strlcpy(d->module->multi_name, name, sizeof(d->module->multi_name) - 1);
-        d->module->multi_name[sizeof(d->module->multi_name) - 1] = 0;
         dt_dev_add_history_item(d->module->dev, d->module, TRUE);
         dt_iop_gui_update_header(d->module);
       }
@@ -918,9 +917,6 @@ static gboolean _rename_module_destroy(GtkWidget *widget, GdkEvent *event, gpoin
 
 static void _iop_gui_rename_module(dt_iop_module_t *module)
 {
-  // we don't want to rename one-instance modules
-  if(module->flags() & IOP_FLAGS_ONE_INSTANCE) return;
-
   const int bs = DT_PIXEL_APPLY_DPI(12);
   gint px = 0, py = 0;
 
