@@ -874,6 +874,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     img = &buffered_image;
   }
 
+  gboolean draw_thumb_background = FALSE;
   float imgwd = 0.90f;
   if (image_only)
   {
@@ -885,6 +886,16 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     // cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
   }
   else
+  {
+    draw_thumb_background = TRUE;
+  }
+
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_size_t mip
+      = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * width, imgwd * height);
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
+
+  if(draw_thumb_background)
   {
     double x0 = DT_PIXEL_APPLY_DPI(1), y0 = DT_PIXEL_APPLY_DPI(1), rect_width = width - DT_PIXEL_APPLY_DPI(2),
            rect_height = height - DT_PIXEL_APPLY_DPI(2), radius = DT_PIXEL_APPLY_DPI(5);
@@ -915,7 +926,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       PangoRectangle ink;
       PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
       pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-      const int fontsize = 0.25 * width;
+      const int fontsize = 0.20 * width;
       pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
       layout = pango_cairo_create_layout(cr);
       pango_layout_set_font_description(layout, desc);
@@ -923,20 +934,41 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       while(ext > img->filename && *ext != '.') ext--;
       ext++;
       cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
-      pango_layout_set_text(layout, ext, -1);
-      pango_layout_get_pixel_extents(layout, &ink, NULL);
-      cairo_move_to(cr, .025 * width - ink.x, .24 * height - fontsize);
-      pango_cairo_show_layout(cr, layout);
+
+      char* upcase_ext = g_ascii_strup(ext, -1);  // extension in capital letters to avoid character descenders
+
+      if (buf.height > buf.width)
+      {
+        int max_chr_width = 0;
+        for (int i = 0; upcase_ext[i] != 0; i++)
+        {
+          pango_layout_set_text(layout, &upcase_ext[i], 1);
+          pango_layout_get_pixel_extents(layout, &ink, NULL);
+          max_chr_width = MAX(max_chr_width, ink.width);
+        }
+
+        for (int i = 0, yoffs = fontsize;  upcase_ext[i] != 0; i++,  yoffs -= fontsize)
+        {
+          pango_layout_set_text(layout, &upcase_ext[i], 1);
+          pango_layout_get_pixel_extents(layout, &ink, NULL);
+          cairo_move_to(cr, .025 * width - ink.x + (max_chr_width - ink.width) / 2, .2 * height - yoffs);
+          pango_cairo_show_layout(cr, layout);
+        }
+      }
+      else
+      {
+        pango_layout_set_text(layout, upcase_ext, -1);
+        pango_layout_get_pixel_extents(layout, &ink, NULL);
+        cairo_move_to(cr, .025 * width - ink.x, .2 * height - fontsize);
+        pango_cairo_show_layout(cr, layout);
+      }
+      g_free(upcase_ext);
       pango_font_description_free(desc);
       g_object_unref(layout);
 
     }
   }
 
-  dt_mipmap_buffer_t buf;
-  dt_mipmap_size_t mip
-      = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * width, imgwd * height);
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
   // if we got a different mip than requested, and it's not a skull (8x8 px), we count
   // this thumbnail as missing (to trigger re-exposure)
   if(buf.size != mip && buf.width != 8 && buf.height != 8) missing = 1;
