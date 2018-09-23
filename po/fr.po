@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-20 18:18+0200\n"
-"PO-Revision-Date: 2018-09-20 18:18+0200\n"
+"POT-Creation-Date: 2018-09-23 18:12+0200\n"
+"PO-Revision-Date: 2018-09-23 18:13+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2523,41 +2523,45 @@ msgstr ""
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module « %s » version non cohérente: %d != %d"
 
-#: ../src/develop/imageop.c:889
+#: ../src/develop/imageop.c:987
 msgid "new instance"
 msgstr "nouvelle instance"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:894
+#: ../src/develop/imageop.c:992
 msgid "duplicate instance"
 msgstr "cloner l'instance"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:899 ../src/libs/masks.c:1155
+#: ../src/develop/imageop.c:997 ../src/libs/masks.c:1155
 msgid "move up"
 msgstr "monter"
 
-#: ../src/develop/imageop.c:905 ../src/libs/masks.c:1158
+#: ../src/develop/imageop.c:1003 ../src/libs/masks.c:1158
 msgid "move down"
 msgstr "descendre"
 
 #. delete
-#: ../src/develop/imageop.c:911 ../src/libs/image.c:142
+#: ../src/develop/imageop.c:1009 ../src/libs/image.c:142
 #: ../src/libs/styles.c:370 ../src/libs/tagging.c:568
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:940 ../src/develop/imageop.c:1917
+#: ../src/develop/imageop.c:1016
+msgid "rename"
+msgstr "renommer"
+
+#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:2020
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:940 ../src/develop/imageop.c:1917
+#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:2020
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1263 ../src/gui/accelerators.c:628
+#: ../src/develop/imageop.c:1366 ../src/gui/accelerators.c:628
 #: ../src/gui/accelerators.c:713 ../src/gui/accelerators.c:878
 #: ../src/gui/accelerators.c:904 ../src/gui/presets.c:179
 #: ../src/gui/presets.c:286 ../src/gui/presets.c:628
@@ -2566,33 +2570,33 @@ msgstr "%s est désactivé"
 msgid "preset"
 msgstr "pré-réglage"
 
-#: ../src/develop/imageop.c:1283
+#: ../src/develop/imageop.c:1386
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusion"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1288
+#: ../src/develop/imageop.c:1391
 msgctxt "accel"
 msgid "show module"
 msgstr "afficher le module"
 
-#: ../src/develop/imageop.c:1289
+#: ../src/develop/imageop.c:1392
 msgctxt "accel"
 msgid "enable module"
 msgstr "activer le module"
 
-#: ../src/develop/imageop.c:1291 ../src/libs/lib.c:602
+#: ../src/develop/imageop.c:1394 ../src/libs/lib.c:602
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1292 ../src/libs/lib.c:606
+#: ../src/develop/imageop.c:1395 ../src/libs/lib.c:606
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:1887
+#: ../src/develop/imageop.c:1990
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -2600,11 +2604,11 @@ msgstr ""
 "actions instances multiples\n"
 "clic-milieu créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:1896 ../src/libs/lib.c:997
+#: ../src/develop/imageop.c:1999 ../src/libs/lib.c:997
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1904 ../src/gui/preferences.c:398
+#: ../src/develop/imageop.c:2007 ../src/gui/preferences.c:398
 #: ../src/libs/lib.c:1009
 msgid "presets"
 msgstr "pré-réglages"
