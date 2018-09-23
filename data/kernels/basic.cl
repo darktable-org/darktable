@@ -2161,7 +2161,7 @@ colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, un
 /* kernel for the unbreak input profile module - gamma version */
 
 kernel void
-profilegamma (read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height,
+profilegamma (read_only image2d_t in, write_only image2d_t out, int width, int height,
         read_only image2d_t table, global const float *ta)
 {
   const unsigned int x = get_global_id(0);
@@ -2180,48 +2180,27 @@ profilegamma (read_only image2d_t in, write_only image2d_t out, unsigned int wid
   write_imagef(out, (int2)(x, y), o);
 }
 
-float LogProfile( const float x, const float factor, const float range, const float noise_level, 
-         const float shadows_range, const float grey, const float Logmin_val)
-{
-  float lg2 = factor * ( (x + noise_level) / ( grey + noise_level));
-  
-  if ( lg2 < noise_level ) 
-  { 
-    lg2 = Logmin_val; 
-  }
-  else { 
-    lg2 = log2(lg2);
-  }
-  lg2 = (lg2 - shadows_range ) / range ;
-  lg2 = (lg2 - noise_level) / (1.f - noise_level);
-  
-  return lg2;
-}
-
 /* kernel for the unbreak input profile module - log version */
 kernel void
-profilegamma_log (read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height,
-                  const float factor, 
-                  const float range, 
-                  const float noise_level, 
-                  const float shadows_range, 
-                  const float grey)
+profilegamma_log (read_only image2d_t in, write_only image2d_t out, int width, int height, const float dynamic_range, const float shadows_range, const float grey)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
 
-  if(x >= height || y >= width) return;
-  
+  if(x >= width || y >= height) return;
+
   float4 i = read_imagef(in, sampleri, (int2)(x, y));
- 
-  const float Logmin_val = log2(noise_level);
+  const float4 noise = pow((float4)2.f, (float4)-dynamic_range);
+  const float4 Lognoise = log2(noise);
+  const float4 dynamic4 = dynamic_range;
+  const float4 shadows4 = shadows_range;
+  const float4 grey4 = grey;
   
-  i.x = i.x;//LogProfile(i.x, factor, range, noise_level, shadows_range, grey, Logmin_val);
-  i.y = i.y;//LogProfile(i.x, factor, range, noise_level, shadows_range, grey, Logmin_val);
-  i.z = i.z;//LogProfile(i.z, factor, range, noise_level, shadows_range, grey, Logmin_val);
+  i = i / grey4;
+  i = (i > noise) ? log2(i) : Lognoise;
+  i = (i - shadows4) / dynamic4;
 
   write_imagef(out, (int2)(x, y), i);
-
 }
 
 /* kernel for the interpolation resample helper */
