@@ -868,6 +868,104 @@ static void dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
   dt_iop_gui_duplicate(user_data, TRUE);
 }
 
+typedef struct dt_iop_gui_rename_module_t
+{
+  GtkWidget *floating_window;
+  dt_iop_module_t *module;
+} dt_iop_gui_rename_module_t;
+
+// http://stackoverflow.com/questions/4631388/transparent-floating-gtkentry
+static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, dt_iop_gui_rename_module_t *d)
+{
+  int ended = 0;
+
+  switch(event->keyval)
+  {
+    case GDK_KEY_Escape:
+      ended = 1;
+      break;
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
+    {
+      const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
+      if(strcmp(d->module->multi_name, name) != 0)
+      {
+        g_strlcpy(d->module->multi_name, name, sizeof(d->module->multi_name) - 1);
+        dt_dev_add_history_item(d->module->dev, d->module, TRUE);
+        dt_iop_gui_update_header(d->module);
+      }
+
+      ended = 1;
+    }
+    break;
+  }
+
+  if(ended)
+  {
+    gtk_widget_destroy(d->floating_window);
+    free(d);
+    return TRUE;
+  }
+  return FALSE; /* event not handled */
+}
+
+static gboolean _rename_module_destroy(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  gtk_widget_destroy(GTK_WIDGET(user_data));
+  return FALSE;
+}
+
+static void _iop_gui_rename_module(dt_iop_module_t *module)
+{
+  const int bs = DT_PIXEL_APPLY_DPI(12);
+  gint px = 0, py = 0;
+
+  dt_iop_gui_rename_module_t *d = (dt_iop_gui_rename_module_t *)calloc(1, sizeof(dt_iop_gui_rename_module_t));
+  d->module = module;
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+
+  GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
+  GtkWidget *label = g_list_nth_data(childs, 5);
+  gdk_window_get_origin(gtk_widget_get_window(label), &px, &py);
+  const gint w = gdk_window_get_width(gtk_widget_get_window(label)) - bs * 8 - bs * 1.7;
+  const gint h = gdk_window_get_height(gtk_widget_get_window(label));
+
+  const gint x = px + bs * 6;
+  const gint y = py;
+
+  d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(d->floating_window);
+#endif
+  /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
+  gtk_widget_set_can_focus(d->floating_window, TRUE);
+  gtk_window_set_decorated(GTK_WINDOW(d->floating_window), FALSE);
+  gtk_window_set_type_hint(GTK_WINDOW(d->floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
+  gtk_window_set_transient_for(GTK_WINDOW(d->floating_window), GTK_WINDOW(window));
+  gtk_widget_set_opacity(d->floating_window, 0.8);
+  gtk_window_move(GTK_WINDOW(d->floating_window), x, y);
+
+  GtkWidget *entry = gtk_entry_new();
+  gtk_widget_set_size_request(entry, w, h);
+  gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
+
+  gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
+  gtk_container_add(GTK_CONTAINER(d->floating_window), entry);
+  g_signal_connect(entry, "focus-out-event", G_CALLBACK(_rename_module_destroy), d->floating_window);
+  g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), d);
+
+  gtk_entry_set_text(GTK_ENTRY(entry), module->multi_name);
+
+  gtk_widget_show_all(d->floating_window);
+  gtk_widget_grab_focus(entry);
+  gtk_window_present(GTK_WINDOW(d->floating_window));
+}
+
+static void dt_iop_gui_rename_callback(GtkButton *button, dt_iop_module_t *module)
+{
+  _iop_gui_rename_module(module);
+}
+
 static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
@@ -912,6 +1010,11 @@ static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton 
   // gtk_widget_set_tooltip_text(item, _("delete this instance"));
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(dt_iop_gui_delete_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_close);
+  gtk_menu_shell_append(menu, item);
+
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+  item = gtk_menu_item_new_with_label(_("rename"));
+  g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(dt_iop_gui_rename_callback), module);
   gtk_menu_shell_append(menu, item);
 
   gtk_widget_show_all(GTK_WIDGET(menu));
