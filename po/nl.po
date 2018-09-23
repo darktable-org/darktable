@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-11 10:54+0200\n"
-"PO-Revision-Date: 2018-09-14 22:13+0200\n"
+"POT-Creation-Date: 2018-09-23 13:48+0200\n"
+"PO-Revision-Date: 2018-09-23 13:58+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1061,55 +1061,55 @@ msgstr ""
 "ophalen instellingen van de formaatmodule mislukt, exporteren is "
 "afgebroken ..."
 
-#: ../src/common/collection.c:865 ../src/develop/lightroom.c:822
+#: ../src/common/collection.c:881 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:451
 #: ../src/iop/channelmixer.c:462 ../src/iop/colorbalance.c:631
-#: ../src/iop/temperature.c:1361 ../src/libs/collect.c:1183
+#: ../src/iop/temperature.c:1367 ../src/libs/collect.c:1183
 msgid "red"
 msgstr "rood"
 
-#: ../src/common/collection.c:867 ../src/develop/lightroom.c:824
-#: ../src/iop/temperature.c:1352 ../src/libs/collect.c:1183
+#: ../src/common/collection.c:883 ../src/develop/lightroom.c:824
+#: ../src/iop/temperature.c:1358 ../src/libs/collect.c:1183
 msgid "yellow"
 msgstr "geel"
 
-#: ../src/common/collection.c:869 ../src/develop/lightroom.c:826
+#: ../src/common/collection.c:885 ../src/develop/lightroom.c:826
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:452
 #: ../src/iop/channelmixer.c:468 ../src/iop/colorbalance.c:638
-#: ../src/iop/temperature.c:1349 ../src/iop/temperature.c:1362
+#: ../src/iop/temperature.c:1355 ../src/iop/temperature.c:1368
 #: ../src/libs/collect.c:1183
 msgid "green"
 msgstr "groen"
 
-#: ../src/common/collection.c:871 ../src/develop/lightroom.c:828
+#: ../src/common/collection.c:887 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
 #: ../src/iop/channelmixer.c:474 ../src/iop/colorbalance.c:645
-#: ../src/iop/temperature.c:1363 ../src/libs/collect.c:1183
+#: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1183
 msgid "blue"
 msgstr "blauw"
 
-#: ../src/common/collection.c:873 ../src/libs/collect.c:1183
+#: ../src/common/collection.c:889 ../src/libs/collect.c:1183
 msgid "purple"
 msgstr "paars"
 
-#: ../src/common/collection.c:882 ../src/libs/collect.c:1155
+#: ../src/common/collection.c:898 ../src/libs/collect.c:1155
 msgid "altered"
 msgstr "aangepast"
 
-#: ../src/common/collection.c:888 ../src/libs/collect.c:1164
+#: ../src/common/collection.c:904 ../src/libs/collect.c:1164
 msgid "tagged"
 msgstr "gelabeld"
 
-#: ../src/common/collection.c:894 ../src/libs/collect.c:1173
+#: ../src/common/collection.c:910 ../src/libs/collect.c:1173
 msgid "not copied locally"
 msgstr "niet lokaal gekopieerd"
 
-#: ../src/common/collection.c:1252
+#: ../src/common/collection.c:1268
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "%d afbeelding van %d (#%d) uit de collectie is geselecteerd"
 
-#: ../src/common/collection.c:1258
+#: ../src/common/collection.c:1274
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -1364,7 +1364,7 @@ msgstr ""
 
 #: ../src/common/history.c:430 ../src/common/history.c:433
 #: ../src/common/history.c:449 ../src/common/styles.c:725
-#: ../src/common/styles.c:729 ../src/develop/blend_gui.c:2030
+#: ../src/common/styles.c:729 ../src/develop/blend_gui.c:2032
 #: ../src/develop/develop.c:1339 ../src/iop/ashift.c:4492
 #: ../src/libs/live_view.c:436
 msgid "on"
@@ -1372,8 +1372,8 @@ msgstr "aan"
 
 #: ../src/common/history.c:430 ../src/common/history.c:433
 #: ../src/common/history.c:449 ../src/common/styles.c:725
-#: ../src/common/styles.c:729 ../src/develop/blend_gui.c:1802
-#: ../src/develop/blend_gui.c:2027 ../src/develop/develop.c:1339
+#: ../src/common/styles.c:729 ../src/develop/blend_gui.c:1804
+#: ../src/develop/blend_gui.c:2029 ../src/develop/develop.c:1339
 #: ../src/imageio/format/exr.cc:360 ../src/imageio/format/j2k.c:663
 #: ../src/iop/ashift.c:4491 ../src/iop/ashift.c:4497 ../src/iop/colorin.c:1863
 #: ../src/iop/demosaic.c:5063 ../src/iop/vignette.c:1140
@@ -2031,83 +2031,87 @@ msgstr "mengen in module '%s' overgeslagen: roi's komen niet overeen"
 msgid "could not allocate buffer for blending"
 msgstr "toewijzen buffer t.g.v. mengen mislukt"
 
-#: ../src/develop/blend_gui.c:1091
+#: ../src/develop/blend_gui.c:547
+msgid "display mask is currently disabled by another module"
+msgstr "maskerweergave is nu niet mogelijk vanwege een andere module"
+
+#: ../src/develop/blend_gui.c:1093
 msgid "sliders for L channel"
 msgstr "schuifregelaars voor L kanaal"
 
-#: ../src/develop/blend_gui.c:1091
+#: ../src/develop/blend_gui.c:1093
 msgid "sliders for a channel"
 msgstr "schuifregelaars voor a kanaal"
 
-#: ../src/develop/blend_gui.c:1091
+#: ../src/develop/blend_gui.c:1093
 msgid "sliders for b channel"
 msgstr "schuifregelaars voor b kanaal"
 
-#: ../src/develop/blend_gui.c:1092
+#: ../src/develop/blend_gui.c:1094
 msgid "sliders for chroma channel (of LCh)"
 msgstr "schuifregelaars voor kleurwaarde (van LCh)"
 
-#: ../src/develop/blend_gui.c:1092
+#: ../src/develop/blend_gui.c:1094
 msgid "sliders for hue channel (of LCh)"
 msgstr "schuifregelaars voor tint (van LCh)"
 
-#: ../src/develop/blend_gui.c:1093
+#: ../src/develop/blend_gui.c:1095
 msgid " g "
 msgstr " g "
 
-#: ../src/develop/blend_gui.c:1093
+#: ../src/develop/blend_gui.c:1095
 msgid " R "
 msgstr " R "
 
-#: ../src/develop/blend_gui.c:1093
+#: ../src/develop/blend_gui.c:1095
 msgid " G "
 msgstr " G "
 
-#: ../src/develop/blend_gui.c:1093
+#: ../src/develop/blend_gui.c:1095
 msgid " B "
 msgstr " B "
 
-#: ../src/develop/blend_gui.c:1093
+#: ../src/develop/blend_gui.c:1095
 msgid " H "
 msgstr " H "
 
-#: ../src/develop/blend_gui.c:1093
+#: ../src/develop/blend_gui.c:1095
 msgid " S "
 msgstr " S "
 
-#: ../src/develop/blend_gui.c:1093
+#: ../src/develop/blend_gui.c:1095
 msgid " L "
 msgstr " L "
 
-#: ../src/develop/blend_gui.c:1095
+#: ../src/develop/blend_gui.c:1097
 msgid "sliders for gray value"
 msgstr "schuifregelaars voor grijs waarde"
 
-#: ../src/develop/blend_gui.c:1095
+#: ../src/develop/blend_gui.c:1097
 msgid "sliders for red channel"
 msgstr "schuifregelaars voor rood kanaal"
 
-#: ../src/develop/blend_gui.c:1095
+#: ../src/develop/blend_gui.c:1097
 msgid "sliders for green channel"
 msgstr "schuifregelaars voor groen kanaal"
 
-#: ../src/develop/blend_gui.c:1096
+#: ../src/develop/blend_gui.c:1098
 msgid "sliders for blue channel"
 msgstr "schuifregelaars voor blauw kanaal"
 
-#: ../src/develop/blend_gui.c:1096
+#: ../src/develop/blend_gui.c:1098
 msgid "sliders for hue channel (of HSL)"
 msgstr "schuifregelaars voor tint (van HSL)"
 
-#: ../src/develop/blend_gui.c:1097
+#: ../src/develop/blend_gui.c:1099
 msgid "sliders for chroma channel (of HSL)"
 msgstr "schuifregelaars voor kleurwaarde (van HSL)"
 
-#: ../src/develop/blend_gui.c:1097
+#: ../src/develop/blend_gui.c:1099
 msgid "sliders for value channel (of HSL)"
 msgstr "schuifregelaars voor value kanaal (van HSL)"
 
-#: ../src/develop/blend_gui.c:1099
+#: ../src/develop/blend_gui.c:1101
 msgid ""
 "adjustment based on input received by this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -2120,7 +2124,7 @@ msgstr ""
 "* gebied tussen de aangrenzende gebieden van bovenste/onderste markeringen: "
 "gedeeltelijk mengen"
 
-#: ../src/develop/blend_gui.c:1103
+#: ../src/develop/blend_gui.c:1105
 msgid ""
 "adjustment based on unblended output of this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -2133,327 +2137,327 @@ msgstr ""
 "* gebied tussen de aangrenzende gebieden van bovenste/onderste markeringen: "
 "gedeeltelijk mengen"
 
-#: ../src/develop/blend_gui.c:1254 ../src/iop/colorzones.c:1084
+#: ../src/develop/blend_gui.c:1256 ../src/iop/colorzones.c:1084
 #: ../src/iop/tonecurve.c:932
 msgid "pick GUI color from image"
 msgstr "neem GUI kleur van afbeelding"
 
-#: ../src/develop/blend_gui.c:1258
+#: ../src/develop/blend_gui.c:1260
 msgid "reset blend mask settings"
 msgstr "herstel instellingen voor mengen masker"
 
-#: ../src/develop/blend_gui.c:1262
+#: ../src/develop/blend_gui.c:1264
 msgid "invert all channel's polarities"
 msgstr "keer alle kanaal-polariteiten om"
 
-#: ../src/develop/blend_gui.c:1275 ../src/develop/blend_gui.c:1279
+#: ../src/develop/blend_gui.c:1277 ../src/develop/blend_gui.c:1281
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr ""
 "masker omkeren, meest duidelijk zichtbaar na inschakeling 'toon masker'"
 
-#: ../src/develop/blend_gui.c:1288
+#: ../src/develop/blend_gui.c:1290
 msgid "output"
 msgstr "output"
 
-#: ../src/develop/blend_gui.c:1299
+#: ../src/develop/blend_gui.c:1301
 msgid "input"
 msgstr "invoer"
 
-#: ../src/develop/blend_gui.c:1310 ../src/develop/blend_gui.c:1311
+#: ../src/develop/blend_gui.c:1312 ../src/develop/blend_gui.c:1313
 msgid "double click to reset"
 msgstr "dubbelklikken is resetten"
 
-#: ../src/develop/blend_gui.c:1373
+#: ../src/develop/blend_gui.c:1375
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
 msgstr[0] "%d vorm gebruikt"
 msgstr[1] "%d vormen gebruikt"
 
-#: ../src/develop/blend_gui.c:1378 ../src/develop/blend_gui.c:1431
+#: ../src/develop/blend_gui.c:1380 ../src/develop/blend_gui.c:1433
 msgid "no mask used"
 msgstr "geen maskers"
 
-#: ../src/develop/blend_gui.c:1430 ../src/develop/blend_gui.c:1800
-#: ../src/develop/blend_gui.c:1838 ../src/develop/blend_gui.c:1995
-#: ../src/develop/blend_gui.c:2003 ../src/develop/blend_gui.c:2025
-#: ../src/develop/blend_gui.c:2041
+#: ../src/develop/blend_gui.c:1432 ../src/develop/blend_gui.c:1802
+#: ../src/develop/blend_gui.c:1840 ../src/develop/blend_gui.c:1997
+#: ../src/develop/blend_gui.c:2005 ../src/develop/blend_gui.c:2027
+#: ../src/develop/blend_gui.c:2043
 msgid "blend"
 msgstr "mengen"
 
-#: ../src/develop/blend_gui.c:1430 ../src/develop/blend_gui.c:1810
+#: ../src/develop/blend_gui.c:1432 ../src/develop/blend_gui.c:1812
 msgid "drawn mask"
 msgstr "vector masker"
 
-#: ../src/develop/blend_gui.c:1442
+#: ../src/develop/blend_gui.c:1444
 msgid "show and edit mask elements"
 msgstr "toon en bewerk masker"
 
-#: ../src/develop/blend_gui.c:1449
+#: ../src/develop/blend_gui.c:1451
 msgid "toggle polarity of drawn mask"
 msgstr "keer getekend masker om"
 
-#: ../src/develop/blend_gui.c:1460 ../src/libs/masks.c:995
+#: ../src/develop/blend_gui.c:1462 ../src/libs/masks.c:995
 #: ../src/libs/masks.c:1034 ../src/libs/masks.c:1640
 msgid "add gradient"
 msgstr "kleurverloop toevoegen"
 
-#: ../src/develop/blend_gui.c:1469 ../src/iop/retouch.c:2521
+#: ../src/develop/blend_gui.c:1471 ../src/iop/retouch.c:2539
 #: ../src/iop/spots.c:647 ../src/libs/masks.c:991 ../src/libs/masks.c:1030
 #: ../src/libs/masks.c:1647
 msgid "add path"
 msgstr "pad toevoegen"
 
-#: ../src/develop/blend_gui.c:1478 ../src/iop/retouch.c:2529
+#: ../src/develop/blend_gui.c:1480 ../src/iop/retouch.c:2547
 #: ../src/iop/spots.c:655 ../src/libs/masks.c:987 ../src/libs/masks.c:1026
 #: ../src/libs/masks.c:1655
 msgid "add ellipse"
 msgstr "ellips toevoegen"
 
-#: ../src/develop/blend_gui.c:1487 ../src/iop/retouch.c:2537
+#: ../src/develop/blend_gui.c:1489 ../src/iop/retouch.c:2555
 #: ../src/iop/spots.c:663 ../src/libs/masks.c:983 ../src/libs/masks.c:1022
 #: ../src/libs/masks.c:1663
 msgid "add circle"
 msgstr "cirkel toevoegen"
 
-#: ../src/develop/blend_gui.c:1496 ../src/iop/retouch.c:2514
+#: ../src/develop/blend_gui.c:1498 ../src/iop/retouch.c:2532
 #: ../src/libs/masks.c:1018 ../src/libs/masks.c:1670
 msgid "add brush"
 msgstr "penseel toevoegen"
 
 #. * generate a list of all available blend modes
-#: ../src/develop/blend_gui.c:1748 ../src/libs/live_view.c:407
+#: ../src/develop/blend_gui.c:1750 ../src/libs/live_view.c:407
 msgctxt "blendmode"
 msgid "normal"
 msgstr "normaal"
 
-#: ../src/develop/blend_gui.c:1749
+#: ../src/develop/blend_gui.c:1751
 msgctxt "blendmode"
 msgid "normal bounded"
 msgstr "normaal begrensd"
 
-#: ../src/develop/blend_gui.c:1750 ../src/libs/live_view.c:416
+#: ../src/develop/blend_gui.c:1752 ../src/libs/live_view.c:416
 msgctxt "blendmode"
 msgid "lighten"
 msgstr "ophelderen"
 
-#: ../src/develop/blend_gui.c:1751 ../src/libs/live_view.c:415
+#: ../src/develop/blend_gui.c:1753 ../src/libs/live_view.c:415
 msgctxt "blendmode"
 msgid "darken"
 msgstr "verdonkeren"
 
-#: ../src/develop/blend_gui.c:1752 ../src/libs/live_view.c:412
+#: ../src/develop/blend_gui.c:1754 ../src/libs/live_view.c:412
 msgctxt "blendmode"
 msgid "multiply"
 msgstr "vermenigvuldigen"
 
-#: ../src/develop/blend_gui.c:1753
+#: ../src/develop/blend_gui.c:1755
 msgctxt "blendmode"
 msgid "average"
 msgstr "gemiddelde"
 
-#: ../src/develop/blend_gui.c:1754
+#: ../src/develop/blend_gui.c:1756
 msgctxt "blendmode"
 msgid "addition"
 msgstr "toevoeging"
 
-#: ../src/develop/blend_gui.c:1755
+#: ../src/develop/blend_gui.c:1757
 msgctxt "blendmode"
 msgid "subtract"
 msgstr "aftrekken"
 
-#: ../src/develop/blend_gui.c:1756 ../src/libs/live_view.c:421
+#: ../src/develop/blend_gui.c:1758 ../src/libs/live_view.c:421
 msgctxt "blendmode"
 msgid "difference"
 msgstr "verschil"
 
-#: ../src/develop/blend_gui.c:1757 ../src/libs/live_view.c:413
+#: ../src/develop/blend_gui.c:1759 ../src/libs/live_view.c:413
 msgctxt "blendmode"
 msgid "screen"
 msgstr "scherm"
 
-#: ../src/develop/blend_gui.c:1758 ../src/libs/live_view.c:414
+#: ../src/develop/blend_gui.c:1760 ../src/libs/live_view.c:414
 msgctxt "blendmode"
 msgid "overlay"
 msgstr "bedekken"
 
-#: ../src/develop/blend_gui.c:1759
+#: ../src/develop/blend_gui.c:1761
 msgctxt "blendmode"
 msgid "softlight"
 msgstr "zacht licht"
 
-#: ../src/develop/blend_gui.c:1760
+#: ../src/develop/blend_gui.c:1762
 msgctxt "blendmode"
 msgid "hardlight"
 msgstr "hard licht"
 
-#: ../src/develop/blend_gui.c:1761
+#: ../src/develop/blend_gui.c:1763
 msgctxt "blendmode"
 msgid "vividlight"
 msgstr "vividlight"
 
-#: ../src/develop/blend_gui.c:1762
+#: ../src/develop/blend_gui.c:1764
 msgctxt "blendmode"
 msgid "linearlight"
 msgstr "linearlight"
 
-#: ../src/develop/blend_gui.c:1763
+#: ../src/develop/blend_gui.c:1765
 msgctxt "blendmode"
 msgid "pinlight"
 msgstr "pinlight"
 
-#: ../src/develop/blend_gui.c:1764
+#: ../src/develop/blend_gui.c:1766
 msgctxt "blendmode"
 msgid "lightness"
 msgstr "helderheid"
 
-#: ../src/develop/blend_gui.c:1765
+#: ../src/develop/blend_gui.c:1767
 msgctxt "blendmode"
 msgid "chroma"
 msgstr "kleurwaarde"
 
-#: ../src/develop/blend_gui.c:1766
+#: ../src/develop/blend_gui.c:1768
 msgctxt "blendmode"
 msgid "hue"
 msgstr "tint"
 
-#: ../src/develop/blend_gui.c:1767
+#: ../src/develop/blend_gui.c:1769
 msgctxt "blendmode"
 msgid "color"
 msgstr "kleur"
 
-#: ../src/develop/blend_gui.c:1768
+#: ../src/develop/blend_gui.c:1770
 msgctxt "blendmode"
 msgid "coloradjustment"
 msgstr "aanpassen kleur"
 
-#: ../src/develop/blend_gui.c:1770
+#: ../src/develop/blend_gui.c:1772
 msgctxt "blendmode"
 msgid "Lab lightness"
 msgstr "Lab helderheid"
 
-#: ../src/develop/blend_gui.c:1772
+#: ../src/develop/blend_gui.c:1774
 msgctxt "blendmode"
 msgid "Lab color"
 msgstr "Lab kleur"
 
-#: ../src/develop/blend_gui.c:1773
+#: ../src/develop/blend_gui.c:1775
 msgctxt "blendmode"
 msgid "Lab L-channel"
 msgstr "Lab L-kanaal"
 
-#: ../src/develop/blend_gui.c:1775
+#: ../src/develop/blend_gui.c:1777
 msgctxt "blendmode"
 msgid "Lab a-channel"
 msgstr "Lab a-kanaal"
 
-#: ../src/develop/blend_gui.c:1777
+#: ../src/develop/blend_gui.c:1779
 msgctxt "blendmode"
 msgid "Lab b-channel"
 msgstr "Lab b-kanaal"
 
-#: ../src/develop/blend_gui.c:1779
+#: ../src/develop/blend_gui.c:1781
 msgctxt "blendmode"
 msgid "HSV lightness"
 msgstr "HSV helderheid"
 
-#: ../src/develop/blend_gui.c:1781
+#: ../src/develop/blend_gui.c:1783
 msgctxt "blendmode"
 msgid "HSV color"
 msgstr "HSL kleur"
 
-#: ../src/develop/blend_gui.c:1782
+#: ../src/develop/blend_gui.c:1784
 msgctxt "blendmode"
 msgid "RGB red channel"
 msgstr "RGB rood kanaal"
 
-#: ../src/develop/blend_gui.c:1784
+#: ../src/develop/blend_gui.c:1786
 msgctxt "blendmode"
 msgid "RGB green channel"
 msgstr "RGB groen kanaal"
 
-#: ../src/develop/blend_gui.c:1786
+#: ../src/develop/blend_gui.c:1788
 msgctxt "blendmode"
 msgid "RGB blue channel"
 msgstr "RGB blauw kanaal"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
-#: ../src/develop/blend_gui.c:1790
+#: ../src/develop/blend_gui.c:1792
 msgctxt "blendmode"
 msgid "difference (deprecated)"
 msgstr "verschil (verouderd)"
 
-#: ../src/develop/blend_gui.c:1792
+#: ../src/develop/blend_gui.c:1794
 msgctxt "blendmode"
 msgid "inverse (deprecated)"
 msgstr "geïnverteerd (verouderd)"
 
-#: ../src/develop/blend_gui.c:1794
+#: ../src/develop/blend_gui.c:1796
 msgctxt "blendmode"
 msgid "normal (deprecated)"
 msgstr "normaal (verouderd)"
 
-#: ../src/develop/blend_gui.c:1795
+#: ../src/develop/blend_gui.c:1797
 msgctxt "blendmode"
 msgid "unbounded (deprecated)"
 msgstr "onbegrensd (verouderd)"
 
-#: ../src/develop/blend_gui.c:1805
+#: ../src/develop/blend_gui.c:1807
 msgid "uniformly"
 msgstr "geheel"
 
-#: ../src/develop/blend_gui.c:1817
+#: ../src/develop/blend_gui.c:1819
 msgid "parametric mask"
 msgstr "parametrisch masker"
 
-#: ../src/develop/blend_gui.c:1824
+#: ../src/develop/blend_gui.c:1826
 msgid "drawn & parametric mask"
 msgstr "vector & parametrisch masker"
 
-#: ../src/develop/blend_gui.c:1830
+#: ../src/develop/blend_gui.c:1832
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
 msgstr ""
 "activeer mengen; geheel, vector masker, parametrisch masker of in combinatie"
 
-#: ../src/develop/blend_gui.c:1838
+#: ../src/develop/blend_gui.c:1840
 msgid "blend mode"
 msgstr "overvloeiwijze"
 
-#: ../src/develop/blend_gui.c:1839
+#: ../src/develop/blend_gui.c:1841
 msgid "choose blending mode"
 msgstr "kies wijze van overvloeien"
 
-#: ../src/develop/blend_gui.c:1995 ../src/iop/watermark.c:1384
+#: ../src/develop/blend_gui.c:1997 ../src/iop/watermark.c:1384
 msgid "opacity"
 msgstr "dekking"
 
-#: ../src/develop/blend_gui.c:1998
+#: ../src/develop/blend_gui.c:2000
 msgid "set the opacity of the blending"
 msgstr "bepaal de dekking bij overvloeien"
 
-#: ../src/develop/blend_gui.c:2003
+#: ../src/develop/blend_gui.c:2005
 msgid "combine masks"
 msgstr "combineer maskers"
 
-#: ../src/develop/blend_gui.c:2005
+#: ../src/develop/blend_gui.c:2007
 msgid "exclusive"
 msgstr "exclusief"
 
-#: ../src/develop/blend_gui.c:2008
+#: ../src/develop/blend_gui.c:2010
 msgid "inclusive"
 msgstr "inclusief"
 
-#: ../src/develop/blend_gui.c:2011
+#: ../src/develop/blend_gui.c:2013
 msgid "exclusive & inverted"
 msgstr "exclusief & omgekeerd"
 
-#: ../src/develop/blend_gui.c:2014
+#: ../src/develop/blend_gui.c:2016
 msgid "inclusive & inverted"
 msgstr "inclusief & omgekeerd"
 
-#: ../src/develop/blend_gui.c:2019
+#: ../src/develop/blend_gui.c:2021
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
@@ -2461,23 +2465,23 @@ msgstr ""
 "hoe een individueel vector masker en verschillende parametrisch masker "
 "kanalen te combineren"
 
-#: ../src/develop/blend_gui.c:2025
+#: ../src/develop/blend_gui.c:2027
 msgid "invert mask"
 msgstr "masker omkeren"
 
-#: ../src/develop/blend_gui.c:2034
+#: ../src/develop/blend_gui.c:2036
 msgid "apply mask in normal or inverted mode"
 msgstr "pas het masker in omgekeerde vorm toe"
 
-#: ../src/develop/blend_gui.c:2041
+#: ../src/develop/blend_gui.c:2043
 msgid "mask blur"
 msgstr "masker verdoezelen"
 
-#: ../src/develop/blend_gui.c:2043
+#: ../src/develop/blend_gui.c:2045
 msgid "radius for gaussian blur of blend mask"
 msgstr "te gebruiken straal voor gaussian verdoezeling van het masker"
 
-#: ../src/develop/blend_gui.c:2049
+#: ../src/develop/blend_gui.c:2051
 msgid ""
 "display mask and/or color channel. ctrl-click to display mask, shift-click "
 "to display channel. hover over parametric mask slider to select channel for "
@@ -2487,7 +2491,7 @@ msgstr ""
 "kanaal,  beweeg over de parametrisch-masker-schuifregelaar om het te "
 "vertonen kanaal te selecteren"
 
-#: ../src/develop/blend_gui.c:2058
+#: ../src/develop/blend_gui.c:2060
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "masker menging tijdelijk uitzetten\n"
@@ -2498,74 +2502,78 @@ msgstr ""
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module `%s' versie komt niet overeen: %d != %d"
 
-#: ../src/develop/imageop.c:889
+#: ../src/develop/imageop.c:987
 msgid "new instance"
 msgstr "nieuw exemplaar"
 
-#: ../src/develop/imageop.c:894
+#: ../src/develop/imageop.c:992
 msgid "duplicate instance"
 msgstr "kloon exemplaar"
 
-#: ../src/develop/imageop.c:899 ../src/libs/masks.c:1155
+#: ../src/develop/imageop.c:997 ../src/libs/masks.c:1155
 msgid "move up"
 msgstr "eerder"
 
-#: ../src/develop/imageop.c:905 ../src/libs/masks.c:1158
+#: ../src/develop/imageop.c:1003 ../src/libs/masks.c:1158
 msgid "move down"
 msgstr "later"
 
 #. delete
-#: ../src/develop/imageop.c:911 ../src/libs/image.c:142
+#: ../src/develop/imageop.c:1009 ../src/libs/image.c:142
 #: ../src/libs/styles.c:370 ../src/libs/tagging.c:568
 msgid "delete"
 msgstr "verwijderen"
 
-#: ../src/develop/imageop.c:940 ../src/develop/imageop.c:1915
+#: ../src/develop/imageop.c:1016
+msgid "rename"
+msgstr "hernoem"
+
+#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:2020
 #, c-format
 msgid "%s is switched on"
 msgstr "%s is ingeschakeld"
 
-#: ../src/develop/imageop.c:940 ../src/develop/imageop.c:1915
+#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:2020
 #, c-format
 msgid "%s is switched off"
 msgstr "%s is uitgeschakeld"
 
-#: ../src/develop/imageop.c:1263 ../src/gui/accelerators.c:628
+#: ../src/develop/imageop.c:1366 ../src/gui/accelerators.c:628
 #: ../src/gui/accelerators.c:713 ../src/gui/accelerators.c:878
 #: ../src/gui/accelerators.c:904 ../src/gui/presets.c:179
 #: ../src/gui/presets.c:286 ../src/gui/presets.c:628
-#: ../src/iop/temperature.c:1443 ../src/libs/import.c:576 ../src/libs/lib.c:311
+#: ../src/iop/temperature.c:1449 ../src/libs/import.c:576 ../src/libs/lib.c:311
 #: ../src/libs/lib.c:336 ../src/libs/lib.c:1157
 msgid "preset"
 msgstr "voorkeur"
 
-#: ../src/develop/imageop.c:1283
+#: ../src/develop/imageop.c:1386
 msgctxt "accel"
 msgid "fusion"
 msgstr "samensmelten"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1288
+#: ../src/develop/imageop.c:1391
 msgctxt "accel"
 msgid "show module"
 msgstr "toon module"
 
-#: ../src/develop/imageop.c:1289
+#: ../src/develop/imageop.c:1392
 msgctxt "accel"
 msgid "enable module"
 msgstr "inschakelen module"
 
-#: ../src/develop/imageop.c:1291 ../src/libs/lib.c:602
+#: ../src/develop/imageop.c:1394 ../src/libs/lib.c:602
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "reset module"
 
-#: ../src/develop/imageop.c:1292 ../src/libs/lib.c:606
+#: ../src/develop/imageop.c:1395 ../src/libs/lib.c:606
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "toon vooraf ingesteld menu"
 
-#: ../src/develop/imageop.c:1885
+#: ../src/develop/imageop.c:1990
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -2573,11 +2581,11 @@ msgstr ""
 "acties meerdere exemplaren\n"
 "midden muisknop creëert een nieuw exemplaar"
 
-#: ../src/develop/imageop.c:1894 ../src/libs/lib.c:997
+#: ../src/develop/imageop.c:1999 ../src/libs/lib.c:997
 msgid "reset parameters"
 msgstr "reset"
 
-#: ../src/develop/imageop.c:1902 ../src/gui/preferences.c:398
+#: ../src/develop/imageop.c:2007 ../src/gui/preferences.c:398
 #: ../src/libs/lib.c:1009
 msgid "presets"
 msgstr "voorkeuren"
@@ -2596,6 +2604,7 @@ msgstr "`%s' is geen lightroom xmp!"
 msgid "tags"
 msgstr "labels"
 
+#. DT_COLLECTION_SORT_DATETIME
 #: ../src/develop/lightroom.c:1575 ../src/libs/tools/filter.c:141
 msgid "rating"
 msgstr "classificatie"
@@ -2605,6 +2614,7 @@ msgstr "classificatie"
 msgid "geotagging"
 msgstr "geotagging"
 
+#. DT_COLLECTION_SORT_ID
 #: ../src/develop/lightroom.c:1593 ../src/libs/collect.h:34
 #: ../src/libs/tools/filter.c:143
 msgid "color label"
@@ -3798,10 +3808,12 @@ msgstr "PDF"
 #. create labels
 #. clang-format off
 #. xmp
+#. DT_COLLECTION_SORT_PAT
 #: ../src/imageio/format/pdf.c:580 ../src/imageio/storage/facebook.c:1111
 #: ../src/imageio/storage/flickr.c:533 ../src/imageio/storage/gallery.c:184
 #: ../src/imageio/storage/latex.c:184 ../src/libs/collect.h:34
 #: ../src/libs/metadata.c:335 ../src/libs/metadata_view.c:122
+#: ../src/libs/tools/filter.c:146
 msgid "title"
 msgstr "titel"
 
@@ -5019,19 +5031,19 @@ msgid "radius"
 msgstr "straal"
 
 #: ../src/iop/bilateral.cc:85 ../src/iop/channelmixer.c:130
-#: ../src/iop/temperature.c:201
+#: ../src/iop/temperature.c:204
 msgctxt "accel"
 msgid "red"
 msgstr "rood"
 
 #: ../src/iop/bilateral.cc:86 ../src/iop/channelmixer.c:131
-#: ../src/iop/temperature.c:202
+#: ../src/iop/temperature.c:205
 msgctxt "accel"
 msgid "green"
 msgstr "groen"
 
 #: ../src/iop/bilateral.cc:87 ../src/iop/channelmixer.c:132
-#: ../src/iop/temperature.c:203
+#: ../src/iop/temperature.c:206
 msgctxt "accel"
 msgid "blue"
 msgstr "blauw"
@@ -5601,7 +5613,7 @@ msgctxt "accel"
 msgid "saturation"
 msgstr "verzadiging"
 
-#: ../src/iop/colisa.c:365 ../src/iop/retouch.c:2775 ../src/iop/soften.c:721
+#: ../src/iop/colisa.c:365 ../src/iop/retouch.c:2793 ../src/iop/soften.c:721
 #: ../src/iop/vignette.c:1148
 msgid "brightness"
 msgstr "helderheid"
@@ -7457,7 +7469,7 @@ msgstr "helderheid"
 msgid "soften with"
 msgstr "verzachten met"
 
-#: ../src/iop/lowpass.c:677 ../src/iop/retouch.c:2792 ../src/iop/shadhi.c:820
+#: ../src/iop/lowpass.c:677 ../src/iop/retouch.c:2810 ../src/iop/shadhi.c:820
 msgid "gaussian"
 msgstr "gaussian"
 
@@ -7649,11 +7661,21 @@ msgstr ""
 msgid "retouch"
 msgstr "retoucheren"
 
-#: ../src/iop/retouch.c:2503
+#: ../src/iop/retouch.c:1860
+msgid "cannot display scales when the blending mask is displayed"
+msgstr ""
+"weergave van schalen is onmogelijk wanneer een mengmasker wordt getoond"
+
+#: ../src/iop/retouch.c:2151
+msgid "cannot display masks when the blending mask is displayed"
+msgstr ""
+"weergave van maskers is onmogelijk wanneer een mengmasker wordt getoond"
+
+#: ../src/iop/retouch.c:2521
 msgid "# shapes:"
 msgstr "# vormen:"
 
-#: ../src/iop/retouch.c:2507
+#: ../src/iop/retouch.c:2525
 msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
@@ -7662,43 +7684,43 @@ msgstr ""
 "afbeelding\n"
 "vormen worden aan de huidige schaal toegevoegd"
 
-#: ../src/iop/retouch.c:2545
+#: ../src/iop/retouch.c:2563
 msgid "show and edit shapes on the current scale"
 msgstr "toon en bewerk vormen in huidige schaal"
 
-#: ../src/iop/retouch.c:2556
+#: ../src/iop/retouch.c:2574
 msgid "algorithms:"
 msgstr "algoritmen:"
 
-#: ../src/iop/retouch.c:2561
+#: ../src/iop/retouch.c:2579
 msgid "activates fill tool"
 msgstr "activeer vul gereedschap"
 
-#: ../src/iop/retouch.c:2568
+#: ../src/iop/retouch.c:2586
 msgid "activates blur tool"
 msgstr "activeer gereedschap verdoezelen"
 
-#: ../src/iop/retouch.c:2575
+#: ../src/iop/retouch.c:2593
 msgid "activates healing tool"
 msgstr "activeer gereedschap herstellen"
 
-#: ../src/iop/retouch.c:2582
+#: ../src/iop/retouch.c:2600
 msgid "activates cloning tool"
 msgstr "activeer gereedschap klonen"
 
-#: ../src/iop/retouch.c:2595
+#: ../src/iop/retouch.c:2613
 msgid "# scales:"
 msgstr "# schalen:"
 
-#: ../src/iop/retouch.c:2602
+#: ../src/iop/retouch.c:2620
 msgid "current:"
 msgstr "huidige:"
 
-#: ../src/iop/retouch.c:2609
+#: ../src/iop/retouch.c:2627
 msgid "merge from:"
 msgstr "samenvoegen met:"
 
-#: ../src/iop/retouch.c:2619
+#: ../src/iop/retouch.c:2637
 msgid ""
 "top slider adjusts where the merge scales start\n"
 "bottom slider adjusts the number of scales\n"
@@ -7710,43 +7732,43 @@ msgstr ""
 "de rode box toont de huidige schaal\n"
 "groene lijnen geven aan dat schalen vormen bezitten"
 
-#: ../src/iop/retouch.c:2641
+#: ../src/iop/retouch.c:2659
 msgid "display masks"
 msgstr "toon maskers"
 
-#: ../src/iop/retouch.c:2648
+#: ../src/iop/retouch.c:2666
 msgid "temporarily switch off shapes"
 msgstr "vormen tijdelijk uitschakelen"
 
-#: ../src/iop/retouch.c:2656
+#: ../src/iop/retouch.c:2674
 msgid "display wavelet scale"
 msgstr "toon wavelet schaal"
 
-#: ../src/iop/retouch.c:2665
+#: ../src/iop/retouch.c:2683
 msgid "cut shapes from current scale"
 msgstr "knip vormen van huidige schaal"
 
-#: ../src/iop/retouch.c:2672
+#: ../src/iop/retouch.c:2690
 msgid "paste cutted shapes to current scale"
 msgstr "plak geknipte vormen aan huidige schaal"
 
-#: ../src/iop/retouch.c:2697
+#: ../src/iop/retouch.c:2715
 msgid "preview single scale"
 msgstr "preview enkele schaal"
 
-#: ../src/iop/retouch.c:2704
+#: ../src/iop/retouch.c:2722
 msgid "adjust preview levels"
 msgstr "aanpassen preview niveaus"
 
-#: ../src/iop/retouch.c:2723
+#: ../src/iop/retouch.c:2741
 msgid "auto levels"
 msgstr "automatisch niveaus"
 
-#: ../src/iop/retouch.c:2735
+#: ../src/iop/retouch.c:2753
 msgid "shape selected:"
 msgstr "geselecteerde vorm"
 
-#: ../src/iop/retouch.c:2739
+#: ../src/iop/retouch.c:2757
 msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
@@ -7754,102 +7776,102 @@ msgstr ""
 "klik om een vorm te selecteren,\n"
 "of deselecteer door met een klik in een leeg ruimte"
 
-#: ../src/iop/retouch.c:2746
+#: ../src/iop/retouch.c:2764
 msgid "fill mode"
 msgstr "vul modus"
 
-#: ../src/iop/retouch.c:2747
+#: ../src/iop/retouch.c:2765
 msgid "erase"
 msgstr "wissen"
 
-#: ../src/iop/retouch.c:2748 ../src/iop/watermark.c:1341
+#: ../src/iop/retouch.c:2766 ../src/iop/watermark.c:1341
 msgid "color"
 msgstr "kleur"
 
-#: ../src/iop/retouch.c:2749
+#: ../src/iop/retouch.c:2767
 msgid "erase the detail or fills with choosen color"
 msgstr "wis de details of vullingen met gekozen kleur"
 
-#: ../src/iop/retouch.c:2761 ../src/iop/retouch.c:2762
+#: ../src/iop/retouch.c:2779 ../src/iop/retouch.c:2780
 msgid "select fill color"
 msgstr "selecteer vul kleur"
 
-#: ../src/iop/retouch.c:2768
+#: ../src/iop/retouch.c:2786
 msgid "pick fill color from image"
 msgstr "kies kleur van afbeelding"
 
-#: ../src/iop/retouch.c:2772
+#: ../src/iop/retouch.c:2790
 msgid "fill color: "
 msgstr "vul kleur:"
 
-#: ../src/iop/retouch.c:2777
+#: ../src/iop/retouch.c:2795
 msgid "adjusts color brightness to fine-tune it. works with erase as well"
 msgstr "kleur helderheid fine-tuning, dit werkt ook met wissen"
 
-#: ../src/iop/retouch.c:2791
+#: ../src/iop/retouch.c:2809
 msgid "blur type"
 msgstr "type verdoezeling"
 
-#: ../src/iop/retouch.c:2793
+#: ../src/iop/retouch.c:2811
 msgid "bilateral"
 msgstr "bilateral"
 
-#: ../src/iop/retouch.c:2794
+#: ../src/iop/retouch.c:2812
 msgid "type for the blur algorithm"
 msgstr "algoritme voor het type verdoezeling"
 
-#: ../src/iop/retouch.c:2800
+#: ../src/iop/retouch.c:2818
 msgid "blur radius"
 msgstr "straal verdoezeling"
 
-#: ../src/iop/retouch.c:2801
+#: ../src/iop/retouch.c:2819
 msgid "radius of the selected blur type"
 msgstr "straal van geselecteerd type verdoezeling"
 
-#: ../src/iop/retouch.c:2808
+#: ../src/iop/retouch.c:2826
 msgid "mask opacity"
 msgstr "masker bedekking"
 
-#: ../src/iop/retouch.c:2809
+#: ../src/iop/retouch.c:2827
 msgid "set the opacity on the selected shape"
 msgstr "bepaal bedekking op geselecteerde vorm"
 
 #. add all the controls to the iop
-#: ../src/iop/retouch.c:2813
+#: ../src/iop/retouch.c:2831
 msgid "retouch tools"
 msgstr "retouch gereedschappen"
 
 #. wavelet decompose
-#: ../src/iop/retouch.c:2822
+#: ../src/iop/retouch.c:2840
 msgid "wavelet decompose"
 msgstr "wavelet decompose"
 
 #. shapes
-#: ../src/iop/retouch.c:2836
+#: ../src/iop/retouch.c:2854
 msgid "shapes"
 msgstr "vormen"
 
-#: ../src/iop/retouch.c:3164
+#: ../src/iop/retouch.c:3182
 msgctxt "accel"
 msgid "retouch tool circle"
 msgstr "retoucheer gereedschap cirkel"
 
-#: ../src/iop/retouch.c:3165
+#: ../src/iop/retouch.c:3183
 msgctxt "accel"
 msgid "retouch tool ellipse"
 msgstr "retoucheer gereedschap elipse"
 
-#: ../src/iop/retouch.c:3166
+#: ../src/iop/retouch.c:3184
 msgctxt "accel"
 msgid "retouch tool path"
 msgstr "retoucheer gereedschap pad"
 
-#: ../src/iop/retouch.c:3167
+#: ../src/iop/retouch.c:3185
 msgctxt "accel"
 msgid "retouch tool brush"
 msgstr "retoucheer gereedschap penseel"
 
-#: ../src/iop/retouch.c:4088 ../src/iop/retouch.c:4938
+#: ../src/iop/retouch.c:4106 ../src/iop/retouch.c:4956
 #, c-format
 msgid "max scale is %i for this image size"
 msgstr "maximale schaal %i voor deze afbeeldings groote"
@@ -8154,99 +8176,99 @@ msgctxt "accel"
 msgid "spot show or hide"
 msgstr "toon of verberg spot"
 
-#: ../src/iop/temperature.c:156
+#: ../src/iop/temperature.c:159
 msgctxt "modulename"
 msgid "white balance"
 msgstr "witbalans"
 
-#: ../src/iop/temperature.c:199
+#: ../src/iop/temperature.c:202
 msgctxt "accel"
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:200
+#: ../src/iop/temperature.c:203
 msgctxt "accel"
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:205
+#: ../src/iop/temperature.c:208
 msgctxt "accel"
 msgid "preset/camera"
 msgstr "voorkeur/camera"
 
-#: ../src/iop/temperature.c:206
+#: ../src/iop/temperature.c:209
 msgctxt "accel"
 msgid "preset/camera neutral"
 msgstr "voorkeur/camera neutraal"
 
-#: ../src/iop/temperature.c:207
+#: ../src/iop/temperature.c:210
 msgctxt "accel"
 msgid "preset/spot"
 msgstr "voorkeur/spot"
 
-#: ../src/iop/temperature.c:758
+#: ../src/iop/temperature.c:761
 msgctxt "white balance"
 msgid "camera"
 msgstr "camera"
 
-#: ../src/iop/temperature.c:759
+#: ../src/iop/temperature.c:762
 msgctxt "white balance"
 msgid "camera neutral"
 msgstr "cameraneutraal"
 
-#: ../src/iop/temperature.c:760
+#: ../src/iop/temperature.c:763
 msgctxt "white balance"
 msgid "spot"
 msgstr "spot"
 
-#: ../src/iop/temperature.c:935
+#: ../src/iop/temperature.c:938
 #, c-format
 msgid "`%s' color matrix not found for image"
 msgstr "`%s' kleuren matrix is niet gevonden"
 
-#: ../src/iop/temperature.c:989
+#: ../src/iop/temperature.c:992
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "ophalen camera-witbalans info van `%s' is niet gelukt!"
 
-#: ../src/iop/temperature.c:1350
+#: ../src/iop/temperature.c:1356
 msgid "magenta"
 msgstr "magenta"
 
-#: ../src/iop/temperature.c:1351
+#: ../src/iop/temperature.c:1357
 msgid "cyan"
 msgstr "cyaan"
 
-#: ../src/iop/temperature.c:1364
+#: ../src/iop/temperature.c:1370
 msgid "emerald"
 msgstr "smaragd"
 
-#: ../src/iop/temperature.c:1428
+#: ../src/iop/temperature.c:1434
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:1429
+#: ../src/iop/temperature.c:1435
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:1445
+#: ../src/iop/temperature.c:1451
 msgid "choose white balance preset from camera"
 msgstr "kies voor camera-witbalans"
 
-#: ../src/iop/temperature.c:1448
+#: ../src/iop/temperature.c:1454
 msgid "finetune"
 msgstr "fijnafstelling"
 
-#: ../src/iop/temperature.c:1449
+#: ../src/iop/temperature.c:1455
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:1453
+#: ../src/iop/temperature.c:1459
 msgid "fine tune white balance preset"
 msgstr "fijnafstelling witbalans voorkeur"
 
-#: ../src/iop/temperature.c:1458
+#: ../src/iop/temperature.c:1464
 msgid "white balance disabled for camera"
 msgstr "camera-witbalans is uitgeschakeld"
 
@@ -8894,7 +8916,9 @@ msgstr "tijd"
 msgid "history"
 msgstr "geschiedenis"
 
+#. DT_COLLECTION_SORT_TITLE
 #: ../src/libs/collect.h:35 ../src/libs/metadata.c:336
+#: ../src/libs/tools/filter.c:147
 msgid "description"
 msgstr "omschrijving"
 
@@ -9464,6 +9488,7 @@ msgstr "resync lokale kopie"
 msgid "synchronize the image's XMP and remove the local copy"
 msgstr "synchroniseer xmp-bestand en verwijder de lokale kopie"
 
+#. DT_COLLECTION_SORT_COLOR
 #: ../src/libs/image.c:261 ../src/libs/tools/filter.c:144
 msgid "group"
 msgstr "groeperen"
@@ -9734,6 +9759,7 @@ msgstr "bedekken"
 msgid "selected image"
 msgstr "geselecteerde afbeelding"
 
+#. DT_COLLECTION_SORT_RATING
 #: ../src/libs/live_view.c:385 ../src/libs/tools/filter.c:142
 msgid "id"
 msgstr "id"
@@ -10002,6 +10028,7 @@ msgstr "groep id"
 msgid "version"
 msgstr "versie"
 
+#. DT_COLLECTION_SORT_GROUP
 #: ../src/libs/metadata_view.c:99 ../src/libs/tools/filter.c:145
 msgid "full path"
 msgstr "volledig pad"
@@ -10211,27 +10238,35 @@ msgstr "alles laten zien"
 msgid "navigation"
 msgstr "navigeer"
 
-#: ../src/libs/navigation.c:504
+#: ../src/libs/navigation.c:516
 msgid "small"
 msgstr "klein"
 
-#: ../src/libs/navigation.c:508
+#: ../src/libs/navigation.c:520
 msgid "fit to screen"
 msgstr "passend"
 
-#: ../src/libs/navigation.c:512
+#: ../src/libs/navigation.c:524
 msgid "50%"
 msgstr "50%"
 
-#: ../src/libs/navigation.c:516
+#: ../src/libs/navigation.c:528
 msgid "100%"
 msgstr "100%"
 
-#: ../src/libs/navigation.c:520
+#: ../src/libs/navigation.c:532
 msgid "200%"
 msgstr "200%"
 
-#: ../src/libs/navigation.c:524
+#: ../src/libs/navigation.c:536
+msgid "400%"
+msgstr "400%"
+
+#: ../src/libs/navigation.c:540
+msgid "800%"
+msgstr "800%"
+
+#: ../src/libs/navigation.c:544
 msgid "1600%"
 msgstr "1600%"
 
