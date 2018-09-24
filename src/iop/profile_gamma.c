@@ -258,6 +258,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       const float grey = data->grey_point / 100.0f;
       const float noise = powf(2.0f, -data->dynamic_range);
       const float Logmin = Log2(noise);
+      const float safety = powf(2.0f, -14.0f);
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) shared(data) schedule(static)
@@ -279,7 +280,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
             }
             else
             {
-              out[i] = (Log2(lg2) - data->shadows_range) / (data->dynamic_range);
+              out[i] = (Log2(lg2 + safety) - data->shadows_range) / (data->dynamic_range) - safety;
             }
           }
         }
