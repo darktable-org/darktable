@@ -1347,15 +1347,55 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   {
     if(img && width > DECORATION_SIZE_LIMIT)
     {
-      // copy status:
-      const float x = zoom == 1 ? (0.07) * fscale : .21 * width;
-      const float y = zoom == 1 ? 0.17 * fscale : 0.1 * height;
-      const float r = zoom == 1 ? 0.01 * fscale : 0.03 * width;
-      const int xoffset = 6;
       const gboolean has_local_copy = (img && (img->flags & DT_IMAGE_LOCAL_COPY));
-      cairo_save(cr);
-      dtgtk_cairo_paint_local_copy(cr, x + (3 * r * xoffset) - 5 * r, y - r, r * 2, r * 2, has_local_copy, NULL);
-      cairo_restore(cr);
+
+      if (has_local_copy)
+      {
+        cairo_save(cr);
+
+        if (zoom != 1)
+        {
+          double x0 = DT_PIXEL_APPLY_DPI(1), y0 = DT_PIXEL_APPLY_DPI(1), rect_width = width - DT_PIXEL_APPLY_DPI(2),
+                radius = DT_PIXEL_APPLY_DPI(5);
+          double x1, off, off1;
+
+          x1 = x0 + rect_width;
+          off = radius * 0.666;
+          off1 = radius - off;
+
+          cairo_move_to(cr, x1 - width * 0.08, y0);
+          cairo_line_to(cr, x1 - radius, y0);
+          cairo_curve_to(cr, x1 - off1, y0, x1, y0 + off1, x1, y0 + radius);
+          cairo_line_to(cr, x1, y0 + height * 0.08);
+          cairo_close_path(cr);
+          cairo_set_source_rgb(cr, 1, 1, 1);
+          cairo_fill_preserve(cr);
+          cairo_set_line_width(cr, 0.005 * width);
+          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+          cairo_stroke(cr);
+        }
+        else
+        {
+          const float x_zoom = 0.325;
+          const float y_zoom = 0.112;
+          const float edge_length = 0.016 * fscale;
+
+          cairo_rectangle(cr, x_zoom * fscale, y_zoom * fscale, edge_length, edge_length);
+          cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+          cairo_set_line_width(cr, 0.002 * fscale);
+          cairo_stroke(cr);
+
+          cairo_move_to(cr, x_zoom * fscale + edge_length * 0.1, y_zoom * fscale);
+          cairo_line_to(cr, x_zoom * fscale + edge_length, y_zoom * fscale);
+          cairo_line_to(cr, x_zoom * fscale + edge_length, y_zoom * fscale + edge_length * 0.9);
+          cairo_close_path(cr);
+          cairo_set_source_rgb(cr, 1, 1, 1);
+          cairo_fill_preserve(cr);
+          cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+          cairo_stroke(cr);
+        }
+        cairo_restore(cr);
+      }
     }
   }
 
