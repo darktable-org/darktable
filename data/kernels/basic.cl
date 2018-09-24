@@ -2192,14 +2192,14 @@ profilegamma_log (read_only image2d_t in, write_only image2d_t out, int width, i
   float4 i = read_imagef(in, sampleri, (int2)(x, y));
   const float4 noise = pow((float4)2.0f, (float4)-dynamic_range);
   const float4 safety = pow((float4)2.0f, (float4)-14.0f);
-  const float4 Lognoise = log2(noise);
   const float4 dynamic4 = dynamic_range;
   const float4 shadows4 = shadows_range;
   const float4 grey4 = grey;
+  const float4 zero4 = (log( noise ) - shadows4) / dynamic4; 
+  const float4 safety_grey = safety / grey4;
   
   i = i / grey4;
-  i = (i > noise) ? log2(i + safety) : Lognoise;
-  i = (i - shadows4) / dynamic4 - safety;
+  i = (i >= noise) ? (log2(i + safety) - shadows4) / dynamic4 - safety_grey: zero4 - (dynamic4 / (i - zero4));
 
   write_imagef(out, (int2)(x, y), i);
 }
