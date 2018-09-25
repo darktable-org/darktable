@@ -372,14 +372,11 @@ static void optimize(dt_iop_module_t *self)
   dynamic_range = dynamic_range * ( 1. + (p->black_target / 100.));
 
   /* belt and suspenders sanitization */
-  if(dynamic_range > 0.5 && dynamic_range < 32.) p->dynamic_range = dynamic_range; else goto error;
+  if(dynamic_range > 0.5 && dynamic_range < 32.) p->dynamic_range = dynamic_range; else return;
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
   darktable.gui->reset = 0;
-  
-error:
-  return;
 }
 
 
@@ -411,8 +408,9 @@ static void measure_grey(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
 
   if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) return;
-  float const L[3] = { 0.2126f, 0.7152f, 0.0722f };
-  p->grey_point = 100.f * (self->picked_color[0] * L[0] + self->picked_color[1] * L[1] + self->picked_color[2] * L[2]);
+  float XYZ[3];
+  dt_prophotorgb_to_XYZ((const float *)self->picked_color, XYZ);
+  p->grey_point = 100.f * XYZ[1];
 }
 
 
