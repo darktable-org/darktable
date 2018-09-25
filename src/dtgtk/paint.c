@@ -905,6 +905,10 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
     case 4:
       cairo_set_source_rgba(cr, 1, 0.0, 1.0, alpha);
       break; // purple
+    case 7:
+      // don't fill
+      cairo_set_source_rgba(cr, 0, 0, 0, 0);
+      break;
     default:
       cairo_set_source_rgba(cr, 1, 1, 1, alpha);
       def = TRUE;
