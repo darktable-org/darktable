@@ -2190,7 +2190,7 @@ profilegamma_log (read_only image2d_t in, write_only image2d_t out, int width, i
   if(x >= width || y >= height) return;
 
   float4 i = read_imagef(in, sampleri, (int2)(x, y));
-  const float4 noise = pow((float4)2.0f, (float4)-dynamic_range);
+  const float4 noise = pow((float4)2.0f, (float4)-16.0f);
   const float4 dynamic4 = dynamic_range;
   const float4 shadows4 = shadows_range;
   const float4 grey4 = grey;

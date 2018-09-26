@@ -256,7 +256,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     case PROFILEGAMMA_LOG:
     {
       const float grey = data->grey_point / 100.0f;
-      const float noise = powf(2.0f, -data->dynamic_range);
+      const float noise = powf(2.0f, -16.0f);
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) shared(data) schedule(static)
