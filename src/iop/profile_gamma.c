@@ -354,11 +354,12 @@ static void optimize(dt_iop_module_t *self)
   
   // D50 white
   float grey = (p->grey_point /100.); 
-  float const L[3] = { 0.2126f, 0.7152f, 0.0722f };
-  float max = self->picked_color_max[0] * L[0] + self->picked_color_max[1] * L[1] + self->picked_color_max[2] * L[2] ;
-  
-  float noise = powf(2., -32.);
-  
+  //float const L[3] = { 0.2126f, 0.7152f, 0.0722f };
+  //float max = self->picked_color_max[0] * L[0] + self->picked_color_max[1] * L[1] + self->picked_color_max[2] * L[2] ;
+  float XYZ[3];
+  dt_prophotorgb_to_XYZ((const float *)self->picked_color_max, XYZ);
+  const float max = XYZ[1];
+  float noise = powf(2., -16.);
   const float RGBmin
     = fmin(fmin(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
   
@@ -369,7 +370,7 @@ static void optimize(dt_iop_module_t *self)
   float dynamic_range = fabsf(EVmax - (const float) p->shadows_range);
 
   /* Rescale the dynamic range with user input */
-  dynamic_range = dynamic_range * ( 1. + (p->black_target / 100.));
+  dynamic_range = dynamic_range * ( 1. + (2. * p->black_target / 100.));
 
   /* belt and suspenders sanitization */
   if(dynamic_range > 0.5 && dynamic_range < 32.) p->dynamic_range = dynamic_range; else return;
@@ -392,7 +393,7 @@ static void black_target_callback(GtkWidget *slider, gpointer user_data)
   
   float ratio = (p->black_target - previous) / (previous + 100.0f);
   
-  p->dynamic_range += p->dynamic_range * ratio;
+  p->dynamic_range += p->dynamic_range * 2. * ratio;
   p->shadows_range += p->shadows_range * ratio;
   
   darktable.gui->reset = 1;
@@ -477,10 +478,13 @@ static void shadows_pick_callback(GtkWidget *button, gpointer user_data)
     dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
     dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
-    float const L[3] = { 0.2126f, 0.7152f, 0.0722f };
-    float black = (self->picked_color[0] * L[0] + self->picked_color[1] * L[1] + self->picked_color[2] * L[2]);
+    //float const L[3] = { 0.2126f, 0.7152f, 0.0722f };
+    //float black = (self->picked_color[0] * L[0] + self->picked_color[1] * L[1] + self->picked_color[2] * L[2]);
+    float XYZ[3];
+    dt_prophotorgb_to_XYZ((const float *)self->picked_color_max, XYZ);
+    const float black = XYZ[1];
 
-    p->shadows_range = (1.0f + p->black_target / 100.0f) * Log2Thres(black / (p->grey_point / 100.0f), powf(2.0f, -32.0f));
+    p->shadows_range = (1.0f + p->black_target / 100.0f) * Log2Thres(black / (p->grey_point / 100.0f), powf(2.0f, -16.0f));
 
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->shadows_range, p->shadows_range);
