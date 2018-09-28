@@ -2270,7 +2270,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       if(form->type & DT_MASKS_CLONE)
       {
         float x = 0.f, y = 0.f;
-        dt_masks_calculate_source_pos_value(gui, DT_MASKS_BRUSH, xpos, ypos, &x, &y);
+        dt_masks_calculate_source_pos_value(gui, DT_MASKS_BRUSH, xpos, ypos, xpos, ypos, &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
 
@@ -2390,7 +2390,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       {
         const int i = gui->guipoints_count - 1;
         float x = 0.f, y = 0.f;
-        dt_masks_calculate_source_pos_value(gui, DT_MASKS_BRUSH, guipoints[i * 2], guipoints[i * 2 + 1], &x, &y);
+        dt_masks_calculate_source_pos_value(gui, DT_MASKS_BRUSH, guipoints[0], guipoints[1], guipoints[i * 2],
+                                            guipoints[i * 2 + 1], &x, &y, TRUE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
 

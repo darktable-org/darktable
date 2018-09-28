@@ -620,7 +620,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       if(form->type & DT_MASKS_CLONE)
       {
         float x = 0.f, y = 0.f;
-        dt_masks_calculate_source_pos_value(gui, DT_MASKS_CIRCLE, xpos, ypos, &x, &y);
+        dt_masks_calculate_source_pos_value(gui, DT_MASKS_CIRCLE, xpos, ypos, xpos, ypos, &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
       

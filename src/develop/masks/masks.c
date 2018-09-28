@@ -2517,8 +2517,9 @@ void dt_masks_set_source_pos_initial_state(dt_masks_form_gui_t *gui, const uint3
 }
 
 // calculates the source position value for preview drawing, on cairo coordinates
-void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mask_type, const float xpos,
-                                         const float ypos, float *px, float *py)
+void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mask_type, const float initial_xpos,
+                                         const float initial_ypos, const float xpos, const float ypos, float *px,
+                                         float *py, const int adding)
 {
   float x = 0.f, y = 0.f;
 
@@ -2527,10 +2528,8 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
 
   if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE)
   {
-    float pts_src[2] = { gui->posx_source * wd, gui->posy_source * ht };
-
-    x = xpos + pts_src[0];
-    y = ypos + pts_src[1];
+    x = xpos + gui->posx_source * wd;
+    y = ypos + gui->posy_source * ht;
   }
   else if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE_TEMP)
   {
@@ -2570,8 +2569,18 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
   }
   else if(gui->source_pos_type == DT_MASKS_SOURCE_POS_ABSOLUTE)
   {
-    x = gui->posx_source;
-    y = gui->posy_source;
+    // if the user is actually adding the mask follow the cursor
+    if(adding)
+    {
+      x = xpos + gui->posx_source - initial_xpos;
+      y = ypos + gui->posy_source - initial_ypos;
+    }
+    else
+    {
+      // if not added yet set the start position
+      x = gui->posx_source;
+      y = gui->posy_source;
+    }
   }
   else
     fprintf(stderr, "unknown source position type for setting source position value\n");

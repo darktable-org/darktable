@@ -2012,8 +2012,8 @@ static void dt_path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
     if((k * 6 + 2) >= 0)
     {
       float x = 0.f, y = 0.f;
-      dt_masks_calculate_source_pos_value(gui, DT_MASKS_PATH, gpt->points[k * 6 + 2] + dx,
-                                          gpt->points[k * 6 + 3] + dy, &x, &y);
+      dt_masks_calculate_source_pos_value(gui, DT_MASKS_PATH, gpt->points[2] + dx, gpt->points[3] + dy,
+                                          gpt->points[k * 6 + 2] + dx, gpt->points[k * 6 + 3] + dy, &x, &y, TRUE);
       dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
     }
     else
@@ -2031,7 +2031,7 @@ static void dt_path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
       }
 
       float x = 0.f, y = 0.f;
-      dt_masks_calculate_source_pos_value(gui, DT_MASKS_PATH, xpos, ypos, &x, &y);
+      dt_masks_calculate_source_pos_value(gui, DT_MASKS_PATH, xpos, ypos, xpos, ypos, &x, &y, FALSE);
       dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
     }
   }
