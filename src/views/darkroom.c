@@ -1885,6 +1885,9 @@ void mouse_leave(dt_view_t *self)
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_control_set_mouse_over_id(dev->image_storage.id);
 
+  // masks
+  dt_masks_events_mouse_leave(dev->gui_module);
+
   // reset any changes the selected plugin might have made.
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
@@ -1913,6 +1916,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   int handled = 0;
   x += offx;
   y += offy;
+
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && ctl->button_down
      && ctl->button_down_which == 1)
   {
@@ -1939,7 +1943,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     return;
   }
   // masks
-  if(dev->form_visible) handled = dt_masks_events_mouse_moved(dev->gui_module, x, y, pressure, which);
+  handled = dt_masks_events_mouse_moved(dev->gui_module, x, y, pressure, which);
   if(handled) return;
   // module
   if(dev->gui_module && dev->gui_module->mouse_moved)
