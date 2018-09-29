@@ -302,6 +302,7 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
 int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_t state);
 void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, int32_t width, int32_t height,
                                  int32_t pointerx, int32_t pointery);
+void dt_masks_events_mouse_leave(struct dt_iop_module_t *module);
 
 /** functions used to manipulate gui datas */
 void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index);

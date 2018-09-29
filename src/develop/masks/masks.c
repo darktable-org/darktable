@@ -206,6 +206,7 @@ void dt_masks_init_form_gui(dt_masks_form_gui_t *gui)
 {
   memset(gui, 0, sizeof(dt_masks_form_gui_t));
 
+  gui->posx = gui->posy = -1.0f;
   gui->posx_source = gui->posy_source = -1.0f;
   gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
 }
@@ -1238,18 +1239,38 @@ void dt_masks_free_form(dt_masks_form_t *form)
   free(form);
 }
 
+void dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
+{
+  // reset mouse position for masks
+  if(darktable.develop->form_gui)
+  {
+    dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+    gui->posx = gui->posy = -1.f;
+  }
+}
+
 int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double y, double pressure, int which)
 {
-  // add an option to allow skip mouse events while editing masks
-  if(darktable.develop->darkroom_skip_mouse_events) return 0;
-
-  dt_masks_form_t *form = darktable.develop->form_visible;
+  // record mouse position even if there are no masks visible
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-
+  dt_masks_form_t *form = darktable.develop->form_visible;
   float pzx, pzy;
+
   dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
+
+  if(gui)
+  {
+    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
+    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+  }
+
+  // do not preocess if no forms visible
+  if(!form) return 0;
+
+  // add an option to allow skip mouse events while editing masks
+  if(darktable.develop->darkroom_skip_mouse_events) return 0;
 
   int rep = 0;
   if(form->type & DT_MASKS_CIRCLE)
@@ -1459,7 +1480,7 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
   dev->form_gui->guipoints_payload = NULL;
   dev->form_gui->guipoints_count = 0;
   dev->form_gui->pipe_hash = dev->form_gui->formid = 0;
-  dev->form_gui->posx = dev->form_gui->posy = dev->form_gui->dx = dev->form_gui->dy = 0.0f;
+  dev->form_gui->dx = dev->form_gui->dy = 0.0f;
   dev->form_gui->scrollx = dev->form_gui->scrolly = 0.0f;
   dev->form_gui->form_selected = dev->form_gui->border_selected = dev->form_gui->form_dragging
       = dev->form_gui->form_rotating = dev->form_gui->border_toggling = FALSE;
