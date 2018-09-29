@@ -1078,9 +1078,6 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
 
         darktable.develop->form_gui->creation = TRUE;
         darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
-
-        gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-        gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
       }
       else if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
@@ -1179,8 +1176,6 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       if(!gpt) return 0;
       // we start the form dragging
       gui->source_dragging = TRUE;
-      gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-      gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
       gui->dx = gpt->source[2] - gui->posx;
       gui->dy = gpt->source[3] - gui->posy;
       return 1;
@@ -1189,8 +1184,6 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
     {
       gui->form_dragging = TRUE;
       gui->point_edited = -1;
-      gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-      gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
       gui->dx = gpt->points[2] - gui->posx;
       gui->dy = gpt->points[3] - gui->posy;
       return 1;
@@ -1286,8 +1279,6 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       {
         // we move the entire segment
         gui->seg_dragging = gui->seg_selected;
-        gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-        gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
         gui->dx = gpt->points[gui->seg_selected * 6 + 2] - gui->posx;
         gui->dy = gpt->points[gui->seg_selected * 6 + 3] - gui->posy;
       }
@@ -1719,15 +1710,8 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
   }
   else if(gui->form_dragging || gui->source_dragging)
   {
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     dt_control_queue_redraw_center();
     return 1;
-  }
-  else if(gui->creation)
-  {
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
   }
 
   gui->form_selected = FALSE;
@@ -2019,7 +2003,7 @@ static void dt_path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
     else
     {
       float xpos, ypos;
-      if(gui->posx == 0 && gui->posy == 0)
+      if(gui->posx == -1.f && gui->posy == -1.f)
       {
         xpos = (.5f + dt_control_get_dev_zoom_x()) * darktable.develop->preview_pipe->iwidth;
         ypos = (.5f + dt_control_get_dev_zoom_y()) * darktable.develop->preview_pipe->iheight;

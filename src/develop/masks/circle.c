@@ -222,8 +222,6 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
     if(!gpt) return 0;
     // we start the form dragging
     gui->source_dragging = TRUE;
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     gui->dx = gpt->source[0] - gui->posx;
     gui->dy = gpt->source[1] - gui->posy;
     return 1;
@@ -234,8 +232,6 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
     if(!gpt) return 0;
     // we start the form dragging
     gui->form_dragging = TRUE;
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     gui->dx = gpt->points[0] - gui->posx;
     gui->dy = gpt->points[1] - gui->posy;
     return 1;
@@ -425,9 +421,6 @@ static int dt_circle_events_button_released(struct dt_iop_module_t *module, floa
 
       darktable.develop->form_gui->creation = TRUE;
       darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
-
-      gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-      gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     }
     return 1;
   }
@@ -467,9 +460,6 @@ static int dt_circle_events_button_released(struct dt_iop_module_t *module, floa
 
       darktable.develop->form_gui->creation = TRUE;
       darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
-
-      gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-      gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     }
     return 1;
   }
@@ -482,8 +472,6 @@ static int dt_circle_events_mouse_moved(struct dt_iop_module_t *module, float pz
 {
   if(gui->form_dragging || gui->source_dragging)
   {
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -529,9 +517,6 @@ static int dt_circle_events_mouse_moved(struct dt_iop_module_t *module, float pz
   // add a preview when creating a circle
   else if(gui->creation)
   {
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
-
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -575,7 +560,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       radius2 *= MIN(wd, ht);
 
       float xpos, ypos;
-      if(gui->posx == 0 && gui->posy == 0)
+      if(gui->posx == -1.f && gui->posy == -1.f)
       {
         float zoom_x, zoom_y;
         zoom_y = dt_control_get_dev_zoom_y();

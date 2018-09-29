@@ -591,8 +591,6 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
     if(!gpt) return 0;
     // we start the source dragging
     gui->source_dragging = TRUE;
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     gui->dx = gpt->source[0] - gui->posx;
     gui->dy = gpt->source[1] - gui->posy;
     return 1;
@@ -603,8 +601,6 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
     gui->point_dragging = gui->point_selected;
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     gui->dx = gpt->points[0] - gui->posx;
     gui->dy = gpt->points[1] - gui->posy;
     return 1;
@@ -619,8 +615,6 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
       gui->form_rotating = TRUE;
     else
       gui->form_dragging = TRUE;
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     gui->dx = gpt->points[0] - gui->posx;
     gui->dy = gpt->points[1] - gui->posy;
     return 1;
@@ -834,9 +828,6 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module, flo
 
       darktable.develop->form_gui->creation = TRUE;
       darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
-
-      gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-      gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     }
     return 1;
   }
@@ -1018,9 +1009,6 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module, flo
 
       darktable.develop->form_gui->creation = TRUE;
       darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
-
-      gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-      gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     }
     return 1;
   }
@@ -1033,8 +1021,6 @@ static int dt_ellipse_events_mouse_moved(struct dt_iop_module_t *module, float p
 {
   if(gui->form_dragging || gui->form_rotating || gui->source_dragging || gui->point_dragging >= 1)
   {
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -1099,9 +1085,6 @@ static int dt_ellipse_events_mouse_moved(struct dt_iop_module_t *module, float p
   // add a preview when creating an ellipse
   else if(gui->creation)
   {
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
-
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -1158,7 +1141,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
       float pzx = gui->posx;
       float pzy = gui->posy;
 
-      if(pzx == 0 && pzy == 0)
+      if(pzx == -1.f && pzy == -1.f)
       {
         float zoom_x, zoom_y;
         zoom_y = dt_control_get_dev_zoom_y();
