@@ -2176,8 +2176,6 @@ static void rt_select_algorithm_callback(GtkToggleButton *togglebutton, dt_iop_m
 
     darktable.develop->form_gui->creation = TRUE;
     darktable.develop->form_gui->creation_module = self;
-    darktable.develop->form_gui->creation_continuous = TRUE;
-    darktable.develop->form_gui->creation_continuous_module = self;
     dt_control_queue_redraw_center();
   }
 
@@ -2431,6 +2429,12 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       // lost focus, hide all shapes and free if some are in creation
       if(darktable.develop->form_gui->creation && darktable.develop->form_gui->creation_module == self)
         dt_masks_change_form_gui(NULL);
+
+      if(darktable.develop->form_gui->creation_continuous_module == self)
+      {
+        darktable.develop->form_gui->creation_continuous = FALSE;
+        darktable.develop->form_gui->creation_continuous_module = NULL;
+      }
 
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
