@@ -271,7 +271,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         {
           for(int i = 0; i < 3; i++)
           {
-            out[i] = (Log2(CLAMP(in[i] / grey, noise, 99999.0f)) - data->shadows_range) / (data->dynamic_range);
+            float tmp = in[i] / grey;
+            if (tmp < noise) tmp = noise;
+            out[i] = (Log2(tmp) - data->shadows_range) / (data->dynamic_range);
+            if (out[i] < 0.0f) out[i] = 0;
           }
         }
       }
