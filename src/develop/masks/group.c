@@ -59,7 +59,8 @@ static int dt_group_events_button_pressed(struct dt_iop_module_t *module, float 
     // we set the selected form in edit mode
     gui->group_edited = gui->group_selected;
     // we initialise some variable
-    gui->posx = gui->posy = gui->dx = gui->dy = 0.0f;
+    gui->posx = gui->posy = -1.f;
+    gui->dx = gui->dy = 0.0f;
     gui->form_selected = gui->border_selected = gui->form_dragging = gui->form_rotating = FALSE;
     gui->pivot_selected = FALSE;
     gui->point_border_selected = gui->seg_selected = gui->point_selected = gui->feather_selected = -1;
