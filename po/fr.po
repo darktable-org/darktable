@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-23 18:12+0200\n"
-"PO-Revision-Date: 2018-09-23 18:13+0200\n"
+"POT-Creation-Date: 2018-10-01 19:55+0200\n"
+"PO-Revision-Date: 2018-10-01 20:01+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2224,24 +2224,24 @@ msgid "add gradient"
 msgstr "ajouter un dégradé"
 
 #: ../src/develop/blend_gui.c:1471 ../src/iop/spots.c:647
-#: ../src/iop/retouch.c:2539 ../src/libs/masks.c:991 ../src/libs/masks.c:1030
+#: ../src/iop/retouch.c:2598 ../src/libs/masks.c:991 ../src/libs/masks.c:1030
 #: ../src/libs/masks.c:1647
 msgid "add path"
 msgstr "ajouter un chemin"
 
 #: ../src/develop/blend_gui.c:1480 ../src/iop/spots.c:655
-#: ../src/iop/retouch.c:2547 ../src/libs/masks.c:987 ../src/libs/masks.c:1026
+#: ../src/iop/retouch.c:2606 ../src/libs/masks.c:987 ../src/libs/masks.c:1026
 #: ../src/libs/masks.c:1655
 msgid "add ellipse"
-msgstr "ajouter une forme elliptique"
+msgstr "ajouter une ellipse"
 
 #: ../src/develop/blend_gui.c:1489 ../src/iop/spots.c:663
-#: ../src/iop/retouch.c:2555 ../src/libs/masks.c:983 ../src/libs/masks.c:1022
+#: ../src/iop/retouch.c:2614 ../src/libs/masks.c:983 ../src/libs/masks.c:1022
 #: ../src/libs/masks.c:1663
 msgid "add circle"
-msgstr "ajouter une forme circulaire"
+msgstr "ajouter un cercle"
 
-#: ../src/develop/blend_gui.c:1498 ../src/iop/retouch.c:2532
+#: ../src/develop/blend_gui.c:1498 ../src/iop/retouch.c:2591
 #: ../src/libs/masks.c:1018 ../src/libs/masks.c:1670
 msgid "add brush"
 msgstr "ajouter une forme au pinceau"
@@ -2711,50 +2711,50 @@ msgstr ""
 "défiler pour changer la dureté, ctrl+défiler pour modifier l'opacité de la "
 "forme"
 
-#: ../src/develop/masks/masks.c:322
+#: ../src/develop/masks/masks.c:331
 #, c-format
 msgid "circle #%d"
 msgstr "cercle #%d"
 
-#: ../src/develop/masks/masks.c:324
+#: ../src/develop/masks/masks.c:333
 #, c-format
 msgid "path #%d"
 msgstr "chemin #%d"
 
-#: ../src/develop/masks/masks.c:326
+#: ../src/develop/masks/masks.c:335
 #, c-format
 msgid "gradient #%d"
 msgstr "dégradé #%d"
 
-#: ../src/develop/masks/masks.c:328
+#: ../src/develop/masks/masks.c:337
 #, c-format
 msgid "ellipse #%d"
 msgstr "ellipse #%d"
 
-#: ../src/develop/masks/masks.c:330
+#: ../src/develop/masks/masks.c:339
 #, c-format
 msgid "brush #%d"
 msgstr "pinceau #%d"
 
-#: ../src/develop/masks/masks.c:384
+#: ../src/develop/masks/masks.c:393
 #, c-format
 msgid "copy of %s"
 msgstr "copie de %s"
 
-#: ../src/develop/masks/masks.c:1064
+#: ../src/develop/masks/masks.c:1073
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: version non cohérente du masque: %d != %d"
 
-#: ../src/develop/masks/masks.c:1767 ../src/libs/masks.c:1038
+#: ../src/develop/masks/masks.c:1829 ../src/libs/masks.c:1038
 msgid "add existing shape"
 msgstr "ajouter un masque existant"
 
-#: ../src/develop/masks/masks.c:1792
+#: ../src/develop/masks/masks.c:1854
 msgid "use same shapes as"
 msgstr "utiliser les mêmes masques que"
 
-#: ../src/develop/masks/masks.c:2104
+#: ../src/develop/masks/masks.c:2166
 msgid "masks can not contain themselves"
 msgstr "masques ne peuvent pas se contenir"
 
@@ -2879,7 +2879,7 @@ msgstr "lumière du soir"
 msgid "underwater"
 msgstr "sous l'eau"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1522
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1523
 msgid "black & white"
 msgstr "noir et blanc"
 
@@ -4915,7 +4915,7 @@ msgstr "fusion d'exposition"
 #: ../src/iop/clipping.c:1864 ../src/iop/clipping.c:1882
 #: ../src/iop/clipping.c:2022 ../src/iop/clipping.c:2049
 #: ../src/iop/colorreconstruction.c:1366 ../src/iop/lens.c:2085
-#: ../src/iop/retouch.c:569 ../src/libs/export.c:492
+#: ../src/iop/retouch.c:572 ../src/libs/export.c:492
 #: ../src/libs/live_view.c:349 ../src/libs/live_view.c:374
 #: ../src/libs/live_view.c:383 ../src/libs/print_settings.c:1467
 msgid "none"
@@ -4970,7 +4970,7 @@ msgstr "laplacien local: résultat incohérent"
 #: ../src/iop/bilat.c:516 ../src/iop/denoiseprofile.c:2104
 #: ../src/iop/exposure.c:849 ../src/iop/lens.c:2233 ../src/iop/levels.c:569
 #: ../src/libs/copy_history.c:310 ../src/libs/export.c:644
-#: ../src/libs/print_settings.c:1508 ../src/views/darkroom.c:1453
+#: ../src/libs/print_settings.c:1508 ../src/views/darkroom.c:1454
 msgid "mode"
 msgstr "mode"
 
@@ -5646,7 +5646,7 @@ msgctxt "accel"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/colisa.c:365 ../src/iop/soften.c:721 ../src/iop/retouch.c:2793
+#: ../src/iop/colisa.c:365 ../src/iop/soften.c:721 ../src/iop/retouch.c:2852
 #: ../src/iop/vignette.c:1148
 msgid "brightness"
 msgstr "luminosité"
@@ -6051,26 +6051,26 @@ msgstr "rendu (sortie)"
 
 #: ../src/iop/colorout.c:779 ../src/libs/export.c:627
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1452
-#: ../src/views/darkroom.c:1603 ../src/views/lighttable.c:2404
+#: ../src/views/darkroom.c:1604 ../src/views/lighttable.c:2404
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:780 ../src/libs/export.c:628
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1453
-#: ../src/views/darkroom.c:1604 ../src/views/lighttable.c:2405
+#: ../src/views/darkroom.c:1605 ../src/views/lighttable.c:2405
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:781 ../src/libs/export.c:629
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1454
-#: ../src/views/darkroom.c:1605 ../src/views/lighttable.c:2406
+#: ../src/views/darkroom.c:1606 ../src/views/lighttable.c:2406
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
 #: ../src/iop/colorout.c:782 ../src/libs/export.c:630
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1455
-#: ../src/views/darkroom.c:1606 ../src/views/lighttable.c:2407
+#: ../src/views/darkroom.c:1607 ../src/views/lighttable.c:2407
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -6624,7 +6624,7 @@ msgid ""
 msgstr "pourcentage de valeurs hautes tronquées, "
 
 #: ../src/iop/exposure.c:885 ../src/iop/highlights.c:1057
-#: ../src/views/darkroom.c:1481
+#: ../src/views/darkroom.c:1482
 msgid "clipping threshold"
 msgstr "seuil de troncature"
 
@@ -7512,7 +7512,7 @@ msgstr "luminosité"
 msgid "soften with"
 msgstr "adoucir avec"
 
-#: ../src/iop/lowpass.c:677 ../src/iop/shadhi.c:820 ../src/iop/retouch.c:2810
+#: ../src/iop/lowpass.c:677 ../src/iop/shadhi.c:820 ../src/iop/retouch.c:2869
 msgid "gaussian"
 msgstr "gaussien"
 
@@ -8007,22 +8007,22 @@ msgstr "montrer cacher masques de correction"
 msgid "retouch"
 msgstr "retouche"
 
-#: ../src/iop/retouch.c:1860
+#: ../src/iop/retouch.c:1945
 msgid "cannot display scales when the blending mask is displayed"
 msgstr ""
 "impossible d'afficher les échelles de décomposition en ondelette lorsque les "
 "masques de fusion sont affichés"
 
-#: ../src/iop/retouch.c:2151
+#: ../src/iop/retouch.c:2196
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "impossible d'afficher les masques lorsque les masques de fusion sont affichés"
 
-#: ../src/iop/retouch.c:2521
+#: ../src/iop/retouch.c:2580
 msgid "# shapes:"
 msgstr "# formes:"
 
-#: ../src/iop/retouch.c:2525
+#: ../src/iop/retouch.c:2584
 msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
@@ -8031,43 +8031,43 @@ msgstr ""
 "cliquer sur l'image\n"
 "les formes sont ajoutées que l'échelle de décomposition actuelle"
 
-#: ../src/iop/retouch.c:2563
+#: ../src/iop/retouch.c:2622
 msgid "show and edit shapes on the current scale"
 msgstr "montre et édite les formes de l'échelle actuelle"
 
-#: ../src/iop/retouch.c:2574
+#: ../src/iop/retouch.c:2633
 msgid "algorithms:"
 msgstr "algorithmes:"
 
-#: ../src/iop/retouch.c:2579
+#: ../src/iop/retouch.c:2638
 msgid "activates fill tool"
 msgstr "activer outil de remplissage"
 
-#: ../src/iop/retouch.c:2586
+#: ../src/iop/retouch.c:2645
 msgid "activates blur tool"
 msgstr "activer l'outil de flou"
 
-#: ../src/iop/retouch.c:2593
+#: ../src/iop/retouch.c:2652
 msgid "activates healing tool"
 msgstr "activer l'outil de correction"
 
-#: ../src/iop/retouch.c:2600
+#: ../src/iop/retouch.c:2659
 msgid "activates cloning tool"
 msgstr "activer l'outil de copie"
 
-#: ../src/iop/retouch.c:2613
+#: ../src/iop/retouch.c:2672
 msgid "# scales:"
 msgstr "# échelles:"
 
-#: ../src/iop/retouch.c:2620
+#: ../src/iop/retouch.c:2679
 msgid "current:"
 msgstr "actuelle:"
 
-#: ../src/iop/retouch.c:2627
+#: ../src/iop/retouch.c:2686
 msgid "merge from:"
 msgstr "fusion depuis:"
 
-#: ../src/iop/retouch.c:2637
+#: ../src/iop/retouch.c:2696
 msgid ""
 "top slider adjusts where the merge scales start\n"
 "bottom slider adjusts the number of scales\n"
@@ -8079,43 +8079,43 @@ msgstr ""
 "l'échelle actuelle est sélectionné par un cadre rouge\n"
 "les échelles comportant des formes sont sur-lignées en vert"
 
-#: ../src/iop/retouch.c:2659
+#: ../src/iop/retouch.c:2718
 msgid "display masks"
 msgstr "affiche les masques"
 
-#: ../src/iop/retouch.c:2666
+#: ../src/iop/retouch.c:2725
 msgid "temporarily switch off shapes"
 msgstr "désactive les formes temporairement"
 
-#: ../src/iop/retouch.c:2674
+#: ../src/iop/retouch.c:2733
 msgid "display wavelet scale"
 msgstr "affiche une seule échelle de la décomposition"
 
-#: ../src/iop/retouch.c:2683
+#: ../src/iop/retouch.c:2742
 msgid "cut shapes from current scale"
 msgstr "couper les formes de l'échelle de décomposition actuelle"
 
-#: ../src/iop/retouch.c:2690
+#: ../src/iop/retouch.c:2749
 msgid "paste cutted shapes to current scale"
 msgstr "coller les formes sur l'échelle de décomposition actuelle"
 
-#: ../src/iop/retouch.c:2715
+#: ../src/iop/retouch.c:2774
 msgid "preview single scale"
 msgstr "pré-visualisation d'une seule échelle"
 
-#: ../src/iop/retouch.c:2722
+#: ../src/iop/retouch.c:2781
 msgid "adjust preview levels"
 msgstr "ajuste les niveaux de pré-visualisation"
 
-#: ../src/iop/retouch.c:2741
+#: ../src/iop/retouch.c:2800
 msgid "auto levels"
 msgstr "niveaux automatiques"
 
-#: ../src/iop/retouch.c:2753
+#: ../src/iop/retouch.c:2812
 msgid "shape selected:"
 msgstr "forme sélectionnée:"
 
-#: ../src/iop/retouch.c:2757
+#: ../src/iop/retouch.c:2816
 msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
@@ -8123,103 +8123,123 @@ msgstr ""
 "cliquer sur la forme pour la sélectionner\n"
 "pour déselectionner cliquer en dehors d'une forme"
 
-#: ../src/iop/retouch.c:2764
+#: ../src/iop/retouch.c:2823
 msgid "fill mode"
 msgstr "mode de remplissage"
 
-#: ../src/iop/retouch.c:2765
+#: ../src/iop/retouch.c:2824
 msgid "erase"
 msgstr "effacer"
 
-#: ../src/iop/retouch.c:2766 ../src/iop/watermark.c:1341
+#: ../src/iop/retouch.c:2825 ../src/iop/watermark.c:1341
 msgid "color"
 msgstr "couleur"
 
-#: ../src/iop/retouch.c:2767
+#: ../src/iop/retouch.c:2826
 msgid "erase the detail or fills with choosen color"
 msgstr "efface les détails ou rempli avec la couleur choisie"
 
-#: ../src/iop/retouch.c:2779 ../src/iop/retouch.c:2780
+#: ../src/iop/retouch.c:2838 ../src/iop/retouch.c:2839
 msgid "select fill color"
 msgstr "sélectionner la couleur de remplissage"
 
-#: ../src/iop/retouch.c:2786
+#: ../src/iop/retouch.c:2845
 msgid "pick fill color from image"
 msgstr "choisir une couleur dans l'image"
 
-#: ../src/iop/retouch.c:2790
+#: ../src/iop/retouch.c:2849
 msgid "fill color: "
 msgstr "couleur"
 
-#: ../src/iop/retouch.c:2795
+#: ../src/iop/retouch.c:2854
 msgid "adjusts color brightness to fine-tune it. works with erase as well"
 msgstr ""
 "ajuste la luminosité de la couleur. marche aussi avec le mode d'effacement"
 
-#: ../src/iop/retouch.c:2809
+#: ../src/iop/retouch.c:2868
 msgid "blur type"
 msgstr "flou"
 
-#: ../src/iop/retouch.c:2811
+#: ../src/iop/retouch.c:2870
 msgid "bilateral"
 msgstr "bilatéral"
 
-#: ../src/iop/retouch.c:2812
+#: ../src/iop/retouch.c:2871
 msgid "type for the blur algorithm"
 msgstr "type d'algorithme de flou"
 
-#: ../src/iop/retouch.c:2818
+#: ../src/iop/retouch.c:2877
 msgid "blur radius"
 msgstr "rayon"
 
-#: ../src/iop/retouch.c:2819
+#: ../src/iop/retouch.c:2878
 msgid "radius of the selected blur type"
 msgstr "rayon du flou sélectionné"
 
-#: ../src/iop/retouch.c:2826
+#: ../src/iop/retouch.c:2885
 msgid "mask opacity"
 msgstr "opacité du masque"
 
-#: ../src/iop/retouch.c:2827
+#: ../src/iop/retouch.c:2886
 msgid "set the opacity on the selected shape"
 msgstr "fixer l'opacité de la forme sélectionnée"
 
 #. add all the controls to the iop
-#: ../src/iop/retouch.c:2831
+#: ../src/iop/retouch.c:2890
 msgid "retouch tools"
 msgstr "outils de retouche"
 
 #. wavelet decompose
-#: ../src/iop/retouch.c:2840
+#: ../src/iop/retouch.c:2899
 msgid "wavelet decompose"
 msgstr "décomposition en ondelettes"
 
 #. shapes
-#: ../src/iop/retouch.c:2854
+#: ../src/iop/retouch.c:2913
 msgid "shapes"
 msgstr "formes"
 
-#: ../src/iop/retouch.c:3182
+#: ../src/iop/retouch.c:3241
 msgctxt "accel"
 msgid "retouch tool circle"
 msgstr "cercle de l'outil retouche"
 
-#: ../src/iop/retouch.c:3183
+#: ../src/iop/retouch.c:3242
 msgctxt "accel"
 msgid "retouch tool ellipse"
 msgstr "ellipse de l'outil retouche"
 
-#: ../src/iop/retouch.c:3184
+#: ../src/iop/retouch.c:3243
 msgctxt "accel"
 msgid "retouch tool path"
 msgstr "chemin de l'outil retouche"
 
-#: ../src/iop/retouch.c:3185
+#: ../src/iop/retouch.c:3244
 msgctxt "accel"
 msgid "retouch tool brush"
 msgstr "pinceau de l'outil retouche"
 
-#: ../src/iop/retouch.c:4106 ../src/iop/retouch.c:4956
+#: ../src/iop/retouch.c:3246
+msgctxt "accel"
+msgid "continuous add circle"
+msgstr "ajouter en continu un cercle"
+
+#: ../src/iop/retouch.c:3247
+msgctxt "accel"
+msgid "continuous add ellipse"
+msgstr "ajouter en continu une ellipse"
+
+#: ../src/iop/retouch.c:3248
+msgctxt "accel"
+msgid "continuous add path"
+msgstr "ajouter en continu un chemin"
+
+#: ../src/iop/retouch.c:3249
+msgctxt "accel"
+msgid "continuous add brush"
+msgstr "ajouter en continu une forme au pinceau"
+
+#: ../src/iop/retouch.c:4260 ../src/iop/retouch.c:5110
 #, c-format
 msgid "max scale is %i for this image size"
 msgstr "l'échelle maximum est %i pour la taille de cette image"
@@ -9318,7 +9338,7 @@ msgstr "exporte avec les réglages actuels"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1191 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:2328
+#: ../src/views/darkroom.c:2334
 msgctxt "accel"
 msgid "export"
 msgstr "exporter"
@@ -11204,28 +11224,28 @@ msgstr "vérification de gamut"
 msgid "soft proof"
 msgstr "épreuvage"
 
-#: ../src/views/darkroom.c:919
+#: ../src/views/darkroom.c:920
 msgid "no userdefined presets for favorite modules were found"
 msgstr "aucun pré-réglage trouvé pour les modules favoris"
 
-#: ../src/views/darkroom.c:924
+#: ../src/views/darkroom.c:925
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "applique le style « %s » à l'image actuelle"
 
-#: ../src/views/darkroom.c:983
+#: ../src/views/darkroom.c:984
 msgid "no styles have been created yet"
 msgstr "aucun style disponible"
 
-#: ../src/views/darkroom.c:1407
+#: ../src/views/darkroom.c:1408
 msgid "quick access to presets of your favorites"
 msgstr "accès rapide aux pré-réglages des favoris"
 
-#: ../src/views/darkroom.c:1415
+#: ../src/views/darkroom.c:1416
 msgid "quick access for applying any of your styles"
 msgstr "accès rapide à vos styles"
 
-#: ../src/views/darkroom.c:1426
+#: ../src/views/darkroom.c:1427
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -11233,47 +11253,47 @@ msgstr ""
 "activer/désactiver les zones sur-/sous-exposées raw\n"
 "clic-droit pour les options"
 
-#: ../src/views/darkroom.c:1454
+#: ../src/views/darkroom.c:1455
 msgid "mark with CFA color"
 msgstr "marquer les couleurs CFA"
 
-#: ../src/views/darkroom.c:1455
+#: ../src/views/darkroom.c:1456
 msgid "mark with solid color"
 msgstr "marquer avec une couleur unie"
 
-#: ../src/views/darkroom.c:1456
+#: ../src/views/darkroom.c:1457
 msgid "false color"
 msgstr "fausse couleur"
 
-#: ../src/views/darkroom.c:1458
+#: ../src/views/darkroom.c:1459
 msgid "select how to mark the clipped pixels"
 msgstr "sélectionner comment marquer les pixels tronqués"
 
-#: ../src/views/darkroom.c:1465 ../src/views/darkroom.c:1521
+#: ../src/views/darkroom.c:1466 ../src/views/darkroom.c:1522
 msgid "color scheme"
 msgstr "schéma de couleur"
 
-#: ../src/views/darkroom.c:1466
+#: ../src/views/darkroom.c:1467
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rouge"
 
-#: ../src/views/darkroom.c:1467
+#: ../src/views/darkroom.c:1468
 msgctxt "solidcolor"
 msgid "green"
 msgstr "vert"
 
-#: ../src/views/darkroom.c:1468
+#: ../src/views/darkroom.c:1469
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/views/darkroom.c:1469
+#: ../src/views/darkroom.c:1470
 msgctxt "solidcolor"
 msgid "black"
 msgstr "noir"
 
-#: ../src/views/darkroom.c:1473
+#: ../src/views/darkroom.c:1474
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -11281,7 +11301,7 @@ msgstr ""
 "sélectionner la couleur pour marquer les sur-expositions.\n"
 "utiliser uniquement si le mode est « marquer avec une couleur unie »"
 
-#: ../src/views/darkroom.c:1483
+#: ../src/views/darkroom.c:1484
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -11291,7 +11311,7 @@ msgstr ""
 "1.0 - niveau blanc\n"
 "0.0 - niveau noir"
 
-#: ../src/views/darkroom.c:1494
+#: ../src/views/darkroom.c:1495
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -11299,35 +11319,35 @@ msgstr ""
 "activer/désactiver les zones sur-/sous-exposées\n"
 "clic-droit pour les options"
 
-#: ../src/views/darkroom.c:1523
+#: ../src/views/darkroom.c:1524
 msgid "red & blue"
 msgstr "rouge et bleu"
 
-#: ../src/views/darkroom.c:1524
+#: ../src/views/darkroom.c:1525
 msgid "purple & green"
 msgstr "violet et vert"
 
-#: ../src/views/darkroom.c:1526
+#: ../src/views/darkroom.c:1527
 msgid "select colors to indicate over/under exposure"
 msgstr "sélectionne les couleurs indiquant une sur-/sous-exposition"
 
-#: ../src/views/darkroom.c:1535
+#: ../src/views/darkroom.c:1536
 msgid "lower threshold"
 msgstr "seuil bas"
 
-#: ../src/views/darkroom.c:1536
+#: ../src/views/darkroom.c:1537
 msgid "threshold of what shall be considered underexposed"
 msgstr "seuil en-dessous duquel les pixels sont considérés sous-exposés"
 
-#: ../src/views/darkroom.c:1544
+#: ../src/views/darkroom.c:1545
 msgid "upper threshold"
 msgstr "seuil haut"
 
-#: ../src/views/darkroom.c:1545
+#: ../src/views/darkroom.c:1546
 msgid "threshold of what shall be considered overexposed"
 msgstr "seuil au-dessus duquel les pixels sont considérés sur-exposés"
 
-#: ../src/views/darkroom.c:1556
+#: ../src/views/darkroom.c:1557
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -11335,7 +11355,7 @@ msgstr ""
 "activer/désactiver l'épreuvage écran\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1569
+#: ../src/views/darkroom.c:1570
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -11343,139 +11363,139 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1601 ../src/views/lighttable.c:2402
+#: ../src/views/darkroom.c:1602 ../src/views/lighttable.c:2402
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/views/darkroom.c:1616
+#: ../src/views/darkroom.c:1617
 msgid "softproof profile"
 msgstr "épreuvage écran"
 
-#: ../src/views/darkroom.c:1617 ../src/views/lighttable.c:2410
+#: ../src/views/darkroom.c:1618 ../src/views/lighttable.c:2410
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:1649 ../src/views/lighttable.c:2431
+#: ../src/views/darkroom.c:1650 ../src/views/lighttable.c:2431
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
 
-#: ../src/views/darkroom.c:1652
+#: ../src/views/darkroom.c:1653
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "profils ICC d'épreuvage dans %s ou %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2320 ../src/views/map.c:859 ../src/views/print.c:329
+#: ../src/views/darkroom.c:2326 ../src/views/map.c:859 ../src/views/print.c:329
 #: ../src/views/tethering.c:388
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activer/désactiver le bandeau"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2323
+#: ../src/views/darkroom.c:2329
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom en gros plan"
 
-#: ../src/views/darkroom.c:2324
+#: ../src/views/darkroom.c:2330
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoomer"
 
-#: ../src/views/darkroom.c:2325
+#: ../src/views/darkroom.c:2331
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajusté"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2331
+#: ../src/views/darkroom.c:2337
 msgctxt "accel"
 msgid "image forward"
 msgstr "image suivante"
 
-#: ../src/views/darkroom.c:2332
+#: ../src/views/darkroom.c:2338
 msgctxt "accel"
 msgid "image back"
 msgstr "image précédente"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:2335
+#: ../src/views/darkroom.c:2341
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw sur-exposé"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:2338
+#: ../src/views/darkroom.c:2344
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sur-exposition"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:2341
+#: ../src/views/darkroom.c:2347
 msgctxt "accel"
 msgid "softproof"
 msgstr "épreuvage"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:2344
+#: ../src/views/darkroom.c:2350
 msgctxt "accel"
 msgid "gamut check"
 msgstr "vérification de gamut"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2347
+#: ../src/views/darkroom.c:2353
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "augmenter la taille du pinceau"
 
-#: ../src/views/darkroom.c:2348
+#: ../src/views/darkroom.c:2354
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "diminuer la taille du pinceau"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2351
+#: ../src/views/darkroom.c:2357
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "augmenter la dureté du pinceau"
 
-#: ../src/views/darkroom.c:2352
+#: ../src/views/darkroom.c:2358
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "diminuer la dureté du pinceau"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2355
+#: ../src/views/darkroom.c:2361
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "augmenter la luminosité du pinceau"
 
-#: ../src/views/darkroom.c:2356
+#: ../src/views/darkroom.c:2362
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "diminuer la luminosité du pinceau"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:2359
+#: ../src/views/darkroom.c:2365
 msgctxt "accel"
 msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2362 ../src/views/map.c:856
+#: ../src/views/darkroom.c:2368 ../src/views/map.c:856
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:2363 ../src/views/map.c:857
+#: ../src/views/darkroom.c:2369 ../src/views/map.c:857
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:2366
+#: ../src/views/darkroom.c:2372
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permet de recadrer et zoomer pendant l'édition des masques"
