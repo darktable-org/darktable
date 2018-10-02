@@ -1484,9 +1484,6 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
   uint64_t hash = 5381;
   piece->hash = 0;
 
-  // this should be redundant! (but is not)
-  memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
-
   if(piece->enabled)
   {
     /* construct module params data for hash calc */
@@ -1505,6 +1502,8 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
       pos += sizeof(dt_develop_blend_params_t);
     }
     memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
+    // this should be redundant! (but is not)
+    memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
     /* and we add masks */
     dt_masks_group_get_hash_buffer(grp, str + pos);
 
