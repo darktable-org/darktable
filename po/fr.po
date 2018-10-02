@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-01 19:55+0200\n"
-"PO-Revision-Date: 2018-10-01 20:01+0200\n"
+"POT-Creation-Date: 2018-10-02 18:08+0200\n"
+"PO-Revision-Date: 2018-10-02 18:13+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2551,12 +2551,12 @@ msgstr "supprimer"
 msgid "rename"
 msgstr "renommer"
 
-#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:2020
+#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:2019
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:2020
+#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:2019
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
@@ -2596,7 +2596,7 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:1990
+#: ../src/develop/imageop.c:1989
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -2604,11 +2604,11 @@ msgstr ""
 "actions instances multiples\n"
 "clic-milieu créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:1999 ../src/libs/lib.c:997
+#: ../src/develop/imageop.c:1998 ../src/libs/lib.c:997
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:2007 ../src/gui/preferences.c:398
+#: ../src/develop/imageop.c:2006 ../src/gui/preferences.c:398
 #: ../src/libs/lib.c:1009
 msgid "presets"
 msgstr "pré-réglages"
@@ -2746,15 +2746,15 @@ msgstr "copie de %s"
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: version non cohérente du masque: %d != %d"
 
-#: ../src/develop/masks/masks.c:1829 ../src/libs/masks.c:1038
+#: ../src/develop/masks/masks.c:1833 ../src/libs/masks.c:1038
 msgid "add existing shape"
 msgstr "ajouter un masque existant"
 
-#: ../src/develop/masks/masks.c:1854
+#: ../src/develop/masks/masks.c:1858
 msgid "use same shapes as"
 msgstr "utiliser les mêmes masques que"
 
-#: ../src/develop/masks/masks.c:2166
+#: ../src/develop/masks/masks.c:2170
 msgid "masks can not contain themselves"
 msgstr "masques ne peuvent pas se contenir"
 
@@ -7300,27 +7300,45 @@ msgstr "centile des blancs"
 msgid "white"
 msgstr "blanc"
 
-#: ../src/iop/liquify.c:266
+#: ../src/iop/liquify.c:269
 msgid "liquify"
 msgstr "liquéfier"
 
-#: ../src/iop/liquify.c:3204
-msgid "click and drag to add point"
-msgstr "cliquer et tracer pour ajouter un point"
+#: ../src/iop/liquify.c:3314
+msgid ""
+"click and drag to add point\n"
+"scrool to change size\n"
+"shift-scroll to change strength - ctrl-scroll to change direction"
+msgstr ""
+"cliquer et tracer pour ajouter un point\n"
+"défiler pour changer la taille\n"
+"shift-défiler pour changer la force - ctrl-défiler pour changer la direction"
 
-#: ../src/iop/liquify.c:3206
-msgid "click to add line"
-msgstr "cliquer pour ajouter une ligne"
+#: ../src/iop/liquify.c:3318
+msgid ""
+"click to add line\n"
+"scrool to change size\n"
+"shift-scroll to change strength - ctrl-scroll to change direction"
+msgstr ""
+"cliquer pour ajouter une ligne\n"
+"défiler pour changer la taille\n"
+"shift-défiler pour changer la force - ctrl-défiler pour changer la direction"
 
-#: ../src/iop/liquify.c:3208
-msgid "click to add curve"
-msgstr "cliquer pour ajouter une courbe"
+#: ../src/iop/liquify.c:3322
+msgid ""
+"click to add curve\n"
+"scrool to change size\n"
+"shift-scroll to change strength - ctrl-scroll to change direction"
+msgstr ""
+"cliquer pour ajouter une courbe\n"
+"défiler pour changer la taille\n"
+"shift-défiler pour changer la force - ctrl-défiler pour changer la direction"
 
-#: ../src/iop/liquify.c:3210
+#: ../src/iop/liquify.c:3325
 msgid "click to edit nodes"
 msgstr "cliquer pour éditer les points"
 
-#: ../src/iop/liquify.c:3247
+#: ../src/iop/liquify.c:3396
 msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
@@ -7328,27 +7346,27 @@ msgstr ""
 "utiliser un outil pour ajouter une forme.\n"
 "clic-droit pour supprimer une forme."
 
-#: ../src/iop/liquify.c:3249
+#: ../src/iop/liquify.c:3398
 msgid "warps|nodes count:"
 msgstr "nb formes|points:"
 
-#: ../src/iop/liquify.c:3256
+#: ../src/iop/liquify.c:3405
 msgid "node tool: edit, add and delete nodes"
 msgstr "outil point: éditer, ajouter et supprimer des points"
 
-#: ../src/iop/liquify.c:3264
+#: ../src/iop/liquify.c:3413
 msgid "curve tool: draw curves"
 msgstr "outil courbe: dessiner des courbes"
 
-#: ../src/iop/liquify.c:3272
+#: ../src/iop/liquify.c:3421
 msgid "line tool: draw lines"
 msgstr "outil ligne: dessiner des lignes"
 
-#: ../src/iop/liquify.c:3280
+#: ../src/iop/liquify.c:3429
 msgid "point tool: draw points"
 msgstr "outil point: placer des points"
 
-#: ../src/iop/liquify.c:3287
+#: ../src/iop/liquify.c:3436
 msgid ""
 "ctrl-click: add node - right click: remove path\n"
 "ctrl-alt-click: toggle line/curve"
@@ -7356,7 +7374,7 @@ msgstr ""
 "ctrl-clic: ajouter un point - clic-droit: supprimer un chemin\n"
 "ctrl-alt-clic: changer line/courbe"
 
-#: ../src/iop/liquify.c:3289
+#: ../src/iop/liquify.c:3438
 msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl-click: autosmooth, cusp, smooth, symmetrical - right click to remove"
@@ -7366,23 +7384,23 @@ msgstr ""
 "ctrl-clic: automatique, parabolique, lissé, symétrique - clic-droit pour "
 "supprimer"
 
-#: ../src/iop/liquify.c:3292 ../src/iop/liquify.c:3293
+#: ../src/iop/liquify.c:3441 ../src/iop/liquify.c:3442
 msgid "drag to change shape of path"
 msgstr "déplacer pour changer le chemin"
 
-#: ../src/iop/liquify.c:3294
+#: ../src/iop/liquify.c:3443
 msgid "drag to adjust warp radius"
 msgstr "déplacer pour ajuster le rayon"
 
-#: ../src/iop/liquify.c:3295
+#: ../src/iop/liquify.c:3444
 msgid "drag to adjust hardness (center)"
 msgstr "déplacer pour ajuster la dureté (centre)"
 
-#: ../src/iop/liquify.c:3296
+#: ../src/iop/liquify.c:3445
 msgid "drag to adjust hardness (feather)"
 msgstr "déplacer pour ajuster la dureté (progressif)"
 
-#: ../src/iop/liquify.c:3297
+#: ../src/iop/liquify.c:3446
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl-click: linear, grow, and shrink"
@@ -7390,22 +7408,22 @@ msgstr ""
 "déplacer pour ajuster la force du point\n"
 "ctrl-clic: linéaire, augmente et diminue"
 
-#: ../src/iop/liquify.c:3315
+#: ../src/iop/liquify.c:3464
 msgctxt "accel"
 msgid "point tool"
 msgstr "outil point"
 
-#: ../src/iop/liquify.c:3316
+#: ../src/iop/liquify.c:3465
 msgctxt "accel"
 msgid "line tool"
 msgstr "outil ligne"
 
-#: ../src/iop/liquify.c:3317
+#: ../src/iop/liquify.c:3466
 msgctxt "accel"
 msgid "curve tool"
 msgstr "outil courbe"
 
-#: ../src/iop/liquify.c:3318
+#: ../src/iop/liquify.c:3467
 msgctxt "accel"
 msgid "node tool"
 msgstr "édition des chemins"
@@ -9338,7 +9356,7 @@ msgstr "exporte avec les réglages actuels"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1191 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:2334
+#: ../src/views/darkroom.c:2338
 msgctxt "accel"
 msgid "export"
 msgstr "exporter"
@@ -11387,115 +11405,115 @@ msgstr "profils ICC d'épreuvage dans %s ou %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2326 ../src/views/map.c:859 ../src/views/print.c:329
+#: ../src/views/darkroom.c:2330 ../src/views/map.c:859 ../src/views/print.c:329
 #: ../src/views/tethering.c:388
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activer/désactiver le bandeau"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2329
+#: ../src/views/darkroom.c:2333
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom en gros plan"
 
-#: ../src/views/darkroom.c:2330
+#: ../src/views/darkroom.c:2334
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoomer"
 
-#: ../src/views/darkroom.c:2331
+#: ../src/views/darkroom.c:2335
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajusté"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2337
+#: ../src/views/darkroom.c:2341
 msgctxt "accel"
 msgid "image forward"
 msgstr "image suivante"
 
-#: ../src/views/darkroom.c:2338
+#: ../src/views/darkroom.c:2342
 msgctxt "accel"
 msgid "image back"
 msgstr "image précédente"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:2341
+#: ../src/views/darkroom.c:2345
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw sur-exposé"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:2344
+#: ../src/views/darkroom.c:2348
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sur-exposition"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:2347
+#: ../src/views/darkroom.c:2351
 msgctxt "accel"
 msgid "softproof"
 msgstr "épreuvage"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:2350
+#: ../src/views/darkroom.c:2354
 msgctxt "accel"
 msgid "gamut check"
 msgstr "vérification de gamut"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2353
+#: ../src/views/darkroom.c:2357
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "augmenter la taille du pinceau"
 
-#: ../src/views/darkroom.c:2354
+#: ../src/views/darkroom.c:2358
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "diminuer la taille du pinceau"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2357
+#: ../src/views/darkroom.c:2361
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "augmenter la dureté du pinceau"
 
-#: ../src/views/darkroom.c:2358
+#: ../src/views/darkroom.c:2362
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "diminuer la dureté du pinceau"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2361
+#: ../src/views/darkroom.c:2365
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "augmenter la luminosité du pinceau"
 
-#: ../src/views/darkroom.c:2362
+#: ../src/views/darkroom.c:2366
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "diminuer la luminosité du pinceau"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:2365
+#: ../src/views/darkroom.c:2369
 msgctxt "accel"
 msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2368 ../src/views/map.c:856
+#: ../src/views/darkroom.c:2372 ../src/views/map.c:856
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:2369 ../src/views/map.c:857
+#: ../src/views/darkroom.c:2373 ../src/views/map.c:857
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:2372
+#: ../src/views/darkroom.c:2376
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permet de recadrer et zoomer pendant l'édition des masques"
@@ -11681,6 +11699,15 @@ msgstr ""
 "nous vous suggérons de passer à la version 64 bits.\n"
 "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
 "corrigés.\n"
+
+#~ msgid "click and drag to add point"
+#~ msgstr "cliquer et tracer pour ajouter un point"
+
+#~ msgid "click to add line"
+#~ msgstr "cliquer pour ajouter une ligne"
+
+#~ msgid "click to add curve"
+#~ msgstr "cliquer pour ajouter une courbe"
 
 #~ msgid "select fill color."
 #~ msgstr "sélectionner la couleur de remplissage"
