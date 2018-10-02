@@ -2942,7 +2942,7 @@ int button_released (struct dt_iop_module_t *module,
       g->temp = NULL; // a point is done
       gtk_toggle_button_set_active (g->btn_node_tool, 1);
     }
-    if (gtk_toggle_button_get_active (g->btn_line_tool))
+    else if (gtk_toggle_button_get_active (g->btn_line_tool))
     {
       const int prev_index = g->node_index;
       g->temp = alloc_line_to (module, pt);
@@ -2955,7 +2955,7 @@ int button_released (struct dt_iop_module_t *module,
       node_get(&g->params, prev_index)->header.next = g->node_index;
       start_drag (g, DT_LIQUIFY_LAYER_CENTERPOINT, g->temp);
     }
-    if (gtk_toggle_button_get_active (g->btn_curve_tool))
+    else if (gtk_toggle_button_get_active (g->btn_curve_tool))
     {
       const int prev_index = g->node_index;
       g->temp = alloc_curve_to (module, pt);
