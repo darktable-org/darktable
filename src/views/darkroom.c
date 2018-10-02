@@ -1886,7 +1886,11 @@ void mouse_leave(dt_view_t *self)
   dt_control_set_mouse_over_id(dev->image_storage.id);
 
   // masks
-  dt_masks_events_mouse_leave(dev->gui_module);
+  int handled = dt_masks_events_mouse_leave(dev->gui_module);
+  if(handled) return;
+  // module
+  if(dev->gui_module && dev->gui_module->mouse_leave)
+    handled = dev->gui_module->mouse_leave(dev->gui_module);
 
   // reset any changes the selected plugin might have made.
   dt_control_change_cursor(GDK_LEFT_PTR);
