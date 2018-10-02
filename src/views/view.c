@@ -546,7 +546,25 @@ void dt_view_manager_reset(dt_view_manager_t *vm)
 void dt_view_manager_mouse_leave(dt_view_manager_t *vm)
 {
   if(!vm->current_view) return;
-  if(vm->current_view->mouse_leave) vm->current_view->mouse_leave(vm->current_view);
+  dt_view_t *v = vm->current_view;
+
+  /* lets check if any plugins want to handle mouse move */
+  gboolean handled = FALSE;
+  GList *plugins = g_list_last(darktable.lib->plugins);
+  while(plugins)
+  {
+    dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+
+    /* does this module belong to current view ?*/
+    if(plugin->mouse_leave && dt_lib_is_visible_in_view(plugin, v))
+      if(plugin->mouse_leave(plugin)) handled = TRUE;
+
+    /* get next plugin */
+    plugins = g_list_previous(plugins);
+  }
+
+  /* if not handled by any plugin let pass to view handler*/
+  if(!handled && v->mouse_leave) v->mouse_leave(v);
 }
 
 void dt_view_manager_mouse_enter(dt_view_manager_t *vm)
