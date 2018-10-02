@@ -2941,6 +2941,7 @@ int button_released (struct dt_iop_module_t *module,
       }
       g->temp = NULL; // a point is done
       gtk_toggle_button_set_active (g->btn_node_tool, 1);
+      handled = dragged ? 2 : 1;
     }
     else if (gtk_toggle_button_get_active (g->btn_line_tool))
     {
@@ -2954,6 +2955,7 @@ int button_released (struct dt_iop_module_t *module,
       g->temp->header.prev = prev_index;
       node_get(&g->params, prev_index)->header.next = g->node_index;
       start_drag (g, DT_LIQUIFY_LAYER_CENTERPOINT, g->temp);
+      handled = 1;
     }
     else if (gtk_toggle_button_get_active (g->btn_curve_tool))
     {
@@ -2972,9 +2974,9 @@ int button_released (struct dt_iop_module_t *module,
       g->temp->header.prev = prev_index;
       node_get(&g->params, prev_index)->header.next = g->node_index;
       start_drag (g, DT_LIQUIFY_LAYER_CENTERPOINT, g->temp);
+      handled = 1;
     }
     g->status &= ~DT_LIQUIFY_STATUS_NEW;
-    handled = 1;
     goto done;
   }
 
