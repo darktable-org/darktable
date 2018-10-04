@@ -562,11 +562,8 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       float xpos, ypos;
       if(gui->posx == -1.f && gui->posy == -1.f)
       {
-        float zoom_x, zoom_y;
-        zoom_y = dt_control_get_dev_zoom_y();
-        zoom_x = dt_control_get_dev_zoom_x();
-        xpos = (.5f + zoom_x) * wd;
-        ypos = (.5f + zoom_y) * ht;
+        xpos = darktable.develop->preview_pipe->backbuf_width / 2.f;
+        ypos = darktable.develop->preview_pipe->backbuf_height / 2.f;
       }
       else
       {
