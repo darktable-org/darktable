@@ -365,6 +365,9 @@ def add_edges(gr):
   # want to splittone vignette and b/w
   gr.add_edge(('splittoning', 'vignette'))
   gr.add_edge(('splittoning', 'channelmixer'))
+  
+  # don't mess up the vignetting correction with the black point change
+  gr.add_edge(('exposure', 'lens'))
 
   # want to change exposure/basecurve after tone mapping
   gr.add_edge(('exposure', 'tonemap'))
