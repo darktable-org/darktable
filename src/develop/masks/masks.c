@@ -1241,14 +1241,11 @@ void dt_masks_free_form(dt_masks_form_t *form)
 
 int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
 {
-  dt_masks_form_t *form = darktable.develop->form_visible;
-
   // reset mouse position for masks
-  if(form && darktable.develop->form_gui)
+  if(darktable.develop->form_gui)
   {
     dt_masks_form_gui_t *gui = darktable.develop->form_gui;
     gui->posx = gui->posy = -1.f;
-    return 1;
   }
   return 0;
 }
@@ -1428,7 +1425,7 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
   // add preview when creating a circle or ellipse
   if((form->type & DT_MASKS_GRADIENT) && gui->creation)
     return;
-  
+
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
   if(wd < 1.0 || ht < 1.0) return;
@@ -2506,17 +2503,17 @@ void dt_masks_draw_clone_source_pos(cairo_t *cr, const float zoom_scale, const f
   double dashed[] = { 4.0, 4.0 };
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
-  
+
   cairo_set_dash(cr, dashed, 0, 0);
   cairo_set_line_width(cr, 3.0 / zoom_scale);
   cairo_set_source_rgba(cr, .3, .3, .3, .8);
-  
+
   cairo_move_to(cr, x + dx, y);
   cairo_line_to(cr, x - dx, y);
   cairo_move_to(cr, x, y + dy);
   cairo_line_to(cr, x, y - dy);
   cairo_stroke_preserve(cr);
-  
+
   cairo_set_line_width(cr, 1.0 / zoom_scale);
   cairo_set_source_rgba(cr, .8, .8, .8, .8);
   cairo_stroke(cr);
