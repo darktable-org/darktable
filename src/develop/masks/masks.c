@@ -1245,6 +1245,12 @@ int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
   if(darktable.develop->form_gui)
   {
     dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+
+    // if masks are being created or edited don't reset the position
+    if(gui->creation || gui->form_dragging || gui->source_dragging || gui->point_dragging >= 0
+       || gui->feather_dragging >= 0 || gui->seg_dragging >= 0 || gui->point_border_dragging >= 0)
+      return 0;
+
     gui->posx = gui->posy = -1.f;
   }
   return 0;
