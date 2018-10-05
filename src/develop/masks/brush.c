@@ -2228,11 +2228,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       float xpos, ypos;
       if(gui->posx == -1.f && gui->posy == -1.f)
       {
-        float zoom_x, zoom_y;
-        zoom_y = dt_control_get_dev_zoom_y();
-        zoom_x = dt_control_get_dev_zoom_x();
-        xpos = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
-        ypos = (.5f + zoom_y) * darktable.develop->preview_pipe->backbuf_height;
+        xpos = (.5f + dt_control_get_dev_zoom_x()) * darktable.develop->preview_pipe->backbuf_width;
+        ypos = (.5f + dt_control_get_dev_zoom_y()) * darktable.develop->preview_pipe->backbuf_height;
       }
       else
       {
