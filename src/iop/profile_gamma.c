@@ -52,7 +52,7 @@ typedef struct dt_iop_profilegamma_params_t
   float dynamic_range;
   float grey_point;
   float shadows_range;
-  float black_target;
+  float security_factor;
 } dt_iop_profilegamma_params_t;
 
 typedef struct dt_iop_profilegamma_gui_data_t
@@ -64,7 +64,7 @@ typedef struct dt_iop_profilegamma_gui_data_t
   GtkWidget *dynamic_range;
   GtkWidget *grey_point;
   GtkWidget *shadows_range;
-  GtkWidget *black_target;
+  GtkWidget *security_factor;
   GtkWidget *auto_button;
 } dt_iop_profilegamma_gui_data_t;
 
@@ -78,7 +78,7 @@ typedef struct dt_iop_profilegamma_data_t
   float dynamic_range;
   float grey_point;
   float shadows_range;
-  float black_target;
+  float security_factor;
 } dt_iop_profilegamma_data_t;
 
 typedef struct dt_iop_profilegamma_global_data_t
@@ -329,59 +329,25 @@ static void gamma_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void optimize(dt_iop_module_t *self)
-{
-  /*******************
-
-  This section optimizes the camera parameters (black level correction and camera linearity factor) such that :
-    - the target dynamic range (of the color chart used to produce the ICC input profile) is matched,
-    - the input grey level is in the center of the histogram,
-    - the black point of the ICC profile / color chart is matched,
-    - the dynamic range is centered on 0 (black EV = - white EV).
-
-  It assumes that :
-    - the data will be color-corrected afterwards with an input ICC profile
-    - it is better to remap the data dynamic range to the color chart's before the ICC color correction
-    - a contrast + gamma curve will be applied at the end of the pixel pipe to recover a proper contrast and
-  saturation
-
-  IT 8 and data-color charts have L values between 17 % and 96 %, hence 2.5 EV of dynamic range.
-  ***********************/
-
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) 
-  {
-    dt_control_log(_("wait for the preview to be updated."));
-    return;
-  }
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  
-  float XYZ[3];
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color_max, XYZ);
-  float noise = powf(2., -16.);
-  float EVmax = Log2Thres( (XYZ[1]) / (p->grey_point /100.), noise );
-  p->dynamic_range = fabsf(EVmax - p->shadows_range) * ( 1. + (2. * p->black_target / 100.));
-
-  darktable.gui->reset = 1;
-  dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
-  darktable.gui->reset = 0;
-}
-
-
-static void black_target_callback(GtkWidget *slider, gpointer user_data)
+static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  float previous = p->black_target;
   
-  p->black_target = dt_bauhaus_slider_get(slider);
+  float previous = p->security_factor;
+  p->security_factor = dt_bauhaus_slider_get(slider);
+  float ratio = (p->security_factor - previous) / (previous + 100.0f);
   
-  float ratio = (p->black_target - previous) / (previous + 100.0f);
+  float EVmin = p->shadows_range;
+  EVmin = EVmin + ratio * EVmin;
   
-  p->dynamic_range += p->dynamic_range * ratio;
-  p->shadows_range += p->shadows_range * ratio;
+  float EVmax = p->dynamic_range + p->shadows_range;
+  EVmax = EVmax + ratio * EVmax;
+  
+  p->dynamic_range = EVmax - EVmin;
+  p->shadows_range = EVmin;
   
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
@@ -391,22 +357,7 @@ static void black_target_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void measure_grey(dt_iop_module_t *self)
-{
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) 
-  {
-    dt_control_log(_("wait for the preview to be updated."));
-    return;
-  }
-  float XYZ[3];
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color, XYZ);
-  p->grey_point = 100.f * XYZ[1];
-}
-
-
-static void autogrey_point_callback(GtkWidget *button, gpointer user_data)
+static void auto_grey(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -428,10 +379,18 @@ static void autogrey_point_callback(GtkWidget *button, gpointer user_data)
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
   else
   {
-    measure_grey(self);
-
+    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) 
+    {
+      dt_control_log(_("wait for the preview to be updated."));
+      return;
+    }
+    
     dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
     dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+    
+    float XYZ[3];
+    dt_prophotorgb_to_XYZ((const float *)self->picked_color, XYZ);
+    p->grey_point = 100.f * XYZ[1];
 
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->grey_point, p->grey_point);
@@ -443,7 +402,7 @@ static void autogrey_point_callback(GtkWidget *button, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void shadows_pick_callback(GtkWidget *button, gpointer user_data)
+static void auto_black(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -472,13 +431,18 @@ static void shadows_pick_callback(GtkWidget *button, gpointer user_data)
     
     dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
     dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+    
+    float noise = powf(2.0f, -16.0f);
+    float XYZ[3]; 
 
-    float XYZ[3];
+    // Black
     dt_prophotorgb_to_XYZ((const float *)self->picked_color_min, XYZ);
-    const float black = XYZ[1];
+    float EVmin = Log2Thres(XYZ[1] / (p->grey_point / 100.0f), noise);
+    EVmin *= (1.0f + p->security_factor / 100.0f);
+    EVmin -= 0.0230f * p->dynamic_range;
 
-    p->shadows_range = (1.0f + p->black_target / 100.0f) * Log2Thres(black / (p->grey_point / 100.0f), powf(2.0f, -16.0f));
-
+    p->shadows_range = EVmin;
+      
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->shadows_range, p->shadows_range);
     darktable.gui->reset = 0;
@@ -489,7 +453,7 @@ static void shadows_pick_callback(GtkWidget *button, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void autofix_callback(GtkWidget *button, gpointer user_data)
+static void auto_dynamic_range(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -511,11 +475,35 @@ static void autofix_callback(GtkWidget *button, gpointer user_data)
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
   else
   {
-    optimize(self);
-
     dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
     dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+    
+    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) 
+    {
+      dt_control_log(_("wait for the preview to be updated."));
+      return;
+    }
+    
+    float noise = powf(2.0f, -16.0f);
+    float XYZ[3];
+      
+    // Black
+    float EVmin = p->shadows_range;
+    
+    // Dynamic range
+    dt_prophotorgb_to_XYZ((const float *)self->picked_color_max, XYZ);
+    float EVmax = Log2Thres(XYZ[1] / (p->grey_point / 100.0f), noise);
+    EVmax *= (1.0f + p->security_factor / 100.0f);
+  
+    /* 
+      Remap the black point to Y = 2.30 % and the white point to Y = 90.00 %
+      to match the patches values from the color charts used to produce ICC profiles
+    */
+    float dynamic_range = (EVmax - EVmin) / (0.9000f - 0.0230f);
+    EVmax += 0.1000f * dynamic_range;
 
+    p->dynamic_range = EVmax - EVmin;
+      
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->dynamic_range, p->dynamic_range);
     darktable.gui->reset = 0;
@@ -529,58 +517,57 @@ static void optimize_button_pressed_callback(GtkWidget *button, gpointer user_da
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-  else
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
+  
+  dt_control_queue_redraw();
+  self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
   dt_iop_request_focus(self);
+  dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+  dt_dev_reprocess_all(self->dev);
+  dt_control_queue_redraw();
 
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-    dt_dev_reprocess_all(self->dev);
-    
-    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) return;
-    
-    dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-    dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-    
-    float noise = powf(2., -16.);
-    float XYZ[3];
-    
-    // Grey
-    dt_prophotorgb_to_XYZ((const float *)self->picked_color, XYZ);
-    p->grey_point = 100.f * XYZ[1];
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) return;
+  
+  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
+  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+  
+  float noise = powf(2.0f, -16.0f);
+  float XYZ[3];
+  
+  // Grey
+  dt_prophotorgb_to_XYZ((const float *)self->picked_color, XYZ);
+  p->grey_point = 100.f * XYZ[1];
 
-    // Black
-    dt_prophotorgb_to_XYZ((const float *)self->picked_color_min, XYZ);
-    p->shadows_range = Log2Thres(XYZ[1]/ (p->grey_point / 100.0f), noise);
-    
-    // Dynamic range
-    dt_prophotorgb_to_XYZ((const float *)self->picked_color_max, XYZ);
-    float EVmax = Log2Thres( (XYZ[1]) / (p->grey_point /100.), noise);
-    p->dynamic_range = fabsf(EVmax - p->shadows_range);
-    
-    // Adjust
-    p->shadows_range = (1.0f + p->black_target / 100.0f) * p->shadows_range;
-    p->dynamic_range = (1.0f + p->black_target / 100.0f) * p->dynamic_range;
-      
-    
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->grey_point, p->grey_point);
-    dt_bauhaus_slider_set(g->shadows_range, p->shadows_range);
-    dt_bauhaus_slider_set(g->dynamic_range, p->dynamic_range);
-    darktable.gui->reset = 0;
-    
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  // Black
+  dt_prophotorgb_to_XYZ((const float *)self->picked_color_min, XYZ);
+  float EVmin = Log2Thres(XYZ[1] / (p->grey_point / 100.0f), noise);
+  EVmin *= (1.0f + p->security_factor / 100.0f);
+  
+  // Dynamic range
+  dt_prophotorgb_to_XYZ((const float *)self->picked_color_max, XYZ);
+  float EVmax = Log2Thres(XYZ[1] / (p->grey_point / 100.0f), noise);
+  EVmax *= (1.0f + p->security_factor / 100.0f);
+  
+  /* 
+    Remap the black point to Y = 2.30 % and the white point to Y = 90.00 %
+    to match the patches values from the color charts used to produce ICC profiles
+  */
+  float dynamic_range = (EVmax - EVmin) / (0.9000f - 0.0230f);
+  EVmin -= 0.0230f * dynamic_range;
+  EVmax += 0.1000f * dynamic_range;
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
-  else
-    dt_control_queue_redraw();
+  p->shadows_range = EVmin;
+  p->dynamic_range = EVmax - EVmin;
     
+  darktable.gui->reset = 1;
+  dt_bauhaus_slider_set(g->grey_point, p->grey_point);
+  dt_bauhaus_slider_set(g->shadows_range, p->shadows_range);
+  dt_bauhaus_slider_set(g->dynamic_range, p->dynamic_range);
+  darktable.gui->reset = 0;
+  
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+
 }
 
 
@@ -707,7 +694,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->dynamic_range = p->dynamic_range;
   d->grey_point = p->grey_point;
   d->shadows_range = p->shadows_range;
-  d->black_target = p->black_target;
+  d->security_factor = p->security_factor;
   d->mode = p->mode;
 
   //piece->process_cl_ready = 1;
@@ -756,7 +743,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
   dt_bauhaus_slider_set_soft(g->grey_point, p->grey_point);
   dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
-  dt_bauhaus_slider_set_soft(g->black_target, p->black_target);
+  dt_bauhaus_slider_set_soft(g->security_factor, p->security_factor);
 }
 
 void init(dt_iop_module_t *module)
@@ -851,52 +838,49 @@ void gui_init(dt_iop_module_t *self)
 
   // grey_point slider
   g->grey_point = dt_bauhaus_slider_new_with_range(self, 0.1, 100., 0.5, p->grey_point, 2);
-  dt_bauhaus_widget_set_label(g->grey_point, NULL, _("input middle grey"));
+  dt_bauhaus_widget_set_label(g->grey_point, NULL, _("middle grey luma"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->grey_point, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->grey_point, "%.2f %%");
-  gtk_widget_set_tooltip_text(
-      g->grey_point,
-      _("adjust to match a neutral tone\nuse 100 % to disable the tone-mapping"));
+  gtk_widget_set_tooltip_text(g->grey_point, _("adjust to match a neutral tone"));
   g_signal_connect(G_OBJECT(g->grey_point), "value-changed", G_CALLBACK(grey_point_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->grey_point, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
-  g_signal_connect(G_OBJECT(g->grey_point), "quad-pressed", G_CALLBACK(autogrey_point_callback), self);
+  g_signal_connect(G_OBJECT(g->grey_point), "quad-pressed", G_CALLBACK(auto_grey), self);
   
   // Shadows range slider
   g->shadows_range = dt_bauhaus_slider_new_with_range(self, -16.0, -0.0, 0.1, p->shadows_range, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->shadows_range, -16., 16.0);
-  dt_bauhaus_widget_set_label(g->shadows_range, NULL, _("output black exposure"));
+  dt_bauhaus_widget_set_label(g->shadows_range, NULL, _("black relative exposure"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->shadows_range, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->shadows_range, "%.2f EV");
-  gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between the new 50 % grey and 0 % black"));
+  gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between middle grey and pure black"));
   g_signal_connect(G_OBJECT(g->shadows_range), "value-changed", G_CALLBACK(shadows_range_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->shadows_range, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
-  g_signal_connect(G_OBJECT(g->shadows_range), "quad-pressed", G_CALLBACK(shadows_pick_callback), self);
+  g_signal_connect(G_OBJECT(g->shadows_range), "quad-pressed", G_CALLBACK(auto_black), self);
 
   // Dynamic range slider
   g->dynamic_range = dt_bauhaus_slider_new_with_range(self, 0.5, 16.0, 0.1, p->dynamic_range, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->dynamic_range, 0.01, 32.0);
-  dt_bauhaus_widget_set_label(g->dynamic_range, NULL, _("output dynamic range"));
+  dt_bauhaus_widget_set_label(g->dynamic_range, NULL, _("dynamic range"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->dynamic_range, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->dynamic_range, "%.2f EV");
-  gtk_widget_set_tooltip_text(g->dynamic_range, _("number of stops between 0 % black and 100 % white"));
+  gtk_widget_set_tooltip_text(g->dynamic_range, _("number of stops between pure black and pure white"));
   g_signal_connect(G_OBJECT(g->dynamic_range), "value-changed", G_CALLBACK(dynamic_range_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->dynamic_range, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
-  g_signal_connect(G_OBJECT(g->dynamic_range), "quad-pressed", G_CALLBACK(autofix_callback), self);
+  g_signal_connect(G_OBJECT(g->dynamic_range), "quad-pressed", G_CALLBACK(auto_dynamic_range), self);
 
   // Auto tune slider
   gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("optimize automatically")), FALSE, FALSE, 5); 
-  g->black_target = dt_bauhaus_slider_new_with_range(self, -100., 100., 0.1, p->black_target, 2);
-  dt_bauhaus_widget_set_label(g->black_target, NULL, _("dynamic range correction"));
-  gtk_box_pack_start(GTK_BOX(vbox_log), g->black_target, TRUE, TRUE, 0);
-  dt_bauhaus_slider_set_format(g->black_target, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->black_target, _("optimize the dynamic range and correct it"));
-  g_signal_connect(G_OBJECT(g->black_target), "value-changed", G_CALLBACK(black_target_callback), self);
+  g->security_factor = dt_bauhaus_slider_new_with_range(self, -100., 100., 0.1, p->security_factor, 2);
+  dt_bauhaus_widget_set_label(g->security_factor, NULL, _("security factor"));
+  gtk_box_pack_start(GTK_BOX(vbox_log), g->security_factor, TRUE, TRUE, 0);
+  dt_bauhaus_slider_set_format(g->security_factor, "%.2f %%");
+  gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or reduce the computed dynamic range"));
+  g_signal_connect(G_OBJECT(g->security_factor), "value-changed", G_CALLBACK(security_threshold_callback), self);
   
   g->auto_button = gtk_button_new_with_label(_("auto tune"));
   gtk_widget_set_tooltip_text(g->auto_button, _("make an optimization with some guessing"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->auto_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->auto_button), "clicked", G_CALLBACK(optimize_button_pressed_callback), self);
-
 
   gtk_widget_show_all(vbox_log);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_log, "log");
