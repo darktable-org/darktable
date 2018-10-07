@@ -2199,7 +2199,7 @@ profilegamma_log (read_only image2d_t in, write_only image2d_t out, int width, i
   
   o = (i < noise) ? noise : i / grey4;
   o = (log2(o) - shadows4) / dynamic4;
-  o = (o < (float4)0.0f) ? 0.0f : o;
+  o = (o < noise) ? noise : o;
 
   write_imagef(out, (int2)(x, y), o);
 }
