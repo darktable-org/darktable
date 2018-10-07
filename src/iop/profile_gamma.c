@@ -274,7 +274,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
             float tmp = in[i] / grey;
             if (tmp < noise) tmp = noise;
             out[i] = (Log2(tmp) - data->shadows_range) / (data->dynamic_range);
-            if (out[i] < 0.0f) out[i] = 0;
+            if (out[i] < noise) out[i] = noise;
           }
         }
       }
@@ -436,7 +436,7 @@ static void auto_black(GtkWidget *button, gpointer user_data)
     float XYZ[3]; 
 
     // Black
-    dt_prophotorgb_to_XYZ((const float *)self->picked_color_min, XYZ);
+    dt_prophotorgb_to_XYZ((const float *)self->picked_color, XYZ);
     float EVmin = Log2Thres(XYZ[1] / (p->grey_point / 100.0f), noise);
     EVmin *= (1.0f + p->security_factor / 100.0f);
     EVmin -= 0.0230f * p->dynamic_range;
@@ -518,14 +518,18 @@ static void optimize_button_pressed_callback(GtkWidget *button, gpointer user_da
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   
-  dt_control_queue_redraw();
-  self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
   dt_iop_request_focus(self);
   dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+  dt_control_queue_redraw();
+  self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
   dt_dev_reprocess_all(self->dev);
   dt_control_queue_redraw();
 
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) return;
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) 
+  {
+    dt_control_log(_("wait for the preview to be updated."));
+    return;
+  }
   
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
