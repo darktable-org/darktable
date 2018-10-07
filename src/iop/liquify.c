@@ -2633,33 +2633,6 @@ static void get_point_scale(struct dt_iop_module_t *module, float x, float y, fl
   *pt = (nx * darktable.develop->pipe->iwidth) +  (ny * darktable.develop->pipe->iheight) * I;
 }
 
-int mouse_leave(struct dt_iop_module_t *module)
-{
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-
-  if (g->temp)
-  {
-    dt_pthread_mutex_lock (&g->lock);
-
-    dt_liquify_warp_t *warp = &g->temp->warp;
-    float complex pt;
-    float scale;
-
-    //  move back the temp form to center
-    get_point_scale(module, .5f * darktable.develop->width, .5f * darktable.develop->height, &pt, &scale);
-
-    warp->radius += pt - warp->point;
-    warp->strength += pt - warp->point;
-    warp->point = pt;
-    dt_pthread_mutex_unlock (&g->lock);
-
-    sync_pipe (module, FALSE);
-    return 1;
-  }
-
-  return 0;
-}
-
 int mouse_moved (struct dt_iop_module_t *module,
                  double x,
                  double y,
