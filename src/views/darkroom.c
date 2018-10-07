@@ -628,7 +628,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_read_history(dev);
 
   // we have to init all module instances other than "base" instance
-  GList *modules = dev->iop;
+  GList *modules = g_list_last(dev->iop);
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -669,7 +669,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
             base->expander, "position", &gv);
         gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
                               expander, g_value_get_int(&gv) + pos_base - pos_module);
-        dt_iop_gui_set_expanded(module, TRUE, FALSE);
+        dt_iop_gui_set_expanded(module, FALSE, FALSE);
         dt_iop_gui_update_blending(module);
       }
 
@@ -687,7 +687,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       if(!dt_iop_is_hidden(module)) dt_iop_gui_update_header(module);
     }
 
-    modules = g_list_next(modules);
+    modules = g_list_previous(modules);
   }
 
   dt_dev_pop_history_items(dev, dev->history_end);
