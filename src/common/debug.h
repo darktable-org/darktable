@@ -100,6 +100,7 @@
   } while(0)
 
 #define DT_DEBUG_SQLITE3_BIND_INT(a, b, c) __DT_DEBUG_ASSERT__(sqlite3_bind_int(a, b, c))
+#define DT_DEBUG_SQLITE3_BIND_INT64(a, b, c) __DT_DEBUG_ASSERT__(sqlite3_bind_int64(a, b, c))
 #define DT_DEBUG_SQLITE3_BIND_DOUBLE(a, b, c) __DT_DEBUG_ASSERT__(sqlite3_bind_double(a, b, c))
 #define DT_DEBUG_SQLITE3_BIND_TEXT(a, b, c, d, e) __DT_DEBUG_ASSERT__(sqlite3_bind_text(a, b, c, d, e))
 #define DT_DEBUG_SQLITE3_BIND_BLOB(a, b, c, d, e) __DT_DEBUG_ASSERT__(sqlite3_bind_blob(a, b, c, d, e))

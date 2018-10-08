@@ -66,6 +66,7 @@ typedef enum dt_collection_sort_t
   DT_COLLECTION_SORT_COLOR,
   DT_COLLECTION_SORT_GROUP,
   DT_COLLECTION_SORT_PATH,
+  DT_COLLECTION_SORT_CUSTOM_ORDER,
   DT_COLLECTION_SORT_TITLE,
   DT_COLLECTION_SORT_DESCRIPTION
 } dt_collection_sort_t;
@@ -219,6 +220,12 @@ int dt_collection_serialize(char *buf, int bufsize);
 void dt_collection_split_operator_number(const gchar *input, char **number1, char **number2, char **operator);
 void dt_collection_split_operator_datetime(const gchar *input, char **number1, char **number2,
                                            char **operator);
+
+int64_t dt_collection_get_image_position(const int32_t image_id);
+void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position);
+
+/* move images with drag and drop */
+void dt_collection_move_before(const int32_t image_id, GList * selected_images);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
