@@ -37,7 +37,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 15
+#define CURRENT_DATABASE_VERSION_LIBRARY 16
 #define CURRENT_DATABASE_VERSION_DATA 1
 
 typedef struct dt_database_t
@@ -967,6 +967,29 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 15;
+  }
+  else if(version == 15)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+    ////////////////////////////// custom image order
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN position INTEGER",
+             "[init] can't add `position' column to images table in database\n");
+    TRY_EXEC("CREATE INDEX main.image_position_index ON images (position)",
+             "[init] can't create index for custom image order table\n");
+
+    // Set the initial image sequence. The image id - the sequece images were imported -
+    // defines the initial order of images.
+    //
+    // An int64 is used for the position index. The upper 31 bits define the initial order.
+    // The lower 32bit provide space to reorder images.
+    //
+    // see: dt_collection_move_before()
+    //
+    TRY_EXEC("UPDATE main.images SET position = id << 32",
+             "[init] can't update positions custom image order table\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 16;
   } // maybe in the future, see commented out code elsewhere
     //   else if(version == XXX)
     //   {
@@ -1084,11 +1107,13 @@ static void _create_library_schema(dt_database_t *db)
       "caption VARCHAR, description VARCHAR, license VARCHAR, sha1sum CHAR(40), "
       "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
       "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
-      "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER)",
+      "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER)",
       NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.images_group_id_index ON images (group_id)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.images_film_id_index ON images (film_id)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.images_filename_index ON images (filename)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.image_position_index ON images (position)", NULL, NULL, NULL);
+
   ////////////////////////////// selected_images
   sqlite3_exec(db->handle, "CREATE TABLE main.selected_images (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
   ////////////////////////////// history
