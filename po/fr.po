@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-02 18:08+0200\n"
-"PO-Revision-Date: 2018-10-02 18:13+0200\n"
+"POT-Creation-Date: 2018-10-09 17:41+0200\n"
+"PO-Revision-Date: 2018-10-09 17:42+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1065,19 +1065,19 @@ msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
 "abandonnée..."
 
-#: ../src/common/collection.c:881 ../src/develop/lightroom.c:822
+#: ../src/common/collection.c:886 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:451
 #: ../src/iop/channelmixer.c:462 ../src/iop/colorbalance.c:631
 #: ../src/iop/temperature.c:1367 ../src/libs/collect.c:1183
 msgid "red"
 msgstr "rouge"
 
-#: ../src/common/collection.c:883 ../src/develop/lightroom.c:824
+#: ../src/common/collection.c:888 ../src/develop/lightroom.c:824
 #: ../src/iop/temperature.c:1358 ../src/libs/collect.c:1183
 msgid "yellow"
 msgstr "jaune"
 
-#: ../src/common/collection.c:885 ../src/develop/lightroom.c:826
+#: ../src/common/collection.c:890 ../src/develop/lightroom.c:826
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:452
 #: ../src/iop/channelmixer.c:468 ../src/iop/colorbalance.c:638
 #: ../src/iop/temperature.c:1355 ../src/iop/temperature.c:1368
@@ -1085,35 +1085,35 @@ msgstr "jaune"
 msgid "green"
 msgstr "vert"
 
-#: ../src/common/collection.c:887 ../src/develop/lightroom.c:828
+#: ../src/common/collection.c:892 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
 #: ../src/iop/channelmixer.c:474 ../src/iop/colorbalance.c:645
 #: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1183
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:889 ../src/libs/collect.c:1183
+#: ../src/common/collection.c:894 ../src/libs/collect.c:1183
 msgid "purple"
 msgstr "violet"
 
-#: ../src/common/collection.c:898 ../src/libs/collect.c:1155
+#: ../src/common/collection.c:903 ../src/libs/collect.c:1155
 msgid "altered"
 msgstr "développées"
 
-#: ../src/common/collection.c:904 ../src/libs/collect.c:1164
+#: ../src/common/collection.c:909 ../src/libs/collect.c:1164
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:910 ../src/libs/collect.c:1173
+#: ../src/common/collection.c:915 ../src/libs/collect.c:1173
 msgid "not copied locally"
 msgstr "non copiée localement"
 
-#: ../src/common/collection.c:1268
+#: ../src/common/collection.c:1272
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "« %d » image sur « %d » (#%d) sélectionnée dans la collection courante"
 
-#: ../src/common/collection.c:1274
+#: ../src/common/collection.c:1278
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -1266,7 +1266,7 @@ msgstr "non"
 msgid "yes"
 msgstr "oui"
 
-#: ../src/common/database.c:1340
+#: ../src/common/database.c:1365
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1281,16 +1281,16 @@ msgstr ""
 "\n"
 "« %s »\n"
 
-#: ../src/common/database.c:1347
+#: ../src/common/database.c:1372
 msgid "darktable - error locking database"
 msgstr "darktable - erreur du verrouillage de la base de données"
 
-#: ../src/common/database.c:1347 ../src/common/database.c:1673
-#: ../src/common/database.c:1749
+#: ../src/common/database.c:1372 ../src/common/database.c:1698
+#: ../src/common/database.c:1774
 msgid "close darktable"
 msgstr "quitter darktable"
 
-#: ../src/common/database.c:1458
+#: ../src/common/database.c:1483
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -1299,12 +1299,12 @@ msgstr ""
 "le fichier de verrouillage de la base contient un numéro de process actif "
 "sur votre système : « %d »"
 
-#: ../src/common/database.c:1464
+#: ../src/common/database.c:1489
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "le fichier de verrouillage de la base de données semble être vide"
 
-#: ../src/common/database.c:1472
+#: ../src/common/database.c:1497
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr ""
@@ -1313,7 +1313,7 @@ msgstr ""
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:1662 ../src/common/database.c:1738
+#: ../src/common/database.c:1687 ../src/common/database.c:1763
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1333,11 +1333,11 @@ msgstr ""
 "la base de données depuis une sauvegarde ou re-démarrer avec une nouvelle "
 "base de données?"
 
-#: ../src/common/database.c:1672 ../src/common/database.c:1748
+#: ../src/common/database.c:1697 ../src/common/database.c:1773
 msgid "darktable - error opening database"
 msgstr "darktable - erreur lors de l'ouverture de la base de données"
 
-#: ../src/common/database.c:1673 ../src/common/database.c:1749
+#: ../src/common/database.c:1698 ../src/common/database.c:1774
 msgid "delete database"
 msgstr "effacer la base de données"
 
@@ -1364,23 +1364,23 @@ msgstr ""
 "impossible de supprimer un film comprenant des copies locales dont les "
 "originaux ne sont pas accessibles"
 
-#: ../src/common/history.c:249
+#: ../src/common/history.c:413
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "il est nécessaire de copier le développement d'une image avant de le coller "
 "sur une autre"
 
-#: ../src/common/history.c:430 ../src/common/history.c:433
-#: ../src/common/history.c:449 ../src/common/styles.c:725
-#: ../src/common/styles.c:729 ../src/develop/blend_gui.c:2032
+#: ../src/common/history.c:620 ../src/common/history.c:623
+#: ../src/common/history.c:639 ../src/common/styles.c:728
+#: ../src/common/styles.c:732 ../src/develop/blend_gui.c:2032
 #: ../src/develop/develop.c:1339 ../src/iop/ashift.c:4492
 #: ../src/libs/live_view.c:436
 msgid "on"
 msgstr "activé(e)"
 
-#: ../src/common/history.c:430 ../src/common/history.c:433
-#: ../src/common/history.c:449 ../src/common/styles.c:725
-#: ../src/common/styles.c:729 ../src/develop/blend_gui.c:1804
+#: ../src/common/history.c:620 ../src/common/history.c:623
+#: ../src/common/history.c:639 ../src/common/styles.c:728
+#: ../src/common/styles.c:732 ../src/develop/blend_gui.c:1804
 #: ../src/develop/blend_gui.c:2029 ../src/develop/develop.c:1339
 #: ../src/imageio/format/exr.cc:360 ../src/imageio/format/j2k.c:663
 #: ../src/iop/ashift.c:4491 ../src/iop/ashift.c:4497 ../src/iop/colorin.c:1863
@@ -1407,26 +1407,26 @@ msgstr ""
 "<h1>Merci,</h1><p>tout devrait s'être bien passé, vous pouvez <b>fermer</b> "
 "votre navigateur maintenant et <b>retourner</b> dans darktable.</p>"
 
-#: ../src/common/image.c:161
+#: ../src/common/image.c:197
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1442
+#: ../src/common/image.c:1508
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:1456
+#: ../src/common/image.c:1522
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1522 ../src/control/jobs/control_jobs.c:642
+#: ../src/common/image.c:1588 ../src/control/jobs/control_jobs.c:642
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible"
 
-#: ../src/common/image.c:1688
+#: ../src/common/image.c:1754
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1566,8 +1566,8 @@ msgstr "le style « %s » existe déjà"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:307 ../src/common/styles.c:311
 #: ../src/common/styles.c:391 ../src/common/styles.c:460
-#: ../src/common/styles.c:632 ../src/common/styles.c:1158
-#: ../src/common/styles.c:1177
+#: ../src/common/styles.c:635 ../src/common/styles.c:1161
+#: ../src/common/styles.c:1180
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -1584,17 +1584,17 @@ msgstr "le style « %s » a été créé"
 msgid "no image selected!"
 msgstr "aucune image sélectionnée"
 
-#: ../src/common/styles.c:813
+#: ../src/common/styles.c:816
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "impossible de remplacer le style %s"
 
-#: ../src/common/styles.c:819
+#: ../src/common/styles.c:822
 #, c-format
 msgid "style file for %s exists"
 msgstr "le fichier du style « %s » existe"
 
-#: ../src/common/styles.c:1047
+#: ../src/common/styles.c:1050
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "le style « %s » a été importé"
@@ -2746,15 +2746,15 @@ msgstr "copie de %s"
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: version non cohérente du masque: %d != %d"
 
-#: ../src/develop/masks/masks.c:1833 ../src/libs/masks.c:1038
+#: ../src/develop/masks/masks.c:1836 ../src/libs/masks.c:1038
 msgid "add existing shape"
 msgstr "ajouter un masque existant"
 
-#: ../src/develop/masks/masks.c:1858
+#: ../src/develop/masks/masks.c:1861
 msgid "use same shapes as"
 msgstr "utiliser les mêmes masques que"
 
-#: ../src/develop/masks/masks.c:2170
+#: ../src/develop/masks/masks.c:2173
 msgid "masks can not contain themselves"
 msgstr "masques ne peuvent pas se contenir"
 
@@ -3832,12 +3832,12 @@ msgstr "PDF"
 #. create labels
 #. clang-format off
 #. xmp
-#. DT_COLLECTION_SORT_PAT
+#. DT_COLLECTION_SORT_CUSTOM_ORDER
 #: ../src/imageio/format/pdf.c:580 ../src/imageio/storage/facebook.c:1111
 #: ../src/imageio/storage/flickr.c:533 ../src/imageio/storage/gallery.c:184
 #: ../src/imageio/storage/latex.c:184 ../src/libs/collect.h:34
 #: ../src/libs/metadata.c:335 ../src/libs/metadata_view.c:122
-#: ../src/libs/tools/filter.c:146
+#: ../src/libs/tools/filter.c:147
 msgid "title"
 msgstr "titre"
 
@@ -6051,26 +6051,26 @@ msgstr "rendu (sortie)"
 
 #: ../src/iop/colorout.c:779 ../src/libs/export.c:627
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1452
-#: ../src/views/darkroom.c:1604 ../src/views/lighttable.c:2404
+#: ../src/views/darkroom.c:1604 ../src/views/lighttable.c:2435
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:780 ../src/libs/export.c:628
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1453
-#: ../src/views/darkroom.c:1605 ../src/views/lighttable.c:2405
+#: ../src/views/darkroom.c:1605 ../src/views/lighttable.c:2436
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:781 ../src/libs/export.c:629
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1454
-#: ../src/views/darkroom.c:1606 ../src/views/lighttable.c:2406
+#: ../src/views/darkroom.c:1606 ../src/views/lighttable.c:2437
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
 #: ../src/iop/colorout.c:782 ../src/libs/export.c:630
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1455
-#: ../src/views/darkroom.c:1607 ../src/views/lighttable.c:2407
+#: ../src/views/darkroom.c:1607 ../src/views/lighttable.c:2438
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -7304,7 +7304,7 @@ msgstr "blanc"
 msgid "liquify"
 msgstr "liquéfier"
 
-#: ../src/iop/liquify.c:3314
+#: ../src/iop/liquify.c:3287
 msgid ""
 "click and drag to add point\n"
 "scrool to change size\n"
@@ -7314,7 +7314,7 @@ msgstr ""
 "défiler pour changer la taille\n"
 "shift-défiler pour changer la force - ctrl-défiler pour changer la direction"
 
-#: ../src/iop/liquify.c:3318
+#: ../src/iop/liquify.c:3291
 msgid ""
 "click to add line\n"
 "scrool to change size\n"
@@ -7324,7 +7324,7 @@ msgstr ""
 "défiler pour changer la taille\n"
 "shift-défiler pour changer la force - ctrl-défiler pour changer la direction"
 
-#: ../src/iop/liquify.c:3322
+#: ../src/iop/liquify.c:3295
 msgid ""
 "click to add curve\n"
 "scrool to change size\n"
@@ -7334,11 +7334,11 @@ msgstr ""
 "défiler pour changer la taille\n"
 "shift-défiler pour changer la force - ctrl-défiler pour changer la direction"
 
-#: ../src/iop/liquify.c:3325
+#: ../src/iop/liquify.c:3298
 msgid "click to edit nodes"
 msgstr "cliquer pour éditer les points"
 
-#: ../src/iop/liquify.c:3396
+#: ../src/iop/liquify.c:3369
 msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
@@ -7346,27 +7346,27 @@ msgstr ""
 "utiliser un outil pour ajouter une forme.\n"
 "clic-droit pour supprimer une forme."
 
-#: ../src/iop/liquify.c:3398
+#: ../src/iop/liquify.c:3371
 msgid "warps|nodes count:"
 msgstr "nb formes|points:"
 
-#: ../src/iop/liquify.c:3405
+#: ../src/iop/liquify.c:3378
 msgid "node tool: edit, add and delete nodes"
 msgstr "outil point: éditer, ajouter et supprimer des points"
 
-#: ../src/iop/liquify.c:3413
+#: ../src/iop/liquify.c:3386
 msgid "curve tool: draw curves"
 msgstr "outil courbe: dessiner des courbes"
 
-#: ../src/iop/liquify.c:3421
+#: ../src/iop/liquify.c:3394
 msgid "line tool: draw lines"
 msgstr "outil ligne: dessiner des lignes"
 
-#: ../src/iop/liquify.c:3429
+#: ../src/iop/liquify.c:3402
 msgid "point tool: draw points"
 msgstr "outil point: placer des points"
 
-#: ../src/iop/liquify.c:3436
+#: ../src/iop/liquify.c:3409
 msgid ""
 "ctrl-click: add node - right click: remove path\n"
 "ctrl-alt-click: toggle line/curve"
@@ -7374,7 +7374,7 @@ msgstr ""
 "ctrl-clic: ajouter un point - clic-droit: supprimer un chemin\n"
 "ctrl-alt-clic: changer line/courbe"
 
-#: ../src/iop/liquify.c:3438
+#: ../src/iop/liquify.c:3411
 msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl-click: autosmooth, cusp, smooth, symmetrical - right click to remove"
@@ -7384,23 +7384,23 @@ msgstr ""
 "ctrl-clic: automatique, parabolique, lissé, symétrique - clic-droit pour "
 "supprimer"
 
-#: ../src/iop/liquify.c:3441 ../src/iop/liquify.c:3442
+#: ../src/iop/liquify.c:3414 ../src/iop/liquify.c:3415
 msgid "drag to change shape of path"
 msgstr "déplacer pour changer le chemin"
 
-#: ../src/iop/liquify.c:3443
+#: ../src/iop/liquify.c:3416
 msgid "drag to adjust warp radius"
 msgstr "déplacer pour ajuster le rayon"
 
-#: ../src/iop/liquify.c:3444
+#: ../src/iop/liquify.c:3417
 msgid "drag to adjust hardness (center)"
 msgstr "déplacer pour ajuster la dureté (centre)"
 
-#: ../src/iop/liquify.c:3445
+#: ../src/iop/liquify.c:3418
 msgid "drag to adjust hardness (feather)"
 msgstr "déplacer pour ajuster la dureté (progressif)"
 
-#: ../src/iop/liquify.c:3446
+#: ../src/iop/liquify.c:3419
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl-click: linear, grow, and shrink"
@@ -7408,22 +7408,22 @@ msgstr ""
 "déplacer pour ajuster la force du point\n"
 "ctrl-clic: linéaire, augmente et diminue"
 
-#: ../src/iop/liquify.c:3464
+#: ../src/iop/liquify.c:3437
 msgctxt "accel"
 msgid "point tool"
 msgstr "outil point"
 
-#: ../src/iop/liquify.c:3465
+#: ../src/iop/liquify.c:3438
 msgctxt "accel"
 msgid "line tool"
 msgstr "outil ligne"
 
-#: ../src/iop/liquify.c:3466
+#: ../src/iop/liquify.c:3439
 msgctxt "accel"
 msgid "curve tool"
 msgstr "outil courbe"
 
-#: ../src/iop/liquify.c:3467
+#: ../src/iop/liquify.c:3440
 msgctxt "accel"
 msgid "node tool"
 msgstr "édition des chemins"
@@ -9011,7 +9011,7 @@ msgstr "historique"
 
 #. DT_COLLECTION_SORT_TITLE
 #: ../src/libs/collect.h:35 ../src/libs/metadata.c:336
-#: ../src/libs/tools/filter.c:147
+#: ../src/libs/tools/filter.c:148
 msgid "description"
 msgstr "description"
 
@@ -11017,37 +11017,37 @@ msgstr "bandeau"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2227
+#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2258
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 étoile"
 
-#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2228
+#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2259
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 étoile"
 
-#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2229
+#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2260
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2230
+#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2261
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:174 ../src/views/lighttable.c:2231
+#: ../src/libs/tools/filmstrip.c:174 ../src/views/lighttable.c:2262
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:175 ../src/views/lighttable.c:2232
+#: ../src/libs/tools/filmstrip.c:175 ../src/views/lighttable.c:2263
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:176 ../src/views/lighttable.c:2233
+#: ../src/libs/tools/filmstrip.c:176 ../src/views/lighttable.c:2264
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rejeter"
@@ -11109,6 +11109,11 @@ msgstr "tout sauf rejetées"
 msgid "sort by"
 msgstr "trier par"
 
+#. DT_COLLECTION_SORT_PAT
+#: ../src/libs/tools/filter.c:146
+msgid "custom sort"
+msgstr "tri personnalisé"
+
 #: ../src/libs/tools/global_toolbox.c:49
 msgid "preferences"
 msgstr "préférences"
@@ -11167,7 +11172,7 @@ msgstr "affiche les surimpressions"
 msgid "hinter"
 msgstr "rendu"
 
-#: ../src/libs/tools/lighttable.c:64 ../src/views/lighttable.c:139
+#: ../src/libs/tools/lighttable.c:64 ../src/views/lighttable.c:148
 msgid "lighttable"
 msgstr "table lumineuse"
 
@@ -11381,7 +11386,7 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1602 ../src/views/lighttable.c:2402
+#: ../src/views/darkroom.c:1602 ../src/views/lighttable.c:2433
 msgid "display intent"
 msgstr "rendu (écran)"
 
@@ -11389,11 +11394,11 @@ msgstr "rendu (écran)"
 msgid "softproof profile"
 msgstr "épreuvage écran"
 
-#: ../src/views/darkroom.c:1618 ../src/views/lighttable.c:2410
+#: ../src/views/darkroom.c:1618 ../src/views/lighttable.c:2441
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:1650 ../src/views/lighttable.c:2431
+#: ../src/views/darkroom.c:1650 ../src/views/lighttable.c:2462
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
@@ -11522,116 +11527,116 @@ msgstr "permet de recadrer et zoomer pendant l'édition des masques"
 msgid "good knight"
 msgstr "bon chevalier"
 
-#: ../src/views/lighttable.c:528 ../src/views/slideshow.c:331
+#: ../src/views/lighttable.c:544 ../src/views/slideshow.c:331
 msgid "there are no images in this collection"
 msgstr "il n'y a pas d'images dans cette collection"
 
-#: ../src/views/lighttable.c:532
+#: ../src/views/lighttable.c:548
 msgid "if you have not imported any images yet"
 msgstr "si vous n'avez pas encore importé d'images"
 
-#: ../src/views/lighttable.c:536
+#: ../src/views/lighttable.c:552
 msgid "you can do so in the import module"
 msgstr "vous pouvez le faire dans le module « importer »"
 
-#: ../src/views/lighttable.c:544
+#: ../src/views/lighttable.c:560
 msgid "try to relax the filter settings in the top panel"
 msgstr "vous pouvez modifier le filtre de notation dans le panneau supérieur"
 
-#: ../src/views/lighttable.c:553
+#: ../src/views/lighttable.c:569
 msgid "or add images in the collection module in the left panel"
 msgstr ""
 "ou modifier les filtres de collection dans le menu de collection à gauche."
 
 #. Navigation keys
-#: ../src/views/lighttable.c:2236
+#: ../src/views/lighttable.c:2267
 msgctxt "accel"
 msgid "navigate up"
 msgstr "aller en haut"
 
-#: ../src/views/lighttable.c:2237
+#: ../src/views/lighttable.c:2268
 msgctxt "accel"
 msgid "navigate down"
 msgstr "aller en bas"
 
-#: ../src/views/lighttable.c:2238
+#: ../src/views/lighttable.c:2269
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "défiler par page vers le haut"
 
-#: ../src/views/lighttable.c:2239
+#: ../src/views/lighttable.c:2270
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "défiler par page vers le bas"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2242
+#: ../src/views/lighttable.c:2273
 msgctxt "accel"
 msgid "scroll up"
 msgstr "défiler en arrière"
 
-#: ../src/views/lighttable.c:2243
+#: ../src/views/lighttable.c:2274
 msgctxt "accel"
 msgid "scroll down"
 msgstr "défiler en avant"
 
-#: ../src/views/lighttable.c:2244
+#: ../src/views/lighttable.c:2275
 msgctxt "accel"
 msgid "scroll left"
 msgstr "défiler vers la gauche"
 
-#: ../src/views/lighttable.c:2245
+#: ../src/views/lighttable.c:2276
 msgctxt "accel"
 msgid "scroll right"
 msgstr "défiler vers la droite "
 
-#: ../src/views/lighttable.c:2246
+#: ../src/views/lighttable.c:2277
 msgctxt "accel"
 msgid "scroll center"
 msgstr "défiler vers le centre"
 
-#: ../src/views/lighttable.c:2247
+#: ../src/views/lighttable.c:2278
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "aligner les images sur la grille"
 
-#: ../src/views/lighttable.c:2248
+#: ../src/views/lighttable.c:2279
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "inverse sélection de l'image"
 
-#: ../src/views/lighttable.c:2249
+#: ../src/views/lighttable.c:2280
 msgctxt "accel"
 msgid "select single image"
 msgstr "sélectionne image unique"
 
 #. Preview key
-#: ../src/views/lighttable.c:2252
+#: ../src/views/lighttable.c:2283
 msgctxt "accel"
 msgid "preview"
 msgstr "aperçu"
 
-#: ../src/views/lighttable.c:2253
+#: ../src/views/lighttable.c:2284
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "aperçu avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:2254
+#: ../src/views/lighttable.c:2285
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "aperçu persistant"
 
-#: ../src/views/lighttable.c:2255
+#: ../src/views/lighttable.c:2286
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "aperçu persistant avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:2256
+#: ../src/views/lighttable.c:2287
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "sortir du mode aperçu persistant"
 
-#: ../src/views/lighttable.c:2374
+#: ../src/views/lighttable.c:2405
 msgid "set display profile"
 msgstr "profil (écran)"
 
@@ -11699,6 +11704,25 @@ msgstr ""
 "nous vous suggérons de passer à la version 64 bits.\n"
 "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
 "corrigés.\n"
+
+#~ msgid "show scrollbars for center view"
+#~ msgstr "affiche les barres de défilement pour la vue centrale"
+
+#~ msgctxt "preferences"
+#~ msgid "no scrollbars"
+#~ msgstr "pas de barre de défilement"
+
+#~ msgctxt "preferences"
+#~ msgid "lighttable"
+#~ msgstr "table lumineuse"
+
+#~ msgctxt "preferences"
+#~ msgid "lighttable + darkroom"
+#~ msgstr "table lumineuse et chambre noire"
+
+#~ msgid "defines where scrollbars should be displayed"
+#~ msgstr ""
+#~ "défini dans quelles vues les barres de défilement doivent apparaître"
 
 #~ msgid "click and drag to add point"
 #~ msgstr "cliquer et tracer pour ajouter un point"
