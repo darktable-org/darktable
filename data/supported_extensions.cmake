@@ -14,6 +14,7 @@ set(DT_SUPPORTED_EXTENSIONS
     "dc2"
     "dcr"
     "dng"
+    "gpr"
     "erf"
     "exr"
     "fff"
