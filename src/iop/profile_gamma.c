@@ -24,6 +24,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/opencl.h"
+#include "common/sse.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop_math.h"
@@ -57,6 +58,7 @@ typedef struct dt_iop_profilegamma_params_t
 
 typedef struct dt_iop_profilegamma_gui_data_t
 {
+  dt_pthread_mutex_t lock;
   GtkWidget *mode;
   GtkWidget *mode_stack;
   GtkWidget *linear;
@@ -311,6 +313,54 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_profilegamma_data_t *data = (dt_iop_profilegamma_data_t *)piece->data;
+  const int ch = piece->colors;
+  
+  switch(data->mode)
+  {
+    case PROFILEGAMMA_LOG:
+    {
+      const __m128 grey = _mm_set1_ps(data->grey_point / 100.0f);
+      const __m128 noise = _mm_set1_ps(powf(2.0f, -16.0f));
+      const __m128 shadows_range = _mm_set1_ps(data->shadows_range);
+      const __m128 dynamic_range = _mm_set1_ps(data->dynamic_range);
+
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) schedule(static)
+#endif
+      for(int j = 0; j < roi_out->height; j++)
+      {
+        float *in = ((float *)ivoid) + (size_t)ch * roi_in->width * j;
+        float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
+        for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
+        {
+          __m128 tmp = _mm_max_ps(_mm_load_ps(in) / grey, noise);
+          __m128 calc = (_mm_log2_ps(tmp) - shadows_range) / dynamic_range;
+          tmp = _mm_max_ps(calc, noise);
+          _mm_store_ps(out, tmp);
+        }
+      }
+      break;
+    }
+
+    case PROFILEGAMMA_GAMMA:
+    {
+      // fallback to pure C
+      process((dt_iop_module_t *)self, (dt_dev_pixelpipe_iop_t *)piece, (const void *const) ivoid, (void *const) ovoid,
+             (const dt_iop_roi_t *const) roi_in, (const dt_iop_roi_t *const) roi_out);
+      
+      break;
+    }
+  }
+
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
+#endif
+
 static void linear_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -336,6 +386,7 @@ static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
   
+  dt_pthread_mutex_lock(&g->lock);
   float previous = p->security_factor;
   p->security_factor = dt_bauhaus_slider_get(slider);
   float ratio = (p->security_factor - previous) / (previous + 100.0f);
@@ -353,6 +404,7 @@ static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
   dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
   dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
   darktable.gui->reset = 0;
+  dt_pthread_mutex_unlock(&g->lock);
   
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -388,6 +440,7 @@ static void auto_grey(GtkWidget *button, gpointer user_data)
     dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
     dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
     
+    dt_pthread_mutex_lock(&g->lock);
     float XYZ[3];
     dt_prophotorgb_to_XYZ((const float *)self->picked_color, XYZ);
     p->grey_point = 100.f * XYZ[1];
@@ -397,6 +450,7 @@ static void auto_grey(GtkWidget *button, gpointer user_data)
     darktable.gui->reset = 0;
     
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    dt_pthread_mutex_unlock(&g->lock);
   }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -432,6 +486,8 @@ static void auto_black(GtkWidget *button, gpointer user_data)
     dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
     dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
     
+    dt_pthread_mutex_lock(&g->lock);
+    
     float noise = powf(2.0f, -16.0f);
     float XYZ[3]; 
 
@@ -448,6 +504,8 @@ static void auto_black(GtkWidget *button, gpointer user_data)
     darktable.gui->reset = 0;
     
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    
+    dt_pthread_mutex_unlock(&g->lock);
   }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -477,6 +535,8 @@ static void auto_dynamic_range(GtkWidget *button, gpointer user_data)
   {
     dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
     dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+    
+    dt_pthread_mutex_lock(&g->lock);
     
     if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) 
     {
@@ -509,6 +569,8 @@ static void auto_dynamic_range(GtkWidget *button, gpointer user_data)
     darktable.gui->reset = 0;
     
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    
+    dt_pthread_mutex_unlock(&g->lock);
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -533,6 +595,8 @@ static void optimize_button_pressed_callback(GtkWidget *button, gpointer user_da
   
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+  
+  dt_pthread_mutex_lock(&g->lock);
   
   float noise = powf(2.0f, -16.0f);
   float XYZ[3];
@@ -569,6 +633,8 @@ static void optimize_button_pressed_callback(GtkWidget *button, gpointer user_da
   darktable.gui->reset = 0;
   
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  
+  dt_pthread_mutex_unlock(&g->lock);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -637,74 +703,72 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   const float linear = p->linear;
   const float gamma = p->gamma;
+  d->mode = p->mode;
 
   d->linear = p->linear;
   d->gamma = p->gamma;
-
-  float a, b, c, g;
-  if(gamma == 1.0)
+  
+  if (p->mode == PROFILEGAMMA_GAMMA)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
-#endif
-    for(int k = 0; k < 0x10000; k++) d->table[k] = 1.0 * k / 0x10000;
-  }
-  else
-  {
-    if(linear == 0.0)
+    float a, b, c, g;
+    if(gamma == 1.0)
     {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
-#endif
-      for(int k = 0; k < 0x10000; k++) d->table[k] = powf(1.00 * k / 0x10000, gamma);
+  #ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(d) schedule(static)
+  #endif
+      for(int k = 0; k < 0x10000; k++) d->table[k] = 1.0 * k / 0x10000;
     }
     else
     {
-      if(linear < 1.0)
+      if(linear == 0.0)
       {
-        g = gamma * (1.0 - linear) / (1.0 - gamma * linear);
-        a = 1.0 / (1.0 + linear * (g - 1));
-        b = linear * (g - 1) * a;
-        c = powf(a * linear + b, g) / linear;
+  #ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(d) schedule(static)
+  #endif
+        for(int k = 0; k < 0x10000; k++) d->table[k] = powf(1.00 * k / 0x10000, gamma);
       }
       else
       {
-        a = b = g = 0.0;
-        c = 1.0;
-      }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d, a, b, c, g) schedule(static)
-#endif
-      for(int k = 0; k < 0x10000; k++)
-      {
-        float tmp;
-        if(k < 0x10000 * linear)
-          tmp = c * k / 0x10000;
+        if(linear < 1.0)
+        {
+          g = gamma * (1.0 - linear) / (1.0 - gamma * linear);
+          a = 1.0 / (1.0 + linear * (g - 1));
+          b = linear * (g - 1) * a;
+          c = powf(a * linear + b, g) / linear;
+        }
         else
-          tmp = powf(a * k / 0x10000 + b, g);
-        d->table[k] = tmp;
+        {
+          a = b = g = 0.0;
+          c = 1.0;
+        }
+  #ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(d, a, b, c, g) schedule(static)
+  #endif
+        for(int k = 0; k < 0x10000; k++)
+        {
+          float tmp;
+          if(k < 0x10000 * linear)
+            tmp = c * k / 0x10000;
+          else
+            tmp = powf(a * k / 0x10000 + b, g);
+          d->table[k] = tmp;
+        }
       }
     }
+
+    // now the extrapolation stuff:
+    const float x[4] = { 0.7f, 0.8f, 0.9f, 1.0f };
+    const float y[4]
+        = { d->table[CLAMP((int)(x[0] * 0x10000ul), 0, 0xffff)], d->table[CLAMP((int)(x[1] * 0x10000ul), 0, 0xffff)],
+            d->table[CLAMP((int)(x[2] * 0x10000ul), 0, 0xffff)],
+            d->table[CLAMP((int)(x[3] * 0x10000ul), 0, 0xffff)] };
+    dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
   }
-
-  // now the extrapolation stuff:
-  const float x[4] = { 0.7f, 0.8f, 0.9f, 1.0f };
-  const float y[4]
-      = { d->table[CLAMP((int)(x[0] * 0x10000ul), 0, 0xffff)], d->table[CLAMP((int)(x[1] * 0x10000ul), 0, 0xffff)],
-          d->table[CLAMP((int)(x[2] * 0x10000ul), 0, 0xffff)],
-          d->table[CLAMP((int)(x[3] * 0x10000ul), 0, 0xffff)] };
-  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
-
+  
   d->dynamic_range = p->dynamic_range;
   d->grey_point = p->grey_point;
   d->shadows_range = p->shadows_range;
   d->security_factor = p->security_factor;
-  d->mode = p->mode;
-
-  //piece->process_cl_ready = 1;
-
-  // no OpenCL for log yet.
-  //if(d->mode == PROFILEGAMMA_LOG) piece->process_cl_ready = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
