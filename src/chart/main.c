@@ -53,7 +53,7 @@ typedef struct dt_lut_t
 {
   // gtk gui
   GtkWidget *window, *image_button, *cht_button, *it8_button, *reference_image_button, *reference_it8_box,
-      *reference_image_box, *process_button, *export_button, *export_raw_button, *reference_mode, *gray_ramp,
+      *reference_image_box, *process_button, *export_button, *export_raw_button, *reference_mode,
       *number_patches, *source_shrink, *reference_shrink, *result_label;
   GtkWidget *treeview;
   GtkTreeModel *model;
@@ -289,7 +289,7 @@ static char *get_filename_base(const char *filename)
 static gboolean open_reference_image(dt_lut_t *self, const char *filename)
 {
   gboolean res = open_image(&self->reference, filename);
-  gtk_widget_set_sensitive(self->process_button, FALSE);
+  gtk_widget_set_sensitive(self->process_button, res);
   gtk_widget_set_sensitive(self->export_button, FALSE);
   gtk_widget_set_sensitive(self->export_raw_button, FALSE);
   if(!res)
@@ -375,15 +375,8 @@ static gboolean open_cht(dt_lut_t *self, const char *filename)
   gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(self->it8_button));
   gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(self->reference_image_button));
 
-  // fill the gray ramp selector
   if(res)
   {
-    gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(self->gray_ramp));
-    GList *patch_sets = g_hash_table_get_keys(self->chart->patch_sets);
-    patch_sets = g_list_sort(patch_sets, (GCompareFunc)g_strcmp0);
-    for(GList *iter = patch_sets; iter; iter = g_list_next(iter))
-      gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(self->gray_ramp), NULL, (char *)iter->data);
-    g_list_free(patch_sets);
     self->source.shrink = self->chart->box_shrink;
     self->reference.shrink = self->chart->box_shrink;
     gtk_range_set_value(GTK_RANGE(self->source_shrink), 1.0);
@@ -392,7 +385,7 @@ static gboolean open_cht(dt_lut_t *self, const char *filename)
 
   gtk_widget_set_sensitive(self->it8_button, res);
   gtk_widget_set_sensitive(self->reference_image_button, res);
-  gtk_widget_set_sensitive(self->process_button, FALSE);
+  gtk_widget_set_sensitive(self->process_button, res);
   gtk_widget_set_sensitive(self->export_button, FALSE);
   gtk_widget_set_sensitive(self->export_raw_button, FALSE);
 
@@ -602,37 +595,19 @@ static void export_raw(dt_lut_t *self, char *filename, char *name, char *descrip
   if(!fd) return;
 
   GList *patch_names = NULL;
-  char *gray_ramp_key = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(self->gray_ramp));
-
-  if(gray_ramp_key)
-    patch_names = g_hash_table_lookup(self->chart->patch_sets, gray_ramp_key);
-
-  const int num_gray = g_list_length(patch_names);
-
-  // TODO: if no gray ramp was selected (for example with ColorChecker where the gray patches are not in their
-  // own patch set) we should go over all patches and find those that look neutral and are in a row/column
 
   fprintf(fd, "name;%s\n", name);
   fprintf(fd, "description;%s\n", description);
-  fprintf(fd, "num_gray;%d\n", num_gray);
+  fprintf(fd, "num_gray; 0\n");
 
   fprintf(fd, "patch;L_source;a_source;b_source;L_reference;a_reference;b_reference\n");
-  // iterate over all known patches in the chart, gray ramp last
+  // iterate over all known patches in the chart
   g_hash_table_iter_init(&table_iter, self->chart->patch_sets);
   while(g_hash_table_iter_next(&table_iter, &key, &value))
   {
-    if(!g_strcmp0(gray_ramp_key, (char *)key)) continue;
     patch_names = (GList *)value;
     print_patches(self, fd, patch_names);
   }
-
-  if(gray_ramp_key)
-  {
-    patch_names = g_hash_table_lookup(self->chart->patch_sets, gray_ramp_key);
-    if(patch_names) print_patches(self, fd, patch_names);
-  }
-
-  g_free(gray_ramp_key);
   fclose(fd);
 }
 
@@ -876,44 +851,51 @@ static int compare_L_source(const void *x_, const void *y_)
 }
 
 static void process_data(dt_lut_t *self, double *target_L, double *target_a, double *target_b,
-                         double *colorchecker_Lab, int N, int num_grays, int sparsity)
+                         double *colorchecker_Lab, int N, int sparsity)
 {
-  // sort all gray patches according to the L channel of the source colors
-  double *grays = malloc(sizeof(double) * 6 * num_grays);
-  for(int k = 0; k < num_grays; k++)
-  {
-    grays[k * 6 + 0] = colorchecker_Lab[(k + N - num_grays) * 3 + 0];
-    grays[k * 6 + 1] = colorchecker_Lab[(k + N - num_grays) * 3 + 1];
-    grays[k * 6 + 2] = colorchecker_Lab[(k + N - num_grays) * 3 + 2];
-    grays[k * 6 + 3] = target_L[k + N - num_grays];
-    grays[k * 6 + 4] = target_a[k + N - num_grays];
-    grays[k * 6 + 5] = target_b[k + N - num_grays];
-  }
-  qsort(grays, num_grays, sizeof(double) * 6, compare_L_source);
-  for(int k = 0; k < num_grays; k++)
-  {
-    colorchecker_Lab[(k + N - num_grays) * 3 + 0] = grays[k * 6 + 0];
-    colorchecker_Lab[(k + N - num_grays) * 3 + 1] = grays[k * 6 + 1];
-    colorchecker_Lab[(k + N - num_grays) * 3 + 2] = grays[k * 6 + 2];
-    target_L[k + N - num_grays] = grays[k * 6 + 3];
-    target_a[k + N - num_grays] = grays[k * 6 + 4];
-    target_b[k + N - num_grays] = grays[k * 6 + 5];
-  }
-  free(grays);
-
-  // construct a tone curve from the grays plus pure black and pure white
-  int num_tonecurve = num_grays + 2;
+  // get all the memory, just in case:
+  double *cx = malloc(sizeof(double)*N);
+  double *cy = malloc(sizeof(double)*N);
+  double *grays = malloc(sizeof(double) * 6 * N);
   tonecurve_t tonecurve;
-  double *cx = malloc(sizeof(double) * num_tonecurve);
-  double *cy = malloc(sizeof(double) * num_tonecurve);
-  cx[0] = cy[0] = 0.0;                           // fix black
-  cx[num_grays + 1] = cy[num_grays + 1] = 100.0; // fix white
-  for(int k = 0; k < num_grays; k++) cx[k + 1] = colorchecker_Lab[3 * (N - num_grays + k)];
-  for(int k = 0; k < num_grays; k++) cy[k + 1] = target_L[N - num_grays + k];
-  tonecurve_create(&tonecurve, cx, cy, num_tonecurve);
+  int num_tonecurve = 0;
+  {
+    int cnt = 0;
+    
+    for(int i=0;i<N;i++)
+    {
+      double sat_in =
+        colorchecker_Lab[3*i+1] * colorchecker_Lab[3*i+1] +
+        colorchecker_Lab[3*i+2] * colorchecker_Lab[3*i+2];
+      double sat_out = 
+        target_a[i] * target_a[i] +
+        target_b[i] * target_b[i];
+      // we'll allow some artistic tint or one due to illuminants (note square scale)
+      if(sat_in < 15.0 && sat_out < 15.0)
+      {
+        cnt++; // store as gray patch:
+        grays[6*cnt + 0] = colorchecker_Lab[3*i+0];
+        grays[6*cnt + 1] = colorchecker_Lab[3*i+1];
+        grays[6*cnt + 2] = colorchecker_Lab[3*i+2];
+        grays[6*cnt + 3] = target_L[i];
+        grays[6*cnt + 4] = target_a[i];
+        grays[6*cnt + 5] = target_b[i];
+      }
+    }
+    fprintf(stderr, "detected %d/%d as gray patches for tonecurve computation\n", cnt, N);
+    // sort entries by source L
+    qsort(grays, cnt, sizeof(double) * 6, compare_L_source);
 
-  cy = NULL;
-  cx = NULL;
+    // put entries with fixed black and white into cx, cy
+    cx[0] = cy[0] = 0.0;           // fix black
+    cx[cnt+1] = cy[cnt+1] = 100.0; // fix white
+
+    // construct a tone curve from the grays plus pure black and pure white
+    num_tonecurve = cnt + 2;
+    for(int k = 0; k < cnt; k++) cx[k + 1] = grays[6*k+0];
+    for(int k = 0; k < cnt; k++) cy[k + 1] = grays[6*k+3];
+    tonecurve_create(&tonecurve, cx, cy, num_tonecurve);
+  }
 
 #if 0 // quiet.
   for(int k = 0; k < num_tonecurve; k++)
@@ -926,21 +908,23 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   for(int k = 0; k < N; k++) target_L[k] = tonecurve_unapply(&tonecurve, target_L[k]);
 #else // rgb tonecurve affecting colours, too
   tonecurve_t rgbcurve;
-  cx = malloc(sizeof(double) * num_tonecurve);
-  cy = malloc(sizeof(double) * num_tonecurve);
+  // ownership transferred to tonecurve object, so we just alloc without free here:
+  cx = malloc(sizeof(double)*num_tonecurve);
+  cy = malloc(sizeof(double)*num_tonecurve);
   cx[0] = cy[0] = 0.0;                           // fix black
-  cx[num_grays + 1] = cy[num_grays + 1] = 100.0; // fix white
-  for(int k = 0; k < num_grays; k++)
+  cx[num_tonecurve - 1] = cy[num_tonecurve - 1] = 100.0; // fix white
+  for(int k = 1; k < num_tonecurve-1; k++)
   {
     float rgb[3], Lab[3] = { 0.0f, 0.0f, 0.0f };
-    Lab[0] = colorchecker_Lab[3 * (N - num_grays + k)];
+    Lab[0] = grays[6*k+0];
     dt_Lab_to_prophotorgb(Lab, rgb);
-    cx[k + 1] = rgb[0];
+    cx[k] = rgb[0];
     Lab[0] = tonecurve_apply(&tonecurve, Lab[0]);
     dt_Lab_to_prophotorgb(Lab, rgb);
-    cy[k + 1] = rgb[0];
+    cy[k] = rgb[0];
   }
   tonecurve_create(&rgbcurve, cx, cy, num_tonecurve);
+  free(grays);
 
   // now unapply the curve:
   for(int k = 0; k < N; k++)
@@ -1012,23 +996,10 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
   self->tonecurve_encoded = NULL;
   self->colorchecker_encoded = NULL;
 
-  char *gray_ramp_key = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(self->gray_ramp));
   if(!self->chart) return;
-
-  // TODO: if no gray ramp was selected (for example with ColorChecker where the gray patches are not in their
-  // own patch set) we should go over all patches and find those that look neutral and are in a row/column
-  if(!gray_ramp_key) return;
-
-  GList *gray_ramp = g_hash_table_lookup(self->chart->patch_sets, gray_ramp_key);
-  if(!gray_ramp)
-  {
-    g_free(gray_ramp_key);
-    return;
-  }
 
   int i = 0;
   int N = g_hash_table_size(self->chart->box_table);
-  const int num_tonecurve = g_list_length(gray_ramp);
 
   double *target_L = (double *)calloc(sizeof(double), (N + 4));
   double *target_a = (double *)calloc(sizeof(double), (N + 4));
@@ -1041,23 +1012,15 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
   g_hash_table_iter_init(&table_iter, self->chart->patch_sets);
   while(g_hash_table_iter_next(&table_iter, &set_key, &value))
   {
-    if(!g_strcmp0(gray_ramp_key, (char *)set_key)) continue;
     GList *patch_names = (GList *)value;
     add_patches_to_array(self, patch_names, &N, &i, target_L, target_a, target_b, colorchecker_Lab);
-  }
-
-  if(gray_ramp_key) // TODO: ColorChecker like charts without a ramp patch set just happen to work by accident
-  {
-    GList *patch_names = g_hash_table_lookup(self->chart->patch_sets, gray_ramp_key);
-    if(patch_names)
-      add_patches_to_array(self, patch_names, &N, &i, target_L, target_a, target_b, colorchecker_Lab);
   }
 
   add_hdr_patches(&N, &target_L, &target_a, &target_b, &colorchecker_Lab);
 
   int sparsity = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(self->number_patches)) + 4;
 
-  process_data(self, target_L, target_a, target_b, colorchecker_Lab, N, num_tonecurve, sparsity);
+  process_data(self, target_L, target_a, target_b, colorchecker_Lab, N, sparsity);
 
   gtk_widget_set_sensitive(self->export_button, TRUE);
 
@@ -1065,8 +1028,6 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
   free(target_a);
   free(target_b);
   free(colorchecker_Lab);
-
-  g_free(gray_ramp_key);
 }
 
 static void cht_state_callback(GtkWidget *widget, GtkStateFlags flags, gpointer user_data)
@@ -1080,17 +1041,6 @@ static void cht_state_callback(GtkWidget *widget, GtkStateFlags flags, gpointer 
     gtk_widget_set_sensitive(self->process_button, FALSE);
     gtk_widget_set_sensitive(self->export_button, FALSE);
     gtk_widget_set_sensitive(self->export_raw_button, FALSE);
-  }
-}
-
-static void gray_ramp_changed_callback(GtkComboBox *widget, gpointer user_data)
-{
-  dt_lut_t *self = (dt_lut_t *)user_data;
-  int active = gtk_combo_box_get_active(widget);
-  if(active >= 0)
-  {
-    gtk_widget_set_sensitive(self->process_button, TRUE);
-    gtk_widget_set_sensitive(self->export_raw_button, TRUE);
   }
 }
 
@@ -1211,10 +1161,6 @@ static GtkWidget *create_notebook_page_process(dt_lut_t *self)
 
   int line = 0;
 
-  GtkWidget *gray_ramp = gtk_combo_box_text_new();
-  gtk_grid_attach(GTK_GRID(page), gtk_label_new("patches with gray ramp"), 0, line, 1, 1);
-  gtk_grid_attach(GTK_GRID(page), gray_ramp, 1, line++, 1, 1);
-
   // TODO: it might make sense to limit this to a smaller range and/or use a slider
   // 49 is the current max in the lut iop
   GtkWidget *number_patches = gtk_spin_button_new_with_range(0, 49, 1);
@@ -1233,12 +1179,10 @@ static GtkWidget *create_notebook_page_process(dt_lut_t *self)
   gtk_widget_set_halign(self->result_label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(page), self->result_label, 1, line++, 3, 1);
 
-  g_signal_connect(gray_ramp, "changed", G_CALLBACK(gray_ramp_changed_callback), self);
   g_signal_connect(process_button, "clicked", G_CALLBACK(process_button_clicked_callback), self);
   g_signal_connect(export_button, "clicked", G_CALLBACK(export_button_clicked_callback), self);
   g_signal_connect(export_raw_button, "clicked", G_CALLBACK(export_raw_button_clicked_callback), self);
 
-  self->gray_ramp = gray_ramp;
   self->number_patches = number_patches;
   self->process_button = process_button;
   self->export_button = export_button;
@@ -1813,7 +1757,7 @@ static int main_csv(dt_lut_t *self, int argc, char *argv[])
 
   add_hdr_patches(&N, &target_L, &target_a, &target_b, &colorchecker_Lab);
 
-  process_data(self, target_L, target_a, target_b, colorchecker_Lab, N, num_tonecurve, sparsity);
+  process_data(self, target_L, target_a, target_b, colorchecker_Lab, N, sparsity);
 
   export_style(self, filename_style, name, description);
 
