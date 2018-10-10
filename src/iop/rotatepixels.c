@@ -76,7 +76,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_BASIC;
 }
 
 int operation_tags()

@@ -198,11 +198,11 @@ static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, ui
     return TRUE;
   else if(iop_group & IOP_GROUP_BASIC && group == DT_MODULEGROUP_BASIC)
     return TRUE;
+  else if(iop_group & IOP_GROUP_CORRECT && group == DT_MODULEGROUP_CORRECT)
+    return TRUE;
   else if(iop_group & IOP_GROUP_TONE && group == DT_MODULEGROUP_TONE)
     return TRUE;
   else if(iop_group & IOP_GROUP_COLOR && group == DT_MODULEGROUP_COLOR)
-    return TRUE;
-  else if(iop_group & IOP_GROUP_CORRECT && group == DT_MODULEGROUP_CORRECT)
     return TRUE;
   else if(iop_group & IOP_GROUP_EFFECT && group == DT_MODULEGROUP_EFFECT)
     return TRUE;

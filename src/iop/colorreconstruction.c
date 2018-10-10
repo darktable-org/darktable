@@ -136,7 +136,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_CORRECT;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

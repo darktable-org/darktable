@@ -73,7 +73,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()

@@ -98,7 +98,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_TONE;
 }
 
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices

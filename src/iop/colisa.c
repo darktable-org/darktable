@@ -84,7 +84,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_TONE;
 }
 
 

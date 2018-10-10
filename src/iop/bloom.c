@@ -38,7 +38,7 @@
 
 #define BOX_ITERATIONS 8
 #define NUM_BUCKETS 4 /* OpenCL bucket chain size for tmp buffers; minimum 2 */
-
+  
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 #define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
 DT_MODULE_INTROSPECTION(1, dt_iop_bloom_params_t)
