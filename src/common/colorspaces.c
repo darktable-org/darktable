@@ -38,6 +38,7 @@
 #endif
 
 static const cmsCIEXYZ d65 = {0.95045471, 1.00000000, 1.08905029};
+//static const cmsCIEXYZ d50 = {0.96422000, 1.00000000, 0.82490000};
 static const cmsCIEXYZTRIPLE rec709_primaries_pre_quantized = {
   {0.43603516, 0.22248840, 0.01391602},
   {0.38511658, 0.71690369, 0.09706116},
@@ -52,6 +53,11 @@ static const cmsCIEXYZTRIPLE adobe_primaries_prequantized = {
   {0.60974121, 0.31111145, 0.01947021},
   {0.20527649, 0.62567139, 0.06086731},
   {0.14918518, 0.06321716, 0.74456787}
+};
+static const cmsCIEXYZTRIPLE prophoto_primaries_prequantized = {
+    {0.7976749f, 0.1351917f, 0.0313534f},
+    {0.2880402f, 0.7118741f, 0.0000857f},
+    {0.0000000f, 0.0000000f, 0.8252100f}
 };
 
 #define generate_mat3inv_body(c_type, A, B)                                                                  \
@@ -333,6 +339,18 @@ static cmsHPROFILE dt_colorspaces_create_adobergb_profile(void)
 
   cmsHPROFILE profile = _create_lcms_profile("Adobe RGB (compatible)", "Adobe RGB",
                                              &adobe_primaries_prequantized, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
+static cmsHPROFILE dt_colorspaces_create_prophotorgb_profile(void)
+{
+  cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.8);
+
+  cmsHPROFILE profile = _create_lcms_profile("Prophoto RGB", "Prophoto RGB",
+                                             &prophoto_primaries_prequantized, transferFunction, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -945,7 +963,8 @@ static const char *_profile_names[] =
   N_("standard color matrix"),
   N_("enhanced color matrix"),
   N_("vendor color matrix"),
-  N_("alternate color matrix")
+  N_("alternate color matrix"),
+  N_("Prophoto RGB"),
 };
 
 static dt_colorspaces_color_profile_t *_create_profile(dt_colorspaces_color_profile_type_t type,
@@ -1188,6 +1207,11 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_BRG,
                                                                dt_colorspaces_create_brg_profile(),
                                                                _("BRG (for testing)"),
+                                                               ++in_pos, ++out_pos, ++display_pos));
+                                                               
+  res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_PROPHOTORGB,
+                                                               dt_colorspaces_create_prophotorgb_profile(),
+                                                               _("Prophoto RGB"),
                                                                ++in_pos, ++out_pos, ++display_pos));
 
   // temporary list of profiles to be added, we keep this separate to be able to sort it before adding
