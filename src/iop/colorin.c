@@ -62,6 +62,7 @@ typedef enum dt_iop_color_normalize_t
   DT_NORMALIZE_OFF,
   DT_NORMALIZE_SRGB,
   DT_NORMALIZE_ADOBE_RGB,
+  DT_NORMALIZE_PROPHOTO_RGB,
   DT_NORMALIZE_LINEAR_REC709_RGB,
   DT_NORMALIZE_LINEAR_REC2020_RGB
 } dt_iop_color_normalize_t;
@@ -1287,6 +1288,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     case DT_NORMALIZE_ADOBE_RGB:
       d->nrgb = dt_colorspaces_get_profile(DT_COLORSPACE_ADOBERGB, "", DT_PROFILE_DIRECTION_IN)->profile;
       break;
+    case DT_NORMALIZE_PROPHOTO_RGB:
+      d->nrgb = dt_colorspaces_get_profile(DT_COLORSPACE_PROPHOTORGB, "", DT_PROFILE_DIRECTION_IN)->profile;
+      break;
     case DT_NORMALIZE_LINEAR_REC709_RGB:
       d->nrgb = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC709, "", DT_PROFILE_DIRECTION_IN)->profile;
       break;
@@ -1678,6 +1682,8 @@ void reload_defaults(dt_iop_module_t *module)
     tmp.type = DT_COLORSPACE_SRGB;
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_ADOBE_RGB)
     tmp.type = DT_COLORSPACE_ADOBERGB;
+  else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_PROPHOTO_RGB)
+    tmp.type = DT_COLORSPACE_PROPHOTORGB;
   else if(dt_image_is_ldr(&module->dev->image_storage))
     tmp.type = DT_COLORSPACE_SRGB;
   else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
@@ -1863,6 +1869,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->clipping_combobox, _("off"));
   dt_bauhaus_combobox_add(g->clipping_combobox, _("sRGB"));
   dt_bauhaus_combobox_add(g->clipping_combobox, _("Adobe RGB (compatible)"));
+  dt_bauhaus_combobox_add(g->clipping_combobox, _("Prophoto RGB"));
   dt_bauhaus_combobox_add(g->clipping_combobox, _("linear Rec709 RGB"));
   dt_bauhaus_combobox_add(g->clipping_combobox, _("linear Rec2020 RGB"));
 

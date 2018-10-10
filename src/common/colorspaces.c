@@ -55,9 +55,9 @@ static const cmsCIEXYZTRIPLE adobe_primaries_prequantized = {
   {0.14918518, 0.06321716, 0.74456787}
 };
 static const cmsCIEXYZTRIPLE prophoto_primaries_prequantized = {
-    {0.7976749f, 0.1351917f, 0.0313534f},
-    {0.2880402f, 0.7118741f, 0.0000857f},
-    {0.0000000f, 0.0000000f, 0.8252100f}
+  {0.7976749f, 0.1351917f, 0.0313534f},
+  {0.2880402f, 0.7118741f, 0.0000857f},
+  {0.0000000f, 0.0000000f, 0.8252100f}
 };
 
 #define generate_mat3inv_body(c_type, A, B)                                                                  \
@@ -990,6 +990,9 @@ static void _update_display_transforms(dt_colorspaces_t *self)
 
   if(self->transform_adobe_rgb_to_display) cmsDeleteTransform(self->transform_adobe_rgb_to_display);
   self->transform_adobe_rgb_to_display = NULL;
+  
+  if(self->transform_prophoto_rgb_to_display) cmsDeleteTransform(self->transform_prophoto_rgb_to_display);
+  self->transform_prophoto_rgb_to_display = NULL;
 
   const dt_colorspaces_color_profile_t *display_dt_profile = _get_profile(self, self->display_type,
                                                                           self->display_filename,
@@ -1007,6 +1010,14 @@ static void _update_display_transforms(dt_colorspaces_t *self)
                                                        0);
 
   self->transform_adobe_rgb_to_display = cmsCreateTransform(_get_profile(self, DT_COLORSPACE_ADOBERGB, "",
+                                                                         DT_PROFILE_DIRECTION_DISPLAY)->profile,
+                                                            TYPE_RGBA_8,
+                                                            display_profile,
+                                                            TYPE_BGRA_8,
+                                                            self->display_intent,
+                                                            0);
+                                                            
+  self->transform_prophoto_rgb_to_display = cmsCreateTransform(_get_profile(self, DT_COLORSPACE_PROPHOTORGB, "",
                                                                          DT_PROFILE_DIRECTION_DISPLAY)->profile,
                                                             TYPE_RGBA_8,
                                                             display_profile,
@@ -1176,6 +1187,11 @@ dt_colorspaces_t *dt_colorspaces_init()
                                                                dt_colorspaces_create_adobergb_profile(),
                                                                _("Adobe RGB (compatible)"),
                                                                ++in_pos, ++out_pos, ++display_pos));
+                                                               
+  res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_PROPHOTORGB,
+                                                               dt_colorspaces_create_prophotorgb_profile(),
+                                                               _("Prophoto RGB"),
+                                                               ++in_pos, ++out_pos, ++display_pos));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_LIN_REC709,
                                                                dt_colorspaces_create_linear_rec709_rgb_profile(),
@@ -1207,11 +1223,6 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_BRG,
                                                                dt_colorspaces_create_brg_profile(),
                                                                _("BRG (for testing)"),
-                                                               ++in_pos, ++out_pos, ++display_pos));
-                                                               
-  res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_PROPHOTORGB,
-                                                               dt_colorspaces_create_prophotorgb_profile(),
-                                                               _("Prophoto RGB"),
                                                                ++in_pos, ++out_pos, ++display_pos));
 
   // temporary list of profiles to be added, we keep this separate to be able to sort it before adding

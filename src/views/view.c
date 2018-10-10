@@ -1021,6 +1021,11 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           {
             transform = darktable.color_profiles->transform_adobe_rgb_to_display;
           }
+          else if(buf.color_space == DT_COLORSPACE_PROPHOTORGB &&
+                  darktable.color_profiles->transform_prophoto_rgb_to_display)
+          {
+            transform = darktable.color_profiles->transform_prophoto_rgb_to_display;
+          }
           else
           {
             pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);

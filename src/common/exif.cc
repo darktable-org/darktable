@@ -873,6 +873,8 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->colorspace = DT_IMAGE_COLORSPACE_SRGB;
       else if(colorspace == 0x02)
         img->colorspace = DT_IMAGE_COLORSPACE_ADOBE_RGB;
+      else if(colorspace == 0x03)
+        img->colorspace = DT_IMAGE_COLORSPACE_PROPHOTO_RGB;
       else if(colorspace == 0xffff)
       {
         if(FIND_EXIF_TAG("Exif.Iop.InteroperabilityIndex"))
@@ -2865,6 +2867,8 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
         return DT_COLORSPACE_SRGB;
       else if(colorspace == 0x02)
         return DT_COLORSPACE_ADOBERGB;
+      else if(colorspace == 0x03)
+        return DT_COLORSPACE_PROPHOTORGB;
       else if(colorspace == 0xffff)
       {
         if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Iop.InteroperabilityIndex"))) != exifData.end()
