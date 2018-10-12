@@ -329,7 +329,68 @@ static void _update_collected_images(dt_view_t *self)
   g_free(query);
   g_free(ins_query);
 
-  // 3. get new low-bound, then update the full preview rowid accordingly
+  // 3. if aspect ratio sort needed, let's compute it now
+
+  if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+  {
+    // it takes something like 1s to process 3000 images on a fast machine, so it seems better to disable this for
+    // large collectiion  (mostly if trying to use this filter on the whole database, that is no collection selected.
+    if (darktable.collection->count > 3000)
+    {
+      dt_control_log(_("cannot use aspect-ratio filter on large collections (default to import order)"));
+    }
+    else
+    {
+      GList *list = NULL;
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM memory.collected_images", -1, &stmt, NULL);
+
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        const int imgid = sqlite3_column_int(stmt, 0);
+        list = g_list_append(list, GINT_TO_POINTER(imgid));
+      }
+      sqlite3_finalize(stmt);
+
+      // clean the memory DB, all images will be inserted again with the proper aspect-ratio,
+      // this is way faster than a set of update.
+      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.collected_images", NULL, NULL,
+                            NULL);
+      // now inject aspect ratio into the memory db
+
+      GList *l = list;
+
+      while (l)
+      {
+        const int imgid = GPOINTER_TO_INT(l->data);
+        double aspect_ratio = .0f;
+        dt_mipmap_buffer_t buf;
+        dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_0, DT_MIPMAP_BLOCKING, 'r');
+
+        if (buf.height == 0)
+          aspect_ratio = 1.0f;
+        else
+          aspect_ratio = (float)buf.width / (float)buf.height;
+        dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "INSERT INTO memory.collected_images (imgid, aspect_ratio) VALUES (?1, ?2)",
+                                    -1, &stmt, NULL);
+
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+        DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 2, aspect_ratio);
+
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+        l = l->next;
+      }
+
+      g_list_free(list);
+    }
+  }
+
+  // 4. get new low-bound, then update the full preview rowid accordingly
+
   if (lib->full_preview_id != -1)
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MIN(rowid) FROM memory.collected_images",
@@ -364,9 +425,15 @@ static void _update_collected_images(dt_view_t *self)
   if(lib->statements.main_query) sqlite3_finalize(lib->statements.main_query);
 
   /* prepare a new main query statement for collection */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT imgid FROM memory.collected_images ORDER BY rowid LIMIT ?1, ?2", -1,
-                              &lib->statements.main_query, NULL);
+  char final_query[128] = { 0 };
+
+  snprintf(final_query, sizeof(final_query),
+           "SELECT imgid FROM memory.collected_images ORDER BY %srowid LIMIT ?1, ?2",
+           darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO
+           ?(darktable.collection->params.descending?"aspect_ratio DESC, ":"aspect_ratio, ")
+           :"");
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), final_query, -1, &lib->statements.main_query, NULL);
 
   dt_control_queue_redraw_center();
 }
@@ -1690,6 +1757,9 @@ void enter(dt_view_t *self)
   }
 
   dt_ui_scrollbars_show(darktable.gui->ui, scrollbars_visible);
+
+  if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+    _update_collected_images(self);
 }
 
 void leave(dt_view_t *self)
