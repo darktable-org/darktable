@@ -206,13 +206,13 @@ static void move_view(dt_library_t *lib, dt_lighttable_direction_t dir)
     break;
     case DIRECTION_PGUP:
     {
-      lib->offset -= (lib->max_rows - 1 ) * iir;
+      lib->offset -= (lib->max_rows - 1) * iir;
       while(lib->offset < 0) lib->offset += iir;
     }
     break;
     case DIRECTION_PGDOWN:
     {
-      lib->offset += (lib->max_rows - 1 ) * iir;
+      lib->offset += (lib->max_rows - 1) * iir;
       while(lib->offset >= lib->collection_count) lib->offset -= iir;
     }
     break;
@@ -719,7 +719,7 @@ end_query_cache:
               {
                 // managing shift + movement
                 int direction = (lib->key_jump_offset > 0) ? DIRECTION_RIGHT : DIRECTION_LEFT;
-                if (lib->key_select_direction != direction ) 
+                if (lib->key_select_direction != direction)
                 {
                   lib->key_select_direction =  direction;
                   dt_selection_toggle(darktable.selection, before_mouse_over_id);
@@ -2133,7 +2133,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     lib->key_select = 1;
   }
 
-  if((key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods) || ( key == accels->lighttable_left.accel_key && layout == 1 && zoom != 1 ))
+  if((key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods) || (key == accels->lighttable_left.accel_key && layout == 1 && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = -DT_LIBRARY_MAX_ZOOM;
@@ -2157,7 +2157,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   }
 
   //if(key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
-  if((key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods) || ( key == accels->lighttable_right.accel_key && layout == 1 && zoom != 1 ))
+  if((key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods) || (key == accels->lighttable_right.accel_key && layout == 1 && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = +DT_LIBRARY_MAX_ZOOM;
@@ -2180,7 +2180,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 1;
   }
 
-  if((key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods) || ( key == accels->lighttable_up.accel_key && layout == 1 && zoom != 1 ))
+  if((key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods) || (key == accels->lighttable_up.accel_key && layout == 1 && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = -DT_LIBRARY_MAX_ZOOM;
@@ -2201,7 +2201,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 1;
   }
 
-  if((key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods) || ( key == accels->lighttable_down.accel_key && layout == 1 && zoom != 1 ))
+  if((key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods) || (key == accels->lighttable_down.accel_key && layout == 1 && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = +DT_LIBRARY_MAX_ZOOM;
