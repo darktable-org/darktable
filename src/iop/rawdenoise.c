@@ -485,7 +485,7 @@ void gui_update(dt_iop_module_t *self)
     gtk_widget_set_visible(GTK_WIDGET(g->threshold), TRUE);
     gtk_widget_set_visible(g->label_non_raw, FALSE);
   }
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(g->box_raw);
 }
 
 static void threshold_callback(GtkWidget *slider, gpointer user_data)
@@ -776,7 +776,8 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
       p->transition_y[k] = d->transition_y[k];
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(self->widget);
+    dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+    gtk_widget_queue_draw(c->box_raw);
   }
   else if(event->button == 1)
   {
@@ -834,8 +835,7 @@ static gboolean rawdenoise_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
 void gui_init(dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_rawdenoise_gui_data_t));
-  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-  dt_iop_rawdenoise_gui_data_t *c = g; // FIXME
+  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
 
   c->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
@@ -850,11 +850,11 @@ void gui_init(dt_iop_module_t *self)
   c->x_move = -1;
   c->mouse_radius = 1.0 / DT_IOP_RAWDENOISE_BANDS;
 
-  g->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  c->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
 
-  gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(c->area), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->area), FALSE, FALSE, 0);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -866,18 +866,16 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(rawdenoise_leave_notify), self);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(rawdenoise_scrolled), self);
 
-  g->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 0.1, 0.001, p->threshold, 3);
-  gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->threshold), TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->threshold, NULL, _("noise threshold"));
-  g_signal_connect(G_OBJECT(g->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
+  c->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 0.1, 0.001, p->threshold, 3);
+  gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->threshold), TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(c->threshold, NULL, _("noise threshold"));
+  g_signal_connect(G_OBJECT(c->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
 
-  g->label_non_raw = gtk_label_new(_("raw denoising\nonly works for raw images."));
-  gtk_widget_set_halign(g->label_non_raw, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->label_non_raw), TRUE, TRUE, 0);
+  c->label_non_raw = gtk_label_new(_("raw denoising\nonly works for raw images."));
+  gtk_widget_set_halign(c->label_non_raw, GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->label_non_raw), TRUE, TRUE, 0);
 
-  // gtk_widget_show_all(g->box_raw);
-
-  self->widget = g->box_raw;
+  self->widget = c->box_raw;
   gtk_widget_show_all(self->widget);
 }
 
