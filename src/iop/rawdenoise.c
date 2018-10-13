@@ -49,6 +49,7 @@ typedef struct dt_iop_rawdenoise_params_t
 
 typedef struct dt_iop_rawdenoise_gui_data_t
 {
+  GtkWidget *stack;
   dt_draw_curve_t *transition_curve; // curve for gui to draw
 
   GtkWidget *box_raw;
@@ -493,19 +494,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
 
   dt_bauhaus_slider_set(g->threshold, p->threshold);
-  if(self->hide_enable_button)
-  {
-    gtk_widget_set_visible(GTK_WIDGET(g->area), FALSE);
-    gtk_widget_set_visible(GTK_WIDGET(g->threshold), FALSE);
-    gtk_widget_set_visible(g->label_non_raw, TRUE);
-  }
-  else
-  {
-    gtk_widget_set_visible(GTK_WIDGET(g->area), TRUE);
-    gtk_widget_set_visible(GTK_WIDGET(g->threshold), TRUE);
-    gtk_widget_set_visible(g->label_non_raw, FALSE);
-  }
-  gtk_widget_queue_draw(g->box_raw);
+  gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "non_raw" : "raw");
 }
 
 static void threshold_callback(GtkWidget *slider, gpointer user_data)
@@ -834,6 +823,11 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
 
+  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  c->stack = gtk_stack_new();
+  gtk_stack_set_homogeneous(GTK_STACK(c->stack), FALSE);
+  gtk_box_pack_start(GTK_BOX(self->widget), c->stack, TRUE, TRUE, 0);
+
   c->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   (void)dt_draw_curve_add_point(c->transition_curve, p->x[DT_IOP_RAWDENOISE_BANDS - 2] - 1.0,
                                 p->y[DT_IOP_RAWDENOISE_BANDS - 2]);
@@ -869,10 +863,24 @@ void gui_init(dt_iop_module_t *self)
 
   c->label_non_raw = gtk_label_new(_("raw denoising\nonly works for raw images."));
   gtk_widget_set_halign(c->label_non_raw, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->label_non_raw), TRUE, TRUE, 0);
 
-  self->widget = c->box_raw;
-  gtk_widget_show_all(self->widget);
+  // This is done so that if we use several instances, the newly created ones
+  // use the same graphical interface as the original one.
+  // In other words, if the original one is in "non_raw" mode, we have to put
+  // "non_raw" in the stack first, so that when we add a new instance, we see
+  // the label_non_raw
+  if (self->hide_enable_button)
+  {
+    gtk_stack_add_named(GTK_STACK(c->stack), c->label_non_raw, "non_raw");
+    gtk_stack_add_named(GTK_STACK(c->stack), c->box_raw, "raw");
+  }
+  else
+  {
+    gtk_stack_add_named(GTK_STACK(c->stack), c->box_raw, "raw");
+    gtk_stack_add_named(GTK_STACK(c->stack), c->label_non_raw, "non_raw");
+  }
+
+  gtk_stack_set_visible_child_name(GTK_STACK(c->stack), self->hide_enable_button ? "non_raw" : "raw");
 }
 
 void gui_cleanup(dt_iop_module_t *self)
