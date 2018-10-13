@@ -572,6 +572,13 @@
     <longdescription>if the thumbnail size is greater than this value, it will be processed using the full quality rendering path (better but slower).</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>plugins/lighttable/extended_thumb_overlay</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>enable extended thumb overlay</shortdescription>
+    <longdescription>if set to true, thumb overlay shows filename and some exif data.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>pressure_sensitivity</name>
     <type>
       <enum>
