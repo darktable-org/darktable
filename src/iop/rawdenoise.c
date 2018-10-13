@@ -712,35 +712,11 @@ static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *even
   if(c->dragging)
   {
     *p = c->drag_params;
-    if(c->x_move >= 0)
-    {
-      const float mx = CLAMP(event->x - inset, 0, width) / (float)width;
-      if(c->x_move > 0 && c->x_move < DT_IOP_RAWDENOISE_BANDS - 1)
-      {
-        const float minx = p->transition_x[c->x_move - 1] + 0.001f;
-        const float maxx = p->transition_x[c->x_move + 1] - 0.001f;
-        p->transition_x[c->x_move] = fminf(maxx, fmaxf(minx, mx));
-      }
-    }
-    else
+    if(c->x_move < 0)
     {
       dt_iop_rawdenoise_get_params(p, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
-  else if(event->y > height)
-  {
-    c->x_move = 0;
-    float dist = fabs(p->transition_x[0] - c->mouse_x);
-    for(int k = 1; k < DT_IOP_RAWDENOISE_BANDS; k++)
-    {
-      float d2 = fabs(p->transition_x[k] - c->mouse_x);
-      if(d2 < dist)
-      {
-        c->x_move = k;
-        dist = d2;
-      }
-    }
   }
   else
   {
