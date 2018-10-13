@@ -128,6 +128,34 @@ static inline __m128 dt_sRGB_to_XYZ_sse2(__m128 rgb)
                               _mm_mul_ps(srgb_to_xyz_2, _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2)))));
   return XYZ;
 }
+
+/** uses D50 white point. */
+// see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
+static inline __m128 dt_XYZ_to_prophotoRGB_sse2(__m128 XYZ)
+{
+  // XYZ -> prophotoRGB matrix, D50
+  const __m128 xyz_to_rgb_0 = _mm_setr_ps(1.3459433f, -0.5445989f, -0.0000000f, 0.0f);
+  const __m128 xyz_to_rgb_1 = _mm_setr_ps(-0.2556075f, 1.5081673f, -0.0000000f, 0.0f);
+  const __m128 xyz_to_rgb_2 = _mm_setr_ps(-0.0511118f, -0.0205351f, 1.2118128f, 0.0f);
+
+  return _mm_add_ps(_mm_mul_ps(xyz_to_rgb_0, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(0, 0, 0, 0))),
+                   _mm_add_ps(_mm_mul_ps(xyz_to_rgb_1, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(1, 1, 1, 1))),
+                              _mm_mul_ps(xyz_to_rgb_2, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(2, 2, 2, 2)))));
+}
+
+/** uses D50 white point. */
+// see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
+static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 XYZ)
+{
+  // prophotoRGB -> XYZ matrix, D50
+  const __m128 xyz_to_rgb_0 = _mm_setr_ps(0.7976749f, 0.2880402f, 0.0000000f, 0.0f);
+  const __m128 xyz_to_rgb_1 = _mm_setr_ps(0.1351917f, 0.7118741f, 0.0000000f, 0.0f);
+  const __m128 xyz_to_rgb_2 = _mm_setr_ps(0.0313534f, 0.0000857f, 0.8252100f, 0.0f);
+
+  return _mm_add_ps(_mm_mul_ps(xyz_to_rgb_0, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(0, 0, 0, 0))),
+                   _mm_add_ps(_mm_mul_ps(xyz_to_rgb_1, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(1, 1, 1, 1))),
+                              _mm_mul_ps(xyz_to_rgb_2, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(2, 2, 2, 2)))));
+}
 #endif
 
 static inline float cbrt_5f(float f)
@@ -161,7 +189,7 @@ static inline float lab_f(const float x)
 /** uses D50 white point. */
 static inline void dt_XYZ_to_Lab(const float *XYZ, float *Lab)
 {
-  const float d50[3] = { 0.9642, 1.0, 0.8249 };
+  const float d50[3] = { 0.9642f, 1.0f, 0.8249f };
   const float f[3] = { lab_f(XYZ[0] / d50[0]), lab_f(XYZ[1] / d50[1]), lab_f(XYZ[2] / d50[2]) };
   Lab[0] = 116.0f * f[1] - 16.0f;
   Lab[1] = 500.0f * (f[0] - f[1]);
@@ -170,7 +198,7 @@ static inline void dt_XYZ_to_Lab(const float *XYZ, float *Lab)
 
 static inline float lab_f_inv(const float x)
 {
-  const float epsilon = 0.20689655172413796; // cbrtf(216.0f/24389.0f);
+  const float epsilon = 0.20689655172413796f; // cbrtf(216.0f/24389.0f);
   const float kappa = 24389.0f / 27.0f;
   if(x > epsilon)
     return x * x * x;
@@ -181,7 +209,7 @@ static inline float lab_f_inv(const float x)
 /** uses D50 white point. */
 static inline void dt_Lab_to_XYZ(const float *Lab, float *XYZ)
 {
-  const float d50[3] = { 0.9642, 1.0, 0.8249 };
+  const float d50[3] = { 0.96422f, 1.0f, 0.8249f };
   const float fy = (Lab[0] + 16.0f) / 116.0f;
   const float fx = Lab[1] / 500.0f + fy;
   const float fz = fy - Lab[2] / 200.0f;
@@ -234,33 +262,44 @@ static inline void dt_sRGB_to_XYZ(const float *const sRGB, float *XYZ)
     for(int c = 0; c < 3; c++) XYZ[r] += srgb_to_xyz[r][c] * rgb[c];
 }
 
-static inline void dt_Lab_to_prophotorgb(const float *const Lab, float *rgb)
+static inline void dt_XYZ_to_prophotorgb(const float *const XYZ, float *rgb)
 {
   const float xyz_to_rgb[3][3] = {
     // prophoto rgb d50
-    { 1.3459433, -0.2556075, -0.0511118 },
-    { -0.5445989, 1.5081673, 0.0205351 },
-    { 0.0000000, 0.0000000, 1.2118128 },
+    { 1.3459433f, -0.2556075f, -0.0511118f },
+    { -0.5445989f, 1.5081673f, 0.0205351f },
+    { 0.0000000f, 0.0000000f, 1.2118128f },
   };
-
-  float XYZ[3];
-  dt_Lab_to_XYZ(Lab, XYZ);
   rgb[0] = rgb[1] = rgb[2] = 0.0f;
   for(int r = 0; r < 3; r++)
     for(int c = 0; c < 3; c++) rgb[r] += xyz_to_rgb[r][c] * XYZ[c];
 }
 
-static inline void dt_prophotorgb_to_Lab(const float *const rgb, float *Lab)
+static inline void dt_prophotorgb_to_XYZ(const float *const rgb, float *XYZ)
 {
   const float rgb_to_xyz[3][3] = {
     // prophoto rgb
-    { 0.7976749, 0.1351917, 0.0313534 },
-    { 0.2880402, 0.7118741, 0.0000857 },
-    { 0.0000000, 0.0000000, 0.8252100 },
+    { 0.7976749f, 0.1351917f, 0.0313534f },
+    { 0.2880402f, 0.7118741f, 0.0000857f },
+    { 0.0000000f, 0.0000000f, 0.8252100f },
   };
-  float XYZ[3] = { 0.0f };
+  XYZ[0] = XYZ[1] = XYZ[2] = 0.0f;
   for(int r = 0; r < 3; r++)
     for(int c = 0; c < 3; c++) XYZ[r] += rgb_to_xyz[r][c] * rgb[c];
+}
+
+
+static inline void dt_Lab_to_prophotorgb(const float *const Lab, float *rgb)
+{
+  float XYZ[3] = { 0.0f };
+  dt_Lab_to_XYZ(Lab, XYZ);
+  dt_XYZ_to_prophotorgb(XYZ, rgb);
+}
+
+static inline void dt_prophotorgb_to_Lab(const float *const rgb, float *Lab)
+{
+  float XYZ[3] = { 0.0f };
+  dt_prophotorgb_to_XYZ(rgb, XYZ);
   dt_XYZ_to_Lab(XYZ, Lab);
 }
 
