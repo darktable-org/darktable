@@ -72,9 +72,9 @@ float lab_f(float x)
 float4 XYZ_to_Lab(float4 xyz)
 {
   float4 lab;
-
-  xyz.x *= (1.0f/0.9642f);
-  xyz.z *= (1.0f/0.8249f);
+  const float4 d50 = (float4)(0.9642f, 1.0f, 0.8249f, 1.0f);
+  
+  xyz /= d50;
   xyz.x = lab_f(xyz.x);
   xyz.y = lab_f(xyz.y);
   xyz.z = lab_f(xyz.z);
@@ -106,28 +106,7 @@ float4 Lab_to_XYZ(float4 Lab)
   return XYZ;
 }
 
-float4 Lab_to_prophotorgb(float4 Lab)
-{
-  const float xyz_to_rgb[3][3] = { // prophoto rgb d50
-    { 1.3459433f, -0.2556075f, -0.0511118f},
-    {-0.5445989f,  1.5081673f,  0.0205351f},
-    { 0.0000000f,  0.0000000f,  1.2118128f},
-  };
-  float4 XYZ = Lab_to_XYZ(Lab);
-  float4 rgb = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-  rgb.x += xyz_to_rgb[0][0] * XYZ.x;
-  rgb.x += xyz_to_rgb[0][1] * XYZ.y;
-  rgb.x += xyz_to_rgb[0][2] * XYZ.z;
-  rgb.y += xyz_to_rgb[1][0] * XYZ.x;
-  rgb.y += xyz_to_rgb[1][1] * XYZ.y;
-  rgb.y += xyz_to_rgb[1][2] * XYZ.z;
-  rgb.z += xyz_to_rgb[2][0] * XYZ.x;
-  rgb.z += xyz_to_rgb[2][1] * XYZ.y;
-  rgb.z += xyz_to_rgb[2][2] * XYZ.z;
-  return rgb;
-}
-
-float4 prophotorgb_to_Lab(float4 rgb)
+float4 prophotorgb_to_XYZ(float4 rgb)
 {
   const float rgb_to_xyz[3][3] = { // prophoto rgb
     {0.7976749f, 0.1351917f, 0.0313534f},
@@ -144,6 +123,38 @@ float4 prophotorgb_to_Lab(float4 rgb)
   XYZ.z += rgb_to_xyz[2][0] * rgb.x;
   XYZ.z += rgb_to_xyz[2][1] * rgb.y;
   XYZ.z += rgb_to_xyz[2][2] * rgb.z;
+  return XYZ;
+}
+
+float4 XYZ_to_prophotorgb(float4 XYZ)
+{
+  const float xyz_to_rgb[3][3] = { // prophoto rgb d50
+    { 1.3459433f, -0.2556075f, -0.0511118f},
+    {-0.5445989f,  1.5081673f,  0.0205351f},
+    { 0.0000000f,  0.0000000f,  1.2118128f},
+  };
+  float4 rgb = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+  rgb.x += xyz_to_rgb[0][0] * XYZ.x;
+  rgb.x += xyz_to_rgb[0][1] * XYZ.y;
+  rgb.x += xyz_to_rgb[0][2] * XYZ.z;
+  rgb.y += xyz_to_rgb[1][0] * XYZ.x;
+  rgb.y += xyz_to_rgb[1][1] * XYZ.y;
+  rgb.y += xyz_to_rgb[1][2] * XYZ.z;
+  rgb.z += xyz_to_rgb[2][0] * XYZ.x;
+  rgb.z += xyz_to_rgb[2][1] * XYZ.y;
+  rgb.z += xyz_to_rgb[2][2] * XYZ.z;
+  return rgb;
+}
+
+float4 Lab_to_prophotorgb(float4 Lab)
+{
+  float4 XYZ = Lab_to_XYZ(Lab);
+  return XYZ_to_prophotorgb(XYZ);
+}
+
+float4 prophotorgb_to_Lab(float4 rgb)
+{
+  float4 XYZ = prophotorgb_to_XYZ(rgb);
   return XYZ_to_Lab(XYZ);
 }
 
