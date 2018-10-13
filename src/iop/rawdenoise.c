@@ -475,15 +475,15 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->threshold, p->threshold);
   if(self->hide_enable_button)
   {
-    gtk_widget_set_visible(self->widget, FALSE);
-    self->widget = g->label_non_raw;
-    gtk_widget_set_visible(self->widget, TRUE);
+    gtk_widget_set_visible(GTK_WIDGET(g->area), FALSE);
+    gtk_widget_set_visible(GTK_WIDGET(g->threshold), FALSE);
+    gtk_widget_set_visible(g->label_non_raw, TRUE);
   }
   else
   {
-    gtk_widget_set_visible(self->widget, FALSE);
-    self->widget = g->box_raw;
-    gtk_widget_set_visible(self->widget, TRUE);
+    gtk_widget_set_visible(GTK_WIDGET(g->area), TRUE);
+    gtk_widget_set_visible(GTK_WIDGET(g->threshold), TRUE);
+    gtk_widget_set_visible(g->label_non_raw, FALSE);
   }
   gtk_widget_queue_draw(self->widget);
 }
@@ -871,25 +871,13 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->threshold, NULL, _("noise threshold"));
   g_signal_connect(G_OBJECT(g->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
 
-  gtk_widget_show_all(g->box_raw);
-
   g->label_non_raw = gtk_label_new(_("raw denoising\nonly works for raw images."));
   gtk_widget_set_halign(g->label_non_raw, GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->label_non_raw), TRUE, TRUE, 0);
 
-  gtk_widget_show_all(g->label_non_raw);
+  // gtk_widget_show_all(g->box_raw);
 
-  if(self->hide_enable_button)
-  {
-    gtk_widget_set_visible(self->widget, FALSE);
-    self->widget = g->label_non_raw;
-    gtk_widget_set_visible(self->widget, TRUE);
-  }
-  else
-  {
-    gtk_widget_set_visible(self->widget, FALSE);
-    self->widget = g->box_raw;
-    gtk_widget_set_visible(self->widget, TRUE);
-  }
+  self->widget = g->box_raw;
   gtk_widget_show_all(self->widget);
 }
 
