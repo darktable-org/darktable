@@ -1180,21 +1180,22 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
         r2 = 0.007 * fscale;
       }
 
+      const gboolean extended_thumb_overlay = dt_conf_get_bool("plugins/lighttable/extended_thumb_overlay");
       float x, y;
       if(zoom != 1)
-        y = 0.90 * height;
+        y = (extended_thumb_overlay ? 0.93 : 0.9) * height;
       else
         y = .12 * fscale;
       const gboolean image_is_rejected = (img && ((img->flags & 0x7) == 6));
 
       if(img)
       {
-        if (zoom != 1 && (!darktable.gui->show_overlays || imgsel == imgid))
+        if (zoom != 1 && (!darktable.gui->show_overlays || imgsel == imgid) && extended_thumb_overlay)
         {
-          const double overlay_height = 0.33 * height;
-          const int exif_offset = DT_PIXEL_APPLY_DPI(5);
-          const int fontsize = 0.17 * overlay_height;
-          const double line_offs = 1.2 * fontsize;
+          const double overlay_height = 0.26 * height;
+          const int exif_offset = DT_PIXEL_APPLY_DPI(3);
+          const int fontsize = 0.18 * overlay_height;
+          const double line_offs = 1.15 * fontsize;
 
 
           double x0 = DT_PIXEL_APPLY_DPI(1);
