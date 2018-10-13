@@ -844,7 +844,7 @@ void gui_init(dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->x_move = -1;
-  c->mouse_radius = 1.0 / DT_IOP_RAWDENOISE_BANDS;
+  c->mouse_radius = 1.0 / (DT_IOP_RAWDENOISE_BANDS * 2);
 
   c->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
