@@ -365,9 +365,6 @@ static void _update_collected_images(dt_view_t *self)
                               "SELECT imgid FROM memory.collected_images ORDER BY rowid LIMIT ?1, ?2", -1,
                               &lib->statements.main_query, NULL);
 
-  _unregister_custom_image_order_drag_n_drop(self);
-  _register_custom_image_order_drag_n_drop(self);
-
   dt_control_queue_redraw_center();
 }
 
