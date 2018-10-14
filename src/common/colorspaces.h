@@ -57,7 +57,8 @@ typedef enum dt_colorspaces_color_profile_type_t
   DT_COLORSPACE_VENDOR_MATRIX = 13,
   DT_COLORSPACE_ALTERNATE_MATRIX = 14,
   DT_COLORSPACE_BRG = 15,
-  DT_COLORSPACE_LAST = 16
+  DT_COLORSPACE_LAST = 16,
+  DT_COLORSPACE_PROPHOTORGB = 17
 } dt_colorspaces_color_profile_type_t;
 
 typedef enum dt_colorspaces_color_mode_t
@@ -95,7 +96,7 @@ typedef struct dt_colorspaces_t
 
   dt_colorspaces_color_mode_t mode;
 
-  cmsHTRANSFORM transform_srgb_to_display, transform_adobe_rgb_to_display;
+  cmsHTRANSFORM transform_srgb_to_display, transform_adobe_rgb_to_display, transform_prophoto_rgb_to_display;
 
 } dt_colorspaces_t;
 
