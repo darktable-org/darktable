@@ -557,21 +557,7 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-
-  switch (ch) { //TODO not really best thing. Color the curve instead.
-    case 1:
-      cairo_set_source_rgb(cr, 1, 0, 0);
-      break;
-    case 2:
-      cairo_set_source_rgb(cr, 0, 1, 0);
-      break;
-    case 3:
-      cairo_set_source_rgb(cr, 0, 0, 1);
-      break;
-    default:
-      cairo_set_source_rgb(cr, .2, .2, .2);
-      break;
-  }
+  cairo_set_source_rgb(cr, .2, .2, .2);
 
   cairo_paint(cr);
 
@@ -592,7 +578,6 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb(cr, .1, .1, .1);
   dt_draw_grid(cr, 8, 0, 0, width, height);
-
 
   if(c->mouse_y > 0 || c->dragging)
   {
@@ -647,10 +632,23 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   {
     // draw curves, selected last
     ch = ((int)c->channel + i + 1) % rawdenoise_none;
+    float alpha = 0.3;
     if (i == rawdenoise_none-1)
-      cairo_set_source_rgba(cr, .7, .7, .7, 1.0);
-    else
-      cairo_set_source_rgba(cr, .7, .7, .7, 0.3);
+      alpha = 1.0;
+    switch (ch) {
+      case 0:
+        cairo_set_source_rgba(cr, .7, .7, .7, alpha);
+        break;
+      case 1:
+        cairo_set_source_rgba(cr, .7, .1, .1, alpha);
+        break;
+      case 2:
+        cairo_set_source_rgba(cr, .1, .7, .1, alpha);
+        break;
+      case 3:
+        cairo_set_source_rgba(cr, .1, .1, .7, alpha);
+        break;
+    }
 
     p = *(dt_iop_rawdenoise_params_t *)self->params;
     dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0,
