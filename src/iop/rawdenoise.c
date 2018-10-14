@@ -148,7 +148,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 {
   float threshold = data->threshold;
   int lev;
-  float noise[] = { 0.8002, 0.2735, 0.1202, 0.0585, 0.0291, 0.0152, 0.0080, 0.0044 };
+  float noise_all[] = { 0.8002, 0.2735, 0.1202, 0.0585, 0.0291, 0.0152, 0.0080, 0.0044 };
   for (int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
   {
     // scale the value from [0,1] to [0,16],
@@ -156,7 +156,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
     float threshold_exp_4 = data->force[rawdenoise_all][DT_IOP_RAWDENOISE_BANDS - i - 1];
     threshold_exp_4 *= threshold_exp_4;
     threshold_exp_4 *= threshold_exp_4;
-    noise[i] = noise[i] * threshold_exp_4 * 16.0;
+    noise_all[i] = noise_all[i] * threshold_exp_4 * 16.0;
   }
 
   const size_t size = (size_t)(roi->width / 2 + 1) * (roi->height / 2 + 1);
@@ -174,6 +174,26 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   const int nc = 4;
   for(int c = 0; c < nc; c++) /* denoise R,G1,B,G3 individually */
   {
+    float noise[DT_IOP_RAWDENOISE_BANDS];
+    for (int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
+    {
+      float threshold_exp_4;
+      switch (c) {
+        case 0:
+          threshold_exp_4 = data->force[rawdenoise_R][DT_IOP_RAWDENOISE_BANDS - i - 1];
+          break;
+        case 3:
+          threshold_exp_4 = data->force[rawdenoise_B][DT_IOP_RAWDENOISE_BANDS - i - 1];
+          break;
+        default:
+          threshold_exp_4 = data->force[rawdenoise_G][DT_IOP_RAWDENOISE_BANDS - i - 1];
+          break;
+      }
+      threshold_exp_4 *= threshold_exp_4;
+      threshold_exp_4 *= threshold_exp_4;
+      noise[i] = noise_all[i] * threshold_exp_4 * 16.0;
+    }
+
     // zero lowest quarter part
     memset(fimg, 0, size * sizeof(float));
 
@@ -296,7 +316,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
   // note that these constants are the same for X-Trans and Bayer, as
   // they are proportional to image detail on each channel, not the
   // sensor pattern
-  float noise[] = { 0.8002, 0.2735, 0.1202, 0.0585, 0.0291, 0.0152, 0.0080, 0.0044 };
+  float noise_all[] = { 0.8002, 0.2735, 0.1202, 0.0585, 0.0291, 0.0152, 0.0080, 0.0044 };
   for (int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
   {
     // scale the value from [0,1] to [0,16],
@@ -304,7 +324,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
     float threshold_exp_4 = data->force[rawdenoise_all][DT_IOP_RAWDENOISE_BANDS - i - 1];
     threshold_exp_4 *= threshold_exp_4;
     threshold_exp_4 *= threshold_exp_4;
-    noise[i] = noise[i] * threshold_exp_4 * 16.0;
+    noise_all[i] = noise_all[i] * threshold_exp_4 * 16.0;
   }
 
   const int width = roi->width;
@@ -314,6 +334,25 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
 
   for(int c = 0; c < 3; c++)
   {
+    float noise[DT_IOP_RAWDENOISE_BANDS];
+    for (int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
+    {
+      float threshold_exp_4;
+      switch (c) {
+        case 0:
+          threshold_exp_4 = data->force[rawdenoise_R][DT_IOP_RAWDENOISE_BANDS - i - 1];
+          break;
+        case 2:
+          threshold_exp_4 = data->force[rawdenoise_B][DT_IOP_RAWDENOISE_BANDS - i - 1];
+          break;
+        default:
+          threshold_exp_4 = data->force[rawdenoise_G][DT_IOP_RAWDENOISE_BANDS - i - 1];
+          break;
+      }
+      threshold_exp_4 *= threshold_exp_4;
+      threshold_exp_4 *= threshold_exp_4;
+      noise[i] = noise_all[i] * threshold_exp_4 * 16.0;
+    }
     memset(fimg, 0, size * sizeof(float));
 
 #ifdef _OPENMP
