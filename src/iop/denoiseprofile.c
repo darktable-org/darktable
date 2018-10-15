@@ -898,7 +898,15 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
                              sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
     // add 8.0 here because it seemed a little weak
-    const float adjt = 8.0f;
+    float adjt = 8.0f;
+
+    //TODO make adjt multiplied by a number in [0,4] on scales 0 -> 4
+    // yet, scale 4 does not give much change.
+    // max_scale -1 always corresponds to the largest scale.
+    // small scales are ignored by the algorithm  when zoomed out,
+    // so if max_scale < 5, pay attention to which multiplier to use
+    // so that the fine scale multipliers are not used on large scales
+
     const float thrs[4] = { adjt * sb2 / std_x[0], adjt * sb2 / std_x[1], adjt * sb2 / std_x[2], 0.0f };
 // const float std = (std_x[0] + std_x[1] + std_x[2])/3.0f;
 // const float thrs[4] = { adjt*sigma*sigma/std, adjt*sigma*sigma/std, adjt*sigma*sigma/std, 0.0f};
