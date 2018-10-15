@@ -231,11 +231,11 @@ void init_presets(dt_iop_module_so_t *self)
   // these blobs were exported as dtstyle and copied from there:
   add_preset(self,
              _("chroma (use on 1st instance)"),
-             "0000803f0000803f000080bf05a32a3636106236c01b58341f1609b446faddb301000000",
+             "gz04eJxjYGiwZ4Dg/dti91vWKRhZcYsxmibv5THN2n3XhJEBBhrsgARQnQNUPUViVMUApDYXmg==",
              "gz12eJxjZGBgEGYAgRNODESDBnsIHll8AM62GP8=", 7);
   add_preset(self,
              _("luma (use on 2nd instance)"),
-             "000080400000003f000080bf38c54438c0d7b83828ff8934230e0c344a216d3400000000",
+             "gz04eJxjYGhwYGBgsGdgaNi/LXa/ZZ2CkRW3GKNp8l4e06zdd00Y4KDBDqLOAaTWnkIxqmIARVMXGg==",
              "gz12eJxjZGBgEGAAgWlODESDBnsIHll8AJKaGMo=", 7);
 }
 
