@@ -109,7 +109,9 @@ typedef struct dt_iop_colorbalance_data_t
   dt_iop_colorbalance_mode_t mode;
   float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
   float saturation, contrast, grey;
-  float color_patches[LEVELS][CHANNEL_SIZE]; //lines : lift, gamma, gain ; cols : R, G, B;
+  float color_patches_lift[CHANNEL_SIZE];
+  float color_patches_gamma[CHANNEL_SIZE];
+  float color_patches_gain[CHANNEL_SIZE];
   int color_patches_flags[LEVELS];
   float luma_patches[LEVELS];
   int luma_patches_flags[LEVELS];
@@ -203,7 +205,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                   grey = d->grey / 100.0f;
     
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) shared(d) schedule(static)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -272,7 +274,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                   grey = d->grey / 100.0f;
       
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) shared(d) schedule(static)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -358,7 +360,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       const __m128 saturation = _mm_setr_ps(d->saturation, d->saturation, d->saturation, 0.0f);
       
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -428,12 +430,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       float grey_corr = d->grey / 100.0f;
       const __m128 grey = _mm_setr_ps(grey_corr, grey_corr, grey_corr, 0.0f);
       const __m128 saturation = _mm_setr_ps(d->saturation, d->saturation, d->saturation, 0.0f);
-      //const __m128 one = _mm_set1_ps(1.0f);
       const __m128 zero = _mm_setzero_ps();
-      
                                    
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -452,10 +452,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           __m128 luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
           rgb = luma + saturation * (rgb - luma);
           
-          // clamp
-          //rgb = _mm_max_ps(rgb, zero);
-          //rgb = _mm_min_ps(rgb, one);
-          
           // slope offset
           rgb = rgb * gain + lift;
           
@@ -465,11 +461,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
           // fulcrum contrast
           rgb = _mm_pow_ps(rgb / grey, contrast) * grey;
-          
-          // clamp
-          //rgb = _mm_max_ps(rgb, zero);
-          //rgb = _mm_min_ps(rgb, one);
-          
+
           // transform the result back to Lab
           // sRGB -> XYZ
           XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
@@ -822,6 +814,72 @@ void gui_update(dt_iop_module_t *self)
   set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
+  
+  int control_mode = dt_bauhaus_combobox_get(g->controls);
+  
+  switch (control_mode)
+  {
+    case HSL:
+    {
+      gtk_widget_set_visible(g->lift_r, FALSE);
+      gtk_widget_set_visible(g->lift_g, FALSE);
+      gtk_widget_set_visible(g->lift_b, FALSE);
+      gtk_widget_set_visible(g->gamma_r, FALSE);
+      gtk_widget_set_visible(g->gamma_g, FALSE);
+      gtk_widget_set_visible(g->gamma_b, FALSE);
+      gtk_widget_set_visible(g->gain_r, FALSE);
+      gtk_widget_set_visible(g->gain_g, FALSE);
+      gtk_widget_set_visible(g->gain_b, FALSE);
+      
+      gtk_widget_set_visible(g->hue_lift, TRUE);
+      gtk_widget_set_visible(g->sat_lift, TRUE);
+      gtk_widget_set_visible(g->hue_gamma, TRUE);
+      gtk_widget_set_visible(g->sat_gamma, TRUE);
+      gtk_widget_set_visible(g->hue_gain, TRUE);
+      gtk_widget_set_visible(g->sat_gain, TRUE);
+      break;
+    }
+    case RGBL:
+    {
+      gtk_widget_set_visible(g->lift_r, TRUE);
+      gtk_widget_set_visible(g->lift_g, TRUE);
+      gtk_widget_set_visible(g->lift_b, TRUE);
+      gtk_widget_set_visible(g->gamma_r, TRUE);
+      gtk_widget_set_visible(g->gamma_g, TRUE);
+      gtk_widget_set_visible(g->gamma_b, TRUE);
+      gtk_widget_set_visible(g->gain_r, TRUE);
+      gtk_widget_set_visible(g->gain_g, TRUE);
+      gtk_widget_set_visible(g->gain_b, TRUE);
+      
+      gtk_widget_set_visible(g->hue_lift, FALSE);
+      gtk_widget_set_visible(g->sat_lift, FALSE);
+      gtk_widget_set_visible(g->hue_gamma, FALSE);
+      gtk_widget_set_visible(g->sat_gamma, FALSE);
+      gtk_widget_set_visible(g->hue_gain, FALSE);
+      gtk_widget_set_visible(g->sat_gain, FALSE);
+      break;
+    }
+    case BOTH:
+    {
+      gtk_widget_set_visible(g->lift_r, TRUE);
+      gtk_widget_set_visible(g->lift_g, TRUE);
+      gtk_widget_set_visible(g->lift_b, TRUE);
+      gtk_widget_set_visible(g->gamma_r, TRUE);
+      gtk_widget_set_visible(g->gamma_g, TRUE);
+      gtk_widget_set_visible(g->gamma_b, TRUE);
+      gtk_widget_set_visible(g->gain_r, TRUE);
+      gtk_widget_set_visible(g->gain_g, TRUE);
+      gtk_widget_set_visible(g->gain_b, TRUE);
+      
+      gtk_widget_set_visible(g->hue_lift, TRUE);
+      gtk_widget_set_visible(g->sat_lift, TRUE);
+      gtk_widget_set_visible(g->hue_gamma, TRUE);
+      gtk_widget_set_visible(g->sat_gamma, TRUE);
+      gtk_widget_set_visible(g->hue_gain, TRUE);
+      gtk_widget_set_visible(g->sat_gain, TRUE);
+    }
+  }
+  
 }
 
 static void mode_callback(GtkWidget *combo, dt_iop_module_t *self)
@@ -1416,7 +1474,7 @@ static void lift_neutralize_callback(GtkWidget *button, gpointer user_data)
     
     // Save the patch color for the optimization
     dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
-    for (int c = 0; c < 3; ++c) d->color_patches[LIFT][c] = RGB[c];
+    for (int c = 0; c < 3; ++c) d->color_patches_lift[c] = RGB[c];
     d->color_patches_flags[LIFT] = 1;
     
     // Compute the RGB values after the CDL factors
@@ -1486,7 +1544,7 @@ static void gamma_neutralize_callback(GtkWidget *button, gpointer user_data)
     
     // Save the patch color for the optimization
     dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
-    for (int c = 0; c < 3; ++c) d->color_patches[GAMMA][c] = RGB[c];
+    for (int c = 0; c < 3; ++c) d->color_patches_gamma[c] = RGB[c];
     d->color_patches_flags[GAMMA] = 1;
     
     // Compute the RGB values after the CDL factors
@@ -1556,7 +1614,7 @@ static void gain_neutralize_callback(GtkWidget *button, gpointer user_data)
     
     // Save the patch color for the optimization
     dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
-    for (int c = 0; c < 3; ++c) d->color_patches[GAIN][c] = RGB[c];
+    for (int c = 0; c < 3; ++c) d->color_patches_gain[c] = RGB[c];
     d->color_patches_flags[GAIN] = 1;
     
     // Compute the RGB values after the CDL factors
@@ -1609,14 +1667,15 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
   }
   
   // Build the CDL-corrected samples (after the factors)
-  float samples[3][3] = { {0.f} };
+  float samples_lift[3] = { 0.f };
+  float samples_gamma[3] = { 0.f };
+  float samples_gain[3] = { 0.f };
   
-  for (int ch = 0; ch < 3; ++ch) 
+  for (int c = 0; c < 3; ++c) 
   {
-    for (int c = 0; c < 3; ++c) samples[ch][c] = CDL( d->color_patches[ch][c], \
-                                                      p->gain[CHANNEL_FACTOR], \
-                                                      p->lift[CHANNEL_FACTOR] - 1.0f, \
-                                                      1.0f / p->gamma[CHANNEL_FACTOR] );
+    samples_lift[c] = CDL(d->color_patches_lift[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+    samples_gamma[c] = CDL(d->color_patches_gamma[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+    samples_gain[c] = CDL(d->color_patches_gain[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
   }
 
   float XYZ[3] = { 0.f };
@@ -1624,17 +1683,17 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
   // Get the average patches RGB value (= neutral grey equivalents) after the CDL factors
   float greys[3] = { 0.0 };
   
-  for (int ch = 0; ch < LEVELS; ++ch) 
+  for (int c = 0; c < 3; ++c) 
   {
-    for (int c = 0; c < 3; ++c) greys[ch] += samples[ch][c] / 3.0f;
+    greys[0] += samples_lift[c] / 3.0f;
+    greys[1] += samples_gamma[c] / 3.0f;
+    greys[2] += samples_gain[c] / 3.0f;
   }
                          
   // Get the current params
-  float RGB[3][3] = {
-                      { p->lift[CHANNEL_RED] - 1.0f, p->lift[CHANNEL_GREEN] - 1.0f, p->lift[CHANNEL_BLUE] - 1.0f },
-                      { p->gamma[CHANNEL_RED], p->gamma[CHANNEL_GREEN], p->gamma[CHANNEL_BLUE] },
-                      { p->gain[CHANNEL_RED], p->gain[CHANNEL_GREEN], p->gain[CHANNEL_BLUE]}
-                    };
+  float RGB_lift[3] = { p->lift[CHANNEL_RED] - 1.0f, p->lift[CHANNEL_GREEN] - 1.0f, p->lift[CHANNEL_BLUE] - 1.0f };
+  float RGB_gamma[3] = { p->gamma[CHANNEL_RED], p->gamma[CHANNEL_GREEN], p->gamma[CHANNEL_BLUE] };
+  float RGB_gain[3] = { p->gain[CHANNEL_RED], p->gain[CHANNEL_GREEN], p->gain[CHANNEL_BLUE] };
                     
   /** Optimization loop :
   * We try to find the CDL curves that neutralize the 3 input color patches, while not affecting the overall lightness. 
@@ -1651,29 +1710,31 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
   for (int runs = 0 ; runs < 100 ; ++runs)
   {        
     // compute RGB slope/gain
-    for (int c = 0; c < 3; ++c) RGB[2][c] = CLAMP((powf(MAX(greys[GAIN], 0.000001f), RGB[GAMMA][c]) - RGB[LIFT][c]) / MAX(samples[GAIN][c], 0.000001f), 0.75f, 1.25f);
+    for (int c = 0; c < 3; ++c) RGB_gain[c] = CLAMP((powf(MAX(greys[GAIN], 0.000001f), RGB_gamma[c]) - RGB_lift[c]) / MAX(samples_gain[c], 0.000001f), 0.75f, 1.25f);
     // compute RGB offset/lift
-    for (int c = 0; c < 3; ++c) RGB[0][c] = CLAMP(powf(MAX(greys[LIFT], 0.000001f), RGB[GAMMA][c]) - MAX(samples[LIFT][c], 0.000001f)  * RGB[GAIN][c], -0.25f, 0.25f);
+    for (int c = 0; c < 3; ++c) RGB_lift[c] = CLAMP(powf(MAX(greys[LIFT], 0.000001f), RGB_gamma[c]) - MAX(samples_lift[c], 0.000001f)  * RGB_gain[c], -0.25f, 0.25f);
     // compute  power/gamma
-    for (int c = 0; c < 3; ++c) RGB[1][c] = CLAMP(logf(MAX(RGB[GAIN][c] * samples[GAMMA][c] + RGB[LIFT][c], 0.000001f)) / logf(MAX(greys[GAMMA], 0.000001f)), 0.25f, 1.25f);
+    for (int c = 0; c < 3; ++c) RGB_gamma[c] = CLAMP(logf(MAX(RGB_gain[c] * samples_gamma[c] + RGB_lift[c], 0.000001f)) / logf(MAX(greys[GAMMA], 0.000001f)), 0.25f, 1.25f);
   }
   
   // correct the luminance on RGB parameters
-  for (int ch = 0; ch < 3; ++ch) 
-  {
-    dt_prophotorgb_to_XYZ((const float *)RGB[ch], (float *)XYZ);  
-    for (int c = 0; c < 3; ++c) RGB[ch][c] = (RGB[ch][c] - XYZ[1]) + 1.0f;
-  }
+  dt_prophotorgb_to_XYZ((const float *)RGB_lift, (float *)XYZ);  
+  for (int c = 0; c < 3; ++c) RGB_lift[c] = (RGB_lift[c] - XYZ[1]) + 1.0f;
+  dt_prophotorgb_to_XYZ((const float *)RGB_gamma, (float *)XYZ);  
+  for (int c = 0; c < 3; ++c) RGB_gamma[c] = (RGB_gamma[c] - XYZ[1]) + 1.0f;
+  dt_prophotorgb_to_XYZ((const float *)RGB_lift, (float *)XYZ);  
+  for (int c = 0; c < 3; ++c) RGB_gain[c] = (RGB_gain[c] - XYZ[1]) + 1.0f;
   
-  p->lift[CHANNEL_RED] = RGB[0][0];
-  p->lift[CHANNEL_GREEN] = RGB[0][1];
-  p->lift[CHANNEL_BLUE] = RGB[0][2];
-  p->gamma[CHANNEL_RED] = RGB[1][0];
-  p->gamma[CHANNEL_GREEN] = RGB[1][1];
-  p->gamma[CHANNEL_BLUE] = RGB[1][2];
-  p->gain[CHANNEL_RED] = RGB[2][0];
-  p->gain[CHANNEL_GREEN] = RGB[2][1];
-  p->gain[CHANNEL_BLUE] = RGB[2][2];
+  
+  p->lift[CHANNEL_RED] = RGB_lift[0];
+  p->lift[CHANNEL_GREEN] = RGB_lift[1];
+  p->lift[CHANNEL_BLUE] = RGB_lift[2];
+  p->gamma[CHANNEL_RED] = RGB_gamma[0];
+  p->gamma[CHANNEL_GREEN] = RGB_gamma[1];
+  p->gamma[CHANNEL_BLUE] = RGB_gamma[2];
+  p->gain[CHANNEL_RED] = RGB_gain[0];
+  p->gain[CHANNEL_GREEN] = RGB_gain[1];
+  p->gain[CHANNEL_BLUE] = RGB_gain[2];
   
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->lift_r, p->lift[CHANNEL_RED] - 1.0f);
@@ -1906,6 +1967,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->controls), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->controls, _("color-grading mapping method"));
   g_signal_connect(G_OBJECT(g->controls), "value-changed", G_CALLBACK(controls_callback), self);
+  dt_bauhaus_combobox_set(g->controls, HSL);
   
   
   // master
@@ -2156,24 +2218,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->auto_color, _("optimize the RGB curves to remove color casts"));
   gtk_box_pack_start(GTK_BOX(box), g->auto_color, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->auto_color), "clicked", G_CALLBACK(optimize_color_pressed_callback), self);
-  
-  dt_bauhaus_combobox_set(g->controls, HSL);
-  gtk_widget_set_visible(g->lift_r, FALSE);
-  gtk_widget_set_visible(g->lift_g, FALSE);
-  gtk_widget_set_visible(g->lift_b, FALSE);
-  gtk_widget_set_visible(g->gamma_r, FALSE);
-  gtk_widget_set_visible(g->gamma_g, FALSE);
-  gtk_widget_set_visible(g->gamma_b, FALSE);
-  gtk_widget_set_visible(g->gain_r, FALSE);
-  gtk_widget_set_visible(g->gain_g, FALSE);
-  gtk_widget_set_visible(g->gain_b, FALSE);
-  
-  gtk_widget_set_visible(g->hue_lift, TRUE);
-  gtk_widget_set_visible(g->sat_lift, TRUE);
-  gtk_widget_set_visible(g->hue_gamma, TRUE);
-  gtk_widget_set_visible(g->sat_gamma, TRUE);
-  gtk_widget_set_visible(g->hue_gain, TRUE);
-  gtk_widget_set_visible(g->sat_gain, TRUE);
   
 #undef ADD_FACTOR
 #undef ADD_CHANNEL
