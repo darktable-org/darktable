@@ -79,7 +79,7 @@ static int64_t create_next_image_position()
    * next image position
    * 0000 0003 0000 0000
    */
-  return (max_image_position() & 0xFFFFFFFF00000000) + (1l << 32);
+  return (max_image_position() & 0xFFFFFFFF00000000) + (1ll << 32);
 }
 
 static void _image_local_copy_full_path(const int imgid, char *pathname, size_t pathname_len);
