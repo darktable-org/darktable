@@ -638,6 +638,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->contrast = p->contrast;
 }
 
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = calloc(1, sizeof(dt_iop_colorbalance_data_t));
+  self->commit_params(self, self->default_params, pipe, piece);
+}
+
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  free(piece->data);
+  piece->data = NULL;
+}
+
 static inline void update_saturation_slider_color(GtkWidget *slider, float hue)
 {
   float rgb[3];
