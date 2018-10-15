@@ -604,11 +604,11 @@ colorbalance (read_only image2d_t in, write_only image2d_t out, const int width,
   sRGB = (sRGB <= (float4)0.04045f) ? sRGB / 12.92f : pow((sRGB + (float4)0.055f) / (1.0f + 0.055f), (float4)2.4f);
   
   // fulcrum contrast
-  sRGB = pow(sRGB / grey4, contrast4) * grey4;
+  sRGB = pow(fmax(sRGB, (float4)0.0f) / grey4, contrast4) * grey4;
 
-  Lab.xyz = XYZ_to_Lab(sRGB_to_XYZ(sRGB)).xyz;
+  sRGB = XYZ_to_Lab(sRGB_to_XYZ(sRGB));
 
-  write_imagef (out, (int2)(x, y), Lab);
+  write_imagef (out, (int2)(x, y), sRGB);
 }
 
 kernel void
@@ -635,7 +635,7 @@ colorbalance_cdl (read_only image2d_t in, write_only image2d_t out, const int wi
   RGB = pow(fmax((RGB * gain + lift), (float4)0.0f), gamma_inv);
   
   // fulcrum contrast
-  RGB = pow(RGB / grey4, contrast4) * grey4;
+  RGB = pow(fmax(RGB, (float4)0.0f) / grey4, contrast4) * grey4;
 
   RGB = prophotorgb_to_Lab(RGB);
 
