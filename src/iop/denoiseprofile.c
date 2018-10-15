@@ -953,22 +953,22 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     // zoom level, it does NOT corresponds to the the maximum number of scales.
     // in other words, max_scale is the maximum number of VISIBLE scales.
     // That is why we have this "scale+offset_scale"
-    float band_force_exp_2 = d->force[denoiseprofile_all][scale + offset_scale];
+    float band_force_exp_2 = d->force[denoiseprofile_all][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
     for (int ch = 0; ch < 3; ch++)
     {
       adjt[ch] *= band_force_exp_2;
     }
-    band_force_exp_2 = d->force[denoiseprofile_R][scale + offset_scale];
+    band_force_exp_2 = d->force[denoiseprofile_R][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
     adjt[0] *= band_force_exp_2;
-    band_force_exp_2 = d->force[denoiseprofile_G][scale + offset_scale];
+    band_force_exp_2 = d->force[denoiseprofile_G][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
     adjt[1] *= band_force_exp_2;
-    band_force_exp_2 = d->force[denoiseprofile_B][scale + offset_scale];
+    band_force_exp_2 = d->force[denoiseprofile_B][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
     adjt[2] *= band_force_exp_2;
