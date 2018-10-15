@@ -17,6 +17,10 @@ endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
+# This will provide -DCMAKE_BUILD_TYPE=Profiling
+# and -DCMAKE_BUILD_TYPE=AddressSanitizer
+include(DefineCompilerFlags)
+
 project(darktable CXX C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
