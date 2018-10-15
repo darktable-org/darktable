@@ -109,9 +109,9 @@ typedef struct dt_iop_colorbalance_data_t
   dt_iop_colorbalance_mode_t mode;
   float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
   float saturation, contrast, grey;
-  float color_patches_lift[CHANNEL_SIZE];
-  float color_patches_gamma[CHANNEL_SIZE];
-  float color_patches_gain[CHANNEL_SIZE];
+  float color_patches_lift[3];
+  float color_patches_gamma[3];
+  float color_patches_gain[3];
   int color_patches_flags[LEVELS];
   float luma_patches[LEVELS];
   int luma_patches_flags[LEVELS];
@@ -1131,7 +1131,9 @@ static void lift_red_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   
   normalize_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, p->lift, CHANNEL_RED, p->mode);
+  darktable.gui->reset = 1;
   set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
+  darktable.gui->reset = 0;
   
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1143,7 +1145,9 @@ static void lift_green_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   
   normalize_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, p->lift, CHANNEL_GREEN, p->mode);
+  darktable.gui->reset = 1;
   set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
+  darktable.gui->reset = 0;
   
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1155,7 +1159,9 @@ static void lift_blue_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   
   normalize_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, p->lift, CHANNEL_BLUE, p->mode);
+  darktable.gui->reset = 1;
   set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
+  darktable.gui->reset = 0;  
   
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1175,8 +1181,9 @@ static void gamma_red_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   
   normalize_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, p->gamma, CHANNEL_RED, p->mode);
+  darktable.gui->reset = 1;
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
-  
+  darktable.gui->reset = 0;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 static void gamma_green_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -1187,7 +1194,9 @@ static void gamma_green_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   
   normalize_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, p->gamma, CHANNEL_GREEN, p->mode);
+  darktable.gui->reset = 1;
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
+  darktable.gui->reset = 0;
   
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1199,8 +1208,9 @@ static void gamma_blue_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   
   normalize_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, p->gamma, CHANNEL_BLUE, p->mode);
+  darktable.gui->reset = 1;
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
-  
+  darktable.gui->reset = 0;  
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1219,7 +1229,9 @@ static void gain_red_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   
   normalize_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, p->gain, CHANNEL_RED, p->mode);
+  darktable.gui->reset = 1;
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
+  darktable.gui->reset = 0;
   
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1231,8 +1243,9 @@ static void gain_green_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   
   normalize_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, p->gain, CHANNEL_GREEN, p->mode);
+  darktable.gui->reset = 1;
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
-  
+  darktable.gui->reset = 0;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 static void gain_blue_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -1243,8 +1256,9 @@ static void gain_blue_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   
   normalize_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, p->gain, CHANNEL_BLUE, p->mode);
+  darktable.gui->reset = 1;
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
-  
+  darktable.gui->reset = 0;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1373,19 +1387,17 @@ static void autogrey_callback(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  
-  dt_iop_request_focus(self);
-  dt_control_queue_redraw();
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    dt_dev_reprocess_all(self->dev);
-  }
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    dt_iop_request_focus(self);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_control_queue_redraw();
+  }
   else
   {
+    dt_dev_reprocess_all(self->dev);
     dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
     dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
     
@@ -1435,19 +1447,17 @@ static void lift_neutralize_callback(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   
-  dt_iop_request_focus(self);
-  dt_control_queue_redraw();
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    dt_dev_reprocess_all(self->dev);
-  }
-
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    dt_iop_request_focus(self);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_control_queue_redraw();
+  }
   else
   {
+    dt_dev_reprocess_all(self->dev);
     dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
     dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
     
@@ -1468,7 +1478,7 @@ static void lift_neutralize_callback(GtkWidget *button, gpointer user_data)
     
     // Save the patch color for the optimization
     dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
-    *d->color_patches_lift = *RGB;
+    for (int c = 0; c < 3; ++c) d->color_patches_lift[c] = RGB[c];
     d->color_patches_flags[LIFT] = 1;
     
     // Compute the RGB values after the CDL factors
@@ -1509,19 +1519,17 @@ static void gamma_neutralize_callback(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-
-  dt_iop_request_focus(self);
-  dt_control_queue_redraw();
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    dt_dev_reprocess_all(self->dev);
-  }
-
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    dt_iop_request_focus(self);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_control_queue_redraw();
+  }
   else
   {
+    dt_dev_reprocess_all(self->dev);
     dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
     dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
     
@@ -1538,7 +1546,7 @@ static void gamma_neutralize_callback(GtkWidget *button, gpointer user_data)
     
     // Save the patch color for the optimization
     dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
-    *d->color_patches_gamma = *RGB;
+    for (int c = 0; c < 3; ++c) d->color_patches_gamma[c] = RGB[c];
     d->color_patches_flags[GAMMA] = 1;
     
     // Compute the RGB values after the CDL factors
@@ -1579,19 +1587,17 @@ static void gain_neutralize_callback(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-
-  dt_iop_request_focus(self);
-  dt_control_queue_redraw();
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    dt_dev_reprocess_all(self->dev);
-  }
-
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    dt_iop_request_focus(self);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_control_queue_redraw();
+  }
   else
   {
+    dt_dev_reprocess_all(self->dev);
     dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
     dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
     
@@ -1608,7 +1614,7 @@ static void gain_neutralize_callback(GtkWidget *button, gpointer user_data)
     
     // Save the patch color for the optimization
     dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
-    *d->color_patches_gain = *RGB;
+    for (int c = 0; c < 3; c++) d->color_patches_gain[c] = RGB[c];
     d->color_patches_flags[GAIN] = 1;
     
     // Compute the RGB values after the CDL factors
@@ -1649,6 +1655,7 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
@@ -1754,19 +1761,17 @@ static void lift_auto_callback(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-
-  dt_iop_request_focus(self);
-  dt_control_queue_redraw();
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    dt_dev_reprocess_all(self->dev);
-  }
-
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    dt_iop_request_focus(self);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_control_queue_redraw();
+  }
   else
   {
+    dt_dev_reprocess_all(self->dev);
     dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
     dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
     dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
@@ -1799,19 +1804,17 @@ static void gamma_auto_callback(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-
-  dt_iop_request_focus(self);
-  dt_control_queue_redraw();
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    dt_dev_reprocess_all(self->dev);
-  }
-
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    dt_iop_request_focus(self);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_control_queue_redraw();
+  }
   else
   {
+    dt_dev_reprocess_all(self->dev);
     dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
     dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
     dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
@@ -1843,19 +1846,17 @@ static void gain_auto_callback(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-
-  dt_iop_request_focus(self);
-  dt_control_queue_redraw();
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    dt_dev_reprocess_all(self->dev);
-  }
-
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    dt_iop_request_focus(self);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_control_queue_redraw();
+  }
   else
   {
+    dt_dev_reprocess_all(self->dev);
     dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
     dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
     dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
@@ -1887,6 +1888,7 @@ static void optimize_luma_pressed_callback(GtkWidget *button, gpointer user_data
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
