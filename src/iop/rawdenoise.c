@@ -643,27 +643,9 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
 
   cairo_save(cr);
 
-  // draw x positions
-  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-  const float arrw = DT_PIXEL_APPLY_DPI(7.0f);
-  for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
-  {
-    cairo_move_to(cr, width * p.x[ch][k], height + inset - DT_PIXEL_APPLY_DPI(1));
-    cairo_rel_line_to(cr, -arrw * .5f, 0);
-    cairo_rel_line_to(cr, arrw * .5f, -arrw);
-    cairo_rel_line_to(cr, arrw * .5f, arrw);
-    cairo_close_path(cr);
-    if(c->x_move == k)
-      cairo_fill(cr);
-    else
-      cairo_stroke(cr);
-  }
-
   // draw selected cursor
   cairo_translate(cr, 0, height);
 
-  // cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
 
