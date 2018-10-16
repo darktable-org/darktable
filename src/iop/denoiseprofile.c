@@ -2175,13 +2175,9 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   p->mode = dt_bauhaus_combobox_get(w);
   if(p->mode == MODE_WAVELETS)
-  {
     gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "wavelets");
-  }
   else
-  {
     gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
-  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2210,13 +2206,9 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->mode, p->mode);
   dt_bauhaus_combobox_set(g->profile, -1);
   if(p->mode == MODE_WAVELETS)
-  {
     gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "wavelets");
-  }
   else
-  {
     gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
-  }
   if(p->a[0] == -1.0)
   {
     dt_bauhaus_combobox_set(g->profile, 0);
