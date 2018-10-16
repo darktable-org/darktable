@@ -553,7 +553,6 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
     dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
 }

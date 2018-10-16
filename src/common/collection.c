@@ -373,7 +373,6 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         break;
 
       case DT_COLLECTION_SORT_ID:
-      case DT_COLLECTION_SORT_ASPECT_RATIO:
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id DESC");
         break;
 
@@ -423,7 +422,6 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         break;
 
       case DT_COLLECTION_SORT_ID:
-      case DT_COLLECTION_SORT_ASPECT_RATIO:
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
         break;
 
