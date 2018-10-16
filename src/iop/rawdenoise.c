@@ -87,6 +87,28 @@ typedef struct dt_iop_rawdenoise_global_data_t
 {
 } dt_iop_rawdenoise_global_data_t;
 
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
+                  const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    dt_iop_rawdenoise_params_t *o = (dt_iop_rawdenoise_params_t *)old_params;
+    dt_iop_rawdenoise_params_t *n = (dt_iop_rawdenoise_params_t *)new_params;
+    n->threshold = o->threshold;
+    for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
+    {
+      for(int ch = 0; ch < rawdenoise_none; ch++)
+      {
+        n->x[ch][k] = k / (DT_IOP_RAWDENOISE_BANDS - 1.0);
+        n->y[ch][k] = 0.5f;
+      }
+    }
+    return 0;
+  }
+  return 1;
+}
+
+
 const char *name()
 {
   return _("raw denoise");
