@@ -40,8 +40,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_rawdenoise_params_t)
 #define DT_IOP_RAWDENOISE_RES 64
 #define DT_IOP_RAWDENOISE_BANDS 5
 
-typedef enum dt_iop_rawdenoise_channel_t
-{
+typedef enum dt_iop_rawdenoise_channel_t {
   rawdenoise_all = 0,
   rawdenoise_R = 1,
   rawdenoise_G = 2,
@@ -144,12 +143,12 @@ static void hat_transform(float *temp, const float *const base, int stride, int 
 #define BIT16 65536.0
 
 static void wavelet_denoise(const float *const in, float *const out, const dt_iop_roi_t *const roi,
-                            dt_iop_rawdenoise_data_t* data, uint32_t filters)
+                            dt_iop_rawdenoise_data_t *data, uint32_t filters)
 {
   float threshold = data->threshold;
   int lev;
   float noise_all[] = { 0.8002, 0.2735, 0.1202, 0.0585, 0.0291, 0.0152, 0.0080, 0.0044 };
-  for (int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
+  for(int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
   {
     // scale the value from [0,1] to [0,16],
     // and makes the "0.5" neutral value become 1
@@ -175,10 +174,11 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   for(int c = 0; c < nc; c++) /* denoise R,G1,B,G3 individually */
   {
     float noise[DT_IOP_RAWDENOISE_BANDS];
-    for (int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
+    for(int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
     {
       float threshold_exp_4;
-      switch (c) {
+      switch(c)
+      {
         case 0:
           threshold_exp_4 = data->force[rawdenoise_R][DT_IOP_RAWDENOISE_BANDS - i - 1];
           break;
@@ -310,14 +310,14 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 }
 
 static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_iop_roi_t *const roi,
-                                   dt_iop_rawdenoise_data_t* data, const uint8_t (*const xtrans)[6])
+                                   dt_iop_rawdenoise_data_t *data, const uint8_t (*const xtrans)[6])
 {
   float threshold = data->threshold;
   // note that these constants are the same for X-Trans and Bayer, as
   // they are proportional to image detail on each channel, not the
   // sensor pattern
   float noise_all[] = { 0.8002, 0.2735, 0.1202, 0.0585, 0.0291, 0.0152, 0.0080, 0.0044 };
-  for (int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
+  for(int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
   {
     // scale the value from [0,1] to [0,16],
     // and makes the "0.5" neutral value become 1
@@ -335,10 +335,11 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
   for(int c = 0; c < 3; c++)
   {
     float noise[DT_IOP_RAWDENOISE_BANDS];
-    for (int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
+    for(int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
     {
       float threshold_exp_4;
-      switch (c) {
+      switch(c)
+      {
         case 0:
           threshold_exp_4 = data->force[rawdenoise_R][DT_IOP_RAWDENOISE_BANDS - i - 1];
           break;
@@ -483,7 +484,7 @@ void init(dt_iop_module_t *module)
   dt_iop_rawdenoise_params_t tmp;
   for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
   {
-    for (int ch = 0; ch < rawdenoise_none; ch++)
+    for(int ch = 0; ch < rawdenoise_none; ch++)
     {
       tmp.x[ch][k] = k / (DT_IOP_RAWDENOISE_BANDS - 1.0);
       tmp.y[ch][k] = 0.5f;
@@ -510,7 +511,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   d->threshold = p->threshold;
 
-  for (int ch = 0; ch < rawdenoise_none; ch++)
+  for(int ch = 0; ch < rawdenoise_none; ch++)
   {
     dt_draw_curve_set_point(d->curve[ch], 0, p->x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p->y[ch][0]);
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
@@ -530,7 +531,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   dt_iop_rawdenoise_params_t *default_params = (dt_iop_rawdenoise_params_t *)self->default_params;
 
   piece->data = (void *)d;
-  for (int ch = 0; ch < rawdenoise_none; ch++)
+  for(int ch = 0; ch < rawdenoise_none; ch++)
   {
     d->curve[ch] = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
@@ -566,8 +567,8 @@ static void threshold_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void dt_iop_rawdenoise_get_params(dt_iop_rawdenoise_params_t *p, const int ch, const double mouse_x, const double mouse_y,
-                                         const float rad)
+static void dt_iop_rawdenoise_get_params(dt_iop_rawdenoise_params_t *p, const int ch, const double mouse_x,
+                                         const double mouse_y, const float rad)
 {
   for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
   {
@@ -583,8 +584,7 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   dt_iop_rawdenoise_params_t p = *(dt_iop_rawdenoise_params_t *)self->params;
 
   int ch = (int)c->channel;
-  dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0,
-                          p.y[ch][0]);
+  dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p.y[ch][0]);
   for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
     dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
   dt_draw_curve_set_point(c->transition_curve, DT_IOP_RAWDENOISE_BANDS + 1, p.x[ch][1] + 1.0,
@@ -622,8 +622,7 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   {
     // draw min/max curves:
     dt_iop_rawdenoise_get_params(&p, c->channel, c->mouse_x, 1., c->mouse_radius);
-    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0,
-                            p.y[ch][0]);
+    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p.y[ch][0]);
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
       dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
     dt_draw_curve_set_point(c->transition_curve, DT_IOP_RAWDENOISE_BANDS + 1, p.x[ch][1] + 1.0,
@@ -632,8 +631,7 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
 
     p = *(dt_iop_rawdenoise_params_t *)self->params;
     dt_iop_rawdenoise_get_params(&p, c->channel, c->mouse_x, .0, c->mouse_radius);
-    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0,
-                            p.y[ch][0]);
+    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p.y[ch][0]);
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
       dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
     dt_draw_curve_set_point(c->transition_curve, DT_IOP_RAWDENOISE_BANDS + 1, p.x[ch][1] + 1.0,
@@ -649,14 +647,14 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
 
-  for (int i = 0; i < rawdenoise_none; i++)
+  for(int i = 0; i < rawdenoise_none; i++)
   {
     // draw curves, selected last
     ch = ((int)c->channel + i + 1) % rawdenoise_none;
     float alpha = 0.3;
-    if (i == rawdenoise_none-1)
-      alpha = 1.0;
-    switch (ch) {
+    if(i == rawdenoise_none - 1) alpha = 1.0;
+    switch(ch)
+    {
       case 0:
         cairo_set_source_rgba(cr, .7, .7, .7, alpha);
         break;
@@ -672,8 +670,7 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
     }
 
     p = *(dt_iop_rawdenoise_params_t *)self->params;
-    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0,
-                            p.y[ch][0]);
+    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p.y[ch][0]);
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
       dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
     dt_draw_curve_set_point(c->transition_curve, DT_IOP_RAWDENOISE_BANDS + 1, p.x[ch][1] + 1.0,
@@ -902,17 +899,13 @@ void gui_init(dt_iop_module_t *self)
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("all")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("R")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("G")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("B")));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
@@ -963,7 +956,7 @@ void gui_init(dt_iop_module_t *self)
   // In other words, if the original one is in "non_raw" mode, we have to put
   // "non_raw" in the stack first, so that when we add a new instance, we see
   // the label_non_raw
-  if (self->hide_enable_button)
+  if(self->hide_enable_button)
   {
     gtk_stack_add_named(GTK_STACK(c->stack), c->label_non_raw, "non_raw");
     gtk_stack_add_named(GTK_STACK(c->stack), c->box_raw, "raw");
