@@ -44,7 +44,7 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 // debug
 #define AUTO
 #define CONTROLS
-//#define OPTIM
+#define OPTIM
 
 DT_MODULE_INTROSPECTION(2, dt_iop_colorbalance_params_t)
 
@@ -111,13 +111,6 @@ typedef struct dt_iop_colorbalance_gui_data_t
   GtkWidget *auto_luma;
   GtkWidget *auto_color;
 #endif
-} dt_iop_colorbalance_gui_data_t;
-
-typedef struct dt_iop_colorbalance_data_t
-{
-  dt_iop_colorbalance_mode_t mode;
-  float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
-  float saturation, contrast, grey;
 #ifdef AUTO
   float color_patches_lift[3];
   float color_patches_gamma[3];
@@ -126,6 +119,13 @@ typedef struct dt_iop_colorbalance_data_t
   float luma_patches[LEVELS];
   int luma_patches_flags[LEVELS];
 #endif
+} dt_iop_colorbalance_gui_data_t;
+
+typedef struct dt_iop_colorbalance_data_t
+{
+  dt_iop_colorbalance_mode_t mode;
+  float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
+  float saturation, contrast, grey;
 } dt_iop_colorbalance_data_t;
 
 typedef struct dt_iop_colorbalance_global_data_t
@@ -667,21 +667,6 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 {
   piece->data = calloc(1, sizeof(dt_iop_colorbalance_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
-#ifdef AUTO
-  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)(piece->data);
-  float tmp[3] = { 0.0f };
-  
-  memcpy(d->color_patches_lift, &tmp, 3*sizeof(float));
-  memcpy(d->color_patches_gain, &tmp, 3*sizeof(float));
-  memcpy(d->color_patches_gamma, &tmp, 3*sizeof(float));
-  
-  float tmp2[LEVELS] = { 0.0f };
-  memcpy(d->luma_patches, &tmp2, LEVELS*sizeof(float));
-  
-  int tmp3[LEVELS] = { 0 };
-  memcpy(d->color_patches_flags, &tmp3, LEVELS*sizeof(int));
-  memcpy(d->luma_patches_flags, &tmp3, LEVELS*sizeof(int));
-#endif
 }
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1552,9 +1537,8 @@ static void lift_neutralize_callback(GtkWidget *button, gpointer user_data)
     
     // Save the patch color for the optimization
 #ifdef OPTIM
-    dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
-    for (int c = 0; c < 3; ++c) d->color_patches_lift[c] = RGB[c];
-    d->color_patches_flags[LIFT] = 1;
+    for (int c = 0; c < 3; ++c) g->color_patches_lift[c] = RGB[c];
+    g->color_patches_flags[LIFT] = 1;
 #endif
 
     // Compute the RGB values after the CDL factors
@@ -1622,9 +1606,8 @@ static void gamma_neutralize_callback(GtkWidget *button, gpointer user_data)
     
     // Save the patch color for the optimization
 #ifdef OPTIM
-    dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
-    for (int c = 0; c < 3; ++c) d->color_patches_gamma[c] = RGB[c];
-    d->color_patches_flags[GAMMA] = 1;
+    for (int c = 0; c < 3; ++c) g->color_patches_gamma[c] = RGB[c];
+    g->color_patches_flags[GAMMA] = 1;
 #endif
 
     // Compute the RGB values after the CDL factors
@@ -1692,9 +1675,8 @@ static void gain_neutralize_callback(GtkWidget *button, gpointer user_data)
     
     // Save the patch color for the optimization
 #ifdef OPTIM
-    dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
-    for (int c = 0; c < 3; c++) d->color_patches_gain[c] = RGB[c];
-    d->color_patches_flags[GAIN] = 1;
+    for (int c = 0; c < 3; c++) g->color_patches_gain[c] = RGB[c];
+    g->color_patches_flags[GAIN] = 1;
 #endif
 
     // Compute the RGB values after the CDL factors
@@ -1739,9 +1721,8 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
   
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
   
-  if(d->color_patches_flags[0] != 1 || d->color_patches_flags[1] != 1 || d->color_patches_flags[2] != 1)
+  if(g->color_patches_flags[0] != 1 || g->color_patches_flags[1] != 1 || g->color_patches_flags[2] != 1)
   {
     dt_control_log(_("you need to select 3 color samples first"));
     return;
@@ -1754,9 +1735,9 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
   
   for (int c = 0; c < 3; ++c) 
   {
-    samples_lift[c] = CDL(d->color_patches_lift[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
-    samples_gamma[c] = CDL(d->color_patches_gamma[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
-    samples_gain[c] = CDL(d->color_patches_gain[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+    samples_lift[c] = CDL(g->color_patches_lift[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+    samples_gamma[c] = CDL(g->color_patches_gamma[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+    samples_gain[c] = CDL(g->color_patches_gain[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
   }
 
   float XYZ[3] = { 0.f };
@@ -1866,9 +1847,8 @@ static void lift_auto_callback(GtkWidget *button, gpointer user_data)
     dt_Lab_to_XYZ((const float *)self->picked_color_min, XYZ);
     
 #ifdef OPTIM
-    dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
-    d->luma_patches[LIFT] = XYZ[1];
-    d->luma_patches_flags[LIFT] = 1;
+    g->luma_patches[LIFT] = XYZ[1];
+    g->luma_patches_flags[LIFT] = 1;
 #endif
 
     float RGB[3] = { 0.0f };
@@ -1911,9 +1891,8 @@ static void gamma_auto_callback(GtkWidget *button, gpointer user_data)
     dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
     
 #ifdef OPTIM
-    dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
-    d->luma_patches[GAMMA] = XYZ[1];
-    d->luma_patches_flags[GAMMA] = 1;
+    g->luma_patches[GAMMA] = XYZ[1];
+    g->luma_patches_flags[GAMMA] = 1;
 #endif
     
     float RGB[3] = { 0.0f };
@@ -1956,9 +1935,8 @@ static void gain_auto_callback(GtkWidget *button, gpointer user_data)
     dt_Lab_to_XYZ((const float *)self->picked_color_max, XYZ);
     
 #ifdef OPTIM
-    dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
-    d->luma_patches[GAIN] = XYZ[1];
-    d->luma_patches_flags[GAIN] = 1;
+    g->luma_patches[GAIN] = XYZ[1];
+    g->luma_patches_flags[GAIN] = 1;
 #endif
 
     float RGB[3] = { 0.0f };
@@ -1981,9 +1959,8 @@ static void optimize_luma_pressed_callback(GtkWidget *button, gpointer user_data
   
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)self->data;
   
-  if(d->luma_patches_flags[0] != 1 || d->luma_patches_flags[1] != 1 || d->luma_patches_flags[2] != 1)
+  if(g->luma_patches_flags[0] != 1 || g->luma_patches_flags[1] != 1 || g->luma_patches_flags[2] != 1)
   {
     dt_control_log(_("you need to select 3 luma samples first"));
     return;
@@ -1994,9 +1971,9 @@ static void optimize_luma_pressed_callback(GtkWidget *button, gpointer user_data
   */
   for (int runs = 0 ; runs < 100 ; ++runs)
   {        
-    p->gain[CHANNEL_FACTOR] = CLAMP(p->lift[CHANNEL_FACTOR] / d->luma_patches[GAIN], 0.0f, 2.0f);
-    p->lift[CHANNEL_FACTOR] = CLAMP(-p->gain[CHANNEL_FACTOR] * d->luma_patches[LIFT] + 1.0f, 0.0f, 2.0f);
-    p->gamma[CHANNEL_FACTOR] = CLAMP(logf(MAX(p->gain[CHANNEL_FACTOR] * d->luma_patches[GAMMA] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f)) / logf(0.1800f), 0.0f, 2.0f);
+    p->gain[CHANNEL_FACTOR] = CLAMP(p->lift[CHANNEL_FACTOR] / g->luma_patches[GAIN], 0.0f, 2.0f);
+    p->lift[CHANNEL_FACTOR] = CLAMP(-p->gain[CHANNEL_FACTOR] * g->luma_patches[LIFT] + 1.0f, 0.0f, 2.0f);
+    p->gamma[CHANNEL_FACTOR] = CLAMP(logf(MAX(p->gain[CHANNEL_FACTOR] * g->luma_patches[GAMMA] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f)) / logf(0.1800f), 0.0f, 2.0f);
   }
 
   dt_bauhaus_slider_set_soft(g->lift_factor, p->lift[CHANNEL_FACTOR] - 1.0f);
