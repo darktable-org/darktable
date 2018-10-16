@@ -19,9 +19,9 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/exif.h"
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
-#include "common/exif.h"
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
@@ -54,8 +54,7 @@ typedef enum dt_iop_denoiseprofile_mode_t
   MODE_WAVELETS = 1
 } dt_iop_denoiseprofile_mode_t;
 
-typedef enum dt_iop_denoiseprofile_channel_t
-{
+typedef enum dt_iop_denoiseprofile_channel_t {
   denoiseprofile_all = 0,
   denoiseprofile_R = 1,
   denoiseprofile_G = 2,
@@ -73,7 +72,8 @@ typedef struct dt_iop_denoiseprofile_params_t
   float strength;   // noise level after equalization
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-  float x[denoiseprofile_none][DT_IOP_DENOISE_PROFILE_BANDS], y[denoiseprofile_none][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+  float x[denoiseprofile_none][DT_IOP_DENOISE_PROFILE_BANDS],
+      y[denoiseprofile_none][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
@@ -84,7 +84,7 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   GtkWidget *strength;
   dt_noiseprofile_t interpolated; // don't use name, maker or model, they may point to garbage
   GList *profiles;
-  //TODO add stack?
+  // TODO add stack?
   dt_draw_curve_t *transition_curve; // curve for gui to draw
   GtkDrawingArea *area;
   GtkNotebook *channel_tabs;
@@ -101,9 +101,9 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
 
 typedef struct dt_iop_denoiseprofile_data_t
 {
-  float radius;     // search radius
-  float strength;   // noise level after equalization
-  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+  float radius;                      // search radius
+  float strength;                    // noise level after equalization
+  float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
   dt_draw_curve_t *curve[denoiseprofile_none];
   dt_iop_denoiseprofile_channel_t channel;
@@ -229,14 +229,12 @@ static void add_preset(dt_iop_module_so_t *self, const char *name, const char *p
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  //TODO update these
+  // TODO update these
   // these blobs were exported as dtstyle and copied from there:
-  add_preset(self,
-             _("chroma (use on 1st instance)"),
+  add_preset(self, _("chroma (use on 1st instance)"),
              "gz04eJxjYGiwZ4Dg/dti91vWKRhZcYsxmibv5THN2n3XhJEBBhrsgARQnQNUPUViVMUApDYXmg==",
              "gz12eJxjZGBgEGYAgRNODESDBnsIHll8AM62GP8=", 7);
-  add_preset(self,
-             _("luma (use on 2nd instance)"),
+  add_preset(self, _("luma (use on 2nd instance)"),
              "gz04eJxjYGhwYGBgsGdgaNi/LXa/ZZ2CkRW3GKNp8l4e06zdd00Y4KDBDqLOAaTWnkIxqmIARVMXGg==",
              "gz12eJxjZGBgEGAAgWlODESDBnsIHll8AJKaGMo=", 7);
 }
@@ -946,7 +944,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
                              sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
     // add 8.0 here because it seemed a little weak
-    float adjt[3] = {8.0f, 8.0f, 8.0f};
+    float adjt[3] = { 8.0f, 8.0f, 8.0f };
 
     int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
     // current scale number is scale+offset_scale
@@ -955,10 +953,11 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     // zoom level, it does NOT corresponds to the the maximum number of scales.
     // in other words, max_scale is the maximum number of VISIBLE scales.
     // That is why we have this "scale+offset_scale"
-    float band_force_exp_2 = d->force[denoiseprofile_all][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    float band_force_exp_2
+        = d->force[denoiseprofile_all][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
-    for (int ch = 0; ch < 3; ch++)
+    for(int ch = 0; ch < 3; ch++)
     {
       adjt[ch] *= band_force_exp_2;
     }
@@ -2005,10 +2004,10 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->data = NULL;
   dt_iop_denoiseprofile_params_t tmp;
-  memset(&tmp,0,sizeof(dt_iop_denoiseprofile_params_t));
+  memset(&tmp, 0, sizeof(dt_iop_denoiseprofile_params_t));
   for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
   {
-    for (int ch = 0; ch < denoiseprofile_none; ch++)
+    for(int ch = 0; ch < denoiseprofile_none; ch++)
     {
       tmp.x[ch][k] = k / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0);
       tmp.y[ch][k] = 0.5f;
@@ -2098,7 +2097,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   d->radius = p->radius;
   d->strength = p->strength;
-  for (int i = 0; i < 3; i++)
+  for(int i = 0; i < 3; i++)
   {
     d->a[i] = p->a[i];
     d->b[i] = p->b[i];
@@ -2119,7 +2118,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     }
   }
 
-  for (int ch = 0; ch < denoiseprofile_none; ch++)
+  for(int ch = 0; ch < denoiseprofile_none; ch++)
   {
     dt_draw_curve_set_point(d->curve[ch], 0, p->x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0, p->y[ch][0]);
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
@@ -2136,7 +2135,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   dt_iop_denoiseprofile_params_t *default_params = (dt_iop_denoiseprofile_params_t *)self->default_params;
 
   piece->data = (void *)d;
-  for (int ch = 0; ch < denoiseprofile_none; ch++)
+  for(int ch = 0; ch < denoiseprofile_none; ch++)
   {
     d->curve[ch] = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
@@ -2204,7 +2203,7 @@ static void strength_callback(GtkWidget *w, dt_iop_module_t *self)
 
 void gui_update(dt_iop_module_t *self)
 {
-  //TODO use a stack
+  // TODO use a stack
   // let gui slider match current parameters:
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
@@ -2244,8 +2243,8 @@ void gui_update(dt_iop_module_t *self)
   }
 }
 
-static void dt_iop_denoiseprofile_get_params(dt_iop_denoiseprofile_params_t *p, const int ch, const double mouse_x, const double mouse_y,
-                                         const float rad)
+static void dt_iop_denoiseprofile_get_params(dt_iop_denoiseprofile_params_t *p, const int ch, const double mouse_x,
+                                             const double mouse_y, const float rad)
 {
   for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
   {
@@ -2261,8 +2260,7 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
   dt_iop_denoiseprofile_params_t p = *(dt_iop_denoiseprofile_params_t *)self->params;
 
   int ch = (int)c->channel;
-  dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0,
-                          p.y[ch][0]);
+  dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0, p.y[ch][0]);
   for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
     dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
   dt_draw_curve_set_point(c->transition_curve, DT_IOP_DENOISE_PROFILE_BANDS + 1, p.x[ch][1] + 1.0,
@@ -2300,23 +2298,23 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
   {
     // draw min/max curves:
     dt_iop_denoiseprofile_get_params(&p, c->channel, c->mouse_x, 1., c->mouse_radius);
-    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0,
-                            p.y[ch][0]);
+    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0, p.y[ch][0]);
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
       dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
     dt_draw_curve_set_point(c->transition_curve, DT_IOP_DENOISE_PROFILE_BANDS + 1, p.x[ch][1] + 1.0,
                             p.y[ch][DT_IOP_DENOISE_PROFILE_BANDS - 1]);
-    dt_draw_curve_calc_values(c->transition_curve, 0.0, 1.0, DT_IOP_DENOISE_PROFILE_RES, c->draw_min_xs, c->draw_min_ys);
+    dt_draw_curve_calc_values(c->transition_curve, 0.0, 1.0, DT_IOP_DENOISE_PROFILE_RES, c->draw_min_xs,
+                              c->draw_min_ys);
 
     p = *(dt_iop_denoiseprofile_params_t *)self->params;
     dt_iop_denoiseprofile_get_params(&p, c->channel, c->mouse_x, .0, c->mouse_radius);
-    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0,
-                            p.y[ch][0]);
+    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0, p.y[ch][0]);
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
       dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
     dt_draw_curve_set_point(c->transition_curve, DT_IOP_DENOISE_PROFILE_BANDS + 1, p.x[ch][1] + 1.0,
                             p.y[ch][DT_IOP_DENOISE_PROFILE_BANDS - 1]);
-    dt_draw_curve_calc_values(c->transition_curve, 0.0, 1.0, DT_IOP_DENOISE_PROFILE_RES, c->draw_max_xs, c->draw_max_ys);
+    dt_draw_curve_calc_values(c->transition_curve, 0.0, 1.0, DT_IOP_DENOISE_PROFILE_RES, c->draw_max_xs,
+                              c->draw_max_ys);
   }
 
   cairo_save(cr);
@@ -2327,14 +2325,14 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
 
-  for (int i = 0; i < denoiseprofile_none; i++)
+  for(int i = 0; i < denoiseprofile_none; i++)
   {
     // draw curves, selected last
     ch = ((int)c->channel + i + 1) % denoiseprofile_none;
     float alpha = 0.3;
-    if (i == denoiseprofile_none-1)
-      alpha = 1.0;
-    switch (ch) {
+    if(i == denoiseprofile_none - 1) alpha = 1.0;
+    switch(ch)
+    {
       case 0:
         cairo_set_source_rgba(cr, .7, .7, .7, alpha);
         break;
@@ -2350,8 +2348,7 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
     }
 
     p = *(dt_iop_denoiseprofile_params_t *)self->params;
-    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0,
-                            p.y[ch][0]);
+    dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0, p.y[ch][0]);
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
       dt_draw_curve_set_point(c->transition_curve, k + 1, p.x[ch][k], p.y[ch][k]);
     dt_draw_curve_set_point(c->transition_curve, DT_IOP_DENOISE_PROFILE_BANDS + 1, p.x[ch][1] + 1.0,
@@ -2585,17 +2582,13 @@ void gui_init(dt_iop_module_t *self)
 
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("all")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("R")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("G")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("B")));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->channel_tabs, g->channel)));
