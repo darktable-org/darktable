@@ -231,7 +231,6 @@ static void add_preset(dt_iop_module_so_t *self, const char *name, const char *p
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  // TODO update these
   // these blobs were exported as dtstyle and copied from there:
   add_preset(self, _("chroma (use on 1st instance)"),
              "gz04eJxjYGiwZ4Dg/dti91vWKRhZcYsxmibv5THN2n3XhJEBBhrsgARQnQNUPUViVMUApDYXmg==",
@@ -2197,7 +2196,6 @@ static void strength_callback(GtkWidget *w, dt_iop_module_t *self)
 
 void gui_update(dt_iop_module_t *self)
 {
-  // TODO use a stack
   // let gui slider match current parameters:
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
