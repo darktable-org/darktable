@@ -1193,7 +1193,7 @@ static void _create_memory_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE TABLE memory.color_labels_temp (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
-      "CREATE TABLE memory.collected_images (rowid INTEGER PRIMARY KEY AUTOINCREMENT, imgid INTEGER, aspect_ratio REAL)", NULL,
+      "CREATE TABLE memory.collected_images (rowid INTEGER PRIMARY KEY AUTOINCREMENT, imgid INTEGER)", NULL,
       NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.tmp_selection (imgid INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.tagq (tmpid INTEGER PRIMARY KEY, id INTEGER)", NULL, NULL, NULL);
