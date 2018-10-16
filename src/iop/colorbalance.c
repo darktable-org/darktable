@@ -68,7 +68,7 @@ typedef enum _colorbalance_channel_t
 
 typedef enum _colorbalance_levels_t
 {
-  LIFT,
+  LIFT = 0,
   GAMMA,
   GAIN,
   LEVELS
@@ -584,7 +584,7 @@ void init(dt_iop_module_t *module)
   module->priority = 449; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorbalance_params_t);
   module->gui_data = NULL;
-  dt_iop_colorbalance_params_t tmp = (dt_iop_colorbalance_params_t){ 1, 
+  dt_iop_colorbalance_params_t tmp = (dt_iop_colorbalance_params_t){ SLOPE_OFFSET_POWER, 
                                                                      { 1.0f, 1.0f, 1.0f, 1.0f },
                                                                      { 1.0f, 1.0f, 1.0f, 1.0f },
                                                                      { 1.0f, 1.0f, 1.0f, 1.0f },
@@ -625,7 +625,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)(piece->data);
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)p1;
 
-  for(int i = 0; i < 4; i++)
+  for(int i = 0; i < CHANNEL_SIZE; i++)
   {
     d->lift[i] = p->lift[i];
     d->gamma[i] = p->gamma[i];
