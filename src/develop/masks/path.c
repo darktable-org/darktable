@@ -1020,7 +1020,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
   else
     masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/path/border"), 0.5f);
 
-  if(gui->creation && which == 1 && (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
+  if(gui->creation && which == 2 && (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
   {
     // set some absolute or relative position for the source of the clone mask
     if(form->type & DT_MASKS_CLONE) dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
