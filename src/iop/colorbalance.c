@@ -108,6 +108,7 @@ typedef struct dt_iop_colorbalance_gui_data_t
   GtkWidget *saturation, *contrast, *grey;
 #ifdef AUTO
   GtkWidget *masterbox;
+  GtkWidget *optim_label;
   GtkWidget *auto_luma;
   GtkWidget *auto_color;
 #endif
@@ -842,11 +843,13 @@ void gui_update(dt_iop_module_t *self)
 #ifdef AUTO
   if (p->mode == LIFT_GAMMA_GAIN) 
   {
+    gtk_widget_set_visible(g->optim_label, FALSE);
     gtk_widget_set_visible(g->auto_color, FALSE);
     gtk_widget_set_visible(g->auto_luma, FALSE);
   }
   else
   {
+    gtk_widget_set_visible(g->optim_label, TRUE);
     gtk_widget_set_visible(g->auto_color, TRUE);
     gtk_widget_set_visible(g->auto_luma, TRUE);
   }
@@ -962,11 +965,13 @@ static void mode_callback(GtkWidget *combo, dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   if (p->mode == LIFT_GAMMA_GAIN) 
   {
+    gtk_widget_set_visible(g->optim_label, FALSE);
     gtk_widget_set_visible(g->auto_color, FALSE);
     gtk_widget_set_visible(g->auto_luma, FALSE);
   }
   else
   {
+    gtk_widget_set_visible(g->optim_label, TRUE);
     gtk_widget_set_visible(g->auto_color, TRUE);
     gtk_widget_set_visible(g->auto_luma, TRUE);
   }
@@ -2268,8 +2273,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->gain_b, 1.0, 0.0, 0.0, 1.0);
   
 #ifdef AUTO
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("auto optimizers")), FALSE, FALSE, 5);
-  
+  g->optim_label =  dt_ui_section_label_new(_("auto optimizers"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->optim_label, FALSE, FALSE, 5);
+
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   
