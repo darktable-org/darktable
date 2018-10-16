@@ -1781,9 +1781,36 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
                              sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
     // add 8.0 here because it seemed a little weak
-    const float adjt = 8.0f;
+    float adjt[3] = { 8.0f, 8.0f, 8.0f };
 
-    const float thrs[4] = { adjt * sb2 / std_x[0], adjt * sb2 / std_x[1], adjt * sb2 / std_x[2], 0.0f };
+    int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
+    // current scale number is s+offset_scale
+    // for instance, largest scale is DT_IOP_DENOISE_PROFILE_BANDS
+    // max_scale only indicates the number of scales to process at THIS
+    // zoom level, it does NOT corresponds to the the maximum number of scales.
+    // in other words, max_scale is the maximum number of VISIBLE scales.
+    // That is why we have this "s+offset_scale"
+    float band_force_exp_2 = d->force[denoiseprofile_all][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+    band_force_exp_2 *= band_force_exp_2;
+    band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
+    for(int ch = 0; ch < 3; ch++)
+    {
+      adjt[ch] *= band_force_exp_2;
+    }
+    band_force_exp_2 = d->force[denoiseprofile_R][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+    band_force_exp_2 *= band_force_exp_2;
+    band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
+    adjt[0] *= band_force_exp_2;
+    band_force_exp_2 = d->force[denoiseprofile_G][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+    band_force_exp_2 *= band_force_exp_2;
+    band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
+    adjt[1] *= band_force_exp_2;
+    band_force_exp_2 = d->force[denoiseprofile_B][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+    band_force_exp_2 *= band_force_exp_2;
+    band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
+    adjt[2] *= band_force_exp_2;
+
+    const float thrs[4] = { adjt[0] * sb2 / std_x[0], adjt[1] * sb2 / std_x[1], adjt[2] * sb2 / std_x[2], 0.0f };
     // fprintf(stderr, "scale %d thrs %f %f %f\n", s, thrs[0], thrs[1], thrs[2]);
 
     const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
