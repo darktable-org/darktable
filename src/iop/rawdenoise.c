@@ -195,16 +195,17 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   const int nc = 4;
   for(int c = 0; c < nc; c++) /* denoise R,G1,B,G3 individually */
   {
+    int color = FC(c % 2, c / 2, filters);
     float noise[DT_IOP_RAWDENOISE_BANDS];
     for(int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
     {
       float threshold_exp_4;
-      switch(c)
+      switch(color)
       {
         case 0:
           threshold_exp_4 = data->force[rawdenoise_R][DT_IOP_RAWDENOISE_BANDS - i - 1];
           break;
-        case 3:
+        case 2:
           threshold_exp_4 = data->force[rawdenoise_B][DT_IOP_RAWDENOISE_BANDS - i - 1];
           break;
         default:
