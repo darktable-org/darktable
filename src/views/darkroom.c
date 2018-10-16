@@ -190,7 +190,7 @@ void expose(
   {
     float zx = zoom_x, zy = zoom_y, boxw = 1., boxh = 1.;
     dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, &boxw, &boxh);
-    dt_view_set_scrollbar(self, zx + .5 - boxw * .5, 1.0, boxw, zy + .5 - boxh * .5, 1.0, boxh);
+    dt_view_set_scrollbar(self, zx, -0.5 + boxw/2, 0.5, boxw/2, zy, -0.5+ boxh/2, 0.5, boxh/2);
   }
 
   if((dev->image_status == DT_DEV_PIXELPIPE_VALID)
@@ -1781,6 +1781,18 @@ void enter(dt_view_t *self)
   dt_view_filmstrip_prefetch();
 
   dt_collection_hint_message(darktable.collection);
+
+  char *scrollbars_conf = dt_conf_get_string("scrollbars");
+
+  gboolean scrollbars_visible = FALSE;
+  if(scrollbars_conf)
+  {
+    if(!strcmp(scrollbars_conf, "lighttable + darkroom"))
+      scrollbars_visible = TRUE;
+    g_free(scrollbars_conf);
+  }
+
+  dt_ui_scrollbars_show(darktable.gui->ui, scrollbars_visible);
 }
 
 void leave(dt_view_t *self)
@@ -1875,6 +1887,8 @@ void leave(dt_view_t *self)
   if(dev->overexposed.timeout > 0) g_source_remove(dev->overexposed.timeout);
   gtk_widget_hide(dev->overexposed.floating_window);
   gtk_widget_hide(dev->profile.floating_window);
+
+  dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
@@ -2088,6 +2102,15 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   return 0;
 }
 
+void scrollbar_changed(dt_view_t *self, double x, double y)
+{
+  dt_control_set_dev_zoom_x(x);
+  dt_control_set_dev_zoom_y(y);
+
+  /* redraw pipe */
+  dt_dev_invalidate(darktable.develop);
+  dt_control_queue_redraw();
+}
 
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
