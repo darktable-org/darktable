@@ -145,6 +145,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     }
     n->radius = o->radius;
     n->strength = o->strength;
+    memcpy(n->a, o->a, sizeof(float) * 3);
+    memcpy(n->b, o->b, sizeof(float) * 3);
     // autodetect current profile:
     if(!self->dev)
     {
