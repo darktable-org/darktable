@@ -642,6 +642,20 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 {
   piece->data = calloc(1, sizeof(dt_iop_colorbalance_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
+  
+  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)(piece->data);
+  float tmp[3] = { 0.0f };
+  
+  memcpy(d->color_patches_lift, &tmp, 3*sizeof(float));
+  memcpy(d->color_patches_gain, &tmp, 3*sizeof(float));
+  memcpy(d->color_patches_gamma, &tmp, 3*sizeof(float));
+  
+  float tmp2[LEVELS] = { 0.0f };
+  memcpy(d->luma_patches, &tmp2, LEVELS*sizeof(float));
+  
+  int tmp3[LEVELS] = { 0 };
+  memcpy(d->color_patches_flags, &tmp3, LEVELS*sizeof(int));
+  memcpy(d->luma_patches_flags, &tmp3, LEVELS*sizeof(int));
 }
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -829,28 +843,30 @@ void gui_update(dt_iop_module_t *self)
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
   
+  // default control is HSL
+  gtk_widget_set_visible(g->lift_r, FALSE);
+  gtk_widget_set_visible(g->lift_g, FALSE);
+  gtk_widget_set_visible(g->lift_b, FALSE);
+  gtk_widget_set_visible(g->gamma_r, FALSE);
+  gtk_widget_set_visible(g->gamma_g, FALSE);
+  gtk_widget_set_visible(g->gamma_b, FALSE);
+  gtk_widget_set_visible(g->gain_r, FALSE);
+  gtk_widget_set_visible(g->gain_g, FALSE);
+  gtk_widget_set_visible(g->gain_b, FALSE);
+  
+  gtk_widget_set_visible(g->hue_lift, TRUE);
+  gtk_widget_set_visible(g->sat_lift, TRUE);
+  gtk_widget_set_visible(g->hue_gamma, TRUE);
+  gtk_widget_set_visible(g->sat_gamma, TRUE);
+  gtk_widget_set_visible(g->hue_gain, TRUE);
+  gtk_widget_set_visible(g->sat_gain, TRUE);
+  
   int control_mode = dt_bauhaus_combobox_get(g->controls);
   
   switch (control_mode)
   {
     case HSL:
     {
-      gtk_widget_set_visible(g->lift_r, FALSE);
-      gtk_widget_set_visible(g->lift_g, FALSE);
-      gtk_widget_set_visible(g->lift_b, FALSE);
-      gtk_widget_set_visible(g->gamma_r, FALSE);
-      gtk_widget_set_visible(g->gamma_g, FALSE);
-      gtk_widget_set_visible(g->gamma_b, FALSE);
-      gtk_widget_set_visible(g->gain_r, FALSE);
-      gtk_widget_set_visible(g->gain_g, FALSE);
-      gtk_widget_set_visible(g->gain_b, FALSE);
-      
-      gtk_widget_set_visible(g->hue_lift, TRUE);
-      gtk_widget_set_visible(g->sat_lift, TRUE);
-      gtk_widget_set_visible(g->hue_gamma, TRUE);
-      gtk_widget_set_visible(g->sat_gamma, TRUE);
-      gtk_widget_set_visible(g->hue_gain, TRUE);
-      gtk_widget_set_visible(g->sat_gain, TRUE);
       break;
     }
     case RGBL:
@@ -891,9 +907,33 @@ void gui_update(dt_iop_module_t *self)
       gtk_widget_set_visible(g->sat_gamma, TRUE);
       gtk_widget_set_visible(g->hue_gain, TRUE);
       gtk_widget_set_visible(g->sat_gain, TRUE);
+      break;
     }
   }
+}
+
+void gui_reset(dt_iop_module_t *self)
+{
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   
+  dt_bauhaus_combobox_set(g->controls, HSL);
+  
+  gtk_widget_set_visible(g->lift_r, FALSE);
+  gtk_widget_set_visible(g->lift_g, FALSE);
+  gtk_widget_set_visible(g->lift_b, FALSE);
+  gtk_widget_set_visible(g->gamma_r, FALSE);
+  gtk_widget_set_visible(g->gamma_g, FALSE);
+  gtk_widget_set_visible(g->gamma_b, FALSE);
+  gtk_widget_set_visible(g->gain_r, FALSE);
+  gtk_widget_set_visible(g->gain_g, FALSE);
+  gtk_widget_set_visible(g->gain_b, FALSE);
+  
+  gtk_widget_set_visible(g->hue_lift, TRUE);
+  gtk_widget_set_visible(g->sat_lift, TRUE);
+  gtk_widget_set_visible(g->hue_gamma, TRUE);
+  gtk_widget_set_visible(g->sat_gamma, TRUE);
+  gtk_widget_set_visible(g->hue_gain, TRUE);
+  gtk_widget_set_visible(g->sat_gain, TRUE);
 }
 
 static void mode_callback(GtkWidget *combo, dt_iop_module_t *self)
@@ -1768,6 +1808,7 @@ static void lift_auto_callback(GtkWidget *button, gpointer user_data)
     dt_iop_request_focus(self);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
     dt_control_queue_redraw();
+    dt_dev_reprocess_all(self->dev);
   }
   else
   {
@@ -1934,6 +1975,10 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_colorbalance_gui_data_t));
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
+  
+  g->mode = NULL;
+  g->controls = NULL;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   
@@ -1953,11 +1998,11 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->controls, _("HSL"));
   dt_bauhaus_combobox_add(g->controls, _("RGBL"));
   dt_bauhaus_combobox_add(g->controls, _("both"));
+  dt_bauhaus_combobox_set_default(g->controls, HSL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->controls), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->controls, _("color-grading mapping method"));
   g_signal_connect(G_OBJECT(g->controls), "value-changed", G_CALLBACK(controls_callback), self);
-  dt_bauhaus_combobox_set(g->controls, HSL);
-  
+
   
   // master
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("master")), FALSE, FALSE, 2);
@@ -2207,6 +2252,24 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->auto_color, _("optimize the RGB curves to remove color casts"));
   gtk_box_pack_start(GTK_BOX(box), g->auto_color, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->auto_color), "clicked", G_CALLBACK(optimize_color_pressed_callback), self);
+  
+  // default control is HSL
+  gtk_widget_set_visible(g->lift_r, FALSE);
+  gtk_widget_set_visible(g->lift_g, FALSE);
+  gtk_widget_set_visible(g->lift_b, FALSE);
+  gtk_widget_set_visible(g->gamma_r, FALSE);
+  gtk_widget_set_visible(g->gamma_g, FALSE);
+  gtk_widget_set_visible(g->gamma_b, FALSE);
+  gtk_widget_set_visible(g->gain_r, FALSE);
+  gtk_widget_set_visible(g->gain_g, FALSE);
+  gtk_widget_set_visible(g->gain_b, FALSE);
+  
+  gtk_widget_set_visible(g->hue_lift, TRUE);
+  gtk_widget_set_visible(g->sat_lift, TRUE);
+  gtk_widget_set_visible(g->hue_gamma, TRUE);
+  gtk_widget_set_visible(g->sat_gamma, TRUE);
+  gtk_widget_set_visible(g->hue_gain, TRUE);
+  gtk_widget_set_visible(g->sat_gain, TRUE);
   
 #undef ADD_FACTOR
 #undef ADD_CHANNEL
