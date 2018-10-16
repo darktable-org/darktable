@@ -84,7 +84,9 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   GtkWidget *strength;
   dt_noiseprofile_t interpolated; // don't use name, maker or model, they may point to garbage
   GList *profiles;
-  // TODO add stack?
+  GtkWidget *stack;
+  GtkWidget *box_nlm;
+  GtkWidget *box_wavelets;
   dt_draw_curve_t *transition_curve; // curve for gui to draw
   GtkDrawingArea *area;
   GtkNotebook *channel_tabs;
@@ -2174,15 +2176,11 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
   p->mode = dt_bauhaus_combobox_get(w);
   if(p->mode == MODE_WAVELETS)
   {
-    gtk_widget_set_visible(g->radius, FALSE);
-    gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), TRUE);
-    gtk_widget_set_visible(GTK_WIDGET(g->area), TRUE);
+    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "wavelets");
   }
   else
   {
-    gtk_widget_set_visible(g->radius, TRUE);
-    gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), FALSE);
-    gtk_widget_set_visible(GTK_WIDGET(g->area), FALSE);
+    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2213,15 +2211,11 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->profile, -1);
   if(p->mode == MODE_WAVELETS)
   {
-    gtk_widget_set_visible(g->radius, FALSE);
-    gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), TRUE);
-    gtk_widget_set_visible(GTK_WIDGET(g->area), TRUE);
+    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "wavelets");
   }
   else
   {
-    gtk_widget_set_visible(g->radius, TRUE);
-    gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), FALSE);
-    gtk_widget_set_visible(GTK_WIDGET(g->area), FALSE);
+    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
   }
   if(p->a[0] == -1.0)
   {
@@ -2576,9 +2570,14 @@ void gui_init(dt_iop_module_t *self)
   g->mode = dt_bauhaus_combobox_new(self);
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 1.f, 0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
+
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
+
+  g->box_nlm = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  g->box_wavelets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  gtk_box_pack_start(GTK_BOX(g->box_nlm), g->radius, TRUE, TRUE, 0);
 
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
@@ -2611,8 +2610,8 @@ void gui_init(dt_iop_module_t *self)
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->area), FALSE, FALSE, 0);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -2623,6 +2622,16 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(denoiseprofile_motion_notify), self);
   g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(denoiseprofile_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(denoiseprofile_scrolled), self);
+
+  g->stack = gtk_stack_new();
+  gtk_stack_set_homogeneous(GTK_STACK(g->stack), FALSE);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->stack, TRUE, TRUE, 0);
+
+  gtk_widget_show_all(g->box_nlm);
+  gtk_widget_show_all(g->box_wavelets);
+  gtk_stack_add_named(GTK_STACK(g->stack), g->box_nlm, "nlm");
+  gtk_stack_add_named(GTK_STACK(g->stack), g->box_wavelets, "wavelets");
+  gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
