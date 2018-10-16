@@ -210,7 +210,7 @@ static inline float lab_f_inv(const float x)
 /** uses D50 white point. */
 static inline void dt_Lab_to_XYZ(const float *Lab, float *XYZ)
 {
-  const float d50[3] = { 0.96422f, 1.0f, 0.8249f };
+  const float d50[3] = { 0.9642f, 1.0f, 0.8249f };
   const float fy = (Lab[0] + 16.0f) / 116.0f;
   const float fx = Lab[1] / 500.0f + fy;
   const float fz = fy - Lab[2] / 200.0f;
