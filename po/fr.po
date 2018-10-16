@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-16 15:52+0200\n"
-"PO-Revision-Date: 2018-10-16 16:15+0200\n"
+"POT-Creation-Date: 2018-10-16 23:03+0200\n"
+"PO-Revision-Date: 2018-10-16 23:04+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 2.2\n"
 
 #: ../build/src/preferences_gen.h:1686
 msgid "GUI options"
@@ -5759,7 +5759,7 @@ msgstr "maître"
 
 #: ../src/iop/colorbalance.c:2044
 msgid "grey fulcrum"
-msgstr "gris neutre"
+msgstr "gris pivot"
 
 #: ../src/iop/colorbalance.c:2047
 msgid "adjust to match a neutral tone"
@@ -5864,7 +5864,7 @@ msgstr "optimiseurs automatiques"
 
 #: ../src/iop/colorbalance.c:2276
 msgid "optimize luma"
-msgstr "optimiser luminosité"
+msgstr "optimiser luma"
 
 #: ../src/iop/colorbalance.c:2277
 msgid "fit the whole histogram and center the average luma"
