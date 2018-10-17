@@ -40,18 +40,19 @@ DT_MODULE_INTROSPECTION(2, dt_iop_rawdenoise_params_t)
 #define DT_IOP_RAWDENOISE_RES 64
 #define DT_IOP_RAWDENOISE_BANDS 5
 
-typedef enum dt_iop_rawdenoise_channel_t {
-  rawdenoise_all = 0,
-  rawdenoise_R = 1,
-  rawdenoise_G = 2,
-  rawdenoise_B = 3,
-  rawdenoise_none = 4
+typedef enum dt_iop_rawdenoise_channel_t
+{
+  DT_RAWDENOISE_ALL = 0,
+  DT_RAWDENOISE_R = 1,
+  DT_RAWDENOISE_G = 2,
+  DT_RAWDENOISE_B = 3,
+  DT_RAWDENOISE_NONE = 4
 } dt_iop_rawdenoise_channel_t;
 
 typedef struct dt_iop_rawdenoise_params_t
 {
   float threshold;
-  float x[rawdenoise_none][DT_IOP_RAWDENOISE_BANDS], y[rawdenoise_none][DT_IOP_RAWDENOISE_BANDS];
+  float x[DT_RAWDENOISE_NONE][DT_IOP_RAWDENOISE_BANDS], y[DT_RAWDENOISE_NONE][DT_IOP_RAWDENOISE_BANDS];
 } dt_iop_rawdenoise_params_t;
 
 typedef struct dt_iop_rawdenoise_gui_data_t
@@ -78,9 +79,9 @@ typedef struct dt_iop_rawdenoise_gui_data_t
 typedef struct dt_iop_rawdenoise_data_t
 {
   float threshold;
-  dt_draw_curve_t *curve[rawdenoise_none];
+  dt_draw_curve_t *curve[DT_RAWDENOISE_NONE];
   dt_iop_rawdenoise_channel_t channel;
-  float force[rawdenoise_none][DT_IOP_RAWDENOISE_BANDS];
+  float force[DT_RAWDENOISE_NONE][DT_IOP_RAWDENOISE_BANDS];
 } dt_iop_rawdenoise_data_t;
 
 typedef struct dt_iop_rawdenoise_global_data_t
@@ -97,7 +98,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->threshold = o->threshold;
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
     {
-      for(int ch = 0; ch < rawdenoise_none; ch++)
+      for(int ch = 0; ch < DT_RAWDENOISE_NONE; ch++)
       {
         n->x[ch][k] = k / (DT_IOP_RAWDENOISE_BANDS - 1.0);
         n->y[ch][k] = 0.5f;
@@ -174,7 +175,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   {
     // scale the value from [0,1] to [0,16],
     // and makes the "0.5" neutral value become 1
-    float threshold_exp_4 = data->force[rawdenoise_all][DT_IOP_RAWDENOISE_BANDS - i - 1];
+    float threshold_exp_4 = data->force[DT_RAWDENOISE_ALL][DT_IOP_RAWDENOISE_BANDS - i - 1];
     threshold_exp_4 *= threshold_exp_4;
     threshold_exp_4 *= threshold_exp_4;
     noise_all[i] = noise_all[i] * threshold_exp_4 * 16.0;
@@ -203,13 +204,13 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
       switch(color)
       {
         case 0:
-          threshold_exp_4 = data->force[rawdenoise_R][DT_IOP_RAWDENOISE_BANDS - i - 1];
+          threshold_exp_4 = data->force[DT_RAWDENOISE_R][DT_IOP_RAWDENOISE_BANDS - i - 1];
           break;
         case 2:
-          threshold_exp_4 = data->force[rawdenoise_B][DT_IOP_RAWDENOISE_BANDS - i - 1];
+          threshold_exp_4 = data->force[DT_RAWDENOISE_B][DT_IOP_RAWDENOISE_BANDS - i - 1];
           break;
         default:
-          threshold_exp_4 = data->force[rawdenoise_G][DT_IOP_RAWDENOISE_BANDS - i - 1];
+          threshold_exp_4 = data->force[DT_RAWDENOISE_G][DT_IOP_RAWDENOISE_BANDS - i - 1];
           break;
       }
       threshold_exp_4 *= threshold_exp_4;
@@ -344,7 +345,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
   {
     // scale the value from [0,1] to [0,16],
     // and makes the "0.5" neutral value become 1
-    float threshold_exp_4 = data->force[rawdenoise_all][DT_IOP_RAWDENOISE_BANDS - i - 1];
+    float threshold_exp_4 = data->force[DT_RAWDENOISE_ALL][DT_IOP_RAWDENOISE_BANDS - i - 1];
     threshold_exp_4 *= threshold_exp_4;
     threshold_exp_4 *= threshold_exp_4;
     noise_all[i] = noise_all[i] * threshold_exp_4 * 16.0;
@@ -364,13 +365,13 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
       switch(c)
       {
         case 0:
-          threshold_exp_4 = data->force[rawdenoise_R][DT_IOP_RAWDENOISE_BANDS - i - 1];
+          threshold_exp_4 = data->force[DT_RAWDENOISE_R][DT_IOP_RAWDENOISE_BANDS - i - 1];
           break;
         case 2:
-          threshold_exp_4 = data->force[rawdenoise_B][DT_IOP_RAWDENOISE_BANDS - i - 1];
+          threshold_exp_4 = data->force[DT_RAWDENOISE_B][DT_IOP_RAWDENOISE_BANDS - i - 1];
           break;
         default:
-          threshold_exp_4 = data->force[rawdenoise_G][DT_IOP_RAWDENOISE_BANDS - i - 1];
+          threshold_exp_4 = data->force[DT_RAWDENOISE_G][DT_IOP_RAWDENOISE_BANDS - i - 1];
           break;
       }
       threshold_exp_4 *= threshold_exp_4;
@@ -507,7 +508,7 @@ void init(dt_iop_module_t *module)
   dt_iop_rawdenoise_params_t tmp;
   for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
   {
-    for(int ch = 0; ch < rawdenoise_none; ch++)
+    for(int ch = 0; ch < DT_RAWDENOISE_NONE; ch++)
     {
       tmp.x[ch][k] = k / (DT_IOP_RAWDENOISE_BANDS - 1.0);
       tmp.y[ch][k] = 0.5f;
@@ -534,7 +535,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   d->threshold = p->threshold;
 
-  for(int ch = 0; ch < rawdenoise_none; ch++)
+  for(int ch = 0; ch < DT_RAWDENOISE_NONE; ch++)
   {
     dt_draw_curve_set_point(d->curve[ch], 0, p->x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0, p->y[ch][0]);
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
@@ -554,19 +555,19 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   dt_iop_rawdenoise_params_t *default_params = (dt_iop_rawdenoise_params_t *)self->default_params;
 
   piece->data = (void *)d;
-  for(int ch = 0; ch < rawdenoise_none; ch++)
+  for(int ch = 0; ch < DT_RAWDENOISE_NONE; ch++)
   {
     d->curve[ch] = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
       (void)dt_draw_curve_add_point(d->curve[ch], default_params->x[ch][k], default_params->y[ch][k]);
   }
-  self->commit_params(self, self->default_params, pipe, piece); // TODO necessary?
+  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)(piece->data);
-  for(int ch = 0; ch < rawdenoise_none; ch++) dt_draw_curve_destroy(d->curve[ch]);
+  for(int ch = 0; ch < DT_RAWDENOISE_NONE; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
   piece->data = NULL;
 }
@@ -670,12 +671,12 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
 
-  for(int i = 0; i < rawdenoise_none; i++)
+  for(int i = 0; i < DT_RAWDENOISE_NONE; i++)
   {
     // draw curves, selected last
-    ch = ((int)c->channel + i + 1) % rawdenoise_none;
+    ch = ((int)c->channel + i + 1) % DT_RAWDENOISE_NONE;
     float alpha = 0.3;
-    if(i == rawdenoise_none - 1) alpha = 1.0;
+    if(i == DT_RAWDENOISE_NONE - 1) alpha = 1.0;
     switch(ch)
     {
       case 0:
