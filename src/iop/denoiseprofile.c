@@ -54,12 +54,13 @@ typedef enum dt_iop_denoiseprofile_mode_t
   MODE_WAVELETS = 1
 } dt_iop_denoiseprofile_mode_t;
 
-typedef enum dt_iop_denoiseprofile_channel_t {
-  denoiseprofile_all = 0,
-  denoiseprofile_R = 1,
-  denoiseprofile_G = 2,
-  denoiseprofile_B = 3,
-  denoiseprofile_none = 4
+typedef enum dt_iop_denoiseprofile_channel_t
+{
+  DT_DENOISE_PROFILE_ALL = 0,
+  DT_DENOISE_PROFILE_R = 1,
+  DT_DENOISE_PROFILE_G = 2,
+  DT_DENOISE_PROFILE_B = 3,
+  DT_DENOISE_PROFILE_NONE = 4
 } dt_iop_denoiseprofile_channel_t;
 
 // this is the version of the modules parameters,
@@ -72,8 +73,8 @@ typedef struct dt_iop_denoiseprofile_params_t
   float strength;   // noise level after equalization
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-  float x[denoiseprofile_none][DT_IOP_DENOISE_PROFILE_BANDS],
-      y[denoiseprofile_none][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
@@ -107,9 +108,9 @@ typedef struct dt_iop_denoiseprofile_data_t
   float strength;                    // noise level after equalization
   float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-  dt_draw_curve_t *curve[denoiseprofile_none];
+  dt_draw_curve_t *curve[DT_DENOISE_PROFILE_NONE];
   dt_iop_denoiseprofile_channel_t channel;
-  float force[denoiseprofile_none][DT_IOP_DENOISE_PROFILE_BANDS];
+  float force[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
 } dt_iop_denoiseprofile_data_t;
 
 typedef struct dt_iop_denoiseprofile_global_data_t
@@ -955,22 +956,22 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     // in other words, max_scale is the maximum number of VISIBLE scales.
     // That is why we have this "scale+offset_scale"
     float band_force_exp_2
-        = d->force[denoiseprofile_all][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+        = d->force[DT_DENOISE_PROFILE_ALL][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
     for(int ch = 0; ch < 3; ch++)
     {
       adjt[ch] *= band_force_exp_2;
     }
-    band_force_exp_2 = d->force[denoiseprofile_R][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_R][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
     adjt[0] *= band_force_exp_2;
-    band_force_exp_2 = d->force[denoiseprofile_G][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_G][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
     adjt[1] *= band_force_exp_2;
-    band_force_exp_2 = d->force[denoiseprofile_B][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_B][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
     adjt[2] *= band_force_exp_2;
@@ -1790,22 +1791,22 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     // zoom level, it does NOT corresponds to the the maximum number of scales.
     // in other words, max_scale is the maximum number of VISIBLE scales.
     // That is why we have this "s+offset_scale"
-    float band_force_exp_2 = d->force[denoiseprofile_all][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+    float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_ALL][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
     for(int ch = 0; ch < 3; ch++)
     {
       adjt[ch] *= band_force_exp_2;
     }
-    band_force_exp_2 = d->force[denoiseprofile_R][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_R][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
     adjt[0] *= band_force_exp_2;
-    band_force_exp_2 = d->force[denoiseprofile_G][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_G][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
     adjt[1] *= band_force_exp_2;
-    band_force_exp_2 = d->force[denoiseprofile_B][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_B][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
     adjt[2] *= band_force_exp_2;
@@ -2008,7 +2009,7 @@ void init(dt_iop_module_t *module)
   memset(&tmp, 0, sizeof(dt_iop_denoiseprofile_params_t));
   for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
   {
-    for(int ch = 0; ch < denoiseprofile_none; ch++)
+    for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
     {
       tmp.x[ch][k] = k / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0);
       tmp.y[ch][k] = 0.5f;
@@ -2119,7 +2120,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     }
   }
 
-  for(int ch = 0; ch < denoiseprofile_none; ch++)
+  for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
   {
     dt_draw_curve_set_point(d->curve[ch], 0, p->x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0, p->y[ch][0]);
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
@@ -2136,7 +2137,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   dt_iop_denoiseprofile_params_t *default_params = (dt_iop_denoiseprofile_params_t *)self->default_params;
 
   piece->data = (void *)d;
-  for(int ch = 0; ch < denoiseprofile_none; ch++)
+  for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
   {
     d->curve[ch] = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
@@ -2148,7 +2149,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)(piece->data);
-  for(int ch = 0; ch < denoiseprofile_none; ch++) dt_draw_curve_destroy(d->curve[ch]);
+  for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
   piece->data = NULL;
 }
@@ -2309,12 +2310,12 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
 
-  for(int i = 0; i < denoiseprofile_none; i++)
+  for(int i = 0; i < DT_DENOISE_PROFILE_NONE; i++)
   {
     // draw curves, selected last
-    ch = ((int)c->channel + i + 1) % denoiseprofile_none;
+    ch = ((int)c->channel + i + 1) % DT_DENOISE_PROFILE_NONE;
     float alpha = 0.3;
-    if(i == denoiseprofile_none - 1) alpha = 1.0;
+    if(i == DT_DENOISE_PROFILE_NONE - 1) alpha = 1.0;
     switch(ch)
     {
       case 0:
