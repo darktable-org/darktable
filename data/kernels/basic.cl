@@ -296,7 +296,7 @@ highlights_1f_lch_xtrans (read_only image2d_t in, write_only image2d_t out, cons
   const int ylid = get_local_id(1);
   const int xgid = get_group_id(0);
   const int ygid = get_group_id(1);
-  
+
   // individual control variable in this work group and the work group size
   const int l = mad24(ylid, xlsz, xlid);
   const int lsz = mul24(xlsz, ylsz);
@@ -339,13 +339,13 @@ highlights_1f_lch_xtrans (read_only image2d_t in, write_only image2d_t out, cons
   {
     // if current pixel is clipped, always reconstruct
     int clipped = (buffer[0] > clip);
-    
+
     if(!clipped)
     {
       clipped = 1;
-      // check if there is any 3x3 block touching the current 
-      // pixel which has no clipping, as then we don't need to 
-      // reconstruct the current pixel. This avoids zippering in 
+      // check if there is any 3x3 block touching the current
+      // pixel which has no clipping, as then we don't need to
+      // reconstruct the current pixel. This avoids zippering in
       // edge transitions from clipped to unclipped areas. The
       // X-Trans sensor seems prone to this, unlike Bayer, due
       // to its irregular pattern.
@@ -368,7 +368,7 @@ highlights_1f_lch_xtrans (read_only image2d_t in, write_only image2d_t out, cons
         }
       }
     }
- 
+
     if(clipped)
     {
       float mean[3] = { 0.0f, 0.0f, 0.0f };
@@ -506,7 +506,7 @@ lookup(read_only image2d_t lut, const float x)
 /* kernel for the plugin colorin: unbound processing */
 kernel void
 colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                 global float *cmat, global float *lmat, 
+                 global float *cmat, global float *lmat,
                  read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
                  const int blue_mapping, global const float (*const a)[3])
 {
@@ -556,7 +556,7 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
 /* kernel for the plugin colorin: with clipping */
 kernel void
 colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                  global float *cmat, global float *lmat, 
+                  global float *cmat, global float *lmat,
                   read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
                   const int blue_mapping, global const float (*const a)[3])
 {
@@ -687,7 +687,7 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
 /* kernel for the colorcorrection plugin. */
 __kernel void
 colorcorrection (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                 const float saturation, const float a_scale, const float a_base, 
+                 const float saturation, const float a_scale, const float a_base,
                  const float b_scale, const float b_base)
 {
   const int x = get_global_id(0);
@@ -722,7 +722,7 @@ keystone_backtransform(float2 *i, const float4 k_space, const float2 ka, const f
 {
   float xx = (*i).x - k_space.x;
   float yy = (*i).y - k_space.y;
-  
+
   /*float u = ka.x-kb.x+kc.x-kd.x;
   float v = ka.x-kb.x;
   float w = ka.x-kd.x;
@@ -736,7 +736,7 @@ keystone_backtransform(float2 *i, const float4 k_space, const float2 ka, const f
   //(*i).y = (xx/k_space.z)*(yy/k_space.w)*(ka.y-kb.y+kc.y-kd.y) - (xx/k_space.z)*(ka.y-kb.y) - (yy/k_space.w)*(ka.y-kd.y) + ka.y + k_space.y;
   (*i).y = (xx/k_space.z)*(yy/k_space.w)*u - (xx/k_space.z)*v - (yy/k_space.w)*w + z + k_space.y;*/
   float div = ((ma.z*xx-ma.x*yy)*mb.y+(ma.y*yy-ma.w*xx)*mb.x+ma.x*ma.w-ma.y*ma.z);
-  
+
   (*i).x = (ma.w*xx-ma.y*yy)/div + ka.x;
   (*i).y =-(ma.z*xx-ma.x*yy)/div + ka.y;
 }
@@ -796,7 +796,7 @@ interpolation_func_lanczos(float width, float t)
 
 /* kernel for clip&rotate: bilinear interpolation */
 __kernel void
-clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
+clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
             const int in_width, const int in_height,
             const int2 roi_in, const float2 roi_out, const float scale_in, const float scale_out,
             const int flip, const float2 t, const float2 k, const float4 mat,
@@ -808,10 +808,10 @@ clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int
   if(x >= width || y >= height) return;
 
   float2 pi, po;
-  
+
   pi.x = roi_out.x + x + 0.5f;
   pi.y = roi_out.y + y + 0.5f;
-  
+
   pi.x -= flip ? t.y * scale_out : t.x * scale_out;
   pi.y -= flip ? t.x * scale_out : t.y * scale_out;
 
@@ -839,7 +839,7 @@ clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int
 
 /* kernel for clip&rotate: bicubic interpolation */
 __kernel void
-clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
+clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
             const int in_width, const int in_height,
             const int2 roi_in, const float2 roi_out, const float scale_in, const float scale_out,
             const int flip, const float2 t, const float2 k, const float4 mat,
@@ -849,14 +849,14 @@ clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int 
   const int y = get_global_id(1);
 
   const int kwidth = 2;
-  
+
   if(x >= width || y >= height) return;
 
   float2 pi, po;
-  
+
   pi.x = roi_out.x + x + 0.5f;
   pi.y = roi_out.y + y + 0.5f;
-  
+
   pi.x -= flip ? t.y * scale_out : t.x * scale_out;
   pi.y -= flip ? t.x * scale_out : t.y * scale_out;
 
@@ -900,7 +900,7 @@ clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int 
 
 /* kernel for clip&rotate: lanczos2 interpolation */
 __kernel void
-clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
+clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
             const int in_width, const int in_height,
             const int2 roi_in, const float2 roi_out, const float scale_in, const float scale_out,
             const int flip, const float2 t, const float2 k, const float4 mat,
@@ -910,14 +910,14 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
   const int y = get_global_id(1);
 
   const int kwidth = 2;
-  
+
   if(x >= width || y >= height) return;
 
   float2 pi, po;
-  
+
   pi.x = roi_out.x + x + 0.5f;
   pi.y = roi_out.y + y + 0.5f;
-  
+
   pi.x -= flip ? t.y * scale_out : t.x * scale_out;
   pi.y -= flip ? t.x * scale_out : t.y * scale_out;
 
@@ -962,7 +962,7 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
 
 /* kernel for clip&rotate: lanczos3 interpolation */
 __kernel void
-clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
+clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
             const int in_width, const int in_height,
             const int2 roi_in, const float2 roi_out, const float scale_in, const float scale_out,
             const int flip, const float2 t, const float2 k, const float4 mat,
@@ -976,10 +976,10 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
   if(x >= width || y >= height) return;
 
   float2 pi, po;
-  
+
   pi.x = roi_out.x + x + 0.5f;
   pi.y = roi_out.y + y + 0.5f;
-  
+
   pi.x -= flip ? t.y * scale_out : t.x * scale_out;
   pi.y -= flip ? t.x * scale_out : t.y * scale_out;
 
@@ -1066,7 +1066,7 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 /* kernels for the lens plugin: bicubic interpolation */
@@ -1176,10 +1176,10 @@ lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const in
     weight += w;
   }
   pixel.z = sum/weight;
-  
+
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -1292,8 +1292,8 @@ lens_distort_lanczos2 (read_only image2d_t in, write_only image2d_t out, const i
   pixel.z = sum/weight;
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
-  
-  write_imagef (out, (int2)(x, y), pixel); 
+
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -1406,7 +1406,7 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -1414,7 +1414,7 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
 /* kernel for the ashift module: bilinear interpolation */
 kernel void
 ashift_bilinear(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out, 
+                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out,
                 const float in_scale, const float out_scale, const float2 clip, global float *homograph)
 {
   const int x = get_global_id(0);
@@ -1437,7 +1437,7 @@ ashift_bilinear(read_only image2d_t in, write_only image2d_t out, const int widt
     pin[i] = 0.0f;
     for(int j = 0; j < 3; j++) pin[i] += homograph[3 * i + j] * pout[j];
   }
- 
+
   // convert to input pixel coordinates
   pin[0] /= pin[2];
   pin[1] /= pin[2];
@@ -1454,13 +1454,13 @@ ashift_bilinear(read_only image2d_t in, write_only image2d_t out, const int widt
 
   float4 pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight) ? read_imagef(in, samplerf, (float2)(rx, ry)) : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 /* kernel for the ashift module: bicubic interpolation */
 kernel void
 ashift_bicubic (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out, 
+                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out,
                 const float in_scale, const float out_scale, const float2 clip, global float *homograph)
 {
   const int x = get_global_id(0);
@@ -1485,7 +1485,7 @@ ashift_bicubic (read_only image2d_t in, write_only image2d_t out, const int widt
     pin[i] = 0.0f;
     for(int j = 0; j < 3; j++) pin[i] += homograph[3 * i + j] * pout[j];
   }
- 
+
   // convert to input pixel coordinates
   pin[0] /= pin[2];
   pin[1] /= pin[2];
@@ -1515,17 +1515,17 @@ ashift_bicubic (read_only image2d_t in, write_only image2d_t out, const int widt
     pixel += read_imagef(in, sampleri, (int2)(i, j)) * w;
     weight += w;
   }
-  
+
   pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight) ? pixel/weight : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
 /* kernel for the ashift module: lanczos2 interpolation */
 kernel void
 ashift_lanczos2(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out, 
+                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out,
                 const float in_scale, const float out_scale, const float2 clip, global float *homograph)
 {
   const int x = get_global_id(0);
@@ -1550,7 +1550,7 @@ ashift_lanczos2(read_only image2d_t in, write_only image2d_t out, const int widt
     pin[i] = 0.0f;
     for(int j = 0; j < 3; j++) pin[i] += homograph[3 * i + j] * pout[j];
   }
- 
+
   // convert to input pixel coordinates
   pin[0] /= pin[2];
   pin[1] /= pin[2];
@@ -1580,17 +1580,17 @@ ashift_lanczos2(read_only image2d_t in, write_only image2d_t out, const int widt
     pixel += read_imagef(in, sampleri, (int2)(i, j)) * w;
     weight += w;
   }
-  
+
   pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight) ? pixel/weight : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
 /* kernels for the ashift module: lanczos3 interpolation */
 kernel void
 ashift_lanczos3(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out, 
+                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out,
                 const float in_scale, const float out_scale, const float2 clip, global float *homograph)
 {
   const int x = get_global_id(0);
@@ -1615,7 +1615,7 @@ ashift_lanczos3(read_only image2d_t in, write_only image2d_t out, const int widt
     pin[i] = 0.0f;
     for(int j = 0; j < 3; j++) pin[i] += homograph[3 * i + j] * pout[j];
   }
- 
+
   // convert to input pixel coordinates
   pin[0] /= pin[2];
   pin[1] /= pin[2];
@@ -1645,10 +1645,10 @@ ashift_lanczos3(read_only image2d_t in, write_only image2d_t out, const int widt
     pixel += read_imagef(in, sampleri, (int2)(i, j)) * w;
     weight += w;
   }
-  
+
   pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight) ? pixel/weight : (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -1665,7 +1665,7 @@ lens_vignette (read_only image2d_t in, write_only image2d_t out, const int width
 
   pixel.xyz *= scale.xyz;
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -1693,7 +1693,7 @@ flip(read_only image2d_t in, write_only image2d_t out, const int width, const in
 
 
 /* we use this exp approximation to maintain full identity with cpu path */
-float 
+float
 fast_expf(const float x)
 {
   // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
@@ -1737,7 +1737,7 @@ monochrome_filter(
     read_only image2d_t in,
     write_only image2d_t out,
     const int width,
-    const int height, 
+    const int height,
     const float a,
     const float b,
     const float size)
@@ -1759,7 +1759,7 @@ monochrome(
     read_only image2d_t base,
     write_only image2d_t out,
     const int width,
-    const int height, 
+    const int height,
     const float a,
     const float b,
     const float size,
@@ -1909,7 +1909,7 @@ colorzones (read_only image2d_t in, write_only image2d_t out, const int width, c
   pixel.y = cos(2.0f*M_PI_F*(h + hm)) * Cm * C;
   pixel.z = sin(2.0f*M_PI_F*(h + hm)) * Cm * C;
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -1931,7 +1931,7 @@ zonesystem (read_only image2d_t in, write_only image2d_t out, const int width, c
 
   pixel.xyz *= zs;
 
-  write_imagef (out, (int2)(x, y), pixel); 
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
@@ -2137,8 +2137,8 @@ lowlight (read_only image2d_t in, write_only image2d_t out, const int width, con
 
 
 /* kernel for the contrast lightness saturation module */
-kernel void 
-colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height, const float saturation, 
+kernel void
+colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height, const float saturation,
         read_only image2d_t ctable, global const float *ca, read_only image2d_t ltable, global const float *la)
 {
   const unsigned int x = get_global_id(0);
@@ -2158,9 +2158,10 @@ colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, un
   write_imagef(out, (int2)(x, y), o);
 }
 
-/* kernel for the unbreak input profile module */
+/* kernel for the unbreak input profile module - gamma version */
+
 kernel void
-profilegamma (read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height,
+profilegamma (read_only image2d_t in, write_only image2d_t out, int width, int height,
         read_only image2d_t table, global const float *ta)
 {
   const unsigned int x = get_global_id(0);
@@ -2175,6 +2176,30 @@ profilegamma (read_only image2d_t in, write_only image2d_t out, unsigned int wid
   o.y = lookup_unbounded(table, i.y, ta);
   o.z = lookup_unbounded(table, i.z, ta);
   o.w = i.w;
+
+  write_imagef(out, (int2)(x, y), o);
+}
+
+/* kernel for the unbreak input profile module - log version */
+kernel void
+profilegamma_log (read_only image2d_t in, write_only image2d_t out, int width, int height, const float dynamic_range, const float shadows_range, const float grey)
+{
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 noise = pow((float4)2.0f, (float4)-16.0f);
+  const float4 dynamic4 = dynamic_range;
+  const float4 shadows4 = shadows_range;
+  const float4 grey4 = grey;
+
+  float4 o;
+
+  o = (i < noise) ? noise : i / grey4;
+  o = (log2(o) - shadows4) / dynamic4;
+  o = (o < noise) ? noise : o;
 
   write_imagef(out, (int2)(x, y), o);
 }
@@ -2261,4 +2286,3 @@ interpolation_resample (read_only image2d_t in, write_only image2d_t out, const 
     write_imagef (out, (int2)(x, y), buffer[ylid]);
   }
 }
-
