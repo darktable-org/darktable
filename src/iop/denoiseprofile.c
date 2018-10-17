@@ -67,6 +67,14 @@ typedef enum dt_iop_denoiseprofile_channel_t
 // and includes version information about compile-time dt
 DT_MODULE_INTROSPECTION(4, dt_iop_denoiseprofile_params_t)
 
+typedef struct dt_iop_denoiseprofile_params_v1_t
+{
+  float radius;     // search radius
+  float strength;   // noise level after equalization
+  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+} dt_iop_denoiseprofile_params_v1_t;
+
 typedef struct dt_iop_denoiseprofile_params_t
 {
   float radius;     // search radius
@@ -136,7 +144,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 {
   if((old_version == 1 || old_version == 2 || old_version == 3) && new_version == 4)
   {
-    dt_iop_denoiseprofile_params_t *o = (dt_iop_denoiseprofile_params_t *)old_params;
+    dt_iop_denoiseprofile_params_v1_t *o = (dt_iop_denoiseprofile_params_v1_t *)old_params;
     dt_iop_denoiseprofile_params_t *n = (dt_iop_denoiseprofile_params_t *)new_params;
     if(old_version == 1)
     {
@@ -150,6 +158,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->strength = o->strength;
     memcpy(n->a, o->a, sizeof(float) * 3);
     memcpy(n->b, o->b, sizeof(float) * 3);
+    // init curves coordinates
+    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
+    {
+      for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
+      {
+        n->x[c][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0);
+        n->y[c][b] = 0.5f;
+      }
+    }
     // autodetect current profile:
     if(!self->dev)
     {
@@ -168,14 +185,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     {
       // set the param a[0] to -1.0 to signal the autodetection
       n->a[0] = -1.0;
-    }
-    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
-    {
-      for(int c = 0; c < denoiseprofile_none; c++)
-      {
-        n->x[c][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0);
-        n->y[c][b] = 0.5f;
-      }
     }
     return 0;
   }
