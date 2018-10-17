@@ -2482,7 +2482,7 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget, GdkEventButton *e
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_denoiseprofile_gui_data_t *c = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-  int ch = c->channel;
+  const int ch = c->channel;
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
@@ -2595,7 +2595,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(denoiseprofile_tab_switch), self);
 
   g->channel = dt_conf_get_int("plugins/darkroom/denoiseprofile/gui_channel");
-  int ch = (int)g->channel;
+  const int ch = (int)g->channel;
   g->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0,
                                 p->y[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2]);
