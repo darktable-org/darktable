@@ -234,11 +234,13 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         case DT_MODULEGROUP_ACTIVE_PIPE:
         {
           if(module->enabled)
-            gtk_widget_show(w);
+          {
+            if(w) gtk_widget_show(w);
+          }
           else
           {
             if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
-            gtk_widget_hide(w);
+            if(w) gtk_widget_hide(w);
           }
         }
         break;
@@ -246,11 +248,13 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         case DT_MODULEGROUP_FAVORITES:
         {
           if(module->so->state == dt_iop_state_FAVORITE)
-            gtk_widget_show(w);
+          {
+            if(w) gtk_widget_show(w);
+          }
           else
           {
             if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
-            gtk_widget_hide(w);
+            if(w) gtk_widget_hide(w);
           }
         }
         break;
@@ -260,11 +264,13 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
           /* show all except hidden ones */
           if((module->so->state != dt_iop_state_HIDDEN || module->enabled)
              && (!(module->flags() & IOP_FLAGS_DEPRECATED)))
-            gtk_widget_show(w);
+          {
+            if(w) gtk_widget_show(w);
+          }
           else
           {
             if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
-            gtk_widget_hide(w);
+            if(w) gtk_widget_hide(w);
           }
         }
         break;
@@ -274,11 +280,13 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
           if(_lib_modulegroups_test(self, d->current, module->groups())
              && module->so->state != dt_iop_state_HIDDEN
              && (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
-            gtk_widget_show(w);
+          {
+            if(w) gtk_widget_show(w);
+          }
           else
           {
             if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
-            gtk_widget_hide(w);
+            if(w) gtk_widget_hide(w);
           }
         }
       }

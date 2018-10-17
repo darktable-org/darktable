@@ -206,13 +206,13 @@ static void move_view(dt_library_t *lib, dt_lighttable_direction_t dir)
     break;
     case DIRECTION_PGUP:
     {
-      lib->offset -= (lib->max_rows - 1 ) * iir;
+      lib->offset -= (lib->max_rows - 1) * iir;
       while(lib->offset < 0) lib->offset += iir;
     }
     break;
     case DIRECTION_PGDOWN:
     {
-      lib->offset += (lib->max_rows - 1 ) * iir;
+      lib->offset += (lib->max_rows - 1) * iir;
       while(lib->offset >= lib->collection_count) lib->offset -= iir;
     }
     break;
@@ -276,6 +276,9 @@ static void zoom_around_image(dt_library_t *lib, double pointerx, double pointer
 static void _view_lighttable_collection_listener_callback(gpointer instance, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
+  _unregister_custom_image_order_drag_n_drop(self);
+  _register_custom_image_order_drag_n_drop(self);
+
   _update_collected_images(self);
 }
 
@@ -364,13 +367,6 @@ static void _update_collected_images(dt_view_t *self)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT imgid FROM memory.collected_images ORDER BY rowid LIMIT ?1, ?2", -1,
                               &lib->statements.main_query, NULL);
-
-  _unregister_custom_image_order_drag_n_drop(self);
-
-  if (darktable.collection->params.sort == DT_COLLECTION_SORT_CUSTOM_ORDER)
-  {
-    _register_custom_image_order_drag_n_drop(self);
-  }
 
   dt_control_queue_redraw_center();
 }
@@ -603,7 +599,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   /* update scroll borders */
   int shown_rows = ceilf((float)lib->collection_count / iir);
   if(iir > 1) shown_rows += max_rows - 2;
-  dt_view_set_scrollbar(self, 0, 1, 1, offset, shown_rows * iir, (max_rows - 1) * iir);
+  dt_view_set_scrollbar(self, 0, 0, 1, 1, offset, 0, shown_rows * iir, (max_rows - 1) * iir);
 
   /* let's reset and reuse the main_query statement */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
@@ -713,15 +709,15 @@ end_query_cache:
               // going into a non existing position. Do nothing
               mouse_over_id = before_mouse_over_id;
 
-            if (lib->key_jump_offset != 0) 
+            if (lib->key_jump_offset != 0)
             {
-              if (lib->key_select) 
+              if (lib->key_select)
               {
                 // managing shift + movement
                 int direction = (lib->key_jump_offset > 0) ? DIRECTION_RIGHT : DIRECTION_LEFT;
-                if (lib->key_select_direction != direction ) 
+                if (lib->key_select_direction != direction)
                 {
-                  lib->key_select_direction =  direction;
+                  lib->key_select_direction = direction;
                   dt_selection_toggle(darktable.selection, before_mouse_over_id);
                 }
                 int loop_count = abs(lib->key_jump_offset); // ex: from -10 to 1  // from 10 to 1
@@ -1152,8 +1148,10 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
 
   int id;
 
-  dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM * offset_j,
-                        lib->collection_count, DT_LIBRARY_MAX_ZOOM * max_cols);
+  dt_view_set_scrollbar(self,
+                        zoom_x, -width + wd, wd * DT_LIBRARY_MAX_ZOOM - wd + width, width,
+                        zoom_y,  -height + ht,
+                        ht * ceilf((float)lib->collection_count / DT_LIBRARY_MAX_ZOOM) - ht + height, height);
 
   cairo_translate(cr, -offset_x * wd, -offset_y * ht);
   cairo_translate(cr, -MIN(offset_i * wd, 0.0), 0.0);
@@ -1649,7 +1647,7 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
 }
 
 void enter(dt_view_t *self)
-{  
+{
   gtk_drag_dest_set(dt_ui_center(darktable.gui->ui), GTK_DEST_DEFAULT_ALL, target_list_all, n_targets_all,
                     GDK_ACTION_COPY);
 
@@ -1657,10 +1655,7 @@ void enter(dt_view_t *self)
   g_signal_connect(dt_ui_center(darktable.gui->ui), "drag-data-received", G_CALLBACK(drag_and_drop_received),
                    self);
 
-  if (darktable.collection->params.sort == DT_COLLECTION_SORT_CUSTOM_ORDER)
-  {
-    _register_custom_image_order_drag_n_drop(self);
-  }
+  _register_custom_image_order_drag_n_drop(self);
 
   /* connect to signals */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
@@ -1683,6 +1678,18 @@ void enter(dt_view_t *self)
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE, FALSE);
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE, FALSE);
   }
+
+  char *scrollbars_conf = dt_conf_get_string("scrollbars");
+
+  gboolean scrollbars_visible = FALSE;
+  if(scrollbars_conf)
+  {
+    if(strcmp(scrollbars_conf, "no scrollbars"))
+      scrollbars_visible = TRUE;
+    g_free(scrollbars_conf);
+  }
+
+  dt_ui_scrollbars_show(darktable.gui->ui, scrollbars_visible);
 }
 
 void leave(dt_view_t *self)
@@ -1712,6 +1719,8 @@ void leave(dt_view_t *self)
     lib->full_preview = 0;
     lib->display_focus = 0;
   }
+
+  dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 }
 
 void reset(dt_view_t *self)
@@ -1731,7 +1740,7 @@ void mouse_enter(dt_view_t *self)
   // TODO: In gtk.c the function center_leave return true. It is not needed when using arrows. the same for mouse_leave, mouse_move
   dt_library_t *lib = (dt_library_t *)self->data;
   uint32_t id = dt_control_get_mouse_over_id();
-  if (lib->using_arrows == 0) 
+  if (lib->using_arrows == 0)
   {
     if(id == -1)
       dt_control_set_mouse_over_id(
@@ -1742,7 +1751,7 @@ void mouse_enter(dt_view_t *self)
 void mouse_leave(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  if (lib->using_arrows == 0) 
+  if (lib->using_arrows == 0)
   {
     lib->last_mouse_over_id = dt_control_get_mouse_over_id(); // see mouse_enter (re: fluxbox)
     if(!lib->pan && dt_conf_get_int("plugins/lighttable/images_in_row") != 1)
@@ -1754,6 +1763,28 @@ void mouse_leave(dt_view_t *self)
 }
 
 
+void scrollbar_changed(dt_view_t *self, double x, double y)
+{
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+
+  switch(layout)
+  {
+    case 1: // file manager
+    {
+      const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+      _set_position(self, round(y/iir)*iir);
+      break;
+    }
+    default: // zoomable
+    {
+      dt_library_t *lib = (dt_library_t *) self->data;
+      lib->zoom_x = x;
+      lib->zoom_y = y;
+      dt_control_queue_redraw_center();
+      break;
+    }
+  }
+}
 
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
@@ -2133,7 +2164,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     lib->key_select = 1;
   }
 
-  if((key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods) || ( key == accels->lighttable_left.accel_key && layout == 1 && zoom != 1 ))
+  if((key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods) || (key == accels->lighttable_left.accel_key && layout == 1 && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = -DT_LIBRARY_MAX_ZOOM;
@@ -2157,7 +2188,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   }
 
   //if(key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
-  if((key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods) || ( key == accels->lighttable_right.accel_key && layout == 1 && zoom != 1 ))
+  if((key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods) || (key == accels->lighttable_right.accel_key && layout == 1 && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = +DT_LIBRARY_MAX_ZOOM;
@@ -2180,7 +2211,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 1;
   }
 
-  if((key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods) || ( key == accels->lighttable_up.accel_key && layout == 1 && zoom != 1 ))
+  if((key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods) || (key == accels->lighttable_up.accel_key && layout == 1 && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = -DT_LIBRARY_MAX_ZOOM;
@@ -2201,11 +2232,11 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 1;
   }
 
-  if((key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods) || ( key == accels->lighttable_down.accel_key && layout == 1 && zoom != 1 ))
+  if((key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods) || (key == accels->lighttable_down.accel_key && layout == 1 && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = +DT_LIBRARY_MAX_ZOOM;
-    else if(layout == 1) 
+    else if(layout == 1)
     {
       if (zoom == 1)
       {
@@ -2472,28 +2503,41 @@ void gui_init(dt_view_t *self)
 
 static void _register_custom_image_order_drag_n_drop(dt_view_t *self)
 {
-  // drag and drop for custom order of picture sequence (dnd) and drag&drop of external files/folders into darktable
-  gtk_drag_source_set(dt_ui_center(darktable.gui->ui), GDK_BUTTON1_MASK, target_list_internal, n_targets_internal, GDK_ACTION_COPY);
+  // register drag and drop for custom image ordering only
+  // if "custom order" is selected and if the view "Lighttable"
+  // is active
+  if (darktable.gui)
+  {
+    dt_view_t *current_view = darktable.view_manager->current_view;
+    if (darktable.collection->params.sort == DT_COLLECTION_SORT_CUSTOM_ORDER && current_view && current_view->view(self) == DT_VIEW_LIGHTTABLE)
+    {
+      // drag and drop for custom order of picture sequence (dnd) and drag&drop of external files/folders into darktable
+      gtk_drag_source_set(dt_ui_center(darktable.gui->ui), GDK_BUTTON1_MASK, target_list_internal, n_targets_internal, GDK_ACTION_COPY);
 
-  // check if already connected
-  const int is_connected = g_signal_handler_find(dt_ui_center(darktable.gui->ui),
-                                   G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA,
-                                   0, 0, NULL, G_CALLBACK(_dnd_begin_picture_reorder), (gpointer)self) != 0;
+      // check if already connected
+      const int is_connected = g_signal_handler_find(dt_ui_center(darktable.gui->ui),
+                                       G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA,
+                                       0, 0, NULL, G_CALLBACK(_dnd_begin_picture_reorder), (gpointer)self) != 0;
 
-  if (!is_connected) {
-    g_signal_connect(dt_ui_center(darktable.gui->ui), "drag-begin",    G_CALLBACK(_dnd_begin_picture_reorder), (gpointer)self);
-    g_signal_connect(dt_ui_center(darktable.gui->ui), "drag-data-get", G_CALLBACK(_dnd_get_picture_reorder),   (gpointer)self);
-    g_signal_connect(dt_ui_center(darktable.gui->ui), "drag_motion",   G_CALLBACK(_dnd_drag_picture_motion),   (gpointer)self);
+      if (!is_connected) {
+        g_signal_connect(dt_ui_center(darktable.gui->ui), "drag-begin",    G_CALLBACK(_dnd_begin_picture_reorder), (gpointer)self);
+        g_signal_connect(dt_ui_center(darktable.gui->ui), "drag-data-get", G_CALLBACK(_dnd_get_picture_reorder),   (gpointer)self);
+        g_signal_connect(dt_ui_center(darktable.gui->ui), "drag_motion",   G_CALLBACK(_dnd_drag_picture_motion),   (gpointer)self);
+      }
+    }
   }
 }
 
 static void _unregister_custom_image_order_drag_n_drop(dt_view_t *self)
 {
-  gtk_drag_source_unset(dt_ui_center(darktable.gui->ui));
+  if (darktable.gui)
+  {
+    gtk_drag_source_unset(dt_ui_center(darktable.gui->ui));
 
-  g_signal_handlers_disconnect_matched(dt_ui_center(darktable.gui->ui), G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_dnd_begin_picture_reorder), (gpointer)self);
-  g_signal_handlers_disconnect_matched(dt_ui_center(darktable.gui->ui), G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_dnd_get_picture_reorder), (gpointer)self);
-  g_signal_handlers_disconnect_matched(dt_ui_center(darktable.gui->ui), G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_dnd_drag_picture_motion), (gpointer)self);
+    g_signal_handlers_disconnect_matched(dt_ui_center(darktable.gui->ui), G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_dnd_begin_picture_reorder), (gpointer)self);
+    g_signal_handlers_disconnect_matched(dt_ui_center(darktable.gui->ui), G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_dnd_get_picture_reorder), (gpointer)self);
+    g_signal_handlers_disconnect_matched(dt_ui_center(darktable.gui->ui), G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0, 0, NULL, G_CALLBACK(_dnd_drag_picture_motion), (gpointer)self);
+  }
 }
 
 static void _dnd_get_picture_reorder(GtkWidget *widget, GdkDragContext *context, gint x, gint y,

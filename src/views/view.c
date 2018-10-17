@@ -195,6 +195,8 @@ static int dt_view_load_module(void *v, const char *libname, const char *module_
     view->key_released = NULL;
   if(!g_module_symbol(view->module, "configure", (gpointer) & (view->configure))) view->configure = NULL;
   if(!g_module_symbol(view->module, "scrolled", (gpointer) & (view->scrolled))) view->scrolled = NULL;
+  if(!g_module_symbol(view->module, "scrollbar_changed", (gpointer) & (view->scrollbar_changed)))
+    view->scrollbar_changed = NULL;
   if(!g_module_symbol(view->module, "init_key_accels", (gpointer) & (view->init_key_accels)))
     view->init_key_accels = NULL;
   if(!g_module_symbol(view->module, "connect_key_accels", (gpointer) & (view->connect_key_accels)))
@@ -465,6 +467,9 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   if(new_view->enter) new_view->enter(new_view);
   if(new_view->connect_key_accels) new_view->connect_key_accels(new_view);
 
+  /* update the scrollbars */
+  dt_ui_update_scrollbars(darktable.gui->ui);
+
   /* raise view changed signal */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
 
@@ -712,15 +717,29 @@ void dt_view_manager_scrolled(dt_view_manager_t *vm, double x, double y, int up,
   if(vm->current_view->scrolled) vm->current_view->scrolled(vm->current_view, x, y, up, state);
 }
 
-void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwinsize, float vpos, float vsize,
-                           float vwinsize)
+void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm, double x, double y)
 {
+  if(!vm->current_view) return;
+  if(vm->current_view->scrollbar_changed) vm->current_view->scrollbar_changed(vm->current_view, x, y);
+}
+
+void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hlower, float hsize, float hwinsize,
+                           float vpos, float vlower, float vsize,float vwinsize)
+{
+  if (view->vscroll_pos == vpos && view->vscroll_lower == vlower && view->vscroll_size == vsize &&
+      view->vscroll_viewport_size == vwinsize && view->hscroll_pos == hpos && view->hscroll_lower == hlower &&
+      view->hscroll_size == hsize && view->hscroll_viewport_size == hwinsize)
+    return;
+
   view->vscroll_pos = vpos;
+  view->vscroll_lower = vlower;
   view->vscroll_size = vsize;
   view->vscroll_viewport_size = vwinsize;
   view->hscroll_pos = hpos;
+  view->hscroll_lower = hlower;
   view->hscroll_size = hsize;
   view->hscroll_viewport_size = hwinsize;
+
   GtkWidget *widget;
   widget = darktable.gui->widgets.left_border;
   gtk_widget_queue_draw(widget);
@@ -730,6 +749,9 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
   gtk_widget_queue_draw(widget);
   widget = darktable.gui->widgets.top_border;
   gtk_widget_queue_draw(widget);
+
+  if (!darktable.gui->scrollbars.dragging) dt_ui_update_scrollbars(darktable.gui->ui);
+
 }
 
 static inline void dt_view_draw_altered(cairo_t *cr, const float x, const float y, const float r)
@@ -1180,14 +1202,77 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
         r2 = 0.007 * fscale;
       }
 
+      const gboolean extended_thumb_overlay = dt_conf_get_bool("plugins/lighttable/extended_thumb_overlay");
       float x, y;
       if(zoom != 1)
-        y = 0.90 * height;
+        y = (extended_thumb_overlay ? 0.93 : 0.9) * height;
       else
         y = .12 * fscale;
       const gboolean image_is_rejected = (img && ((img->flags & 0x7) == 6));
 
       if(img)
+      {
+        if (zoom != 1 && (!darktable.gui->show_overlays || imgsel == imgid) && extended_thumb_overlay)
+        {
+          const double overlay_height = 0.26 * height;
+          const int exif_offset = DT_PIXEL_APPLY_DPI(3);
+          const int fontsize = 0.18 * overlay_height;
+          const double line_offs = 1.15 * fontsize;
+
+
+          double x0 = DT_PIXEL_APPLY_DPI(1);
+          double y0 = height - overlay_height;
+          double rect_width = width - DT_PIXEL_APPLY_DPI(2);
+          double rect_height = overlay_height - DT_PIXEL_APPLY_DPI(2);
+          double radius = DT_PIXEL_APPLY_DPI(5);
+          double x1, y1, off, off1;
+
+          x1 = x0 + rect_width;
+          y1 = y0 + rect_height;
+          off = radius * 0.666;
+          off1 = radius - off;
+          cairo_save(cr);
+          cairo_move_to(cr, x0, y0 + radius);
+          cairo_curve_to(cr, x0, y0 + off1, x0 + off1, y0, x0 + radius, y0);
+          cairo_line_to(cr, x1 - radius, y0);
+          cairo_curve_to(cr, x1 - off1, y0, x1, y0 + off1, x1, y0 + radius);
+          cairo_line_to(cr, x1, y1 - radius);
+          cairo_curve_to(cr, x1, y1 - off1, x1 - off1, y1, x1 - radius, y1);
+          cairo_line_to(cr, x0 + radius, y1);
+          cairo_curve_to(cr, x0 + off1, y1, x0, y1 - off1, x0, y1 - radius);
+          cairo_close_path(cr);
+          cairo_set_source_rgb(cr, bgcol, bgcol, bgcol);
+          cairo_fill_preserve(cr);
+          cairo_set_line_width(cr, 0.005 * width);
+          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+          cairo_stroke(cr);
+
+          // some exif data
+          PangoLayout *layout;
+          PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+          pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+          layout = pango_cairo_create_layout(cr);
+          pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+          pango_layout_set_font_description(layout, desc);
+          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+
+          cairo_move_to(cr, x0 + exif_offset, y0 + exif_offset);
+          pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
+          pango_layout_set_width(layout, (int)(PANGO_SCALE * (width - 2 * exif_offset)));
+          pango_layout_set_text(layout, img->filename, -1);
+          pango_cairo_show_layout(cr, layout);
+          char exifline[50];
+          cairo_move_to(cr, x0 + exif_offset, y0 + exif_offset + line_offs);
+          dt_image_print_exif(img, exifline, sizeof(exifline));
+          pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
+          pango_layout_set_text(layout, exifline, -1);
+          pango_cairo_show_layout(cr, layout);
+
+          pango_font_description_free(desc);
+          g_object_unref(layout);
+          cairo_restore(cr);
+        }
+
         for(int k = 0; k < 5; k++)
         {
           if(zoom != 1)
@@ -1216,6 +1301,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
               cairo_stroke(cr);
           }
         }
+      }
 
       // Image rejected?
       if(zoom != 1)

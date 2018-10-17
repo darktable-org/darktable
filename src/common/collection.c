@@ -561,7 +561,7 @@ GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean 
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    const int imgid = sqlite3_column_int(stmt, 0);
     list = g_list_append(list, GINT_TO_POINTER(imgid));
   }
 
@@ -1389,7 +1389,7 @@ void dt_collection_shift_image_positions(const unsigned int length, const int64_
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), update_image_pos_query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, length);
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 2, image_position);
-  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 3, (image_position & 0xFFFFFFFF00000000) + (1l << 32));
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 3, (image_position & 0xFFFFFFFF00000000) + (1ll << 32));
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
