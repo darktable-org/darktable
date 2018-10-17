@@ -93,6 +93,14 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 {
   if(old_version == 1 && new_version == 2)
   {
+    // Since first version, the dt_iop_params_t struct have new members
+    // at the end of the struct.
+    // Yet, the beginning of the struct is exactly the same:
+    // threshold is still the first member of the struct.
+    // This allows to define the variable o with dt_iop_rawdenoise_params_t
+    // as long as we don't try to access new members on o.
+    // In other words, o can be seen as a dt_iop_rawdenoise_params_t
+    // with no allocated space for the new member.
     dt_iop_rawdenoise_params_t *o = (dt_iop_rawdenoise_params_t *)old_params;
     dt_iop_rawdenoise_params_t *n = (dt_iop_rawdenoise_params_t *)new_params;
     n->threshold = o->threshold;
