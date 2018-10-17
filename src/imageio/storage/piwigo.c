@@ -21,10 +21,10 @@
 #define DT_PIWIGO_NAME    "Piwigo"          // module name
 #define DT_PIWIGO_FAILED  0
 #define DT_PIWIGO_SUCCESS 1
-#define DT_PIWIGO_NO  	  DT_PIWIGO_FILED
+#define DT_PIWIGO_NO      DT_PIWIGO_FILED
 #define DT_PIWIGO_YES     DT_PIWIGO_SUCCESS 
-#define DT_PIWIGO_DIMENSION_MAX   0			// No maximum dimension
-#define DT_PIWIGO_DIMENSION_BEST  0			// No recommended dimension
+#define DT_PIWIGO_DIMENSION_MAX   0         // No maximum dimension
+#define DT_PIWIGO_DIMENSION_BEST  0         // No recommended dimension
 
 // module supports darktable release 2.x
 DT_MODULE(2)
@@ -37,7 +37,7 @@ int version()
 /* get translated module name */
 const char *name(const struct dt_imageio_module_storage_t *self)
 {
-	return DT_PIWIGO_NAME;
+  return DT_PIWIGO_NAME;
 }
 
 /* construct widget above */
@@ -68,7 +68,7 @@ int supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module
 {
   if ( false )
   {
-	return DT_PIWIGO_YES;
+    return DT_PIWIGO_YES;
   }
   return DT_PIWIGO_NO;
 }
@@ -79,7 +79,7 @@ int dimension(struct dt_imageio_module_storage_t *self, struct dt_imageio_module
 {
   return DT_PIWIGO_DIMENSION_MAX;
 }
-			  
+        
 /* get storage recommended image dimension, return 0 if no recommendation exists. */
 int recommended_dimension(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *data,
                           uint32_t *width, uint32_t *height)
