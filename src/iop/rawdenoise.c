@@ -483,8 +483,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 void reload_defaults(dt_iop_module_t *module)
 {
+  // init defaults:
+  dt_iop_rawdenoise_params_t tmp;
+  tmp.threshold = 0.01;
+  for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
+  {
+    for(int ch = 0; ch < DT_RAWDENOISE_NONE; ch++)
+    {
+      tmp.x[ch][k] = k / (DT_IOP_RAWDENOISE_BANDS - 1.0);
+      tmp.y[ch][k] = 0.5f;
+    }
+  }
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) return;
+  if(!module->dev) goto end;
 
   // can't be switched on for non-raw images:
   if(dt_image_is_raw(&module->dev->image_storage))
@@ -492,6 +503,10 @@ void reload_defaults(dt_iop_module_t *module)
   else
     module->hide_enable_button = 1;
   module->default_enabled = 0;
+
+end:
+ memcpy(module->params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
+ memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
 }
 
 void init(dt_iop_module_t *module)
