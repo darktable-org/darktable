@@ -1280,7 +1280,9 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
   else
     masks_density = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/density"), 1.0f);
 
-  if(gui->creation && which == 1 && (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
+  if(gui->creation && which == 1
+     && (((state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+         || ((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)))
   {
     // set some absolute or relative position for the source of the clone mask
     if(form->type & DT_MASKS_CLONE) dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
