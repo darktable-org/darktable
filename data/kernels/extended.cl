@@ -580,26 +580,66 @@ colormapping_mapping (read_only image2d_t in, read_only image2d_t tmp, write_onl
 /* kernel for the colorbalance module */
 kernel void
 colorbalance (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-              const float4 lift, const float4 gain, const float4 gamma_inv)
+              const float4 lift, const float4 gain, const float4 gamma_inv, const float saturation, const float contrast, const float grey)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 Lab = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 Lab = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 XYZ = Lab_to_XYZ(Lab);
+  float4 sRGB = XYZ_to_sRGB(XYZ);
+  const float4 luma = XYZ.y;
+  const float4 saturation4 = saturation;
+  const float4 contrast4 = contrast;
+  const float4 grey4 = grey;
 
-  float4 sRGB = XYZ_to_sRGB(Lab_to_XYZ(Lab));
+ // saturation
+  sRGB = luma + saturation4 * (sRGB - luma);
 
+  // Lift gamma gain
   sRGB = (sRGB <= (float4)0.0031308f) ? 12.92f * sRGB : (1.0f + 0.055f) * pow(sRGB, (float4)1.0f/2.4f) - (float4)0.055f;
-
   sRGB = pow(fmax(((sRGB - (float4)1.0f) * lift + (float4)1.0f) * gain, (float4)0.0f), gamma_inv);
-
   sRGB = (sRGB <= (float4)0.04045f) ? sRGB / 12.92f : pow((sRGB + (float4)0.055f) / (1.0f + 0.055f), (float4)2.4f);
+  
+  // fulcrum contrast
+  sRGB = pow(fmax(sRGB, (float4)0.0f) / grey4, contrast4) * grey4;
 
-  Lab.xyz = XYZ_to_Lab(sRGB_to_XYZ(sRGB)).xyz;
+  sRGB = XYZ_to_Lab(sRGB_to_XYZ(sRGB));
 
-  write_imagef (out, (int2)(x, y), Lab);
+  write_imagef (out, (int2)(x, y), sRGB);
+}
+
+kernel void
+colorbalance_cdl (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+              const float4 lift, const float4 gain, const float4 gamma_inv, const float saturation, const float contrast, const float grey)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float4 Lab = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 XYZ = Lab_to_XYZ(Lab);
+  float4 RGB = XYZ_to_prophotorgb(XYZ);
+  const float4 luma = XYZ.y;
+  const float4 saturation4 = saturation;
+  const float4 contrast4 = contrast;
+  const float4 grey4 = grey;
+  
+  // saturation
+  RGB = luma + saturation4 * (RGB - luma);
+ 
+  // lift power slope
+  RGB = pow(fmax((RGB * gain + lift), (float4)0.0f), gamma_inv);
+  
+  // fulcrum contrast
+  RGB = pow(fmax(RGB, (float4)0.0f) / grey4, contrast4) * grey4;
+
+  RGB = prophotorgb_to_Lab(RGB);
+
+  write_imagef (out, (int2)(x, y), RGB);
 }
 
 /* helpers and kernel for the colorchecker module */
