@@ -834,7 +834,7 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-  int ch = c->channel;
+  const int ch = c->channel;
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
@@ -937,7 +937,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(rawdenoise_tab_switch), self);
 
   c->channel = dt_conf_get_int("plugins/darkroom/rawdenoise/gui_channel");
-  int ch = (int)c->channel;
+  const int ch = (int)c->channel;
   c->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   (void)dt_draw_curve_add_point(c->transition_curve, p->x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0,
                                 p->y[ch][DT_IOP_RAWDENOISE_BANDS - 2]);
