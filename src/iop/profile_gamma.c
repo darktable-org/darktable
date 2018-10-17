@@ -244,6 +244,20 @@ error:
 }
 #endif
 
+// From data/kernels/extended.cl
+static inline float fastlog2(float x)
+{
+  union { float f; unsigned int i; } vx = { x };
+  union { unsigned int i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
+
+  float y = vx.i;
+
+  y *= 1.1920928955078125e-7f;
+
+  return y - 124.22551499f
+    - 1.498030302f * mx.f
+    - 1.72587999f / (0.3520887068f + mx.f);
+}
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -257,25 +271,32 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     case PROFILEGAMMA_LOG:
     {
       const float grey = data->grey_point / 100.0f;
+      
+      /** The log2(x) -> -INF when x -> 0
+      * thus very low values (noise) will get even lower, resulting in noise negative amplification,
+      * which leads to pepper noise in shadows. To avoid that, we need to clip values that are noise for sure.
+      * Using 16 bits RAW data, the black value (known by rawspeed for every manufacturer) could be used as a threshold. 
+      * However, at this point of the pixelpipe, the RAW levels have already been corrected and everything can happen with black levels
+      * in the exposure module. So we define the threshold as the first non-null 16 bit integer
+      */
       const float noise = powf(2.0f, -16.0f);
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) shared(data) schedule(static)
 #endif
-      for(int k = 0; k < roi_out->height; k++)
+      for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
       {
-        const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-        float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
-
-        for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
+        float tmp = ((const float *)ivoid)[k] / grey;
+        if (tmp < noise) tmp = noise;
+        tmp = (fastlog2(tmp) - data->shadows_range) / (data->dynamic_range);
+        
+        if (tmp < noise) 
+        { 
+          ((float *)ovoid)[k] = noise;
+        }
+        else
         {
-          for(int i = 0; i < 3; i++)
-          {
-            float tmp = in[i] / grey;
-            if (tmp < noise) tmp = noise;
-            out[i] = (Log2(tmp) - data->shadows_range) / (data->dynamic_range);
-            if (out[i] < noise) out[i] = noise;
-          }
+          ((float *)ovoid)[k] = tmp;
         }
       }
       break;
@@ -284,7 +305,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     case PROFILEGAMMA_GAMMA:
     {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(data) schedule(static)
+#pragma omp parallel for default(none) shared(data) schedule(static)
 #endif
       for(int k = 0; k < roi_out->height; k++)
       {
@@ -361,24 +382,17 @@ static void auto_grey(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    dt_iop_request_focus(self);
-    dt_lib_colorpicker_set_area(darktable.lib, 0.9);
-    dt_dev_reprocess_all(self->dev);
-  }
-  else
-  {
-    dt_control_queue_redraw();
-  }
-  
-  dt_iop_request_focus(self);
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    dt_iop_request_focus(self);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_control_queue_redraw();
+  }
   else
   {
+    dt_dev_reprocess_all(self->dev);
     if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) 
     {
       dt_control_log(_("wait for the preview to be updated."));
@@ -406,23 +420,17 @@ static void auto_black(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    dt_iop_request_focus(self);
-    dt_dev_reprocess_all(self->dev);
-  }
-  else
-  {
-    dt_control_queue_redraw();
-  }
-  
-  dt_iop_request_focus(self);
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    dt_iop_request_focus(self);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_control_queue_redraw();
+  }
   else
   {
+    dt_dev_reprocess_all(self->dev);
     if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) 
     {
       dt_control_log(_("wait for the preview to be updated."));
@@ -457,24 +465,17 @@ static void auto_dynamic_range(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    dt_iop_request_focus(self);
-    dt_lib_colorpicker_set_area(darktable.lib, 0.9);
-    dt_dev_reprocess_all(self->dev);
-  }
-  else
-  {
-    dt_control_queue_redraw();
-  }
-  
-  dt_iop_request_focus(self);
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    dt_iop_request_focus(self);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_control_queue_redraw();
+  }
   else
   {
+    dt_dev_reprocess_all(self->dev);
     dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
     dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
     
@@ -517,13 +518,13 @@ static void optimize_button_pressed_callback(GtkWidget *button, gpointer user_da
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   
   dt_iop_request_focus(self);
   dt_lib_colorpicker_set_area(darktable.lib, 0.99);
   dt_control_queue_redraw();
   self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
   dt_dev_reprocess_all(self->dev);
-  dt_control_queue_redraw();
 
   if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) 
   {
@@ -690,7 +691,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // now the extrapolation stuff:
   const float x[4] = { 0.7f, 0.8f, 0.9f, 1.0f };
   const float y[4]
-      = { d->table[CLAMP((int)(x[0] * 0x10000ul), 0, 0xffff)], d->table[CLAMP((int)(x[1] * 0x10000ul), 0, 0xffff)],
+      = { d->table[CLAMP((int)(x[0] * 0x10000ul), 0, 0xffff)], 
+          d->table[CLAMP((int)(x[1] * 0x10000ul), 0, 0xffff)],
           d->table[CLAMP((int)(x[2] * 0x10000ul), 0, 0xffff)],
           d->table[CLAMP((int)(x[3] * 0x10000ul), 0, 0xffff)] };
   dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
@@ -845,7 +847,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->grey_point, NULL, _("middle grey luma"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->grey_point, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->grey_point, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->grey_point, _("adjust to match a neutral tone"));
+  gtk_widget_set_tooltip_text(g->grey_point, _("adjust to match the average luma of the subject"));
   g_signal_connect(G_OBJECT(g->grey_point), "value-changed", G_CALLBACK(grey_point_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->grey_point, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
   g_signal_connect(G_OBJECT(g->grey_point), "quad-pressed", G_CALLBACK(auto_grey), self);
@@ -856,7 +858,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->shadows_range, NULL, _("black relative exposure"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->shadows_range, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->shadows_range, "%.2f EV");
-  gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between middle grey and pure black"));
+  gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between middle grey and pure black\nthis is a reading a posemeter would give you on the scene"));
   g_signal_connect(G_OBJECT(g->shadows_range), "value-changed", G_CALLBACK(shadows_range_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->shadows_range, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
   g_signal_connect(G_OBJECT(g->shadows_range), "quad-pressed", G_CALLBACK(auto_black), self);
@@ -867,7 +869,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->dynamic_range, NULL, _("dynamic range"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->dynamic_range, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->dynamic_range, "%.2f EV");
-  gtk_widget_set_tooltip_text(g->dynamic_range, _("number of stops between pure black and pure white"));
+  gtk_widget_set_tooltip_text(g->dynamic_range, _("number of stops between pure black and pure white\nthis is a reading a posemeter would give you on the scene"));
   g_signal_connect(G_OBJECT(g->dynamic_range), "value-changed", G_CALLBACK(dynamic_range_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->dynamic_range, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
   g_signal_connect(G_OBJECT(g->dynamic_range), "quad-pressed", G_CALLBACK(auto_dynamic_range), self);
@@ -878,7 +880,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->security_factor, NULL, _("security factor"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->security_factor, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->security_factor, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or reduce the computed dynamic range"));
+  gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range\nthis is usefull when noise perturbates the measurements"));
   g_signal_connect(G_OBJECT(g->security_factor), "value-changed", G_CALLBACK(security_threshold_callback), self);
   
   g->auto_button = gtk_button_new_with_label(_("auto tune"));
