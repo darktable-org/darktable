@@ -37,7 +37,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 16
+#define CURRENT_DATABASE_VERSION_LIBRARY 17
 #define CURRENT_DATABASE_VERSION_DATA 1
 
 typedef struct dt_database_t
@@ -990,12 +990,25 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 16;
-  } // maybe in the future, see commented out code elsewhere
-    //   else if(version == XXX)
-    //   {
-    //     sqlite3_exec(db->handle, "ALTER TABLE film_rolls ADD COLUMN external_drive VARCHAR(1024)", NULL,
-    //     NULL, NULL);
-    //   }
+  }
+  else if(version == 16)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+    ////////////////////////////// final image aspect ratio
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN aspect_ratio REAL",
+             "[init] can't add `aspect_ratio' column to images table in database\n");
+    TRY_EXEC("UPDATE main.images SET aspect_ratio = 0.0",
+             "[init] can't update aspect_ratio in database\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 17;
+  }
+  // maybe in the future, see commented out code elsewhere
+  //   else if(version == XXX)
+  //   {
+  //     sqlite3_exec(db->handle, "ALTER TABLE film_rolls ADD COLUMN external_drive VARCHAR(1024)", NULL,
+  //     NULL, NULL);
+  //   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1107,7 +1120,7 @@ static void _create_library_schema(dt_database_t *db)
       "caption VARCHAR, description VARCHAR, license VARCHAR, sha1sum CHAR(40), "
       "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
       "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
-      "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER)",
+      "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, aspect_ratio REAL)",
       NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.images_group_id_index ON images (group_id)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.images_film_id_index ON images (film_id)", NULL, NULL, NULL);
