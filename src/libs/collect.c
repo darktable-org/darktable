@@ -1173,6 +1173,11 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    DT_IMAGE_LOCAL_COPY, _("copied locally"),  _("not copied locally"), where_ext);
         break;
 
+      case DT_COLLECTION_PROP_ASPECT_RATIO: // aspect ratio, 3 hardcoded alternatives
+        g_snprintf(query, sizeof(query), "SELECT ROUND(aspect_ratio,1), 1, COUNT(*) AS count FROM main.images "
+                   "WHERE %s GROUP BY ROUND(aspect_ratio,1)", where_ext);
+        break;
+
       case DT_COLLECTION_PROP_COLORLABEL: // colorlabels
         g_snprintf(query, sizeof(query), "SELECT CASE "
                            "color WHEN 0 THEN '%s' WHEN 1 THEN '%s' WHEN 2 THEN '%s' WHEN 3 THEN '%s' WHEN 4 THEN '%s' "
@@ -1435,7 +1440,7 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   }
 
   if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
-     || property == DT_COLLECTION_PROP_ISO)
+     || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_ASPECT_RATIO)
   {
     gtk_widget_set_tooltip_text(d->text, _("type your query, use <, <=, >, >=, <>, =, [;] as operators"));
   }
@@ -2052,6 +2057,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FOCAL_LENGTH);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_ISO);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_APERTURE);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_ASPECT_RATIO);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FILENAME);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GEOTAGGING);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_LOCAL_COPY);
