@@ -2,16 +2,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-16 23:49-0400\n"
-"PO-Revision-Date: 2018-10-16 23:57-0400\n"
-"Last-Translator: Aurélien PIERRE <contact@aurelienpierre.com>\n"
+"POT-Creation-Date: 2018-10-18 11:47+0200\n"
+"PO-Revision-Date: 2018-10-18 11:47+0200\n"
+"Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Poedit 2.1.1\n"
 
 #: ../build/src/preferences_gen.h:1686
 msgid "GUI options"
@@ -1102,7 +1102,7 @@ msgstr ""
 
 #: ../src/common/collection.c:886 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:451
-#: ../src/iop/channelmixer.c:462 ../src/iop/colorbalance.c:2160
+#: ../src/iop/channelmixer.c:462 ../src/iop/colorbalance.c:2168
 #: ../src/iop/temperature.c:1367 ../src/libs/collect.c:1183
 msgid "red"
 msgstr "rouge"
@@ -1114,7 +1114,7 @@ msgstr "jaune"
 
 #: ../src/common/collection.c:890 ../src/develop/lightroom.c:826
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:452
-#: ../src/iop/channelmixer.c:468 ../src/iop/colorbalance.c:2167
+#: ../src/iop/channelmixer.c:468 ../src/iop/colorbalance.c:2175
 #: ../src/iop/temperature.c:1355 ../src/iop/temperature.c:1368
 #: ../src/libs/collect.c:1183
 msgid "green"
@@ -1122,7 +1122,7 @@ msgstr "vert"
 
 #: ../src/common/collection.c:892 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
-#: ../src/iop/channelmixer.c:474 ../src/iop/colorbalance.c:2174
+#: ../src/iop/channelmixer.c:474 ../src/iop/colorbalance.c:2182
 #: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1183
 msgid "blue"
 msgstr "bleu"
@@ -2701,7 +2701,7 @@ msgstr "clic-droit pour réinitialiser la courbure"
 msgid "ctrl+click to add a node"
 msgstr "ctrl-clic pour ajouter un point"
 
-#: ../src/develop/masks/masks.c:170 ../src/develop/masks/masks.c:199
+#: ../src/develop/masks/masks.c:170 ../src/develop/masks/masks.c:203
 msgid "ctrl+scroll to set shape opacity, shift+scroll to set feather size"
 msgstr ""
 "ctrl-défiler pour modifier l'opacité, shift+défiler pour changer le dégradé"
@@ -2714,11 +2714,19 @@ msgstr "ctrl-défiler pour modifier l'opacité de la forme"
 msgid "move to rotate shape"
 msgstr "déplacer pour faire pivoter"
 
-#: ../src/develop/masks/masks.c:182
+#: ../src/develop/masks/masks.c:182 ../src/develop/masks/masks.c:201
+msgid ""
+"scroll to set size, shift+scroll to set feather size\n"
+"ctrl+scroll to set shape opacity"
+msgstr ""
+"défiler pour changer la taille, shift+défiler pour changer la dureté,\n"
+"ctrl+défiler pour changer l'opacité"
+
+#: ../src/develop/masks/masks.c:184
 msgid "ctrl+click to rotate"
 msgstr "ctrl-clic pour pivoter"
 
-#: ../src/develop/masks/masks.c:184
+#: ../src/develop/masks/masks.c:186
 msgid ""
 "shift+click to switch feathering mode, ctrl+scroll to set shape opacity,\n"
 "shift+scroll to set feather size"
@@ -2727,7 +2735,7 @@ msgstr ""
 "l'opacité,\n"
 "shift+défiler pour changer le dégradé"
 
-#: ../src/develop/masks/masks.c:189
+#: ../src/develop/masks/masks.c:191
 msgid ""
 "scroll to set brush size, shift+scroll to set hardness,\n"
 "ctrl+scroll to set opacity"
@@ -2736,60 +2744,60 @@ msgstr ""
 "dureté,\n"
 "ctrl+défiler pour changer l'opacité"
 
-#: ../src/develop/masks/masks.c:192
+#: ../src/develop/masks/masks.c:194
 msgid "scroll to set brush size"
 msgstr "défiler pour modifier la taille du pinceau"
 
-#: ../src/develop/masks/masks.c:194
+#: ../src/develop/masks/masks.c:196
 msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
 msgstr ""
 "défiler pour changer la dureté, ctrl+défiler pour modifier l'opacité de la "
 "forme"
 
-#: ../src/develop/masks/masks.c:331
+#: ../src/develop/masks/masks.c:335
 #, c-format
 msgid "circle #%d"
 msgstr "cercle #%d"
 
-#: ../src/develop/masks/masks.c:333
+#: ../src/develop/masks/masks.c:337
 #, c-format
 msgid "path #%d"
 msgstr "chemin #%d"
 
-#: ../src/develop/masks/masks.c:335
+#: ../src/develop/masks/masks.c:339
 #, c-format
 msgid "gradient #%d"
 msgstr "dégradé #%d"
 
-#: ../src/develop/masks/masks.c:337
+#: ../src/develop/masks/masks.c:341
 #, c-format
 msgid "ellipse #%d"
 msgstr "ellipse #%d"
 
-#: ../src/develop/masks/masks.c:339
+#: ../src/develop/masks/masks.c:343
 #, c-format
 msgid "brush #%d"
 msgstr "pinceau #%d"
 
-#: ../src/develop/masks/masks.c:393
+#: ../src/develop/masks/masks.c:397
 #, c-format
 msgid "copy of %s"
 msgstr "copie de %s"
 
-#: ../src/develop/masks/masks.c:1073
+#: ../src/develop/masks/masks.c:1077
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: version non cohérente du masque: %d != %d"
 
-#: ../src/develop/masks/masks.c:1836 ../src/libs/masks.c:1038
+#: ../src/develop/masks/masks.c:1840 ../src/libs/masks.c:1038
 msgid "add existing shape"
 msgstr "ajouter un masque existant"
 
-#: ../src/develop/masks/masks.c:1861
+#: ../src/develop/masks/masks.c:1865
 msgid "use same shapes as"
 msgstr "utiliser les mêmes masques que"
 
-#: ../src/develop/masks/masks.c:2173
+#: ../src/develop/masks/masks.c:2177
 msgid "masks can not contain themselves"
 msgstr "masques ne peuvent pas se contenir"
 
@@ -3341,7 +3349,8 @@ msgid "golden spiral"
 msgstr "spirale d'or"
 
 #: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:678
-#: ../src/iop/lens.c:2091 ../src/libs/tools/filter.c:117
+#: ../src/iop/denoiseprofile.c:2586 ../src/iop/lens.c:2091
+#: ../src/iop/rawdenoise.c:951 ../src/libs/tools/filter.c:117
 msgid "all"
 msgstr "tout"
 
@@ -4772,11 +4781,13 @@ msgstr "lumière d'arrière-plan"
 msgid "clarity"
 msgstr "clarté"
 
-#: ../src/iop/atrous.c:1420
+#: ../src/iop/atrous.c:1420 ../src/iop/denoiseprofile.c:2406
+#: ../src/iop/rawdenoise.c:781
 msgid "coarse"
 msgstr "global"
 
-#: ../src/iop/atrous.c:1427
+#: ../src/iop/atrous.c:1427 ../src/iop/denoiseprofile.c:2414
+#: ../src/iop/rawdenoise.c:789
 msgid "fine"
 msgstr "détail"
 
@@ -4785,10 +4796,12 @@ msgid "contrasty"
 msgstr "contrasté"
 
 #: ../src/iop/atrous.c:1440 ../src/iop/atrous.c:1444
+#: ../src/iop/denoiseprofile.c:2423 ../src/iop/rawdenoise.c:798
 msgid "smooth"
 msgstr "flou"
 
-#: ../src/iop/atrous.c:1445
+#: ../src/iop/atrous.c:1445 ../src/iop/denoiseprofile.c:2428
+#: ../src/iop/rawdenoise.c:803
 msgid "noisy"
 msgstr "bruité"
 
@@ -5002,8 +5015,8 @@ msgstr "contraste local"
 msgid "local laplacian: inconsistent output"
 msgstr "laplacien local: résultat incohérent"
 
-#: ../src/iop/bilat.c:516 ../src/iop/colorbalance.c:2017
-#: ../src/iop/denoiseprofile.c:2104 ../src/iop/exposure.c:849
+#: ../src/iop/bilat.c:516 ../src/iop/colorbalance.c:2025
+#: ../src/iop/denoiseprofile.c:2638 ../src/iop/exposure.c:849
 #: ../src/iop/lens.c:2233 ../src/iop/levels.c:569
 #: ../src/iop/profile_gamma.c:808 ../src/libs/copy_history.c:310
 #: ../src/libs/export.c:644 ../src/libs/print_settings.c:1508
@@ -5044,7 +5057,8 @@ msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr "taille des détails locaux (sigma spatial du filtre bilatéral)"
 
 #: ../src/iop/bilat.c:537 ../src/iop/colisa.c:364
-#: ../src/iop/colorbalance.c:2059 ../src/iop/lowpass.c:671
+#: ../src/iop/colorbalance.c:2067 ../src/iop/colorbalance.c:2069
+#: ../src/iop/lowpass.c:671
 msgid "contrast"
 msgstr "contraste"
 
@@ -5173,7 +5187,7 @@ msgstr "seuil"
 msgid "the threshold of light"
 msgstr "seuil de lumière"
 
-#: ../src/iop/bloom.c:526 ../src/iop/denoiseprofile.c:2107
+#: ../src/iop/bloom.c:526 ../src/iop/denoiseprofile.c:2641
 #: ../src/iop/grain.c:627 ../src/iop/hazeremoval.c:186
 #: ../src/iop/hotpixels.c:460 ../src/iop/nlmeans.c:849 ../src/iop/velvia.c:378
 msgid "strength"
@@ -5413,8 +5427,8 @@ msgid "destination"
 msgstr "canal de destination"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
-#: ../src/iop/channelmixer.c:448 ../src/iop/colorbalance.c:2140
-#: ../src/iop/colorbalance.c:2189 ../src/iop/colorbalance.c:2236
+#: ../src/iop/channelmixer.c:448 ../src/iop/colorbalance.c:2148
+#: ../src/iop/colorbalance.c:2197 ../src/iop/colorbalance.c:2244
 #: ../src/iop/colorize.c:427 ../src/iop/colorreconstruction.c:1363
 #: ../src/iop/colorreconstruction.c:1368 ../src/iop/colorzones.c:1076
 #: ../src/iop/colorzones.c:1107 ../src/iop/graduatednd.c:1168
@@ -5424,14 +5438,14 @@ msgstr "teinte"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:449 ../src/iop/colisa.c:366
-#: ../src/iop/colorbalance.c:2043 ../src/iop/colorbalance.c:2045
-#: ../src/iop/colorbalance.c:2061 ../src/iop/colorbalance.c:2152
-#: ../src/iop/colorbalance.c:2200 ../src/iop/colorbalance.c:2247
-#: ../src/iop/colorchecker.c:1300 ../src/iop/colorcorrection.c:286
-#: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:1074
-#: ../src/iop/colorzones.c:1108 ../src/iop/graduatednd.c:1182
-#: ../src/iop/lowpass.c:673 ../src/iop/soften.c:714
-#: ../src/iop/splittoning.c:500 ../src/iop/vignette.c:1149
+#: ../src/iop/colorbalance.c:2051 ../src/iop/colorbalance.c:2053
+#: ../src/iop/colorbalance.c:2160 ../src/iop/colorbalance.c:2208
+#: ../src/iop/colorbalance.c:2255 ../src/iop/colorchecker.c:1300
+#: ../src/iop/colorcorrection.c:286 ../src/iop/colorize.c:441
+#: ../src/iop/colorzones.c:1074 ../src/iop/colorzones.c:1108
+#: ../src/iop/graduatednd.c:1182 ../src/iop/lowpass.c:673
+#: ../src/iop/soften.c:714 ../src/iop/splittoning.c:500
+#: ../src/iop/vignette.c:1149
 msgid "saturation"
 msgstr "saturation"
 
@@ -5531,7 +5545,7 @@ msgid "flip"
 msgstr "symétrie miroir"
 
 #: ../src/iop/clipping.c:1867 ../src/iop/clipping.c:2052
-#: ../src/iop/colorbalance.c:2031 ../src/libs/live_view.c:377
+#: ../src/iop/colorbalance.c:2039 ../src/libs/live_view.c:377
 msgid "both"
 msgstr "les deux"
 
@@ -5714,171 +5728,182 @@ msgstr "balance couleur"
 msgid "lift/gamma/gain controls as seen in video editors"
 msgstr "contrôles lift/gamma/gain comme dans les éditeurs vidéos"
 
-#: ../src/iop/colorbalance.c:1469 ../src/iop/colorbalance.c:1530
-#: ../src/iop/colorbalance.c:1603 ../src/iop/colorbalance.c:1672
-#: ../src/iop/colorbalance.c:1847 ../src/iop/colorbalance.c:1891
-#: ../src/iop/colorbalance.c:1935 ../src/iop/profile_gamma.c:398
+#: ../src/iop/colorbalance.c:185 ../src/iop/exposure.c:119
+#: ../src/iop/profile_gamma.c:108
+msgctxt "accel"
+msgid "mode"
+msgstr "mode"
+
+#: ../src/iop/colorbalance.c:186
+msgctxt "accel"
+msgid "controls"
+msgstr "contrôles"
+
+#: ../src/iop/colorbalance.c:1477 ../src/iop/colorbalance.c:1538
+#: ../src/iop/colorbalance.c:1611 ../src/iop/colorbalance.c:1680
+#: ../src/iop/colorbalance.c:1855 ../src/iop/colorbalance.c:1899
+#: ../src/iop/colorbalance.c:1943 ../src/iop/profile_gamma.c:398
 #: ../src/iop/profile_gamma.c:436 ../src/iop/profile_gamma.c:484
 #: ../src/iop/profile_gamma.c:531
 msgid "wait for the preview to be updated."
 msgstr "attendez que la pré-visualisation soit mise à jour"
 
-#: ../src/iop/colorbalance.c:1732
+#: ../src/iop/colorbalance.c:1740
 msgid "you need to select 3 color samples first"
 msgstr "vous devez préalablement sélectionner 3 zones de couleur"
 
-#: ../src/iop/colorbalance.c:1970
+#: ../src/iop/colorbalance.c:1978
 msgid "you need to select 3 luma samples first"
 msgstr "vous devez préalablement sélectionner 3 zones de luminosité"
 
-#: ../src/iop/colorbalance.c:2018
+#: ../src/iop/colorbalance.c:2026
 msgid "lift / gamma / gain"
 msgstr "lift / gamma / gain"
 
-#: ../src/iop/colorbalance.c:2019
+#: ../src/iop/colorbalance.c:2027
 msgid "slope / offset / power"
 msgstr "slope / offset / power"
 
-#: ../src/iop/colorbalance.c:2021 ../src/iop/colorbalance.c:2034
+#: ../src/iop/colorbalance.c:2029 ../src/iop/colorbalance.c:2042
 msgid "color-grading mapping method"
 msgstr "méthode d'ajustement des couleurs"
 
-#: ../src/iop/colorbalance.c:2028
+#: ../src/iop/colorbalance.c:2036
 msgid "color control sliders"
 msgstr "contrôle des couleurs"
 
-#: ../src/iop/colorbalance.c:2029
+#: ../src/iop/colorbalance.c:2037
 msgid "HSL"
 msgstr "TSL"
 
-#: ../src/iop/colorbalance.c:2030
+#: ../src/iop/colorbalance.c:2038
 msgid "RGBL"
 msgstr "RGBL"
 
 #. master
-#: ../src/iop/colorbalance.c:2039
+#: ../src/iop/colorbalance.c:2047
 msgid "master"
 msgstr "maître"
 
-#: ../src/iop/colorbalance.c:2049
+#: ../src/iop/colorbalance.c:2057
 msgid "grey fulcrum"
 msgstr "gris pivot"
 
-#: ../src/iop/colorbalance.c:2052
+#: ../src/iop/colorbalance.c:2060
 msgid "adjust to match a neutral tone"
 msgstr "ajuste pour des tons neutres"
 
-#: ../src/iop/colorbalance.c:2117 ../src/iop/colorbalance.c:2127
+#: ../src/iop/colorbalance.c:2125 ../src/iop/colorbalance.c:2135
 msgid "factor of "
 msgstr "facteur de "
 
-#: ../src/iop/colorbalance.c:2118
+#: ../src/iop/colorbalance.c:2126
 msgid "factor"
 msgstr "facteur"
 
 #. lift
-#: ../src/iop/colorbalance.c:2133
+#: ../src/iop/colorbalance.c:2141
 msgid "shadows : lift / offset"
 msgstr "ombres : lift / offset"
 
-#: ../src/iop/colorbalance.c:2135
+#: ../src/iop/colorbalance.c:2143
 msgid "factor of lift"
 msgstr "facteur de lift"
 
-#: ../src/iop/colorbalance.c:2135
+#: ../src/iop/colorbalance.c:2143
 msgid "lift"
 msgstr "lift"
 
-#: ../src/iop/colorbalance.c:2142 ../src/iop/colorbalance.c:2191
-#: ../src/iop/colorbalance.c:2238
+#: ../src/iop/colorbalance.c:2150 ../src/iop/colorbalance.c:2199
+#: ../src/iop/colorbalance.c:2246
 msgid "select the hue"
 msgstr "sélectionne la teinte"
 
-#: ../src/iop/colorbalance.c:2155 ../src/iop/colorbalance.c:2203
-#: ../src/iop/colorbalance.c:2250
+#: ../src/iop/colorbalance.c:2163 ../src/iop/colorbalance.c:2211
+#: ../src/iop/colorbalance.c:2258
 msgid "select the saturation"
 msgstr "sélectionne la saturation"
 
-#: ../src/iop/colorbalance.c:2160
+#: ../src/iop/colorbalance.c:2168
 msgid "factor of red for lift"
 msgstr "facteur rouge du lift"
 
-#: ../src/iop/colorbalance.c:2167
+#: ../src/iop/colorbalance.c:2175
 msgid "factor of green for lift"
 msgstr "facteur vert du lift"
 
-#: ../src/iop/colorbalance.c:2174
+#: ../src/iop/colorbalance.c:2182
 msgid "factor of blue for lift"
 msgstr "facteur bleu du lift"
 
 #. gamma
-#: ../src/iop/colorbalance.c:2182
+#: ../src/iop/colorbalance.c:2190
 msgid "mid-tones : gamma / power"
 msgstr "tons moyens : gamma / power"
 
-#: ../src/iop/colorbalance.c:2184
+#: ../src/iop/colorbalance.c:2192
 msgid "factor of gamma"
 msgstr "facteur gamma"
 
-#: ../src/iop/colorbalance.c:2184 ../src/iop/profile_gamma.c:810
+#: ../src/iop/colorbalance.c:2192 ../src/iop/profile_gamma.c:810
 #: ../src/iop/profile_gamma.c:832
 msgid "gamma"
 msgstr "gamma"
 
-#: ../src/iop/colorbalance.c:2207
+#: ../src/iop/colorbalance.c:2215
 msgid "factor of red for gamma"
 msgstr "facteur rouge du gamma"
 
-#: ../src/iop/colorbalance.c:2214
+#: ../src/iop/colorbalance.c:2222
 msgid "factor of green for gamma"
 msgstr "facteur vert du gamma"
 
-#: ../src/iop/colorbalance.c:2221
+#: ../src/iop/colorbalance.c:2229
 msgid "factor of blue for gamma"
 msgstr "facteur bleu du gamma"
 
 #. gain
-#: ../src/iop/colorbalance.c:2229
+#: ../src/iop/colorbalance.c:2237
 msgid "highlights : gain / slope"
 msgstr "hautes lumières : gain / slope"
 
-#: ../src/iop/colorbalance.c:2231
+#: ../src/iop/colorbalance.c:2239
 msgid "factor of gain"
 msgstr "facteur du gain"
 
-#: ../src/iop/colorbalance.c:2231
+#: ../src/iop/colorbalance.c:2239
 msgid "gain"
 msgstr "gain"
 
-#: ../src/iop/colorbalance.c:2254
+#: ../src/iop/colorbalance.c:2262
 msgid "factor of red for gain"
 msgstr "facteur rouge du gain"
 
-#: ../src/iop/colorbalance.c:2261
+#: ../src/iop/colorbalance.c:2269
 msgid "factor of green for gain"
 msgstr "facteur vert du gain"
 
-#: ../src/iop/colorbalance.c:2268
+#: ../src/iop/colorbalance.c:2276
 msgid "factor of blue for gain"
 msgstr "facteur bleu du gain"
 
-#: ../src/iop/colorbalance.c:2276
+#: ../src/iop/colorbalance.c:2284
 msgid "auto optimizers"
 msgstr "optimiseurs automatiques"
 
-#: ../src/iop/colorbalance.c:2282
+#: ../src/iop/colorbalance.c:2290
 msgid "optimize luma"
 msgstr "optimiser luma"
 
-#: ../src/iop/colorbalance.c:2283
+#: ../src/iop/colorbalance.c:2291
 msgid "fit the whole histogram and center the average luma"
 msgstr "ajuste l'histogramme et centre la luminosité moyenne"
 
-#: ../src/iop/colorbalance.c:2287
+#: ../src/iop/colorbalance.c:2295
 msgid "neutralize colors"
 msgstr "neutraliser les couleurs"
 
-#: ../src/iop/colorbalance.c:2288
+#: ../src/iop/colorbalance.c:2296
 msgid "optimize the RGB curves to remove color casts"
 msgstr "optimise les courbes RGB et supprime les dérives de couleur"
 
@@ -6043,7 +6068,7 @@ msgstr "impossible de générer le profil d'entrée"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "profil d'entrée non supporté, remplacé par linéaire RGB Rec709 !"
 
-#: ../src/iop/colorin.c:1842 ../src/iop/denoiseprofile.c:2103
+#: ../src/iop/colorin.c:1842 ../src/iop/denoiseprofile.c:2637
 #: ../src/libs/export.c:603 ../src/libs/print_settings.c:1183
 #: ../src/libs/print_settings.c:1401
 msgid "profile"
@@ -6556,45 +6581,58 @@ msgstr ""
 "dématriçage\n"
 "uniquement pour les images raw"
 
-#: ../src/iop/denoiseprofile.c:137
+#: ../src/iop/denoiseprofile.c:196
 msgid "denoise (profiled)"
 msgstr "réduction du bruit (profil)"
 
-#: ../src/iop/denoiseprofile.c:187
+#. these blobs were exported as dtstyle and copied from there:
+#: ../src/iop/denoiseprofile.c:245
 msgid "chroma (use on 1st instance)"
 msgstr "chroma (utiliser sur 1ère instance)"
 
-#: ../src/iop/denoiseprofile.c:191
+#: ../src/iop/denoiseprofile.c:248
 msgid "luma (use on 2nd instance)"
 msgstr "luma (utiliser sur la 2nd instance)"
 
-#: ../src/iop/denoiseprofile.c:1862
+#: ../src/iop/denoiseprofile.c:1975
 #, c-format
 msgid "found match for ISO %d"
 msgstr "profil pour ISO %d trouvé"
 
-#: ../src/iop/denoiseprofile.c:1870
+#: ../src/iop/denoiseprofile.c:1983
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:2105 ../src/iop/nlmeans.c:847
+#: ../src/iop/denoiseprofile.c:2588 ../src/iop/rawdenoise.c:953
+msgid "R"
+msgstr "R"
+
+#: ../src/iop/denoiseprofile.c:2590 ../src/iop/rawdenoise.c:955
+msgid "G"
+msgstr "G"
+
+#: ../src/iop/denoiseprofile.c:2592 ../src/iop/rawdenoise.c:957
+msgid "B"
+msgstr "B"
+
+#: ../src/iop/denoiseprofile.c:2639 ../src/iop/nlmeans.c:847
 msgid "patch size"
 msgstr "taille"
 
-#: ../src/iop/denoiseprofile.c:2108
+#: ../src/iop/denoiseprofile.c:2642
 msgid "non-local means"
 msgstr "moyenne non-locales"
 
-#: ../src/iop/denoiseprofile.c:2109
+#: ../src/iop/denoiseprofile.c:2643
 msgid "wavelets"
 msgstr "ondelettes"
 
-#: ../src/iop/denoiseprofile.c:2110
+#: ../src/iop/denoiseprofile.c:2644
 msgid "profile used for variance stabilization"
 msgstr "profil utilisé pour la stabilisation de variance"
 
-#: ../src/iop/denoiseprofile.c:2111
+#: ../src/iop/denoiseprofile.c:2645
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -6603,11 +6641,11 @@ msgstr ""
 "fonctionne mieux pour le mode de fusion 'luminosité'. 'ondelettes' "
 "fonctionnent pour le mode de fusion 'couleur'"
 
-#: ../src/iop/denoiseprofile.c:2114
+#: ../src/iop/denoiseprofile.c:2648
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr "rayon des éléments à identifier. augmenter pour plus de netteté."
 
-#: ../src/iop/denoiseprofile.c:2115
+#: ../src/iop/denoiseprofile.c:2649
 msgid "finetune denoising strength"
 msgstr "réglage fin de la force de réduction"
 
@@ -6694,11 +6732,6 @@ msgstr ""
 "ce module sera supprimé dans le futur\n"
 "il apparaît afin que vous le désactiviez\n"
 "et utilisiez le nouvel égaliseur"
-
-#: ../src/iop/exposure.c:119 ../src/iop/profile_gamma.c:108
-msgctxt "accel"
-msgid "mode"
-msgstr "mode"
 
 #: ../src/iop/exposure.c:120
 msgctxt "accel"
@@ -7762,19 +7795,18 @@ msgstr "gamma"
 
 #: ../src/iop/profile_gamma.c:111
 msgctxt "accel"
-msgid "dynamic_range"
+msgid "dynamic range"
 msgstr "plage dynamique"
 
 #: ../src/iop/profile_gamma.c:112
 msgctxt "accel"
-msgid "grey_point"
+msgid "grey point"
 msgstr "point gris"
 
 #: ../src/iop/profile_gamma.c:113
-#, fuzzy
 msgctxt "accel"
-msgid "shadows_range"
-msgstr "ombres"
+msgid "shadows range"
+msgstr "étendue des ombres"
 
 #: ../src/iop/profile_gamma.c:812
 msgid "tone mapping method"
@@ -7845,20 +7877,20 @@ msgstr "réglage auto"
 msgid "make an optimization with some guessing"
 msgstr "faire une optimisation basée sur des suppositions"
 
-#: ../src/iop/rawdenoise.c:62
+#: ../src/iop/rawdenoise.c:123
 msgid "raw denoise"
 msgstr "réduction du bruit RAW"
 
-#: ../src/iop/rawdenoise.c:77
+#: ../src/iop/rawdenoise.c:138
 msgctxt "accel"
 msgid "noise threshold"
 msgstr "seuil de bruit"
 
-#: ../src/iop/rawdenoise.c:470
+#: ../src/iop/rawdenoise.c:995
 msgid "noise threshold"
 msgstr "seuil de bruit"
 
-#: ../src/iop/rawdenoise.c:476
+#: ../src/iop/rawdenoise.c:998
 msgid ""
 "raw denoising\n"
 "only works for raw images."
@@ -11920,6 +11952,10 @@ msgstr ""
 "nous vous suggérons de passer à la version 64 bits.\n"
 "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
 "corrigés.\n"
+
+#~ msgctxt "accel"
+#~ msgid "dynamic_range"
+#~ msgstr "plage dynamique"
 
 #~ msgid "click and drag to add point"
 #~ msgstr "cliquer et tracer pour ajouter un point"
