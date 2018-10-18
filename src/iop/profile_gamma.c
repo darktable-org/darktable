@@ -108,9 +108,9 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mode"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "linear"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "gamma"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "dynamic_range"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "grey_point"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows_range"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "dynamic range"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "grey point"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows range"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -120,9 +120,9 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "mode", GTK_WIDGET(g->mode));
   dt_accel_connect_slider_iop(self, "linear", GTK_WIDGET(g->linear));
   dt_accel_connect_slider_iop(self, "gamma", GTK_WIDGET(g->gamma));
-  dt_accel_connect_slider_iop(self, "dynamic_range", GTK_WIDGET(g->dynamic_range));
-  dt_accel_connect_slider_iop(self, "grey_point", GTK_WIDGET(g->grey_point));
-  dt_accel_connect_slider_iop(self, "shadows_range", GTK_WIDGET(g->shadows_range));
+  dt_accel_connect_slider_iop(self, "dynamic range", GTK_WIDGET(g->dynamic_range));
+  dt_accel_connect_slider_iop(self, "grey point", GTK_WIDGET(g->grey_point));
+  dt_accel_connect_slider_iop(self, "shadows range", GTK_WIDGET(g->shadows_range));
 }
 
 
