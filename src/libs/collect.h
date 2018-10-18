@@ -34,8 +34,8 @@ const char *dt_lib_collect_string[] = { N_("film roll"),   N_("folders"),     N_
                                         N_("history"),     N_("color label"), N_("title"),
                                         N_("description"), N_("creator"),     N_("publisher"),
                                         N_("rights"),      N_("lens"),        N_("focal length"),
-                                        N_("ISO"),         N_("aperture"),    N_("filename"),
-                                        N_("geotagging"),  N_("local copy") };
+                                        N_("ISO"),         N_("aperture"),    N_("aspect ratio"),
+                                        N_("filename"),    N_("geotagging"),  N_("local copy") };
 const int dt_lib_collect_string_cnt = sizeof(dt_lib_collect_string) / sizeof(dt_lib_collect_string[0]);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
