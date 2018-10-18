@@ -2570,6 +2570,7 @@ void gui_init(dt_iop_module_t *self)
   g->mode = dt_bauhaus_combobox_new(self);
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 1.f, 0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
+  g->channel = dt_conf_get_int("plugins/darkroom/denoiseprofile/gui_channel");
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
@@ -2594,7 +2595,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), g->channel);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(denoiseprofile_tab_switch), self);
 
-  g->channel = dt_conf_get_int("plugins/darkroom/denoiseprofile/gui_channel");
   const int ch = (int)g->channel;
   g->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0,
