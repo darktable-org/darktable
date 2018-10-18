@@ -240,6 +240,8 @@ void dt_image_set_location(const int32_t imgid, double lon, double lat);
 void dt_image_set_location_and_elevation(const int32_t imgid, double lon, double lat, double ele);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const uint32_t imgid);
+/** set the image final/cropped aspect ratio */
+void dt_image_set_aspect_ratio(const int32_t imgid);
 /** returns the orientation bits of the image from exif. */
 static inline dt_image_orientation_t dt_image_orientation(const dt_image_t *img)
 {
