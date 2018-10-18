@@ -944,6 +944,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_stack_set_homogeneous(GTK_STACK(c->stack), FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), c->stack, TRUE, TRUE, 0);
 
+  c->channel = dt_conf_get_int("plugins/darkroom/rawdenoise/gui_channel");
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
   gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
@@ -959,7 +960,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(rawdenoise_tab_switch), self);
 
-  c->channel = dt_conf_get_int("plugins/darkroom/rawdenoise/gui_channel");
   const int ch = (int)c->channel;
   c->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   (void)dt_draw_curve_add_point(c->transition_curve, p->x[ch][DT_IOP_RAWDENOISE_BANDS - 2] - 1.0,
