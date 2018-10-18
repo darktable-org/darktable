@@ -117,7 +117,7 @@ void init(dt_iop_module_t *self)
   self->default_params = calloc(1, sizeof(dt_iop_finalscale_params_t));
   self->default_enabled = 1;
   self->hide_enable_button = 1;
-  self->priority = 911; // module order created by iop_dependencies.py, do not edit!
+  self->priority = 914; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_finalscale_params_t);
   self->gui_data = NULL;
 }

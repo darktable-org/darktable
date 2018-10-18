@@ -123,7 +123,7 @@ void init(dt_iop_module_t *self)
   self->params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
   self->default_enabled = 0;
-  self->priority = 338; // module order created by iop_dependencies.py, do not edit!
+  self->priority = 342; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_hazeremoval_params_t);
   self->gui_data = NULL;
   dt_iop_hazeremoval_params_t tmp = (dt_iop_hazeremoval_params_t){ 0.5f, 0.25f };
