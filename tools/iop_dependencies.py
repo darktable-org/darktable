@@ -268,6 +268,7 @@ def add_edges(gr):
   gr.add_edge(('colorcorrection', 'tonecurve'))
   gr.add_edge(('colorcorrection', 'levels'))
   gr.add_edge(('colorcorrection', 'relight'))
+  gr.add_edge(('colorcorrection', 'toneequalizer'))
   # want to split-tone monochrome images:
   gr.add_edge(('colorcorrection', 'monochrome'))
 
@@ -428,6 +429,11 @@ def add_edges(gr):
   gr.add_edge(('zonesystem', 'shadhi'))
   gr.add_edge(('relight', 'shadhi'))
   gr.add_edge(('colisa', 'shadhi'))
+  
+  # toneequalizer is a simple parametric filmic tonecurve
+  gr.add_edge(('colisa', 'toneequalizer'))
+  gr.add_edge(('tonecurve', 'toneequalizer'))
+  gr.add_edge(('levels', 'toneequalizer'))
 
   # the bilateral filter, in linear input rgb
   gr.add_edge(('colorin', 'bilateral'))
@@ -482,6 +488,7 @@ def add_edges(gr):
   gr.add_edge(('colorize', 'colorchecker'))
   gr.add_edge(('colisa', 'colorchecker'))
   gr.add_edge(('defringe', 'colorchecker'))
+  gr.add_edge(('toneequalizer', 'colorchecker'))
   gr.add_edge(('colorchecker', 'colorreconstruction'))
 
   # ugly hack: don't let vibrance drift any more
@@ -554,6 +561,7 @@ gr.add_nodes([
 'temperature',
 'tonecurve',
 'tonemap',
+'toneequalizer',
 'velvia',
 'vibrance',
 'vignette',
