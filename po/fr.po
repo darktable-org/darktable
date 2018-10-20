@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-18 11:47+0200\n"
-"PO-Revision-Date: 2018-10-18 11:47+0200\n"
+"POT-Creation-Date: 2018-10-20 09:35+0200\n"
+"PO-Revision-Date: 2018-10-20 09:38+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 2.2\n"
 
 #: ../build/src/preferences_gen.h:1686
 msgid "GUI options"
@@ -1102,7 +1102,7 @@ msgstr ""
 
 #: ../src/common/collection.c:886 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:358 ../src/iop/channelmixer.c:451
-#: ../src/iop/channelmixer.c:462 ../src/iop/colorbalance.c:2168
+#: ../src/iop/channelmixer.c:462 ../src/iop/colorbalance.c:2344
 #: ../src/iop/temperature.c:1367 ../src/libs/collect.c:1183
 msgid "red"
 msgstr "rouge"
@@ -1114,7 +1114,7 @@ msgstr "jaune"
 
 #: ../src/common/collection.c:890 ../src/develop/lightroom.c:826
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:452
-#: ../src/iop/channelmixer.c:468 ../src/iop/colorbalance.c:2175
+#: ../src/iop/channelmixer.c:468 ../src/iop/colorbalance.c:2351
 #: ../src/iop/temperature.c:1355 ../src/iop/temperature.c:1368
 #: ../src/libs/collect.c:1183
 msgid "green"
@@ -1122,7 +1122,7 @@ msgstr "vert"
 
 #: ../src/common/collection.c:892 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
-#: ../src/iop/channelmixer.c:474 ../src/iop/colorbalance.c:2182
+#: ../src/iop/channelmixer.c:474 ../src/iop/colorbalance.c:2358
 #: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1183
 msgid "blue"
 msgstr "bleu"
@@ -5015,7 +5015,7 @@ msgstr "contraste local"
 msgid "local laplacian: inconsistent output"
 msgstr "laplacien local: résultat incohérent"
 
-#: ../src/iop/bilat.c:516 ../src/iop/colorbalance.c:2025
+#: ../src/iop/bilat.c:516 ../src/iop/colorbalance.c:2197
 #: ../src/iop/denoiseprofile.c:2638 ../src/iop/exposure.c:849
 #: ../src/iop/lens.c:2233 ../src/iop/levels.c:569
 #: ../src/iop/profile_gamma.c:808 ../src/libs/copy_history.c:310
@@ -5057,7 +5057,7 @@ msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr "taille des détails locaux (sigma spatial du filtre bilatéral)"
 
 #: ../src/iop/bilat.c:537 ../src/iop/colisa.c:364
-#: ../src/iop/colorbalance.c:2067 ../src/iop/colorbalance.c:2069
+#: ../src/iop/colorbalance.c:2243 ../src/iop/colorbalance.c:2245
 #: ../src/iop/lowpass.c:671
 msgid "contrast"
 msgstr "contraste"
@@ -5427,8 +5427,8 @@ msgid "destination"
 msgstr "canal de destination"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
-#: ../src/iop/channelmixer.c:448 ../src/iop/colorbalance.c:2148
-#: ../src/iop/colorbalance.c:2197 ../src/iop/colorbalance.c:2244
+#: ../src/iop/channelmixer.c:448 ../src/iop/colorbalance.c:2324
+#: ../src/iop/colorbalance.c:2373 ../src/iop/colorbalance.c:2420
 #: ../src/iop/colorize.c:427 ../src/iop/colorreconstruction.c:1363
 #: ../src/iop/colorreconstruction.c:1368 ../src/iop/colorzones.c:1076
 #: ../src/iop/colorzones.c:1107 ../src/iop/graduatednd.c:1168
@@ -5438,9 +5438,9 @@ msgstr "teinte"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:449 ../src/iop/colisa.c:366
-#: ../src/iop/colorbalance.c:2051 ../src/iop/colorbalance.c:2053
-#: ../src/iop/colorbalance.c:2160 ../src/iop/colorbalance.c:2208
-#: ../src/iop/colorbalance.c:2255 ../src/iop/colorchecker.c:1300
+#: ../src/iop/colorbalance.c:2227 ../src/iop/colorbalance.c:2229
+#: ../src/iop/colorbalance.c:2336 ../src/iop/colorbalance.c:2384
+#: ../src/iop/colorbalance.c:2431 ../src/iop/colorchecker.c:1300
 #: ../src/iop/colorcorrection.c:286 ../src/iop/colorize.c:441
 #: ../src/iop/colorzones.c:1074 ../src/iop/colorzones.c:1108
 #: ../src/iop/graduatednd.c:1182 ../src/iop/lowpass.c:673
@@ -5545,7 +5545,7 @@ msgid "flip"
 msgstr "symétrie miroir"
 
 #: ../src/iop/clipping.c:1867 ../src/iop/clipping.c:2052
-#: ../src/iop/colorbalance.c:2039 ../src/libs/live_view.c:377
+#: ../src/iop/colorbalance.c:2212 ../src/libs/live_view.c:377
 msgid "both"
 msgstr "les deux"
 
@@ -5720,190 +5720,193 @@ msgstr "ajustement de la luminosité"
 msgid "color saturation adjustment"
 msgstr "ajustement de la saturation"
 
-#: ../src/iop/colorbalance.c:140
+#: ../src/iop/colorbalance.c:143
 msgid "color balance"
 msgstr "balance couleur"
 
-#: ../src/iop/colorbalance.c:145
+#: ../src/iop/colorbalance.c:148
 msgid "lift/gamma/gain controls as seen in video editors"
 msgstr "contrôles lift/gamma/gain comme dans les éditeurs vidéos"
 
-#: ../src/iop/colorbalance.c:185 ../src/iop/exposure.c:119
+#: ../src/iop/colorbalance.c:188 ../src/iop/exposure.c:119
 #: ../src/iop/profile_gamma.c:108
 msgctxt "accel"
 msgid "mode"
 msgstr "mode"
 
-#: ../src/iop/colorbalance.c:186
+#: ../src/iop/colorbalance.c:189
 msgctxt "accel"
 msgid "controls"
 msgstr "contrôles"
 
-#: ../src/iop/colorbalance.c:1477 ../src/iop/colorbalance.c:1538
-#: ../src/iop/colorbalance.c:1611 ../src/iop/colorbalance.c:1680
-#: ../src/iop/colorbalance.c:1855 ../src/iop/colorbalance.c:1899
-#: ../src/iop/colorbalance.c:1943 ../src/iop/profile_gamma.c:398
+#: ../src/iop/colorbalance.c:1649 ../src/iop/colorbalance.c:1710
+#: ../src/iop/colorbalance.c:1783 ../src/iop/colorbalance.c:1852
+#: ../src/iop/colorbalance.c:2027 ../src/iop/colorbalance.c:2071
+#: ../src/iop/colorbalance.c:2115 ../src/iop/profile_gamma.c:398
 #: ../src/iop/profile_gamma.c:436 ../src/iop/profile_gamma.c:484
 #: ../src/iop/profile_gamma.c:531
 msgid "wait for the preview to be updated."
 msgstr "attendez que la pré-visualisation soit mise à jour"
 
-#: ../src/iop/colorbalance.c:1740
+#: ../src/iop/colorbalance.c:1912
 msgid "you need to select 3 color samples first"
 msgstr "vous devez préalablement sélectionner 3 zones de couleur"
 
-#: ../src/iop/colorbalance.c:1978
+#: ../src/iop/colorbalance.c:2150
 msgid "you need to select 3 luma samples first"
 msgstr "vous devez préalablement sélectionner 3 zones de luminosité"
 
-#: ../src/iop/colorbalance.c:2026
-msgid "lift / gamma / gain"
-msgstr "lift / gamma / gain"
+#: ../src/iop/colorbalance.c:2198
+msgid "lift, gamma, gain (ProPhotoRGB)"
+msgstr "lift, gamma, gain (ProPhotoRGB)"
 
-#: ../src/iop/colorbalance.c:2027
-msgid "slope / offset / power"
-msgstr "slope / offset / power"
+#: ../src/iop/colorbalance.c:2199
+msgid "slope, offset, power (ProPhotoRGB)"
+msgstr "slope, offset, power (ProPhotoRGB)"
 
-#: ../src/iop/colorbalance.c:2029 ../src/iop/colorbalance.c:2042
+#: ../src/iop/colorbalance.c:2200
+msgid "lift, gamma, gain (sRGB)"
+msgstr "lift, gamma, gain (sRGB)"
+
+#: ../src/iop/colorbalance.c:2202 ../src/iop/colorbalance.c:2215
 msgid "color-grading mapping method"
 msgstr "méthode d'ajustement des couleurs"
 
-#: ../src/iop/colorbalance.c:2036
+#: ../src/iop/colorbalance.c:2209
 msgid "color control sliders"
 msgstr "contrôle des couleurs"
 
-#: ../src/iop/colorbalance.c:2037
+#: ../src/iop/colorbalance.c:2210
 msgid "HSL"
 msgstr "TSL"
 
-#: ../src/iop/colorbalance.c:2038
+#: ../src/iop/colorbalance.c:2211
 msgid "RGBL"
 msgstr "RGBL"
 
-#. master
-#: ../src/iop/colorbalance.c:2047
+#: ../src/iop/colorbalance.c:2223
 msgid "master"
 msgstr "maître"
 
-#: ../src/iop/colorbalance.c:2057
+#: ../src/iop/colorbalance.c:2233
 msgid "grey fulcrum"
 msgstr "gris pivot"
 
-#: ../src/iop/colorbalance.c:2060
+#: ../src/iop/colorbalance.c:2236
 msgid "adjust to match a neutral tone"
 msgstr "ajuste pour des tons neutres"
 
-#: ../src/iop/colorbalance.c:2125 ../src/iop/colorbalance.c:2135
+#: ../src/iop/colorbalance.c:2301 ../src/iop/colorbalance.c:2311
 msgid "factor of "
 msgstr "facteur de "
 
-#: ../src/iop/colorbalance.c:2126
+#: ../src/iop/colorbalance.c:2302
 msgid "factor"
 msgstr "facteur"
 
 #. lift
-#: ../src/iop/colorbalance.c:2141
+#: ../src/iop/colorbalance.c:2317
 msgid "shadows : lift / offset"
 msgstr "ombres : lift / offset"
 
-#: ../src/iop/colorbalance.c:2143
+#: ../src/iop/colorbalance.c:2319
 msgid "factor of lift"
 msgstr "facteur de lift"
 
-#: ../src/iop/colorbalance.c:2143
+#: ../src/iop/colorbalance.c:2319
 msgid "lift"
 msgstr "lift"
 
-#: ../src/iop/colorbalance.c:2150 ../src/iop/colorbalance.c:2199
-#: ../src/iop/colorbalance.c:2246
+#: ../src/iop/colorbalance.c:2326 ../src/iop/colorbalance.c:2375
+#: ../src/iop/colorbalance.c:2422
 msgid "select the hue"
 msgstr "sélectionne la teinte"
 
-#: ../src/iop/colorbalance.c:2163 ../src/iop/colorbalance.c:2211
-#: ../src/iop/colorbalance.c:2258
+#: ../src/iop/colorbalance.c:2339 ../src/iop/colorbalance.c:2387
+#: ../src/iop/colorbalance.c:2434
 msgid "select the saturation"
 msgstr "sélectionne la saturation"
 
-#: ../src/iop/colorbalance.c:2168
+#: ../src/iop/colorbalance.c:2344
 msgid "factor of red for lift"
 msgstr "facteur rouge du lift"
 
-#: ../src/iop/colorbalance.c:2175
+#: ../src/iop/colorbalance.c:2351
 msgid "factor of green for lift"
 msgstr "facteur vert du lift"
 
-#: ../src/iop/colorbalance.c:2182
+#: ../src/iop/colorbalance.c:2358
 msgid "factor of blue for lift"
 msgstr "facteur bleu du lift"
 
 #. gamma
-#: ../src/iop/colorbalance.c:2190
+#: ../src/iop/colorbalance.c:2366
 msgid "mid-tones : gamma / power"
 msgstr "tons moyens : gamma / power"
 
-#: ../src/iop/colorbalance.c:2192
+#: ../src/iop/colorbalance.c:2368
 msgid "factor of gamma"
 msgstr "facteur gamma"
 
-#: ../src/iop/colorbalance.c:2192 ../src/iop/profile_gamma.c:810
+#: ../src/iop/colorbalance.c:2368 ../src/iop/profile_gamma.c:810
 #: ../src/iop/profile_gamma.c:832
 msgid "gamma"
 msgstr "gamma"
 
-#: ../src/iop/colorbalance.c:2215
+#: ../src/iop/colorbalance.c:2391
 msgid "factor of red for gamma"
 msgstr "facteur rouge du gamma"
 
-#: ../src/iop/colorbalance.c:2222
+#: ../src/iop/colorbalance.c:2398
 msgid "factor of green for gamma"
 msgstr "facteur vert du gamma"
 
-#: ../src/iop/colorbalance.c:2229
+#: ../src/iop/colorbalance.c:2405
 msgid "factor of blue for gamma"
 msgstr "facteur bleu du gamma"
 
 #. gain
-#: ../src/iop/colorbalance.c:2237
+#: ../src/iop/colorbalance.c:2413
 msgid "highlights : gain / slope"
 msgstr "hautes lumières : gain / slope"
 
-#: ../src/iop/colorbalance.c:2239
+#: ../src/iop/colorbalance.c:2415
 msgid "factor of gain"
 msgstr "facteur du gain"
 
-#: ../src/iop/colorbalance.c:2239
+#: ../src/iop/colorbalance.c:2415
 msgid "gain"
 msgstr "gain"
 
-#: ../src/iop/colorbalance.c:2262
+#: ../src/iop/colorbalance.c:2438
 msgid "factor of red for gain"
 msgstr "facteur rouge du gain"
 
-#: ../src/iop/colorbalance.c:2269
+#: ../src/iop/colorbalance.c:2445
 msgid "factor of green for gain"
 msgstr "facteur vert du gain"
 
-#: ../src/iop/colorbalance.c:2276
+#: ../src/iop/colorbalance.c:2452
 msgid "factor of blue for gain"
 msgstr "facteur bleu du gain"
 
-#: ../src/iop/colorbalance.c:2284
+#: ../src/iop/colorbalance.c:2460
 msgid "auto optimizers"
 msgstr "optimiseurs automatiques"
 
-#: ../src/iop/colorbalance.c:2290
+#: ../src/iop/colorbalance.c:2466
 msgid "optimize luma"
 msgstr "optimiser luma"
 
-#: ../src/iop/colorbalance.c:2291
+#: ../src/iop/colorbalance.c:2467
 msgid "fit the whole histogram and center the average luma"
 msgstr "ajuste l'histogramme et centre la luminosité moyenne"
 
-#: ../src/iop/colorbalance.c:2295
+#: ../src/iop/colorbalance.c:2471
 msgid "neutralize colors"
 msgstr "neutraliser les couleurs"
 
-#: ../src/iop/colorbalance.c:2296
+#: ../src/iop/colorbalance.c:2472
 msgid "optimize the RGB curves to remove color casts"
 msgstr "optimise les courbes RGB et supprime les dérives de couleur"
 
