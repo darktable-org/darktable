@@ -243,9 +243,18 @@ static gboolean _lib_lighttable_zoom_entry_changed(GtkWidget *entry, GdkEventKey
 
 static void _lib_lighttable_layout_changed(GtkComboBox *widget, gpointer user_data)
 {
-  const int i = gtk_combo_box_get_active(widget);
-  dt_conf_set_int("plugins/lighttable/layout", i);
-  dt_control_queue_redraw_center();
+  const int new_layout = gtk_combo_box_get_active(widget);
+  const int current_layout = dt_conf_get_int("plugins/lighttable/layout");
+
+  if(current_layout != new_layout)
+  {
+    dt_conf_set_int("plugins/lighttable/layout", new_layout);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  }
+  else
+  {
+    dt_control_queue_redraw_center();
+  }
 }
 
 #define DT_LIBRARY_MAX_ZOOM 13
