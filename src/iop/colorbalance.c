@@ -2197,7 +2197,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
   dt_bauhaus_combobox_add(g->mode, _("lift, gamma, gain (ProPhotoRGB)"));
   dt_bauhaus_combobox_add(g->mode, _("slope, offset, power (ProPhotoRGB)"));
-  dt_bauhaus_combobox_add(g->mode, _("lift, gamma, gain (legacy, sRGB)"));
+  dt_bauhaus_combobox_add(g->mode, _("lift, gamma, gain (sRGB)"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->mode, _("color-grading mapping method"));
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
