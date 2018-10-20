@@ -782,21 +782,21 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
       dt_prophotorgb_to_XYZ((const float *)&p->lift[CHANNEL_RED], XYZ);
       d->lift[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR];
-      d->lift[CHANNEL_RED] = (p->lift[CHANNEL_RED] - XYZ[1]) * 2.0f + 1.f;
-      d->lift[CHANNEL_GREEN] = (p->lift[CHANNEL_GREEN] - XYZ[1]) * 2.0f + 1.f;
-      d->lift[CHANNEL_BLUE] = (p->lift[CHANNEL_BLUE] - XYZ[1]) * 2.0f + 1.f;
+      d->lift[CHANNEL_RED] = (p->lift[CHANNEL_RED] - XYZ[1]) + 1.f;
+      d->lift[CHANNEL_GREEN] = (p->lift[CHANNEL_GREEN] - XYZ[1]) + 1.f;
+      d->lift[CHANNEL_BLUE] = (p->lift[CHANNEL_BLUE] - XYZ[1]) + 1.f;
 
       dt_prophotorgb_to_XYZ((const float *)&p->gamma[CHANNEL_RED], XYZ);
       d->gamma[CHANNEL_FACTOR] = p->gamma[CHANNEL_FACTOR];
-      d->gamma[CHANNEL_RED] = (p->gamma[CHANNEL_RED] - XYZ[1]) * 2.0f + 1.f;
-      d->gamma[CHANNEL_GREEN] = (p->gamma[CHANNEL_GREEN] - XYZ[1]) * 2.0f + 1.f;
-      d->gamma[CHANNEL_BLUE] = (p->gamma[CHANNEL_BLUE] - XYZ[1]) * 2.0f + 1.f;
+      d->gamma[CHANNEL_RED] = (p->gamma[CHANNEL_RED] - XYZ[1]) + 1.f;
+      d->gamma[CHANNEL_GREEN] = (p->gamma[CHANNEL_GREEN] - XYZ[1]) + 1.f;
+      d->gamma[CHANNEL_BLUE] = (p->gamma[CHANNEL_BLUE] - XYZ[1]) + 1.f;
 
       dt_prophotorgb_to_XYZ((const float *)&p->gain[CHANNEL_RED], XYZ);
       d->gain[CHANNEL_FACTOR] = p->gain[CHANNEL_FACTOR];
-      d->gain[CHANNEL_RED] = (p->gain[CHANNEL_RED] - XYZ[1]) * 2.0f + 1.f;
-      d->gain[CHANNEL_GREEN] = (p->gain[CHANNEL_GREEN] - XYZ[1]) * 2.0f + 1.f;
-      d->gain[CHANNEL_BLUE] = (p->gain[CHANNEL_BLUE] - XYZ[1]) * 2.0f + 1.f;
+      d->gain[CHANNEL_RED] = (p->gain[CHANNEL_RED] - XYZ[1]) + 1.f;
+      d->gain[CHANNEL_GREEN] = (p->gain[CHANNEL_GREEN] - XYZ[1]) + 1.f;
+      d->gain[CHANNEL_BLUE] = (p->gain[CHANNEL_BLUE] - XYZ[1]) + 1.f;
 
       break;
     }
@@ -818,20 +818,25 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     {
       // Divide the parameters by 2.2 to match the correction we got in legacy sRGB mode
       // That is because we work in a larger space
+      // Correct the luminance in RGB parameters so we don't affect it
+      float XYZ[3];
+      dt_prophotorgb_to_XYZ((const float *)&p->lift[CHANNEL_RED], XYZ);
       d->lift[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR];
-      d->lift[CHANNEL_RED] = (p->lift[CHANNEL_RED] - 1.0f) / 2.2f + 1.f;
-      d->lift[CHANNEL_GREEN] = (p->lift[CHANNEL_GREEN] - 1.0f) / 2.2f + 1.f;
-      d->lift[CHANNEL_BLUE] = (p->lift[CHANNEL_BLUE] - 1.0f) / 2.2f + 1.f;
+      d->lift[CHANNEL_RED] = (p->lift[CHANNEL_RED] - XYZ[1]) / 2.2f + 1.f;
+      d->lift[CHANNEL_GREEN] = (p->lift[CHANNEL_GREEN] - XYZ[1]) / 2.2f + 1.f;
+      d->lift[CHANNEL_BLUE] = (p->lift[CHANNEL_BLUE] - XYZ[1]) / 2.2f + 1.f;
 
+      dt_prophotorgb_to_XYZ((const float *)&p->gamma[CHANNEL_RED], XYZ);
       d->gamma[CHANNEL_FACTOR] = p->gamma[CHANNEL_FACTOR];
-      d->gamma[CHANNEL_RED] = (p->gamma[CHANNEL_RED] - 1.0f) / 2.2f + 1.f;
-      d->gamma[CHANNEL_GREEN] = (p->gamma[CHANNEL_GREEN] - 1.0f) / 2.2f + 1.f;
-      d->gamma[CHANNEL_BLUE] = (p->gamma[CHANNEL_BLUE] - 1.0f) / 2.2f + 1.f;
+      d->gamma[CHANNEL_RED] = (p->gamma[CHANNEL_RED] - XYZ[1]) / 2.2f + 1.f;
+      d->gamma[CHANNEL_GREEN] = (p->gamma[CHANNEL_GREEN] - XYZ[1]) / 2.2f + 1.f;
+      d->gamma[CHANNEL_BLUE] = (p->gamma[CHANNEL_BLUE] - XYZ[1]) / 2.2f + 1.f;
 
+      dt_prophotorgb_to_XYZ((const float *)&p->gain[CHANNEL_RED], XYZ);
       d->gain[CHANNEL_FACTOR] = p->gain[CHANNEL_FACTOR];
-      d->gain[CHANNEL_RED] = (p->gain[CHANNEL_RED] - 1.0f) / 2.2f + 1.f;
-      d->gain[CHANNEL_GREEN] = (p->gain[CHANNEL_GREEN] - 1.0f) / 2.2f + 1.f;
-      d->gain[CHANNEL_BLUE] = (p->gain[CHANNEL_BLUE] - 1.0f) / 2.2f + 1.f;
+      d->gain[CHANNEL_RED] = (p->gain[CHANNEL_RED] - XYZ[1]) / 2.2f + 1.f;
+      d->gain[CHANNEL_GREEN] = (p->gain[CHANNEL_GREEN] - XYZ[1]) / 2.2f + 1.f;
+      d->gain[CHANNEL_BLUE] = (p->gain[CHANNEL_BLUE] - XYZ[1]) / 2.2f + 1.f;
 
       break;
     }
@@ -1242,7 +1247,7 @@ static void hue_lift_callback(GtkWidget *slider, gpointer user_data)
 
   float hsl[3] = {dt_bauhaus_slider_get(slider),
                   dt_bauhaus_slider_get(g->sat_lift),
-                  0.4688f};
+                  0.437462716f};
 
   update_saturation_slider_color(g->sat_lift, hsl[0]);
   set_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, hsl, p->lift, p->mode);
@@ -1260,7 +1265,7 @@ static void sat_lift_callback(GtkWidget *slider, gpointer user_data)
 
   float hsl[3] = {dt_bauhaus_slider_get(g->hue_lift),
                   dt_bauhaus_slider_get(slider),
-                  0.4688f};
+                  0.437462716f};
 
   set_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, hsl, p->lift, p->mode);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1275,7 +1280,7 @@ static void hue_gamma_callback(GtkWidget *slider, gpointer user_data)
 
   float hsl[3] = {dt_bauhaus_slider_get(slider),
                   dt_bauhaus_slider_get(g->sat_gamma),
-                  0.4688f};
+                  0.437462716f};
 
   update_saturation_slider_color(g->sat_gamma, hsl[0]);
   set_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, hsl, p->gamma, p->mode);
@@ -1293,7 +1298,7 @@ static void sat_gamma_callback(GtkWidget *slider, gpointer user_data)
 
   float hsl[3] = {dt_bauhaus_slider_get(g->hue_gamma),
                   dt_bauhaus_slider_get(slider),
-                  0.4688f};
+                  0.437462716f};
 
   set_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, hsl, p->gamma, p->mode);
 
@@ -1309,7 +1314,7 @@ static void hue_gain_callback(GtkWidget *slider, gpointer user_data)
 
   float hsl[3] = {dt_bauhaus_slider_get(slider),
                   dt_bauhaus_slider_get(g->sat_gain),
-                  0.4688f};
+                  0.437462716f};
 
   update_saturation_slider_color(g->sat_gain, hsl[0]);
   set_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, hsl, p->gain, p->mode);
@@ -1327,7 +1332,7 @@ static void sat_gain_callback(GtkWidget *slider, gpointer user_data)
 
   float hsl[3] = {dt_bauhaus_slider_get(g->hue_gain),
                   dt_bauhaus_slider_get(slider),
-                  0.4688f};
+                  0.437462716f};
 
   set_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, hsl, p->gain, p->mode);
 
@@ -1732,25 +1737,18 @@ static void lift_neutralize_callback(GtkWidget *button, gpointer user_data)
                                               p->lift[CHANNEL_FACTOR] - 1.0f, \
                                               1.0f / p->gamma[CHANNEL_FACTOR] );
 
-    // Compute the average grey
-    float grey = 0.0;
-    for (int c = 0; c < 3; ++c) grey += RGB[c] / 3.0f;
+    // Compute the luminance of the average grey
+    dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
     // Get the parameter
-    for (int c = 0; c < 3; ++c) RGB[c] = grey - RGB[c] * gain[c];
+    for (int c = 0; c < 3; ++c) RGB[c] = XYZ[1] - RGB[c] * gain[c];
 
-    // Correct the luminance
-    dt_prophotorgb_to_XYZ(RGB, XYZ);
-    for (int c = 0; c < 3; ++c) RGB[c] = (RGB[c] - XYZ[1]) + 1.0f;
-
-    p->lift[CHANNEL_RED] = RGB[0];
-    p->lift[CHANNEL_GREEN] = RGB[1];
-    p->lift[CHANNEL_BLUE] = RGB[2];
-
+    p->lift[CHANNEL_RED] = RGB[0] + 1.0f;
+    p->lift[CHANNEL_GREEN] = RGB[1] + 1.0f;
+    p->lift[CHANNEL_BLUE] = RGB[2] + 1.0f;
+    
+    normalize_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, p->lift, CHANNEL_FACTOR,  SLOPE_OFFSET_POWER);
     darktable.gui->reset = 1;
-    dt_bauhaus_slider_set_soft(g->lift_r, p->lift[CHANNEL_RED] - 1.0f);
-    dt_bauhaus_slider_set_soft(g->lift_g, p->lift[CHANNEL_GREEN] - 1.0f);
-    dt_bauhaus_slider_set_soft(g->lift_b, p->lift[CHANNEL_BLUE] - 1.0f);
     set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
     darktable.gui->reset = 0;
 
@@ -1801,25 +1799,18 @@ static void gamma_neutralize_callback(GtkWidget *button, gpointer user_data)
                                               p->lift[CHANNEL_FACTOR] - 1.0f, \
                                               1.0f / p->gamma[CHANNEL_FACTOR] );
 
-    // Compute the average grey
-    float grey = 0.0;
-    for (int c = 0; c < 3; ++c) grey += RGB[c] / 3.0f;
+    // Compute the luminance of the average grey
+    dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
     // Get the parameter
-    for (int c = 0; c < 3; ++c) RGB[c] = logf(RGB[c]) / logf(grey);
+    for (int c = 0; c < 3; ++c) RGB[c] = logf(RGB[c]) / logf(XYZ[1]);
 
-    // Correct the luminance
-    dt_prophotorgb_to_XYZ(RGB, XYZ);
-    for (int c = 0; c < 3; ++c) RGB[c] = (RGB[c] - XYZ[1]) + 1.0f;
+    p->gamma[CHANNEL_RED] = RGB[0] + 1.0f;
+    p->gamma[CHANNEL_GREEN] = RGB[1] + 1.0f;
+    p->gamma[CHANNEL_BLUE] = RGB[2] + 1.0f;
 
-    p->gamma[CHANNEL_RED] = RGB[0];
-    p->gamma[CHANNEL_GREEN] = RGB[1];
-    p->gamma[CHANNEL_BLUE] = RGB[2];
-
+    normalize_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, p->gamma, CHANNEL_FACTOR,  SLOPE_OFFSET_POWER);
     darktable.gui->reset = 1;
-    dt_bauhaus_slider_set_soft(g->gamma_r, p->gamma[CHANNEL_RED] - 1.0f);
-    dt_bauhaus_slider_set_soft(g->gamma_g, p->gamma[CHANNEL_GREEN] - 1.0f);
-    dt_bauhaus_slider_set_soft(g->gamma_b, p->gamma[CHANNEL_BLUE] - 1.0f);
     set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
     darktable.gui->reset = 0;
 
@@ -1870,25 +1861,18 @@ static void gain_neutralize_callback(GtkWidget *button, gpointer user_data)
                                               p->lift[CHANNEL_FACTOR] - 1.0f, \
                                               1.0f / p->gamma[CHANNEL_FACTOR] );
 
-    // Compute the average grey
-    float grey = 0.0;
-    for (int c = 0; c < 3; ++c) grey += RGB[c] / 3.0f;
+    // Compute the luminance of the average grey
+    dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
     // Get the parameter
-    for (int c = 0; c < 3; ++c) RGB[c] = grey / MAX(RGB[c], 0.000001f);
+    for (int c = 0; c < 3; ++c) RGB[c] = XYZ[1] / MAX(RGB[c], 0.000001f);  
 
-    // Correct the luminance
-    dt_prophotorgb_to_XYZ(RGB, XYZ);
-    for (int c = 0; c < 3; ++c) RGB[c] = (RGB[c] - XYZ[1]) + 1.0f;
+    p->gain[CHANNEL_RED] = RGB[0] + 1.0f;
+    p->gain[CHANNEL_GREEN] = RGB[1] + 1.0f;
+    p->gain[CHANNEL_BLUE] = RGB[2] + 1.0f;
 
-    p->gain[CHANNEL_RED] = RGB[0];
-    p->gain[CHANNEL_GREEN] = RGB[1];
-    p->gain[CHANNEL_BLUE] = RGB[2];
-
+    normalize_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, p->gain, CHANNEL_FACTOR,  SLOPE_OFFSET_POWER);
     darktable.gui->reset = 1;
-    dt_bauhaus_slider_set_soft(g->gain_r, p->gain[CHANNEL_RED] - 1.0f);
-    dt_bauhaus_slider_set_soft(g->gain_g, p->gain[CHANNEL_GREEN] - 1.0f);
-    dt_bauhaus_slider_set_soft(g->gain_b, p->gain[CHANNEL_BLUE] - 1.0f);
     set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
     darktable.gui->reset = 0;
 
@@ -1925,17 +1909,16 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
     samples_gain[c] = CDL(g->color_patches_gain[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
   }
 
-  float XYZ[3] = { 0.f };
-
-  // Get the average patches RGB value (= neutral grey equivalents) after the CDL factors
+  // Get the average patches luma value (= neutral grey equivalents) after the CDL factors
   float greys[3] = { 0.0 };
-
-  for (int c = 0; c < 3; ++c)
-  {
-    greys[0] += samples_lift[c] / 3.0f;
-    greys[1] += samples_gamma[c] / 3.0f;
-    greys[2] += samples_gain[c] / 3.0f;
-  }
+  float XYZ[3] = { 0.0 };
+  dt_prophotorgb_to_XYZ((const float *)samples_lift, (float *)XYZ);
+  greys[0] = XYZ[1];
+  dt_prophotorgb_to_XYZ((const float *)samples_gamma, (float *)XYZ);
+  greys[1] = XYZ[1];
+  dt_prophotorgb_to_XYZ((const float *)samples_gain, (float *)XYZ);
+  greys[2] = XYZ[1];
+  
 
   // Get the current params
   float RGB_lift[3] = { p->lift[CHANNEL_RED] - 1.0f, p->lift[CHANNEL_GREEN] - 1.0f, p->lift[CHANNEL_BLUE] - 1.0f };
@@ -1961,43 +1944,27 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
     // compute RGB offset/lift
     for (int c = 0; c < 3; ++c) RGB_lift[c] = CLAMP(powf(MAX(greys[LIFT], 0.000001f), RGB_gamma[c]) - MAX(samples_lift[c], 0.000001f)  * RGB_gain[c], -0.25f, 0.25f);
     // compute  power/gamma
-    for (int c = 0; c < 3; ++c) RGB_gamma[c] = CLAMP(logf(MAX(RGB_gain[c] * samples_gamma[c] + RGB_lift[c], 0.000001f)) / logf(MAX(greys[GAMMA], 0.000001f)), 0.25f, 1.25f);
+    for (int c = 0; c < 3; ++c) RGB_gamma[c] = CLAMP(logf(MAX(RGB_gain[c] * samples_gamma[c] + RGB_lift[c], 0.000001f)) / logf(MAX(greys[GAMMA], 0.000001f)), 0.50f, 1.50f);
   }
 
-  // correct the luminance on RGB parameters
-  dt_prophotorgb_to_XYZ((const float *)RGB_lift, (float *)XYZ);
-  for (int c = 0; c < 3; ++c) RGB_lift[c] = (RGB_lift[c] - XYZ[1]) + 1.0f;
-  dt_prophotorgb_to_XYZ((const float *)RGB_gamma, (float *)XYZ);
-  for (int c = 0; c < 3; ++c) RGB_gamma[c] = (RGB_gamma[c] - XYZ[1]) + 1.0f;
-  dt_prophotorgb_to_XYZ((const float *)RGB_lift, (float *)XYZ);
-  for (int c = 0; c < 3; ++c) RGB_gain[c] = (RGB_gain[c] - XYZ[1]) + 1.0f;
-
   // save
-  p->lift[CHANNEL_RED] = RGB_lift[0];
-  p->lift[CHANNEL_GREEN] = RGB_lift[1];
-  p->lift[CHANNEL_BLUE] = RGB_lift[2];
-  p->gamma[CHANNEL_RED] = RGB_gamma[0];
-  p->gamma[CHANNEL_GREEN] = RGB_gamma[1];
-  p->gamma[CHANNEL_BLUE] = RGB_gamma[2];
-  p->gain[CHANNEL_RED] = RGB_gain[0];
-  p->gain[CHANNEL_GREEN] = RGB_gain[1];
-  p->gain[CHANNEL_BLUE] = RGB_gain[2];
+  p->lift[CHANNEL_RED] = RGB_lift[0] + 1.0f;
+  p->lift[CHANNEL_GREEN] = RGB_lift[1] + 1.0f;
+  p->lift[CHANNEL_BLUE] = RGB_lift[2] + 1.0f;
+  p->gamma[CHANNEL_RED] = RGB_gamma[0] + 1.0f;
+  p->gamma[CHANNEL_GREEN] = RGB_gamma[1] + 1.0f;
+  p->gamma[CHANNEL_BLUE] = RGB_gamma[2] + 1.0f;
+  p->gain[CHANNEL_RED] = RGB_gain[0] + 1.0f;
+  p->gain[CHANNEL_GREEN] = RGB_gain[1] + 1.0f;
+  p->gain[CHANNEL_BLUE] = RGB_gain[2] + 1.0f;
+  
+  normalize_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, p->lift, CHANNEL_FACTOR, SLOPE_OFFSET_POWER);
+  normalize_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, p->gamma, CHANNEL_FACTOR,  SLOPE_OFFSET_POWER);
+  normalize_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, p->gain, CHANNEL_FACTOR,  SLOPE_OFFSET_POWER);
 
   darktable.gui->reset = 1;
-  dt_bauhaus_slider_set_soft(g->lift_r, p->lift[CHANNEL_RED] - 1.0f);
-  dt_bauhaus_slider_set_soft(g->lift_g, p->lift[CHANNEL_GREEN] - 1.0f);
-  dt_bauhaus_slider_set_soft(g->lift_b, p->lift[CHANNEL_BLUE] - 1.0f);
   set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
-
-  dt_bauhaus_slider_set_soft(g->gamma_r, p->gamma[CHANNEL_RED] - 1.0f);
-  dt_bauhaus_slider_set_soft(g->gamma_g, p->gamma[CHANNEL_GREEN] - 1.0f);
-  dt_bauhaus_slider_set_soft(g->gamma_b, p->gamma[CHANNEL_BLUE] - 1.0f);
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
-
-  dt_bauhaus_slider_set_soft(g->gain_r, p->gain[CHANNEL_RED] - 1.0f);
-  dt_bauhaus_slider_set_soft(g->gain_g, p->gain[CHANNEL_GREEN] - 1.0f);
-  dt_bauhaus_slider_set_soft(g->gain_b, p->gain[CHANNEL_BLUE] - 1.0f);
-  set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
   darktable.gui->reset = 0;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
