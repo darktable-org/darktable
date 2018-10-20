@@ -211,7 +211,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
   const int ch = piece->colors;
-  
+
  // these are RGB values!
     const float gamma[3] = { d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
                              d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
@@ -224,11 +224,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                             d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR] },
                 contrast = (d->contrast != 0.0f) ? 1.0f / d->contrast : 1000000.0f,
                 grey = d->grey / 100.0f;
-           
+
   // For neutral parameters, skip the computations doing x^1 or (x-a)*1 + a to save time
   const int run_contrast = (d->contrast == 1.0f) ? 0 : 1;
   const int run_saturation = (d->saturation == 1.0f) ? 0: 1;
-  
+
   switch (d->mode)
   {
     case LEGACY:
@@ -311,10 +311,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           {
             // main saturation
             if (run_saturation) rgb[c] = luma + d->saturation * (rgb[c] - luma);
-            
+
             // RGB gamma correction
             rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c], 1.0f/2.2f);
-            
+
             // lift gamma gain
             rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
             rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c], gamma_inv[c] * 2.2f);
@@ -424,7 +424,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const __m128 saturation = _mm_setr_ps(d->saturation, d->saturation, d->saturation, 0.0f);
   const __m128 zero = _mm_setzero_ps();
   const __m128 one = _mm_set1_ps(1.0);
-  
+
   // For neutral parameters, skip the computations doing x^1 or (x-a)*1 + a to save time
   const int run_contrast = (d->contrast == 1.0f) ? 0 : 1;
   const int run_saturation = (d->saturation == 1.0f) ? 0: 1;
@@ -454,12 +454,12 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           // XYZ -> sRGB
           __m128 rgb = dt_XYZ_to_sRGB_sse2(XYZ);
 
-          // do the calculation in RGB space 
+          // do the calculation in RGB space
           // regular lift gamma gain
           rgb = ((rgb - one) * lift + one) * gain;
           rgb = _mm_max_ps(rgb, zero);
           rgb = _mm_pow_ps(rgb, gamma_inv);
-          
+
           // transform the result back to Lab
           // sRGB -> XYZ
           XYZ = dt_sRGB_to_XYZ_sse2(rgb);
@@ -470,7 +470,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
       break;
     }
-    
+
     case LIFT_GAMMA_GAIN:
     {
       // these are RGB values!
@@ -478,7 +478,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                       2.0 - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
                                       2.0 - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]),
                                       0.0f);
-                                      
+
       const __m128 gamma_RGB = _mm_set1_ps(2.2f);
       const __m128 gamma_inv_RGB = _mm_set1_ps(1.0f/2.2f);
 
@@ -505,10 +505,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             __m128 luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
             rgb = luma + saturation * (rgb - luma);
           }
-          
+
           // RGB gamma adjustement
           rgb = _mm_pow_ps(_mm_max_ps(rgb, zero), gamma_inv_RGB);
-          
+
           // regular lift gamma gain
           rgb = ((rgb - one) * lift + one) * gain;
           rgb = _mm_max_ps(rgb, zero);
@@ -520,7 +520,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             rgb = _mm_max_ps(rgb, zero);
             rgb = _mm_pow_ps(rgb / grey, contrast) * grey;
           }
-          
+
           // transform the result back to Lab
           // sRGB -> XYZ
           XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
@@ -561,7 +561,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             __m128 luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
             rgb = luma + saturation * (rgb - luma);
           }
-          
+
           // slope offset
           rgb = rgb * gain + lift;
 
@@ -770,37 +770,37 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)(piece->data);
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)p1;
-  
+
   d->mode = p->mode;
-  
+
   switch ( d->mode )
   {
     case SLOPE_OFFSET_POWER:
     {
       // Correct the luminance in RGB parameters so we don't affect it
       float XYZ[3];
-      
+
       dt_prophotorgb_to_XYZ((const float *)&p->lift[CHANNEL_RED], XYZ);
       d->lift[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR];
       d->lift[CHANNEL_RED] = (p->lift[CHANNEL_RED] - XYZ[1]) * 2.0f + 1.f;
       d->lift[CHANNEL_GREEN] = (p->lift[CHANNEL_GREEN] - XYZ[1]) * 2.0f + 1.f;
       d->lift[CHANNEL_BLUE] = (p->lift[CHANNEL_BLUE] - XYZ[1]) * 2.0f + 1.f;
-      
+
       dt_prophotorgb_to_XYZ((const float *)&p->gamma[CHANNEL_RED], XYZ);
       d->gamma[CHANNEL_FACTOR] = p->gamma[CHANNEL_FACTOR];
       d->gamma[CHANNEL_RED] = (p->gamma[CHANNEL_RED] - XYZ[1]) * 2.0f + 1.f;
       d->gamma[CHANNEL_GREEN] = (p->gamma[CHANNEL_GREEN] - XYZ[1]) * 2.0f + 1.f;
       d->gamma[CHANNEL_BLUE] = (p->gamma[CHANNEL_BLUE] - XYZ[1]) * 2.0f + 1.f;
-      
+
       dt_prophotorgb_to_XYZ((const float *)&p->gain[CHANNEL_RED], XYZ);
       d->gain[CHANNEL_FACTOR] = p->gain[CHANNEL_FACTOR];
       d->gain[CHANNEL_RED] = (p->gain[CHANNEL_RED] - XYZ[1]) * 2.0f + 1.f;
       d->gain[CHANNEL_GREEN] = (p->gain[CHANNEL_GREEN] - XYZ[1]) * 2.0f + 1.f;
       d->gain[CHANNEL_BLUE] = (p->gain[CHANNEL_BLUE] - XYZ[1]) * 2.0f + 1.f;
-      
+
       break;
     }
-    
+
     case LEGACY:
     {
       // Luminance is not corrected in lift/gamma/gain for compatibility
@@ -810,10 +810,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
         d->gamma[i] = p->gamma[i];
         d->gain[i] = p->gain[i];
       }
-      
+
       break;
     }
-    
+
     case LIFT_GAMMA_GAIN:
     {
       // Divide the parameters by 2.2 to match the correction we got in legacy sRGB mode
@@ -822,20 +822,20 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       d->lift[CHANNEL_RED] = (p->lift[CHANNEL_RED] - 1.0f) / 2.2f + 1.f;
       d->lift[CHANNEL_GREEN] = (p->lift[CHANNEL_GREEN] - 1.0f) / 2.2f + 1.f;
       d->lift[CHANNEL_BLUE] = (p->lift[CHANNEL_BLUE] - 1.0f) / 2.2f + 1.f;
-      
+
       d->gamma[CHANNEL_FACTOR] = p->gamma[CHANNEL_FACTOR];
       d->gamma[CHANNEL_RED] = (p->gamma[CHANNEL_RED] - 1.0f) / 2.2f + 1.f;
       d->gamma[CHANNEL_GREEN] = (p->gamma[CHANNEL_GREEN] - 1.0f) / 2.2f + 1.f;
       d->gamma[CHANNEL_BLUE] = (p->gamma[CHANNEL_BLUE] - 1.0f) / 2.2f + 1.f;
-      
+
       d->gain[CHANNEL_FACTOR] = p->gain[CHANNEL_FACTOR];
       d->gain[CHANNEL_RED] = (p->gain[CHANNEL_RED] - 1.0f) / 2.2f + 1.f;
       d->gain[CHANNEL_GREEN] = (p->gain[CHANNEL_GREEN] - 1.0f) / 2.2f + 1.f;
       d->gain[CHANNEL_BLUE] = (p->gain[CHANNEL_BLUE] - 1.0f) / 2.2f + 1.f;
-      
+
       break;
     }
-    
+
   }
 
 
@@ -949,7 +949,7 @@ static inline void normalize_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *
       break;
     }
   }
- 
+
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(R, p[CHANNEL_RED] - 1.0f);
   dt_bauhaus_slider_set_soft(G, p[CHANNEL_GREEN] - 1.0f);
@@ -2219,7 +2219,7 @@ void gui_init(dt_iop_module_t *self)
   // master
   g->master_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->master_box), TRUE, TRUE, 0);
-  
+
   gtk_box_pack_start(GTK_BOX(g->master_box), dt_ui_section_label_new(_("master")), FALSE, FALSE, 2);
 
   g->saturation = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005, p->saturation - 1.0f, 4, 0);
