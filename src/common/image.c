@@ -546,6 +546,9 @@ void dt_image_set_aspect_ratio(const int32_t imgid)
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
     }
+
+    if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
   }
 }
 
