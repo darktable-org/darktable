@@ -349,9 +349,8 @@ static void apply_auto_grey(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
-  float XYZ[3];
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color, XYZ);
-  p->grey_point = 100.f * XYZ[1];
+  float grey = fmax(fmax(self->picked_color[0], self->picked_color[1]), self->picked_color[2]);
+  p->grey_point = 100.f * grey;
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->grey_point, p->grey_point);
@@ -367,11 +366,10 @@ static void apply_auto_black(dt_iop_module_t *self)
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
   float noise = powf(2.0f, -16.0f);
-  float XYZ[3];
 
   // Black
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color, XYZ);
-  float EVmin = Log2Thres(XYZ[1] / (p->grey_point / 100.0f), noise);
+  float black = fmax(fmax(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
+  float EVmin = Log2Thres(black / (p->grey_point / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
   EVmin -= 0.0230f * p->dynamic_range;
 
@@ -391,18 +389,17 @@ static void apply_auto_dynamic_range(dt_iop_module_t *self)
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
   float noise = powf(2.0f, -16.0f);
-  float XYZ[3];
 
   // Black
   float EVmin = p->shadows_range;
 
-  // Dynamic range
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color_max, XYZ);
-  float EVmax = Log2Thres(XYZ[1] / (p->grey_point / 100.0f), noise);
+  // White
+  float white = fmax(fmax(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
+  float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
   /*
-    Remap the black point to Y = 2.30 % and the white point to Y = 90.00 %
+    Remap the black point to RGB = 2.30 % and the white point to RGB = 90.00 %
     to match the patches values from the color charts used to produce ICC profiles
   */
   float dynamic_range = (EVmax - EVmin) / (0.9000f - 0.0230f);
@@ -485,20 +482,19 @@ static void optimize_button_pressed_callback(GtkWidget *button, gpointer user_da
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
   float noise = powf(2.0f, -16.0f);
-  float XYZ[3];
 
   // Grey
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color, XYZ);
-  p->grey_point = 100.f * XYZ[1];
+  float grey = fmax(fmax(self->picked_color[0], self->picked_color[1]), self->picked_color[2]);
+  p->grey_point = 100.f * grey;
 
   // Black
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color_min, XYZ);
-  float EVmin = Log2Thres(XYZ[1] / (p->grey_point / 100.0f), noise);
+  float black = fmax(fmax(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
+  float EVmin = Log2Thres(black / (p->grey_point / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
-  // Dynamic range
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color_max, XYZ);
-  float EVmax = Log2Thres(XYZ[1] / (p->grey_point / 100.0f), noise);
+  // White
+  float white = fmax(fmax(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
+  float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
   /*
@@ -521,7 +517,6 @@ static void optimize_button_pressed_callback(GtkWidget *button, gpointer user_da
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-
 }
 
 
