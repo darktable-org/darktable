@@ -367,6 +367,7 @@ void dt_history_delete_on_selection()
   {
     int imgid = sqlite3_column_int(stmt, 0);
     dt_history_delete_on_image(imgid);
+    dt_image_set_aspect_ratio(imgid);
   }
   sqlite3_finalize(stmt);
 }
@@ -576,7 +577,7 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   dt_image_synch_xmp(dest_imgid);
 
   dt_mipmap_cache_remove(darktable.mipmap_cache, dest_imgid);
-
+  dt_image_set_aspect_ratio(dest_imgid);
   return 0;
 }
 

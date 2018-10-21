@@ -1820,9 +1820,6 @@ void leave(dt_view_t *self)
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
-  // update possibly changed aspect ratio
-  dt_image_set_aspect_ratio(dev->image_storage.id);
-
   // tag image as changed
   // TODO: only tag the image when there was a real change.
   guint tagid = 0;
@@ -1839,6 +1836,9 @@ void leave(dt_view_t *self)
     // dump new xmp data
     dt_image_synch_xmp(dev->image_storage.id);
   }
+
+  // update possibly changed aspect ratio
+  dt_image_set_aspect_ratio(dev->image_storage.id);
 
   // clear gui.
 
