@@ -44,7 +44,8 @@ typedef enum dt_iop_profilegamma_mode_t
   PROFILEGAMMA_GAMMA = 1
 } dt_iop_profilegamma_mode_t;
 
-typedef enum dt_iop_profilegamma_pickcolor_type_t {
+typedef enum dt_iop_profilegamma_pickcolor_type_t
+{
   DT_PICKPROFLOG_NONE = 0,
   DT_PICKPROFLOG_GREY_POINT = 1,
   DT_PICKPROFLOG_SHADOWS_RANGE = 2,
