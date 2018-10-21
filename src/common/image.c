@@ -544,6 +544,7 @@ void dt_image_set_aspect_ratio(const int32_t imgid)
       DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, aspect_ratio);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
       sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
     }
   }
 }
