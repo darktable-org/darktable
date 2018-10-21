@@ -683,3 +683,8 @@ cell:selected
   /* insensitive */
   color: black;
 }
+
+#darkroom_tools
+{
+    background-color: #9A4847;
+}

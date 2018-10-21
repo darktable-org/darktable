@@ -1429,6 +1429,7 @@ void gui_init(dt_view_t *self)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(dev->rawoverexposed.button,
                                 _("toggle raw over exposed indication\nright click for options"));
+    gtk_widget_set_name(GTK_WIDGET(dev->rawoverexposed.button), "darkroom_tools");
     g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "clicked",
                      G_CALLBACK(_rawoverexposed_quickbutton_clicked), dev);
     g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "button-press-event",
@@ -1497,6 +1498,7 @@ void gui_init(dt_view_t *self)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(dev->overexposed.button,
                                 _("toggle over/under exposed indication\nright click for options"));
+    gtk_widget_set_name(GTK_WIDGET(dev->overexposed.button), "darkroom_tools");
     g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
                      G_CALLBACK(_overexposed_quickbutton_clicked), dev);
     g_signal_connect(G_OBJECT(dev->overexposed.button), "button-press-event",
@@ -1559,6 +1561,7 @@ void gui_init(dt_view_t *self)
     = dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(dev->profile.softproof_button,
                                 _("toggle softproofing\nright click for profile options"));
+    gtk_widget_set_name(GTK_WIDGET(dev->profile.softproof_button), "darkroom_tools");
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
                      G_CALLBACK(_softproof_quickbutton_clicked), dev);
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "button-press-event",
@@ -1572,6 +1575,7 @@ void gui_init(dt_view_t *self)
     = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(dev->profile.gamut_button,
                  _("toggle gamut checking\nright click for profile options"));
+    gtk_widget_set_name(GTK_WIDGET(dev->profile.gamut_button), "darkroom_tools");
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
                      G_CALLBACK(_gamut_quickbutton_clicked), dev);
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "button-press-event",
