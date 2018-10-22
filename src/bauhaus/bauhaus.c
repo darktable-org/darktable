@@ -1212,12 +1212,8 @@ static void dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
   {
     const float font_size = get_label_font_size();
     cairo_save(cr);
-    if(sensitive)
-      set_color(cr, darktable.bauhaus->color_border);
-    else
-      set_color(cr, darktable.bauhaus->color_bg);
-    w->quad_paint(cr, width - height - 1, -1, height + 2, font_size + 2, w->quad_paint_flags, w->quad_paint_data);
-    if(sensitive)
+
+    if(sensitive && (w->quad_paint_flags & CPF_ACTIVE))
       set_color(cr, darktable.bauhaus->color_fg);
     else
       set_color(cr, darktable.bauhaus->color_fg_insensitive);
@@ -1912,6 +1908,13 @@ static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButt
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   if(w->quad_paint && (event->x > allocation.width - allocation.height))
   {
+    if (w->quad_toggle)
+    {
+      if (w->quad_paint_flags & CPF_ACTIVE)
+        w->quad_paint_flags &= ~CPF_ACTIVE;
+      else
+        w->quad_paint_flags |= CPF_ACTIVE;
+    }
     g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
     return TRUE;
   }
@@ -2224,6 +2227,13 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   if(w->quad_paint && (event->x > allocation.width - allocation.height))
   {
+    if (w->quad_toggle)
+    {
+      if (w->quad_paint_flags & CPF_ACTIVE)
+        w->quad_paint_flags &= ~CPF_ACTIVE;
+      else
+        w->quad_paint_flags |= CPF_ACTIVE;
+    }
     g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
     return TRUE;
   }
