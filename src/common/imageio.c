@@ -941,14 +941,14 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     lua_pushstring(L, filename);
 
     luaA_push_type(L, format->parameter_lua_type, format_params);
- 
+
     if (storage)
       luaA_push_type(L, storage->parameter_lua_type, storage_params);
     else
       lua_pushnil(L);
 
     dt_lua_event_trigger(L, "intermediate-export-image", 4);
-  
+
     dt_lua_unlock();
 #endif
 
@@ -1009,7 +1009,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   /* silly check using file extensions: */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL && dt_imageio_is_hdr(filename))
     ret = dt_imageio_open_hdr(img, filename, buf);
-  
+
   /* use rawspeed to load the raw */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
   {
