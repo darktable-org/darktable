@@ -172,7 +172,7 @@ void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe, dt_colorspaces_color_pro
 {
   pipe->icc_type = icc_type;
   g_free(pipe->icc_filename);
-  pipe->icc_filename = g_strdup(icc_filename);
+  pipe->icc_filename = g_strdup(icc_filename?icc_filename:"");
   pipe->icc_intent = icc_intent;
 }
 

@@ -907,7 +907,8 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
       float amount = 1.03f;
       if(up) amount = 0.97f;
       guint nb = g_list_length(form->points);
-      if(gui->border_selected || (state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+      // resize don't care where the mouse is inside a shape
+      if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
         // do not exceed upper limit of 1.0
         for(int k = 0; k < nb; k++)
@@ -924,13 +925,13 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         {
           float masks_border = dt_conf_get_float("plugins/darkroom/spots/path_border");
-          masks_border = MAX(0.005f, MIN(masks_border * amount, 0.5f));
+          masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
           dt_conf_set_float("plugins/darkroom/spots/path_border", masks_border);
         }
         else
         {
           float masks_border = dt_conf_get_float("plugins/darkroom/masks/path/border");
-          masks_border = MAX(0.005f, MIN(masks_border * amount, 0.5f));
+          masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
           dt_conf_set_float("plugins/darkroom/masks/path/border", masks_border);
         }
       }
@@ -1019,7 +1020,9 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
   else
     masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/path/border"), 0.5f);
 
-  if(gui->creation && which == 1 && (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
+  if(gui->creation && which == 1 && g_list_length(form->points) == 0
+     && (((state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+         || ((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)))
   {
     // set some absolute or relative position for the source of the clone mask
     if(form->type & DT_MASKS_CLONE) dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
@@ -1124,7 +1127,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       bzpt->ctrl1[0] = bzpt->ctrl1[1] = bzpt->ctrl2[0] = bzpt->ctrl2[1] = -1.0;
       bzpt->state = DT_MASKS_POINT_STATE_NORMAL;
 
-      bzpt->border[0] = bzpt->border[1] = MAX(0.005f, masks_border);
+      bzpt->border[0] = bzpt->border[1] = MAX(0.0005f, masks_border);
 
       // if that's the first point we should had another one as base point
       if(nb == 0)
@@ -1133,7 +1136,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
         bzpt2->corner[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
         bzpt2->corner[1] = pts[1] / darktable.develop->preview_pipe->iheight;
         bzpt2->ctrl1[0] = bzpt2->ctrl1[1] = bzpt2->ctrl2[0] = bzpt2->ctrl2[1] = -1.0;
-        bzpt2->border[0] = bzpt2->border[1] = MAX(0.005f, masks_border);
+        bzpt2->border[0] = bzpt2->border[1] = MAX(0.0005f, masks_border);
         bzpt2->state = DT_MASKS_POINT_STATE_NORMAL;
         form->points = g_list_append(form->points, bzpt2);
 
@@ -1264,8 +1267,8 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
         int right_index = gui->seg_selected == max_index ? 0 : gui->seg_selected + 1;
         dt_masks_point_path_t *left = (dt_masks_point_path_t *)g_list_nth_data(form->points, left_index);
         dt_masks_point_path_t *right = (dt_masks_point_path_t *)g_list_nth_data(form->points, right_index);
-        bzpt->border[0] = MAX(0.005f, (left->border[0] + right->border[0]) * 0.5);
-        bzpt->border[1] = MAX(0.005f, (left->border[1] + right->border[1]) * 0.5);
+        bzpt->border[0] = MAX(0.0005f, (left->border[0] + right->border[0]) * 0.5);
+        bzpt->border[1] = MAX(0.0005f, (left->border[1] + right->border[1]) * 0.5);
 
         form->points = g_list_insert(form->points, bzpt, gui->seg_selected + 1);
         _path_init_ctrl_points(form);

@@ -407,7 +407,7 @@ void init(dt_view_t *self)
     lib->map = g_object_new(OSM_TYPE_GPS_MAP, "map-source", OSM_GPS_MAP_SOURCE_NULL, "proxy-uri",
                             g_getenv("http_proxy"), NULL);
 
-    GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
+    GtkWidget *parent = gtk_widget_get_parent(gtk_widget_get_parent(dt_ui_center(darktable.gui->ui)));
     gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map), TRUE, TRUE, 0);
 
     lib->osd = g_object_new(OSM_TYPE_GPS_MAP_OSD, "show-scale", TRUE, "show-coordinates", TRUE, "show-dpad",
@@ -791,8 +791,8 @@ void enter(dt_view_t *self)
   _view_map_set_map_source_g_object(self, lib->map_source);
 
   /* replace center widget */
-  GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
-  gtk_widget_hide(dt_ui_center(darktable.gui->ui));
+  GtkWidget *parent = gtk_widget_get_parent(gtk_widget_get_parent(dt_ui_center(darktable.gui->ui)));
+  gtk_widget_hide(gtk_widget_get_parent(dt_ui_center(darktable.gui->ui)));
 
   gtk_box_reorder_child(GTK_BOX(parent), GTK_WIDGET(lib->map), 2);
 
@@ -839,7 +839,7 @@ void leave(dt_view_t *self)
   dt_map_t *lib = (dt_map_t *)self->data;
 
   gtk_widget_hide(GTK_WIDGET(lib->map));
-  gtk_widget_show_all(dt_ui_center(darktable.gui->ui));
+  gtk_widget_show_all(gtk_widget_get_parent(dt_ui_center(darktable.gui->ui)));
 
   /* reset proxy */
   darktable.view_manager->proxy.map.view = NULL;

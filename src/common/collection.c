@@ -62,6 +62,8 @@ static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpo
 
 /* determine image offset of specified imgid for the given collection */
 static int dt_collection_image_offset_with_collection(const dt_collection_t *collection, int imgid);
+/* update aspect ratio for the selected images */
+static void _collection_update_aspect_ratio(const dt_collection_t *collection);
 
 const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
 {
@@ -212,6 +214,8 @@ int dt_collection_update(const dt_collection_t *collection)
   ((dt_collection_t *)collection)->count = _dt_collection_compute_count(collection);
   dt_collection_hint_message(collection);
 
+  _collection_update_aspect_ratio(collection);
+
   return result;
 }
 
@@ -334,12 +338,51 @@ dt_collection_rating_comperator_t dt_collection_get_rating_comparator(const dt_c
   return collection->params.comparator;
 }
 
+static void _collection_update_aspect_ratio(const dt_collection_t *collection)
+{
+  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
+
+  //  Update the aspect ratio for selected images in the collection if needed, we do not do this for all
+  //  images as it could take a long time. The aspect ratio is then updated when needed, and at some
+  //  point all aspect ratio for all images will be set and this could won't be really needed.
+
+  if (params->sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+  {
+    const float MAX_TIME = 5.0;
+    const gchar *where_ext = dt_collection_get_extended_where(collection, -1);
+    gchar *query = NULL;
+    sqlite3_stmt *stmt = NULL;
+
+    query = dt_util_dstrcat
+      (query, "SELECT id FROM main.images WHERE %s AND (aspect_ratio=0.0 OR aspect_ratio IS NULL)", where_ext);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+
+    double start = dt_get_wtime();
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const int imgid = sqlite3_column_int(stmt, 0);
+      dt_image_set_aspect_ratio(imgid);
+
+      if(dt_get_wtime() - start > MAX_TIME)
+      {
+        dt_control_log(_("too much time to update aspect ratio for the collection"));
+        break;
+      }
+    }
+    sqlite3_finalize(stmt);
+    g_free(query);
+  }
+}
+
 void dt_collection_set_sort(const dt_collection_t *collection, dt_collection_sort_t sort, gboolean reverse)
 {
   dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
 
   if(sort != DT_COLLECTION_SORT_NONE) params->sort = sort;
   if(reverse != -1) params->descending = reverse;
+
+  _collection_update_aspect_ratio(collection);
 }
 
 dt_collection_sort_t dt_collection_get_sort_field(const dt_collection_t *collection)
@@ -400,6 +443,10 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "description DESC, filename DESC, version DESC");
         break;
 
+      case DT_COLLECTION_SORT_ASPECT_RATIO:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "aspect_ratio DESC, filename DESC, version DESC");
+        break;
+
       case DT_COLLECTION_SORT_NONE:
         // shouldn't happen
         break;
@@ -447,6 +494,10 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 
       case DT_COLLECTION_SORT_DESCRIPTION:
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "description, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_ASPECT_RATIO:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "aspect_ratio, filename, version");
         break;
 
       case DT_COLLECTION_SORT_NONE:
@@ -915,6 +966,29 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
                               (strcmp(escaped_text, _("not copied locally")) == 0) ? "not" : "",
                               DT_IMAGE_LOCAL_COPY);
       break;
+
+    case DT_COLLECTION_PROP_ASPECT_RATIO: // aspect ratio
+    {
+      gchar *operator, *number1, *number2;
+      dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
+
+      if(operator&& strcmp(operator, "[]") == 0)
+      {
+        if(number1 && number2)
+          query = dt_util_dstrcat(query, "((aspect_ratio >= %s) AND (aspect_ratio <= %s))", number1, number2);
+      }
+      else if(operator&& number1)
+        query = dt_util_dstrcat(query, "(aspect_ratio %s %s)", operator, number1);
+      else if(number1)
+        query = dt_util_dstrcat(query, "(aspect_ratio = %s)", number1);
+      else
+        query = dt_util_dstrcat(query, "(aspect_ratio LIKE '%%%s%%')", escaped_text);
+
+      g_free(operator);
+      g_free(number1);
+      g_free(number2);
+    }
+    break;
 
     case DT_COLLECTION_PROP_CAMERA: // camera
       // Start query with a false statement to avoid special casing the first condition
@@ -1389,7 +1463,7 @@ void dt_collection_shift_image_positions(const unsigned int length, const int64_
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), update_image_pos_query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, length);
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 2, image_position);
-  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 3, (image_position & 0xFFFFFFFF00000000) + (1l << 32));
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 3, (image_position & 0xFFFFFFFF00000000) + (1ll << 32));
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
