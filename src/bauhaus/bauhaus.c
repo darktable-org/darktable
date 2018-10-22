@@ -827,6 +827,15 @@ void dt_bauhaus_widget_set_quad_toggle(GtkWidget *widget, int toggle)
   w->quad_toggle = toggle;
 }
 
+void dt_bauhaus_widget_set_quad_active(GtkWidget *widget, int active)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if (active)
+    w->quad_paint_flags |= CPF_ACTIVE;
+  else
+    w->quad_paint_flags &= ~CPF_ACTIVE;
+}
+
 static float _default_linear_callback(GtkWidget *self, float value, dt_bauhaus_callback_t dir)
 {
   // regardless of dir: input <-> output
