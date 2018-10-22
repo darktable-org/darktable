@@ -954,7 +954,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->grey_point, "%.2f %%");
   gtk_widget_set_tooltip_text(g->grey_point, _("adjust to match the average luma of the subject"));
   g_signal_connect(G_OBJECT(g->grey_point), "value-changed", G_CALLBACK(grey_point_callback), self);
-  dt_bauhaus_widget_set_quad_paint(g->grey_point, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
+  dt_bauhaus_widget_set_quad_paint(g->grey_point, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->grey_point, TRUE);
   g_signal_connect(G_OBJECT(g->grey_point), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 
   // Shadows range slider
@@ -965,7 +966,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->shadows_range, "%.2f EV");
   gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between middle grey and pure black\nthis is a reading a posemeter would give you on the scene"));
   g_signal_connect(G_OBJECT(g->shadows_range), "value-changed", G_CALLBACK(shadows_range_callback), self);
-  dt_bauhaus_widget_set_quad_paint(g->shadows_range, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
+  dt_bauhaus_widget_set_quad_paint(g->shadows_range, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->shadows_range, TRUE);
   g_signal_connect(G_OBJECT(g->shadows_range), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 
   // Dynamic range slider
@@ -976,7 +978,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->dynamic_range, "%.2f EV");
   gtk_widget_set_tooltip_text(g->dynamic_range, _("number of stops between pure black and pure white\nthis is a reading a posemeter would give you on the scene"));
   g_signal_connect(G_OBJECT(g->dynamic_range), "value-changed", G_CALLBACK(dynamic_range_callback), self);
-  dt_bauhaus_widget_set_quad_paint(g->dynamic_range, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
+  dt_bauhaus_widget_set_quad_paint(g->dynamic_range, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->dynamic_range, TRUE);
   g_signal_connect(G_OBJECT(g->dynamic_range), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 
   // Auto tune slider
