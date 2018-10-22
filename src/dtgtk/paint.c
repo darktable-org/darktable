@@ -278,8 +278,6 @@ void dtgtk_cairo_paint_switch(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
   cairo_scale(cr, s, s);
 
-  if(!(flags & CPF_ACTIVE)) cairo_set_source_rgba(cr, 1, 1, 1, 0.2);
-
   cairo_set_line_width(cr, 0.125);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
   cairo_arc(cr, 0.5, 0.5, 0.45, (-50 * 3.145 / 180), (230 * 3.145 / 180));
@@ -289,7 +287,6 @@ void dtgtk_cairo_paint_switch(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
 
   if((flags & CPF_ACTIVE)) // If active add some green diffuse light
   {
-    cairo_set_source_rgba(cr, 1, 1, 1, 0.2);
     cairo_set_line_width(cr, 0.25);
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
     cairo_arc(cr, 0.5, 0.5, 0.45, (-50 * 3.145 / 180), (230 * 3.145 / 180));
@@ -379,11 +376,6 @@ void dtgtk_cairo_paint_masks_eye(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   cairo_scale(cr, s, s);
   cairo_set_line_width(cr, 0.15);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-
-  if((flags & CPF_ACTIVE))
-    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
-  else
-    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
 
   double dashed[] = { 0.2, 0.2 };
   int len = sizeof(dashed) / sizeof(dashed[0]);
@@ -966,9 +958,6 @@ void dtgtk_cairo_paint_colorpicker(cairo_t *cr, gint x, gint y, gint w, gint h, 
   /* draw pipette */
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-
-  if((flags & CPF_ACTIVE)) cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
-
 
   // drop
   cairo_set_line_width(cr, 0.15);
