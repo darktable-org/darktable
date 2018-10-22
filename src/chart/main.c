@@ -548,7 +548,7 @@ static void print_xml_plugin(FILE *fd, int num, int op_version, const char *oper
   fprintf(fd, "    <blendop_params>gz12eJxjYGBgkGAAgRNODESDBnsIHll8ANNSGQM=</blendop_params>\n");
   fprintf(fd, "    <blendop_version>7</blendop_version>\n");
   fprintf(fd, "    <multi_priority>0</multi_priority>\n");
-  fprintf(fd, "    <multi_name> </multi_name>\n");
+  fprintf(fd, "    <multi_name></multi_name>\n");
   fprintf(fd, "  </plugin>\n");
 }
 

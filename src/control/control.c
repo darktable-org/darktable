@@ -176,7 +176,7 @@ void dt_control_cleanup(dt_control_t *s)
 
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
-  darktable.control->tabborder = 8;
+  darktable.control->tabborder = 2;
   const int tb = darktable.control->tabborder;
   // re-configure all components:
   dt_view_manager_configure(darktable.view_manager, event->width - 2 * tb, event->height - 2 * tb);
@@ -214,7 +214,7 @@ void *dt_control_expose(void *voidptr)
 
   // TODO: control_expose: only redraw the part not overlapped by temporary control panel show!
   //
-  float tb = 8; // fmaxf(10, width/100.0);
+  float tb = 2; // fmaxf(10, width/100.0);
   darktable.control->tabborder = tb;
   darktable.control->width = width;
   darktable.control->height = height;
