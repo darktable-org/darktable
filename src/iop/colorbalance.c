@@ -1746,7 +1746,7 @@ static void lift_neutralize_callback(GtkWidget *button, gpointer user_data)
     p->lift[CHANNEL_RED] = RGB[0] + 1.0f;
     p->lift[CHANNEL_GREEN] = RGB[1] + 1.0f;
     p->lift[CHANNEL_BLUE] = RGB[2] + 1.0f;
-    
+
     normalize_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, p->lift, CHANNEL_FACTOR,  SLOPE_OFFSET_POWER);
     darktable.gui->reset = 1;
     set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
@@ -1865,7 +1865,7 @@ static void gain_neutralize_callback(GtkWidget *button, gpointer user_data)
     dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
     // Get the parameter
-    for (int c = 0; c < 3; ++c) RGB[c] = XYZ[1] / MAX(RGB[c], 0.000001f);  
+    for (int c = 0; c < 3; ++c) RGB[c] = XYZ[1] / MAX(RGB[c], 0.000001f);
 
     p->gain[CHANNEL_RED] = RGB[0] + 1.0f;
     p->gain[CHANNEL_GREEN] = RGB[1] + 1.0f;
@@ -1918,7 +1918,7 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
   greys[1] = XYZ[1];
   dt_prophotorgb_to_XYZ((const float *)samples_gain, (float *)XYZ);
   greys[2] = XYZ[1];
-  
+
 
   // Get the current params
   float RGB_lift[3] = { p->lift[CHANNEL_RED] - 1.0f, p->lift[CHANNEL_GREEN] - 1.0f, p->lift[CHANNEL_BLUE] - 1.0f };
@@ -1957,7 +1957,7 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
   p->gain[CHANNEL_RED] = RGB_gain[0] + 1.0f;
   p->gain[CHANNEL_GREEN] = RGB_gain[1] + 1.0f;
   p->gain[CHANNEL_BLUE] = RGB_gain[2] + 1.0f;
-  
+
   normalize_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, p->lift, CHANNEL_FACTOR, SLOPE_OFFSET_POWER);
   normalize_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, p->gamma, CHANNEL_FACTOR,  SLOPE_OFFSET_POWER);
   normalize_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, p->gain, CHANNEL_FACTOR,  SLOPE_OFFSET_POWER);
