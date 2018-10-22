@@ -610,29 +610,9 @@ static int get_colorpick_from_button(GtkWidget *button, dt_iop_profilegamma_gui_
 
 static void set_colorpick_state(dt_iop_profilegamma_gui_data_t *g, const int which_colorpicker)
 {
-  switch(which_colorpicker)
-  {
-    case DT_PICKPROFLOG_GREY_POINT:
-      dt_bauhaus_widget_set_quad_paint(g->grey_point, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
-      dt_bauhaus_widget_set_quad_paint(g->shadows_range, dtgtk_cairo_paint_colorpicker, CPF_NONE, NULL);
-      dt_bauhaus_widget_set_quad_paint(g->dynamic_range, dtgtk_cairo_paint_colorpicker, CPF_NONE, NULL);
-      break;
-    case DT_PICKPROFLOG_SHADOWS_RANGE:
-      dt_bauhaus_widget_set_quad_paint(g->grey_point, dtgtk_cairo_paint_colorpicker, CPF_NONE, NULL);
-      dt_bauhaus_widget_set_quad_paint(g->shadows_range, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
-      dt_bauhaus_widget_set_quad_paint(g->dynamic_range, dtgtk_cairo_paint_colorpicker, CPF_NONE, NULL);
-      break;
-    case DT_PICKPROFLOG_DYNAMIC_RANGE:
-      dt_bauhaus_widget_set_quad_paint(g->grey_point, dtgtk_cairo_paint_colorpicker, CPF_NONE, NULL);
-      dt_bauhaus_widget_set_quad_paint(g->shadows_range, dtgtk_cairo_paint_colorpicker, CPF_NONE, NULL);
-      dt_bauhaus_widget_set_quad_paint(g->dynamic_range, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
-      break;
-    default:
-      dt_bauhaus_widget_set_quad_paint(g->grey_point, dtgtk_cairo_paint_colorpicker, CPF_NONE, NULL);
-      dt_bauhaus_widget_set_quad_paint(g->shadows_range, dtgtk_cairo_paint_colorpicker, CPF_NONE, NULL);
-      dt_bauhaus_widget_set_quad_paint(g->dynamic_range, dtgtk_cairo_paint_colorpicker, CPF_NONE, NULL);
-      break;
-  }
+  dt_bauhaus_widget_set_quad_active(g->grey_point, which_colorpicker == DT_PICKPROFLOG_GREY_POINT);
+  dt_bauhaus_widget_set_quad_active(g->shadows_range, which_colorpicker == DT_PICKPROFLOG_SHADOWS_RANGE);
+  dt_bauhaus_widget_set_quad_active(g->dynamic_range, which_colorpicker == DT_PICKPROFLOG_DYNAMIC_RANGE);
 }
 
 static void color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
