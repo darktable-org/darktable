@@ -1202,15 +1202,15 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
 static void dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
 {
   GtkWidget *widget = GTK_WIDGET(w);
-  gboolean sensitive = gtk_widget_is_sensitive(GTK_WIDGET(w));
+  const gboolean sensitive = gtk_widget_is_sensitive(GTK_WIDGET(w));
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width;
-  int height = allocation.height;
+  const int width = allocation.width;
+  const int height = allocation.height;
 
   if(w->quad_paint)
   {
-    float font_size = get_label_font_size();
+    const float font_size = get_label_font_size();
     cairo_save(cr);
     if(sensitive)
       set_color(cr, darktable.bauhaus->color_border);
