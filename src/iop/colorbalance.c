@@ -1701,6 +1701,7 @@ static void lift_neutralize_callback(GtkWidget *button, gpointer user_data)
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
   {
     dt_iop_request_focus(self);
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
     dt_control_queue_redraw();
   }
@@ -1767,6 +1768,7 @@ static void gamma_neutralize_callback(GtkWidget *button, gpointer user_data)
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
   {
     dt_iop_request_focus(self);
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
     dt_control_queue_redraw();
   }
@@ -1829,6 +1831,7 @@ static void gain_neutralize_callback(GtkWidget *button, gpointer user_data)
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
   {
     dt_iop_request_focus(self);
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
     dt_control_queue_redraw();
   }
@@ -1893,8 +1896,33 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
 
   if(g->color_patches_flags[0] != 1 || g->color_patches_flags[1] != 1 || g->color_patches_flags[2] != 1)
   {
-    dt_control_log(_("you need to select 3 color samples first"));
-    return;
+    // if no manual color-picking has been done, guess fromm the whole picture
+    dt_iop_request_focus(self);
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+    dt_control_queue_redraw();
+    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_dev_reprocess_all(self->dev);
+
+    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f)
+    {
+      dt_control_log(_("wait for the preview to be updated."));
+      return;
+    }
+    
+    float XYZ[3] = { 0.0f };
+    dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
+    float RGB[3] = { 0.0f };
+    dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
+
+    // Save the patch color for the optimization
+    for (int c = 0; c < 3; c++) g->color_patches_lift[c] = RGB[c];
+    g->color_patches_flags[LIFT] = 1;
+    for (int c = 0; c < 3; c++) g->color_patches_gamma[c] = RGB[c];
+    g->color_patches_flags[GAMMA] = 1;
+    for (int c = 0; c < 3; c++) g->color_patches_gain[c] = RGB[c];
+    g->color_patches_flags[GAIN] = 1;
+    
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }
 
   // Build the CDL-corrected samples (after the factors)
@@ -1937,7 +1965,7 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
   * To avoid divergence, we constrain the parameters between +- 0.25 around the neutral value.
   * Experimentally, nothing good happens out of these bounds.
   */
-  for (int runs = 0 ; runs < 100 ; ++runs)
+  for (int runs = 0 ; runs < 500 ; ++runs)
   {
     // compute RGB slope/gain
     for (int c = 0; c < 3; ++c) RGB_gain[c] = CLAMP((powf(MAX(greys[GAIN], 0.000001f), RGB_gamma[c]) - RGB_lift[c]) / MAX(samples_gain[c], 0.000001f), 0.75f, 1.25f);
@@ -1965,6 +1993,7 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
   darktable.gui->reset = 1;
   set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
+  set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
   darktable.gui->reset = 0;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1979,6 +2008,7 @@ static void lift_auto_callback(GtkWidget *button, gpointer user_data)
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
   {
     dt_iop_request_focus(self);
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
     dt_control_queue_redraw();
     dt_dev_reprocess_all(self->dev);
@@ -2024,6 +2054,7 @@ static void gamma_auto_callback(GtkWidget *button, gpointer user_data)
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
   {
     dt_iop_request_focus(self);
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
     dt_control_queue_redraw();
   }
@@ -2068,6 +2099,7 @@ static void gain_auto_callback(GtkWidget *button, gpointer user_data)
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
   {
     dt_iop_request_focus(self);
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
     dt_control_queue_redraw();
   }
@@ -2114,8 +2146,34 @@ static void optimize_luma_pressed_callback(GtkWidget *button, gpointer user_data
 
   if(g->luma_patches_flags[0] != 1 || g->luma_patches_flags[1] != 1 || g->luma_patches_flags[2] != 1)
   {
-    dt_control_log(_("you need to select 3 luma samples first"));
-    return;
+    // if no manual color-picking has been done, guess fromm the whole picture
+    dt_iop_request_focus(self);
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+    dt_control_queue_redraw();
+    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_dev_reprocess_all(self->dev);
+
+    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f)
+    {
+      dt_control_log(_("wait for the preview to be updated."));
+      return;
+    }
+    
+    float XYZ[3] = { 0.0f };
+    dt_Lab_to_XYZ((const float *)self->picked_color_min, XYZ);
+    g->luma_patches[LIFT] = XYZ[1];
+    g->luma_patches_flags[LIFT] = 1;
+    
+    dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
+    g->luma_patches[GAMMA] = XYZ[1];
+    g->luma_patches_flags[GAMMA] = 1;
+    
+    dt_Lab_to_XYZ((const float *)self->picked_color_max, XYZ);
+    g->luma_patches[GAIN] = XYZ[1];
+    g->luma_patches_flags[GAIN] = 1;
+    
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    
   }
 
   /** Optimization loop :
