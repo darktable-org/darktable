@@ -66,7 +66,7 @@ typedef struct dt_iop_profilegamma_params_t
 typedef struct dt_iop_profilegamma_gui_data_t
 {
   int apply_picked_color;
-  int wich_colorpicker;
+  int which_colorpicker;
 
   GtkWidget *mode;
   GtkWidget *mode_stack;
@@ -349,9 +349,8 @@ static void apply_auto_grey(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
-  float XYZ[3];
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color, XYZ);
-  p->grey_point = 100.f * XYZ[1];
+  float grey = fmax(fmax(self->picked_color[0], self->picked_color[1]), self->picked_color[2]);
+  p->grey_point = 100.f * grey;
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->grey_point, p->grey_point);
@@ -367,11 +366,10 @@ static void apply_auto_black(dt_iop_module_t *self)
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
   float noise = powf(2.0f, -16.0f);
-  float XYZ[3];
 
   // Black
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color, XYZ);
-  float EVmin = Log2Thres(XYZ[1] / (p->grey_point / 100.0f), noise);
+  float black = fmax(fmax(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
+  float EVmin = Log2Thres(black / (p->grey_point / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
   EVmin -= 0.0230f * p->dynamic_range;
 
@@ -391,18 +389,17 @@ static void apply_auto_dynamic_range(dt_iop_module_t *self)
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
   float noise = powf(2.0f, -16.0f);
-  float XYZ[3];
 
   // Black
   float EVmin = p->shadows_range;
 
-  // Dynamic range
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color_max, XYZ);
-  float EVmax = Log2Thres(XYZ[1] / (p->grey_point / 100.0f), noise);
+  // White
+  float white = fmax(fmax(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
+  float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
   /*
-    Remap the black point to Y = 2.30 % and the white point to Y = 90.00 %
+    Remap the black point to RGB = 2.30 % and the white point to RGB = 90.00 %
     to match the patches values from the color charts used to produce ICC profiles
   */
   float dynamic_range = (EVmax - EVmin) / (0.9000f - 0.0230f);
@@ -485,20 +482,19 @@ static void optimize_button_pressed_callback(GtkWidget *button, gpointer user_da
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
   float noise = powf(2.0f, -16.0f);
-  float XYZ[3];
 
   // Grey
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color, XYZ);
-  p->grey_point = 100.f * XYZ[1];
+  float grey = fmax(fmax(self->picked_color[0], self->picked_color[1]), self->picked_color[2]);
+  p->grey_point = 100.f * grey;
 
   // Black
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color_min, XYZ);
-  float EVmin = Log2Thres(XYZ[1] / (p->grey_point / 100.0f), noise);
+  float black = fmax(fmax(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
+  float EVmin = Log2Thres(black / (p->grey_point / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
-  // Dynamic range
-  dt_prophotorgb_to_XYZ((const float *)self->picked_color_max, XYZ);
-  float EVmax = Log2Thres(XYZ[1] / (p->grey_point / 100.0f), noise);
+  // White
+  float white = fmax(fmax(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
+  float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
   /*
@@ -521,7 +517,6 @@ static void optimize_button_pressed_callback(GtkWidget *button, gpointer user_da
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-
 }
 
 
@@ -581,17 +576,17 @@ static void mode_callback(GtkWidget *combo, gpointer user_data)
 static int call_apply_picked_color(struct dt_iop_module_t *self, dt_iop_profilegamma_gui_data_t *g)
 {
   int handled = 0;
-  if(g->wich_colorpicker == DT_PICKPROFLOG_GREY_POINT)
+  if(g->which_colorpicker == DT_PICKPROFLOG_GREY_POINT)
   {
     handled = 1;
     apply_auto_grey(self);
   }
-  else if(g->wich_colorpicker == DT_PICKPROFLOG_SHADOWS_RANGE)
+  else if(g->which_colorpicker == DT_PICKPROFLOG_SHADOWS_RANGE)
   {
     handled = 1;
     apply_auto_black(self);
   }
-  else if(g->wich_colorpicker == DT_PICKPROFLOG_DYNAMIC_RANGE)
+  else if(g->which_colorpicker == DT_PICKPROFLOG_DYNAMIC_RANGE)
   {
     handled = 1;
     apply_auto_dynamic_range(self);
@@ -601,21 +596,21 @@ static int call_apply_picked_color(struct dt_iop_module_t *self, dt_iop_profileg
 
 static int get_colorpick_from_button(GtkWidget *button, dt_iop_profilegamma_gui_data_t *g)
 {
-  int wich_colorpicker = DT_PICKPROFLOG_NONE;
+  int which_colorpicker = DT_PICKPROFLOG_NONE;
 
   if(button == g->grey_point)
-    wich_colorpicker = DT_PICKPROFLOG_GREY_POINT;
+    which_colorpicker = DT_PICKPROFLOG_GREY_POINT;
   else if(button == g->shadows_range)
-    wich_colorpicker = DT_PICKPROFLOG_SHADOWS_RANGE;
+    which_colorpicker = DT_PICKPROFLOG_SHADOWS_RANGE;
   else if(button == g->dynamic_range)
-    wich_colorpicker = DT_PICKPROFLOG_DYNAMIC_RANGE;
+    which_colorpicker = DT_PICKPROFLOG_DYNAMIC_RANGE;
 
-  return wich_colorpicker;
+  return which_colorpicker;
 }
 
-static void set_colorpick_state(dt_iop_profilegamma_gui_data_t *g, const int wich_colorpicker)
+static void set_colorpick_state(dt_iop_profilegamma_gui_data_t *g, const int which_colorpicker)
 {
-  switch(wich_colorpicker)
+  switch(which_colorpicker)
   {
     case DT_PICKPROFLOG_GREY_POINT:
       dt_bauhaus_widget_set_quad_paint(g->grey_point, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
@@ -649,9 +644,9 @@ static void color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
 
   if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
   {
-    g->wich_colorpicker = get_colorpick_from_button(button, g);
+    g->which_colorpicker = get_colorpick_from_button(button, g);
 
-    if(g->wich_colorpicker != DT_PICKPROFLOG_NONE)
+    if(g->which_colorpicker != DT_PICKPROFLOG_NONE)
     {
       dt_iop_request_focus(self);
       self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
@@ -678,10 +673,10 @@ static void color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
       g->apply_picked_color = 0;
     }
 
-    const int wich_colorpicker = get_colorpick_from_button(button, g);
-    if(wich_colorpicker != g->wich_colorpicker && wich_colorpicker != DT_PICKPROFLOG_NONE)
+    const int which_colorpicker = get_colorpick_from_button(button, g);
+    if(which_colorpicker != g->which_colorpicker && which_colorpicker != DT_PICKPROFLOG_NONE)
     {
-      g->wich_colorpicker = wich_colorpicker;
+      g->which_colorpicker = which_colorpicker;
 
       self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
 
@@ -693,11 +688,11 @@ static void color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
     }
     else
     {
-      g->wich_colorpicker = DT_PICKPROFLOG_NONE;
+      g->which_colorpicker = DT_PICKPROFLOG_NONE;
     }
   }
 
-  set_colorpick_state(g, g->wich_colorpicker);
+  set_colorpick_state(g, g->which_colorpicker);
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -708,8 +703,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   {
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     g->apply_picked_color = 0;
-    g->wich_colorpicker = DT_PICKPROFLOG_NONE;
-    set_colorpick_state(g, g->wich_colorpicker);
+    g->which_colorpicker = DT_PICKPROFLOG_NONE;
+    set_colorpick_state(g, g->which_colorpicker);
   }
 }
 
@@ -851,7 +846,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
   dt_bauhaus_slider_set_soft(g->security_factor, p->security_factor);
 
-  set_colorpick_state(g, g->wich_colorpicker);
+  set_colorpick_state(g, g->which_colorpicker);
 }
 
 void init(dt_iop_module_t *module)
@@ -904,7 +899,7 @@ void gui_init(dt_iop_module_t *self)
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   g->apply_picked_color = 0;
-  g->wich_colorpicker = DT_PICKPROFLOG_NONE;
+  g->which_colorpicker = DT_PICKPROFLOG_NONE;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -954,7 +949,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->grey_point, "%.2f %%");
   gtk_widget_set_tooltip_text(g->grey_point, _("adjust to match the average luma of the subject"));
   g_signal_connect(G_OBJECT(g->grey_point), "value-changed", G_CALLBACK(grey_point_callback), self);
-  dt_bauhaus_widget_set_quad_paint(g->grey_point, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
+  dt_bauhaus_widget_set_quad_paint(g->grey_point, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->grey_point, TRUE);
   g_signal_connect(G_OBJECT(g->grey_point), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 
   // Shadows range slider
@@ -965,7 +961,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->shadows_range, "%.2f EV");
   gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between middle grey and pure black\nthis is a reading a posemeter would give you on the scene"));
   g_signal_connect(G_OBJECT(g->shadows_range), "value-changed", G_CALLBACK(shadows_range_callback), self);
-  dt_bauhaus_widget_set_quad_paint(g->shadows_range, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
+  dt_bauhaus_widget_set_quad_paint(g->shadows_range, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->shadows_range, TRUE);
   g_signal_connect(G_OBJECT(g->shadows_range), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 
   // Dynamic range slider
@@ -976,7 +973,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->dynamic_range, "%.2f EV");
   gtk_widget_set_tooltip_text(g->dynamic_range, _("number of stops between pure black and pure white\nthis is a reading a posemeter would give you on the scene"));
   g_signal_connect(G_OBJECT(g->dynamic_range), "value-changed", G_CALLBACK(dynamic_range_callback), self);
-  dt_bauhaus_widget_set_quad_paint(g->dynamic_range, dtgtk_cairo_paint_colorpicker, CPF_ACTIVE, NULL);
+  dt_bauhaus_widget_set_quad_paint(g->dynamic_range, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->dynamic_range, TRUE);
   g_signal_connect(G_OBJECT(g->dynamic_range), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 
   // Auto tune slider
