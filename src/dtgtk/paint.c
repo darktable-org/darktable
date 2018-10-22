@@ -1266,6 +1266,7 @@ void dtgtk_cairo_paint_overexposed(cairo_t *cr, gint x, gint y, gint w, gint h, 
 
 void dtgtk_cairo_paint_rawoverexposed(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
+  const float transp = (flags & CPF_ACTIVE ? 1.0 : 0.4);
   gint s = w < h ? w : h;
   cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
   cairo_scale(cr, s, s);
@@ -1281,19 +1282,19 @@ void dtgtk_cairo_paint_rawoverexposed(cairo_t *cr, gint x, gint y, gint w, gint 
 
   // draw 4 CFA-like colored squares
 
-  cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0); // red
+  cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, transp); // red
   cairo_rectangle(cr, (line_width / 2.0), (line_width / 2.0), step, step);
   cairo_fill(cr);
 
-  cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 1.0); // green
+  cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, transp); // green
   cairo_rectangle(cr, step, (line_width / 2.0), step, step);
   cairo_fill(cr);
 
-  cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 1.0); // green
+  cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, transp); // green
   cairo_rectangle(cr, (line_width / 2.0), step, step, step);
   cairo_fill(cr);
 
-  cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 1.0); // blue
+  cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, transp); // blue
   cairo_rectangle(cr, step, step, step, step);
   cairo_fill(cr);
 
