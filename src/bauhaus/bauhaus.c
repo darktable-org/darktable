@@ -650,7 +650,7 @@ void dt_bauhaus_slider_set_hard_min(GtkWidget* widget, float val)
   {
     dt_bauhaus_slider_set_soft(widget,val);
   }
-  else 
+  else
   {
     dt_bauhaus_slider_set_soft(widget,pos);
   }
@@ -676,8 +676,8 @@ void dt_bauhaus_slider_set_hard_max(GtkWidget* widget, float val)
   if(pos > val) {
 
     dt_bauhaus_slider_set_soft(widget,val);
-  } 
-  else 
+  }
+  else
   {
     dt_bauhaus_slider_set_soft(widget,pos);
   }
@@ -701,11 +701,11 @@ void dt_bauhaus_slider_set_soft_min(GtkWidget* widget, float val)
   d->min =  d->soft_min;
   if(rawval > d->soft_max) dt_bauhaus_slider_set_soft_max(widget,val);
   if(rawval > d->hard_max) dt_bauhaus_slider_set_hard_max(widget,val);
-  if(pos < val) 
+  if(pos < val)
   {
     dt_bauhaus_slider_set_soft(widget,val);
-  } 
-  else 
+  }
+  else
   {
     dt_bauhaus_slider_set_soft(widget,pos);
   }
