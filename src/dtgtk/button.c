@@ -85,6 +85,10 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
     {
       gtk_render_background(context, cr, 0, 0, width, height);
     }
+    else if (!(flags & CPF_ACTIVE))
+    {
+      fg_color.alpha = CLAMP(fg_color.alpha / 2.0, 0.3, 1.0);
+    }
   }
   else if(!(flags & CPF_BG_TRANSPARENT))
   {
