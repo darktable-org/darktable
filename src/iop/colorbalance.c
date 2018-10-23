@@ -87,7 +87,8 @@ typedef enum _controls_t
   BOTH
 } _controls_t;
 
-typedef enum dt_iop_colorbalance_pickcolor_type_t {
+typedef enum dt_iop_colorbalance_pickcolor_type_t
+{
   DT_PICKCOLBAL_NONE = 0,
   DT_PICKCOLBAL_HUE_LIFT = 1,
   DT_PICKCOLBAL_HUE_GAMMA = 2,
@@ -2060,7 +2061,7 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
       dt_control_log(_("wait for the preview to be updated."));
       return;
     }
-    
+
     float XYZ[3] = { 0.0f };
     dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
     float RGB[3] = { 0.0f };
@@ -2073,7 +2074,7 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
     g->color_patches_flags[GAMMA] = 1;
     for (int c = 0; c < 3; c++) g->color_patches_gain[c] = RGB[c];
     g->color_patches_flags[GAIN] = 1;
-    
+
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }
 
@@ -2174,22 +2175,22 @@ static void optimize_luma_pressed_callback(GtkWidget *button, gpointer user_data
       dt_control_log(_("wait for the preview to be updated."));
       return;
     }
-    
+
     float XYZ[3] = { 0.0f };
     dt_Lab_to_XYZ((const float *)self->picked_color_min, XYZ);
     g->luma_patches[LIFT] = XYZ[1];
     g->luma_patches_flags[LIFT] = 1;
-    
+
     dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
     g->luma_patches[GAMMA] = XYZ[1];
     g->luma_patches_flags[GAMMA] = 1;
-    
+
     dt_Lab_to_XYZ((const float *)self->picked_color_max, XYZ);
     g->luma_patches[GAIN] = XYZ[1];
     g->luma_patches_flags[GAIN] = 1;
-    
+
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-    
+
   }
 
   /** Optimization loop :
