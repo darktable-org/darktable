@@ -128,8 +128,6 @@ typedef struct dt_iop_colorbalance_gui_data_t
   GtkWidget *optim_label;
   GtkWidget *auto_luma;
   GtkWidget *auto_color;
-#endif
-#ifdef AUTO
   float color_patches_lift[3];
   float color_patches_gamma[3];
   float color_patches_gain[3];
