@@ -1070,41 +1070,33 @@ static void apply_gain_auto(dt_iop_module_t *self)
 
 static int call_apply_picked_color(struct dt_iop_module_t *self, dt_iop_colorbalance_gui_data_t *g)
 {
-  int handled = 0;
-  if(g->which_colorpicker == DT_PICKCOLBAL_HUE_LIFT)
+  int handled = 1;
+  switch(g->which_colorpicker)
   {
-    handled = 1;
-    apply_lift_neutralize(self);
-  }
-  else if(g->which_colorpicker == DT_PICKCOLBAL_HUE_GAMMA)
-  {
-    handled = 1;
-    apply_gamma_neutralize(self);
-  }
-  else if(g->which_colorpicker == DT_PICKCOLBAL_HUE_GAIN)
-  {
-    handled = 1;
-    apply_gain_neutralize(self);
-  }
-  else if(g->which_colorpicker == DT_PICKCOLBAL_LIFT_FACTOR)
-  {
-    handled = 1;
-    apply_lift_auto(self);
-  }
-  else if(g->which_colorpicker == DT_PICKCOLBAL_GAMMA_FACTOR)
-  {
-    handled = 1;
-    apply_gamma_auto(self);
-  }
-  else if(g->which_colorpicker == DT_PICKCOLBAL_GAIN_FACTOR)
-  {
-    handled = 1;
-    apply_gain_auto(self);
-  }
-  else if(g->which_colorpicker == DT_PICKCOLBAL_GREY)
-  {
-    handled = 1;
-    apply_autogrey(self);
+    case DT_PICKCOLBAL_HUE_LIFT:
+      apply_lift_neutralize(self);
+      break;
+    case DT_PICKCOLBAL_HUE_GAMMA:
+      apply_gamma_neutralize(self);
+      break;
+    case DT_PICKCOLBAL_HUE_GAIN:
+      apply_gain_neutralize(self);
+      break;
+    case DT_PICKCOLBAL_LIFT_FACTOR:
+      apply_lift_auto(self);
+      break;
+    case DT_PICKCOLBAL_GAMMA_FACTOR:
+      apply_gamma_auto(self);
+      break;
+    case DT_PICKCOLBAL_GAIN_FACTOR:
+      apply_gain_auto(self);
+      break;
+    case DT_PICKCOLBAL_GREY:
+      apply_autogrey(self);
+      break;
+    default:
+      handled = 0;
+      break;
   }
   return handled;
 }
