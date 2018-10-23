@@ -87,6 +87,17 @@ typedef enum _controls_t
   BOTH
 } _controls_t;
 
+typedef enum dt_iop_colorbalance_pickcolor_type_t {
+  DT_PICKCOLBAL_NONE = 0,
+  DT_PICKCOLBAL_HUE_LIFT = 1,
+  DT_PICKCOLBAL_HUE_GAMMA = 2,
+  DT_PICKCOLBAL_HUE_GAIN = 3,
+  DT_PICKCOLBAL_LIFT_FACTOR = 4,
+  DT_PICKCOLBAL_GAMMA_FACTOR = 5,
+  DT_PICKCOLBAL_GAIN_FACTOR = 6,
+  DT_PICKCOLBAL_GREY = 7
+} dt_iop_colorbalance_pickcolor_type_t;
+
 typedef struct dt_iop_colorbalance_params_t
 {
   dt_iop_colorbalance_mode_t mode;
@@ -97,6 +108,9 @@ typedef struct dt_iop_colorbalance_params_t
 typedef struct dt_iop_colorbalance_gui_data_t
 {
   dt_pthread_mutex_t lock;
+  int apply_picked_color;
+  int which_colorpicker;
+
   GtkWidget *master_box;
   GtkWidget *mode;
 #ifdef CONTROLS
@@ -720,147 +734,6 @@ error:
 }
 #endif
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_colorbalance_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorbalance_params_t));
-  module->default_enabled = 0;
-  module->priority = 449; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_colorbalance_params_t);
-  module->gui_data = NULL;
-  dt_iop_colorbalance_params_t tmp = (dt_iop_colorbalance_params_t){ SLOPE_OFFSET_POWER,
-                                                                     { 1.0f, 1.0f, 1.0f, 1.0f },
-                                                                     { 1.0f, 1.0f, 1.0f, 1.0f },
-                                                                     { 1.0f, 1.0f, 1.0f, 1.0f },
-                                                                     1.0f, 1.0f, 18.0f };
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorbalance_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorbalance_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-}
-
-void init_global(dt_iop_module_so_t *module)
-{
-  const int program = 8; // extended.cl, from programs.conf
-  dt_iop_colorbalance_global_data_t *gd
-      = (dt_iop_colorbalance_global_data_t *)malloc(sizeof(dt_iop_colorbalance_global_data_t));
-  module->data = gd;
-  gd->kernel_colorbalance = dt_opencl_create_kernel(program, "colorbalance");
-  gd->kernel_colorbalance_lgg = dt_opencl_create_kernel(program, "colorbalance_lgg");
-  gd->kernel_colorbalance_cdl = dt_opencl_create_kernel(program, "colorbalance_cdl");
-}
-
-void cleanup_global(dt_iop_module_so_t *module)
-{
-  dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_colorbalance);
-  dt_opencl_free_kernel(gd->kernel_colorbalance_lgg);
-  dt_opencl_free_kernel(gd->kernel_colorbalance_cdl);
-  free(module->data);
-  module->data = NULL;
-}
-
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
-{
-  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)(piece->data);
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)p1;
-
-  d->mode = p->mode;
-
-  switch ( d->mode )
-  {
-    case SLOPE_OFFSET_POWER:
-    {
-      // Correct the luminance in RGB parameters so we don't affect it
-      float XYZ[3];
-
-      dt_prophotorgb_to_XYZ((const float *)&p->lift[CHANNEL_RED], XYZ);
-      d->lift[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR];
-      d->lift[CHANNEL_RED] = (p->lift[CHANNEL_RED] - XYZ[1]) + 1.f;
-      d->lift[CHANNEL_GREEN] = (p->lift[CHANNEL_GREEN] - XYZ[1]) + 1.f;
-      d->lift[CHANNEL_BLUE] = (p->lift[CHANNEL_BLUE] - XYZ[1]) + 1.f;
-
-      dt_prophotorgb_to_XYZ((const float *)&p->gamma[CHANNEL_RED], XYZ);
-      d->gamma[CHANNEL_FACTOR] = p->gamma[CHANNEL_FACTOR];
-      d->gamma[CHANNEL_RED] = (p->gamma[CHANNEL_RED] - XYZ[1]) + 1.f;
-      d->gamma[CHANNEL_GREEN] = (p->gamma[CHANNEL_GREEN] - XYZ[1]) + 1.f;
-      d->gamma[CHANNEL_BLUE] = (p->gamma[CHANNEL_BLUE] - XYZ[1]) + 1.f;
-
-      dt_prophotorgb_to_XYZ((const float *)&p->gain[CHANNEL_RED], XYZ);
-      d->gain[CHANNEL_FACTOR] = p->gain[CHANNEL_FACTOR];
-      d->gain[CHANNEL_RED] = (p->gain[CHANNEL_RED] - XYZ[1]) + 1.f;
-      d->gain[CHANNEL_GREEN] = (p->gain[CHANNEL_GREEN] - XYZ[1]) + 1.f;
-      d->gain[CHANNEL_BLUE] = (p->gain[CHANNEL_BLUE] - XYZ[1]) + 1.f;
-
-      break;
-    }
-
-    case LEGACY:
-    {
-      // Luminance is not corrected in lift/gamma/gain for compatibility
-      for(int i = 0; i < CHANNEL_SIZE; i++)
-      {
-        d->lift[i] = p->lift[i];
-        d->gamma[i] = p->gamma[i];
-        d->gain[i] = p->gain[i];
-      }
-
-      break;
-    }
-
-    case LIFT_GAMMA_GAIN:
-    {
-      // Divide the parameters by 2.2 to match the correction we got in legacy sRGB mode
-      // That is because we work in a larger space
-      // Correct the luminance in RGB parameters so we don't affect it
-      float XYZ[3];
-      dt_prophotorgb_to_XYZ((const float *)&p->lift[CHANNEL_RED], XYZ);
-      d->lift[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR];
-      d->lift[CHANNEL_RED] = (p->lift[CHANNEL_RED] - XYZ[1]) / 2.2f + 1.f;
-      d->lift[CHANNEL_GREEN] = (p->lift[CHANNEL_GREEN] - XYZ[1]) / 2.2f + 1.f;
-      d->lift[CHANNEL_BLUE] = (p->lift[CHANNEL_BLUE] - XYZ[1]) / 2.2f + 1.f;
-
-      dt_prophotorgb_to_XYZ((const float *)&p->gamma[CHANNEL_RED], XYZ);
-      d->gamma[CHANNEL_FACTOR] = p->gamma[CHANNEL_FACTOR];
-      d->gamma[CHANNEL_RED] = (p->gamma[CHANNEL_RED] - XYZ[1]) / 2.2f + 1.f;
-      d->gamma[CHANNEL_GREEN] = (p->gamma[CHANNEL_GREEN] - XYZ[1]) / 2.2f + 1.f;
-      d->gamma[CHANNEL_BLUE] = (p->gamma[CHANNEL_BLUE] - XYZ[1]) / 2.2f + 1.f;
-
-      dt_prophotorgb_to_XYZ((const float *)&p->gain[CHANNEL_RED], XYZ);
-      d->gain[CHANNEL_FACTOR] = p->gain[CHANNEL_FACTOR];
-      d->gain[CHANNEL_RED] = (p->gain[CHANNEL_RED] - XYZ[1]) / 2.2f + 1.f;
-      d->gain[CHANNEL_GREEN] = (p->gain[CHANNEL_GREEN] - XYZ[1]) / 2.2f + 1.f;
-      d->gain[CHANNEL_BLUE] = (p->gain[CHANNEL_BLUE] - XYZ[1]) / 2.2f + 1.f;
-
-      break;
-    }
-
-  }
-
-
-  d->grey = p->grey;
-  d->saturation = p->saturation;
-  d->contrast = p->contrast;
-}
-
-void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  piece->data = calloc(1, sizeof(dt_iop_colorbalance_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
-}
-
-void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  free(piece->data);
-  piece->data = NULL;
-}
-
 static inline void update_saturation_slider_color(GtkWidget *slider, float hue)
 {
   float rgb[3];
@@ -871,31 +744,6 @@ static inline void update_saturation_slider_color(GtkWidget *slider, float hue)
     hsl2rgb(rgb, hue, 0.0, 0.5);
     dt_bauhaus_slider_set_stop(slider, 0.0, rgb[0], rgb[1], rgb[2]);
     gtk_widget_queue_draw(GTK_WIDGET(slider));
-  }
-}
-
-static inline void set_HSL_sliders(GtkWidget *hue, GtkWidget *sat, float RGB[4])
-{
-  /** HSL sliders are set from the RGB values at any time.
-  * Only the RGB values are saved and used in the computations.
-  * The HSL sliders are merely an interface.
-  */
-  float RGB_norm[3] = { (RGB[CHANNEL_RED] / 2.0f), (RGB[CHANNEL_GREEN]) / 2.0f, (RGB[CHANNEL_BLUE] / 2.0f) };
-  float h, s, l;
-  rgb2hsl(RGB_norm, &h, &s, &l);
-
-  if (h != -1.0f)
-  {
-    dt_bauhaus_slider_set_soft(hue, h);
-    dt_bauhaus_slider_set_soft(sat, s);
-    update_saturation_slider_color(GTK_WIDGET(sat), h);
-    gtk_widget_queue_draw(GTK_WIDGET(sat));
-  }
-  else
-  {
-    dt_bauhaus_slider_set_soft(hue, -1.0f);
-    dt_bauhaus_slider_set_soft(sat, 0.0f);
-    gtk_widget_queue_draw(GTK_WIDGET(sat));
   }
 }
 
@@ -962,17 +810,578 @@ static inline void normalize_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *
   darktable.gui->reset = 0;
 }
 
+static inline void set_HSL_sliders(GtkWidget *hue, GtkWidget *sat, float RGB[4])
+{
+  /** HSL sliders are set from the RGB values at any time.
+  * Only the RGB values are saved and used in the computations.
+  * The HSL sliders are merely an interface.
+  */
+  float RGB_norm[3] = { (RGB[CHANNEL_RED] / 2.0f), (RGB[CHANNEL_GREEN]) / 2.0f, (RGB[CHANNEL_BLUE] / 2.0f) };
+  float h, s, l;
+  rgb2hsl(RGB_norm, &h, &s, &l);
+
+  if(h != -1.0f)
+  {
+    dt_bauhaus_slider_set_soft(hue, h);
+    dt_bauhaus_slider_set_soft(sat, s);
+    update_saturation_slider_color(GTK_WIDGET(sat), h);
+    gtk_widget_queue_draw(GTK_WIDGET(sat));
+  }
+  else
+  {
+    dt_bauhaus_slider_set_soft(hue, -1.0f);
+    dt_bauhaus_slider_set_soft(sat, 0.0f);
+    gtk_widget_queue_draw(GTK_WIDGET(sat));
+  }
+}
+
+static void apply_autogrey(dt_iop_module_t *self)
+{
+  if(self->dt->gui->reset) return;
+  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+
+  float XYZ[3] = { 0.0f };
+  float rgb[3] = { 0.0f };
+  dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
+  dt_XYZ_to_prophotorgb((const float *)XYZ, rgb);
+
+  const float lift[3]
+      = { (p->lift[CHANNEL_RED] + p->lift[CHANNEL_FACTOR] - 2.0f),
+          (p->lift[CHANNEL_GREEN] + p->lift[CHANNEL_FACTOR] - 2.0f),
+          (p->lift[CHANNEL_BLUE] + p->lift[CHANNEL_FACTOR] - 2.0f) },
+      gamma[3]
+      = { p->gamma[CHANNEL_RED] * p->gamma[CHANNEL_FACTOR], p->gamma[CHANNEL_GREEN] * p->gamma[CHANNEL_FACTOR],
+          p->gamma[CHANNEL_BLUE] * p->gamma[CHANNEL_FACTOR] },
+      gamma_inv[3]
+      = { (gamma[0] != 0.0f) ? 1.0f / gamma[0] : 1000000.0f, (gamma[1] != 0.0f) ? 1.0f / gamma[1] : 1000000.0f,
+          (gamma[2] != 0.0f) ? 1.0f / gamma[2] : 1000000.0f },
+      gain[3] = { p->gain[CHANNEL_RED] * p->gain[CHANNEL_FACTOR], p->gain[CHANNEL_GREEN] * p->gain[CHANNEL_FACTOR],
+                  p->gain[CHANNEL_BLUE] * p->gain[CHANNEL_FACTOR] };
+
+  for(int c = 0; c < 3; c++)
+  {
+    rgb[c] = CDL(rgb[c], gain[c], lift[c], gamma_inv[c]);
+    rgb[c] = CLAMP(rgb[c], 0.0f, 1.0f);
+  }
+
+  dt_prophotorgb_to_XYZ((const float *)rgb, XYZ);
+
+  p->grey = XYZ[1] * 100.0f;
+
+  dt_bauhaus_slider_set_soft(g->grey, p->grey);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+#ifdef AUTO
+static void apply_lift_neutralize(dt_iop_module_t *self)
+{
+  if(self->dt->gui->reset) return;
+  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+
+  const float gain[3] = { p->gain[CHANNEL_RED], p->gain[CHANNEL_GREEN], p->gain[CHANNEL_BLUE] };
+
+  float XYZ[3] = { 0.0f };
+  dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
+  float RGB[3] = { 0.0f };
+  dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
+
+// Save the patch color for the optimization
+#ifdef OPTIM
+  for(int c = 0; c < 3; ++c) g->color_patches_lift[c] = RGB[c];
+  g->color_patches_flags[LIFT] = 1;
+#endif
+
+  // Compute the RGB values after the CDL factors
+  for(int c = 0; c < 3; ++c)
+    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+
+  // Compute the luminance of the average grey
+  dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
+
+  // Get the parameter
+  for(int c = 0; c < 3; ++c) RGB[c] = XYZ[1] - RGB[c] * gain[c];
+
+  p->lift[CHANNEL_RED] = RGB[0] + 1.0f;
+  p->lift[CHANNEL_GREEN] = RGB[1] + 1.0f;
+  p->lift[CHANNEL_BLUE] = RGB[2] + 1.0f;
+
+  normalize_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, p->lift, CHANNEL_FACTOR, SLOPE_OFFSET_POWER);
+  darktable.gui->reset = 1;
+  set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
+  darktable.gui->reset = 0;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void apply_gamma_neutralize(dt_iop_module_t *self)
+{
+  if(self->dt->gui->reset) return;
+  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+
+  float XYZ[3] = { 0.0f };
+  dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
+  float RGB[3] = { 0.0f };
+  dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
+
+// Save the patch color for the optimization
+#ifdef OPTIM
+  for(int c = 0; c < 3; ++c) g->color_patches_gamma[c] = RGB[c];
+  g->color_patches_flags[GAMMA] = 1;
+#endif
+
+  // Compute the RGB values after the CDL factors
+  for(int c = 0; c < 3; ++c)
+    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+
+  // Compute the luminance of the average grey
+  dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
+
+  // Get the parameter
+  for(int c = 0; c < 3; ++c) RGB[c] = logf(RGB[c]) / logf(XYZ[1]);
+
+  p->gamma[CHANNEL_RED] = RGB[0] + 1.0f;
+  p->gamma[CHANNEL_GREEN] = RGB[1] + 1.0f;
+  p->gamma[CHANNEL_BLUE] = RGB[2] + 1.0f;
+
+  normalize_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, p->gamma, CHANNEL_FACTOR, SLOPE_OFFSET_POWER);
+  darktable.gui->reset = 1;
+  set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
+  darktable.gui->reset = 0;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void apply_gain_neutralize(dt_iop_module_t *self)
+{
+  if(self->dt->gui->reset) return;
+  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+
+  float XYZ[3] = { 0.0f };
+  dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
+  float RGB[3] = { 0.0f };
+  dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
+
+// Save the patch color for the optimization
+#ifdef OPTIM
+  for(int c = 0; c < 3; c++) g->color_patches_gain[c] = RGB[c];
+  g->color_patches_flags[GAIN] = 1;
+#endif
+
+  // Compute the RGB values after the CDL factors
+  for(int c = 0; c < 3; ++c)
+    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+
+  // Compute the luminance of the average grey
+  dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
+
+  // Get the parameter
+  for(int c = 0; c < 3; ++c) RGB[c] = XYZ[1] / MAX(RGB[c], 0.000001f);
+
+  p->gain[CHANNEL_RED] = RGB[0] + 1.0f;
+  p->gain[CHANNEL_GREEN] = RGB[1] + 1.0f;
+  p->gain[CHANNEL_BLUE] = RGB[2] + 1.0f;
+
+  normalize_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, p->gain, CHANNEL_FACTOR, SLOPE_OFFSET_POWER);
+  darktable.gui->reset = 1;
+  set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
+  darktable.gui->reset = 0;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void apply_lift_auto(dt_iop_module_t *self)
+{
+  if(self->dt->gui->reset) return;
+  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+
+  float XYZ[3] = { 0.0f };
+  dt_Lab_to_XYZ((const float *)self->picked_color_min, XYZ);
+
+#ifdef OPTIM
+  g->luma_patches[LIFT] = XYZ[1];
+  g->luma_patches_flags[LIFT] = 1;
+#endif
+
+  float RGB[3] = { 0.0f };
+  dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
+
+  p->lift[CHANNEL_FACTOR] = -p->gain[CHANNEL_FACTOR] * XYZ[1] + 1.0f;
+
+  dt_bauhaus_slider_set_soft(g->lift_factor, p->lift[CHANNEL_FACTOR] - 1.0f);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void apply_gamma_auto(dt_iop_module_t *self)
+{
+  if(self->dt->gui->reset) return;
+  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+
+  float XYZ[3] = { 0.0f };
+  dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
+
+#ifdef OPTIM
+  g->luma_patches[GAMMA] = XYZ[1];
+  g->luma_patches_flags[GAMMA] = 1;
+#endif
+
+  float RGB[3] = { 0.0f };
+  dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
+
+  p->gamma[CHANNEL_FACTOR]
+      = logf(MAX(p->gain[CHANNEL_FACTOR] * XYZ[1] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f)) / logf(0.1800f);
+
+  dt_bauhaus_slider_set_soft(g->gamma_factor, p->gamma[CHANNEL_FACTOR] - 1.0f);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void apply_gain_auto(dt_iop_module_t *self)
+{
+  if(self->dt->gui->reset) return;
+  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+
+  float XYZ[3] = { 0.0f };
+  dt_Lab_to_XYZ((const float *)self->picked_color_max, XYZ);
+
+#ifdef OPTIM
+  g->luma_patches[GAIN] = XYZ[1];
+  g->luma_patches_flags[GAIN] = 1;
+#endif
+
+  float RGB[3] = { 0.0f };
+  dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
+
+  p->gain[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR] / (XYZ[1]);
+
+  dt_bauhaus_slider_set_soft(g->gain_factor, p->gain[CHANNEL_FACTOR] - 1.0f);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+#endif
+
+static int call_apply_picked_color(struct dt_iop_module_t *self, dt_iop_colorbalance_gui_data_t *g)
+{
+  int handled = 0;
+  if(g->which_colorpicker == DT_PICKCOLBAL_HUE_LIFT)
+  {
+    handled = 1;
+    apply_lift_neutralize(self);
+  }
+  else if(g->which_colorpicker == DT_PICKCOLBAL_HUE_GAMMA)
+  {
+    handled = 1;
+    apply_gamma_neutralize(self);
+  }
+  else if(g->which_colorpicker == DT_PICKCOLBAL_HUE_GAIN)
+  {
+    handled = 1;
+    apply_gain_neutralize(self);
+  }
+  else if(g->which_colorpicker == DT_PICKCOLBAL_LIFT_FACTOR)
+  {
+    handled = 1;
+    apply_lift_auto(self);
+  }
+  else if(g->which_colorpicker == DT_PICKCOLBAL_GAMMA_FACTOR)
+  {
+    handled = 1;
+    apply_gamma_auto(self);
+  }
+  else if(g->which_colorpicker == DT_PICKCOLBAL_GAIN_FACTOR)
+  {
+    handled = 1;
+    apply_gain_auto(self);
+  }
+  else if(g->which_colorpicker == DT_PICKCOLBAL_GREY)
+  {
+    handled = 1;
+    apply_autogrey(self);
+  }
+  return handled;
+}
+
+static int get_colorpick_from_button(GtkWidget *button, dt_iop_colorbalance_gui_data_t *g)
+{
+  int which_colorpicker = DT_PICKCOLBAL_NONE;
+
+  if(button == g->hue_lift)
+    which_colorpicker = DT_PICKCOLBAL_HUE_LIFT;
+  else if(button == g->hue_gamma)
+    which_colorpicker = DT_PICKCOLBAL_HUE_GAMMA;
+  else if(button == g->hue_gain)
+    which_colorpicker = DT_PICKCOLBAL_HUE_GAIN;
+  else if(button == g->lift_factor)
+    which_colorpicker = DT_PICKCOLBAL_LIFT_FACTOR;
+  else if(button == g->gamma_factor)
+    which_colorpicker = DT_PICKCOLBAL_GAMMA_FACTOR;
+  else if(button == g->gain_factor)
+    which_colorpicker = DT_PICKCOLBAL_GAIN_FACTOR;
+  else if(button == g->grey)
+    which_colorpicker = DT_PICKCOLBAL_GREY;
+
+  return which_colorpicker;
+}
+
+static void set_colorpick_state(dt_iop_colorbalance_gui_data_t *g, const int which_colorpicker)
+{
+  dt_bauhaus_widget_set_quad_active(g->hue_lift, which_colorpicker == DT_PICKCOLBAL_HUE_LIFT);
+  dt_bauhaus_widget_set_quad_active(g->hue_gamma, which_colorpicker == DT_PICKCOLBAL_HUE_GAMMA);
+  dt_bauhaus_widget_set_quad_active(g->hue_gain, which_colorpicker == DT_PICKCOLBAL_HUE_GAIN);
+  dt_bauhaus_widget_set_quad_active(g->lift_factor, which_colorpicker == DT_PICKCOLBAL_LIFT_FACTOR);
+  dt_bauhaus_widget_set_quad_active(g->gamma_factor, which_colorpicker == DT_PICKCOLBAL_GAMMA_FACTOR);
+  dt_bauhaus_widget_set_quad_active(g->gain_factor, which_colorpicker == DT_PICKCOLBAL_GAIN_FACTOR);
+  dt_bauhaus_widget_set_quad_active(g->grey, which_colorpicker == DT_PICKCOLBAL_GREY);
+}
+
+static void color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
+{
+  if(self->dt->gui->reset) return;
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    g->which_colorpicker = get_colorpick_from_button(button, g);
+
+    if(g->which_colorpicker != DT_PICKCOLBAL_NONE)
+    {
+      dt_iop_request_focus(self);
+      self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+
+      if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF) dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+
+      g->apply_picked_color = 1;
+
+      dt_dev_reprocess_all(self->dev);
+    }
+  }
+  else
+  {
+    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f)
+    {
+      dt_control_log(_("wait for the preview to be updated."));
+      return;
+    }
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+
+    if(g->apply_picked_color)
+    {
+      call_apply_picked_color(self, g);
+      g->apply_picked_color = 0;
+    }
+
+    const int which_colorpicker = get_colorpick_from_button(button, g);
+    if(which_colorpicker != g->which_colorpicker && which_colorpicker != DT_PICKCOLBAL_NONE)
+    {
+      g->which_colorpicker = which_colorpicker;
+
+      self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+
+      if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF) dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+
+      g->apply_picked_color = 1;
+
+      dt_dev_reprocess_all(self->dev);
+    }
+    else
+    {
+      g->which_colorpicker = DT_PICKCOLBAL_NONE;
+    }
+  }
+
+  set_colorpick_state(g, g->which_colorpicker);
+}
+
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+
+  if(!in)
+  {
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    g->apply_picked_color = 0;
+    g->which_colorpicker = DT_PICKCOLBAL_NONE;
+    set_colorpick_state(g, g->which_colorpicker);
+  }
+}
+
+int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
+{
+  int handled = 0;
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
+  {
+    handled = call_apply_picked_color(self, g);
+    g->apply_picked_color = 0;
+  }
+
+  return handled;
+}
+
+void init(dt_iop_module_t *module)
+{
+  module->params = calloc(1, sizeof(dt_iop_colorbalance_params_t));
+  module->default_params = calloc(1, sizeof(dt_iop_colorbalance_params_t));
+  module->default_enabled = 0;
+  module->priority = 449; // module order created by iop_dependencies.py, do not edit!
+  module->params_size = sizeof(dt_iop_colorbalance_params_t);
+  module->gui_data = NULL;
+  dt_iop_colorbalance_params_t tmp = (dt_iop_colorbalance_params_t){ SLOPE_OFFSET_POWER,
+                                                                     { 1.0f, 1.0f, 1.0f, 1.0f },
+                                                                     { 1.0f, 1.0f, 1.0f, 1.0f },
+                                                                     { 1.0f, 1.0f, 1.0f, 1.0f },
+                                                                     1.0f,
+                                                                     1.0f,
+                                                                     18.0f };
+
+  memcpy(module->params, &tmp, sizeof(dt_iop_colorbalance_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorbalance_params_t));
+}
+
+void cleanup(dt_iop_module_t *module)
+{
+  free(module->params);
+  module->params = NULL;
+}
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl, from programs.conf
+  dt_iop_colorbalance_global_data_t *gd
+      = (dt_iop_colorbalance_global_data_t *)malloc(sizeof(dt_iop_colorbalance_global_data_t));
+  module->data = gd;
+  gd->kernel_colorbalance = dt_opencl_create_kernel(program, "colorbalance");
+  gd->kernel_colorbalance_lgg = dt_opencl_create_kernel(program, "colorbalance_lgg");
+  gd->kernel_colorbalance_cdl = dt_opencl_create_kernel(program, "colorbalance_cdl");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_colorbalance);
+  dt_opencl_free_kernel(gd->kernel_colorbalance_lgg);
+  dt_opencl_free_kernel(gd->kernel_colorbalance_cdl);
+  free(module->data);
+  module->data = NULL;
+}
+
+void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)(piece->data);
+  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)p1;
+
+  d->mode = p->mode;
+
+  switch(d->mode)
+  {
+    case SLOPE_OFFSET_POWER:
+    {
+      // Correct the luminance in RGB parameters so we don't affect it
+      float XYZ[3];
+
+      dt_prophotorgb_to_XYZ((const float *)&p->lift[CHANNEL_RED], XYZ);
+      d->lift[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR];
+      d->lift[CHANNEL_RED] = (p->lift[CHANNEL_RED] - XYZ[1]) + 1.f;
+      d->lift[CHANNEL_GREEN] = (p->lift[CHANNEL_GREEN] - XYZ[1]) + 1.f;
+      d->lift[CHANNEL_BLUE] = (p->lift[CHANNEL_BLUE] - XYZ[1]) + 1.f;
+
+      dt_prophotorgb_to_XYZ((const float *)&p->gamma[CHANNEL_RED], XYZ);
+      d->gamma[CHANNEL_FACTOR] = p->gamma[CHANNEL_FACTOR];
+      d->gamma[CHANNEL_RED] = (p->gamma[CHANNEL_RED] - XYZ[1]) + 1.f;
+      d->gamma[CHANNEL_GREEN] = (p->gamma[CHANNEL_GREEN] - XYZ[1]) + 1.f;
+      d->gamma[CHANNEL_BLUE] = (p->gamma[CHANNEL_BLUE] - XYZ[1]) + 1.f;
+
+      dt_prophotorgb_to_XYZ((const float *)&p->gain[CHANNEL_RED], XYZ);
+      d->gain[CHANNEL_FACTOR] = p->gain[CHANNEL_FACTOR];
+      d->gain[CHANNEL_RED] = (p->gain[CHANNEL_RED] - XYZ[1]) + 1.f;
+      d->gain[CHANNEL_GREEN] = (p->gain[CHANNEL_GREEN] - XYZ[1]) + 1.f;
+      d->gain[CHANNEL_BLUE] = (p->gain[CHANNEL_BLUE] - XYZ[1]) + 1.f;
+
+      break;
+    }
+
+    case LEGACY:
+    {
+      // Luminance is not corrected in lift/gamma/gain for compatibility
+      for(int i = 0; i < CHANNEL_SIZE; i++)
+      {
+        d->lift[i] = p->lift[i];
+        d->gamma[i] = p->gamma[i];
+        d->gain[i] = p->gain[i];
+      }
+
+      break;
+    }
+
+    case LIFT_GAMMA_GAIN:
+    {
+      // Divide the parameters by 2.2 to match the correction we got in legacy sRGB mode
+      // That is because we work in a larger space
+      // Correct the luminance in RGB parameters so we don't affect it
+      float XYZ[3];
+      dt_prophotorgb_to_XYZ((const float *)&p->lift[CHANNEL_RED], XYZ);
+      d->lift[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR];
+      d->lift[CHANNEL_RED] = (p->lift[CHANNEL_RED] - XYZ[1]) / 2.2f + 1.f;
+      d->lift[CHANNEL_GREEN] = (p->lift[CHANNEL_GREEN] - XYZ[1]) / 2.2f + 1.f;
+      d->lift[CHANNEL_BLUE] = (p->lift[CHANNEL_BLUE] - XYZ[1]) / 2.2f + 1.f;
+
+      dt_prophotorgb_to_XYZ((const float *)&p->gamma[CHANNEL_RED], XYZ);
+      d->gamma[CHANNEL_FACTOR] = p->gamma[CHANNEL_FACTOR];
+      d->gamma[CHANNEL_RED] = (p->gamma[CHANNEL_RED] - XYZ[1]) / 2.2f + 1.f;
+      d->gamma[CHANNEL_GREEN] = (p->gamma[CHANNEL_GREEN] - XYZ[1]) / 2.2f + 1.f;
+      d->gamma[CHANNEL_BLUE] = (p->gamma[CHANNEL_BLUE] - XYZ[1]) / 2.2f + 1.f;
+
+      dt_prophotorgb_to_XYZ((const float *)&p->gain[CHANNEL_RED], XYZ);
+      d->gain[CHANNEL_FACTOR] = p->gain[CHANNEL_FACTOR];
+      d->gain[CHANNEL_RED] = (p->gain[CHANNEL_RED] - XYZ[1]) / 2.2f + 1.f;
+      d->gain[CHANNEL_GREEN] = (p->gain[CHANNEL_GREEN] - XYZ[1]) / 2.2f + 1.f;
+      d->gain[CHANNEL_BLUE] = (p->gain[CHANNEL_BLUE] - XYZ[1]) / 2.2f + 1.f;
+
+      break;
+    }
+  }
+
+
+  d->grey = p->grey;
+  d->saturation = p->saturation;
+  d->contrast = p->contrast;
+}
+
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = calloc(1, sizeof(dt_iop_colorbalance_data_t));
+  self->commit_params(self, self->default_params, pipe, piece);
+}
+
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  free(piece->data);
+  piece->data = NULL;
+}
+
 static inline void set_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *B, float hsl[3], float *p, int mode)
 {
 
   float rgb[3] = { 0.0f };
   hsl2rgb(rgb, hsl[0], hsl[1], hsl[2]);
 
-  if (hsl[0] != -1)
+  if(hsl[0] != -1)
   {
     // Adjustement from http://filmicworlds.com/blog/minimal-color-grading-tools/
     float mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
-    p[CHANNEL_RED] = (rgb[0] - mean) * 2.0f  + 1.0f;
+    p[CHANNEL_RED] = (rgb[0] - mean) * 2.0f + 1.0f;
     p[CHANNEL_GREEN] = (rgb[1] - mean) * 2.0f + 1.0f;
     p[CHANNEL_BLUE] = (rgb[2] - mean) * 2.0f + 1.0f;
 
@@ -985,6 +1394,11 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
+
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  self->color_picker_box[0] = self->color_picker_box[1] = .25f;
+  self->color_picker_box[2] = self->color_picker_box[3] = .75f;
+  self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
 
   dt_bauhaus_combobox_set(g->mode, p->mode);
 
@@ -1008,7 +1422,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->gain_b, p->gain[CHANNEL_BLUE] - 1.0f);
 
 #ifdef AUTO
-  if (p->mode == LEGACY || p->mode == LIFT_GAMMA_GAIN)
+  if(p->mode == LEGACY || p->mode == LIFT_GAMMA_GAIN)
   {
     gtk_widget_set_visible(g->optim_label, FALSE);
     gtk_widget_set_visible(g->auto_color, FALSE);
@@ -1022,7 +1436,7 @@ void gui_update(dt_iop_module_t *self)
   }
 #endif
 
-  if (p->mode == LEGACY)
+  if(p->mode == LEGACY)
   {
     gtk_widget_set_visible(g->master_box, FALSE);
   }
@@ -1630,261 +2044,7 @@ static gboolean dt_iop_area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t
 }
 #endif
 
-
-static void autogrey_callback(GtkWidget *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_iop_request_focus(self);
-    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-    dt_control_queue_redraw();
-  }
-  else
-  {
-    dt_dev_reprocess_all(self->dev);
-    dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-    dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-
-    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f)
-    {
-      dt_control_log(_("wait for the preview to be updated."));
-      return;
-    }
-
-    float XYZ[3] = { 0.0f };
-    float rgb[3] = { 0.0f };
-    dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
-    dt_XYZ_to_prophotorgb((const float *)XYZ, rgb);
-
-    const float lift[3] = { ( p->lift[CHANNEL_RED] + p->lift[CHANNEL_FACTOR] - 2.0f ),
-                              ( p->lift[CHANNEL_GREEN] + p->lift[CHANNEL_FACTOR] - 2.0f ),
-                              ( p->lift[CHANNEL_BLUE] + p->lift[CHANNEL_FACTOR] - 2.0f ) },
-                gamma[3] = { p->gamma[CHANNEL_RED] * p->gamma[CHANNEL_FACTOR],
-                             p->gamma[CHANNEL_GREEN] * p->gamma[CHANNEL_FACTOR],
-                             p->gamma[CHANNEL_BLUE] * p->gamma[CHANNEL_FACTOR] },
-                gamma_inv[3] = { (gamma[0] != 0.0f) ? 1.0f / gamma[0] : 1000000.0f,
-                                 (gamma[1] != 0.0f) ? 1.0f / gamma[1] : 1000000.0f,
-                                 (gamma[2] != 0.0f) ? 1.0f / gamma[2] : 1000000.0f },
-                gain[3] = { p->gain[CHANNEL_RED] * p->gain[CHANNEL_FACTOR],
-                            p->gain[CHANNEL_GREEN] * p->gain[CHANNEL_FACTOR],
-                            p->gain[CHANNEL_BLUE] * p->gain[CHANNEL_FACTOR] };
-
-    for(int c = 0; c < 3; c++)
-    {
-      rgb[c] = CDL(rgb[c], gain[c], lift[c], gamma_inv[c]);
-      rgb[c] = CLAMP(rgb[c], 0.0f, 1.0f);
-    }
-
-    dt_prophotorgb_to_XYZ((const float *)rgb, XYZ);
-
-    p->grey = XYZ[1] * 100.0f;
-
-    dt_bauhaus_slider_set_soft(g->grey, p->grey);
-
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
-}
-
 #ifdef AUTO
-static void lift_neutralize_callback(GtkWidget *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_iop_request_focus(self);
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-    dt_control_queue_redraw();
-  }
-  else
-  {
-    dt_dev_reprocess_all(self->dev);
-    dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-    dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-
-    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f)
-    {
-      dt_control_log(_("wait for the preview to be updated."));
-      return;
-    }
-
-    const float gain[3] = { p->gain[CHANNEL_RED],
-                            p->gain[CHANNEL_GREEN],
-                            p->gain[CHANNEL_BLUE] };
-
-    float XYZ[3] = { 0.0f };
-    dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
-    float RGB[3] = { 0.0f };
-    dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
-
-    // Save the patch color for the optimization
-#ifdef OPTIM
-    for (int c = 0; c < 3; ++c) g->color_patches_lift[c] = RGB[c];
-    g->color_patches_flags[LIFT] = 1;
-#endif
-
-    // Compute the RGB values after the CDL factors
-    for (int c = 0; c < 3; ++c) RGB[c] = CDL( RGB[c], \
-                                              p->gain[CHANNEL_FACTOR], \
-                                              p->lift[CHANNEL_FACTOR] - 1.0f, \
-                                              1.0f / p->gamma[CHANNEL_FACTOR] );
-
-    // Compute the luminance of the average grey
-    dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
-
-    // Get the parameter
-    for (int c = 0; c < 3; ++c) RGB[c] = XYZ[1] - RGB[c] * gain[c];
-
-    p->lift[CHANNEL_RED] = RGB[0] + 1.0f;
-    p->lift[CHANNEL_GREEN] = RGB[1] + 1.0f;
-    p->lift[CHANNEL_BLUE] = RGB[2] + 1.0f;
-
-    normalize_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, p->lift, CHANNEL_FACTOR,  SLOPE_OFFSET_POWER);
-    darktable.gui->reset = 1;
-    set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
-    darktable.gui->reset = 0;
-
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
-}
-
-static void gamma_neutralize_callback(GtkWidget *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_iop_request_focus(self);
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-    dt_control_queue_redraw();
-  }
-  else
-  {
-    dt_dev_reprocess_all(self->dev);
-    dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-    dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-
-    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f)
-    {
-      dt_control_log(_("wait for the preview to be updated."));
-      return;
-    }
-
-    float XYZ[3] = { 0.0f };
-    dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
-    float RGB[3] = { 0.0f };
-    dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
-
-    // Save the patch color for the optimization
-#ifdef OPTIM
-    for (int c = 0; c < 3; ++c) g->color_patches_gamma[c] = RGB[c];
-    g->color_patches_flags[GAMMA] = 1;
-#endif
-
-    // Compute the RGB values after the CDL factors
-    for (int c = 0; c < 3; ++c) RGB[c] = CDL( RGB[c], \
-                                              p->gain[CHANNEL_FACTOR], \
-                                              p->lift[CHANNEL_FACTOR] - 1.0f, \
-                                              1.0f / p->gamma[CHANNEL_FACTOR] );
-
-    // Compute the luminance of the average grey
-    dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
-
-    // Get the parameter
-    for (int c = 0; c < 3; ++c) RGB[c] = logf(RGB[c]) / logf(XYZ[1]);
-
-    p->gamma[CHANNEL_RED] = RGB[0] + 1.0f;
-    p->gamma[CHANNEL_GREEN] = RGB[1] + 1.0f;
-    p->gamma[CHANNEL_BLUE] = RGB[2] + 1.0f;
-
-    normalize_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, p->gamma, CHANNEL_FACTOR,  SLOPE_OFFSET_POWER);
-    darktable.gui->reset = 1;
-    set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
-    darktable.gui->reset = 0;
-
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
-}
-
-static void gain_neutralize_callback(GtkWidget *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_iop_request_focus(self);
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-    dt_control_queue_redraw();
-  }
-  else
-  {
-    dt_dev_reprocess_all(self->dev);
-    dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-    dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-
-    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f)
-    {
-      dt_control_log(_("wait for the preview to be updated."));
-      return;
-    }
-
-    float XYZ[3] = { 0.0f };
-    dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
-    float RGB[3] = { 0.0f };
-    dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
-
-    // Save the patch color for the optimization
-#ifdef OPTIM
-    for (int c = 0; c < 3; c++) g->color_patches_gain[c] = RGB[c];
-    g->color_patches_flags[GAIN] = 1;
-#endif
-
-    // Compute the RGB values after the CDL factors
-    for (int c = 0; c < 3; ++c) RGB[c] = CDL( RGB[c], \
-                                              p->gain[CHANNEL_FACTOR], \
-                                              p->lift[CHANNEL_FACTOR] - 1.0f, \
-                                              1.0f / p->gamma[CHANNEL_FACTOR] );
-
-    // Compute the luminance of the average grey
-    dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
-
-    // Get the parameter
-    for (int c = 0; c < 3; ++c) RGB[c] = XYZ[1] / MAX(RGB[c], 0.000001f);
-
-    p->gain[CHANNEL_RED] = RGB[0] + 1.0f;
-    p->gain[CHANNEL_GREEN] = RGB[1] + 1.0f;
-    p->gain[CHANNEL_BLUE] = RGB[2] + 1.0f;
-
-    normalize_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, p->gain, CHANNEL_FACTOR,  SLOPE_OFFSET_POWER);
-    darktable.gui->reset = 1;
-    set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
-    darktable.gui->reset = 0;
-
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
-}
-
 static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1999,142 +2159,6 @@ static void optimize_color_pressed_callback(GtkWidget *button, gpointer user_dat
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void lift_auto_callback(GtkWidget *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_iop_request_focus(self);
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-    dt_control_queue_redraw();
-    dt_dev_reprocess_all(self->dev);
-  }
-  else
-  {
-    dt_dev_reprocess_all(self->dev);
-    dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-    dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-
-    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f)
-    {
-      dt_control_log(_("wait for the preview to be updated."));
-      return;
-    }
-
-    float XYZ[3] = { 0.0f };
-    dt_Lab_to_XYZ((const float *)self->picked_color_min, XYZ);
-
-#ifdef OPTIM
-    g->luma_patches[LIFT] = XYZ[1];
-    g->luma_patches_flags[LIFT] = 1;
-#endif
-
-    float RGB[3] = { 0.0f };
-    dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
-
-    p->lift[CHANNEL_FACTOR] = - p->gain[CHANNEL_FACTOR] * XYZ[1] + 1.0f;
-
-    dt_bauhaus_slider_set_soft(g->lift_factor, p->lift[CHANNEL_FACTOR] - 1.0f);
-
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
-}
-
-static void gamma_auto_callback(GtkWidget *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_iop_request_focus(self);
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-    dt_control_queue_redraw();
-  }
-  else
-  {
-    dt_dev_reprocess_all(self->dev);
-    dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-    dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-
-    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f)
-    {
-      dt_control_log(_("wait for the preview to be updated."));
-      return;
-    }
-
-    float XYZ[3] = { 0.0f };
-    dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
-
-#ifdef OPTIM
-    g->luma_patches[GAMMA] = XYZ[1];
-    g->luma_patches_flags[GAMMA] = 1;
-#endif
-
-    float RGB[3] = { 0.0f };
-    dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
-
-    p->gamma[CHANNEL_FACTOR] =  logf(MAX(p->gain[CHANNEL_FACTOR] * XYZ[1] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f)) / logf(0.1800f);
-
-    dt_bauhaus_slider_set_soft(g->gamma_factor, p->gamma[CHANNEL_FACTOR] - 1.0f);
-
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
-}
-
-static void gain_auto_callback(GtkWidget *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_iop_request_focus(self);
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-    dt_control_queue_redraw();
-  }
-  else
-  {
-    dt_dev_reprocess_all(self->dev);
-    dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-    dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-
-    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f)
-    {
-      dt_control_log(_("wait for the preview to be updated."));
-      return;
-    }
-
-    float XYZ[3] = { 0.0f };
-    dt_Lab_to_XYZ((const float *)self->picked_color_max, XYZ);
-
-#ifdef OPTIM
-    g->luma_patches[GAIN] = XYZ[1];
-    g->luma_patches_flags[GAIN] = 1;
-#endif
-
-    float RGB[3] = { 0.0f };
-    dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
-
-    p->gain[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR] / (XYZ[1]);
-
-    dt_bauhaus_slider_set_soft(g->gain_factor, p->gain[CHANNEL_FACTOR] - 1.0f);
-
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
-}
-
 static void optimize_luma_pressed_callback(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -2212,6 +2236,8 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
 
   g->mode = NULL;
+  g->apply_picked_color = 0;
+  g->which_colorpicker = DT_PICKCOLBAL_NONE;
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
@@ -2262,7 +2288,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->grey), "value-changed", G_CALLBACK(grey_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->grey, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->grey, TRUE);
-  g_signal_connect(G_OBJECT(g->grey), "quad-pressed", G_CALLBACK(autogrey_callback), self);
+  g_signal_connect(G_OBJECT(g->grey), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 
   g->contrast = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.005, p->contrast - 1.0f, 4, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->contrast, -0.99, 0.99);
@@ -2319,18 +2345,20 @@ void gui_init(dt_iop_module_t *self)
 //                     G_CALLBACK (dt_iop_colorbalance_leave_notify), self);
 #endif
 
-#define ADD_FACTOR(which) \
-  g->which##_factor = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005, p->which[CHANNEL_FACTOR] - 1.0f, 4, 0);\
-  dt_bauhaus_slider_enable_soft_boundaries(g->which##_factor, -1.0, 1.0); \
-  dt_bauhaus_slider_set_stop(g->which##_factor, 0.0, 0.0, 0.0, 0.0);\
-  dt_bauhaus_slider_set_stop(g->which##_factor, 1.0, 1.0, 1.0, 1.0);\
-  gtk_widget_set_tooltip_text(g->which##_factor, _("factor of " #which));\
-  dt_bauhaus_widget_set_label(g->which##_factor, _(#which), _("factor"));\
-  g_signal_connect(G_OBJECT(g->which##_factor), "value-changed", G_CALLBACK(which##_factor_callback), self);\
-  gtk_box_pack_start(GTK_BOX(self->widget), g->which##_factor, TRUE, TRUE, 0);\
-  dt_bauhaus_widget_set_quad_paint(g->which##_factor, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);\
-  dt_bauhaus_widget_set_quad_toggle(g->which##_factor, TRUE);\
-  g_signal_connect(G_OBJECT(g->which##_factor), "quad-pressed", G_CALLBACK(which##_auto_callback), self);
+#define ADD_FACTOR(which)                                                                                         \
+  g->which##_factor = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005,                      \
+                                                                    p->which[CHANNEL_FACTOR] - 1.0f, 4, 0);       \
+  dt_bauhaus_slider_enable_soft_boundaries(g->which##_factor, -1.0, 1.0);                                         \
+  dt_bauhaus_slider_set_stop(g->which##_factor, 0.0, 0.0, 0.0, 0.0);                                              \
+  dt_bauhaus_slider_set_stop(g->which##_factor, 1.0, 1.0, 1.0, 1.0);                                              \
+  gtk_widget_set_tooltip_text(g->which##_factor, _("factor of " #which));                                         \
+  dt_bauhaus_widget_set_label(g->which##_factor, _(#which), _("factor"));                                         \
+  g_signal_connect(G_OBJECT(g->which##_factor), "value-changed", G_CALLBACK(which##_factor_callback), self);      \
+  gtk_box_pack_start(GTK_BOX(self->widget), g->which##_factor, TRUE, TRUE, 0);                                    \
+  dt_bauhaus_widget_set_quad_paint(g->which##_factor, dtgtk_cairo_paint_colorpicker,                              \
+                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);                                 \
+  dt_bauhaus_widget_set_quad_toggle(g->which##_factor, TRUE);                                                     \
+  g_signal_connect(G_OBJECT(g->which##_factor), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 
 #define ADD_CHANNEL(which, c, n, N) \
   g->which##_##c = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005, p->which[CHANNEL_##N] - 1.0f, 4, 0);\
@@ -2356,7 +2384,7 @@ void gui_init(dt_iop_module_t *self)
 #ifdef AUTO
   dt_bauhaus_widget_set_quad_paint(g->hue_lift, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->hue_lift, TRUE);
-  g_signal_connect(G_OBJECT(g->hue_lift), "quad-pressed", G_CALLBACK(lift_neutralize_callback), self);
+  g_signal_connect(G_OBJECT(g->hue_lift), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 #endif
 
   g->sat_lift = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 0.25f, 0.0005f, 0.0f, 4, 0);
@@ -2406,7 +2434,7 @@ void gui_init(dt_iop_module_t *self)
 #ifdef AUTO
   dt_bauhaus_widget_set_quad_paint(g->hue_gamma, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->hue_gamma, TRUE);
-  g_signal_connect(G_OBJECT(g->hue_gamma), "quad-pressed", G_CALLBACK(gamma_neutralize_callback), self);
+  g_signal_connect(G_OBJECT(g->hue_gamma), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 #endif
   g->sat_gamma = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 0.25f, 0.0005f, 0.0f, 4, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->sat_gamma, 0.0f, 1.0f);
@@ -2454,7 +2482,7 @@ void gui_init(dt_iop_module_t *self)
 #ifdef AUTO
   dt_bauhaus_widget_set_quad_paint(g->hue_gain, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->hue_gain, TRUE);
-  g_signal_connect(G_OBJECT(g->hue_gain), "quad-pressed", G_CALLBACK(gain_neutralize_callback), self);
+  g_signal_connect(G_OBJECT(g->hue_gain), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 #endif
   g->sat_gain = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 0.25f, 0.0005f, 0.0f, 4, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->sat_gain, 0.0f, 1.0f);
@@ -2529,6 +2557,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   // nothing else necessary, gtk will clean up the slider.
   free(self->gui_data);
   self->gui_data = NULL;
