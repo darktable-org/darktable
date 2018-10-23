@@ -79,7 +79,7 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   int height = allocation.height;
 
   /* draw standard button background if not transparent */
-  if((flags & CPF_STYLE_FLAT))
+  if(flags & CPF_STYLE_FLAT)
   {
     if(flags & CPF_PRELIGHT)
     {
