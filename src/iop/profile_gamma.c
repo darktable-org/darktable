@@ -575,21 +575,21 @@ static void mode_callback(GtkWidget *combo, gpointer user_data)
 
 static int call_apply_picked_color(struct dt_iop_module_t *self, dt_iop_profilegamma_gui_data_t *g)
 {
-  int handled = 0;
-  if(g->which_colorpicker == DT_PICKPROFLOG_GREY_POINT)
+  int handled = 1;
+  switch(g->which_colorpicker)
   {
-    handled = 1;
-    apply_auto_grey(self);
-  }
-  else if(g->which_colorpicker == DT_PICKPROFLOG_SHADOWS_RANGE)
-  {
-    handled = 1;
-    apply_auto_black(self);
-  }
-  else if(g->which_colorpicker == DT_PICKPROFLOG_DYNAMIC_RANGE)
-  {
-    handled = 1;
-    apply_auto_dynamic_range(self);
+     case DT_PICKPROFLOG_GREY_POINT:
+       apply_auto_grey(self);
+       break;
+     case DT_PICKPROFLOG_SHADOWS_RANGE:
+       apply_auto_black(self);
+       break;
+     case DT_PICKPROFLOG_DYNAMIC_RANGE:
+       apply_auto_dynamic_range(self);
+       break;
+     default:
+       handled = 0;
+       break;
   }
   return handled;
 }
