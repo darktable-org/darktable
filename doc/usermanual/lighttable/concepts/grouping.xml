@@ -87,7 +87,10 @@
 
   <para>
     You can define which image constitutes the group head, while in an expanded view of a group,
-    clicking on the <quote>G</quote> symbol of the desired image.
+    clicking on the <quote>G</quote> symbol of the desired image. That symbol is shown only if 
+    grouping mode is enabled, so to change the group head, you need to first enable group mode,
+    then expand the group you want to change and then click the <quote>G</quote> symbol on the
+    desired image.
   </para>
 
   <para>
