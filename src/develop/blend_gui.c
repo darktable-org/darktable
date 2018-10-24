@@ -1835,8 +1835,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                                                         "parametric mask, or combination of both"));
     g_signal_connect(G_OBJECT(bd->masks_modes_combo), "value-changed",
                      G_CALLBACK(_blendop_masks_mode_callback), bd);
-
-
+    dt_gui_add_help_link(GTK_WIDGET(bd->masks_modes_combo), "blending.html");
 
     bd->blend_modes_combo = dt_bauhaus_combobox_new(module);
     dt_bauhaus_widget_set_label(bd->blend_modes_combo, _("blend"), _("blend mode"));
@@ -1993,6 +1992,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_bauhaus_combobox_set(bd->blend_modes_combo, 0);
     g_signal_connect(G_OBJECT(bd->blend_modes_combo), "value-changed",
                      G_CALLBACK(_blendop_blend_mode_callback), bd);
+    dt_gui_add_help_link(GTK_WIDGET(bd->blend_modes_combo), "blending_operators.html");
 
 
     bd->opacity_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 1, 100.0, 0);
