@@ -430,7 +430,8 @@ if(GPHOTO2_FOUND)
   # CPack ignores variables you define in your CMakeLists.txt file,
   # and only variables ${CPACK_*} are correctly used.
   # so this needs to be saved by adding another variable with a name beginning with CPACK
-  set( CPACK_NSIS_GPHOTO2_VERSION ${GPHOTO2_VERSION_STRING} CACHE STRING "GPHOT2 version string")
+  set( CPACK_NSIS_GPHOTO2_VERSION ${GPHOTO2_VERSION_STRING} CACHE STRING "GPHOTO2 version string")
+  set( CPACK_NSIS_GRAPHICSMAGICK_VERSION ${GraphicsMagick_PKGCONF_VERSION} CACHE STRING "GM version string")
 endif(GPHOTO2_FOUND)
 
 # Check for __builtin_cpu_supports here due to a bug in clang/llvm. LLVM uses
