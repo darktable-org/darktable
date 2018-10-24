@@ -1084,7 +1084,10 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
   bd->blendif_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
-  dt_gui_add_help_link(GTK_WIDGET(bd->blendif_box), "parametric_mask.html");
+  // add event box so that one can click into the area to get help for parametric masks
+  GtkWidget* event_box = gtk_event_box_new();
+  dt_gui_add_help_link(GTK_WIDGET(event_box), "parametric_mask.html");
+  gtk_container_add(GTK_CONTAINER(blendw), event_box);
 
   /* create and add blendif support if module supports it */
   if(bd->blendif_support)
@@ -1356,7 +1359,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     bd->blendif_inited = 1;
   }
 
-  gtk_box_pack_start(GTK_BOX(blendw), GTK_WIDGET(bd->blendif_box), TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->blendif_box));
 }
 
 void dt_iop_gui_update_masks(dt_iop_module_t *module)
@@ -1417,7 +1420,10 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
   bd->masks_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
-  dt_gui_add_help_link(GTK_WIDGET(bd->masks_box), "drawn_mask.html");
+  // add event box so that one can click into the area to get help for drawn masks
+  GtkWidget* event_box = gtk_event_box_new();
+  dt_gui_add_help_link(GTK_WIDGET(event_box), "drawn_mask.html");
+  gtk_container_add(GTK_CONTAINER(blendw), event_box);
 
   /* create and add masks support if module supports it */
   if(bd->masks_support)
@@ -1508,8 +1514,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->masks_inited = 1;
   }
-
-  gtk_box_pack_start(GTK_BOX(blendw), GTK_WIDGET(bd->masks_box), TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->masks_box));
 }
 
 void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
