@@ -428,7 +428,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->legacy_params = so->legacy_params;
   // allow to select a shape inside an iop
   module->masks_selection_changed = so->masks_selection_changed;
-  
+
   module->connect_key_accels = so->connect_key_accels;
   module->disconnect_key_accels = so->disconnect_key_accels;
 
@@ -1886,6 +1886,141 @@ static GdkPixbuf *load_image(const char *filename, int size)
   return pixbuf;
 }
 
+static char* dt_iop_get_help_url(dt_iop_module_t *module)
+{
+  if(!strcmp(module->op,"dither"))
+    return "correction_group.html#dithering";
+  if(!strcmp(module->op,"watermark"))
+    return "effect_group.html#watermark";
+  if(!strcmp(module->op,"borders"))
+    return "effect_group.html#framing";
+  if(!strcmp(module->op,"clahe"))
+    return "tone_group.html#local_contrast";
+  if(!strcmp(module->op,"velvia"))
+    return "color_group.html#velvia";
+  if(!strcmp(module->op,"splittoning"))
+    return "effect_group.html#splittoning";
+  if(!strcmp(module->op,"vignette"))
+    return "effect_group.html#vignetting";
+  if(!strcmp(module->op,"soften"))
+    return "effect_group.html#soften";
+  if(!strcmp(module->op,"channelmixer"))
+    return "color_group.html#channel_mixer";
+  if(!strcmp(module->op,"colorout"))
+    return "color_group.html#output_color_profile";
+  if(!strcmp(module->op,"colorcontrast"))
+    return "color_group.html#color_contrast";
+  if(!strcmp(module->op,"grain"))
+    return "effect_group.html#grain";
+  if(!strcmp(module->op,"highpass"))
+    return "effect_group.html#highpass";
+  if(!strcmp(module->op,"lowpass"))
+    return "effect_group.html#lowpass";
+  if(!strcmp(module->op,"sharpen"))
+    return "correction_group.html#sharpen";
+  if(!strcmp(module->op,"colorcorrection"))
+    return "color_group.html#color_correction";
+  if(!strcmp(module->op,"relight"))
+    return "tone_group.html#fill_light";
+  if(!strcmp(module->op,"levels"))
+    return "tone_group.html#levels";
+  if(!strcmp(module->op,"tonecurve"))
+    return "tone_group.html#tone_curve";
+  if(!strcmp(module->op,"zonesystem"))
+    return "tone_group.html#zone_system";
+  if(!strcmp(module->op,"colisa"))
+    return "modules.html#contrast_brightness_saturation";
+  if(!strcmp(module->op,"monochrome"))
+    return "color_group.html#monochrome";
+  if(!strcmp(module->op,"lowlight"))
+    return "effect_group.html#low_light";
+  if(!strcmp(module->op,"colorzones"))
+    return "color_group.html#color_zones";
+  if(!strcmp(module->op,"bilat"))
+    return "tone_group.html#local_contrast";
+  if(!strcmp(module->op,"atrous"))
+    return "correction_group.html#equalizer";
+  if(!strcmp(module->op,"shadhi"))
+    return "modules.html#shadows_and_highlights";
+  if(!strcmp(module->op,"globaltonemap"))
+    return "tone_group.html#global_tonemap";
+  if(!strcmp(module->op,"nlmeans"))
+    return "correction_group.html#denoise_non_local_means";
+  if(!strcmp(module->op,"bloom"))
+    return "effect_group.html#bloom";
+  if(!strcmp(module->op,"colormapping"))
+    return "effect_group.html#color_mapping";
+  if(!strcmp(module->op,"colortransfer"))
+    return NULL;//TODO
+  if(!strcmp(module->op,"colorize"))
+    return "effect_group.html#colorize";
+  if(!strcmp(module->op,"clipping"))
+    return "modules.html#crop_and_rotate";
+  if(!strcmp(module->op,"colorbalance"))
+    return "color_group.html#d0e8958";
+  if(!strcmp(module->op,"vibrance"))
+    return "color_group.html#vibrance";
+  if(!strcmp(module->op,"equalizer"))
+    return "correction_group.html#equalizer";
+  if(!strcmp(module->op,"defringe"))
+    return "correction_group.html#defringe";
+  if(!strcmp(module->op,"colorchecker"))
+    return "color_group.html#color_look_up_table";
+  if(!strcmp(module->op,"colorreconstruct"))
+    return "modules.html#color_reconstruction";
+  if(!strcmp(module->op,"colorin"))
+    return "color_group.html#input_color_profile";
+  if(!strcmp(module->op,"hazeremoval"))
+    return "correction_group.html#haze_removal";
+  if(!strcmp(module->op,"profile_gamma"))
+    return "color_group.html#unbreak_input_profile";
+  if(!strcmp(module->op,"bilateral"))
+    return "correction_group.html#denoise_bilateral";
+  if(!strcmp(module->op,"basecurve"))
+    return "modules.html#base_curve";
+  if(!strcmp(module->op,"graduatednd"))
+    return "effect_group.html#graduated_density";
+  if(!strcmp(module->op,"flip"))
+    return "modules.html#orientation";
+  if(!strcmp(module->op,"scalepixels"))
+    return "correction_group.html#scale_pixels";
+  if(!strcmp(module->op,"rotatepixels"))
+    return "correction_group.html#rotate_pixels";
+  if(!strcmp(module->op,"liquify"))
+    return "correction_group.html#liquify";
+  if(!strcmp(module->op,"ashift"))
+    return "correction_group.html#perspective_correction";
+  if(!strcmp(module->op,"lens"))
+    return "correction_group.html#lens_correction";
+  if(!strcmp(module->op,"retouch"))
+    return NULL;//TODO
+  if(!strcmp(module->op,"spots"))
+    return "correction_group.html#spot_removal";
+  if(!strcmp(module->op,"exposure"))
+    return "modules.html#exposure";
+  if(!strcmp(module->op,"tonemap"))
+    return "tone_group.html#tonemapping";
+  if(!strcmp(module->op,"denoiseprofile"))
+    return "correction_group.html#denoise_profiled";
+  if(!strcmp(module->op,"demosaic"))
+    return "modules.html#demosaic";
+  if(!strcmp(module->op,"rawdenoise"))
+    return "correction_group.html#raw_denoise";
+  if(!strcmp(module->op,"hotpixels"))
+    return "correction_group.html#hotpixels";
+  if(!strcmp(module->op,"cacorrect"))
+    return "correction_group.html#chromatic_aberrations";
+  if(!strcmp(module->op,"highlights"))
+    return "modules.html#highlight_reconstruction";
+  if(!strcmp(module->op,"temperature"))
+    return "modules.html#whitebalance";
+  if(!strcmp(module->op,"invert"))
+    return "modules.html#invert";
+  if(!strcmp(module->op,"rawprepare"))
+    return "modules.html#raw_black_white_point";
+  return NULL;
+}
+
 static const uint8_t fallback_pixel[4] = { 0, 0, 0, 0 };
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
@@ -1992,6 +2127,8 @@ got_image:
     gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
   }
 
+  dt_gui_add_help_link(expander, dt_iop_get_help_url(module));
+
   /* add reset button */
   hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   module->reset_button = GTK_WIDGET(hw[idx]);
@@ -2028,6 +2165,7 @@ got_image:
   /* reorder header, for now, iop are always in the right panel */
   for(int i = 7; i >= 0; i--)
     if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 2 ? TRUE : FALSE, i == 2 ? TRUE : FALSE, 2);
+  dt_gui_add_help_link(header, "interacting.html");
 
   gtk_widget_set_halign(hw[2], GTK_ALIGN_END);
   dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
