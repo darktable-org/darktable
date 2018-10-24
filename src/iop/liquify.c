@@ -3365,7 +3365,7 @@ void gui_init (dt_iop_module_t *module)
 
   module->widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
   dt_gui_add_help_link(module->widget, "correction_group.html#liquify");
-  
+
   GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_widget_set_tooltip_text(hbox, _("use a tool to add warps.\nright-click to remove a warp."));
 
