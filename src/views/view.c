@@ -358,6 +358,12 @@ static char* dt_lib_get_help_url(dt_lib_module_t *plugin)
     return "mask_manager.html";
   if(!strcmp(plugin->plugin_name,"modulelist"))
     return "more_modules.html";
+  if(!strcmp(plugin->plugin_name,"location"))
+    return "find_location.html";
+  if(!strcmp(plugin->plugin_name,"map_settings"))
+    return "map_settings.html";
+  if(!strcmp(plugin->plugin_name,"print_settings"))
+    return "print_settings.html";
   if(!strcmp(plugin->plugin_name,"global_toolbox"))
     return NULL;
   if(!strcmp(plugin->plugin_name,"lighttable_mode"))
@@ -376,6 +382,7 @@ static char* dt_lib_get_help_url(dt_lib_module_t *plugin)
     return NULL;
   if(!strcmp(plugin->plugin_name,"viewswitcher"))
     return NULL;
+  printf("%s\n",plugin->plugin_name);
   return NULL;
 }
 
