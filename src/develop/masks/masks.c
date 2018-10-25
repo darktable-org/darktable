@@ -178,7 +178,9 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formty
   }
   else if(formtype & DT_MASKS_ELLIPSE)
   {
-    if(gui->point_selected >= 0)
+    if(gui->creation)
+      g_strlcat(msg, _("scroll to set size, shift+scroll to set feather size\nctrl+scroll to set shape opacity"), sizeof(msg));
+    else if(gui->point_selected >= 0)
       g_strlcat(msg, _("ctrl+click to rotate"), sizeof(msg));
     else if(gui->form_selected)
       g_strlcat(msg, _("shift+click to switch feathering mode, ctrl+scroll to set shape opacity,\nshift+scroll to set feather size"), sizeof(msg));
@@ -195,11 +197,22 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formty
   }
   else if(formtype & DT_MASKS_CIRCLE)
   {
-    if(gui->form_selected)
+    if(gui->creation)
+      g_strlcat(msg, _("scroll to set size, shift+scroll to set feather size\nctrl+scroll to set shape opacity"), sizeof(msg));
+    else if(gui->form_selected)
       g_strlcat(msg, _("ctrl+scroll to set shape opacity, shift+scroll to set feather size"), sizeof(msg));
   }
 
   dt_control_hinter_message(darktable.control, msg);
+}
+
+void dt_masks_init_form_gui(dt_masks_form_gui_t *gui)
+{
+  memset(gui, 0, sizeof(dt_masks_form_gui_t));
+
+  gui->posx = gui->posy = -1.0f;
+  gui->posx_source = gui->posy_source = -1.0f;
+  gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
 }
 
 void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index)
@@ -1230,18 +1243,45 @@ void dt_masks_free_form(dt_masks_form_t *form)
   free(form);
 }
 
+int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
+{
+  // reset mouse position for masks
+  if(darktable.develop->form_gui)
+  {
+    dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+
+    // if masks are being created or edited don't reset the position
+    if(gui->creation || gui->form_dragging || gui->source_dragging || gui->point_dragging >= 0
+       || gui->feather_dragging >= 0 || gui->seg_dragging >= 0 || gui->point_border_dragging >= 0)
+      return 0;
+
+    gui->posx = gui->posy = -1.f;
+  }
+  return 0;
+}
+
 int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double y, double pressure, int which)
 {
-  // add an option to allow skip mouse events while editing masks
-  if(darktable.develop->darkroom_skip_mouse_events) return 0;
-
-  dt_masks_form_t *form = darktable.develop->form_visible;
+  // record mouse position even if there are no masks visible
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-
+  dt_masks_form_t *form = darktable.develop->form_visible;
   float pzx, pzy;
+
   dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
+
+  if(gui)
+  {
+    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
+    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+  }
+
+  // do not preocess if no forms visible
+  if(!form) return 0;
+
+  // add an option to allow skip mouse events while editing masks
+  if(darktable.develop->darkroom_skip_mouse_events) return 0;
 
   int rep = 0;
   if(form->type & DT_MASKS_CIRCLE)
@@ -1395,7 +1435,7 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
   // add preview when creating a circle or ellipse
   if((form->type & DT_MASKS_GRADIENT) && gui->creation)
     return;
-  
+
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
   if(wd < 1.0 || ht < 1.0) return;
@@ -1451,7 +1491,7 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
   dev->form_gui->guipoints_payload = NULL;
   dev->form_gui->guipoints_count = 0;
   dev->form_gui->pipe_hash = dev->form_gui->formid = 0;
-  dev->form_gui->posx = dev->form_gui->posy = dev->form_gui->dx = dev->form_gui->dy = 0.0f;
+  dev->form_gui->dx = dev->form_gui->dy = 0.0f;
   dev->form_gui->scrollx = dev->form_gui->scrolly = 0.0f;
   dev->form_gui->form_selected = dev->form_gui->border_selected = dev->form_gui->form_dragging
       = dev->form_gui->form_rotating = dev->form_gui->border_toggling = FALSE;
@@ -1530,6 +1570,39 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t
   darktable.develop->form_gui->edit_mode = value;
   if(value && form)
     dt_dev_masks_selection_change(darktable.develop, form->formid, FALSE);
+  else
+    dt_dev_masks_selection_change(darktable.develop, 0, FALSE);
+
+  dt_control_queue_redraw_center();
+}
+
+void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module, const int formid,
+                                        dt_masks_edit_mode_t value)
+{
+  if(!module) return;
+
+  dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
+
+  const int grid = module->blend_params->mask_id;
+  dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, formid);
+  if(form)
+  {
+    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
+    fpt->formid = formid;
+    fpt->parentid = grid;
+    fpt->state = DT_MASKS_STATE_USE;
+    fpt->opacity = 1.0f;
+    grp->points = g_list_append(grp->points, fpt);
+  }
+
+  dt_masks_form_t *grp2 = dt_masks_create(DT_MASKS_GROUP);
+  grp2->formid = 0;
+  dt_masks_group_ungroup(grp2, grp);
+  dt_masks_change_form_gui(grp2);
+  darktable.develop->form_gui->edit_mode = value;
+
+  if(value && form)
+    dt_dev_masks_selection_change(darktable.develop, formid, FALSE);
   else
     dt_dev_masks_selection_change(darktable.develop, 0, FALSE);
 
@@ -2429,6 +2502,123 @@ void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel)
         module->masks_selection_changed(module, darktable.develop->mask_form_selected_id);
     }
   }
+}
+
+// draw a cross where the source position of a clone mask will be created
+void dt_masks_draw_clone_source_pos(cairo_t *cr, const float zoom_scale, const float x, const float y)
+{
+  const float dx = 3.5f / zoom_scale;
+  const float dy = 3.5f / zoom_scale;
+
+  double dashed[] = { 4.0, 4.0 };
+  dashed[0] /= zoom_scale;
+  dashed[1] /= zoom_scale;
+
+  cairo_set_dash(cr, dashed, 0, 0);
+  cairo_set_line_width(cr, 3.0 / zoom_scale);
+  cairo_set_source_rgba(cr, .3, .3, .3, .8);
+
+  cairo_move_to(cr, x + dx, y);
+  cairo_line_to(cr, x - dx, y);
+  cairo_move_to(cr, x, y + dy);
+  cairo_line_to(cr, x, y - dy);
+  cairo_stroke_preserve(cr);
+
+  cairo_set_line_width(cr, 1.0 / zoom_scale);
+  cairo_set_source_rgba(cr, .8, .8, .8, .8);
+  cairo_stroke(cr);
+}
+
+// sets if the initial source position for a clone mask will be absolute or relative,
+// based on mouse position and key state
+void dt_masks_set_source_pos_initial_state(dt_masks_form_gui_t *gui, const uint32_t state, const float pzx,
+                                           const float pzy)
+{
+  if((state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+    gui->source_pos_type = DT_MASKS_SOURCE_POS_ABSOLUTE;
+  else if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
+  else
+    fprintf(stderr, "unknown state for setting masks position type\n");
+
+  // both source types record an absolute position,
+  // for the relative type, the first time is used the position is recorded,
+  // the second time a relative position is calculated based on that one
+  gui->posx_source = pzx * darktable.develop->preview_pipe->backbuf_width;
+  gui->posy_source = pzy * darktable.develop->preview_pipe->backbuf_height;
+}
+
+// calculates the source position value for preview drawing, on cairo coordinates
+void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mask_type, const float initial_xpos,
+                                         const float initial_ypos, const float xpos, const float ypos, float *px,
+                                         float *py, const int adding)
+{
+  float x = 0.f, y = 0.f;
+
+  const float wd = darktable.develop->preview_pipe->iwidth;
+  const float ht = darktable.develop->preview_pipe->iheight;
+
+  if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE)
+  {
+    x = xpos + gui->posx_source * wd;
+    y = ypos + gui->posy_source * ht;
+  }
+  else if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE_TEMP)
+  {
+    if(gui->posx_source == -1.f && gui->posy_source == -1.f)
+    {
+      if(mask_type & DT_MASKS_CIRCLE)
+      {
+        const float radius = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_size"));
+        x = xpos + radius * wd;
+        y = ypos - radius * ht;
+      }
+      else if(mask_type & DT_MASKS_ELLIPSE)
+      {
+        const float radius_a = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_a");
+        const float radius_b = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_b");
+        x = xpos + radius_a * wd;
+        y = ypos - radius_b * ht;
+      }
+      else if(mask_type & DT_MASKS_PATH)
+      {
+        x = xpos + 0.02f * wd;
+        y = ypos + 0.02f * ht;
+      }
+      else if(mask_type & DT_MASKS_BRUSH)
+      {
+        x = xpos + 0.01f * wd;
+        y = ypos + 0.01f * ht;
+      }
+      else
+        fprintf(stderr, "unsuported masks type when calculating source position value\n");
+    }
+    else
+    {
+      x = gui->posx_source;
+      y = gui->posy_source;
+    }
+  }
+  else if(gui->source_pos_type == DT_MASKS_SOURCE_POS_ABSOLUTE)
+  {
+    // if the user is actually adding the mask follow the cursor
+    if(adding)
+    {
+      x = xpos + gui->posx_source - initial_xpos;
+      y = ypos + gui->posy_source - initial_ypos;
+    }
+    else
+    {
+      // if not added yet set the start position
+      x = gui->posx_source;
+      y = gui->posy_source;
+    }
+  }
+  else
+    fprintf(stderr, "unknown source position type for setting source position value\n");
+
+  *px = x;
+  *py = y;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

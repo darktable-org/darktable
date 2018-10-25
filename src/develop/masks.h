@@ -83,6 +83,13 @@ typedef enum dt_masks_ellipse_flags_t
   DT_MASKS_ELLIPSE_PROPORTIONAL = 1
 } dt_masks_ellipse_flags_t;
 
+typedef enum dt_masks_source_pos_type_t
+{
+  DT_MASKS_SOURCE_POS_RELATIVE = 0,
+  DT_MASKS_SOURCE_POS_RELATIVE_TEMP = 1,
+  DT_MASKS_SOURCE_POS_ABSOLUTE = 2
+} dt_masks_source_pos_type_t;
+
 /** structure used to store 1 point for a circle */
 typedef struct dt_masks_point_circle_t
 {
@@ -189,7 +196,7 @@ typedef struct dt_masks_form_gui_t
   int guipoints_count;
 
   // values for mouse positions, etc...
-  float posx, posy, dx, dy, scrollx, scrolly;
+  float posx, posy, dx, dy, scrollx, scrolly, posx_source, posy_source;
   gboolean form_selected;
   gboolean border_selected;
   gboolean source_selected;
@@ -200,6 +207,7 @@ typedef struct dt_masks_form_gui_t
   int feather_selected;
   int seg_selected;
   int point_border_selected;
+  int source_pos_type;
 
   gboolean form_dragging;
   gboolean source_dragging;
@@ -215,8 +223,10 @@ typedef struct dt_masks_form_gui_t
 
 
   gboolean creation;
+  gboolean creation_continuous;
   gboolean creation_closing_form;
   dt_iop_module_t *creation_module;
+  dt_iop_module_t *creation_continuous_module;
 
   dt_masks_pressure_sensitivity_t pressure_sensitivity;
 
@@ -224,6 +234,9 @@ typedef struct dt_masks_form_gui_t
   int formid;
   uint64_t pipe_hash;
 } dt_masks_form_gui_t;
+
+/** init dt_masks_form_gui_t struct with default values */
+void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);
 
 /** get points in real space with respect of distortion dx and dy are used to eventually move the center of
  * the circle */
@@ -289,6 +302,7 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
 int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_t state);
 void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, int32_t width, int32_t height,
                                  int32_t pointerx, int32_t pointery);
+int dt_masks_events_mouse_leave(struct dt_iop_module_t *module);
 
 /** functions used to manipulate gui datas */
 void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index);
@@ -302,6 +316,8 @@ dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp, dt_masks_f
 void dt_masks_iop_edit_toggle_callback(GtkToggleButton *togglebutton, struct dt_iop_module_t *module);
 void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module_t *module);
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t value);
+void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module, const int formid,
+                                        dt_masks_edit_mode_t value);
 void dt_masks_iop_update(struct dt_iop_module_t *module);
 void dt_masks_iop_combo_populate(GtkWidget *w, struct dt_iop_module_t **m);
 void dt_masks_iop_use_same_as(struct dt_iop_module_t *module, struct dt_iop_module_t *src);
@@ -317,7 +333,16 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid);
 int dt_masks_point_in_form_exact(float x, float y, float *points, int points_start, int points_count);
 int dt_masks_point_in_form_near(float x, float y, float *points, int points_start, int points_count, float distance, int *near);
 
+/** allow to select a shape inside an iop */
 void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel);
+
+/** utils for selecting the source of a clone mask while creating it */
+void dt_masks_draw_clone_source_pos(cairo_t *cr, const float zoom_scale, const float x, const float y);
+void dt_masks_set_source_pos_initial_state(dt_masks_form_gui_t *gui, const uint32_t state, const float pzx,
+                                           const float pzy);
+void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mask_type, const float initial_xpos,
+                                         const float initial_ypos, const float xpos, const float ypos, float *px,
+                                         float *py, const int adding);
 
 /** code for dynamic handling of intermediate buffers */
 static inline
