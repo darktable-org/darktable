@@ -28,6 +28,7 @@
 #include "common/mipmap_cache.h"
 #include "common/module.h"
 #include "common/undo.h"
+#include "common/usermanual_url.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -310,82 +311,6 @@ int dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name)
   return dt_view_manager_switch_by_view(vm, new_view);
 }
 
-static char* dt_lib_get_help_url(dt_lib_module_t *plugin)
-{
-  if(!strcmp(plugin->plugin_name,"ratings"))
-    return "star_ratings_and_color_labels.html";
-  if(!strcmp(plugin->plugin_name,"filter"))
-    return "filtering_and_sort_order.html";
-  if(!strcmp(plugin->plugin_name,"colorlabels"))
-    return "star_ratings_and_color_labels.html";
-  if(!strcmp(plugin->plugin_name,"import"))
-    return "lighttable_panels.html#import";
-  if(!strcmp(plugin->plugin_name,"select"))
-    return "select.html";
-  if(!strcmp(plugin->plugin_name,"image"))
-    return "selected_images.html";
-  if(!strcmp(plugin->plugin_name,"copy_history"))
-    return "history_stack.html";
-  if(!strcmp(plugin->plugin_name,"styles"))
-    return "styles.html";
-  if(!strcmp(plugin->plugin_name,"metadata"))
-    return "metadata_editor.html";
-  if(!strcmp(plugin->plugin_name,"tagging"))
-    return "tagging.html";
-  if(!strcmp(plugin->plugin_name,"geotagging"))
-    return "geotagging.html";
-  if(!strcmp(plugin->plugin_name,"collect"))
-    return "collect_images.html";
-  if(!strcmp(plugin->plugin_name,"recentcollect"))
-    return "recently_used_collections.html";
-  if(!strcmp(plugin->plugin_name,"metadata_view"))
-    return "image_information.html";
-  if(!strcmp(plugin->plugin_name,"export"))
-    return "export_selected.html";
-  if(!strcmp(plugin->plugin_name,"histogram"))
-    return "histogram.html";
-  if(!strcmp(plugin->plugin_name,"navigation"))
-    return "darkroom_panels.html#navigation";
-  if(!strcmp(plugin->plugin_name,"snapshots"))
-    return "snapshots.html";
-  if(!strcmp(plugin->plugin_name,"modulegroups"))
-    return "module_groups.html";
-  if(!strcmp(plugin->plugin_name,"history"))
-    return "history.html";
-  if(!strcmp(plugin->plugin_name,"colorpicker"))
-    return "global_color_picker.html";
-  if(!strcmp(plugin->plugin_name,"masks"))
-    return "mask_manager.html";
-  if(!strcmp(plugin->plugin_name,"modulelist"))
-    return "more_modules.html";
-  if(!strcmp(plugin->plugin_name,"location"))
-    return "find_location.html";
-  if(!strcmp(plugin->plugin_name,"map_settings"))
-    return "map_settings.html";
-  if(!strcmp(plugin->plugin_name,"print_settings"))
-    return "print_settings.html";
-  if(!strcmp(plugin->plugin_name,"global_toolbox"))
-    return NULL;
-  if(!strcmp(plugin->plugin_name,"lighttable_mode"))
-    return NULL;
-  if(!strcmp(plugin->plugin_name,"module_toolbox"))
-    return NULL;
-  if(!strcmp(plugin->plugin_name,"view_toolbox"))
-    return NULL;
-  if(!strcmp(plugin->plugin_name,"backgroundjobs"))
-    return NULL;
-  if(!strcmp(plugin->plugin_name,"hinter"))
-    return NULL;
-  if(!strcmp(plugin->plugin_name,"filter"))
-    return NULL;
-  if(!strcmp(plugin->plugin_name,"filmstrip"))
-    return NULL;
-  if(!strcmp(plugin->plugin_name,"viewswitcher"))
-    return NULL;
-  printf("%s\n",plugin->plugin_name);
-  return NULL;
-}
-
 int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 {
   dt_view_t *old_view = vm->current_view;
@@ -502,7 +427,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
       /* if we didn't get an expander let's add the widget */
       if(!w) w = plugin->widget;
-      dt_gui_add_help_link(w, dt_lib_get_help_url(plugin));
+      dt_gui_add_help_link(w, dt_get_help_url(plugin->plugin_name));
 
       /* add module to its container */
       dt_ui_container_add_widget(darktable.gui->ui, plugin->container(plugin), w);
