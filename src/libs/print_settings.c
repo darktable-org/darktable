@@ -1112,7 +1112,7 @@ gui_init (dt_lib_module_t *self)
   dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)malloc(sizeof(dt_lib_print_settings_t));
   self->data = d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  dt_gui_add_help_link(self->widget,"print_chapter.html#print_overview");
+  dt_gui_add_help_link(self->widget, "print_chapter.html#print_overview");
 
   char datadir[PATH_MAX] = { 0 };
   char confdir[PATH_MAX] = { 0 };
