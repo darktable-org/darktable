@@ -384,7 +384,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, "color_group.html#color_contrast");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   /* a scale */
   g->a_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 5.0, 0.01, p->a_steepness, 2);

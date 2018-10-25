@@ -153,7 +153,7 @@ char* dt_get_help_url(char* name)
   if(!strcmp(name,"colormapping"))
     return "effect_group.html#color_mapping";
   if(!strcmp(name,"colortransfer"))
-    return NULL;//TODO
+    return NULL;
   if(!strcmp(name,"colorize"))
     return "effect_group.html#colorize";
   if(!strcmp(name,"clipping"))

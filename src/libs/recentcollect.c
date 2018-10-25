@@ -301,7 +301,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)calloc(1, sizeof(dt_lib_recentcollect_t));
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, "recently_used_collections.html#recently_used_collections");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   d->inited = 0;
 
   gtk_widget_set_name(self->widget, "recent-collection-ui");

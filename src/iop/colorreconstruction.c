@@ -641,7 +641,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   if(!b) goto error;
-  
+
   dt_iop_colorreconstruct_bilateral_slice(b, in, out, data->threshold, roi_in, piece->iscale);
 
   // here is where we generate the canned bilateral grid of the preview pipe for later use
@@ -887,7 +887,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
   b->sigma_r = bf->sigma_r;
   b->dev_grid = NULL;
   b->dev_grid_tmp = NULL;
-  
+
   // alloc grid buffer:
   b->dev_grid
       = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
@@ -1350,7 +1350,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->hash = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, "modules.html#color_reconstruction");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->threshold = dt_bauhaus_slider_new_with_range(self, 50.0f, 150.0f, 0.1f, p->threshold, 2);
   g->spatial = dt_bauhaus_slider_new_with_range(self, 0.0f, 1000.0f, 1.0f, p->spatial, 2);

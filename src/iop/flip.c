@@ -504,7 +504,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  dt_gui_add_help_link(self->widget, "modules.html#orientation");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   GtkWidget *label = dtgtk_reset_label_new(_("rotate"), self, &p->orientation, sizeof(int32_t));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);

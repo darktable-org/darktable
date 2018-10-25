@@ -613,7 +613,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, "effect_group.html#grain");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   /* courseness */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 20.0, 6400.0, 20.0, p->scale * GRAIN_SCALE_FACTOR, 0);

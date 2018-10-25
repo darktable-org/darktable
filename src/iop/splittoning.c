@@ -523,7 +523,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_set_row_spacing(grid, DT_BAUHAUS_SPACE);
   gtk_grid_set_column_spacing(grid, DT_BAUHAUS_SPACE);
   gtk_grid_set_column_homogeneous(grid, FALSE);
-  dt_gui_add_help_link(self->widget, "effect_group.html#splittoning");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   float rgb[3];
 
