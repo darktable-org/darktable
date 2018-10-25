@@ -1123,7 +1123,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *hbox, *label1;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, "effect_group.html#vignetting");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   label1 = dtgtk_reset_label_new(_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
 

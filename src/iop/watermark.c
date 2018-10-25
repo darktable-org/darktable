@@ -1312,7 +1312,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(self->widget), DT_BAUHAUS_SPACE);
   gtk_grid_set_column_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(10));
-  dt_gui_add_help_link(self->widget, "effect_group.html#watermark");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   gtk_grid_attach(GTK_GRID(self->widget), dt_ui_section_label_new(_("content")), 0, line++, 3, 1);
 

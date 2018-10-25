@@ -907,7 +907,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->selected = -1;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, "tone_group.html#tone_curve");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // tabs
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());

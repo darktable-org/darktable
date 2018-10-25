@@ -442,7 +442,7 @@ void gui_init(dt_iop_module_t *self)
   g->pixels_fixed = -1;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, "correction_group.html#hotpixels");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(g->box_raw), "draw", G_CALLBACK(draw), self);

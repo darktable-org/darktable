@@ -501,7 +501,7 @@ void gui_init(dt_lib_module_t *self)
   // Setting up the GUI
   self->widget = container;
   gtk_box_pack_start(GTK_BOX(container), output_row, TRUE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, "global_color_picker.html#global_color_picker");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   // The color patch
   data->color_patch = gtk_drawing_area_new();

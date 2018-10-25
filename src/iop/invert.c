@@ -615,7 +615,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  dt_gui_add_help_link(self->widget, "modules.html#invert");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, 4 * sizeof(float)));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->label), TRUE, TRUE, 0);
