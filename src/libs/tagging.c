@@ -474,7 +474,7 @@ void gui_init(dt_lib_module_t *self)
   d->imgsel = -1;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  dt_gui_add_help_link(self->widget, "tagging.html#tagging");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   //   gtk_widget_set_size_request(self->widget, DT_PIXEL_APPLY_DPI(100), -1);
 
   GtkBox *box, *hbox;

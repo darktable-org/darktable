@@ -313,7 +313,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  dt_gui_add_help_link(self->widget, "tone_group.html#local_contrast");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g->vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   g->vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
