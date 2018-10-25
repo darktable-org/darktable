@@ -735,6 +735,10 @@ static void film_strip_activated(const int imgid, void *data)
   // switch images in darkroom mode:
   const dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  // first compute/update possibly new aspect ratio of current picture
+  dt_image_set_aspect_ratio(dev->image_storage.id);
+
   // clean the undo list
   dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
   dt_dev_change_image(dev, imgid);
@@ -1815,6 +1819,7 @@ void leave(dt_view_t *self)
     dt_conf_set_string("plugins/darkroom/active", "");
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
+
   // tag image as changed
   // TODO: only tag the image when there was a real change.
   guint tagid = 0;
@@ -1831,6 +1836,9 @@ void leave(dt_view_t *self)
     // dump new xmp data
     dt_image_synch_xmp(dev->image_storage.id);
   }
+
+  // update possibly changed aspect ratio
+  dt_image_set_aspect_ratio(dev->image_storage.id);
 
   // clear gui.
 
