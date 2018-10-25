@@ -660,7 +660,7 @@ void gui_init(dt_lib_module_t *self)
   _lib_metatdata_view_init_labels();
 
   self->widget = gtk_grid_new();
-  dt_gui_add_help_link(self->widget,"image_information.html#image_information");
+  dt_gui_add_help_link(self->widget,dt_get_help_url(self->plugin_name));
   gtk_grid_set_column_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(5));
 //   GtkWidget *last = NULL;
 

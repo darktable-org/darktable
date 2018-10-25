@@ -564,7 +564,7 @@ void gui_init(dt_iop_module_t *self)
   for(int i = 0; i < 3; i++)
     for(int j = 0; j < 2; j++) c->pick_xy_positions[i][j] = -1;
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  dt_gui_add_help_link(self->widget, "tone_group.html#levels");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   c->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->mode, NULL, _("mode"));

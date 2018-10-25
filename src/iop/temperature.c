@@ -773,7 +773,7 @@ void gui_update(struct dt_iop_module_t *self)
     for(int i = 0; i < wb_preset_count; i++)
     {
       if(g->preset_cnt >= 50) break;
-      if(!strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker) 
+      if(!strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
          && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model))
       {
         if(!wb_name || strcmp(wb_name, wb_preset[i].name))
@@ -810,7 +810,7 @@ void gui_update(struct dt_iop_module_t *self)
     for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
     {
       // look through all variants of this preset, with different tuning
-      for(int i = g->preset_num[j]; !found && (i < wb_preset_count) 
+      for(int i = g->preset_num[j]; !found && (i < wb_preset_count)
                                     && !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
                                     && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model)
                                     && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name);
@@ -1064,7 +1064,7 @@ gui:
       // we're normalizing that to be D65
       for(int i = 0; i < wb_preset_count; i++)
       {
-        if(!strcmp(wb_preset[i].make, module->dev->image_storage.camera_maker) 
+        if(!strcmp(wb_preset[i].make, module->dev->image_storage.camera_maker)
            && !strcmp(wb_preset[i].model, module->dev->image_storage.camera_model)
            && !strcmp(wb_preset[i].name, Daylight) && wb_preset[i].tuning == 0)
         {
@@ -1277,7 +1277,7 @@ static void apply_preset(dt_iop_module_t *self)
     {
       gboolean found = FALSE;
       // look through all variants of this preset, with different tuning
-      for(int i = g->preset_num[pos]; (i < wb_preset_count) 
+      for(int i = g->preset_num[pos]; (i < wb_preset_count)
                                       && !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
                                       && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model)
                                       && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[pos]].name);
@@ -1385,7 +1385,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, "modules.html#whitebalance");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   g->stack = gtk_stack_new();

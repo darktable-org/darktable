@@ -81,7 +81,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_scrolled_window_new(
       NULL, NULL); // GTK_ADJUSTMENT(gtk_adjustment_new(200, 100, 200, 10, 100, 100))
   gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(208));
-  dt_gui_add_help_link(self->widget, "more_modules.html#more_modules");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(self->widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
   d->tree = GTK_TREE_VIEW(gtk_tree_view_new());
   gtk_widget_set_size_request(GTK_WIDGET(d->tree), DT_PIXEL_APPLY_DPI(50), -1);

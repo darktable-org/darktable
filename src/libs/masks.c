@@ -1629,7 +1629,7 @@ void gui_init(dt_lib_module_t *self)
 
   // initialise widgets
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
-  dt_gui_add_help_link(self->widget, "mask_manager.html#mask_manager");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   GtkWidget *label = gtk_label_new(_("created shapes"));

@@ -833,7 +833,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->mouse_radius = 1.0 / DT_IOP_LOWLIGHT_BANDS;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, "effect_group.html#low_light");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
 

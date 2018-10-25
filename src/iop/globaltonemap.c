@@ -688,7 +688,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->hash = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, "tone_group.html#global_tonemap");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   /* operator */
   g->operator= dt_bauhaus_combobox_new(self);

@@ -1859,7 +1859,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->old_width = g->old_height = -1;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, "modules.html#crop_and_rotate");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g->hvflip = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->hvflip, NULL, _("flip"));
   dt_bauhaus_combobox_add(g->hvflip, _("none"));

@@ -49,13 +49,13 @@ static const float colorchecker_Lab[] =
  49.93,   -4.88, -21.93, // blue sky
  43.14,  -13.10,  21.91, // foliage
  55.11,    8.84, -25.40, // blue flower
- 70.72,  -33.40, -0.20 , // bluish green  
+ 70.72,  -33.40, -0.20 , // bluish green
  62.66,   36.07,  57.10, // orange
  40.02,   10.41, -45.96, // purple red
- 51.12,   48.24,  16.25, // moderate red  
+ 51.12,   48.24,  16.25, // moderate red
  30.33,   22.98, -21.59, // purple
- 72.53,  -23.71,  57.26, // yellow green  
- 71.94,  19.36 ,  67.86, // orange yellow 
+ 72.53,  -23.71,  57.26, // yellow green
+ 71.94,  19.36 ,  67.86, // orange yellow
  28.78,  14.18 , -50.30, // blue
  55.26,  -38.34,  31.37, // green
  42.10,  53.38 ,  28.19, // red
@@ -305,7 +305,7 @@ vfastlog2 (v4sf x)
   const v4sf c_0_3520087068 = v4sfl (0.3520887068f);
 
   return y - c_124_22551499
-    - c_1_498030302 * mx.f 
+    - c_1_498030302 * mx.f
     - c_1_725877999 / (c_0_3520087068 + mx.f);
 }
 
@@ -319,7 +319,7 @@ vfastlog (v4sf x)
 // thinplate spline kernel \phi(r) = 2 r^2 ln(r)
 static inline v4sf kerneldist4(const float *x, const float *y)
 {
-  const float r2 = 
+  const float r2 =
       (x[0]-y[0])*(x[0]-y[0])+
       (x[1]-y[1])*(x[1]-y[1])+
       (x[2]-y[2])*(x[2]-y[2]);
@@ -327,7 +327,7 @@ static inline v4sf kerneldist4(const float *x, const float *y)
 }
 #endif
 
-static inline float 
+static inline float
 fastlog2 (float x)
 {
   union { float f; uint32_t i; } vx = { x };
@@ -336,7 +336,7 @@ fastlog2 (float x)
   y *= 1.1920928955078125e-7f;
 
   return y - 124.22551499f
-    - 1.498030302f * mx.f 
+    - 1.498030302f * mx.f
     - 1.72587999f / (0.3520887068f + mx.f);
 }
 
@@ -365,7 +365,7 @@ static inline float kernel(const float *x, const float *y)
   // well damnit, this speedup thing unfortunately shows severe artifacts.
   // return r*r*fasterlog(MAX(1e-8f,r));
   // this one seems to be a lot better, let's see how it goes:
-  const float r2 = 
+  const float r2 =
       (x[0]-y[0])*(x[0]-y[0])+
       (x[1]-y[1])*(x[1]-y[1])+
       (x[2]-y[2])*(x[2]-y[2]);
@@ -1250,7 +1250,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, "color_group.html#color_look_up_table");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // custom 24-patch widget in addition to combo box
   g->area = dtgtk_drawing_area_new_with_aspect_ratio(4.0/6.0);

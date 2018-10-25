@@ -345,7 +345,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, "tone_group.html#fill_light");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
