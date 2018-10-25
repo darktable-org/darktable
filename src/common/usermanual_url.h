@@ -19,4 +19,4 @@
 
 #include <string.h>
 
-char* dt_get_help_url(char* name);
+char *dt_get_help_url(char *name);
