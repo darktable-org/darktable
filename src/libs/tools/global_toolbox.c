@@ -240,21 +240,21 @@ static void _main_do_event(GdkEvent *event, gpointer data)
           }
           if(base_url)
           {
-            dt_l10n_language_t *language = (dt_l10n_language_t *)g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
+            dt_l10n_language_t *language
+                = (dt_l10n_language_t *)g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
             char *lang = language->code;
             const int number_of_supported_languages = 4;
-            const char* supported_languages[4] = {"en", "fr", "it", "es"};
+            const char *supported_languages[4] = { "en", "fr", "it", "es" };
             bool is_language_supported = false;
-            for (int i = 0; i < number_of_supported_languages; i++)
+            for(int i = 0; i < number_of_supported_languages; i++)
             {
-              if (0 == strcmp(lang, supported_languages[i]))
+              if(0 == strcmp(lang, supported_languages[i]))
               {
                 is_language_supported = true;
                 break;
               }
             }
-            if (!is_language_supported)
-              lang = "en";
+            if(!is_language_supported) lang = "en";
             char *url = g_build_path("/", base_url, lang, help_url, NULL);
             // TODO: call the web browser directly so that file:// style base for local installs works
 #if GTK_CHECK_VERSION(3, 22, 0)
