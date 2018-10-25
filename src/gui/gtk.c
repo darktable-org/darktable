@@ -943,6 +943,36 @@ static const char* get_axis_name(int pos)
   return AXIS_NAMES[pos];
 }
 
+static GdkRGBA get_darkroom_ui_bg_color(GtkStyleContext *ctx)
+{
+    const char *bg_color_str = dt_conf_get_string("plugins/darkroom/ui/background_color");
+    GdkRGBA darkroom_bg_color = {0};
+
+    /* https://en.wikipedia.org/wiki/Shades_of_gray */
+    if (strcmp(bg_color_str, "white") == 0) {
+        gdk_rgba_parse(&darkroom_bg_color, "#ffffff");
+    } else if (strcmp(bg_color_str, "light gray") == 0) {
+        gdk_rgba_parse(&darkroom_bg_color, "#dedede");
+    } else if (strcmp(bg_color_str, "medium gray") == 0) {
+        gdk_rgba_parse(&darkroom_bg_color, "#bebebe");
+    } else if (strcmp(bg_color_str, "spanish gray") == 0) {
+        gdk_rgba_parse(&darkroom_bg_color, "#989898");
+    } else if (strcmp(bg_color_str, "dim gray") == 0) {
+        gdk_rgba_parse(&darkroom_bg_color, "#696969");
+    } else if (strcmp(bg_color_str, "jet gray") == 0) {
+        gdk_rgba_parse(&darkroom_bg_color, "#343434");
+    } else if (strcmp(bg_color_str, "black") == 0) {
+        gdk_rgba_parse(&darkroom_bg_color, "#000000");
+    } else {
+        /* default */
+        gtk_style_context_lookup_color(ctx,
+                                       "darkroom_bg_color",
+                                       &darkroom_bg_color);
+    }
+
+    return darkroom_bg_color;
+}
+
 int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 {
   /* lets zero mem */
@@ -1167,7 +1197,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   c[DT_GUI_COLOR_BG] = (GdkRGBA){ 0.1333, 0.1333, 0.1333, 1.0 };
 
   c[DT_GUI_COLOR_DARKROOM_BG] = (GdkRGBA){ .2, .2, .2, 1.0 };
-  gtk_style_context_lookup_color(ctx, "darkroom_bg_color", &c[DT_GUI_COLOR_DARKROOM_BG]);
+
+  c[DT_GUI_COLOR_DARKROOM_BG] = get_darkroom_ui_bg_color(ctx);
 
   c[DT_GUI_COLOR_DARKROOM_PREVIEW_BG] = (GdkRGBA){ .1, .1, .1, 1.0 };
   gtk_style_context_lookup_color(ctx, "darkroom_preview_bg_color", &c[DT_GUI_COLOR_DARKROOM_PREVIEW_BG]);

@@ -1079,6 +1079,24 @@
     <longdescription>process the image in darkroom mode with a small border. set to 0 if you don't want any border.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>plugins/darkroom/ui/background_color</name>
+    <type>
+      <enum>
+        <option>white</option>
+        <option>light gray</option>
+        <option>medium gray</option>
+        <option>spanish gray</option>
+        <option>dim gray</option>
+        <option>jet gray</option>
+        <option>black</option>
+        <option>default</option>
+      </enum>
+    </type>
+    <default>default</default>
+    <shortdescription>background color around the image in darkroom mode</shortdescription>
+    <longdescription>process the image in darkroom mode with a background color of your choice.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>scrollbars</name>
     <type>
       <enum>
