@@ -1448,8 +1448,13 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   }
 
   if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
+<<<<<<< HEAD
      || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_EXPOSURE
      || property == DT_COLLECTION_PROP_ASPECT_RATIO)
+=======
+     || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_ASPECT_RATIO
+     || property == DT_COLLECTION_PROP_EXPOSURE)
+>>>>>>> c3a0a4f72fe8f0700470a784ece18b3fdb7f697c
   {
     gtk_widget_set_tooltip_text(d->text, _("type your query, use <, <=, >, >=, <>, =, [;] as operators"));
   }
@@ -2068,6 +2073,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_APERTURE);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_EXPOSURE);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_ASPECT_RATIO);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_EXPOSURE);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FILENAME);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GEOTAGGING);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_LOCAL_COPY);
