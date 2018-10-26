@@ -1437,8 +1437,8 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   {
     message = g_strdup_printf(
       ngettext(
-        "%d image of %d in current collection is selected", 
-        "%d images of %d in current collection are selected", 
+        "%d image of %d in current collection is selected",
+        "%d images of %d in current collection are selected",
         cs),
       cs, c);
   }
