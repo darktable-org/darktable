@@ -31,6 +31,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <inttypes.h>
 #include <math.h>
@@ -107,9 +108,11 @@ typedef struct dt_iop_colorzones_global_data_t
   int kernel_colorzones;
 } dt_iop_colorzones_global_data_t;
 
+#define NAME "color zones"
+
 const char *name()
 {
-  return _("color zones");
+  return _(NAME);
 }
 
 int flags()
@@ -119,7 +122,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

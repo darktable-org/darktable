@@ -41,6 +41,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 // for Kelvin temperature and bogus WB
 #include "common/colorspaces.h"
@@ -154,15 +155,17 @@ static int ignore_missing_wb(dt_image_t *img)
   return FALSE;
 }
 
+#define NAME "white balance"
+
 const char *name()
 {
-  return C_("modulename", "white balance");
+  return C_("modulename", NAME);
 }
 
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
 }
 
 int flags()

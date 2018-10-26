@@ -34,6 +34,7 @@
 #include "gui/guides.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <assert.h>
 #include <gdk/gdkkeysyms.h>
@@ -290,14 +291,16 @@ static void adjust_aabb(const float *p, float *aabb)
   aabb[3] = fmaxf(aabb[3], p[1]);
 }
 
+#define NAME "crop and rotate"
+
 const char *name()
 {
-  return _("crop and rotate");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
 }
 
 int flags()

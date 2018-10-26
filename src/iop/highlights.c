@@ -35,6 +35,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -72,14 +73,16 @@ typedef struct dt_iop_highlights_global_data_t
   int kernel_highlights_4f_clip;
 } dt_iop_highlights_global_data_t;
 
+#define NAME "highlight reconstruction"
+
 const char *name()
 {
-  return _("highlight reconstruction");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
 }
 
 int flags()

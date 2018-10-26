@@ -31,6 +31,8 @@
 #include "develop/blend.h"
 #include "develop/imageop_math.h"
 #include "develop/masks.h"
+#include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
 #include <stdlib.h>
@@ -182,15 +184,17 @@ typedef struct dt_iop_retouch_global_data_t
   int kernel_retouch_copy_mask_to_alpha;
 } dt_iop_retouch_global_data_t;
 
+#define NAME "retouch"
+
 // this returns a translatable name
 const char *name()
 {
-  return _("retouch");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int flags()

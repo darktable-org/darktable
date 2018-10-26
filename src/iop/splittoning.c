@@ -32,6 +32,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -75,10 +76,11 @@ typedef struct dt_iop_splittoning_global_data_t
   int kernel_splittoning;
 } dt_iop_splittoning_global_data_t;
 
+#define NAME "split toning"
 
 const char *name()
 {
-  return _("split toning");
+  return _(NAME);
 }
 
 int flags()
@@ -88,7 +90,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
