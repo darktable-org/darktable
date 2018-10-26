@@ -3055,7 +3055,7 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   for(int n = 0; n < lines_count; n++)
   {
     const int length = lines[n].length;
-    
+
     total_points += length;
 
     my_points_idx[n].length = length;
@@ -4119,7 +4119,7 @@ static void process_after_preview_callback(gpointer instance, gpointer user_data
       }
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       break;
-      
+
     case ASHIFT_JOBCODE_NONE:
     default:
       break;
