@@ -405,7 +405,7 @@ typedef struct dt_iop_module_t
                        void *new_params, const int new_version);
   // allow to select a shape inside an iop
   void (*masks_selection_changed)(struct dt_iop_module_t *self, const int form_selected_id);
-  
+
   /** this is the temp homebrew callback to operations.
     * x,y, and scale are just given for orientation in the framebuffer. i and o are
     * scaled to the same size width*height and contain a max of 3 floats. other color
