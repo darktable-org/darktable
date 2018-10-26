@@ -27,6 +27,7 @@
 #include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -59,14 +60,16 @@ typedef struct dt_iop_rlce_data_t
   double slope;
 } dt_iop_rlce_data_t;
 
+#define NAME "local contrast"
+
 const char *name()
 {
-  return _("local contrast");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
 }
 
 int flags()

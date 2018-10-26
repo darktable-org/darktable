@@ -23,6 +23,7 @@
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -50,16 +51,18 @@ typedef struct dt_iop_cacorrect_global_data_t
 {
 } dt_iop_cacorrect_global_data_t;
 
+#define NAME "chromatic aberrations"
+
 // this returns a translatable name
 const char *name()
 {
   // make sure you put all your translatable strings into _() !
-  return _("chromatic aberrations");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int flags()

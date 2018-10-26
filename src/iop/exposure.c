@@ -45,6 +45,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #define exposure2white(x) exp2f(-(x))
 #define white2exposure(x) -dt_log2f(fmaxf(1e-20f, x))
@@ -99,14 +100,16 @@ typedef struct dt_iop_exposure_global_data_t
   int kernel_exposure;
 } dt_iop_exposure_global_data_t;
 
+#define NAME "exposure"
+
 const char *name()
 {
-  return _("exposure");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
 }
 
 int flags()

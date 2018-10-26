@@ -36,6 +36,7 @@
 #include "common/imageio_tiff.h"
 #include "develop/imageop_math.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include "external/adobe_coeff.c"
 #if defined(__SSE__)
@@ -106,14 +107,16 @@ typedef struct dt_iop_colorin_data_t
   dt_colorspaces_color_profile_type_t type;
 } dt_iop_colorin_data_t;
 
+#define NAME "input color profile"
+
 const char *name()
 {
-  return _("input color profile");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
 }
 
 int flags()

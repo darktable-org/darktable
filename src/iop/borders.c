@@ -33,6 +33,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -156,14 +157,16 @@ typedef struct dt_iop_borders_global_data_t
 
 typedef struct dt_iop_borders_params_t dt_iop_borders_data_t;
 
+#define NAME "framing"
+
 const char *name()
 {
-  return _("framing");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
 }
 
 int operation_tags()

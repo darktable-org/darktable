@@ -35,6 +35,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 
@@ -82,9 +83,11 @@ typedef struct dt_iop_relight_global_data_t
   int kernel_relight;
 } dt_iop_relight_global_data_t;
 
+#define NAME "fill light"
+
 const char *name()
 {
-  return _("fill light");
+  return _(NAME);
 }
 
 int flags()
@@ -94,7 +97,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_TONE;
+  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)

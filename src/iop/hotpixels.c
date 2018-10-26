@@ -31,6 +31,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -65,14 +66,16 @@ typedef struct dt_iop_hotpixels_data_t
   gboolean markfixed;
 } dt_iop_hotpixels_data_t;
 
+#define NAME "hot pixels"
+
 const char *name()
 {
-  return _("hot pixels");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int flags()

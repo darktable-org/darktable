@@ -32,6 +32,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <math.h>
@@ -191,14 +192,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+#define NAME "denoise (profiled)"
+
 const char *name()
 {
-  return _("denoise (profiled)");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int flags()

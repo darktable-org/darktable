@@ -31,6 +31,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -71,10 +72,11 @@ typedef struct dt_iop_colisa_global_data_t
   int kernel_colisa;
 } dt_iop_colisa_global_data_t;
 
+#define NAME "contrast brightness saturation"
 
 const char *name()
 {
-  return _("contrast brightness saturation");
+  return _(NAME);
 }
 
 int flags()
@@ -84,7 +86,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
 }
 
 

@@ -30,6 +30,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -73,15 +74,16 @@ typedef struct dt_iop_colorout_gui_data_t
   GtkWidget *output_intent, *output_profile;
 } dt_iop_colorout_gui_data_t;
 
+#define NAME "output color profile"
 
 const char *name()
 {
-  return _("output color profile");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
 }
 
 int flags()

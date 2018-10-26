@@ -41,6 +41,7 @@
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <float.h>
 #include <gtk/gtk.h>
@@ -80,9 +81,11 @@ typedef struct dt_iop_hazeremoval_global_data_t
 {
 } dt_iop_hazeremoval_global_data_t;
 
+#define NAME "haze removal"
+
 const char *name()
 {
-  return _("haze removal");
+  return _(NAME);
 }
 
 int flags()
@@ -92,7 +95,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

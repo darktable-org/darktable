@@ -34,6 +34,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -147,9 +148,11 @@ typedef struct dt_iop_vignette_global_data_t
   int kernel_vignette;
 } dt_iop_vignette_global_data_t;
 
+#define NAME "vignetting"
+
 const char *name()
 {
-  return _("vignetting");
+  return _(NAME);
 }
 
 int flags()
@@ -160,7 +163,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
