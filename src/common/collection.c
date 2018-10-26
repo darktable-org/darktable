@@ -702,7 +702,7 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
     *operator= g_match_info_fetch(match_info, 1);
     *number1 = g_match_info_fetch(match_info, 2);
 
-    if(*operator&& strcmp(*operator, "") == 0)
+    if(*operator && strcmp(*operator, "") == 0)
     {
       g_free(*operator);
       *operator= NULL;
@@ -846,21 +846,19 @@ void dt_collection_split_operator_exposure(const gchar *input, char **number1, c
 
   if(match_count == 6 || match_count == 7)
   {
-    *number1 = g_match_info_fetch(match_info, 2);
-    if(strstr(g_match_info_fetch(match_info, 1), "1/") != NULL)
-    {
-      float n1 = atof(*number1);
-      if(n1 != 0)
-        g_snprintf(*number1, sizeof(*number1), "%.5f", 1/n1);
-    }
+    gchar *n1 = g_match_info_fetch(match_info, 2);
 
-    *number2 = g_match_info_fetch(match_info, 5);
+    if(strstr(g_match_info_fetch(match_info, 1), "1/") != NULL)
+      *number1 = dt_util_dstrcat(NULL, "1.0/%s", n1);
+    else
+      *number1 = n1;
+
+    gchar *n2 = g_match_info_fetch(match_info, 5);
+
     if(strstr(g_match_info_fetch(match_info, 4), "1/") != NULL)
-    {
-      float n1 = atof(*number2);
-      if(n1 != 0)
-        g_snprintf(*number2, sizeof(*number2), "%.5f", 1/n1);
-    }
+      *number2 = dt_util_dstrcat(NULL, "1.0/%s", n2);
+    else
+      *number2 = n2;
 
     *operator= g_strdup("[]");
     g_match_info_free(match_info);
@@ -879,16 +877,14 @@ void dt_collection_split_operator_exposure(const gchar *input, char **number1, c
   {
     *operator= g_match_info_fetch(match_info, 1);
 
-    *number1 = g_match_info_fetch(match_info, 3);
+    gchar *n1 = g_match_info_fetch(match_info, 3);
 
     if(strstr(g_match_info_fetch(match_info, 2), "1/") != NULL)
-    {
-      float n1 = atof(*number1);
-      if(n1 != 0)
-        g_snprintf(*number1, sizeof(*number1), "%.5f", 1/n1);
-    }
+      *number1 = dt_util_dstrcat(NULL, "1.0/%s", n1);
+    else
+      *number1 = n1;
 
-    if(*operator&& strcmp(*operator, "") == 0)
+    if(*operator && strcmp(*operator, "") == 0)
     {
       g_free(*operator);
       *operator= NULL;
@@ -1040,12 +1036,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       gchar *operator, *number1, *number2;
       dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
 
-      if(operator&& strcmp(operator, "[]") == 0)
+      if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
           query = dt_util_dstrcat(query, "((aspect_ratio >= %s) AND (aspect_ratio <= %s))", number1, number2);
       }
-      else if(operator&& number1)
+      else if(operator && number1)
         query = dt_util_dstrcat(query, "(aspect_ratio %s %s)", operator, number1);
       else if(number1)
         query = dt_util_dstrcat(query, "(aspect_ratio = %s)", number1);
@@ -1117,12 +1113,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       gchar *operator, *number1, *number2;
       dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
 
-      if(operator&& strcmp(operator, "[]") == 0)
+      if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
           query = dt_util_dstrcat(query, "((focal_length >= %s) AND (focal_length <= %s))", number1, number2);
       }
-      else if(operator&& number1)
+      else if(operator && number1)
         query = dt_util_dstrcat(query, "(focal_length %s %s)", operator, number1);
       else if(number1)
         query = dt_util_dstrcat(query, "(focal_length = %s)", number1);
@@ -1140,12 +1136,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       gchar *operator, *number1, *number2;
       dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
 
-      if(operator&& strcmp(operator, "[]") == 0)
+      if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
           query = dt_util_dstrcat(query, "((iso >= %s) AND (iso <= %s))", number1, number2);
       }
-      else if(operator&& number1)
+      else if(operator && number1)
         query = dt_util_dstrcat(query, "(iso %s %s)", operator, number1);
       else if(number1)
         query = dt_util_dstrcat(query, "(iso = %s)", number1);
@@ -1163,13 +1159,13 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       gchar *operator, *number1, *number2;
       dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
 
-      if(operator&& strcmp(operator, "[]") == 0)
+      if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
           query = dt_util_dstrcat(query, "((ROUND(aperture,1) >= %s) AND (ROUND(aperture,1) <= %s))", number1,
                                   number2);
       }
-      else if(operator&& number1)
+      else if(operator && number1)
         query = dt_util_dstrcat(query, "(ROUND(aperture,1) %s %s)", operator, number1);
       else if(number1)
         query = dt_util_dstrcat(query, "(ROUND(aperture,1) = %s)", number1);
@@ -1187,16 +1183,16 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       gchar *operator, *number1, *number2;
       dt_collection_split_operator_exposure(escaped_text, &number1, &number2, &operator);
 
-      if(operator&& strcmp(operator, "[]") == 0)
+      if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((ROUND(exposure,5) >= %s) AND (ROUND(exposure,5) <= %s))", number1,
+          query = dt_util_dstrcat(query, "((exposure >= %s  - 1.0/100000) AND (exposure <= %s  + 1.0/100000))", number1,
                                   number2);
       }
-      else if(operator&& number1)
-        query = dt_util_dstrcat(query, "(ROUND(exposure,5) %s %s)", operator, number1);
+      else if(operator && number1)
+        query = dt_util_dstrcat(query, "(exposure %s %s)", operator, number1);
       else if(number1)
-        query = dt_util_dstrcat(query, "(ROUND(exposure,5) = %s)", number1);
+        query = dt_util_dstrcat(query, "((exposure >= %s - 1.0/100000) AND (exposure <= %s + 1.0/100000))", number1, number1);
       else
         query = dt_util_dstrcat(query, "(exposure LIKE '%%%s%%')", escaped_text);
 
