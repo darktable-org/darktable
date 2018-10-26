@@ -1186,13 +1186,35 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((exposure >= %s  - 1.0/100000) AND (exposure <= %s  + 1.0/100000))", number1,
-                                  number2);
+        {
+          if(strstr(number1, "1.0/") != NULL && strstr(number2, "1.0/"))
+            query = dt_util_dstrcat(query, "(1.0/CAST(1/exposure + 0.9 AS INTEGER) >= %s AND 1.0/CAST(1/exposure + 0.9 AS INTEGER) <= %s)",
+                number1, number2);
+          else if(strstr(number1, "1.0/") != NULL)
+            query = dt_util_dstrcat(query, "(1.0/CAST(1/exposure + 0.9 AS INTEGER) >= %s AND ROUND(exposure, 2) <= %s)",
+                number1, number2);
+          else if(strstr(number2, "1.0/") != NULL)
+            query = dt_util_dstrcat(query, "(ROUND(exposure, 2) >= %s AND 1.0/CAST(1/exposure + 0.9 AS INTEGER) <= %s)",
+                number1, number2);
+          else
+            query = dt_util_dstrcat(query, "(ROUND(exposure, 2) >= %s AND ROUND(exposure, 2) <= %s)",
+                number1, number2);
+        }
       }
       else if(operator && number1)
-        query = dt_util_dstrcat(query, "(exposure %s %s)", operator, number1);
+      {
+        if(strstr(number1, "1.0/") != NULL)
+          query = dt_util_dstrcat(query, "(1.0/CAST(1/exposure + 0.9 AS INTEGER) %s %s)", operator, number1);
+        else
+          query = dt_util_dstrcat(query, "(exposure %s %s)", operator, number1);
+      }
       else if(number1)
-        query = dt_util_dstrcat(query, "((exposure >= %s - 1.0/100000) AND (exposure <= %s + 1.0/100000))", number1, number1);
+      {
+        if(strstr(number1, "1.0/") != NULL)
+          query = dt_util_dstrcat(query, "(1.0/CAST(1/exposure + 0.9 AS INTEGER) = %s)", number1);
+        else
+          query = dt_util_dstrcat(query, "(ROUND(exposure, 2) = %s)", number1);
+      }
       else
         query = dt_util_dstrcat(query, "(exposure LIKE '%%%s%%')", escaped_text);
 
