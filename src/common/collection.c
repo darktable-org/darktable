@@ -1193,7 +1193,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         query = dt_util_dstrcat(query, "(exposure %s %s)", operator, number1);
       else if(number1)
         query = dt_util_dstrcat(query,
-                                "(CASE WHEN exposure < 0.5 THEN ((exposure >= %s - 1.0/100000) AND  (exposure <= %s + 1.0/100000)) "
+                                "(CASE WHEN exposure <= 0.5 THEN ((exposure >= %s - 1.0/100000) AND  (exposure <= %s + 1.0/100000)) "
                                 "ELSE (ROUND(exposure,2) >= %s - 1.0/100000) AND (ROUND(exposure,2) <= %s + 1.0/100000) END)",
                                 number1, number1, number1, number1);
       else
