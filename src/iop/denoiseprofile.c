@@ -42,7 +42,6 @@
 #endif
 
 #define REDUCESIZE 64
-#define MAX_PROFILES 30
 #define NUM_BUCKETS 4
 
 #define DT_IOP_DENOISE_PROFILE_INSET DT_PIXEL_APPLY_DPI(5)
@@ -326,10 +325,10 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 static inline void precondition(const float *const in, float *const buf, const int wd, const int ht,
                                 const float a[3], const float b[3])
 {
-  const float sigma2[3]
-      = { (b[0] / a[0]) * (b[0] / a[0]),
-          (b[1] / a[1]) * (b[1] / a[1]),
-          (b[2] / a[2]) * (b[2] / a[2]) };
+  const float sigma2_plus_3_8[3]
+      = { (b[0] / a[0]) * (b[0] / a[0]) + 3.f / 8.f,
+          (b[1] / a[1]) * (b[1] / a[1]) + 3.f / 8.f,
+          (b[2] / a[2]) * (b[2] / a[2]) + 3.f / 8.f };
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(a)
@@ -342,9 +341,8 @@ static inline void precondition(const float *const in, float *const buf, const i
     {
       for(int c = 0; c < 3; c++)
       {
-        buf2[c] = in2[c] / a[c];
-        const float d = fmaxf(0.0f, buf2[c] + 3.f / 8.f + sigma2[c]);
-        buf2[c] = 2.0f * sqrtf(d);
+        const float d = fmaxf(0.0f, in2[c] / a[c] + sigma2_plus_3_8[c]);
+        buf2[c] = d > 0.0f ? 2.0f * sqrtf(d) : 0.0f;
       }
       buf2 += 4;
       in2 += 4;
@@ -355,10 +353,10 @@ static inline void precondition(const float *const in, float *const buf, const i
 static inline void backtransform(float *const buf, const int wd, const int ht, const float a[3],
                                  const float b[3])
 {
-  const float sigma2[3]
-      = { (b[0] / a[0]) * (b[0] / a[0]),
-          (b[1] / a[1]) * (b[1] / a[1]),
-          (b[2] / a[2]) * (b[2] / a[2]) };
+  const float sigma2_plus_1_8[3]
+      = { (b[0] / a[0]) * (b[0] / a[0]) + 1.f / 8.f,
+          (b[1] / a[1]) * (b[1] / a[1]) + 1.f / 8.f,
+          (b[2] / a[2]) * (b[2] / a[2]) + 1.f / 8.f };
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(a)
@@ -370,13 +368,13 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
     {
       for(int c = 0; c < 3; c++)
       {
-        const float x = buf2[c];
+        const float x = buf2[c], x2 = x * x;
         // closed form approximation to unbiased inverse (input range was 0..200 for fit, not 0..1)
         if(x < .5f)
           buf2[c] = 0.0f;
         else
-          buf2[c] = 1.f / 4.f * x * x + 1.f / 4.f * sqrtf(3.f / 2.f) / x - 11.f / 8.f * 1.f / (x * x)
-                    + 5.f / 8.f * sqrtf(3.f / 2.f) * 1.f / (x * x * x) - 1.f / 8.f - sigma2[c];
+          buf2[c] = 1.f / 4.f * x2 + 1.f / 4.f * sqrtf(3.f / 2.f) / x - 11.f / 8.f / x2
+                    + 5.f / 8.f * sqrtf(3.f / 2.f) / (x * x2) - sigma2_plus_1_8[c];
         // asymptotic form:
         // buf2[c] = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2[c]);
         buf2[c] *= a[c];
@@ -395,10 +393,10 @@ static inline float weight(const float *c1, const float *c2, const float inv_sig
 // return _mm_set1_ps(1.0f);
 #if 1
   // 3d distance based on color
-  float diff[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+  float diff[4];
   for(int c = 0; c < 4; c++) diff[c] = c1[c] - c2[c];
 
-  float sqr[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+  float sqr[4];
   for(int c = 0; c < 4; c++) sqr[c] = diff[c] * diff[c];
 
   const float dot = (sqr[0] + sqr[1] + sqr[2]) * inv_sigma2;
@@ -433,7 +431,7 @@ static inline __m128 weight_sse(const __m128 *c1, const __m128 *c2, const float 
     const float f = filter[(ii)] * filter[(jj)];                                                             \
     const float wp = weight(px, px2, inv_sigma2);                                                            \
     const float w = f * wp;                                                                                  \
-    float pd[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                                                \
+    float pd[4];                                                                                             \
     for(int c = 0; c < 4; c++) pd[c] = w * px2[c];                                                           \
     for(int c = 0; c < 4; c++) sum[c] += pd[c];                                                              \
     for(int c = 0; c < 4; c++) wgt[c] += w;                                                                  \
@@ -1374,7 +1372,7 @@ static int bucket_next(unsigned int *state, unsigned int max)
 
 static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
                               cl_mem dev_out, const dt_iop_roi_t *const roi_in,
-                              const dt_iop_roi_t *const)
+                              const dt_iop_roi_t *const roi_out)
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->data;
