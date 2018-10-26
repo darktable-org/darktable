@@ -32,6 +32,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <inttypes.h>
 #include <math.h>
 #include <stdlib.h>
@@ -78,10 +79,11 @@ typedef struct dt_iop_lowlight_global_data_t
   int kernel_lowlight;
 } dt_iop_lowlight_global_data_t;
 
+#define NAME "lowlight vision"
 
 const char *name()
 {
-  return _("lowlight vision");
+  return _(NAME);
 }
 
 int flags()
@@ -91,7 +93,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
 }
 
 

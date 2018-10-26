@@ -38,6 +38,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
@@ -146,16 +147,17 @@ typedef struct dt_iop_tonecurve_global_data_t
   int kernel_tonecurve;
 } dt_iop_tonecurve_global_data_t;
 
+#define NAME "tone curve"
 
 const char *name()
 {
-  return _("tone curve");
+  return _(NAME);
 }
 
 
 int groups()
 {
-  return IOP_GROUP_TONE;
+  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
 }
 
 int flags()

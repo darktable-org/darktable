@@ -29,6 +29,7 @@
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -89,10 +90,11 @@ typedef struct dt_iop_bilat_gui_data_t
 }
 dt_iop_bilat_gui_data_t;
 
+#define NAME "local contrast"
 // this returns a translatable name
 const char *name()
 {
-  return _("local contrast");
+  return _(NAME);
 }
 
 // some additional flags (self explanatory i think):
@@ -104,7 +106,7 @@ int flags()
 // where does it appear in the gui?
 int groups()
 {
-  return IOP_GROUP_TONE;
+  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
 }
 
 int legacy_params(

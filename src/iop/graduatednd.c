@@ -37,6 +37,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -134,9 +135,11 @@ typedef struct dt_iop_graduatednd_data_t
   float color1[4];   // inverted color (1 - c)
 } dt_iop_graduatednd_data_t;
 
+#define NAME "graduated density"
+
 const char *name()
 {
-  return _("graduated density");
+  return _(NAME);
 }
 
 int flags()
@@ -147,7 +150,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)

@@ -26,6 +26,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -48,15 +49,17 @@ typedef struct dt_iop_spots_gui_data_t
 
 typedef struct dt_iop_spots_params_t dt_iop_spots_data_t;
 
+#define NAME "spot removal"
+
 // this returns a translatable name
 const char *name()
 {
-  return _("spot removal");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int flags()

@@ -31,6 +31,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -97,15 +98,17 @@ typedef struct dt_iop_dither_data_t
   } random;
 } dt_iop_dither_data_t;
 
+#define NAME "dithering"
+
 const char *name()
 {
-  return _("dithering");
+  return _(NAME);
 }
 
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int flags()
