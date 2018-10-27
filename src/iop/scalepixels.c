@@ -25,6 +25,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -50,9 +51,11 @@ typedef struct dt_iop_scalepixels_data_t {
   float y_scale;
 } dt_iop_scalepixels_data_t;
 
+#define NAME "scale pixels"
+
 const char *name()
 {
-  return C_("modulename", "scale pixels");
+  return C_("modulename", NAME);
 }
 
 int flags()
@@ -62,7 +65,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int operation_tags()

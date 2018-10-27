@@ -31,6 +31,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -98,14 +99,16 @@ typedef struct dt_iop_profilegamma_global_data_t
   int kernel_profilegamma_log;
 } dt_iop_profilegamma_global_data_t;
 
+#define NAME "unbreak input profile"
+
 const char *name()
 {
-  return _("unbreak input profile");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
 }
 
 int flags()

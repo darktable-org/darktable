@@ -30,6 +30,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -83,9 +84,11 @@ typedef struct dt_iop_colorcontrast_global_data_t
   int kernel_colorcontrast;
 } dt_iop_colorcontrast_global_data_t;
 
+#define NAME "color contrast"
+
 const char *name()
 {
-  return _("color contrast");
+  return _(NAME);
 }
 
 int flags()
@@ -95,7 +98,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

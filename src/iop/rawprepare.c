@@ -29,6 +29,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdint.h>
@@ -91,9 +92,11 @@ typedef struct dt_iop_rawprepare_global_data_t
   int kernel_rawprepare_4f;
 } dt_iop_rawprepare_global_data_t;
 
+#define NAME "raw black/white point"
+
 const char *name()
 {
-  return C_("modulename", "raw black/white point");
+  return C_("modulename", NAME);
 }
 
 int operation_tags()
@@ -108,7 +111,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
 }
 
 void init_presets(dt_iop_module_so_t *self)

@@ -40,6 +40,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_flip_params_t)
 
@@ -69,14 +70,16 @@ static void adjust_aabb(const int32_t *p, int32_t *aabb)
   aabb[3] = MAX(aabb[3], p[1]);
 }
 
+#define NAME "orientation"
+
 const char *name()
 {
-  return _("orientation");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
 }
 
 int operation_tags()

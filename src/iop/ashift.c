@@ -37,6 +37,7 @@
 #include "gui/guides.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -105,9 +106,11 @@
 
 DT_MODULE_INTROSPECTION(4, dt_iop_ashift_params_t)
 
+#define NAME "perspective correction"
+
 const char *name()
 {
-  return _("perspective correction");
+  return _(NAME);
 }
 
 int flags()
@@ -117,7 +120,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int operation_tags()

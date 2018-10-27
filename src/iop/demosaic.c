@@ -30,6 +30,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <math.h>
 #include <memory.h>
@@ -154,14 +155,16 @@ void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
                        float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                        const uint32_t filters);
 
+#define NAME "demosaic"
+
 const char *name()
 {
-  return _("demosaic");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
 }
 
 int flags()

@@ -26,6 +26,7 @@
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -64,9 +65,11 @@ static void adjust_aabb(const float *p, float *aabb)
   aabb[3] = fmaxf(aabb[3], p[1]);
 }
 
+#define NAME "rotate pixels"
+
 const char *name()
 {
-  return C_("modulename", "rotate pixels");
+  return C_("modulename", NAME);
 }
 
 int flags()
@@ -76,7 +79,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int operation_tags()

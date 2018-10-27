@@ -31,6 +31,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -287,14 +288,16 @@ typedef struct dt_iop_basecurve_global_data_t
 } dt_iop_basecurve_global_data_t;
 
 
+#define NAME "base curve"
+
 const char *name()
 {
-  return _("base curve");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
 }
 
 

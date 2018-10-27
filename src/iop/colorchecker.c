@@ -29,6 +29,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include "iop/gaussian_elimination.h"
 #include "libs/colorpicker.h"
 #include <assert.h>
@@ -108,14 +109,16 @@ typedef struct dt_iop_colorchecker_global_data_t
   int kernel_colorchecker;
 } dt_iop_colorchecker_global_data_t;
 
+#define NAME "color look up table"
+
 const char *name()
 {
-  return _("color look up table");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
 }
 
 int flags()

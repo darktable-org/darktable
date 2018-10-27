@@ -27,6 +27,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -228,9 +229,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+#define NAME "watermark"
+
 const char *name()
 {
-  return _("watermark");
+  return _(NAME);
 }
 
 int flags()
@@ -240,7 +243,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
 }
 
 int operation_tags()

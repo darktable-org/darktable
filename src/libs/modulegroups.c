@@ -92,6 +92,27 @@ int position()
   return 999;
 }
 
+int _iop_get_group_order(const int group_id, const int default_order)
+{
+  if (group_id < DT_MODULEGROUP_BASIC)
+    return group_id;
+
+  gchar *key = dt_util_dstrcat(NULL, "plugins/darkroom/group_order/%d", group_id - 1);
+  int prefs = dt_conf_get_int(key);
+
+  /* if zero, not found, record it */
+  if (!prefs)
+  {
+    dt_conf_set_int(key, default_order - 1);
+    prefs = default_order;
+  }
+  else
+    prefs += 1;
+
+  g_free(key);
+  return prefs<1 ? 1 : (prefs>DT_MODULEGROUP_SIZE? DT_MODULEGROUP_SIZE: prefs);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -117,29 +138,34 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], _("show only active modules"));
 
   /* basic */
-  d->buttons[DT_MODULEGROUP_BASIC] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_basic, pf, NULL);
-  g_signal_connect(d->buttons[DT_MODULEGROUP_BASIC], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_BASIC], _("basic group"));
-
-  /* correct */
-  d->buttons[DT_MODULEGROUP_CORRECT] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_correct, pf, NULL);
-  g_signal_connect(d->buttons[DT_MODULEGROUP_CORRECT], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_CORRECT], _("correction group"));
-
-  /* color */
-  d->buttons[DT_MODULEGROUP_COLOR] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_color, pf, NULL);
-  g_signal_connect(d->buttons[DT_MODULEGROUP_COLOR], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_COLOR], _("color group"));
+  int g_index = _iop_get_group_order(DT_MODULEGROUP_BASIC, DT_MODULEGROUP_BASIC);
+  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_basic, pf, NULL);
+  g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
+  gtk_widget_set_tooltip_text(d->buttons[g_index], _("basic group"));
 
   /* tone */
-  d->buttons[DT_MODULEGROUP_TONE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_tone, pf, NULL);
-  g_signal_connect(d->buttons[DT_MODULEGROUP_TONE], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_TONE], _("tone group"));
+  g_index = _iop_get_group_order(DT_MODULEGROUP_TONE, DT_MODULEGROUP_TONE);
+  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_tone, pf, NULL);
+  g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
+  gtk_widget_set_tooltip_text(d->buttons[g_index], _("tone group"));
+
+  /* color */
+  g_index = _iop_get_group_order(DT_MODULEGROUP_COLOR, DT_MODULEGROUP_COLOR);
+  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_color, pf, NULL);
+  g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
+  gtk_widget_set_tooltip_text(d->buttons[g_index], _("color group"));
+
+  /* correct */
+  g_index = _iop_get_group_order(DT_MODULEGROUP_CORRECT, DT_MODULEGROUP_CORRECT);
+  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_correct, pf, NULL);
+  g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
+  gtk_widget_set_tooltip_text(d->buttons[g_index], _("correction group"));
 
   /* effect */
-  d->buttons[DT_MODULEGROUP_EFFECT] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_effect, pf, NULL);
-  g_signal_connect(d->buttons[DT_MODULEGROUP_EFFECT], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_EFFECT], _("effects group"));
+  g_index = _iop_get_group_order(DT_MODULEGROUP_EFFECT, DT_MODULEGROUP_EFFECT);
+  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_effect, pf, NULL);
+  g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
+  gtk_widget_set_tooltip_text(d->buttons[g_index], _("effects group"));
 
   /* minimize table height before adding the buttons */
   gtk_widget_set_size_request(self->widget, -1, -1);
@@ -307,19 +333,23 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
 
   /* deactivate all buttons */
   uint32_t cb = 0;
+  int gid = 0;
   for(int k = 0; k < DT_MODULEGROUP_SIZE; k++)
   {
     /* store toggled modulegroup */
-    if(d->buttons[k] == button) cb = k;
+    if(d->buttons[k] == button)
+    {
+      cb = k;
+      gid = _iop_get_group_order(k,k);
+    }
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[k]), FALSE);
   }
 
-
-  if(d->current == cb)
+  if(d->current == gid)
     d->current = DT_MODULEGROUP_NONE;
   else
   {
-    d->current = cb;
+    d->current = gid;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[cb]), TRUE);
   }
 
@@ -380,9 +410,11 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
   /* lets find the group which is not favorite/active pipe */
   for(int k = DT_MODULEGROUP_BASIC; k < DT_MODULEGROUP_SIZE; k++)
   {
-    if(_lib_modulegroups_test(self, k, module->groups()))
+    const int gid = _iop_get_group_order(k, k);
+
+    if(_lib_modulegroups_test(self, gid, module->groups()))
     {
-      _lib_modulegroups_set(self, k);
+      _lib_modulegroups_set(self, gid);
       return;
     }
   }
