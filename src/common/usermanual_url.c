@@ -89,7 +89,7 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "colortransfer")) return NULL;
   if(!strcmp(name, "colorize")) return "effect_group.html#colorize";
   if(!strcmp(name, "clipping")) return "modules.html#crop_and_rotate";
-  if(!strcmp(name, "colorbalance")) return "color_group.html#d0e8958";
+  if(!strcmp(name, "colorbalance")) return "color_group.html#color_balance";
   if(!strcmp(name, "vibrance")) return "color_group.html#vibrance";
   if(!strcmp(name, "equalizer")) return "correction_group.html#equalizer";
   if(!strcmp(name, "defringe")) return "correction_group.html#defringe";
