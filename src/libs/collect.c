@@ -1249,7 +1249,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         break;
 
       case DT_COLLECTION_PROP_EXPOSURE: // exposure
-        g_snprintf(query, sizeof(query), "SELECT CASE WHEN (exposure <= 0.5) "
+        g_snprintf(query, sizeof(query), "SELECT CASE WHEN (exposure < 0.4) "
                               "THEN '1/' || CAST(1/exposure + 0.9 AS INTEGER) "
                            "ELSE ROUND(exposure,2) || '\"' END as _exposure, 1, COUNT(*) AS count "
                 "FROM main.images WHERE %s GROUP BY _exposure ORDER BY exposure",
