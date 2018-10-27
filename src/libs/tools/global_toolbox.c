@@ -244,13 +244,13 @@ static void _main_do_event(GdkEvent *event, gpointer data)
                 = (dt_l10n_language_t *)g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
             char *lang = language->code;
             // array of languages the usermanual supports.
-            // "\0" MUST remain the last element of the array
-            const char *supported_languages[5] = { "en", "fr", "it", "es", "\0" };
+            // NULL MUST remain the last element of the array
+            const char *supported_languages[] = { "en", "fr", "it", "es", NULL };
             gboolean is_language_supported = false;
             int i = 0;
-            while(supported_languages[i][0] != '\0')
+            while(supported_languages[i])
             {
-              if(0 == strcmp(lang, supported_languages[i]))
+              if(!strcmp(lang, supported_languages[i]))
               {
                 is_language_supported = true;
                 break;
