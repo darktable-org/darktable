@@ -30,6 +30,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -412,9 +413,11 @@ static float dt_lut_lookup_2d_1c(const float *grain_lut, const float x, const fl
   return xy0 * (1.0f - x_diff) + xy1 * x_diff;
 }
 
+#define NAME "grain"
+
 const char *name()
 {
-  return _("grain");
+  return _(NAME);
 }
 
 int flags()
@@ -424,7 +427,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
 }
 
 #if 0 // BAUHAUS doesn't support keyaccels yet...

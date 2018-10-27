@@ -36,6 +36,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_invert_params_t)
 
@@ -106,14 +107,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+#define NAME "invert"
+
 const char *name()
 {
-  return _("invert");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
 }
 
 int flags()

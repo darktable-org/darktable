@@ -29,6 +29,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <memory.h>
 #include <stdlib.h>
@@ -110,14 +111,16 @@ typedef struct dt_iop_atrous_data_t
   dt_draw_curve_t *curve[atrous_none];
 } dt_iop_atrous_data_t;
 
+#define NAME "equalizer"
+
 const char *name()
 {
-  return _("equalizer");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int flags()

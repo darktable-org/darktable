@@ -32,6 +32,7 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <ctype.h>
 #include <gtk/gtk.h>
@@ -127,14 +128,16 @@ typedef struct dt_iop_lensfun_data_t
   gboolean do_nan_checks;
 } dt_iop_lensfun_data_t;
 
+#define NAME "lens correction"
+
 const char *name()
 {
-  return _("lens correction");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int operation_tags()
