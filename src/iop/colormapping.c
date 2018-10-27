@@ -34,6 +34,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -137,15 +138,16 @@ typedef struct dt_iop_colormapping_global_data_t
   int kernel_mapping;
 } dt_iop_colormapping_global_data_t;
 
+#define NAME "color mapping"
 
 const char *name()
 {
-  return _("color mapping");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
 }
 
 int flags()

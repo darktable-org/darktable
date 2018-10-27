@@ -33,6 +33,7 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 //#include <gtk/gtk.h>
 #include <stdlib.h>
@@ -151,9 +152,11 @@ typedef struct dt_iop_colorbalance_global_data_t
   int kernel_colorbalance_lgg;
 } dt_iop_colorbalance_global_data_t;
 
+#define NAME "color balance"
+
 const char *name()
 {
-  return _("color balance");
+  return _(NAME);
 }
 
 const char *description()
@@ -168,7 +171,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,

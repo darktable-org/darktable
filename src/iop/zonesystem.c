@@ -37,6 +37,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -111,10 +112,11 @@ typedef struct dt_iop_zonesystem_gui_data_t
 
 } dt_iop_zonesystem_gui_data_t;
 
+#define NAME "zone system"
 
 const char *name()
 {
-  return _("zone system");
+  return _(NAME);
 }
 
 int flags()
@@ -125,7 +127,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_TONE;
+  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
 }
 
 /* get the zone index of pixel lightness from zonemap */

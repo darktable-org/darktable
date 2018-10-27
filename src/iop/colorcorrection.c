@@ -29,6 +29,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <assert.h>
 #include <math.h>
@@ -63,9 +64,11 @@ typedef struct dt_iop_colorcorrection_global_data_t
   int kernel_colorcorrection;
 } dt_iop_colorcorrection_global_data_t;
 
+#define NAME "color correction"
+
 const char *name()
 {
-  return _("color correction");
+  return _(NAME);
 }
 
 int flags()
@@ -75,7 +78,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
 }
 
 void init_presets(dt_iop_module_so_t *self)

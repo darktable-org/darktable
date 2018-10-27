@@ -27,6 +27,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -77,9 +78,11 @@ typedef struct dt_iop_colorize_global_data_t
 } dt_iop_colorize_global_data_t;
 
 
+#define NAME "colorize"
+
 const char *name()
 {
-  return _("colorize");
+  return _(NAME);
 }
 
 int flags()
@@ -89,7 +92,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

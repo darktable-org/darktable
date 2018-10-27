@@ -34,6 +34,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -171,10 +172,11 @@ typedef struct dt_iop_shadhi_global_data_t
   int kernel_shadows_highlights_mix;
 } dt_iop_shadhi_global_data_t;
 
+#define NAME "shadows and highlights"
 
 const char *name()
 {
-  return _("shadows and highlights");
+  return _(NAME);
 }
 
 int flags()
@@ -184,7 +186,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

@@ -32,6 +32,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -66,16 +67,17 @@ typedef struct dt_iop_sharpen_global_data_t
   int kernel_sharpen_mix;
 } dt_iop_sharpen_global_data_t;
 
+#define NAME "sharpen"
 
 const char *name()
 {
-  return C_("sharpen", "sharpen");
+  return C_("modulename", NAME);
 }
 
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int flags()

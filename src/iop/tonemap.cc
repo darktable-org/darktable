@@ -44,6 +44,7 @@ extern "C" {
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 }
@@ -68,15 +69,17 @@ typedef struct dt_iop_tonemapping_data_t
   float contrast, Fsize;
 } dt_iop_tonemapping_data_t;
 
+#define NAME "tone mapping"
+
 const char *name()
 {
-  return _("tone mapping");
+  return _(NAME);
 }
 
 
 int groups()
 {
-  return IOP_GROUP_TONE;
+  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
 }
 
 int flags()
