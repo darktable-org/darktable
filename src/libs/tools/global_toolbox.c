@@ -243,16 +243,19 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             dt_l10n_language_t *language
                 = (dt_l10n_language_t *)g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
             char *lang = language->code;
-            const int number_of_supported_languages = 4;
-            const char *supported_languages[4] = { "en", "fr", "it", "es" };
-            bool is_language_supported = false;
-            for(int i = 0; i < number_of_supported_languages; i++)
+            // array of languages the usermanual supports.
+            // "\0" MUST remain the last element of the array
+            const char *supported_languages[5] = { "en", "fr", "it", "es", "\0" };
+            gboolean is_language_supported = false;
+            int i = 0;
+            while(supported_languages[i][0] != '\0')
             {
               if(0 == strcmp(lang, supported_languages[i]))
               {
                 is_language_supported = true;
                 break;
               }
+              i++;
             }
             if(!is_language_supported) lang = "en";
             char *url = g_build_path("/", base_url, lang, help_url, NULL);
@@ -264,12 +267,12 @@ static void _main_do_event(GdkEvent *event, gpointer data)
 #endif
             g_free(base_url);
             g_free(url);
-            dt_control_log(_("Help url opened in web brower"));
+            dt_control_log(_("help url opened in web brower"));
           }
         }
         else
         {
-          dt_control_log(_("There is no help available for this element"));
+          dt_control_log(_("there is no help available for this element"));
         }
       }
       handled = TRUE;
