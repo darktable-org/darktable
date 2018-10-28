@@ -146,7 +146,7 @@ typedef struct dt_control_t
   double button_x, button_y;
   int history_start;
   int32_t mouse_over_id;
-  bool lock_cursor_shape;
+  gboolean lock_cursor_shape;
 
   // TODO: move these to some darkroom struct
   // synchronized navigation
