@@ -75,7 +75,7 @@ void dt_control_init(dt_control_t *s)
   s->dev_zoom_x = 0;
   s->dev_zoom_y = 0;
   s->dev_zoom = DT_ZOOM_FIT;
-  s->lock_cursor_shape = false;
+  s->lock_cursor_shape = FALSE;
 }
 
 void dt_control_key_accelerators_on(struct dt_control_t *s)
@@ -100,12 +100,12 @@ int dt_control_is_key_accelerators_on(struct dt_control_t *s)
 
 void dt_control_forbid_change_cursor()
 {
-  darktable.control->lock_cursor_shape = true;
+  darktable.control->lock_cursor_shape = TRUE;
 }
 
 void dt_control_allow_change_cursor()
 {
-  darktable.control->lock_cursor_shape = false;
+  darktable.control->lock_cursor_shape = FALSE;
 }
 
 void dt_control_change_cursor(dt_cursor_t curs)
