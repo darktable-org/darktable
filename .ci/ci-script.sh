@@ -53,7 +53,7 @@ du -hcs "$BUILD_DIR"
 du -hcs "$INSTALL_PREFIX"
 
 cd "$BUILD_DIR"
-cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo $ECO -DVALIDATE_APPDATA_FILE=On "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
+cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -GNinja -DCMAKE_BUILD_TYPE="$BUILD_TYPE" $ECO -DVALIDATE_APPDATA_FILE=On "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
 
 case "$TARGET" in
   "usermanual")
