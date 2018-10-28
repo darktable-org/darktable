@@ -246,13 +246,13 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             // array of languages the usermanual supports.
             // NULL MUST remain the last element of the array
             const char *supported_languages[] = { "en", "fr", "it", "es", NULL };
-            gboolean is_language_supported = false;
+            gboolean is_language_supported = FALSE;
             int i = 0;
             while(supported_languages[i])
             {
               if(!strcmp(lang, supported_languages[i]))
               {
-                is_language_supported = true;
+                is_language_supported = TRUE;
                 break;
               }
               i++;
