@@ -108,8 +108,8 @@ static void _lib_folders_update_collection(const gchar *filmroll);
 static void entry_insert_text(GtkWidget *entry, gchar *new_text, gint new_length, gpointer *position,
                           dt_lib_collect_rule_t *d);
 static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr);
-static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d);
 static void collection_updated(gpointer instance, gpointer self);
+static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, GdkEventButton *event, dt_lib_collect_t *d);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -389,17 +389,14 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_c
 
 static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_collect_t *d)
 {
-  if(d->view_rule != DT_COLLECTION_PROP_FOLDERS) return FALSE;
-  /* single click with the right mouse button? */
-  if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+  if((d->view_rule == DT_COLLECTION_PROP_FOLDERS && event->type == GDK_BUTTON_PRESS && event->button == 3)
+     || (event->type == GDK_2BUTTON_PRESS && event->button == 1))
   {
-    GtkTreeSelection *selection;
-
-    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
 
     if(gtk_tree_selection_count_selected_rows(selection) <= 1)
     {
-      GtkTreePath *path;
+      GtkTreePath *path = NULL;
 
       /* Get tree path for row that was clicked */
       if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL,
@@ -407,11 +404,16 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
       {
         gtk_tree_selection_unselect_all(selection);
         gtk_tree_selection_select_path(selection, path);
-        gtk_tree_path_free(path);
       }
-    }
-    view_popup_menu(treeview, event, d);
 
+      /* single click on folder with the right mouse button? */
+      if (d->view_rule == DT_COLLECTION_PROP_FOLDERS && (event->type == GDK_BUTTON_PRESS && event->button == 3))
+        view_popup_menu(treeview, event, d);
+      else
+        row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
+
+      gtk_tree_path_free(path);
+    }
     return TRUE; /* we handled this */
   }
   return FALSE; /* we did not handle this */
@@ -1468,7 +1470,7 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   dt_collection_update_query(darktable.collection);
 }
 
-static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d)
+static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, GdkEventButton *event, dt_lib_collect_t *d)
 {
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
@@ -1482,6 +1484,24 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
 
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
   gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
+
+  if(text && strlen(text)>0 && item == DT_COLLECTION_PROP_TAG && gtk_tree_model_iter_has_child (model, &iter))
+  {
+    /* if a tag has children, ctrl-clicking on a parent node should display all images under this hierarchy. */
+    if(event->state & GDK_CONTROL_MASK)
+    {
+      gchar *n_text = g_strconcat(text, "|%", NULL);
+      g_free(text);
+      text = n_text;
+    }
+    /* if a tag has children, shift-clicking on a parent node should display all images in and under this hierarchy. */
+    else if(event->state & GDK_SHIFT_MASK)
+    {
+      gchar *n_text = g_strconcat(text, "%", NULL);
+      g_free(text);
+      text = n_text;
+    }
+  }
 
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
@@ -1839,7 +1859,6 @@ void gui_init(dt_lib_module_t *self)
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
-  g_signal_connect(G_OBJECT(view), "row-activated", G_CALLBACK(row_activated), d);
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(view_onButtonPressed), d);
   g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
 
