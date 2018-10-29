@@ -354,10 +354,10 @@ static size_t _path_find_self_intersection(dt_masks_dynbuf_t *inter,
   size_t inter_count = 0;
 
   // we search extreme points in x and y
-  int xmin, xmax, ymin, ymax;
+  size_t xmin, xmax, ymin, ymax;
   xmin = ymin = INT_MAX;
-  xmax = ymax = INT_MIN;
-  int posextr[4] = { -1 }; // xmin,xmax,ymin,ymax
+  xmax = ymax = 0;
+  size_t posextr[4] = { 0 }; // xmin,xmax,ymin,ymax
 
   for(size_t i = nb_corners * 3; i < border_count; i++)
   {
@@ -390,13 +390,30 @@ static size_t _path_find_self_intersection(dt_masks_dynbuf_t *inter,
       posextr[3] = i;
     }
   }
+  if (xmin == 0 || ymin == 0) {
+      return 0;
+  }
   xmin -= 1, ymin -= 1;
-  xmax += 1, ymax += 1;
-  const int hb = ymax - ymin;
-  const int wb = xmax - xmin;
 
+  if (xmax == INT_MAX || ymax == INT_MAX) {
+      return 0;
+  }
+  xmax += 1, ymax += 1;
+
+  if (ymax == INT_MAX || ymin > ymax) {
+      return 0;
+  }
+  const size_t hb = ymax - ymin;
+  if (xmax == INT_MAX || xmin > xmax) {
+      return 0;
+  }
+  const size_t wb = xmax - xmin;
+
+  if (hb * wb > hb) {
+      return 0;
+  }
   // we allocate the buffer
-  const size_t ss = (size_t)hb * wb;
+  const size_t ss = hb * wb;
   if(ss < 10) return 0;
 
   int *binter = calloc(ss, sizeof(int));
@@ -416,10 +433,10 @@ static size_t _path_find_self_intersection(dt_masks_dynbuf_t *inter,
   int lastx = border[(posextr[1] - 1) * 2];
   int lasty = border[(posextr[1] - 1) * 2 + 1];
 
-  for(int ii = nb_corners * 3; ii < border_count; ii++)
+  for(size_t ii = nb_corners * 3; ii < border_count; ii++)
   {
     // we want to loop from one border extremity
-    int i = ii - nb_corners * 3 + posextr[1];
+    size_t i = ii - nb_corners * 3 + posextr[1];
     if(i >= border_count) i = i - border_count + nb_corners * 3;
 
     if(inter_count >= nb_corners * 4) break;
@@ -432,8 +449,8 @@ static size_t _path_find_self_intersection(dt_masks_dynbuf_t *inter,
     // and "register" them in binter
     for(int j = dt_masks_dynbuf_position(extra) / 2 - 1; j >= 0; j--)
     {
-      int xx = (dt_masks_dynbuf_buffer(extra))[j * 2];
-      int yy = (dt_masks_dynbuf_buffer(extra))[j * 2 + 1];
+      size_t xx = (dt_masks_dynbuf_buffer(extra))[j * 2];
+      size_t yy = (dt_masks_dynbuf_buffer(extra))[j * 2 + 1];
 
       // we check also 2 points around to be sure catching intersection
       int v[3] = { 0 };
