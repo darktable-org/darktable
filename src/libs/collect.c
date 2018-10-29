@@ -1483,6 +1483,18 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
   gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
 
+  if (text && strlen(text)>0 && item == DT_COLLECTION_PROP_TAG)
+  {
+    /* if a tag has children, clicking on a parent node should display all images starting with this tag.
+       Not doing that we get an empty display (no selected pictures). */
+    if(gtk_tree_model_iter_has_child (model, &iter))
+    {
+      gchar *n_text = g_strconcat(text, "|%", NULL);
+      g_free(text);
+      text = n_text;
+    }
+  }
+
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
