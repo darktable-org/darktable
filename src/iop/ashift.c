@@ -37,6 +37,7 @@
 #include "gui/guides.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -105,9 +106,11 @@
 
 DT_MODULE_INTROSPECTION(4, dt_iop_ashift_params_t)
 
+#define NAME "perspective correction"
+
 const char *name()
 {
-  return _("perspective correction");
+  return _(NAME);
 }
 
 int flags()
@@ -117,7 +120,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int operation_tags()
@@ -3055,7 +3058,7 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   for(int n = 0; n < lines_count; n++)
   {
     const int length = lines[n].length;
-    
+
     total_points += length;
 
     my_points_idx[n].length = length;
@@ -4119,7 +4122,7 @@ static void process_after_preview_callback(gpointer instance, gpointer user_data
       }
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       break;
-      
+
     case ASHIFT_JOBCODE_NONE:
     default:
       break;
@@ -4464,6 +4467,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->rotation = dt_bauhaus_slider_new_with_range(self, -ROTATION_RANGE, ROTATION_RANGE, 0.01*ROTATION_RANGE, p->rotation, 2);
   dt_bauhaus_widget_set_label(g->rotation, NULL, _("rotation"));

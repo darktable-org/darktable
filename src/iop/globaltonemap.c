@@ -30,6 +30,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -96,9 +97,11 @@ typedef struct dt_iop_global_tonemap_global_data_t
   int kernel_global_tonemap_filmic;
 } dt_iop_global_tonemap_global_data_t;
 
+#define NAME "global tonemap"
+
 const char *name()
 {
-  return _("global tonemap");
+  return _(NAME);
 }
 
 int flags()
@@ -108,7 +111,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_TONE;
+  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -688,6 +691,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->hash = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   /* operator */
   g->operator= dt_bauhaus_combobox_new(self);

@@ -26,6 +26,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -48,15 +49,17 @@ typedef struct dt_iop_spots_gui_data_t
 
 typedef struct dt_iop_spots_params_t dt_iop_spots_data_t;
 
+#define NAME "spot removal"
+
 // this returns a translatable name
 const char *name()
 {
-  return _("spot removal");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
 }
 
 int flags()
@@ -635,6 +638,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *label = gtk_label_new(_("number of strokes:"));
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);

@@ -37,6 +37,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_GUI_CURVE_INFL .3f
@@ -112,14 +113,16 @@ typedef struct dt_iop_levels_global_data_t
   int kernel_levels;
 } dt_iop_levels_global_data_t;
 
+#define NAME "levels"
+
 const char *name()
 {
-  return _("levels");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_TONE;
+  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
 }
 
 int flags()
@@ -564,6 +567,7 @@ void gui_init(dt_iop_module_t *self)
   for(int i = 0; i < 3; i++)
     for(int j = 0; j < 2; j++) c->pick_xy_positions[i][j] = -1;
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   c->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->mode, NULL, _("mode"));

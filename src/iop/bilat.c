@@ -29,6 +29,7 @@
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -89,10 +90,11 @@ typedef struct dt_iop_bilat_gui_data_t
 }
 dt_iop_bilat_gui_data_t;
 
+#define NAME "local contrast"
 // this returns a translatable name
 const char *name()
 {
-  return _("local contrast");
+  return _(NAME);
 }
 
 // some additional flags (self explanatory i think):
@@ -104,7 +106,7 @@ int flags()
 // where does it appear in the gui?
 int groups()
 {
-  return IOP_GROUP_TONE;
+  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
 }
 
 int legacy_params(
@@ -511,6 +513,7 @@ void gui_init(dt_iop_module_t *self)
   dt_pthread_mutex_init(&g->lock, NULL);
   g->hash = 0;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));

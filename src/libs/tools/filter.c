@@ -137,12 +137,16 @@ void gui_init(dt_lib_module_t *self)
   d->sort = widget = gtk_combo_box_text_new();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("filename"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("time"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("rating"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("id"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("color label"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("group"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("full path"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("time")); // DT_COLLECTION_SORT_DATETIME
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("rating")); // DT_COLLECTION_SORT_RATING
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("id")); // DT_COLLECTION_SORT_ID
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("color label")); // DT_COLLECTION_SORT_COLOR
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("group")); // DT_COLLECTION_SORT_GROUP
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("full path")); // DT_COLLECTION_SORT_PAT
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("custom sort")); // DT_COLLECTION_SORT_CUSTOM_ORDER
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("title")); // DT_COLLECTION_SORT_TITLE
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("description")); // DT_COLLECTION_SORT_DESCRIPTION
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("aspect ratio")); // DT_COLLECTION_SORT_ASPECT_RATIO
 
   /* select the last selected value */
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_collection_get_sort_field(darktable.collection));

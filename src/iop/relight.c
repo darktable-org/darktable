@@ -35,6 +35,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 
@@ -82,9 +83,11 @@ typedef struct dt_iop_relight_global_data_t
   int kernel_relight;
 } dt_iop_relight_global_data_t;
 
+#define NAME "fill light"
+
 const char *name()
 {
-  return _("fill light");
+  return _(NAME);
 }
 
 int flags()
@@ -94,7 +97,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_TONE;
+  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -345,6 +348,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 

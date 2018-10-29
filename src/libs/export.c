@@ -508,11 +508,13 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   GtkWidget *label;
 
   label = dt_ui_section_label_new(_("storage options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
+  dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
 
   d->storage = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->storage, NULL, _("target storage"));
@@ -541,6 +543,7 @@ void gui_init(dt_lib_module_t *self)
   label = dt_ui_section_label_new(_("format options"));
   gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(20));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
+  dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
 
   d->format = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->format, NULL, _("file format"));
@@ -564,6 +567,7 @@ void gui_init(dt_lib_module_t *self)
   label = dt_ui_section_label_new(_("global options"));
   gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(20));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
+  dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
 
   d->width = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, EXPORT_MAX_IMAGE_SIZE, 1));
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->width), _("maximum output width\nset to 0 for no scaling"));

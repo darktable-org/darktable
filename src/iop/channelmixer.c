@@ -30,6 +30,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -108,10 +109,11 @@ typedef struct dt_iop_channelmixer_global_data_t
   int kernel_channelmixer;
 } dt_iop_channelmixer_global_data_t;
 
+#define NAME "channel mixer"
 
 const char *name()
 {
-  return _("channel mixer");
+  return _(NAME);
 }
 
 int flags()
@@ -121,7 +123,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
 }
 
 #if 0 // BAUHAUS doesn't support keyaccels yet...
@@ -441,6 +443,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   /* output */
   g->combo1 = dt_bauhaus_combobox_new(self);

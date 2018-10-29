@@ -62,6 +62,8 @@ static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpo
 
 /* determine image offset of specified imgid for the given collection */
 static int dt_collection_image_offset_with_collection(const dt_collection_t *collection, int imgid);
+/* update aspect ratio for the selected images */
+static void _collection_update_aspect_ratio(const dt_collection_t *collection);
 
 const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
 {
@@ -188,8 +190,6 @@ int dt_collection_update(const dt_collection_t *collection)
   else
     selq = dt_util_dstrcat(selq, "SELECT DISTINCT id FROM main.images WHERE %s", wq);
 
-
-
   /* build sort order part */
   if(!(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT)
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
@@ -213,6 +213,8 @@ int dt_collection_update(const dt_collection_t *collection)
    * _dt_collection_store, too. */
   ((dt_collection_t *)collection)->count = _dt_collection_compute_count(collection);
   dt_collection_hint_message(collection);
+
+  _collection_update_aspect_ratio(collection);
 
   return result;
 }
@@ -336,12 +338,51 @@ dt_collection_rating_comperator_t dt_collection_get_rating_comparator(const dt_c
   return collection->params.comparator;
 }
 
+static void _collection_update_aspect_ratio(const dt_collection_t *collection)
+{
+  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
+
+  //  Update the aspect ratio for selected images in the collection if needed, we do not do this for all
+  //  images as it could take a long time. The aspect ratio is then updated when needed, and at some
+  //  point all aspect ratio for all images will be set and this could won't be really needed.
+
+  if (params->sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+  {
+    const float MAX_TIME = 5.0;
+    const gchar *where_ext = dt_collection_get_extended_where(collection, -1);
+    gchar *query = NULL;
+    sqlite3_stmt *stmt = NULL;
+
+    query = dt_util_dstrcat
+      (query, "SELECT id FROM main.images WHERE %s AND (aspect_ratio=0.0 OR aspect_ratio IS NULL)", where_ext);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+
+    double start = dt_get_wtime();
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const int imgid = sqlite3_column_int(stmt, 0);
+      dt_image_set_aspect_ratio(imgid);
+
+      if(dt_get_wtime() - start > MAX_TIME)
+      {
+        dt_control_log(_("too much time to update aspect ratio for the collection"));
+        break;
+      }
+    }
+    sqlite3_finalize(stmt);
+    g_free(query);
+  }
+}
+
 void dt_collection_set_sort(const dt_collection_t *collection, dt_collection_sort_t sort, gboolean reverse)
 {
   dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
 
   if(sort != DT_COLLECTION_SORT_NONE) params->sort = sort;
   if(reverse != -1) params->descending = reverse;
+
+  _collection_update_aspect_ratio(collection);
 }
 
 dt_collection_sort_t dt_collection_get_sort_field(const dt_collection_t *collection)
@@ -390,6 +431,22 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "folder DESC, filename DESC, version DESC");
         break;
 
+      case DT_COLLECTION_SORT_CUSTOM_ORDER:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "position DESC, filename DESC, version DESC");
+        break;
+
+      case DT_COLLECTION_SORT_TITLE:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "caption DESC, filename DESC, version DESC");
+        break;
+
+      case DT_COLLECTION_SORT_DESCRIPTION:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "description DESC, filename DESC, version DESC");
+        break;
+
+      case DT_COLLECTION_SORT_ASPECT_RATIO:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "aspect_ratio DESC, filename DESC, version DESC");
+        break;
+
       case DT_COLLECTION_SORT_NONE:
         // shouldn't happen
         break;
@@ -425,6 +482,22 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 
       case DT_COLLECTION_SORT_PATH:
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "folder, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_CUSTOM_ORDER:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "position, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_TITLE:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "caption, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_DESCRIPTION:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "description, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_ASPECT_RATIO:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "aspect_ratio, filename, version");
         break;
 
       case DT_COLLECTION_SORT_NONE:
@@ -516,7 +589,6 @@ GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean 
   if((collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
     sq = dt_collection_get_sort_query(collection);
 
-
   sqlite3_stmt *stmt = NULL;
 
   /* build the query string */
@@ -540,7 +612,7 @@ GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean 
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    const int imgid = sqlite3_column_int(stmt, 0);
     list = g_list_append(list, GINT_TO_POINTER(imgid));
   }
 
@@ -630,7 +702,7 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
     *operator= g_match_info_fetch(match_info, 1);
     *number1 = g_match_info_fetch(match_info, 2);
 
-    if(*operator&& strcmp(*operator, "") == 0)
+    if(*operator && strcmp(*operator, "") == 0)
     {
       g_free(*operator);
       *operator= NULL;
@@ -754,6 +826,70 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
 
   // ensure operator is not null
   if(!*operator) *operator= g_strdup("");
+
+  g_match_info_free(match_info);
+  g_regex_unref(regex);
+}
+
+void dt_collection_split_operator_exposure(const gchar *input, char **number1, char **number2, char **operator)
+{
+  GRegex *regex;
+  GMatchInfo *match_info;
+  int match_count;
+
+  *number1 = *number2 = *operator= NULL;
+
+  // we test the range expression first
+  regex = g_regex_new("^\\s*\\[\\s*(1/)?([0-9]+\\.?[0-9]*)(\")?\\s*;\\s*(1/)?([0-9]+\\.?[0-9]*)(\")?\\s*\\]\\s*$", 0, 0, NULL);
+  g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
+  match_count = g_match_info_get_match_count(match_info);
+
+  if(match_count == 6 || match_count == 7)
+  {
+    gchar *n1 = g_match_info_fetch(match_info, 2);
+
+    if(strstr(g_match_info_fetch(match_info, 1), "1/") != NULL)
+      *number1 = dt_util_dstrcat(NULL, "1.0/%s", n1);
+    else
+      *number1 = n1;
+
+    gchar *n2 = g_match_info_fetch(match_info, 5);
+
+    if(strstr(g_match_info_fetch(match_info, 4), "1/") != NULL)
+      *number2 = dt_util_dstrcat(NULL, "1.0/%s", n2);
+    else
+      *number2 = n2;
+
+    *operator= g_strdup("[]");
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+    return;
+  }
+
+  g_match_info_free(match_info);
+  g_regex_unref(regex);
+
+  // and we test the classic comparison operators
+  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*(1/)?([0-9]+\\.?[0-9]*)(\")?\\s*$", 0, 0, NULL);
+  g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
+  match_count = g_match_info_get_match_count(match_info);
+  if(match_count == 4 || match_count == 5)
+  {
+    *operator= g_match_info_fetch(match_info, 1);
+
+    gchar *n1 = g_match_info_fetch(match_info, 3);
+
+    if(strstr(g_match_info_fetch(match_info, 2), "1/") != NULL)
+      *number1 = dt_util_dstrcat(NULL, "1.0/%s", n1);
+    else
+      *number1 = n1;
+
+    if(*operator && strcmp(*operator, "") == 0)
+    {
+      g_free(*operator);
+      *operator= NULL;
+    }
+  }
 
   g_match_info_free(match_info);
   g_regex_unref(regex);
@@ -895,6 +1031,29 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
                               DT_IMAGE_LOCAL_COPY);
       break;
 
+    case DT_COLLECTION_PROP_ASPECT_RATIO: // aspect ratio
+    {
+      gchar *operator, *number1, *number2;
+      dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
+
+      if(operator && strcmp(operator, "[]") == 0)
+      {
+        if(number1 && number2)
+          query = dt_util_dstrcat(query, "((aspect_ratio >= %s) AND (aspect_ratio <= %s))", number1, number2);
+      }
+      else if(operator && number1)
+        query = dt_util_dstrcat(query, "(aspect_ratio %s %s)", operator, number1);
+      else if(number1)
+        query = dt_util_dstrcat(query, "(aspect_ratio = %s)", number1);
+      else
+        query = dt_util_dstrcat(query, "(aspect_ratio LIKE '%%%s%%')", escaped_text);
+
+      g_free(operator);
+      g_free(number1);
+      g_free(number2);
+    }
+    break;
+
     case DT_COLLECTION_PROP_CAMERA: // camera
       // Start query with a false statement to avoid special casing the first condition
       query = dt_util_dstrcat(query, "((1=0)");
@@ -954,12 +1113,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       gchar *operator, *number1, *number2;
       dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
 
-      if(operator&& strcmp(operator, "[]") == 0)
+      if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
           query = dt_util_dstrcat(query, "((focal_length >= %s) AND (focal_length <= %s))", number1, number2);
       }
-      else if(operator&& number1)
+      else if(operator && number1)
         query = dt_util_dstrcat(query, "(focal_length %s %s)", operator, number1);
       else if(number1)
         query = dt_util_dstrcat(query, "(focal_length = %s)", number1);
@@ -977,12 +1136,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       gchar *operator, *number1, *number2;
       dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
 
-      if(operator&& strcmp(operator, "[]") == 0)
+      if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
           query = dt_util_dstrcat(query, "((iso >= %s) AND (iso <= %s))", number1, number2);
       }
-      else if(operator&& number1)
+      else if(operator && number1)
         query = dt_util_dstrcat(query, "(iso %s %s)", operator, number1);
       else if(number1)
         query = dt_util_dstrcat(query, "(iso = %s)", number1);
@@ -1000,18 +1159,45 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       gchar *operator, *number1, *number2;
       dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
 
-      if(operator&& strcmp(operator, "[]") == 0)
+      if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
           query = dt_util_dstrcat(query, "((ROUND(aperture,1) >= %s) AND (ROUND(aperture,1) <= %s))", number1,
                                   number2);
       }
-      else if(operator&& number1)
+      else if(operator && number1)
         query = dt_util_dstrcat(query, "(ROUND(aperture,1) %s %s)", operator, number1);
       else if(number1)
         query = dt_util_dstrcat(query, "(ROUND(aperture,1) = %s)", number1);
       else
         query = dt_util_dstrcat(query, "(ROUND(aperture,1) LIKE '%%%s%%')", escaped_text);
+
+      g_free(operator);
+      g_free(number1);
+      g_free(number2);
+    }
+    break;
+
+    case DT_COLLECTION_PROP_EXPOSURE: // exposure
+    {
+      gchar *operator, *number1, *number2;
+      dt_collection_split_operator_exposure(escaped_text, &number1, &number2, &operator);
+
+      if(operator && strcmp(operator, "[]") == 0)
+      {
+        if(number1 && number2)
+          query = dt_util_dstrcat(query, "((exposure >= %s  - 1.0/100000) AND (exposure <= %s  + 1.0/100000))", number1,
+                                  number2);
+      }
+      else if(operator && number1)
+        query = dt_util_dstrcat(query, "(exposure %s %s)", operator, number1);
+      else if(number1)
+        query = dt_util_dstrcat(query,
+                                "(CASE WHEN exposure < 0.4 THEN ((exposure >= %s - 1.0/100000) AND  (exposure <= %s + 1.0/100000)) "
+                                "ELSE (ROUND(exposure,2) >= %s - 1.0/100000) AND (ROUND(exposure,2) <= %s + 1.0/100000) END)",
+                                number1, number1, number1, number1);
+      else
+        query = dt_util_dstrcat(query, "(exposure LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1217,7 +1403,6 @@ void dt_collection_update_query(const dt_collection_t *collection)
     g_free(complete_query);
   }
 
-
   /* raise signal of collection change, only if this is an original */
   if(!collection->clone) dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 }
@@ -1255,8 +1440,8 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   {
     message = g_strdup_printf(
       ngettext(
-        "%d image of %d in current collection is selected", 
-        "%d images of %d in current collection are selected", 
+        "%d image of %d in current collection is selected",
+        "%d images of %d in current collection are selected",
         cs),
       cs, c);
   }
@@ -1328,6 +1513,162 @@ static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpo
   {
     if(old_count != collection->count) dt_collection_hint_message(collection);
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  }
+}
+
+int64_t dt_collection_get_image_position(const int32_t image_id)
+{
+  int64_t image_position = -1;
+
+  if (image_id >= 0)
+  {
+    sqlite3_stmt *stmt = NULL;
+    gchar *image_pos_query = NULL;
+    image_pos_query = dt_util_dstrcat(
+          image_pos_query,
+          "SELECT position FROM main.images WHERE id = ?1");
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), image_pos_query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, image_id);
+
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      image_position = sqlite3_column_int64(stmt, 0);
+    }
+
+    sqlite3_finalize(stmt);
+    g_free(image_pos_query);
+  }
+
+  return image_position;
+}
+
+void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position)
+{
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+  sqlite3_stmt *stmt = NULL;
+
+  // shift image positions to make some space
+  gchar * update_image_pos_query = "UPDATE main.images SET position = position + ?1 WHERE position >= ?2 AND position < ?3";
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), update_image_pos_query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, length);
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 2, image_position);
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 3, (image_position & 0xFFFFFFFF00000000) + (1ll << 32));
+
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+}
+
+/* move images with drag and drop
+ *
+ * An int64 is used for the position index. The upper 31 bits define the initial order.
+ * The lower 32bit provide space to reorder images. That way only a small amount of images must be
+ * updated while reordering images.
+ *
+ * Example: (position values hex)
+ * Initial order:
+ * Img 1: 0000 0001 0000 0000
+ * Img 2: 0000 0002 0000 0000
+ * Img 3: 0000 0003 0000 0000
+ * Img 3: 0000 0004 0000 0000
+ *
+ * Putting Img 2 in front of Img 1. Would give
+ * Img 2: 0000 0001 0000 0000
+ * Img 1: 0000 0001 0000 0001
+ * Img 3: 0000 0003 0000 0000
+ * Img 4: 0000 0004 0000 0000
+ *
+ * Img 3 and Img 4 is not updated.
+*/
+void dt_collection_move_before(const int32_t image_id, GList * selected_images)
+{
+  if (!selected_images)
+  {
+    return;
+  }
+
+  const guint selected_images_length = g_list_length(selected_images);
+
+  if (selected_images_length == 0)
+  {
+    return;
+  }
+
+  // getting the position of the target image
+  const int64_t target_image_pos = dt_collection_get_image_position(image_id);
+
+  if (target_image_pos >= 0)
+  {
+    dt_collection_shift_image_positions(selected_images_length, target_image_pos);
+
+    sqlite3_stmt *stmt = NULL;
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+
+    // move images to their intended positons
+    int64_t new_image_pos = target_image_pos;
+
+    gchar *insert_image_pos_query = "UPDATE main.images SET position = ?1 WHERE id = ?2";
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), insert_image_pos_query, -1, &stmt, NULL);
+
+    for (const GList * selected_images_iter = selected_images;
+        selected_images_iter != NULL;
+        selected_images_iter = selected_images_iter->next)
+    {
+      const int moved_image_id = GPOINTER_TO_INT(selected_images_iter->data);
+
+      DT_DEBUG_SQLITE3_BIND_INT64(stmt, 1, new_image_pos);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, moved_image_id);
+      sqlite3_step(stmt);
+      sqlite3_reset(stmt);
+      new_image_pos++;
+    }
+    sqlite3_finalize(stmt);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+  }
+  else
+  {
+    // move images to the end of the list
+    sqlite3_stmt *stmt = NULL;
+
+    // get last position
+    int64_t max_position = -1;
+
+    gchar *max_position_query = "SELECT MAX(position) FROM main.images";
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), max_position_query, -1, &stmt, NULL);
+
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      max_position = sqlite3_column_int64(stmt, 0);
+      max_position = (max_position & 0xFFFFFFFF00000000) >> 32;
+    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_stmt *update_stmt = NULL;
+
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+
+    // move images to last position in custom image order table
+    gchar *update_query = "UPDATE main.images SET position = ?1 WHERE id = ?2";
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), update_query, -1, &update_stmt, NULL);
+
+    for (const GList * selected_images_iter = selected_images;
+        selected_images_iter != NULL;
+        selected_images_iter = selected_images_iter->next)
+    {
+      max_position++;
+      const int moved_image_id = GPOINTER_TO_INT(selected_images_iter->data);
+      DT_DEBUG_SQLITE3_BIND_INT64(update_stmt, 1, max_position << 32);
+      DT_DEBUG_SQLITE3_BIND_INT(update_stmt, 2, moved_image_id);
+      sqlite3_step(update_stmt);
+      sqlite3_reset(update_stmt);
+    }
+
+    sqlite3_finalize(update_stmt);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
   }
 }
 

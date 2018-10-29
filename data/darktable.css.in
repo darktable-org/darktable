@@ -15,10 +15,10 @@
 @define-color brush_cursor alpha(white, .9);
 @define-color brush_trace alpha(black, .8);
 
-@define-color bauhaus_fg #999;
+@define-color bauhaus_fg #ccc;
 @define-color bauhaus_border #191919;
 @define-color bauhaus_bg alpha(@bauhaus_border, 0.2);
-@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.2);
+@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
 
 * {
   font: ${GTK_CSS_FONT};
@@ -682,4 +682,9 @@ cell:selected
 {
   /* insensitive */
   color: black;
+}
+
+#show_mask_button
+{
+    color: #FFFF00;
 }

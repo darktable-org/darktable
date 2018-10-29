@@ -650,7 +650,7 @@ void dt_bauhaus_slider_set_hard_min(GtkWidget* widget, float val)
   {
     dt_bauhaus_slider_set_soft(widget,val);
   }
-  else 
+  else
   {
     dt_bauhaus_slider_set_soft(widget,pos);
   }
@@ -676,8 +676,8 @@ void dt_bauhaus_slider_set_hard_max(GtkWidget* widget, float val)
   if(pos > val) {
 
     dt_bauhaus_slider_set_soft(widget,val);
-  } 
-  else 
+  }
+  else
   {
     dt_bauhaus_slider_set_soft(widget,pos);
   }
@@ -701,11 +701,11 @@ void dt_bauhaus_slider_set_soft_min(GtkWidget* widget, float val)
   d->min =  d->soft_min;
   if(rawval > d->soft_max) dt_bauhaus_slider_set_soft_max(widget,val);
   if(rawval > d->hard_max) dt_bauhaus_slider_set_hard_max(widget,val);
-  if(pos < val) 
+  if(pos < val)
   {
     dt_bauhaus_slider_set_soft(widget,val);
-  } 
-  else 
+  }
+  else
   {
     dt_bauhaus_slider_set_soft(widget,pos);
   }
@@ -825,6 +825,15 @@ void dt_bauhaus_widget_set_quad_toggle(GtkWidget *widget, int toggle)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   w->quad_toggle = toggle;
+}
+
+void dt_bauhaus_widget_set_quad_active(GtkWidget *widget, int active)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if (active)
+    w->quad_paint_flags |= CPF_ACTIVE;
+  else
+    w->quad_paint_flags &= ~CPF_ACTIVE;
 }
 
 static float _default_linear_callback(GtkWidget *self, float value, dt_bauhaus_callback_t dir)
@@ -1202,22 +1211,18 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
 static void dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
 {
   GtkWidget *widget = GTK_WIDGET(w);
-  gboolean sensitive = gtk_widget_is_sensitive(GTK_WIDGET(w));
+  const gboolean sensitive = gtk_widget_is_sensitive(GTK_WIDGET(w));
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width;
-  int height = allocation.height;
+  const int width = allocation.width;
+  const int height = allocation.height;
 
   if(w->quad_paint)
   {
-    float font_size = get_label_font_size();
+    const float font_size = get_label_font_size();
     cairo_save(cr);
-    if(sensitive)
-      set_color(cr, darktable.bauhaus->color_border);
-    else
-      set_color(cr, darktable.bauhaus->color_bg);
-    w->quad_paint(cr, width - height - 1, -1, height + 2, font_size + 2, w->quad_paint_flags, w->quad_paint_data);
-    if(sensitive)
+
+    if(sensitive && (w->quad_paint_flags & CPF_ACTIVE))
       set_color(cr, darktable.bauhaus->color_fg);
     else
       set_color(cr, darktable.bauhaus->color_fg_insensitive);
@@ -1912,6 +1917,13 @@ static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButt
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   if(w->quad_paint && (event->x > allocation.width - allocation.height))
   {
+    if (w->quad_toggle)
+    {
+      if (w->quad_paint_flags & CPF_ACTIVE)
+        w->quad_paint_flags &= ~CPF_ACTIVE;
+      else
+        w->quad_paint_flags |= CPF_ACTIVE;
+    }
     g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
     return TRUE;
   }
@@ -2224,6 +2236,13 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   if(w->quad_paint && (event->x > allocation.width - allocation.height))
   {
+    if (w->quad_toggle)
+    {
+      if (w->quad_paint_flags & CPF_ACTIVE)
+        w->quad_paint_flags &= ~CPF_ACTIVE;
+      else
+        w->quad_paint_flags |= CPF_ACTIVE;
+    }
     g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
     return TRUE;
   }

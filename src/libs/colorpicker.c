@@ -501,6 +501,7 @@ void gui_init(dt_lib_module_t *self)
   // Setting up the GUI
   self->widget = container;
   gtk_box_pack_start(GTK_BOX(container), output_row, TRUE, TRUE, 0);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   // The color patch
   data->color_patch = gtk_drawing_area_new();
@@ -559,7 +560,6 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.restrict_histogram
       = dt_conf_get_int("ui_last/colorpicker_restrict_histogram");
   gtk_box_pack_start(GTK_BOX(container), restrict_button, TRUE, TRUE, 0);
-
   g_signal_connect(G_OBJECT(restrict_button), "toggled", G_CALLBACK(_restrict_histogram_changed), NULL);
 
   // Adding the live samples section

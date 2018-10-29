@@ -82,6 +82,7 @@ static void create_callback(GtkButton *button, gpointer user_data)
 void gui_init(dt_lib_module_t *self)
 {
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  dt_gui_add_help_link(self->widget, "tethering_panels.html#session");
   self->data = calloc(1, sizeof(dt_lib_session_t));
 
   // Setup lib data

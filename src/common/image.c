@@ -46,6 +46,42 @@
 #endif
 #include <glib/gstdio.h>
 
+static int64_t max_image_position()
+{
+  sqlite3_stmt *stmt = NULL;
+
+  // get last position
+  int64_t max_position = 0;
+
+  gchar *max_position_query = "SELECT MAX(position) FROM main.images";
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), max_position_query, -1, &stmt, NULL);
+
+  if (sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    max_position = sqlite3_column_int64(stmt, 0);
+  }
+
+  sqlite3_finalize(stmt);
+  return max_position;
+}
+
+static int64_t create_next_image_position()
+{
+  /* The sequence pictures come in (import) define the initial sequence.
+   *
+   * The upper int32_t of the last image position is increased by one
+   * while the lower 32 bits are masked out.
+   *
+   * Example:
+   * last image position: (Hex)
+   * 0000 0002 0000 0001
+   *
+   * next image position
+   * 0000 0003 0000 0000
+   */
+  return (max_image_position() & 0xFFFFFFFF00000000) + (1ll << 32);
+}
+
 static void _image_local_copy_full_path(const int imgid, char *pathname, size_t pathname_len);
 
 int dt_image_is_ldr(const dt_image_t *img)
@@ -482,6 +518,40 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   dt_image_set_flip(imgid, orientation);
 }
 
+void dt_image_set_aspect_ratio(const int32_t imgid)
+{
+  double aspect_ratio = .0f;
+  dt_mipmap_buffer_t buf;
+
+  // mipmap cache must be initialized, otherwise we'll update next call
+  if(darktable.mipmap_cache)
+  {
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_0, DT_MIPMAP_BLOCKING, 'r');
+
+    if (buf.buf && buf.height && buf.width)
+      aspect_ratio = (float)buf.width / (float)buf.height;
+
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+
+    // store the computed aspect ratio
+    if (aspect_ratio > 0.0f)
+    {
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE images SET aspect_ratio=ROUND(?1,1) WHERE id=?2",
+                                  -1, &stmt, NULL);
+
+      DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, aspect_ratio);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+
+    if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  }
+}
+
 int32_t dt_image_duplicate(const int32_t imgid)
 {
   return dt_image_duplicate_with_version(imgid, -1);
@@ -492,6 +562,11 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
 {
   sqlite3_stmt *stmt;
   int32_t newid = -1;
+  const int64_t image_position = dt_collection_get_image_position(imgid);
+  const int64_t new_image_position = (image_position < 0) ? max_image_position() : image_position + 1;
+
+  dt_collection_shift_image_positions(1, new_image_position);
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT a.id FROM main.images AS a JOIN main.images AS b WHERE "
                               "a.film_id = b.film_id AND a.filename = b.filename AND "
@@ -516,16 +591,18 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
       "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
       "raw_auto_bright_threshold, raw_black, raw_maximum, "
       "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-      "longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end) "
+      "longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end, "
+      "position, aspect_ratio) "
       "SELECT NULL, group_id, film_id, width, height, filename, maker, model, lens, "
       "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
       "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
       "raw_auto_bright_threshold, raw_black, raw_maximum, "
       "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-      "longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0 "
-      "FROM main.images WHERE id = ?1",
+      "longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1, aspect_ratio "
+      "FROM main.images WHERE id = ?2",
       -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 1, new_image_position);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -878,15 +955,33 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
     flags |= DT_IMAGE_HAS_TXT;
     g_free(extra_file);
   }
+
   // insert dummy image entry in database
+
+  /* Image Position Calulation
+   *
+   * The upper int32_t of the last image position is increased by one
+   * while the lower 32 bits are masked out.
+   *
+   * Example:
+   * last image position: (Hex)
+   * 0000 0002 0000 0001
+   *
+   * next image position
+   * 0000 0003 0000 0000
+   */
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "INSERT INTO main.images (id, film_id, filename, caption, description, license, sha1sum, flags, version, "
-      "max_version, history_end) VALUES (NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0)",
+      "max_version, history_end, position) "
+      "SELECT NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32) "
+      "FROM images",
       -1, &stmt, NULL);
+
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, flags);
+
   rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
@@ -1279,6 +1374,8 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
 
     if((gerror == NULL) || (gerror != NULL && gerror->code == G_IO_ERROR_EXISTS))
     {
+      const int64_t new_image_position = create_next_image_position();
+
       // update database
       DT_DEBUG_SQLITE3_PREPARE_V2(
           dt_database_get(darktable.db),
@@ -1288,17 +1385,20 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
           "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
           "raw_auto_bright_threshold, raw_black, raw_maximum, "
           "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-          "longitude, latitude, altitude, color_matrix, colorspace, version, max_version) "
+          "longitude, latitude, altitude, color_matrix, colorspace, version, max_version, "
+          "position, aspect_ratio) "
           "SELECT NULL, group_id, ?1 as film_id, width, height, filename, maker, model, lens, "
           "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
           "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
           "raw_auto_bright_threshold, raw_black, raw_maximum, "
           "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-          "longitude, latitude, altitude, color_matrix, colorspace, -1, -1 "
-          "FROM main.images WHERE id = ?2",
+          "longitude, latitude, altitude, color_matrix, colorspace, -1, -1, "
+          "?2, aspect_ratio "
+          "FROM main.images WHERE id = ?3",
           -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+      DT_DEBUG_SQLITE3_BIND_INT64(stmt, 2, new_image_position);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),

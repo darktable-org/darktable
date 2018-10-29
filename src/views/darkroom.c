@@ -190,7 +190,7 @@ void expose(
   {
     float zx = zoom_x, zy = zoom_y, boxw = 1., boxh = 1.;
     dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, &boxw, &boxh);
-    dt_view_set_scrollbar(self, zx + .5 - boxw * .5, 1.0, boxw, zy + .5 - boxh * .5, 1.0, boxh);
+    dt_view_set_scrollbar(self, zx, -0.5 + boxw/2, 0.5, boxw/2, zy, -0.5+ boxh/2, 0.5, boxh/2);
   }
 
   if((dev->image_status == DT_DEV_PIXELPIPE_VALID)
@@ -559,6 +559,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   if(!dev->form_gui)
   {
     dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
+    dt_masks_init_form_gui(dev->form_gui);
   }
   dt_masks_change_form_gui(NULL);
 
@@ -627,7 +628,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_read_history(dev);
 
   // we have to init all module instances other than "base" instance
-  GList *modules = dev->iop;
+  GList *modules = g_list_last(dev->iop);
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -668,7 +669,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
             base->expander, "position", &gv);
         gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
                               expander, g_value_get_int(&gv) + pos_base - pos_module);
-        dt_iop_gui_set_expanded(module, TRUE, FALSE);
+        dt_iop_gui_set_expanded(module, FALSE, FALSE);
         dt_iop_gui_update_blending(module);
       }
 
@@ -686,7 +687,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       if(!dt_iop_is_hidden(module)) dt_iop_gui_update_header(module);
     }
 
-    modules = g_list_next(modules);
+    modules = g_list_previous(modules);
   }
 
   dt_dev_pop_history_items(dev, dev->history_end);
@@ -734,6 +735,10 @@ static void film_strip_activated(const int imgid, void *data)
   // switch images in darkroom mode:
   const dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  // first compute/update possibly new aspect ratio of current picture
+  dt_image_set_aspect_ratio(dev->image_storage.id);
+
   // clean the undo list
   dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
   dt_dev_change_image(dev, imgid);
@@ -1681,6 +1686,7 @@ void enter(dt_view_t *self)
   if(!dev->form_gui)
   {
     dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
+    dt_masks_init_form_gui(dev->form_gui);
   }
   dt_masks_change_form_gui(NULL);
   dev->form_gui->pipe_hash = 0;
@@ -1779,6 +1785,18 @@ void enter(dt_view_t *self)
   dt_view_filmstrip_prefetch();
 
   dt_collection_hint_message(darktable.collection);
+
+  char *scrollbars_conf = dt_conf_get_string("scrollbars");
+
+  gboolean scrollbars_visible = FALSE;
+  if(scrollbars_conf)
+  {
+    if(!strcmp(scrollbars_conf, "lighttable + darkroom"))
+      scrollbars_visible = TRUE;
+    g_free(scrollbars_conf);
+  }
+
+  dt_ui_scrollbars_show(darktable.gui->ui, scrollbars_visible);
 }
 
 void leave(dt_view_t *self)
@@ -1801,6 +1819,7 @@ void leave(dt_view_t *self)
     dt_conf_set_string("plugins/darkroom/active", "");
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
+
   // tag image as changed
   // TODO: only tag the image when there was a real change.
   guint tagid = 0;
@@ -1817,6 +1836,9 @@ void leave(dt_view_t *self)
     // dump new xmp data
     dt_image_synch_xmp(dev->image_storage.id);
   }
+
+  // update possibly changed aspect ratio
+  dt_image_set_aspect_ratio(dev->image_storage.id);
 
   // clear gui.
 
@@ -1874,6 +1896,8 @@ void leave(dt_view_t *self)
   gtk_widget_hide(dev->overexposed.floating_window);
   gtk_widget_hide(dev->profile.floating_window);
 
+  dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
+
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 
@@ -1882,6 +1906,13 @@ void mouse_leave(dt_view_t *self)
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_control_set_mouse_over_id(dev->image_storage.id);
+
+  // masks
+  int handled = dt_masks_events_mouse_leave(dev->gui_module);
+  if(handled) return;
+  // module
+  if(dev->gui_module && dev->gui_module->mouse_leave)
+    handled = dev->gui_module->mouse_leave(dev->gui_module);
 
   // reset any changes the selected plugin might have made.
   dt_control_change_cursor(GDK_LEFT_PTR);
@@ -1911,6 +1942,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   int handled = 0;
   x += offx;
   y += offy;
+
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && ctl->button_down
      && ctl->button_down_which == 1)
   {
@@ -1937,7 +1969,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     return;
   }
   // masks
-  if(dev->form_visible) handled = dt_masks_events_mouse_moved(dev->gui_module, x, y, pressure, which);
+  handled = dt_masks_events_mouse_moved(dev->gui_module, x, y, pressure, which);
   if(handled) return;
   // module
   if(dev->gui_module && dev->gui_module->mouse_moved)
@@ -2078,6 +2110,15 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   return 0;
 }
 
+void scrollbar_changed(dt_view_t *self, double x, double y)
+{
+  dt_control_set_dev_zoom_x(x);
+  dt_control_set_dev_zoom_y(y);
+
+  /* redraw pipe */
+  dt_dev_invalidate(darktable.develop);
+  dt_control_queue_redraw();
+}
 
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {

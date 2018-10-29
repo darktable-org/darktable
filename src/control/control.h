@@ -60,6 +60,10 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_control_log_busy_enter();
 void dt_control_log_busy_leave();
+// disable the possibility to change the cursor shape with dt_control_change_cursor
+void dt_control_forbid_change_cursor();
+// enable the possibility to change the cursor shape with dt_control_change_cursor
+void dt_control_allow_change_cursor();
 void dt_control_change_cursor(dt_cursor_t cursor);
 void dt_control_write_sidecar_files();
 void dt_control_delete_images();
@@ -142,6 +146,7 @@ typedef struct dt_control_t
   double button_x, button_y;
   int history_start;
   int32_t mouse_over_id;
+  gboolean lock_cursor_shape;
 
   // TODO: move these to some darkroom struct
   // synchronized navigation

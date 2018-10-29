@@ -30,6 +30,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -73,15 +74,16 @@ typedef struct dt_iop_colorout_gui_data_t
   GtkWidget *output_intent, *output_profile;
 } dt_iop_colorout_gui_data_t;
 
+#define NAME "output color profile"
 
 const char *name()
 {
-  return _("output color profile");
+  return _(NAME);
 }
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
 }
 
 int flags()
@@ -771,6 +773,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // TODO:
   g->output_intent = dt_bauhaus_combobox_new(self);

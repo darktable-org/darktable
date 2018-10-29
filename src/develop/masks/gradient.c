@@ -128,8 +128,6 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
       gui->form_rotating = TRUE;
     else
       gui->form_dragging = TRUE;
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     gui->dx = gpt->points[0] - gui->posx;
     gui->dy = gpt->points[1] - gui->posy;
     return 1;
@@ -298,8 +296,6 @@ static int dt_gradient_events_mouse_moved(struct dt_iop_module_t *module, float 
 {
   if(gui->form_dragging || gui->form_rotating)
   {
-    gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
-    gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
     dt_control_queue_redraw_center();
     return 1;
   }

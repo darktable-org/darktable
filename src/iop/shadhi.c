@@ -34,6 +34,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -171,10 +172,11 @@ typedef struct dt_iop_shadhi_global_data_t
   int kernel_shadows_highlights_mix;
 } dt_iop_shadhi_global_data_t;
 
+#define NAME "shadows and highlights"
 
 const char *name()
 {
-  return _("shadows and highlights");
+  return _(NAME);
 }
 
 int flags()
@@ -184,7 +186,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -811,6 +813,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->shadows = dt_bauhaus_slider_new_with_range(self, -100.0, 100.0, 2., p->shadows, 2);
   g->highlights = dt_bauhaus_slider_new_with_range(self, -100.0, 100.0, 2., p->highlights, 2);
@@ -819,7 +822,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->shadhi_algo, NULL, _("soften with"));
   dt_bauhaus_combobox_add(g->shadhi_algo, _("gaussian"));
   dt_bauhaus_combobox_add(g->shadhi_algo, _("bilateral filter"));
-  g->radius = dt_bauhaus_slider_new_with_range(self, 0.1, 200.0, 2., p->radius, 2);
+  g->radius = dt_bauhaus_slider_new_with_range(self, 0.1, 500.0, 2., p->radius, 2);
   g->compress = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->compress, 2);
   g->shadows_ccorrect = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->shadows_ccorrect, 2);
   g->highlights_ccorrect = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->highlights_ccorrect, 2);
