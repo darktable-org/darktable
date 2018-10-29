@@ -340,11 +340,18 @@ static void _path_points_recurs(float *p1, float *p2, double tmin, double tmax, 
 }
 
 /** find all self intersections in a path */
-static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners, float *border, int border_count)
+static size_t _path_find_self_intersection(dt_masks_dynbuf_t *inter,
+                                           size_t nb_corners,
+                                           float *border,
+                                           size_t border_count)
 {
   if(nb_corners == 0 || border_count == 0) return 0;
 
-  int inter_count = 0;
+  if (nb_corners * 3 < nb_corners) {
+      return 0;
+  }
+
+  size_t inter_count = 0;
 
   // we search extreme points in x and y
   int xmin, xmax, ymin, ymax;
@@ -352,8 +359,11 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
   xmax = ymax = INT_MIN;
   int posextr[4] = { -1 }; // xmin,xmax,ymin,ymax
 
-  for(int i = nb_corners * 3; i < border_count; i++)
+  for(size_t i = nb_corners * 3; i < border_count; i++)
   {
+    if (i * 2 < i) {
+        return 0;
+    }
     if(isnan(border[i * 2]) || isnan(border[i * 2 + 1]))
     {
       border[i * 2] = border[i * 2 - 2];
