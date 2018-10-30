@@ -100,16 +100,15 @@ typedef struct dt_iop_profilegamma_global_data_t
   int kernel_profilegamma_log;
 } dt_iop_profilegamma_global_data_t;
 
-#define NAME "unbreak input profile"
 
 const char *name()
 {
-  return _(NAME);
+  return _("unbreak input profile");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("unbreak input profile", IOP_GROUP_COLOR);
 }
 
 int flags()

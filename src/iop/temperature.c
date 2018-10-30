@@ -155,17 +155,16 @@ static int ignore_missing_wb(dt_image_t *img)
   return FALSE;
 }
 
-#define NAME "white balance"
 
 const char *name()
 {
-  return C_("modulename", NAME);
+  return C_("modulename", "white balance");
 }
 
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("white balance", IOP_GROUP_BASIC);
 }
 
 int flags()

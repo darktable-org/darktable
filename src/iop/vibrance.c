@@ -59,11 +59,10 @@ typedef struct dt_iop_vibrance_global_data_t
   int kernel_vibrance;
 } dt_iop_vibrance_global_data_t;
 
-#define NAME "vibrance"
 
 const char *name()
 {
-  return _(NAME);
+  return _("vibrance");
 }
 
 int flags()
@@ -73,7 +72,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("vibrance", IOP_GROUP_COLOR);
 }
 
 #if 0 // BAUHAUS doesn't support keyaccels yet...

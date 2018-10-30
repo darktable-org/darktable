@@ -73,16 +73,15 @@ typedef struct dt_iop_highlights_global_data_t
   int kernel_highlights_4f_clip;
 } dt_iop_highlights_global_data_t;
 
-#define NAME "highlight reconstruction"
 
 const char *name()
 {
-  return _(NAME);
+  return _("highlight reconstruction");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("highlight reconstruction", IOP_GROUP_BASIC);
 }
 
 int flags()

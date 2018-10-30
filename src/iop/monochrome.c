@@ -67,16 +67,15 @@ typedef struct dt_iop_monochrome_global_data_t
   int kernel_monochrome_filter, kernel_monochrome;
 } dt_iop_monochrome_global_data_t;
 
-#define NAME "monochrome"
 
 const char *name()
 {
-  return _(NAME);
+  return _("monochrome");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("monochrome", IOP_GROUP_COLOR);
 }
 
 int flags()

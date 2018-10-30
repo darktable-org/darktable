@@ -128,16 +128,15 @@ typedef struct dt_iop_lensfun_data_t
   gboolean do_nan_checks;
 } dt_iop_lensfun_data_t;
 
-#define NAME "lens correction"
 
 const char *name()
 {
-  return _(NAME);
+  return _("lens correction");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("lens correction", IOP_GROUP_CORRECT);
 }
 
 int operation_tags()

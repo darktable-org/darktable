@@ -51,18 +51,17 @@ typedef struct dt_iop_cacorrect_global_data_t
 {
 } dt_iop_cacorrect_global_data_t;
 
-#define NAME "chromatic aberrations"
 
 // this returns a translatable name
 const char *name()
 {
   // make sure you put all your translatable strings into _() !
-  return _(NAME);
+  return _("chromatic aberrations");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("chromatic aberrations", IOP_GROUP_CORRECT);
 }
 
 int flags()

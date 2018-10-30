@@ -72,11 +72,10 @@ typedef struct dt_iop_colisa_global_data_t
   int kernel_colisa;
 } dt_iop_colisa_global_data_t;
 
-#define NAME "contrast brightness saturation"
 
 const char *name()
 {
-  return _(NAME);
+  return _("contrast brightness saturation");
 }
 
 int flags()
@@ -86,7 +85,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("contrast brightness saturation", IOP_GROUP_BASIC);
 }
 
 

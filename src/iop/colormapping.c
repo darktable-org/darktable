@@ -138,16 +138,15 @@ typedef struct dt_iop_colormapping_global_data_t
   int kernel_mapping;
 } dt_iop_colormapping_global_data_t;
 
-#define NAME "color mapping"
 
 const char *name()
 {
-  return _(NAME);
+  return _("color mapping");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("color mapping", IOP_GROUP_EFFECT);
 }
 
 int flags()

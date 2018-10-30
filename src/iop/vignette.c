@@ -148,11 +148,10 @@ typedef struct dt_iop_vignette_global_data_t
   int kernel_vignette;
 } dt_iop_vignette_global_data_t;
 
-#define NAME "vignetting"
 
 const char *name()
 {
-  return _(NAME);
+  return _("vignetting");
 }
 
 int flags()
@@ -163,7 +162,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("vignetting", IOP_GROUP_EFFECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)

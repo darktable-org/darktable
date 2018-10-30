@@ -73,10 +73,9 @@ typedef struct dt_iop_bloom_global_data_t
   int kernel_bloom_mix;
 } dt_iop_bloom_global_data_t;
 
-#define NAME "bloom"
 const char *name()
 {
-  return _(NAME);
+  return _("bloom");
 }
 
 int flags()
@@ -86,7 +85,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("bloom", IOP_GROUP_EFFECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)

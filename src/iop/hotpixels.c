@@ -66,16 +66,15 @@ typedef struct dt_iop_hotpixels_data_t
   gboolean markfixed;
 } dt_iop_hotpixels_data_t;
 
-#define NAME "hot pixels"
 
 const char *name()
 {
-  return _(NAME);
+  return _("hot pixels");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("hot pixels", IOP_GROUP_CORRECT);
 }
 
 int flags()

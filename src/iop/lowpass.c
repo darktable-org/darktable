@@ -123,11 +123,10 @@ typedef struct dt_iop_lowpass_global_data_t
   int kernel_lowpass_mix;
 } dt_iop_lowpass_global_data_t;
 
-#define NAME "lowpass"
 
 const char *name()
 {
-  return _(NAME);
+  return _("lowpass");
 }
 
 int flags()
@@ -137,7 +136,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("lowpass", IOP_GROUP_EFFECT);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

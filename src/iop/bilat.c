@@ -90,11 +90,10 @@ typedef struct dt_iop_bilat_gui_data_t
 }
 dt_iop_bilat_gui_data_t;
 
-#define NAME "local contrast"
 // this returns a translatable name
 const char *name()
 {
-  return _(NAME);
+  return _("local contrast");
 }
 
 // some additional flags (self explanatory i think):
@@ -106,7 +105,7 @@ int flags()
 // where does it appear in the gui?
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
+  return dt_iop_get_group("local contrast", IOP_GROUP_TONE);
 }
 
 int legacy_params(

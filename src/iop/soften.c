@@ -80,11 +80,10 @@ typedef struct dt_iop_soften_global_data_t
   int kernel_soften_mix;
 } dt_iop_soften_global_data_t;
 
-#define NAME "soften"
 
 const char *name()
 {
-  return _(NAME);
+  return _("soften");
 }
 
 int flags()
@@ -94,7 +93,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("soften", IOP_GROUP_EFFECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)

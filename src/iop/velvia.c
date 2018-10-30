@@ -78,11 +78,10 @@ typedef struct dt_iop_velvia_global_data_t
   int kernel_velvia;
 } dt_iop_velvia_global_data_t;
 
-#define NAME "velvia"
 
 const char *name()
 {
-  return _(NAME);
+  return _("velvia");
 }
 
 int flags()
@@ -92,7 +91,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("velvia", IOP_GROUP_COLOR);
 }
 
 #if 0 // BAUHAUS doesn't support keyaccels yet...

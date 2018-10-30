@@ -76,11 +76,10 @@ typedef struct dt_iop_splittoning_global_data_t
   int kernel_splittoning;
 } dt_iop_splittoning_global_data_t;
 
-#define NAME "split toning"
 
 const char *name()
 {
-  return _(NAME);
+  return _("split toning");
 }
 
 int flags()
@@ -90,7 +89,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("split toning", IOP_GROUP_EFFECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)

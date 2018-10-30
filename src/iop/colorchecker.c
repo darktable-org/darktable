@@ -109,16 +109,15 @@ typedef struct dt_iop_colorchecker_global_data_t
   int kernel_colorchecker;
 } dt_iop_colorchecker_global_data_t;
 
-#define NAME "color look up table"
 
 const char *name()
 {
-  return _(NAME);
+  return _("color look up table");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("color look up table", IOP_GROUP_COLOR);
 }
 
 int flags()

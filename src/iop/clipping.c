@@ -291,16 +291,15 @@ static void adjust_aabb(const float *p, float *aabb)
   aabb[3] = fmaxf(aabb[3], p[1]);
 }
 
-#define NAME "crop and rotate"
 
 const char *name()
 {
-  return _(NAME);
+  return _("crop and rotate");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("crop and rotate", IOP_GROUP_BASIC);
 }
 
 int flags()

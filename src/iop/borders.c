@@ -157,16 +157,15 @@ typedef struct dt_iop_borders_global_data_t
 
 typedef struct dt_iop_borders_params_t dt_iop_borders_data_t;
 
-#define NAME "framing"
 
 const char *name()
 {
-  return _(NAME);
+  return _("framing");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("framing", IOP_GROUP_EFFECT);
 }
 
 int operation_tags()

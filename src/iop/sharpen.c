@@ -67,16 +67,15 @@ typedef struct dt_iop_sharpen_global_data_t
   int kernel_sharpen_mix;
 } dt_iop_sharpen_global_data_t;
 
-#define NAME "sharpen"
 
 const char *name()
 {
-  return C_("sharpen", NAME);
+  return C_("modulename", "sharpen");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("sharpen", IOP_GROUP_CORRECT);
 }
 
 int flags()

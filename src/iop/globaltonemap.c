@@ -97,11 +97,10 @@ typedef struct dt_iop_global_tonemap_global_data_t
   int kernel_global_tonemap_filmic;
 } dt_iop_global_tonemap_global_data_t;
 
-#define NAME "global tonemap"
 
 const char *name()
 {
-  return _(NAME);
+  return _("global tonemap");
 }
 
 int flags()
@@ -111,7 +110,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
+  return dt_iop_get_group("global tonemap", IOP_GROUP_TONE);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

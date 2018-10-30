@@ -147,17 +147,16 @@ typedef struct dt_iop_tonecurve_global_data_t
   int kernel_tonecurve;
 } dt_iop_tonecurve_global_data_t;
 
-#define NAME "tone curve"
 
 const char *name()
 {
-  return _(NAME);
+  return _("tone curve");
 }
 
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
+  return dt_iop_get_group("tone curve", IOP_GROUP_TONE);
 }
 
 int flags()

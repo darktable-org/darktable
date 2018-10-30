@@ -98,17 +98,16 @@ typedef struct dt_iop_dither_data_t
   } random;
 } dt_iop_dither_data_t;
 
-#define NAME "dithering"
 
 const char *name()
 {
-  return _(NAME);
+  return _("dithering");
 }
 
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("dithering", IOP_GROUP_CORRECT);
 }
 
 int flags()

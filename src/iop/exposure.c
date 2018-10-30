@@ -100,16 +100,15 @@ typedef struct dt_iop_exposure_global_data_t
   int kernel_exposure;
 } dt_iop_exposure_global_data_t;
 
-#define NAME "exposure"
 
 const char *name()
 {
-  return _(NAME);
+  return _("exposure");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("exposure", IOP_GROUP_BASIC);
 }
 
 int flags()

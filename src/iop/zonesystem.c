@@ -112,11 +112,10 @@ typedef struct dt_iop_zonesystem_gui_data_t
 
 } dt_iop_zonesystem_gui_data_t;
 
-#define NAME "zone system"
 
 const char *name()
 {
-  return _(NAME);
+  return _("zone system");
 }
 
 int flags()
@@ -127,7 +126,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
+  return dt_iop_get_group("zone system", IOP_GROUP_TONE);
 }
 
 /* get the zone index of pixel lightness from zonemap */

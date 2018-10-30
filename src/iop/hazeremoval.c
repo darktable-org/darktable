@@ -81,11 +81,10 @@ typedef struct dt_iop_hazeremoval_global_data_t
 {
 } dt_iop_hazeremoval_global_data_t;
 
-#define NAME "haze removal"
 
 const char *name()
 {
-  return _(NAME);
+  return _("haze removal");
 }
 
 int flags()
@@ -95,7 +94,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("haze removal", IOP_GROUP_CORRECT);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

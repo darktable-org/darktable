@@ -413,11 +413,10 @@ static float dt_lut_lookup_2d_1c(const float *grain_lut, const float x, const fl
   return xy0 * (1.0f - x_diff) + xy1 * x_diff;
 }
 
-#define NAME "grain"
 
 const char *name()
 {
-  return _(NAME);
+  return _("grain");
 }
 
 int flags()
@@ -427,7 +426,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("grain", IOP_GROUP_EFFECT);
 }
 
 #if 0 // BAUHAUS doesn't support keyaccels yet...

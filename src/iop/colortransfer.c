@@ -95,16 +95,15 @@ typedef struct dt_iop_colortransfer_data_t
   int n;
 } dt_iop_colortransfer_data_t;
 
-#define NAME "color transfer"
 
 const char *name()
 {
-  return _(NAME);
+  return _("color transfer");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("color transfer", IOP_GROUP_COLOR);
 }
 
 int flags()

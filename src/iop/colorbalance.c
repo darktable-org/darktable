@@ -155,11 +155,10 @@ typedef struct dt_iop_colorbalance_global_data_t
   int kernel_colorbalance_lgg;
 } dt_iop_colorbalance_global_data_t;
 
-#define NAME "color balance"
 
 const char *name()
 {
-  return _(NAME);
+  return _("color balance");
 }
 
 const char *description()
@@ -174,7 +173,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("color balance", IOP_GROUP_COLOR);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,

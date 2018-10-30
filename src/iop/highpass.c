@@ -71,11 +71,10 @@ typedef struct dt_iop_highpass_global_data_t
   int kernel_highpass_mix;
 } dt_iop_highpass_global_data_t;
 
-#define NAME "highpass"
 
 const char *name()
 {
-  return _(NAME);
+  return _("highpass");
 }
 
 int flags()
@@ -85,7 +84,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("highpass", IOP_GROUP_EFFECT);
 }
 
 #if 0 // BAUHAUS doesn't support keyaccels yet...

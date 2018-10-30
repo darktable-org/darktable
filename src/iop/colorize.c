@@ -78,11 +78,10 @@ typedef struct dt_iop_colorize_global_data_t
 } dt_iop_colorize_global_data_t;
 
 
-#define NAME "colorize"
 
 const char *name()
 {
-  return _(NAME);
+  return _("colorize");
 }
 
 int flags()
@@ -92,7 +91,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("colorize", IOP_GROUP_EFFECT);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
