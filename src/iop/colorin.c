@@ -107,16 +107,15 @@ typedef struct dt_iop_colorin_data_t
   dt_colorspaces_color_profile_type_t type;
 } dt_iop_colorin_data_t;
 
-#define NAME "input color profile"
 
 const char *name()
 {
-  return _(NAME);
+  return _("input color profile");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("input color profile", IOP_GROUP_COLOR);
 }
 
 int flags()

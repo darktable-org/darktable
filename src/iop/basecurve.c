@@ -288,16 +288,15 @@ typedef struct dt_iop_basecurve_global_data_t
 } dt_iop_basecurve_global_data_t;
 
 
-#define NAME "base curve"
 
 const char *name()
 {
-  return _(NAME);
+  return _("base curve");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("base curve", IOP_GROUP_BASIC);
 }
 
 

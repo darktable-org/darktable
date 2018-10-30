@@ -51,11 +51,10 @@ typedef struct dt_iop_scalepixels_data_t {
   float y_scale;
 } dt_iop_scalepixels_data_t;
 
-#define NAME "scale pixels"
 
 const char *name()
 {
-  return C_("modulename", NAME);
+  return C_("modulename", "scale pixels");
 }
 
 int flags()
@@ -65,7 +64,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("scale pixels", IOP_GROUP_CORRECT);
 }
 
 int operation_tags()

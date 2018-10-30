@@ -184,17 +184,16 @@ typedef struct dt_iop_retouch_global_data_t
   int kernel_retouch_copy_mask_to_alpha;
 } dt_iop_retouch_global_data_t;
 
-#define NAME "retouch"
 
 // this returns a translatable name
 const char *name()
 {
-  return _(NAME);
+  return _("retouch");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("retouch", IOP_GROUP_CORRECT);
 }
 
 int flags()

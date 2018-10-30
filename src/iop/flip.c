@@ -70,16 +70,15 @@ static void adjust_aabb(const int32_t *p, int32_t *aabb)
   aabb[3] = MAX(aabb[3], p[1]);
 }
 
-#define NAME "orientation"
 
 const char *name()
 {
-  return _(NAME);
+  return _("orientation");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("orientation", IOP_GROUP_BASIC);
 }
 
 int operation_tags()

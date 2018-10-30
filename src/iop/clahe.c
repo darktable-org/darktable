@@ -60,16 +60,15 @@ typedef struct dt_iop_rlce_data_t
   double slope;
 } dt_iop_rlce_data_t;
 
-#define NAME "local contrast"
 
 const char *name()
 {
-  return _(NAME);
+  return _("local contrast");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("local contrast", IOP_GROUP_EFFECT);
 }
 
 int flags()

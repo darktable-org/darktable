@@ -64,11 +64,10 @@ typedef struct dt_iop_colorcorrection_global_data_t
   int kernel_colorcorrection;
 } dt_iop_colorcorrection_global_data_t;
 
-#define NAME "color correction"
 
 const char *name()
 {
-  return _(NAME);
+  return _("color correction");
 }
 
 int flags()
@@ -78,7 +77,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("color correction", IOP_GROUP_COLOR);
 }
 
 void init_presets(dt_iop_module_so_t *self)

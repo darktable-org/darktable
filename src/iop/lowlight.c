@@ -79,11 +79,10 @@ typedef struct dt_iop_lowlight_global_data_t
   int kernel_lowlight;
 } dt_iop_lowlight_global_data_t;
 
-#define NAME "lowlight vision"
 
 const char *name()
 {
-  return _(NAME);
+  return _("lowlight vision");
 }
 
 int flags()
@@ -93,7 +92,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("lowlight vision", IOP_GROUP_EFFECT);
 }
 
 

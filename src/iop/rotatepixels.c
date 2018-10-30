@@ -65,11 +65,10 @@ static void adjust_aabb(const float *p, float *aabb)
   aabb[3] = fmaxf(aabb[3], p[1]);
 }
 
-#define NAME "rotate pixels"
 
 const char *name()
 {
-  return C_("modulename", NAME);
+  return C_("modulename", "rotate pixels");
 }
 
 int flags()
@@ -79,7 +78,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("rotate pixels", IOP_GROUP_CORRECT);
 }
 
 int operation_tags()

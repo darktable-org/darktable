@@ -63,16 +63,15 @@ typedef struct dt_iop_defringe_gui_data_t
 //}
 // dt_iop_defringe_global_data_t;
 
-#define NAME "defringe"
 
 const char *name()
 {
-  return _(NAME);
+  return _("defringe");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("defringe", IOP_GROUP_CORRECT);
 }
 
 int flags()

@@ -122,11 +122,10 @@ typedef struct dt_iop_colorreconstruct_global_data_t
   int kernel_colorreconstruct_slice;
 } dt_iop_colorreconstruct_global_data_t;
 
-#define NAME "color reconstruction"
 
 const char *name()
 {
-  return _(NAME);
+  return _("color reconstruction");
 }
 
 int flags()
@@ -138,7 +137,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("color reconstruction", IOP_GROUP_BASIC);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

@@ -106,11 +106,10 @@
 
 DT_MODULE_INTROSPECTION(4, dt_iop_ashift_params_t)
 
-#define NAME "perspective correction"
 
 const char *name()
 {
-  return _(NAME);
+  return _("perspective correction");
 }
 
 int flags()
@@ -120,7 +119,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("perspective correction", IOP_GROUP_CORRECT);
 }
 
 int operation_tags()
