@@ -69,7 +69,8 @@ typedef enum dt_collection_sort_t
   DT_COLLECTION_SORT_CUSTOM_ORDER,
   DT_COLLECTION_SORT_TITLE,
   DT_COLLECTION_SORT_DESCRIPTION,
-  DT_COLLECTION_SORT_ASPECT_RATIO
+  DT_COLLECTION_SORT_ASPECT_RATIO,
+  DT_COLLECTION_SORT_SHUFFLE
 } dt_collection_sort_t;
 
 typedef enum dt_collection_properties_t
