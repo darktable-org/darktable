@@ -147,6 +147,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("title")); // DT_COLLECTION_SORT_TITLE
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("description")); // DT_COLLECTION_SORT_DESCRIPTION
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("aspect ratio")); // DT_COLLECTION_SORT_ASPECT_RATIO
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("shuffle")); // DT_COLLECTION_SORT_SHUFFLE
 
   /* select the last selected value */
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_collection_get_sort_field(darktable.collection));
