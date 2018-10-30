@@ -151,6 +151,13 @@ typedef struct dt_iop_denoiseprofile_global_data_t
   int kernel_denoiseprofile_reduce_second;
 } dt_iop_denoiseprofile_global_data_t;
 
+static int sign(int a)
+{
+  return (a > 0) - (a < 0);
+}
+
+#define DT_DENOISE_PROFILE_NBHOOD_NORMAL_SIZE 7
+
 static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self);
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -1062,13 +1069,6 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 #undef MAX_MAX_SCALE
 }
 
-static int sign(int a)
-{
-  return (a > 0) - (a < 0);
-}
-
-#define DT_DENOISE_PROFILE_NBHOOD_NORMAL_SIZE 7
-
 static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                             const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                             const dt_iop_roi_t *const roi_out)
@@ -1112,6 +1112,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
     for(int ki_index = -K; ki_index <= K; ki_index++)
     {
       int ki = coordinate_offsets[abs(ki_index)] * sign(ki_index);
+      if(ki == 0 && kj == 0) continue;
       // TODO: adaptive K tests here!
       // TODO: expf eval for real bilateral experience :)
 
@@ -1266,6 +1267,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
     for(int ki_index = -K; ki_index <= K; ki_index++)
     {
       int ki = coordinate_offsets[abs(ki_index)] * sign(ki_index);
+      if(ki == 0 && kj == 0) continue;
       int inited_slide = 0;
 // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
 // we will add up errors)
@@ -1545,6 +1547,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     for(int ki_index = -K; ki_index <= K; ki_index++)
     {
       int i = coordinate_offsets[abs(ki_index)] * sign(ki_index);
+      if(i == 0 && j == 0) continue;
       int q[2] = { i, j };
 
       dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
