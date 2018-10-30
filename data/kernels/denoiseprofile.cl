@@ -244,7 +244,7 @@ denoiseprofile_finish(read_only image2d_t in, read_only image2d_t in2, global fl
      orig is the pixel value from this (undenoised) image */
   float4 orig = read_imagef(in2, sampleri, (int2)(x, y));
 
-  float4 px = ((float4)u2.w > (float4)0.0f ? u2/u2.w : orig;
+  float4 px = ((float4)u2.w > (float4)0.0f ? u2/u2.w : orig);
 
   px = (px < (float4)0.5f ? (float4)0.0f : 
     0.25f*px*px + 0.25f*sqrt(1.5f)/px - 1.375f/(px*px) + 0.625f*sqrt(1.5f)/(px*px*px) - 0.125f - sigma2);
