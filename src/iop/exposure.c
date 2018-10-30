@@ -501,6 +501,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
 
   dt_bauhaus_slider_set(g->autoexpp, 0.01);
+  dt_bauhaus_widget_set_quad_active(g->autoexpp, FALSE);
 
   dt_bauhaus_slider_set(g->deflicker_percentile, p->deflicker_percentile);
   dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
