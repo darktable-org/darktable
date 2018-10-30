@@ -45,6 +45,7 @@ typedef struct dt_lib_colorpicker_t
   GtkWidget *add_sample_button;
   GtkWidget *display_samples_check_box;
   GdkRGBA rgb;
+  gboolean from_proxy;
 } dt_lib_colorpicker_t;
 
 const char *name(dt_lib_module_t *self)
@@ -223,7 +224,8 @@ static void _size_changed(GtkComboBox *widget, gpointer p)
   dt_conf_set_int("ui_last/colorpicker_size", gtk_combo_box_get_active(widget));
   darktable.lib->proxy.colorpicker.size = gtk_combo_box_get_active(widget);
   gtk_widget_set_sensitive(data->statistic_selector, dt_conf_get_int("ui_last/colorpicker_size"));
-  dt_dev_invalidate_from_gui(darktable.develop);
+  if (!data->from_proxy)
+    dt_dev_invalidate_from_gui(darktable.develop);
   _update_picker_output(p);
 }
 
@@ -438,7 +440,9 @@ static void _set_sample_area(dt_lib_module_t *self, float size)
         = size;
   }
 
-  gtk_combo_box_set_active(GTK_COMBO_BOX(d->size_selector), 1);
+  d->from_proxy = TRUE;
+  gtk_combo_box_set_active(GTK_COMBO_BOX(d->size_selector), DT_COLORPICKER_SIZE_BOX);
+  d->from_proxy = FALSE;
 }
 
 static void _set_sample_point(dt_lib_module_t *self, float x, float y)
@@ -451,7 +455,9 @@ static void _set_sample_point(dt_lib_module_t *self, float x, float y)
     darktable.develop->gui_module->color_picker_point[1] = y;
   }
 
-  gtk_combo_box_set_active(GTK_COMBO_BOX(d->size_selector), 0);
+  d->from_proxy = TRUE;
+  gtk_combo_box_set_active(GTK_COMBO_BOX(d->size_selector), DT_COLORPICKER_SIZE_POINT);
+  d->from_proxy = FALSE;
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -473,6 +479,7 @@ void gui_init(dt_lib_module_t *self)
   data->rgb.green = 0.7;
   data->rgb.blue = 0.7;
   data->rgb.alpha = 1.0;
+  data->from_proxy = FALSE;
 
   // Initializing proxy functions and data
   darktable.lib->proxy.colorpicker.module = self;
@@ -654,6 +661,8 @@ void gui_reset(dt_lib_module_t *self)
         = darktable.lib->proxy.colorpicker.picked_color_lab_min[i]
         = darktable.lib->proxy.colorpicker.picked_color_lab_max[i] = 0;
   }
+
+  data->from_proxy = FALSE;
 
   _update_picker_output(self);
 
