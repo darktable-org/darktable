@@ -369,6 +369,10 @@ def add_edges(gr):
   # want to change exposure/basecurve after tone mapping
   gr.add_edge(('exposure', 'tonemap'))
   gr.add_edge(('basecurve', 'tonemap'))
+  # fbw goes after tonemap but before exposure/basecurve
+  gr.add_edge(('freaky_bw', 'tonemap'))
+  gr.add_edge(('exposure', 'freaky_bw'))
+  gr.add_edge(('basecurve', 'freaky_bw'))
   # need demosaiced data, but not Lab:
   gr.add_edge(('tonemap', 'demosaic'))
   gr.add_edge(('colorin', 'tonemap'))
@@ -496,6 +500,7 @@ gr.add_nodes([
 'basecurve',
 'bilateral',
 'bilat',
+'freaky_bw',
 'bloom',
 'borders',
 'cacorrect',

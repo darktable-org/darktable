@@ -85,6 +85,10 @@
 #include <magick/api.h>
 #endif
 
+#ifdef HAVE_FFTW3
+#include <fftw3.h>
+#endif
+
 #include "dbus.h"
 
 #if defined(__SUNOS__)
@@ -433,6 +437,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.exiv2_threadsafe), NULL);
+  dt_pthread_mutex_init(&(darktable.fftw3_threadsafe), NULL);
   darktable.control = (dt_control_t *)calloc(1, sizeof(dt_control_t));
 
   // database
@@ -539,9 +544,14 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #else
                "  OpenEXR support disabled\n"
 #endif
+
+#ifdef HAVE_FFTW3
+               "  fftw3 support enabled\n"
+#else
+               "  fftw3 support disabled\n"
+#endif
                ,
-               darktable_package_string,
-               darktable_last_commit_year,
+               darktable_package_string, darktable_last_commit_year,
                (sizeof(void *) == 8 ? "64 bit" : sizeof(void *) == 4 ? "32 bit" : "unknown")
 #if USE_LUA
                    ,
@@ -889,6 +899,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 #endif
 
+#ifdef HAVE_FFTW3_OMP
+#ifdef _OPENMP
+  fftwf_init_threads();
+  fftwf_plan_with_nthreads(dt_get_num_threads());
+#endif
+#endif
+
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
 
@@ -1098,6 +1115,12 @@ void dt_cleanup()
   DestroyMagick();
 #endif
 
+#ifdef HAVE_FFTW3_OMP
+#ifdef _OPENMP
+  fftwf_cleanup_threads();
+#endif
+#endif
+
   dt_guides_cleanup(darktable.guides);
 
   dt_database_destroy(darktable.db);
@@ -1113,6 +1136,7 @@ void dt_cleanup()
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.capabilities_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.exiv2_threadsafe));
+  dt_pthread_mutex_destroy(&(darktable.fftw3_threadsafe));
 
   dt_exif_cleanup();
 }

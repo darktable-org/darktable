@@ -132,6 +132,10 @@ if(LENSFUN_FOUND)
   add_iop(lens "lens.c" DEFAULT_VISIBLE)
 endif(LENSFUN_FOUND)
 
+if(FFTW3_FOUND)
+  add_iop(freaky_bw "freaky_bw.c" DEFAULT_VISIBLE)
+endif(FFTW3_FOUND)
+
 # fix for Mac when OpenMP is only available in C compiler
 if(APPLE)
   set_target_properties(demosaic PROPERTIES LINKER_LANGUAGE C)
