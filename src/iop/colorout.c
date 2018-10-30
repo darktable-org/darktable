@@ -74,16 +74,15 @@ typedef struct dt_iop_colorout_gui_data_t
   GtkWidget *output_intent, *output_profile;
 } dt_iop_colorout_gui_data_t;
 
-#define NAME "output color profile"
 
 const char *name()
 {
-  return _(NAME);
+  return _("output color profile");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("output color profile", IOP_GROUP_COLOR);
 }
 
 int flags()

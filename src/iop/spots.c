@@ -49,17 +49,16 @@ typedef struct dt_iop_spots_gui_data_t
 
 typedef struct dt_iop_spots_params_t dt_iop_spots_data_t;
 
-#define NAME "spot removal"
 
 // this returns a translatable name
 const char *name()
 {
-  return _(NAME);
+  return _("spot removal");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("spot removal", IOP_GROUP_CORRECT);
 }
 
 int flags()

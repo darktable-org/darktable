@@ -172,11 +172,10 @@ typedef struct dt_iop_shadhi_global_data_t
   int kernel_shadows_highlights_mix;
 } dt_iop_shadhi_global_data_t;
 
-#define NAME "shadows and highlights"
 
 const char *name()
 {
-  return _(NAME);
+  return _("shadows and highlights");
 }
 
 int flags()
@@ -186,7 +185,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("shadows and highlights", IOP_GROUP_BASIC);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

@@ -83,11 +83,10 @@ typedef struct dt_iop_relight_global_data_t
   int kernel_relight;
 } dt_iop_relight_global_data_t;
 
-#define NAME "fill light"
 
 const char *name()
 {
-  return _(NAME);
+  return _("fill light");
 }
 
 int flags()
@@ -97,7 +96,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
+  return dt_iop_get_group("fill light", IOP_GROUP_TONE);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)

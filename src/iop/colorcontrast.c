@@ -84,11 +84,10 @@ typedef struct dt_iop_colorcontrast_global_data_t
   int kernel_colorcontrast;
 } dt_iop_colorcontrast_global_data_t;
 
-#define NAME "color contrast"
 
 const char *name()
 {
-  return _(NAME);
+  return _("color contrast");
 }
 
 int flags()
@@ -98,7 +97,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("color contrast", IOP_GROUP_COLOR);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

@@ -264,17 +264,16 @@ typedef struct {
 
 } dt_iop_liquify_gui_data_t;
 
-#define NAME "liquify"
 
 // this returns a translatable name
 const char *name ()
 {
-  return _(NAME);
+  return _("liquify");
 }
 
 int groups ()
 {
-return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+return dt_iop_get_group("liquify", IOP_GROUP_CORRECT);
 }
 
 int flags ()

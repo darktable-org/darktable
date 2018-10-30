@@ -155,16 +155,15 @@ void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
                        float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                        const uint32_t filters);
 
-#define NAME "demosaic"
 
 const char *name()
 {
-  return _(NAME);
+  return _("demosaic");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("demosaic", IOP_GROUP_BASIC);
 }
 
 int flags()

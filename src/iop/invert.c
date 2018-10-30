@@ -107,16 +107,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-#define NAME "invert"
 
 const char *name()
 {
-  return _(NAME);
+  return _("invert");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("invert", IOP_GROUP_BASIC);
 }
 
 int flags()

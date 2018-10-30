@@ -113,16 +113,15 @@ typedef struct dt_iop_levels_global_data_t
   int kernel_levels;
 } dt_iop_levels_global_data_t;
 
-#define NAME "levels"
 
 const char *name()
 {
-  return _(NAME);
+  return _("levels");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
+  return dt_iop_get_group("levels", IOP_GROUP_TONE);
 }
 
 int flags()
