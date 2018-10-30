@@ -69,17 +69,15 @@ typedef struct dt_iop_tonemapping_data_t
   float contrast, Fsize;
 } dt_iop_tonemapping_data_t;
 
-#define NAME "tone mapping"
-
 const char *name()
 {
-  return _(NAME);
+  return _("tone mapping");
 }
 
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
+  return dt_iop_get_group("tone mapping", IOP_GROUP_TONE);
 }
 
 int flags()
