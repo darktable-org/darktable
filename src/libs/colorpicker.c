@@ -221,9 +221,12 @@ static void _size_changed(GtkComboBox *widget, gpointer p)
 {
   dt_lib_colorpicker_t *data = ((dt_lib_module_t *)p)->data;
 
-  dt_conf_set_int("ui_last/colorpicker_size", gtk_combo_box_get_active(widget));
-  darktable.lib->proxy.colorpicker.size = gtk_combo_box_get_active(widget);
-  gtk_widget_set_sensitive(data->statistic_selector, dt_conf_get_int("ui_last/colorpicker_size"));
+  const int size = gtk_combo_box_get_active(widget);
+
+  dt_conf_set_int("ui_last/colorpicker_size", size);
+  darktable.lib->proxy.colorpicker.size = size;
+  gtk_widget_set_sensitive(data->statistic_selector, size);
+
   if (!data->from_proxy)
     dt_dev_invalidate_from_gui(darktable.develop);
   _update_picker_output(p);
