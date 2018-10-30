@@ -30,6 +30,7 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "iop/iop_api.h"
 #include "common/iop_group.h"
 #include <assert.h>
@@ -137,6 +138,42 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "dynamic range", GTK_WIDGET(g->dynamic_range));
   dt_accel_connect_slider_iop(self, "grey point", GTK_WIDGET(g->grey_point));
   dt_accel_connect_slider_iop(self, "shadows range", GTK_WIDGET(g->shadows_range));
+}
+
+void init_presets(dt_iop_module_so_t *self)
+{
+  dt_iop_profilegamma_params_t p;
+  memset(&p, 0, sizeof(p));
+
+  p.mode = PROFILEGAMMA_LOG;
+  p.grey_point = 18.00f;
+  p.security_factor = 0.0f;
+
+  // 16 EV preset
+  p.dynamic_range = 16.0f;
+  p.shadows_range = -12.0f;
+  dt_gui_presets_add_generic(_("16 EV dynamic range (generic)"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // 14 EV preset
+  p.dynamic_range = 14.0f;
+  p.shadows_range = -10.50f;
+  dt_gui_presets_add_generic(_("14 EV dynamic range (generic)"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // 12 EV preset
+  p.dynamic_range = 12.0f;
+  p.shadows_range = -9.0f;
+  dt_gui_presets_add_generic(_("12 EV dynamic range (generic)"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // 10 EV preset
+  p.dynamic_range = 10.0f;
+  p.shadows_range = -7.50f;
+  dt_gui_presets_add_generic(_("10 EV dynamic range (generic)"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // 08 EV preset
+  p.dynamic_range = 8.0f;
+  p.shadows_range = -6.0f;
+  dt_gui_presets_add_generic(_("08 EV dynamic range (generic)"), self->op, self->version(), &p, sizeof(p), 1);
+
 }
 
 
