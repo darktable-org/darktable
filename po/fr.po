@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-30 19:31+0100\n"
+"POT-Creation-Date: 2018-10-31 23:55+0100\n"
 "PO-Revision-Date: 2018-10-31 10:39+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -6263,7 +6263,7 @@ msgstr ""
 msgid "color reconstruction"
 msgstr "reconstruction des couleurs"
 
-#: ../src/iop/colorreconstruction.c:174 ../src/iop/tonemap.cc:93
+#: ../src/iop/colorreconstruction.c:174 ../src/iop/tonemap.cc:91
 msgctxt "accel"
 msgid "spatial extent"
 msgstr "étendue spatiale"
@@ -6289,7 +6289,7 @@ msgid "module `color reconstruction' failed"
 msgstr "échec du module  « correction de perspective »"
 
 #: ../src/iop/colorreconstruction.c:1363 ../src/iop/shadhi.c:855
-#: ../src/iop/tonemap.cc:302
+#: ../src/iop/tonemap.cc:300
 msgid "spatial extent"
 msgstr "étendue spatiale"
 
@@ -8721,12 +8721,16 @@ msgstr ""
 "les valeurs a et b de chaque pixel sont ajustées sur la base de la courbe L. "
 "auto XYZ est similaire mais applique la saturation dans l'espace XYZ."
 
-#: ../src/iop/tonemap.cc:92
+#: ../src/iop/tonemap.cc:74
+msgid "tone mapping"
+msgstr "mappage tonalités"
+
+#: ../src/iop/tonemap.cc:90
 msgctxt "accel"
 msgid "contrast compression"
 msgstr "contraste"
 
-#: ../src/iop/tonemap.cc:296
+#: ../src/iop/tonemap.cc:294
 msgid "contrast compression"
 msgstr "contraste"
 
@@ -12012,9 +12016,6 @@ msgstr ""
 #~ msgctxt "sharpen"
 #~ msgid "sharpen"
 #~ msgstr "renforcer la netteté"
-
-#~ msgid "tone mapping"
-#~ msgstr "mappage tonalités"
 
 #~ msgid "you need to select 3 color samples first"
 #~ msgstr "vous devez préalablement sélectionner 3 zones de couleur"
