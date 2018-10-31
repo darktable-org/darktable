@@ -299,11 +299,11 @@ void init_presets(dt_iop_module_so_t *self)
 {
   // these blobs were exported as dtstyle and copied from there:
   add_preset(self, _("chroma (use on 1st instance)"),
-             "gz04eJxjYGiwZ2B44MAAphv2b4vdb1mnYGTFLcZomryXxzRr910TRgYYaLADEkB1DvYQ9RSJURUDAIFFGLo=", 5,
+             "gz03eJxjYGiwZ2B44MAAphv2b4vdb1mnYGTFLcZomryXxzRr910TRgYYaLADEkB1DvYQ9eSLiUf9s+te/s/OjJPV/sA7Y3vZI/X2EHnyMAB8fx/c", 5,
              "gz12eJxjZGBgEGYAgRNODESDBnsIHll8AM62GP8=", 7);
   add_preset(self, _("luma (use on 2nd instance)"),
-             "gz04eJxjYGhwYGB4AMQM9gwMDfu3xe63rFMwsuIWYzRN3stjmrX7rgkDHDTYQdQ5gNTaUyhGVQwAImYYOg==", 5,
-             "gz12eJxjZGBgEGAAgWlODESDBnsIHll8AJKaGMo=", 7);
+             "gz03eJxjYGiwZ4AAIN2w388ywNJ97j7LS3qqpokcz03CM61NGRlgoMEOos4BpNaeQjF7zi3/7XJef7QLvPPUbnHHXag8eRgAb44fKg==", 5,
+             "gz12eJxjZGBgEABiRoYCJwaiQYM9BI8sPgBoshil", 7);
 }
 
 typedef union floatint_t
