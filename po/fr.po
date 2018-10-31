@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-10-30 19:31+0100\n"
-"PO-Revision-Date: 2018-10-30 19:31+0100\n"
+"PO-Revision-Date: 2018-10-31 10:39+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -5740,11 +5740,11 @@ msgstr "inverse profil logarithmique (dernière instance)"
 
 #: ../src/iop/colorbalance.c:244
 msgid "split-toning teal-orange (2nd instance)"
-msgstr "virage partiel bleu-canard/orange (2nd instance)"
+msgstr "virage partiel bleu-sarcelle/orange (2nd instance)"
 
 #: ../src/iop/colorbalance.c:247
 msgid "split-toning teal-orange (1st instance)"
-msgstr "virage partiel bleu-canard/orange (1ère instance)"
+msgstr "virage partiel bleu-sarcelle/orange (1ère instance)"
 
 #: ../src/iop/colorbalance.c:254 ../src/iop/exposure.c:121
 #: ../src/iop/profile_gamma.c:122
@@ -11889,7 +11889,7 @@ msgstr "défiler vers la gauche"
 #: ../src/views/lighttable.c:2309
 msgctxt "accel"
 msgid "scroll right"
-msgstr "défiler vers la droite "
+msgstr "défiler vers la droite"
 
 #: ../src/views/lighttable.c:2310
 msgctxt "accel"
