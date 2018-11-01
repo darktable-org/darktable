@@ -320,7 +320,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)]
                              : dt_iop_eval_exp(d->unbounded_coeffs_L, L_in);
-
+dt_Lab_to_X
       if(autoscale_ab == s_scale_manual)
       {
         const float a_in = (in[1] + 128.0f) / 256.0f;
@@ -680,7 +680,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 static float eval_grey(float x)
 {
   // estimate the log base to remap
-  return (100.0f / x + 1.0f - 1.0f / 0.18f) / 2.0f;
+  //return (100.0f / x + 1.0f - 1.0f / 0.18f) / 2.0f;
+  return x;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1140,6 +1141,19 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
+  c->autoscale_ab = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(c->autoscale_ab, NULL, _("color space"));
+  dt_bauhaus_combobox_add(c->autoscale_ab, _("Lab, bounded channels"));
+  dt_bauhaus_combobox_add(c->autoscale_ab, _("Lab, independant channels"));
+  dt_bauhaus_combobox_add(c->autoscale_ab, _("XYZ, bounded channels"));
+  dt_bauhaus_combobox_add(c->autoscale_ab, _("RGB, bounded channels"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(c->autoscale_ab, _("if set to auto, a and b curves have no effect and are "
+                                                 "not displayed. chroma values (a and b) of each pixel are "
+                                                 "then adjusted based on L curve data. auto XYZ is similar "
+                                                 "but applies the saturation changes in XYZ space."));
+  g_signal_connect(G_OBJECT(c->autoscale_ab), "value-changed", G_CALLBACK(autoscale_ab_callback), self);
+
   // tabs
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
@@ -1193,19 +1207,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
   g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(dt_iop_tonecurve_key_press), self);
 
-  c->autoscale_ab = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->autoscale_ab, NULL, _("scale chroma"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, C_("scale", "manual"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic in XYZ"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic in RGB"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(c->autoscale_ab, _("if set to auto, a and b curves have no effect and are "
-                                                 "not displayed. chroma values (a and b) of each pixel are "
-                                                 "then adjusted based on L curve data. auto XYZ is similar "
-                                                 "but applies the saturation changes in XYZ space."));
-  g_signal_connect(G_OBJECT(c->autoscale_ab), "value-changed", G_CALLBACK(autoscale_ab_callback), self);
-
   /* From src/common/curve_tools.h :
     #define CUBIC_SPLINE 0
     #define CATMULL_ROM 1
@@ -1235,9 +1236,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
 
 
-  c->logbase = dt_bauhaus_slider_new_with_range(self, 0.1f, 21.95f, 0.5f, 18.0f, 2);
+  c->logbase = dt_bauhaus_slider_new_with_range(self, 2.0f, 64.f, 0.5f, 2.0f, 2);
   dt_bauhaus_widget_set_label(c->logbase, NULL, _("logarithmic middle grey reference"));
-  dt_bauhaus_slider_set_format(c->logbase, "%.2f %%");
   gtk_widget_set_tooltip_text(c->logbase, _("select the middle grey luma (as in the unbreak profile) "
                                              "to set the base of the logaritm in the graph display"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);
@@ -1483,9 +1483,27 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         picker_scale(sample->picked_color_lab_min, picker_min);
         picker_scale(sample->picked_color_lab_max, picker_max);
 
+        // convert the picker samples to XYZ to show the real Y luminance value if we work in XYZ or RGB mode
+        if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
+        {
+          float XYZ_min[3], XYZ_max[3], XYZ_mean[3];
+
+          dt_Lab_to_XYZ((const float*)&picker_min[ch_L], XYZ_min);
+          picker_min[ch_L] = XYZ_min[1];
+
+          dt_Lab_to_XYZ((const float*)&picker_max[ch_L], XYZ_max);
+          picker_max[ch_L] = XYZ_max[1];
+
+          dt_Lab_to_XYZ((const float*)&picker_mean[ch_L], XYZ_mean);
+          picker_mean[ch_L] = XYZ_mean[1];
+        }
+
+        // Convert abcissa to log coordinates if needed
+        /*
         picker_min[ch] = to_log(picker_min[ch], c->loglogscale, ch, c->semilog, 0);
         picker_max[ch] = to_log(picker_max[ch], c->loglogscale, ch, c->semilog, 0);
         picker_mean[ch] = to_log(picker_mean[ch], c->loglogscale, ch, c->semilog, 0);
+        * */
 
         cairo_set_source_rgba(cr, 0.5, 0.7, 0.5, 0.15);
         cairo_rectangle(cr, width * picker_min[ch], 0, width * fmax(picker_max[ch] - picker_min[ch], 0.0f),
