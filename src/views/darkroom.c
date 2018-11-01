@@ -1412,12 +1412,14 @@ void gui_init(dt_view_t *self)
   gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets of your favorites"));
   g_signal_connect(G_OBJECT(favorite_presets), "clicked", G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
                    NULL);
+  dt_gui_add_help_link(favorite_presets, dt_get_help_url("favorite_presets"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets, DT_VIEW_DARKROOM);
 
   /* create quick styles popup menu tool */
   GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_signal_connect(G_OBJECT(styles), "clicked", G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
   gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
+  dt_gui_add_help_link(styles, dt_get_help_url("bottom_panel_styles"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
 
   const int panel_width = dt_conf_get_int("panel_width");
