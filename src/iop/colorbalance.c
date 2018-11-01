@@ -1120,6 +1120,13 @@ static void apply_gain_auto(dt_iop_module_t *self)
 }
 #endif
 
+static void disable_colorpick(struct dt_iop_module_t *self)
+{
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  g->which_colorpicker = DT_PICKCOLBAL_NONE;
+}
+
 static int call_apply_picked_color(struct dt_iop_module_t *self, dt_iop_colorbalance_gui_data_t *g)
 {
   int handled = 1;
@@ -1250,9 +1257,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 
   if(!in)
   {
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    disable_colorpick(self);
     g->apply_picked_color = 0;
-    g->which_colorpicker = DT_PICKCOLBAL_NONE;
     set_colorpick_state(g, g->which_colorpicker);
   }
 }
@@ -1437,10 +1443,11 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
 
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  disable_colorpick(self);
   self->color_picker_box[0] = self->color_picker_box[1] = .25f;
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
   self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
+  set_colorpick_state(g, g->which_colorpicker);
 
   dt_bauhaus_combobox_set(g->mode, p->mode);
 
@@ -2600,7 +2607,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  disable_colorpick(self);
   // nothing else necessary, gtk will clean up the slider.
   free(self->gui_data);
   self->gui_data = NULL;
