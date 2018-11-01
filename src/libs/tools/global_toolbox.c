@@ -119,6 +119,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));
   g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
                    NULL);
+  dt_gui_add_help_link(d->preferences_button, dt_get_help_url("global_toolbox_preferences"));
 }
 
 void gui_cleanup(dt_lib_module_t *self)

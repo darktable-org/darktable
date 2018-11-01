@@ -19,6 +19,7 @@
 
 char *dt_get_help_url(char *name)
 {
+  if(name==NULL) return NULL;
   if(!strcmp(name, "ratings")) return "star_ratings_and_color_labels.html#star_ratings_and_color_labels";
   if(!strcmp(name, "filter")) return "filtering_and_sort_order.html#filtering_and_sort_order";
   if(!strcmp(name, "colorlabels")) return "star_ratings_and_color_labels.html#star_ratings_and_color_labels";
@@ -46,6 +47,7 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "map_settings")) return "map_settings.html#map_settings";
   if(!strcmp(name, "print_settings")) return "print_settings.html#print_settings";
   if(!strcmp(name, "global_toolbox")) return NULL; //TODO differenciate preference from group etc
+  if(!strcmp(name, "global_toolbox_preferences")) return "preferences.html#preferences";
   if(!strcmp(name, "lighttable_mode")) return "lighttable_chapter.html#lighttable_overview";
   if(!strcmp(name, "module_toolbox")) return NULL;
   if(!strcmp(name, "view_toolbox")) return NULL;
