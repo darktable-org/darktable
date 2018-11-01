@@ -54,7 +54,7 @@ static const char *comparators[] = {
 /* Stores the collection query, returns 1 if changed.. */
 static int _dt_collection_store(const dt_collection_t *collection, gchar *query, gchar *query_no_group);
 /* Counts the number of images in the current collection */
-static uint32_t _dt_collection_compute_count(const dt_collection_t *collection, bool no_group);
+static uint32_t _dt_collection_compute_count(const dt_collection_t *collection, gboolean no_group);
 /* signal handlers to update the cached count when something interesting might have happened.
  * we need 2 different since there are different kinds of signals we need to listen to. */
 static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_data);
@@ -239,8 +239,8 @@ int dt_collection_update(const dt_collection_t *collection)
 
   /* update the cached count. collection isn't a real const anyway, we are writing to it in
    * _dt_collection_store, too. */
-  ((dt_collection_t *)collection)->count = _dt_collection_compute_count(collection, false);
-  ((dt_collection_t *)collection)->count_no_group = _dt_collection_compute_count(collection, true);
+  ((dt_collection_t *)collection)->count = _dt_collection_compute_count(collection, FALSE);
+  ((dt_collection_t *)collection)->count_no_group = _dt_collection_compute_count(collection, TRUE);
   dt_collection_hint_message(collection);
 
   _collection_update_aspect_ratio(collection);
@@ -570,7 +570,7 @@ static int _dt_collection_store(const dt_collection_t *collection, gchar *query,
   return 1;
 }
 
-static uint32_t _dt_collection_compute_count(const dt_collection_t *collection, bool no_group)
+static uint32_t _dt_collection_compute_count(const dt_collection_t *collection, gboolean no_group)
 {
   sqlite3_stmt *stmt = NULL;
   uint32_t count = 1;
@@ -1543,8 +1543,8 @@ static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_da
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
   int old_count = collection->count;
-  collection->count = _dt_collection_compute_count(collection, false);
-  collection->count_no_group = _dt_collection_compute_count(collection, true);
+  collection->count = _dt_collection_compute_count(collection, FALSE);
+  collection->count_no_group = _dt_collection_compute_count(collection, TRUE);
   if(!collection->clone)
   {
     if(old_count != collection->count) dt_collection_hint_message(collection);
@@ -1556,8 +1556,8 @@ static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpo
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
   int old_count = collection->count;
-  collection->count = _dt_collection_compute_count(collection, false);
-  collection->count_no_group = _dt_collection_compute_count(collection, true);
+  collection->count = _dt_collection_compute_count(collection, FALSE);
+  collection->count_no_group = _dt_collection_compute_count(collection, TRUE);
   if(!collection->clone)
   {
     if(old_count != collection->count) dt_collection_hint_message(collection);
