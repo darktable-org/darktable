@@ -56,10 +56,12 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "filter")) return NULL;
   if(!strcmp(name, "filmstrip")) return "filmstrip_overview.html#filmstrip_overview";
   if(!strcmp(name, "viewswitcher")) return "user_interface.html#views";
+  if(!strcmp(name, "favorite_presets")) return "darkroom_bottom_panel.html#favorite_presets";
+  if(!strcmp(name, "bottom_panel_styles")) return "darkroom_bottom_panel.html#styles";
   if(!strcmp(name, "rawoverexposed")) return "darkroom_bottom_panel.html#rawoverexposed";
   if(!strcmp(name, "overexposed")) return "darkroom_bottom_panel.html#overexposed";
   if(!strcmp(name, "softproof")) return "darkroom_bottom_panel.html#softproof";
-  if(!strcmp(name, "gamut")) return "darkroom_bottom_panel.html#gamutcheck";  
+  if(!strcmp(name, "gamut")) return "darkroom_bottom_panel.html#gamutcheck";
   if(!strcmp(name, "dither")) return "correction_group.html#dithering";
   if(!strcmp(name, "watermark")) return "effect_group.html#watermark";
   if(!strcmp(name, "borders")) return "effect_group.html#framing";
