@@ -45,15 +45,15 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "location")) return "find_location.html#find_location";
   if(!strcmp(name, "map_settings")) return "map_settings.html#map_settings";
   if(!strcmp(name, "print_settings")) return "print_settings.html#print_settings";
-  if(!strcmp(name, "global_toolbox")) return NULL;
-  if(!strcmp(name, "lighttable_mode")) return NULL;
-  if(!strcmp(name, "module_toolbox")) return NULL;
-  if(!strcmp(name, "view_toolbox")) return NULL;
+  if(!strcmp(name, "global_toolbox")) return NULL; //TODO differenciate preference from group etc
+  if(!strcmp(name, "lighttable_mode")) return "lighttable_chapter.html#lighttable_overview";
+  if(!strcmp(name, "module_toolbox")) return NULL; //TODO "lighttable_chapter.html#lighttable_overview" ou "darkroom_bottom_panel.html#darkroom_bottom_panel"
+  if(!strcmp(name, "view_toolbox")) return NULL; //TODO "lighttable_chapter.html#lighttable_overview" ou "darkroom_bottom_panel.html#darkroom_bottom_panel"
   if(!strcmp(name, "backgroundjobs")) return NULL;
-  if(!strcmp(name, "hinter")) return NULL;
+  if(!strcmp(name, "hinter")) return NULL; // informations at the top of the interface which say "image number 10 etc"
   if(!strcmp(name, "filter")) return NULL;
-  if(!strcmp(name, "filmstrip")) return NULL;
-  if(!strcmp(name, "viewswitcher")) return NULL;
+  if(!strcmp(name, "filmstrip")) return "filmstrip_overview.html#filmstrip_overview";
+  if(!strcmp(name, "viewswitcher")) return "user_interface.html#views";
 
   if(!strcmp(name, "dither")) return "correction_group.html#dithering";
   if(!strcmp(name, "watermark")) return "effect_group.html#watermark";
