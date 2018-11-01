@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-01 16:17+0100\n"
-"PO-Revision-Date: 2018-11-01 16:18+0100\n"
+"POT-Creation-Date: 2018-11-01 21:06+0100\n"
+"PO-Revision-Date: 2018-11-01 21:08+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1100,23 +1100,23 @@ msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
 "abandonnée..."
 
-#: ../src/common/collection.c:369
+#: ../src/common/collection.c:405
 msgid "too much time to update aspect ratio for the collection"
 msgstr "trop de temps pour mettre à jour l'aspect pour la collection"
 
-#: ../src/common/collection.c:1001 ../src/develop/lightroom.c:822
+#: ../src/common/collection.c:1044 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:453
 #: ../src/iop/channelmixer.c:464 ../src/iop/colorbalance.c:2450
 #: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1188
 msgid "red"
 msgstr "rouge"
 
-#: ../src/common/collection.c:1003 ../src/develop/lightroom.c:824
+#: ../src/common/collection.c:1046 ../src/develop/lightroom.c:824
 #: ../src/iop/temperature.c:1360 ../src/libs/collect.c:1188
 msgid "yellow"
 msgstr "jaune"
 
-#: ../src/common/collection.c:1005 ../src/develop/lightroom.c:826
+#: ../src/common/collection.c:1048 ../src/develop/lightroom.c:826
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:454
 #: ../src/iop/channelmixer.c:470 ../src/iop/colorbalance.c:2457
 #: ../src/iop/temperature.c:1357 ../src/iop/temperature.c:1370
@@ -1124,35 +1124,40 @@ msgstr "jaune"
 msgid "green"
 msgstr "vert"
 
-#: ../src/common/collection.c:1007 ../src/develop/lightroom.c:828
+#: ../src/common/collection.c:1050 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:361 ../src/iop/channelmixer.c:455
 #: ../src/iop/channelmixer.c:476 ../src/iop/colorbalance.c:2464
 #: ../src/iop/temperature.c:1371 ../src/libs/collect.c:1188
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:1009 ../src/libs/collect.c:1188
+#: ../src/common/collection.c:1052 ../src/libs/collect.c:1188
 msgid "purple"
 msgstr "violet"
 
-#: ../src/common/collection.c:1018 ../src/libs/collect.c:1155
+#: ../src/common/collection.c:1061 ../src/libs/collect.c:1155
 msgid "altered"
 msgstr "développées"
 
-#: ../src/common/collection.c:1024 ../src/libs/collect.c:1164
+#: ../src/common/collection.c:1067 ../src/libs/collect.c:1164
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:1030 ../src/libs/collect.c:1173
+#: ../src/common/collection.c:1073 ../src/libs/collect.c:1173
 msgid "not copied locally"
 msgstr "non copiée localement"
 
-#: ../src/common/collection.c:1437
+#. grouping
+#: ../src/common/collection.c:1286 ../src/libs/collect.c:1277
+msgid "group leaders"
+msgstr "tête de groupe"
+
+#: ../src/common/collection.c:1484
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "« %d » image sur « %d » (#%d) sélectionnée dans la collection courante"
 
-#: ../src/common/collection.c:1443
+#: ../src/common/collection.c:1490
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -1579,21 +1584,21 @@ msgstr "legal"
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
 msgstr "Le module GNOME Keyring n'est plus supporté. configurez en un autre"
 
-#: ../src/common/ratings.c:49
+#: ../src/common/ratings.c:82 ../src/common/ratings.c:101
 #, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
 msgstr[0] "rejet de %d image"
 msgstr[1] "rejet de %d images"
 
-#: ../src/common/ratings.c:51
+#: ../src/common/ratings.c:84 ../src/common/ratings.c:103
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "application de %d étoile(s) à %d image"
 msgstr[1] "application de %d étoile(s) à %d images"
 
-#: ../src/common/ratings.c:75
+#: ../src/common/ratings.c:143
 msgid "no images selected to apply rating"
 msgstr "aucune image sélectionnée pour appliquer les étoiles"
 
@@ -6225,26 +6230,26 @@ msgstr "rendu (sortie)"
 
 #: ../src/iop/colorout.c:781 ../src/libs/export.c:631
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1455
-#: ../src/views/darkroom.c:1608 ../src/views/lighttable.c:2468
+#: ../src/views/darkroom.c:1608 ../src/views/lighttable.c:2453
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:782 ../src/libs/export.c:632
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
-#: ../src/views/darkroom.c:1609 ../src/views/lighttable.c:2469
+#: ../src/views/darkroom.c:1609 ../src/views/lighttable.c:2454
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:783 ../src/libs/export.c:633
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
-#: ../src/views/darkroom.c:1610 ../src/views/lighttable.c:2470
+#: ../src/views/darkroom.c:1610 ../src/views/lighttable.c:2455
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
 #: ../src/iop/colorout.c:784 ../src/libs/export.c:634
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
-#: ../src/views/darkroom.c:1611 ../src/views/lighttable.c:2471
+#: ../src/views/darkroom.c:1611 ../src/views/lighttable.c:2456
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -9220,20 +9225,24 @@ msgstr "non positionnée"
 msgid "copied locally"
 msgstr "copiée localement"
 
-#: ../src/libs/collect.c:1396 ../src/libs/collect.c:1410
-#: ../src/libs/collect.c:1751
+#: ../src/libs/collect.c:1277
+msgid "group followers"
+msgstr "membres du groupe"
+
+#: ../src/libs/collect.c:1405 ../src/libs/collect.c:1419
+#: ../src/libs/collect.c:1761
 msgid "clear this rule"
 msgstr "supprimer cette condition"
 
-#: ../src/libs/collect.c:1401
+#: ../src/libs/collect.c:1410
 msgid "clear this rule or add new rules"
 msgstr "supprimer cette condition ou en ajouter une nouvelle"
 
-#: ../src/libs/collect.c:1454
+#: ../src/libs/collect.c:1463
 msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "entrer la requête, utiliser <, <=, >, >=, <>, =, [;] comme opérateurs"
 
-#: ../src/libs/collect.c:1459
+#: ../src/libs/collect.c:1468
 msgid ""
 "type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
 "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
@@ -9242,34 +9251,34 @@ msgstr ""
 "entrer les dates sous la forme : AAAA:MM:JJ HH:MM:SS (uniquement l'année est "
 "obligatoire)"
 
-#: ../src/libs/collect.c:1465 ../src/libs/collect.c:1837
+#: ../src/libs/collect.c:1474 ../src/libs/collect.c:1847
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr ""
 "saisissez votre requête,\n"
 "utilisez « % » en caractère joker"
 
-#: ../src/libs/collect.c:1757
+#: ../src/libs/collect.c:1767
 msgid "narrow down search"
 msgstr "affiner la recherche"
 
-#: ../src/libs/collect.c:1762
+#: ../src/libs/collect.c:1772
 msgid "add more images"
 msgstr "inclure des images"
 
-#: ../src/libs/collect.c:1767
+#: ../src/libs/collect.c:1777
 msgid "exclude images"
 msgstr "exclure des images"
 
-#: ../src/libs/collect.c:1774
+#: ../src/libs/collect.c:1784
 msgid "change to: and"
 msgstr "changer en « et »"
 
-#: ../src/libs/collect.c:1779
+#: ../src/libs/collect.c:1789
 msgid "change to: or"
 msgstr "changer en « ou »"
 
-#: ../src/libs/collect.c:1784
+#: ../src/libs/collect.c:1794
 msgid "change to: except"
 msgstr "changer en « sauf »"
 
@@ -9329,6 +9338,10 @@ msgstr "aspect"
 #: ../src/libs/tools/filter.c:139
 msgid "filename"
 msgstr "nom de fichier"
+
+#: ../src/libs/collect.h:39
+msgid "grouping"
+msgstr "groupe"
 
 #: ../src/libs/collect.h:39 ../src/libs/metadata_view.c:100
 #: ../src/libs/metadata_view.c:291
@@ -11314,37 +11327,37 @@ msgstr "bandeau"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2291
+#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2276
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 étoile"
 
-#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2292
+#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2277
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 étoile"
 
-#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2293
+#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2278
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2294
+#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2279
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:174 ../src/views/lighttable.c:2295
+#: ../src/libs/tools/filmstrip.c:174 ../src/views/lighttable.c:2280
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:175 ../src/views/lighttable.c:2296
+#: ../src/libs/tools/filmstrip.c:175 ../src/views/lighttable.c:2281
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:176 ../src/views/lighttable.c:2297
+#: ../src/libs/tools/filmstrip.c:176 ../src/views/lighttable.c:2282
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rejeter"
@@ -11691,7 +11704,7 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1606 ../src/views/lighttable.c:2466
+#: ../src/views/darkroom.c:1606 ../src/views/lighttable.c:2451
 msgid "display intent"
 msgstr "rendu (écran)"
 
@@ -11699,11 +11712,11 @@ msgstr "rendu (écran)"
 msgid "softproof profile"
 msgstr "épreuvage écran"
 
-#: ../src/views/darkroom.c:1622 ../src/views/lighttable.c:2474
+#: ../src/views/darkroom.c:1622 ../src/views/lighttable.c:2459
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:1654 ../src/views/lighttable.c:2495
+#: ../src/views/darkroom.c:1654 ../src/views/lighttable.c:2480
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
@@ -11854,94 +11867,94 @@ msgstr ""
 "ou modifier les filtres de collection dans le menu de collection à gauche."
 
 #. Navigation keys
-#: ../src/views/lighttable.c:2300
+#: ../src/views/lighttable.c:2285
 msgctxt "accel"
 msgid "navigate up"
 msgstr "aller en haut"
 
-#: ../src/views/lighttable.c:2301
+#: ../src/views/lighttable.c:2286
 msgctxt "accel"
 msgid "navigate down"
 msgstr "aller en bas"
 
-#: ../src/views/lighttable.c:2302
+#: ../src/views/lighttable.c:2287
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "défiler par page vers le haut"
 
-#: ../src/views/lighttable.c:2303
+#: ../src/views/lighttable.c:2288
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "défiler par page vers le bas"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2306
+#: ../src/views/lighttable.c:2291
 msgctxt "accel"
 msgid "scroll up"
 msgstr "défiler en arrière"
 
-#: ../src/views/lighttable.c:2307
+#: ../src/views/lighttable.c:2292
 msgctxt "accel"
 msgid "scroll down"
 msgstr "défiler en avant"
 
-#: ../src/views/lighttable.c:2308
+#: ../src/views/lighttable.c:2293
 msgctxt "accel"
 msgid "scroll left"
 msgstr "défiler vers la gauche"
 
-#: ../src/views/lighttable.c:2309
+#: ../src/views/lighttable.c:2294
 msgctxt "accel"
 msgid "scroll right"
 msgstr "défiler vers la droite"
 
-#: ../src/views/lighttable.c:2310
+#: ../src/views/lighttable.c:2295
 msgctxt "accel"
 msgid "scroll center"
 msgstr "défiler vers le centre"
 
-#: ../src/views/lighttable.c:2311
+#: ../src/views/lighttable.c:2296
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "aligner les images sur la grille"
 
-#: ../src/views/lighttable.c:2312
+#: ../src/views/lighttable.c:2297
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "inverse sélection de l'image"
 
-#: ../src/views/lighttable.c:2313
+#: ../src/views/lighttable.c:2298
 msgctxt "accel"
 msgid "select single image"
 msgstr "sélectionne image unique"
 
 #. Preview key
-#: ../src/views/lighttable.c:2316
+#: ../src/views/lighttable.c:2301
 msgctxt "accel"
 msgid "preview"
 msgstr "aperçu"
 
-#: ../src/views/lighttable.c:2317
+#: ../src/views/lighttable.c:2302
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "aperçu avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:2318
+#: ../src/views/lighttable.c:2303
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "aperçu persistant"
 
-#: ../src/views/lighttable.c:2319
+#: ../src/views/lighttable.c:2304
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "aperçu persistant avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:2320
+#: ../src/views/lighttable.c:2305
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "sortir du mode aperçu persistant"
 
-#: ../src/views/lighttable.c:2438
+#: ../src/views/lighttable.c:2423
 msgid "set display profile"
 msgstr "profil (écran)"
 
