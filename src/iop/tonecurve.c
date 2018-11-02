@@ -320,7 +320,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)]
                              : dt_iop_eval_exp(d->unbounded_coeffs_L, L_in);
-dt_Lab_to_X
+
       if(autoscale_ab == s_scale_manual)
       {
         const float a_in = (in[1] + 128.0f) / 256.0f;
@@ -697,10 +697,34 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  if(p->tonecurve_autoscale_ab == 0) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic);
-  if(p->tonecurve_autoscale_ab == 1) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_manual);
-  if(p->tonecurve_autoscale_ab == 2) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic_xyz);
-  if(p->tonecurve_autoscale_ab == 3) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic_rgb);
+
+  switch(p->tonecurve_autoscale_ab)
+  {
+    case 0:
+    {
+      dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic);
+      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      break;
+    }
+    case 1:
+    {
+      dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_manual);
+      gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
+      break;
+    }
+    case 2:
+    {
+      dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic_xyz);
+      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      break;
+    }
+    case 3:
+    {
+      dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic_rgb);
+      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      break;
+    }
+  }
 
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
 
@@ -742,7 +766,7 @@ void init(dt_iop_module_t *module)
     // { CATMULL_ROM, CATMULL_ROM, CATMULL_ROM},  // curve types
     { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
     // { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE},
-    s_scale_automatic, // autoscale_ab
+    s_scale_automatic_rgb, // autoscale_ab
     0,
     1 // unbound_ab
   };
@@ -834,11 +858,27 @@ static void autoscale_ab_callback(GtkWidget *widget, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  const int combo = dt_bauhaus_combobox_get(g->autoscale_ab);
-  if(combo == 0) p->tonecurve_autoscale_ab = s_scale_automatic;
-  if(combo == 1) p->tonecurve_autoscale_ab = s_scale_manual;
-  if(combo == 2) p->tonecurve_autoscale_ab = s_scale_automatic_xyz;
-  if(combo == 3) p->tonecurve_autoscale_ab = s_scale_automatic_rgb;
+  const int combo = dt_bauhaus_combobox_get(widget);
+  if(combo == 0)
+  {
+    p->tonecurve_autoscale_ab = s_scale_automatic;
+    gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+  }
+  if(combo == 1)
+  {
+    p->tonecurve_autoscale_ab = s_scale_manual;
+    gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
+  }
+  if(combo == 2)
+  {
+    p->tonecurve_autoscale_ab = s_scale_automatic_xyz;
+    gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+  }
+  if(combo == 3)
+  {
+    p->tonecurve_autoscale_ab = s_scale_automatic_rgb;
+    gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1450,31 +1490,38 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       {
         sample = samples->data;
 
-        picker_scale(sample->picked_color_lab_mean, picker_mean);
-        picker_scale(sample->picked_color_lab_min, picker_min);
-        picker_scale(sample->picked_color_lab_max, picker_max);
+        float Y_picker_min = 0.0f, Y_picker_max = 0.0f, Y_picker_mean = 0.0f;
 
         // convert the picker samples to XYZ to show the real Y luminance value if we work in XYZ or RGB mode
         if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
         {
-          float XYZ_min[3], XYZ_max[3], XYZ_mean[3];
+          float XYZ[3];
 
-          dt_Lab_to_XYZ((const float*)&picker_min[ch_L], XYZ_min);
-          picker_min[ch_L] = XYZ_min[1];
+          dt_Lab_to_XYZ((const float*)&picker_min[ch_L], XYZ);
+          Y_picker_min = XYZ[1];
 
-          dt_Lab_to_XYZ((const float*)&picker_max[ch_L], XYZ_max);
-          picker_max[ch_L] = XYZ_max[1];
+          dt_Lab_to_XYZ((const float*)&picker_max[ch_L], XYZ);
+          Y_picker_max = XYZ[1];
 
-          dt_Lab_to_XYZ((const float*)&picker_mean[ch_L], XYZ_mean);
-          picker_mean[ch_L] = XYZ_mean[1];
+          dt_Lab_to_XYZ((const float*)&picker_mean[ch_L], XYZ);
+          Y_picker_mean = XYZ[1];
+        }
+
+        picker_scale(sample->picked_color_lab_mean, picker_mean);
+        picker_scale(sample->picked_color_lab_min, picker_min);
+        picker_scale(sample->picked_color_lab_max, picker_max);
+
+        if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
+        {
+          picker_min[ch_L] = Y_picker_min;
+          picker_max[ch_L] = Y_picker_max;
+          picker_mean[ch_L] = Y_picker_mean;
         }
 
         // Convert abcissa to log coordinates if needed
-        /*
         picker_min[ch] = to_log(picker_min[ch], c->loglogscale, ch, c->semilog, 0);
         picker_max[ch] = to_log(picker_max[ch], c->loglogscale, ch, c->semilog, 0);
         picker_mean[ch] = to_log(picker_mean[ch], c->loglogscale, ch, c->semilog, 0);
-        * */
 
         cairo_set_source_rgba(cr, 0.5, 0.7, 0.5, 0.15);
         cairo_rectangle(cr, width * picker_min[ch], 0, width * fmax(picker_max[ch] - picker_min[ch], 0.0f),
@@ -1498,9 +1545,34 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         pango_font_description_set_absolute_size(desc, PANGO_SCALE);
         layout = pango_cairo_create_layout(cr);
         pango_layout_set_font_description(layout, desc);
+
+        float Y_picker_min = 0.0f, Y_picker_max = 0.0f, Y_picker_mean = 0.0f;
+
+        // convert the picker samples to XYZ to show the real Y luminance value if we work in XYZ or RGB mode
+        if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
+        {
+          float XYZ[3];
+
+          dt_Lab_to_XYZ((const float*)&raw_min[ch_L], XYZ);
+          Y_picker_min = XYZ[1];
+
+          dt_Lab_to_XYZ((const float*)&raw_max[ch_L], XYZ);
+          Y_picker_max = XYZ[1];
+
+          dt_Lab_to_XYZ((const float*)&raw_mean[ch_L], XYZ);
+          Y_picker_mean = XYZ[1];
+        }
+
         picker_scale(raw_mean, picker_mean);
         picker_scale(raw_min, picker_min);
         picker_scale(raw_max, picker_max);
+
+        if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
+        {
+          raw_min[ch_L] = Y_picker_min;
+          raw_max[ch_L] = Y_picker_max;
+          raw_mean[ch_L] = Y_picker_mean;
+        }
 
         // scale conservatively to 100% of width:
         snprintf(text, sizeof(text), "100.00 / 100.00 ( +100.00)");
