@@ -492,27 +492,6 @@ void init_presets(dt_iop_module_so_t *self)
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(p.tonecurve[ch_L][k].y, 2.2f);
   dt_gui_presets_add_generic(_("contrast - high (gamma 2.2)"), self->op, self->version(), &p, sizeof(p), 1);
 
-  // Log contrast
-  for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].x = linear_L[k];
-  for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].y = linear_L[k];
-  p.tonecurve[ch_L][1].y -= 0.020;
-  p.tonecurve[ch_L][2].y -= 0.030;
-  p.tonecurve[ch_L][4].y += 0.030;
-  p.tonecurve[ch_L][5].y += 0.020;
-  for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].x = ((logf(p.tonecurve[ch_L][k].x) / logf(2.0f)) + 8.0f) / 8.0f;
-  for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = ((logf(p.tonecurve[ch_L][k].y) / logf(2.0f)) + 8.0f) / 8.0f;
-  dt_gui_presets_add_generic(_("contrast - med (log 8 EV)"), self->op, self->version(), &p, sizeof(p), 1);
-
-  for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].x = linear_L[k];
-  for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].y = linear_L[k];
-  p.tonecurve[ch_L][1].y -= 0.040;
-  p.tonecurve[ch_L][2].y -= 0.060;
-  p.tonecurve[ch_L][4].y += 0.060;
-  p.tonecurve[ch_L][5].y += 0.040;
-  for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].x = ((logf(p.tonecurve[ch_L][k].x) / logf(2.0f)) + 8.0f) / 8.0f;
-  for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = ((logf(p.tonecurve[ch_L][k].y) / logf(2.0f)) + 8.0f) / 8.0f;
-  dt_gui_presets_add_generic(_("contrast - high (log 8 EV)"), self->op, self->version(), &p, sizeof(p), 1);
-
   /** for pure power-like functions, we need more nodes close to the bounds**/
 
   p.tonecurve_type[ch_L] = MONOTONE_HERMITE;
@@ -535,14 +514,6 @@ void init_presets(dt_iop_module_so_t *self)
   // Exp2 - no contrast
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(2.0f, linear_L[k]) - 1.0f;
   dt_gui_presets_add_generic(_("exponential (base 2)"), self->op, self->version(), &p, sizeof(p), 1);
-
-   // Log10 - no contrast
-  for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = logf(linear_L[k] * 9.0f + 1.0f) / logf(9.0f);
-  dt_gui_presets_add_generic(_("logarithm (base 10)"), self->op, self->version(), &p, sizeof(p), 1);
-
-  // Exp10 - no contrast
-  for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = (powf(10.0f, linear_L[k]) - 1.0f) / 9.0f;
-  dt_gui_presets_add_generic(_("exponential (base 10)"), self->op, self->version(), &p, sizeof(p), 1);
 
   for (int k=0; k<sizeof(preset_camera_curves)/sizeof(preset_camera_curves[0]); k++)
   {
