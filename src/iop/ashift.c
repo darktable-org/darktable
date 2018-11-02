@@ -411,6 +411,8 @@ typedef struct dt_iop_ashift_gui_data_t
   dt_iop_ashift_jobcode_t jobcode;
   int jobparams;
   dt_pthread_mutex_t lock;
+
+  gboolean adjust_crop;
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -2432,12 +2434,24 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   }
   else //(p->cropmode == ASHIFT_CROP_ASPECT)
   {
-    params[0] = 0.5;
-    params[1] = 0.5;
-    cropfit.x = NAN;
-    cropfit.y = NAN;
-    cropfit.alpha = atan2((float)cropfit.height, (float)cropfit.width);
-    pcount = 2;
+    if (g->adjust_crop)
+    {
+      params[0] = g->lastx;
+      params[1] = g->lasty;
+      cropfit.x = g->lastx;
+      cropfit.y = g->lasty;
+      cropfit.alpha = atan2((float)cropfit.height, (float)cropfit.width);
+      pcount = 2;
+    }
+    else
+    {
+      params[0] = 0.5;
+      params[1] = 0.5;
+      cropfit.x = NAN;
+      cropfit.y = NAN;
+      cropfit.alpha = atan2((float)cropfit.height, (float)cropfit.width);
+      pcount = 2;
+    }
   }
 
   // start the simplex fit
@@ -2486,6 +2500,7 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   printf("margins after crop fitting: iter %d, x %f, y %f, angle %f, crop area (%f %f %f %f), width %f, height %f\n",
          iter, cropfit.x, cropfit.y, cropfit.alpha, p->cl, p->cr, p->ct, p->cb, wd, ht);
 #endif
+  dt_control_queue_redraw_center();
   return;
 
 failed:
@@ -3248,6 +3263,55 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_close_path(cr);
     cairo_stroke(cr);
 
+    // if adjusting crop, draw indicator
+    if (g->adjust_crop && p->cropmode == ASHIFT_CROP_ASPECT)
+    {
+      const double xpos = (C[1][0] + C[2][0]) / 2.0f;
+      const double ypos = (C[0][1] + C[1][1]) / 2.0f;
+      const double size_circle = xpos / 30;
+      const double size_line = xpos / 5;
+      const double size_arrow = xpos / 25;
+
+      cairo_set_line_width(cr, 2.0 / zoom_scale);
+      cairo_set_source_rgb(cr, .7, .7, .7);
+      cairo_arc (cr, xpos, ypos, size_circle, 0, 2.0 * M_PI);
+      cairo_stroke(cr);
+      cairo_fill(cr);
+
+      cairo_set_line_width(cr, 2.0 / zoom_scale);
+      cairo_set_source_rgb(cr, .7, .7, .7);
+
+      // horizontal line
+      cairo_move_to(cr, xpos - size_line, ypos);
+      cairo_line_to(cr, xpos + size_line, ypos);
+
+      cairo_move_to(cr, xpos - size_line, ypos);
+      cairo_rel_line_to(cr, size_arrow, size_arrow);
+      cairo_move_to(cr, xpos - size_line, ypos);
+      cairo_rel_line_to(cr, size_arrow, -size_arrow);
+
+      cairo_move_to(cr, xpos + size_line, ypos);
+      cairo_rel_line_to(cr, -size_arrow, size_arrow);
+      cairo_move_to(cr, xpos + size_line, ypos);
+      cairo_rel_line_to(cr, -size_arrow, -size_arrow);
+
+      // vertical line
+      cairo_move_to(cr, xpos, ypos - size_line);
+      cairo_line_to(cr, xpos, ypos + size_line);
+
+      cairo_move_to(cr, xpos, ypos - size_line);
+      cairo_rel_line_to(cr, -size_arrow, size_arrow);
+      cairo_move_to(cr, xpos, ypos - size_line);
+      cairo_rel_line_to(cr, size_arrow, size_arrow);
+
+      cairo_move_to(cr, xpos, ypos + size_line);
+      cairo_rel_line_to(cr, -size_arrow, -size_arrow);
+      cairo_move_to(cr, xpos, ypos + size_line);
+      cairo_rel_line_to(cr, size_arrow, -size_arrow);
+
+      cairo_stroke(cr);
+    }
+
     cairo_restore(cr);
   }
 
@@ -3450,6 +3514,16 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   pzx += 0.5f;
   pzy += 0.5f;
 
+  if (g->adjust_crop)
+  {
+    dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+    g->lastx = pzx;
+    g->lasty = pzy;
+    do_crop(self, p);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    return TRUE;
+  }
+
   // if in rectangle selecting mode adjust "near"-ness of lines according to
   // the rectangular selection
   if(g->isbounding != ASHIFT_BOUNDING_OFF)
@@ -3516,7 +3590,19 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   // do nothing if visibility of lines is switched off or no lines available
   if(g->lines_suppressed || g->lines == NULL)
-    return FALSE;
+  {
+    dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+    if (p->cropmode == ASHIFT_CROP_ASPECT)
+    {
+      dt_control_change_cursor(GDK_HAND1);
+      g->adjust_crop = TRUE;
+      g->lastx = pzx;
+      g->lasty = pzy;
+      return TRUE;
+    }
+    else
+      return FALSE;
+  }
 
   // remember lines version at this stage so we can continuously monitor if the
   // lines have changed in-between
@@ -3590,6 +3676,10 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  // stop adjust crop
+  g->adjust_crop = FALSE;
+  dt_control_change_cursor(GDK_LEFT_PTR);
 
   // finalize the isbounding mode
   // if user has released the shift button in-between -> do nothing
@@ -4317,6 +4407,7 @@ void reload_defaults(dt_iop_module_t *module)
 
     g->jobcode = ASHIFT_JOBCODE_NONE;
     g->jobparams = 0;
+    g->adjust_crop = FALSE;
   }
 }
 
@@ -4463,7 +4554,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->jobcode = ASHIFT_JOBCODE_NONE;
   g->jobparams = 0;
-
+  g->adjust_crop = FALSE;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
