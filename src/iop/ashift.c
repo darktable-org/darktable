@@ -2441,8 +2441,8 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   }
 
   // start the simplex fit
-  int iter = simplex(crop_fitness, params, pcount, NMS_CROP_EPSILON, NMS_CROP_SCALE, NMS_CROP_ITERATIONS,
-                     crop_constraint, (void*)&cropfit);
+  const int iter = simplex(crop_fitness, params, pcount, NMS_CROP_EPSILON, NMS_CROP_SCALE, NMS_CROP_ITERATIONS,
+                           crop_constraint, (void*)&cropfit);
 
   // in case the fit did not converge -> failed
   if(iter >= NMS_CROP_ITERATIONS) goto failed;
@@ -3164,24 +3164,24 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
 
   // the usual rescaling stuff
-  float wd = dev->preview_pipe->backbuf_width;
-  float ht = dev->preview_pipe->backbuf_height;
+  const float wd = dev->preview_pipe->backbuf_width;
+  const float ht = dev->preview_pipe->backbuf_height;
   if(wd < 1.0 || ht < 1.0) return;
-  float zoom_y = dt_control_get_dev_zoom_y();
-  float zoom_x = dt_control_get_dev_zoom_x();
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  const float zoom_y = dt_control_get_dev_zoom_y();
+  const float zoom_x = dt_control_get_dev_zoom_x();
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 
   // we draw the cropping area; we need x_off/y_off/width/height which is only available
   // after g->buf has been processed
-  if(g->buf  && (p->cropmode != ASHIFT_CROP_OFF) && self->enabled)
+  if(g->buf && (p->cropmode != ASHIFT_CROP_OFF) && self->enabled)
   {
     // roi data of the preview pipe input buffer
-    float iwd = g->buf_width;
-    float iht = g->buf_height;
-    float ixo = g->buf_x_off;
-    float iyo = g->buf_y_off;
+    const float iwd = g->buf_width;
+    const float iht = g->buf_height;
+    const float ixo = g->buf_x_off;
+    const float iyo = g->buf_y_off;
 
     // the four corners of the input buffer of this module
     const float V[4][2] = { { ixo,        iyo       },
@@ -3536,12 +3536,12 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   }
 
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
+  const int closeup = dt_control_get_dev_closeup();
   const float min_scale = dt_dev_get_zoom_scale(self->dev, DT_ZOOM_FIT, 1<<closeup, 0);
   const float cur_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 0);
 
   // if we are zoomed out (no panning possible) and we have lines to display we take control
-  int take_control = (cur_scale == min_scale) && (g->points_lines_count > 0);
+  const int take_control = (cur_scale == min_scale) && (g->points_lines_count > 0);
 
   g->near_delta = dt_conf_get_float("plugins/darkroom/ashift/near_delta");
 
@@ -3604,8 +3604,8 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     pzx += 0.5f;
     pzy += 0.5f;
 
-    float wd = self->dev->preview_pipe->backbuf_width;
-    float ht = self->dev->preview_pipe->backbuf_height;
+    const float wd = self->dev->preview_pipe->backbuf_width;
+    const float ht = self->dev->preview_pipe->backbuf_height;
 
     if(wd >= 1.0 && ht >= 1.0)
     {
