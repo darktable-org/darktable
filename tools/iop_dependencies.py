@@ -460,6 +460,7 @@ def add_edges(gr):
   # colorbalance needs a Lab buffer and should be after clipping. probably.
   gr.add_edge(('colorbalance', 'colorin'))
   gr.add_edge(('colorout', 'colorbalance'))
+  gr.add_edge(('colorize', 'colorbalance'))
 
   # colorchecker should happen early in Lab mode, after
   # highlight colour reconstruction, but with the ability to mess with everything
