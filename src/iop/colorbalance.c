@@ -1841,7 +1841,7 @@ static void grey_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   if(self->dt->gui->reset) return;
-  p->grey = dt_bauhaus_slider_get(slider) + 1.0f;
+  p->grey = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
