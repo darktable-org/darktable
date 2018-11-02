@@ -245,8 +245,9 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             char *lang = "en";
             if(darktable.l10n!=NULL)
             {
-              dt_l10n_language_t *language
-                  = (dt_l10n_language_t *)g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
+              dt_l10n_language_t *language = NULL;
+              if(darktable.l10n->selected!=-1)
+                  language = (dt_l10n_language_t *)g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
               if (language != NULL)
                 lang = language->code;
               // array of languages the usermanual supports.
