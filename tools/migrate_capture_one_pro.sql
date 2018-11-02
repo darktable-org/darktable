@@ -1,3 +1,29 @@
+-- This script takes a Capture One Pro catalogue (tested with version 11) 
+-- and recreates the Albums in the catalog in Darktable as tags while 
+-- preserving the album hierarchy. For example, a hierarchy like this:
+-- - Level1
+--   - Level2_1
+--     - Level3
+--   - Level2_2
+-- Will result in the following tags:
+-- - Level1
+-- - Level1|Level2_1
+-- - Level1|Level2_1|Level3
+-- - Level1|Level2_2
+-- If images are present in the Darktable catalogue, the relevant tags
+-- will also be added. Images that are not in the catalogue will be 
+-- ignored.
+-- 
+-- To use, you must either:
+-- - Ensure that Darktable's data.db, library.db are present in the 
+--   current directory and Capture One Pro's catalog is in the current 
+--   directory and named "C1ProCat.cocatalogdb"
+-- - Update the "ATTACH" statements below so that they reflect the 
+--   correct name/path of the aforementioned files.
+-- Then simply run sqlite3 migrate_capture_one_pro.sql.
+-- It is strongly recommended that you back up your Darktable databases 
+-- prior to attempting this.
+
 ATTACH 'data.db' AS data;
 ATTACH 'library.db' AS library;
 ATTACH 'C1ProCat.cocatalogdb' AS c1cat;
