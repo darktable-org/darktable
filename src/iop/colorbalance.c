@@ -279,13 +279,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
 
  // these are RGB values!
-    const float gamma[3] = { d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
-                             d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
-                             d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR] },
-                gamma_inv[3] = { (gamma[0] != 0.0) ? 1.0 / gamma[0] : 1000000.0,
-                                 (gamma[1] != 0.0) ? 1.0 / gamma[1] : 1000000.0,
-                                 (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0 },
-                gain[3] = { d->gain[CHANNEL_RED] * d->gain[CHANNEL_FACTOR],
+    const float gain[3] = { d->gain[CHANNEL_RED] * d->gain[CHANNEL_FACTOR],
                             d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
                             d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR] },
                 contrast = (d->contrast != 0.0f) ? 1.0f / d->contrast : 1000000.0f,
@@ -302,7 +296,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
        // these are RGB values!
       const float lift[3] = { 2.0 - (d->lift[CHANNEL_RED] * d->lift[CHANNEL_FACTOR]),
                               2.0 - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
-                              2.0 - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]) };
+                              2.0 - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]) },
+                 gamma[3] = { d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
+                              d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
+                              d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR] },
+             gamma_inv[3] = { (gamma[0] != 0.0) ? 1.0 / gamma[0] : 1000000.0,
+                              (gamma[1] != 0.0) ? 1.0 / gamma[1] : 1000000.0,
+                              (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0 };
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(d) schedule(static)
@@ -350,7 +350,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
        // these are RGB values!
       const float lift[3] = { 2.0 - (d->lift[CHANNEL_RED] * d->lift[CHANNEL_FACTOR]),
                               2.0 - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
-                              2.0 - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]) };
+                              2.0 - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]) },
+                 gamma[3] = { d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
+                              d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
+                              d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR] },
+             gamma_inv[3] = { (gamma[0] != 0.0) ? 1.0 / gamma[0] : 1000000.0,
+                              (gamma[1] != 0.0) ? 1.0 / gamma[1] : 1000000.0,
+                              (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0 };
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(d) schedule(static)
@@ -411,7 +417,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       const float lift[3] = { ( d->lift[CHANNEL_RED] + d->lift[CHANNEL_FACTOR] - 2.0f),
                               ( d->lift[CHANNEL_GREEN] + d->lift[CHANNEL_FACTOR] - 2.0f),
-                              ( d->lift[CHANNEL_BLUE] + d->lift[CHANNEL_FACTOR] - 2.0f)};
+                              ( d->lift[CHANNEL_BLUE] + d->lift[CHANNEL_FACTOR] - 2.0f)},
+                 gamma[3] = { (2.0f - d->gamma[CHANNEL_RED]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
+                              (2.0f - d->gamma[CHANNEL_GREEN]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
+                              (2.0f - d->gamma[CHANNEL_BLUE]) * (2.0f - d->gamma[CHANNEL_FACTOR])};
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(d) schedule(static)
@@ -440,7 +449,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             if (run_saturation) rgb[c] = luma + d->saturation * (rgb[c] - luma);
 
             // channel CDL
-            rgb[c] = CDL(rgb[c], gain[c], lift[c], gamma_inv[c]);
+            rgb[c] = CDL(rgb[c], gain[c], lift[c], gamma[c]);
 
             // fulcrum contrat
             if (run_contrast) rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c] / grey, contrast) * grey;
@@ -470,14 +479,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 {
   dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
   const int ch = piece->colors;
-  const __m128 gamma = _mm_setr_ps(d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
-                                   d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
-                                   d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR],
-                                   0.0f);
-  const __m128 gamma_inv = _mm_setr_ps((gamma[0] != 0.0) ? 1.0 / gamma[0] : 1000000.0,
-                                       (gamma[1] != 0.0) ? 1.0 / gamma[1] : 1000000.0,
-                                       (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0,
-                                       0.0f);
   const __m128 gain = _mm_setr_ps(d->gain[CHANNEL_RED] * d->gain[CHANNEL_FACTOR],
                                   d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
                                   d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR],
@@ -504,6 +505,16 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                       2.0 - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
                                       2.0 - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]),
                                       0.0f);
+
+      const __m128 gamma = _mm_setr_ps(d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
+                                   d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
+                                   d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR],
+                                   0.0f);
+
+      const __m128 gamma_inv = _mm_setr_ps((gamma[0] != 0.0) ? 1.0 / gamma[0] : 1000000.0,
+                                       (gamma[1] != 0.0) ? 1.0 / gamma[1] : 1000000.0,
+                                       (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0,
+                                       0.0f);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -540,10 +551,18 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     case LIFT_GAMMA_GAIN:
     {
       // these are RGB values!
-      const __m128 lift = _mm_setr_ps(2.0 - (d->lift[CHANNEL_RED] * d->lift[CHANNEL_FACTOR]),
-                                      2.0 - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
-                                      2.0 - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]),
+      const __m128 lift = _mm_setr_ps(2.0f - (d->lift[CHANNEL_RED] * d->lift[CHANNEL_FACTOR]),
+                                      2.0f - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
+                                      2.0f - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]),
                                       0.0f);
+      const __m128 gamma = _mm_setr_ps(d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
+                                       d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
+                                       d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR],
+                                       0.0f);
+      const __m128 gamma_inv = _mm_setr_ps((gamma[0] != 0.0) ? 1.0 / gamma[0] : 1000000.0,
+                                           (gamma[1] != 0.0) ? 1.0 / gamma[1] : 1000000.0,
+                                           (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0,
+                                           0.0f);
 
       const __m128 gamma_RGB = _mm_set1_ps(2.2f);
       const __m128 gamma_inv_RGB = _mm_set1_ps(1.0f/2.2f);
@@ -605,6 +624,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                       (d->lift[CHANNEL_GREEN] + d->lift[CHANNEL_FACTOR] - 2.f),
                                       (d->lift[CHANNEL_BLUE] + d->lift[CHANNEL_FACTOR] - 2.f),
                                       0.0f);
+      const __m128 gamma = _mm_setr_ps((2.0f - d->gamma[CHANNEL_RED]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
+                                      (2.0f - d->gamma[CHANNEL_GREEN]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
+                                      (2.0f - d->gamma[CHANNEL_BLUE]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
+                                      0.0f);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -633,7 +656,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
           //power
           rgb = _mm_max_ps(rgb, zero);
-          rgb = _mm_pow_ps(rgb, gamma_inv);
+          rgb = _mm_pow_ps(rgb, gamma);
 
           // fulcrum contrast
           if (run_contrast)
@@ -746,14 +769,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                               ( d->lift[CHANNEL_GREEN] + d->lift[CHANNEL_FACTOR] - 2.0f ),
                               ( d->lift[CHANNEL_BLUE] + d->lift[CHANNEL_FACTOR] - 2.0f ),
                               0.0f },
-                  gamma[4] = { d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
-                               d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
-                               d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR],
+                  gamma[4] = { (2.0f - d->gamma[CHANNEL_RED]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
+                               (2.0f - d->gamma[CHANNEL_GREEN]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
+                               (2.0f - d->gamma[CHANNEL_BLUE]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
                                0.0f },
-                  gamma_inv[4] = { (gamma[0] != 0.0f) ? 1.0f / gamma[0] : 1000000.0f,
-                                   (gamma[1] != 0.0f) ? 1.0f / gamma[1] : 1000000.0f,
-                                   (gamma[2] != 0.0f) ? 1.0f / gamma[2] : 1000000.0f,
-                                   0.0f },
                   gain[4] = { d->gain[CHANNEL_RED] * d->gain[CHANNEL_FACTOR],
                               d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
                               d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR],
@@ -768,7 +787,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 3, sizeof(int), (void *)&height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 4, 4 * sizeof(float), (void *)&lift);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 5, 4 * sizeof(float), (void *)&gain);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 6, 4 * sizeof(float), (void *)&gamma_inv);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 6, 4 * sizeof(float), (void *)&gamma);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 7, sizeof(float), (void *)&saturation);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 8, sizeof(float), (void *)&contrast);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 9, sizeof(float), (void *)&grey);
