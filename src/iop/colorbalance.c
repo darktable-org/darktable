@@ -2342,14 +2342,14 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(g->master_box), dt_ui_section_label_new(_("master")), FALSE, FALSE, 2);
 
-  g->saturation = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005, p->saturation - 1.0f, 4, 0);
+  g->saturation = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005, p->saturation - 1.0f, 5, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->saturation, -1.0f, 1.0f);
   dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
   gtk_box_pack_start(GTK_BOX(g->master_box), g->saturation, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->saturation, _("saturation"));
   g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
 
-  g->grey = dt_bauhaus_slider_new_with_range(self, 0.1, 100., 0.5, p->grey, 1);
+  g->grey = dt_bauhaus_slider_new_with_range(self, 0.1, 100., 0.5, p->grey, 2);
   dt_bauhaus_widget_set_label(g->grey, NULL, _("contrast fulcrum"));
   gtk_box_pack_start(GTK_BOX(g->master_box), g->grey, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->grey, "%.2f %%");
@@ -2416,7 +2416,7 @@ void gui_init(dt_iop_module_t *self)
 
 #define ADD_FACTOR(which)                                                                                         \
   g->which##_factor = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005,                      \
-                                                                    p->which[CHANNEL_FACTOR] - 1.0f, 4, 0);       \
+                                                                    p->which[CHANNEL_FACTOR] - 1.0f, 5, 0);       \
   dt_bauhaus_slider_enable_soft_boundaries(g->which##_factor, -1.0, 1.0);                                         \
   dt_bauhaus_slider_set_stop(g->which##_factor, 0.0, 0.0, 0.0, 0.0);                                              \
   dt_bauhaus_slider_set_stop(g->which##_factor, 1.0, 1.0, 1.0, 1.0);                                              \
@@ -2430,7 +2430,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->which##_factor), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 
 #define ADD_CHANNEL(which, c, n, N) \
-  g->which##_##c = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005, p->which[CHANNEL_##N] - 1.0f, 4, 0);\
+  g->which##_##c = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005, p->which[CHANNEL_##N] - 1.0f, 5, 0);\
   dt_bauhaus_slider_enable_soft_boundaries(g->which##_##c, -1.0, 1.0); \
   gtk_widget_set_tooltip_text(g->which##_##c, _("factor of " #n " for " #which));\
   dt_bauhaus_widget_set_label(g->which##_##c, _(#which), _(#n));\
@@ -2444,7 +2444,7 @@ void gui_init(dt_iop_module_t *self)
   (void)lift_messages;
   ADD_FACTOR(lift)
 
-  g->hue_lift = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.0005f, 0.0f, 4, 0);
+  g->hue_lift = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.0005f, 0.0f, 5, 0);
   dt_bauhaus_widget_set_label(g->hue_lift, NULL, _("hue"));
   draw_hue_slider(g->hue_lift);
   gtk_widget_set_tooltip_text(g->hue_lift, _("select the hue"));
@@ -2456,7 +2456,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->hue_lift), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 #endif
 
-  g->sat_lift = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 0.25f, 0.0005f, 0.0f, 4, 0);
+  g->sat_lift = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 0.25f, 0.0005f, 0.0f, 5, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->sat_lift, 0.0f, 1.0f);
   dt_bauhaus_widget_set_label(g->sat_lift, NULL, _("saturation"));
   dt_bauhaus_slider_set_stop(g->sat_lift, 0.0f, 0.2f, 0.2f, 0.2f);
@@ -2494,7 +2494,7 @@ void gui_init(dt_iop_module_t *self)
   (void)gamma_messages;
   ADD_FACTOR(gamma)
 
-  g->hue_gamma = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.0005f, 0.0f, 4, 0);
+  g->hue_gamma = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.0005f, 0.0f, 5, 0);
   dt_bauhaus_widget_set_label(g->hue_gamma, NULL, _("hue"));
   draw_hue_slider(g->hue_gamma);
   gtk_widget_set_tooltip_text(g->hue_gamma, _("select the hue"));
@@ -2505,7 +2505,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_toggle(g->hue_gamma, TRUE);
   g_signal_connect(G_OBJECT(g->hue_gamma), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 #endif
-  g->sat_gamma = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 0.25f, 0.0005f, 0.0f, 4, 0);
+  g->sat_gamma = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 0.25f, 0.0005f, 0.0f, 5, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->sat_gamma, 0.0f, 1.0f);
   dt_bauhaus_widget_set_label(g->sat_gamma, NULL, _("saturation"));
   dt_bauhaus_slider_set_stop(g->sat_gamma, 0.0f, 0.2f, 0.2f, 0.2f);
@@ -2542,7 +2542,7 @@ void gui_init(dt_iop_module_t *self)
   (void)gain_messages;
   ADD_FACTOR(gain)
 
-  g->hue_gain = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.0005f, 0.0f, 4, 0);
+  g->hue_gain = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.0005f, 0.0f, 5, 0);
   dt_bauhaus_widget_set_label(g->hue_gain, NULL, _("hue"));
   draw_hue_slider(g->hue_gain);
   gtk_widget_set_tooltip_text(g->hue_gain, _("select the hue"));
@@ -2553,7 +2553,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_toggle(g->hue_gain, TRUE);
   g_signal_connect(G_OBJECT(g->hue_gain), "quad-pressed", G_CALLBACK(color_picker_callback), self);
 #endif
-  g->sat_gain = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 0.25f, 0.0005f, 0.0f, 4, 0);
+  g->sat_gain = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 0.25f, 0.0005f, 0.0f, 5, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->sat_gain, 0.0f, 1.0f);
   dt_bauhaus_widget_set_label(g->sat_gain, NULL, _("saturation"));
   dt_bauhaus_slider_set_stop(g->sat_gain, 0.0f, 0.2f, 0.2f, 0.2f);
