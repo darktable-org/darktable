@@ -119,6 +119,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));
   g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
                    NULL);
+  dt_gui_add_help_link(d->preferences_button, dt_get_help_url("global_toolbox_preferences"));
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -240,22 +241,28 @@ static void _main_do_event(GdkEvent *event, gpointer data)
           }
           if(base_url)
           {
-            dt_l10n_language_t *language
-                = (dt_l10n_language_t *)g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
-            char *lang = language->code;
-            // array of languages the usermanual supports.
-            // NULL MUST remain the last element of the array
-            const char *supported_languages[] = { "en", "fr", "it", "es", NULL };
             gboolean is_language_supported = FALSE;
-            int i = 0;
-            while(supported_languages[i])
+            char *lang = "en";
+            if(darktable.l10n!=NULL)
             {
-              if(!strcmp(lang, supported_languages[i]))
+              dt_l10n_language_t *language = NULL;
+              if(darktable.l10n->selected!=-1)
+                  language = (dt_l10n_language_t *)g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
+              if (language != NULL)
+                lang = language->code;
+              // array of languages the usermanual supports.
+              // NULL MUST remain the last element of the array
+              const char *supported_languages[] = { "en", "fr", "it", "es", NULL };
+              int i = 0;
+              while(supported_languages[i])
               {
-                is_language_supported = TRUE;
-                break;
+                if(!strcmp(lang, supported_languages[i]))
+                {
+                  is_language_supported = TRUE;
+                  break;
+                }
+                i++;
               }
-              i++;
             }
             if(!is_language_supported) lang = "en";
             char *url = g_build_path("/", base_url, lang, help_url, NULL);
