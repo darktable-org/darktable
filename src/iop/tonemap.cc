@@ -44,6 +44,7 @@ extern "C" {
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 }
@@ -76,7 +77,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_TONE;
+  return dt_iop_get_group("tone mapping", IOP_GROUP_TONE);
 }
 
 int flags()
@@ -284,6 +285,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   /* contrast */
   g->contrast = dt_bauhaus_slider_new_with_range(self, 1.0, 5.0000, 0.1, p->contrast, 3);

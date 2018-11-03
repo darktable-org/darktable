@@ -2189,7 +2189,7 @@ profilegamma_log (read_only image2d_t in, write_only image2d_t out, int width, i
 
   if(x >= width || y >= height) return;
 
-  float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 i = read_imagef(in, sampleri, (int2)(x, y));
   const float4 noise = pow((float4)2.0f, (float4)-16.0f);
   const float4 dynamic4 = dynamic_range;
   const float4 shadows4 = shadows_range;
@@ -2200,8 +2200,9 @@ profilegamma_log (read_only image2d_t in, write_only image2d_t out, int width, i
   o = (i < noise) ? noise : i / grey4;
   o = (log2(o) - shadows4) / dynamic4;
   o = (o < noise) ? noise : o;
+  i.xyz = o.xyz;
 
-  write_imagef(out, (int2)(x, y), o);
+  write_imagef(out, (int2)(x, y), i);
 }
 
 /* kernel for the interpolation resample helper */

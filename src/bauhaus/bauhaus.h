@@ -231,6 +231,8 @@ const char* dt_bauhaus_widget_get_label(GtkWidget *w);
 void dt_bauhaus_widget_set_quad_paint(GtkWidget *w, dt_bauhaus_quad_paint_f f, int paint_flags, void *paint_data);
 // make this quad a toggle button:
 void dt_bauhaus_widget_set_quad_toggle(GtkWidget *w, int toggle);
+// set active status for the quat toggle button:
+void dt_bauhaus_widget_set_quad_active(GtkWidget *w, int active);
 
 void dt_bauhaus_hide_popup();
 void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w);

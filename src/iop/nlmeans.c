@@ -27,6 +27,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -75,6 +76,7 @@ typedef struct dt_iop_nlmeans_global_data_t
   int kernel_nlmeans_finish;
 } dt_iop_nlmeans_global_data_t;
 
+
 const char *name()
 {
   return _("denoise (non-local means)");
@@ -98,7 +100,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group("denoise (non-local means)", IOP_GROUP_CORRECT);
 }
 
 int flags()
@@ -836,6 +838,7 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_nlmeans_gui_data_t));
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g->radius = dt_bauhaus_slider_new_with_range(self, 1.0f, 4.0f, 1., 2.f, 0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);
   g->luma = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);

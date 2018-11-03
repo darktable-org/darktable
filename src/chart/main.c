@@ -444,6 +444,7 @@ static gboolean open_it8(dt_lut_t *self, const char *filename)
   {
     free(self->reference_filename);
     self->reference_filename = get_filename_base(filename);
+    gtk_widget_set_sensitive(self->process_button, TRUE);
   }
   gtk_widget_queue_draw(self->source.drawing_area);
 

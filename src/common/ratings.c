@@ -27,17 +27,69 @@
 void dt_ratings_apply_to_image(int imgid, int rating)
 {
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-  // one star is a toggle, so you can easily reject images by removing the last star:
-  if(((image->flags & 0x7) == 1) && !dt_conf_get_bool("rating_one_double_tap") && (rating == 1))
+
+  if(image)
   {
-    rating = 0;
+    image->flags = (image->flags & ~0x7) | (0x7 & rating);
+    // synch through:
+    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+
+    dt_collection_hint_message(darktable.collection);
   }
+  else
+  {
+    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+  }
+}
 
-  image->flags = (image->flags & ~0x7) | (0x7 & rating);
-  // synch through:
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+void dt_ratings_apply_to_image_or_group(int imgid, int rating)
+{
+  const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  if(image)
+  {
+    int img_group_id = image->group_id;
 
-  dt_collection_hint_message(darktable.collection);
+    // one star is a toggle, so you can easily reject images by removing the last star:
+    if(((image->flags & 0x7) == 1) && !dt_conf_get_bool("rating_one_double_tap") && (rating == 1))
+    {
+      rating = 0;
+    }
+    else if(((image->flags & 0x7) == 6) && (rating == 6))
+    {
+      rating = 0;
+    }
+
+    dt_image_cache_read_release(darktable.image_cache, image);
+
+    // If we're clicking on a grouped image, apply the rating to all images in the group.
+    if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id)
+    {
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT id FROM main.images WHERE group_id = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img_group_id);
+      int count = 0;
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        dt_ratings_apply_to_image(sqlite3_column_int(stmt, 0), rating);
+        count++;
+      }
+      sqlite3_finalize(stmt);
+
+      if(count > 1)
+      {
+        if(rating == 6)
+          dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
+        else
+          dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count),
+                         rating, count);
+      }
+    }
+    else
+    {
+      dt_ratings_apply_to_image(imgid, rating);
+    }
+  }
 }
 
 void dt_ratings_apply_to_selection(int rating)
@@ -59,10 +111,26 @@ void dt_ratings_apply_to_selection(int rating)
 
     /* for each selected image update rating */
     sqlite3_stmt *stmt;
+    gboolean first = TRUE;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
                                 NULL);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
+      if(first == TRUE)
+      {
+        first = FALSE;
+        const dt_image_t *image = dt_image_cache_get(darktable.image_cache, sqlite3_column_int(stmt, 0), 'r');
+
+        // one star is a toggle, so you can easily reject images by removing the last star:
+        // The ratings should be consistent for the whole selection, so this logic is only applied to the first image.
+        if(((image->flags & 0x7) == 1) && !dt_conf_get_bool("rating_one_double_tap") && (rating == 1))
+        {
+          rating = 0;
+        }
+
+        dt_image_cache_read_release(darktable.image_cache, image);
+      }
+
       dt_ratings_apply_to_image(sqlite3_column_int(stmt, 0), rating);
     }
     sqlite3_finalize(stmt);

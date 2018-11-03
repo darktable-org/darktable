@@ -683,3 +683,8 @@ cell:selected
   /* insensitive */
   color: black;
 }
+
+#show_mask_button
+{
+    color: #FFFF00;
+}

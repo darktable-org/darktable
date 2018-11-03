@@ -26,6 +26,7 @@
 #include "common/interpolation.h"
 #include "common/module.h"
 #include "common/opencl.h"
+#include "common/usermanual_url.h"
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/develop.h"
@@ -428,7 +429,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->legacy_params = so->legacy_params;
   // allow to select a shape inside an iop
   module->masks_selection_changed = so->masks_selection_changed;
-  
+
   module->connect_key_accels = so->connect_key_accels;
   module->disconnect_key_accels = so->disconnect_key_accels;
 
@@ -1992,6 +1993,8 @@ got_image:
     gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
   }
 
+  dt_gui_add_help_link(expander, dt_get_help_url(module->op));
+
   /* add reset button */
   hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   module->reset_button = GTK_WIDGET(hw[idx]);
@@ -2028,6 +2031,7 @@ got_image:
   /* reorder header, for now, iop are always in the right panel */
   for(int i = 7; i >= 0; i--)
     if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 2 ? TRUE : FALSE, i == 2 ? TRUE : FALSE, 2);
+  dt_gui_add_help_link(header, "interacting.html");
 
   gtk_widget_set_halign(hw[2], GTK_ALIGN_END);
   dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);

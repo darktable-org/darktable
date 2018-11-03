@@ -34,6 +34,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <math.h>
@@ -135,7 +136,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group("lowpass", IOP_GROUP_EFFECT);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -648,6 +649,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
 #if 0 // gaussian is order not user selectable here, as it does not make much sense for a lowpass filter
   GtkBox *hbox  = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));

@@ -31,6 +31,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -287,6 +288,7 @@ typedef struct dt_iop_basecurve_global_data_t
 } dt_iop_basecurve_global_data_t;
 
 
+
 const char *name()
 {
   return _("base curve");
@@ -294,7 +296,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group("base curve", IOP_GROUP_BASIC);
 }
 
 
@@ -350,7 +352,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 static float exposure_increment(float stops, int e, float fusion, float bias)
 {
-  float offset = (stops * fusion) * (bias - 1.0) / 2.0;
+  float offset = stops * fusion * (bias - 1.0f) / 2.0f;
   return powf(2.0f, stops * e + offset);
 }
 
@@ -418,7 +420,6 @@ int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   cl_int err = -999;
   const int devid = piece->pipe->devid;
 
-  do
   {
     if(!gauss_blur_cl(self, piece, dev_in, dev_tmp1, dev_tmp2, width, height))
       return FALSE;
@@ -433,8 +434,7 @@ int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reduce, 3, sizeof(int), (void *)&ch);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_reduce, sizes);
     if(err != CL_SUCCESS) return FALSE;
-  } while(0);
-
+  }
 
   if(dev_detail != NULL)
   {
@@ -467,7 +467,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const int rad = MIN(width, ceilf(256 * roi_in->scale / piece->iscale));
+  const int rad = MIN(width, (int)ceilf(256 * roi_in->scale / piece->iscale));
 
   cl_mem *dev_col = calloc(num_levels_max, sizeof(cl_mem));
   cl_mem *dev_comb = calloc(num_levels_max, sizeof(cl_mem));
@@ -489,7 +489,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   for(int k = 0, step = 1, w = width, h = height; k < num_levels; k++)
   {
     // coarsest step is some % of image width.
-    dev_col[k]  = dt_opencl_alloc_device(devid, w, h, 4 * sizeof(float));
+    dev_col[k] = dt_opencl_alloc_device(devid, w, h, 4 * sizeof(float));
     if(dev_col[k] == NULL) goto error;
 
     dev_comb[k] = dt_opencl_alloc_device(devid, w, h, 4 * sizeof(float));
@@ -523,7 +523,6 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   for(int e = 0; e < d->exposure_fusion + 1; e++)
   {
     // for every exposure fusion image: push by some ev, apply base curve and compute features
-    do
     {
       const float ev = exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias);
 
@@ -544,14 +543,13 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 3, sizeof(int), (void *)&height);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_compute_features, sizes);
       if(err != CL_SUCCESS) goto error;
-    } while(0);
+    }
 
     // create gaussian pyramid of color buffer
     if(!gauss_reduce_cl(self, piece, dev_col[0], dev_col[1], dev_out, dev_tmp1, dev_tmp2, width, height))
       goto error;
 
     // adjust features
-    do
     {
       size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 0, sizeof(cl_mem), (void *)&dev_col[0]);
@@ -566,8 +564,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
       size_t region[] = { width, height, 1 };
       err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_col[0], origin, origin, region);
       if(err != CL_SUCCESS) goto error;
-    } while(0);
-
+    }
 
     for(int k = 1, w = width, h = height; k < num_levels; k++)
     {
@@ -646,7 +643,6 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
       h = (h - 1) / 2 + 1;
     }
 
-    do
     {
       // normalize both gaussian base and laplacian
       size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
@@ -662,8 +658,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
       size_t region[] = { w, h, 1 };
       err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_comb[k], origin, origin, region);
       if(err != CL_SUCCESS) goto error;
-    } while(0);
-
+    }
 
     if(k < num_levels - 1)
     {
@@ -692,7 +687,6 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   }
 
   // copy output buffer
-  do
   {
     size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -702,8 +696,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 4, sizeof(int), (void *)&height);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_finalize, sizes);
     if(err != CL_SUCCESS) goto error;
-  } while(0);
-
+  }
 
   for(int k = 0; k < num_levels_max; k++)
   {
@@ -784,17 +777,18 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   else
     return process_cl_lut(self, piece, dev_in, dev_out, roi_in, roi_out);
 }
+
 #endif
 
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
+  dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)piece->data;
 
   if(d->exposure_fusion)
   {
-    const int rad = MIN(roi_in->width, ceilf(256 * roi_in->scale / piece->iscale));
+    const int rad = MIN(roi_in->width, (int)ceilf(256 * roi_in->scale / piece->iscale));
 
     tiling->factor = 6.666f;                 // in + out + col[] + comb[] + 2*tmp
     tiling->maxbuf = 1.0f;
@@ -812,7 +806,6 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->yalign = 1;
     tiling->overlap = 0;
   }
-  return;
 }
 
 
@@ -859,10 +852,10 @@ static inline void compute_features(
 #endif
   for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
   {
-    const size_t x = 4ul*(wd*j+i);
+    const size_t x = 4*((size_t)wd*j+i);
     const float max = MAX(col[x], MAX(col[x+1], col[x+2]));
     const float min = MIN(col[x], MIN(col[x+1], col[x+2]));
-    const float sat = .1f + .1f*(max-min)/MAX(1e-4, max);
+    const float sat = .1f + .1f*(max-min)/MAX(1e-4f, max);
     col[x+3] = sat;
 
     const float c = 0.54f;
@@ -881,7 +874,7 @@ static inline void gauss_blur(
     const size_t wd,
     const size_t ht)
 {
-  const float w[5] = {1./16., 4./16., 6./16., 4./16., 1./16.};
+  const float w[5] = { 1.f / 16.f, 4.f / 16.f, 6.f / 16.f, 4.f / 16.f, 1.f / 16.f };
   float *tmp = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
   memset(tmp, 0, 4*wd*ht*sizeof(float));
 #ifdef _OPENMP
@@ -972,162 +965,173 @@ static inline void gauss_reduce(
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-    void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                    void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const float *const in  = (float *)ivoid;
+  const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
-  const int ch = piece->colors;
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
 
-  // are we doing exposure fusion?
-  if(d->exposure_fusion)
+  // allocate temporary buffer for wavelet transform + blending
+  const int wd = roi_in->width, ht = roi_in->height;
+  int num_levels = 8;
+  float **col = malloc(num_levels * sizeof(float *));
+  float **comb = malloc(num_levels * sizeof(float *));
+  int w = wd, h = ht;
+  const int rad = MIN(wd, (int)ceilf(256 * roi_in->scale / piece->iscale));
+  int step = 1;
+  for(int k = 0; k < num_levels; k++)
   {
-    // allocate temporary buffer for wavelet transform + blending
-    const int wd = roi_in->width, ht = roi_in->height;
-    int num_levels = 8;
-    float **col  = malloc(num_levels * sizeof(float*));
-    float **comb = malloc(num_levels * sizeof(float*));
-    int w = wd, h = ht;
-    const int rad = MIN(wd, ceilf(256 * roi_in->scale / piece->iscale));
-    int step = 1;
-    for(int k=0;k<num_levels;k++)
+    // coarsest step is some % of image width.
+    col[k] = dt_alloc_align(64, sizeof(float) * 4 * w * h);
+    comb[k] = dt_alloc_align(64, sizeof(float) * 4 * w * h);
+    memset(comb[k], 0, sizeof(float) * 4 * w * h);
+    w = (w - 1) / 2 + 1;
+    h = (h - 1) / 2 + 1;
+    step *= 2;
+    if(step > rad || w < 4 || h < 4)
     {
-      // coarsest step is some % of image width.
-      col[k]  = dt_alloc_align(64, sizeof(float)*4ul*w*h);
-      comb[k] = dt_alloc_align(64, sizeof(float)*4ul*w*h);
-      memset(comb[k], 0, sizeof(float)*4*w*h);
-      w = (w-1)/2+1; h = (h-1)/2+1;
-      step *= 2;
-      if(step > rad || w < 4 || h < 4)
-      {
-        num_levels = k+1;
-        break;
-      }
+      num_levels = k + 1;
+      break;
     }
+  }
 
-    for(int e=0;e<d->exposure_fusion+1;e++)
-    { // for every exposure fusion image:
-      // push by some ev, apply base curve:
-      apply_ev_and_curve(in, col[0], wd, ht,
-                         exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias), d->table,
-                         d->unbounded_coeffs);
+  for(int e = 0; e < d->exposure_fusion + 1; e++)
+  { // for every exposure fusion image:
+    // push by some ev, apply base curve:
+    apply_ev_and_curve(in, col[0], wd, ht,
+                       exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias), d->table,
+                       d->unbounded_coeffs);
 
-      // compute features
-      compute_features(col[0], wd, ht);
+    // compute features
+    compute_features(col[0], wd, ht);
 
-      // create gaussian pyramid of colour buffer
-      w = wd; h = ht;
-      gauss_reduce(col[0], col[1], out, w, h);
+    // create gaussian pyramid of colour buffer
+    w = wd;
+    h = ht;
+    gauss_reduce(col[0], col[1], out, w, h);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(col) schedule(static)
 #endif
-      for(size_t k=0;k<4ul*wd*ht;k+=4)
-        col[0][k+3] *= .1f + sqrtf(out[k]*out[k] + out[k+1]*out[k+1] + out[k+2]*out[k+2]);
+    for(size_t k = 0; k < 4ul * wd * ht; k += 4)
+      col[0][k + 3] *= .1f + sqrtf(out[k] * out[k] + out[k + 1] * out[k + 1] + out[k + 2] * out[k + 2]);
 
 // #define DEBUG_VIS2
 #ifdef DEBUG_VIS2 // transform weights in channels
-      for(size_t k=0;k<4ul*w*h;k+=4)
-        col[0][k+e] = col[0][k+3];
+    for(size_t k = 0; k < 4ul * w * h; k += 4) col[0][k + e] = col[0][k + 3];
 #endif
 
 // #define DEBUG_VIS
 #ifdef DEBUG_VIS // DEBUG visualise weight buffer
-      for(size_t k=0;k<4ul*w*h;k+=4)
-        comb[0][k+e] = col[0][k+3];
-      continue;
+    for(size_t k = 0; k < 4ul * w * h; k += 4) comb[0][k + e] = col[0][k + 3];
+    continue;
 #endif
 
-      for(int k=1;k<num_levels;k++)
+    for(int k = 1; k < num_levels; k++)
+    {
+      gauss_reduce(col[k - 1], col[k], 0, w, h);
+      w = (w - 1) / 2 + 1;
+      h = (h - 1) / 2 + 1;
+    }
+
+    // update pyramid coarse to fine
+    for(int k = num_levels - 1; k >= 0; k--)
+    {
+      w = wd;
+      h = ht;
+      for(int i = 0; i < k; i++)
       {
-        gauss_reduce(col[k-1], col[k], 0, w, h);
-        w = (w-1)/2+1; h = (h-1)/2+1;
+        w = (w - 1) / 2 + 1;
+        h = (h - 1) / 2 + 1;
       }
-
-      // update pyramid coarse to fine
-      for(int k=num_levels-1;k>=0;k--)
-      {
-        w = wd; h = ht;
-        for(int i=0;i<k;i++) { w = (w-1)/2+1; h = (h-1)/2+1; }
-        // abuse output buffer as temporary memory:
-        if(k!=num_levels-1)
-          gauss_expand(col[k+1], out, w, h);
+      // abuse output buffer as temporary memory:
+      if(k != num_levels - 1) gauss_expand(col[k + 1], out, w, h);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(col,comb,w,h,num_levels,k) schedule(static)
+#pragma omp parallel for default(none) shared(col, comb, w, h, num_levels, k) schedule(static)
 #endif
-        for(int j=0;j<h;j++) for(int i=0;i<w;i++)
+      for(int j = 0; j < h; j++)
+        for(int i = 0; i < w; i++)
         {
-          const size_t x = 4ul*(w*j+i);
+          const size_t x = 4 * ((size_t)w * j + i);
           // blend images into output pyramid
-          if(k == num_levels-1) // blend gaussian base
+          if(k == num_levels - 1) // blend gaussian base
 #ifdef DEBUG_VIS2
             ;
 #else
-            for(int c=0;c<3;c++)
-              comb[k][x+c] += col[k][x+3] * col[k][x+c];
+            for(int c = 0; c < 3; c++) comb[k][x + c] += col[k][x + 3] * col[k][x + c];
 #endif
           else // laplacian
-            for(int c=0;c<3;c++) comb[k][x+c] +=
-              col[k][x+3] * (col[k][x+c] - out[x+c]);
-          comb[k][x+3] += col[k][x+3];
+            for(int c = 0; c < 3; c++) comb[k][x + c] += col[k][x + 3] * (col[k][x + c] - out[x + c]);
+          comb[k][x + 3] += col[k][x + 3];
         }
-      }
     }
+  }
 
 #ifndef DEBUG_VIS // DEBUG: switch off when visualising weight buf
-    // normalise and reconstruct output pyramid buffer coarse to fine
-    for(int k=num_levels-1;k>=0;k--)
+  // normalise and reconstruct output pyramid buffer coarse to fine
+  for(int k = num_levels - 1; k >= 0; k--)
+  {
+    w = wd;
+    h = ht;
+    for(int i = 0; i < k; i++)
     {
-      w = wd; h = ht;
-      for(int i=0;i<k;i++) { w = (w-1)/2+1; h = (h-1)/2+1;}
-
-      // normalise both gaussian base and laplacians:
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(comb,w,h,k) schedule(static)
-#endif
-      for(size_t i=0;i<(size_t)4*w*h;i+=4)
-        if(comb[k][i+3] > 1e-8f)
-          for(int c=0;c<3;c++) comb[k][i+c] /= comb[k][i+3];
-
-      if(k < num_levels-1)
-      { // reconstruct output image
-        gauss_expand(comb[k+1], out, w, h);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(comb,w,h,k) schedule(static)
-#endif
-        for(int j=0;j<h;j++) for(int i=0;i<w;i++)
-        {
-          const size_t x = 4ul*(w*j+i);
-          for(int c=0;c<3;c++) comb[k][x+c] += out[x+c];
-        }
-      }
+      w = (w - 1) / 2 + 1;
+      h = (h - 1) / 2 + 1;
     }
-#endif
 
-    // copy output buffer
+    // normalise both gaussian base and laplacians:
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(comb, w, h, k) schedule(static)
+#endif
+    for(size_t i = 0; i < (size_t)4 * w * h; i += 4)
+      if(comb[k][i + 3] > 1e-8f)
+        for(int c = 0; c < 3; c++) comb[k][i + c] /= comb[k][i + 3];
+
+    if(k < num_levels - 1)
+    { // reconstruct output image
+      gauss_expand(comb[k + 1], out, w, h);
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(comb, w, h, k) schedule(static)
+#endif
+      for(int j = 0; j < h; j++)
+        for(int i = 0; i < w; i++)
+        {
+          const size_t x = 4ul * (w * j + i);
+          for(int c = 0; c < 3; c++) comb[k][x + c] += out[x + c];
+        }
+    }
+  }
+#endif
+  // copy output buffer
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(comb) schedule(static)
 #endif
-    for(size_t k=0;k<4ul*wd*ht;k+=4)
-    {
-      out[k+0] = comb[0][k+0];
-      out[k+1] = comb[0][k+1];
-      out[k+2] = comb[0][k+2];
-      out[k+3] = in[k+3]; // pass on 4th channel
-    }
-
-    // free temp buffers
-    for(int k=0;k<num_levels;k++)
-    {
-      dt_free_align(col[k]);
-      dt_free_align(comb[k]);
-    }
-    free(col);
-    free(comb);
-    return;
+  for(size_t k = 0; k < (size_t)4 * wd * ht; k += 4)
+  {
+    out[k + 0] = comb[0][k + 0];
+    out[k + 1] = comb[0][k + 1];
+    out[k + 2] = comb[0][k + 2];
+    out[k + 3] = in[k + 3]; // pass on 4th channel
   }
 
-  // fast path for non-fusion
+  // free temp buffers
+  for(int k = 0; k < num_levels; k++)
+  {
+    dt_free_align(col[k]);
+    dt_free_align(comb[k]);
+  }
+  free(col);
+  free(comb);
+}
+
+void process_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                 void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const float *const in = (const float *)ivoid;
+  float *const out = (float *)ovoid;
+  const int ch = piece->colors;
+  dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
@@ -1143,9 +1147,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       else
         outp[i] = dt_iop_eval_exp(d->unbounded_coeffs, inp[i]);
     }
-
     outp[3] = inp[3];
   }
+}
+
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
+  // are we doing exposure fusion?
+  if(d->exposure_fusion)
+    process_fusion(self, piece, ivoid, ovoid, roi_in, roi_out);
+  else
+    process_lut(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -1314,16 +1328,17 @@ static gboolean dt_iop_basecurve_leave_notify(GtkWidget *widget, GdkEventCrossin
   return TRUE;
 }
 
-static float to_log(const float x, float base)
+static float to_log(const float x, const float base)
 {
-  if(base)
+  if(base > 0.0f && base != 1.0f)
     return logf(x * (base - 1.0f) + 1.0f) / logf(base);
   else
     return x;
 }
-static float to_lin(const float x, float base)
+
+static float to_lin(const float x, const float base)
 {
-  if(base)
+  if(base > 0.0f && base != 1.0f)
     return (powf(base, x) - 1.0f) / (base - 1.0f);
   else
     return x;
@@ -1420,7 +1435,7 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     snprintf(text, sizeof(text), "100.00 / 100.00 ( +100.00)");
     pango_layout_set_text(layout, text, -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
-    pango_font_description_set_absolute_size(desc, width*1.0/ink.width * PANGO_SCALE);
+    pango_font_description_set_absolute_size(desc, (double)width / ink.width * PANGO_SCALE);
     pango_layout_set_font_description(layout, desc);
 
     snprintf(text, sizeof(text), "%.2f / %.2f ( %+.2f)", x_node_value, y_node_value, d_node_value);
@@ -1473,7 +1488,7 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_move_to(cr, 0, height * to_log(c->draw_ys[0], c->loglogscale));
   for(int k = 1; k < DT_IOP_TONECURVE_RES; k++)
   {
-    const float xx = k / (DT_IOP_TONECURVE_RES - 1.0);
+    const float xx = k / (DT_IOP_TONECURVE_RES - 1.0f);
     if(xx > xm)
     {
       const float yy = dt_iop_eval_exp(unbounded_coeffs, xx);
@@ -1908,6 +1923,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->loglogscale = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("abscissa: input, ordinate: output. works on RGB channels"));
 
@@ -1932,20 +1948,26 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), c->fusion, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->fusion), "value-changed", G_CALLBACK(fusion_callback), self);
 
-  c->exposure_step = dt_bauhaus_slider_new_with_range(self, 0.01, 4.0, 0.100, 1.0, 3);
+  c->exposure_step = dt_bauhaus_slider_new_with_range(self, 0.01f, 4.0f, 0.100f, 1.0f, 3);
   gtk_widget_set_tooltip_text(c->exposure_step, _("how many stops to shift the individual exposures apart"));
   dt_bauhaus_widget_set_label(c->exposure_step, NULL, _("exposure shift"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->exposure_step, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->exposure_step), "value-changed", G_CALLBACK(exposure_step_callback), self);
+  gtk_widget_show_all(c->exposure_step);
+  gtk_widget_set_no_show_all(c->exposure_step, TRUE);
+  gtk_widget_set_visible(c->exposure_step, p->exposure_fusion != 0 ? TRUE : FALSE);
 
   // initially set to 1 (consistency with previous versions), but double-click resets to 0
   // to get a quick way to reach 0 with the mouse.
-  c->exposure_bias = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.100, 0.0, 3);
+  c->exposure_bias = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, 0.100f, 0.0f, 3);
   gtk_widget_set_tooltip_text(c->exposure_bias, _("whether to shift exposure up or down "
                                                   "(-1: reduce highlight, +1: reduce shadows)"));
   dt_bauhaus_widget_set_label(c->exposure_bias, NULL, _("exposure bias"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->exposure_bias, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->exposure_bias), "value-changed", G_CALLBACK(exposure_bias_callback), self);
+  gtk_widget_show_all(c->exposure_bias);
+  gtk_widget_set_no_show_all(c->exposure_bias, TRUE);
+  gtk_widget_set_visible(c->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK

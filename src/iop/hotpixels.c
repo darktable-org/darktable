@@ -31,6 +31,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -65,6 +66,7 @@ typedef struct dt_iop_hotpixels_data_t
   gboolean markfixed;
 } dt_iop_hotpixels_data_t;
 
+
 const char *name()
 {
   return _("hot pixels");
@@ -72,7 +74,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group("hot pixels", IOP_GROUP_CORRECT);
 }
 
 int flags()
@@ -442,6 +444,7 @@ void gui_init(dt_iop_module_t *self)
   g->pixels_fixed = -1;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(g->box_raw), "draw", G_CALLBACK(draw), self);

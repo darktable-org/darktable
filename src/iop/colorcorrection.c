@@ -29,6 +29,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <assert.h>
 #include <math.h>
@@ -63,6 +64,7 @@ typedef struct dt_iop_colorcorrection_global_data_t
   int kernel_colorcorrection;
 } dt_iop_colorcorrection_global_data_t;
 
+
 const char *name()
 {
   return _("color correction");
@@ -75,7 +77,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group("color correction", IOP_GROUP_COLOR);
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -259,6 +261,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->selected = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("drag the line for split toning. "

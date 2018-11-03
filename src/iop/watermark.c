@@ -27,6 +27,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -228,6 +229,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+
 const char *name()
 {
   return _("watermark");
@@ -240,7 +242,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group("watermark", IOP_GROUP_EFFECT);
 }
 
 int operation_tags()
@@ -1312,6 +1314,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(self->widget), DT_BAUHAUS_SPACE);
   gtk_grid_set_column_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(10));
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   gtk_grid_attach(GTK_GRID(self->widget), dt_ui_section_label_new(_("content")), 0, line++, 3, 1);
 

@@ -474,6 +474,7 @@ void gui_init(dt_lib_module_t *self)
   d->imgsel = -1;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   //   gtk_widget_set_size_request(self->widget, DT_PIXEL_APPLY_DPI(100), -1);
 
   GtkBox *box, *hbox;
@@ -501,6 +502,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_set_model(d->current, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->current), _("attached tags,\ndoubleclick to detach"));
+  dt_gui_add_help_link(GTK_WIDGET(d->current), "tagging.html#tagging_usage");
   g_signal_connect(G_OBJECT(d->current), "row-activated", G_CALLBACK(detach_activated), (gpointer)self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->current));
 
@@ -510,12 +512,14 @@ void gui_init(dt_lib_module_t *self)
   button = gtk_button_new_with_label(_("attach"));
   d->attach_button = button;
   gtk_widget_set_tooltip_text(button, _("attach tag to all selected images"));
+  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(attach_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("detach"));
   d->detach_button = button;
   gtk_widget_set_tooltip_text(button, _("detach tag from all selected images"));
+  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(detach_button_clicked), (gpointer)self);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
 
@@ -528,6 +532,7 @@ void gui_init(dt_lib_module_t *self)
   // text entry and new button
   w = gtk_entry_new();
   gtk_widget_set_tooltip_text(w, _("enter tag name"));
+  dt_gui_add_help_link(w, "tagging.html#tagging_usage");
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
   // g_signal_connect(G_OBJECT(w), "key-release-event",
@@ -553,6 +558,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_set_model(d->related, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->related), _("related tags,\ndoubleclick to attach"));
+  dt_gui_add_help_link(GTK_WIDGET(d->related), "tagging.html#tagging_usage");
   g_signal_connect(G_OBJECT(d->related), "row-activated", G_CALLBACK(attach_activated), (gpointer)self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->related));
 
@@ -562,24 +568,28 @@ void gui_init(dt_lib_module_t *self)
   button = gtk_button_new_with_label(_("new"));
   d->new_button = button;
   gtk_widget_set_tooltip_text(button, _("create a new tag with the\nname you entered"));
+  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(new_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("delete"));
   d->delete_button = button;
   gtk_widget_set_tooltip_text(button, _("delete selected tag"));
+  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(C_("verb", "import"));
   d->import_button = button;
   gtk_widget_set_tooltip_text(button, _("import tags from a Lightroom keyword file"));
+  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(C_("verb", "export"));
   d->export_button = button;
   gtk_widget_set_tooltip_text(button, _("export all tags to a Lightroom keyword file"));
+  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)self);
 

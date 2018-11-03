@@ -28,6 +28,7 @@
 #include "common/mipmap_cache.h"
 #include "common/module.h"
 #include "common/undo.h"
+#include "common/usermanual_url.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -426,6 +427,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
       /* if we didn't get an expander let's add the widget */
       if(!w) w = plugin->widget;
+      dt_gui_add_help_link(w, dt_get_help_url(plugin->plugin_name));
 
       /* add module to its container */
       dt_ui_container_add_widget(darktable.gui->ui, plugin->container(plugin), w);

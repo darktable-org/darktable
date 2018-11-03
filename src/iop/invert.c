@@ -36,6 +36,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_invert_params_t)
 
@@ -106,6 +107,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+
 const char *name()
 {
   return _("invert");
@@ -113,7 +115,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group("invert", IOP_GROUP_BASIC);
 }
 
 int flags()
@@ -615,6 +617,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, 4 * sizeof(float)));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->label), TRUE, TRUE, 0);
