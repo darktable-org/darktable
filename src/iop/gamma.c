@@ -263,7 +263,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   {
-    fprintf(stderr,"Using cmatrix codepath\n");
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
