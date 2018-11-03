@@ -302,8 +302,8 @@ void init_presets(dt_iop_module_so_t *self)
              "gz03eJxjYGiwZ2B44MAAphv2b4vdb1mnYGTFLcZomryXxzRr910TRgYYaLADEkB1DvYQ9eSLiUf9s+te/s/OjJPV/sA7Y3vZI/X2EHnyMAB8fx/c", 5,
              "gz12eJxjZGBgEGYAgRNODESDBnsIHll8AM62GP8=", 7);
   add_preset(self, _("luma (use on 2nd instance)"),
-             "gz03eJxjYGiwZ4AAIN2w388ywNJ97j7LS3qqpokcz03CM61NGRlgoMEOos4BpNaeQjF7zi3/7XJef7QLvPPUbnHHXag8eRgAb44fKg==", 5,
-             "gz12eJxjZGBgEABiRoYCJwaiQYM9BI8sPgBoshil", 7);
+             "gz03eJxjYGiwZwCCWTNn2jEwNOz3swywdJ+7z/KSnqppIsdzk/BMa1NGBhhoAKphAKp3AGKIPnLF/B78sT2hqm33u3yhnWH2D7vC1qVQefIwAPd8IVk=", 5,
+             "gz12eJxjZGBgEGAAgR4nBqJBgz0Ejyw+AIdGGMA=", 7);
 }
 
 typedef union floatint_t
