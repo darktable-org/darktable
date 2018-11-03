@@ -2440,6 +2440,8 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   {
     if (g->adjust_crop)
     {
+      g->lastx = CLAMP(g->lastx, 0.1f, 0.9f);
+      g->lasty = CLAMP(g->lasty, 0.1f, 0.9f);
       params[0] = g->lastx;
       params[1] = g->lasty;
       cropfit.x = g->lastx;
