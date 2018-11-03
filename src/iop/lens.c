@@ -32,6 +32,7 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <assert.h>
 #include <ctype.h>
 #include <gtk/gtk.h>
@@ -127,6 +128,7 @@ typedef struct dt_iop_lensfun_data_t
   gboolean do_nan_checks;
 } dt_iop_lensfun_data_t;
 
+
 const char *name()
 {
   return _("lens correction");
@@ -134,7 +136,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group("lens correction", IOP_GROUP_CORRECT);
 }
 
 int operation_tags()
@@ -2132,6 +2134,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *button;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // camera selector
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

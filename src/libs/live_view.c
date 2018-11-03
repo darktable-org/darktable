@@ -270,6 +270,7 @@ void gui_init(dt_lib_module_t *self)
 
   // Setup gui
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  dt_gui_add_help_link(self->widget, "live_view.html#live_view");
   GtkWidget *box;
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);

@@ -1535,6 +1535,9 @@ static gboolean _lock_databases(dt_database_t *db)
 
 dt_database_t *dt_database_init(const char *alternative, const gboolean load_data)
 {
+  /*  set the threading mode to Serialized */
+  sqlite3_config(SQLITE_CONFIG_SERIALIZED);
+
   sqlite3_initialize();
 
 start:
@@ -1603,8 +1606,6 @@ start:
     return db;
   }
 
-  /*  set the threading mode to Serialized */
-  sqlite3_config(SQLITE_CONFIG_SERIALIZED);
 
   /* opening / creating database */
   if(sqlite3_open(db->dbfilename_library, &db->handle))

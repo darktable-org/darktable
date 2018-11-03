@@ -41,6 +41,7 @@
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <float.h>
 #include <gtk/gtk.h>
@@ -80,6 +81,7 @@ typedef struct dt_iop_hazeremoval_global_data_t
 {
 } dt_iop_hazeremoval_global_data_t;
 
+
 const char *name()
 {
   return _("haze removal");
@@ -92,7 +94,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group("haze removal", IOP_GROUP_CORRECT);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -181,6 +183,7 @@ void gui_init(dt_iop_module_t *self)
   g->hash = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->strength = dt_bauhaus_slider_new_with_range(self, -1, 1, 0.01, p->strength, 2);
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));

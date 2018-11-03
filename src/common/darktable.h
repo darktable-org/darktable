@@ -85,6 +85,8 @@ typedef unsigned int u_int;
 #include "common/poison.h"
 #endif
 
+#include "common/usermanual_url.h"
+
 #define DT_MODULE_VERSION 18 // version of dt's module interface
 
 // version of current performance configuration version

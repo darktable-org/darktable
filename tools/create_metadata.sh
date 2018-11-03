@@ -40,7 +40,7 @@ grep -v "^#" "$inputfile" | while IFS= read -r line; do
     first=1
 
     cat >> "$outputdir/$outputbody" << EOF
-    if(strncmp(key, "$line", $length) == 0)
+    if(strncmp(key, "$(echo $line |tr -d '\r')", $length) == 0)
         return $enum;
 EOF
 

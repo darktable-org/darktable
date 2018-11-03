@@ -267,6 +267,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   self->widget = gtk_grid_new();
   GtkGrid *grid = GTK_GRID(self->widget);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_homogeneous(grid, TRUE);
@@ -278,24 +279,28 @@ void gui_init(dt_lib_module_t *self)
   ellipsize_button(copy_parts);
   d->copy_parts_button = copy_parts;
   gtk_widget_set_tooltip_text(copy_parts, _("copy part history stack of\nfirst selected image"));
+  dt_gui_add_help_link(copy_parts, "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, copy_parts, 0, line, 2, 1);
 
   GtkWidget *copy = gtk_button_new_with_label(_("copy all"));
   ellipsize_button(copy);
   d->copy_button = copy;
   gtk_widget_set_tooltip_text(copy, _("copy history stack of\nfirst selected image"));
+  dt_gui_add_help_link(copy, "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, copy, 2, line, 2, 1);
 
   GtkWidget *delete = gtk_button_new_with_label(_("discard"));
   ellipsize_button(delete);
   d->delete_button = delete;
   gtk_widget_set_tooltip_text(delete, _("discard history stack of\nall selected images"));
+  dt_gui_add_help_link(delete, "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, delete, 4, line++, 2, 1);
 
 
   d->paste_parts = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
   ellipsize_button(d->paste_parts);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->paste_parts), _("paste part history stack to\nall selected images"));
+  dt_gui_add_help_link(GTK_WIDGET(d->paste_parts), "history_stack.html#history_stack_usage");
   d->imageid = -1;
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), FALSE);
   gtk_grid_attach(grid, GTK_WIDGET(d->paste_parts), 0, line, 3, 1);
@@ -303,6 +308,7 @@ void gui_init(dt_lib_module_t *self)
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste all")));
   ellipsize_button(d->paste);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->paste), _("paste history stack to\nall selected images"));
+  dt_gui_add_help_link(GTK_WIDGET(d->paste), "history_stack.html#history_stack_usage");
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
   gtk_grid_attach(grid, GTK_WIDGET(d->paste), 3, line++, 3, 1);
 
@@ -311,6 +317,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->pastemode, _("append"));
   dt_bauhaus_combobox_add(d->pastemode, _("overwrite"));
   gtk_widget_set_tooltip_text(d->pastemode, _("how to handle existing history"));
+  dt_gui_add_help_link(d->pastemode, "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, d->pastemode, 0, line++, 6, 1);
   dt_bauhaus_combobox_set(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
@@ -319,12 +326,14 @@ void gui_init(dt_lib_module_t *self)
   ellipsize_button(loadbutton);
   d->load_button = loadbutton;
   gtk_widget_set_tooltip_text(loadbutton, _("open an XMP sidecar file\nand apply it to selected images"));
+  dt_gui_add_help_link(loadbutton, "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, loadbutton, 0, line, 3, 1);
 
   GtkWidget *button = gtk_button_new_with_label(_("write sidecar files"));
   ellipsize_button(button);
   d->write_button = button;
   gtk_widget_set_tooltip_text(button, _("write history stack and tags to XMP sidecar files"));
+  dt_gui_add_help_link(button, "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, button, 3, line, 3, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
 

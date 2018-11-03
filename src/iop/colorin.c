@@ -36,6 +36,7 @@
 #include "common/imageio_tiff.h"
 #include "develop/imageop_math.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include "external/adobe_coeff.c"
 #if defined(__SSE__)
@@ -106,6 +107,7 @@ typedef struct dt_iop_colorin_data_t
   dt_colorspaces_color_profile_type_t type;
 } dt_iop_colorin_data_t;
 
+
 const char *name()
 {
   return _("input color profile");
@@ -113,7 +115,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group("input color profile", IOP_GROUP_COLOR);
 }
 
 int flags()
@@ -1838,6 +1840,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g->profile_combobox = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->profile_combobox, NULL, _("profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile_combobox, TRUE, TRUE, 0);

@@ -594,9 +594,9 @@ colorbalance (read_only image2d_t in, write_only image2d_t out, const int width,
   sRGB = (sRGB <= (float4)0.0031308f) ? 12.92f * sRGB : (1.0f + 0.055f) * pow(sRGB, (float4)1.0f/2.4f) - (float4)0.055f;
   sRGB = pow(fmax(((sRGB - (float4)1.0f) * lift + (float4)1.0f) * gain, (float4)0.0f), gamma_inv);
   sRGB = (sRGB <= (float4)0.04045f) ? sRGB / 12.92f : pow((sRGB + (float4)0.055f) / (1.0f + 0.055f), (float4)2.4f);
-  sRGB = XYZ_to_Lab(sRGB_to_XYZ(sRGB));
+  Lab.xyz = XYZ_to_Lab(sRGB_to_XYZ(sRGB)).xyz;
 
-  write_imagef (out, (int2)(x, y), sRGB);
+  write_imagef (out, (int2)(x, y), Lab);
 }
 
 kernel void
@@ -633,9 +633,9 @@ colorbalance_lgg (read_only image2d_t in, write_only image2d_t out, const int wi
     RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : pow(RGB / grey4, contrast4) * grey4;
   }
 
-  RGB = prophotorgb_to_Lab(RGB);
+  Lab.xyz = prophotorgb_to_Lab(RGB).xyz;
 
-  write_imagef (out, (int2)(x, y), RGB);
+  write_imagef (out, (int2)(x, y), Lab);
 }
 
 kernel void
@@ -671,9 +671,9 @@ colorbalance_cdl (read_only image2d_t in, write_only image2d_t out, const int wi
     RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : pow(RGB / grey4, contrast4) * grey4;
   }
 
-  RGB = prophotorgb_to_Lab(RGB);
+  Lab.xyz = prophotorgb_to_Lab(RGB).xyz;
 
-  write_imagef (out, (int2)(x, y), RGB);
+  write_imagef (out, (int2)(x, y), Lab);
 }
 
 /* helpers and kernel for the colorchecker module */

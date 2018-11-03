@@ -35,6 +35,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -72,6 +73,7 @@ typedef struct dt_iop_highlights_global_data_t
   int kernel_highlights_4f_clip;
 } dt_iop_highlights_global_data_t;
 
+
 const char *name()
 {
   return _("highlight reconstruction");
@@ -79,7 +81,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group("highlight reconstruction", IOP_GROUP_BASIC);
 }
 
 int flags()
@@ -1042,6 +1044,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->mode = dt_bauhaus_combobox_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
