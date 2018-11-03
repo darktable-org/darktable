@@ -69,9 +69,9 @@ const char *name()
   return _("denoise (bilateral filter)");
 }
 
-int groups() 
+int groups()
 {
-return dt_iop_get_group("input color profile", IOP_GROUP_CORRECT);
+  return dt_iop_get_group("denoise (bilateral filter)", IOP_GROUP_CORRECT);
 }
 
 int flags()
