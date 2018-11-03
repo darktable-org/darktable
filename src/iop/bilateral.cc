@@ -35,6 +35,7 @@ extern "C" {
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include "common/iop_group.h"
 }
 #include "iop/Permutohedral.h"
 extern "C" {
