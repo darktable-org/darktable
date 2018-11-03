@@ -1412,12 +1412,14 @@ void gui_init(dt_view_t *self)
   gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets of your favorites"));
   g_signal_connect(G_OBJECT(favorite_presets), "clicked", G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
                    NULL);
+  dt_gui_add_help_link(favorite_presets, dt_get_help_url("favorite_presets"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets, DT_VIEW_DARKROOM);
 
   /* create quick styles popup menu tool */
   GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_signal_connect(G_OBJECT(styles), "clicked", G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
   gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
+  dt_gui_add_help_link(styles, dt_get_help_url("bottom_panel_styles"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
 
   const int panel_width = dt_conf_get_int("panel_width");
@@ -1436,6 +1438,7 @@ void gui_init(dt_view_t *self)
     g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "button-release-event",
                      G_CALLBACK(_rawoverexposed_quickbutton_released), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->rawoverexposed.button, DT_VIEW_DARKROOM);
+    dt_gui_add_help_link(dev->rawoverexposed.button, dt_get_help_url("rawoverexposed"));
 
     // and the popup window
     dev->rawoverexposed.floating_window = gtk_popover_new(dev->rawoverexposed.button);
@@ -1504,6 +1507,7 @@ void gui_init(dt_view_t *self)
     g_signal_connect(G_OBJECT(dev->overexposed.button), "button-release-event",
                      G_CALLBACK(_overexposed_quickbutton_released), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overexposed.button, DT_VIEW_DARKROOM);
+    dt_gui_add_help_link(dev->overexposed.button, dt_get_help_url("overexposed"));
 
     // and the popup window
     dev->overexposed.floating_window = gtk_popover_new(dev->overexposed.button);
@@ -1566,6 +1570,7 @@ void gui_init(dt_view_t *self)
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "button-release-event",
                      G_CALLBACK(_profile_quickbutton_released), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->profile.softproof_button, DT_VIEW_DARKROOM);
+    dt_gui_add_help_link(dev->profile.softproof_button, dt_get_help_url("softproof"));
 
     // the gamut check button
     dev->profile.gamut_button
@@ -1579,6 +1584,7 @@ void gui_init(dt_view_t *self)
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "button-release-event",
                      G_CALLBACK(_profile_quickbutton_released), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->profile.gamut_button, DT_VIEW_DARKROOM);
+    dt_gui_add_help_link(dev->profile.gamut_button, dt_get_help_url("gamut"));
 
     // and the popup window, which is shared between the two profile buttons
     dev->profile.floating_window = gtk_popover_new(NULL);
