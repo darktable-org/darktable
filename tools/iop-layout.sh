@@ -76,6 +76,7 @@ group_correct=(
     'hot pixels'
     'defringe'
     'chromatic aberrations'
+    'denoise (bilateral filter)'
     'denoise (non-local means)'
     'denoise (profiled)'
     'dithering'
