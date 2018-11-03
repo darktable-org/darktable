@@ -31,6 +31,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -58,6 +59,7 @@ typedef struct dt_iop_vibrance_global_data_t
   int kernel_vibrance;
 } dt_iop_vibrance_global_data_t;
 
+
 const char *name()
 {
   return _("vibrance");
@@ -70,7 +72,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group("vibrance", IOP_GROUP_COLOR);
 }
 
 #if 0 // BAUHAUS doesn't support keyaccels yet...
@@ -235,6 +237,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_vibrance_params_t *p = (dt_iop_vibrance_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   ;
 
   /* vibrance */

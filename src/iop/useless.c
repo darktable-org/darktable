@@ -23,6 +23,7 @@
 #include "develop/imageop.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -62,6 +63,7 @@ typedef struct dt_iop_useless_global_data_t
   // we don't need it for this example (as for most dt plugins)
 } dt_iop_useless_global_data_t;
 
+x
 // this returns a translatable name
 const char *name()
 {
@@ -78,7 +80,7 @@ int flags()
 // where does it appear in the gui?
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group("silly example", IOP_GROUP_BASIC);
 }
 
 /** modify regions of interest (optional, per pixel ops don't need this) */

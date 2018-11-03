@@ -29,6 +29,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -130,7 +131,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group("raw denoise", IOP_GROUP_CORRECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -940,6 +941,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   c->stack = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(c->stack), FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), c->stack, TRUE, TRUE, 0);

@@ -31,6 +31,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <inttypes.h>
 #include <math.h>
@@ -107,6 +108,7 @@ typedef struct dt_iop_colorzones_global_data_t
   int kernel_colorzones;
 } dt_iop_colorzones_global_data_t;
 
+
 const char *name()
 {
   return _("color zones");
@@ -119,7 +121,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_COLOR;
+  return dt_iop_get_group("color zones", IOP_GROUP_COLOR);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -1058,6 +1060,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->mouse_radius = 1.0 / DT_IOP_COLORZONES_BANDS;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // tabs
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

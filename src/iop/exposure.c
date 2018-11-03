@@ -45,6 +45,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #define exposure2white(x) exp2f(-(x))
 #define white2exposure(x) -dt_log2f(fmaxf(1e-20f, x))
@@ -99,6 +100,7 @@ typedef struct dt_iop_exposure_global_data_t
   int kernel_exposure;
 } dt_iop_exposure_global_data_t;
 
+
 const char *name()
 {
   return _("exposure");
@@ -106,7 +108,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group("exposure", IOP_GROUP_BASIC);
 }
 
 int flags()
@@ -498,6 +500,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
 
   dt_bauhaus_slider_set(g->autoexpp, 0.01);
+  dt_bauhaus_widget_set_quad_active(g->autoexpp, FALSE);
 
   dt_bauhaus_slider_set(g->deflicker_percentile, p->deflicker_percentile);
   dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
@@ -844,6 +847,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));

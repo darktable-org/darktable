@@ -30,6 +30,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <math.h>
 #include <memory.h>
@@ -154,6 +155,7 @@ void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
                        float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                        const uint32_t filters);
 
+
 const char *name()
 {
   return _("demosaic");
@@ -161,7 +163,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return dt_iop_get_group("demosaic", IOP_GROUP_BASIC);
 }
 
 int flags()
@@ -5029,6 +5031,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

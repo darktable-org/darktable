@@ -27,6 +27,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -77,6 +78,7 @@ typedef struct dt_iop_colorize_global_data_t
 } dt_iop_colorize_global_data_t;
 
 
+
 const char *name()
 {
   return _("colorize");
@@ -89,7 +91,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group("colorize", IOP_GROUP_EFFECT);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -419,6 +421,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   /* hue slider */
   g->gslider1 = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.01f, 0.0f, 2, 0);

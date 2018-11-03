@@ -19,7 +19,9 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/image_cache.h"
 #include "control/signal.h"
+#include "gui/gtk.h"
 
 typedef struct dt_selection_t
 {
@@ -105,26 +107,80 @@ void dt_selection_clear(const dt_selection_t *selection)
   dt_collection_hint_message(darktable.collection);
 }
 
-void dt_selection_select_single(dt_selection_t *selection, uint32_t imgid)
+void dt_selection_select(dt_selection_t *selection, uint32_t imgid)
 {
   gchar *query = NULL;
-  selection->last_single_id = imgid;
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
   if(imgid != -1)
   {
-    query = dt_util_dstrcat(query, "INSERT OR IGNORE INTO main.selected_images VALUES (%d)", imgid);
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
-    g_free(query);
+    const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    if(image)
+    {
+      int img_group_id = image->group_id;
+      dt_image_cache_read_release(darktable.image_cache, image);
+
+      if(!darktable.gui || !darktable.gui->grouping || darktable.gui->expanded_group_id == img_group_id || !selection->collection)
+      {
+        query = dt_util_dstrcat(query, "INSERT OR IGNORE INTO main.selected_images VALUES (%d)", imgid);
+      }
+      else
+      {
+        query = dt_util_dstrcat(query, "INSERT OR IGNORE INTO main.selected_images SELECT id FROM main.images "
+                                       "WHERE group_id = %d AND id IN (%s)",
+                                img_group_id, dt_collection_get_query_no_group(selection->collection));
+      }
+
+      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+      g_free(query);
+    }
   }
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
 }
 
-void dt_selection_toggle(dt_selection_t *selection, uint32_t imgid)
+void dt_selection_deselect(dt_selection_t *selection, uint32_t imgid)
 {
   gchar *query = NULL;
+  selection->last_single_id = -1;
+
+  if(imgid != -1)
+  {
+    const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    if(image)
+    {
+      int img_group_id = image->group_id;
+      dt_image_cache_read_release(darktable.image_cache, image);
+
+      if(!darktable.gui || !darktable.gui->grouping || darktable.gui->expanded_group_id == img_group_id)
+      {
+        query = dt_util_dstrcat(query, "DELETE FROM main.selected_images WHERE imgid = %d", imgid);
+      }
+      else
+      {
+        query = dt_util_dstrcat(query, "DELETE FROM main.selected_images WHERE imgid IN "
+                                       "(SELECT id FROM main.images WHERE group_id = %d)",
+                                img_group_id);
+      }
+
+      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+      g_free(query);
+    }
+  }
+
+  /* update hint message */
+  dt_collection_hint_message(darktable.collection);
+}
+
+void dt_selection_select_single(dt_selection_t *selection, uint32_t imgid)
+{
+  selection->last_single_id = imgid;
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
+  dt_selection_select(selection, imgid);
+}
+
+void dt_selection_toggle(dt_selection_t *selection, uint32_t imgid)
+{
   sqlite3_stmt *stmt;
   gboolean exists = FALSE;
 
@@ -140,18 +196,12 @@ void dt_selection_toggle(dt_selection_t *selection, uint32_t imgid)
 
   if(exists)
   {
-    selection->last_single_id = -1;
-    query = dt_util_dstrcat(query, "DELETE FROM main.selected_images WHERE imgid = %d", imgid);
+    dt_selection_deselect(selection, imgid);
   }
   else
   {
-    selection->last_single_id = imgid;
-    query = dt_util_dstrcat(query, "INSERT OR IGNORE INTO main.selected_images VALUES (%d)", imgid);
+    dt_selection_select(selection, imgid);
   }
-
-  sqlite3_exec(dt_database_get(darktable.db), query, NULL, NULL, NULL);
-
-  g_free(query);
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -164,7 +214,7 @@ void dt_selection_select_all(dt_selection_t *selection)
   if(!selection->collection) return;
 
   fullq = dt_util_dstrcat(fullq, "%s", "INSERT OR IGNORE INTO main.selected_images ");
-  fullq = dt_util_dstrcat(fullq, "%s", dt_collection_get_query(selection->collection));
+  fullq = dt_util_dstrcat(fullq, "%s", dt_collection_get_query_no_group(selection->collection));
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
@@ -186,7 +236,7 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
   /* get start and end rows for range selection */
   int rc = 0;
   uint32_t sr = -1, er = -1;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), dt_collection_get_query(selection->collection),
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), dt_collection_get_query_no_group(selection->collection),
                               -1, &stmt, NULL);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -212,7 +262,7 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
   dt_collection_update(selection->collection);
 
   fullq = dt_util_dstrcat(fullq, "%s", "INSERT OR IGNORE INTO main.selected_images ");
-  fullq = dt_util_dstrcat(fullq, "%s", dt_collection_get_query(selection->collection));
+  fullq = dt_util_dstrcat(fullq, "%s", dt_collection_get_query_no_group(selection->collection));
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), fullq, -1, &stmt, NULL);
 
@@ -225,6 +275,11 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
   /* reset filter */
   dt_collection_set_query_flags(selection->collection, old_flags);
   dt_collection_update(selection->collection);
+
+  // The logic above doesn't handle groups, so explicitly select the beginning and end to make sure those are selected properly
+  dt_selection_select(selection, selection->last_single_id);
+  dt_selection_select(selection, imgid);
+
   selection->last_single_id = -1;
 }
 
@@ -242,6 +297,9 @@ void dt_selection_select_filmroll(dt_selection_t *selection)
                         "b ON a.id = b.imgid)",
                         NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.tmp_selection", NULL, NULL, NULL);
+
+  dt_collection_update(selection->collection);
+
   selection->last_single_id = -1;
 }
 

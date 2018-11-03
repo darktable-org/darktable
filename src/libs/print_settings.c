@@ -1112,6 +1112,7 @@ gui_init (dt_lib_module_t *self)
   dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)malloc(sizeof(dt_lib_print_settings_t));
   self->data = d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  dt_gui_add_help_link(self->widget, "print_chapter.html#print_overview");
 
   char datadir[PATH_MAX] = { 0 };
   char confdir[PATH_MAX] = { 0 };
@@ -1162,7 +1163,7 @@ gui_init (dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(_("printer"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
-
+  dt_gui_add_help_link(self->widget, "print_usage.html#print_printer_section");
   d->printers = dt_bauhaus_combobox_new(NULL);
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->printers, TRUE, TRUE, 0);
@@ -1264,6 +1265,7 @@ gui_init (dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(_("page"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+  dt_gui_add_help_link(self->widget, "print_page_section.html#print_page_section");
 
   //// papers
 
@@ -1394,6 +1396,7 @@ gui_init (dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(_("print settings"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+  dt_gui_add_help_link(self->widget, "print_settings.html#print_settings");
 
   //  Add export profile combo
 
@@ -1527,6 +1530,7 @@ gui_init (dt_lib_module_t *self)
   d->print_button = button;
   gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("print with current settings"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), TRUE, TRUE, 0);
+  dt_gui_add_help_link(GTK_WIDGET(button), "print_button.html#print_button");
 
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (_print_button_clicked),

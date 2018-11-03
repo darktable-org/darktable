@@ -25,6 +25,7 @@
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <math.h>
 #include <stdlib.h>
@@ -62,6 +63,7 @@ typedef struct dt_iop_defringe_gui_data_t
 //}
 // dt_iop_defringe_global_data_t;
 
+
 const char *name()
 {
   return _("defringe");
@@ -69,7 +71,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group("defringe", IOP_GROUP_CORRECT);
 }
 
 int flags()
@@ -437,6 +439,7 @@ void gui_init(dt_iop_module_t *module)
   dt_iop_defringe_params_t *p = (dt_iop_defringe_params_t *)module->params;
 
   module->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(module->widget, dt_get_help_url(module->op));
 
   /* mode selection */
   g->mode_select = dt_bauhaus_combobox_new(module);

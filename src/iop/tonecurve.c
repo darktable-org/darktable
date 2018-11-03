@@ -38,6 +38,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
@@ -155,7 +156,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_TONE;
+  return dt_iop_get_group("tone curve", IOP_GROUP_TONE);
 }
 
 int flags()
@@ -907,6 +908,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->selected = -1;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // tabs
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());

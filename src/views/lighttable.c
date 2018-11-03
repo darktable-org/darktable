@@ -1587,7 +1587,7 @@ static gboolean star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acc
   if(mouse_over_id <= 0)
     dt_ratings_apply_to_selection(num);
   else
-    dt_ratings_apply_to_image(mouse_over_id, num);
+    dt_ratings_apply_to_image_or_group(mouse_over_id, num);
   _update_collected_images(self);
 
   dt_collection_update_query(darktable.collection); // update the counter
@@ -1924,22 +1924,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       case DT_VIEW_STAR_5:
       {
         int32_t mouse_over_id = dt_control_get_mouse_over_id();
-        dt_image_t *image = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'w');
-        if(image)
-        {
-          if(lib->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1))
-            image->flags &= ~0x7;
-          else if(lib->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6))
-            image->flags &= ~0x7;
-          else
-          {
-            image->flags &= ~0x7;
-            image->flags |= lib->image_over;
-          }
-          dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-        }
-        else
-          dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+        dt_ratings_apply_to_image_or_group(mouse_over_id, lib->image_over);
         _update_collected_images(self);
         break;
       }

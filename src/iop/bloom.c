@@ -28,6 +28,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -72,7 +73,6 @@ typedef struct dt_iop_bloom_global_data_t
   int kernel_bloom_mix;
 } dt_iop_bloom_global_data_t;
 
-
 const char *name()
 {
   return _("bloom");
@@ -85,7 +85,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group("bloom", IOP_GROUP_EFFECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -507,6 +507,7 @@ void gui_init(struct dt_iop_module_t *self)
   const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   /* size */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->size, 0);

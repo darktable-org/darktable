@@ -1,35 +1,32 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 henrik andersson.
+    copyright (c) 2018 Pascal Obry
 
     darktable is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
+    it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
     darktable is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    GNU Lesser General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
+    You should have received a copy of the GNU Lesser General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #pragma once
 
-#include "common/darktable.h"
-#include <gtk/gtk.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/** \brief applies specified rating to selected images */
-void dt_ratings_apply_to_selection(int rating);
+int dt_iop_get_group(const char *name, const int default_group);
 
-/** apply rating to the specified image */
-void dt_ratings_apply_to_image(int imgid, int rating);
-
-/** apply rating to the specified image, or any image in a collapsed group */
-void dt_ratings_apply_to_image_or_group(int imgid, int rating);
-
+#ifdef __cplusplus
+}
+#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

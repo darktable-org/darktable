@@ -34,6 +34,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -92,7 +93,7 @@ int flags()
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group("soften", IOP_GROUP_EFFECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -700,6 +701,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   /* size */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 2, p->size, 2);

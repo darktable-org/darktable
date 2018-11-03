@@ -1084,6 +1084,10 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
   bd->blendif_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  // add event box so that one can click into the area to get help for parametric masks
+  GtkWidget* event_box = gtk_event_box_new();
+  dt_gui_add_help_link(GTK_WIDGET(event_box), "parametric_mask.html");
+  gtk_container_add(GTK_CONTAINER(blendw), event_box);
 
   /* create and add blendif support if module supports it */
   if(bd->blendif_support)
@@ -1355,7 +1359,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     bd->blendif_inited = 1;
   }
 
-  gtk_box_pack_start(GTK_BOX(blendw), GTK_WIDGET(bd->blendif_box), TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->blendif_box));
 }
 
 void dt_iop_gui_update_masks(dt_iop_module_t *module)
@@ -1416,6 +1420,10 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
   bd->masks_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  // add event box so that one can click into the area to get help for drawn masks
+  GtkWidget* event_box = gtk_event_box_new();
+  dt_gui_add_help_link(GTK_WIDGET(event_box), "drawn_mask.html");
+  gtk_container_add(GTK_CONTAINER(blendw), event_box);
 
   /* create and add masks support if module supports it */
   if(bd->masks_support)
@@ -1506,8 +1514,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->masks_inited = 1;
   }
-
-  gtk_box_pack_start(GTK_BOX(blendw), GTK_WIDGET(bd->masks_box), TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->masks_box));
 }
 
 void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
@@ -1833,8 +1840,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                                                         "parametric mask, or combination of both"));
     g_signal_connect(G_OBJECT(bd->masks_modes_combo), "value-changed",
                      G_CALLBACK(_blendop_masks_mode_callback), bd);
-
-
+    dt_gui_add_help_link(GTK_WIDGET(bd->masks_modes_combo), "blending.html");
 
     bd->blend_modes_combo = dt_bauhaus_combobox_new(module);
     dt_bauhaus_widget_set_label(bd->blend_modes_combo, _("blend"), _("blend mode"));
@@ -1991,6 +1997,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_bauhaus_combobox_set(bd->blend_modes_combo, 0);
     g_signal_connect(G_OBJECT(bd->blend_modes_combo), "value-changed",
                      G_CALLBACK(_blendop_blend_mode_callback), bd);
+    dt_gui_add_help_link(GTK_WIDGET(bd->blend_modes_combo), "blending_operators.html");
 
 
     bd->opacity_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 1, 100.0, 0);
@@ -2053,7 +2060,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                                                 "select channel for display"));
     gtk_widget_set_size_request(GTK_WIDGET(bd->showmask), bs, bs);
     g_signal_connect(G_OBJECT(bd->showmask), "button-press-event", G_CALLBACK(_blendop_blendif_showmask_clicked), module);
-
+    gtk_widget_set_name(bd->showmask, "show_mask_button");
 
     bd->suppress
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
@@ -2083,6 +2090,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), GTK_WIDGET(bd->masks_invert_combo), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), hbox, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(bd->bottom_box), TRUE, TRUE, 0);
+    dt_gui_add_help_link(GTK_WIDGET(bd->bottom_box), "combined_masks.html");
 
     bd->blend_inited = 1;
     gtk_widget_queue_draw(GTK_WIDGET(iopw));

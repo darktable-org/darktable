@@ -108,8 +108,8 @@ static void _lib_folders_update_collection(const gchar *filmroll);
 static void entry_insert_text(GtkWidget *entry, gchar *new_text, gint new_length, gpointer *position,
                           dt_lib_collect_rule_t *d);
 static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr);
-static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d);
 static void collection_updated(gpointer instance, gpointer self);
+static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, GdkEventButton *event, dt_lib_collect_t *d);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -246,7 +246,6 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
 #endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-
   if(tree_path != NULL)
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), tree_path);
   else
@@ -390,17 +389,14 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_c
 
 static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_collect_t *d)
 {
-  if(d->view_rule != DT_COLLECTION_PROP_FOLDERS) return FALSE;
-  /* single click with the right mouse button? */
-  if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+  if((d->view_rule == DT_COLLECTION_PROP_FOLDERS && event->type == GDK_BUTTON_PRESS && event->button == 3)
+     || (event->type == GDK_2BUTTON_PRESS && event->button == 1))
   {
-    GtkTreeSelection *selection;
-
-    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
 
     if(gtk_tree_selection_count_selected_rows(selection) <= 1)
     {
-      GtkTreePath *path;
+      GtkTreePath *path = NULL;
 
       /* Get tree path for row that was clicked */
       if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL,
@@ -408,11 +404,16 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
       {
         gtk_tree_selection_unselect_all(selection);
         gtk_tree_selection_select_path(selection, path);
-        gtk_tree_path_free(path);
       }
-    }
-    view_popup_menu(treeview, event, d);
 
+      /* single click on folder with the right mouse button? */
+      if (d->view_rule == DT_COLLECTION_PROP_FOLDERS && (event->type == GDK_BUTTON_PRESS && event->button == 3))
+        view_popup_menu(treeview, event, d);
+      else
+        row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
+
+      gtk_tree_path_free(path);
+    }
     return TRUE; /* we handled this */
   }
   return FALSE; /* we did not handle this */
@@ -1098,7 +1099,6 @@ static void list_view(dt_lib_collect_rule_t *dr)
   set_properties(dr);
 
   GtkTreeModel *model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(d->listfilter));
-
   if(d->view_rule != property)
   {
     sqlite3_stmt *stmt;
@@ -1248,6 +1248,14 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    where_ext);
         break;
 
+      case DT_COLLECTION_PROP_EXPOSURE: // exposure
+        g_snprintf(query, sizeof(query), "SELECT CASE WHEN (exposure < 0.4) "
+                              "THEN '1/' || CAST(1/exposure + 0.9 AS INTEGER) "
+                           "ELSE ROUND(exposure,2) || '\"' END as _exposure, 1, COUNT(*) AS count "
+                "FROM main.images WHERE %s GROUP BY _exposure ORDER BY exposure",
+                  where_ext);
+        break;
+
       case DT_COLLECTION_PROP_FILENAME: // filename
         g_snprintf(query, sizeof(query), "SELECT filename, 1, COUNT(*) AS count "
                 "FROM main.images WHERE %s GROUP BY filename ORDER BY filename", where_ext);
@@ -1258,6 +1266,15 @@ static void list_view(dt_lib_collect_rule_t *dr)
                 "FROM main.images JOIN "
                 "(SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id "
                 "WHERE %s GROUP BY folder ORDER BY folder DESC", where_ext);
+        break;
+
+      case DT_COLLECTION_PROP_GROUPING: // Grouping, 2 hardcoded alternatives
+        g_snprintf(query, sizeof(query), "SELECT CASE "
+                           "WHEN id = group_id THEN '%s' ELSE '%s' END as group_leader, 1, "
+                           "COUNT(*) AS count "
+                           "FROM main.images "
+                           "WHERE %s GROUP BY group_leader ORDER BY group_leader ASC",
+                   _("group leaders"),  _("group followers"), where_ext);
         break;
     }
 
@@ -1440,7 +1457,8 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   }
 
   if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
-     || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_ASPECT_RATIO)
+     || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_ASPECT_RATIO
+     || property == DT_COLLECTION_PROP_EXPOSURE)
   {
     gtk_widget_set_tooltip_text(d->text, _("type your query, use <, <=, >, >=, <>, =, [;] as operators"));
   }
@@ -1461,7 +1479,7 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   dt_collection_update_query(darktable.collection);
 }
 
-static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d)
+static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, GdkEventButton *event, dt_lib_collect_t *d)
 {
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
@@ -1476,6 +1494,24 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
   gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
 
+  if(text && strlen(text)>0 && item == DT_COLLECTION_PROP_TAG && gtk_tree_model_iter_has_child (model, &iter))
+  {
+    /* if a tag has children, ctrl-clicking on a parent node should display all images under this hierarchy. */
+    if(event->state & GDK_CONTROL_MASK)
+    {
+      gchar *n_text = g_strconcat(text, "|%", NULL);
+      g_free(text);
+      text = n_text;
+    }
+    /* if a tag has children, shift-clicking on a parent node should display all images in and under this hierarchy. */
+    else if(event->state & GDK_SHIFT_MASK)
+    {
+      gchar *n_text = g_strconcat(text, "%", NULL);
+      g_free(text);
+      text = n_text;
+    }
+  }
+
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_insert_text, NULL);
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
@@ -1489,7 +1525,8 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
   if(item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS
      || item == DT_COLLECTION_PROP_DAY || item == DT_COLLECTION_PROP_TIME
      || item == DT_COLLECTION_PROP_COLORLABEL || item == DT_COLLECTION_PROP_GEOTAGGING
-     || item == DT_COLLECTION_PROP_HISTORY ||  item == DT_COLLECTION_PROP_LOCAL_COPY)
+     || item == DT_COLLECTION_PROP_HISTORY ||  item == DT_COLLECTION_PROP_LOCAL_COPY
+     || item == DT_COLLECTION_PROP_GROUPING)
     set_properties(d->rule + active); // we just have to set the selection
   else
     update_view(d->rule + active); // we have to update visible items too
@@ -1777,6 +1814,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   d->active_rule = 0;
   d->nb_rules = 0;
@@ -1831,7 +1869,6 @@ void gui_init(dt_lib_module_t *self)
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
-  g_signal_connect(G_OBJECT(view), "row-activated", G_CALLBACK(row_activated), d);
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(view_onButtonPressed), d);
   g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
 
@@ -2058,9 +2095,11 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_ISO);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_APERTURE);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_ASPECT_RATIO);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_EXPOSURE);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FILENAME);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GEOTAGGING);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_LOCAL_COPY);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GROUPING);
 
 }
 #endif

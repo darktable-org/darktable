@@ -183,7 +183,7 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formty
     else if(gui->point_selected >= 0)
       g_strlcat(msg, _("ctrl+click to rotate"), sizeof(msg));
     else if(gui->form_selected)
-      g_strlcat(msg, _("shift+click to switch feathering mode, ctrl+scroll to set shape opacity,\nshift+scroll to set feather size"), sizeof(msg));
+      g_strlcat(msg, _("shift+click to switch feathering mode, ctrl+scroll to set shape opacity,\nshift+scroll to set feather size, ctrl+click to rotate"), sizeof(msg));
   }
   else if(formtype & DT_MASKS_BRUSH)
   {

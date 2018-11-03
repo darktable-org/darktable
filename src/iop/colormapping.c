@@ -34,6 +34,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -145,7 +146,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_EFFECT;
+  return dt_iop_get_group("color mapping", IOP_GROUP_EFFECT);
 }
 
 int flags()
@@ -1090,6 +1091,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_pthread_mutex_init(&g->lock, NULL);
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkWidget *source = gtk_label_new(_("source clusters:"));

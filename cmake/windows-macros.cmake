@@ -160,8 +160,8 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
 
   # Add GraphicsMagick libraries
   install(DIRECTORY
-      "${MINGW_PATH}/../lib/GraphicsMagick-1.3.29/modules-Q8/coders"
-      DESTINATION lib/GraphicsMagick-1.3.29/modules-Q8/
+      "${MINGW_PATH}/../lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q8/coders"
+      DESTINATION lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q8/
       COMPONENT DTApplication
       FILES_MATCHING PATTERN "*"
       PATTERN "*.a" EXCLUDE
