@@ -180,6 +180,25 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   return widget;
 }
 
+static dt_iop_module_t *get_base_module(dt_develop_t *dev, const char *op)
+{
+  dt_iop_module_t *result = NULL;
+
+  GList *modules = g_list_first(dev->iop);
+  while(modules)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    if(strcmp(mod->op, op) == 0)
+    {
+      result = mod;
+      break;
+    }
+    modules = g_list_next(modules);
+  }
+
+  return result;
+}
+
 static GList *_duplicate_history(GList *hist)
 {
   GList *result = NULL;
@@ -193,35 +212,35 @@ static GList *_duplicate_history(GList *hist)
 
     memcpy(new, old, sizeof(dt_dev_history_item_t));
 
-    new->params = malloc(old->module->params_size);
+    int32_t params_size = 0;
+    if(old->module)
+    {
+      params_size = old->module->params_size;
+    }
+    else
+    {
+      dt_iop_module_t *base = get_base_module(darktable.develop, old->op_name);
+      if(base)
+      {
+        params_size = base->params_size;
+      }
+      else
+      {
+        // nothing else to do
+        fprintf(stderr, "[_duplicate_history] can't find base module for %s\n", old->op_name);
+      }
+    }
+
+    new->params = malloc(params_size);
     new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
 
-    memcpy(new->params, old->params, old->module->params_size);
+    memcpy(new->params, old->params, params_size);
     memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
 
     result = g_list_append(result, new);
 
     h = g_list_next(h);
   }
-  return result;
-}
-
-static dt_iop_module_t *get_base_module(dt_develop_t *dev, char *op)
-{
-  dt_iop_module_t *result = NULL;
-
-  GList *modules = g_list_first(dev->iop);
-  while(modules)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    if(strcmp(mod->op,op)==0)
-    {
-      result = mod;
-      break;
-    }
-    modules = g_list_next(modules);
-  }
-
   return result;
 }
 
@@ -234,7 +253,6 @@ static void _reset_module_instance(GList *hist, dt_iop_module_t *module, int mul
     if (!hit->module && strcmp(hit->multi_name,module->op)==0 && hit->multi_priority==multi_priority)
     {
       hit->module = module;
-      snprintf(hit->multi_name, sizeof(hit->multi_name), "%s", module->multi_name);
     }
     hist = hist->next;
   }
@@ -279,8 +297,12 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
       // this fixes the duplicate module when undo: hitem->multi_priority = 0;
       if (hitem->module == NULL)
       {
-        const dt_iop_module_t *base = get_base_module(darktable.develop, hitem->multi_name);
-
+        const dt_iop_module_t *base = get_base_module(darktable.develop, hitem->op_name);
+        if(base == NULL)
+        {
+          fprintf(stderr, "[_pop_undo] can't find base module for %s\n", hitem->op_name);
+          return;
+        }
         //  from there we create a new module for this base instance. The goal is to do a very minimal setup of the
         //  new module to be able to write the history items. From there we reload the whole history back and this
         //  will recreate the proper module instances.
@@ -293,39 +315,9 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
         }
 
         // adjust the multi_name of the new module
-
-        int pname = module->multi_priority + 1;
-        char mname[128];
-
-        do
-        {
-          snprintf(mname, sizeof(mname), "%d", pname);
-          gboolean dup = FALSE;
-
-          GList *modules = g_list_first(base->dev->iop);
-          while(modules)
-          {
-            dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-            if(mod->instance == base->instance)
-            {
-              if(strcmp(mname, mod->multi_name) == 0)
-              {
-                dup = TRUE;
-                break;
-              }
-            }
-            modules = g_list_next(modules);
-          }
-
-          if(dup)
-            pname++;
-          else
-            break;
-        } while(1);
-        g_strlcpy(module->multi_name, mname, sizeof(module->multi_name));
+        g_strlcpy(module->multi_name, hitem->multi_name, sizeof(module->multi_name));
 
         // if not already done, set the module to all others same instance
-
         if (!done)
         {
           GList *h = g_list_first(darktable.develop->history);
@@ -338,7 +330,6 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
         }
 
         hitem->module = module;
-        snprintf(hitem->multi_name, sizeof(hitem->multi_name), "%s", hitem->module->multi_name);
       }
       l = next;
     }
