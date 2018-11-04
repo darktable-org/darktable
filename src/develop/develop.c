@@ -607,6 +607,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
           darktable.gui->reset = 0;
         }
       }
+      snprintf(hist->op_name, sizeof(hist->op_name), "%s", module->op);
       hist->focus_hash = dev->focus_hash;
       hist->enabled = module->enabled;
       hist->module = module;
@@ -1104,6 +1105,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
     hist->params = malloc(hist->module->params_size);
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+    snprintf(hist->op_name, sizeof(hist->op_name), "%s", hist->module->op);
     snprintf(hist->multi_name, sizeof(hist->multi_name), "%s", multi_name);
     hist->multi_priority = multi_priority;
 
@@ -1580,8 +1582,6 @@ void dt_dev_invalidate_history_module(GList *list, dt_iop_module_t *module)
     if (hitem->module == module)
     {
       hitem->module = NULL;
-      // set the multi_name to the module op name to be able to recreate the multi-instance later
-      strncpy(hitem->multi_name, module->op, sizeof(hitem->multi_name));
     }
     list = list->next;
   }
