@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-01 21:06+0100\n"
-"PO-Revision-Date: 2018-11-01 21:08+0100\n"
+"POT-Creation-Date: 2018-11-04 17:07+0100\n"
+"PO-Revision-Date: 2018-11-04 17:12+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1105,8 +1105,8 @@ msgid "too much time to update aspect ratio for the collection"
 msgstr "trop de temps pour mettre à jour l'aspect pour la collection"
 
 #: ../src/common/collection.c:1044 ../src/develop/lightroom.c:822
-#: ../src/iop/bilateral.cc:359 ../src/iop/channelmixer.c:453
-#: ../src/iop/channelmixer.c:464 ../src/iop/colorbalance.c:2450
+#: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
+#: ../src/iop/channelmixer.c:464 ../src/iop/colorbalance.c:2469
 #: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1188
 msgid "red"
 msgstr "rouge"
@@ -1117,16 +1117,16 @@ msgid "yellow"
 msgstr "jaune"
 
 #: ../src/common/collection.c:1048 ../src/develop/lightroom.c:826
-#: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:454
-#: ../src/iop/channelmixer.c:470 ../src/iop/colorbalance.c:2457
+#: ../src/iop/bilateral.cc:361 ../src/iop/channelmixer.c:454
+#: ../src/iop/channelmixer.c:470 ../src/iop/colorbalance.c:2476
 #: ../src/iop/temperature.c:1357 ../src/iop/temperature.c:1370
 #: ../src/libs/collect.c:1188
 msgid "green"
 msgstr "vert"
 
 #: ../src/common/collection.c:1050 ../src/develop/lightroom.c:828
-#: ../src/iop/bilateral.cc:361 ../src/iop/channelmixer.c:455
-#: ../src/iop/channelmixer.c:476 ../src/iop/colorbalance.c:2464
+#: ../src/iop/bilateral.cc:362 ../src/iop/channelmixer.c:455
+#: ../src/iop/channelmixer.c:476 ../src/iop/colorbalance.c:2483
 #: ../src/iop/temperature.c:1371 ../src/libs/collect.c:1188
 msgid "blue"
 msgstr "bleu"
@@ -1417,7 +1417,7 @@ msgstr ""
 #: ../src/common/history.c:621 ../src/common/history.c:624
 #: ../src/common/history.c:640 ../src/common/styles.c:728
 #: ../src/common/styles.c:732 ../src/develop/blend_gui.c:2039
-#: ../src/develop/develop.c:1339 ../src/iop/ashift.c:4495
+#: ../src/develop/develop.c:1341 ../src/iop/ashift.c:4592
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "activé(e)"
@@ -1425,9 +1425,9 @@ msgstr "activé(e)"
 #: ../src/common/history.c:621 ../src/common/history.c:624
 #: ../src/common/history.c:640 ../src/common/styles.c:728
 #: ../src/common/styles.c:732 ../src/develop/blend_gui.c:1811
-#: ../src/develop/blend_gui.c:2036 ../src/develop/develop.c:1339
+#: ../src/develop/blend_gui.c:2036 ../src/develop/develop.c:1341
 #: ../src/imageio/format/exr.cc:360 ../src/imageio/format/j2k.c:663
-#: ../src/iop/ashift.c:4494 ../src/iop/ashift.c:4500 ../src/iop/colorin.c:1866
+#: ../src/iop/ashift.c:4591 ../src/iop/ashift.c:4597 ../src/iop/colorin.c:1866
 #: ../src/iop/demosaic.c:5066 ../src/iop/vignette.c:1143
 #: ../src/libs/history.c:164 ../src/libs/live_view.c:436
 msgid "off"
@@ -2562,7 +2562,7 @@ msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "désactive temporairement le masque de fusion. uniquement pour le module actif"
 
-#: ../src/develop/develop.c:1142
+#: ../src/develop/develop.c:1144
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module « %s » version non cohérente: %d != %d"
@@ -2931,7 +2931,7 @@ msgstr "lumière du soir"
 msgid "underwater"
 msgstr "sous l'eau"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1527
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1531
 msgid "black & white"
 msgstr "noir et blanc"
 
@@ -3358,7 +3358,7 @@ msgid "golden spiral"
 msgstr "spirale d'or"
 
 #: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:678
-#: ../src/iop/denoiseprofile.c:2644 ../src/iop/lens.c:2093
+#: ../src/iop/denoiseprofile.c:2692 ../src/iop/lens.c:2093
 #: ../src/iop/rawdenoise.c:953 ../src/libs/tools/filter.c:117
 msgid "all"
 msgstr "tout"
@@ -3511,7 +3511,7 @@ msgstr "ouverture"
 
 #. focal length
 #: ../src/gui/preferences.c:444 ../src/gui/preferences.c:1306
-#: ../src/gui/presets.c:478 ../src/iop/ashift.c:4512 ../src/libs/camera.c:589
+#: ../src/gui/presets.c:478 ../src/iop/ashift.c:4609 ../src/libs/camera.c:589
 #: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:111
 msgid "focal length"
 msgstr "focale"
@@ -4512,155 +4512,155 @@ msgstr[1] "%d/%d exportées vers l'album google+"
 msgid "perspective correction"
 msgstr "correction de perspective"
 
-#: ../src/iop/ashift.c:511 ../src/iop/watermark.c:258
+#: ../src/iop/ashift.c:513 ../src/iop/watermark.c:258
 msgctxt "accel"
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/ashift.c:512
+#: ../src/iop/ashift.c:514
 msgctxt "accel"
 msgid "lens shift (v)"
 msgstr "correction d'objectif (v)"
 
-#: ../src/iop/ashift.c:513
+#: ../src/iop/ashift.c:515
 msgctxt "accel"
 msgid "lens shift (h)"
 msgstr "correction d'objectif (h)"
 
-#: ../src/iop/ashift.c:514
+#: ../src/iop/ashift.c:516
 msgctxt "accel"
 msgid "shear"
 msgstr "cisaillement"
 
-#: ../src/iop/ashift.c:2501
+#: ../src/iop/ashift.c:2522
 msgid "automatic cropping failed"
 msgstr "recadrage automatique impossible"
 
-#: ../src/iop/ashift.c:2521
+#: ../src/iop/ashift.c:2542
 msgid "data pending - please repeat"
 msgstr "données en attente, merci de recommencer"
 
-#: ../src/iop/ashift.c:2527
+#: ../src/iop/ashift.c:2548
 msgid "could not detect structural data in image"
 msgstr "impossible de détecter les structures dans l'image"
 
-#: ../src/iop/ashift.c:2538
+#: ../src/iop/ashift.c:2559
 msgid "could not run outlier removal"
 msgstr "impossible de supprimer les lignes de contrôle"
 
-#: ../src/iop/ashift.c:2592
+#: ../src/iop/ashift.c:2613
 msgid "not enough structure for automatic correction"
 msgstr "pas assez de structure pour corriger automatiquement"
 
-#: ../src/iop/ashift.c:2597
+#: ../src/iop/ashift.c:2618
 msgid "automatic correction failed, please correct manually"
 msgstr "correction automatique impossible, merci de corriger manuellement"
 
-#: ../src/iop/ashift.c:4268 ../src/iop/ashift.c:4269 ../src/iop/ashift.c:4369
-#: ../src/iop/ashift.c:4370
+#: ../src/iop/ashift.c:4364 ../src/iop/ashift.c:4365 ../src/iop/ashift.c:4466
+#: ../src/iop/ashift.c:4467
 #, c-format
 msgid "lens shift (%s)"
 msgstr "correction d'objectif (%s)"
 
-#: ../src/iop/ashift.c:4268 ../src/iop/ashift.c:4269 ../src/iop/ashift.c:4369
-#: ../src/iop/ashift.c:4370 ../src/iop/clipping.c:1578
+#: ../src/iop/ashift.c:4364 ../src/iop/ashift.c:4365 ../src/iop/ashift.c:4466
+#: ../src/iop/ashift.c:4467 ../src/iop/clipping.c:1578
 #: ../src/iop/clipping.c:1868 ../src/iop/clipping.c:1887
 msgid "horizontal"
 msgstr "horizontale"
 
-#: ../src/iop/ashift.c:4268 ../src/iop/ashift.c:4269 ../src/iop/ashift.c:4369
-#: ../src/iop/ashift.c:4370 ../src/iop/clipping.c:1577
+#: ../src/iop/ashift.c:4364 ../src/iop/ashift.c:4365 ../src/iop/ashift.c:4466
+#: ../src/iop/ashift.c:4467 ../src/iop/clipping.c:1577
 #: ../src/iop/clipping.c:1869 ../src/iop/clipping.c:1886
 msgid "vertical"
 msgstr "verticale"
 
-#: ../src/iop/ashift.c:4472 ../src/iop/graduatednd.c:1157
+#: ../src/iop/ashift.c:4569 ../src/iop/graduatednd.c:1157
 #: ../src/iop/watermark.c:1394
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/ashift.c:4478
+#: ../src/iop/ashift.c:4575
 msgid "lens shift (vertical)"
 msgstr "correction d'objectif (verticale)"
 
-#: ../src/iop/ashift.c:4483
+#: ../src/iop/ashift.c:4580
 msgid "lens shift (horizontal)"
 msgstr "correction d'objectif (horizontale)"
 
-#: ../src/iop/ashift.c:4488
+#: ../src/iop/ashift.c:4585
 msgid "shear"
 msgstr "cisaillement"
 
-#: ../src/iop/ashift.c:4493 ../src/iop/clipping.c:2018
+#: ../src/iop/ashift.c:4590 ../src/iop/clipping.c:2018
 #: ../src/libs/live_view.c:343
 msgid "guides"
 msgstr "guides"
 
-#: ../src/iop/ashift.c:4499 ../src/iop/clipping.c:1894
+#: ../src/iop/ashift.c:4596 ../src/iop/clipping.c:1894
 msgid "automatic cropping"
 msgstr "recadrage"
 
-#: ../src/iop/ashift.c:4501
+#: ../src/iop/ashift.c:4598
 msgid "largest area"
 msgstr "plus grand coté"
 
-#: ../src/iop/ashift.c:4502
+#: ../src/iop/ashift.c:4599
 msgid "original format"
 msgstr "format d'origine"
 
-#: ../src/iop/ashift.c:4506
+#: ../src/iop/ashift.c:4603
 msgid "lens model"
 msgstr "modèle d'objectif"
 
-#: ../src/iop/ashift.c:4507
+#: ../src/iop/ashift.c:4604
 msgid "generic"
 msgstr "générique"
 
-#: ../src/iop/ashift.c:4508
+#: ../src/iop/ashift.c:4605
 msgid "specific"
 msgstr "spécifique"
 
-#: ../src/iop/ashift.c:4521
+#: ../src/iop/ashift.c:4618
 msgid "crop factor"
 msgstr "facteur de cadrage"
 
-#: ../src/iop/ashift.c:4526
+#: ../src/iop/ashift.c:4623
 msgid "lens dependence"
 msgstr "dépendance à l'objectif"
 
-#: ../src/iop/ashift.c:4536
+#: ../src/iop/ashift.c:4633
 msgid "aspect adjust"
 msgstr "ajustement aspect"
 
-#: ../src/iop/ashift.c:4546
+#: ../src/iop/ashift.c:4643
 msgid "automatic fit"
 msgstr "correction automatique"
 
-#: ../src/iop/ashift.c:4565
+#: ../src/iop/ashift.c:4662
 msgid "get structure"
 msgstr "récupère les structures"
 
-#: ../src/iop/ashift.c:4610
+#: ../src/iop/ashift.c:4707
 msgid "rotate image"
 msgstr "rotation de l'image"
 
-#: ../src/iop/ashift.c:4611 ../src/iop/ashift.c:4612
+#: ../src/iop/ashift.c:4708 ../src/iop/ashift.c:4709
 msgid "apply lens shift correction in one direction"
 msgstr "applique la correction d'objectif dans une direction"
 
-#: ../src/iop/ashift.c:4613
+#: ../src/iop/ashift.c:4710
 msgid "shear the image along one diagonal"
 msgstr "cisaillement de l'image selon une diagonale"
 
-#: ../src/iop/ashift.c:4614
+#: ../src/iop/ashift.c:4711
 msgid "display guide lines overlay"
 msgstr "superpose des lignes guides"
 
-#: ../src/iop/ashift.c:4615 ../src/iop/clipping.c:1897
+#: ../src/iop/ashift.c:4712 ../src/iop/clipping.c:1897
 msgid "automatically crop to avoid black edges"
 msgstr "recadre automatique pour éviter les bords noirs"
 
-#: ../src/iop/ashift.c:4616
+#: ../src/iop/ashift.c:4713
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -4668,13 +4668,13 @@ msgstr ""
 "modèle d'objectif pour la correction de perspective: générique ou fonction "
 "de la longueur focale"
 
-#: ../src/iop/ashift.c:4618
+#: ../src/iop/ashift.c:4715
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "longueur focale de l'objectif, valeur par défaut depuis les exif si "
 "disponible"
 
-#: ../src/iop/ashift.c:4620
+#: ../src/iop/ashift.c:4717
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -4682,7 +4682,7 @@ msgstr ""
 "facteur de cadrage du capteur de l'appareil, valeur par défaut depuis les "
 "exif si disponible, positionnement manuel souvent nécessaire"
 
-#: ../src/iop/ashift.c:4623
+#: ../src/iop/ashift.c:4720
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -4690,13 +4690,13 @@ msgstr ""
 "le niveau de correction dépendant de l'objectif, positionner au maximum pour "
 "une dépendance totale, positionner à zéro pour un modèle générique"
 
-#: ../src/iop/ashift.c:4625
+#: ../src/iop/ashift.c:4722
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "ajuste les dimensions de l'image en redimensionnant horizontalement ou "
 "verticalement"
 
-#: ../src/iop/ashift.c:4626
+#: ../src/iop/ashift.c:4723
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4706,7 +4706,7 @@ msgstr ""
 "ctrl-clic pour la correction de rotation seulement\n"
 "shift-clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:4629
+#: ../src/iop/ashift.c:4726
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4716,7 +4716,7 @@ msgstr ""
 "ctrl-clic pour la correction de rotation seulement\n"
 "shift-clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:4632
+#: ../src/iop/ashift.c:4729
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -4732,7 +4732,7 @@ msgstr ""
 "ctrl-shift-clic pour uniquement la correction de rotation et d'alignement "
 "d'objectif"
 
-#: ../src/iop/ashift.c:4638
+#: ../src/iop/ashift.c:4735
 msgid ""
 "analyse line structure in image\n"
 "ctrl-click for an additional edge enhancement\n"
@@ -4744,11 +4744,11 @@ msgstr ""
 "shift-clic pour une amélioration des détails accrue\n"
 "ctrl-shift-clic pour une combinaison des deux méthodes"
 
-#: ../src/iop/ashift.c:4642
+#: ../src/iop/ashift.c:4739
 msgid "remove line structure information"
 msgstr "supprime la visualisation des lignes de structure"
 
-#: ../src/iop/ashift.c:4643
+#: ../src/iop/ashift.c:4740
 msgid "toggle visibility of structure lines"
 msgstr "active/désactive l'affichage des lignes de structure"
 
@@ -4791,12 +4791,12 @@ msgstr "lumière d'arrière-plan"
 msgid "clarity"
 msgstr "clarté"
 
-#: ../src/iop/atrous.c:1422 ../src/iop/denoiseprofile.c:2461
+#: ../src/iop/atrous.c:1422 ../src/iop/denoiseprofile.c:2509
 #: ../src/iop/rawdenoise.c:782
 msgid "coarse"
 msgstr "global"
 
-#: ../src/iop/atrous.c:1429 ../src/iop/denoiseprofile.c:2469
+#: ../src/iop/atrous.c:1429 ../src/iop/denoiseprofile.c:2517
 #: ../src/iop/rawdenoise.c:790
 msgid "fine"
 msgstr "détail"
@@ -4806,11 +4806,11 @@ msgid "contrasty"
 msgstr "contrasté"
 
 #: ../src/iop/atrous.c:1442 ../src/iop/atrous.c:1446
-#: ../src/iop/denoiseprofile.c:2478 ../src/iop/rawdenoise.c:799
+#: ../src/iop/denoiseprofile.c:2526 ../src/iop/rawdenoise.c:799
 msgid "smooth"
 msgstr "flou"
 
-#: ../src/iop/atrous.c:1447 ../src/iop/denoiseprofile.c:2483
+#: ../src/iop/atrous.c:1447 ../src/iop/denoiseprofile.c:2531
 #: ../src/iop/rawdenoise.c:804
 msgid "noisy"
 msgstr "bruité"
@@ -5025,12 +5025,12 @@ msgstr "contraste local"
 msgid "local laplacian: inconsistent output"
 msgstr "laplacien local: résultat incohérent"
 
-#: ../src/iop/bilat.c:522 ../src/iop/colorbalance.c:2298
-#: ../src/iop/denoiseprofile.c:2696 ../src/iop/exposure.c:853
+#: ../src/iop/bilat.c:522 ../src/iop/colorbalance.c:2317
+#: ../src/iop/denoiseprofile.c:2744 ../src/iop/exposure.c:853
 #: ../src/iop/lens.c:2236 ../src/iop/levels.c:572
 #: ../src/iop/profile_gamma.c:932 ../src/libs/copy_history.c:316
 #: ../src/libs/export.c:648 ../src/libs/print_settings.c:1511
-#: ../src/views/darkroom.c:1458
+#: ../src/views/darkroom.c:1461
 msgid "mode"
 msgstr "mode"
 
@@ -5067,7 +5067,7 @@ msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr "taille des détails locaux (sigma spatial du filtre bilatéral)"
 
 #: ../src/iop/bilat.c:543 ../src/iop/colisa.c:366
-#: ../src/iop/colorbalance.c:2345 ../src/iop/colorbalance.c:2347
+#: ../src/iop/colorbalance.c:2364 ../src/iop/colorbalance.c:2366
 #: ../src/iop/lowpass.c:673
 msgid "contrast"
 msgstr "contraste"
@@ -5108,57 +5108,57 @@ msgstr ""
 "compression dynamique (réduit le contraste des ombres et hautes lumières), "
 "augmenter pour un contraste local plus puissant."
 
-#: ../src/iop/bilateral.cc:69
+#: ../src/iop/bilateral.cc:70
 msgid "denoise (bilateral filter)"
 msgstr "réduction du bruit (bilatéral)"
 
-#: ../src/iop/bilateral.cc:84 ../src/iop/lowpass.c:192 ../src/iop/shadhi.c:275
+#: ../src/iop/bilateral.cc:85 ../src/iop/lowpass.c:192 ../src/iop/shadhi.c:275
 #: ../src/iop/sharpen.c:100
 msgctxt "accel"
 msgid "radius"
 msgstr "rayon"
 
-#: ../src/iop/bilateral.cc:85 ../src/iop/channelmixer.c:131
+#: ../src/iop/bilateral.cc:86 ../src/iop/channelmixer.c:131
 #: ../src/iop/temperature.c:206
 msgctxt "accel"
 msgid "red"
 msgstr "rouge"
 
-#: ../src/iop/bilateral.cc:86 ../src/iop/channelmixer.c:132
+#: ../src/iop/bilateral.cc:87 ../src/iop/channelmixer.c:132
 #: ../src/iop/temperature.c:207
 msgctxt "accel"
 msgid "green"
 msgstr "vert"
 
-#: ../src/iop/bilateral.cc:87 ../src/iop/channelmixer.c:133
+#: ../src/iop/bilateral.cc:88 ../src/iop/channelmixer.c:133
 #: ../src/iop/temperature.c:208
 msgctxt "accel"
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/iop/bilateral.cc:353
+#: ../src/iop/bilateral.cc:354
 msgid "spatial extent of the gaussian"
 msgstr "extension spatiale du flou gaussien"
 
-#: ../src/iop/bilateral.cc:354
+#: ../src/iop/bilateral.cc:355
 msgid "how much to blur red"
 msgstr ""
 "force du flou\n"
 "pour le rouge"
 
-#: ../src/iop/bilateral.cc:355
+#: ../src/iop/bilateral.cc:356
 msgid "how much to blur green"
 msgstr ""
 "force du flou\n"
 "pour le vert"
 
-#: ../src/iop/bilateral.cc:356
+#: ../src/iop/bilateral.cc:357
 msgid "how much to blur blue"
 msgstr ""
 "force du flou\n"
 "pour le bleu"
 
-#: ../src/iop/bilateral.cc:358 ../src/iop/clahe.c:324 ../src/iop/dither.c:800
+#: ../src/iop/bilateral.cc:359 ../src/iop/clahe.c:324 ../src/iop/dither.c:800
 #: ../src/iop/lowpass.c:672 ../src/iop/shadhi.c:831 ../src/iop/sharpen.c:762
 msgid "radius"
 msgstr "rayon"
@@ -5197,7 +5197,7 @@ msgstr "seuil"
 msgid "the threshold of light"
 msgstr "seuil de lumière"
 
-#: ../src/iop/bloom.c:527 ../src/iop/denoiseprofile.c:2701
+#: ../src/iop/bloom.c:527 ../src/iop/denoiseprofile.c:2748
 #: ../src/iop/grain.c:630 ../src/iop/hazeremoval.c:189
 #: ../src/iop/hotpixels.c:463 ../src/iop/nlmeans.c:852 ../src/iop/velvia.c:381
 msgid "strength"
@@ -5437,8 +5437,8 @@ msgid "destination"
 msgstr "canal de destination"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
-#: ../src/iop/channelmixer.c:450 ../src/iop/colorbalance.c:2429
-#: ../src/iop/colorbalance.c:2479 ../src/iop/colorbalance.c:2527
+#: ../src/iop/channelmixer.c:450 ../src/iop/colorbalance.c:2448
+#: ../src/iop/colorbalance.c:2498 ../src/iop/colorbalance.c:2546
 #: ../src/iop/colorize.c:430 ../src/iop/colorreconstruction.c:1365
 #: ../src/iop/colorreconstruction.c:1370 ../src/iop/colorzones.c:1079
 #: ../src/iop/colorzones.c:1110 ../src/iop/graduatednd.c:1171
@@ -5448,9 +5448,9 @@ msgstr "teinte"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:451 ../src/iop/colisa.c:368
-#: ../src/iop/colorbalance.c:2328 ../src/iop/colorbalance.c:2330
-#: ../src/iop/colorbalance.c:2442 ../src/iop/colorbalance.c:2491
-#: ../src/iop/colorbalance.c:2539 ../src/iop/colorchecker.c:1303
+#: ../src/iop/colorbalance.c:2347 ../src/iop/colorbalance.c:2349
+#: ../src/iop/colorbalance.c:2461 ../src/iop/colorbalance.c:2510
+#: ../src/iop/colorbalance.c:2558 ../src/iop/colorchecker.c:1303
 #: ../src/iop/colorcorrection.c:289 ../src/iop/colorize.c:444
 #: ../src/iop/colorzones.c:1077 ../src/iop/colorzones.c:1111
 #: ../src/iop/graduatednd.c:1185 ../src/iop/lowpass.c:675
@@ -5555,7 +5555,7 @@ msgid "flip"
 msgstr "symétrie miroir"
 
 #: ../src/iop/clipping.c:1870 ../src/iop/clipping.c:2055
-#: ../src/iop/colorbalance.c:2313 ../src/libs/live_view.c:378
+#: ../src/iop/colorbalance.c:2332 ../src/libs/live_view.c:378
 msgid "both"
 msgstr "les deux"
 
@@ -5762,163 +5762,163 @@ msgctxt "accel"
 msgid "controls"
 msgstr "contrôles"
 
-#: ../src/iop/colorbalance.c:1222 ../src/iop/colorbalance.c:2117
-#: ../src/iop/colorbalance.c:2231 ../src/iop/profile_gamma.c:516
+#: ../src/iop/colorbalance.c:1241 ../src/iop/colorbalance.c:2136
+#: ../src/iop/colorbalance.c:2250 ../src/iop/profile_gamma.c:516
 #: ../src/iop/profile_gamma.c:691
 msgid "wait for the preview to be updated."
 msgstr "attendez que la pré-visualisation soit mise à jour"
 
-#: ../src/iop/colorbalance.c:2299
+#: ../src/iop/colorbalance.c:2318
 msgid "lift, gamma, gain (ProPhotoRGB)"
 msgstr "lift, gamma, gain (ProPhotoRGB)"
 
-#: ../src/iop/colorbalance.c:2300
+#: ../src/iop/colorbalance.c:2319
 msgid "slope, offset, power (ProPhotoRGB)"
 msgstr "slope, offset, power (ProPhotoRGB)"
 
-#: ../src/iop/colorbalance.c:2301
+#: ../src/iop/colorbalance.c:2320
 msgid "lift, gamma, gain (sRGB)"
 msgstr "lift, gamma, gain (sRGB)"
 
-#: ../src/iop/colorbalance.c:2303 ../src/iop/colorbalance.c:2316
+#: ../src/iop/colorbalance.c:2322 ../src/iop/colorbalance.c:2335
 msgid "color-grading mapping method"
 msgstr "méthode d'ajustement des couleurs"
 
-#: ../src/iop/colorbalance.c:2310
+#: ../src/iop/colorbalance.c:2329
 msgid "color control sliders"
 msgstr "contrôle des couleurs"
 
-#: ../src/iop/colorbalance.c:2311
+#: ../src/iop/colorbalance.c:2330
 msgid "HSL"
 msgstr "TSL"
 
-#: ../src/iop/colorbalance.c:2312
+#: ../src/iop/colorbalance.c:2331
 msgid "RGBL"
 msgstr "RGBL"
 
-#: ../src/iop/colorbalance.c:2324
+#: ../src/iop/colorbalance.c:2343
 msgid "master"
 msgstr "maître"
 
-#: ../src/iop/colorbalance.c:2334
+#: ../src/iop/colorbalance.c:2353
 msgid "contrast fulcrum"
 msgstr "contraste pivot"
 
-#: ../src/iop/colorbalance.c:2337
+#: ../src/iop/colorbalance.c:2356
 msgid "adjust to match a neutral tone"
 msgstr "ajuste pour des tons neutres"
 
-#: ../src/iop/colorbalance.c:2404 ../src/iop/colorbalance.c:2416
+#: ../src/iop/colorbalance.c:2423 ../src/iop/colorbalance.c:2435
 msgid "factor of "
 msgstr "facteur de "
 
-#: ../src/iop/colorbalance.c:2405
+#: ../src/iop/colorbalance.c:2424
 msgid "factor"
 msgstr "facteur"
 
 #. lift
-#: ../src/iop/colorbalance.c:2422
+#: ../src/iop/colorbalance.c:2441
 msgid "shadows : lift / offset"
 msgstr "ombres : lift / offset"
 
-#: ../src/iop/colorbalance.c:2424
+#: ../src/iop/colorbalance.c:2443
 msgid "factor of lift"
 msgstr "facteur de lift"
 
-#: ../src/iop/colorbalance.c:2424
+#: ../src/iop/colorbalance.c:2443
 msgid "lift"
 msgstr "lift"
 
-#: ../src/iop/colorbalance.c:2431 ../src/iop/colorbalance.c:2481
-#: ../src/iop/colorbalance.c:2529
+#: ../src/iop/colorbalance.c:2450 ../src/iop/colorbalance.c:2500
+#: ../src/iop/colorbalance.c:2548
 msgid "select the hue"
 msgstr "sélectionne la teinte"
 
-#: ../src/iop/colorbalance.c:2445 ../src/iop/colorbalance.c:2494
-#: ../src/iop/colorbalance.c:2542
+#: ../src/iop/colorbalance.c:2464 ../src/iop/colorbalance.c:2513
+#: ../src/iop/colorbalance.c:2561
 msgid "select the saturation"
 msgstr "sélectionne la saturation"
 
-#: ../src/iop/colorbalance.c:2450
+#: ../src/iop/colorbalance.c:2469
 msgid "factor of red for lift"
 msgstr "facteur rouge du lift"
 
-#: ../src/iop/colorbalance.c:2457
+#: ../src/iop/colorbalance.c:2476
 msgid "factor of green for lift"
 msgstr "facteur vert du lift"
 
-#: ../src/iop/colorbalance.c:2464
+#: ../src/iop/colorbalance.c:2483
 msgid "factor of blue for lift"
 msgstr "facteur bleu du lift"
 
 #. gamma
-#: ../src/iop/colorbalance.c:2472
+#: ../src/iop/colorbalance.c:2491
 msgid "mid-tones : gamma / power"
 msgstr "tons moyens : gamma / power"
 
-#: ../src/iop/colorbalance.c:2474
+#: ../src/iop/colorbalance.c:2493
 msgid "factor of gamma"
 msgstr "facteur gamma"
 
-#: ../src/iop/colorbalance.c:2474 ../src/iop/profile_gamma.c:934
+#: ../src/iop/colorbalance.c:2493 ../src/iop/profile_gamma.c:934
 #: ../src/iop/profile_gamma.c:956
 msgid "gamma"
 msgstr "gamma"
 
-#: ../src/iop/colorbalance.c:2498
+#: ../src/iop/colorbalance.c:2517
 msgid "factor of red for gamma"
 msgstr "facteur rouge du gamma"
 
-#: ../src/iop/colorbalance.c:2505
+#: ../src/iop/colorbalance.c:2524
 msgid "factor of green for gamma"
 msgstr "facteur vert du gamma"
 
-#: ../src/iop/colorbalance.c:2512
+#: ../src/iop/colorbalance.c:2531
 msgid "factor of blue for gamma"
 msgstr "facteur bleu du gamma"
 
 #. gain
-#: ../src/iop/colorbalance.c:2520
+#: ../src/iop/colorbalance.c:2539
 msgid "highlights : gain / slope"
 msgstr "hautes lumières : gain / slope"
 
-#: ../src/iop/colorbalance.c:2522
+#: ../src/iop/colorbalance.c:2541
 msgid "factor of gain"
 msgstr "facteur du gain"
 
-#: ../src/iop/colorbalance.c:2522
+#: ../src/iop/colorbalance.c:2541
 msgid "gain"
 msgstr "gain"
 
-#: ../src/iop/colorbalance.c:2546
+#: ../src/iop/colorbalance.c:2565
 msgid "factor of red for gain"
 msgstr "facteur rouge du gain"
 
-#: ../src/iop/colorbalance.c:2553
+#: ../src/iop/colorbalance.c:2572
 msgid "factor of green for gain"
 msgstr "facteur vert du gain"
 
-#: ../src/iop/colorbalance.c:2560
+#: ../src/iop/colorbalance.c:2579
 msgid "factor of blue for gain"
 msgstr "facteur bleu du gain"
 
-#: ../src/iop/colorbalance.c:2568
+#: ../src/iop/colorbalance.c:2587
 msgid "auto optimizers"
 msgstr "optimiseurs automatiques"
 
-#: ../src/iop/colorbalance.c:2574
+#: ../src/iop/colorbalance.c:2593
 msgid "optimize luma"
 msgstr "optimiser luma"
 
-#: ../src/iop/colorbalance.c:2575
+#: ../src/iop/colorbalance.c:2594
 msgid "fit the whole histogram and center the average luma"
 msgstr "ajuste l'histogramme et centre la luminosité moyenne"
 
-#: ../src/iop/colorbalance.c:2579
+#: ../src/iop/colorbalance.c:2598
 msgid "neutralize colors"
 msgstr "neutraliser les couleurs"
 
-#: ../src/iop/colorbalance.c:2580
+#: ../src/iop/colorbalance.c:2599
 msgid "optimize the RGB curves to remove color casts"
 msgstr "optimise les courbes RGB et supprime les dérives de couleur"
 
@@ -6083,7 +6083,7 @@ msgstr "impossible de générer le profil d'entrée"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "profil d'entrée non supporté, remplacé par linéaire RGB Rec709 !"
 
-#: ../src/iop/colorin.c:1845 ../src/iop/denoiseprofile.c:2695
+#: ../src/iop/colorin.c:1845 ../src/iop/denoiseprofile.c:2743
 #: ../src/libs/export.c:607 ../src/libs/print_settings.c:1184
 #: ../src/libs/print_settings.c:1404
 msgid "profile"
@@ -6230,26 +6230,26 @@ msgstr "rendu (sortie)"
 
 #: ../src/iop/colorout.c:781 ../src/libs/export.c:631
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1455
-#: ../src/views/darkroom.c:1608 ../src/views/lighttable.c:2453
+#: ../src/views/darkroom.c:1614 ../src/views/lighttable.c:2453
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:782 ../src/libs/export.c:632
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
-#: ../src/views/darkroom.c:1609 ../src/views/lighttable.c:2454
+#: ../src/views/darkroom.c:1615 ../src/views/lighttable.c:2454
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:783 ../src/libs/export.c:633
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
-#: ../src/views/darkroom.c:1610 ../src/views/lighttable.c:2455
+#: ../src/views/darkroom.c:1616 ../src/views/lighttable.c:2455
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
 #: ../src/iop/colorout.c:784 ../src/libs/export.c:634
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
-#: ../src/views/darkroom.c:1611 ../src/views/lighttable.c:2456
+#: ../src/views/darkroom.c:1617 ../src/views/lighttable.c:2456
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -6596,62 +6596,62 @@ msgstr ""
 "dématriçage\n"
 "uniquement pour les images raw"
 
-#: ../src/iop/denoiseprofile.c:239
+#: ../src/iop/denoiseprofile.c:246
 msgid "denoise (profiled)"
 msgstr "réduction du bruit (profil)"
 
 #. these blobs were exported as dtstyle and copied from there:
-#: ../src/iop/denoiseprofile.c:294
+#: ../src/iop/denoiseprofile.c:301
 msgid "chroma (use on 1st instance)"
 msgstr "chroma (utiliser sur 1ère instance)"
 
-#: ../src/iop/denoiseprofile.c:297
+#: ../src/iop/denoiseprofile.c:304
 msgid "luma (use on 2nd instance)"
 msgstr "luma (utiliser sur la 2nd instance)"
 
-#: ../src/iop/denoiseprofile.c:2020
+#: ../src/iop/denoiseprofile.c:2068
 #, c-format
 msgid "found match for ISO %d"
 msgstr "profil pour ISO %d trouvé"
 
-#: ../src/iop/denoiseprofile.c:2028
+#: ../src/iop/denoiseprofile.c:2076
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:2646 ../src/iop/rawdenoise.c:955
+#: ../src/iop/denoiseprofile.c:2694 ../src/iop/rawdenoise.c:955
 msgid "R"
 msgstr "R"
 
-#: ../src/iop/denoiseprofile.c:2648 ../src/iop/rawdenoise.c:957
+#: ../src/iop/denoiseprofile.c:2696 ../src/iop/rawdenoise.c:957
 msgid "G"
 msgstr "G"
 
-#: ../src/iop/denoiseprofile.c:2650 ../src/iop/rawdenoise.c:959
+#: ../src/iop/denoiseprofile.c:2698 ../src/iop/rawdenoise.c:959
 msgid "B"
 msgstr "B"
 
-#: ../src/iop/denoiseprofile.c:2697 ../src/iop/nlmeans.c:850
+#: ../src/iop/denoiseprofile.c:2745 ../src/iop/nlmeans.c:850
 msgid "patch size"
 msgstr "taille"
 
-#: ../src/iop/denoiseprofile.c:2699
-msgid "search radius"
-msgstr "rayon"
+#: ../src/iop/denoiseprofile.c:2747
+msgid "coarse-grain noise reduction"
+msgstr "réduction du grain grossier"
 
-#: ../src/iop/denoiseprofile.c:2702
+#: ../src/iop/denoiseprofile.c:2749
 msgid "non-local means"
 msgstr "moyenne non-locales"
 
-#: ../src/iop/denoiseprofile.c:2703
+#: ../src/iop/denoiseprofile.c:2750
 msgid "wavelets"
 msgstr "ondelettes"
 
-#: ../src/iop/denoiseprofile.c:2704
+#: ../src/iop/denoiseprofile.c:2751
 msgid "profile used for variance stabilization"
 msgstr "profil utilisé pour la stabilisation de variance"
 
-#: ../src/iop/denoiseprofile.c:2705
+#: ../src/iop/denoiseprofile.c:2752
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -6660,21 +6660,19 @@ msgstr ""
 "fonctionne mieux pour le mode de fusion 'luminosité'. 'ondelettes' "
 "fonctionnent pour le mode de fusion 'couleur'"
 
-#: ../src/iop/denoiseprofile.c:2708
+#: ../src/iop/denoiseprofile.c:2755
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr "rayon des éléments à identifier. augmenter pour plus de netteté."
 
-#: ../src/iop/denoiseprofile.c:2709
+#: ../src/iop/denoiseprofile.c:2756
 msgid ""
-"emergency use only: radius of the neighbourhood to search patches in. "
-"increase for better denoising performance, but watch the long runtimes! "
-"large radii can be very slow. you have been warned"
+"size of the zone around the pixel to search for similar patches. increase if "
+"you see coarse-grain noise. reduce if you see grid artefacts."
 msgstr ""
-"à utiliser avec prudence : taille du rayon de recherche, augmenter pour une "
-"meilleure suppression du bruit au détriment de la performance qui peut très "
-"vite devenir très pénalisante."
+"taille de la zone autour du pixel pour la recherche de similarité, augmenter "
+"pour traiter un grain grossier et réduire pour un bruit structuré"
 
-#: ../src/iop/denoiseprofile.c:2710
+#: ../src/iop/denoiseprofile.c:2759
 msgid "finetune denoising strength"
 msgstr "réglage fin de la force de réduction"
 
@@ -6825,7 +6823,7 @@ msgid ""
 msgstr "pourcentage de valeurs hautes tronquées, "
 
 #: ../src/iop/exposure.c:889 ../src/iop/highlights.c:1060
-#: ../src/views/darkroom.c:1486
+#: ../src/views/darkroom.c:1489
 msgid "clipping threshold"
 msgstr "seuil de troncature"
 
@@ -6922,7 +6920,7 @@ msgstr ""
 "tourne les images de 90 degrés\n"
 "(sens horaire)"
 
-#: ../src/iop/gamma.c:50
+#: ../src/iop/gamma.c:43
 msgctxt "modulename"
 msgid "gamma"
 msgstr "gamma"
@@ -9666,7 +9664,7 @@ msgstr "exporte avec les réglages actuels"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1195 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:2369
+#: ../src/views/darkroom.c:2375
 msgctxt "accel"
 msgid "export"
 msgstr "exporter"
@@ -9810,7 +9808,7 @@ msgstr "génère l'historique minimum qui produit la même image"
 msgid "create a style from the current history stack"
 msgstr "crée un style depuis l'historique actuel"
 
-#: ../src/libs/history.c:387 ../src/libs/snapshots.c:345
+#: ../src/libs/history.c:378 ../src/libs/snapshots.c:345
 msgid "original"
 msgstr "original"
 
@@ -11428,20 +11426,20 @@ msgstr "tri personnalisé"
 msgid "preferences"
 msgstr "préférences"
 
-#: ../src/libs/tools/global_toolbox.c:87 ../src/libs/tools/global_toolbox.c:140
+#: ../src/libs/tools/global_toolbox.c:87 ../src/libs/tools/global_toolbox.c:141
 msgid "expand grouped images"
 msgstr "montrer les images groupées"
 
-#: ../src/libs/tools/global_toolbox.c:89 ../src/libs/tools/global_toolbox.c:142
+#: ../src/libs/tools/global_toolbox.c:89 ../src/libs/tools/global_toolbox.c:143
 msgid "collapse grouped images"
 msgstr "cacher les images groupées"
 
-#: ../src/libs/tools/global_toolbox.c:99 ../src/libs/tools/global_toolbox.c:160
+#: ../src/libs/tools/global_toolbox.c:99 ../src/libs/tools/global_toolbox.c:161
 msgid "hide image overlays"
 msgstr "cache les surimpressions"
 
 #: ../src/libs/tools/global_toolbox.c:101
-#: ../src/libs/tools/global_toolbox.c:162
+#: ../src/libs/tools/global_toolbox.c:163
 msgid "show image overlays"
 msgstr "affiche les surimpressions"
 
@@ -11455,33 +11453,33 @@ msgstr ""
 msgid "show global preferences"
 msgstr "montrer les préférences globales"
 
-#: ../src/libs/tools/global_toolbox.c:230
+#: ../src/libs/tools/global_toolbox.c:231
 msgid "do you want to access https://www.darktable.org/?"
 msgstr "voulez-vous accéder à https://www.darktable.org/?"
 
-#: ../src/libs/tools/global_toolbox.c:232
+#: ../src/libs/tools/global_toolbox.c:233
 msgid "access the online usermanual?"
 msgstr "accéder au manuel utilisateur en ligne?"
 
-#: ../src/libs/tools/global_toolbox.c:270
+#: ../src/libs/tools/global_toolbox.c:277
 msgid "help url opened in web brower"
 msgstr "aide ouverte dans le navigateur"
 
-#: ../src/libs/tools/global_toolbox.c:275
+#: ../src/libs/tools/global_toolbox.c:282
 msgid "there is no help available for this element"
 msgstr "aucune aide disponible pour cet élément"
 
-#: ../src/libs/tools/global_toolbox.c:338
+#: ../src/libs/tools/global_toolbox.c:345
 msgctxt "accel"
 msgid "grouping"
 msgstr "grouper"
 
-#: ../src/libs/tools/global_toolbox.c:339
+#: ../src/libs/tools/global_toolbox.c:346
 msgctxt "accel"
 msgid "preferences"
 msgstr "préférences"
 
-#: ../src/libs/tools/global_toolbox.c:340
+#: ../src/libs/tools/global_toolbox.c:347
 msgctxt "accel"
 msgid "show overlays"
 msgstr "affiche les surimpressions"
@@ -11582,11 +11580,11 @@ msgstr "aucun style disponible"
 msgid "quick access to presets of your favorites"
 msgstr "accès rapide aux pré-réglages des favoris"
 
-#: ../src/views/darkroom.c:1420
+#: ../src/views/darkroom.c:1421
 msgid "quick access for applying any of your styles"
 msgstr "accès rapide à vos styles"
 
-#: ../src/views/darkroom.c:1431
+#: ../src/views/darkroom.c:1433
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -11594,47 +11592,47 @@ msgstr ""
 "activer/désactiver les zones sur-/sous-exposées raw\n"
 "clic-droit pour les options"
 
-#: ../src/views/darkroom.c:1459
+#: ../src/views/darkroom.c:1462
 msgid "mark with CFA color"
 msgstr "marquer les couleurs CFA"
 
-#: ../src/views/darkroom.c:1460
+#: ../src/views/darkroom.c:1463
 msgid "mark with solid color"
 msgstr "marquer avec une couleur unie"
 
-#: ../src/views/darkroom.c:1461
+#: ../src/views/darkroom.c:1464
 msgid "false color"
 msgstr "fausse couleur"
 
-#: ../src/views/darkroom.c:1463
+#: ../src/views/darkroom.c:1466
 msgid "select how to mark the clipped pixels"
 msgstr "sélectionner comment marquer les pixels tronqués"
 
-#: ../src/views/darkroom.c:1470 ../src/views/darkroom.c:1526
+#: ../src/views/darkroom.c:1473 ../src/views/darkroom.c:1530
 msgid "color scheme"
 msgstr "schéma de couleur"
 
-#: ../src/views/darkroom.c:1471
+#: ../src/views/darkroom.c:1474
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rouge"
 
-#: ../src/views/darkroom.c:1472
+#: ../src/views/darkroom.c:1475
 msgctxt "solidcolor"
 msgid "green"
 msgstr "vert"
 
-#: ../src/views/darkroom.c:1473
+#: ../src/views/darkroom.c:1476
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/views/darkroom.c:1474
+#: ../src/views/darkroom.c:1477
 msgctxt "solidcolor"
 msgid "black"
 msgstr "noir"
 
-#: ../src/views/darkroom.c:1478
+#: ../src/views/darkroom.c:1481
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -11642,7 +11640,7 @@ msgstr ""
 "sélectionner la couleur pour marquer les sur-expositions.\n"
 "utiliser uniquement si le mode est « marquer avec une couleur unie »"
 
-#: ../src/views/darkroom.c:1488
+#: ../src/views/darkroom.c:1491
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -11652,7 +11650,7 @@ msgstr ""
 "1.0 - niveau blanc\n"
 "0.0 - niveau noir"
 
-#: ../src/views/darkroom.c:1499
+#: ../src/views/darkroom.c:1502
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -11660,35 +11658,35 @@ msgstr ""
 "activer/désactiver les zones sur-/sous-exposées\n"
 "clic-droit pour les options"
 
-#: ../src/views/darkroom.c:1528
+#: ../src/views/darkroom.c:1532
 msgid "red & blue"
 msgstr "rouge et bleu"
 
-#: ../src/views/darkroom.c:1529
+#: ../src/views/darkroom.c:1533
 msgid "purple & green"
 msgstr "violet et vert"
 
-#: ../src/views/darkroom.c:1531
+#: ../src/views/darkroom.c:1535
 msgid "select colors to indicate over/under exposure"
 msgstr "sélectionne les couleurs indiquant une sur-/sous-exposition"
 
-#: ../src/views/darkroom.c:1540
+#: ../src/views/darkroom.c:1544
 msgid "lower threshold"
 msgstr "seuil bas"
 
-#: ../src/views/darkroom.c:1541
+#: ../src/views/darkroom.c:1545
 msgid "threshold of what shall be considered underexposed"
 msgstr "seuil en-dessous duquel les pixels sont considérés sous-exposés"
 
-#: ../src/views/darkroom.c:1549
+#: ../src/views/darkroom.c:1553
 msgid "upper threshold"
 msgstr "seuil haut"
 
-#: ../src/views/darkroom.c:1550
+#: ../src/views/darkroom.c:1554
 msgid "threshold of what shall be considered overexposed"
 msgstr "seuil au-dessus duquel les pixels sont considérés sur-exposés"
 
-#: ../src/views/darkroom.c:1561
+#: ../src/views/darkroom.c:1565
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -11696,7 +11694,7 @@ msgstr ""
 "activer/désactiver l'épreuvage écran\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1574
+#: ../src/views/darkroom.c:1579
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -11704,139 +11702,139 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1606 ../src/views/lighttable.c:2451
+#: ../src/views/darkroom.c:1612 ../src/views/lighttable.c:2451
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/views/darkroom.c:1621
+#: ../src/views/darkroom.c:1627
 msgid "softproof profile"
 msgstr "épreuvage écran"
 
-#: ../src/views/darkroom.c:1622 ../src/views/lighttable.c:2459
+#: ../src/views/darkroom.c:1628 ../src/views/lighttable.c:2459
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:1654 ../src/views/lighttable.c:2480
+#: ../src/views/darkroom.c:1660 ../src/views/lighttable.c:2480
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
 
-#: ../src/views/darkroom.c:1657
+#: ../src/views/darkroom.c:1663
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "profils ICC d'épreuvage dans %s ou %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2361 ../src/views/map.c:859 ../src/views/print.c:329
+#: ../src/views/darkroom.c:2367 ../src/views/map.c:859 ../src/views/print.c:329
 #: ../src/views/tethering.c:388
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activer/désactiver le bandeau"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2364
+#: ../src/views/darkroom.c:2370
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom en gros plan"
 
-#: ../src/views/darkroom.c:2365
+#: ../src/views/darkroom.c:2371
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoomer"
 
-#: ../src/views/darkroom.c:2366
+#: ../src/views/darkroom.c:2372
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajusté"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2372
+#: ../src/views/darkroom.c:2378
 msgctxt "accel"
 msgid "image forward"
 msgstr "image suivante"
 
-#: ../src/views/darkroom.c:2373
+#: ../src/views/darkroom.c:2379
 msgctxt "accel"
 msgid "image back"
 msgstr "image précédente"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:2376
+#: ../src/views/darkroom.c:2382
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw sur-exposé"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:2379
+#: ../src/views/darkroom.c:2385
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sur-exposition"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:2382
+#: ../src/views/darkroom.c:2388
 msgctxt "accel"
 msgid "softproof"
 msgstr "épreuvage"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:2385
+#: ../src/views/darkroom.c:2391
 msgctxt "accel"
 msgid "gamut check"
 msgstr "vérification de gamut"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2388
+#: ../src/views/darkroom.c:2394
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "augmenter la taille du pinceau"
 
-#: ../src/views/darkroom.c:2389
+#: ../src/views/darkroom.c:2395
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "diminuer la taille du pinceau"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2392
+#: ../src/views/darkroom.c:2398
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "augmenter la dureté du pinceau"
 
-#: ../src/views/darkroom.c:2393
+#: ../src/views/darkroom.c:2399
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "diminuer la dureté du pinceau"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2396
+#: ../src/views/darkroom.c:2402
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "augmenter la luminosité du pinceau"
 
-#: ../src/views/darkroom.c:2397
+#: ../src/views/darkroom.c:2403
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "diminuer la luminosité du pinceau"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:2400
+#: ../src/views/darkroom.c:2406
 msgctxt "accel"
 msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2403 ../src/views/map.c:856
+#: ../src/views/darkroom.c:2409 ../src/views/map.c:856
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:2404 ../src/views/map.c:857
+#: ../src/views/darkroom.c:2410 ../src/views/map.c:857
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:2407
+#: ../src/views/darkroom.c:2413
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permet de recadrer et zoomer pendant l'édition des masques"
@@ -12022,6 +12020,18 @@ msgstr ""
 "nous vous suggérons de passer à la version 64 bits.\n"
 "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
 "corrigés.\n"
+
+#~ msgid "search radius"
+#~ msgstr "rayon"
+
+#~ msgid ""
+#~ "emergency use only: radius of the neighbourhood to search patches in. "
+#~ "increase for better denoising performance, but watch the long runtimes! "
+#~ "large radii can be very slow. you have been warned"
+#~ msgstr ""
+#~ "à utiliser avec prudence : taille du rayon de recherche, augmenter pour "
+#~ "une meilleure suppression du bruit au détriment de la performance qui "
+#~ "peut très vite devenir très pénalisante."
 
 #~ msgid "grey fulcrum"
 #~ msgstr "gris pivot"
