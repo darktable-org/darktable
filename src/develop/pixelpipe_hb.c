@@ -2154,7 +2154,7 @@ int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, dt_develop_t *de
   // temporarily disable gamma mapping.
   GList *gammap = g_list_last(pipe->nodes);
   dt_dev_pixelpipe_iop_t *gamma = (dt_dev_pixelpipe_iop_t *)gammap->data;
-  while(strcmp(gamma->module->op, "colorout"))
+  while(strcmp(gamma->module->op, "gamma"))
   {
     gamma = NULL;
     gammap = g_list_previous(gammap);
