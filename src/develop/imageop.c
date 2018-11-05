@@ -545,15 +545,6 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
     dt_iop_gui_cleanup_module(module);
   }
 
-  // we remove all references in the history stack and dev->iop
-  dt_dev_module_remove(dev, module);
-
-  // we recreate the pipe
-  dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
-  dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
-  dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
-  dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
-
   // if module was priority 0, then we set next to priority 0
   if(is_zero)
   {
@@ -569,6 +560,15 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
       history = g_list_next(history);
     }
   }
+
+  // we remove all references in the history stack and dev->iop
+  dt_dev_module_remove(dev, module);
+
+  // we recreate the pipe
+  dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
+  dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
+  dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
+  dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
 
   // we cleanup the module
   dt_accel_disconnect_list(module->accel_closures);
