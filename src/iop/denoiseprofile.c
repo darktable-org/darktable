@@ -2744,7 +2744,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
   dt_bauhaus_widget_set_label(g->radius, NULL, _("patch size"));
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
-  dt_bauhaus_widget_set_label(g->nbhood, NULL, _("coarse-grain noise reduction"));
+  dt_bauhaus_widget_set_label(g->nbhood, NULL, _("coarse noise elimination"));
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
@@ -2754,7 +2754,7 @@ void gui_init(dt_iop_module_t *self)
                                          "wavelets work best for `color' blending"));
   gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match. increase for more sharpness"));
   gtk_widget_set_tooltip_text(g->nbhood, _("size of the zone around the pixel to search for similar patches. "
-                                           "increase if you see coarse-grain noise. "
+                                           "increase if you see coarse grain noise. "
                                            "reduce if you see grid artefacts."));
   gtk_widget_set_tooltip_text(g->strength, _("finetune denoising strength"));
   g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
