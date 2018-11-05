@@ -227,7 +227,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
         v5->y[c][b] = v4.y[c][b];
       }
     }
-    v5->nbhood = 0.0; // set to old hardcoded default
+    v5->nbhood = 7; // set to old hardcoded default
     return 0;
   }
   return 1;
@@ -326,13 +326,12 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   {
     const int P
         = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
-    const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // nbhood
-    const int max_K = ceilf(d->nbhood * K * K + K);
+    const int K = ceilf(d->nbhood * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // nbhood
 
     tiling->factor = 4.0f + 0.25f * NUM_BUCKETS; // in + out + (2 + NUM_BUCKETS * 0.25) tmp
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
-    tiling->overlap = P + max_K;
+    tiling->overlap = P + K;
     tiling->xalign = 1;
     tiling->yalign = 1;
   }
@@ -1062,13 +1061,6 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 #undef MAX_MAX_SCALE
 }
 
-static int sign(int a)
-{
-  return (a > 0) - (a < 0);
-}
-
-#define DT_DENOISE_PROFILE_NBHOOD_NORMAL_SIZE 7
-
 static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                             const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                             const dt_iop_roi_t *const roi_out)
@@ -1083,13 +1075,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   // adjust to zoom size:
   const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
-  const int K = ceilf(DT_DENOISE_PROFILE_NBHOOD_NORMAL_SIZE * scale);
-
-  int coordinate_offsets[DT_DENOISE_PROFILE_NBHOOD_NORMAL_SIZE];
-  for(int i = 0; i < DT_DENOISE_PROFILE_NBHOOD_NORMAL_SIZE; i++)
-  {
-    coordinate_offsets[i] = i * i * d->nbhood + i;
-  }
+  const int K = ceilf(d->nbhood * scale); // nbhood
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
@@ -1106,12 +1092,10 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
 
   // for each shift vector
-  for(int kj_index = -K; kj_index <= K; kj_index++)
+  for(int kj = -K; kj <= K; kj++)
   {
-    int kj = coordinate_offsets[abs(kj_index)] * sign(kj_index);
-    for(int ki_index = -K; ki_index <= K; ki_index++)
+    for(int ki = -K; ki <= K; ki++)
     {
-      int ki = coordinate_offsets[abs(ki_index)] * sign(ki_index);
       // TODO: adaptive K tests here!
       // TODO: expf eval for real bilateral experience :)
 
@@ -1233,18 +1217,13 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
+  dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
 
   // adjust to zoom size:
   const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
-  const int K = ceilf(DT_DENOISE_PROFILE_NBHOOD_NORMAL_SIZE * scale);
+  const int K = ceilf(d->nbhood * scale); // nbhood
 
-  int coordinate_offsets[DT_DENOISE_PROFILE_NBHOOD_NORMAL_SIZE];
-  for(int i = 0; i < DT_DENOISE_PROFILE_NBHOOD_NORMAL_SIZE; i++)
-  {
-    coordinate_offsets[i] = i * i * d->nbhood + i;
-  }
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
   float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
@@ -1260,12 +1239,10 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
 
   // for each shift vector
-  for(int kj_index = -K; kj_index <= K; kj_index++)
+  for(int kj = -K; kj <= K; kj++)
   {
-    int kj = coordinate_offsets[abs(kj_index)] * sign(kj_index);
-    for(int ki_index = -K; ki_index <= K; ki_index++)
+    for(int ki = -K; ki <= K; ki++)
     {
-      int ki = coordinate_offsets[abs(ki_index)] * sign(ki_index);
       int inited_slide = 0;
 // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
 // we will add up errors)
@@ -1442,7 +1419,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
                               cl_mem dev_out, const dt_iop_roi_t *const roi_in,
                               const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
+  dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->data;
 
   const int devid = piece->pipe->devid;
@@ -1463,12 +1440,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
-  const int K = ceilf(DT_DENOISE_PROFILE_NBHOOD_NORMAL_SIZE * scale);
-  int coordinate_offsets[DT_DENOISE_PROFILE_NBHOOD_NORMAL_SIZE];
-  for(int i = 0; i < DT_DENOISE_PROFILE_NBHOOD_NORMAL_SIZE; i++)
-  {
-    coordinate_offsets[i] = i * i * d->nbhood + i;
-  }
+  const int K = ceilf(d->nbhood * scale); // nbhood
   const float norm = 0.015f / (2 * P + 1);
 
 
@@ -1539,12 +1511,10 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_init, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  for(int kj_index = -K; kj_index <= 0; kj_index++)
-  {
-    int j = coordinate_offsets[abs(kj_index)] * sign(kj_index);
-    for(int ki_index = -K; ki_index <= K; ki_index++)
+
+  for(int j = -K; j <= 0; j++)
+    for(int i = -K; i <= K; i++)
     {
-      int i = coordinate_offsets[abs(ki_index)] * sign(ki_index);
       int q[2] = { i, j };
 
       dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
@@ -1610,7 +1580,6 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       // indirectly give gpu some air to breathe (and to do display related stuff)
       dt_iop_nap(darktable.opencl->micro_nap);
     }
-  }
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 1, sizeof(cl_mem), (void *)&dev_U2);
@@ -2070,7 +2039,7 @@ void reload_defaults(dt_iop_module_t *module)
     }
 
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = 1.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 0.0f;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 7.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
     for(int k = 0; k < 3; k++)
@@ -2278,7 +2247,7 @@ static void radius_callback(GtkWidget *w, dt_iop_module_t *self)
 static void nbhood_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_params_t *p = self->params;
-  p->nbhood = dt_bauhaus_slider_get(w);
+  p->nbhood = (int)dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2656,7 +2625,7 @@ void gui_init(dt_iop_module_t *self)
   g->profile = dt_bauhaus_combobox_new(self);
   g->mode = dt_bauhaus_combobox_new(self);
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 1.f, 0);
-  g->nbhood = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01, 0.0f, 2);
+  g->nbhood = dt_bauhaus_slider_new_with_range(self, 1.0f, 30.0f, 1., 7.f, 0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
   g->channel = dt_conf_get_int("plugins/darkroom/denoiseprofile/gui_channel");
 
@@ -2727,7 +2696,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
   dt_bauhaus_widget_set_label(g->radius, NULL, _("patch size"));
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
-  dt_bauhaus_widget_set_label(g->nbhood, NULL, _("coarse noise elimination"));
+  dt_bauhaus_widget_set_label(g->nbhood, NULL, _("search radius"));
+  dt_bauhaus_slider_set_format(g->nbhood, "%.0f");
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
@@ -2736,8 +2706,7 @@ void gui_init(dt_iop_module_t *self)
                                          "non-local means works best for `lightness' blending, "
                                          "wavelets work best for `color' blending"));
   gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match. increase for more sharpness"));
-  gtk_widget_set_tooltip_text(g->nbhood, _("size of the zone around the pixel to search for similar patches. "
-                                           "increase if you see coarse grain noise"));
+  gtk_widget_set_tooltip_text(g->nbhood, _("emergency use only: radius of the neighbourhood to search patches in. increase for better denoising performance, but watch the long runtimes! large radii can be very slow. you have been warned"));
   gtk_widget_set_tooltip_text(g->strength, _("finetune denoising strength"));
   g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
