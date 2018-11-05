@@ -819,6 +819,14 @@ static void frame_colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *s
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  gtk_toggle_button_set_active(g->border_picker, FALSE);
+  gtk_toggle_button_set_active(g->frame_picker, FALSE);
+}
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;

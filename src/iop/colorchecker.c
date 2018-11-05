@@ -751,6 +751,13 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  dt_bauhaus_widget_set_quad_active(g->combobox_patch, 0);
+}
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
