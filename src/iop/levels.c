@@ -506,6 +506,13 @@ void gui_update(dt_iop_module_t *self)
   g->hash = 0;
   dt_pthread_mutex_unlock(&g->lock);
 
+  if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->blackpick), 0);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->greypick), 0);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->whitepick), 0);
+  }
+
   gtk_widget_queue_draw(self->widget);
 }
 

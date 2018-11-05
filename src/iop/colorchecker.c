@@ -802,6 +802,9 @@ void gui_update(struct dt_iop_module_t *self)
     dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
   }
   gtk_widget_queue_draw(g->area);
+
+  if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+    dt_bauhaus_widget_set_quad_active(g->combobox_patch, 0);
 }
 
 void init(dt_iop_module_t *module)
