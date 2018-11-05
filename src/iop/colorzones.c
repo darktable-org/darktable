@@ -87,6 +87,7 @@ typedef struct dt_iop_colorzones_gui_data_t
   dt_iop_colorzones_params_t drag_params;
   int dragging;
   int x_move;
+  GtkWidget *colorpicker;
   dt_iop_colorzones_channel_t channel;
   float draw_xs[DT_IOP_COLORZONES_RES], draw_ys[DT_IOP_COLORZONES_RES];
   float draw_min_xs[DT_IOP_COLORZONES_RES], draw_min_ys[DT_IOP_COLORZONES_RES];
@@ -366,6 +367,13 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   for(int ch = 0; ch < 3; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
   piece->data = NULL;
+}
+
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -1087,7 +1095,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(tb, _("pick GUI color from image"));
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_end(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
-
+  c->colorpicker = tb;
 
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(colorzones_tab_switch), self);
 

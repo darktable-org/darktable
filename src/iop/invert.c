@@ -591,6 +591,13 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->picker), 0);
+}
+
 void gui_update(dt_iop_module_t *self)
 {
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
