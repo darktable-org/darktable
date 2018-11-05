@@ -584,7 +584,7 @@ static void picker_callback(GtkToggleButton *button, gpointer user_data)
   else
     dt_control_queue_redraw();
 
-  // only activate if the color picker is selected, this is becasue the monochrome module as a draw signal. On the
+  // only activate if the color picker is selected, this is becasue the monochrome module as a draw signal.
   if (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
   {
     if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
