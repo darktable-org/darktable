@@ -609,6 +609,9 @@ void gui_update(dt_iop_module_t *self)
     gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
     dtgtk_reset_label_set_text(g->label, _("color of film material"));
     gui_update_from_coeffs(self);
+
+    if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->picker), 0);
   }
   else
   {

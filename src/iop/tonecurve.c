@@ -648,6 +648,9 @@ void gui_update(struct dt_iop_module_t *self)
   if(p->tonecurve_autoscale_ab == 3) dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic_rgb);
   // that's all, gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
+
+  if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
 }
 
 

@@ -299,6 +299,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale1, p->ev);
   dt_bauhaus_slider_set(g->scale2, p->width);
   dtgtk_gradient_slider_set_value(g->gslider1, p->center);
+
+  if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tbutton1), 0);
 }
 
 void init(dt_iop_module_t *module)
