@@ -383,6 +383,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->select_by, 2 - p->channel);
   dt_bauhaus_slider_set(g->strength, p->strength);
   gtk_widget_queue_draw(self->widget);
+
+  if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
 }
 
 void init(dt_iop_module_t *module)
