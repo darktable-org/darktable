@@ -271,6 +271,60 @@ static void _undo_items_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data
   _reset_module_instance(hdata->snapshot, udata->module, udata->multi_priority);
 }
 
+static void _add_module_expander(dt_develop_t *dev, dt_iop_module_t *module)
+{
+  // dt_dev_reload_history_items won't do this for base instances
+  // and it will call gui_init() for the rest
+  // so we do it here
+  if(!dt_iop_is_hidden(module) && !module->expander)
+  {
+    // since multi_priority is in reverse order, we want the last one
+    // that is grather than this
+    dt_iop_module_t *base = NULL;
+    dt_iop_module_t *base_last = NULL;
+    GList *mods = g_list_last(dev->iop);
+    while(mods)
+    {
+      dt_iop_module_t *mod = (dt_iop_module_t *)(mods->data);
+
+      if(mod != module && mod->instance == module->instance)
+      {
+        // we save the last one in case module is the last one
+        base_last = mod;
+        if(mod->multi_priority > module->multi_priority)
+        {
+          base = mod;
+          break;
+        }
+      }
+      mods = g_list_previous(mods);
+    }
+    if(base == NULL)
+    {
+      base = base_last;
+      base_last = NULL;
+    }
+    if(base)
+    {
+      int order = (base_last == NULL) ? 1 : 0;
+      /* add module to right panel */
+      GtkWidget *expander = dt_iop_gui_get_expander(module);
+      dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+      GValue gv = { 0, { { 0 } } };
+      g_value_init(&gv, G_TYPE_INT);
+      gtk_container_child_get_property(
+          GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
+          base->expander, "position", &gv);
+      gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER), expander,
+                            g_value_get_int(&gv) + order);
+      dt_iop_gui_set_expanded(module, TRUE, FALSE);
+      dt_iop_gui_update_blending(module);
+    }
+    else
+      fprintf(stderr, "[_add_module_expander] can't find base for module %s\n", module->op);
+  }
+}
+
 static void _rebuild_multi_priority(dt_develop_t *dev, dt_iop_module_t *module)
 {
   // go through history
@@ -327,44 +381,6 @@ static void _rebuild_multi_priority(dt_develop_t *dev, dt_iop_module_t *module)
   }
   else
     fprintf(stderr, "[_rebuild_multi_priority] can't find old multi_priority for module %s\n", module->op);
-
-  // dt_dev_reload_history_items won't do this
-  if(!dt_iop_is_hidden(module) && !module->expander)
-  {
-    // we search the first iop corresponding
-    GList *mods = g_list_first(dev->iop);
-    dt_iop_module_t *base = NULL;
-    int multi_priority_last = INT_MAX;
-    while(mods)
-    {
-      dt_iop_module_t *mod = (dt_iop_module_t *)(mods->data);
-
-      if(mod != module && mod->instance == module->instance)
-      {
-        if(mod->multi_priority < multi_priority_last)
-        {
-          multi_priority_last = mod->multi_priority;
-          base = mod;
-        }
-      }
-      mods = g_list_next(mods);
-    }
-    if(base)
-    {
-      /* add module to right panel */
-      GtkWidget *expander = dt_iop_gui_get_expander(module);
-      dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
-      GValue gv = { 0, { { 0 } } };
-      g_value_init(&gv, G_TYPE_INT);
-      gtk_container_child_get_property(
-          GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
-          base->expander, "position", &gv);
-      gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER), expander,
-                            g_value_get_int(&gv) - 1);
-      dt_iop_gui_set_expanded(module, TRUE, FALSE);
-      dt_iop_gui_update_blending(module);
-    }
-  }
 }
 
 static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
@@ -436,6 +452,9 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
 
         // we insert this module into dev->iop
         dev->iop = g_list_insert_sorted(dev->iop, module, sort_plugins);
+
+        // add the expander, dt_dev_reload_history_items() don't work well without one
+        _add_module_expander(dev, module);
 
         // if not already done, set the module to all others same instance
         if (!done)
