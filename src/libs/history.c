@@ -440,8 +440,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
         // if not already done, set the module to all others same instance
         if (!done)
         {
-          GList *h = (dev->history);
-          _reset_module_instance(h, module, hitem->multi_priority);
+          _reset_module_instance(dev->history, module, hitem->multi_priority);
 
           // and do that also in the undo/redo lists
           struct _cb_data udata = { module, hitem->multi_priority };
