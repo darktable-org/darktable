@@ -333,6 +333,13 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
+}
+
 void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_monochrome_params_t));
