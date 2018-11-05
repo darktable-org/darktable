@@ -736,6 +736,12 @@ static void film_strip_activated(const int imgid, void *data)
   const dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
+  // disable color picker when changing image
+  if(dev->gui_module)
+  {
+    dev->gui_module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  }
+
   // first compute/update possibly new aspect ratio of current picture
   dt_image_set_aspect_ratio(dev->image_storage.id);
 
