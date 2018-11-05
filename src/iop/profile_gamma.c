@@ -410,7 +410,6 @@ static void apply_auto_black(dt_iop_module_t *self)
   float black = fmax(fmax(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
   float EVmin = Log2Thres(black / (p->grey_point / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
-  EVmin -= 0.0230f * p->dynamic_range;
 
   p->shadows_range = EVmin;
 
@@ -436,13 +435,6 @@ static void apply_auto_dynamic_range(dt_iop_module_t *self)
   float white = fmax(fmax(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
   float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
-
-  /*
-    Remap the black point to RGB = 2.30 % and the white point to RGB = 90.00 %
-    to match the patches values from the color charts used to produce ICC profiles
-  */
-  float dynamic_range = (EVmax - EVmin) / (0.9000f - 0.0230f);
-  EVmax += 0.1000f * dynamic_range;
 
   p->dynamic_range = EVmax - EVmin;
 
@@ -535,14 +527,6 @@ static void optimize_button_pressed_callback(GtkWidget *button, gpointer user_da
   float white = fmax(fmax(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
   float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
-
-  /*
-    Remap the black point to Y = 2.30 % and the white point to Y = 90.00 %
-    to match the patches values from the color charts used to produce ICC profiles
-  */
-  float dynamic_range = (EVmax - EVmin) / (0.9000f - 0.0230f);
-  EVmin -= 0.0230f * dynamic_range;
-  EVmax += 0.1000f * dynamic_range;
 
   p->shadows_range = EVmin;
   p->dynamic_range = EVmax - EVmin;
