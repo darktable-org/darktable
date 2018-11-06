@@ -799,6 +799,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
     memcpy(module->params, module->default_params, module->params_size);
     memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
     module->enabled = module->default_enabled;
+    module->multi_name[0] = '\0';
     modules = g_list_next(modules);
   }
   // go through history and set gui params
@@ -1638,8 +1639,8 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   if(dev->gui_attached && del)
   {
     /* signal that history has changed */
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE, module);
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE, module);
     /* redraw */
     dt_control_queue_redraw_center();
   }
