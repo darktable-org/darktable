@@ -493,6 +493,8 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module);
 /** change module state */
 void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t state);
 void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state);
+/* duplicate module and return new instance */
+dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params);
 
 void dt_iop_gui_update_header(dt_iop_module_t *module);
 
