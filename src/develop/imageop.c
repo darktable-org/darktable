@@ -744,14 +744,14 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
   dt_control_queue_redraw_center();
 }
 
-static void dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
+dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 {
   // make sure the duplicated module appears in the history
   dt_dev_add_history_item(base->dev, base, FALSE);
 
   // first we create the new module
   dt_iop_module_t *module = dt_dev_module_duplicate(base->dev, base, 0);
-  if(!module) return;
+  if(!module) return NULL;
 
   // we reflect the positions changes in the history stack too
   GList *history = g_list_first(module->dev->history);
@@ -851,6 +851,7 @@ static void dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
     /* redraw */
     dt_control_queue_redraw_center();
   }
+  return module;
 }
 
 static void dt_iop_gui_copy_callback(GtkButton *button, gpointer user_data)
