@@ -545,6 +545,12 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
     dt_iop_gui_cleanup_module(module);
   }
 
+  // we remove all references in the history stack and dev->iop
+  // this will inform that a module has been removed from history
+  // we do it here so we have the multi_priorities to reconstruct
+  // de deleted module if the user undo it
+  dt_dev_module_remove(dev, module);
+
   // if module was priority 0, then we set next to priority 0
   if(is_zero)
   {
@@ -561,8 +567,11 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
     }
   }
 
-  // we remove all references in the history stack and dev->iop
-  dt_dev_module_remove(dev, module);
+  // we save the current state of history (with the new multi_priorities)
+  if(dev->gui_attached)
+  {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+  }
 
   // we cleanup the module
   dt_accel_disconnect_list(module->accel_closures);
@@ -654,6 +663,12 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
   gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
                         module->expander, g_value_get_int(&gv) + 1);
 
+  /* signal that history has changed */
+  if(next->dev->gui_attached)
+  {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+  }
+
   // we rebuild the pipe
   next->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
   next->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
@@ -730,6 +745,12 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
       module->expander, "position", &gv);
   gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
                         module->expander, g_value_get_int(&gv) - 1);
+
+  /* signal that history has changed */
+  if(prev->dev->gui_attached)
+  {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+  }
 
   // we rebuild the pipe
   prev->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
