@@ -744,14 +744,14 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
   dt_control_queue_redraw_center();
 }
 
-static void dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
+dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 {
   // make sure the duplicated module appears in the history
   dt_dev_add_history_item(base->dev, base, FALSE);
 
   // first we create the new module
   dt_iop_module_t *module = dt_dev_module_duplicate(base->dev, base, 0);
-  if(!module) return;
+  if(!module) return NULL;
 
   // we reflect the positions changes in the history stack too
   GList *history = g_list_first(module->dev->history);
@@ -851,6 +851,7 @@ static void dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
     /* redraw */
     dt_control_queue_redraw_center();
   }
+  return module;
 }
 
 static void dt_iop_gui_copy_callback(GtkButton *button, gpointer user_data)
@@ -2000,7 +2001,10 @@ got_image:
   /* add preset button if module has implementation */
   hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   module->presets_button = GTK_WIDGET(hw[idx]);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets"));
+  if (module->flags() & IOP_FLAGS_ONE_INSTANCE)
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets"));
+  else
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets\nmiddle-click to apply on new instance"));
   g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(popup_callback), module);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
