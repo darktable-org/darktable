@@ -101,7 +101,7 @@ static void *_dup_masks_form_cb(const void *formdata, gpointer user_data)
   return (void *)_dup_masks_form(f);
 }
 
-// duplicate the list of forms, replace item in the list with form is the same formid
+// duplicate the list of forms, replace item in the list with form with the same formid
 GList *dt_masks_dup_forms_deep(GList *forms, dt_masks_form_t *form)
 {
   return (GList *)g_list_copy_deep(forms, _dup_masks_form_cb, (gpointer)form);
