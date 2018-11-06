@@ -2001,7 +2001,10 @@ got_image:
   /* add preset button if module has implementation */
   hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   module->presets_button = GTK_WIDGET(hw[idx]);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets"));
+  if (module->flags() & IOP_FLAGS_ONE_INSTANCE)
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets"));
+  else
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets\nmiddle-click to apply on new instance"));
   g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(popup_callback), module);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
