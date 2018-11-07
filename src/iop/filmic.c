@@ -272,19 +272,19 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
 static void sanitize_latitude(dt_iop_filmic_params_t *p, dt_iop_filmic_gui_data_t *g)
 {
-  if (p->latitude_stops > (p->white_point_source - p->black_point_source) / 1.5f)
+  if (p->latitude_stops > (p->white_point_source - p->black_point_source) * 0.9f)
   {
     // The film latitude is its linear part
     // it can never be higher than the dynamic range
-    p->latitude_stops =  (p->white_point_source - p->black_point_source) / 1.5f;
+    p->latitude_stops =  (p->white_point_source - p->black_point_source) * 0.9f;
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
     darktable.gui->reset = 0;
   }
-  else if (p->latitude_stops <  (p->white_point_source - p->black_point_source) / 2.5f)
+  else if (p->latitude_stops <  (p->white_point_source - p->black_point_source) / 2.6f)
   {
     // Having a latitude < dynamic range / 2.5 breaks the spline interpolation
-    p->latitude_stops =  (p->white_point_source - p->black_point_source) / 2.5f;
+    p->latitude_stops =  (p->white_point_source - p->black_point_source) / 2.6f;
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
     darktable.gui->reset = 0;
@@ -725,10 +725,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   // target luminance desired after filmic curve
   const float black_display = p->black_point_target / 100.0f; // in %
-  const float grey_display = powf(p->grey_point_target / 100.0f, 1.0f / p->output_power);
+  const float grey_display = powf(p->grey_point_target / 100.0f, 1.0f / (p->output_power));
   const float white_display = p->white_point_target / 100.0f; // in %
 
-  const float latitude = CLAMP(p->latitude_stops, dynamic_range/2.5f, dynamic_range/1.5f);
+  const float latitude = CLAMP(p->latitude_stops, dynamic_range/2.6f, dynamic_range * 0.9f);
   const float balance = p->balance / 100.0f; // in %
 
   float contrast = p->contrast;
@@ -903,7 +903,7 @@ void init(dt_iop_module_t *module)
                                 -7.0,  // source black
                                  3.0,  // source white
                                  0.0,  // security factor
-                                 45.86, // target grey
+                                 18.0, // target grey
                                  0.0,  // target black
                                  100.0,  // target white
                                  2.2,  // target power (~ gamma)
@@ -1011,7 +1011,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->black_point_target), "value-changed", G_CALLBACK(black_point_target_callback), self);
 
   // latitude slider
-  g->latitude_stops = dt_bauhaus_slider_new_with_range(self, 2.0, 12.0, 0.1, p->latitude_stops, 2);
+  g->latitude_stops = dt_bauhaus_slider_new_with_range(self, 1.0, 16.0, 0.1, p->latitude_stops, 2);
   dt_bauhaus_widget_set_label(g->latitude_stops, NULL, _("latitude of the film"));
   dt_bauhaus_slider_set_format(g->latitude_stops, "%.2f EV");
   gtk_box_pack_start(GTK_BOX(self->widget), g->latitude_stops, TRUE, TRUE, 0);
@@ -1034,7 +1034,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->contrast), "value-changed", G_CALLBACK(contrast_callback), self);
 
   // balance slider
-  g->balance = dt_bauhaus_slider_new_with_range(self, -100., 100., 1.0, p->balance, 2);
+  g->balance = dt_bauhaus_slider_new_with_range(self, -99., 99., 1.0, p->balance, 2);
   dt_bauhaus_widget_set_label(g->balance, NULL, _("balance shadows/highlights"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->balance, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->balance, "%.2f %%");
