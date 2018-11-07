@@ -195,9 +195,19 @@ static inline void dt_draw_curve_calc_values(dt_draw_curve_t *c, const float min
   c->csample.m_outputRes = 0x10000;
   CurveDataSample(&c->c, &c->csample);
   if(x)
+  {
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) shared(x) schedule(static)
+#endif
     for(int k = 0; k < res; k++) x[k] = k * (1.0f / res);
+  }
   if(y)
+  {
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) shared(y, c) schedule(static)
+#endif
     for(int k = 0; k < res; k++) y[k] = min + (max - min) * c->csample.m_Samples[k] * (1.0f / 0x10000);
+  }
 }
 
 static inline float dt_draw_curve_calc_value(dt_draw_curve_t *c, const float x)
