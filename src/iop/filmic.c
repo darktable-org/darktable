@@ -966,7 +966,7 @@ void init(dt_iop_module_t *module)
                                  100.0,  // target white
                                  2.2,  // target power (~ gamma)
                                  4.0,  // intent latitude
-                                 2.0,  // intent contrast
+                                 1.0,  // intent contrast
                                  90.,   // intent saturation
                                  0.0, // balance shadows/highlights
                               };
