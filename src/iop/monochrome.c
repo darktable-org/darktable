@@ -330,7 +330,15 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
   dt_bauhaus_slider_set(g->highlights, p->highlights);
+  g->dragging = FALSE;
   gtk_widget_queue_draw(self->widget);
+}
+
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
 }
 
 void init(dt_iop_module_t *module)
@@ -480,6 +488,7 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
     dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
     dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
     if(event->type == GDK_2BUTTON_PRESS)
     {
       // reset
@@ -514,6 +523,7 @@ static gboolean dt_iop_monochrome_button_release(GtkWidget *widget, GdkEventButt
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
     g->dragging = 0;
     g_object_set(G_OBJECT(widget), "has-tooltip", TRUE, (gchar *)0);
     return TRUE;
@@ -534,7 +544,9 @@ static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *ev
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
 
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
@@ -556,17 +568,13 @@ static void highlights_callback(GtkWidget *w, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void picker_callback(GtkWidget *button, gpointer user_data)
+static void picker_callback(GtkToggleButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
 
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE)
-    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-  else
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
-  dt_iop_request_focus(self);
+  self->request_color_pick
+      = (gtk_toggle_button_get_active(button) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
 
   if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
   {
@@ -576,7 +584,12 @@ static void picker_callback(GtkWidget *button, gpointer user_data)
   else
     dt_control_queue_redraw();
 
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  // only activate if the color picker is selected, this is becasue the monochrome module as a draw signal.
+  if (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
+  {
+    if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+    dt_iop_request_focus(self);
+  }
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -585,6 +598,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
 
   g->dragging = 0;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -607,7 +621,6 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
 
   g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, 0.0, 2);
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   gtk_widget_set_tooltip_text(g->highlights, _("how much to keep highlights"));
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
   gtk_box_pack_start(GTK_BOX(box), g->highlights, TRUE, TRUE, 0);

@@ -275,7 +275,9 @@ int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_versio
 
 /** we create a completely new form. */
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type);
-/** retrieve a form with is id */
+/** retrieve form id from a list of forms */
+dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, int id);
+/** retrieve form id */
 dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id);
 
 /** read the forms from the db */
@@ -328,6 +330,8 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
 void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up);
 void dt_masks_form_move(dt_masks_form_t *grp, int formid, int up);
 int dt_masks_form_duplicate(dt_develop_t *dev, int formid);
+/* duplicate the list of forms, replace item in the list with form with the same formid */
+GList *dt_masks_dup_forms_deep(GList *forms, dt_masks_form_t *form);
 
 /** utils functions */
 int dt_masks_point_in_form_exact(float x, float y, float *points, int points_start, int points_count);

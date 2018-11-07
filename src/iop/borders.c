@@ -819,6 +819,14 @@ static void frame_colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *s
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  gtk_toggle_button_set_active(g->border_picker, FALSE);
+  gtk_toggle_button_set_active(g->frame_picker, FALSE);
+}
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
@@ -887,6 +895,12 @@ void gui_update(struct dt_iop_module_t *self)
     .red = p->frame_color[0], .green = p->frame_color[1], .blue = p->frame_color[2], .alpha = 1.0
   };
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->frame_colorpick), &fc);
+
+  if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->border_picker), 0);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->frame_picker), 0);
+  }
 }
 
 void init(dt_iop_module_t *module)
@@ -973,6 +987,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
 
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 

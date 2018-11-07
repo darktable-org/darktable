@@ -35,6 +35,7 @@ extern "C" {
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include "common/iop_group.h"
 }
 #include "iop/Permutohedral.h"
 extern "C" {
@@ -71,7 +72,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return dt_iop_get_group("denoise (bilateral filter)", IOP_GROUP_CORRECT);
 }
 
 int flags()

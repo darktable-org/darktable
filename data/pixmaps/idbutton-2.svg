@@ -14,7 +14,7 @@
    height="50.117401"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48+devel r13342 custom"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
    sodipodi:docname="idbutton-2.svg"
    inkscape:export-filename="/home/houz/programming/darktable/darktable/data/pixmaps/idbutton-2.png"
    inkscape:export-xdpi="7.4109979"
@@ -449,15 +449,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="19.653852"
-     inkscape:cx="30"
+     inkscape:cx="30.101761"
      inkscape:cy="25.058701"
      inkscape:document-units="px"
-     inkscape:current-layer="layer10"
+     inkscape:current-layer="layer2"
      showgrid="false"
-     inkscape:window-width="1280"
-     inkscape:window-height="722"
+     inkscape:window-width="1920"
+     inkscape:window-height="1053"
      inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-y="27"
      inkscape:window-maximized="1"
      showguides="false"
      inkscape:guide-bbox="true"
@@ -472,16 +472,20 @@
        visible="true"
        enabled="true"
        snapvisiblegridlinesonly="true"
-       originx="2.9999996px"
-       originy="3.0000018px" />
+       originx="2.9999996"
+       originy="3.0000018"
+       spacingx="1"
+       spacingy="1" />
     <sodipodi:guide
        orientation="1,0"
        position="259,515.00001"
-       id="guide4171" />
+       id="guide4171"
+       inkscape:locked="false" />
     <sodipodi:guide
        orientation="0,1"
        position="2.9999996,259.00001"
-       id="guide4173" />
+       id="guide4173"
+       inkscape:locked="false" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -491,7 +495,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -600,8 +604,7 @@
        cx="256"
        cy="256"
        r="32"
-       transform="matrix(0.08253776,0,0,0.08253776,-2.7523864,472.49306)"
-       d="m 288,256 a 32,32 0 0 1 -32,32 32,32 0 0 1 -32,-32 32,32 0 0 1 32,-32 32,32 0 0 1 32,32 z" />
+       transform="matrix(0.08253776,0,0,0.08253776,-2.7523864,472.49306)" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -610,7 +613,7 @@
      style="display:inline"
      transform="translate(2.9999996,-464.88261)">
     <path
-       style="display:inline;fill:url(#linearGradient3885);fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter3903)"
+       style="display:inline;fill:url(#linearGradient3885);fill-opacity:1;fill-rule:nonzero;stroke:none;"
        d="m 22.273322,475.18946 -4.578267,13.03322 18.029343,-3.03325 c -2.670457,-5.12847 -7.590069,-8.89703 -13.451076,-9.99997 z"
        id="path3902"
        inkscape:connector-curvature="0"
@@ -622,9 +625,9 @@
        inkscape:connector-curvature="0"
        id="path3905"
        d="m 36.288978,487.78017 -13.576241,2.55171 11.641554,14.09724 c 3.106154,-4.87692 3.910018,-11.02171 1.934687,-16.64895 z"
-       style="display:inline;fill:url(#linearGradient3907);fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter3903)" />
+       style="display:inline;fill:url(#linearGradient3907);fill-opacity:1;fill-rule:nonzero;stroke:none;" />
     <path
-       style="display:inline;fill:url(#linearGradient3911);fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter3903)"
+       style="display:inline;fill:url(#linearGradient3911);fill-opacity:1;fill-rule:nonzero;stroke:none;"
        d="m 32.392937,506.21343 -8.997974,-10.48152 -6.387789,17.13051 c 5.776611,0.25155 11.500088,-2.12468 15.385763,-6.64899 z"
        id="path3909"
        inkscape:connector-curvature="0"
@@ -636,9 +639,9 @@
        inkscape:connector-curvature="0"
        id="path3913"
        d="m 14.481241,512.05599 4.578266,-13.03323 -18.0293426,3.03327 c 2.6704565,5.12846 7.5900694,8.89702 13.4510766,9.99996 z"
-       style="display:inline;fill:url(#linearGradient3915);fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter3903)" />
+       style="display:inline;fill:url(#linearGradient3915);fill-opacity:1;fill-rule:nonzero;stroke:none;" />
     <path
-       style="display:inline;fill:url(#linearGradient3919);fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter3903)"
+       style="display:inline;fill:url(#linearGradient3919);fill-opacity:1;fill-rule:nonzero;stroke:none;"
        d="M 0.46558452,499.46529 14.041825,496.91357 2.4002718,482.81633 c -3.10615484,4.87691 -3.9100182,11.02171 -1.93468728,16.64896 z"
        id="path3917"
        inkscape:connector-curvature="0"
@@ -650,14 +653,13 @@
        inkscape:connector-curvature="0"
        id="path3921"
        d="m 4.3616255,481.03202 8.9979735,10.48151 6.38779,-17.1305 c -5.776612,-0.25154 -11.500088,2.12468 -15.3857635,6.64899 z"
-       style="display:inline;fill:url(#linearGradient3923);fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter3903)" />
+       style="display:inline;fill:url(#linearGradient3923);fill-opacity:1;fill-rule:nonzero;stroke:none;" />
     <circle
        style="fill:url(#linearGradient4212);fill-opacity:1;stroke:none"
        id="path4204"
        cx="18.377281"
        cy="493.62271"
-       r="2.6412084"
-       d="m 21.01849,493.62271 a 2.6412084,2.6412084 0 0 1 -2.641209,2.64121 2.6412084,2.6412084 0 0 1 -2.641208,-2.64121 2.6412084,2.6412084 0 0 1 2.641208,-2.64121 2.6412084,2.6412084 0 0 1 2.641209,2.64121 z" />
+       r="2.6412084" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -725,8 +727,7 @@
        cx="49.49432"
        cy="510.41089"
        rx="4.3786302"
-       ry="4.5641661"
-       d="m 53.87295,510.41089 a 4.3786302,4.5641661 0 0 1 -4.37863,4.56416 4.3786302,4.5641661 0 0 1 -4.37863,-4.56416 4.3786302,4.5641661 0 0 1 4.37863,-4.56417 4.3786302,4.5641661 0 0 1 4.37863,4.56417 z" />
+       ry="4.5641661" />
     <path
        style="opacity:0.5;fill:#000000;stroke:none;filter:url(#filter4251)"
        d="M 203.20857,32.751464 C 304.21857,93.946602 401.86252,159.8542 490.93752,237.75834 L 503.52567,193.69985 240.07384,12.970099 Z"

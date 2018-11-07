@@ -14,7 +14,7 @@
    height="39.999996"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48+devel r13342 custom"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
    sodipodi:docname="idbutton.svg"
    inkscape:export-filename="/Users/claytonwalker/Desktop/Darktable Icon 2/512.png"
    inkscape:export-xdpi="90"
@@ -345,15 +345,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.269509"
-     inkscape:cx="22.115441"
+     inkscape:cx="22.20525"
      inkscape:cy="22.115447"
      inkscape:document-units="px"
-     inkscape:current-layer="layer6"
+     inkscape:current-layer="layer2"
      showgrid="false"
-     inkscape:window-width="1280"
-     inkscape:window-height="722"
+     inkscape:window-width="1920"
+     inkscape:window-height="1053"
      inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-y="27"
      inkscape:window-maximized="1"
      showguides="false"
      inkscape:guide-bbox="true"
@@ -368,16 +368,20 @@
        visible="true"
        enabled="true"
        snapvisiblegridlinesonly="true"
-       originx="-23.476013px"
-       originy="-20.477679px" />
+       originx="-23.476013"
+       originy="-20.477679"
+       spacingx="1"
+       spacingy="1" />
     <sodipodi:guide
        orientation="1,0"
        position="232.52399,491.52233"
-       id="guide4171" />
+       id="guide4171"
+       inkscape:locked="false" />
     <sodipodi:guide
        orientation="0,1"
        position="-23.476013,235.52233"
-       id="guide4173" />
+       id="guide4173"
+       inkscape:locked="false" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -387,7 +391,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -496,8 +500,7 @@
        cx="256"
        cy="256"
        r="32"
-       transform="matrix(0.07751938,0,0,0.07751938,23.708571,451.59983)"
-       d="m 288,256 a 32,32 0 0 1 -32,32 32,32 0 0 1 -32,-32 32,32 0 0 1 32,-32 32,32 0 0 1 32,32 z" />
+       transform="matrix(0.07751938,0,0,0.07751938,23.708571,451.59983)" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -506,7 +509,7 @@
      style="display:inline"
      transform="translate(-23.476013,-451.52232)">
     <path
-       style="display:inline;fill:url(#linearGradient3885);fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter3903)"
+       style="display:inline;fill:url(#linearGradient3885);fill-opacity:1;fill-rule:nonzero;stroke:none;"
        d="m 47.212688,454.13229 -4.299902,12.2408 16.933138,-2.84885 c -2.508089,-4.81664 -7.128584,-8.35607 -12.633236,-9.39195 z"
        id="path3902"
        inkscape:connector-curvature="0"
@@ -518,9 +521,9 @@
        inkscape:connector-curvature="0"
        id="path3905"
        d="m 60.376177,465.95747 -12.75079,2.39657 10.933735,13.2401 c 2.917297,-4.58039 3.672284,-10.35157 1.817055,-15.63667 z"
-       style="display:inline;fill:url(#linearGradient3907);fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter3903)" />
+       style="display:inline;fill:url(#linearGradient3907);fill-opacity:1;fill-rule:nonzero;stroke:none;" />
     <path
-       style="display:inline;fill:url(#linearGradient3911);fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter3903)"
+       style="display:inline;fill:url(#linearGradient3911);fill-opacity:1;fill-rule:nonzero;stroke:none;"
        d="m 56.71702,483.26997 -8.450887,-9.84423 -5.999404,16.08895 c 5.425387,0.23626 10.800869,-1.99549 14.450291,-6.24472 z"
        id="path3909"
        inkscape:connector-curvature="0"
@@ -532,9 +535,9 @@
        inkscape:connector-curvature="0"
        id="path3913"
        d="m 39.894374,488.75729 4.299903,-12.24078 -16.933138,2.84883 c 2.50809,4.81665 7.128585,8.35608 12.633235,9.39195 z"
-       style="display:inline;fill:url(#linearGradient3915);fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter3903)" />
+       style="display:inline;fill:url(#linearGradient3915);fill-opacity:1;fill-rule:nonzero;stroke:none;" />
     <path
-       style="display:inline;fill:url(#linearGradient3919);fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter3903)"
+       style="display:inline;fill:url(#linearGradient3919);fill-opacity:1;fill-rule:nonzero;stroke:none;"
        d="m 26.730886,476.93212 12.75079,-2.39657 -10.933734,-13.24011 c -2.917297,4.58039 -3.672285,10.35157 -1.817056,15.63668 z"
        id="path3917"
        inkscape:connector-curvature="0"
@@ -546,14 +549,13 @@
        inkscape:connector-curvature="0"
        id="path3921"
        d="m 30.390043,459.61962 8.450887,9.84422 5.999405,-16.08895 c -5.425387,-0.23625 -10.80087,1.9955 -14.450292,6.24473 z"
-       style="display:inline;fill:url(#linearGradient3923);fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter3903)" />
+       style="display:inline;fill:url(#linearGradient3923);fill-opacity:1;fill-rule:nonzero;stroke:none;" />
     <circle
        style="fill:url(#linearGradient4212);fill-opacity:1;stroke:none"
        id="path4204"
        cx="43.553532"
        cy="471.44479"
-       r="2.4806201"
-       d="m 46.034152,471.44479 a 2.4806201,2.4806201 0 0 1 -2.48062,2.48062 2.4806201,2.4806201 0 0 1 -2.48062,-2.48062 2.4806201,2.4806201 0 0 1 2.48062,-2.48062 2.4806201,2.4806201 0 0 1 2.48062,2.48062 z" />
+       r="2.4806201" />
   </g>
   <g
      inkscape:groupmode="layer"

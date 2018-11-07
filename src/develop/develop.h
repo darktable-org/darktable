@@ -37,6 +37,7 @@ typedef struct dt_dev_history_item_t
   int32_t enabled;                // switched respective module on/off
   dt_iop_params_t *params;        // parameters for this operation
   struct dt_develop_blend_params_t *blend_params;
+  char op_name[20];
   int multi_priority;
   char multi_name[128];
   int32_t focus_hash;             // used to determine whether or not to start a new item or to merge down
@@ -150,6 +151,8 @@ typedef struct dt_develop_t
   // operations pipeline
   int32_t iop_instance;
   GList *iop;
+  // iop's to be deleted
+  GList *alliop;
 
   // histogram for display.
   uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;

@@ -690,6 +690,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
           h->module = style_module;
           h->multi_priority = s->multi_priority;
           g_strlcpy(h->multi_name, s->name, sizeof(h->multi_name));
+          g_strlcpy(h->op_name, m->op, sizeof(h->op_name));
 
           if(m->legacy_params && (s->module_version != m->version()))
           {
