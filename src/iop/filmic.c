@@ -270,6 +270,27 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
+static void sanitize_latitude(dt_iop_filmic_params_t *p, dt_iop_filmic_gui_data_t *g)
+{
+  if (p->latitude_stops > (p->white_point_source - p->black_point_source) / 1.5f)
+  {
+    // The film latitude is its linear part
+    // it can never be higher than the dynamic range
+    p->latitude_stops =  (p->white_point_source - p->black_point_source) / 1.5f;
+    darktable.gui->reset = 1;
+    dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
+    darktable.gui->reset = 0;
+  }
+  else if (p->latitude_stops <  (p->white_point_source - p->black_point_source) / 2.5f)
+  {
+    // Having a latitude < dynamic range / 2.5 breaks the spline interpolation
+    p->latitude_stops =  (p->white_point_source - p->black_point_source) / 2.5f;
+    darktable.gui->reset = 1;
+    dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
+    darktable.gui->reset = 0;
+  }
+}
+
 static void apply_auto_grey(dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
@@ -311,15 +332,7 @@ static void apply_auto_black(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
   darktable.gui->reset = 0;
 
-  // The film latitude is its linear part
-  // it can never be higher than the dynamic range
-  if (p->latitude_stops > p->white_point_source - p->black_point_source)
-  {
-    p->latitude_stops = 0.9f * (p->white_point_source - p->black_point_source);
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
-    darktable.gui->reset = 0;
-  }
+  sanitize_latitude(p, g);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -346,15 +359,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);
   darktable.gui->reset = 0;
 
-  // The film latitude is its linear part
-  // it can never be higher than the dynamic range
-  if (p->latitude_stops > p->white_point_source - p->black_point_source)
-  {
-    p->latitude_stops = 0.9f * (p->white_point_source - p->black_point_source);
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
-    darktable.gui->reset = 0;
-  }
+  sanitize_latitude(p, g);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -384,15 +389,7 @@ static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
   darktable.gui->reset = 0;
 
-  // The film latitude is its linear part
-  // it can never be higher than the dynamic range
-  if (p->latitude_stops > p->white_point_source - p->black_point_source)
-  {
-    p->latitude_stops = 0.9f * (p->white_point_source - p->black_point_source);
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
-    darktable.gui->reset = 0;
-  }
+  sanitize_latitude(p, g);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -447,15 +444,7 @@ static void optimize_button_pressed_callback(GtkWidget *button, gpointer user_da
   dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);
   darktable.gui->reset = 0;
 
-  // The film latitude is its linear part
-  // it can never be higher than the dynamic range
-  if (p->latitude_stops > p->white_point_source - p->black_point_source)
-  {
-    p->latitude_stops = 0.9f * (p->white_point_source - p->black_point_source);
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
-    darktable.gui->reset = 0;
-  }
+  sanitize_latitude(p, g);
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
@@ -480,15 +469,7 @@ static void white_point_source_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   p->white_point_source = dt_bauhaus_slider_get(slider);
 
-  // The film latitude is its linear part
-  // it can never be higher than the dynamic range
-  if (p->latitude_stops > p->white_point_source - p->black_point_source)
-  {
-    p->latitude_stops = 0.9f * (p->white_point_source - p->black_point_source);
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
-    darktable.gui->reset = 0;
-  }
+  sanitize_latitude(p, g);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -501,15 +482,7 @@ static void black_point_source_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   p->black_point_source = dt_bauhaus_slider_get(slider);
 
-  // The film latitude is its linear part
-  // it can never be higher than the dynamic range
-  if (p->latitude_stops > p->white_point_source - p->black_point_source)
-  {
-    p->latitude_stops = 0.9f * (p->white_point_source - p->black_point_source);
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
-    darktable.gui->reset = 0;
-  }
+  sanitize_latitude(p, g);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -532,15 +505,7 @@ static void latitude_stops_callback(GtkWidget *slider, gpointer user_data)
 
   p->latitude_stops = dt_bauhaus_slider_get(slider);
 
-  // The film latitude is its linear part
-  // it can never be higher than the dynamic range
-  if (p->latitude_stops > p->white_point_source - p->black_point_source)
-  {
-    p->latitude_stops = p->white_point_source - p->black_point_source;
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
-    darktable.gui->reset = 0;
-  }
+  sanitize_latitude(p, g);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -763,7 +728,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   const float grey_display = powf(p->grey_point_target / 100.0f, 1.0f / p->output_power);
   const float white_display = p->white_point_target / 100.0f; // in %
 
-  const float latitude = CLAMP(p->latitude_stops, 0.5f, dynamic_range);
+  const float latitude = CLAMP(p->latitude_stops, dynamic_range/2.5f, dynamic_range/1.5f);
   const float balance = p->balance / 100.0f; // in %
 
   float contrast = p->contrast;
@@ -775,21 +740,18 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // nodes for mapping from log encoding to desired target luminance
   // Y coordinates
   float toe_display = black_display +
-                        (
-                          (fabsf(black_source) / dynamic_range) *
-                          ((dynamic_range - latitude) / dynamic_range)
-                        ) * (1.0f - balance);
+                        ((fabsf(black_source)) *
+                          (dynamic_range - latitude) *
+                          (1.0f - balance) / dynamic_range / dynamic_range);
+
   toe_display = CLAMP(toe_display, 0.0f, grey_display);
-  if (toe_display < 0.010f) toe_display = 0.0f;
 
   float shoulder_display = white_display -
-                        (
-                          (white_source / dynamic_range) *
-                          ((dynamic_range - latitude) / dynamic_range)
-                        ) * (1.0f + balance);
+                        ((white_source) *
+                          (dynamic_range - latitude) *
+                          (1.0f + balance) / dynamic_range / dynamic_range);
 
   shoulder_display = CLAMP(shoulder_display, grey_display, 1.0f);
-  if (shoulder_display > 0.990f) shoulder_display = 1.0f;
 
   // interception
   float linear_intercept = grey_display - (p->contrast * grey_log);
@@ -797,11 +759,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // X coordinates
   float toe_log = (toe_display - linear_intercept) / p->contrast;
   toe_log = CLAMP(toe_log, 0.0f, grey_log);
-  if (toe_log < 0.010f) toe_log = 0.0f;
 
   float shoulder_log = (shoulder_display - linear_intercept) / p->contrast;
   shoulder_log = CLAMP(shoulder_log, grey_log, 1.0f);
-  if (shoulder_log > 0.990f) shoulder_log = 1.0f;
 
 
   // sanitize values
@@ -943,7 +903,7 @@ void init(dt_iop_module_t *module)
                                 -7.0,  // source black
                                  3.0,  // source white
                                  0.0,  // security factor
-                                 18, // target grey
+                                 45.86, // target grey
                                  0.0,  // target black
                                  100.0,  // target white
                                  2.2,  // target power (~ gamma)
@@ -1099,7 +1059,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->grey_point_target), "value-changed", G_CALLBACK(grey_point_target_callback), self);
 
   // power/gamma slider
-  g->output_power = dt_bauhaus_slider_new_with_range(self, 1.8, 2.6, 0.1, p->output_power, 2);
+  g->output_power = dt_bauhaus_slider_new_with_range(self, 1.8, 2.4, 0.1, p->output_power, 2);
   dt_bauhaus_widget_set_label(g->output_power, NULL, _("destination power factor"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_power, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->output_power, _("number of stops between pure black and pure white\nthis is a reading a posemeter would give you on the scene"));
