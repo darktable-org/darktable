@@ -101,8 +101,8 @@ static void *_dup_masks_form_cb(const void *formdata, gpointer user_data)
   return (void *)_dup_masks_form(f);
 }
 
-// duplicate the list of forms, replace item in the list with form is the same formid
-static GList *_dup_masks_forms_deep(GList *forms, dt_masks_form_t *form)
+// duplicate the list of forms, replace item in the list with form with the same formid
+GList *dt_masks_dup_forms_deep(GList *forms, dt_masks_form_t *form)
 {
   return (GList *)g_list_copy_deep(forms, _dup_masks_form_cb, (gpointer)form);
 }
@@ -110,7 +110,7 @@ static GList *_dup_masks_forms_deep(GList *forms, dt_masks_form_t *form)
 static _masks_undo_data_t *_create_snapshot(GList *forms, dt_masks_form_t *form, dt_develop_t *dev)
 {
   _masks_undo_data_t *data = malloc(sizeof(struct _masks_undo_data_t));
-  data->forms = _dup_masks_forms_deep(forms, form);
+  data->forms = dt_masks_dup_forms_deep(forms, form);
   data->form  = dev->form_visible ? _dup_masks_form(dev->form_visible) : NULL;
   return data;
 }
@@ -130,7 +130,7 @@ static void _masks_do_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data
   dt_develop_t *dev = (dt_develop_t *)user_data;
   _masks_undo_data_t *udata = (_masks_undo_data_t *)item;
 
-  dev->forms = _dup_masks_forms_deep(udata->forms, NULL);
+  dev->forms = dt_masks_dup_forms_deep(udata->forms, NULL);
   dev->form_gui->creation = FALSE;
 
   dt_masks_clear_form_gui(dev);
@@ -965,9 +965,8 @@ dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
   return form;
 }
 
-dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id)
+dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, int id)
 {
-  GList *forms = g_list_first(dev->forms);
   while(forms)
   {
     dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
@@ -977,6 +976,10 @@ dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id)
   return NULL;
 }
 
+dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id)
+{
+  return dt_masks_get_from_id_ext(dev->forms, id);
+}
 
 void dt_masks_read_forms(dt_develop_t *dev)
 {
