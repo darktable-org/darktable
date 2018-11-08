@@ -370,7 +370,7 @@ static void sanitize_latitude(dt_iop_filmic_params_t *p, dt_iop_filmic_gui_data_
   }
   else if (p->latitude_stops <  (p->white_point_source - p->black_point_source) / 4.0f)
   {
-    // Having a latitude < dynamic range / 2.5 breaks the spline interpolation
+    // Having a latitude < dynamic range / 4 breaks the spline interpolation
     p->latitude_stops =  (p->white_point_source - p->black_point_source) / 4.0f;
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
@@ -860,8 +860,14 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   float shoulder_log = (shoulder_display - linear_intercept) / p->contrast;
   shoulder_log = CLAMP(shoulder_log, grey_log, 0.999f);
 
+  /**
+   * Now we have 3 segments :
+   *  - x = [0.0 ; toe_log], curved part
+   *  - x = [toe_log ; shoulder_log], linear part
+   *  - x = [shoulder_log ; 1.0] curved part
+  **/
 
-  // sanitize values
+  // sanitize the nodes
   int TOE_LOST = FALSE;
   int SHOULDER_LOST = FALSE;
 
@@ -873,13 +879,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   {
     SHOULDER_LOST = TRUE;
   }
-
-  /**
-   * Now we have 3 segments :
-   *  - x = [0.0 ; toe_log], curved part
-   *  - x = [toe_log ; shoulder_log], linear part
-   *  - x = [shoulder_log ; 1.0] curved part
-  **/
 
   // Build the curve
   if (SHOULDER_LOST && !TOE_LOST)
