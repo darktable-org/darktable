@@ -16,7 +16,7 @@
 
 #include <xmmintrin.h>
 
-/*
+/**
  * Fast SSE2 implementation of special math functions.
  */
 
@@ -120,6 +120,22 @@ static inline __m128 _mm_pow_ps(__m128 x, __m128 y)
 static inline __m128 _mm_pow_ps1(__m128 x, float y)
 {
   return _mm_exp2_ps(_mm_mul_ps(_mm_log2_ps(x), _mm_set1_ps(y)));
+}
+
+
+/**
+ * Allow access of the content of a SSE vector
+ **/
+
+static inline float _mm_vectorGetByIndex( __m128 V, unsigned int i)
+{
+  union {
+    __m128 v;
+    float a[4];
+  } converter;
+
+  converter.v = V;
+  return converter.a[i];
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
