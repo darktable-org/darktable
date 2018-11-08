@@ -587,7 +587,7 @@ colorbalance (read_only image2d_t in, write_only image2d_t out, const int width,
 
   if(x >= width || y >= height) return;
 
-  const float4 Lab = read_imagef(in, sampleri, (int2)(x, y));
+  float4 Lab = read_imagef(in, sampleri, (int2)(x, y));
   float4 sRGB = XYZ_to_sRGB(Lab_to_XYZ(Lab));
 
   // Lift gamma gain
@@ -608,7 +608,7 @@ colorbalance_lgg (read_only image2d_t in, write_only image2d_t out, const int wi
 
   if(x >= width || y >= height) return;
 
-  const float4 Lab = read_imagef(in, sampleri, (int2)(x, y));
+  float4 Lab = read_imagef(in, sampleri, (int2)(x, y));
   const float4 XYZ = Lab_to_XYZ(Lab);
   float4 RGB = XYZ_to_prophotorgb(XYZ);
 
@@ -647,7 +647,7 @@ colorbalance_cdl (read_only image2d_t in, write_only image2d_t out, const int wi
 
   if(x >= width || y >= height) return;
 
-  const float4 Lab = read_imagef(in, sampleri, (int2)(x, y));
+  float4 Lab = read_imagef(in, sampleri, (int2)(x, y));
   const float4 XYZ = Lab_to_XYZ(Lab);
   float4 RGB = XYZ_to_prophotorgb(XYZ);
 
