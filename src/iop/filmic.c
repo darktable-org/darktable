@@ -22,6 +22,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/opencl.h"
+#include "common/sse.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop_math.h"
@@ -212,6 +213,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   */
   const float EPS = powf(2.0f, -16);
   const float saturation = data->saturation / 100.0f;
+  const int run_saturation = (saturation != 1.0f) ? TRUE : FALSE;
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) shared(data) schedule(static)
@@ -234,21 +236,25 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       for(size_t c = 0; c < 3; c++)
       {
         // Log tone-mapping
-        rgb[c] = (rgb[c] > EPS) ? (Log2(rgb[c] / data->grey_source) - data->black_source) / data->dynamic_range : EPS;
+        rgb[c] = (rgb[c] > EPS) ? (fastlog2(rgb[c] / data->grey_source) - data->black_source) / data->dynamic_range : EPS;
 
         // Filmic S curve
         rgb[c] = (rgb[c] > 1.0f)
                     ? dt_iop_eval_exp(data->unbounded_coeffs, rgb[c])
                     : (rgb[c] < 0.0f)
-                        ? dt_iop_eval_exp(data->unbounded_coeffs + 3, 1.0f - rgb[c])
-                        : data->table[CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)];
+                      ? dt_iop_eval_exp(data->unbounded_coeffs + 3, 1.0f - rgb[c])
+                      : data->table[CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)];
       }
 
       // Adjust the saturation
-      dt_prophotorgb_to_XYZ(rgb, XYZ);
-      for(size_t c = 0; c < 3; c++)
+      if (run_saturation)
       {
-        rgb[c] = XYZ[1] + saturation * (rgb[c] - XYZ[1]);
+        // Run only when the saturation has a non-neutral value
+        dt_prophotorgb_to_XYZ(rgb, XYZ);
+        for(size_t c = 0; c < 3; c++)
+        {
+          rgb[c] = XYZ[1] + saturation * (rgb[c] - XYZ[1]);
+        }
       }
 
       // transform the result back to Lab
@@ -267,6 +273,89 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
+
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_filmic_data_t *data = (dt_iop_filmic_data_t *)piece->data;
+
+  const int ch = piece->colors;
+
+  const float sat = data->saturation / 100.0f;
+  const int run_saturation = (sat != 1.0f) ? TRUE : FALSE;
+  const __m128 saturation = _mm_setr_ps(sat, sat, sat, 0.0f);
+
+  const float grey_corr = data->grey_source;
+  const __m128 grey = _mm_setr_ps(grey_corr, grey_corr, grey_corr, 0.0f);
+
+  const __m128 black = _mm_setr_ps(data->black_source, data->black_source, data->black_source, 0.0f);
+  const __m128 dynamic_range = _mm_setr_ps(data->dynamic_range, data->dynamic_range, data->dynamic_range, .0f);
+
+  const float eps = powf(2.0f, -16);
+  const __m128 EPS = _mm_setr_ps(eps, eps, eps, 0.0f);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(data) schedule(static)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    float *in = ((float *)ivoid) + (size_t)ch * roi_in->width * j;
+    float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
+    for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
+    {
+      // Lab -> XYZ
+      __m128 XYZ = dt_Lab_to_XYZ_sse2(_mm_load_ps(in));
+      // XYZ -> sRGB
+      __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
+
+      // Log tone-mapping
+      rgb = _mm_max_ps(rgb, EPS);
+      rgb = rgb / grey;
+      rgb = _mm_log2_ps(rgb);
+      rgb -= black;
+      rgb /=  dynamic_range;
+      rgb = _mm_max_ps(rgb, EPS);
+
+      float rgb_unpack[4] = { _mm_vectorGetByIndex(rgb, 0),
+                              _mm_vectorGetByIndex(rgb, 1),
+                              _mm_vectorGetByIndex(rgb, 2),
+                              _mm_vectorGetByIndex(rgb, 3) };
+
+      for (int c = 0; c < 3; ++c)
+      {
+        // Filmic S curve
+        rgb_unpack[c] = (rgb_unpack[c] > 1.0f)
+                      ? dt_iop_eval_exp(data->unbounded_coeffs, rgb_unpack[c])
+                      : (rgb_unpack[c] < 0.0f)
+                        ? dt_iop_eval_exp(data->unbounded_coeffs + 3, 1.0f - rgb_unpack[c])
+                        : data->table[CLAMP((int)(rgb_unpack[c] * 0x10000ul), 0, 0xffff)];
+      }
+
+      rgb = _mm_load_ps(rgb_unpack);
+
+      // adjust main saturation
+      if (run_saturation)
+      {
+        XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+        const __m128 luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+        rgb = luma + saturation * (rgb - luma);
+      }
+
+      // transform the result back to Lab
+      // sRGB -> XYZ
+      XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+      // XYZ -> Lab
+      _mm_store_ps(out, dt_XYZ_to_Lab_sse2(XYZ));
+    }
+  }
+
+
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
+#endif
+
 
 static void sanitize_latitude(dt_iop_filmic_params_t *p, dt_iop_filmic_gui_data_t *g)
 {
