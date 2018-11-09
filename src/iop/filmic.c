@@ -894,6 +894,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   // interception
   float linear_intercept = grey_display - (contrast * grey_log);
+  if (linear_intercept > 0.0f) linear_intercept = -0.001f;
 
   // X coordinates
   float toe_log = (toe_display - linear_intercept) / p->contrast;
