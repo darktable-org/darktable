@@ -26,6 +26,7 @@
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "common/utility.h"
+#include "common/collection.h"
 #include "control/control.h"
 #include "develop/develop.h"
 
@@ -577,7 +578,12 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   dt_image_synch_xmp(dest_imgid);
 
   dt_mipmap_cache_remove(darktable.mipmap_cache, dest_imgid);
-  dt_image_set_aspect_ratio(dest_imgid);
+
+  /* update the aspect ratio if the current sorting is based on aspect ratio, otherwise the aspect ratio will be
+     recalculated when the mimpap will be recreated */
+  if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+    dt_image_set_aspect_ratio(dest_imgid);
+
   return 0;
 }
 
