@@ -123,7 +123,7 @@ add_iop(denoiseprofile "denoiseprofile.c")
 add_iop(defringe "defringe.c")
 add_iop(ashift "ashift.c")
 add_iop(hazeremoval "hazeremoval.c")
-add_iop(toneequalizer "filmic.c" DEFAULT_VISIBLE)
+add_iop(filmic "filmic.c" DEFAULT_VISIBLE)
 
 if(RSVG2_FOUND)
   add_iop(watermark "watermark.c")
