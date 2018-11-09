@@ -518,9 +518,28 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   dt_image_set_flip(imgid, orientation);
 }
 
+void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio)
+{
+  if (aspect_ratio > .0f)
+  {
+    sqlite3_stmt *stmt;
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE images SET aspect_ratio=ROUND(?1,1) WHERE id=?2",
+                                -1, &stmt, NULL);
+
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, aspect_ratio);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  }
+}
+
 void dt_image_set_aspect_ratio(const int32_t imgid)
 {
-  double aspect_ratio = .0f;
   dt_mipmap_buffer_t buf;
 
   // mipmap cache must be initialized, otherwise we'll update next call
@@ -529,26 +548,12 @@ void dt_image_set_aspect_ratio(const int32_t imgid)
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_0, DT_MIPMAP_BLOCKING, 'r');
 
     if (buf.buf && buf.height && buf.width)
-      aspect_ratio = (float)buf.width / (float)buf.height;
-
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-
-    // store the computed aspect ratio
-    if (aspect_ratio > 0.0f)
     {
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE images SET aspect_ratio=ROUND(?1,1) WHERE id=?2",
-                                  -1, &stmt, NULL);
-
-      DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, aspect_ratio);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
+      const double aspect_ratio = (double)buf.width / (double)buf.height;
+      dt_image_set_aspect_ratio_to(imgid, aspect_ratio);
     }
 
-    if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   }
 }
 
