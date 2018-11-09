@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-06 18:50+0100\n"
-"PO-Revision-Date: 2018-11-06 18:53+0100\n"
+"POT-Creation-Date: 2018-11-09 14:04+0100\n"
+"PO-Revision-Date: 2018-11-09 14:11+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Poedit 2.1.1\n"
 
 #: ../build/src/preferences_gen.h:1686
 msgid "GUI options"
@@ -1417,7 +1417,7 @@ msgstr ""
 #: ../src/common/history.c:621 ../src/common/history.c:624
 #: ../src/common/history.c:640 ../src/common/styles.c:728
 #: ../src/common/styles.c:732 ../src/develop/blend_gui.c:2039
-#: ../src/develop/develop.c:1348 ../src/iop/ashift.c:4592
+#: ../src/develop/develop.c:1349 ../src/iop/ashift.c:4592
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "activé(e)"
@@ -1425,7 +1425,7 @@ msgstr "activé(e)"
 #: ../src/common/history.c:621 ../src/common/history.c:624
 #: ../src/common/history.c:640 ../src/common/styles.c:728
 #: ../src/common/styles.c:732 ../src/develop/blend_gui.c:1811
-#: ../src/develop/blend_gui.c:2036 ../src/develop/develop.c:1348
+#: ../src/develop/blend_gui.c:2036 ../src/develop/develop.c:1349
 #: ../src/imageio/format/exr.cc:360 ../src/imageio/format/j2k.c:663
 #: ../src/iop/ashift.c:4591 ../src/iop/ashift.c:4597 ../src/iop/colorin.c:1866
 #: ../src/iop/demosaic.c:5066 ../src/iop/vignette.c:1143
@@ -2562,50 +2562,50 @@ msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "désactive temporairement le masque de fusion. uniquement pour le module actif"
 
-#: ../src/develop/develop.c:1151
+#: ../src/develop/develop.c:1152
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module « %s » version non cohérente: %d != %d"
 
-#: ../src/develop/imageop.c:983
+#: ../src/develop/imageop.c:1004
 msgid "new instance"
 msgstr "nouvelle instance"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:988
+#: ../src/develop/imageop.c:1009
 msgid "duplicate instance"
 msgstr "cloner l'instance"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:993 ../src/libs/masks.c:1155
+#: ../src/develop/imageop.c:1014 ../src/libs/masks.c:1155
 msgid "move up"
 msgstr "monter"
 
-#: ../src/develop/imageop.c:999 ../src/libs/masks.c:1158
+#: ../src/develop/imageop.c:1020 ../src/libs/masks.c:1158
 msgid "move down"
 msgstr "descendre"
 
 #. delete
-#: ../src/develop/imageop.c:1005 ../src/libs/image.c:142
+#: ../src/develop/imageop.c:1026 ../src/libs/image.c:142
 #: ../src/libs/styles.c:371 ../src/libs/tagging.c:575
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:1012
+#: ../src/develop/imageop.c:1033
 msgid "rename"
 msgstr "renommer"
 
-#: ../src/develop/imageop.c:1039 ../src/develop/imageop.c:2020
+#: ../src/develop/imageop.c:1060 ../src/develop/imageop.c:2041
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1039 ../src/develop/imageop.c:2020
+#: ../src/develop/imageop.c:1060 ../src/develop/imageop.c:2041
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1362 ../src/gui/accelerators.c:628
+#: ../src/develop/imageop.c:1383 ../src/gui/accelerators.c:628
 #: ../src/gui/accelerators.c:713 ../src/gui/accelerators.c:878
 #: ../src/gui/accelerators.c:904 ../src/gui/presets.c:179
 #: ../src/gui/presets.c:286 ../src/gui/presets.c:628
@@ -2614,33 +2614,33 @@ msgstr "%s est désactivé"
 msgid "preset"
 msgstr "pré-réglage"
 
-#: ../src/develop/imageop.c:1382
+#: ../src/develop/imageop.c:1403
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusion"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1387
+#: ../src/develop/imageop.c:1408
 msgctxt "accel"
 msgid "show module"
 msgstr "afficher le module"
 
-#: ../src/develop/imageop.c:1388
+#: ../src/develop/imageop.c:1409
 msgctxt "accel"
 msgid "enable module"
 msgstr "activer le module"
 
-#: ../src/develop/imageop.c:1390 ../src/libs/lib.c:602
+#: ../src/develop/imageop.c:1411 ../src/libs/lib.c:602
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1391 ../src/libs/lib.c:606
+#: ../src/develop/imageop.c:1412 ../src/libs/lib.c:606
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:1985
+#: ../src/develop/imageop.c:2006
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -2648,16 +2648,16 @@ msgstr ""
 "actions instances multiples\n"
 "clic-milieu pour créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:1996 ../src/libs/lib.c:997
+#: ../src/develop/imageop.c:2017 ../src/libs/lib.c:997
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:2005 ../src/gui/preferences.c:398
+#: ../src/develop/imageop.c:2026 ../src/gui/preferences.c:398
 #: ../src/libs/lib.c:1009
 msgid "presets"
 msgstr "pré-réglages"
 
-#: ../src/develop/imageop.c:2007
+#: ../src/develop/imageop.c:2028
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -4939,7 +4939,7 @@ msgstr "similaire nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:220
+#: ../src/iop/basecurve.c:220 ../src/iop/filmic.c:1255
 msgid "cubic spline"
 msgstr "spline cubique"
 
@@ -5076,7 +5076,7 @@ msgstr "taille des détails locaux (sigma spatial du filtre bilatéral)"
 
 #: ../src/iop/bilat.c:543 ../src/iop/colisa.c:366
 #: ../src/iop/colorbalance.c:2364 ../src/iop/colorbalance.c:2366
-#: ../src/iop/lowpass.c:673
+#: ../src/iop/filmic.c:1217 ../src/iop/lowpass.c:673
 msgid "contrast"
 msgstr "contraste"
 
@@ -5461,9 +5461,9 @@ msgstr "teinte"
 #: ../src/iop/colorbalance.c:2558 ../src/iop/colorchecker.c:1313
 #: ../src/iop/colorcorrection.c:289 ../src/iop/colorize.c:444
 #: ../src/iop/colorzones.c:1088 ../src/iop/colorzones.c:1122
-#: ../src/iop/graduatednd.c:1185 ../src/iop/lowpass.c:675
-#: ../src/iop/soften.c:716 ../src/iop/splittoning.c:501
-#: ../src/iop/vignette.c:1152
+#: ../src/iop/filmic.c:1241 ../src/iop/graduatednd.c:1185
+#: ../src/iop/lowpass.c:675 ../src/iop/soften.c:716
+#: ../src/iop/splittoning.c:501 ../src/iop/vignette.c:1152
 msgid "saturation"
 msgstr "saturation"
 
@@ -5771,7 +5771,8 @@ msgid "controls"
 msgstr "contrôles"
 
 #: ../src/iop/colorbalance.c:1241 ../src/iop/colorbalance.c:2136
-#: ../src/iop/colorbalance.c:2250 ../src/iop/profile_gamma.c:508
+#: ../src/iop/colorbalance.c:2250 ../src/iop/filmic.c:528
+#: ../src/iop/filmic.c:772 ../src/iop/profile_gamma.c:508
 #: ../src/iop/profile_gamma.c:675
 msgid "wait for the preview to be updated."
 msgstr "attendez que la pré-visualisation soit mise à jour"
@@ -6867,6 +6868,189 @@ msgstr "CE calculée: "
 msgid "what exposure correction has actually been used"
 msgstr "la correction d'exposition réellement utilisée"
 
+#: ../src/iop/filmic.c:137
+msgid "filmic"
+msgstr "filmique"
+
+#: ../src/iop/filmic.c:1163
+msgid "logarithmic tone-mapping"
+msgstr "mappage-tonalité logarithmique"
+
+#: ../src/iop/filmic.c:1167
+msgid "middle grey luminance"
+msgstr "luminance du gris moyen"
+
+#: ../src/iop/filmic.c:1170
+msgid ""
+"adjust to match the average luminance of the subject.\n"
+"except in back-lighting situations, this should be around 18%."
+msgstr ""
+"ajuster pour correspondre à la luminance moyenne du sujet.\n"
+"sauf pour les scènes sombres, cette valeur devrait être autour de 18%"
+
+#: ../src/iop/filmic.c:1179 ../src/iop/profile_gamma.c:967
+msgid "black relative exposure"
+msgstr "exposition relative du noir"
+
+#: ../src/iop/filmic.c:1182 ../src/iop/profile_gamma.c:970
+msgid ""
+"number of stops between middle grey and pure black\n"
+"this is a reading a posemeter would give you on the scene"
+msgstr ""
+"nombre de stops entre le gris moyen et le noir pur\n"
+"ceci est la valeur que vous donnerait un posemètre sur la scène"
+
+#: ../src/iop/filmic.c:1190
+msgid "white relative exposure"
+msgstr "exposition relative du blanc"
+
+#: ../src/iop/filmic.c:1193
+msgid ""
+"number of stops between middle grey and pure white\n"
+"this is a reading a posemeter would give you on the scene"
+msgstr ""
+"nombre de stops entre le gris moyen et le blanc pur\n"
+"ceci est la valeur que vous donnerait un posemètre sur la scène"
+
+#: ../src/iop/filmic.c:1201
+msgid "auto tuning security factor"
+msgstr "facteur de sécurité"
+
+#: ../src/iop/filmic.c:1204
+msgid "enlarge or shrink the computed dynamic range"
+msgstr "élargir ou rétrécir la plage dynamique calculée"
+
+#: ../src/iop/filmic.c:1207
+msgid "auto tune source"
+msgstr "réglage auto"
+
+#: ../src/iop/filmic.c:1208 ../src/iop/profile_gamma.c:998
+msgid "make an optimization with some guessing"
+msgstr "faire une optimisation basée sur des suppositions"
+
+#: ../src/iop/filmic.c:1213
+msgid "filmic S curve"
+msgstr "courbe filmique en S"
+
+#: ../src/iop/filmic.c:1219
+msgid "slope of the linear part of the curve"
+msgstr "pente de la partie linéaire de la courbe"
+
+#. geotagging
+#: ../src/iop/filmic.c:1224 ../src/libs/metadata_view.c:127
+msgid "latitude"
+msgstr "latitude"
+
+#: ../src/iop/filmic.c:1227
+msgid ""
+"linearity domain in the middle of the curve\n"
+"increase to get more contrast at the extreme luminances"
+msgstr ""
+"domaine de linéarité au centre de la courbe\n"
+"augmenter pour obtenir plus de contraste dans les luminances extrêmes"
+
+#: ../src/iop/filmic.c:1233
+msgid "balance shadows-highlights"
+msgstr "équilibre ombres / hautes lumières"
+
+#: ../src/iop/filmic.c:1236
+msgid "gives more room to shadows or highlights, to protect the details"
+msgstr ""
+"donne plus de place aux ombres ou aux hautes lumières, pour protéger les "
+"détails"
+
+#: ../src/iop/filmic.c:1244
+msgid ""
+"desaturates the output, if the contrast adjustment\n"
+"produces over-saturation in shadows"
+msgstr ""
+"désaturer la sortie, si l'ajustement du contraste\n"
+"produit des ombres sur-saturées "
+
+#: ../src/iop/filmic.c:1254
+msgid "interpolation method"
+msgstr "méthode d'interpolation"
+
+#: ../src/iop/filmic.c:1256
+msgid "centripetal spline"
+msgstr "spline centripète"
+
+#: ../src/iop/filmic.c:1257
+msgid "monotonic spline"
+msgstr "spline monotone"
+
+#: ../src/iop/filmic.c:1259
+msgid ""
+"change this method if you see oscillations or cusps in the curve\n"
+"- cubic spline is better to produce smooth curves but oscillates when nodes "
+"are too close\n"
+"- centripetal is better to avoids cusps and oscillations with close nodes "
+"but is less smooth\n"
+"- monotonic is better for accuracy of pure analytical functions (log, gamma, "
+"exp)\n"
+msgstr ""
+"changer la méthode si des oscillations ou des points de rebroussement "
+"apparaissent dans la courbe:\n"
+"- spline cubique donne des courbes plus douces mais produit des oscillations "
+"quand les points sont proches\n"
+"- centripète permet d'éviter les points de rebroussement et les oscillations "
+"avec les points proches mais est moins doux\n"
+"- monotone donne une meilleure précision sur les fonctions mathématiques "
+"analytiques (log, gamma, exp). \n"
+
+#: ../src/iop/filmic.c:1265
+msgid "destination/display"
+msgstr "destination/affichage"
+
+#: ../src/iop/filmic.c:1269
+msgid "black luminance"
+msgstr "luminance du noir"
+
+#: ../src/iop/filmic.c:1272
+msgid ""
+"luminance of output pure black, this should be 0%\n"
+"except if you want a faded look"
+msgstr ""
+"luminance du noir pur de sortie, devrait être 0%\n"
+"sauf pour obtenir des tons fades"
+
+#: ../src/iop/filmic.c:1278
+msgid "middle grey destination"
+msgstr "destination du gris moyen"
+
+#: ../src/iop/filmic.c:1281
+msgid ""
+"midde grey value of the target display or color space.\n"
+"you should never touch that unless you know what you are doing."
+msgstr ""
+"valeur du gris moyen de la cible de sortie ou de l'espace de couleur.\n"
+"ne jamais toucher sauf si vous savez ce que vous faites."
+
+#: ../src/iop/filmic.c:1287
+msgid "white luminance"
+msgstr "luminance du blanc"
+
+#: ../src/iop/filmic.c:1290
+msgid ""
+"luminance of output pure white, this should be 100%\n"
+"except if you want a faded look"
+msgstr ""
+"luminance du blanc pur de sortie, devrait être 100%\n"
+"sauf pour obtenir des tons fades"
+
+#: ../src/iop/filmic.c:1296
+msgid "destination power factor"
+msgstr "destination du facteur de puissance"
+
+#: ../src/iop/filmic.c:1298
+msgid ""
+"power or gamma of the transfer function of the display or color space.\n"
+"you should never touch that unless you know what you are doing."
+msgstr ""
+"power ou gamma de la fonction de transfert de l'affichage ou de l'espace de "
+"couleur.\n"
+"ne jamais toucher sauf si vous savez ce que vous faites."
+
 #: ../src/iop/finalscale.c:39
 msgctxt "modulename"
 msgid "scale into final size"
@@ -7885,18 +8069,6 @@ msgstr "luma du gris moyen"
 msgid "adjust to match the average luma of the subject"
 msgstr "ajuster pour faire correspondre à la luma moyenne du sujet"
 
-#: ../src/iop/profile_gamma.c:967
-msgid "black relative exposure"
-msgstr "exposition relative du noir"
-
-#: ../src/iop/profile_gamma.c:970
-msgid ""
-"number of stops between middle grey and pure black\n"
-"this is a reading a posemeter would give you on the scene"
-msgstr ""
-"nombre de stops entre le gris moyen et le noir pur\n"
-"ceci est une lecture que vous donnerait un posemètre sur la scène"
-
 #: ../src/iop/profile_gamma.c:979
 msgid "dynamic range"
 msgstr "plage dynamique"
@@ -7929,10 +8101,6 @@ msgstr ""
 #: ../src/iop/profile_gamma.c:997
 msgid "auto tune"
 msgstr "réglage auto"
-
-#: ../src/iop/profile_gamma.c:998
-msgid "make an optimization with some guessing"
-msgstr "faire une optimisation basée sur des suppositions"
 
 #: ../src/iop/rawdenoise.c:124
 msgid "raw denoise"
@@ -9818,7 +9986,7 @@ msgstr "génère l'historique minimum qui produit la même image"
 msgid "create a style from the current history stack"
 msgstr "crée un style depuis l'historique actuel"
 
-#: ../src/libs/history.c:528 ../src/libs/snapshots.c:345
+#: ../src/libs/history.c:676 ../src/libs/snapshots.c:345
 msgid "original"
 msgstr "original"
 
@@ -10506,11 +10674,6 @@ msgstr "hauteur exporté"
 #: ../src/libs/metadata_view.c:124
 msgid "copyright"
 msgstr "droits"
-
-#. geotagging
-#: ../src/libs/metadata_view.c:127
-msgid "latitude"
-msgstr "latitude"
 
 #: ../src/libs/metadata_view.c:128
 msgid "longitude"
@@ -12064,9 +12227,6 @@ msgstr ""
 
 #~ msgid "click to add line"
 #~ msgstr "cliquer pour ajouter une ligne"
-
-#~ msgid "click to add curve"
-#~ msgstr "cliquer pour ajouter une courbe"
 
 #~ msgid "select fill color."
 #~ msgstr "sélectionner la couleur de remplissage"
