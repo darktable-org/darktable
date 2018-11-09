@@ -125,7 +125,7 @@ def add_edges(gr):
   gr.add_edge(('flip', 'retouch'))
   gr.add_edge(('flip', 'liquify'))
   gr.add_edge(('flip', 'ashift'))
-  
+
   # ashift wants a lens corrected image with straight lines.
   # therefore lens should come before and liquify should come after ashift
   gr.add_edge(('ashift', 'lens'))
@@ -268,6 +268,7 @@ def add_edges(gr):
   gr.add_edge(('colorcorrection', 'tonecurve'))
   gr.add_edge(('colorcorrection', 'levels'))
   gr.add_edge(('colorcorrection', 'relight'))
+  gr.add_edge(('colorcorrection', 'filmic'))
   # want to split-tone monochrome images:
   gr.add_edge(('colorcorrection', 'monochrome'))
 
@@ -429,6 +430,16 @@ def add_edges(gr):
   gr.add_edge(('relight', 'shadhi'))
   gr.add_edge(('colisa', 'shadhi'))
 
+  # filmic is a simple parametric tonecurve + log that simulates film
+  # we want it as the last step in the linear pipe
+  gr.add_edge(('colorout', 'filmic'))
+  gr.add_edge(('tonecurve', 'filmic'))
+  gr.add_edge(('levels', 'filmic'))
+  gr.add_edge(('zonesystem', 'filmic'))
+  gr.add_edge(('relight', 'filmic'))
+  gr.add_edge(('colisa', 'filmic'))
+  gr.add_edge(('filmic', 'colorbalance'))
+
   # the bilateral filter, in linear input rgb
   gr.add_edge(('colorin', 'bilateral'))
   gr.add_edge(('bilateral', 'demosaic'))
@@ -482,6 +493,7 @@ def add_edges(gr):
   gr.add_edge(('colorize', 'colorchecker'))
   gr.add_edge(('colisa', 'colorchecker'))
   gr.add_edge(('defringe', 'colorchecker'))
+  gr.add_edge(('filmic', 'colorchecker'))
   gr.add_edge(('colorchecker', 'colorreconstruction'))
 
   # ugly hack: don't let vibrance drift any more
@@ -521,6 +533,7 @@ gr.add_nodes([
 'equalizer', # deprecated
 'exposure',
 'finalscale',
+'filmic',
 'flip',
 'gamma',
 'globaltonemap',
