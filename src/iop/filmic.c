@@ -389,19 +389,19 @@ error:
 
 static void sanitize_latitude(dt_iop_filmic_params_t *p, dt_iop_filmic_gui_data_t *g)
 {
-  if (p->latitude_stops > (p->white_point_source - p->black_point_source) * 0.95f)
+  if (p->latitude_stops > (p->white_point_source - p->black_point_source) * 0.90f)
   {
     // The film latitude is its linear part
     // it can never be higher than the dynamic range
-    p->latitude_stops =  (p->white_point_source - p->black_point_source) * 0.95f;
+    p->latitude_stops =  (p->white_point_source - p->black_point_source) * 0.90f;
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
     darktable.gui->reset = 0;
   }
-  else if (p->latitude_stops <  (p->white_point_source - p->black_point_source) / 4.0f)
+  else if (p->latitude_stops <  (p->white_point_source - p->black_point_source) / 5.0f)
   {
     // Having a latitude < dynamic range / 4 breaks the spline interpolation
-    p->latitude_stops =  (p->white_point_source - p->black_point_source) / 4.0f;
+    p->latitude_stops =  (p->white_point_source - p->black_point_source) / 5.0f;
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
     darktable.gui->reset = 0;
@@ -868,29 +868,29 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   const float grey_display = powf(p->grey_point_target / 100.0f, 1.0f / (p->output_power));
   const float white_display = p->white_point_target / 100.0f; // in %
 
-  const float latitude = CLAMP(p->latitude_stops, dynamic_range/4.0f, dynamic_range * 0.95f);
+  const float latitude = CLAMP(p->latitude_stops, dynamic_range/5.0f, dynamic_range * 0.90f);
   const float balance = p->balance / 100.0f; // in %
 
   float contrast = p->contrast;
   if (contrast < grey_display / grey_log)
   {
     // We need grey_display - (contrast * grey_log) <= 0.0
-    contrast = grey_display / grey_log;
+    contrast = 1.0001f * grey_display / grey_log;
   }
 
   // nodes for mapping from log encoding to desired target luminance
   // Y coordinates
   float toe_display = black_display +
                         ((fabsf(black_source)) *
-                          (dynamic_range - latitude) *
-                          (1.0f - balance) / dynamic_range / dynamic_range);
+                          (dynamic_range - latitude)
+                          / dynamic_range / dynamic_range);
 
   toe_display = CLAMP(toe_display, 0.0f, grey_display);
 
   float shoulder_display = white_display -
                         ((white_source) *
-                          (dynamic_range - latitude) *
-                          (1.0f + balance) / dynamic_range / dynamic_range);
+                          (dynamic_range - latitude)
+                          / dynamic_range / dynamic_range);
 
   shoulder_display = CLAMP(shoulder_display, grey_display, 1.0f);
 
@@ -899,11 +899,29 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   if (linear_intercept > 0.0f) linear_intercept = -0.001f;
 
   // X coordinates
-  float toe_log = (toe_display - linear_intercept) / p->contrast;
-  toe_log = CLAMP(toe_log, 0.001f, grey_log);
+  float toe_log = (toe_display - linear_intercept) / contrast;
+  toe_log = CLAMP(toe_log, 0.0f, grey_log);
 
-  float shoulder_log = (shoulder_display - linear_intercept) / p->contrast;
-  shoulder_log = CLAMP(shoulder_log, grey_log, 0.999f);
+  float shoulder_log = (shoulder_display - linear_intercept) / contrast;
+  shoulder_log = CLAMP(shoulder_log, grey_log, 1.0f);
+
+  // Apply the highlights/shadows balance as a shift along the contrast slope
+  const float norm = powf(powf(contrast, 2.0f) + 1.0f, 0.5f);
+  const float coeff = (dynamic_range - latitude) / dynamic_range * balance;
+  const float offset_y = coeff * contrast /norm;
+
+  toe_display += offset_y;
+  toe_display = CLAMP(toe_display, 0.0f, grey_display);
+
+  shoulder_display += offset_y;
+  shoulder_display = CLAMP(shoulder_display, grey_display, 1.0f);
+
+  toe_log += offset_y / contrast;
+  toe_log = CLAMP(toe_log, 0.0f, grey_log);
+
+  shoulder_log += offset_y / contrast;
+  shoulder_log = CLAMP(shoulder_log, grey_log, 1.0f);
+
 
   /**
    * Now we have 3 segments :
@@ -928,12 +946,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     SHOULDER_LOST = TRUE;
   }
 
-  if (p->interpolator == CUBIC_SPLINE)
-  {
-    // the cubic spline is extra sensitive to close nodes : they will produce cusps
-    if (toe_log < 0.01f || toe_display < 0.01f) TOE_LOST = TRUE;
-    if (shoulder_log > 0.99f || shoulder_display > 0.99f) SHOULDER_LOST = TRUE;
-  }
+  // the cubic spline is extra sensitive to close nodes : they will produce cusps
+  // it's no better for other splines, although not as bad
+  if (toe_log < 0.02f || toe_display < 0.02f) TOE_LOST = TRUE;
+  if (shoulder_log > 0.98f || shoulder_display > 0.98f) SHOULDER_LOST = TRUE;
 
   // Build the curve from the nodes
   if (SHOULDER_LOST && !TOE_LOST)
@@ -996,13 +1012,13 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     // everything OK
     const float x[5] = { black_log,
                          toe_log,
-                         grey_log,
+                         grey_log,// using the grey may overcontrain the problem
                          shoulder_log,
                          white_log };
 
     const float y[5] = { black_display,
                          toe_display,
-                         grey_display,
+                         grey_display,// using the grey may overcontrain the problem
                          shoulder_display,
                          white_display };
 
@@ -1123,7 +1139,7 @@ void init(dt_iop_module_t *module)
                                  100.0,  // target white
                                  2.2,  // target power (~ gamma)
                                  6.0,  // intent latitude
-                                 2.0,  // intent contrast
+                                 1.0,  // intent contrast
                                  90.,   // intent saturation
                                  0.0, // balance shadows/highlights
                                  MONOTONE_HERMITE, //interpolator
@@ -1221,7 +1237,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("filmic S curve")), FALSE, FALSE, 5);
 
   // contrast slider
-  g->contrast = dt_bauhaus_slider_new_with_range(self, 1., 5., 0.05, p->contrast, 2);
+  g->contrast = dt_bauhaus_slider_new_with_range(self, 1., 10., 0.05, p->contrast, 2);
   dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->contrast, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->contrast, _("slope of the linear part of the curve"));
@@ -1237,7 +1253,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->latitude_stops), "value-changed", G_CALLBACK(latitude_stops_callback), self);
 
   // balance slider
-  g->balance = dt_bauhaus_slider_new_with_range(self, -99., 99., 1.0, p->balance, 2);
+  g->balance = dt_bauhaus_slider_new_with_range(self, -100., 100., 1.0, p->balance, 2);
   dt_bauhaus_widget_set_label(g->balance, NULL, _("balance shadows-highlights"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->balance, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->balance, "%.2f %%");
@@ -1259,15 +1275,12 @@ void gui_init(dt_iop_module_t *self)
     #define MONOTONE_HERMITE 2
   */
   g->interpolator = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->interpolator, NULL, _("interpolation method"));
-  dt_bauhaus_combobox_add(g->interpolator, _("cubic spline"));
-  dt_bauhaus_combobox_add(g->interpolator, _("centripetal spline"));
-  dt_bauhaus_combobox_add(g->interpolator, _("monotonic spline"));
+  dt_bauhaus_widget_set_label(g->interpolator, NULL, _("intent"));
+  dt_bauhaus_combobox_add(g->interpolator, _("contrasted")); // cubic spline
+  dt_bauhaus_combobox_add(g->interpolator, _("faded")); // centripetal spline
+  dt_bauhaus_combobox_add(g->interpolator, _("linear")); // monotonic spline
   gtk_box_pack_start(GTK_BOX(self->widget), g->interpolator , TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->interpolator, _("change this method if you see oscillations or cusps in the curve\n"
-                                                 "- cubic spline is better to produce smooth curves but oscillates when nodes are too close\n"
-                                                 "- centripetal is better to avoids cusps and oscillations with close nodes but is less smooth\n"
-                                                 "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)\n"));
+  gtk_widget_set_tooltip_text(g->interpolator, _("change this method if you see reversed contrast or faded blacks"));
   g_signal_connect(G_OBJECT(g->interpolator), "value-changed", G_CALLBACK(interpolator_callback), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("destination/display")), FALSE, FALSE, 5);
