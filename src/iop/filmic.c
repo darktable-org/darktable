@@ -22,7 +22,6 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/opencl.h"
-#include "common/sse.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop_math.h"
@@ -36,6 +35,11 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef __SSE2__
+#include "common/sse.h"
+#endif
+
 
 DT_MODULE_INTROSPECTION(1, dt_iop_filmic_params_t)
 
