@@ -100,7 +100,6 @@ typedef struct dt_iop_filmic_params_t
 
 typedef struct dt_iop_filmic_gui_data_t
 {
-  int apply_picked_color;
   int which_colorpicker;
   GtkWidget *white_point_source;
   GtkWidget *grey_point_source;
@@ -534,6 +533,8 @@ static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
 
 static void apply_autotune(dt_iop_module_t *self)
 {
+  if(self->dt->gui->reset) return;
+
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
 
@@ -720,6 +721,23 @@ static int call_apply_picked_color(struct dt_iop_module_t *self, dt_iop_filmic_g
   return handled;
 }
 
+static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return FALSE;
+  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+
+  /* No color picked, or picked color already applied */
+  if(self->picked_color_max[0] < 0.0f) return FALSE;
+
+  call_apply_picked_color(self, g);
+  /* Make sure next call won't re-apply autotune.
+     Needed to avoid infinite loops draw -> autotune -> set_sliders
+     -> draw. */
+  self->picked_color_max[0] = -INFINITY;
+
+  return FALSE;
+}
+
 static int get_colorpick_from_button(GtkWidget *button, dt_iop_filmic_gui_data_t *g)
 {
   int which_colorpicker = DT_PICKPROFLOG_NONE;
@@ -743,55 +761,23 @@ static void color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
 
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  int clicked_colorpick = get_colorpick_from_button(button, g);
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF || g->which_colorpicker != clicked_colorpick)
   {
-    g->which_colorpicker = get_colorpick_from_button(button, g);
+    g->which_colorpicker = clicked_colorpick;
 
-    if(g->which_colorpicker != DT_PICKPROFLOG_NONE)
-    {
-      dt_iop_request_focus(self);
-      self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-      dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+    dt_iop_request_focus(self);
+    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
 
-      g->apply_picked_color = 1;
-
-      dt_dev_reprocess_all(self->dev);
-    }
+    dt_dev_reprocess_all(self->dev);
   }
   else
   {
-    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f)
-    {
-      dt_control_log(_("wait for the preview to be updated."));
-      return;
-    }
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
-    if(g->apply_picked_color)
-    {
-      call_apply_picked_color(self, g);
-      g->apply_picked_color = 0;
-    }
-
-    const int which_colorpicker = get_colorpick_from_button(button, g);
-    if(which_colorpicker != g->which_colorpicker && which_colorpicker != DT_PICKPROFLOG_NONE)
-    {
-      g->which_colorpicker = which_colorpicker;
-
-      self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-      dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-
-      g->apply_picked_color = 1;
-
-      dt_dev_reprocess_all(self->dev);
-    }
-    else
-    {
-      g->which_colorpicker = DT_PICKPROFLOG_NONE;
-    }
+    disable_colorpick(self);
   }
-
   set_colorpick_state(g, g->which_colorpicker);
+  dt_control_queue_redraw();
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -801,23 +787,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   if(!in)
   {
     disable_colorpick(self);
-    g->apply_picked_color = 0;
     set_colorpick_state(g, g->which_colorpicker);
   }
-}
-
-int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
-{
-  int handled = 0;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
-  {
-    handled = call_apply_picked_color(self, g);
-    g->apply_picked_color = 0;
-  }
-
-  return handled;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -1181,7 +1152,6 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
 
   disable_colorpick(self);
-  g->apply_picked_color = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -1231,13 +1201,17 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->security_factor), "value-changed", G_CALLBACK(security_threshold_callback), self);
 
   g->auto_button = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->auto_button, NULL, _("auto tune globally"));
+  dt_bauhaus_widget_set_label(g->auto_button, NULL, _("auto tune levels"));
   dt_bauhaus_widget_set_quad_paint(g->auto_button, dtgtk_cairo_paint_colorpicker,
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->auto_button, TRUE);
   g_signal_connect(G_OBJECT(g->auto_button), "quad-pressed", G_CALLBACK(color_picker_callback), self);
   gtk_widget_set_tooltip_text(g->auto_button, _("make an optimization with some guessing"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, TRUE, TRUE, 0);
+  /* The widget receives a draw signal right before being applied in
+     the pipeline. This is when we want to take into account the
+     picked color. */
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("filmic S curve")), FALSE, FALSE, 5);
 
