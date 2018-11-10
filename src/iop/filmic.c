@@ -1134,7 +1134,6 @@ void gui_update(dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->interpolator, p->interpolator);
 
-
   set_colorpick_state(g, g->which_colorpicker);
 }
 
@@ -1147,36 +1146,21 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_filmic_params_t);
   module->gui_data = NULL;
 
-  /** Param :
-    float grey_point_source;
-    float black_point_source;
-    float white_point_source;
-    float security_factor;
-    float grey_point_target;
-    float black_point_target;
-    float white_point_target;
-    float output_power;
-    float latitude_stops;
-    float contrast;
-    float saturation;
-    float balance;
-  **/
-
   dt_iop_filmic_params_t tmp
     = (dt_iop_filmic_params_t){
-                                 18, // source grey
-                                -7.0,  // source black
-                                 3.0,  // source white
-                                 0.0,  // security factor
-                                 18.0, // target grey
-                                 0.0,  // target black
-                                 100.0,  // target white
-                                 2.2,  // target power (~ gamma)
-                                 6.0,  // intent latitude
-                                 1.5,  // intent contrast
-                                 90.,   // intent saturation
-                                 0.0, // balance shadows/highlights
-                                 MONOTONE_HERMITE, //interpolator
+                                 .grey_point_source   = 18, // source grey
+                                 .black_point_source  = -7.0,  // source black
+                                 .white_point_source  = 3.0,  // source white
+                                 .security_factor     = 0.0,  // security factor
+                                 .grey_point_target   = 18.0, // target grey
+                                 .black_point_target  = 0.0,  // target black
+                                 .white_point_target  = 100.0,  // target white
+                                 .output_power        = 2.2,  // target power (~ gamma)
+                                 .latitude_stops      = 6.0,  // intent latitude
+                                 .contrast            = 0.5,  // intent contrast
+                                 .saturation          = 90.0,   // intent saturation
+                                 .balance             = 0.0, // balance shadows/highlights
+                                 .interpolator        = MONOTONE_HERMITE //interpolator
                               };
   memcpy(module->params, &tmp, sizeof(dt_iop_filmic_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_filmic_params_t));
