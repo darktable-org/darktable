@@ -1010,20 +1010,20 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   else
   {
     // everything OK
-    const float x[5] = { black_log,
+    const float x[4] = { black_log,
                          toe_log,
-                         grey_log,// using the grey may overcontrain the problem
+                         //grey_log,// using the grey may overcontrain the problem
                          shoulder_log,
                          white_log };
 
-    const float y[5] = { black_display,
+    const float y[4] = { black_display,
                          toe_display,
-                         grey_display,// using the grey may overcontrain the problem
+                         //grey_display,// using the grey may overcontrain the problem
                          shoulder_display,
                          white_display };
 
     d->curve = dt_draw_curve_new(0.0, 1.0, p->interpolator);
-    for(int k = 0; k < 5; k++) (void)dt_draw_curve_add_point(d->curve, x[k], y[k]);
+    for(int k = 0; k < 4; k++) (void)dt_draw_curve_add_point(d->curve, x[k], y[k]);
   }
 
   // Compute the LUT
@@ -1139,7 +1139,7 @@ void init(dt_iop_module_t *module)
                                  100.0,  // target white
                                  2.2,  // target power (~ gamma)
                                  6.0,  // intent latitude
-                                 1.0,  // intent contrast
+                                 1.5,  // intent contrast
                                  90.,   // intent saturation
                                  0.0, // balance shadows/highlights
                                  MONOTONE_HERMITE, //interpolator
