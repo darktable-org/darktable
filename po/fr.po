@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-11-10 08:31+0100\n"
-"PO-Revision-Date: 2018-11-10 11:20+0100\n"
+"PO-Revision-Date: 2018-11-10 11:38+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6989,7 +6989,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1287
 msgid "balance shadows-highlights"
-msgstr "équilibre ombres / hautes lumières"
+msgstr "équilibre ombres-ht. lumières"
 
 #: ../src/iop/filmic.c:1290
 msgid "gives more room to shadows or highlights, to protect the details"
@@ -7071,7 +7071,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1348
 msgid "destination power factor"
-msgstr "destination du facteur de puissance"
+msgstr "destination facteur de puissance"
 
 #: ../src/iop/filmic.c:1350
 msgid ""
