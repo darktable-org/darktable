@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-09 23:53+0100\n"
-"PO-Revision-Date: 2018-11-09 23:59+0100\n"
+"POT-Creation-Date: 2018-11-10 08:31+0100\n"
+"PO-Revision-Date: 2018-11-10 11:20+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2549,9 +2549,8 @@ msgid "gaussian blur"
 msgstr "flou gaussien"
 
 #: ../src/develop/blend_gui.c:2078
-#, fuzzy
 msgid "feathering"
-msgstr "capture"
+msgstr "adoucissement"
 
 #: ../src/develop/blend_gui.c:2082
 msgid "modify mask by chosen method"
@@ -4982,7 +4981,7 @@ msgstr "similaire nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:220 ../src/iop/filmic.c:1263
+#: ../src/iop/basecurve.c:220
 msgid "cubic spline"
 msgstr "spline cubique"
 
@@ -4999,8 +4998,9 @@ msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
 msgid "scale"
 msgstr "échelle"
 
-#: ../src/iop/basecurve.c:1934 ../src/iop/profile_gamma.c:933
-#: ../src/iop/tonecurve.c:448
+#. centripetal spline
+#: ../src/iop/basecurve.c:1934 ../src/iop/filmic.c:1311
+#: ../src/iop/profile_gamma.c:933 ../src/iop/tonecurve.c:448
 msgid "linear"
 msgstr "linéaire"
 
@@ -5119,7 +5119,7 @@ msgstr "taille des détails locaux (sigma spatial du filtre bilatéral)"
 
 #: ../src/iop/bilat.c:543 ../src/iop/colisa.c:366
 #: ../src/iop/colorbalance.c:2364 ../src/iop/colorbalance.c:2366
-#: ../src/iop/filmic.c:1225 ../src/iop/lowpass.c:673
+#: ../src/iop/filmic.c:1271 ../src/iop/lowpass.c:673
 msgid "contrast"
 msgstr "contraste"
 
@@ -5499,7 +5499,7 @@ msgstr "teinte"
 #: ../src/iop/colorbalance.c:2558 ../src/iop/colorchecker.c:1313
 #: ../src/iop/colorcorrection.c:289 ../src/iop/colorize.c:444
 #: ../src/iop/colorzones.c:1088 ../src/iop/colorzones.c:1122
-#: ../src/iop/filmic.c:1249 ../src/iop/graduatednd.c:1185
+#: ../src/iop/filmic.c:1295 ../src/iop/graduatednd.c:1185
 #: ../src/iop/lowpass.c:675 ../src/iop/soften.c:716
 #: ../src/iop/splittoning.c:501 ../src/iop/vignette.c:1152
 msgid "saturation"
@@ -5809,8 +5809,8 @@ msgid "controls"
 msgstr "contrôles"
 
 #: ../src/iop/colorbalance.c:1241 ../src/iop/colorbalance.c:2136
-#: ../src/iop/colorbalance.c:2250 ../src/iop/filmic.c:546
-#: ../src/iop/filmic.c:774 ../src/iop/profile_gamma.c:508
+#: ../src/iop/colorbalance.c:2250 ../src/iop/filmic.c:547
+#: ../src/iop/filmic.c:776 ../src/iop/profile_gamma.c:508
 #: ../src/iop/profile_gamma.c:675
 msgid "wait for the preview to be updated."
 msgstr "attendez que la pré-visualisation soit mise à jour"
@@ -6906,19 +6906,19 @@ msgstr "CE calculée: "
 msgid "what exposure correction has actually been used"
 msgstr "la correction d'exposition réellement utilisée"
 
-#: ../src/iop/filmic.c:137
+#: ../src/iop/filmic.c:138
 msgid "filmic"
 msgstr "filmique"
 
-#: ../src/iop/filmic.c:1171
+#: ../src/iop/filmic.c:1217
 msgid "logarithmic tone-mapping"
 msgstr "mappage-tonalité logarithmique"
 
-#: ../src/iop/filmic.c:1175
+#: ../src/iop/filmic.c:1221
 msgid "middle grey luminance"
 msgstr "luminance du gris moyen"
 
-#: ../src/iop/filmic.c:1178
+#: ../src/iop/filmic.c:1224
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
@@ -6926,11 +6926,11 @@ msgstr ""
 "ajuster pour correspondre à la luminance moyenne du sujet.\n"
 "sauf pour les scènes sombres, cette valeur devrait être autour de 18%"
 
-#: ../src/iop/filmic.c:1187 ../src/iop/profile_gamma.c:967
+#: ../src/iop/filmic.c:1233 ../src/iop/profile_gamma.c:967
 msgid "black relative exposure"
 msgstr "exposition relative du noir"
 
-#: ../src/iop/filmic.c:1190 ../src/iop/profile_gamma.c:970
+#: ../src/iop/filmic.c:1236 ../src/iop/profile_gamma.c:970
 msgid ""
 "number of stops between middle grey and pure black\n"
 "this is a reading a posemeter would give you on the scene"
@@ -6938,11 +6938,11 @@ msgstr ""
 "nombre de stops entre le gris moyen et le noir pur\n"
 "ceci est la valeur que vous donnerait un posemètre sur la scène"
 
-#: ../src/iop/filmic.c:1198
+#: ../src/iop/filmic.c:1244
 msgid "white relative exposure"
 msgstr "exposition relative du blanc"
 
-#: ../src/iop/filmic.c:1201
+#: ../src/iop/filmic.c:1247
 msgid ""
 "number of stops between middle grey and pure white\n"
 "this is a reading a posemeter would give you on the scene"
@@ -6950,36 +6950,36 @@ msgstr ""
 "nombre de stops entre le gris moyen et le blanc pur\n"
 "ceci est la valeur que vous donnerait un posemètre sur la scène"
 
-#: ../src/iop/filmic.c:1209
+#: ../src/iop/filmic.c:1255
 msgid "auto tuning security factor"
 msgstr "facteur de sécurité"
 
-#: ../src/iop/filmic.c:1212
+#: ../src/iop/filmic.c:1258
 msgid "enlarge or shrink the computed dynamic range"
 msgstr "élargir ou rétrécir la plage dynamique calculée"
 
-#: ../src/iop/filmic.c:1215
+#: ../src/iop/filmic.c:1261
 msgid "auto tune source"
 msgstr "réglage auto"
 
-#: ../src/iop/filmic.c:1216 ../src/iop/profile_gamma.c:998
+#: ../src/iop/filmic.c:1262 ../src/iop/profile_gamma.c:998
 msgid "make an optimization with some guessing"
 msgstr "faire une optimisation basée sur des suppositions"
 
-#: ../src/iop/filmic.c:1221
+#: ../src/iop/filmic.c:1267
 msgid "filmic S curve"
 msgstr "courbe filmique en S"
 
-#: ../src/iop/filmic.c:1227
+#: ../src/iop/filmic.c:1273
 msgid "slope of the linear part of the curve"
 msgstr "pente de la partie linéaire de la courbe"
 
 #. geotagging
-#: ../src/iop/filmic.c:1232 ../src/libs/metadata_view.c:127
+#: ../src/iop/filmic.c:1278 ../src/libs/metadata_view.c:127
 msgid "latitude"
 msgstr "latitude"
 
-#: ../src/iop/filmic.c:1235
+#: ../src/iop/filmic.c:1281
 msgid ""
 "linearity domain in the middle of the curve\n"
 "increase to get more contrast at the extreme luminances"
@@ -6987,17 +6987,17 @@ msgstr ""
 "domaine de linéarité au centre de la courbe\n"
 "augmenter pour obtenir plus de contraste dans les luminances extrêmes"
 
-#: ../src/iop/filmic.c:1241
+#: ../src/iop/filmic.c:1287
 msgid "balance shadows-highlights"
 msgstr "équilibre ombres / hautes lumières"
 
-#: ../src/iop/filmic.c:1244
+#: ../src/iop/filmic.c:1290
 msgid "gives more room to shadows or highlights, to protect the details"
 msgstr ""
 "donne plus de place aux ombres ou aux hautes lumières, pour protéger les "
 "détails"
 
-#: ../src/iop/filmic.c:1252
+#: ../src/iop/filmic.c:1298
 msgid ""
 "desaturates the output, if the contrast adjustment\n"
 "produces over-saturation in shadows"
@@ -7005,46 +7005,39 @@ msgstr ""
 "désaturer la sortie, si l'ajustement du contraste\n"
 "produit des ombres sur-saturées "
 
-#: ../src/iop/filmic.c:1262
-msgid "interpolation method"
-msgstr "méthode d'interpolation"
+#: ../src/iop/filmic.c:1308 ../src/libs/export.c:629
+#: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1452
+msgid "intent"
+msgstr "rendu"
 
-#: ../src/iop/filmic.c:1264
-msgid "centripetal spline"
-msgstr "spline centripète"
+#: ../src/iop/filmic.c:1309
+msgid "contrasted"
+msgstr "contrasté"
 
-#: ../src/iop/filmic.c:1265
-msgid "monotonic spline"
-msgstr "spline monotone"
+#. cubic spline
+#: ../src/iop/filmic.c:1310
+msgid "faded"
+msgstr "délavé"
 
-#: ../src/iop/filmic.c:1267
-msgid ""
-"change this method if you see oscillations or cusps in the curve\n"
-"- cubic spline is better to produce smooth curves but oscillates when nodes "
-"are too close\n"
-"- centripetal is better to avoids cusps and oscillations with close nodes "
-"but is less smooth\n"
-"- monotonic is better for accuracy of pure analytical functions (log, gamma, "
-"exp)\n"
+#. monotonic spline
+#: ../src/iop/filmic.c:1312
+msgid "optimized"
+msgstr "optimisé"
+
+#: ../src/iop/filmic.c:1314
+msgid "change this method if you see reversed contrast or faded blacks"
 msgstr ""
-"changer la méthode si des oscillations ou des points de rebroussement "
-"apparaissent dans la courbe:\n"
-"- spline cubique donne des courbes plus douces mais produit des oscillations "
-"quand les points sont proches\n"
-"- centripète permet d'éviter les points de rebroussement et les oscillations "
-"avec les points proches mais est moins doux\n"
-"- monotone donne une meilleure précision sur les fonctions mathématiques "
-"analytiques (log, gamma, exp). \n"
+"changer la méthode si des contrastes inversés ou noirs fades apparaissent"
 
-#: ../src/iop/filmic.c:1273
+#: ../src/iop/filmic.c:1317
 msgid "destination/display"
 msgstr "destination/affichage"
 
-#: ../src/iop/filmic.c:1277
+#: ../src/iop/filmic.c:1321
 msgid "black luminance"
 msgstr "luminance du noir"
 
-#: ../src/iop/filmic.c:1280
+#: ../src/iop/filmic.c:1324
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -7052,11 +7045,11 @@ msgstr ""
 "luminance du noir pur de sortie, devrait être 0%\n"
 "sauf pour obtenir des tons fades"
 
-#: ../src/iop/filmic.c:1286
+#: ../src/iop/filmic.c:1330
 msgid "middle grey destination"
 msgstr "destination du gris moyen"
 
-#: ../src/iop/filmic.c:1289
+#: ../src/iop/filmic.c:1333
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -7064,11 +7057,11 @@ msgstr ""
 "valeur du gris moyen de la cible de sortie ou de l'espace de couleur.\n"
 "ne jamais toucher sauf si vous savez ce que vous faites."
 
-#: ../src/iop/filmic.c:1295
+#: ../src/iop/filmic.c:1339
 msgid "white luminance"
 msgstr "luminance du blanc"
 
-#: ../src/iop/filmic.c:1298
+#: ../src/iop/filmic.c:1342
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -7076,11 +7069,11 @@ msgstr ""
 "luminance du blanc pur de sortie, devrait être 100%\n"
 "sauf pour obtenir des tons fades"
 
-#: ../src/iop/filmic.c:1304
+#: ../src/iop/filmic.c:1348
 msgid "destination power factor"
 msgstr "destination du facteur de puissance"
 
-#: ../src/iop/filmic.c:1306
+#: ../src/iop/filmic.c:1350
 msgid ""
 "power or gamma of the transfer function of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -9846,11 +9839,6 @@ msgstr "paramètres d'image"
 msgid "output ICC profiles in %s or %s"
 msgstr "profils ICC de sortie dans %s ou %s"
 
-#: ../src/libs/export.c:629 ../src/libs/print_settings.c:1239
-#: ../src/libs/print_settings.c:1452
-msgid "intent"
-msgstr "rendu"
-
 #: ../src/libs/export.c:640 ../src/libs/print_settings.c:1468
 msgid "style"
 msgstr "style"
@@ -12231,6 +12219,33 @@ msgstr ""
 "nous vous suggérons de passer à la version 64 bits.\n"
 "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
 "corrigés.\n"
+
+#~ msgid "interpolation method"
+#~ msgstr "méthode d'interpolation"
+
+#~ msgid "centripetal spline"
+#~ msgstr "spline centripète"
+
+#~ msgid "monotonic spline"
+#~ msgstr "spline monotone"
+
+#~ msgid ""
+#~ "change this method if you see oscillations or cusps in the curve\n"
+#~ "- cubic spline is better to produce smooth curves but oscillates when "
+#~ "nodes are too close\n"
+#~ "- centripetal is better to avoids cusps and oscillations with close nodes "
+#~ "but is less smooth\n"
+#~ "- monotonic is better for accuracy of pure analytical functions (log, "
+#~ "gamma, exp)\n"
+#~ msgstr ""
+#~ "changer la méthode si des oscillations ou des points de rebroussement "
+#~ "apparaissent dans la courbe:\n"
+#~ "- spline cubique donne des courbes plus douces mais produit des "
+#~ "oscillations quand les points sont proches\n"
+#~ "- centripète permet d'éviter les points de rebroussement et les "
+#~ "oscillations avec les points proches mais est moins doux\n"
+#~ "- monotone donne une meilleure précision sur les fonctions mathématiques "
+#~ "analytiques (log, gamma, exp). \n"
 
 #~ msgid "mask blur"
 #~ msgstr "masque d'adoucissement"
