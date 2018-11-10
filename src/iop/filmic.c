@@ -907,7 +907,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   // Apply the highlights/shadows balance as a shift along the contrast slope
   const float norm = powf(powf(contrast, 2.0f) + 1.0f, 0.5f);
-  const float coeff = (dynamic_range - latitude) / dynamic_range * balance;
+
+  // negative values drag to the left and compress the shadows, on the UI negative is the inverse
+  const float coeff = -(dynamic_range - latitude) / dynamic_range * balance;
   const float offset_y = coeff * contrast /norm;
 
   toe_display += offset_y;
@@ -1237,7 +1239,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("filmic S curve")), FALSE, FALSE, 5);
 
   // contrast slider
-  g->contrast = dt_bauhaus_slider_new_with_range(self, 1., 10., 0.05, p->contrast, 2);
+  g->contrast = dt_bauhaus_slider_new_with_range(self, 1., 5., 0.05, p->contrast, 2);
   dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->contrast, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->contrast, _("slope of the linear part of the curve"));
@@ -1253,7 +1255,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->latitude_stops), "value-changed", G_CALLBACK(latitude_stops_callback), self);
 
   // balance slider
-  g->balance = dt_bauhaus_slider_new_with_range(self, -100., 100., 1.0, p->balance, 2);
+  g->balance = dt_bauhaus_slider_new_with_range(self, -75., 75., 1.0, p->balance, 2);
   dt_bauhaus_widget_set_label(g->balance, NULL, _("balance shadows-highlights"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->balance, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->balance, "%.2f %%");
