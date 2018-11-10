@@ -765,8 +765,7 @@ static void color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
     {
       dt_iop_request_focus(self);
       self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-
-      if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF) dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+      dt_lib_colorpicker_set_area(darktable.lib, 0.99);
 
       g->apply_picked_color = 1;
 
@@ -794,8 +793,7 @@ static void color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
       g->which_colorpicker = which_colorpicker;
 
       self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-
-      if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF) dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+      dt_lib_colorpicker_set_area(darktable.lib, 0.99);
 
       g->apply_picked_color = 1;
 
