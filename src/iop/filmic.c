@@ -1271,14 +1271,14 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("filmic S curve")), FALSE, FALSE, 5);
 
   // contrast slider
-  g->contrast = dt_bauhaus_slider_new_with_range(self, 1., 5., 0.01, p->contrast, 2);
+  g->contrast = dt_bauhaus_slider_new_with_range(self, 1., 5., 0.01, p->contrast, 3);
   dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->contrast, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->contrast, _("slope of the linear part of the curve"));
   g_signal_connect(G_OBJECT(g->contrast), "value-changed", G_CALLBACK(contrast_callback), self);
 
   // latitude slider
-  g->latitude_stops = dt_bauhaus_slider_new_with_range(self, 1.0, 16.0, 0.05, p->latitude_stops, 2);
+  g->latitude_stops = dt_bauhaus_slider_new_with_range(self, 1.0, 16.0, 0.05, p->latitude_stops, 3);
   dt_bauhaus_widget_set_label(g->latitude_stops, NULL, _("latitude"));
   dt_bauhaus_slider_set_format(g->latitude_stops, "%.2f EV");
   gtk_box_pack_start(GTK_BOX(self->widget), g->latitude_stops, TRUE, TRUE, 0);
