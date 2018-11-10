@@ -221,8 +221,21 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
     for(size_t i = 0; i < roi_out->width; i++)
     {
+      float XYZ[3];
+      dt_Lab_to_XYZ(in, XYZ);
+
       float rgb[3] = { 0.0f };
-      dt_Lab_to_prophotorgb(in, rgb);
+      dt_XYZ_to_prophotorgb(XYZ, rgb);
+
+      // Adjust the saturation
+      if (run_saturation)
+      {
+        // Run only when the saturation has a non-neutral value
+        for(size_t c = 0; c < 3; c++)
+        {
+          rgb[c] = XYZ[1] + saturation * (rgb[c] - XYZ[1]);
+        }
+      }
 
       for(size_t c = 0; c < 3; c++)
       {
@@ -230,24 +243,19 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         rgb[c] /= data->grey_source;
         rgb[c] = (rgb[c] > EPS) ? (fastlog2(rgb[c]) - data->black_source) / data->dynamic_range : EPS;
         rgb[c] = (rgb[c] < 0.0f) ? 0.0f : rgb[c];
-
-        // Filmic S curve
-        rgb[c] = (rgb[c] > 1.0f)
-                    ? dt_iop_eval_exp(data->unbounded_coeffs, rgb[c])
-                    : data->table[CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)];
       }
 
-      // Adjust the saturation
-      if (run_saturation)
-      {
-        // Run only when the saturation has a non-neutral value
-        float XYZ[3];
-        dt_prophotorgb_to_XYZ(rgb, XYZ);
-        for(size_t c = 0; c < 3; c++)
-        {
-          rgb[c] = XYZ[1] + saturation * (rgb[c] - XYZ[1]);
-        }
-      }
+      // Compute the RGB ratios before the non-uniform transform
+      float max = fmaxf(fmaxf(rgb[0], rgb[1]), rgb[2]);
+      const float ratios[3] = {rgb[0] / max, rgb[1] / max, rgb[2] / max};
+
+      // Filmic S curve on the RGB max only
+      max = (max > 1.0f)
+              ? dt_iop_eval_exp(data->unbounded_coeffs, max)
+              : data->table[CLAMP((int)(max * 0x10000ul), 0, 0xffff)];
+
+      // Re-apply the ratios
+      for (size_t c = 0; c < 3; c++) rgb[c] = max * ratios[c];
 
       // transform the result back to Lab
       // sRGB -> XYZ
@@ -293,8 +301,15 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
     for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
     {
-      __m128 XYZ;
-      __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(dt_Lab_to_XYZ_sse2(_mm_load_ps(in)));
+      __m128 XYZ = dt_Lab_to_XYZ_sse2(_mm_load_ps(in));
+      __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
+
+      // adjust main saturation
+      if (run_saturation)
+      {
+        const __m128 luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+        rgb = luma + saturation * (rgb - luma);
+      }
 
       // Log tone-mapping
       rgb = rgb / grey;
@@ -318,14 +333,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       }
 
       rgb = _mm_load_ps(rgb_unpack);
-
-      // adjust main saturation
-      if (run_saturation)
-      {
-        XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
-        const __m128 luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
-        rgb = luma + saturation * (rgb - luma);
-      }
 
       // transform the result back to Lab
       // sRGB -> XYZ
@@ -1076,11 +1083,11 @@ void init(dt_iop_module_t *module)
                                  .black_point_target  = 0.0,  // target black
                                  .white_point_target  = 100.0,  // target white
                                  .output_power        = 2.2,  // target power (~ gamma)
-                                 .latitude_stops      = 6.0,  // intent latitude
-                                 .contrast            = 0.5,  // intent contrast
-                                 .saturation          = 90.0,   // intent saturation
+                                 .latitude_stops      = 5.3,  // intent latitude
+                                 .contrast            = 1.333,  // intent contrast
+                                 .saturation          = 100.0,   // intent saturation
                                  .balance             = 0.0, // balance shadows/highlights
-                                 .interpolator        = MONOTONE_HERMITE //interpolator
+                                 .interpolator        = CUBIC_SPLINE //interpolator
                               };
   memcpy(module->params, &tmp, sizeof(dt_iop_filmic_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_filmic_params_t));
@@ -1206,7 +1213,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->balance), "value-changed", G_CALLBACK(balance_callback), self);
 
   // saturation slider
-  g->saturation = dt_bauhaus_slider_new_with_range(self, 0, 100., 1., p->saturation, 2);
+  g->saturation = dt_bauhaus_slider_new_with_range(self, 0, 200., 1., p->saturation, 2);
   dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
   dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
