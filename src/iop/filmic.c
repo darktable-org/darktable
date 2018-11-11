@@ -77,7 +77,8 @@ typedef enum dt_iop_filmic_pickcolor_type_t
   DT_PICKPROFLOG_NONE = 0,
   DT_PICKPROFLOG_GREY_POINT = 1,
   DT_PICKPROFLOG_BLACK_POINT = 2,
-  DT_PICKPROFLOG_WHITE_POINT = 3
+  DT_PICKPROFLOG_WHITE_POINT = 3,
+  DT_PICKPROFLOG_AUTOTUNE = 4
 } dt_iop_filmic_pickcolor_type_t;
 
 typedef struct dt_iop_filmic_params_t
@@ -99,7 +100,6 @@ typedef struct dt_iop_filmic_params_t
 
 typedef struct dt_iop_filmic_gui_data_t
 {
-  int apply_picked_color;
   int which_colorpicker;
   GtkWidget *white_point_source;
   GtkWidget *grey_point_source;
@@ -486,18 +486,21 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void disable_colorpick(struct dt_iop_module_t *self)
+static void set_colorpick_state(dt_iop_filmic_gui_data_t *g)
+{
+  const int which_colorpicker = g->which_colorpicker;
+  dt_bauhaus_widget_set_quad_active(g->grey_point_source, which_colorpicker == DT_PICKPROFLOG_GREY_POINT);
+  dt_bauhaus_widget_set_quad_active(g->black_point_source, which_colorpicker == DT_PICKPROFLOG_BLACK_POINT);
+  dt_bauhaus_widget_set_quad_active(g->white_point_source, which_colorpicker == DT_PICKPROFLOG_WHITE_POINT);
+  dt_bauhaus_widget_set_quad_active(g->auto_button, which_colorpicker == DT_PICKPROFLOG_AUTOTUNE);
+}
+
+static void disable_colorpick(struct dt_iop_module_t *self, gboolean set_state)
 {
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   g->which_colorpicker = DT_PICKPROFLOG_NONE;
-}
-
-static void set_colorpick_state(dt_iop_filmic_gui_data_t *g, const int which_colorpicker)
-{
-  dt_bauhaus_widget_set_quad_active(g->grey_point_source, which_colorpicker == DT_PICKPROFLOG_GREY_POINT);
-  dt_bauhaus_widget_set_quad_active(g->black_point_source, which_colorpicker == DT_PICKPROFLOG_BLACK_POINT);
-  dt_bauhaus_widget_set_quad_active(g->white_point_source, which_colorpicker == DT_PICKPROFLOG_WHITE_POINT);
+  if (set_state) set_colorpick_state(g);
 }
 
 static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
@@ -530,28 +533,11 @@ static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void optimize_button_pressed_callback(GtkWidget *button, gpointer user_data)
+static void apply_autotune(dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 
-  disable_colorpick(self);
-  set_colorpick_state(g, g->which_colorpicker);
-
-  dt_iop_request_focus(self);
-  dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-  dt_control_queue_redraw();
-  self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-  dt_dev_reprocess_all(self->dev);
-
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f)
-  {
-    dt_control_log(_("wait for the preview to be updated."));
-    return;
-  }
-
+  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
 
   float noise = powf(2.0f, -16.0f);
@@ -585,8 +571,6 @@ static void optimize_button_pressed_callback(GtkWidget *button, gpointer user_da
 
   sanitize_latitude(p, g);
 
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -597,6 +581,9 @@ static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
   p->grey_point_source = dt_bauhaus_slider_get(slider);
+
+  disable_colorpick(self, TRUE);
+
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -610,6 +597,8 @@ static void white_point_source_callback(GtkWidget *slider, gpointer user_data)
 
   sanitize_latitude(p, g);
 
+  disable_colorpick(self, TRUE);
+
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -622,6 +611,8 @@ static void black_point_source_callback(GtkWidget *slider, gpointer user_data)
   p->black_point_source = dt_bauhaus_slider_get(slider);
 
   sanitize_latitude(p, g);
+
+  disable_colorpick(self, TRUE);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -729,11 +720,31 @@ static int call_apply_picked_color(struct dt_iop_module_t *self, dt_iop_filmic_g
      case DT_PICKPROFLOG_WHITE_POINT:
        apply_auto_white_point_source(self);
        break;
+     case DT_PICKPROFLOG_AUTOTUNE:
+       apply_autotune(self);
+       break;
      default:
        handled = 0;
        break;
   }
   return handled;
+}
+
+static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return FALSE;
+  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+
+  /* No color picked, or picked color already applied */
+  if(self->picked_color_max[0] < 0.0f) return FALSE;
+
+  call_apply_picked_color(self, g);
+  /* Make sure next call won't re-apply autotune.
+     Needed to avoid infinite loops draw -> autotune -> set_sliders
+     -> draw. */
+  self->picked_color_max[0] = -INFINITY;
+
+  return FALSE;
 }
 
 static int get_colorpick_from_button(GtkWidget *button, dt_iop_filmic_gui_data_t *g)
@@ -746,6 +757,8 @@ static int get_colorpick_from_button(GtkWidget *button, dt_iop_filmic_gui_data_t
     which_colorpicker = DT_PICKPROFLOG_BLACK_POINT;
   else if(button == g->white_point_source)
     which_colorpicker = DT_PICKPROFLOG_WHITE_POINT;
+  else if(button == g->auto_button)
+    which_colorpicker = DT_PICKPROFLOG_AUTOTUNE;
 
   return which_colorpicker;
 }
@@ -757,81 +770,27 @@ static void color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
 
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+  int clicked_colorpick = get_colorpick_from_button(button, g);
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF || g->which_colorpicker != clicked_colorpick)
   {
-    g->which_colorpicker = get_colorpick_from_button(button, g);
+    g->which_colorpicker = clicked_colorpick;
 
-    if(g->which_colorpicker != DT_PICKPROFLOG_NONE)
-    {
-      dt_iop_request_focus(self);
-      self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-      dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-
-      g->apply_picked_color = 1;
-
-      dt_dev_reprocess_all(self->dev);
-    }
+    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+    dt_dev_reprocess_all(self->dev);
   }
   else
   {
-    if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f)
-    {
-      dt_control_log(_("wait for the preview to be updated."));
-      return;
-    }
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
-    if(g->apply_picked_color)
-    {
-      call_apply_picked_color(self, g);
-      g->apply_picked_color = 0;
-    }
-
-    const int which_colorpicker = get_colorpick_from_button(button, g);
-    if(which_colorpicker != g->which_colorpicker && which_colorpicker != DT_PICKPROFLOG_NONE)
-    {
-      g->which_colorpicker = which_colorpicker;
-
-      self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-      dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-
-      g->apply_picked_color = 1;
-
-      dt_dev_reprocess_all(self->dev);
-    }
-    else
-    {
-      g->which_colorpicker = DT_PICKPROFLOG_NONE;
-    }
+    disable_colorpick(self, FALSE);
   }
-
-  set_colorpick_state(g, g->which_colorpicker);
+  set_colorpick_state(g);
+  dt_control_queue_redraw();
+  dt_iop_request_focus(self);
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-
-  if(!in)
-  {
-    disable_colorpick(self);
-    g->apply_picked_color = 0;
-    set_colorpick_state(g, g->which_colorpicker);
-  }
-}
-
-int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
-{
-  int handled = 0;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
-  {
-    handled = call_apply_picked_color(self, g);
-    g->apply_picked_color = 0;
-  }
-
-  return handled;
+  if(!in) disable_colorpick(self, TRUE);
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -1111,7 +1070,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)module->params;
 
-  disable_colorpick(self);
+  disable_colorpick(self, TRUE);
 
   self->color_picker_box[0] = self->color_picker_box[1] = .25f;
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
@@ -1131,8 +1090,6 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->balance, p->balance);
 
   dt_bauhaus_combobox_set(g->interpolator, p->interpolator);
-
-  set_colorpick_state(g, g->which_colorpicker);
 }
 
 void init(dt_iop_module_t *module)
@@ -1194,8 +1151,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
 
-  disable_colorpick(self);
-  g->apply_picked_color = 0;
+  disable_colorpick(self, FALSE);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -1244,11 +1200,18 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range"));
   g_signal_connect(G_OBJECT(g->security_factor), "value-changed", G_CALLBACK(security_threshold_callback), self);
 
-  g->auto_button = gtk_button_new_with_label(_("auto tune source"));
+  g->auto_button = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->auto_button, NULL, _("auto tune levels"));
+  dt_bauhaus_widget_set_quad_paint(g->auto_button, dtgtk_cairo_paint_colorpicker,
+                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->auto_button, TRUE);
+  g_signal_connect(G_OBJECT(g->auto_button), "quad-pressed", G_CALLBACK(color_picker_callback), self);
   gtk_widget_set_tooltip_text(g->auto_button, _("make an optimization with some guessing"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->auto_button), "clicked", G_CALLBACK(optimize_button_pressed_callback), self);
-
+  /* The widget receives a draw signal right before being applied in
+     the pipeline. This is when we want to take into account the
+     picked color. */
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("filmic S curve")), FALSE, FALSE, 5);
 
@@ -1341,7 +1304,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  disable_colorpick(self);
+  disable_colorpick(self, FALSE);
   free(self->gui_data);
   self->gui_data = NULL;
 }
