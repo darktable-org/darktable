@@ -777,10 +777,8 @@ static void color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
   {
     g->which_colorpicker = clicked_colorpick;
 
-    dt_iop_request_focus(self);
     self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
     dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-
     dt_dev_reprocess_all(self->dev);
   }
   else
@@ -789,6 +787,7 @@ static void color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
   }
   set_colorpick_state(g, g->which_colorpicker);
   dt_control_queue_redraw();
+  dt_iop_request_focus(self);
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
