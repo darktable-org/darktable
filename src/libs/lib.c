@@ -1063,7 +1063,7 @@ void dt_lib_cleanup(dt_lib_t *lib)
   while(lib->plugins)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(lib->plugins->data);
-    if(module) 
+    if(module)
     {
       if(module->data != NULL)
       {
