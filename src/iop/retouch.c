@@ -4053,8 +4053,6 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
       GList *forms = g_list_first(grp->points);
       while(forms)
       {
-        // FIXME: a form can be removed while processing this, making forms->data invalid
-        // not sure if there's a locking mechanism for this...
         const dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
         if(grpt == NULL)
         {
@@ -4073,8 +4071,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
         const int index = rt_get_index_from_formid(p, formid);
         if(index == -1)
         {
-          // FIXME: we get this error when adding a new form and the system is still processing a previous add
-          // we should not report an error in this case (and have a better way of adding a form)
+          // FIXME: we get this error when user go back in history, so forms are the same but the array has changed
           fprintf(stderr, "rt_process_forms: missing form=%i from array\n", formid);
           forms = g_list_next(forms);
           continue;
@@ -4350,7 +4347,7 @@ cl_int rt_process_stats_cl(const int devid, cl_mem dev_img, const int width, con
   src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
   if(src_buffer == NULL)
   {
-    printf("dt_heal_cl: error allocating memory for healing\n");
+    fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -4389,7 +4386,7 @@ cl_int rt_adjust_levels_cl(const int devid, cl_mem dev_img, const int width, con
   src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
   if(src_buffer == NULL)
   {
-    printf("dt_heal_cl: error allocating memory for healing\n");
+    fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -4861,8 +4858,6 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
       GList *forms = g_list_first(grp->points);
       while(forms && err == CL_SUCCESS)
       {
-        // FIXME: a form can be removed while processing this, making forms->data invalid
-        // not sure if there's a locking mechanism for this...
         dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
         if(grpt == NULL)
         {
@@ -4881,8 +4876,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
         const int index = rt_get_index_from_formid(p, formid);
         if(index == -1)
         {
-          // FIXME: we get this error when adding a new form and the system is still processing a previous add
-          // we should not report an error in this case (and have a better way of adding a form)
+          // FIXME: we get this error when user go back in history, so forms are the same but the array has changed
           fprintf(stderr, "rt_process_forms: missing form=%i from array\n", formid);
           forms = g_list_next(forms);
           continue;
@@ -5186,8 +5180,7 @@ cleanup:
 
   if(in_retouch) dt_opencl_release_mem_object(in_retouch);
 
-  //  if (err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_retouch] couldn't enqueue kernel! %d\n", err);
-  if(err != CL_SUCCESS) printf("[opencl_retouch] couldn't enqueue kernel! %d\n", err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_retouch] couldn't enqueue kernel! %d\n", err);
 
   return (err == CL_SUCCESS) ? TRUE : FALSE;
 }
