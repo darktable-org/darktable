@@ -578,7 +578,12 @@ static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   p->grey_point_source = dt_bauhaus_slider_get(slider);
+
+  disable_colorpick(self);
+  set_colorpick_state(g, g->which_colorpicker);
+
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -592,6 +597,9 @@ static void white_point_source_callback(GtkWidget *slider, gpointer user_data)
 
   sanitize_latitude(p, g);
 
+  disable_colorpick(self);
+  set_colorpick_state(g, g->which_colorpicker);
+
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -604,6 +612,9 @@ static void black_point_source_callback(GtkWidget *slider, gpointer user_data)
   p->black_point_source = dt_bauhaus_slider_get(slider);
 
   sanitize_latitude(p, g);
+
+  disable_colorpick(self);
+  set_colorpick_state(g, g->which_colorpicker);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
