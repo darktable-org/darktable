@@ -1008,17 +1008,17 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 }
 
 __kernel void
-blendop_mask_enhance_contrast(__read_only image2d_t mask_in, __write_only image2d_t mask_out,
-                              const int width, const int height,
-                              const float e, const float brightness)
+blendop_mask_tone_curve(__read_only image2d_t mask_in, __write_only image2d_t mask_out,
+			const int width, const int height,
+			const float e, const float brightness, const float gopacity)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  if ( x>= width || y >= height) return;
+  if ( x>= width || y >= height || gopacity <= 1e-4f) return;
 
   float opacity = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
-  float scaled_opacity = 2.f * opacity - 1.f;
+  float scaled_opacity = (2.f * opacity - 1.f) / gopacity;
   if (1.f - brightness <= 0.f)
     scaled_opacity = opacity <= FLT_EPSILON ? -1.f : 1.f;
   else if (1.f + brightness <= 0.f)
@@ -1033,7 +1033,7 @@ blendop_mask_enhance_contrast(__read_only image2d_t mask_in, __write_only image2
     scaled_opacity = (scaled_opacity + brightness) / (1.f + brightness);
     scaled_opacity = fmax(scaled_opacity, -1.f);
   }
-  opacity = (scaled_opacity * e / (1.f + (e - 1.f) * fabs(scaled_opacity))) / 2.f + 0.5f;
+  opacity = ((scaled_opacity * e / (1.f + (e - 1.f) * fabs(scaled_opacity))) / 2.f + 0.5f) * gopacity;
   write_imagef(mask_out, (int2)(x, y), opacity);
 }
 

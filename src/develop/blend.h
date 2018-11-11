@@ -304,7 +304,7 @@ typedef struct dt_blendop_cl_global_t
   int kernel_blendop_Lab;
   int kernel_blendop_RAW;
   int kernel_blendop_rgb;
-  int kernel_blendop_mask_enhance_contrast;
+  int kernel_blendop_mask_tone_curve;
   int kernel_blendop_set_mask;
   int kernel_blendop_display_channel;
 } dt_blendop_cl_global_t;
