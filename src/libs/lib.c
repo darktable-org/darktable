@@ -1063,7 +1063,7 @@ void dt_lib_cleanup(dt_lib_t *lib)
   while(lib->plugins)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(lib->plugins->data);
-    if(module) 
+    if(module)
     {
       if(module->data != NULL)
       {
@@ -1187,12 +1187,14 @@ void dt_lib_colorpicker_set_area(dt_lib_t *lib, float size)
 {
   if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.set_sample_area) return;
   lib->proxy.colorpicker.set_sample_area(lib->proxy.colorpicker.module, size);
+  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 }
 
 void dt_lib_colorpicker_set_point(dt_lib_t *lib, float x, float y)
 {
   if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.set_sample_point) return;
   lib->proxy.colorpicker.set_sample_point(lib->proxy.colorpicker.module, x, y);
+  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
