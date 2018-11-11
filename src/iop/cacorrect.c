@@ -1291,11 +1291,22 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
             // some parameters for the bilinear interpolation
             shiftvfloor[c] = floor((float)lblockshifts[c >> 1][0]);
             shiftvceil[c] = ceil((float)lblockshifts[c >> 1][0]);
-            shiftvfrac[c] = lblockshifts[c >> 1][0] - shiftvfloor[c];
+            if (lblockshifts[c>>1][0] < 0.f) {
+              float tmp = shiftvfloor[c];
+              shiftvfloor[c] = shiftvceil[c];
+              shiftvceil[c] = tmp;
+            }
+            shiftvfrac[c] = fabsf(lblockshifts[c>>1][0] - shiftvfloor[c]);
 
             shifthfloor[c] = floor((float)lblockshifts[c >> 1][1]);
             shifthceil[c] = ceil((float)lblockshifts[c >> 1][1]);
-            shifthfrac[c] = lblockshifts[c >> 1][1] - shifthfloor[c];
+            if (lblockshifts[c>>1][1] < 0.f) {
+              float tmp = shifthfloor[c];
+              shifthfloor[c] = shifthceil[c];
+              shifthceil[c] = tmp;
+            }
+            shifthfrac[c] = fabsf(lblockshifts[c>>1][1] - shifthfloor[c]);
+
 
             GRBdir[0][c] = lblockshifts[c >> 1][0] > 0 ? 2 : -2;
             GRBdir[1][c] = lblockshifts[c >> 1][1] > 0 ? 2 : -2;
