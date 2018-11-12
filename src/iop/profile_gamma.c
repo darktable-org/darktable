@@ -920,7 +920,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_toggle(g->auto_button, TRUE);
   g_signal_connect(G_OBJECT(g->auto_button), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
   gtk_widget_set_tooltip_text(g->auto_button, _("make an optimization with some guessing"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox_log), g->auto_button, TRUE, TRUE, 0);
 
   gtk_widget_show_all(vbox_log);
