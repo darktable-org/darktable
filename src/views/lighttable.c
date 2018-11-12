@@ -1239,10 +1239,12 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
     int current_group = -1;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
         &stmt, NULL);
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
       uint32_t imgid  = sqlite3_column_int(stmt, 0);
       const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-      if (image->group_id != current_group) {
+      if (image->group_id != current_group)
+      {
         sel_group_count++;
         current_group = image->group_id;
       }
