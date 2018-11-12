@@ -572,13 +572,6 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
 
 void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, gboolean no_image)
 {
-  if(!no_image)
-  {
-  if(!darktable.gui || darktable.gui->reset) return;
-  dt_pthread_mutex_lock(&dev->history_mutex);
-  }
-  if(dev->gui_attached || no_image)
-  {
     GList *history = g_list_nth(dev->history, dev->history_end);
     while(history)
     {
@@ -672,10 +665,17 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gbo
       dev->preview_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
       }
     }
-  }
-  
-  if(!no_image)
+}
+
+void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
+{
+  if(!darktable.gui || darktable.gui->reset) return;
+  dt_pthread_mutex_lock(&dev->history_mutex);
+
+  if(dev->gui_attached)
   {
+    dt_dev_add_history_item_ext(dev, module, enable, FALSE);
+  }
 #if 0
   {
     // debug:
@@ -704,12 +704,6 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gbo
     /* redraw */
     dt_control_queue_redraw_center();
   }
-  }
-}
-
-void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
-{
-  dt_dev_add_history_item_ext(dev, module, enable, FALSE);
 }
 
 void dt_dev_free_history_item(gpointer data)
