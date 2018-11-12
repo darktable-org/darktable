@@ -219,22 +219,36 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
   if(!gui) return 0;
   if(gui->source_selected && !gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
+    printf("[dt_circle_events_button_pressed] source_selected before start the form dragging gui->posx=%f, gui->posy=%f, gui->dx=%f, gui->dy=%f\n", 
+        gui->posx, gui->posy, gui->dx, gui->dy);
+    
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
     // we start the form dragging
     gui->source_dragging = TRUE;
     gui->dx = gpt->source[0] - gui->posx;
     gui->dy = gpt->source[1] - gui->posy;
+    
+    printf("[dt_circle_events_button_pressed] source_selected start the form dragging gui->posx=%f, gui->posy=%f, gpt->source[0]=%f, gpt->source[1]=%f, gui->dx=%f, gui->dy=%f\n", 
+        gui->posx, gui->posy, gpt->source[0], gpt->source[1], gui->dx, gui->dy);
+ 
     return 1;
   }
   else if(gui->form_selected && !gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
+    printf("[dt_circle_events_button_pressed] form_selected before start the form dragging gui->posx=%f, gui->posy=%f, gui->dx=%f, gui->dy=%f\n", 
+        gui->posx, gui->posy, gui->dx, gui->dy);
+    
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
     // we start the form dragging
     gui->form_dragging = TRUE;
     gui->dx = gpt->points[0] - gui->posx;
     gui->dy = gpt->points[1] - gui->posy;
+    
+    printf("[dt_circle_events_button_pressed] form_selected start the form dragging gui->posx=%f, gui->posy=%f, gpt->points[0]=%f, gpt->points[1]=%f, gui->dx=%f, gui->dy=%f\n", 
+        gui->posx, gui->posy, gpt->points[0], gpt->points[1], gui->dx, gui->dy);
+
     return 1;
   }
   else if(gui->creation && (which == 3))

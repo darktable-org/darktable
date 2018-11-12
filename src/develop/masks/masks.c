@@ -210,6 +210,8 @@ void dt_masks_init_form_gui(dt_masks_form_gui_t *gui)
 {
   memset(gui, 0, sizeof(dt_masks_form_gui_t));
 
+  printf("[dt_masks_init_form_gui]\n");
+
   gui->posx = gui->posy = -1.0f;
   gui->posx_source = gui->posy_source = -1.0f;
   gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
@@ -1259,6 +1261,9 @@ int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
       return 0;
 
     gui->posx = gui->posy = -1.f;
+    
+    printf("[dt_masks_events_mouse_leave]\n");
+
   }
   return 0;
 }
