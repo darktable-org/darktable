@@ -110,6 +110,7 @@ FILE(GLOB SOURCE_FILES
   "gui/preferences.c"
   "gui/presets.c"
   "gui/styles_dialog.c"
+  "gui/color_picker_proxy.c"
   "libs/lib.c"
   "views/view.c"
   )
