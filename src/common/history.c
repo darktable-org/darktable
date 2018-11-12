@@ -974,19 +974,23 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   for(int i = 0; i < nbf && forms_used_replace[i] > 0; i++)
   {
     dt_masks_form_t *form = dt_masks_get_from_id_ext(dev_src->forms, forms_used_replace[i]);
-    
-    // check if the form already exists in dest image
-    // if so we'll remove it, so it is replaced 
-    dt_masks_form_t *form_dest = dt_masks_get_from_id_ext(dev_dest->forms, forms_used_replace[i]);
-    if(form_dest)
+    if(form)
     {
-      dev_dest->forms = g_list_remove(dev_dest->forms, form_dest);
+      // check if the form already exists in dest image
+      // if so we'll remove it, so it is replaced 
+      dt_masks_form_t *form_dest = dt_masks_get_from_id_ext(dev_dest->forms, forms_used_replace[i]);
+      if(form_dest)
+      {
+        dev_dest->forms = g_list_remove(dev_dest->forms, form_dest);
+      }
+      
+      // and add it to dest image
+      // we can do this because dev->allforms will take care of free() the form
+      // if that changes we'll have to duplicate the form
+      dev_dest->forms = g_list_append(dev_dest->forms, form);
     }
-    
-    // and add it to dest image
-    // we can do this because dev->allforms will take care of free() the form
-    // if that changes we'll have to duplicate the form
-    dev_dest->forms = g_list_append(dev_dest->forms, form);
+    else
+      fprintf(stderr, "[_history_copy_and_paste_on_image_merge] form %i not found in source image\n", forms_used_replace[i]);
   }
 
   // write history and forms to db
