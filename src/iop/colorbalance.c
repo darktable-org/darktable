@@ -1705,6 +1705,8 @@ static void mode_callback(GtkWidget *combo, dt_iop_module_t *self)
   p->mode = dt_bauhaus_combobox_get(combo);
 #ifdef AUTO
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+
   if (p->mode == LEGACY || p->mode == LIFT_GAMMA_GAIN)
   {
     gtk_widget_set_visible(g->optim_label, FALSE);
@@ -1737,6 +1739,8 @@ static void controls_callback(GtkWidget *combo, dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   int control_mode = dt_bauhaus_combobox_get(combo);
+
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
   switch (control_mode)
   {
