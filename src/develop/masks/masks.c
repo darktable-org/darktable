@@ -1281,8 +1281,14 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
 
   if(gui)
   {
+    if(gui->posx == -1.f || gui->posy == -1.f)
+    printf("[dt_masks_events_mouse_moved] before set pos gui->posx=%f, gui->posy=%f\n", gui->posx, gui->posy);
+
     gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
     gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
+    
+    if(gui->posx == -1.f || gui->posy == -1.f)
+    printf("[dt_masks_events_mouse_moved] after set pos gui->posx=%f, gui->posy=%f\n", gui->posx, gui->posy);
   }
 
   // do not preocess if no forms visible
