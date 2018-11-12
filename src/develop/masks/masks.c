@@ -42,10 +42,10 @@ typedef struct _masks_undo_data_t
   dt_masks_form_t *form;
 } _masks_undo_data_t;
 
-static void _masks_write_form_db(dt_masks_form_t *form, dt_develop_t *dev);
+static void _masks_write_form_db(dt_masks_form_t *form, const int imgid, dt_develop_t *dev);
 // write a form into the database
 
-static void _masks_write_forms_db(dt_develop_t *dev, gboolean undo);
+static void _masks_write_forms_db(dt_develop_t *dev, const int imgid, gboolean undo);
 // write all masks form into the database. record an undo if undo is true
 
 static dt_masks_form_t *_dup_masks_form(const dt_masks_form_t *form)
@@ -136,7 +136,7 @@ static void _masks_do_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data
   dt_masks_clear_form_gui(dev);
   dt_masks_change_form_gui(_dup_masks_form(udata->form));
 
-  _masks_write_forms_db(dev, FALSE);
+  _masks_write_forms_db(dev, dev->image_storage.id, FALSE);
 
   // and we ensure that we are in edit mode
   dt_masks_iop_update(darktable.develop->gui_module);
@@ -981,20 +981,20 @@ dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id)
   return dt_masks_get_from_id_ext(dev->forms, id);
 }
 
-void dt_masks_read_forms(dt_develop_t *dev)
+void dt_masks_read_forms_ext(dt_develop_t *dev, const int imgid, gboolean no_image)
 {
   // first we have to reset the list
   g_list_free(dev->forms);
   dev->forms = NULL;
 
-  if(dev->image_storage.id <= 0) return;
+  if(imgid <= 0) return;
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT imgid, formid, form, name, version, points, points_count, source FROM main.mask WHERE imgid = ?1",
       -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1076,7 +1076,7 @@ void dt_masks_read_forms(dt_develop_t *dev)
 
         fprintf(stderr,
                 "[dt_masks_read_forms] %s (imgid `%i'): mask version mismatch: history is %d, dt %d.\n",
-                fname, dev->image_storage.id, form->version, dt_masks_version());
+                fname, imgid, form->version, dt_masks_version());
         dt_control_log(_("%s: mask version mismatch: %d != %d"), fname, dt_masks_version(), form->version);
 
         continue;
@@ -1088,16 +1088,22 @@ void dt_masks_read_forms(dt_develop_t *dev)
   }
 
   sqlite3_finalize(stmt);
+  if(!no_image)
   dt_dev_masks_list_change(dev);
 }
 
-static void _masks_write_forms_db(dt_develop_t *dev, gboolean undo)
+void dt_masks_read_forms(dt_develop_t *dev)
+{
+  dt_masks_read_forms_ext(dev, dev->image_storage.id, FALSE);
+}
+
+static void _masks_write_forms_db(dt_develop_t *dev, const int imgid, gboolean undo)
 {
   // we first erase all masks for the image present in the db
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.mask WHERE imgid = ?1", -1, &stmt,
                               NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -1113,12 +1119,12 @@ static void _masks_write_forms_db(dt_develop_t *dev, gboolean undo)
     dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
 
     if (form)
-      _masks_write_form_db(form, dev);
+      _masks_write_form_db(form, imgid, dev);
 
     forms = g_list_next(forms);
   }
 }
-static void _masks_write_form_db(dt_masks_form_t *form, dt_develop_t *dev)
+static void _masks_write_form_db(dt_masks_form_t *form, const int imgid, dt_develop_t *dev)
 {
   sqlite3_stmt *stmt;
 
@@ -1127,7 +1133,7 @@ static void _masks_write_form_db(dt_masks_form_t *form, dt_develop_t *dev)
                                                              "version, points, points_count,source) VALUES "
                                                              "(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                               -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, form->formid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, form->type);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, form->name, -1, SQLITE_TRANSIENT);
@@ -1230,12 +1236,17 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  _masks_write_form_db(form, dev);
+  _masks_write_form_db(form, dev->image_storage.id, dev);
+}
+
+void dt_masks_write_forms_ext(dt_develop_t *dev, const int imgid, gboolean undo)
+{
+  _masks_write_forms_db(dev, imgid, undo);
 }
 
 void dt_masks_write_forms(dt_develop_t *dev)
 {
-  _masks_write_forms_db(dev, TRUE);
+  _masks_write_forms_db(dev, dev->image_storage.id, TRUE);
 }
 
 void dt_masks_free_form(dt_masks_form_t *form)
