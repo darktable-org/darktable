@@ -1161,6 +1161,8 @@ static void apply_autocolor(dt_iop_module_t *self)
     g->color_patches_flags[GAMMA] = 1;
     for (int c = 0; c < 3; c++) g->color_patches_gain[c] = RGB[c];
     g->color_patches_flags[GAIN] = 1;
+
+    dt_iop_color_picker_reset(&g->color_picker, TRUE);
   }
 
   // Build the CDL-corrected samples (after the factors)
@@ -1256,8 +1258,7 @@ static void apply_autoluma(dt_iop_module_t *self)
     g->luma_patches[GAIN] = XYZ[1];
     g->luma_patches_flags[GAIN] = 1;
 
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
+    dt_iop_color_picker_reset(&g->color_picker, TRUE);
   }
 
   /** Optimization loop :
