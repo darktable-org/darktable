@@ -562,6 +562,8 @@ static void mode_callback(GtkWidget *combo, gpointer user_data)
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   p->mode = dt_bauhaus_combobox_get(combo);
 
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+
   switch(p->mode)
   {
     case PROFILEGAMMA_LOG:
