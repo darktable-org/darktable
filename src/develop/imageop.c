@@ -1437,7 +1437,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, d
   return 0;
 }
 
-GList *dt_iop_load_modules(dt_develop_t *dev)
+GList *dt_iop_load_modules_ext(dt_develop_t *dev, gboolean no_image)
 {
   GList *res = NULL;
   dt_iop_module_t *module;
@@ -1456,7 +1456,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     res = g_list_insert_sorted(res, module, sort_plugins);
     module->data = module_so->data;
     module->so = module_so;
-    dt_iop_reload_defaults(module);
+    if(!no_image) dt_iop_reload_defaults(module);
     iop = g_list_next(iop);
   }
 
@@ -1469,6 +1469,11 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     it = g_list_next(it);
   }
   return res;
+}
+
+GList *dt_iop_load_modules(dt_develop_t *dev)
+{
+  return dt_iop_load_modules_ext(dev, FALSE);
 }
 
 void dt_iop_cleanup_module(dt_iop_module_t *module)
