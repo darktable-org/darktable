@@ -1290,6 +1290,8 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
     if(gui->posx == -1.f || gui->posy == -1.f)
     printf("[dt_masks_events_mouse_moved] after set pos gui->posx=%f, gui->posy=%f\n", gui->posx, gui->posy);
   }
+  else
+    printf("[dt_masks_events_mouse_moved] no gui\n");
 
   // do not preocess if no forms visible
   if(!form) return 0;

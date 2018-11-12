@@ -862,6 +862,7 @@ static gboolean key_released(GtkWidget *w, GdkEventKey *event, gpointer user_dat
 
 static gboolean button_pressed(GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
+  printf("[button_pressed]\n");
   double pressure = 1.0;
   GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
 
@@ -906,12 +907,14 @@ static gboolean mouse_moved(GtkWidget *w, GdkEventMotion *event, gpointer user_d
 
 static gboolean center_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
+  printf("[center_leave]\n");
   dt_control_mouse_leave();
   return TRUE;
 }
 
 static gboolean center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
+  printf("[center_enter]\n");
   dt_control_mouse_enter();
   return TRUE;
 }
