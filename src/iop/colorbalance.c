@@ -1147,7 +1147,7 @@ static void apply_autocolor(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  if(g->color_patches_flags[0] != 1 || g->color_patches_flags[1] != 1 || g->color_patches_flags[2] != 1)
+  if(g->color_patches_flags[GAIN] != 1 || g->color_patches_flags[GAMMA] != 1 || g->color_patches_flags[LIFT] != 1)
   {
     float XYZ[3] = { 0.0f };
     dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
@@ -1241,7 +1241,7 @@ static void apply_autoluma(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  if(g->luma_patches_flags[0] != 1 || g->luma_patches_flags[1] != 1 || g->luma_patches_flags[2] != 1)
+  if(g->luma_patches_flags[GAIN] != 1 || g->luma_patches_flags[GAMMA] != 1 || g->luma_patches_flags[LIFT] != 1)
   {
     float XYZ[3] = { 0.0f };
     dt_Lab_to_XYZ((const float *)self->picked_color_min, XYZ);
