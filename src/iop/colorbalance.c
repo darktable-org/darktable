@@ -2509,7 +2509,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_luma, TRUE, TRUE, 0);
 
   g->auto_color = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->auto_color, NULL, _("optimize color"));
+  dt_bauhaus_widget_set_label(g->auto_color, NULL, _("neutralize colors"));
   dt_bauhaus_widget_set_quad_paint(g->auto_color, dtgtk_cairo_paint_colorpicker,
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->auto_color, TRUE);
