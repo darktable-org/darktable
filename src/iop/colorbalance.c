@@ -1673,7 +1673,11 @@ void gui_reset(dt_iop_module_t *self)
 #ifdef CONTROLS
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  for (int k=0; k<LEVELS; k++) g->color_patches_flags[k] = 0;
+  for (int k=0; k<LEVELS; k++)
+  {
+    g->color_patches_flags[k] = 0;
+    g->luma_patches_flags[k] = 0;
+  }
 
   dt_bauhaus_combobox_set(g->controls, HSL);
 
