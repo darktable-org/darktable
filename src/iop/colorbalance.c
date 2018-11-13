@@ -883,6 +883,21 @@ static inline void normalize_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *
   darktable.gui->reset = 0;
 }
 
+static inline void _check_tuner_picker_labels(dt_iop_module_t *self)
+{
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+
+  if(g->luma_patches_flags[GAIN] == 1 && g->luma_patches_flags[GAMMA] == 1 && g->luma_patches_flags[LIFT] == 1)
+    dt_bauhaus_widget_set_label(g->auto_luma, NULL, _("optimize luma from patches"));
+  else
+    dt_bauhaus_widget_set_label(g->auto_luma, NULL, _("optimize luma"));
+
+  if(g->color_patches_flags[GAIN] == 1 && g->color_patches_flags[GAMMA] == 1 && g->color_patches_flags[LIFT] == 1)
+    dt_bauhaus_widget_set_label(g->auto_color, NULL, _("neutralize colors from patches"));
+  else
+    dt_bauhaus_widget_set_label(g->auto_color, NULL, _("neutralize colors"));
+}
+
 static inline void set_HSL_sliders(GtkWidget *hue, GtkWidget *sat, float RGB[4])
 {
   /** HSL sliders are set from the RGB values at any time.
@@ -1338,6 +1353,7 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self)
     default:
       break;
   }
+  _check_tuner_picker_labels(self);
 }
 
 static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
@@ -1582,6 +1598,7 @@ void gui_update(dt_iop_module_t *self)
   }
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  _check_tuner_picker_labels(self);
 #endif
 
   if(p->mode == LEGACY)
@@ -1678,6 +1695,7 @@ void gui_reset(dt_iop_module_t *self)
     g->color_patches_flags[k] = 0;
     g->luma_patches_flags[k] = 0;
   }
+  _check_tuner_picker_labels(self);
 
   dt_bauhaus_combobox_set(g->controls, HSL);
 
