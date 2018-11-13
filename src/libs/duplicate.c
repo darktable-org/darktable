@@ -274,7 +274,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
     gchar chl[256];
     gchar *path = (gchar *)sqlite3_column_text(stmt, 2);
-    g_snprintf(chl, sizeof(chl), "(%d)", sqlite3_column_int(stmt, 0));
+    g_snprintf(chl, sizeof(chl), "%d", sqlite3_column_int(stmt, 0));
 
     GtkWidget *tb = gtk_entry_new();
     if(path) gtk_entry_set_text(GTK_ENTRY(tb), path);
