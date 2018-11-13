@@ -814,7 +814,7 @@ static int _history_merge_module_into_history(dt_develop_t *dev_dest, dt_iop_mod
   if(module_added)
   {
     dt_dev_add_history_item_ext(dev_dest, module, FALSE, TRUE);
-    dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end, TRUE);
+    dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end);
     
     // we have added the module, now we need to make it last on the pipe
     // for this we increment 1 to all instances with multi_priority < than this one
@@ -910,8 +910,8 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   dt_dev_read_history_ext(dev_src, imgid, TRUE);
   dt_dev_read_history_ext(dev_dest, dest_imgid, TRUE);
 
-  dt_dev_pop_history_items_ext(dev_src, dev_src->history_end, TRUE);
-  dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end, TRUE);
+  dt_dev_pop_history_items_ext(dev_src, dev_src->history_end);
+  dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end);
 
   // we will copy only used forms
   guint nbf = g_list_length(dev_src->forms);
