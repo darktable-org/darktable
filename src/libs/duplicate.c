@@ -37,6 +37,7 @@ typedef struct dt_lib_duplicate_t
 {
   GtkWidget *duplicate_box;
   int imgid;
+  int current_imgid;
 } dt_lib_duplicate_t;
 
 const char *name(dt_lib_module_t *self)
@@ -75,45 +76,41 @@ static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget, GdkEvent 
 
 static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
-  int imgid = darktable.develop->image_storage.id;
-  int newid = dt_image_duplicate(imgid);
+  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  const int imgid = darktable.develop->image_storage.id;
+  const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
   dt_history_delete_on_image(newid);
   // to select the duplicate, we reuse the filmstrip proxy
   dt_view_filmstrip_scroll_to_image(darktable.view_manager,newid,TRUE);
+  d->current_imgid = newid;
 }
 static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
-  int imgid = darktable.develop->image_storage.id;
-  int newid = dt_image_duplicate(imgid);
+  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  const int imgid = darktable.develop->image_storage.id;
+  const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
   dt_history_copy_and_paste_on_image(imgid,newid,FALSE,NULL);
   // to select the duplicate, we reuse the filmstrip proxy
   dt_view_filmstrip_scroll_to_image(darktable.view_manager,newid,TRUE);
+  d->current_imgid = newid;
 }
 
 static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
 {
-  if(dt_conf_get_bool("ask_before_remove"))
-  {
-    GtkWidget *dialog;
-    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
-    // we use the plural form even if there's just 1 image to be sure translations stay in sync
-    dialog = gtk_message_dialog_new(
-        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        ngettext("do you really want to remove %d selected image from the collection?",
-                 "do you really want to remove %d selected images from the collection?", 1),
-        1);
+  const int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "imgid"));
 
-    gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
-    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-    if(res != GTK_RESPONSE_YES) return;
-  }
+  /* if we are removing the current displayed duplicate, we select the original picture */
+  if (imgid == darktable.develop->image_storage.id)
+    d->current_imgid = -1;
+  else
+    d->current_imgid = darktable.develop->image_storage.id;
 
-  int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "imgid"));
-  dt_image_remove(imgid);
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager,imgid,TRUE);
+  dt_control_delete_images();
 
   _lib_duplicate_init_callback(NULL, self);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
@@ -157,6 +154,7 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
     {
       // to select the duplicate, we reuse the filmstrip proxy
       dt_view_filmstrip_scroll_to_image(darktable.view_manager,imgid,TRUE);
+      d->current_imgid = imgid;
     }
   }
 }
@@ -259,11 +257,16 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   {
     GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *dr = gtk_drawing_area_new();
+    const int imgid = sqlite3_column_int(stmt, 1);
+
+    // select original picture
+    if (d->current_imgid == -1) d->current_imgid = imgid;
+
     gtk_widget_set_size_request (dr, 100, 100);
-    g_object_set_data (G_OBJECT (dr),"imgid",GINT_TO_POINTER(sqlite3_column_int(stmt, 1)));
+    g_object_set_data (G_OBJECT (dr),"imgid",GINT_TO_POINTER(imgid));
     gtk_widget_add_events(dr, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
     g_signal_connect (G_OBJECT (dr), "draw", G_CALLBACK (_lib_duplicate_thumb_draw_callback), self);
-    if (sqlite3_column_int(stmt, 1) != dev->image_storage.id)
+    if (imgid != dev->image_storage.id)
     {
       g_signal_connect(G_OBJECT(dr), "button-press-event", G_CALLBACK(_lib_duplicate_thumb_press_callback), self);
       g_signal_connect(G_OBJECT(dr), "button-release-event", G_CALLBACK(_lib_duplicate_thumb_release_callback), self);
@@ -276,12 +279,12 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     GtkWidget *tb = gtk_entry_new();
     if(path) gtk_entry_set_text(GTK_ENTRY(tb), path);
     gtk_entry_set_width_chars(GTK_ENTRY(tb), 15);
-    g_object_set_data (G_OBJECT (tb),"imgid",GINT_TO_POINTER(sqlite3_column_int(stmt, 1)));
+    g_object_set_data (G_OBJECT (tb),"imgid",GINT_TO_POINTER(imgid));
     g_signal_connect(G_OBJECT(tb), "focus-out-event", G_CALLBACK(_lib_duplicate_caption_out_callback), self);
     dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(tb));
     GtkWidget *lb = gtk_label_new (g_strdup(chl));
     GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-    g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(sqlite3_column_int(stmt, 1)));
+    g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(imgid));
     gtk_widget_set_size_request(bt, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
     g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
 
@@ -293,6 +296,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_box_pack_start(GTK_BOX(d->duplicate_box), hb, FALSE, FALSE, 0);
   }
   sqlite3_finalize (stmt);
+
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager,d->current_imgid,TRUE);
 
   gtk_widget_show_all(d->duplicate_box);
 }
@@ -311,6 +316,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   d->imgid = 0;
+  d->current_imgid = darktable.develop->image_storage.id;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_name(self->widget, "duplicate-ui");
