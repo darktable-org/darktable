@@ -2880,7 +2880,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   // opacity value)
   const _Bool suppress_mask = self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
                               && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH);
-  const _Bool mask_blur = d->radius > 0.1f;
+  const _Bool mask_feather = d->feathering_radius > 0.1f;
+  const _Bool mask_blur = d->blur_radius > 0.1f;
   const _Bool mask_tone_curve = fabsf(d->contrast) >= 0.01f || fabsf(d->brightness) >= 0.01f;
 
   // get the clipped opacity value  0 - 1
@@ -2959,22 +2960,9 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       _blend_make_mask(&bd, d->blendif, d->blendif_parameters, d->mask_mode, d->mask_combine, opacity, in, out, m);
     }
 
-    if(mask_blur && d->mask_blur_mode == DEVELOP_MASK_BLUR_GAUSSIAN)
+    if(mask_feather)
     {
-      const float sigma = d->radius * roi_out->scale / piece->iscale;
-      const float mmax[] = { 1.0f };
-      const float mmin[] = { 0.0f };
-
-      dt_gaussian_t *g = dt_gaussian_init(owidth, oheight, 1, mmax, mmin, sigma, 0);
-      if(g)
-      {
-        dt_gaussian_blur(g, mask, mask);
-        dt_gaussian_free(g);
-      }
-    }
-    if(mask_blur && d->mask_blur_mode == DEVELOP_MASK_FEATHER)
-    {
-      int w = (int)(2 * d->radius * roi_out->scale / piece->iscale + 0.5f);
+      int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
       if(w < 1) w = 1;
       float sqrt_eps = 0;
       switch(cst)
@@ -2991,8 +2979,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       }
       float *mask_bak = dt_alloc_align(64, sizeof(*mask_bak) * buffsize);
       memcpy(mask_bak, mask, sizeof(*mask_bak) * buffsize);
-      float *guide = (float *)ivoid;
-      if(!rois_equal)
+      float *guide = d->feathering_guide == DEVELOP_MASK_GUIDE_IN ? (float *)ivoid : (float *)ovoid;
+      if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN)
       {
         float *const guide_tmp = dt_alloc_align(64, sizeof(*guide_tmp) * buffsize * ch);
 #ifdef _OPENMP
@@ -3007,8 +2995,21 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         guide = guide_tmp;
       }
       guided_filter(guide, mask_bak, mask, owidth, oheight, ch, w, sqrt_eps, 0.f, 1.f);
-      if(!rois_equal) dt_free_align(guide);
+      if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN) dt_free_align(guide);
       dt_free_align(mask_bak);
+    }
+    if(mask_blur)
+    {
+      const float sigma = d->blur_radius * roi_out->scale / piece->iscale;
+      const float mmax[] = { 1.0f };
+      const float mmin[] = { 0.0f };
+
+      dt_gaussian_t *g = dt_gaussian_init(owidth, oheight, 1, mmax, mmin, sigma, 0);
+      if(g)
+      {
+        dt_gaussian_blur(g, mask, mask);
+        dt_gaussian_free(g);
+      }
     }
 
     if(mask_tone_curve && opacity > 1e-4f)
@@ -3134,7 +3135,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   // opacity value)
   const _Bool suppress_mask = self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
                               && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH);
-  const _Bool mask_blur = d->radius > 0.1f;
+  const _Bool mask_feather = d->feathering_radius > 0.1f;
+  const _Bool mask_blur = d->blur_radius > 0.1f;
   const _Bool mask_tone_curve = fabsf(d->contrast) >= 0.01f || fabsf(d->brightness) >= 0.01f;
 
   // get the clipped opacity value  0 - 1
@@ -3191,15 +3193,15 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
                                                  d->blendif_parameters);
   if(dev_m == NULL) goto error;
 
-  dev_mask_2 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
-  if(dev_mask_2 == NULL) goto error;
+  dev_mask_1 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
+  if(dev_mask_1 == NULL) goto error;
 
   if(mask_mode == DEVELOP_MASK_ENABLED || suppress_mask)
   {
     // blend uniformly (no drawn or parametric mask)
 
     // set dev_mask with global opacity value
-    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 0, sizeof(cl_mem), (void *)&dev_mask_2);
+    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 0, sizeof(cl_mem), (void *)&dev_mask_1);
     dt_opencl_set_kernel_arg(devid, kernel_set_mask, 1, sizeof(int), (void *)&owidth);
     dt_opencl_set_kernel_arg(devid, kernel_set_mask, 2, sizeof(int), (void *)&oheight);
     dt_opencl_set_kernel_arg(devid, kernel_set_mask, 3, sizeof(float), (void *)&opacity);
@@ -3247,8 +3249,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     }
 
     // write mask from host to device
-    dev_mask_1 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
-    if(dev_mask_1 == NULL) goto error;
+    dev_mask_2 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
+    if(dev_mask_2 == NULL) goto error;
     err = dt_opencl_write_host_to_device(devid, mask, dev_mask_1, owidth, oheight, sizeof(float));
     if(err != CL_SUCCESS) goto error;
 
@@ -3278,21 +3280,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
     if(err != CL_SUCCESS) goto error;
 
-    if(mask_blur && d->mask_blur_mode == DEVELOP_MASK_BLUR_GAUSSIAN)
+    if(mask_feather)
     {
-      const float sigma = d->radius * roi_out->scale / piece->iscale;
-      const float mmax[] = { 1.0f };
-      const float mmin[] = { 0.0f };
-
-      dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, owidth, oheight, 1, mmax, mmin, sigma, 0);
-      if(g) {
-        dt_gaussian_blur_cl(g, dev_mask_2, dev_mask_1);
-        dt_gaussian_free_cl(g);
-      }
-    }
-    else if(mask_blur && d->mask_blur_mode == DEVELOP_MASK_FEATHER)
-    {
-      int w = (int)(2 * d->radius * roi_out->scale / piece->iscale + 0.5f);
+      int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
       if (w < 1)
         w = 1;
       float sqrt_eps = 0;
@@ -3308,8 +3298,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       default:
         assert(0);
       }
-      cl_mem guide = dev_in;
-      if(!rois_equal)
+      cl_mem guide = d->feathering_guide == DEVELOP_MASK_GUIDE_IN ? dev_in : dev_out;
+      if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN)
       {
         guide = dt_opencl_alloc_device(devid, owidth, oheight, 4 * sizeof(float));
         if(guide == NULL) goto error;
@@ -3319,7 +3309,26 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
         if(err != CL_SUCCESS) goto error;
       }
       guided_filter_cl(devid, guide, dev_mask_2, dev_mask_1, owidth, oheight, ch, w, sqrt_eps, 0.f, 1.f);
-      if(!rois_equal) dt_opencl_release_mem_object(guide);
+      if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN) dt_opencl_release_mem_object(guide);
+    }
+    else
+    {
+      cl_mem tmp = dev_mask_1;
+      dev_mask_1 = dev_mask_2;
+      dev_mask_2 = tmp;
+    }
+    if(mask_blur)
+    {
+      const float sigma = d->blur_radius * roi_out->scale / piece->iscale;
+      const float mmax[] = { 1.0f };
+      const float mmin[] = { 0.0f };
+
+      dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, owidth, oheight, 1, mmax, mmin, sigma, 0);
+      if(g)
+      {
+        dt_gaussian_blur_cl(g, dev_mask_1, dev_mask_2);
+        dt_gaussian_free_cl(g);
+      }
     }
     else
     {
@@ -3332,8 +3341,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     {
       const float e = expf(3.f * d->contrast);
       const float brightness = d->brightness;
-      dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 0, sizeof(cl_mem), (void *)&dev_mask_1);
-      dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 1, sizeof(cl_mem), (void *)&dev_mask_2);
+      dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 0, sizeof(cl_mem), (void *)&dev_mask_2);
+      dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 1, sizeof(cl_mem), (void *)&dev_mask_1);
       dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 2, sizeof(int), (void *)&owidth);
       dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 3, sizeof(int), (void *)&oheight);
       dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 4, sizeof(float), (void *)&e);
@@ -3350,9 +3359,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     }
   }
 
-  // get rid of dev_mask_1
-  dt_opencl_release_mem_object(dev_mask_1);
-  dev_mask_1 = NULL;
+  // get rid of dev_mask_2
+  dt_opencl_release_mem_object(dev_mask_2);
+  dev_mask_2 = NULL;
 
   // get temporary buffer for output image to overcome readonly/writeonly limitation
   dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, 4 * sizeof(float));
@@ -3366,7 +3375,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     // let us display a specific channel
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 1, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 2, sizeof(cl_mem), (void *)&dev_mask_2);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 2, sizeof(cl_mem), (void *)&dev_mask_1);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 3, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 4, sizeof(int), (void *)&owidth);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 5, sizeof(int), (void *)&oheight);
@@ -3381,7 +3390,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     const unsigned int blend_mode = d->blend_mode;
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask_2);
+    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask_1);
     dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&owidth);
     dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&oheight);
@@ -3401,7 +3410,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   dt_free_align(_mask);
   dt_opencl_release_mem_object(dev_m);
-  dt_opencl_release_mem_object(dev_mask_2);
+  dt_opencl_release_mem_object(dev_mask_1);
   dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
@@ -3592,7 +3601,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blend_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_BLEND_NORMAL2 : o->mode;
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
-    n->radius = o->radius;
+    n->blur_radius = o->radius;
     n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active); // knock out old unused "active" flag
     memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
 
@@ -3612,7 +3621,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blend_mode = o->blend_mode;
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
-    n->radius = o->radius;
+    n->blur_radius = o->radius;
     // this is needed as version 5 contained a bug which screwed up history
     // stacks of even older
     // versions. potentially bad history stacks can be identified by an active
@@ -3637,7 +3646,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blend_mode = o->blend_mode;
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
-    n->radius = o->radius;
+    n->blur_radius = o->radius;
     n->blendif = o->blendif;
     memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
     return 0;
@@ -3656,7 +3665,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blend_mode = o->blend_mode;
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
-    n->radius = o->radius;
+    n->blur_radius = o->radius;
     n->blendif = o->blendif;
     memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
     return 0;
