@@ -63,7 +63,7 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
   const float4 saturation4 = saturation;
   const float4 contrast4 = contrast;
 
-  o = luma + ((float4)1.0f - derivative / max_grad4 / saturation4) * (o - luma);
+  o = luma + ((float4)1.0f - (float4)4.0f * (luma - (float4)0.5f) * (luma - (float4)0.5f) * derivative / max_grad4 / saturation4) * (o - luma);
   o = clamp(o, (float4)0.0f, (float4)1.0f);
 
   // Apply the transfer function of the display
