@@ -116,6 +116,7 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
   dt_image_remove(imgid);
 
   _lib_duplicate_init_callback(NULL, self);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 }
 
 static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
