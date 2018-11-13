@@ -803,14 +803,9 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   dt_dev_pop_history_items(dev, dev->history_end);
 }
 
-void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt, gboolean no_image)
+void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
 {
   // printf("dev popping all history items >= %d\n", cnt);
-  if(!no_image)
-  {
-  dt_pthread_mutex_lock(&dev->history_mutex);
-  darktable.gui->reset = 1;
-  }
   dev->history_end = cnt;
   // reset gui params for all modules
   GList *modules = dev->iop;
@@ -836,10 +831,17 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt, gboolean no_im
 
     history = g_list_next(history);
   }
-  if(!no_image)
-  {
+}
+
+void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
+{
+  dt_pthread_mutex_lock(&dev->history_mutex);
+  darktable.gui->reset = 1;
+
+  dt_dev_pop_history_items_ext(dev, cnt);
+
   // update all gui modules
-  modules = dev->iop;
+  GList *modules = dev->iop;
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -852,12 +854,6 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt, gboolean no_im
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
   dt_control_queue_redraw_center();
-  }
-}
-
-void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
-{
-  dt_dev_pop_history_items_ext(dev, cnt, FALSE);
 }
 
 void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
