@@ -39,17 +39,18 @@ typedef struct dt_lib_duplicate_t
   int imgid;
 } dt_lib_duplicate_t;
 
-const char *name()
+const char *name(dt_lib_module_t *self)
 {
   return _("duplicate manager");
 }
 
-uint32_t views()
+const char **views(dt_lib_module_t *self)
 {
-  return DT_VIEW_DARKROOM;
+  static const char *v[] = {"darkroom", NULL};
+  return v;
 }
 
-uint32_t container()
+uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
@@ -121,7 +122,7 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
   int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
-  
+
   if(event->button == 1)
   {
     if(event->type == GDK_BUTTON_PRESS)
@@ -133,10 +134,10 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
       float zoom_x, zoom_y;
       closeup = dt_control_get_dev_closeup();
       float scale = 0;
-    
+
       zoom = DT_ZOOM_FIT;
       scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
-    
+
       dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
       dt_control_set_dev_zoom_scale(scale);
       dt_control_set_dev_zoom(zoom);
@@ -145,9 +146,9 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
       dt_control_set_dev_zoom_y(zoom_y);
       dt_dev_invalidate(dev);
       dt_control_queue_redraw();
-    
+
       dt_dev_invalidate(darktable.develop);
-        
+
       d->imgid = imgid;
       dt_control_queue_redraw_center();
     }
@@ -170,20 +171,20 @@ static void _lib_duplicate_thumb_release_callback(GtkWidget *widget, GdkEventBut
 void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-  
+
   if (d->imgid == 0) return;
-  
+
   const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
   int nw = width-2*tb;
   int nh = height-2*tb;
-  
+
   dt_mipmap_buffer_t buf;
   dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, nw, nh);
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, d->imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
-  
+
   int img_wd = buf.width;
   int img_ht = buf.height;
-  
+
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
   // and now we get the values to "fit the screen"
@@ -202,21 +203,21 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     px=0;
     py=(nh-nimgh)/2;
   }
-  
+
   // we erase everything
   cairo_set_source_rgb(cri, .2, .2, .2);
   cairo_paint(cri);
-  
+
   //we draw the cached image
   dt_view_image_expose(DT_VIEW_DESERT, d->imgid, cri, nw, nh, 1, px+tb, py+tb, TRUE, TRUE);
-  
+
   //and the nice border line
   cairo_rectangle(cri, tb+px, tb+py, nimgw, nimgh);
   cairo_set_line_width(cri, 1.0);
   cairo_set_source_rgb(cri, .3, .3, .3);
   cairo_stroke(cri);
 }
-                     
+
 static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
 {
   guint width, height;
@@ -224,24 +225,24 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
   height = gtk_widget_get_allocated_height (widget);
   cairo_set_source_rgb(cr, .2, .2, .2);
   cairo_paint(cr);
-  
+
   int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
-      
+
   dt_view_image_expose(DT_VIEW_DESERT, imgid, cr, width, height, 5, 0, 0, FALSE, FALSE);
 
  return FALSE;
 }
-  
+
 static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-  
+
   d->imgid = 0;
   gtk_container_foreach(GTK_CONTAINER(d->duplicate_box), (GtkCallback)gtk_widget_destroy, 0);
   // retrieve all the versions of the image
   sqlite3_stmt *stmt;
   dt_develop_t *dev = darktable.develop;
-  
+
   // we get a summarize of all versions of the image
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select i.version, i.id, m.value from images as "
                                                              "i left join meta_data as m on m.id = i.id and "
@@ -269,7 +270,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gchar chl[256];
     gchar *path = (gchar *)sqlite3_column_text(stmt, 2);
     g_snprintf(chl, sizeof(chl), "(%d)", sqlite3_column_int(stmt, 0));
-    
+
     GtkWidget *tb = gtk_entry_new();
     if(path) gtk_entry_set_text(GTK_ENTRY(tb), path);
     gtk_entry_set_width_chars(GTK_ENTRY(tb), 15);
@@ -277,7 +278,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     g_signal_connect(G_OBJECT(tb), "focus-out-event", G_CALLBACK(_lib_duplicate_caption_out_callback), self);
     dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(tb));
     GtkWidget *lb = gtk_label_new (g_strdup(chl));
-    GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+    GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(sqlite3_column_int(stmt, 1)));
     gtk_widget_set_size_request(bt, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
     g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
@@ -290,7 +291,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_box_pack_start(GTK_BOX(d->duplicate_box), hb, FALSE, FALSE, 0);
   }
   sqlite3_finalize (stmt);
-  
+
   gtk_widget_show_all(d->duplicate_box);
 }
 
@@ -306,12 +307,12 @@ void gui_init(dt_lib_module_t *self)
   /* initialize ui widgets */
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)g_malloc0(sizeof(dt_lib_duplicate_t));
   self->data = (void *)d;
-  
+
   d->imgid = 0;
-  
+
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_name(self->widget, "duplicate-ui");
-  
+
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), DT_PIXEL_APPLY_DPI(300));
@@ -320,11 +321,11 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *bt = gtk_label_new(_("existing duplicates"));
   gtk_box_pack_start(GTK_BOX(hb), bt, FALSE, FALSE, 0);
-  bt = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_ACTIVE | CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  bt = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_ACTIVE | CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_object_set(G_OBJECT(bt), "tooltip-text", _("create a 'virgin' duplicate of the image without any developpement"), (char *)NULL);
   g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_lib_duplicate_new_clicked_callback), self);
   gtk_box_pack_end(GTK_BOX(hb), bt, FALSE, FALSE, 0);
-  bt = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  bt = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_object_set(G_OBJECT(bt), "tooltip-text", _("create a duplicate of the image with same history stack"), (char *)NULL);
   g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_lib_duplicate_duplicate_clicked_callback), self);
   gtk_box_pack_end(GTK_BOX(hb), bt, FALSE, FALSE, 0);
@@ -333,10 +334,10 @@ void gui_init(dt_lib_module_t *self)
   /* add duplicate list and buttonbox to widget */
   gtk_box_pack_start(GTK_BOX(self->widget), hb, FALSE, FALSE, 0);
   gtk_container_add(GTK_CONTAINER(sw), d->duplicate_box);
-  gtk_box_pack_start(GTK_BOX(self->widget), sw, FALSE, FALSE, 0);  
+  gtk_box_pack_start(GTK_BOX(self->widget), sw, FALSE, FALSE, 0);
 
   gtk_widget_show_all(self->widget);
-  
+
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED, G_CALLBACK(_lib_duplicate_init_callback), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE, G_CALLBACK(_lib_duplicate_init_callback), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
