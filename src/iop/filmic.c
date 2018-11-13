@@ -267,7 +267,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       for(size_t c = 0; c < 3; c++)
       {
         // Desaturate on the non-linear parts of the curve
-        rgb[c] = XYZ[1] + (1.0f - 4.0f * (XYZ[1] - 0.5f) * (XYZ[1] - 0.5f) * data->grad_2[index[c]] / data->max_grad / saturation )* (rgb[c] - XYZ[1]);
+        const float mid_distance = 4.0f * (XYZ[1] - 0.5f) * (XYZ[1] - 0.5f);
+        const float concavity = data->grad_2[index[c]] / data->max_grad;
+        rgb[c] = XYZ[1] + CLAMP(1.0f - data->contrast * mid_distance * concavity / saturation, 0.0f, 1.0f) * (rgb[c] - XYZ[1]);
 
         // Apply the transfer function of the display
         rgb[c] = powf(CLAMP(rgb[c], 0.0f, 1.0f), data->output_power);
@@ -350,7 +352,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       {
         // Desaturate on the non-linear parts of the curve
         const float luma = _mm_vectorGetByIndex(XYZ, 1);
-        rgb_unpack[c] = luma + (1.0f - 4.0f * (luma - 0.5f) * (luma - 0.5f) * data->grad_2[index[c]] / data->max_grad / saturation) * (rgb_unpack[c] - luma);
+        const float mid_distance = 4.0f * (luma - 0.5f) * (luma - 0.5f);
+        const float concavity = data->grad_2[index[c]] / data->max_grad;
+        rgb_unpack[c] = luma + CLAMP(1.0f - data->contrast * mid_distance * concavity / saturation, 0.0f, 1.0f) * (rgb_unpack[c] - luma);
       }
 
       rgb = _mm_load_ps(rgb_unpack);
@@ -1063,8 +1067,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     d->grad_2[k] = fabsf(- d->table[k] * 2.0f + d->table[k-1] + d->table[k+1]) / 2.0f;
     if (d->grad_2[k] > d->max_grad) d->max_grad = d->grad_2[k];
   }
-  d->grad_2[0] = 0.0f;
-  d->grad_2[65535] = 0.0f;
+  d->grad_2[0] = d->max_grad;
+  d->grad_2[65535] = d->max_grad;
 
 }
 
