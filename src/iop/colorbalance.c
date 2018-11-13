@@ -1161,9 +1161,9 @@ static void apply_autocolor(dt_iop_module_t *self)
     g->color_patches_flags[GAMMA] = 1;
     for (int c = 0; c < 3; c++) g->color_patches_gain[c] = RGB[c];
     g->color_patches_flags[GAIN] = 1;
-
-    dt_iop_color_picker_reset(&g->color_picker, TRUE);
   }
+
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
   // Build the CDL-corrected samples (after the factors)
   float samples_lift[3] = { 0.f };
@@ -1257,9 +1257,9 @@ static void apply_autoluma(dt_iop_module_t *self)
     dt_Lab_to_XYZ((const float *)self->picked_color_max, XYZ);
     g->luma_patches[GAIN] = XYZ[1];
     g->luma_patches_flags[GAIN] = 1;
-
-    dt_iop_color_picker_reset(&g->color_picker, TRUE);
   }
+
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
   /** Optimization loop :
   * We try to find the CDL curves that neutralize the 3 input luma patches
@@ -1542,8 +1542,6 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
 
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
-
   self->color_picker_box[0] = self->color_picker_box[1] = .25f;
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
   self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
@@ -1582,6 +1580,8 @@ void gui_update(dt_iop_module_t *self)
     gtk_widget_set_visible(g->auto_color, TRUE);
     gtk_widget_set_visible(g->auto_luma, TRUE);
   }
+
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
 #endif
 
   if(p->mode == LEGACY)
@@ -1706,7 +1706,6 @@ static void mode_callback(GtkWidget *combo, dt_iop_module_t *self)
   p->mode = dt_bauhaus_combobox_get(combo);
 #ifdef AUTO
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
   if (p->mode == LEGACY || p->mode == LIFT_GAMMA_GAIN)
   {
@@ -1720,6 +1719,8 @@ static void mode_callback(GtkWidget *combo, dt_iop_module_t *self)
     gtk_widget_set_visible(g->auto_color, TRUE);
     gtk_widget_set_visible(g->auto_luma, TRUE);
   }
+
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
 #endif
 
   if (p->mode == LEGACY)
@@ -1740,8 +1741,6 @@ static void controls_callback(GtkWidget *combo, dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   int control_mode = dt_bauhaus_combobox_get(combo);
-
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
   switch (control_mode)
   {
@@ -1805,6 +1804,7 @@ static void controls_callback(GtkWidget *combo, dt_iop_module_t *self)
       gtk_widget_set_visible(g->sat_gain, TRUE);
     }
   }
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
 }
 #endif
 
