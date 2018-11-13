@@ -388,18 +388,20 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
   cl_mem dev_table = NULL;
-  cl_mem dev_coeffs = NULL;
+  cl_mem diff_table = NULL;
 
   dev_table = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
   if(dev_table == NULL) goto error;
 
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs);
-  if(dev_coeffs == NULL) goto error;
+  diff_table = dt_opencl_copy_host_to_device(devid, d->grad_2, 256, 256, sizeof(float));
+  if(diff_table == NULL) goto error;
 
   const float dynamic_range = d->dynamic_range;
   const float shadows_range = d->black_source;
   const float grey = d->grey_source;
   const float saturation = d->saturation / 100.0f;
+  const float contrast = d->contrast;
+  const float power = d->output_power;
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -409,18 +411,20 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 5, sizeof(float), (void *)&shadows_range);
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 6, sizeof(float), (void *)&grey);
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 7, sizeof(cl_mem), (void *)&dev_table);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 8, sizeof(cl_mem), (void *)&dev_coeffs);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 8, sizeof(cl_mem), (void *)&diff_table);
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 9, sizeof(float), (void *)&saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 10, sizeof(float), (void *)&contrast);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 11, sizeof(float), (void *)&power);
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic, sizes);
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_table);
-  dt_opencl_release_mem_object(dev_coeffs);
+  dt_opencl_release_mem_object(diff_table);
   return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_table);
-  dt_opencl_release_mem_object(dev_coeffs);
+  dt_opencl_release_mem_object(diff_table);
   dt_print(DT_DEBUG_OPENCL, "[opencl_filmic] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
