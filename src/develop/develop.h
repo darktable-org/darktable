@@ -273,7 +273,7 @@ int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid);
 void dt_dev_add_history_item_ext(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable, gboolean no_image);
 void dt_dev_add_history_item(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable);
 void dt_dev_reload_history_items(dt_develop_t *dev);
-void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt, gboolean no_image);
+void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
 void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid);
 void dt_dev_write_history(dt_develop_t *dev);
