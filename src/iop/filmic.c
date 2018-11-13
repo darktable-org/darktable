@@ -231,7 +231,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float saturation = data->saturation / 100.0f;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(data, stderr) schedule(static)
+#pragma omp parallel for SIMD() default(none) shared(data) schedule(static)
 #endif
   for(size_t j = 0; j < roi_out->height; j++)
   {
