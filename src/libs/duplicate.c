@@ -245,10 +245,10 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   dt_develop_t *dev = darktable.develop;
 
   // we get a summarize of all versions of the image
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select i.version, i.id, m.value from images as "
-                                                             "i left join meta_data as m on m.id = i.id and "
-                                                             "m.key = ?3 where film_id = ?1 and filename = "
-                                                             "?2 order by i.version",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT i.version, i.id, m.value FROM images AS "
+                                                             "i LEFT JOIN meta_data AS m ON m.id = i.id AND "
+                                                             "m.key = ?3 WHERE film_id = ?1 AND filename = "
+                                                             "?2 ORDER BY i.version",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dev->image_storage.filename, -1, SQLITE_TRANSIENT);
