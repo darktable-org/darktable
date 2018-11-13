@@ -209,7 +209,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   cairo_paint(cri);
 
   //we draw the cached image
-  dt_view_image_expose(DT_VIEW_DESERT, d->imgid, cri, nw, nh, 1, px+tb, py+tb, TRUE, TRUE);
+  dt_view_image_over_t image_over = DT_VIEW_DESERT;
+  dt_view_image_expose(&image_over, d->imgid, cri, nw, nh, 1, px+tb, py+tb, TRUE, TRUE);
 
   //and the nice border line
   cairo_rectangle(cri, tb+px, tb+py, nimgw, nimgh);
@@ -227,8 +228,8 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
   cairo_paint(cr);
 
   int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
-
-  dt_view_image_expose(DT_VIEW_DESERT, imgid, cr, width, height, 5, 0, 0, FALSE, FALSE);
+  dt_view_image_over_t image_over = DT_VIEW_DESERT;
+  dt_view_image_expose(&image_over, imgid, cr, width, height, 5, 0, 0, FALSE, FALSE);
 
  return FALSE;
 }
