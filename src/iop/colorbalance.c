@@ -1174,18 +1174,31 @@ static void apply_autocolor(dt_iop_module_t *self)
   if(g->color_patches_flags[GAIN] == INVALID || g->color_patches_flags[GAMMA] == INVALID
      || g->color_patches_flags[LIFT] == INVALID)
   {
+    /*
+     * Some color patches were not picked by the user. Take a
+     * picture-wide patch for these.
+     */
     float XYZ[3] = { 0.0f };
     dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
     float RGB[3] = { 0.0f };
     dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
     // Save the patch color for the optimization
-    for (int c = 0; c < 3; c++) g->color_patches_lift[c] = RGB[c];
-    g->color_patches_flags[LIFT] = AUTO_SELECTED;
-    for (int c = 0; c < 3; c++) g->color_patches_gamma[c] = RGB[c];
-    g->color_patches_flags[GAMMA] = AUTO_SELECTED;
-    for (int c = 0; c < 3; c++) g->color_patches_gain[c] = RGB[c];
-    g->color_patches_flags[GAIN] = AUTO_SELECTED;
+    if(g->color_patches_flags[LIFT] == INVALID)
+    {
+      for(int c = 0; c < 3; c++) g->color_patches_lift[c] = RGB[c];
+      g->color_patches_flags[LIFT] = AUTO_SELECTED;
+    }
+    if(g->color_patches_flags[GAMMA] == INVALID)
+    {
+      for(int c = 0; c < 3; c++) g->color_patches_gamma[c] = RGB[c];
+      g->color_patches_flags[GAMMA] = AUTO_SELECTED;
+    }
+    if(g->color_patches_flags[GAIN] == INVALID)
+    {
+      for(int c = 0; c < 3; c++) g->color_patches_gain[c] = RGB[c];
+      g->color_patches_flags[GAIN] = AUTO_SELECTED;
+    }
   }
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
@@ -1268,20 +1281,30 @@ static void apply_autoluma(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  if(g->luma_patches_flags[GAIN] != 1 || g->luma_patches_flags[GAMMA] != 1 || g->luma_patches_flags[LIFT] != 1)
+  /*
+   * If some luma patches were not picked by the user, take a
+   * picture-wide patch for these.
+   */
+  if(g->luma_patches_flags[LIFT] == INVALID)
   {
     float XYZ[3] = { 0.0f };
     dt_Lab_to_XYZ((const float *)self->picked_color_min, XYZ);
     g->luma_patches[LIFT] = XYZ[1];
-    g->luma_patches_flags[LIFT] = 1;
-
+    g->luma_patches_flags[LIFT] = AUTO_SELECTED;
+  }
+  if(g->luma_patches_flags[GAMMA] == INVALID)
+  {
+    float XYZ[3] = { 0.0f };
     dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
     g->luma_patches[GAMMA] = XYZ[1];
-    g->luma_patches_flags[GAMMA] = 1;
-
+    g->luma_patches_flags[GAMMA] = AUTO_SELECTED;
+  }
+  if(g->luma_patches_flags[GAIN] == INVALID)
+  {
+    float XYZ[3] = { 0.0f };
     dt_Lab_to_XYZ((const float *)self->picked_color_max, XYZ);
     g->luma_patches[GAIN] = XYZ[1];
-    g->luma_patches_flags[GAIN] = 1;
+    g->luma_patches_flags[GAIN] = AUTO_SELECTED;
   }
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
