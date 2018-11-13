@@ -139,7 +139,6 @@ typedef struct dt_iop_filmic_data_t
   float table_temp[0x10000]; // precomputed look-up for the optimized interpolation
   float grad_2[0x10000];
   float max_grad;
-  float unbounded_coeffs[3]; // approximation for extrapolation of curve
   float grey_source;
   float black_source;
   float dynamic_range;
