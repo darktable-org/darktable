@@ -92,6 +92,13 @@ typedef enum _controls_t
   BOTH
 } _controls_t;
 
+typedef enum _colorbalance_patch_t
+{
+  INVALID,
+  USER_SELECTED,
+  AUTO_SELECTED
+} _colorbalance_patch_t;
+
 typedef enum dt_iop_colorbalance_pickcolor_type_t
 {
   DT_PICKCOLBAL_NONE = 0,
@@ -135,9 +142,9 @@ typedef struct dt_iop_colorbalance_gui_data_t
   float color_patches_lift[3];
   float color_patches_gamma[3];
   float color_patches_gain[3];
-  int color_patches_flags[LEVELS];
+  _colorbalance_patch_t color_patches_flags[LEVELS];
   float luma_patches[LEVELS];
-  int luma_patches_flags[LEVELS];
+  _colorbalance_patch_t luma_patches_flags[LEVELS];
   int which_colorpicker;
   dt_iop_color_picker_t color_picker;
 #endif
@@ -887,12 +894,14 @@ static inline void _check_tuner_picker_labels(dt_iop_module_t *self)
 {
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  if(g->luma_patches_flags[GAIN] == 1 && g->luma_patches_flags[GAMMA] == 1 && g->luma_patches_flags[LIFT] == 1)
+  if(g->luma_patches_flags[GAIN] == USER_SELECTED && g->luma_patches_flags[GAMMA] == USER_SELECTED
+     && g->luma_patches_flags[LIFT] == USER_SELECTED)
     dt_bauhaus_widget_set_label(g->auto_luma, NULL, _("optimize luma from patches"));
   else
     dt_bauhaus_widget_set_label(g->auto_luma, NULL, _("optimize luma"));
 
-  if(g->color_patches_flags[GAIN] == 1 && g->color_patches_flags[GAMMA] == 1 && g->color_patches_flags[LIFT] == 1)
+  if(g->color_patches_flags[GAIN] == USER_SELECTED && g->color_patches_flags[GAMMA] == USER_SELECTED
+     && g->color_patches_flags[LIFT] == USER_SELECTED)
     dt_bauhaus_widget_set_label(g->auto_color, NULL, _("neutralize colors from patches"));
   else
     dt_bauhaus_widget_set_label(g->auto_color, NULL, _("neutralize colors"));
@@ -979,7 +988,7 @@ static void apply_lift_neutralize(dt_iop_module_t *self)
 // Save the patch color for the optimization
 #ifdef OPTIM
   for(int c = 0; c < 3; ++c) g->color_patches_lift[c] = RGB[c];
-  g->color_patches_flags[LIFT] = 1;
+  g->color_patches_flags[LIFT] = USER_SELECTED;
 #endif
 
   // Compute the RGB values after the CDL factors
@@ -1018,7 +1027,7 @@ static void apply_gamma_neutralize(dt_iop_module_t *self)
 // Save the patch color for the optimization
 #ifdef OPTIM
   for(int c = 0; c < 3; ++c) g->color_patches_gamma[c] = RGB[c];
-  g->color_patches_flags[GAMMA] = 1;
+  g->color_patches_flags[GAMMA] = USER_SELECTED;
 #endif
 
   // Compute the RGB values after the CDL factors
@@ -1057,7 +1066,7 @@ static void apply_gain_neutralize(dt_iop_module_t *self)
 // Save the patch color for the optimization
 #ifdef OPTIM
   for(int c = 0; c < 3; c++) g->color_patches_gain[c] = RGB[c];
-  g->color_patches_flags[GAIN] = 1;
+  g->color_patches_flags[GAIN] = USER_SELECTED;
 #endif
 
   // Compute the RGB values after the CDL factors
@@ -1093,7 +1102,7 @@ static void apply_lift_auto(dt_iop_module_t *self)
 
 #ifdef OPTIM
   g->luma_patches[LIFT] = XYZ[1];
-  g->luma_patches_flags[LIFT] = 1;
+  g->luma_patches_flags[LIFT] = USER_SELECTED;
 #endif
 
   float RGB[3] = { 0.0f };
@@ -1117,7 +1126,7 @@ static void apply_gamma_auto(dt_iop_module_t *self)
 
 #ifdef OPTIM
   g->luma_patches[GAMMA] = XYZ[1];
-  g->luma_patches_flags[GAMMA] = 1;
+  g->luma_patches_flags[GAMMA] = USER_SELECTED;
 #endif
 
   float RGB[3] = { 0.0f };
@@ -1142,7 +1151,7 @@ static void apply_gain_auto(dt_iop_module_t *self)
 
 #ifdef OPTIM
   g->luma_patches[GAIN] = XYZ[1];
-  g->luma_patches_flags[GAIN] = 1;
+  g->luma_patches_flags[GAIN] = USER_SELECTED;
 #endif
 
   float RGB[3] = { 0.0f };
@@ -1162,7 +1171,8 @@ static void apply_autocolor(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  if(g->color_patches_flags[GAIN] != 1 || g->color_patches_flags[GAMMA] != 1 || g->color_patches_flags[LIFT] != 1)
+  if(g->color_patches_flags[GAIN] == INVALID || g->color_patches_flags[GAMMA] == INVALID
+     || g->color_patches_flags[LIFT] == INVALID)
   {
     float XYZ[3] = { 0.0f };
     dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
@@ -1171,11 +1181,11 @@ static void apply_autocolor(dt_iop_module_t *self)
 
     // Save the patch color for the optimization
     for (int c = 0; c < 3; c++) g->color_patches_lift[c] = RGB[c];
-    g->color_patches_flags[LIFT] = 1;
+    g->color_patches_flags[LIFT] = AUTO_SELECTED;
     for (int c = 0; c < 3; c++) g->color_patches_gamma[c] = RGB[c];
-    g->color_patches_flags[GAMMA] = 1;
+    g->color_patches_flags[GAMMA] = AUTO_SELECTED;
     for (int c = 0; c < 3; c++) g->color_patches_gain[c] = RGB[c];
-    g->color_patches_flags[GAIN] = 1;
+    g->color_patches_flags[GAIN] = AUTO_SELECTED;
   }
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
@@ -1692,8 +1702,8 @@ void gui_reset(dt_iop_module_t *self)
 
   for (int k=0; k<LEVELS; k++)
   {
-    g->color_patches_flags[k] = 0;
-    g->luma_patches_flags[k] = 0;
+    g->color_patches_flags[k] = INVALID;
+    g->luma_patches_flags[k] = INVALID;
   }
   _check_tuner_picker_labels(self);
 
