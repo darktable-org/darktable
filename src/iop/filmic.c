@@ -1132,7 +1132,7 @@ void init(dt_iop_module_t *module)
                                  .output_power        = 2.2,  // target power (~ gamma)
                                  .latitude_stops      = 2.0,  // intent latitude
                                  .contrast            = 1.333,  // intent contrast
-                                 .saturation          = 100.0,   // intent saturation
+                                 .saturation          = 500.0,   // intent saturation
                                  .balance             = 0.0, // balance shadows/highlights
                                  .interpolator        = CUBIC_SPLINE //interpolator
                               };
