@@ -267,7 +267,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       for(size_t c = 0; c < 3; c++)
       {
         // Desaturate on the non-linear parts of the curve
-        rgb[c] = XYZ[1] + (1.0f - data->grad_2[index[c]] / data->max_grad / saturation )* (rgb[c] - XYZ[1]);
+        rgb[c] = XYZ[1] + (1.0f - 4.0f * (XYZ[1] - 0.5f) * (XYZ[1] - 0.5f) * data->grad_2[index[c]] / data->max_grad / saturation )* (rgb[c] - XYZ[1]);
 
         // Apply the transfer function of the display
         rgb[c] = powf(CLAMP(rgb[c], 0.0f, 1.0f), data->output_power);
@@ -350,7 +350,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       {
         // Desaturate on the non-linear parts of the curve
         const float luma = _mm_vectorGetByIndex(XYZ, 1);
-        rgb_unpack[c] = luma + (1.0f - data->grad_2[index[c]] / data->max_grad / saturation) * (rgb_unpack[c] - luma);
+        rgb_unpack[c] = luma + (1.0f - 4.0f * (luma - 0.5f) * (luma - 0.5f) * data->grad_2[index[c]] / data->max_grad / saturation) * (rgb_unpack[c] - luma);
       }
 
       rgb = _mm_load_ps(rgb_unpack);
@@ -1132,7 +1132,7 @@ void init(dt_iop_module_t *module)
                                  .output_power        = 2.2,  // target power (~ gamma)
                                  .latitude_stops      = 2.0,  // intent latitude
                                  .contrast            = 1.333,  // intent contrast
-                                 .saturation          = 500.0,   // intent saturation
+                                 .saturation          = 100.0,   // intent saturation
                                  .balance             = 0.0, // balance shadows/highlights
                                  .interpolator        = CUBIC_SPLINE //interpolator
                               };
@@ -1305,7 +1305,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->latitude_stops), "value-changed", G_CALLBACK(latitude_stops_callback), self);
 
   // balance slider
-  g->balance = dt_bauhaus_slider_new_with_range(self, -75., 75., 1.0, p->balance, 2);
+  g->balance = dt_bauhaus_slider_new_with_range(self, -50., 50., 1.0, p->balance, 2);
   dt_bauhaus_widget_set_label(g->balance, NULL, _("balance shadows-highlights"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->balance, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->balance, "%.2f %%");
@@ -1313,7 +1313,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->balance), "value-changed", G_CALLBACK(balance_callback), self);
 
   // saturation slider
-  g->saturation = dt_bauhaus_slider_new_with_range(self, 1., 1000., 1., p->saturation, 2);
+  g->saturation = dt_bauhaus_slider_new_with_range(self, 100., 1000., 1., p->saturation, 2);
   dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
   dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
