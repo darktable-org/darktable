@@ -22,6 +22,7 @@
 #include "common/mipmap_cache.h"
 #include "common/history.h"
 #include "common/styles.h"
+#include "common/selection.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "develop/develop.h"
@@ -32,12 +33,18 @@
 
 DT_MODULE(1)
 
+typedef enum _lib_duplicate_select_t
+{
+  DT_DUPLICATE_SELECT_NONE = 0,
+  DT_DUPLICATE_SELECT_FIRST = 1,
+  DT_DUPLICATE_SELECT_CURRENT = 2
+} dt_lib_duplicate_select_t;
 
 typedef struct dt_lib_duplicate_t
 {
   GtkWidget *duplicate_box;
   int imgid;
-  int current_imgid;
+  dt_lib_duplicate_select_t select;
 } dt_lib_duplicate_t;
 
 const char *name(dt_lib_module_t *self)
@@ -74,42 +81,46 @@ static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget, GdkEvent 
   return FALSE;
 }
 
+static void _do_select(int imgid)
+{
+  // to select the duplicate, we reuse the filmstrip proxy
+  dt_selection_select_single(darktable.selection, imgid);
+  dt_control_set_mouse_over_id(imgid);
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager,imgid,TRUE);
+}
+
 static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  d->select = DT_DUPLICATE_SELECT_NONE;
   const int imgid = darktable.develop->image_storage.id;
   const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
   dt_history_delete_on_image(newid);
   // to select the duplicate, we reuse the filmstrip proxy
   dt_view_filmstrip_scroll_to_image(darktable.view_manager,newid,TRUE);
-  d->current_imgid = newid;
 }
 static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  d->select = DT_DUPLICATE_SELECT_NONE;
   const int imgid = darktable.develop->image_storage.id;
   const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
   dt_history_copy_and_paste_on_image(imgid,newid,FALSE,NULL);
   // to select the duplicate, we reuse the filmstrip proxy
   dt_view_filmstrip_scroll_to_image(darktable.view_manager,newid,TRUE);
-  d->current_imgid = newid;
 }
 
 static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-
   const int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "imgid"));
 
-  /* if we are removing the current displayed duplicate, we select the original picture */
-  if (imgid == darktable.develop->image_storage.id)
-    d->current_imgid = -1;
-  else
-    d->current_imgid = darktable.develop->image_storage.id;
+  d->select = (imgid == darktable.develop->image_storage.id) ? DT_DUPLICATE_SELECT_FIRST : DT_DUPLICATE_SELECT_CURRENT;
 
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager,imgid,TRUE);
+  dt_selection_select_single(darktable.selection, imgid);
+  dt_control_set_mouse_over_id(imgid);
   dt_control_delete_images();
 
   _lib_duplicate_init_callback(NULL, self);
@@ -153,8 +164,7 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
     else if(event->type == GDK_2BUTTON_PRESS)
     {
       // to select the duplicate, we reuse the filmstrip proxy
-      dt_view_filmstrip_scroll_to_image(darktable.view_manager,imgid,TRUE);
-      d->current_imgid = imgid;
+      _do_select(imgid);
     }
   }
 }
@@ -243,6 +253,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   sqlite3_stmt *stmt;
   dt_develop_t *dev = darktable.develop;
 
+  int first_imgid = -1;
+
   // we get a summarize of all versions of the image
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT i.version, i.id, m.value FROM images AS "
                                                              "i LEFT JOIN meta_data AS m ON m.id = i.id AND "
@@ -260,7 +272,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     const int imgid = sqlite3_column_int(stmt, 1);
 
     // select original picture
-    if (d->current_imgid == -1) d->current_imgid = imgid;
+    if (first_imgid == -1) first_imgid = imgid;
 
     gtk_widget_set_size_request (dr, 100, 100);
     g_object_set_data (G_OBJECT (dr),"imgid",GINT_TO_POINTER(imgid));
@@ -297,7 +309,19 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   }
   sqlite3_finalize (stmt);
 
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager,d->current_imgid,TRUE);
+  switch(d->select)
+  {
+     case DT_DUPLICATE_SELECT_FIRST:
+       _do_select(first_imgid);
+       break;
+     case DT_DUPLICATE_SELECT_CURRENT:
+         _do_select(darktable.develop->image_storage.id);
+       break;
+     case DT_DUPLICATE_SELECT_NONE:
+     default:
+       break;
+  }
+  d->select = DT_DUPLICATE_SELECT_NONE;
 
   gtk_widget_show_all(d->duplicate_box);
 }
@@ -316,7 +340,6 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   d->imgid = 0;
-  d->current_imgid = darktable.develop->image_storage.id;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_name(self->widget, "duplicate-ui");
