@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/masks.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/styles.h"
@@ -236,6 +237,8 @@ static GList *_duplicate_history(GList *hist)
 
     memcpy(new->params, old->params, params_size);
     memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
+    
+    if(old->forms) new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
 
     result = g_list_append(result, new);
 
@@ -285,42 +288,11 @@ static void _add_module_expander(GList *iop_list, dt_iop_module_t *module)
   // so we do it here
   if(!dt_iop_is_hidden(module) && !module->expander)
   {
-    // since multi_priority is in reverse order, we want the last one
-    // that is grather than this
-    dt_iop_module_t *base = NULL;
-    dt_iop_module_t *base_last = NULL;
-    GList *mods = g_list_last(iop_list);
-    while(mods)
-    {
-      dt_iop_module_t *mod = (dt_iop_module_t *)(mods->data);
-
-      if(mod != module && mod->instance == module->instance)
-      {
-        // we save the last one in case module is the last one
-        base_last = mod;
-        if(mod->multi_priority > module->multi_priority)
-        {
-          base = mod;
-          break;
-        }
-      }
-      mods = g_list_previous(mods);
-    }
-    if(base == NULL)
-    {
-      base = base_last;
-      base_last = NULL;
-    }
-    if(base)
-    {
       /* add module to right panel */
       GtkWidget *expander = dt_iop_gui_get_expander(module);
       dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
       dt_iop_gui_set_expanded(module, TRUE, FALSE);
       dt_iop_gui_update_blending(module);
-    }
-    else
-      fprintf(stderr, "[_add_module_expander] can't find base for module %s\n", module->op);
   }
 }
 
@@ -455,7 +427,7 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
 
     modules = g_list_next(modules);
   }
-  if(deleted_module_found) iop_list = g_list_sort(iop_list, sort_plugins);
+  if(deleted_module_found) iop_list = g_list_sort(iop_list, dt_sort_iop_by_order);
 
   *_iop_list = iop_list;
 
@@ -544,9 +516,10 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
       // adjust the multi_name of the new module
       g_strlcpy(module->multi_name, hitem->multi_name, sizeof(module->multi_name));
       dt_iop_update_multi_priority(module, hitem->multi_priority);
+      module->iop_order = hitem->iop_order;
 
       // we insert this module into dev->iop
-      iop_list = g_list_insert_sorted(iop_list, module, sort_plugins);
+      iop_list = g_list_insert_sorted(iop_list, module, dt_sort_iop_by_order);
 
       // add the expander, dt_dev_reload_history_items() don't work well without one
       _add_module_expander(iop_list, module);
@@ -596,7 +569,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
     if(_rebuild_multi_priority(history_temp))
     {
       pipe_remove = 1;
-      iop_temp = g_list_sort(iop_temp, sort_plugins);
+      iop_temp = g_list_sort(iop_temp, dt_sort_iop_by_order);
     }
 
     // check if this undo a delete module and re-create it
@@ -646,6 +619,8 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
     // write new history and reload
     dt_dev_write_history(dev);
     dt_dev_reload_history_items(dev);
+    
+    dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
   }
 }
 
@@ -706,7 +681,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
       label = g_strdup_printf("%s %s", hitem->module->name(), hitem->multi_name);
 
     gboolean selected = (num == darktable.develop->history_end - 1);
-    GtkWidget *widget = _lib_history_create_button(self, num, label, hitem->enabled, selected);
+    GtkWidget *widget = _lib_history_create_button(self, num, label, (hitem->enabled || (strcmp(hitem->op_name, "mask_manager") == 0)), selected);
     g_free(label);
 
     gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);
@@ -740,6 +715,73 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
+  // delete all mask_manager entries
+  int masks_count = 0;
+  char op_mask_manager[20] = {0};
+  g_strlcpy(op_mask_manager, "mask_manager", sizeof(op_mask_manager));
+  
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1 AND operation = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  // compress masks history
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1 AND num "
+                                                             "NOT IN (SELECT MAX(num) FROM main.masks_history WHERE "
+                                                             "imgid = ?1 AND num < ?2)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, darktable.develop->history_end);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  // if there's masks create a mask manage entry
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM main.masks_history WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW) masks_count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  
+  if(masks_count > 0)
+  {
+    // set the masks history as first entry
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.masks_history SET num = 0 WHERE imgid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    
+    // make room for mask manager history entry
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.history SET num=num+1 WHERE imgid = ?1", 
+        -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    // update history end
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.images SET history_end = history_end+1 WHERE id = ?1", 
+        -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    const double iop_order = dt_ioppr_get_iop_order(darktable.develop->iop_order_list, op_mask_manager);
+
+    // create a mask manager entry in history as first entry
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+        dt_database_get(darktable.db),
+        "INSERT INTO main.history (imgid, num, operation, op_params, module, enabled, "
+             "blendop_params, blendop_version, multi_priority, multi_name, iop_order) "
+        "VALUES(?1, 0, ?2, NULL, 1, 0, NULL, 0, 0, '', ?3)",
+        -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 3, iop_order);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+  }
+  
   // load new history and write it back to ensure that all history are properly numbered without a gap
   dt_dev_reload_history_items(darktable.develop);
   dt_dev_write_history(darktable.develop);
@@ -791,6 +833,8 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   /* revert to given history item. */
   int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));
   dt_dev_pop_history_items(darktable.develop, num);
+  // set the module list order
+  dt_dev_reorder_gui_module_list(darktable.develop);
   /* signal history changed */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));

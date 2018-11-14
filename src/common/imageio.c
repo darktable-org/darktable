@@ -342,6 +342,7 @@ dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, d
   // needed to alloc correct buffer size:
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
+  img->buf_dsc.cst = iop_cs_rgb;
   dt_imageio_retval_t ret;
   dt_image_loader_t loader;
 #ifdef HAVE_OPENEXR
@@ -488,6 +489,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_jpeg(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
+    img->buf_dsc.cst = iop_cs_rgb;
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -499,6 +501,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_tiff(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
+    img->buf_dsc.cst = iop_cs_rgb;
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -510,6 +513,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_png(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
+    img->buf_dsc.cst = iop_cs_rgb;
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -522,6 +526,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_j2k(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
+    img->buf_dsc.cst = iop_cs_rgb;
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -534,6 +539,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_pnm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
+    img->buf_dsc.cst = iop_cs_rgb;
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -639,79 +645,21 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
       goto error;
     }
 
-    // remove everything above history_end
-    GList *history = g_list_nth(dev.history, dev.history_end);
-    while(history)
+    GList *modules_used = NULL;
+
+    dt_dev_pop_history_items_ext(&dev, dev.history_end);
+
+    GList *st_items = g_list_last(style_items);
+    while(st_items)
     {
-      GList *next = g_list_next(history);
-      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-      free(hist->params);
-      free(hist->blend_params);
-      free(history->data);
-      dev.history = g_list_delete_link(dev.history, history);
-      history = next;
+      dt_style_item_t *st_item = (dt_style_item_t *)(st_items->data);
+
+      dt_styles_apply_style_item(&dev, st_item, &modules_used, format_params->style_append);
+
+      st_items = g_list_previous(st_items);
     }
 
-    // Add each params
-    for(GList *iter = style_items; iter; iter = g_list_next(iter))
-    {
-      dt_style_item_t *s = (dt_style_item_t *)iter->data;
-
-      for(GList *module = dev.iop; module; module = g_list_next(module))
-      {
-        dt_iop_module_t *m = (dt_iop_module_t *)module->data;
-
-        if(!strcmp(m->op, s->operation))
-        {
-          dt_dev_history_item_t *h = malloc(sizeof(dt_dev_history_item_t));
-          dt_iop_module_t *style_module = m;
-
-          if((format_params->style_append && !(m->flags() & IOP_FLAGS_ONE_INSTANCE)) || m->multi_priority != s->multi_priority)
-          {
-            // dt_dev_module_duplicate() doesn't work here, it's trying too hard to be clever
-            style_module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
-            if(style_module && !dt_iop_load_module(style_module, m->so, m->dev))
-            {
-              style_module->instance = m->instance;
-              style_module->multi_priority = s->multi_priority;
-              snprintf(style_module->multi_name, sizeof(style_module->multi_name), "%s", s->name);
-              dev.iop = g_list_insert_sorted(dev.iop, style_module, sort_plugins);
-            }
-            else
-            {
-              free(h);
-              goto error;
-            }
-          }
-
-          h->params = s->params;
-          h->blend_params = s->blendop_params;
-          h->enabled = s->enabled;
-          h->module = style_module;
-          h->multi_priority = s->multi_priority;
-          g_strlcpy(h->multi_name, s->name, sizeof(h->multi_name));
-          g_strlcpy(h->op_name, m->op, sizeof(h->op_name));
-
-          if(m->legacy_params && (s->module_version != m->version()))
-          {
-            void *new_params = malloc(m->params_size);
-            m->legacy_params(m, h->params, s->module_version, new_params, labs(m->version()));
-
-            free(h->params);
-            h->params = new_params;
-          }
-
-          dev.history_end++;
-          dev.history = g_list_append(dev.history, h);
-
-          // make sure that dt_style_item_free doesn't free data we still use
-          s->params = NULL;
-          s->blendop_params = NULL;
-
-          break;
-        }
-      }
-    }
+    g_list_free(modules_used);
     g_list_free_full(style_items, dt_style_item_free);
   }
 
@@ -981,6 +929,7 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
   dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
+    img->buf_dsc.cst = iop_cs_rgb;
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -1019,7 +968,11 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
   {
     ret = dt_imageio_open_rawspeed(img, filename, buf);
-    if(ret == DT_IMAGEIO_OK) img->loader = LOADER_RAWSPEED;
+    if(ret == DT_IMAGEIO_OK)
+    {
+      img->buf_dsc.cst = iop_cs_RAW;
+      img->loader = LOADER_RAWSPEED;
+    }
   }
 
   /* fallback that tries to open file via GraphicsMagick */

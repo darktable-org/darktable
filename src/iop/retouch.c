@@ -203,6 +203,11 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 //---------------------------------------------------------------------------------
 // draw buttons
 //---------------------------------------------------------------------------------
@@ -665,11 +670,7 @@ static void rt_masks_form_change_opacity(dt_iop_module_t *self, int formid, floa
   {
     grpt->opacity = opacity;
 
-    dt_develop_blend_params_t *bp = self->blend_params;
-    dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, bp->mask_id);
-    dt_masks_write_form(grp, darktable.develop);
-
-    dt_dev_masks_list_update(darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, self, TRUE);
   }
 }
 
@@ -766,7 +767,7 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
   }
 
   // else, we create a new from group with the shapes and display it
-  dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
+  dt_masks_form_t *grp = dt_masks_create_ext(DT_MASKS_GROUP);
   for(int i = 0; i < RETOUCH_NO_FORMS; i++)
   {
     if(p->rt_forms[i].scale == scale)
@@ -786,7 +787,7 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
     }
   }
 
-  dt_masks_form_t *grp2 = dt_masks_create(DT_MASKS_GROUP);
+  dt_masks_form_t *grp2 = dt_masks_create_ext(DT_MASKS_GROUP);
   grp2->formid = 0;
   dt_masks_group_ungroup(grp2, grp);
   dt_masks_change_form_gui(grp2);
@@ -911,7 +912,7 @@ static int rt_masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop
   rt_masks_point_denormalize(piece, roi, target, 1, points);
   rt_masks_point_denormalize(piece, roi, source, 1, points + 2);
 
-  int res = dt_dev_distort_transform_plus(self->dev, piece->pipe, 0, self->priority, points, 2);
+  int res = dt_dev_distort_transform_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, 2);
   if(!res) return res;
 
   *dx = points[0] - points[2];
@@ -2122,7 +2123,7 @@ static gboolean rt_add_shape_callback(GtkWidget *widget, GdkEventButton *e, dt_i
   if(darktable.gui->reset) return FALSE;
 
   GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-  const int creation_continuous = ((e->state & modifiers) == GDK_CONTROL_MASK);
+  const int creation_continuous = !((e->state & modifiers) == GDK_CONTROL_MASK);
 
   return rt_add_shape(widget, creation_continuous, self);
 }
@@ -2331,7 +2332,6 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_retouch_params_t));
   // our module is disabled by default
   module->default_enabled = 0;
-  module->priority = 185; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_retouch_params_t);
   module->gui_data = NULL;
 
@@ -2545,6 +2545,31 @@ void gui_update(dt_iop_module_t *self)
   }
 }
 
+void change_image(struct dt_iop_module_t *self)
+{
+  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
+  if(g)
+  {
+    g->copied_scale = -1;
+    g->mask_display = 0;
+    g->suppress_mask = 0;
+    g->display_wavelet_scale = 0;
+    g->displayed_wavelet_scale = 0;
+    g->first_scale_visible = RETOUCH_MAX_SCALES + 1;
+
+    g->preview_auto_levels = 0;
+    g->preview_levels[0] = RETOUCH_PREVIEW_LVL_MIN;
+    g->preview_levels[1] = 0.f;
+    g->preview_levels[2] = RETOUCH_PREVIEW_LVL_MAX;
+
+    g->is_dragging = 0;
+    g->wdbar_mouse_x = -1;
+    g->wdbar_mouse_y = -1;
+    g->lvlbar_mouse_x = -1;
+    g->lvlbar_mouse_y = -1;
+  }
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   const int bs = DT_PIXEL_APPLY_DPI(14);
@@ -2554,6 +2579,8 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
 
   dt_pthread_mutex_init(&g->lock, NULL);
+  change_image(self);
+/*  
   g->copied_scale = -1;
   g->mask_display = 0;
   g->suppress_mask = 0;
@@ -2571,6 +2598,7 @@ void gui_init(dt_iop_module_t *self)
   g->wdbar_mouse_y = -1;
   g->lvlbar_mouse_x = -1;
   g->lvlbar_mouse_y = -1;
+*/
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -2595,6 +2623,14 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_edit_masks), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_edit_masks, FALSE, FALSE, 0);
 
+  g->bt_brush
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g_signal_connect(G_OBJECT(g->bt_brush), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
+  g_object_set(G_OBJECT(g->bt_brush), "tooltip-text", _("add brush"), (char *)NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), FALSE);
+  gtk_widget_set_size_request(GTK_WIDGET(g->bt_brush), bs, bs);
+  gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_brush, FALSE, FALSE, 0);
+
   g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
   g_object_set(G_OBJECT(g->bt_path), "tooltip-text", _("add path"), (char *)NULL);
@@ -2617,14 +2653,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_circle), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_circle, FALSE, FALSE, 0);
-
-  g->bt_brush
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g_signal_connect(G_OBJECT(g->bt_brush), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
-  g_object_set(G_OBJECT(g->bt_brush), "tooltip-text", _("add brush"), (char *)NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_brush), bs, bs);
-  gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_brush, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(hbox_shapes), GTK_WIDGET(g->label_form), FALSE, TRUE, 0);
 
@@ -2662,8 +2690,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_clone), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_clone), FALSE);
 
-  gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_fill, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_blur, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_fill, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_clone, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_heal, FALSE, FALSE, 0);
 
@@ -2887,6 +2915,15 @@ void gui_init(dt_iop_module_t *self)
   g_object_set(g->sl_mask_opacity, "tooltip-text", _("set the opacity on the selected shape"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->sl_mask_opacity), "value-changed", G_CALLBACK(rt_mask_opacity_callback), self);
 
+  // add all the controls to the iop
+  GtkWidget *lbl_rt_tools = dt_ui_section_label_new(_("retouch tools"));
+  gtk_box_pack_start(GTK_BOX(self->widget), lbl_rt_tools, FALSE, TRUE, 0);
+
+  // shapes toolbar
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox_shapes, TRUE, TRUE, 0);
+  // algorithms toolbar
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox_algo, TRUE, TRUE, 0);
+
   // wavelet decompose
   GtkWidget *lbl_wd = dt_ui_section_label_new(_("wavelet decompose"));
   gtk_box_pack_start(GTK_BOX(self->widget), lbl_wd, FALSE, TRUE, 0);
@@ -2900,15 +2937,6 @@ void gui_init(dt_iop_module_t *self)
 
   // preview single scale
   gtk_box_pack_start(GTK_BOX(self->widget), g->vbox_preview_scale, TRUE, TRUE, 0);
-
-  // add all the controls to the iop
-  GtkWidget *lbl_rt_tools = dt_ui_section_label_new(_("retouch tools"));
-  gtk_box_pack_start(GTK_BOX(self->widget), lbl_rt_tools, FALSE, TRUE, 0);
-
-  // shapes toolbar
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox_shapes, TRUE, TRUE, 0);
-  // algorithms toolbar
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox_algo, TRUE, TRUE, 0);
 
   // shapes
   GtkWidget *lbl_shapes = dt_ui_section_label_new(_("shapes"));
@@ -2992,36 +3020,58 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
       if(grpt)
       {
         const int formid = grpt->formid;
+        const dt_iop_retouch_algo_type_t algo = rt_get_algorithm_from_formid(p, formid);
+        if(algo == DT_IOP_RETOUCH_FILL)
+        {
+          forms = g_list_next(forms);
+          continue;
+        }
 
         // we get the spot
         dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, formid);
         if(form)
         {
           // if the form is outside the roi, we just skip it
-          if(!rt_masks_form_is_in_roi(self, piece, form, roi_in, roi_in))
-          {
-            forms = g_list_next(forms);
-            continue;
-          }
-
           // we get the area for the form
           int fl, ft, fw, fh;
-
           if(!dt_masks_get_area(self, piece, form, &fw, &fh, &fl, &ft))
           {
             forms = g_list_next(forms);
             continue;
           }
+
+          // is the form outside of the roi?
           fw *= roi_in->scale, fh *= roi_in->scale, fl *= roi_in->scale, ft *= roi_in->scale;
+          if(ft >= roi_in->y + roi_in->height || ft + fh <= roi_in->y || fl >= roi_in->x + roi_in->width
+             || fl + fw <= roi_in->x)
+          {
+            forms = g_list_next(forms);
+            continue;
+          }
 
-          // we enlarge the roi if needed
-          roiy = fminf(ft, roiy);
-          roix = fminf(fl, roix);
-          roir = fmaxf(fl + fw, roir);
-          roib = fmaxf(ft + fh, roib);
-
-          // heal/clone need both source and destination areas
-          const dt_iop_retouch_algo_type_t algo = rt_get_algorithm_from_formid(p, formid);
+          // heal need the entire area
+          if(algo == DT_IOP_RETOUCH_HEAL)
+          {
+            // we enlarge the roi if needed
+            roiy = fminf(ft, roiy);
+            roix = fminf(fl, roix);
+            roir = fmaxf(fl + fw, roir);
+            roib = fmaxf(ft + fh, roib);
+          }
+          // blur need an overlap of 4 * radius (scaled)
+          if(algo == DT_IOP_RETOUCH_BLUR)
+          {
+            const int index = rt_get_index_from_formid(p, formid);
+            if(index >= 0)
+            {
+              const int overlap = ceilf(4 * (p->rt_forms[index].blur_radius * roi_in->scale / piece->iscale));
+              if(roiy > ft) roiy = MAX(roiy - overlap, ft);
+              if(roix > fl) roix = MAX(roix - overlap, fl);
+              if(roir < fl + fw) roir = MAX(roir + overlap, fl + fw);
+              if(roib < ft + fh) roib = MAX(roib + overlap, ft + fh);
+            }
+          }
+          // heal and clone need both source and destination areas
           if(algo == DT_IOP_RETOUCH_HEAL || algo == DT_IOP_RETOUCH_CLONE)
           {
             int dx = 0, dy = 0;
@@ -3433,135 +3483,8 @@ void connect_key_accels(dt_iop_module_t *module)
 // process
 //--------------------------------------------------------------------------------------------------
 
-#ifdef __SSE2__
-/** uses D50 white point. */
-// see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
-static inline __m128 dt_XYZ_to_RGB_sse2(__m128 XYZ)
-{
-  // XYZ -> sRGB matrix, D65
-  const __m128 xyz_to_srgb_0 = _mm_setr_ps(3.1338561f, -0.9787684f, 0.0719453f, 0.0f);
-  const __m128 xyz_to_srgb_1 = _mm_setr_ps(-1.6168667f, 1.9161415f, -0.2289914f, 0.0f);
-  const __m128 xyz_to_srgb_2 = _mm_setr_ps(-0.4906146f, 0.0334540f, 1.4052427f, 0.0f);
-
-  __m128 rgb
-      = _mm_add_ps(_mm_mul_ps(xyz_to_srgb_0, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(0, 0, 0, 0))),
-                   _mm_add_ps(_mm_mul_ps(xyz_to_srgb_1, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(1, 1, 1, 1))),
-                              _mm_mul_ps(xyz_to_srgb_2, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(2, 2, 2, 2)))));
-
-  return rgb;
-}
-
-static inline __m128 dt_RGB_to_XYZ_sse2(__m128 rgb)
-{
-  // sRGB -> XYZ matrix, D65
-  const __m128 srgb_to_xyz_0 = _mm_setr_ps(0.4360747f, 0.2225045f, 0.0139322f, 0.0f);
-  const __m128 srgb_to_xyz_1 = _mm_setr_ps(0.3850649f, 0.7168786f, 0.0971045f, 0.0f);
-  const __m128 srgb_to_xyz_2 = _mm_setr_ps(0.1430804f, 0.0606169f, 0.7141733f, 0.0f);
-
-  __m128 XYZ
-      = _mm_add_ps(_mm_mul_ps(srgb_to_xyz_0, _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0))),
-                   _mm_add_ps(_mm_mul_ps(srgb_to_xyz_1, _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1))),
-                              _mm_mul_ps(srgb_to_xyz_2, _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2)))));
-  return XYZ;
-}
-#endif
-
-/** uses D50 white point. */
-static inline void dt_XYZ_to_RGB(const float *const XYZ, float *rgb)
-{
-  const float xyz_to_srgb_matrix[3][3] = { { 3.1338561, -1.6168667, -0.4906146 },
-                                           { -0.9787684, 1.9161415, 0.0334540 },
-                                           { 0.0719453, -0.2289914, 1.4052427 } };
-
-  // XYZ -> sRGB
-  rgb[0] = rgb[1] = rgb[2] = 0.f;
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) rgb[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
-}
-
-static inline void dt_RGB_to_XYZ(const float *const rgb, float *XYZ)
-{
-  const float srgb_to_xyz[3][3] = { { 0.4360747, 0.3850649, 0.1430804 },
-                                    { 0.2225045, 0.7168786, 0.0606169 },
-                                    { 0.0139322, 0.0971045, 0.7141733 } };
-
-  // sRGB -> XYZ
-  XYZ[0] = XYZ[1] = XYZ[2] = 0.0;
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) XYZ[r] += srgb_to_xyz[r][c] * rgb[c];
-}
-
-static void image_rgb2lab(float *img_src, const int width, const int height, const int ch, const int use_sse)
-{
-  const int stride = width * height * ch;
-
-#if defined(__SSE__)
-  if(ch == 4 && use_sse)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
-#endif
-    for(int i = 0; i < stride; i += ch)
-    {
-      // RGB -> XYZ
-      __m128 rgb = _mm_load_ps(img_src + i);
-      __m128 XYZ = dt_RGB_to_XYZ_sse2(rgb);
-      // XYZ -> Lab
-      _mm_store_ps(img_src + i, dt_XYZ_to_Lab_sse2(XYZ));
-    }
-
-    return;
-  }
-#endif
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
-#endif
-  for(int i = 0; i < stride; i += ch)
-  {
-    float XYZ[3] = { 0 };
-
-    dt_RGB_to_XYZ(img_src + i, XYZ);
-    dt_XYZ_to_Lab(XYZ, img_src + i);
-  }
-}
-
-static void image_lab2rgb(float *img_src, const int width, const int height, const int ch, const int use_sse)
-{
-  const int stride = width * height * ch;
-
-#if defined(__SSE__)
-  if(ch == 4 && use_sse)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
-#endif
-    for(int i = 0; i < stride; i += ch)
-    {
-      // Lab -> XYZ
-      __m128 Lab = _mm_load_ps(img_src + i);
-      __m128 XYZ = dt_Lab_to_XYZ_sse2(Lab);
-      // XYZ -> RGB
-      _mm_store_ps(img_src + i, dt_XYZ_to_RGB_sse2(XYZ));
-    }
-
-    return;
-  }
-#endif
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
-#endif
-  for(int i = 0; i < stride; i += ch)
-  {
-    float XYZ[3] = { 0 };
-
-    dt_Lab_to_XYZ(img_src + i, XYZ);
-    dt_XYZ_to_RGB(XYZ, img_src + i);
-  }
-}
-
-static void rt_process_stats(const float *const img_src, const int width, const int height, const int ch,
+static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
+                             float *const img_src, const int width, const int height, const int ch,
                              float levels[3], int use_sse)
 {
   const int size = width * height * ch;
@@ -3569,6 +3492,10 @@ static void rt_process_stats(const float *const img_src, const int width, const 
   float l_min = INFINITY;
   float l_sum = 0.f;
   int count = 0;
+  int converted_cst;
+
+  dt_ioppr_transform_image_colorspace(self, img_src, width, height,
+      iop_cs_rgb, iop_cs_Lab, &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) reduction(+ : count, l_sum) reduction(max : l_max)        \
@@ -3576,24 +3503,21 @@ static void rt_process_stats(const float *const img_src, const int width, const 
 #endif
   for(int i = 0; i < size; i += ch)
   {
-    float XYZ[3] = { 0 };
-    float Lab[3] = { 0 };
-
-    dt_RGB_to_XYZ(img_src + i, XYZ);
-    dt_XYZ_to_Lab(XYZ, Lab);
-
-    l_max = MAX(l_max, Lab[0]);
-    l_min = MIN(l_min, Lab[0]);
-    l_sum += Lab[0];
+    l_max = MAX(l_max, img_src[i]);
+    l_min = MIN(l_min, img_src[i]);
+    l_sum += img_src[i];
     count++;
   }
+
+  dt_ioppr_transform_image_colorspace(self, img_src, width, height,
+      iop_cs_Lab, iop_cs_rgb, &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
 
   levels[0] = l_min / 100.f;
   levels[2] = l_max / 100.f;
   levels[1] = (l_sum / (float)count) / 100.f;
 }
 
-static void rt_adjust_levels(float *img_src, const int width, const int height, const int ch,
+static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *img_src, const int width, const int height, const int ch,
                              const float levels[3], int use_sse)
 {
   const int size = width * height * ch;
@@ -3608,17 +3532,16 @@ static void rt_adjust_levels(float *img_src, const int width, const int height, 
   const float mid = left + delta;
   const float tmp = (middle - mid) / delta;
   const float in_inv_gamma = pow(10, tmp);
+  int converted_cst;
+  
+  dt_ioppr_transform_image_colorspace(self, img_src, width, height,
+      iop_cs_rgb, iop_cs_Lab, &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(img_src) schedule(static)
 #endif
   for(int i = 0; i < size; i += ch)
   {
-    float XYZ[3] = { 0 };
-
-    dt_RGB_to_XYZ(img_src + i, XYZ);
-    dt_XYZ_to_Lab(XYZ, img_src + i);
-
     for(int c = 0; c < 1; c++)
     {
       const float L_in = img_src[i + c] / 100.0f;
@@ -3633,10 +3556,10 @@ static void rt_adjust_levels(float *img_src, const int width, const int height, 
         img_src[i + c] = 100.0f * powf(percentage, in_inv_gamma);
       }
     }
-
-    dt_Lab_to_XYZ(img_src + i, XYZ);
-    dt_XYZ_to_RGB(XYZ, img_src + i);
   }
+  
+  dt_ioppr_transform_image_colorspace(self, img_src, width, height,
+      iop_cs_Lab, iop_cs_rgb, &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
 }
 
 #undef RT_WDBAR_INSET
@@ -3925,7 +3848,7 @@ cleanup:
   if(img_src) dt_free_align(img_src);
 }
 
-static void retouch_blur(float *const in, dt_iop_roi_t *const roi_in, const int ch, float *const mask_scaled,
+static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *const roi_in, const int ch, float *const mask_scaled,
                          dt_iop_roi_t *const roi_mask_scaled, const float opacity, const int blur_type,
                          const float blur_radius, dt_dev_pixelpipe_iop_t *piece, const int use_sse)
 {
@@ -3971,14 +3894,18 @@ static void retouch_blur(float *const in, dt_iop_roi_t *const roi_in, const int 
     dt_bilateral_t *b = dt_bilateral_init(roi_mask_scaled->width, roi_mask_scaled->height, sigma_s, sigma_r);
     if(b)
     {
-      image_rgb2lab(img_dest, roi_mask_scaled->width, roi_mask_scaled->height, ch, use_sse);
+      int converted_cst;
+      
+      dt_ioppr_transform_image_colorspace(self, img_dest, roi_mask_scaled->width, roi_mask_scaled->height,
+          iop_cs_rgb, iop_cs_Lab, &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
 
       dt_bilateral_splat(b, img_dest);
       dt_bilateral_blur(b);
       dt_bilateral_slice(b, img_dest, img_dest, detail);
       dt_bilateral_free(b);
 
-      image_lab2rgb(img_dest, roi_mask_scaled->width, roi_mask_scaled->height, ch, use_sse);
+      dt_ioppr_transform_image_colorspace(self, img_dest, roi_mask_scaled->width, roi_mask_scaled->height,
+          iop_cs_Lab, iop_cs_rgb, &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
     }
   }
 
@@ -4162,7 +4089,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           }
           else if(algo == DT_IOP_RETOUCH_BLUR)
           {
-            retouch_blur(layer, roi_layer, wt_p->ch, mask_scaled, &roi_mask_scaled, form_opacity,
+            retouch_blur(self, layer, roi_layer, wt_p->ch, mask_scaled, &roi_mask_scaled, form_opacity,
                          p->rt_forms[index].blur_type, p->rt_forms[index].blur_radius, piece, wt_p->use_sse);
           }
           else if(algo == DT_IOP_RETOUCH_FILL)
@@ -4285,7 +4212,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
       dt_pthread_mutex_unlock(&g->lock);
 
       levels[0] = levels[1] = levels[2] = 0;
-      rt_process_stats(in_retouch, roi_rt->width, roi_rt->height, ch, levels, use_sse);
+      rt_process_stats(self, piece, in_retouch, roi_rt->width, roi_rt->height, ch, levels, use_sse);
       rt_clamp_minmax(levels, levels);
 
       for(int i = 0; i < 3; i++) g->preview_levels[i] = levels[i];
@@ -4305,7 +4232,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // if user wants to preview a detail scale adjust levels
   if(dwt_p->return_layer > 0 && dwt_p->return_layer < dwt_p->scales + 1)
   {
-    rt_adjust_levels(in_retouch, roi_rt->width, roi_rt->height, ch, levels, use_sse);
+    rt_adjust_levels(self, piece, in_retouch, roi_rt->width, roi_rt->height, ch, levels, use_sse);
   }
 
   // copy alpha channel if nedded
@@ -4344,7 +4271,8 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
 #ifdef HAVE_OPENCL
 
-cl_int rt_process_stats_cl(const int devid, cl_mem dev_img, const int width, const int height, float levels[3])
+cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const int devid, cl_mem dev_img, 
+                           const int width, const int height, float levels[3])
 {
   cl_int err = CL_SUCCESS;
 
@@ -4368,7 +4296,7 @@ cl_int rt_process_stats_cl(const int devid, cl_mem dev_img, const int width, con
   }
 
   // just call the CPU version for now
-  rt_process_stats(src_buffer, width, height, ch, levels, 1);
+  rt_process_stats(self, piece, src_buffer, width, height, ch, levels, 1);
 
   err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, width * height * ch * sizeof(float), TRUE);
   if(err != CL_SUCCESS)
@@ -4382,8 +4310,8 @@ cleanup:
   return err;
 }
 
-cl_int rt_adjust_levels_cl(const int devid, cl_mem dev_img, const int width, const int height,
-                           const float levels[3])
+cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const int devid, cl_mem dev_img, 
+                           const int width, const int height, const float levels[3])
 {
   cl_int err = CL_SUCCESS;
 
@@ -4407,7 +4335,7 @@ cl_int rt_adjust_levels_cl(const int devid, cl_mem dev_img, const int width, con
   }
 
   // just call the CPU version for now
-  rt_adjust_levels(src_buffer, width, height, ch, levels, 1);
+  rt_adjust_levels(self, piece, src_buffer, width, height, ch, levels, 1);
 
   err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, width * height * ch * sizeof(float), TRUE);
   if(err != CL_SUCCESS)
@@ -5139,7 +5067,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_pthread_mutex_unlock(&g->lock);
 
       levels[0] = levels[1] = levels[2] = 0;
-      err = rt_process_stats_cl(devid, in_retouch, roi_rt->width, roi_rt->height, levels);
+      err = rt_process_stats_cl(self, piece, devid, in_retouch, roi_rt->width, roi_rt->height, levels);
       if(err != CL_SUCCESS) goto cleanup;
 
       rt_clamp_minmax(levels, levels);
@@ -5161,7 +5089,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // if user wants to preview a detail scale adjust levels
   if(dwt_p->return_layer > 0 && dwt_p->return_layer < dwt_p->scales + 1)
   {
-    err = rt_adjust_levels_cl(devid, in_retouch, roi_rt->width, roi_rt->height, levels);
+    err = rt_adjust_levels_cl(self, piece, devid, in_retouch, roi_rt->width, roi_rt->height, levels);
     if(err != CL_SUCCESS) goto cleanup;
   }
 
