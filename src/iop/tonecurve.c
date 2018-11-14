@@ -650,8 +650,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 static float eval_grey(float x)
 {
-  // estimate the log base to remap
-  //return (100.0f / x + 1.0f - 1.0f / 0.18f) / 2.0f;
+  // estimate the log base to remap the grey x to 0.5
   return x;
 }
 
@@ -1250,9 +1249,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   c->logbase = dt_bauhaus_slider_new_with_range(self, 2.0f, 64.f, 0.5f, 2.0f, 2);
-  dt_bauhaus_widget_set_label(c->logbase, NULL, _("logarithmic middle grey reference"));
-  gtk_widget_set_tooltip_text(c->logbase, _("select the middle grey luma (as in the unbreak profile) "
-                                             "to set the base of the logaritm in the graph display"));
+  dt_bauhaus_widget_set_label(c->logbase, NULL, _("base of the logarithm"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
 
@@ -1396,6 +1393,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // draw grid
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb(cr, .1, .1, .1);
+
   if (c->loglogscale > 0.0f && ch == ch_L )
   {
     if (c->semilog == 0)
@@ -1474,12 +1472,19 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_save(cr);
       cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
+
       if (ch == ch_L && c->loglogscale > 0.0f && c->semilog != -1)
-        dt_draw_histogram_8_log_base(cr, hist, 4, ch, c->loglogscale);
+      {
+        // not working
+        // dt_draw_histogram_8_log_base(cr, hist, 4, ch, c->loglogscale);
+      }
       else
+      {
+        // the histogram shows linear Lab so we hide it for RGB, XYZ and log scales
         dt_draw_histogram_8(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw
-                                                                                         // handle waveform
+                                                                                       // handle waveform
                                                                                          // histograms
+      }
       cairo_restore(cr);
     }
 
