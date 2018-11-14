@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-14 09:13+0100\n"
-"PO-Revision-Date: 2018-11-14 09:17+0100\n"
+"POT-Creation-Date: 2018-11-14 10:20+0100\n"
+"PO-Revision-Date: 2018-11-14 10:24+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2198,7 +2198,7 @@ msgstr ""
 "* intervalle entre 2 marqueurs adjacents interne/externe : fusion progressive"
 
 #: ../src/develop/blend_gui.c:1285 ../src/iop/colorzones.c:1098
-#: ../src/iop/tonecurve.c:945
+#: ../src/iop/tonecurve.c:1188
 msgid "pick GUI color from image"
 msgstr "choisit une couleur dans l'image"
 
@@ -4981,7 +4981,7 @@ msgstr "similaire nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:220
+#: ../src/iop/basecurve.c:220 ../src/iop/tonecurve.c:1229
 msgid "cubic spline"
 msgstr "spline cubique"
 
@@ -4994,13 +4994,14 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
 
 #: ../src/iop/basecurve.c:1933 ../src/iop/lens.c:2228
-#: ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1391
+#: ../src/iop/tonecurve.c:1240 ../src/iop/vignette.c:1149
+#: ../src/iop/watermark.c:1391
 msgid "scale"
 msgstr "échelle"
 
 #. centripetal spline
 #: ../src/iop/basecurve.c:1934 ../src/iop/filmic.c:1341
-#: ../src/iop/profile_gamma.c:853 ../src/iop/tonecurve.c:448
+#: ../src/iop/profile_gamma.c:853 ../src/iop/tonecurve.c:1241
 msgid "linear"
 msgstr "linéaire"
 
@@ -5008,7 +5009,7 @@ msgstr "linéaire"
 msgid "logarithmic"
 msgstr "logarithmique"
 
-#: ../src/iop/basecurve.c:1936
+#: ../src/iop/basecurve.c:1936 ../src/iop/tonecurve.c:1245
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -6855,8 +6856,7 @@ msgctxt "mode"
 msgid "manual"
 msgstr "manuel"
 
-#: ../src/iop/exposure.c:858 ../src/iop/levels.c:594 ../src/iop/tonecurve.c:979
-#: ../src/iop/vignette.c:1140
+#: ../src/iop/exposure.c:858 ../src/iop/levels.c:594 ../src/iop/vignette.c:1140
 msgid "automatic"
 msgstr "automatique"
 
@@ -6916,7 +6916,7 @@ msgstr "la correction d'exposition réellement utilisée"
 msgid "filmic"
 msgstr "filmique"
 
-#: ../src/iop/filmic.c:1240 ../src/iop/tonecurve.c:960
+#: ../src/iop/filmic.c:1240
 msgid "double click to reset curve"
 msgstr "double-cliquer pour réinitialiser"
 
@@ -8868,64 +8868,71 @@ msgstr "ajustement de balance des blancs"
 msgid "white balance disabled for camera"
 msgstr "balance des blancs désactivée pour le boîtier"
 
-#: ../src/iop/tonecurve.c:154
+#: ../src/iop/tonecurve.c:159
 msgid "tone curve"
 msgstr "courbe des tonalités"
 
-#: ../src/iop/tonecurve.c:444
-msgid "low contrast"
-msgstr "contraste faible"
+#: ../src/iop/tonecurve.c:447 ../src/iop/tonemap.cc:294
+msgid "contrast compression"
+msgstr "contraste"
 
-#: ../src/iop/tonecurve.c:458
-msgid "med contrast"
-msgstr "contraste moyen"
+#: ../src/iop/tonecurve.c:455
+msgid "gamma 1.0 (linear)"
+msgstr "gamma 1.0 (linéaire)"
 
-#: ../src/iop/tonecurve.c:468
-msgid "high contrast"
-msgstr "contraste fort"
+#: ../src/iop/tonecurve.c:464
+msgid "contrast - med (linear)"
+msgstr "contrasté - moyen (linéaire)"
 
-#: ../src/iop/tonecurve.c:928
-msgid "  L  "
-msgstr "  L "
+#: ../src/iop/tonecurve.c:472
+msgid "contrast - high (linear)"
+msgstr "contraste - haut (linéaire)"
 
-#: ../src/iop/tonecurve.c:930
-msgid "tonecurve for L channel"
-msgstr "courbe des tonalités pour le canal L"
+#: ../src/iop/tonecurve.c:483
+msgid "contrast - med (gamma 2.2)"
+msgstr "contraste - moyen (gamma 2.2)"
 
-#: ../src/iop/tonecurve.c:932
-msgid "  a  "
-msgstr "  a  "
+#: ../src/iop/tonecurve.c:493
+msgid "contrast - high (gamma 2.2)"
+msgstr "contraste - haut (gamma 2.2)"
 
-#: ../src/iop/tonecurve.c:934
-msgid "tonecurve for a channel"
-msgstr "courbe des tonalités pour le canal a"
+#: ../src/iop/tonecurve.c:504
+msgid "gamma 2.0"
+msgstr "gamma 2.0"
 
-#: ../src/iop/tonecurve.c:936
-msgid "  b  "
-msgstr "  b  "
+#: ../src/iop/tonecurve.c:508
+msgid "gamma 0.5"
+msgstr "gamma 0.5"
 
-#: ../src/iop/tonecurve.c:938
-msgid "tonecurve for b channel"
-msgstr "courbe des tonalités pour le canal b"
+#: ../src/iop/tonecurve.c:512
+msgid "logarithm (base 2)"
+msgstr "logarithmique (base 2)"
 
-#: ../src/iop/tonecurve.c:978
-msgid "scale chroma"
-msgstr "échelle des canaux a et b"
+#: ../src/iop/tonecurve.c:516
+msgid "exponential (base 2)"
+msgstr "exponentielle (base 2)"
 
-#: ../src/iop/tonecurve.c:980
-msgctxt "scale"
-msgid "manual"
-msgstr "manuelle"
+#: ../src/iop/tonecurve.c:1155
+msgid "color space"
+msgstr "espace de couleur"
 
-#: ../src/iop/tonecurve.c:981
-msgid "automatic in XYZ"
-msgstr "automatique XYZ"
+#: ../src/iop/tonecurve.c:1156
+msgid "Lab, linked channels"
+msgstr "Lab, canaux liés"
 
-#: ../src/iop/tonecurve.c:982
-msgid "automatic in RGB"
-msgstr "automatique RGB"
+#: ../src/iop/tonecurve.c:1157
+msgid "Lab, independant channels"
+msgstr "Lab, canaux indépendants"
 
-#: ../src/iop/tonecurve.c:984
+#: ../src/iop/tonecurve.c:1158
+msgid "XYZ, linked channels"
+msgstr "XYZ, canaux liés"
+
+#: ../src/iop/tonecurve.c:1159
+msgid "RGB, linked channels"
+msgstr "RGB, canaux liés"
+
+#: ../src/iop/tonecurve.c:1161
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data. auto "
@@ -8935,16 +8942,83 @@ msgstr ""
 "les valeurs a et b de chaque pixel sont ajustées sur la base de la courbe L. "
 "auto XYZ est similaire mais applique la saturation dans l'espace XYZ."
 
+#: ../src/iop/tonecurve.c:1171
+msgid "  L  "
+msgstr "  L "
+
+#: ../src/iop/tonecurve.c:1173
+msgid "tonecurve for L channel"
+msgstr "courbe des tonalités pour le canal L"
+
+#: ../src/iop/tonecurve.c:1175
+msgid "  a  "
+msgstr "  a  "
+
+#: ../src/iop/tonecurve.c:1177
+msgid "tonecurve for a channel"
+msgstr "courbe des tonalités pour le canal a"
+
+#: ../src/iop/tonecurve.c:1179
+msgid "  b  "
+msgstr "  b  "
+
+#: ../src/iop/tonecurve.c:1181
+msgid "tonecurve for b channel"
+msgstr "courbe des tonalités pour le canal b"
+
+#: ../src/iop/tonecurve.c:1228
+msgid "interpolation method"
+msgstr "méthode d'interpolation"
+
+#: ../src/iop/tonecurve.c:1230
+msgid "centripetal spline"
+msgstr "spline centripète"
+
+#: ../src/iop/tonecurve.c:1231
+msgid "monotonic spline"
+msgstr "spline monotone"
+
+#: ../src/iop/tonecurve.c:1233
+msgid ""
+"change this method if you see oscillations or cusps in the curve\n"
+"- cubic spline is better to produce smooth curves but oscillates when nodes "
+"are too close\n"
+"- centripetal is better to avoids cusps and oscillations with close nodes "
+"but is less smooth\n"
+"- monotonic is better for accuracy of pure analytical functions (log, gamma, "
+"exp)\n"
+msgstr ""
+"changer la méthode si des oscillations ou des points de rebroussement "
+"apparaissent dans la courbe:\n"
+"- spline cubique donne des courbes plus douces mais produit des oscillations "
+"quand les points sont proches\n"
+"- centripète permet d'éviter les points de rebroussement et les oscillations "
+"avec les points proches mais est moins doux\n"
+"- monotone donne une meilleure précision sur les fonctions mathématiques "
+"analytiques (log, gamma, exp). \n"
+
+#: ../src/iop/tonecurve.c:1242
+msgid "log-log (xy)"
+msgstr "log-log (xy)"
+
+#: ../src/iop/tonecurve.c:1243
+msgid "semi-log (x)"
+msgstr "semi-log (x)"
+
+#: ../src/iop/tonecurve.c:1244
+msgid "semi-log (y)"
+msgstr "semi-log (y)"
+
+#: ../src/iop/tonecurve.c:1252
+msgid "base of the logarithm"
+msgstr "base du logarithme"
+
 #: ../src/iop/tonemap.cc:74
 msgid "tone mapping"
 msgstr "mappage tonalités"
 
 #: ../src/iop/tonemap.cc:90
 msgctxt "accel"
-msgid "contrast compression"
-msgstr "contraste"
-
-#: ../src/iop/tonemap.cc:294
 msgid "contrast compression"
 msgstr "contraste"
 
@@ -12238,6 +12312,28 @@ msgstr ""
 "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
 "corrigés.\n"
 
+#~ msgid "low contrast"
+#~ msgstr "contraste faible"
+
+#~ msgid "med contrast"
+#~ msgstr "contraste moyen"
+
+#~ msgid "high contrast"
+#~ msgstr "contraste fort"
+
+#~ msgid "scale chroma"
+#~ msgstr "échelle des canaux a et b"
+
+#~ msgctxt "scale"
+#~ msgid "manual"
+#~ msgstr "manuelle"
+
+#~ msgid "automatic in XYZ"
+#~ msgstr "automatique XYZ"
+
+#~ msgid "automatic in RGB"
+#~ msgstr "automatique RGB"
+
 #~ msgid "mask enhancement"
 #~ msgstr "amélioration du masque"
 
@@ -12261,33 +12357,6 @@ msgstr ""
 
 #~ msgid "auto tune"
 #~ msgstr "réglage auto"
-
-#~ msgid "interpolation method"
-#~ msgstr "méthode d'interpolation"
-
-#~ msgid "centripetal spline"
-#~ msgstr "spline centripète"
-
-#~ msgid "monotonic spline"
-#~ msgstr "spline monotone"
-
-#~ msgid ""
-#~ "change this method if you see oscillations or cusps in the curve\n"
-#~ "- cubic spline is better to produce smooth curves but oscillates when "
-#~ "nodes are too close\n"
-#~ "- centripetal is better to avoids cusps and oscillations with close nodes "
-#~ "but is less smooth\n"
-#~ "- monotonic is better for accuracy of pure analytical functions (log, "
-#~ "gamma, exp)\n"
-#~ msgstr ""
-#~ "changer la méthode si des oscillations ou des points de rebroussement "
-#~ "apparaissent dans la courbe:\n"
-#~ "- spline cubique donne des courbes plus douces mais produit des "
-#~ "oscillations quand les points sont proches\n"
-#~ "- centripète permet d'éviter les points de rebroussement et les "
-#~ "oscillations avec les points proches mais est moins doux\n"
-#~ "- monotone donne une meilleure précision sur les fonctions mathématiques "
-#~ "analytiques (log, gamma, exp). \n"
 
 #~ msgid "coarse-grain noise reduction"
 #~ msgstr "réduction du grain grossier"
@@ -13390,10 +13459,6 @@ msgstr ""
 #~ msgctxt "accel"
 #~ msgid "linear part"
 #~ msgstr "linéaire"
-
-#~ msgctxt "accel"
-#~ msgid "gamma exponential part"
-#~ msgstr "facteur exponentiel gamma"
 
 #~ msgid "colorblend"
 #~ msgstr "fusion des couleurs"
