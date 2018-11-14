@@ -169,7 +169,12 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_FENCE;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_RAW;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -198,6 +203,18 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     return 0;
   }
   return 1;
+}
+
+int input_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+                     dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_RAW;
+}
+
+int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+                      dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
 }
 
 #ifdef HAVE_OPENCL
@@ -4679,7 +4696,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_demosaic_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 114; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;

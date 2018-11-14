@@ -154,6 +154,11 @@ int default_group()
   return IOP_GROUP_EFFECT;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "density"));
@@ -208,7 +213,7 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
   float pts[4]
       = { xa * self->dev->preview_pipe->backbuf_width, ya * self->dev->preview_pipe->backbuf_height,
           xb * self->dev->preview_pipe->backbuf_width, yb * self->dev->preview_pipe->backbuf_height };
-  dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, pts, 2);
+  dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 2);
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   pts[0] /= (float)piece->buf_out.width;
   pts[2] /= (float)piece->buf_out.width;
@@ -403,7 +408,7 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
   }
   // now we want that points to take care of distort modules
 
-  if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 999999, pts, 2))
+  if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 2))
     return 0;
   *xa = pts[0] / self->dev->preview_pipe->backbuf_width;
   *ya = pts[1] / self->dev->preview_pipe->backbuf_height;
@@ -1143,7 +1148,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_graduatednd_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_graduatednd_params_t));
   module->default_enabled = 0;
-  module->priority = 299; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_graduatednd_params_t);
   module->gui_data = NULL;
   dt_iop_graduatednd_params_t tmp = (dt_iop_graduatednd_params_t){ 1.0, 0, 0, 50, 0, 0 };

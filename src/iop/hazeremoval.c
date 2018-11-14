@@ -96,6 +96,11 @@ int default_group()
   return IOP_GROUP_CORRECT;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_hazeremoval_data_t));
@@ -122,7 +127,6 @@ void init(dt_iop_module_t *self)
   self->params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
   self->default_enabled = 0;
-  self->priority = 357; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_hazeremoval_params_t);
   self->gui_data = NULL;
   dt_iop_hazeremoval_params_t tmp = (dt_iop_hazeremoval_params_t){ 0.5f, 0.25f };
@@ -843,7 +847,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // cases we make sure that the preview pipe has left us with
     // proper readings for distance_max and A0.  If data are not yet
     // there we need to wait (with timeout).
-    if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+    if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &g->lock, &g->hash))
       dt_control_log(_("inconsistent output"));
     dt_pthread_mutex_lock(&g->lock);
     A0[0] = g->A0[0];
@@ -860,7 +864,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // PREVIEW pixelpipe stores values.
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
+    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_pthread_mutex_lock(&g->lock);
     g->A0[0] = A0[0];
     g->A0[1] = A0[1];

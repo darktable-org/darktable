@@ -201,6 +201,8 @@ typedef struct darktable_t
 
   int32_t unmuted;
   GList *iop;
+  GList *iop_order_list;
+  GList *iop_order_rules;
   GList *capabilities;
   JsonParser *noiseprofile_parser;
   struct dt_conf_t *conf;

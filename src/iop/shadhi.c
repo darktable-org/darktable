@@ -187,6 +187,11 @@ int default_group()
   return IOP_GROUP_BASIC;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -769,7 +774,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_shadhi_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_shadhi_params_t));
   module->default_enabled = 0;
-  module->priority = 557; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_shadhi_params_t);
   module->gui_data = NULL;
   dt_iop_shadhi_params_t tmp

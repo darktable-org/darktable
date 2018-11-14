@@ -536,7 +536,7 @@ static inline int _brush_cyclic_cursor(int n, int nb)
 
 /** get all points of the brush and the border */
 /** this takes care of gaps and iop distortions */
-static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int prio_max,
+static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, const double iop_order, const int transf_direction, 
                                     dt_dev_pixelpipe_t *pipe, float **points, int *points_count,
                                     float **border, int *border_count, float **payload, int *payload_count,
                                     int source)
@@ -847,9 +847,9 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   start2 = dt_get_wtime();
 
   // and we transform them with all distorted modules
-  if(dt_dev_distort_transform_plus(dev, pipe, 0, prio_max, *points, *points_count))
+  if(dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction, *points, *points_count))
   {
-    if(!border || dt_dev_distort_transform_plus(dev, pipe, 0, prio_max, *border, *border_count))
+    if(!border || dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction, *border, *border_count))
     {
       if(darktable.unmuted & DT_DEBUG_PERF)
         dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points transform took %0.04f sec\n", form->name,
@@ -969,7 +969,7 @@ static void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t 
 static int dt_brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points,
                                       int *points_count, float **border, int *border_count, int source)
 {
-  return _brush_get_points_border(dev, form, 999999, dev->preview_pipe, points, points_count, border,
+  return _brush_get_points_border(dev, form, 0.f, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points, points_count, border,
                                   border_count, NULL, NULL, source);
 }
 
@@ -1083,7 +1083,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       else
       {
         masks_border = dt_conf_get_float("plugins/darkroom/masks/brush/border");
-        masks_border = MAX(0.005f, MIN(masks_border * amount, 0.5f));
+        masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
         dt_conf_set_float("plugins/darkroom/masks/brush/border", masks_border);
       }
 
@@ -1132,13 +1132,13 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         {
           float masks_border = dt_conf_get_float("plugins/darkroom/spots/brush_border");
-          masks_border = MAX(0.005f, MIN(masks_border * amount, 0.5f));
+          masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
           dt_conf_set_float("plugins/darkroom/spots/brush_border", masks_border);
         }
         else
         {
           float masks_border = dt_conf_get_float("plugins/darkroom/masks/brush/border");
-          masks_border = MAX(0.005f, MIN(masks_border * amount, 0.5f));
+          masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
           dt_conf_set_float("plugins/darkroom/masks/brush/border", masks_border);
         }
       }
@@ -1166,7 +1166,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         }
       }
 
-      dt_masks_write_form(form, darktable.develop);
+      dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
       // we recreate the form points
       dt_masks_gui_form_remove(form, gui, index);
@@ -1304,7 +1304,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
           point->ctrl1[1] = point->ctrl2[1] = point->corner[1];
           point->state = DT_MASKS_POINT_STATE_USER;
         }
-        dt_masks_write_form(form, darktable.develop);
+        dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
         // we recreate the form points
         dt_masks_gui_form_remove(form, gui, index);
@@ -1439,7 +1439,6 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
 
       // we delete or remove the shape
       dt_masks_form_remove(module, NULL, form);
-      dt_dev_masks_list_change(darktable.develop);
       dt_control_queue_redraw_center();
       return 1;
     }
@@ -1450,7 +1449,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
     gui->point_selected = -1;
     _brush_init_ctrl_points(form);
 
-    dt_masks_write_form(form, darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
@@ -1469,7 +1468,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
       point->state = DT_MASKS_POINT_STATE_NORMAL;
       _brush_init_ctrl_points(form);
 
-      dt_masks_write_form(form, darktable.develop);
+      dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
       // we recreate the form points
       dt_masks_gui_form_remove(form, gui, index);
@@ -1506,7 +1505,6 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
     }
 
     // we remove the shape
-    dt_dev_masks_list_remove(darktable.develop, form->formid, parentid);
     dt_masks_form_remove(module, dt_masks_get_from_id(darktable.develop, parentid), form);
     return 1;
   }
@@ -1733,7 +1731,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
       points = g_list_next(points);
     }
 
-    dt_masks_write_form(form, darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
@@ -1756,7 +1754,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     form->source[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
     form->source[1] = pts[1] / darktable.develop->preview_pipe->iheight;
-    dt_masks_write_form(form, darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
@@ -1770,7 +1768,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
   else if(gui->seg_dragging >= 0)
   {
     gui->seg_dragging = -1;
-    dt_masks_write_form(form, darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
     dt_masks_update_image(darktable.develop);
     return 1;
   }
@@ -1801,7 +1799,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
 
     _brush_init_ctrl_points(form);
 
-    dt_masks_write_form(form, darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
@@ -1834,7 +1832,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
 
     _brush_init_ctrl_points(form);
 
-    dt_masks_write_form(form, darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
@@ -1849,7 +1847,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
     gui->point_border_dragging = -1;
 
     // we save the move
-    dt_masks_write_form(form, darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
     return 1;
@@ -1941,7 +1939,7 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
 
     _brush_init_ctrl_points(form);
 
-    dt_masks_write_form(form, darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
@@ -2518,7 +2516,7 @@ static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   // we get buffers for all points
   float *points = NULL, *border = NULL;
   int points_count, border_count;
-  if(!_brush_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
+  if(!_brush_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
                                &border, &border_count, NULL, NULL, 1))
   {
     free(points);
@@ -2568,7 +2566,7 @@ static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   // we get buffers for all points
   float *points = NULL, *border = NULL;
   int points_count, border_count;
-  if(!_brush_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
+  if(!_brush_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
                                &border, &border_count, NULL, NULL, 0))
   {
     free(points);
@@ -2650,7 +2648,7 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   // we get buffers for all points
   float *points = NULL, *border = NULL, *payload = NULL;
   int points_count, border_count, payload_count;
-  if(!_brush_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
+  if(!_brush_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe,&points, &points_count,
                                &border, &border_count, &payload, &payload_count, 0))
   {
     free(points);
@@ -2786,7 +2784,7 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   float *points = NULL, *border = NULL, *payload = NULL;
 
   int points_count, border_count, payload_count;
-  if(!_brush_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
+  if(!_brush_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe,&points, &points_count,
                                &border, &border_count, &payload, &payload_count, 0))
   {
     free(points);

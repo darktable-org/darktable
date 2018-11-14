@@ -81,6 +81,11 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
@@ -115,43 +120,13 @@ static void _get_histogram_profile_type(dt_colorspaces_color_profile_type_t *out
     *out_type = darktable.color_profiles->softproof_type;
     *out_filename = darktable.color_profiles->softproof_filename;
   }
+  else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
+  {
+    dt_ioppr_get_work_profile_type(darktable.develop, out_type, out_filename);
+  }
   else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
   {
-    // use introspection to get the params values
-    dt_iop_module_so_t *colorout_so = NULL;
-    dt_iop_module_t *colorout = NULL;
-    GList *modules = g_list_last(darktable.iop);
-    while(modules)
-    {
-      dt_iop_module_so_t *module_so = (dt_iop_module_so_t *)(modules->data);
-      if(!strcmp(module_so->op, "colorout"))
-      {
-        colorout_so = module_so;
-        break;
-      }
-      modules = g_list_previous(modules);
-    }
-    if(colorout_so && colorout_so->get_p)
-    {
-      modules = g_list_last(darktable.develop->iop);
-      while(modules)
-      {
-        dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-        if(!strcmp(module->op, "colorout"))
-        {
-          colorout = module;
-          break;
-        }
-        modules = g_list_previous(modules);
-      }
-    }
-    if(colorout)
-    {
-      dt_colorspaces_color_profile_type_t *_type = colorout_so->get_p(colorout->params, "type");
-      char *_filename = colorout_so->get_p(colorout->params, "filename");
-      if(_type) *out_type = *_type;
-      if(_filename) *out_filename = _filename;
-    }
+    dt_ioppr_get_export_profile_type(darktable.develop, out_type, out_filename);
   }
   else
   {
@@ -388,7 +363,6 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_overexposed_t));
   module->hide_enable_button = 1;
   module->default_enabled = 1;
-  module->priority = 928; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_overexposed_t);
   module->gui_data = NULL;
 }

@@ -117,6 +117,11 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mode"));
@@ -264,7 +269,7 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
   histogram_params.bins_count = DEFLICKER_BINS_COUNT;
 
   dt_histogram_worker(&histogram_params, histogram_stats, buf.buf, histogram,
-                      dt_histogram_helper_cs_RAW_uint16);
+                      dt_histogram_helper_cs_RAW_uint16, NULL);
   histogram_stats->ch = 1u;
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
@@ -541,7 +546,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_exposure_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->priority = 157; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
 }
