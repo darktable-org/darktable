@@ -288,7 +288,6 @@ void dt_ellipsize_combo(GtkComboBox *cbox);
 static inline void dt_ui_section_label_set(GtkWidget *label)
 {
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
-  gtk_widget_set_hexpand(label, TRUE); // not really needed, but it makes sure that parent containers expand
   g_object_set(G_OBJECT(label), "xalign", 1.0, (gchar *)0);    // make the text right aligned
   gtk_widget_set_margin_bottom(label, DT_PIXEL_APPLY_DPI(10)); // gtk+ css doesn't support margins :(
   gtk_widget_set_margin_start(label, DT_PIXEL_APPLY_DPI(30)); // gtk+ css doesn't support margins :(
