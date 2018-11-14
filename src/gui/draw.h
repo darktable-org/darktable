@@ -287,7 +287,7 @@ static inline void dt_draw_histogram_8_log(cairo_t *cr, uint32_t *hist, int32_t 
 static inline void dt_draw_histogram_8_log_base(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel, float base_log)
 {
   cairo_move_to(cr, 0, 0);
-  for(int k = 0; k < 256; k++) cairo_line_to(cr, CLAMP((int)255.0 * logf(k/255.0 * (base_log - 1.0f) + 1.0f), 0, 255) / logf(base_log), logf(1.0 + hist[channels * k + channel]));
+  for(int k = 0; k < 256; k++) cairo_line_to(cr, CLAMP((int)(255.0 * logf(k/255.0 * (base_log - 1.0f) + 1.0f)), 0, 255) / logf(base_log), logf(1.0 + hist[channels * k + channel]));
   cairo_line_to(cr, 255, 0);
   cairo_close_path(cr);
   cairo_fill(cr);

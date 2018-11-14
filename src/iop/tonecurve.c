@@ -1201,7 +1201,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("double click to reset curve"));
+
+  // FIXME: that tooltip goes in the way of the numbers when you hover a node to get a reading
+  //gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("double click to reset curve"));
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -1490,32 +1492,23 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       {
         sample = samples->data;
 
-        float Y_picker_min = 0.0f, Y_picker_max = 0.0f, Y_picker_mean = 0.0f;
+        picker_scale(sample->picked_color_lab_mean, picker_mean);
+        picker_scale(sample->picked_color_lab_min, picker_min);
+        picker_scale(sample->picked_color_lab_max, picker_max);
 
         // convert the picker samples to XYZ to show the real Y luminance value if we work in XYZ or RGB mode
         if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
         {
           float XYZ[3];
 
-          dt_Lab_to_XYZ((const float*)&picker_min[ch_L], XYZ);
-          Y_picker_min = XYZ[1];
+          dt_Lab_to_XYZ((const float*)sample->picked_color_lab_min, XYZ);
+          picker_min[ch_L] = XYZ[1];
 
-          dt_Lab_to_XYZ((const float*)&picker_max[ch_L], XYZ);
-          Y_picker_max = XYZ[1];
+          dt_Lab_to_XYZ((const float*)sample->picked_color_lab_max, XYZ);
+          picker_max[ch_L] = XYZ[1];
 
-          dt_Lab_to_XYZ((const float*)&picker_mean[ch_L], XYZ);
-          Y_picker_mean = XYZ[1];
-        }
-
-        picker_scale(sample->picked_color_lab_mean, picker_mean);
-        picker_scale(sample->picked_color_lab_min, picker_min);
-        picker_scale(sample->picked_color_lab_max, picker_max);
-
-        if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
-        {
-          picker_min[ch_L] = Y_picker_min;
-          picker_max[ch_L] = Y_picker_max;
-          picker_mean[ch_L] = Y_picker_mean;
+          dt_Lab_to_XYZ((const float*)sample->picked_color_lab_mean, XYZ);
+          picker_mean[ch_L] = XYZ[1];
         }
 
         // Convert abcissa to log coordinates if needed
@@ -1546,32 +1539,23 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         layout = pango_cairo_create_layout(cr);
         pango_layout_set_font_description(layout, desc);
 
-        float Y_picker_min = 0.0f, Y_picker_max = 0.0f, Y_picker_mean = 0.0f;
+        picker_scale(raw_mean, picker_mean);
+        picker_scale(raw_min, picker_min);
+        picker_scale(raw_max, picker_max);
 
         // convert the picker samples to XYZ to show the real Y luminance value if we work in XYZ or RGB mode
         if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
         {
           float XYZ[3];
 
-          dt_Lab_to_XYZ((const float*)&raw_min[ch_L], XYZ);
-          Y_picker_min = XYZ[1];
+          dt_Lab_to_XYZ((const float*)raw_min, XYZ);
+          picker_min[ch_L] = XYZ[1];
 
-          dt_Lab_to_XYZ((const float*)&raw_max[ch_L], XYZ);
-          Y_picker_max = XYZ[1];
+          dt_Lab_to_XYZ((const float*)raw_max, XYZ);
+          picker_max[ch_L] = XYZ[1];
 
-          dt_Lab_to_XYZ((const float*)&raw_mean[ch_L], XYZ);
-          Y_picker_mean = XYZ[1];
-        }
-
-        picker_scale(raw_mean, picker_mean);
-        picker_scale(raw_min, picker_min);
-        picker_scale(raw_max, picker_max);
-
-        if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
-        {
-          raw_min[ch_L] = Y_picker_min;
-          raw_max[ch_L] = Y_picker_max;
-          raw_mean[ch_L] = Y_picker_mean;
+          dt_Lab_to_XYZ((const float*)raw_mean, XYZ);
+          picker_mean[ch_L] = XYZ[1];
         }
 
         // scale conservatively to 100% of width:
@@ -1594,7 +1578,17 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         cairo_line_to(cr, width * picker_mean[ch], -height);
         cairo_stroke(cr);
 
-        snprintf(text, sizeof(text), "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
+        if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
+        {
+          float XYZ_mean[3], XYZ_mean_output[3];
+          dt_Lab_to_XYZ((const float*)raw_mean, XYZ_mean);
+          dt_Lab_to_XYZ((const float*)raw_mean_output, XYZ_mean_output);
+          snprintf(text, sizeof(text), "%.1f → %.1f", XYZ_mean[ch] * 100.0f, XYZ_mean_output[ch] * 100.0f);
+        }
+        else
+        {
+          snprintf(text, sizeof(text), "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
+        }
 
         cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
         cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(0.04) * height);
@@ -1633,7 +1627,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     const float x_node_value = tonecurve[c->selected].x * (max_scale_value - min_scale_value) + min_scale_value;
     const float y_node_value = tonecurve[c->selected].y * (max_scale_value - min_scale_value) + min_scale_value;
     const float d_node_value = y_node_value - x_node_value;
-    snprintf(text, sizeof(text), "%.2f / %.2f ( %+.2f)", x_node_value, y_node_value, d_node_value);
+    snprintf(text, sizeof(text), "%.1f / %.1f ( %+.1f)", x_node_value, y_node_value, d_node_value);
 
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
     pango_layout_set_text(layout, text, -1);
