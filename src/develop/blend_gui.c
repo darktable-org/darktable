@@ -1375,6 +1375,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     g_signal_connect(G_OBJECT(bd->upper_polarity), "toggled", G_CALLBACK(_blendop_blendif_polarity_callback),
                      bd);
 
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), dt_ui_section_label_new(_("parametric mask")), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(header), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(uplabel), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(upslider), TRUE, FALSE, 0);
@@ -1534,6 +1535,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_brush, FALSE, FALSE, 0);
 
 
+    gtk_box_pack_start(GTK_BOX(bd->masks_box), dt_ui_section_label_new(_("drawn mask")), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(hbox), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(abox), TRUE, TRUE, 0);
 
@@ -2147,6 +2149,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
     gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(box), TRUE, TRUE, 0);
 
+    gtk_box_pack_start(GTK_BOX(box), dt_ui_section_label_new(_("blend options")), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->masks_modes_combo), TRUE, TRUE, 0);
 
     bd->top_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
@@ -2163,6 +2166,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->bottom_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), GTK_WIDGET(bd->masks_combine_combo), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), GTK_WIDGET(bd->masks_invert_combo), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(bd->bottom_box), dt_ui_section_label_new(_("mask refinement")), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), bd->masks_feathering_guide_combo, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), bd->feathering_radius_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), bd->blur_radius_slider, TRUE, TRUE, 0);
