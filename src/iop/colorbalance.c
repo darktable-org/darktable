@@ -966,7 +966,9 @@ static void apply_autogrey(dt_iop_module_t *self)
 
   p->grey = XYZ[1] * 100.0f;
 
+  darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->grey, p->grey);
+  darktable.gui->reset = 0;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1110,7 +1112,9 @@ static void apply_lift_auto(dt_iop_module_t *self)
 
   p->lift[CHANNEL_FACTOR] = -p->gain[CHANNEL_FACTOR] * XYZ[1] + 1.0f;
 
+  darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->lift_factor, p->lift[CHANNEL_FACTOR] - 1.0f);
+  darktable.gui->reset = 0;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1135,7 +1139,9 @@ static void apply_gamma_auto(dt_iop_module_t *self)
   p->gamma[CHANNEL_FACTOR]
       = logf(MAX(p->gain[CHANNEL_FACTOR] * XYZ[1] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f)) / logf(0.1800f);
 
+  darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->gamma_factor, p->gamma[CHANNEL_FACTOR] - 1.0f);
+  darktable.gui->reset = 0;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1159,7 +1165,9 @@ static void apply_gain_auto(dt_iop_module_t *self)
 
   p->gain[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR] / (XYZ[1]);
 
+  darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->gain_factor, p->gain[CHANNEL_FACTOR] - 1.0f);
+  darktable.gui->reset = 0;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
