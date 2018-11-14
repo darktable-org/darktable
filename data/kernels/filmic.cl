@@ -22,7 +22,7 @@ kernel void
 filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
         const float dynamic_range, const float shadows_range, const float grey,
         read_only image2d_t table, read_only image2d_t diff, const float saturation,
-        const float contrast, const float power, const float max_grad)
+        const float contrast, const float power)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -58,13 +58,12 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
   derivative.x = lookup(diff, (const float)index.x);
   derivative.y = lookup(diff, (const float)index.y);
   derivative.z = lookup(diff, (const float)index.z);
-  const float4 max_grad4 = max_grad;
 
   const float4 saturation4 = saturation;
-  const float4 contrast4 = contrast;
   const float4 mid_distance = (float4)4.0f * (luma - (float4)0.5f) * (luma - (float4)0.5f);
+  const float4 bounds = ((float4) 1.0f) / ((float4) 1.0f - luma);
 
-  o = luma + clamp((float4)1.0f - mid_distance * contrast * derivative / max_grad4 / saturation4, (float4)0.0f, (float4)1.0f) * (o - luma);
+  o = luma + clamp((float4)1.0f - bounds * mid_distance * derivative / saturation4, (float4)0.0f, (float4)1.0f) * (o - luma);
   o = clamp(o, (float4)0.0f, (float4)1.0f);
 
   // Apply the transfer function of the display
