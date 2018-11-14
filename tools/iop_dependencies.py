@@ -126,6 +126,14 @@ def add_edges(gr):
   gr.add_edge(('flip', 'liquify'))
   gr.add_edge(('flip', 'ashift'))
 
+  # clipping is a convolution operation and needs linear data to avoid messing-up edges
+  # therefore needs to go before any curve, gamma or contrast operation
+  gr.add_edge(('basecurve', 'clipping'))
+  gr.add_edge(('profile_gamma', 'clipping'))
+  gr.add_edge(('tonecurve', 'clipping'))
+  gr.add_edge(('graduatednd', 'clipping'))
+  gr.add_edge(('colisa', 'clipping'))
+
   # ashift wants a lens corrected image with straight lines.
   # therefore lens should come before and liquify should come after ashift
   gr.add_edge(('ashift', 'lens'))
@@ -461,8 +469,9 @@ def add_edges(gr):
   gr.add_edge(('equalizer', 'colorin'))
 
   # colorbalance needs a Lab buffer and should be after clipping. probably.
-  gr.add_edge(('clipping', 'colorbalance'))
   gr.add_edge(('colorbalance', 'colorin'))
+  gr.add_edge(('colorout', 'colorbalance'))
+  gr.add_edge(('colorize', 'colorbalance'))
 
   # colorchecker should happen early in Lab mode, after
   # highlight colour reconstruction, but with the ability to mess with everything
