@@ -65,6 +65,11 @@ int flags()
   return IOP_FLAGS_ONE_INSTANCE;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_RAW;
+}
+
 /*==================================================================================
  * begin raw therapee code, hg checkout of march 09, 2016 branch master.
  *==================================================================================*/
@@ -1521,7 +1526,6 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // we come just before demosaicing.
-  module->priority = 71; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_cacorrect_params_t);
   module->gui_data = NULL;
 }

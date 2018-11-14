@@ -133,6 +133,11 @@ int operation_tags_filter()
   return IOP_TAG_DECORATION | IOP_TAG_CLIPPING;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 typedef enum dt_iop_ashift_homodir_t
 {
   ASHIFT_HOMOGRAPH_FORWARD,
@@ -2832,7 +2837,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, points,
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, points,
                                       2);
 
     float ovec[2] = { points[2] - points[0], points[3] - points[1] };
@@ -2845,7 +2850,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
 
     // did modules prior to this one in pixelpipe have changed? -> check via hash value
-    uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, 0, self->priority - 1);
+    uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL);
 
     dt_pthread_mutex_lock(&g->lock);
     g->isflipped = isflipped;
@@ -2964,7 +2969,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999, points,
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, points,
                                       2);
 
     float ovec[2] = { points[2] - points[0], points[3] - points[1] };
@@ -2977,7 +2982,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
 
     // do modules coming before this one in pixelpipe have changed? -> check via hash value
-    uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, 0, self->priority - 1);
+    uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL);
 
     dt_pthread_mutex_lock(&g->lock);
     g->isflipped = isflipped;
@@ -3299,7 +3304,7 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   }
 
   // third step: transform all points
-  if(!dt_dev_distort_transform_plus(dev, dev->preview_pipe, self->priority, 9999999, my_points, total_points))
+  if(!dt_dev_distort_transform_plus(dev, dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_INCL, my_points, total_points))
     goto error;
 
   // fourth step: get bounding box in final coordinates (used later for checking "near"-ness to mouse pointer)
@@ -3346,6 +3351,24 @@ static int gui_has_focus(struct dt_iop_module_t *self)
   return self->dev->gui_module == self;
 }
 
+/* this function replaces this sentence, it calls distort_transform() for this module on the pipe
+if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority, self->priority + 1,
+      (float *)V, 4))
+*/
+static int call_distort_transform(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, struct dt_iop_module_t *self,
+                                  float *points, size_t points_count)
+{
+  int ret = 0;
+  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
+  if(!piece) return ret;
+  if(piece->module == self && piece->enabled &&
+     !(dev->gui_module && dev->gui_module->operation_tags_filter() & piece->module->operation_tags()))
+  {
+    ret = piece->module->distort_transform(piece->module, piece, points, points_count);
+  }
+  return ret;
+}
+
 void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
                      int32_t pointerx, int32_t pointery)
 {
@@ -3380,8 +3403,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                           {   ixo + iwd,  iyo       } };
 
     // convert coordinates of corners to coordinates of this module's output
-    if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority, self->priority + 1,
-      (float *)V, 4))
+    if(call_distort_transform(self->dev, self->dev->preview_pipe, self, (float *)V, 4))
       return;
 
     // get x/y-offset as well as width and height of output buffer
@@ -3403,7 +3425,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                             { xmin + p->cr * owd, ymin + p->ct * oht } };
 
     // convert clipping corners to final output image
-    if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority + 1, 9999999,
+    if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL,
       (float *)C, 4))
       return;
 
@@ -4489,7 +4511,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_ashift_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_ashift_params_t));
   module->default_enabled = 0;
-  module->priority = 214; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_ashift_params_t);
   module->gui_data = NULL;
   dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH, 1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,

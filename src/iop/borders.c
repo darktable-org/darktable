@@ -184,6 +184,11 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "border size"));
@@ -918,7 +923,6 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_borders_params_t);
   module->gui_data = NULL;
-  module->priority = 957; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
