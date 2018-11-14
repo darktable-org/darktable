@@ -530,6 +530,10 @@ static void grey_point_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
+  
+  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   p->grey_point = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -539,6 +543,10 @@ static void dynamic_range_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
+
+  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   p->dynamic_range = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -548,6 +556,10 @@ static void shadows_range_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
+
+  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   p->shadows_range = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
