@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-11-15 10:57+0100\n"
-"PO-Revision-Date: 2018-11-15 15:09+0100\n"
+"PO-Revision-Date: 2018-11-15 15:24+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -2527,6 +2527,7 @@ msgstr "invoer afbeelding"
 #: ../src/develop/blend_gui.c:2095
 msgid "choose to guide mask by input or output image"
 msgstr ""
+"kies om het masker te laten gidsen door de invoer of de uitvoer afbeelding"
 
 #: ../src/develop/blend_gui.c:2101
 msgid "feathering radius"
@@ -2585,7 +2586,7 @@ msgstr "meng opties"
 
 #: ../src/develop/blend_gui.c:2169
 msgid "mask refinement"
-msgstr ""
+msgstr "maskerverfijning"
 
 #: ../src/develop/develop.c:1185
 #, c-format
@@ -5786,17 +5787,15 @@ msgstr "controles"
 
 #: ../src/iop/colorbalance.c:899
 msgid "optimize luma from patches"
-msgstr "optimaliseer luminantie vanuit stuk"
+msgstr "optimaliseer luminantie vanuit patronen"
 
 #: ../src/iop/colorbalance.c:901 ../src/iop/colorbalance.c:2630
 msgid "optimize luma"
 msgstr "optimaliseer luminantie"
 
 #: ../src/iop/colorbalance.c:905
-#, fuzzy
-#| msgid "neutralize colors"
 msgid "neutralize colors from patches"
-msgstr "kleuren neutraliseren"
+msgstr "kleuren neutraliseren vanuit patronen"
 
 #: ../src/iop/colorbalance.c:907 ../src/iop/colorbalance.c:2639
 msgid "neutralize colors"
@@ -5976,7 +5975,7 @@ msgid ""
 "shift-click while color picking to replace patch"
 msgstr ""
 "(%2.2f %2.2f %2.2f)\n"
-"gewijzigde patches zijn gemarkeerd door een contour\n"
+"gewijzigde patronen zijn gemarkeerd door een contour\n"
 "klik voor selectie\n"
 "dubbelklik voor reset\n"
 "verwijder patch met rechtermuisknop\n"
@@ -6023,7 +6022,7 @@ msgid ""
 "control target color of the patches via relative offsets or via absolute Lab "
 "values"
 msgstr ""
-"beheer doelkleur van de stukken via relatieve afstand of via absolute Lab "
+"beheer doelkleur van de patronen via relatieve afstand of via absolute Lab "
 "waarden"
 
 #: ../src/iop/colorchecker.c:1319
@@ -6683,7 +6682,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:2708
 msgid "radius of the patches to match. increase for more sharpness"
-msgstr "straal van de patches om aan te passen, verhoog voor meer scherpte"
+msgstr "straal van de patronen om aan te passen, verhoog voor meer scherpte"
 
 #: ../src/iop/denoiseprofile.c:2709
 msgid ""
@@ -7989,7 +7988,7 @@ msgstr "kleurwaarde"
 
 #: ../src/iop/nlmeans.c:858
 msgid "radius of the patches to match"
-msgstr "te evenaren straal van de patches"
+msgstr "te evenaren straal van de patronen"
 
 #: ../src/iop/nlmeans.c:860
 msgid "how much to smooth brightness"
@@ -8946,7 +8945,7 @@ msgstr "middelpuntzoekende wig"
 
 #: ../src/iop/tonecurve.c:1231
 msgid "monotonic spline"
-msgstr "monotoon wig"
+msgstr "monotone wig"
 
 #: ../src/iop/tonecurve.c:1233
 msgid ""
@@ -8980,10 +8979,8 @@ msgid "semi-log (y)"
 msgstr "semi-log (y)"
 
 #: ../src/iop/tonecurve.c:1252
-#, fuzzy
-#| msgid "type for the blur algorithm"
 msgid "base of the logarithm"
-msgstr "algoritme voor het type verdoezeling"
+msgstr "basis van de logaritme"
 
 #: ../src/iop/tonemap.cc:74
 msgid "tone mapping"
@@ -8992,7 +8989,7 @@ msgstr "toonmapping"
 #: ../src/iop/tonemap.cc:90
 msgctxt "accel"
 msgid "contrast compression"
-msgstr "contrastcompressie"
+msgstr "contrast - compressie"
 
 #: ../src/iop/velvia.c:84
 msgid "velvia"
@@ -9816,16 +9813,12 @@ msgid "existing duplicates"
 msgstr "bestaande duplo's"
 
 #: ../src/libs/duplicate.c:356
-#, fuzzy
-#| msgid "creates a duplicate of the image before applying style"
 msgid "create a 'virgin' duplicate of the image without any developpement"
-msgstr "maakt een kloon van de afbeelding voordat stijl wordt toegepast"
+msgstr "maakt een schone duplo van de afbeelding zonder de bewerkingen"
 
 #: ../src/libs/duplicate.c:360
-#, fuzzy
-#| msgid "creates a duplicate of the image before applying style"
 msgid "create a duplicate of the image with same history stack"
-msgstr "maakt een kloon van de afbeelding voordat stijl wordt toegepast"
+msgstr "maakt een duplo van de afbeelding met dezelfde stijl"
 
 #: ../src/libs/export.c:64
 msgid "export selected"
