@@ -124,18 +124,18 @@ void gui_init(dt_lib_module_t *self)
 
   dtgtk_cairo_paint_flags_t pf = CPF_STYLE_FLAT;
 
+  /* active */
+  d->buttons[DT_MODULEGROUP_ACTIVE_PIPE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, pf, NULL);
+  g_signal_connect(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], "toggled", G_CALLBACK(_lib_modulegroups_toggle),
+                   self);
+  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], _("show only active modules"));
+
   /* favorites */
   d->buttons[DT_MODULEGROUP_FAVORITES] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_favorites, pf, NULL);
   g_signal_connect(d->buttons[DT_MODULEGROUP_FAVORITES], "toggled", G_CALLBACK(_lib_modulegroups_toggle),
                    self);
   gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_FAVORITES],
                               _("show only your favourite modules (selected in `more modules' below)"));
-
-  /* active */
-  d->buttons[DT_MODULEGROUP_ACTIVE_PIPE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, pf, NULL);
-  g_signal_connect(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], "toggled", G_CALLBACK(_lib_modulegroups_toggle),
-                   self);
-  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], _("show only active modules"));
 
   /* basic */
   int g_index = _iop_get_group_order(DT_MODULEGROUP_BASIC, DT_MODULEGROUP_BASIC);
@@ -340,7 +340,7 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
     if(d->buttons[k] == button)
     {
       cb = k;
-      gid = _iop_get_group_order(k,k);
+      gid = _iop_get_group_order(k, k);
     }
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[k]), FALSE);
   }
