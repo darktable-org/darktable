@@ -1501,21 +1501,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         picker_scale(sample->picked_color_lab_min, picker_min);
         picker_scale(sample->picked_color_lab_max, picker_max);
 
-        // convert the picker samples to XYZ to show the real Y luminance value if we work in XYZ or RGB mode
-        if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
-        {
-          float XYZ[3];
-
-          dt_Lab_to_XYZ((const float*)sample->picked_color_lab_min, XYZ);
-          picker_min[ch_L] = XYZ[1];
-
-          dt_Lab_to_XYZ((const float*)sample->picked_color_lab_max, XYZ);
-          picker_max[ch_L] = XYZ[1];
-
-          dt_Lab_to_XYZ((const float*)sample->picked_color_lab_mean, XYZ);
-          picker_mean[ch_L] = XYZ[1];
-        }
-
         // Convert abcissa to log coordinates if needed
         picker_min[ch] = to_log(picker_min[ch], c->loglogscale, ch, c->semilog, 0);
         picker_max[ch] = to_log(picker_max[ch], c->loglogscale, ch, c->semilog, 0);
@@ -1547,21 +1532,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         picker_scale(raw_mean, picker_mean);
         picker_scale(raw_min, picker_min);
         picker_scale(raw_max, picker_max);
-
-        // convert the picker samples to XYZ to show the real Y luminance value if we work in XYZ or RGB mode
-        if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
-        {
-          float XYZ[3];
-
-          dt_Lab_to_XYZ((const float*)raw_min, XYZ);
-          picker_min[ch_L] = XYZ[1];
-
-          dt_Lab_to_XYZ((const float*)raw_max, XYZ);
-          picker_max[ch_L] = XYZ[1];
-
-          dt_Lab_to_XYZ((const float*)raw_mean, XYZ);
-          picker_mean[ch_L] = XYZ[1];
-        }
 
         // scale conservatively to 100% of width:
         snprintf(text, sizeof(text), "100.00 / 100.00 ( +100.00)");
