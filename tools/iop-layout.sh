@@ -47,6 +47,7 @@ group_tone=(
     'fill light'
     'local contrast'
     'global tonemap'
+    'filmic'
 )
 
 group_color=(
