@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-11-15 10:57+0100\n"
-"PO-Revision-Date: 2018-11-15 11:00+0100\n"
+"PO-Revision-Date: 2018-11-15 11:28+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -2513,39 +2513,28 @@ msgid "apply mask in normal or inverted mode"
 msgstr "pas het masker in omgekeerde vorm toe"
 
 #: ../src/develop/blend_gui.c:2083
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "tethering view"
 msgid "feathering guide"
-msgstr "tethering weergave"
+msgstr "doezelaars gids"
 
 #: ../src/develop/blend_gui.c:2085
-#, fuzzy
-#| msgid "rotate image"
 msgid "output image"
-msgstr "draai afbeelding"
+msgstr "uitvoer afbeelding"
 
 #: ../src/develop/blend_gui.c:2089
-#, fuzzy
-#| msgid "import image"
 msgid "input image"
-msgstr "importeer afbeelding"
+msgstr "invoer afbeelding"
 
 #: ../src/develop/blend_gui.c:2095
 msgid "choose to guide mask by input or output image"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2101
-#, fuzzy
-#| msgid "search radius"
 msgid "feathering radius"
-msgstr "zoek straal"
+msgstr "doezelaar straal"
 
 #: ../src/develop/blend_gui.c:2103
-#, fuzzy
-#| msgid "spatial extent of the unblurring"
 msgid "spatial radius of feathering"
-msgstr "omvang van verscherping"
+msgstr "omvang van doezelaar"
 
 #: ../src/develop/blend_gui.c:2109
 msgid "mask blur"
@@ -2556,10 +2545,8 @@ msgid "radius for gaussian blur of blend mask"
 msgstr "te gebruiken straal voor gaussian verdoezeling van het masker"
 
 #: ../src/develop/blend_gui.c:2117
-#, fuzzy
-#| msgid "brightness"
 msgid "mask brightness"
-msgstr "helderheid"
+msgstr "masker helderheid"
 
 #: ../src/develop/blend_gui.c:2119
 msgid ""
@@ -2568,10 +2555,8 @@ msgid ""
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2127
-#, fuzzy
-#| msgid "dark contrast"
 msgid "mask contrast"
-msgstr "donker contrast"
+msgstr "masker contrast"
 
 #: ../src/develop/blend_gui.c:2129
 msgid ""
@@ -2592,13 +2577,11 @@ msgstr ""
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "masker menging tijdelijk uitzetten\n"
-"geldt alleen voor de module nu in beeld"
+"geldt alleen voor de nu zichtbare module"
 
 #: ../src/develop/blend_gui.c:2152
-#, fuzzy
-#| msgid "lua options"
 msgid "blend options"
-msgstr "lua-opties"
+msgstr "meng opties"
 
 #: ../src/develop/blend_gui.c:2169
 msgid "mask refinement"
@@ -5806,10 +5789,8 @@ msgid "controls"
 msgstr "controles"
 
 #: ../src/iop/colorbalance.c:899
-#, fuzzy
-#| msgid "optimize luma"
 msgid "optimize luma from patches"
-msgstr "optimaliseer luminantie"
+msgstr "optimaliseer luminantie vanuit stuk"
 
 #: ../src/iop/colorbalance.c:901 ../src/iop/colorbalance.c:2630
 msgid "optimize luma"
@@ -6989,10 +6970,9 @@ msgid "make an optimization with some guessing"
 msgstr "maak een optimalisatie door wat te gissen"
 
 #: ../src/iop/filmic.c:1297
-#, fuzzy
 #| msgid "click to add curve"
 msgid "filmic S curve"
-msgstr "voeg een curve toe door te klikken"
+msgstr "filmic S curve"
 
 #: ../src/iop/filmic.c:1303
 #, fuzzy
@@ -7035,10 +7015,8 @@ msgid "intent"
 msgstr "intensie"
 
 #: ../src/iop/filmic.c:1339
-#, fuzzy
-#| msgid "contrast"
 msgid "contrasted"
-msgstr "contrast"
+msgstr "gecontrasteerd"
 
 #. cubic spline
 #: ../src/iop/filmic.c:1340
@@ -7047,10 +7025,8 @@ msgstr ""
 
 #. monotonic spline
 #: ../src/iop/filmic.c:1342
-#, fuzzy
-#| msgid "optimize luma"
 msgid "optimized"
-msgstr "optimaliseer luminantie"
+msgstr "geoptimaliseerde"
 
 #: ../src/iop/filmic.c:1344
 msgid "change this method if you see reversed contrast or faded blacks"
@@ -9003,10 +8979,8 @@ msgid "tonecurve for b channel"
 msgstr "tooncurve b kanaal"
 
 #: ../src/iop/tonecurve.c:1228
-#, fuzzy
-#| msgid "operation mode"
 msgid "interpolation method"
-msgstr "methode"
+msgstr "interpolatiemethode"
 
 #: ../src/iop/tonecurve.c:1230
 #, fuzzy
@@ -9872,17 +9846,12 @@ msgid "write sidecar files"
 msgstr "schrijf xmp bestanden"
 
 #: ../src/libs/duplicate.c:52
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "duplicate image"
 msgid "duplicate manager"
-msgstr "kloon afbeelding"
+msgstr "duplo beheerder"
 
 #: ../src/libs/duplicate.c:353
-#, fuzzy
-#| msgid "create duplicate"
 msgid "existing duplicates"
-msgstr "creëer kloon"
+msgstr "bestaande duplo's"
 
 #: ../src/libs/duplicate.c:356
 #, fuzzy
