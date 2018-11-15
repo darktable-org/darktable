@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-11-15 10:57+0100\n"
-"PO-Revision-Date: 2018-11-15 14:15+0100\n"
+"PO-Revision-Date: 2018-11-15 14:34+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -6897,18 +6897,18 @@ msgstr "reset curve met dubbelklikken"
 
 #: ../src/iop/filmic.c:1243
 msgid "logarithmic shaper"
-msgstr "logaritmische bepaler"
+msgstr "logaritmische instellingen"
 
 #: ../src/iop/filmic.c:1247
 msgid "middle grey luminance"
-msgstr "middelste grijze luminantie"
+msgstr "middengrijs luminantie"
 
 #: ../src/iop/filmic.c:1250
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
 msgstr ""
-"wijzig dit om de gemiddelde helderheid van het onderwerp te laten "
+"wijzig dit om de gemiddelde luminanties van het onderwerp te laten "
 "overeenkomen\n"
 "echter niet bij tegenlicht situaties, dit zou ongeveer 18% moeten zijn"
 
@@ -6921,7 +6921,7 @@ msgid ""
 "number of stops between middle grey and pure white\n"
 "this is a reading a posemeter would give you on the scene"
 msgstr ""
-"aantal stops tussen geheelmidden grijs en zuiver wit\n"
+"aantal stops tussen geheel middengrijs en zuiver wit\n"
 "dit is een meting die een posimeter zou geven"
 
 #: ../src/iop/filmic.c:1270 ../src/iop/profile_gamma.c:899
@@ -6972,7 +6972,7 @@ msgid ""
 "increase to get more contrast at the extreme luminances"
 msgstr ""
 "lineariteitsdomein in het midden van de curve\n"
-"verhoog voor meer contrast bij extreme helderheden"
+"verhoog voor meer contrast bij extreme luminanties"
 
 #: ../src/iop/filmic.c:1317
 msgid "balance shadows-highlights"
@@ -7016,47 +7016,44 @@ msgid "change this method if you see reversed contrast or faded blacks"
 msgstr "wijzig de methode wanneer je een omgekeerd contrast of vaal zwart ziet"
 
 #: ../src/iop/filmic.c:1347
-#, fuzzy
-#| msgid "destination"
 msgid "destination/display"
-msgstr "bestemming"
+msgstr "bestemming /display"
 
 #: ../src/iop/filmic.c:1351
-#, fuzzy
-#| msgid "balance"
 msgid "black luminance"
-msgstr "witbalans"
+msgstr "zwart luminantie"
 
 #: ../src/iop/filmic.c:1354
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
 msgstr ""
+"luminantie voor uitgaand pikzwart, dit moet uitkomen op 0%\n"
+"tenzij je een fletser beeld wenst"
 
 #: ../src/iop/filmic.c:1360
-#, fuzzy
-#| msgid "_select as destination"
 msgid "middle grey destination"
-msgstr "_selecteer als bestemming"
+msgstr "middengrijs bestemming"
 
 #: ../src/iop/filmic.c:1363
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
+"midden grijswaarde voor doel of kleurruimte\n"
+"wijzig dit niet tenzij je weet waarmee je bezig bent"
 
 #: ../src/iop/filmic.c:1369
-#, fuzzy
-#| msgctxt "modulename"
-#| msgid "white balance"
 msgid "white luminance"
-msgstr "witbalans"
+msgstr "wit luminantie"
 
 #: ../src/iop/filmic.c:1372
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
 msgstr ""
+"luminantie voor uitgaand zuiver wit, dit moet uitkomen op 100%\n"
+"tenzij je een fletser beeld wenst"
 
 #: ../src/iop/filmic.c:1378
 #, fuzzy
