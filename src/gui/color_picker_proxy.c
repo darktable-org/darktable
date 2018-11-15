@@ -26,13 +26,10 @@ static gboolean _iop_color_picker_draw(GtkWidget *widget, cairo_t *cr, dt_iop_co
 
 void dt_iop_color_picker_reset(dt_iop_color_picker_t *picker, gboolean update)
 {
-  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
   picker->module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   picker->reset(picker->module);
   if (update) picker->update(picker->module);
-  dt_iop_request_focus(picker->module);
 }
-
 
 int dt_iop_color_picker_get_set(dt_iop_color_picker_t *picker, GtkWidget *button)
 {
