@@ -44,11 +44,17 @@ int dt_iop_get_group(const char *name, const int default_group)
   }
   else
   {
+    gchar *g_key = dt_util_dstrcat(NULL, "plugins/darkroom/group_order/%d", prefs);
+    prefs = dt_conf_get_int(g_key);
+
     prefs = 1 << (prefs - 1);
+
     if (prefs > IOP_GROUP_EFFECT)
       prefs = IOP_GROUP_EFFECT;
     else if (prefs < IOP_GROUP_BASIC)
       prefs = IOP_GROUP_BASIC;
+
+    g_free(g_key);
   }
 
   g_free(key);
