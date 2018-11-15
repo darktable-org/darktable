@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-11-15 10:57+0100\n"
-"PO-Revision-Date: 2018-11-15 11:28+0100\n"
+"PO-Revision-Date: 2018-11-15 11:49+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -6975,39 +6975,39 @@ msgid "filmic S curve"
 msgstr "filmic S curve"
 
 #: ../src/iop/filmic.c:1303
-#, fuzzy
-#| msgid "size of the border in percent of the full image"
 msgid "slope of the linear part of the curve"
-msgstr ""
-"de afmeting van de rand\n"
-"als percentage van de volledige afbeelding"
+msgstr "helling van het lineair deel van de curve"
 
 #. geotagging
 #: ../src/iop/filmic.c:1308 ../src/libs/metadata_view.c:127
 msgid "latitude"
-msgstr "breedtegraad"
+msgstr "omvang"
 
 #: ../src/iop/filmic.c:1311
 msgid ""
 "linearity domain in the middle of the curve\n"
 "increase to get more contrast at the extreme luminances"
 msgstr ""
+"lineariteitsdomein in het midden van de curve\n"
+"verhoog voor meer contrast bij extreme helderheden"
 
 #: ../src/iop/filmic.c:1317
-#, fuzzy
-#| msgid "shadows and highlights"
 msgid "balance shadows-highlights"
-msgstr "schaduwen en hooglichten"
+msgstr "balans tussen schaduwen en hooglichten"
 
 #: ../src/iop/filmic.c:1320
 msgid "gives more room to shadows or highlights, to protect the details"
 msgstr ""
+"geeft meer ruimte voor shaduwen of hooglichten, en beschermd daarmee de "
+"details"
 
 #: ../src/iop/filmic.c:1328
 msgid ""
 "desaturates the output, if the contrast adjustment\n"
 "produces over-saturation in shadows"
 msgstr ""
+"verminderd verzadiging van uitvoer, wanneer de contrastaanpassing\n"
+"oververzadiging geeft in de schaduwen"
 
 #: ../src/iop/filmic.c:1338 ../src/libs/export.c:629
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1452
