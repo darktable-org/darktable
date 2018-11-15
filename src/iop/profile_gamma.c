@@ -471,6 +471,8 @@ static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+
   float previous = p->security_factor;
   p->security_factor = dt_bauhaus_slider_get(slider);
   float ratio = (p->security_factor - previous) / (previous + 100.0f);
