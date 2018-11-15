@@ -201,9 +201,12 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     *n = *d; // start with a fresh copy of default parameters
 
-    *n->lift = *o->lift;
-    *n->gamma = *o->gamma;
-    *n->gain = *o->gain;
+    for(int i = 0; i < CHANNEL_SIZE; i++)
+    {
+      n->lift[i] = o->lift[i];
+      n->gamma[i] = o->gamma[i];
+      n->gain[i] = o->gain[i];
+    }
     n->mode = LEGACY;
     return 0;
   }
