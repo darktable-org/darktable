@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-11-15 10:57+0100\n"
-"PO-Revision-Date: 2018-11-15 14:34+0100\n"
+"PO-Revision-Date: 2018-11-15 15:09+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -2681,16 +2681,12 @@ msgid "presets"
 msgstr "voorkeuren"
 
 #: ../src/develop/imageop.c:2037
-#, fuzzy
-#| msgid ""
-#| "multiple instances actions\n"
-#| "middle-click creates new instance"
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
 msgstr ""
-"acties meerdere exemplaren\n"
-"midden muisknop creëert een nieuw exemplaar"
+"voorkeuren\n"
+"klik midden muisknop voor toepassing op een nieuw exemplaar"
 
 #: ../src/develop/lightroom.c:1032
 msgid "cannot find lightroom XMP!"
@@ -4963,7 +4959,7 @@ msgstr "gelijk aan nokia"
 #. smoother cubic spline curve
 #: ../src/iop/basecurve.c:220 ../src/iop/tonecurve.c:1229
 msgid "cubic spline"
-msgstr "cubic spline"
+msgstr "kubusvormige wig"
 
 #: ../src/iop/basecurve.c:294
 msgid "base curve"
@@ -6950,7 +6946,7 @@ msgstr "automatisch afstemming niveaus"
 
 #: ../src/iop/filmic.c:1294 ../src/iop/profile_gamma.c:936
 msgid "make an optimization with some guessing"
-msgstr "maak met hulp van wat gissingen een optimalisatie"
+msgstr "maak door wat gissingen een optimalisatie"
 
 #: ../src/iop/filmic.c:1297
 #| msgid "click to add curve"
@@ -7056,10 +7052,8 @@ msgstr ""
 "tenzij je een fletser beeld wenst"
 
 #: ../src/iop/filmic.c:1378
-#, fuzzy
-#| msgid "destination"
 msgid "destination power factor"
-msgstr "bestemming"
+msgstr "bestemmingskracht factor"
 
 #: ../src/iop/filmic.c:1380
 msgid ""
@@ -8847,16 +8841,14 @@ msgid "gamma 1.0 (linear)"
 msgstr "gamma 1.0 (linear)"
 
 #: ../src/iop/tonecurve.c:464
-#, fuzzy
 #| msgid "contrast compression"
 msgid "contrast - med (linear)"
-msgstr "contrastcompressie"
+msgstr "contrast - midden (lineair)"
 
 #: ../src/iop/tonecurve.c:472
-#, fuzzy
 #| msgid "the contrast of highpass filter"
 msgid "contrast - high (linear)"
-msgstr "contrast voor high-pass filter"
+msgstr "contrast - hoog (lineair)"
 
 #: ../src/iop/tonecurve.c:483
 msgid "contrast - med (gamma 2.2)"
@@ -8877,51 +8869,37 @@ msgid "gamma 0.5"
 msgstr "gamma 0.5"
 
 #: ../src/iop/tonecurve.c:512
-#, fuzzy
 #| msgid "logarithmic"
 msgid "logarithm (base 2)"
-msgstr "logaritmisch"
+msgstr "logaritme (basis 2)"
 
 #: ../src/iop/tonecurve.c:516
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "gamma exponential part"
 msgid "exponential (base 2)"
-msgstr "gamma exponentiële factor"
+msgstr "exponentieel (basis 2)"
 
 #: ../src/iop/tonecurve.c:1155
-#, fuzzy
-#| msgid "color scheme"
 msgid "color space"
-msgstr "kleurenschema"
+msgstr "kleurenruimte"
 
 #: ../src/iop/tonecurve.c:1156
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "Lab L-channel"
 msgid "Lab, linked channels"
-msgstr "Lab L-kanaal"
+msgstr "Lab, verbonden kanalen"
 
 #: ../src/iop/tonecurve.c:1157
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "Lab a-channel"
 msgid "Lab, independant channels"
-msgstr "Lab a-kanaal"
+msgstr "Lab, onafhankelijke kanalen"
 
 #: ../src/iop/tonecurve.c:1158
-#, fuzzy
 #| msgctxt "blendmode"
 #| msgid "RGB red channel"
 msgid "XYZ, linked channels"
-msgstr "RGB rood kanaal"
+msgstr "XYZ, verbonden kanalen"
 
 #: ../src/iop/tonecurve.c:1159
-#, fuzzy
 #| msgctxt "blendmode"
 #| msgid "RGB red channel"
 msgid "RGB, linked channels"
-msgstr "RGB rood kanaal"
+msgstr "RGB, verbonden kanalen"
 
 #: ../src/iop/tonecurve.c:1161
 msgid ""
@@ -8963,16 +8941,12 @@ msgid "interpolation method"
 msgstr "interpolatiemethode"
 
 #: ../src/iop/tonecurve.c:1230
-#, fuzzy
-#| msgid "cubic spline"
 msgid "centripetal spline"
-msgstr "cubic spline"
+msgstr "middelpuntzoekende wig"
 
 #: ../src/iop/tonecurve.c:1231
-#, fuzzy
-#| msgid "cubic spline"
 msgid "monotonic spline"
-msgstr "cubic spline"
+msgstr "monotoon wig"
 
 #: ../src/iop/tonecurve.c:1233
 msgid ""
@@ -8984,6 +8958,14 @@ msgid ""
 "- monotonic is better for accuracy of pure analytical functions (log, gamma, "
 "exp)\n"
 msgstr ""
+"wijzig deze methode wanneer oscillaties of knobbels in de curve worden "
+"waargenomen\n"
+"- kubusvormig geeft een meer effen curve maar oscilleert wanneer de knopen "
+"te dicht bij elkaar zitten\n"
+"- middelpuntzoekende is beter ter vermijding van knobbels en oscillaties "
+"maar minder glad bij naast elkaar zittende knopen\n"
+"- monotoon werkt beter voor de nauwkeurigheid van pure analytische functies "
+"(log, gamma,exp)\n"
 
 #: ../src/iop/tonecurve.c:1242
 msgid "log-log (xy)"
