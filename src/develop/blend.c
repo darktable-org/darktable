@@ -3620,6 +3620,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->mask_mode = o->mask_mode;
     n->blend_mode = o->blend_mode;
     n->opacity = o->opacity;
+    n->mask_combine = o->mask_combine;
     n->mask_id = o->mask_id;
     n->blur_radius = o->radius;
     // this is needed as version 5 contained a bug which screwed up history
@@ -3645,6 +3646,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->mask_mode = o->mask_mode;
     n->blend_mode = o->blend_mode;
     n->opacity = o->opacity;
+    n->mask_combine = o->mask_combine;
     n->mask_id = o->mask_id;
     n->blur_radius = o->radius;
     n->blendif = o->blendif;
@@ -3664,6 +3666,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->mask_mode = o->mask_mode;
     n->blend_mode = o->blend_mode;
     n->opacity = o->opacity;
+    n->mask_combine = o->mask_combine;
     n->mask_id = o->mask_id;
     n->blur_radius = o->radius;
     n->blendif = o->blendif;
