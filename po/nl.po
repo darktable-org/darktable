@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-11-15 10:57+0100\n"
-"PO-Revision-Date: 2018-11-15 11:49+0100\n"
+"PO-Revision-Date: 2018-11-15 12:00+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -6998,7 +6998,7 @@ msgstr "balans tussen schaduwen en hooglichten"
 #: ../src/iop/filmic.c:1320
 msgid "gives more room to shadows or highlights, to protect the details"
 msgstr ""
-"geeft meer ruimte voor shaduwen of hooglichten, en beschermd daarmee de "
+"geeft meer ruimte voor shaduwen of hooglichten en beschermd daarmee de "
 "details"
 
 #: ../src/iop/filmic.c:1328
@@ -7006,7 +7006,7 @@ msgid ""
 "desaturates the output, if the contrast adjustment\n"
 "produces over-saturation in shadows"
 msgstr ""
-"verminderd verzadiging van uitvoer, wanneer de contrastaanpassing\n"
+"verminderd verzadiging van de uitvoer, wanneer de contrastaanpassing\n"
 "oververzadiging geeft in de schaduwen"
 
 #: ../src/iop/filmic.c:1338 ../src/libs/export.c:629
@@ -7021,16 +7021,16 @@ msgstr "gecontrasteerd"
 #. cubic spline
 #: ../src/iop/filmic.c:1340
 msgid "faded"
-msgstr ""
+msgstr "vaal"
 
 #. monotonic spline
 #: ../src/iop/filmic.c:1342
 msgid "optimized"
-msgstr "geoptimaliseerde"
+msgstr "geoptimaliseerd"
 
 #: ../src/iop/filmic.c:1344
 msgid "change this method if you see reversed contrast or faded blacks"
-msgstr ""
+msgstr "wijzig de methode wanneer je een omgekeerd contrast of vaal zwart ziet"
 
 #: ../src/iop/filmic.c:1347
 #, fuzzy
