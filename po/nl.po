@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-11-15 10:57+0100\n"
-"PO-Revision-Date: 2018-11-15 12:00+0100\n"
+"PO-Revision-Date: 2018-11-15 14:15+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -6896,14 +6896,10 @@ msgid "double click to reset curve"
 msgstr "reset curve met dubbelklikken"
 
 #: ../src/iop/filmic.c:1243
-#, fuzzy
-#| msgid "logarithmic"
 msgid "logarithmic shaper"
-msgstr "logaritmisch"
+msgstr "logaritmische bepaler"
 
 #: ../src/iop/filmic.c:1247
-#, fuzzy
-#| msgid "middle grey luma"
 msgid "middle grey luminance"
 msgstr "middelste grijze luminantie"
 
@@ -6912,28 +6908,25 @@ msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
 msgstr ""
+"wijzig dit om de gemiddelde helderheid van het onderwerp te laten "
+"overeenkomen\n"
+"echter niet bij tegenlicht situaties, dit zou ongeveer 18% moeten zijn"
 
 #: ../src/iop/filmic.c:1259
-#, fuzzy
-#| msgid "black relative exposure"
 msgid "white relative exposure"
-msgstr "zwart relatieve belichting"
+msgstr "relatieve belichting wit"
 
 #: ../src/iop/filmic.c:1262
-#, fuzzy
-#| msgid ""
-#| "number of stops between middle grey and pure black\n"
-#| "this is a reading a posemeter would give you on the scene"
 msgid ""
 "number of stops between middle grey and pure white\n"
 "this is a reading a posemeter would give you on the scene"
 msgstr ""
-"aantal stops tussen middengrijs en geheel zwart\n"
+"aantal stops tussen geheelmidden grijs en zuiver wit\n"
 "dit is een meting die een posimeter zou geven"
 
 #: ../src/iop/filmic.c:1270 ../src/iop/profile_gamma.c:899
 msgid "black relative exposure"
-msgstr "zwart relatieve belichting"
+msgstr "relatieve belichting zwart"
 
 #: ../src/iop/filmic.c:1273 ../src/iop/profile_gamma.c:902
 msgid ""
@@ -6944,30 +6937,20 @@ msgstr ""
 "dit is een meting die een posimeter zou geven"
 
 #: ../src/iop/filmic.c:1281
-#, fuzzy
-#| msgid "security factor"
 msgid "auto tuning security factor"
-msgstr "veiligheidsfactor"
+msgstr "automatische afstemmings-veiligheidsfactor"
 
 #: ../src/iop/filmic.c:1284
-#, fuzzy
-#| msgid ""
-#| "enlarge or shrink the computed dynamic range\n"
-#| "this is usefull when noise perturbates the measurements"
 msgid "enlarge or shrink the computed dynamic range"
-msgstr ""
-"vergroot of verklein het berekende dynamisch bereik\n"
-"dit is nuttig als de metingen door ruis worden verstoord"
+msgstr "vergroot of verklein het berekende dynamisch bereik"
 
 #: ../src/iop/filmic.c:1289 ../src/iop/profile_gamma.c:931
-#, fuzzy
-#| msgid "auto levels"
 msgid "auto tune levels"
-msgstr "automatisch niveaus"
+msgstr "automatisch afstemming niveaus"
 
 #: ../src/iop/filmic.c:1294 ../src/iop/profile_gamma.c:936
 msgid "make an optimization with some guessing"
-msgstr "maak een optimalisatie door wat te gissen"
+msgstr "maak met hulp van wat gissingen een optimalisatie"
 
 #: ../src/iop/filmic.c:1297
 #| msgid "click to add curve"
