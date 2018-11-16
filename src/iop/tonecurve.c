@@ -1481,7 +1481,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       else
       {
         // the histogram shows linear Lab so we hide it for RGB, XYZ and log scales
-        dt_draw_histogram_8(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw
+        if (autoscale_ab != s_scale_automatic_xyz && autoscale_ab != s_scale_automatic_rgb)
+          dt_draw_histogram_8(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw
                                                                                        // handle waveform
                                                                                          // histograms
       }
