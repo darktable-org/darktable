@@ -14,9 +14,9 @@ EFFECT=5
 
 module_group=(
     $BASIC
+    $TONE
     $COLOR
     $CORRECT
-    $TONE
     $EFFECT
 )
 
@@ -26,81 +26,81 @@ module_group=(
 
 group_basic=(
     'base curve'
-    'crop and rotate'
-    'demosaic'
-    'exposure'
-    'graduated density'
-    'input color profile'
-    'invert'
-    'lens correction'
-    'orientation'
-    'output color profile'
-    'perspective correction'
-    'raw black/white point'
-    'rotate pixels'
-    'scale pixels'
-    'tone mapping'
-    'unbreak input profile'
     'white balance'
+    'shadows and highlights'
+    'orientation'
+    'raw black/white point'
+    'color reconstruction'
+    'demosaic'
+    'contrast brightness saturation'
+    'crop and rotate'
+    'exposure'
+    'highlight reconstruction'
+    'invert'
 )
 
 group_tone=(
-    'bloom'
-    'color balance'
-    'contrast brightness saturation'
-    'equalizer'
-    'fill light'
-    'global tonemap'
-    'levels'
-    'local contrast'
-    'shadows and highlights'
-    'tone curve'
     'zone system'
+    'tone curve'
+    'tone mapping'
+    'levels'
+    'fill light'
+    'local contrast'
+    'global tonemap'
     'filmic'
 )
 
 group_color=(
-    'channel mixer'
+    'unbreak input profile'
+    'velvia'
+    'vibrance'
+    'color balance'
     'color contrast'
     'color correction'
     'color look up table'
-    'color mapping'
+    'output color profile'
+    'channel mixer'
     'color transfer'
     'color zones'
-    'colorize'
-    'lowlight vision'
+    'input color profile'
     'monochrome'
-    'split toning'
-    'velvia'
-    'vibrance'
 )
 
 group_correct=(
-    'chromatic aberrations'
-    'color reconstruction'
+    'perspective correction'
+    'raw denoise'
+    'retouch'
+    'rotate pixels'
+    'scale pixels'
+    'sharpen'
+    'spot removal'
+    'hot pixels'
     'defringe'
+    'chromatic aberrations'
     'denoise (bilateral filter)'
     'denoise (non-local means)'
     'denoise (profiled)'
     'dithering'
+    'equalizer'
+    'lens correction'
+    'liquify'
     'haze removal'
-    'highlight reconstruction'
-    'hot pixels'
-    'raw denoise'
 )
 
 group_effect=(
+    'watermark'
+    'bloom'
+    'vignetting'
+    'split toning'
+    'lowlight vision'
+    'lowpass'
+    'color mapping'
+    'colorize'
     'framing'
+    'graduated density'
     'grain'
     'highpass'
-    'liquify'
-    'lowpass'
-    'retouch'
-    'sharpen'
     'soften'
-    'spot removal'
-    'vignetting'
-    'watermark'
 )
 
 ######################################### END OF CONFIGURATION HERE

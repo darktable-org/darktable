@@ -41,6 +41,17 @@ macro (add_iop _lib _src)
 
   if (WIN32)
     _detach_debuginfo (${_lib} ${CMAKE_INSTALL_LIBDIR}/darktable/plugins)
+  else()
+      # Note that $ORIGIN is not a variable but has a special meaning at runtime.
+      # The string "$ORIGIN" should end up in the executable as-is.
+      set(RPATH_DT "$ORIGIN")
+      if (APPLE)
+          # The string "@loader_path" should end up in the executable as-is.
+          set(RPATH_DT "@loader_path")
+      endif()
+      set_target_properties(${_lib}
+                            PROPERTIES
+                            INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
   endif(WIN32)
 
   install(TARGETS  ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins COMPONENT DTApplication)
@@ -123,6 +134,7 @@ add_iop(denoiseprofile "denoiseprofile.c")
 add_iop(defringe "defringe.c")
 add_iop(ashift "ashift.c")
 add_iop(hazeremoval "hazeremoval.c")
+add_iop(filmic "filmic.c" DEFAULT_VISIBLE)
 
 if(RSVG2_FOUND)
   add_iop(watermark "watermark.c")
