@@ -1771,7 +1771,7 @@ void enter(dt_view_t *self)
   /* ensure that filmstrip shows current image */
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image_storage.id, FALSE);
 
-  // switch on groups as they where last time:
+  // switch on groups as they were last time:
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
 
   // make signals work again:

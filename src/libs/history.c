@@ -180,11 +180,11 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   return widget;
 }
 
-static dt_iop_module_t *get_base_module(dt_develop_t *dev, const char *op)
+static dt_iop_module_t *get_base_module(GList *iop_list, const char *op)
 {
   dt_iop_module_t *result = NULL;
 
-  GList *modules = g_list_first(dev->iop);
+  GList *modules = g_list_first(iop_list);
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
@@ -219,7 +219,7 @@ static GList *_duplicate_history(GList *hist)
     }
     else
     {
-      dt_iop_module_t *base = get_base_module(darktable.develop, old->op_name);
+      dt_iop_module_t *base = get_base_module(darktable.develop->iop, old->op_name);
       if(base)
       {
         params_size = base->params_size;
@@ -271,7 +271,14 @@ static void _undo_items_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data
   _reset_module_instance(hdata->snapshot, udata->module, udata->multi_priority);
 }
 
-static void _add_module_expander(dt_develop_t *dev, dt_iop_module_t *module)
+static void _history_invalidate_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  dt_undo_history_t *hist = (dt_undo_history_t *)item;
+  dt_dev_invalidate_history_module(hist->snapshot, module);
+}
+
+static void _add_module_expander(GList *iop_list, dt_iop_module_t *module)
 {
   // dt_dev_reload_history_items won't do this for base instances
   // and it will call gui_init() for the rest
@@ -282,7 +289,7 @@ static void _add_module_expander(dt_develop_t *dev, dt_iop_module_t *module)
     // that is grather than this
     dt_iop_module_t *base = NULL;
     dt_iop_module_t *base_last = NULL;
-    GList *mods = g_list_last(dev->iop);
+    GList *mods = g_list_last(iop_list);
     while(mods)
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)(mods->data);
@@ -306,17 +313,9 @@ static void _add_module_expander(dt_develop_t *dev, dt_iop_module_t *module)
     }
     if(base)
     {
-      int order = (base_last == NULL) ? 1 : 0;
       /* add module to right panel */
       GtkWidget *expander = dt_iop_gui_get_expander(module);
       dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
-      GValue gv = { 0, { { 0 } } };
-      g_value_init(&gv, G_TYPE_INT);
-      gtk_container_child_get_property(
-          GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
-          base->expander, "position", &gv);
-      gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER), expander,
-                            g_value_get_int(&gv) + order);
       dt_iop_gui_set_expanded(module, TRUE, FALSE);
       dt_iop_gui_update_blending(module);
     }
@@ -325,62 +324,252 @@ static void _add_module_expander(dt_develop_t *dev, dt_iop_module_t *module)
   }
 }
 
-static void _rebuild_multi_priority(dt_develop_t *dev, dt_iop_module_t *module)
+// return the 1st history entry that matches module
+static dt_dev_history_item_t *_search_history_by_module(GList *history_list, dt_iop_module_t *module)
 {
-  // go through history
-  int multi_priority_old = 0;
-  GList *history = g_list_first(dev->history);
+  dt_dev_history_item_t *hist_ret = NULL;
+
+  GList *history = g_list_first(history_list);
   while(history)
   {
     dt_dev_history_item_t *hist_item = (dt_dev_history_item_t *)history->data;
 
-    // this is the same module, check if we can find it in dev->iop
-    if(hist_item->module && hist_item->module->instance == module->instance)
+    if(hist_item->module == module)
     {
-      int found_module = 0;
-      GList *modules = g_list_first(dev->iop);
-      while(modules)
-      {
-        dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-
-        if(hist_item->module->instance == mod->instance && mod->multi_priority == hist_item->multi_priority)
-        {
-          found_module = 1;
-          break;
-        }
-
-        modules = g_list_next(modules);
-      }
-
-      if(!found_module)
-      {
-        multi_priority_old = hist_item->multi_priority;
-        break;
-      }
+      hist_ret = hist_item;
+      break;
     }
 
     history = g_list_next(history);
   }
+  return hist_ret;
+}
 
-  if(multi_priority_old > 0)
+static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList *history_list)
+{
+  GList *iop_list = *_iop_list;
+  int deleted_module_found = 0;
+
+  // we will check on dev->iop if there's a module that is not in history
+  GList *modules = g_list_first(iop_list);
+  while(modules)
   {
-    GList *modules = g_list_first(dev->iop);
-    while(modules)
-    {
-      dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
 
-      if(module->instance == mod->instance && mod->multi_priority == 0)
+    int delete_module = 0;
+
+    // base modules are a special case
+    // most base modules won't be in history and must not be deleted
+    // but the user may have deleted a base instance of a multi-instance module
+    // and then undo and redo, so we will end up with two entries in dev->iop
+    // with multi_priority == 0, this can't happen and the extra one must be deleted
+    // dev->iop is sorted by (priority, multi_priority DESC), so if the next one is
+    // a base instance too, one must be deleted
+    if(mod->multi_priority == 0)
+    {
+      GList *modules_next = g_list_next(modules);
+      if(modules_next)
       {
-        mod->multi_priority = multi_priority_old;
-        break;
+        dt_iop_module_t *mod_next = (dt_iop_module_t *)modules_next->data;
+        if(strcmp(mod_next->op, mod->op) == 0 && mod_next->multi_priority == 0)
+        {
+          // is the same one, check which one must be deleted
+          const int mod_in_history = (_search_history_by_module(history_list, mod) != NULL);
+          const int mod_next_in_history = (_search_history_by_module(history_list, mod_next) != NULL);
+
+          // current is in history and next is not, delete next
+          if(mod_in_history && !mod_next_in_history)
+          {
+            mod = mod_next;
+            modules = modules_next;
+            delete_module = 1;
+          }
+          // current is not in history and next is, delete current
+          else if(!mod_in_history && mod_next_in_history)
+          {
+            delete_module = 1;
+          }
+          else
+          {
+            if(mod_in_history && mod_next_in_history)
+              fprintf(
+                  stderr,
+                  "[_check_deleted_instances] found duplicate module %s %s (%i) and %s %s (%i) both in history\n",
+                  mod->op, mod->multi_name, mod->multi_priority, mod_next->op, mod_next->multi_name,
+                  mod_next->multi_priority);
+            else
+              fprintf(
+                  stderr,
+                  "[_check_deleted_instances] found duplicate module %s %s (%i) and %s %s (%i) none in history\n",
+                  mod->op, mod->multi_name, mod->multi_priority, mod_next->op, mod_next->multi_name,
+                  mod_next->multi_priority);
+          }
+        }
+      }
+    }
+    // this is a regular multi-instance and must be in history
+    else
+    {
+      delete_module = (_search_history_by_module(history_list, mod) == NULL);
+    }
+
+    // if module is not in history we delete it
+    if(delete_module)
+    {
+      deleted_module_found = 1;
+
+      if(darktable.develop->gui_module == mod) dt_iop_request_focus(NULL);
+
+      const int reset = darktable.gui->reset;
+      darktable.gui->reset = 1;
+
+      // we remove the plugin effectively
+      if(!dt_iop_is_hidden(mod))
+      {
+        // we just hide the module to avoid lots of gtk critical warnings
+        gtk_widget_hide(mod->expander);
+
+        // this is copied from dt_iop_gui_delete_callback(), not sure why the above sentence...
+        gtk_widget_destroy(mod->widget);
+        dt_iop_gui_cleanup_module(mod);
       }
 
-      modules = g_list_next(modules);
+      iop_list = g_list_remove_link(iop_list, modules);
+
+      // remove it from all snapshots
+      dt_undo_iterate_internal(darktable.undo, DT_UNDO_HISTORY, mod, &_history_invalidate_cb);
+
+      // we cleanup the module
+      dt_accel_disconnect_list(mod->accel_closures);
+      dt_accel_cleanup_locals_iop(mod);
+      mod->accel_closures = NULL;
+      // don't delete the module, a pipe may still need it
+      dev->alliop = g_list_append(dev->alliop, mod);
+
+      darktable.gui->reset = reset;
+
+      // and reset the list
+      modules = g_list_first(iop_list);
+      continue;
     }
-    dev->iop = g_list_sort(dev->iop, sort_plugins);
+
+    modules = g_list_next(modules);
   }
-  else
-    fprintf(stderr, "[_rebuild_multi_priority] can't find old multi_priority for module %s\n", module->op);
+  if(deleted_module_found) iop_list = g_list_sort(iop_list, sort_plugins);
+
+  *_iop_list = iop_list;
+
+  return deleted_module_found;
+}
+
+static void _reorder_gui_module_list(dt_develop_t *dev)
+{
+  int pos_module = 0;
+  GList *modules = g_list_last(dev->iop);
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+
+    GtkWidget *expander = module->expander;
+    if(expander)
+    {
+      gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER), expander,
+                            pos_module++);
+    }
+
+    modules = g_list_previous(modules);
+  }
+}
+
+static int _rebuild_multi_priority(GList *history_list)
+{
+  int changed = 0;
+  GList *history = g_list_first(history_list);
+  while(history)
+  {
+    dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)history->data;
+
+    // if multi_priority is different in history and dev->iop
+    // we keep the history version
+    if(hitem->module && hitem->module->multi_priority != hitem->multi_priority)
+    {
+      hitem->module->multi_priority = hitem->multi_priority;
+      changed = 1;
+    }
+
+    history = g_list_next(history);
+  }
+  return changed;
+}
+
+static int _create_deleted_modules(GList **_iop_list, GList *history_list)
+{
+  GList *iop_list = *_iop_list;
+  int changed = 0;
+  gboolean done = FALSE;
+
+  GList *l = g_list_first(history_list);
+  while(l)
+  {
+    GList *next = g_list_next(l);
+    dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)l->data;
+
+    // this fixes the duplicate module when undo: hitem->multi_priority = 0;
+    if(hitem->module == NULL)
+    {
+      changed = 1;
+
+      const dt_iop_module_t *base_module = get_base_module(iop_list, hitem->op_name);
+      if(base_module == NULL)
+      {
+        fprintf(stderr, "[_create_deleted_modules] can't find base module for %s\n", hitem->op_name);
+        return changed;
+      }
+
+      // from there we create a new module for this base instance. The goal is to do a very minimal setup of the
+      // new module to be able to write the history items. From there we reload the whole history back and this
+      // will recreate the proper module instances.
+      dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+      if(dt_iop_load_module(module, base_module->so, base_module->dev))
+      {
+        return changed;
+      }
+      module->instance = base_module->instance;
+
+      if(!dt_iop_is_hidden(module))
+      {
+        module->gui_init(module);
+      }
+
+      // adjust the multi_name of the new module
+      g_strlcpy(module->multi_name, hitem->multi_name, sizeof(module->multi_name));
+      module->multi_priority = hitem->multi_priority;
+
+      // we insert this module into dev->iop
+      iop_list = g_list_insert_sorted(iop_list, module, sort_plugins);
+
+      // add the expander, dt_dev_reload_history_items() don't work well without one
+      _add_module_expander(iop_list, module);
+
+      // if not already done, set the module to all others same instance
+      if(!done)
+      {
+        _reset_module_instance(history_list, module, hitem->multi_priority);
+
+        // and do that also in the undo/redo lists
+        struct _cb_data udata = { module, hitem->multi_priority };
+        dt_undo_iterate_internal(darktable.undo, DT_UNDO_HISTORY, &udata, &_undo_items_cb);
+        done = TRUE;
+      }
+
+      hitem->module = module;
+    }
+    l = next;
+  }
+
+  *_iop_list = iop_list;
+
+  return changed;
 }
 
 static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
@@ -393,93 +582,50 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
     dt_lib_history_t *d = (dt_lib_history_t *)self->data;
     dt_undo_history_t *hist = (dt_undo_history_t *)data;
 
-    g_list_free_full(dev->history, dt_dev_free_history_item);
-    dev->history = _duplicate_history(hist->snapshot);
-    dev->history_end = hist->end;
+    // we will work on a copy of history and modules
+    // when we're done we'll replace dev->history and dev->iop
+    GList *history_temp = _duplicate_history(hist->snapshot);
+    const int hist_end = hist->end;
+    GList *iop_temp = g_list_copy(dev->iop);
 
-    // let's handle invalidated module in the history
+    // topology has changed?
     int pipe_remove = 0;
 
-    GList *l = g_list_first(dev->history);
-    gboolean done = FALSE;
-
-    while(l)
+    // we have to check if multi_priority has changed since history was saved
+    // we will adjust it here
+    if(_rebuild_multi_priority(history_temp))
     {
-      GList *next = g_list_next(l);
-      dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)l->data;
+      pipe_remove = 1;
+      iop_temp = g_list_sort(iop_temp, sort_plugins);
+    }
 
-      // this fixes the duplicate module when undo: hitem->multi_priority = 0;
-      if(hitem->module == NULL)
-      {
-        pipe_remove = 1;
+    // check if this undo a delete module and re-create it
+    if(_create_deleted_modules(&iop_temp, history_temp))
+    {
+      pipe_remove = 1;
+    }
 
-        const dt_iop_module_t *base_module = get_base_module(dev, hitem->op_name);
-        if(base_module == NULL)
-        {
-          fprintf(stderr, "[_pop_undo] can't find base module for %s\n", hitem->op_name);
-          return;
-        }
-
-        // from there we create a new module for this base instance. The goal is to do a very minimal setup of the
-        // new module to be able to write the history items. From there we reload the whole history back and this
-        // will recreate the proper module instances.
-        dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
-        if(dt_iop_load_module(module, base_module->so, base_module->dev))
-        {
-          free(module);
-          return;
-        }
-        module->instance = base_module->instance;
-
-        if(!dt_iop_is_hidden(module))
-        {
-          module->gui_init(module);
-        }
-
-        // if the user has deleted the base instance (multi_priority == 0), then another
-        // instance has been set with zero
-        // to restore the original state we have to search in this history snapshot
-        // for a multi_priority that don't exists in dev->iop and replace in dev->iop
-        // all multi_priority = 0 with it, then we can add this new module to the list
-        if(hitem->multi_priority == 0)
-        {
-          _rebuild_multi_priority(dev, module);
-        }
-
-        // adjust the multi_name of the new module
-        g_strlcpy(module->multi_name, hitem->multi_name, sizeof(module->multi_name));
-        module->multi_priority = hitem->multi_priority;
-
-        // we insert this module into dev->iop
-        dev->iop = g_list_insert_sorted(dev->iop, module, sort_plugins);
-
-        // add the expander, dt_dev_reload_history_items() don't work well without one
-        _add_module_expander(dev, module);
-
-        // if not already done, set the module to all others same instance
-        if (!done)
-        {
-          _reset_module_instance(dev->history, module, hitem->multi_priority);
-
-          // and do that also in the undo/redo lists
-          struct _cb_data udata = { module, hitem->multi_priority };
-          dt_undo_iterate_internal(darktable.undo, DT_UNDO_HISTORY, &udata, &_undo_items_cb);
-          done = TRUE;
-        }
-
-        hitem->module = module;
-      }
-      l = next;
+    // check if this is a redo of a delete module or an undo of an add module
+    if(_check_deleted_instances(dev, &iop_temp, history_temp))
+    {
+      pipe_remove = 1;
     }
 
     // disable recording undo as the _lib_history_change_callback will be triggered by the calls below
     d->record_undo = FALSE;
 
-    // write new history and reload
-    dt_dev_write_history(dev);
-    dt_dev_reload_history_items(dev);
+    dt_pthread_mutex_lock(&dev->history_mutex);
 
-    // a new module has been added
+    // set history and modules to dev
+    GList *history_temp2 = dev->history;
+    dev->history = history_temp;
+    dev->history_end = hist_end;
+    g_list_free_full(history_temp2, dt_dev_free_history_item);
+    GList *iop_temp2 = dev->iop;
+    dev->iop = iop_temp;
+    g_list_free(iop_temp2);
+
+    // topology has changed
     if(pipe_remove)
     {
       // we refresh the pipe
@@ -491,6 +637,15 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
       // invalidate buffers and force redraw of darkroom
       dt_dev_invalidate_all(dev);
     }
+
+    dt_pthread_mutex_unlock(&dev->history_mutex);
+
+    // if dev->iop has changed reflect that on module list
+    if(pipe_remove) _reorder_gui_module_list(dev);
+
+    // write new history and reload
+    dt_dev_write_history(dev);
+    dt_dev_reload_history_items(dev);
   }
 }
 
@@ -500,13 +655,6 @@ static void _history_undo_data_free(gpointer data)
   GList *snapshot = hist->snapshot;
   g_list_free_full(snapshot, dt_dev_free_history_item);
   free(data);
-}
-
-static void _history_invalidate_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  dt_undo_history_t *hist = (dt_undo_history_t *)item;
-  dt_dev_invalidate_history_module(hist->snapshot, module);
 }
 
 static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module_t *module, gpointer user_data)
@@ -643,6 +791,8 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   /* revert to given history item. */
   int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));
   dt_dev_pop_history_items(darktable.develop, num);
+  /* signal history changed */
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 }
 

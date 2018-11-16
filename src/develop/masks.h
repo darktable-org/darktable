@@ -275,14 +275,16 @@ int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_versio
 
 /** we create a completely new form. */
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type);
-/** retrieve form id from a list of forms */
+/** returns a form with formid == id from a list of forms */
 dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, int id);
-/** retrieve form id */
+/** returns a form with formid == id from dev->forms */
 dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id);
 
 /** read the forms from the db */
+void dt_masks_read_forms_ext(dt_develop_t *dev, const int imgid, gboolean no_image);
 void dt_masks_read_forms(dt_develop_t *dev);
 /** write the forms into the db */
+void dt_masks_write_forms_ext(dt_develop_t *dev, const int imgid, gboolean undo);
 void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev);
 void dt_masks_write_forms(dt_develop_t *dev);
 void dt_masks_free_form(dt_masks_form_t *form);
