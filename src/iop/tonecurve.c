@@ -688,6 +688,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_reset(struct dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
 }
@@ -861,21 +863,25 @@ static void autoscale_ab_callback(GtkWidget *widget, dt_iop_module_t *self)
   if(combo == 0)
   {
     p->tonecurve_autoscale_ab = s_scale_automatic;
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
     gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
   }
   if(combo == 1)
   {
     p->tonecurve_autoscale_ab = s_scale_manual;
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
     gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
   }
   if(combo == 2)
   {
     p->tonecurve_autoscale_ab = s_scale_automatic_xyz;
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
     gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
   }
   if(combo == 3)
   {
     p->tonecurve_autoscale_ab = s_scale_automatic_rgb;
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
     gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1481,7 +1487,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       else
       {
         // the histogram shows linear Lab so we hide it for RGB, XYZ and log scales
-        dt_draw_histogram_8(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw
+        if (autoscale_ab != s_scale_automatic_xyz && autoscale_ab != s_scale_automatic_rgb)
+          dt_draw_histogram_8(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw
                                                                                        // handle waveform
                                                                                          // histograms
       }
@@ -1500,21 +1507,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         picker_scale(sample->picked_color_lab_mean, picker_mean);
         picker_scale(sample->picked_color_lab_min, picker_min);
         picker_scale(sample->picked_color_lab_max, picker_max);
-
-        // convert the picker samples to XYZ to show the real Y luminance value if we work in XYZ or RGB mode
-        if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
-        {
-          float XYZ[3];
-
-          dt_Lab_to_XYZ((const float*)sample->picked_color_lab_min, XYZ);
-          picker_min[ch_L] = XYZ[1];
-
-          dt_Lab_to_XYZ((const float*)sample->picked_color_lab_max, XYZ);
-          picker_max[ch_L] = XYZ[1];
-
-          dt_Lab_to_XYZ((const float*)sample->picked_color_lab_mean, XYZ);
-          picker_mean[ch_L] = XYZ[1];
-        }
 
         // Convert abcissa to log coordinates if needed
         picker_min[ch] = to_log(picker_min[ch], c->loglogscale, ch, c->semilog, 0);
@@ -1548,21 +1540,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         picker_scale(raw_min, picker_min);
         picker_scale(raw_max, picker_max);
 
-        // convert the picker samples to XYZ to show the real Y luminance value if we work in XYZ or RGB mode
-        if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
-        {
-          float XYZ[3];
-
-          dt_Lab_to_XYZ((const float*)raw_min, XYZ);
-          picker_min[ch_L] = XYZ[1];
-
-          dt_Lab_to_XYZ((const float*)raw_max, XYZ);
-          picker_max[ch_L] = XYZ[1];
-
-          dt_Lab_to_XYZ((const float*)raw_mean, XYZ);
-          picker_mean[ch_L] = XYZ[1];
-        }
-
         // scale conservatively to 100% of width:
         snprintf(text, sizeof(text), "100.00 / 100.00 ( +100.00)");
         pango_layout_set_text(layout, text, -1);
@@ -1583,17 +1560,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         cairo_line_to(cr, width * picker_mean[ch], -height);
         cairo_stroke(cr);
 
-        if (autoscale_ab == s_scale_automatic_xyz || autoscale_ab == s_scale_automatic_rgb)
-        {
-          float XYZ_mean[3], XYZ_mean_output[3];
-          dt_Lab_to_XYZ((const float*)raw_mean, XYZ_mean);
-          dt_Lab_to_XYZ((const float*)raw_mean_output, XYZ_mean_output);
-          snprintf(text, sizeof(text), "%.1f → %.1f", XYZ_mean[ch] * 100.0f, XYZ_mean_output[ch] * 100.0f);
-        }
-        else
-        {
-          snprintf(text, sizeof(text), "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
-        }
+        snprintf(text, sizeof(text), "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
 
         cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
         cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(0.04) * height);
@@ -1881,6 +1848,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
           p->tonecurve[ch][k].y = d->tonecurve[ch][k].y;
         }
         c->selected = -2; // avoid motion notify re-inserting immediately.
+        dt_bauhaus_combobox_set(c->interpolator, p->tonecurve_type[ch_L]);
         dt_dev_add_history_item(darktable.develop, self, TRUE);
         gtk_widget_queue_draw(self->widget);
       }
