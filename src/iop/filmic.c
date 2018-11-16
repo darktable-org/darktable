@@ -1278,7 +1278,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Security factor
   g->security_factor = dt_bauhaus_slider_new_with_range(self, -200., 200., 1.0, p->security_factor, 2);
-  dt_bauhaus_widget_set_label(g->security_factor, NULL, _("auto tuning security factor"));
+  dt_bauhaus_widget_set_label(g->security_factor, NULL, _("auto tuning safety factor"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->security_factor, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->security_factor, "%.2f %%");
   gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range"));

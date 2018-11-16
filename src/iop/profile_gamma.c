@@ -922,7 +922,7 @@ void gui_init(dt_iop_module_t *self)
   // Security factor
   gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("optimize automatically")), FALSE, FALSE, 5);
   g->security_factor = dt_bauhaus_slider_new_with_range(self, -100., 100., 0.1, p->security_factor, 2);
-  dt_bauhaus_widget_set_label(g->security_factor, NULL, _("security factor"));
+  dt_bauhaus_widget_set_label(g->security_factor, NULL, _("safety factor"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->security_factor, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->security_factor, "%.2f %%");
   gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range\nthis is usefull when noise perturbates the measurements"));
