@@ -36,6 +36,12 @@ static int32_t dt_image_load_job_run(dt_job_t *job)
 
   // drop read lock, as this is only speculative async loading.
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+
+  if (buf.buf && buf.height && buf.width)
+  {
+    const double aspect_ratio = (double)buf.width / (double)buf.height;
+    dt_image_set_aspect_ratio_to(params->imgid, aspect_ratio);
+  }
   return 0;
 }
 
