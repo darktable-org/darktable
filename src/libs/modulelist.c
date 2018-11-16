@@ -317,7 +317,7 @@ static gint _lib_modulelist_gui_sort(GtkTreeModel *model, GtkTreeIter *a, GtkTre
   return g_utf8_collate(modulea->name(), moduleb->name());
 }
 
-static char *gen_params(char state, int *size)
+static char *gen_params(char state, int *size, char *names)
 {
   int len = 0;
   char *params = NULL;
@@ -341,7 +341,9 @@ static char *gen_params(char state, int *size)
       params = tmp;
     }
     memcpy(params + len, module->op, op_len);
-    params[new_len - 1] = state;
+    char *pattern = g_strdup_printf("|%s|", module->op);
+    params[new_len - 1] = (names==NULL ? state : strstr(names, module->op)!=NULL);
+    g_free(pattern);
     len = new_len;
   }
 
@@ -353,11 +355,18 @@ void init_presets(dt_lib_module_t *self)
 {
   // add "none" and "all" presets
   int len;
-  char *params_none = gen_params(0, &len);
-  char *params_all = gen_params(1, &len);
+  char *params_none = gen_params(0, &len, NULL);
+  char *params_all = gen_params(1, &len, NULL);
+  char *params_default = gen_params(1, &len,
+                                    "|basecurve|clipping|colisa|colorcorrection|colorin|colorout"
+                                    "|demosaic|exposure|flip|graduatednd|grain|lens|levels|monochrome"
+                                    "|shadhi|sharpen|temperature|tonecurve|vignette|");
 
   dt_lib_presets_add(_("show none"), self->plugin_name, self->version(), params_none, len);
   dt_lib_presets_add(_("show all"), self->plugin_name, self->version(), params_all, len);
+
+  /* the modules that are activated by default in the initial configuration */
+  dt_lib_presets_add(_("default"), self->plugin_name, self->version(), params_default, len);
 
   free(params_none);
   free(params_all);
