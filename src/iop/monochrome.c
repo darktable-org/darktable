@@ -341,6 +341,18 @@ void gui_reset(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
 }
 
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+
+  if(!in)
+  {
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
+}
+
 void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_monochrome_params_t));
@@ -380,14 +392,11 @@ static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer
 
   if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
   {
-    float old_a = p->a, old_b = p->b, old_size = p->size;
     p->a = self->picked_color[1];
     p->b = self->picked_color[2];
     float da = self->picked_color_max[1] - self->picked_color_min[1];
     float db = self->picked_color_max[2] - self->picked_color_min[2];
     p->size = CLAMP((da + db)/128.0, .5, 3.0);
-    if(old_a != p->a || old_b != p->b || old_size != p->size)
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker),
@@ -440,8 +449,6 @@ static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer
   cairo_arc(cr, x, y, width * .22f * p->size, 0, 2.0 * M_PI);
   cairo_stroke(cr);
 
-  if(g->dragging) dt_dev_add_history_item(darktable.develop, self, TRUE);
-
   cairo_destroy(cr);
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
@@ -456,6 +463,7 @@ static gboolean dt_iop_monochrome_motion_notify(GtkWidget *widget, GdkEventMotio
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
   if(g->dragging)
   {
+    const float old_a = p->a, old_b = p->b;
     const int inset = DT_COLORCORRECTION_INSET;
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
@@ -464,6 +472,8 @@ static gboolean dt_iop_monochrome_motion_notify(GtkWidget *widget, GdkEventMotio
     const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
     p->a = PANEL_WIDTH * (mouse_x - width * 0.5f) / (float)width;
     p->b = PANEL_WIDTH * (mouse_y - height * 0.5f) / (float)height;
+
+    if(old_a != p->a || old_b != p->b) dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(self->widget);
   }
   gint x, y;
@@ -525,6 +535,7 @@ static gboolean dt_iop_monochrome_button_release(GtkWidget *widget, GdkEventButt
     self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
     g->dragging = 0;
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
     g_object_set(G_OBJECT(widget), "has-tooltip", TRUE, (gchar *)0);
     return TRUE;
   }
@@ -551,8 +562,9 @@ static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *ev
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
+    const float old_size = p->size;
     p->size = CLAMP(p->size + delta_y * 0.1, 0.5f, 3.0f);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    if(old_size != p->size) dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(widget);
   }
 
