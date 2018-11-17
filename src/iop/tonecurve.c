@@ -73,13 +73,13 @@ typedef struct dt_iop_tonecurve_node_t
 
 typedef enum dt_iop_tonecurve_autoscale_t
 {
-  s_scale_manual = 0,           // user specified curves
-  s_scale_automatic = 1,        // automatically adjust saturation based on L_out/L_in
-  s_scale_automatic_xyz = 2,    // automatically adjust saturation by
-                                // transforming the curve C to C' like:
-                                // L_out=C(L_in) -> Y_out=C'(Y_in) and applying C' to the X and Z
-                                // channels, too (and then transforming it back to Lab of course)
-  s_scale_automatic_rgb = 3,    // similar to above but use an rgb working space
+  DT_S_SCALE_MANUAL = 0,           // user specified curves
+  DT_S_SCALE_AUTOMATIC = 1,        // automatically adjust saturation based on L_out/L_in
+  DT_S_SCALE_AUTOMATIC_XYZ = 2,    // automatically adjust saturation by
+                                   // transforming the curve C to C' like:
+                                   // L_out=C(L_in) -> Y_out=C'(Y_in) and applying C' to the X and Z
+                                   // channels, too (and then transforming it back to Lab of course)
+  DT_S_SCALE_AUTOMATIC_RGB = 3,    // similar to above but use an rgb working space
 } dt_iop_tonecurve_autoscale_t;
 
 // parameter structure of tonecurve 1st version, needed for use in legacy_params()
@@ -321,7 +321,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)]
                              : dt_iop_eval_exp(d->unbounded_coeffs_L, L_in);
 
-      if(autoscale_ab == s_scale_manual)
+      if(autoscale_ab == DT_S_SCALE_MANUAL)
       {
         const float a_in = (in[1] + 128.0f) / 256.0f;
         const float b_in = (in[2] + 128.0f) / 256.0f;
@@ -346,7 +346,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                          : d->table[ch_b][CLAMP((int)(b_in * 0x10000ul), 0, 0xffff)]);
         }
       }
-      else if(autoscale_ab == s_scale_automatic)
+      else if(autoscale_ab == DT_S_SCALE_AUTOMATIC)
       {
         // in Lab: correct compressed Luminance for saturation:
         if(L_in > 0.01f)
@@ -360,7 +360,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           out[2] = in[2] * low_approximation;
         }
       }
-      else if(autoscale_ab == s_scale_automatic_xyz)
+      else if(autoscale_ab == DT_S_SCALE_AUTOMATIC_XYZ)
       {
         float XYZ[3];
         dt_Lab_to_XYZ(in, XYZ);
@@ -369,7 +369,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                    : dt_iop_eval_exp(d->unbounded_coeffs_L, XYZ[c]);
         dt_XYZ_to_Lab(XYZ, out);
       }
-      else if(autoscale_ab == s_scale_automatic_rgb)
+      else if(autoscale_ab == DT_S_SCALE_AUTOMATIC_RGB)
       {
         float rgb[3] = {0, 0, 0};
         dt_Lab_to_prophotorgb(in, rgb);
@@ -420,7 +420,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve_type[ch_a] = CUBIC_SPLINE;
   p.tonecurve_type[ch_b] = CUBIC_SPLINE;
   p.tonecurve_preset = 0;
-  p.tonecurve_autoscale_ab = s_scale_automatic_rgb;
+  p.tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC_RGB;
   p.tonecurve_unbound_ab = 1;
 
   float linear_ab[7] = { 0.0, 0.08, 0.3, 0.5, 0.7, 0.92, 1.0 };
@@ -572,7 +572,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   for(int k = 0; k < 0x10000; k++) d->table[ch_b][k] = d->table[ch_b][k] * 256.0f - 128.0f;
 
   piece->process_cl_ready = 1;
-  if(p->tonecurve_autoscale_ab == s_scale_automatic_xyz)
+  if(p->tonecurve_autoscale_ab == DT_S_SCALE_AUTOMATIC_XYZ)
   {
     // derive curve for XYZ:
     for(int k=0;k<0x10000;k++)
@@ -585,7 +585,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       d->table[ch_L][k] = XYZ[1]; // now mapping Y_in to Y_out
     }
   }
-  else if(p->tonecurve_autoscale_ab == s_scale_automatic_rgb)
+  else if(p->tonecurve_autoscale_ab == DT_S_SCALE_AUTOMATIC_RGB)
   {
     // derive curve for rgb:
     for(int k=0;k<0x10000;k++)
@@ -660,7 +660,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)malloc(sizeof(dt_iop_tonecurve_data_t));
   dt_iop_tonecurve_params_t *default_params = (dt_iop_tonecurve_params_t *)self->default_params;
   piece->data = (void *)d;
-  d->autoscale_ab = s_scale_automatic;
+  d->autoscale_ab = DT_S_SCALE_AUTOMATIC;
   d->unbound_ab = 1;
   for(int ch = 0; ch < ch_max; ch++)
   {
@@ -701,27 +701,27 @@ void gui_update(struct dt_iop_module_t *self)
 
   switch(p->tonecurve_autoscale_ab)
   {
-    case 0:
+    case DT_S_SCALE_MANUAL:
     {
-      dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic);
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
-      break;
-    }
-    case 1:
-    {
-      dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_manual);
+      dt_bauhaus_combobox_set(g->autoscale_ab, 1);
       gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
       break;
     }
-    case 2:
+    case DT_S_SCALE_AUTOMATIC:
     {
-      dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic_xyz);
+      dt_bauhaus_combobox_set(g->autoscale_ab, 0);
       gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
       break;
     }
-    case 3:
+    case DT_S_SCALE_AUTOMATIC_XYZ:
     {
-      dt_bauhaus_combobox_set(g->autoscale_ab, s_scale_automatic_rgb);
+      dt_bauhaus_combobox_set(g->autoscale_ab, 2);
+      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      break;
+    }
+    case DT_S_SCALE_AUTOMATIC_RGB:
+    {
+      dt_bauhaus_combobox_set(g->autoscale_ab, 3);
       gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
       break;
     }
@@ -767,7 +767,7 @@ void init(dt_iop_module_t *module)
     // { CATMULL_ROM, CATMULL_ROM, CATMULL_ROM},  // curve types
     { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
     // { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE},
-    s_scale_automatic_rgb, // autoscale_ab
+    DT_S_SCALE_AUTOMATIC_RGB, // autoscale_ab
     0,
     1 // unbound_ab
   };
@@ -860,30 +860,34 @@ static void autoscale_ab_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   const int combo = dt_bauhaus_combobox_get(widget);
-  if(combo == 0)
+
+  switch(combo)
   {
-    p->tonecurve_autoscale_ab = s_scale_automatic;
-    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
-    gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+    case 0:
+      p->tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC;
+      gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
+      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      break;
+
+    case 1:
+      p->tonecurve_autoscale_ab = DT_S_SCALE_MANUAL;
+      gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
+      gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
+      break;
+
+    case 2:
+      p->tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC_XYZ;
+      gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
+      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      break;
+
+    case 3:
+      p->tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC_RGB;
+      gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
+      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      break;
   }
-  if(combo == 1)
-  {
-    p->tonecurve_autoscale_ab = s_scale_manual;
-    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
-    gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
-  }
-  if(combo == 2)
-  {
-    p->tonecurve_autoscale_ab = s_scale_automatic_xyz;
-    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
-    gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
-  }
-  if(combo == 3)
-  {
-    p->tonecurve_autoscale_ab = s_scale_automatic_rgb;
-    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
-    gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
-  }
+
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1003,7 +1007,7 @@ static void dt_iop_tonecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widg
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
   // if autoscale_ab is on: do not modify a and b curves
-  if((autoscale_ab != s_scale_manual) && ch != ch_L) return;
+  if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L) return;
 
   if(nodes <= 2) return;
 
@@ -1075,7 +1079,7 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
   // if autoscale_ab is on: do not modify a and b curves
-  if((autoscale_ab != s_scale_manual) && ch != ch_L) return TRUE;
+  if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L) return TRUE;
 
   if(c->selected < 0) return TRUE;
 
@@ -1099,7 +1103,7 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
   // if autoscale_ab is on: do not modify a and b curves
-  if((autoscale_ab != s_scale_manual) && ch != ch_L) return TRUE;
+  if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L) return TRUE;
 
   if(c->selected < 0) return TRUE;
 
@@ -1426,7 +1430,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_stroke(cr);
 
   // if autoscale_ab is on: do not display a and b curves
-  if((autoscale_ab != s_scale_manual) && ch != ch_L) goto finally;
+  if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L) goto finally;
 
   // draw nodes positions
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
@@ -1487,7 +1491,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       else
       {
         // the histogram shows linear Lab so we hide it for RGB, XYZ and log scales
-        if (autoscale_ab != s_scale_automatic_xyz && autoscale_ab != s_scale_automatic_rgb)
+        if (autoscale_ab != DT_S_SCALE_AUTOMATIC_XYZ && autoscale_ab != DT_S_SCALE_AUTOMATIC_RGB)
           dt_draw_histogram_8(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw
                                                                                        // handle waveform
                                                                                          // histograms
@@ -1698,7 +1702,7 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
   // if autoscale_ab is on: do not modify a and b curves
-  if((autoscale_ab != s_scale_manual) && ch != ch_L) goto finally;
+  if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L) goto finally;
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
@@ -1838,7 +1842,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
     {
       // reset current curve
       // if autoscale_ab is on: allow only reset of L curve
-      if(!((autoscale_ab != s_scale_manual) && ch != ch_L))
+      if(!((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L))
       {
         p->tonecurve_nodes[ch] = d->tonecurve_nodes[ch];
         p->tonecurve_type[ch] = d->tonecurve_type[ch];
@@ -1856,12 +1860,9 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       {
         if(ch != ch_L)
         {
-          p->tonecurve_autoscale_ab = s_scale_manual;
+          p->tonecurve_autoscale_ab = DT_S_SCALE_MANUAL;
           c->selected = -2; // avoid motion notify re-inserting immediately.
-          if(p->tonecurve_autoscale_ab == 0) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_automatic);
-          if(p->tonecurve_autoscale_ab == 1) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_manual);
-          if(p->tonecurve_autoscale_ab == 2) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_automatic_xyz);
-          if(p->tonecurve_autoscale_ab == 3) dt_bauhaus_combobox_set(c->autoscale_ab, s_scale_automatic_rgb);
+          dt_bauhaus_combobox_set(c->autoscale_ab, 1);
           dt_dev_add_history_item(darktable.develop, self, TRUE);
           gtk_widget_queue_draw(self->widget);
         }
