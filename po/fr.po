@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-16 17:12+0100\n"
-"PO-Revision-Date: 2018-11-16 17:15+0100\n"
+"POT-Creation-Date: 2018-11-18 17:51+0100\n"
+"PO-Revision-Date: 2018-11-18 17:52+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2198,7 +2198,7 @@ msgstr ""
 "* intervalle entre 2 marqueurs adjacents interne/externe : fusion progressive"
 
 #: ../src/develop/blend_gui.c:1285 ../src/iop/colorzones.c:1098
-#: ../src/iop/tonecurve.c:1194
+#: ../src/iop/tonecurve.c:1198
 msgid "pick GUI color from image"
 msgstr "choisit une couleur dans l'image"
 
@@ -4990,7 +4990,7 @@ msgstr "similaire nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:220 ../src/iop/tonecurve.c:1235
+#: ../src/iop/basecurve.c:220 ../src/iop/tonecurve.c:1239
 msgid "cubic spline"
 msgstr "spline cubique"
 
@@ -5003,14 +5003,14 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
 
 #: ../src/iop/basecurve.c:1933 ../src/iop/lens.c:2228
-#: ../src/iop/tonecurve.c:1246 ../src/iop/vignette.c:1149
+#: ../src/iop/tonecurve.c:1250 ../src/iop/vignette.c:1149
 #: ../src/iop/watermark.c:1391
 msgid "scale"
 msgstr "échelle"
 
 #. centripetal spline
 #: ../src/iop/basecurve.c:1934 ../src/iop/filmic.c:1343
-#: ../src/iop/profile_gamma.c:867 ../src/iop/tonecurve.c:1247
+#: ../src/iop/profile_gamma.c:867 ../src/iop/tonecurve.c:1251
 msgid "linear"
 msgstr "linéaire"
 
@@ -5018,7 +5018,7 @@ msgstr "linéaire"
 msgid "logarithmic"
 msgstr "logarithmique"
 
-#: ../src/iop/basecurve.c:1936 ../src/iop/tonecurve.c:1251
+#: ../src/iop/basecurve.c:1936 ../src/iop/tonecurve.c:1255
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -5138,7 +5138,7 @@ msgid "L difference to detect edges (range sigma of bilateral filter)"
 msgstr ""
 "différence L pour la détection des bords (étendue sigma du filtre bilatéral)"
 
-#: ../src/iop/bilat.c:548 ../src/iop/monochrome.c:625 ../src/iop/shadhi.c:829
+#: ../src/iop/bilat.c:548 ../src/iop/monochrome.c:637 ../src/iop/shadhi.c:829
 #: ../src/iop/splittoning.c:539
 msgid "highlights"
 msgstr "hautes lumières"
@@ -8017,14 +8017,14 @@ msgstr "monochrome"
 msgid "red filter"
 msgstr "filtre rouge"
 
-#: ../src/iop/monochrome.c:607
+#: ../src/iop/monochrome.c:619
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr ""
 "glisser et défiler à la souris\n"
 "pour modifier le filtre \n"
 "virtuel de couleurs"
 
-#: ../src/iop/monochrome.c:624
+#: ../src/iop/monochrome.c:636
 msgid "how much to keep highlights"
 msgstr "conserver les hautes lumières"
 
@@ -8925,27 +8925,27 @@ msgstr "logarithmique (base 2)"
 msgid "exponential (base 2)"
 msgstr "exponentielle (base 2)"
 
-#: ../src/iop/tonecurve.c:1161
+#: ../src/iop/tonecurve.c:1165
 msgid "color space"
 msgstr "espace de couleur"
 
-#: ../src/iop/tonecurve.c:1162
+#: ../src/iop/tonecurve.c:1166
 msgid "Lab, linked channels"
 msgstr "Lab, canaux liés"
 
-#: ../src/iop/tonecurve.c:1163
+#: ../src/iop/tonecurve.c:1167
 msgid "Lab, independant channels"
 msgstr "Lab, canaux indépendants"
 
-#: ../src/iop/tonecurve.c:1164
+#: ../src/iop/tonecurve.c:1168
 msgid "XYZ, linked channels"
 msgstr "XYZ, canaux liés"
 
-#: ../src/iop/tonecurve.c:1165
+#: ../src/iop/tonecurve.c:1169
 msgid "RGB, linked channels"
 msgstr "RGB, canaux liés"
 
-#: ../src/iop/tonecurve.c:1167
+#: ../src/iop/tonecurve.c:1171
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data. auto "
@@ -8955,43 +8955,43 @@ msgstr ""
 "les valeurs a et b de chaque pixel sont ajustées sur la base de la courbe L. "
 "auto XYZ est similaire mais applique la saturation dans l'espace XYZ."
 
-#: ../src/iop/tonecurve.c:1177
+#: ../src/iop/tonecurve.c:1181
 msgid "  L  "
 msgstr "  L "
 
-#: ../src/iop/tonecurve.c:1179
+#: ../src/iop/tonecurve.c:1183
 msgid "tonecurve for L channel"
 msgstr "courbe des tonalités pour le canal L"
 
-#: ../src/iop/tonecurve.c:1181
+#: ../src/iop/tonecurve.c:1185
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:1183
+#: ../src/iop/tonecurve.c:1187
 msgid "tonecurve for a channel"
 msgstr "courbe des tonalités pour le canal a"
 
-#: ../src/iop/tonecurve.c:1185
+#: ../src/iop/tonecurve.c:1189
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:1187
+#: ../src/iop/tonecurve.c:1191
 msgid "tonecurve for b channel"
 msgstr "courbe des tonalités pour le canal b"
 
-#: ../src/iop/tonecurve.c:1234
+#: ../src/iop/tonecurve.c:1238
 msgid "interpolation method"
 msgstr "méthode d'interpolation"
 
-#: ../src/iop/tonecurve.c:1236
+#: ../src/iop/tonecurve.c:1240
 msgid "centripetal spline"
 msgstr "spline centripète"
 
-#: ../src/iop/tonecurve.c:1237
+#: ../src/iop/tonecurve.c:1241
 msgid "monotonic spline"
 msgstr "spline monotone"
 
-#: ../src/iop/tonecurve.c:1239
+#: ../src/iop/tonecurve.c:1243
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
 "- cubic spline is better to produce smooth curves but oscillates when nodes "
@@ -9010,19 +9010,19 @@ msgstr ""
 "- monotone donne une meilleure précision sur les fonctions mathématiques "
 "analytiques (log, gamma, exp). \n"
 
-#: ../src/iop/tonecurve.c:1248
+#: ../src/iop/tonecurve.c:1252
 msgid "log-log (xy)"
 msgstr "log-log (xy)"
 
-#: ../src/iop/tonecurve.c:1249
+#: ../src/iop/tonecurve.c:1253
 msgid "semi-log (x)"
 msgstr "semi-log (x)"
 
-#: ../src/iop/tonecurve.c:1250
+#: ../src/iop/tonecurve.c:1254
 msgid "semi-log (y)"
 msgstr "semi-log (y)"
 
-#: ../src/iop/tonecurve.c:1258
+#: ../src/iop/tonecurve.c:1262
 msgid "base of the logarithm"
 msgstr "base du logarithme"
 
@@ -11750,8 +11750,8 @@ msgstr "affiche les surimpressions"
 #: ../src/libs/tools/global_toolbox.c:109
 msgid "enable this, then click on a control element to see its online help"
 msgstr ""
-"activer cela, alors cliquer sur l'élément de contrôle pour voir l'aide en "
-"ligne?"
+"une fois activé, cliquer sur l’élément de contrôle pour visualiser l’aide en "
+"ligne correspondante"
 
 #: ../src/libs/tools/global_toolbox.c:119
 msgid "show global preferences"
