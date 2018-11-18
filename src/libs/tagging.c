@@ -663,9 +663,14 @@ static gboolean _match_selected_func(GtkEntryCompletion *completion, GtkTreeMode
 
   if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING) return TRUE;
 
+  GtkEditable *e = (GtkEditable *)gtk_entry_completion_get_entry(completion);
+  if(!GTK_IS_EDITABLE(e))
+  {
+    return FALSE;
+  }
+
   gtk_tree_model_get(model, iter, column, &tag, -1);
   
-  GtkEditable *e = (GtkEditable *)gtk_entry_completion_get_entry(completion);
   gint cut_off, cur_pos = gtk_editable_get_position(e);
 
   gchar *currentText = gtk_editable_get_chars(e, 0, -1);
@@ -693,6 +698,12 @@ static gboolean _completion_match_func(GtkEntryCompletion *completion, const gch
   gboolean res = FALSE;
 
   GtkEditable *e = (GtkEditable *)gtk_entry_completion_get_entry(completion);
+
+  if(!GTK_IS_EDITABLE(e))
+  {
+    return FALSE;
+  }
+  
   gint cur_pos = gtk_editable_get_position(e);
   gboolean onLastTag = (g_strstr_len(&key[cur_pos], -1, ",") == NULL);
   if(!onLastTag)
