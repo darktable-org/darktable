@@ -89,11 +89,11 @@ typedef enum dt_develop_mask_combine_mode_t
   DEVELOP_COMBINE_INV_INCL = (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL)
 } dt_develop_mask_combine_mode_t;
 
-typedef enum dt_develop_mask_blur_mode_t
+typedef enum dt_develop_mask_feathering_guide_t
 {
-  DEVELOP_MASK_BLUR_GAUSSIAN = 0x01,
-  DEVELOP_MASK_FEATHER = 0x02
-} dt_develop_mask_blur_mode_t;
+  DEVELOP_MASK_GUIDE_IN = 0x01,
+  DEVELOP_MASK_GUIDE_OUT = 0x02
+} dt_develop_mask_feathering_guide_t;
 
 typedef enum dt_develop_blendif_channels_t
 {
@@ -280,14 +280,16 @@ typedef struct dt_develop_blend_params_t
   uint32_t mask_id;
   /** blendif mask */
   uint32_t blendif;
+  /** feathering radius */
+  float feathering_radius;
+  /** feathering guide */
+  uint32_t feathering_guide;
   /** blur radius */
-  float radius;
+  float blur_radius;
   /** mask contrast enhancement */
   float contrast;
   /** mask brightness adjustment */
   float brightness;
-  /** mask blur mode */
-  uint32_t mask_blur_mode;
   /** some reserved fields for future use */
   uint32_t reserved[4];
   /** blendif parameters */
@@ -304,7 +306,7 @@ typedef struct dt_blendop_cl_global_t
   int kernel_blendop_Lab;
   int kernel_blendop_RAW;
   int kernel_blendop_rgb;
-  int kernel_blendop_mask_enhance_contrast;
+  int kernel_blendop_mask_tone_curve;
   int kernel_blendop_set_mask;
   int kernel_blendop_display_channel;
 } dt_blendop_cl_global_t;
@@ -338,7 +340,7 @@ typedef struct dt_iop_gui_blend_data_t
   GList *masks_modes;
   GList *masks_combine;
   GList *masks_invert;
-  GList *masks_blur_modes;
+  GList *masks_feathering_guide;
   GList *blend_modes_all;
   GtkWidget *iopw;
   GtkBox *top_box;
@@ -362,8 +364,9 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_combine_combo;
   GtkWidget *masks_invert_combo;
   GtkWidget *opacity_slider;
-  GtkWidget *masks_blur_modes_combo;
-  GtkWidget *radius_slider;
+  GtkWidget *masks_feathering_guide_combo;
+  GtkWidget *feathering_radius_slider;
+  GtkWidget *blur_radius_slider;
   GtkWidget *contrast_slider;
   GtkWidget *brightness_slider;
   int tab;

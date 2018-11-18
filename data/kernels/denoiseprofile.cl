@@ -86,7 +86,10 @@ denoiseprofile_dist(read_only image2d_t in, global float* U4, const int width, c
   const int y = get_global_id(1);
   const int gidx = mad24(y, width, x);
 
+  // Reminder: q.x and q.y can be negative
   if(x >= width || y >= height) return;
+  if(x+q.x >= width || y+q.y >= height) return;
+  if(x+q.x < 0 || y+q.y < 0) return;
 
   float4 p1 = read_imagef(in, sampleri, (int2)(x, y));
   float4 p2 = read_imagef(in, sampleri, (int2)(x, y) + q);
@@ -211,7 +214,22 @@ denoiseprofile_accu(read_only image2d_t in, global float4* U2, global float* U4,
   const int y = get_global_id(1);
   const int gidx = mad24(y, width, x);
 
-  if(x >= width || y >= height) return;
+  if(q.x<0)
+  {
+    if(x-q.x >= width || x<-q.x) return;
+  }
+  else
+  {
+    if(x+q.x >= width || x<q.x) return;
+  }
+  if(q.y<0)
+  {
+    if(y-q.y >= height || y<-q.y) return;
+  }
+  else
+  {
+    if(y+q.y >= height || y<q.y) return;
+  }
 
   float4 u1_pq = read_imagef(in, sampleri, (int2)(x, y) + q);
   float4 u1_mq = read_imagef(in, sampleri, (int2)(x, y) - q);

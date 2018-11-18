@@ -713,12 +713,18 @@ void init_global(dt_iop_module_so_t *self)
 
 void init(dt_iop_module_t *self)
 {
-  const dt_image_t *const image = &(self->dev->image_storage);
 
   self->params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
   self->hide_enable_button = 1;
-  self->default_enabled = dt_image_is_raw(image) && !image_is_normalized(image);
+  self->default_enabled = 0;
+  if(self->dev)
+  { // just being extra careful here, because there is a case when old presets
+    // are upgraded and temporary modules are constructed for this, with a 0x0 dev
+    // pointer. i suppose the can be solved more elegantly on the other side.
+    const dt_image_t *const image = &(self->dev->image_storage);
+    self->default_enabled = dt_image_is_raw(image) && !image_is_normalized(image);
+  }
   self->priority = 14; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_rawprepare_params_t);
   self->gui_data = NULL;
