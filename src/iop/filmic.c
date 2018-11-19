@@ -488,7 +488,7 @@ static void apply_auto_black(dt_iop_module_t *self)
 
   // Black
   dt_Lab_to_prophotorgb(self->picked_color_min, XYZ);
-  float black = fminf(fminf(XYZ[0], XYZ[1]), XYZ[2]);
+  float black = (XYZ[0] + XYZ[1] + XYZ[2]) / 3.0f;
   float EVmin = Log2Thres(black / (p->grey_point_source / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
@@ -580,7 +580,7 @@ static void apply_autotune(dt_iop_module_t *self)
 
   // Black
   dt_Lab_to_prophotorgb(self->picked_color_min, XYZ);
-  float black = fminf(fminf(XYZ[0], XYZ[1]), XYZ[2]);
+  float black = (XYZ[0] + XYZ[1] + XYZ[2]) / 3.0f;
   float EVmin = Log2Thres(black / (p->grey_point_source / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
