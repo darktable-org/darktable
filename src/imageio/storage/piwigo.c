@@ -726,6 +726,25 @@ void init(dt_imageio_module_storage_t *self)
 {
 }
 
+static uint64_t _piwigo_album_id(const gchar *name, GList *albums)
+{
+  uint64_t id = 0;
+
+  GList *a = albums;
+  while(a)
+  {
+    _piwigo_album_t *album = (_piwigo_album_t *)a->data;
+    if(!strcmp(name, album->label))
+    {
+      id = album->id;
+      break;
+    }
+    a = g_list_next(a);
+  }
+
+  return id;
+}
+
 void *get_params(dt_imageio_module_storage_t *self)
 {
   // have to return the size of the struct to store (i.e. without all the variable pointers at the end)
@@ -786,18 +805,7 @@ void *get_params(dt_imageio_module_storage_t *self)
             goto cleanup;
           }
 
-          //  Look for album id
-          GList *a = ui->albums;
-          while(a)
-          {
-            _piwigo_album_t *album = (_piwigo_album_t *)a->data;
-            if(!strcmp(p->album, album->label))
-            {
-              p->album_id = album->id;
-              break;
-            }
-            a = g_list_next(a);
-          }
+          p->album_id = _piwigo_album_id(p->album, ui->albums);
 
           if(!p->album_id)
           {
