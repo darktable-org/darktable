@@ -68,7 +68,8 @@ typedef struct dt_storage_piwigo_gui_data_t
   GtkLabel *status_label;
   GtkEntry *user_entry, *pwd_entry, *new_album_entry;
   GtkBox *create_box;                               // Create album options...
-  GtkWidget *permission_list, *album_list, *export_tags;
+  GtkWidget *permission_list, *export_tags;
+  GtkWidget *album_list, *parent_album_list;
 
   GList *albums;
 
@@ -86,6 +87,7 @@ typedef struct dt_storage_piwigo_params_t
 {
   _piwigo_api_context_t *api;
   int64_t album_id;
+  int64_t parent_album_id;
   char *album;
   gboolean new_album;
   int privacy;
@@ -331,6 +333,7 @@ static void _piwigo_album_changed(GtkComboBox *cb, gpointer data)
 static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui)
 {
   gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->parent_album_list), FALSE);
 
   if(ui->api == NULL || ui->api->authenticated == FALSE)
   {
@@ -342,6 +345,7 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui)
 
   // First clear the combobox except first 2 items (none / create new album)
   dt_bauhaus_combobox_clear(ui->album_list);
+  dt_bauhaus_combobox_clear(ui->parent_album_list);
   g_list_free(ui->albums);
   ui->albums = NULL;
 
@@ -358,6 +362,7 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui)
   if(ui->api->response && !ui->api->error_occured)
   {
     dt_bauhaus_combobox_add(ui->album_list, _("create new album"));
+    dt_bauhaus_combobox_add(ui->parent_album_list, _("---"));
 
     JsonObject *result = json_node_get_object(json_object_get_member(ui->api->response, "result"));
     JsonArray *albums = json_object_get_array_member(result, "categories");
@@ -383,12 +388,14 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui)
       ui->albums = g_list_append(ui->albums, new_album);
 
       dt_bauhaus_combobox_add(ui->album_list, data);
+      dt_bauhaus_combobox_add(ui->parent_album_list, data);
     }
   }
   else
     dt_control_log(_("cannot refresh albums"));
 
   gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->parent_album_list), TRUE);
   dt_bauhaus_combobox_set(ui->album_list, index);
 }
 
@@ -399,6 +406,12 @@ static const gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p
 
   args = _piwigo_query_add_arguments(args, "method", "pwg.categories.add");
   args = _piwigo_query_add_arguments(args, "name", p->album);
+  if(p->parent_album_id != 0)
+  {
+    char pid[100];
+    snprintf(pid, sizeof(pid), "%ld", p->parent_album_id);
+    args = _piwigo_query_add_arguments(args, "parent", pid);
+  }
   args = _piwigo_query_add_arguments(args, "status", p->privacy==0?"public":"private");
 
   _piwigo_api_post(p->api, args, NULL, FALSE);
@@ -573,6 +586,12 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_entry_set_width_chars(GTK_ENTRY(ui->new_album_entry), 0);
 
   gtk_box_pack_start(ui->create_box, hbox, FALSE, FALSE, 0);
+
+  // parent album list
+  ui->parent_album_list = dt_bauhaus_combobox_new(NULL); // Available albums
+  dt_bauhaus_widget_set_label(ui->parent_album_list, NULL, _("parent album"));
+  gtk_widget_set_sensitive(ui->parent_album_list, TRUE);
+  gtk_box_pack_start(ui->create_box, ui->parent_album_list, TRUE, TRUE, 0);
 
   _piwigo_set_status(ui, _("click login button to start"), "#ffffff");
 
@@ -790,6 +809,7 @@ void *get_params(dt_imageio_module_storage_t *self)
       switch(index)
       {
         case 0: // Create album
+          p->parent_album_id = _piwigo_album_id(dt_bauhaus_combobox_get_text(ui->parent_album_list), ui->albums);
           p->album = g_strdup(gtk_entry_get_text(ui->new_album_entry));
           p->new_album = TRUE;
           break;
