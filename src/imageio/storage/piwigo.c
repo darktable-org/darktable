@@ -125,13 +125,16 @@ static _piwigo_api_context_t *_piwigo_ctx_init(void)
 
 static void _piwigo_ctx_destroy(_piwigo_api_context_t **ctx)
 {
-  curl_easy_cleanup((*ctx)->curl_ctx);
-  if((*ctx)->cookie_file) g_unlink((*ctx)->cookie_file);
-  g_object_unref((*ctx)->json_parser);
-  g_free((*ctx)->cookie_file);
-  g_free((*ctx)->url);
-  free(*ctx);
-  *ctx = NULL;
+  if(*ctx)
+  {
+    curl_easy_cleanup((*ctx)->curl_ctx);
+    if((*ctx)->cookie_file) g_unlink((*ctx)->cookie_file);
+    g_object_unref((*ctx)->json_parser);
+    g_free((*ctx)->cookie_file);
+    g_free((*ctx)->url);
+    free(*ctx);
+    *ctx = NULL;
+  }
 }
 
 /** Set status connection text */
@@ -466,8 +469,16 @@ static const gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gc
   return !p->api->error_occured;
 }
 
+// Login button pressed...
+static void _piwigo_login_clicked(GtkButton *button, gpointer data)
+{
+  dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
+  _piwigo_ctx_destroy(&ui->api);
+  _piwigo_refresh_albums(ui);
+}
+
 // Refresh button pressed...
-static void _piwigo_button1_clicked(GtkButton *button, gpointer data)
+static void _piwigo_refresh_clicked(GtkButton *button, gpointer data)
 {
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
   _piwigo_refresh_albums(ui);
@@ -525,7 +536,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   // login button
   button = gtk_button_new_with_label(_("login"));
   gtk_widget_set_tooltip_text(button, _("piwigo login"));
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_piwigo_button1_clicked), (gpointer)ui);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_piwigo_login_clicked), (gpointer)ui);
   gtk_box_pack_start(GTK_BOX(self->widget), button, FALSE, FALSE, 0);
 
   // status area
@@ -563,7 +574,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_tooltip_text(button, _("refresh album list"));
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_piwigo_button1_clicked), (gpointer)ui);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_piwigo_refresh_clicked), (gpointer)ui);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
