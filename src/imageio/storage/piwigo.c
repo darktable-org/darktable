@@ -247,6 +247,8 @@ static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *file
     const char *status = json_object_get_string_member(ctx->response, "stat");
     ctx->error_occured = (status && (strcmp(status,"fail")==0));
   }
+  else
+    ctx->error_occured = TRUE;
 
  cleanup:
   g_string_free(response, TRUE);
