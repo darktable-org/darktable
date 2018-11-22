@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2017 pascal obry.
+    copyright (c) 2014-2018 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,6 +27,17 @@
 #include "common/pdf.h"
 #include "control/jobs/control_jobs.h"
 #include "cups_print.h"
+
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+// some platforms are starting to provide CUPS 2.2.9 and there the
+// CUPS API deprecated routines ate now flagged as such and reported as
+// warning preventing the compilation.
+//
+// this seems wrong and PPD should be removed from this unit. but there
+// still one missing piece discussed with the CUPS maintainers about the
+// way to get media-type using the IPP API. nothing close to working at
+// this stage, so instead of breaking the compilation on platforms using
+// recent CUPS version we kill the warning.
 
 typedef struct dt_prtctl_t
 {
