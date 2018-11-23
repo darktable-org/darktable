@@ -52,6 +52,8 @@ typedef struct _piwigo_api_context_t
   gchar *cookie_file;
   gchar *url;
 
+  gchar *username;
+  gchar *password;
   gboolean error_occured;
 } _piwigo_api_context_t;
 
@@ -95,6 +97,9 @@ typedef struct dt_storage_piwigo_params_t
   char *tags;
 } dt_storage_piwigo_params_t;
 
+/* low-level routine doing the HTTP POST request */
+static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *filename, gboolean isauth);
+
 static size_t curl_write_data_cb(void *ptr, size_t size, size_t nmemb, void *data)
 {
   GString *string = (GString *)data;
@@ -132,6 +137,8 @@ static void _piwigo_ctx_destroy(_piwigo_api_context_t **ctx)
     g_object_unref((*ctx)->json_parser);
     g_free((*ctx)->cookie_file);
     g_free((*ctx)->url);
+    g_free((*ctx)->username);
+    g_free((*ctx)->password);
     free(*ctx);
     *ctx = NULL;
   }
@@ -146,7 +153,7 @@ static void _piwigo_set_status(dt_storage_piwigo_gui_data_t *ui, gchar *message,
   gtk_label_set_markup(ui->status_label, mup);
 }
 
-static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *filename, gboolean isauth)
+static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx, GList *args, char *filename, gboolean isauth)
 {
   curl_mime *form = NULL;
 
@@ -229,6 +236,10 @@ static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *file
 
   int res = curl_easy_perform(ctx->curl_ctx);
 
+#ifdef piwigo_EXTRA_VERBOSE
+  g_printf("curl_easy_perform status %d\n", res);
+#endif
+
   if(filename) curl_mime_free(form);
 
   g_string_free(url, TRUE);
@@ -252,26 +263,71 @@ static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *file
 
  cleanup:
   g_string_free(response, TRUE);
+  return res;
 }
 
-static void _piwigo_api_authenticate(dt_storage_piwigo_gui_data_t *ui)
+static void _piwigo_api_authenticate(_piwigo_api_context_t *ctx)
+{
+  GList *args = NULL;
+
+  args = _piwigo_query_add_arguments(args, "method", "pwg.session.login");
+  args = _piwigo_query_add_arguments(args, "username", ctx->username);
+  args = _piwigo_query_add_arguments(args, "password", ctx->password);
+  ctx->url = g_strdup_printf("https://%s.piwigo.com/ws.php?format=json", ctx->username);
+
+  _piwigo_api_post(ctx, args, NULL, TRUE);
+
+  g_list_free(args);
+}
+
+static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *filename, gboolean isauth)
+{
+  int res = _piwigo_api_post_internal(ctx, args, filename, isauth);
+
+  if(res == CURLE_COULDNT_CONNECT || res == CURLE_SSL_CONNECT_ERROR)
+  {
+#ifdef piwigo_EXTRA_VERBOSE
+    g_printf("curl post error (%d), try authentication again\n", res);
+#endif
+
+    //  recreate a new CURL connection
+    curl_easy_cleanup(ctx->curl_ctx);
+    ctx->curl_ctx = curl_easy_init();
+    ctx->authenticated = FALSE;
+
+    // an error during the curl post command, could be an authentication issue, try to authenticate again
+    _piwigo_api_authenticate(ctx);
+
+    // authentication ok, send again
+    if(ctx->response && !ctx->error_occured)
+    {
+      ctx->authenticated = TRUE;
+#ifdef piwigo_EXTRA_VERBOSE
+      g_printf("authenticated again, retry\n");
+#endif
+      res = _piwigo_api_post_internal(ctx, args, filename, isauth);
+#ifdef piwigo_EXTRA_VERBOSE
+      g_printf("second post exit with status %d\n", res);
+#endif
+    }
+    else
+    {
+#ifdef piwigo_EXTRA_VERBOSE
+      g_printf("failed second authentication\n");
+#endif
+    }
+  }
+}
+
+static void _piwigo_authenticate(dt_storage_piwigo_gui_data_t *ui)
 {
   if(!ui->api)
     ui->api = _piwigo_ctx_init();
 
-  GList *args = NULL;
+  ui->api->username = g_strdup(gtk_entry_get_text(ui->user_entry));
+  ui->api->password = g_strdup(gtk_entry_get_text(ui->pwd_entry));
 
-  const char *username = gtk_entry_get_text(ui->user_entry);
-  const char *password = gtk_entry_get_text(ui->pwd_entry);
-
-  args = _piwigo_query_add_arguments(args, "method", "pwg.session.login");
-  args = _piwigo_query_add_arguments(args, "username", username);
-  args = _piwigo_query_add_arguments(args, "password", password);
-  ui->api->url = g_strdup_printf("https://%s.piwigo.com/ws.php?format=json", username);
-
-  _piwigo_api_post(ui->api, args, NULL, TRUE);
-
-  g_list_free(args);
+  _piwigo_api_authenticate(ui->api);
 
   ui->api->authenticated = FALSE;
 
@@ -286,8 +342,8 @@ static void _piwigo_api_authenticate(dt_storage_piwigo_gui_data_t *ui)
 
       // store username/password
       GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
-      g_hash_table_insert(table, "username", g_strdup(username));
-      g_hash_table_insert(table, "password", g_strdup(password));
+      g_hash_table_insert(table, "username", g_strdup(ui->api->username));
+      g_hash_table_insert(table, "password", g_strdup(ui->api->password));
       if(!dt_pwstorage_set("piwigo", table))
       {
         dt_print(DT_DEBUG_PWSTORAGE, "[piwigo] cannot store username/password\n");
@@ -342,7 +398,7 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui)
 
   if(ui->api == NULL || ui->api->authenticated == FALSE)
   {
-    _piwigo_api_authenticate(ui);
+    _piwigo_authenticate(ui);
     if(ui->api == NULL || !ui->api->authenticated) return;
   }
 
