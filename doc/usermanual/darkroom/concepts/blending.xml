@@ -150,12 +150,39 @@
 
     <sect4 id="blending_usage_additional_controls">
 
-      <title>Additional controls</title>
+      <title>Mask refinement and additional controls</title>
 
       <para>
         When blending with a mask there are some additional options to deal with the final mask:
-        you may blur the mask, temporarily disable it, or display it as an overlay image.
+        you may feather the mask, blur the mask, adjust the mask's brightness and contrast,
+        temporarily disable the mask, or display it as an overlay image.  The latter option is
+        particularly useful for examining the effect of the following controls.
       </para>
+
+      <sect5 id="blending_usage_additional_controls_feathering_guide">
+        <title>feathering guide</title>
+        <para>
+	  Mask feathering smoothens a drawn or parametric mask non-uniformly such that the
+	  mask's edges are adjusted automatically to match the edges of the image.  This mask
+	  smoothing is guided either by the module's input image or by its output (before
+	  blending), depending on what is selected in the <quote>feathering guide</quote>
+	  combobox.  The feathering is particularly sensitive to this choice for edge-modifying
+	  modules, i.e., modules for sharpening or blurring an image.
+        </para>
+      </sect5>
+
+      <sect5 id="blending_usage_additional_controls_feathering_radius">
+        <title>feathering radius</title>
+        <para>
+	  The <quote>feathering radius</quote> slider adjusts the strength of the feathering
+	  effect.  Feathering works best if the drawn and/or parametric mask's edges already
+	  match approximately some edges in the guiding image.  The larger the <quote>feathering
+	  radius</quote> the better the feathering algorithm can align mask edges to more
+	  distant edges of the image.  If this radius is too large, however, the feathered mask
+	  may overshoot.  This means it cover regions that the user actually wants to exclude.
+	  Feathering is turned off if the feathering radius is set to&nbsp;0.
+        </para>
+      </sect5>
 
       <sect5 id="blending_usage_additional_controls_blur">
         <title>mask blur</title>
@@ -163,7 +190,34 @@
           Blurring the mask creates a softer transition between blended and unblended parts of
           an image and avoids artifacts. The mask blur slider controls the radius of a gaussian
           blur applied to the final blend mask. The higher the radius, the stronger the
-          blur&nbsp;&ndash; or set to 0 for an unblurred mask.
+          blur&nbsp;&ndash; or set to 0 for an unblurred mask.  Gaussian blur is always applied
+	  after feathering if both kinds of mask adjustment are activated.  This order allows to
+	  smooth sharp edges or artefacts that may result by feathering.
+        </para>
+      </sect5>
+
+      <sect5 id="blending_usage_additional_controls_mask_brightness">
+        <title>mask opacity</title>
+        <para>
+	  The strength of the module's effect is determined by the mask's local opacity.
+	  Feathering and blurring the mask may result in a mask with reduced opacity, which
+	  implies a reduced effect.  Therefore, the <quote>mask opacity</quote> slider allows to
+	  readjust the mask opacity.  If the opacity is decreased (negative slider values) least
+	  opaque parts are affected stronger than most opaque parts.  Contrary, if the mask
+	  opacity is increased (positive slider values) most opaque parts are affected stronger
+	  than least opaque parts.  As a consequence, completely opaque portions of the mask
+	  always remain opaque and completely transparent portions remain transparent.  This is
+	  to ensure that regions which have been excluded from or included to a module's effect
+	  by setting the mask's opacity to 0% or 100% remain excluded or included even if the
+	  mask opacity is adjusted by this slider.
+        </para>
+      </sect5>
+
+      <sect5 id="blending_usage_additional_controls_mask_contrast">
+        <title>mask contrast</title>
+        <para>
+	  This slider increases or decreases the mask contrast.  This means it allows to modify
+	  the transition between opaque and transparent mask parts.
         </para>
       </sect5>
 
