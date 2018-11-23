@@ -2324,7 +2324,7 @@ static double crop_fitness(double *params, void *data)
       if(I[2] == 0.0f)
         continue;
 
-      // the default case -> normlize I
+      // the default case -> normalize I
       I[0] /= I[2];
       I[1] /= I[2];
 
@@ -2508,7 +2508,7 @@ failed:
 }
 
 // manually adjust crop area by shifting its center
-static void crop_adjust(dt_iop_module_t *module, dt_iop_ashift_params_t *p, float newx, float newy)
+static void crop_adjust(dt_iop_module_t *module, dt_iop_ashift_params_t *p, const float newx, const float newy)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
@@ -2599,7 +2599,7 @@ static void crop_adjust(dt_iop_module_t *module, dt_iop_ashift_params_t *p, floa
       if(I[2] == 0.0f)
         continue;
 
-      // the default case -> normlize I
+      // the default case -> normalize I
       I[0] /= I[2];
       I[1] /= I[2];
 
@@ -2783,7 +2783,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // we are interested if |alpha| is in the range of 90° +/- 45° -> we assume the image is flipped
     int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
 
-    // do modules coming before this one in pixelpipe have changed? -> check via hash value
+    // did modules prior to this one in pixelpipe have changed? -> check via hash value
     uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, 0, self->priority - 1);
 
     dt_pthread_mutex_lock(&g->lock);
@@ -2792,9 +2792,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // save a copy of preview input buffer for parameter fitting
     if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)width * height)
     {
-      // if needed allocate buffer
+      // if needed to allocate buffer
       free(g->buf); // a no-op if g->buf is NULL
-      // only get new buffer if no old buffer or old buffer does not fit in terms of size
+      // only get new buffer if no old buffer available or old buffer does not fit in terms of size
       g->buf = malloc((size_t)width * height * 4 * sizeof(float));
     }
 
@@ -3619,8 +3619,8 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   int handled = 0;
 
-  float wd = self->dev->preview_pipe->backbuf_width;
-  float ht = self->dev->preview_pipe->backbuf_height;
+  const float wd = self->dev->preview_pipe->backbuf_width;
+  const float ht = self->dev->preview_pipe->backbuf_height;
   if(wd < 1.0 || ht < 1.0) return 1;
 
   float pzx, pzy;
@@ -3631,8 +3631,8 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   if (g->adjust_crop)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-    float newx = g->crop_cx + pzx - g->lastx;
-    float newy = g->crop_cy + pzy - g->lasty;
+    const float newx = g->crop_cx + pzx - g->lastx;
+    const float newy = g->crop_cy + pzy - g->lasty;
     crop_adjust(self, p, newx, newy);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
@@ -3697,8 +3697,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   pzx += 0.5f;
   pzy += 0.5f;
 
-  float wd = self->dev->preview_pipe->backbuf_width;
-  float ht = self->dev->preview_pipe->backbuf_height;
+  const float wd = self->dev->preview_pipe->backbuf_width;
+  const float ht = self->dev->preview_pipe->backbuf_height;
   if(wd < 1.0 || ht < 1.0) return 1;
 
 
