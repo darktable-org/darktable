@@ -391,7 +391,7 @@ static void _piwigo_album_changed(GtkComboBox *cb, gpointer data)
 }
 
 /** Refresh albums */
-static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui)
+static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, gchar *select_album)
 {
   gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(ui->parent_album_list), FALSE);
@@ -402,7 +402,30 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui)
     if(ui->api == NULL || !ui->api->authenticated) return;
   }
 
-  int index = dt_bauhaus_combobox_get(ui->album_list);
+  gchar *to_select;
+  int index = 0;
+
+  // get the new album name, it will be checked in the
+  if(select_album == NULL)
+  {
+    to_select = g_strdup(dt_bauhaus_combobox_get_text(ui->album_list));
+    if(to_select)
+    {
+      // cut the count of picture in albumd to get the name only
+      gchar *p = to_select;
+      while(*p)
+      {
+        if(*p == ' ' && *(p+1) == '(')
+        {
+          *p = '\0';
+          break;
+        }
+        p++;
+      }
+    }
+  }
+  else
+    to_select = g_strdup(select_album);
 
   // First clear the combobox except first 2 items (none / create new album)
   dt_bauhaus_combobox_clear(ui->album_list);
@@ -444,6 +467,8 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui)
 
       snprintf(data, sizeof(data), "%s (%ld)", new_album->name, new_album->size);
 
+      if(to_select && !strcmp(new_album->name, to_select)) index = i + 1;
+
       g_strlcpy(new_album->label, data, sizeof(new_album->label));
 
       ui->albums = g_list_append(ui->albums, new_album);
@@ -454,6 +479,8 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui)
   }
   else
     dt_control_log(_("cannot refresh albums"));
+
+  g_free(to_select);
 
   gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(ui->parent_album_list), TRUE);
@@ -532,14 +559,14 @@ static void _piwigo_login_clicked(GtkButton *button, gpointer data)
 {
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
   _piwigo_ctx_destroy(&ui->api);
-  _piwigo_refresh_albums(ui);
+  _piwigo_refresh_albums(ui, NULL);
 }
 
 // Refresh button pressed...
 static void _piwigo_refresh_clicked(GtkButton *button, gpointer data)
 {
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
-  _piwigo_refresh_albums(ui);
+  _piwigo_refresh_albums(ui, NULL);
 }
 
 const char *name(const struct dt_imageio_module_storage_t *self)
@@ -784,7 +811,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
       {
         // we do not want to create more albums when multiple upload
         p->new_album = FALSE;
-        _piwigo_refresh_albums(ui);
+        _piwigo_refresh_albums(ui, p->album);
       }
     }
   }
