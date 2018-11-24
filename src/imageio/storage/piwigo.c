@@ -125,6 +125,9 @@ static _piwigo_api_context_t *_piwigo_ctx_init(void)
   ctx->curl_ctx = curl_easy_init();
   ctx->json_parser = json_parser_new();
   ctx->authenticated = FALSE;
+  ctx->url = NULL;
+  ctx->cookie_file = NULL;
+  ctx->error_occured = FALSE;
   return ctx;
 }
 
@@ -321,8 +324,7 @@ static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *file
 
 static void _piwigo_authenticate(dt_storage_piwigo_gui_data_t *ui)
 {
-  if(!ui->api)
-    ui->api = _piwigo_ctx_init();
+  if(!ui->api) ui->api = _piwigo_ctx_init();
 
   ui->api->username = g_strdup(gtk_entry_get_text(ui->user_entry));
   ui->api->password = g_strdup(gtk_entry_get_text(ui->pwd_entry));
@@ -777,9 +779,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     goto cleanup;
   }
 
-#ifdef _OPENMP
-#pragma omp critical
-#endif
+  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
     gboolean status = TRUE;
     dt_storage_piwigo_params_t *p = (dt_storage_piwigo_params_t *)sdata;
@@ -815,6 +815,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
       }
     }
   }
+  dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
 cleanup:
 
@@ -875,8 +876,13 @@ void *get_params(dt_imageio_module_storage_t *self)
   // fill d from controls in ui
   if(ui->api && ui->api->authenticated == TRUE)
   {
-    // We are authenticated and off to actually export images..
-    p->api = ui->api;
+    // create a new context for the import. set username/password to be able to connect.
+    p->api = _piwigo_ctx_init();
+    p->api->authenticated = FALSE;
+    p->api->username = g_strdup(ui->api->username);
+    p->api->password = g_strdup(ui->api->password);
+    _piwigo_api_authenticate(p->api);
+
     int index = dt_bauhaus_combobox_get(ui->album_list);
 
     p->album_id = 0;
@@ -972,6 +978,7 @@ void free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *pa
   {
     g_free(p->album);
     g_free(p->tags);
+    _piwigo_ctx_destroy(&p->api);
     free(p);
   }
 }
