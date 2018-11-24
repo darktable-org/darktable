@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-18 17:51+0100\n"
-"PO-Revision-Date: 2018-11-18 17:52+0100\n"
+"POT-Creation-Date: 2018-11-24 13:15+0100\n"
+"PO-Revision-Date: 2018-11-24 13:16+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1238,22 +1238,27 @@ msgstr "sRGB (web)"
 msgid "BRG (for testing)"
 msgstr "BRG (pour test)"
 
-#: ../src/common/cups_print.c:396
+#: ../src/common/cups_print.c:407
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
 msgstr "fichier « %s » à imprimer non trouvé pour l'image %d sur « %s »"
 
-#: ../src/common/cups_print.c:415
+#: ../src/common/cups_print.c:426
 msgid "failed to create temporary file for printing options"
 msgstr ""
 "échec de la création du fichier temporaire pour les options d'impression"
 
-#: ../src/common/cups_print.c:545
+#: ../src/common/cups_print.c:494
+#, c-format
+msgid "printing on `%s' cancelled"
+msgstr "impression sur « %s » annulée"
+
+#: ../src/common/cups_print.c:557
 #, c-format
 msgid "error while printing `%s' on `%s'"
 msgstr "erreur pendant l'impression de l'image « %s » sur « %s »"
 
-#: ../src/common/cups_print.c:547
+#: ../src/common/cups_print.c:559
 #, c-format
 msgid "printing `%s' on `%s'"
 msgstr "impression de l'image « %s » sur « %s »"
@@ -1417,7 +1422,7 @@ msgstr ""
 #: ../src/common/history.c:1157 ../src/common/history.c:1160
 #: ../src/common/history.c:1176 ../src/common/styles.c:728
 #: ../src/common/styles.c:732 ../src/develop/blend_gui.c:2073
-#: ../src/develop/develop.c:1386 ../src/iop/ashift.c:4592
+#: ../src/develop/develop.c:1386 ../src/iop/ashift.c:4707
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "activé(e)"
@@ -1427,7 +1432,7 @@ msgstr "activé(e)"
 #: ../src/common/styles.c:732 ../src/develop/blend_gui.c:1845
 #: ../src/develop/blend_gui.c:2070 ../src/develop/develop.c:1386
 #: ../src/imageio/format/exr.cc:360 ../src/imageio/format/j2k.c:663
-#: ../src/iop/ashift.c:4591 ../src/iop/ashift.c:4597 ../src/iop/colorin.c:1866
+#: ../src/iop/ashift.c:4706 ../src/iop/ashift.c:4712 ../src/iop/colorin.c:1866
 #: ../src/iop/demosaic.c:5066 ../src/iop/vignette.c:1143
 #: ../src/libs/history.c:164 ../src/libs/live_view.c:436
 msgid "off"
@@ -3417,7 +3422,7 @@ msgid "golden spiral"
 msgstr "spirale d'or"
 
 #: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:678
-#: ../src/iop/denoiseprofile.c:2644 ../src/iop/lens.c:2093
+#: ../src/iop/denoiseprofile.c:2640 ../src/iop/lens.c:2093
 #: ../src/iop/rawdenoise.c:953 ../src/libs/tools/filter.c:117
 msgid "all"
 msgstr "tout"
@@ -3570,7 +3575,7 @@ msgstr "ouverture"
 
 #. focal length
 #: ../src/gui/preferences.c:444 ../src/gui/preferences.c:1306
-#: ../src/gui/presets.c:482 ../src/iop/ashift.c:4609 ../src/libs/camera.c:589
+#: ../src/gui/presets.c:482 ../src/iop/ashift.c:4724 ../src/libs/camera.c:589
 #: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:111
 msgid "focal length"
 msgstr "focale"
@@ -4571,155 +4576,155 @@ msgstr[1] "%d/%d exportées vers l'album google+"
 msgid "perspective correction"
 msgstr "correction de perspective"
 
-#: ../src/iop/ashift.c:513 ../src/iop/watermark.c:258
+#: ../src/iop/ashift.c:514 ../src/iop/watermark.c:258
 msgctxt "accel"
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/ashift.c:514
+#: ../src/iop/ashift.c:515
 msgctxt "accel"
 msgid "lens shift (v)"
 msgstr "correction d'objectif (v)"
 
-#: ../src/iop/ashift.c:515
+#: ../src/iop/ashift.c:516
 msgctxt "accel"
 msgid "lens shift (h)"
 msgstr "correction d'objectif (h)"
 
-#: ../src/iop/ashift.c:516
+#: ../src/iop/ashift.c:517
 msgctxt "accel"
 msgid "shear"
 msgstr "cisaillement"
 
-#: ../src/iop/ashift.c:2522
+#: ../src/iop/ashift.c:2506
 msgid "automatic cropping failed"
 msgstr "recadrage automatique impossible"
 
-#: ../src/iop/ashift.c:2542
+#: ../src/iop/ashift.c:2650
 msgid "data pending - please repeat"
 msgstr "données en attente, merci de recommencer"
 
-#: ../src/iop/ashift.c:2548
+#: ../src/iop/ashift.c:2656
 msgid "could not detect structural data in image"
 msgstr "impossible de détecter les structures dans l'image"
 
-#: ../src/iop/ashift.c:2559
+#: ../src/iop/ashift.c:2667
 msgid "could not run outlier removal"
 msgstr "impossible de supprimer les lignes de contrôle"
 
-#: ../src/iop/ashift.c:2613
+#: ../src/iop/ashift.c:2721
 msgid "not enough structure for automatic correction"
 msgstr "pas assez de structure pour corriger automatiquement"
 
-#: ../src/iop/ashift.c:2618
+#: ../src/iop/ashift.c:2726
 msgid "automatic correction failed, please correct manually"
 msgstr "correction automatique impossible, merci de corriger manuellement"
 
-#: ../src/iop/ashift.c:4364 ../src/iop/ashift.c:4365 ../src/iop/ashift.c:4466
-#: ../src/iop/ashift.c:4467
+#: ../src/iop/ashift.c:4475 ../src/iop/ashift.c:4476 ../src/iop/ashift.c:4579
+#: ../src/iop/ashift.c:4580
 #, c-format
 msgid "lens shift (%s)"
 msgstr "correction d'objectif (%s)"
 
-#: ../src/iop/ashift.c:4364 ../src/iop/ashift.c:4365 ../src/iop/ashift.c:4466
-#: ../src/iop/ashift.c:4467 ../src/iop/clipping.c:1578
+#: ../src/iop/ashift.c:4475 ../src/iop/ashift.c:4476 ../src/iop/ashift.c:4579
+#: ../src/iop/ashift.c:4580 ../src/iop/clipping.c:1578
 #: ../src/iop/clipping.c:1868 ../src/iop/clipping.c:1887
 msgid "horizontal"
 msgstr "horizontale"
 
-#: ../src/iop/ashift.c:4364 ../src/iop/ashift.c:4365 ../src/iop/ashift.c:4466
-#: ../src/iop/ashift.c:4467 ../src/iop/clipping.c:1577
+#: ../src/iop/ashift.c:4475 ../src/iop/ashift.c:4476 ../src/iop/ashift.c:4579
+#: ../src/iop/ashift.c:4580 ../src/iop/clipping.c:1577
 #: ../src/iop/clipping.c:1869 ../src/iop/clipping.c:1886
 msgid "vertical"
 msgstr "verticale"
 
-#: ../src/iop/ashift.c:4569 ../src/iop/graduatednd.c:1157
+#: ../src/iop/ashift.c:4684 ../src/iop/graduatednd.c:1157
 #: ../src/iop/watermark.c:1394
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/ashift.c:4575
+#: ../src/iop/ashift.c:4690
 msgid "lens shift (vertical)"
 msgstr "correction d'objectif (verticale)"
 
-#: ../src/iop/ashift.c:4580
+#: ../src/iop/ashift.c:4695
 msgid "lens shift (horizontal)"
 msgstr "correction d'objectif (horizontale)"
 
-#: ../src/iop/ashift.c:4585
+#: ../src/iop/ashift.c:4700
 msgid "shear"
 msgstr "cisaillement"
 
-#: ../src/iop/ashift.c:4590 ../src/iop/clipping.c:2018
+#: ../src/iop/ashift.c:4705 ../src/iop/clipping.c:2018
 #: ../src/libs/live_view.c:343
 msgid "guides"
 msgstr "guides"
 
-#: ../src/iop/ashift.c:4596 ../src/iop/clipping.c:1894
+#: ../src/iop/ashift.c:4711 ../src/iop/clipping.c:1894
 msgid "automatic cropping"
 msgstr "recadrage"
 
-#: ../src/iop/ashift.c:4598
+#: ../src/iop/ashift.c:4713
 msgid "largest area"
 msgstr "plus grand coté"
 
-#: ../src/iop/ashift.c:4599
+#: ../src/iop/ashift.c:4714
 msgid "original format"
 msgstr "format d'origine"
 
-#: ../src/iop/ashift.c:4603
+#: ../src/iop/ashift.c:4718
 msgid "lens model"
 msgstr "modèle d'objectif"
 
-#: ../src/iop/ashift.c:4604
+#: ../src/iop/ashift.c:4719
 msgid "generic"
 msgstr "générique"
 
-#: ../src/iop/ashift.c:4605
+#: ../src/iop/ashift.c:4720
 msgid "specific"
 msgstr "spécifique"
 
-#: ../src/iop/ashift.c:4618
+#: ../src/iop/ashift.c:4733
 msgid "crop factor"
 msgstr "facteur de cadrage"
 
-#: ../src/iop/ashift.c:4623
+#: ../src/iop/ashift.c:4738
 msgid "lens dependence"
 msgstr "dépendance à l'objectif"
 
-#: ../src/iop/ashift.c:4633
+#: ../src/iop/ashift.c:4748
 msgid "aspect adjust"
 msgstr "ajustement aspect"
 
-#: ../src/iop/ashift.c:4643
+#: ../src/iop/ashift.c:4758
 msgid "automatic fit"
 msgstr "correction automatique"
 
-#: ../src/iop/ashift.c:4662
+#: ../src/iop/ashift.c:4777
 msgid "get structure"
 msgstr "récupère les structures"
 
-#: ../src/iop/ashift.c:4707
+#: ../src/iop/ashift.c:4822
 msgid "rotate image"
 msgstr "rotation de l'image"
 
-#: ../src/iop/ashift.c:4708 ../src/iop/ashift.c:4709
+#: ../src/iop/ashift.c:4823 ../src/iop/ashift.c:4824
 msgid "apply lens shift correction in one direction"
 msgstr "applique la correction d'objectif dans une direction"
 
-#: ../src/iop/ashift.c:4710
+#: ../src/iop/ashift.c:4825
 msgid "shear the image along one diagonal"
 msgstr "cisaillement de l'image selon une diagonale"
 
-#: ../src/iop/ashift.c:4711
+#: ../src/iop/ashift.c:4826
 msgid "display guide lines overlay"
 msgstr "superpose des lignes guides"
 
-#: ../src/iop/ashift.c:4712 ../src/iop/clipping.c:1897
+#: ../src/iop/ashift.c:4827 ../src/iop/clipping.c:1897
 msgid "automatically crop to avoid black edges"
 msgstr "recadre automatique pour éviter les bords noirs"
 
-#: ../src/iop/ashift.c:4713
+#: ../src/iop/ashift.c:4828
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -4727,13 +4732,13 @@ msgstr ""
 "modèle d'objectif pour la correction de perspective: générique ou fonction "
 "de la longueur focale"
 
-#: ../src/iop/ashift.c:4715
+#: ../src/iop/ashift.c:4830
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "longueur focale de l'objectif, valeur par défaut depuis les exif si "
 "disponible"
 
-#: ../src/iop/ashift.c:4717
+#: ../src/iop/ashift.c:4832
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -4741,7 +4746,7 @@ msgstr ""
 "facteur de cadrage du capteur de l'appareil, valeur par défaut depuis les "
 "exif si disponible, positionnement manuel souvent nécessaire"
 
-#: ../src/iop/ashift.c:4720
+#: ../src/iop/ashift.c:4835
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -4749,13 +4754,13 @@ msgstr ""
 "le niveau de correction dépendant de l'objectif, positionner au maximum pour "
 "une dépendance totale, positionner à zéro pour un modèle générique"
 
-#: ../src/iop/ashift.c:4722
+#: ../src/iop/ashift.c:4837
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "ajuste les dimensions de l'image en redimensionnant horizontalement ou "
 "verticalement"
 
-#: ../src/iop/ashift.c:4723
+#: ../src/iop/ashift.c:4838
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4765,7 +4770,7 @@ msgstr ""
 "ctrl-clic pour la correction de rotation seulement\n"
 "shift-clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:4726
+#: ../src/iop/ashift.c:4841
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4775,7 +4780,7 @@ msgstr ""
 "ctrl-clic pour la correction de rotation seulement\n"
 "shift-clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:4729
+#: ../src/iop/ashift.c:4844
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -4791,7 +4796,7 @@ msgstr ""
 "ctrl-shift-clic pour uniquement la correction de rotation et d'alignement "
 "d'objectif"
 
-#: ../src/iop/ashift.c:4735
+#: ../src/iop/ashift.c:4850
 msgid ""
 "analyse line structure in image\n"
 "ctrl-click for an additional edge enhancement\n"
@@ -4803,11 +4808,11 @@ msgstr ""
 "shift-clic pour une amélioration des détails accrue\n"
 "ctrl-shift-clic pour une combinaison des deux méthodes"
 
-#: ../src/iop/ashift.c:4739
+#: ../src/iop/ashift.c:4854
 msgid "remove line structure information"
 msgstr "supprime la visualisation des lignes de structure"
 
-#: ../src/iop/ashift.c:4740
+#: ../src/iop/ashift.c:4855
 msgid "toggle visibility of structure lines"
 msgstr "active/désactive l'affichage des lignes de structure"
 
@@ -4850,12 +4855,12 @@ msgstr "lumière d'arrière-plan"
 msgid "clarity"
 msgstr "clarté"
 
-#: ../src/iop/atrous.c:1422 ../src/iop/denoiseprofile.c:2461
+#: ../src/iop/atrous.c:1422 ../src/iop/denoiseprofile.c:2457
 #: ../src/iop/rawdenoise.c:782
 msgid "coarse"
 msgstr "global"
 
-#: ../src/iop/atrous.c:1429 ../src/iop/denoiseprofile.c:2469
+#: ../src/iop/atrous.c:1429 ../src/iop/denoiseprofile.c:2465
 #: ../src/iop/rawdenoise.c:790
 msgid "fine"
 msgstr "détail"
@@ -4865,11 +4870,11 @@ msgid "contrasty"
 msgstr "contrasté"
 
 #: ../src/iop/atrous.c:1442 ../src/iop/atrous.c:1446
-#: ../src/iop/denoiseprofile.c:2478 ../src/iop/rawdenoise.c:799
+#: ../src/iop/denoiseprofile.c:2474 ../src/iop/rawdenoise.c:799
 msgid "smooth"
 msgstr "flou"
 
-#: ../src/iop/atrous.c:1447 ../src/iop/denoiseprofile.c:2483
+#: ../src/iop/atrous.c:1447 ../src/iop/denoiseprofile.c:2479
 #: ../src/iop/rawdenoise.c:804
 msgid "noisy"
 msgstr "bruité"
@@ -5087,7 +5092,7 @@ msgid "local laplacian: inconsistent output"
 msgstr "laplacien local: résultat incohérent"
 
 #: ../src/iop/bilat.c:522 ../src/iop/colorbalance.c:2356
-#: ../src/iop/denoiseprofile.c:2696 ../src/iop/exposure.c:853
+#: ../src/iop/denoiseprofile.c:2692 ../src/iop/exposure.c:853
 #: ../src/iop/lens.c:2236 ../src/iop/levels.c:589
 #: ../src/iop/profile_gamma.c:850 ../src/libs/copy_history.c:316
 #: ../src/libs/export.c:648 ../src/libs/print_settings.c:1511
@@ -5258,7 +5263,7 @@ msgstr "seuil"
 msgid "the threshold of light"
 msgstr "seuil de lumière"
 
-#: ../src/iop/bloom.c:527 ../src/iop/denoiseprofile.c:2701
+#: ../src/iop/bloom.c:527 ../src/iop/denoiseprofile.c:2697
 #: ../src/iop/grain.c:630 ../src/iop/hazeremoval.c:189
 #: ../src/iop/hotpixels.c:463 ../src/iop/nlmeans.c:852 ../src/iop/velvia.c:381
 msgid "strength"
@@ -6146,7 +6151,7 @@ msgstr "impossible de générer le profil d'entrée"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "profil d'entrée non supporté, remplacé par linéaire RGB Rec709 !"
 
-#: ../src/iop/colorin.c:1845 ../src/iop/denoiseprofile.c:2695
+#: ../src/iop/colorin.c:1845 ../src/iop/denoiseprofile.c:2691
 #: ../src/libs/export.c:607 ../src/libs/print_settings.c:1184
 #: ../src/libs/print_settings.c:1404
 msgid "profile"
@@ -6659,62 +6664,62 @@ msgstr ""
 "dématriçage\n"
 "uniquement pour les images raw"
 
-#: ../src/iop/denoiseprofile.c:239
+#: ../src/iop/denoiseprofile.c:238
 msgid "denoise (profiled)"
 msgstr "réduction du bruit (profil)"
 
 #. these blobs were exported as dtstyle and copied from there:
-#: ../src/iop/denoiseprofile.c:294
+#: ../src/iop/denoiseprofile.c:293
 msgid "chroma (use on 1st instance)"
 msgstr "chroma (utiliser sur 1ère instance)"
 
-#: ../src/iop/denoiseprofile.c:297
+#: ../src/iop/denoiseprofile.c:296
 msgid "luma (use on 2nd instance)"
 msgstr "luma (utiliser sur la 2nd instance)"
 
-#: ../src/iop/denoiseprofile.c:2020
+#: ../src/iop/denoiseprofile.c:2016
 #, c-format
 msgid "found match for ISO %d"
 msgstr "profil pour ISO %d trouvé"
 
-#: ../src/iop/denoiseprofile.c:2028
+#: ../src/iop/denoiseprofile.c:2024
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:2646 ../src/iop/rawdenoise.c:955
+#: ../src/iop/denoiseprofile.c:2642 ../src/iop/rawdenoise.c:955
 msgid "R"
 msgstr "R"
 
-#: ../src/iop/denoiseprofile.c:2648 ../src/iop/rawdenoise.c:957
+#: ../src/iop/denoiseprofile.c:2644 ../src/iop/rawdenoise.c:957
 msgid "G"
 msgstr "G"
 
-#: ../src/iop/denoiseprofile.c:2650 ../src/iop/rawdenoise.c:959
+#: ../src/iop/denoiseprofile.c:2646 ../src/iop/rawdenoise.c:959
 msgid "B"
 msgstr "B"
 
-#: ../src/iop/denoiseprofile.c:2697 ../src/iop/nlmeans.c:850
+#: ../src/iop/denoiseprofile.c:2693 ../src/iop/nlmeans.c:850
 msgid "patch size"
 msgstr "taille"
 
-#: ../src/iop/denoiseprofile.c:2699
+#: ../src/iop/denoiseprofile.c:2695
 msgid "search radius"
 msgstr "rayon"
 
-#: ../src/iop/denoiseprofile.c:2702
+#: ../src/iop/denoiseprofile.c:2698
 msgid "non-local means"
 msgstr "moyenne non-locales"
 
-#: ../src/iop/denoiseprofile.c:2703
+#: ../src/iop/denoiseprofile.c:2699
 msgid "wavelets"
 msgstr "ondelettes"
 
-#: ../src/iop/denoiseprofile.c:2704
+#: ../src/iop/denoiseprofile.c:2700
 msgid "profile used for variance stabilization"
 msgstr "profil utilisé pour la stabilisation de variance"
 
-#: ../src/iop/denoiseprofile.c:2705
+#: ../src/iop/denoiseprofile.c:2701
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -6723,11 +6728,11 @@ msgstr ""
 "fonctionne mieux pour le mode de fusion 'luminosité'. 'ondelettes' "
 "fonctionnent pour le mode de fusion 'couleur'"
 
-#: ../src/iop/denoiseprofile.c:2708
+#: ../src/iop/denoiseprofile.c:2704
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr "rayon des éléments à identifier. augmenter pour plus de netteté."
 
-#: ../src/iop/denoiseprofile.c:2709
+#: ../src/iop/denoiseprofile.c:2705
 msgid ""
 "emergency use only: radius of the neighbourhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
@@ -6737,7 +6742,7 @@ msgstr ""
 "meilleure suppression du bruit au détriment de la performance qui peut très "
 "vite devenir très pénalisante."
 
-#: ../src/iop/denoiseprofile.c:2710
+#: ../src/iop/denoiseprofile.c:2706
 msgid "finetune denoising strength"
 msgstr "réglage fin de la force de réduction"
 
