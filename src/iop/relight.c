@@ -83,11 +83,10 @@ typedef struct dt_iop_relight_global_data_t
   int kernel_relight;
 } dt_iop_relight_global_data_t;
 
-#define NAME "fill light"
 
 const char *name()
 {
-  return _(NAME);
+  return _("fill light");
 }
 
 int flags()
@@ -97,7 +96,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
+  return dt_iop_get_group("fill light", IOP_GROUP_TONE);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -284,6 +283,13 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tbutton1), 0);
+}
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
@@ -293,6 +299,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale1, p->ev);
   dt_bauhaus_slider_set(g->scale2, p->width);
   dtgtk_gradient_slider_set_value(g->gslider1, p->center);
+
+  if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tbutton1), 0);
 }
 
 void init(dt_iop_module_t *module)
@@ -300,7 +309,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_relight_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_relight_params_t));
   module->default_enabled = 0;
-  module->priority = 705; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 714; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_relight_params_t);
   module->gui_data = NULL;
   dt_iop_relight_params_t tmp = (dt_iop_relight_params_t){ 0.33, 0, 4 };

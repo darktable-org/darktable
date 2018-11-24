@@ -113,6 +113,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
   dev->iop_instance = 0;
   dev->iop = NULL;
+  dev->alliop = NULL;
 
   dev->proxy.exposure = NULL;
 
@@ -154,6 +155,12 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dt_iop_cleanup_module((dt_iop_module_t *)dev->iop->data);
     free(dev->iop->data);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
+  }
+  while(dev->alliop)
+  {
+    dt_iop_cleanup_module((dt_iop_module_t *)dev->alliop->data);
+    free(dev->alliop->data);
+    dev->alliop = g_list_delete_link(dev->alliop, dev->alliop);
   }
   dt_pthread_mutex_destroy(&dev->history_mutex);
   free(dev->histogram);
@@ -522,20 +529,20 @@ void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
 }
 
 // helper used to synch a single history item with db
-int dt_dev_write_history_item(const dt_image_t *image, dt_dev_history_item_t *h, int32_t num)
+int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t num)
 {
-  if(!image) return 1;
+//  if(!image) return 1;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT num FROM main.history WHERE imgid = ?1 AND num = ?2", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, image->id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
   if(sqlite3_step(stmt) != SQLITE_ROW)
   {
     sqlite3_finalize(stmt);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT INTO main.history (imgid, num) VALUES (?1, ?2)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, image->id);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
     sqlite3_step(stmt);
   }
@@ -551,7 +558,7 @@ int dt_dev_write_history_item(const dt_image_t *image, dt_dev_history_item_t *h,
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, h->module->version());
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, h->enabled);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, image->id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, num);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, h->blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, dt_develop_blend_version());
@@ -563,12 +570,8 @@ int dt_dev_write_history_item(const dt_image_t *image, dt_dev_history_item_t *h,
   return 0;
 }
 
-void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
+void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, gboolean no_image)
 {
-  if(!darktable.gui || darktable.gui->reset) return;
-  dt_pthread_mutex_lock(&dev->history_mutex);
-  if(dev->gui_attached)
-  {
     GList *history = g_list_nth(dev->history, dev->history_end);
     while(history)
     {
@@ -600,13 +603,17 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       if(enable)
       {
         module->enabled = TRUE;
-        if(module->off)
+        if(!no_image)
         {
-          darktable.gui->reset = 1;
-          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
-          darktable.gui->reset = 0;
+          if(module->off)
+          {
+            darktable.gui->reset = 1;
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+            darktable.gui->reset = 0;
+          }
         }
       }
+      snprintf(hist->op_name, sizeof(hist->op_name), "%s", module->op);
       hist->focus_hash = dev->focus_hash;
       hist->enabled = module->enabled;
       hist->module = module;
@@ -619,8 +626,11 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
 
       dev->history = g_list_append(dev->history, hist);
-      dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
-      dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
+      if(!no_image)
+      {
+        dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+        dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
+      }
     }
     else
     {
@@ -636,19 +646,35 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       if(!hist->enabled && !module->enabled)
       {
         module->enabled = 1;
-        if(module->off)
+        if(!no_image)
         {
-          darktable.gui->reset = 1;
-          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
-          darktable.gui->reset = 0;
+          if(module->off)
+          {
+            darktable.gui->reset = 1;
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+            darktable.gui->reset = 0;
+          }
         }
       }
       hist->multi_priority = module->multi_priority;
       memcpy(hist->multi_name, module->multi_name, sizeof(module->multi_name));
       hist->enabled = module->enabled;
-      dev->pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
-      dev->preview_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
+      if(!no_image)
+      {
+        dev->pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
+        dev->preview_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
+      }
     }
+}
+
+void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
+{
+  if(!darktable.gui || darktable.gui->reset) return;
+  dt_pthread_mutex_lock(&dev->history_mutex);
+
+  if(dev->gui_attached)
+  {
+    dt_dev_add_history_item_ext(dev, module, enable, FALSE);
   }
 #if 0
   {
@@ -777,11 +803,9 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   dt_dev_pop_history_items(dev, dev->history_end);
 }
 
-void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
+void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
 {
   // printf("dev popping all history items >= %d\n", cnt);
-  dt_pthread_mutex_lock(&dev->history_mutex);
-  darktable.gui->reset = 1;
   dev->history_end = cnt;
   // reset gui params for all modules
   GList *modules = dev->iop;
@@ -791,6 +815,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
     memcpy(module->params, module->default_params, module->params_size);
     memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
     module->enabled = module->default_enabled;
+    module->multi_name[0] = '\0';
     modules = g_list_next(modules);
   }
   // go through history and set gui params
@@ -806,8 +831,17 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 
     history = g_list_next(history);
   }
+}
+
+void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
+{
+  dt_pthread_mutex_lock(&dev->history_mutex);
+  darktable.gui->reset = 1;
+
+  dt_dev_pop_history_items_ext(dev, cnt);
+
   // update all gui modules
-  modules = dev->iop;
+  GList *modules = dev->iop;
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -822,21 +856,21 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   dt_control_queue_redraw_center();
 }
 
-void dt_dev_write_history(dt_develop_t *dev)
+void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
 {
   sqlite3_stmt *stmt;
 
   gboolean changed = FALSE;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
                               &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   GList *history = dev->history;
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    (void)dt_dev_write_history_item(&dev->image_storage, hist, i);
+    (void)dt_dev_write_history_item(imgid, hist, i);
     history = g_list_next(history);
     changed = TRUE;
   }
@@ -845,7 +879,7 @@ void dt_dev_write_history(dt_develop_t *dev)
                               "UPDATE main.images SET history_end = ?1 WHERE id = ?2", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->history_end);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, dev->image_storage.id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -853,9 +887,14 @@ void dt_dev_write_history(dt_develop_t *dev)
   guint tagid = 0;
   dt_tag_new("darktable|changed", &tagid);
   if(changed)
-    dt_tag_attach(tagid, dev->image_storage.id);
+    dt_tag_attach(tagid, imgid);
   else
-    dt_tag_detach(tagid, dev->image_storage.id);
+    dt_tag_detach(tagid, imgid);
+}
+
+void dt_dev_write_history(dt_develop_t *dev)
+{
+  dt_dev_write_history_ext(dev, dev->image_storage.id);
 }
 
 static void auto_apply_presets(dt_develop_t *dev)
@@ -1009,13 +1048,16 @@ static void auto_apply_presets(dt_develop_t *dev)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_dev_read_history(dt_develop_t *dev)
+void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_image)
 {
-  if(dev->image_storage.id <= 0) return;
-  if(!dev->iop) return;
+  if(!no_image)
+  {
+    if(imgid <= 0) return;
+    if(!dev->iop) return;
 
-  // maybe prepend auto-presets to history before loading it:
-  auto_apply_presets(dev);
+    // maybe prepend auto-presets to history before loading it:
+    auto_apply_presets(dev);
+  }
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid, num, module, operation, "
@@ -1023,7 +1065,7 @@ void dt_dev_read_history(dt_develop_t *dev)
                                                              "blendop_version, multi_priority, multi_name "
                                                              "FROM main.history WHERE imgid = ?1 ORDER BY num",
                               -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   dev->history_end = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1104,6 +1146,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
     hist->params = malloc(hist->module->params_size);
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+    snprintf(hist->op_name, sizeof(hist->op_name), "%s", hist->module->op);
     snprintf(hist->multi_name, sizeof(hist->multi_name), "%s", multi_name);
     hist->multi_priority = multi_priority;
 
@@ -1190,14 +1233,14 @@ void dt_dev_read_history(dt_develop_t *dev)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT history_end FROM main.images WHERE id = ?1",
                               -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW) // seriously, this should never fail
   {
     if(sqlite3_column_type(stmt, 0) != SQLITE_NULL)
       dev->history_end = sqlite3_column_int(stmt, 0);
   }
 
-  if(dev->gui_attached)
+  if(dev->gui_attached && !no_image)
   {
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
@@ -1209,6 +1252,10 @@ void dt_dev_read_history(dt_develop_t *dev)
   sqlite3_finalize(stmt);
 }
 
+void dt_dev_read_history(dt_develop_t *dev)
+{
+  dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE);
+}
 
 void dt_dev_reprocess_all(dt_develop_t *dev)
 {
@@ -1580,8 +1627,6 @@ void dt_dev_invalidate_history_module(GList *list, dt_iop_module_t *module)
     if (hitem->module == module)
     {
       hitem->module = NULL;
-      // set the multi_name to the module op name to be able to recreate the multi-instance later
-      strncpy(hitem->multi_name, module->op, sizeof(hitem->multi_name));
     }
     list = list->next;
   }
@@ -1631,8 +1676,8 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   if(dev->gui_attached && del)
   {
     /* signal that history has changed */
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE, module);
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE, module);
     /* redraw */
     dt_control_queue_redraw_center();
   }
@@ -1712,7 +1757,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, i
                                   float *points, size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  GList *modules = g_list_first(dev->iop);
+  GList *modules = g_list_first(pipe->iop);
   GList *pieces = g_list_first(pipe->nodes);
   while(modules)
   {
@@ -1739,7 +1784,7 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
                                       float *points, size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  GList *modules = g_list_last(dev->iop);
+  GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
   while(modules)
   {
@@ -1787,7 +1832,7 @@ uint64_t dt_dev_hash_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, in
 {
   uint64_t hash = 5381;
   dt_pthread_mutex_lock(&dev->history_mutex);
-  GList *modules = g_list_last(dev->iop);
+  GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
   while(modules)
   {
@@ -1881,7 +1926,7 @@ uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *
 {
   uint64_t hash = 5381;
   dt_pthread_mutex_lock(&dev->history_mutex);
-  GList *modules = g_list_last(dev->iop);
+  GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
   while(modules)
   {

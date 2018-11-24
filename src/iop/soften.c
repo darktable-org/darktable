@@ -80,11 +80,10 @@ typedef struct dt_iop_soften_global_data_t
   int kernel_soften_mix;
 } dt_iop_soften_global_data_t;
 
-#define NAME "soften"
 
 const char *name()
 {
-  return _(NAME);
+  return _("soften");
 }
 
 int flags()
@@ -94,7 +93,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("soften", IOP_GROUP_EFFECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -681,7 +680,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_soften_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_soften_params_t));
   module->default_enabled = 0;
-  module->priority = 838; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 842; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_soften_params_t);
   module->gui_data = NULL;
   dt_iop_soften_params_t tmp = (dt_iop_soften_params_t){ 50, 100.0, 0.33, 50 };

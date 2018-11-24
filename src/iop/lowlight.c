@@ -79,11 +79,10 @@ typedef struct dt_iop_lowlight_global_data_t
   int kernel_lowlight;
 } dt_iop_lowlight_global_data_t;
 
-#define NAME "lowlight vision"
 
 const char *name()
 {
-  return _(NAME);
+  return _("lowlight vision");
 }
 
 int flags()
@@ -93,7 +92,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("lowlight vision", IOP_GROUP_EFFECT);
 }
 
 
@@ -290,7 +289,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_lowlight_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_lowlight_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 617; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 614; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_lowlight_params_t);
   module->gui_data = NULL;
   dt_iop_lowlight_params_t tmp;

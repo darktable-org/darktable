@@ -78,11 +78,10 @@ typedef struct dt_iop_colorize_global_data_t
 } dt_iop_colorize_global_data_t;
 
 
-#define NAME "colorize"
 
 const char *name()
 {
-  return _(NAME);
+  return _("colorize");
 }
 
 int flags()
@@ -92,7 +91,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("colorize", IOP_GROUP_EFFECT);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -401,7 +400,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colorize_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorize_params_t));
   module->default_enabled = 0;
-  module->priority = 470; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 471; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorize_params_t);
   module->gui_data = NULL;
   dt_iop_colorize_params_t tmp = (dt_iop_colorize_params_t){ 0, 0.5, 50, 50, module->version() };

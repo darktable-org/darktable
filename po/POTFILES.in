@@ -101,6 +101,7 @@ src/iop/denoiseprofile.c
 src/iop/dither.c
 src/iop/equalizer.c
 src/iop/exposure.c
+src/iop/filmic.c
 src/iop/finalscale.c
 src/iop/flip.c
 src/iop/gamma.c
@@ -147,6 +148,7 @@ src/libs/collect.c
 src/libs/collect.h
 src/libs/colorpicker.c
 src/libs/copy_history.c
+src/libs/duplicate.c
 src/libs/export.c
 src/libs/geotagging.c
 src/libs/histogram.c

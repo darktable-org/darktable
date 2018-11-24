@@ -60,16 +60,15 @@ typedef struct dt_iop_rlce_data_t
   double slope;
 } dt_iop_rlce_data_t;
 
-#define NAME "local contrast"
 
 const char *name()
 {
-  return _(NAME);
+  return _("local contrast");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("local contrast", IOP_GROUP_EFFECT);
 }
 
 int flags()
@@ -295,7 +294,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_rlce_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_rlce_params_t));
   module->default_enabled = 0;
-  module->priority = 897; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 899; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rlce_params_t);
   module->gui_data = NULL;
   dt_iop_rlce_params_t tmp = (dt_iop_rlce_params_t){ 64, 1.25 };

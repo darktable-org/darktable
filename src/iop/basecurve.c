@@ -288,16 +288,15 @@ typedef struct dt_iop_basecurve_global_data_t
 } dt_iop_basecurve_global_data_t;
 
 
-#define NAME "base curve"
 
 const char *name()
 {
-  return _(NAME);
+  return _("base curve");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("base curve", IOP_GROUP_BASIC);
 }
 
 
@@ -1248,7 +1247,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_basecurve_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_basecurve_params_t));
   module->default_enabled = 0;
-  module->priority = 294; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 314; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_basecurve_params_t);
   module->gui_data = NULL;
   dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t){

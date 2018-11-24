@@ -229,11 +229,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-#define NAME "watermark"
 
 const char *name()
 {
-  return _(NAME);
+  return _("watermark");
 }
 
 int flags()
@@ -243,7 +242,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("watermark", IOP_GROUP_EFFECT);
 }
 
 int operation_tags()
@@ -1289,7 +1288,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->default_params = calloc(1, sizeof(dt_iop_watermark_params_t));
   module->default_enabled = 0;
-  module->priority = 970; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 971; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->gui_data = NULL;
   dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t){

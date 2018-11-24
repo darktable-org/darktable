@@ -291,16 +291,15 @@ static void adjust_aabb(const float *p, float *aabb)
   aabb[3] = fmaxf(aabb[3], p[1]);
 }
 
-#define NAME "crop and rotate"
 
 const char *name()
 {
-  return _(NAME);
+  return _("crop and rotate");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("crop and rotate", IOP_GROUP_BASIC);
 }
 
 int flags()
@@ -1692,7 +1691,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
-  module->priority = 455; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 285; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)

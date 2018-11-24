@@ -67,6 +67,10 @@ static dt_develop_blend_params_t _default_blendop_params
         0,
         0,
         0.0f,
+        DEVELOP_MASK_GUIDE_IN,
+        0.0f,
+        0.0f,
+        0.0f,
         { 0, 0, 0, 0 },
         { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
@@ -546,13 +550,10 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   }
 
   // we remove all references in the history stack and dev->iop
+  // this will inform that a module has been removed from history
+  // we do it here so we have the multi_priorities to reconstruct
+  // de deleted module if the user undo it
   dt_dev_module_remove(dev, module);
-
-  // we recreate the pipe
-  dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
-  dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
-  dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
-  dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
 
   // if module was priority 0, then we set next to priority 0
   if(is_zero)
@@ -570,12 +571,18 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
     }
   }
 
+  // we save the current state of history (with the new multi_priorities)
+  if(dev->gui_attached)
+  {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+  }
+
   // we cleanup the module
   dt_accel_disconnect_list(module->accel_closures);
   dt_accel_cleanup_locals_iop(module);
   module->accel_closures = NULL;
-  dt_iop_cleanup_module(module);
-  free(module);
+  // don't delete the module, a pipe may still need it
+  dev->alliop = g_list_append(dev->alliop, module);
   module = NULL;
 
   // we update show params for multi-instances for each other instances
@@ -660,6 +667,12 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
   gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
                         module->expander, g_value_get_int(&gv) + 1);
 
+  /* signal that history has changed */
+  if(next->dev->gui_attached)
+  {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+  }
+
   // we rebuild the pipe
   next->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
   next->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
@@ -737,6 +750,12 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
   gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
                         module->expander, g_value_get_int(&gv) - 1);
 
+  /* signal that history has changed */
+  if(prev->dev->gui_attached)
+  {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+  }
+
   // we rebuild the pipe
   prev->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
   prev->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
@@ -750,14 +769,14 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
   dt_control_queue_redraw_center();
 }
 
-static void dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
+dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 {
   // make sure the duplicated module appears in the history
   dt_dev_add_history_item(base->dev, base, FALSE);
 
   // first we create the new module
   dt_iop_module_t *module = dt_dev_module_duplicate(base->dev, base, 0);
-  if(!module) return;
+  if(!module) return NULL;
 
   // we reflect the positions changes in the history stack too
   GList *history = g_list_first(module->dev->history);
@@ -857,6 +876,7 @@ static void dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
     /* redraw */
     dt_control_queue_redraw_center();
   }
+  return module;
 }
 
 static void dt_iop_gui_copy_callback(GtkButton *button, gpointer user_data)
@@ -1418,7 +1438,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, d
   return 0;
 }
 
-GList *dt_iop_load_modules(dt_develop_t *dev)
+GList *dt_iop_load_modules_ext(dt_develop_t *dev, gboolean no_image)
 {
   GList *res = NULL;
   dt_iop_module_t *module;
@@ -1437,7 +1457,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     res = g_list_insert_sorted(res, module, sort_plugins);
     module->data = module_so->data;
     module->so = module_so;
-    dt_iop_reload_defaults(module);
+    if(!no_image) dt_iop_reload_defaults(module);
     iop = g_list_next(iop);
   }
 
@@ -1450,6 +1470,11 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     it = g_list_next(it);
   }
   return res;
+}
+
+GList *dt_iop_load_modules(dt_develop_t *dev)
+{
+  return dt_iop_load_modules_ext(dev, FALSE);
 }
 
 void dt_iop_cleanup_module(dt_iop_module_t *module)
@@ -2006,7 +2031,10 @@ got_image:
   /* add preset button if module has implementation */
   hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   module->presets_button = GTK_WIDGET(hw[idx]);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets"));
+  if (module->flags() & IOP_FLAGS_ONE_INSTANCE)
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets"));
+  else
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets\nmiddle-click to apply on new instance"));
   g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(popup_callback), module);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 

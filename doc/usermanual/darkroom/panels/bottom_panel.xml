@@ -18,7 +18,7 @@
     activate a filmstrip for quick navigation within the current collection.
   </para>
 
-  <sect3 status="final">
+  <sect3 status="final" id="favorite_presets">
 
     <title>Quick access to favorite presets</title>
 
@@ -31,7 +31,7 @@
 
   </sect3>
 
-  <sect3 status="final">
+  <sect3 status="final" id="darkroom_bottom_panel_styles">
 
     <title>Quick access to styles</title>
 

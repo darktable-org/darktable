@@ -97,11 +97,10 @@ typedef struct dt_iop_global_tonemap_global_data_t
   int kernel_global_tonemap_filmic;
 } dt_iop_global_tonemap_global_data_t;
 
-#define NAME "global tonemap"
 
 const char *name()
 {
-  return _(NAME);
+  return _("global tonemap");
 }
 
 int flags()
@@ -111,7 +110,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
+  return dt_iop_get_group("global tonemap", IOP_GROUP_TONE);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -665,7 +664,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_global_tonemap_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_global_tonemap_params_t));
   module->default_enabled = 0;
-  module->priority = 544; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 542; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_global_tonemap_params_t);
   module->gui_data = NULL;
   dt_iop_global_tonemap_params_t tmp

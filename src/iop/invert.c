@@ -107,16 +107,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-#define NAME "invert"
 
 const char *name()
 {
-  return _(NAME);
+  return _("invert");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("invert", IOP_GROUP_BASIC);
 }
 
 int flags()
@@ -545,7 +544,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_invert_params_t);
   module->gui_data = NULL;
-  module->priority = 29; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 28; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -592,6 +591,13 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->picker), 0);
+}
+
 void gui_update(dt_iop_module_t *self)
 {
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
@@ -603,6 +609,9 @@ void gui_update(dt_iop_module_t *self)
     gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
     dtgtk_reset_label_set_text(g->label, _("color of film material"));
     gui_update_from_coeffs(self);
+
+    if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->picker), 0);
   }
   else
   {

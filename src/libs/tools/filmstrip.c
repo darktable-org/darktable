@@ -564,20 +564,7 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
           int offset = 0;
           if(mouse_over_id == strip->activated_image) offset = dt_collection_image_offset(mouse_over_id);
 
-          dt_image_t *image = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'w');
-          if(strip->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1))
-            image->flags &= ~0x7;
-          else if(strip->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6))
-            image->flags &= ~0x7;
-          else
-          {
-            image->flags &= ~0x7;
-            image->flags |= strip->image_over;
-          }
-          dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-
-
-          dt_collection_hint_message(darktable.collection); // More than this, we need to redraw all
+          dt_ratings_apply_to_image_or_group(mouse_over_id, strip->image_over);
 
           if(mouse_over_id == strip->activated_image)
             if(_lib_filmstrip_imgid_in_collection(darktable.collection, mouse_over_id) == 0)
@@ -943,7 +930,7 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
       int offset = 0;
       if(mouse_over_id == activated_image) offset = dt_collection_image_offset(mouse_over_id);
 
-      dt_ratings_apply_to_image(mouse_over_id, num);
+      dt_ratings_apply_to_image_or_group(mouse_over_id, num);
 
       dt_collection_hint_message(darktable.collection); // More than this, we need to redraw all
 

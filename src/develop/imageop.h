@@ -467,6 +467,7 @@ void dt_iop_unload_modules_so();
 /** load a module for a given .so */
 int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, struct dt_develop_t *dev);
 /** returns a list of instances referencing stuff loaded in load_modules_so. */
+GList *dt_iop_load_modules_ext(struct dt_develop_t *dev, gboolean no_image);
 GList *dt_iop_load_modules(struct dt_develop_t *dev);
 int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, struct dt_develop_t *dev);
 gint sort_plugins(gconstpointer a, gconstpointer b);
@@ -493,6 +494,8 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module);
 /** change module state */
 void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t state);
 void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state);
+/* duplicate module and return new instance */
+dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params);
 
 void dt_iop_gui_update_header(dt_iop_module_t *module);
 

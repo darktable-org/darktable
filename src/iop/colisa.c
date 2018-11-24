@@ -72,11 +72,10 @@ typedef struct dt_iop_colisa_global_data_t
   int kernel_colisa;
 } dt_iop_colisa_global_data_t;
 
-#define NAME "contrast brightness saturation"
 
 const char *name()
 {
-  return _(NAME);
+  return _("contrast brightness saturation");
 }
 
 int flags()
@@ -86,7 +85,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("contrast brightness saturation", IOP_GROUP_BASIC);
 }
 
 
@@ -318,7 +317,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colisa_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colisa_params_t));
   module->default_enabled = 0;
-  module->priority = 647; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 657; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colisa_params_t);
   module->gui_data = NULL;
   dt_iop_colisa_params_t tmp = (dt_iop_colisa_params_t){ 0, 0, 0 };

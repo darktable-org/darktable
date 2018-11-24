@@ -49,17 +49,16 @@ typedef struct dt_iop_spots_gui_data_t
 
 typedef struct dt_iop_spots_params_t dt_iop_spots_data_t;
 
-#define NAME "spot removal"
 
 // this returns a translatable name
 const char *name()
 {
-  return _(NAME);
+  return _("spot removal");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("spot removal", IOP_GROUP_CORRECT);
 }
 
 int flags()
@@ -259,7 +258,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   dt_develop_blend_params_t *bp = self->blend_params;
 
   // We iterate through all spots or polygons
-  dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, bp->mask_id);
+  dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);
   if(grp && (grp->type & DT_MASKS_GROUP))
   {
     GList *forms = g_list_first(grp->points);
@@ -267,7 +266,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     {
       dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       // we get the spot
-      dt_masks_form_t *form = dt_masks_get_from_id(self->dev, grpt->formid);
+      dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, grpt->formid);
       if(form)
       {
         // if the form is outside the roi, we just skip it
@@ -384,7 +383,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   // iterate through all forms
-  dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, bp->mask_id);
+  dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);
   int pos = 0;
   if(grp && (grp->type & DT_MASKS_GROUP))
   {
@@ -393,7 +392,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       // we get the spot
-      dt_masks_form_t *form = dt_masks_get_from_id(self->dev, grpt->formid);
+      dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, grpt->formid);
       if(!form)
       {
         forms = g_list_next(forms);
@@ -541,7 +540,7 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;
-  module->priority = 176; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 171; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_spots_params_t);
   module->gui_data = NULL;
   // init defaults:

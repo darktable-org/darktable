@@ -73,16 +73,15 @@ typedef struct dt_iop_highlights_global_data_t
   int kernel_highlights_4f_clip;
 } dt_iop_highlights_global_data_t;
 
-#define NAME "highlight reconstruction"
 
 const char *name()
 {
-  return _(NAME);
+  return _("highlight reconstruction");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("highlight reconstruction", IOP_GROUP_BASIC);
 }
 
 int flags()
@@ -1026,7 +1025,7 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_highlights_data_t));
   module->params = calloc(1, sizeof(dt_iop_highlights_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_highlights_params_t));
-  module->priority = 58; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 57; // module order created by iop_dependencies.py, do not edit!
   module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_highlights_params_t);
   module->gui_data = NULL;

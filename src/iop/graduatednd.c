@@ -135,11 +135,10 @@ typedef struct dt_iop_graduatednd_data_t
   float color1[4];   // inverted color (1 - c)
 } dt_iop_graduatednd_data_t;
 
-#define NAME "graduated density"
 
 const char *name()
 {
-  return _(NAME);
+  return _("graduated density");
 }
 
 int flags()
@@ -150,7 +149,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("graduated density", IOP_GROUP_EFFECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -1087,7 +1086,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_graduatednd_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_graduatednd_params_t));
   module->default_enabled = 0;
-  module->priority = 279; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 299; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_graduatednd_params_t);
   module->gui_data = NULL;
   dt_iop_graduatednd_params_t tmp = (dt_iop_graduatednd_params_t){ 1.0, 0, 0, 50, 0, 0 };

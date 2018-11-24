@@ -112,11 +112,10 @@ typedef struct dt_iop_zonesystem_gui_data_t
 
 } dt_iop_zonesystem_gui_data_t;
 
-#define NAME "zone system"
 
 const char *name()
 {
-  return _(NAME);
+  return _("zone system");
 }
 
 int flags()
@@ -127,7 +126,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
+  return dt_iop_get_group("zone system", IOP_GROUP_TONE);
 }
 
 /* get the zone index of pixel lightness from zonemap */
@@ -459,7 +458,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_zonesystem_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_zonesystem_params_t));
   module->default_enabled = 0;
-  module->priority = 661; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 671; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_zonesystem_params_t);
   module->gui_data = NULL;
   dt_iop_zonesystem_params_t tmp = (dt_iop_zonesystem_params_t){

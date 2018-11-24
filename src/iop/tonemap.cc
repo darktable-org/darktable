@@ -69,17 +69,15 @@ typedef struct dt_iop_tonemapping_data_t
   float contrast, Fsize;
 } dt_iop_tonemapping_data_t;
 
-#define NAME "tone mapping"
-
 const char *name()
 {
-  return _(NAME);
+  return _("tone mapping");
 }
 
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
+  return dt_iop_get_group("tone mapping", IOP_GROUP_TONE);
 }
 
 int flags()
@@ -269,7 +267,7 @@ void init(dt_iop_module_t *module)
   module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_enabled = 0;
-  module->priority = 147; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 142; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonemapping_params_t);
   module->gui_data = NULL;
 }

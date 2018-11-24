@@ -5,8 +5,8 @@
 BASIC=1
 TONE=2
 COLOR=3
-EFFECT=4
-CORRECT=5
+CORRECT=4
+EFFECT=5
 
 ###
 # module-group order, just reorder the module-group
@@ -14,10 +14,10 @@ CORRECT=5
 
 module_group=(
     $BASIC
-    $TONE
     $COLOR
-    $EFFECT
     $CORRECT
+    $TONE
+    $EFFECT
 )
 
 ###
@@ -26,79 +26,81 @@ module_group=(
 
 group_basic=(
     'base curve'
-    'white balance'
-    'shadows and highlights'
-    'orientation'
-    'raw black/white point'
-    'color reconstruction'
-    'demosaic'
-    'contrast brightness saturation'
     'crop and rotate'
+    'demosaic'
     'exposure'
-    'highlight reconstruction'
+    'graduated density'
+    'input color profile'
     'invert'
+    'lens correction'
+    'orientation'
+    'output color profile'
+    'perspective correction'
+    'raw black/white point'
+    'rotate pixels'
+    'scale pixels'
+    'tone mapping'
+    'unbreak input profile'
+    'white balance'
 )
 
 group_tone=(
-    'zone system'
-    'tone curve'
-    'tone mapping'
-    'levels'
+    'bloom'
+    'color balance'
+    'contrast brightness saturation'
+    'equalizer'
     'fill light'
-    'local contrast'
     'global tonemap'
+    'levels'
+    'local contrast'
+    'shadows and highlights'
+    'tone curve'
+    'zone system'
+    'filmic'
 )
 
 group_color=(
-    'unbreak input profile'
-    'velvia'
-    'vibrance'
-    'color balance'
+    'channel mixer'
     'color contrast'
     'color correction'
     'color look up table'
-    'output color profile'
-    'channel mixer'
+    'color mapping'
     'color transfer'
     'color zones'
-    'input color profile'
+    'colorize'
+    'lowlight vision'
     'monochrome'
+    'split toning'
+    'velvia'
+    'vibrance'
 )
 
 group_correct=(
-    'perspective correction'
-    'raw denoise'
-    'retouch'
-    'rotate pixels'
-    'scale pixels'
-    'sharpen'
-    'spot removal'
-    'hot pixels'
-    'defringe'
     'chromatic aberrations'
+    'color reconstruction'
+    'defringe'
+    'denoise (bilateral filter)'
     'denoise (non-local means)'
     'denoise (profiled)'
     'dithering'
-    'equalizer'
-    'lens correction'
-    'liquify'
     'haze removal'
+    'highlight reconstruction'
+    'hot pixels'
+    'raw denoise'
 )
 
 group_effect=(
-    'watermark'
-    'bloom'
-    'vignetting'
-    'split toning'
-    'lowlight vision'
-    'lowpass'
-    'color mapping'
-    'colorize'
     'framing'
-    'graduated density'
     'grain'
     'highpass'
+    'liquify'
+    'lowpass'
+    'retouch'
+    'sharpen'
     'soften'
+    'spot removal'
+    'vignetting'
+    'watermark'
 )
 
 ######################################### END OF CONFIGURATION HERE
@@ -128,12 +130,25 @@ pos=0
 while [ "x${module_group[pos]}" != "x" ]; do
     group=${module_group[pos]}
     pos=$(( $pos + 1 ))
-    echo "plugins/darkroom/group_order/$pos=$group" >> $FILE
+    echo "plugins/darkroom/group_order/$group=$pos" >> $FILE
 done
+
+function get_group_pos()
+{
+    local GROUP=$1
+
+    pos=0
+    while [ "x${module_group[pos]}" != "x" ]; do
+        if [ ${module_group[pos]} == $GROUP ]; then
+            echo $(( $pos + 1 ))
+        fi
+        pos=$(( $pos + 1 ));
+    done
+}
 
 function set_iop_group()
 {
-    local GROUP=$1
+    local GROUP_POS=$(get_group_pos $1)
     shift
     local LIST=("${@}")
 
@@ -141,14 +156,14 @@ function set_iop_group()
     while [ "x${LIST[pos]}" != "x" ]; do
         name=${LIST[pos]}
         pos=$(( $pos + 1 ))
-        echo "plugins/darkroom/group/$name=$GROUP" >> $FILE
+        echo "plugins/darkroom/group/$name=$GROUP_POS" >> $FILE
     done
 }
 
 sed -i "/plugins\/darkroom\/group\//d" $FILE
 
-set_iop_group 1 "${group_basic[@]}"
-set_iop_group 2 "${group_tone[@]}"
-set_iop_group 3 "${group_color[@]}"
-set_iop_group 4 "${group_correct[@]}"
-set_iop_group 5 "${group_effect[@]}"
+set_iop_group $BASIC   "${group_basic[@]}"
+set_iop_group $TONE    "${group_tone[@]}"
+set_iop_group $COLOR   "${group_color[@]}"
+set_iop_group $CORRECT "${group_correct[@]}"
+set_iop_group $EFFECT  "${group_effect[@]}"

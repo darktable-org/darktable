@@ -90,11 +90,10 @@ typedef struct dt_iop_bilat_gui_data_t
 }
 dt_iop_bilat_gui_data_t;
 
-#define NAME "local contrast"
 // this returns a translatable name
 const char *name()
 {
-  return _(NAME);
+  return _("local contrast");
 }
 
 // some additional flags (self explanatory i think):
@@ -106,7 +105,7 @@ int flags()
 // where does it appear in the gui?
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_TONE);
+  return dt_iop_get_group("local contrast", IOP_GROUP_TONE);
 }
 
 int legacy_params(
@@ -301,7 +300,11 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         dt_pthread_mutex_lock(&g->lock);
         const uint64_t hash = g->hash;
         dt_pthread_mutex_unlock(&g->lock);
-        if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+        if(hash == 0)
+        {
+          // Don't try grabbing anything from preview pipe.
+        }
+        else if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
         {
           // TODO: remove this debug output at some point:
           dt_control_log(_("local laplacian: inconsistent output"));
@@ -384,7 +387,7 @@ void init(dt_iop_module_t *module)
   // by default:
   module->default_enabled = 0;
   // order has to be changed by editing the dependencies in tools/iop_dependencies.py
-  module->priority = 588; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 585; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_bilat_params_t);
   module->gui_data = NULL;
   // init defaults:

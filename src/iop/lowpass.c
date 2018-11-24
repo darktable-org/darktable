@@ -123,11 +123,10 @@ typedef struct dt_iop_lowpass_global_data_t
   int kernel_lowpass_mix;
 } dt_iop_lowpass_global_data_t;
 
-#define NAME "lowpass"
 
 const char *name()
 {
-  return _(NAME);
+  return _("lowpass");
 }
 
 int flags()
@@ -137,7 +136,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("lowpass", IOP_GROUP_EFFECT);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -600,7 +599,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_lowpass_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_lowpass_params_t));
   module->default_enabled = 0;
-  module->priority = 749; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 757; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_lowpass_params_t);
   module->gui_data = NULL;
   dt_iop_lowpass_params_t tmp = (dt_iop_lowpass_params_t){ 0, 10.0f, 1.0f, 0.0f, 1.0f, LOWPASS_ALGO_GAUSSIAN, 1 };

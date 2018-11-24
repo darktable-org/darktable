@@ -76,11 +76,10 @@ typedef struct dt_iop_splittoning_global_data_t
   int kernel_splittoning;
 } dt_iop_splittoning_global_data_t;
 
-#define NAME "split toning"
 
 const char *name()
 {
-  return _(NAME);
+  return _("split toning");
 }
 
 int flags()
@@ -90,7 +89,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("split toning", IOP_GROUP_EFFECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -456,7 +455,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_splittoning_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_splittoning_params_t));
   module->default_enabled = 0;
-  module->priority = 867; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 871; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_splittoning_params_t);
   module->gui_data = NULL;
   dt_iop_splittoning_params_t tmp = (dt_iop_splittoning_params_t){ 0, 0.5, 0.2, 0.5, 0.5, 33.0 };

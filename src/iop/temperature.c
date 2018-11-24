@@ -155,17 +155,16 @@ static int ignore_missing_wb(dt_image_t *img)
   return FALSE;
 }
 
-#define NAME "white balance"
 
 const char *name()
 {
-  return C_("modulename", NAME);
+  return C_("modulename", "white balance");
 }
 
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_BASIC);
+  return dt_iop_get_group("white balance", IOP_GROUP_BASIC);
 }
 
 int flags()
@@ -1112,7 +1111,7 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_temperature_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_temperature_params_t));
-  module->priority = 44; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 42; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
 }

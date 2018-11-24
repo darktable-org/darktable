@@ -148,11 +148,10 @@ typedef struct dt_iop_vignette_global_data_t
   int kernel_vignette;
 } dt_iop_vignette_global_data_t;
 
-#define NAME "vignetting"
 
 const char *name()
 {
-  return _(NAME);
+  return _("vignetting");
 }
 
 int flags()
@@ -163,7 +162,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("vignetting", IOP_GROUP_EFFECT);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -1103,7 +1102,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_vignette_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_vignette_params_t));
   module->default_enabled = 0;
-  module->priority = 852; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 857; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_vignette_params_t);
   module->gui_data = NULL;
   dt_iop_vignette_params_t tmp

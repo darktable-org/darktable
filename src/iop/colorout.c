@@ -74,16 +74,15 @@ typedef struct dt_iop_colorout_gui_data_t
   GtkWidget *output_intent, *output_profile;
 } dt_iop_colorout_gui_data_t;
 
-#define NAME "output color profile"
 
 const char *name()
 {
-  return _(NAME);
+  return _("output color profile");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("output color profile", IOP_GROUP_COLOR);
 }
 
 int flags()
@@ -728,7 +727,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_colorout_params_t));
   module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
-  module->priority = 808; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 814; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
   dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){ DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL};

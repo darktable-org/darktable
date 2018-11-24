@@ -184,17 +184,16 @@ typedef struct dt_iop_retouch_global_data_t
   int kernel_retouch_copy_mask_to_alpha;
 } dt_iop_retouch_global_data_t;
 
-#define NAME "retouch"
 
 // this returns a translatable name
 const char *name()
 {
-  return _(NAME);
+  return _("retouch");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("retouch", IOP_GROUP_CORRECT);
 }
 
 int flags()
@@ -2335,7 +2334,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_retouch_params_t));
   // our module is disabled by default
   module->default_enabled = 0;
-  module->priority = 180; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 185; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_retouch_params_t);
   module->gui_data = NULL;
 
@@ -2981,7 +2980,7 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
   int roiy = *_roiy;
 
   // We iterate through all forms
-  const dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, bp->mask_id);
+  const dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);
   if(grp && (grp->type & DT_MASKS_GROUP))
   {
     GList *forms = g_list_first(grp->points);
@@ -2993,7 +2992,7 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
         const int formid = grpt->formid;
 
         // we get the spot
-        dt_masks_form_t *form = dt_masks_get_from_id(self->dev, formid);
+        dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, formid);
         if(form)
         {
           // if the form is outside the roi, we just skip it
@@ -3061,7 +3060,7 @@ static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self, st
   int roiy = *_roiy;
 
   // We iterate through all forms
-  const dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, bp->mask_id);
+  const dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);
   if(grp && (grp->type & DT_MASKS_GROUP))
   {
     GList *forms = g_list_first(grp->points);
@@ -3085,7 +3084,7 @@ static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self, st
         }
 
         // we get the spot
-        dt_masks_form_t *form = dt_masks_get_from_id(self->dev, formid);
+        dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, formid);
         if(form)
         {
           // we get the source area
@@ -3153,7 +3152,7 @@ static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self, struct dt_d
   int roiy = *_roiy;
 
   // go through all clone and heal forms
-  const dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, bp->mask_id);
+  const dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);
   if(grp && (grp->type & DT_MASKS_GROUP))
   {
     GList *forms = g_list_first(grp->points);
@@ -3172,7 +3171,7 @@ static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self, struct dt_d
         }
 
         // we get the spot
-        dt_masks_form_t *form = dt_masks_get_from_id(self->dev, formid);
+        dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, formid);
         if(form == NULL)
         {
           forms = g_list_next(forms);
@@ -4048,14 +4047,12 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
   // iterate through all forms
   if(!usr_d->suppress_mask)
   {
-    const dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, bp->mask_id);
+    const dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);
     if(grp && (grp->type & DT_MASKS_GROUP))
     {
       GList *forms = g_list_first(grp->points);
       while(forms)
       {
-        // FIXME: a form can be removed while processing this, making forms->data invalid
-        // not sure if there's a locking mechanism for this...
         const dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
         if(grpt == NULL)
         {
@@ -4074,8 +4071,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
         const int index = rt_get_index_from_formid(p, formid);
         if(index == -1)
         {
-          // FIXME: we get this error when adding a new form and the system is still processing a previous add
-          // we should not report an error in this case (and have a better way of adding a form)
+          // FIXME: we get this error when user go back in history, so forms are the same but the array has changed
           fprintf(stderr, "rt_process_forms: missing form=%i from array\n", formid);
           forms = g_list_next(forms);
           continue;
@@ -4089,7 +4085,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
         }
 
         // get the spot
-        dt_masks_form_t *form = dt_masks_get_from_id(self->dev, formid);
+        dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, formid);
         if(form == NULL)
         {
           fprintf(stderr, "rt_process_forms: missing form=%i from masks\n", formid);
@@ -4351,7 +4347,7 @@ cl_int rt_process_stats_cl(const int devid, cl_mem dev_img, const int width, con
   src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
   if(src_buffer == NULL)
   {
-    printf("dt_heal_cl: error allocating memory for healing\n");
+    fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -4390,7 +4386,7 @@ cl_int rt_adjust_levels_cl(const int devid, cl_mem dev_img, const int width, con
   src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
   if(src_buffer == NULL)
   {
-    printf("dt_heal_cl: error allocating memory for healing\n");
+    fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -4856,14 +4852,12 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
   // iterate through all forms
   if(!usr_d->suppress_mask)
   {
-    dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, bp->mask_id);
+    dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);
     if(grp && (grp->type & DT_MASKS_GROUP))
     {
       GList *forms = g_list_first(grp->points);
       while(forms && err == CL_SUCCESS)
       {
-        // FIXME: a form can be removed while processing this, making forms->data invalid
-        // not sure if there's a locking mechanism for this...
         dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
         if(grpt == NULL)
         {
@@ -4882,8 +4876,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
         const int index = rt_get_index_from_formid(p, formid);
         if(index == -1)
         {
-          // FIXME: we get this error when adding a new form and the system is still processing a previous add
-          // we should not report an error in this case (and have a better way of adding a form)
+          // FIXME: we get this error when user go back in history, so forms are the same but the array has changed
           fprintf(stderr, "rt_process_forms: missing form=%i from array\n", formid);
           forms = g_list_next(forms);
           continue;
@@ -4897,7 +4890,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
         }
 
         // get the spot
-        dt_masks_form_t *form = dt_masks_get_from_id(self->dev, formid);
+        dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, formid);
         if(form == NULL)
         {
           fprintf(stderr, "rt_process_forms: missing form=%i from masks\n", formid);
@@ -5187,8 +5180,7 @@ cleanup:
 
   if(in_retouch) dt_opencl_release_mem_object(in_retouch);
 
-  //  if (err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_retouch] couldn't enqueue kernel! %d\n", err);
-  if(err != CL_SUCCESS) printf("[opencl_retouch] couldn't enqueue kernel! %d\n", err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_retouch] couldn't enqueue kernel! %d\n", err);
 
   return (err == CL_SUCCESS) ? TRUE : FALSE;
 }

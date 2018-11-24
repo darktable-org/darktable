@@ -59,11 +59,10 @@ typedef struct dt_iop_vibrance_global_data_t
   int kernel_vibrance;
 } dt_iop_vibrance_global_data_t;
 
-#define NAME "vibrance"
 
 const char *name()
 {
-  return _(NAME);
+  return _("vibrance");
 }
 
 int flags()
@@ -73,7 +72,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("vibrance", IOP_GROUP_COLOR);
 }
 
 #if 0 // BAUHAUS doesn't support keyaccels yet...
@@ -217,7 +216,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_vibrance_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_vibrance_params_t));
   module->default_enabled = 0;
-  module->priority = 426; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 442; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_vibrance_params_t);
   module->gui_data = NULL;
   dt_iop_vibrance_params_t tmp = (dt_iop_vibrance_params_t){ 25 };

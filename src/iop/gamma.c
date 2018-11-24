@@ -38,13 +38,6 @@ typedef struct dt_iop_gamma_params_t
   float gamma, linear;
 } dt_iop_gamma_params_t;
 
-
-typedef struct dt_iop_gamma_data_t
-{
-  uint8_t table[0x10000];
-} dt_iop_gamma_data_t;
-
-
 const char *name()
 {
   return C_("modulename", "gamma");
@@ -195,7 +188,6 @@ static inline void false_color(float val, dt_dev_pixelpipe_display_mask_t channe
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
   const int ch = piece->colors;
 
   const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
@@ -207,7 +199,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     const float yellow[3] = { 1.0f, 1.0f, 0.0f };
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -221,7 +213,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           const float value = colors[c] * (1.0f - alpha) + yellow[c] * alpha;
-          out[2 - c] = d->table[(uint16_t)CLAMP((int)(0x10000ul * value), 0, 0xffff)];
+          out[2 - c] = ((uint8_t)(CLAMP(((uint32_t)255.0f * value), 0x0, 0xff)));
         }
       }
     }
@@ -230,7 +222,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     const float yellow[3] = { 1.0f, 1.0f, 0.0f };
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -242,7 +234,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           const float value = in[1] * (1.0f - alpha) + yellow[c] * alpha;
-          out[2 - c] = d->table[(uint16_t)CLAMP((int)(0x10000ul * value), 0, 0xffff)];
+          out[2 - c] = ((uint8_t)(CLAMP(((uint32_t)255.0f * value), 0x0, 0xff)));
         }
       }
     }
@@ -251,7 +243,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     const float yellow[3] = { 1.0f, 1.0f, 0.0f };
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -264,7 +256,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           const float value = gray * (1.0f - alpha) + yellow[c] * alpha;
-          out[2 - c] = d->table[(uint16_t)CLAMP((int)(0x10000ul * value), 0, 0xffff)];
+          out[2 - c] = ((uint8_t)(CLAMP(((uint32_t)255.0f * value), 0x0, 0xff)));
         }
       }
     }
@@ -272,7 +264,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -280,56 +272,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       uint8_t *out = ((uint8_t *)o) + (size_t)ch * k * roi_out->width;
       for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
       {
-        for(int c = 0; c < 3; c++) out[2 - c] = d->table[(uint16_t)CLAMP((int)(0x10000ul * in[c]), 0, 0xffff)];
+        for(int c = 0; c < 3; c++) out[2 - c] = ((uint8_t)(CLAMP(((uint32_t)255.0f * in[c]), 0x0, 0xff)));
       }
     }
   }
-}
-
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
-{
-  dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)p1;
-  dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
-
-  // build gamma table in pipeline piece from committed params:
-  float a, b, c, g;
-  if(p->linear < 1.0)
-  {
-    g = p->gamma * (1.0 - p->linear) / (1.0 - p->gamma * p->linear);
-    a = 1.0 / (1.0 + p->linear * (g - 1));
-    b = p->linear * (g - 1) * a;
-    c = powf(a * p->linear + b, g) / p->linear;
-  }
-  else
-  {
-    a = b = g = 0.0;
-    c = 1.0;
-  }
-  for(int k = 0; k < 0x10000; k++)
-  {
-    int32_t tmp;
-    if(k < 0x10000 * p->linear)
-      tmp = MIN(c * k, 0xFFFF);
-    else
-    {
-      const float _t = powf(a * k / 0x10000 + b, g) * 0x10000;
-      tmp = MIN(_t, 0xFFFF);
-    }
-    d->table[k] = tmp >> 8;
-  }
-}
-
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  piece->data = malloc(sizeof(dt_iop_gamma_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
-}
-
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  free(piece->data);
-  piece->data = NULL;
 }
 
 void init(dt_iop_module_t *module)
@@ -342,9 +288,6 @@ void init(dt_iop_module_t *module)
   module->priority = 1000; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
-  dt_iop_gamma_params_t tmp = (dt_iop_gamma_params_t){ 1.0, 1.0 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_gamma_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_gamma_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)

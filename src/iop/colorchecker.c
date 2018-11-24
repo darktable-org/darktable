@@ -109,16 +109,15 @@ typedef struct dt_iop_colorchecker_global_data_t
   int kernel_colorchecker;
 } dt_iop_colorchecker_global_data_t;
 
-#define NAME "color look up table"
 
 const char *name()
 {
-  return _(NAME);
+  return _("color look up table");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_COLOR);
+  return dt_iop_get_group("color look up table", IOP_GROUP_COLOR);
 }
 
 int flags()
@@ -752,6 +751,13 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  dt_bauhaus_widget_set_quad_active(g->combobox_patch, 0);
+}
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
@@ -796,6 +802,9 @@ void gui_update(struct dt_iop_module_t *self)
     dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
   }
   gtk_widget_queue_draw(g->area);
+
+  if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+    dt_bauhaus_widget_set_quad_active(g->combobox_patch, 0);
 }
 
 void init(dt_iop_module_t *module)
@@ -803,7 +812,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colorchecker_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorchecker_params_t));
   module->default_enabled = 0;
-  module->priority = 382; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 399; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorchecker_params_t);
   module->gui_data = NULL;
   dt_iop_colorchecker_params_t tmp;

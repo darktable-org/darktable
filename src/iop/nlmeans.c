@@ -76,11 +76,10 @@ typedef struct dt_iop_nlmeans_global_data_t
   int kernel_nlmeans_finish;
 } dt_iop_nlmeans_global_data_t;
 
-#define NAME "denoise (non-local means)"
 
 const char *name()
 {
-  return _(NAME);
+  return _("denoise (non-local means)");
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -101,7 +100,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("denoise (non-local means)", IOP_GROUP_CORRECT);
 }
 
 int flags()
@@ -725,7 +724,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_nlmeans_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_nlmeans_params_t));
   // about the first thing to do in Lab space:
-  module->priority = 529; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 528; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_nlmeans_params_t);
   module->gui_data = NULL;
   module->data = NULL;

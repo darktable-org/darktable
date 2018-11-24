@@ -128,16 +128,15 @@ typedef struct dt_iop_lensfun_data_t
   gboolean do_nan_checks;
 } dt_iop_lensfun_data_t;
 
-#define NAME "lens correction"
 
 const char *name()
 {
-  return _(NAME);
+  return _("lens correction");
 }
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_CORRECT);
+  return dt_iop_get_group("lens correction", IOP_GROUP_CORRECT);
 }
 
 int operation_tags()
@@ -1244,7 +1243,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_lensfun_params_t);
   module->gui_data = NULL;
-  module->priority = 191; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 199; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)

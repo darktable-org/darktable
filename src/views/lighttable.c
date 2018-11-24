@@ -1235,11 +1235,23 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
     /* If more than one image is selected, iterate over these. */
     /* If only one image is selected, scroll through all known images. */
     sqlite3_stmt *stmt;
-    int sel_img_count = 0;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM main.selected_images", -1,
-                                &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) sel_img_count = sqlite3_column_int(stmt, 0);
+    int sel_group_count = 0;
+    int current_group = -1;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
+        &stmt, NULL);
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      uint32_t imgid  = sqlite3_column_int(stmt, 0);
+      const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+      if (image->group_id != current_group)
+      {
+        sel_group_count++;
+        current_group = image->group_id;
+      }
+      dt_image_cache_read_release(darktable.image_cache, image);
+    }
     sqlite3_finalize(stmt);
+    dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] selected group: %d\n", sel_group_count);
 
     /* How many images to preload in advance. */
     int preload_num = dt_conf_get_int("plugins/lighttable/preview/full_size_preload_count");
@@ -1248,7 +1260,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
 
     gchar *stmt_string = g_strdup_printf("SELECT col.imgid AS id, col.rowid FROM memory.collected_images AS col %s "
                                          "WHERE col.rowid %s %d ORDER BY col.rowid %s LIMIT %d",
-                                         (sel_img_count <= 1) ?
+                                         (sel_group_count <= 1) ?
                                            /* We want to operate on the currently collected images,
                                             * so there's no need to match against the selection */
                                            "" :
@@ -1587,7 +1599,7 @@ static gboolean star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acc
   if(mouse_over_id <= 0)
     dt_ratings_apply_to_selection(num);
   else
-    dt_ratings_apply_to_image(mouse_over_id, num);
+    dt_ratings_apply_to_image_or_group(mouse_over_id, num);
   _update_collected_images(self);
 
   dt_collection_update_query(darktable.collection); // update the counter
@@ -1924,22 +1936,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       case DT_VIEW_STAR_5:
       {
         int32_t mouse_over_id = dt_control_get_mouse_over_id();
-        dt_image_t *image = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'w');
-        if(image)
-        {
-          if(lib->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1))
-            image->flags &= ~0x7;
-          else if(lib->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6))
-            image->flags &= ~0x7;
-          else
-          {
-            image->flags &= ~0x7;
-            image->flags |= lib->image_over;
-          }
-          dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-        }
-        else
-          dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+        dt_ratings_apply_to_image_or_group(mouse_over_id, lib->image_over);
         _update_collected_images(self);
         break;
       }

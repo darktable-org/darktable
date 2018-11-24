@@ -413,11 +413,10 @@ static float dt_lut_lookup_2d_1c(const float *grain_lut, const float x, const fl
   return xy0 * (1.0f - x_diff) + xy1 * x_diff;
 }
 
-#define NAME "grain"
 
 const char *name()
 {
-  return _(NAME);
+  return _("grain");
 }
 
 int flags()
@@ -427,7 +426,7 @@ int flags()
 
 int groups()
 {
-  return dt_iop_get_group(NAME, IOP_GROUP_EFFECT);
+  return dt_iop_get_group("grain", IOP_GROUP_EFFECT);
 }
 
 #if 0 // BAUHAUS doesn't support keyaccels yet...
@@ -594,7 +593,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_grain_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_grain_params_t));
   module->default_enabled = 0;
-  module->priority = 779; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 785; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_grain_params_t);
   module->gui_data = NULL;
   dt_iop_grain_params_t tmp
