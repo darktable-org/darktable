@@ -94,7 +94,7 @@ typedef struct dt_storage_piwigo_params_t
   gboolean new_album;
   int privacy;
   gboolean export_tags;
-  char *tags;
+  gchar *tags;
 } dt_storage_piwigo_params_t;
 
 /* low-level routine doing the HTTP POST request */
@@ -686,7 +686,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
           const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
 {
   dt_storage_piwigo_gui_data_t *ui = self->gui_data;
-  dt_storage_piwigo_params_t *p = (dt_storage_piwigo_params_t *)sdata;
 
   gint result = 0;
 
@@ -751,18 +750,20 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     goto cleanup;
   }
 
-  if(p->export_tags)
-  {
-    GList *tags_list = dt_tag_get_list(imgid);
-    p->tags = dt_util_glist_to_str(",", tags_list);
-    g_list_free_full(tags_list, g_free);
-  }
-
 #ifdef _OPENMP
 #pragma omp critical
 #endif
   {
     gboolean status = TRUE;
+    dt_storage_piwigo_params_t *p = (dt_storage_piwigo_params_t *)sdata;
+
+    if(p->export_tags)
+    {
+      GList *tags_list = dt_tag_get_list(imgid);
+      if(p->tags) g_free(p->tags);
+      p->tags = dt_util_glist_to_str(",", tags_list);
+      g_list_free_full(tags_list, g_free);
+    }
 
     if(p->new_album)
     {
