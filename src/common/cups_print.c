@@ -462,7 +462,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
     g_free(argv[11]);
     g_free(argv[13]);
 
-    if (exit_status==0)
+    if(exit_status==0)
     {
       FILE *stream = g_fopen(tmpfile, "rb");
 
@@ -491,6 +491,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
     }
     else
     {
+      dt_control_log(_("printing on `%s' cancelled"), pinfo->printer.name);
       dt_print(DT_DEBUG_PRINT, "[print]   command fails with %d, cancel printing\n", exit_status);
       return;
     }
