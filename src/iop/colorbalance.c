@@ -971,8 +971,6 @@ static void apply_lift_neutralize(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  const float gain[3] = { p->gain[CHANNEL_RED], p->gain[CHANNEL_GREEN], p->gain[CHANNEL_BLUE] };
-
   float XYZ[3] = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
   float RGB[3] = { 0.0f };
@@ -984,13 +982,13 @@ static void apply_lift_neutralize(dt_iop_module_t *self)
 
   // Compute the RGB values after the CDL factors
   for(int c = 0; c < 3; ++c)
-    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
 
   // Compute the luminance of the average grey
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
   // Get the parameter
-  for(int c = 0; c < 3; ++c) RGB[c] = XYZ[1] - RGB[c] * gain[c];
+  for(int c = 0; c < 3; ++c) RGB[c] = powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - RGB[c] * p->gain[c+1];
 
   p->lift[CHANNEL_RED] = RGB[0] + 1.0f;
   p->lift[CHANNEL_GREEN] = RGB[1] + 1.0f;
@@ -1021,17 +1019,17 @@ static void apply_gamma_neutralize(dt_iop_module_t *self)
 
   // Compute the RGB values after the CDL factors
   for(int c = 0; c < 3; ++c)
-    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
 
   // Compute the luminance of the average grey
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
   // Get the parameter
-  for(int c = 0; c < 3; ++c) RGB[c] = logf(RGB[c]) / logf(XYZ[1]);
+  for(int c = 0; c < 3; ++c) RGB[c] = logf(XYZ[1])/ logf(RGB[c] * p->gain[c + 1] + p->lift[c + 1] - 1.0f);
 
-  p->gamma[CHANNEL_RED] = RGB[0] + 1.0f;
-  p->gamma[CHANNEL_GREEN] = RGB[1] + 1.0f;
-  p->gamma[CHANNEL_BLUE] = RGB[2] + 1.0f;
+  p->gamma[CHANNEL_RED] = 2.0 - RGB[0];
+  p->gamma[CHANNEL_GREEN] = 2.0 - RGB[1];
+  p->gamma[CHANNEL_BLUE] = 2.0 - RGB[2];
 
   normalize_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, p->gamma, CHANNEL_FACTOR, SLOPE_OFFSET_POWER);
   darktable.gui->reset = 1;
@@ -1058,17 +1056,17 @@ static void apply_gain_neutralize(dt_iop_module_t *self)
 
   // Compute the RGB values after the CDL factors
   for(int c = 0; c < 3; ++c)
-    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
 
   // Compute the luminance of the average grey
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
   // Get the parameter
-  for(int c = 0; c < 3; ++c) RGB[c] = XYZ[1] / MAX(RGB[c], 0.000001f);
+  for(int c = 0; c < 3; ++c) RGB[c] = (powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - p->lift[c+1] + 1.0f) / MAX(RGB[c], 0.000001f);
 
-  p->gain[CHANNEL_RED] = RGB[0] + 1.0f;
-  p->gain[CHANNEL_GREEN] = RGB[1] + 1.0f;
-  p->gain[CHANNEL_BLUE] = RGB[2] + 1.0f;
+  p->gain[CHANNEL_RED] = RGB[0];
+  p->gain[CHANNEL_GREEN] = RGB[1];
+  p->gain[CHANNEL_BLUE] = RGB[2];
 
   normalize_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, p->gain, CHANNEL_FACTOR, SLOPE_OFFSET_POWER);
   darktable.gui->reset = 1;
@@ -1195,9 +1193,9 @@ static void apply_autocolor(dt_iop_module_t *self)
 
   for (int c = 0; c < 3; ++c)
   {
-    samples_lift[c] = CDL(g->color_patches_lift[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
-    samples_gamma[c] = CDL(g->color_patches_gamma[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
-    samples_gain[c] = CDL(g->color_patches_gain[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+    samples_lift[c] = CDL(g->color_patches_lift[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
+    samples_gamma[c] = CDL(g->color_patches_gamma[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
+    samples_gain[c] = CDL(g->color_patches_gain[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
   }
 
   // Get the average patches luma value (= neutral grey equivalents) after the CDL factors
@@ -1229,24 +1227,24 @@ static void apply_autocolor(dt_iop_module_t *self)
   */
   for (int runs = 0 ; runs < 500 ; ++runs)
   {
-    // compute RGB slope/gain
-    for (int c = 0; c < 3; ++c) RGB_gain[c] = CLAMP((powf(MAX(greys[GAIN], 0.000001f), RGB_gamma[c]) - RGB_lift[c]) / MAX(samples_gain[c], 0.000001f), 0.75f, 1.25f);
-    // compute RGB offset/lift
-    for (int c = 0; c < 3; ++c) RGB_lift[c] = CLAMP(powf(MAX(greys[LIFT], 0.000001f), RGB_gamma[c]) - MAX(samples_lift[c], 0.000001f)  * RGB_gain[c], -0.25f, 0.25f);
-    // compute  power/gamma
-    for (int c = 0; c < 3; ++c) RGB_gamma[c] = CLAMP(logf(MAX(RGB_gain[c] * samples_gamma[c] + RGB_lift[c], 0.000001f)) / logf(MAX(greys[GAMMA], 0.000001f)), 0.50f, 1.50f);
+    // compute RGB slope/gain (powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - p->lift[c+1] + 1.0f) / MAX(RGB[c], 0.000001f);
+    for (int c = 0; c < 3; ++c) RGB_gain[c] = CLAMP((powf(greys[GAIN], 1.0f / (2.0f - RGB_gamma[c])) - RGB_lift[c]) / MAX(samples_gain[c], 0.000001f), 0.0f, 2.0f);
+    // compute RGB offset/lift powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - RGB[c] * p->gain[c+1];
+    for (int c = 0; c < 3; ++c) RGB_lift[c] = CLAMP(powf(greys[LIFT], 1.0f / (2.0f - RGB_gamma[c])) - samples_lift[c] * RGB_gain[c], -1.0f, 1.0f);
+    // compute  power/gamma 2.0f - logf(0.1842f) / logf(MAX(p->gain[CHANNEL_FACTOR] * XYZ[1] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f));
+    for (int c = 0; c < 3; ++c) RGB_gamma[c] = 2.0f - CLAMP(logf(MAX(greys[GAMMA], 0.000001f)) / logf(MAX(RGB_gain[c] * samples_gamma[c] + RGB_lift[c], 0.000001f)), 0.0f, 2.0f);
   }
 
   // save
   p->lift[CHANNEL_RED] = RGB_lift[0] + 1.0f;
   p->lift[CHANNEL_GREEN] = RGB_lift[1] + 1.0f;
   p->lift[CHANNEL_BLUE] = RGB_lift[2] + 1.0f;
-  p->gamma[CHANNEL_RED] = RGB_gamma[0] + 1.0f;
-  p->gamma[CHANNEL_GREEN] = RGB_gamma[1] + 1.0f;
-  p->gamma[CHANNEL_BLUE] = RGB_gamma[2] + 1.0f;
-  p->gain[CHANNEL_RED] = RGB_gain[0] + 1.0f;
-  p->gain[CHANNEL_GREEN] = RGB_gain[1] + 1.0f;
-  p->gain[CHANNEL_BLUE] = RGB_gain[2] + 1.0f;
+  p->gamma[CHANNEL_RED] = RGB_gamma[0];
+  p->gamma[CHANNEL_GREEN] = RGB_gamma[1];
+  p->gamma[CHANNEL_BLUE] = RGB_gamma[2];
+  p->gain[CHANNEL_RED] = RGB_gain[0];
+  p->gain[CHANNEL_GREEN] = RGB_gain[1];
+  p->gain[CHANNEL_BLUE] = RGB_gain[2];
 
   normalize_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, p->lift, CHANNEL_FACTOR, SLOPE_OFFSET_POWER);
   normalize_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, p->gamma, CHANNEL_FACTOR,  SLOPE_OFFSET_POWER);
