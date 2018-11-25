@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-10-24 11:14+0300\n"
-"PO-Revision-Date: 2018-11-25 17:10+0200\n"
+"PO-Revision-Date: 2018-11-25 19:34+0200\n"
 "Last-Translator: Marko Vertainen <marko.vertainen@iki.fi>\n"
 "Language-Team: Finnish (Finland)\n"
 "Language: fi_FI\n"
@@ -1563,10 +1563,10 @@ msgstr[1] "Hylätään %d kuvaa"
 
 #: ../src/common/ratings.c:51
 #, c-format
-#msgid "applying rating %d to %d image"
-#msgid_plural "applying rating %d to %d images"
-#msgstr[0] "Asetetaan valitulle kuvalle tähtiluokitukseksi %d"
-#msgstr[1] "Asetetaan valituille kuville tähtiluokitukseksi %d"
+msgid "applying rating %d to %d image"
+msgid_plural "applying rating %d to %d images"
+msgstr[0] "Asetetaan valitulle %d kuvalle tähtiluokitukseksi %d"
+msgstr[1] "Asetetaan valituille %d kuville tähtiluokitukseksi %d"
 
 #: ../src/common/ratings.c:75
 msgid "no images selected to apply rating"
@@ -1883,7 +1883,7 @@ msgstr "Poista kuvat"
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
 "do you really want to remove %d selected images from the collection?"
-msgstr[0] "Haluatko varmasti poistaa valitun kuvan kokoelmasta?"
+msgstr[0] "Haluatko varmasti poistaa valitun %d kuvan kokoelmasta?"
 msgstr[1] "Haluatko varmasti poistaa valitut %d kuvaa kokoelmasta?"
 
 #: ../src/control/jobs/control_jobs.c:1402
@@ -1899,15 +1899,15 @@ msgstr "Poista kuvat"
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
-msgstr[0] "Haluatko varmasti siirttää valitun kuvan roskakoriin?"
-msgstr[1] "Haluatko varmasti siirttää valitut %d kuvaa roskakoriin?"
+msgstr[0] "Haluatko varmasti sirtää valitun %d kuvan roskakoriin?"
+msgstr[1] "Haluatko varmasti sirttää valitut %d kuvaa roskakoriin?"
 
 #: ../src/control/jobs/control_jobs.c:1444
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
 "do you really want to physically delete %d selected images from disk?"
-msgstr[0] "Haluatko varmasti poistaa valitun kuvan levyltä?"
+msgstr[0] "Haluatko varmasti poistaa valitun %d kuvan levyltä?"
 msgstr[1] "Haluatko varmasti poistaa valitut %d kuvaa levyltä?"
 
 #: ../src/control/jobs/control_jobs.c:1448
@@ -1938,18 +1938,18 @@ msgstr "_Valitse kohteeksi"
 
 #: ../src/control/jobs/control_jobs.c:1495
 #, c-format
-#msgid ""
-#"do you really want to physically move the %d selected image to %s?\n"
-#"(all unselected duplicates will be moved along)"
-#msgid_plural ""
-#"do you really want to physically move %d selected images to %s?\n"
-#"(all unselected duplicates will be moved along)"
-#msgstr[0] ""
-#"Haluatko varmasti siirtää valitun kuvan kohteeseen %s?\n"
-#"(kaikki valitsemattomat kopiot siirretään kuvan mukana)"
-#msgstr[1] ""
-#"Haluatko varmasti siirtää %d valittua kuvaa kohteeseen %s?\n"
-#"(kaikki valitsemattomat kopiot siirretään kuvan mukana)"
+msgid ""
+"do you really want to physically move the %d selected image to %s?\n"
+"(all unselected duplicates will be moved along)"
+msgid_plural ""
+"do you really want to physically move %d selected images to %s?\n"
+"(all unselected duplicates will be moved along)"
+msgstr[0] ""
+"Haluatko varmasti siirtää %d valitun kuvan kohteeseen %s?\n"
+"(kaikki valitsemattomat kopiot siirretään kuvan mukana)"
+msgstr[1] ""
+"Haluatko varmasti siirtää %d valittua kuvaa kohteeseen %s?\n"
+"(kaikki valitsemattomat kopiot siirretään kuvan mukana)"
 
 #: ../src/control/jobs/control_jobs.c:1501
 msgid "move image?"
@@ -1963,10 +1963,10 @@ msgstr "Kopioi kuvat"
 
 #: ../src/control/jobs/control_jobs.c:1552
 #, c-format
-#msgid "do you really want to physically copy the %d selected image to %s?"
-#msgid_plural "do you really want to physically copy %d selected images to %s?"
-#msgstr[0] "Haluatko varmasti kopioida valitun kuvan kohteeseen %s?"
-#msgstr[1] "Haluatko varmasti kopioida %d valittua kuvaa kohteeseen %s?"
+msgid "do you really want to physically copy the %d selected image to %s?"
+msgid_plural "do you really want to physically copy %d selected images to %s?"
+msgstr[0] "Haluatko varmasti kopioida %d valitun kuvan kohteeseen %s?"
+msgstr[1] "Haluatko varmasti kopioida %d valittua kuvaa kohteeseen %s?"
 
 #: ../src/control/jobs/control_jobs.c:1555
 msgid "copy image?"
