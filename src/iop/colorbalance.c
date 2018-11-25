@@ -46,7 +46,7 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 // negative values to the wheels :(
 //#define SHOW_COLOR_WHEELS
 
-DT_MODULE_INTROSPECTION(2, dt_iop_colorbalance_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_colorbalance_params_t)
 
 /*
 
@@ -112,7 +112,7 @@ typedef struct dt_iop_colorbalance_params_t
 {
   dt_iop_colorbalance_mode_t mode;
   float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
-  float saturation, contrast, grey;
+  float saturation, contrast, grey, saturation_out;
 } dt_iop_colorbalance_params_t;
 
 typedef struct dt_iop_colorbalance_gui_data_t
@@ -126,7 +126,7 @@ typedef struct dt_iop_colorbalance_gui_data_t
   GtkWidget *lift_r, *lift_g, *lift_b, *lift_factor;
   GtkWidget *gamma_r, *gamma_g, *gamma_b, *gamma_factor;
   GtkWidget *gain_r, *gain_g, *gain_b, *gain_factor;
-  GtkWidget *saturation, *contrast, *grey;
+  GtkWidget *saturation, *contrast, *grey, *saturation_out;
   GtkWidget *masterbox;
   GtkWidget *optim_label;
   GtkWidget *auto_luma;
@@ -145,7 +145,7 @@ typedef struct dt_iop_colorbalance_data_t
 {
   dt_iop_colorbalance_mode_t mode;
   float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
-  float saturation, contrast, grey;
+  float saturation, contrast, grey, saturation_out;
 } dt_iop_colorbalance_data_t;
 
 typedef struct dt_iop_colorbalance_global_data_t
@@ -179,7 +179,7 @@ int groups()
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1 && new_version == 3)
   {
     typedef struct dt_iop_colorbalance_params_v1_t
     {
@@ -199,6 +199,35 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       n->gain[i] = o->gain[i];
     }
     n->mode = LEGACY;
+    return 0;
+  }
+
+  if(old_version == 2 && new_version == 3)
+  {
+    typedef struct dt_iop_colorbalance_params_v2_t
+    {
+      dt_iop_colorbalance_mode_t mode;
+      float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
+      float saturation, contrast, grey;
+    } dt_iop_colorbalance_params_v2_t;
+
+    dt_iop_colorbalance_params_v2_t *o = (dt_iop_colorbalance_params_v2_t *)old_params;
+    dt_iop_colorbalance_params_t *n = (dt_iop_colorbalance_params_t *)new_params;
+    dt_iop_colorbalance_params_t *d = (dt_iop_colorbalance_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    for(int i = 0; i < CHANNEL_SIZE; i++)
+    {
+      n->lift[i] = o->lift[i];
+      n->gamma[i] = o->gamma[i];
+      n->gain[i] = o->gain[i];
+    }
+    n->mode = o->mode;
+    n->contrast = o->contrast;
+    n->saturation = o->saturation;
+    n->contrast = o->contrast;
+    n->grey = o->grey;
     return 0;
   }
   return 1;
@@ -288,6 +317,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // For neutral parameters, skip the computations doing x^1 or (x-a)*1 + a to save time
   const int run_contrast = (d->contrast == 1.0f) ? 0 : 1;
   const int run_saturation = (d->saturation == 1.0f) ? 0: 1;
+  const int run_saturation_out = (d->saturation_out == 1.0f) ? 0: 1;
 
   switch (d->mode)
   {
@@ -376,12 +406,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           float rgb[3] = { 0.0f };
           dt_XYZ_to_prophotorgb(XYZ, rgb);
 
-          const float luma = XYZ[1]; // the Y channel is the relative luminance
+          float luma = XYZ[1]; // the Y channel is the relative luminance
 
           // do the calculation in RGB space
           for(int c = 0; c < 3; c++)
           {
-            // main saturation
+            // main saturation input
             if (run_saturation) rgb[c] = luma + d->saturation * (rgb[c] - luma);
 
             // RGB gamma correction
@@ -390,6 +420,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             // lift gamma gain
             rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
             rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c], gamma_inv[c] * 2.2f);
+
+            // main saturation output
+            dt_prophotorgb_to_XYZ(rgb, XYZ);
+            luma = XYZ[1];
+            if (run_saturation_out) rgb[c] = luma + d->saturation_out * (rgb[c] - luma);
 
             // contrast
             if (run_contrast) rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c] / grey, contrast) * grey;
@@ -440,16 +475,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           float rgb[3];
           dt_XYZ_to_prophotorgb(XYZ, rgb);
 
-          const float luma = XYZ[1]; // the Y channel is the RGB luminance
+          float luma = XYZ[1]; // the Y channel is the RGB luminance
 
           // do the calculation in RGB space
           for(int c = 0; c < 3; c++)
           {
-            // main saturation
+            // main saturation input
             if (run_saturation) rgb[c] = luma + d->saturation * (rgb[c] - luma);
 
             // channel CDL
             rgb[c] = CDL(rgb[c], gain[c], lift[c], gamma[c]);
+
+            // main saturation output
+            dt_prophotorgb_to_XYZ(rgb, XYZ);
+            luma = XYZ[1];
+            if (run_saturation_out) rgb[c] = luma + d->saturation_out * (rgb[c] - luma);
 
             // fulcrum contrat
             if (run_contrast) rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c] / grey, contrast) * grey;
@@ -489,12 +529,14 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   float grey_corr = d->grey / 100.0f;
   const __m128 grey = _mm_setr_ps(grey_corr, grey_corr, grey_corr, 0.0f);
   const __m128 saturation = _mm_setr_ps(d->saturation, d->saturation, d->saturation, 0.0f);
+  const __m128 saturation_out = _mm_setr_ps(d->saturation_out, d->saturation_out, d->saturation_out, 0.0f);
   const __m128 zero = _mm_setzero_ps();
   const __m128 one = _mm_set1_ps(1.0);
 
   // For neutral parameters, skip the computations doing x^1 or (x-a)*1 + a to save time
   const int run_contrast = (d->contrast == 1.0f) ? 0 : 1;
   const int run_saturation = (d->saturation == 1.0f) ? 0: 1;
+  const int run_saturation_out = (d->saturation_out == 1.0f) ? 0: 1;
 
   switch (d->mode)
   {
@@ -582,12 +624,12 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           // XYZ -> sRGB
           __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
 
-          // do the calculation in RGB space
+          __m128 luma;
 
-          // adjust main saturation
+          // adjust main saturation input
           if (run_saturation)
           {
-            __m128 luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+            luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
             rgb = luma + saturation * (rgb - luma);
           }
 
@@ -598,6 +640,14 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           rgb = ((rgb - one) * lift + one) * gain;
           rgb = _mm_max_ps(rgb, zero);
           rgb = _mm_pow_ps(rgb, gamma_inv * gamma_RGB);
+
+          // adjust main saturation output
+          if (run_saturation_out)
+          {
+            XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+            luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+            rgb = luma + saturation_out * (rgb - luma);
+          }
 
           // fulcrum contrast
           if (run_contrast)
@@ -644,10 +694,12 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           // XYZ -> sRGB
           __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
 
+          __m128 luma;
+
           // adjust main saturation
           if (run_saturation)
           {
-            __m128 luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+            luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
             rgb = luma + saturation * (rgb - luma);
           }
 
@@ -657,6 +709,14 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           //power
           rgb = _mm_max_ps(rgb, zero);
           rgb = _mm_pow_ps(rgb, gamma);
+
+          // adjust main saturation output
+          if (run_saturation_out)
+          {
+            XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+            luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+            rgb = luma + saturation_out * (rgb - luma);
+          }
 
           // fulcrum contrast
           if (run_contrast)
@@ -745,7 +805,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                               d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR], 0.0f },
                   contrast = (d->contrast != 0.0f) ? 1.0f / d->contrast : 1000000.0f,
                   grey = d->grey / 100.0f,
-                  saturation = d->saturation;
+                  saturation = d->saturation,
+                  saturation_out = d->saturation_out;
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 0, sizeof(cl_mem), (void *)&dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -757,6 +818,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 7, sizeof(float), (void *)&saturation);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 8, sizeof(float), (void *)&contrast);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 9, sizeof(float), (void *)&grey);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 10, sizeof(float), (void *)&saturation_out);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_lgg, sizes);
       if(err != CL_SUCCESS) goto error;
       return TRUE;
@@ -779,7 +841,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                               0.0f },
                   contrast = (d->contrast != 0.0f) ? 1.0f / d->contrast : 1000000.0f,
                   grey = d->grey / 100.0f,
-                  saturation = d->saturation;
+                  saturation = d->saturation,
+                  saturation_out = d->saturation_out;
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 0, sizeof(cl_mem), (void *)&dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -791,6 +854,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 7, sizeof(float), (void *)&saturation);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 8, sizeof(float), (void *)&contrast);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 9, sizeof(float), (void *)&grey);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 10, sizeof(float), (void *)&saturation_out);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_cdl, sizes);
       if(err != CL_SUCCESS) goto error;
       return TRUE;
@@ -1441,7 +1505,8 @@ void init(dt_iop_module_t *module)
                                                                      { 1.0f, 1.0f, 1.0f, 1.0f },
                                                                      1.0f,
                                                                      1.0f,
-                                                                     18.0f };
+                                                                     18.0f,
+                                                                     1.0f };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_colorbalance_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorbalance_params_t));
@@ -1553,6 +1618,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   d->grey = p->grey;
   d->saturation = p->saturation;
+  d->saturation_out = p->saturation_out;
   d->contrast = p->contrast;
 }
 
@@ -1960,6 +2026,18 @@ static void saturation_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void saturation_out_callback(GtkWidget *slider, dt_iop_module_t *self)
+{
+  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  if(self->dt->gui->reset) return;
+
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+
+  p->saturation_out = dt_bauhaus_slider_get(slider) + 1.0f;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void contrast_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
@@ -2341,10 +2419,17 @@ void gui_init(dt_iop_module_t *self)
 
   g->saturation = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005, p->saturation - 1.0f, 5, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->saturation, -1.0f, 1.0f);
-  dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
+  dt_bauhaus_widget_set_label(g->saturation, NULL, _("input saturation"));
   gtk_box_pack_start(GTK_BOX(g->master_box), g->saturation, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->saturation, _("saturation"));
+  gtk_widget_set_tooltip_text(g->saturation, _("saturation correction before the color balance"));
   g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
+
+  g->saturation_out = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005, p->saturation_out - 1.0f, 5, 0);
+  dt_bauhaus_slider_enable_soft_boundaries(g->saturation_out, -1.0f, 1.0f);
+  dt_bauhaus_widget_set_label(g->saturation_out, NULL, _("output saturation"));
+  gtk_box_pack_start(GTK_BOX(g->master_box), g->saturation_out, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->saturation_out, _("saturation correction after the color balance"));
+  g_signal_connect(G_OBJECT(g->saturation_out), "value-changed", G_CALLBACK(saturation_out_callback), self);
 
   g->grey = dt_bauhaus_slider_new_with_range(self, 0.1, 100., 0.5, p->grey, 2);
   dt_bauhaus_widget_set_label(g->grey, NULL, _("contrast fulcrum"));
