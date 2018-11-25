@@ -945,16 +945,12 @@ static void apply_autogrey(dt_iop_module_t *self)
       = { p->gamma[CHANNEL_RED] * p->gamma[CHANNEL_FACTOR],
           p->gamma[CHANNEL_GREEN] * p->gamma[CHANNEL_FACTOR],
           p->gamma[CHANNEL_BLUE] * p->gamma[CHANNEL_FACTOR] },
-      gamma_inv[3]
-      = { (gamma[0] != 0.0f) ? 1.0f / gamma[0] : 1000000.0f,
-          (gamma[1] != 0.0f) ? 1.0f / gamma[1] : 1000000.0f,
-          (gamma[2] != 0.0f) ? 1.0f / gamma[2] : 1000000.0f },
       gain[3] = { p->gain[CHANNEL_RED] * p->gain[CHANNEL_FACTOR], p->gain[CHANNEL_GREEN] * p->gain[CHANNEL_FACTOR],
                   p->gain[CHANNEL_BLUE] * p->gain[CHANNEL_FACTOR] };
 
   for(int c = 0; c < 3; c++)
   {
-    rgb[c] = CDL(rgb[c], gain[c], lift[c], gamma_inv[c]);
+    rgb[c] = CDL(rgb[c], gain[c], lift[c], 2.0f - gamma[c]);
     rgb[c] = CLAMP(rgb[c], 0.0f, 1.0f);
   }
 
