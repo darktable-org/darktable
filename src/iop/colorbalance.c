@@ -1122,7 +1122,7 @@ static void apply_gamma_auto(dt_iop_module_t *self)
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
   p->gamma[CHANNEL_FACTOR]
-      = logf(MAX(p->gain[CHANNEL_FACTOR] * XYZ[1] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f)) / logf(0.1800f);
+      = 2.0f - logf(0.1842f) / logf(MAX(p->gain[CHANNEL_FACTOR] * XYZ[1] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f));
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->gamma_factor, p->gamma[CHANNEL_FACTOR] - 1.0f);
@@ -1305,7 +1305,7 @@ static void apply_autoluma(dt_iop_module_t *self)
   {
     p->gain[CHANNEL_FACTOR] = CLAMP(p->lift[CHANNEL_FACTOR] / g->luma_patches[GAIN], 0.0f, 2.0f);
     p->lift[CHANNEL_FACTOR] = CLAMP(-p->gain[CHANNEL_FACTOR] * g->luma_patches[LIFT] + 1.0f, 0.0f, 2.0f);
-    p->gamma[CHANNEL_FACTOR] = CLAMP(logf(MAX(p->gain[CHANNEL_FACTOR] * g->luma_patches[GAMMA] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f)) / logf(0.1800f), 0.0f, 2.0f);
+    p->gamma[CHANNEL_FACTOR] = CLAMP(2.0f - logf(0.1842f) / logf(MAX(p->gain[CHANNEL_FACTOR] * g->luma_patches[GAMMA] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f)), 0.0f, 2.0f);
   }
 
   darktable.gui->reset = 1;
