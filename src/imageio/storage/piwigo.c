@@ -52,6 +52,7 @@ typedef struct _piwigo_api_context_t
   gchar *cookie_file;
   gchar *url;
 
+  gchar *server;
   gchar *username;
   gchar *password;
   gboolean error_occured;
@@ -65,15 +66,25 @@ typedef struct _piwigo_album_t
   int64_t size;
 } _piwigo_album_t;
 
+typedef struct _piwigo_account_t
+{
+  gchar *server;
+  gchar *username;
+  gchar *password;
+} _piwigo_account_t;
+
 typedef struct dt_storage_piwigo_gui_data_t
 {
   GtkLabel *status_label;
+  GtkEntry *server_entry;
   GtkEntry *user_entry, *pwd_entry, *new_album_entry;
   GtkBox *create_box;                               // Create album options...
   GtkWidget *permission_list, *export_tags;
   GtkWidget *album_list, *parent_album_list;
+  GtkWidget *account_list;
 
   GList *albums;
+  GList *accounts;
 
   /** Current Piwigo context for the gui */
   _piwigo_api_context_t *api;
@@ -140,11 +151,103 @@ static void _piwigo_ctx_destroy(_piwigo_api_context_t **ctx)
     g_object_unref((*ctx)->json_parser);
     g_free((*ctx)->cookie_file);
     g_free((*ctx)->url);
+    g_free((*ctx)->server);
     g_free((*ctx)->username);
     g_free((*ctx)->password);
     free(*ctx);
     *ctx = NULL;
   }
+}
+
+static void _piwigo_free_account(void *data)
+{
+  _piwigo_account_t *account = (_piwigo_account_t *)data;
+  g_free(account->server);
+  g_free(account->username);
+  g_free(account->password);
+}
+
+static void _piwigo_load_account(dt_storage_piwigo_gui_data_t *ui)
+{
+  if(!ui->accounts) g_list_free_full(ui->accounts, _piwigo_free_account);
+
+  GHashTable *table = dt_pwstorage_get("piwigo");
+  GHashTableIter iter;
+  gpointer key, value;
+
+  g_hash_table_iter_init (&iter, table);
+
+  while (g_hash_table_iter_next (&iter, &key, &value))
+  {
+    if(key && value)
+    {
+      gchar *data = (gchar *)value;
+      JsonParser *parser = json_parser_new();
+      json_parser_load_from_data(parser, data, strlen(data), NULL);
+      JsonNode *root = json_parser_get_root(parser);
+
+      JsonObject *obj = json_node_get_object(root);
+      _piwigo_account_t *account = malloc(sizeof(_piwigo_account_t));
+
+      account->server =  g_strdup(json_object_get_string_member(obj, "server"));
+      account->username =  g_strdup(json_object_get_string_member(obj, "username"));
+      account->password =  g_strdup(json_object_get_string_member(obj, "password"));
+
+      if(account->server && strlen(account->server)>0)
+        ui->accounts = g_list_append(ui->accounts, account);
+      g_object_unref(parser);
+    }
+  }
+
+  g_hash_table_destroy(table);
+}
+
+static _piwigo_account_t *_piwigo_get_account(dt_storage_piwigo_gui_data_t *ui, const gchar *server)
+{
+  if(!server) return NULL;
+
+  GList *a = ui->accounts;
+
+  while(a)
+  {
+    _piwigo_account_t *account = (_piwigo_account_t *)a->data;;
+    if(account->server && !strcmp(server, account->server)) return account;
+    a = g_list_next(a);
+  }
+
+  return NULL;
+}
+
+static void _piwigo_set_account(dt_storage_piwigo_gui_data_t *ui)
+{
+  /// serialize data;
+  JsonBuilder *builder = json_builder_new();
+  json_builder_begin_object(builder);
+  json_builder_set_member_name(builder, "server");
+  json_builder_add_string_value(builder, gtk_entry_get_text(ui->server_entry));
+  json_builder_set_member_name(builder, "username");
+  json_builder_add_string_value(builder, gtk_entry_get_text(ui->user_entry));
+  json_builder_set_member_name(builder, "password");
+  json_builder_add_string_value(builder, gtk_entry_get_text(ui->pwd_entry));
+
+  json_builder_end_object(builder);
+
+  JsonNode *node = json_builder_get_root(builder);
+  JsonGenerator *generator = json_generator_new();
+  json_generator_set_root(generator, node);
+#if JSON_CHECK_VERSION(0, 14, 0)
+  json_generator_set_pretty(generator, FALSE);
+#endif
+  gchar *data = json_generator_to_data(generator, NULL);
+
+  json_node_free(node);
+  g_object_unref(generator);
+  g_object_unref(builder);
+
+  GHashTable *table = dt_pwstorage_get("piwigo");
+  g_hash_table_insert(table, g_strdup(gtk_entry_get_text(ui->server_entry)), data);
+  dt_pwstorage_set("piwigo", table);
+  g_hash_table_destroy(table);
 }
 
 /** Set status connection text */
@@ -276,7 +379,10 @@ static void _piwigo_api_authenticate(_piwigo_api_context_t *ctx)
   args = _piwigo_query_add_arguments(args, "method", "pwg.session.login");
   args = _piwigo_query_add_arguments(args, "username", ctx->username);
   args = _piwigo_query_add_arguments(args, "password", ctx->password);
-  ctx->url = g_strdup_printf("https://%s.piwigo.com/ws.php?format=json", ctx->username);
+  if(!strcmp(ctx->server, "piwigo.com"))
+    ctx->url = g_strdup_printf("https://%s.piwigo.com/ws.php?format=json", ctx->username);
+  else
+    ctx->url = g_strdup_printf("https://%s/ws.php?format=json", ctx->server);
 
   _piwigo_api_post(ctx, args, NULL, TRUE);
 
@@ -326,6 +432,7 @@ static void _piwigo_authenticate(dt_storage_piwigo_gui_data_t *ui)
 {
   if(!ui->api) ui->api = _piwigo_ctx_init();
 
+  ui->api->server = g_strdup(gtk_entry_get_text(ui->server_entry));
   ui->api->username = g_strdup(gtk_entry_get_text(ui->user_entry));
   ui->api->password = g_strdup(gtk_entry_get_text(ui->pwd_entry));
 
@@ -341,16 +448,8 @@ static void _piwigo_authenticate(dt_storage_piwigo_gui_data_t *ui)
     if(ui->api->authenticated)
     {
       _piwigo_set_status(ui, _("authenticated"), "#7fe07f");
-
-      // store username/password
-      GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
-      g_hash_table_insert(table, "username", g_strdup(ui->api->username));
-      g_hash_table_insert(table, "password", g_strdup(ui->api->password));
-      if(!dt_pwstorage_set("piwigo", table))
-      {
-        dt_print(DT_DEBUG_PWSTORAGE, "[piwigo] cannot store username/password\n");
-      }
-      g_hash_table_destroy(table);
+      dt_conf_set_string("plugins/imageio/storage/export/piwigo/server", ui->api->server);
+      _piwigo_set_account(ui);
     }
     else
     {
@@ -375,6 +474,32 @@ static void _piwigo_entry_changed(GtkEntry *entry, gpointer data)
     _piwigo_set_status(ui, _("not authenticated"), "#e07f7f");
     _piwigo_ctx_destroy(&ui->api);
     gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
+  }
+}
+
+static void _piwigo_server_entry_changed(GtkEntry *entry, gpointer data)
+{
+  dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
+
+  if(ui->api)
+  {
+    _piwigo_set_status(ui, _("not authenticated"), "#e07f7f");
+    _piwigo_ctx_destroy(&ui->api);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
+  }
+}
+
+static void _piwigo_account_changed(GtkComboBox *cb, gpointer data)
+{
+  dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
+  const gchar *value = dt_bauhaus_combobox_get_text(ui->account_list);
+  const _piwigo_account_t *account = _piwigo_get_account(ui, value);
+
+  if(account)
+  {
+    gtk_entry_set_text(ui->server_entry, account->server);
+    gtk_entry_set_text(ui->user_entry, account->username);
+    gtk_entry_set_text(ui->pwd_entry, account->password);
   }
 }
 
@@ -582,41 +707,86 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_storage_piwigo_gui_data_t *ui = self->gui_data;
 
   ui->albums = NULL;
+  ui->accounts = NULL;
   ui->api = NULL;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(8));
 
+  _piwigo_load_account(ui);
+
+  gchar *server = dt_conf_get_string("plugins/imageio/storage/export/piwigo/server");
+
+  // look for last server information
+  _piwigo_account_t *last_account = _piwigo_get_account(ui, server);
+  /*
   GHashTable *table = dt_pwstorage_get("piwigo");
   gchar *_username = g_strdup(g_hash_table_lookup(table, "username"));
   gchar *_password = g_strdup(g_hash_table_lookup(table, "password"));
   g_hash_table_destroy(table);
+  gchar *_username;
+  gchar *_password;
+  */
 
   GtkWidget *hbox, *label, *button;
+
+  // account
+  ui->account_list = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(ui->account_list, NULL, _("accounts"));
+  GList *a = ui->accounts;
+  int account_index = -1, index=0;
+  while(a)
+  {
+    _piwigo_account_t *account = (_piwigo_account_t *)a->data;
+    dt_bauhaus_combobox_add(ui->account_list, account->server);
+    if(!strcmp(account->server, server)) account_index = index;
+    index++;
+    a = g_list_next(a);
+  }
+  gtk_widget_set_hexpand(ui->account_list, TRUE);
+  g_signal_connect(G_OBJECT(ui->account_list), "value-changed", G_CALLBACK(_piwigo_account_changed), (gpointer)ui);
+  gtk_box_pack_start(GTK_BOX(self->widget), ui->account_list, FALSE, FALSE, 0);
+
+  // server
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
+  label = gtk_label_new(_("server"));
+  g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
+  ui->server_entry = GTK_ENTRY(gtk_entry_new());
+  gtk_widget_set_hexpand(GTK_WIDGET(ui->server_entry), TRUE);
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->server_entry));
+  gtk_entry_set_text(ui->server_entry, last_account?last_account->server:"piwigo.com");
+  g_signal_connect(G_OBJECT(ui->server_entry), "changed", G_CALLBACK(_piwigo_server_entry_changed), (gpointer)ui);
+  gtk_entry_set_width_chars(GTK_ENTRY(ui->server_entry), 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->server_entry), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  g_free(server);
 
   // login
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
   label = gtk_label_new(_("user"));
+  g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
   ui->user_entry = GTK_ENTRY(gtk_entry_new());
   gtk_widget_set_hexpand(GTK_WIDGET(ui->user_entry), TRUE);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->user_entry));
-  gtk_entry_set_text(ui->user_entry, _username == NULL ? "" : _username);
+  gtk_entry_set_text(ui->user_entry, last_account?last_account->username:"");
   g_signal_connect(G_OBJECT(ui->user_entry), "changed", G_CALLBACK(_piwigo_entry_changed), (gpointer)ui);
   gtk_entry_set_width_chars(GTK_ENTRY(ui->user_entry), 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->user_entry), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   // password
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
   label = gtk_label_new(_("password"));
+  g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
   ui->pwd_entry = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_visibility(GTK_ENTRY(ui->pwd_entry), FALSE);
   gtk_widget_set_hexpand(GTK_WIDGET(ui->pwd_entry), TRUE);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->pwd_entry));
-  gtk_entry_set_text(ui->pwd_entry, _password == NULL ? "" : _password);
+  gtk_entry_set_text(ui->pwd_entry, last_account?last_account->password:"");
   g_signal_connect(G_OBJECT(ui->pwd_entry), "changed", G_CALLBACK(_piwigo_entry_changed), (gpointer)ui);
   gtk_entry_set_width_chars(GTK_ENTRY(ui->pwd_entry), 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->pwd_entry), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
@@ -638,6 +808,9 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_bauhaus_combobox_set(ui->export_tags, 0);
   gtk_widget_set_hexpand(ui->export_tags, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), ui->export_tags, FALSE, FALSE, 0);
+
+  // select account
+  if(account_index != -1) dt_bauhaus_combobox_set(ui->account_list, account_index);
 
   // permissions list
   ui->permission_list = dt_bauhaus_combobox_new(NULL);
@@ -692,9 +865,6 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(ui->create_box, ui->parent_album_list, TRUE, TRUE, 0);
 
   _piwigo_set_status(ui, _("click login button to start"), "#ffffff");
-
-  g_free(_username);
-  g_free(_password);
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
@@ -879,6 +1049,7 @@ void *get_params(dt_imageio_module_storage_t *self)
     // create a new context for the import. set username/password to be able to connect.
     p->api = _piwigo_ctx_init();
     p->api->authenticated = FALSE;
+    p->api->server = g_strdup(ui->api->server);
     p->api->username = g_strdup(ui->api->username);
     p->api->password = g_strdup(ui->api->password);
     _piwigo_api_authenticate(p->api);
