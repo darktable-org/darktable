@@ -467,10 +467,16 @@ static void apply_auto_grey(dt_iop_module_t *self)
   dt_Lab_to_XYZ(self->picked_color, XYZ);
 
   float grey = XYZ[1];
+  float prev_grey = p->grey_point_source;
   p->grey_point_source = 100.f * grey;
+  float grey_var = Log2(prev_grey / p->grey_point_source);
+  p->black_point_source = p->black_point_source + grey_var;
+  p->white_point_source = p->white_point_source + grey_var;
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->grey_point_source, p->grey_point_source);
+  dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
+  dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);
   darktable.gui->reset = 0;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -488,7 +494,7 @@ static void apply_auto_black(dt_iop_module_t *self)
 
   // Black
   dt_Lab_to_prophotorgb(self->picked_color_min, XYZ);
-  float black = fminf(fminf(XYZ[0], XYZ[1]), XYZ[2]);
+  float black = (XYZ[0] + XYZ[1] + XYZ[2]) / 3.0f;
   float EVmin = Log2Thres(black / (p->grey_point_source / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
@@ -580,7 +586,7 @@ static void apply_autotune(dt_iop_module_t *self)
 
   // Black
   dt_Lab_to_prophotorgb(self->picked_color_min, XYZ);
-  float black = fminf(fminf(XYZ[0], XYZ[1]), XYZ[2]);
+  float black = (XYZ[0] + XYZ[1] + XYZ[2]) / 3.0f;
   float EVmin = Log2Thres(black / (p->grey_point_source / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
@@ -672,7 +678,17 @@ static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  float prev_grey = p->grey_point_source;
   p->grey_point_source = dt_bauhaus_slider_get(slider);
+
+  float grey_var = Log2(prev_grey / p->grey_point_source);
+  p->black_point_source = p->black_point_source + grey_var;
+  p->white_point_source = p->white_point_source + grey_var;
+
+  darktable.gui->reset = 1;
+  dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
+  dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
+  darktable.gui->reset = 0;
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 

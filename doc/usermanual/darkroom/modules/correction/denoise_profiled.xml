@@ -87,13 +87,16 @@
       <title>mode</title>
       <para>
         This module can eliminate noise with two different core algorithms. <quote>non-local
-        means</quote> is a bit better suited to tackle luma (lightness) noise; <quote>
-        wavelet</quote> has its strength in eliminating chroma (color) noise. If needed you can
-        apply two instances of this module (see <xref linkend="multiple_instances"/>). The
-        <quote>non-local means</quote> instance should be combined with blend mode
-        <quote>lightness</quote> or <quote>HSV lightness</quote>; the <quote>wavelet</quote>
-        instance with blend mode <quote>color</quote> or <quote>HSV color</quote>. For more
-        information on blend modes have a look at <xref linkend="blending_operators"/>.
+        means</quote> can tackle efficiently luma (lightness) noise whereas it is less efficient
+        with chroma (color noise). <quote>wavelet</quote> is particularly efficient at eliminating
+        chroma (color) noise but can also give good results for luma noise. It also lets you adjust
+        the force of the denoising depending on the noise coarseness. If needed you can apply two
+        instances of this module (see <xref linkend="multiple_instances"/>): one instance to tackle
+        luma noise with blend mode <quote>lightness</quote> or <quote>HSV lightness</quote>, and
+        another one to tackle chroma noise with blend mode <quote>color</quote> or <quote>HSV color
+        </quote>. An example of the use of two instances with blending modes is available within
+        the presets of this module. For more information on blend modes have a look at
+        <xref linkend="blending_operators"/>.
       </para>
     </sect5>
 
@@ -103,9 +106,46 @@
         This slider is only available if mode <quote>non-local means</quote> is selected. It
         controls the size of the patches being matched when deciding which pixels to average
         (see also <xref linkend="denoise_non_local_means"/>). Setting this to higher values can
-        give more sharpness. Processing time will stay about the same.
+        give more sharpness, especially on strong edges, but may also give more artifacts.
+        Processing time will stay about the same.
       </para>
     </sect5>
+
+    <sect5>
+      <title>search radius</title>
+      <para>
+	       This slider is only available if mode <quote>non-local means</quote> is selected. It
+         controls the how far from a pixel the algorithm will try to find similar patches. The
+         processing time is hugely impacted by this parameter: it depends on the square of the
+         parameter. A lower value will make execution faster, a higher value will make it slower.
+         Increasing the value can give better results for very noisy images when coarse grain
+         noise is visible.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>coarse/fine curves</title>
+      <para>
+        These curves are only available if mode <quote>wavelet</quote> is selected. The noise of
+        an image is usually not only fine grain, but also more or less coarse grain. These curves
+        allow to denoise more or less depending on the coarseness of the visible noise. The left
+        of the curve will act on very coarse grain noise, while the right of the curve will act on
+        very fine grain noise. Pushing up the curve will result in more smoothing, pulling it down
+        will result in less smoothing. As an example, you can preserve very-fine grain noise by
+        pulling down the rightest point of the curve until the minimum value. As another example,
+        if you are tackling chroma noise with a blend mode, you can push up the right part of the
+        curve, as colors are not supposed to change a lot on fine grain scales: this will help
+        especially if you see some isolated pixel left undenoised.
+        Considering R, G, and B curves, the best way to use them is to look at one of the channel
+        using the channel mixer module in gray mode, denoise this particular channel, and then do
+        the same for the other channels. This way, you can take into account the fact that some
+        channel may be noisier than others into your denoising. Be aware that guessing which channel
+        is noisy without actually seeing the channels individually is not straightforward and can be
+        counterintuitive: a pixel which is completely red may not be caused by noise on the R channel,
+        but actually by noise on B and G channels.
+      </para>
+    </sect5>
+
 
     <sect5>
       <title>strength</title>

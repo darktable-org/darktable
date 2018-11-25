@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2017 pascal obry.
+    copyright (c) 2014-2018 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,6 +27,17 @@
 #include "common/pdf.h"
 #include "control/jobs/control_jobs.h"
 #include "cups_print.h"
+
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+// some platforms are starting to provide CUPS 2.2.9 and there the
+// CUPS API deprecated routines ate now flagged as such and reported as
+// warning preventing the compilation.
+//
+// this seems wrong and PPD should be removed from this unit. but there
+// still one missing piece discussed with the CUPS maintainers about the
+// way to get media-type using the IPP API. nothing close to working at
+// this stage, so instead of breaking the compilation on platforms using
+// recent CUPS version we kill the warning.
 
 typedef struct dt_prtctl_t
 {
@@ -451,7 +462,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
     g_free(argv[11]);
     g_free(argv[13]);
 
-    if (exit_status==0)
+    if(exit_status==0)
     {
       FILE *stream = g_fopen(tmpfile, "rb");
 
@@ -480,6 +491,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
     }
     else
     {
+      dt_control_log(_("printing on `%s' cancelled"), pinfo->printer.name);
       dt_print(DT_DEBUG_PRINT, "[print]   command fails with %d, cancel printing\n", exit_status);
       return;
     }

@@ -52,7 +52,9 @@
       averaging pixels with their neighbors, taking into account not only the geometric distance
       but also the distance on the range scale, i.e. differences in the RGB values. As denoising
       is a resource hungry process, it slows down pixelpipe processing significantly; consider
-      to activate this module late in your workflow.
+      to activate this module late in your workflow. The module can be really effective if some
+      RGB channel is more noisy than the 2 other channels. In such a case, use the channel mixer
+      module to see the channels one by one, in order to set the blur intensities accordingly.
     </para>
 
     <sect5>
