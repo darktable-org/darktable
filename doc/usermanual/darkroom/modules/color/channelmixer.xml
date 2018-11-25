@@ -47,7 +47,9 @@
 
     <para>
       First select your output channel and then set the amount each input channel feeds into
-      that output channel.
+      that output channel. Among its many uses, this module can be used to see the RGB channels
+      individually: use the gray destination and put the value 1 on the input channel you want
+      to see and 0 on the others.
     </para>
 
   </sect4>
