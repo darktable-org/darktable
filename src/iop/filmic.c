@@ -531,6 +531,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float saturation = d->saturation / 100.0f;
   const float contrast = d->contrast;
   const float power = d->output_power;
+  const int preserve_color = d->preserve_color;
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -544,6 +545,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 9, sizeof(float), (void *)&saturation);
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 10, sizeof(float), (void *)&contrast);
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 11, sizeof(float), (void *)&power);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 12, sizeof(int), (void *)&preserve_color);
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic, sizes);
   if(err != CL_SUCCESS) goto error;
@@ -968,12 +970,12 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   const float white_log = 1.0f; // assumes user set log as in the autotuner
 
   // target luminance desired after filmic curve
-  const float black_display = p->black_point_target / 100.0f; // in %
-  const float grey_display = powf(p->grey_point_target / 100.0f, 1.0f / (p->output_power));
-  const float white_display = p->white_point_target / 100.0f; // in %
+  const float black_display = CLAMP(p->black_point_target, 0.0f, p->grey_point_target) / 100.0f; // in %
+  const float grey_display = powf(CLAMP(p->grey_point_target, p->black_point_target, p->white_point_target) / 100.0f, 1.0f / (p->output_power));
+  const float white_display = CLAMP(p->white_point_target, p->grey_point_target, 100.0f)  / 100.0f; // in %
 
   const float latitude = CLAMP(p->latitude_stops, 0.01f, dynamic_range * 0.99f);
-  const float balance = p->balance / 100.0f; // in %
+  const float balance = CLAMP(p->balance, 0.0f, 50.0f) / 100.0f; // in %
 
   float contrast = p->contrast;
   if (contrast < grey_display / grey_log)
@@ -1058,7 +1060,8 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
 
   // Build the curve from the nodes
   int nodes;
-  float x[5], y[5];
+  float x[5] = {1.0f};
+  float y[5] = {1.0f};
 
   if (SHOULDER_LOST && !TOE_LOST)
   {
@@ -1137,6 +1140,8 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
 
     // Compute the LUT
     dt_draw_curve_calc_values(curve, 0.0f, 1.0f, res, NULL, table);
+    dt_draw_curve_destroy(curve);
+
   }
   else
   {
@@ -1144,12 +1149,13 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
     curve = dt_draw_curve_new(0.0, 1.0, MONOTONE_HERMITE);
     for(int k = 0; k < nodes; k++) (void)dt_draw_curve_add_point(curve, x[k], y[k]);
     dt_draw_curve_calc_values(curve, 0.0f, 1.0f, res, NULL, table_temp);
+    dt_draw_curve_destroy(curve);
 
     // Compute the cubic spline interpolation
-    dt_draw_curve_destroy(curve);
     curve = dt_draw_curve_new(0.0, 1.0, CUBIC_SPLINE);
     for(int k = 0; k < nodes; k++) (void)dt_draw_curve_add_point(curve, x[k], y[k]);
     dt_draw_curve_calc_values(curve, 0.0f, 1.0f, res, NULL, table);
+    dt_draw_curve_destroy(curve);
 
     // Average both LUT
 #ifdef _OPENMP
@@ -1158,7 +1164,6 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
     for(int k = 0; k < res; k++) table[k] = (table[k] + table_temp[k]) / 2.0f;
   }
 
-  dt_draw_curve_destroy(curve);
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -1466,7 +1471,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->balance), "value-changed", G_CALLBACK(balance_callback), self);
 
   // saturation slider
-  g->saturation = dt_bauhaus_slider_new_with_range(self, 0., 100., 1.0, (powf(2.0f, p->saturation / 100.0f) - 1.0f) * 100.0f, 2);
+  g->saturation = dt_bauhaus_slider_new_with_range(self, 0., 100., 0.1, (powf(2.0f, p->saturation / 100.0f) - 1.0f) * 100.0f, 2);
   dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
   dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);

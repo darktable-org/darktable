@@ -22,7 +22,7 @@ kernel void
 filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
         const float dynamic_range, const float shadows_range, const float grey,
         read_only image2d_t table, read_only image2d_t diff, const float saturation,
-        const float contrast, const float power)
+        const float contrast, const float power, const int preserve_color)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -33,37 +33,63 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
   float4 o = Lab_to_XYZ(i);
   o = XYZ_to_prophotorgb(o);
 
-  const float4 noise = pow((float4)2.0f, (float4)-16.0f);
+  const float noise = pow(2.0f, -16.0f);
+  const float4 noise4 = noise;
   const float4 dynamic4 = dynamic_range;
   const float4 shadows4 = shadows_range;
-  const float4 grey4 = grey;
+  float derivative, luma;
 
-  // Log profile
-  o = o / grey;
-  o = (o < noise) ? noise : o;
-  o = (log2(o) - shadows4) / dynamic4;
-  o = clamp(o, (float4)0.0f, (float4)1.0f);
+  if (preserve_color)
+  {
 
-  const float4 index = o;
+    // Save the ratios
+    float maxRGB = max(max(o.x, o.y), o.z);
+    const float4 ratios = o / (float4)maxRGB;
 
-  // Curve S LUT
-  o.x = lookup(table, (const float)o.x);
-  o.y = lookup(table, (const float)o.y);
-  o.z = lookup(table, (const float)o.z);
+    // Log profile
+    maxRGB = maxRGB / grey;
+    maxRGB = (maxRGB < noise) ? noise : maxRGB;
+    maxRGB = (log2(maxRGB) - shadows_range) / dynamic_range;
+    maxRGB = clamp(maxRGB, 0.0f, 1.0f);
 
-  // Desaturate on the non-linear parts of the curve
-  const float4 luma = prophotorgb_to_XYZ(o).y;
+    const float index = maxRGB;
 
-  float4 derivative;
-  derivative.x = lookup(diff, (const float)index.x);
-  derivative.y = lookup(diff, (const float)index.y);
-  derivative.z = lookup(diff, (const float)index.z);
+    // Curve S LUT
+    maxRGB = lookup(table, (const float)maxRGB);
 
-  const float4 saturation4 = saturation;
-  const float4 mid_distance = (float4)4.0f * (luma - (float4)0.5f) * (luma - (float4)0.5f);
-  const float4 bounds = ((float4) 1.0f) / ((float4) 1.0f - luma);
+    // Re-apply the ratios
+    o = (float4)maxRGB * ratios;
 
-  o = luma + clamp((float4)1.0f - bounds * mid_distance * derivative / saturation4, (float4)0.0f, (float4)1.0f) * (o - luma);
+    // Derivative
+    derivative = lookup(diff, (const float)index);
+    luma = maxRGB;
+  }
+  else
+  {
+    // Log profile
+    o = o / grey;
+    o = (o < noise) ? noise : o;
+    o = (log2(o) - shadows4) / dynamic4;
+    o = clamp(o, (float4)0.0f, (float4)1.0f);
+
+    const float index = prophotorgb_to_XYZ(o).y;
+
+    // Curve S LUT
+    o.x = lookup(table, (const float)o.x);
+    o.y = lookup(table, (const float)o.y);
+    o.z = lookup(table, (const float)o.z);
+
+    // Get the derivative
+    derivative = lookup(diff, (const float)index);
+    luma = prophotorgb_to_XYZ(o).y;
+  }
+
+  // Desaturate selectively
+  const float mid_distance = 4.0f * (luma - 0.5f) * (luma - 0.5f);
+  const float bounds = (1.0f) / (1.0f - luma);
+  const float factor = clamp(1.0f - bounds * mid_distance * derivative / saturation, 0.0f, 1.0f);
+
+  o = (float4)luma + (float4)factor * (o - (float4)luma);
   o = clamp(o, (float4)0.0f, (float4)1.0f);
 
   // Apply the transfer function of the display
