@@ -832,11 +832,11 @@ static inline void normalize_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *
     case (CHANNEL_FACTOR):
     {
       // correct all the channels
-      float rgb[3] = {p[CHANNEL_RED] / 2.0f, p[CHANNEL_GREEN] / 2.0f, p[CHANNEL_BLUE] / 2.0f };
+      float rgb[3] = {(p[CHANNEL_RED] - 1.0f), (p[CHANNEL_GREEN] - 1.0f), (p[CHANNEL_BLUE] - 1.0f) };
       float mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
-      p[CHANNEL_RED] = (rgb[0] - mean) * 2.0f + 1.f;
-      p[CHANNEL_GREEN] = (rgb[1] - mean) * 2.0f + 1.f;
-      p[CHANNEL_BLUE] = (rgb[2] - mean) * 2.0f + 1.f;
+      p[CHANNEL_RED] = (rgb[0] - mean) + 1.f;
+      p[CHANNEL_GREEN] = (rgb[1] - mean) + 1.f;
+      p[CHANNEL_BLUE] = (rgb[2] - mean) + 1.f;
       break;
     }
     case (CHANNEL_RED):
@@ -844,10 +844,10 @@ static inline void normalize_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *
       // correct all channels but the red
       for (int iter = 0; iter < 100; ++iter)
       {
-        float rgb[3] = {p[CHANNEL_RED] / 2.0f, p[CHANNEL_GREEN] / 2.0f, p[CHANNEL_BLUE] / 2.0f };
+        float rgb[3] = {(p[CHANNEL_RED] - 1.0f), (p[CHANNEL_GREEN] - 1.0f), (p[CHANNEL_BLUE] - 1.0f)};
         float mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
-        p[CHANNEL_GREEN] = (rgb[1] - mean) * 2.0f + 1.f;
-        p[CHANNEL_BLUE] = (rgb[2] - mean) * 2.0f + 1.f;
+        p[CHANNEL_GREEN] = (rgb[1] - mean) + 1.f;
+        p[CHANNEL_BLUE] = (rgb[2] - mean) + 1.f;
       }
       break;
     }
@@ -856,10 +856,10 @@ static inline void normalize_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *
       // correct all the channels
       for (int iter = 0; iter < 100; ++iter)
       {
-        float rgb[3] = {p[CHANNEL_RED] / 2.0f, p[CHANNEL_GREEN] / 2.0f, p[CHANNEL_BLUE] / 2.0f };
+        float rgb[3] = {(p[CHANNEL_RED] - 1.0f), (p[CHANNEL_GREEN] - 1.0f), (p[CHANNEL_BLUE] - 1.0f)};
         float mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
-        p[CHANNEL_RED] = (rgb[0] - mean) * 2.0f + 1.f;
-        p[CHANNEL_BLUE] = (rgb[2] - mean) * 2.0f + 1.f;
+        p[CHANNEL_RED] = (rgb[0] - mean) + 1.f;
+        p[CHANNEL_BLUE] = (rgb[2] - mean) + 1.f;
       }
       break;
     }
@@ -868,10 +868,10 @@ static inline void normalize_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *
       // correct all the channels
       for (int iter = 0; iter < 100; ++iter)
       {
-        float rgb[3] = {p[CHANNEL_RED] / 2.0f, p[CHANNEL_GREEN] / 2.0f, p[CHANNEL_BLUE] / 2.0f };
+        float rgb[3] = {(p[CHANNEL_RED] - 1.0f), (p[CHANNEL_GREEN] - 1.0f), (p[CHANNEL_BLUE] - 1.0f)};
         float mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
-        p[CHANNEL_RED] = (rgb[0] - mean) * 2.0f + 1.f;
-        p[CHANNEL_GREEN] = (rgb[1] - mean) * 2.0f + 1.f;
+        p[CHANNEL_RED] = (rgb[0] - mean) + 1.f;
+        p[CHANNEL_GREEN] = (rgb[1] - mean) + 1.f;
       }
       break;
     }
@@ -882,6 +882,53 @@ static inline void normalize_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *
   dt_bauhaus_slider_set_soft(G, p[CHANNEL_GREEN] - 1.0f);
   dt_bauhaus_slider_set_soft(B, p[CHANNEL_BLUE] - 1.0f);
   darktable.gui->reset = 0;
+}
+
+static inline void set_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *B, float hsl[3], float *p, int mode)
+{
+
+  float rgb[3] = { 0.0f };
+  hsl2rgb(rgb, hsl[0], hsl[1], 0.5f);
+
+  if(hsl[0] != -1)
+  {
+    // Express the RGB values in ratio
+    float mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
+    //float max = fmaxf(fmaxf(rgb[0], rgb[1]), rgb[2]);
+    p[CHANNEL_RED] = (rgb[0] - mean) * 0.75f  + 1.0f;
+    p[CHANNEL_GREEN] = (rgb[1] - mean) * 0.75f + 1.0f;
+    p[CHANNEL_BLUE] = (rgb[2] - mean) * 0.75f + 1.0f;
+
+    normalize_RGB_sliders(R, G, B, p, CHANNEL_FACTOR, mode);
+  }
+}
+
+static inline void set_HSL_sliders(GtkWidget *hue, GtkWidget *sat, float RGB[4])
+{
+  /** HSL sliders are set from the RGB values at any time.
+  * Only the RGB values are saved and used in the computations.
+  * The HSL sliders are merely an interface.
+  */
+  float RGB_norm[3] = { (RGB[CHANNEL_RED]), (RGB[CHANNEL_GREEN]), (RGB[CHANNEL_BLUE]) };
+  float mean = (RGB_norm[0] + RGB_norm[1] + RGB_norm[2]) / 3.0f;
+  for (int c = 0; c < 3; ++c) RGB_norm[c] = (RGB_norm[c] - mean) + 0.5f;
+
+  float h, s, l;
+  rgb2hsl(RGB_norm, &h, &s, &l);
+
+  if(h != -1.0f)
+  {
+    dt_bauhaus_slider_set_soft(hue, h);
+    dt_bauhaus_slider_set_soft(sat, s);
+    update_saturation_slider_color(GTK_WIDGET(sat), h);
+    gtk_widget_queue_draw(GTK_WIDGET(sat));
+  }
+  else
+  {
+    dt_bauhaus_slider_set_soft(hue, -1.0f);
+    dt_bauhaus_slider_set_soft(sat, 0.0f);
+    gtk_widget_queue_draw(GTK_WIDGET(sat));
+  }
 }
 
 static inline void _check_tuner_picker_labels(dt_iop_module_t *self)
@@ -901,30 +948,6 @@ static inline void _check_tuner_picker_labels(dt_iop_module_t *self)
     dt_bauhaus_widget_set_label(g->auto_color, NULL, _("neutralize colors"));
 }
 
-static inline void set_HSL_sliders(GtkWidget *hue, GtkWidget *sat, float RGB[4])
-{
-  /** HSL sliders are set from the RGB values at any time.
-  * Only the RGB values are saved and used in the computations.
-  * The HSL sliders are merely an interface.
-  */
-  float RGB_norm[3] = { (RGB[CHANNEL_RED] / 2.0f), (RGB[CHANNEL_GREEN]) / 2.0f, (RGB[CHANNEL_BLUE] / 2.0f) };
-  float h, s, l;
-  rgb2hsl(RGB_norm, &h, &s, &l);
-
-  if(h != -1.0f)
-  {
-    dt_bauhaus_slider_set_soft(hue, h);
-    dt_bauhaus_slider_set_soft(sat, s);
-    update_saturation_slider_color(GTK_WIDGET(sat), h);
-    gtk_widget_queue_draw(GTK_WIDGET(sat));
-  }
-  else
-  {
-    dt_bauhaus_slider_set_soft(hue, -1.0f);
-    dt_bauhaus_slider_set_soft(sat, 0.0f);
-    gtk_widget_queue_draw(GTK_WIDGET(sat));
-  }
-}
 
 static void apply_autogrey(dt_iop_module_t *self)
 {
@@ -1225,7 +1248,7 @@ static void apply_autocolor(dt_iop_module_t *self)
   * To avoid divergence, we constrain the parameters between +- 0.25 around the neutral value.
   * Experimentally, nothing good happens out of these bounds.
   */
-  for (int runs = 0 ; runs < 500 ; ++runs)
+  for (int runs = 0 ; runs < 1000 ; ++runs)
   {
     // compute RGB slope/gain (powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - p->lift[c+1] + 1.0f) / MAX(RGB[c], 0.000001f);
     for (int c = 0; c < 3; ++c) RGB_gain[c] = CLAMP((powf(greys[GAIN], 1.0f / (2.0f - RGB_gamma[c])) - RGB_lift[c]) / MAX(samples_gain[c], 0.000001f), 0.0f, 2.0f);
@@ -1547,25 +1570,6 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   free(piece->data);
   piece->data = NULL;
 }
-
-static inline void set_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *B, float hsl[3], float *p, int mode)
-{
-
-  float rgb[3] = { 0.0f };
-  hsl2rgb(rgb, hsl[0], hsl[1], hsl[2]);
-
-  if(hsl[0] != -1)
-  {
-    // Adjustement from http://filmicworlds.com/blog/minimal-color-grading-tools/
-    float mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
-    p[CHANNEL_RED] = (rgb[0] - mean) * 2.0f + 1.0f;
-    p[CHANNEL_GREEN] = (rgb[1] - mean) * 2.0f + 1.0f;
-    p[CHANNEL_BLUE] = (rgb[2] - mean) * 2.0f + 1.0f;
-
-    normalize_RGB_sliders(R, G, B, p, CHANNEL_FACTOR, mode);
-  }
-}
-
 
 void gui_update(dt_iop_module_t *self)
 {
