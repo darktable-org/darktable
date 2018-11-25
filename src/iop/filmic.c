@@ -148,6 +148,8 @@ typedef struct dt_iop_filmic_data_t
   float output_power;
   float contrast;
   int preserve_color;
+  float latitude_min;
+  float latitude_max;
 } dt_iop_filmic_data_t;
 
 typedef struct dt_iop_filmic_global_data_t
@@ -279,7 +281,6 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   * in the exposure module. So we define the threshold as the first non-null 16 bit integer
   */
   const float EPS = powf(2.0f, -16);
-  const float saturation = data->saturation / 100.0f;
   const int preserve_color = data->preserve_color;
 
 #ifdef _OPENMP
@@ -350,14 +351,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       }
 
       // Desaturate on the non-linear parts of the curve
-      const float mid_distance = 4.0f * (luma - 0.5f) * (luma - 0.5f);
-      const float bounds = 1.0f / (1.0f - luma);
-      const float factor = CLAMP(1.0f - bounds * mid_distance * concavity / saturation, 0.0f, 1.0f);
-
       for(size_t c = 0; c < 3; c++)
       {
         // Desaturate on the non-linear parts of the curve
-        rgb[c] = luma + factor * (rgb[c] - luma);
+        rgb[c] = luma + concavity * (rgb[c] - luma);
 
         // Apply the transfer function of the display
         rgb[c] = powf(CLAMP(rgb[c], 0.0f, 1.0f), data->output_power);
@@ -385,8 +382,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   dt_iop_filmic_data_t *data = (dt_iop_filmic_data_t *)piece->data;
 
   const int ch = piece->colors;
-
-  const float saturation = data->saturation / 100.0f;
   const int preserve_color = data->preserve_color;
 
 
@@ -477,12 +472,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
       }
 
-      const float mid_distance = 4.0f * (luma - 0.5f) * (luma - 0.5f);
-      const float bounds = 1.0f / (1.0f - luma);
-      const float factor = CLAMP(1.0f - bounds * mid_distance * concavity / saturation, 0.0f, 1.0f);
-      const __m128 factor_sse = _mm_set1_ps(factor);
-
-      rgb = luma + factor_sse * (rgb - luma);
+      rgb = luma + _mm_set1_ps(concavity) * (rgb - luma);
       rgb = _mm_max_ps(rgb, zero);
       rgb = _mm_min_ps(rgb, one);
 
@@ -528,7 +518,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float dynamic_range = d->dynamic_range;
   const float shadows_range = d->black_source;
   const float grey = d->grey_source;
-  const float saturation = d->saturation / 100.0f;
   const float contrast = d->contrast;
   const float power = d->output_power;
   const int preserve_color = d->preserve_color;
@@ -542,10 +531,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 6, sizeof(float), (void *)&grey);
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 7, sizeof(cl_mem), (void *)&dev_table);
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 8, sizeof(cl_mem), (void *)&diff_table);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 9, sizeof(float), (void *)&saturation);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 10, sizeof(float), (void *)&contrast);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 11, sizeof(float), (void *)&power);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 12, sizeof(int), (void *)&preserve_color);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 9, sizeof(float), (void *)&contrast);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 10, sizeof(float), (void *)&power);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 11, sizeof(int), (void *)&preserve_color);
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic, sizes);
   if(err != CL_SUCCESS) goto error;
@@ -956,7 +944,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   if(!in) dt_iop_color_picker_reset(&g->color_picker, TRUE);
 }
 
-void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_temp, int res)
+void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_temp, int res, dt_iop_filmic_data_t *d)
 {
   dt_draw_curve_t *curve;
 
@@ -1077,6 +1065,12 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
     y[2] = grey_display;
     y[3] = white_display;
 
+    if(d)
+    {
+      d->latitude_min = toe_log;
+      d->latitude_max = white_log;
+    }
+
     //(_("filmic curve using 4 nodes - highlights lost"));
 
   }
@@ -1095,6 +1089,12 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
     y[2] = shoulder_display;
     y[3] = white_display;
 
+    if(d)
+    {
+      d->latitude_min = black_log;
+      d->latitude_max = shoulder_log;
+    }
+
     //dt_control_log(_("filmic curve using 4 nodes - shadows lost"));
 
   }
@@ -1110,6 +1110,12 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
     y[0] = black_display;
     y[1] = grey_display;
     y[2] = white_display;
+
+    if(d)
+    {
+      d->latitude_min = black_log;
+      d->latitude_max = white_log;
+    }
 
     //dt_control_log(_("filmic curve using 3 nodes - highlights & shadows lost"));
 
@@ -1130,6 +1136,12 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
     //y[2] = grey_display,
     y[2] = shoulder_display;
     y[3] = white_display;
+
+    if(d)
+    {
+      d->latitude_min = toe_log;
+      d->latitude_max = shoulder_log;
+    }
   }
 
   if (p->interpolator != 3)
@@ -1166,6 +1178,29 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
 
 }
 
+static inline float spline(const float t, const float A, const float B, const float mo, const float po)
+{
+  /*https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Catmull%E2%80%93Rom_spline */
+  const float t2 = t*t;
+  const float t3 = t2 * t;
+  return A * t3 + B * t2 + mo * t + po;
+}
+
+static inline float A(const float mo, const float md, const float po, const float pd)
+{
+  return mo + md + 2.0f * pd + 2.0f *po;
+}
+
+static inline float B(const float mo, const float md, const float po, const float pd)
+{
+  return -2.0f * mo - md - 3.0f *pd - 3.0f *po;
+}
+
+static inline float piece_wise_spline(const float t, const float A, const float B, const float mo, const float po)
+{
+  return spline(t, A,  B, mo, po);
+}
+
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1193,7 +1228,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     contrast = 1.0001f * grey_display / grey_log;
   }
 
-  // commit
+  // commitproducts with no low-pass filter, you will increase the contrast of nois
   d->dynamic_range = dynamic_range;
   d->black_source = black_source;
   d->grey_source = grey_source;
@@ -1202,23 +1237,48 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->contrast = contrast;
 
   // compute the curves and their LUT
-  compute_curve_lut(p, d->table, d->table_temp, 0x10000);
+  compute_curve_lut(p, d->table, d->table_temp, 0x10000, d);
 
   // Build a window function based on the log.
   // This will be used to selectively desaturate the non-linear parts
   // to avoid over-saturation in the toe and shoulder.
 
+  const float ground = 0.05f;
+  const float ceiling = 1.000f - ground;
+  const float mo[2] = { 0.1f * ((d->latitude_min - 1.0f) / d->latitude_min), 0.0f },
+              md[2] = { 0.0f, 0.1f * (d->latitude_max / (1.0f - d->latitude_max)) },
+              po[2] = { ceiling, ground },
+              pd[2] = { ground, -ceiling },
+              a[2] = { A(mo[0], md[0], po[0], pd[0]), A(mo[1], md[1], po[1], pd[1]) },
+              b[2] = { B(mo[0], md[0], po[0], pd[0]), B(mo[1], md[1], po[1], pd[1]) };
+
+  const int latitude_min_valid = (d->latitude_min > 0.0f) ? TRUE : FALSE;
+  const int latitude_max_valid = (d->latitude_max < 1.0f) ? TRUE : FALSE;
+  const float saturation = d->saturation / 100.0f;
+
+
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) shared(d) schedule(static)
 #endif
-  for(int k = 1; k < 65535; k++)
+  for(int k = 0; k < 65536; k++)
   {
     const float x = ((float)k) / 65536.0f;
-    //d->grad_2[k] = fabsf(-d->table[k] * 2.0f + d->table[k-1] + d->table[k+1]) / 2.0f;
-    d->grad_2[k] = powf(2.0f, (-dynamic_range * x));
+
+    if (latitude_min_valid && x < d->latitude_min)
+    {
+      d->grad_2[k] = piece_wise_spline(x / d->latitude_min, a[0], b[0], po[0], pd[0]);
+    }
+    else if (latitude_max_valid && x > d->latitude_max)
+    {
+      d->grad_2[k] = piece_wise_spline((x - d->latitude_max)/(1.0f - d->latitude_max), a[1], b[1], po[1], pd[1]);
+    }
+    else
+    {
+      d->grad_2[k] = ground;
+    }
+
+    d->grad_2[k] = CLAMP(1.0f - d->grad_2[k] / saturation, 0.0f, 1.0f);
   }
-  d->grad_2[0] = 1.0f;
-  d->grad_2[65535] = 1.0f;
 
 }
 
@@ -1331,7 +1391,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_filmic_gui_data_t *c = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  compute_curve_lut(p, c->table, c->table_temp, 256);
+  compute_curve_lut(p, c->table, c->table_temp, 256, NULL);
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
