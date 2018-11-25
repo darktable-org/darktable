@@ -21,7 +21,7 @@
 kernel void
 filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
         const float dynamic_range, const float shadows_range, const float grey,
-        read_only image2d_t table, read_only image2d_t diff, const float saturation,
+        read_only image2d_t table, read_only image2d_t diff,
         const float contrast, const float power, const int preserve_color)
 {
   const unsigned int x = get_global_id(0);
@@ -85,11 +85,7 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
   }
 
   // Desaturate selectively
-  const float mid_distance = 4.0f * (luma - 0.5f) * (luma - 0.5f);
-  const float bounds = (1.0f) / (1.0f - luma);
-  const float factor = clamp(1.0f - bounds * mid_distance * derivative / saturation, 0.0f, 1.0f);
-
-  o = (float4)luma + (float4)factor * (o - (float4)luma);
+  o = (float4)luma + (float4)derivative * (o - (float4)luma);
   o = clamp(o, (float4)0.0f, (float4)1.0f);
 
   // Apply the transfer function of the display
