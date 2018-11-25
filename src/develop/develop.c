@@ -605,12 +605,12 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gbo
         module->enabled = TRUE;
         if(!no_image)
         {
-        if(module->off)
-        {
-          darktable.gui->reset = 1;
-          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
-          darktable.gui->reset = 0;
-        }
+          if(module->off)
+          {
+            darktable.gui->reset = 1;
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+            darktable.gui->reset = 0;
+          }
         }
       }
       snprintf(hist->op_name, sizeof(hist->op_name), "%s", module->op);
@@ -628,8 +628,8 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gbo
       dev->history = g_list_append(dev->history, hist);
       if(!no_image)
       {
-      dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
-      dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
+        dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+        dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
       }
     }
     else
@@ -648,12 +648,12 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gbo
         module->enabled = 1;
         if(!no_image)
         {
-        if(module->off)
-        {
-          darktable.gui->reset = 1;
-          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
-          darktable.gui->reset = 0;
-        }
+          if(module->off)
+          {
+            darktable.gui->reset = 1;
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+            darktable.gui->reset = 0;
+          }
         }
       }
       hist->multi_priority = module->multi_priority;
@@ -661,8 +661,8 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gbo
       hist->enabled = module->enabled;
       if(!no_image)
       {
-      dev->pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
-      dev->preview_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
+        dev->pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
+        dev->preview_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
       }
     }
 }
@@ -1052,13 +1052,13 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 {
   if(!no_image)
   {
-  if(imgid <= 0) return;
-  if(!dev->iop) return;
+    if(imgid <= 0) return;
+    if(!dev->iop) return;
 
-  // maybe prepend auto-presets to history before loading it:
-  auto_apply_presets(dev);
+    // maybe prepend auto-presets to history before loading it:
+    auto_apply_presets(dev);
   }
-  
+
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid, num, module, operation, "
                                                              "op_params, enabled, blendop_params, "
