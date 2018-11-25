@@ -53,7 +53,7 @@
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 
 
-DT_MODULE_INTROSPECTION(1, dt_iop_filmic_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_filmic_params_t)
 
 /**
  * DOCUMENTATION
@@ -108,6 +108,7 @@ typedef struct dt_iop_filmic_params_t
   float saturation;
   float balance;
   int interpolator;
+  int preserve_color;
 } dt_iop_filmic_params_t;
 
 typedef struct dt_iop_filmic_gui_data_t
@@ -126,6 +127,7 @@ typedef struct dt_iop_filmic_gui_data_t
   GtkWidget *saturation;
   GtkWidget *balance;
   GtkWidget *interpolator;
+  GtkWidget *preserve_color;
   int which_colorpicker;
   dt_iop_color_picker_t color_picker;
   GtkDrawingArea *area;
@@ -145,6 +147,7 @@ typedef struct dt_iop_filmic_data_t
   float saturation;
   float output_power;
   float contrast;
+  int preserve_color;
 } dt_iop_filmic_data_t;
 
 typedef struct dt_iop_filmic_global_data_t
@@ -168,6 +171,54 @@ int flags()
 {
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
+
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
+                  const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_iop_filmic_params_v1_t
+    {
+      float grey_point_source;
+      float black_point_source;
+      float white_point_source;
+      float security_factor;
+      float grey_point_target;
+      float black_point_target;
+      float white_point_target;
+      float output_power;
+      float latitude_stops;
+      float contrast;
+      float saturation;
+      float balance;
+      int interpolator;
+    } dt_iop_filmic_params_v1_t;
+
+    dt_iop_filmic_params_v1_t *o = (dt_iop_filmic_params_v1_t *)old_params;
+    dt_iop_filmic_params_t *n = (dt_iop_filmic_params_t *)new_params;
+    dt_iop_filmic_params_t *d = (dt_iop_filmic_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    n->grey_point_source = o->grey_point_source;
+    n->white_point_source = o->white_point_source;
+    n->security_factor = o->security_factor;
+    n->grey_point_target = o->grey_point_target;
+    n->black_point_target = o->black_point_target;
+    n->white_point_target = o->white_point_target;
+    n->output_power = o->output_power;
+    n->latitude_stops = o->latitude_stops;
+    n->contrast = o->contrast;
+    n->saturation = o->saturation;
+    n->balance = o->balance;
+    n->interpolator = o->balance;
+    n->preserve_color = 0;
+    return 0;
+  }
+  return 1;
+}
+
+
 
 static inline float Log2(float x)
 {
@@ -229,6 +280,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   */
   const float EPS = powf(2.0f, -16);
   const float saturation = data->saturation / 100.0f;
+  const int preserve_color = data->preserve_color;
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) shared(data) schedule(static)
@@ -245,33 +297,66 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       float rgb[3] = { 0.0f };
       dt_XYZ_to_prophotorgb(XYZ, rgb);
 
-      int index[3];
+      float concavity, luma;
 
-      for(size_t c = 0; c < 3; c++)
+      if (preserve_color)
       {
-        // Log tone-mapping on RGB
-        rgb[c] = rgb[c] / data->grey_source;
-        rgb[c] = (rgb[c] > EPS) ? (fastlog2(rgb[c]) - data->black_source) / data->dynamic_range : EPS;
-        rgb[c] = CLAMP(rgb[c], 0.0f, 1.0f);
+        int index;
+        float ratios[4];
+        float max = fmaxf(fmaxf(rgb[0], rgb[1]), rgb[2]);
 
-        // Store the index of the LUT
-        index[c] = CLAMP(rgb[c] * 0x10000ul, 0, 0xffff);
+        // Save the ratios
+        for (size_t c = 0; c < 3; ++c) ratios[c] = rgb[c] / max;
+
+        // Log tone-mapping
+        max = max / data->grey_source;
+        max = (max > EPS) ? (fastlog2(max) - data->black_source) / data->dynamic_range : EPS;
+        max = CLAMP(max, 0.0f, 1.0f);
+
+        // Filmic S curve on the max RGB
+        index = CLAMP(max * 0x10000ul, 0, 0xffff);
+        max = data->table[index];
+        concavity = data->grad_2[index];
+
+        // Re-apply ratios
+        for (size_t c = 0; c < 3; ++c) rgb[c] = ratios[c] * max;
+
+        luma = max;
+      }
+      else
+      {
+        int index[3];
+
+        for(size_t c = 0; c < 3; c++)
+        {
+          // Log tone-mapping on RGB
+          rgb[c] = rgb[c] / data->grey_source;
+          rgb[c] = (rgb[c] > EPS) ? (fastlog2(rgb[c]) - data->black_source) / data->dynamic_range : EPS;
+          rgb[c] = CLAMP(rgb[c], 0.0f, 1.0f);
+
+          // Store the index of the LUT
+          index[c] = CLAMP(rgb[c] * 0x10000ul, 0, 0xffff);
+        }
+
+        // Concavity
+        dt_prophotorgb_to_XYZ(rgb, XYZ);
+        concavity = data->grad_2[(int)CLAMP(XYZ[1] * 0x10000ul, 0, 0xffff)];
 
         // Filmic S curve
-        rgb[c] = data->table[index[c]];
+        for(size_t c = 0; c < 3; c++) rgb[c] = data->table[index[c]];
+
+        dt_prophotorgb_to_XYZ(rgb, XYZ);
+        luma = XYZ[1];
       }
 
-      dt_prophotorgb_to_XYZ(rgb, XYZ);
-
-      const float luma = XYZ[1];
+      // Desaturate on the non-linear parts of the curve
       const float mid_distance = 4.0f * (luma - 0.5f) * (luma - 0.5f);
+      const float bounds = 1.0f / (1.0f - luma);
+      const float factor = CLAMP(1.0f - bounds * mid_distance * concavity / saturation, 0.0f, 1.0f);
 
       for(size_t c = 0; c < 3; c++)
       {
         // Desaturate on the non-linear parts of the curve
-        const float concavity = data->grad_2[index[c]];
-        const float bounds = 1.0f / (1.0f - luma);
-        const float factor = CLAMP(1.0f - bounds * mid_distance * concavity / saturation, 0.0f, 1.0f);
         rgb[c] = luma + factor * (rgb[c] - luma);
 
         // Apply the transfer function of the display
@@ -301,8 +386,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   const int ch = piece->colors;
 
-  const float sat = data->saturation / 100.0f;
-  const __m128 saturation = _mm_setr_ps(sat, sat, sat, 0.0f);
+  const float saturation = data->saturation / 100.0f;
+  const int preserve_color = data->preserve_color;
+
 
   const __m128 grey = _mm_setr_ps(data->grey_source, data->grey_source, data->grey_source, 0.0f);
   const __m128 black = _mm_setr_ps(data->black_source, data->black_source, data->black_source, 0.0f);
@@ -313,8 +399,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const __m128 EPS = _mm_setr_ps(eps, eps, eps, 0.0f);
   const __m128 zero = _mm_setzero_ps();
   const __m128 one = _mm_set1_ps(1.0f);
-  const __m128 four = _mm_set1_ps(4.0f);
-  const __m128 half = _mm_set1_ps(0.5f);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(data) schedule(static)
@@ -328,46 +412,77 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       __m128 XYZ = dt_Lab_to_XYZ_sse2(_mm_load_ps(in));
       __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
 
-      // Log tone-mapping
-      rgb = rgb / grey;
-      rgb = _mm_max_ps(rgb, EPS);
-      rgb = _mm_log2_ps(rgb);
-      rgb -= black;
-      rgb /=  dynamic_range;
-      rgb = _mm_max_ps(rgb, zero);
-      rgb = _mm_min_ps(rgb, one);
+      float luma, concavity;
 
-      // Unpack SSE vector to regular array
-      float rgb_unpack[4] = { _mm_vectorGetByIndex(rgb, 0),
-                              _mm_vectorGetByIndex(rgb, 1),
-                              _mm_vectorGetByIndex(rgb, 2),
-                              _mm_vectorGetByIndex(rgb, 3) };
-
-      int index[4];
-      float derivative[4];
-
-      for (size_t c = 0; c < 3; ++c)
+      if (preserve_color)
       {
+        // Unpack SSE vector to regular array
+        float rgb_unpack[4] = { _mm_vectorGetByIndex(rgb, 0),
+                                _mm_vectorGetByIndex(rgb, 1),
+                                _mm_vectorGetByIndex(rgb, 2),
+                                _mm_vectorGetByIndex(rgb, 3) };
+        int index;
+        float ratios[4];
+        float max = fmaxf(fmaxf(rgb_unpack[0], rgb_unpack[1]), rgb_unpack[2]);
+
+        // Save the ratios
+        for (size_t c = 0; c < 3; ++c) ratios[c] = rgb_unpack[c] / max;
+
+        // Log tone-mapping
+        max = max / data->grey_source;
+        max = (max > eps) ? (fastlog2(max) - data->black_source) / data->dynamic_range : eps;
+        max = CLAMP(max, 0.0f, 1.0f);
+
+        // Filmic S curve on the max RGB
+        index = CLAMP(max * 0x10000ul, 0, 0xffff);
+        max = data->table[index];
+        concavity = data->grad_2[index];
+
+        // Re-apply ratios
+        for (size_t c = 0; c < 3; ++c) rgb_unpack[c] = ratios[c] * max;
+
+        rgb = _mm_load_ps(rgb_unpack);
+        luma = max;
+      }
+      else
+      {
+        // Log tone-mapping
+        rgb = rgb / grey;
+        rgb = _mm_max_ps(rgb, EPS);
+        rgb = _mm_log2_ps(rgb);
+        rgb -= black;
+        rgb /=  dynamic_range;
+        rgb = _mm_max_ps(rgb, zero);
+        rgb = _mm_min_ps(rgb, one);
+
+        // Store the derivative at the pixel luminance
+        XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+        concavity = data->grad_2[(int)CLAMP(XYZ[1] * 0x10000ul, 0, 0xffff)];
+
+        // Unpack SSE vector to regular array
+        float rgb_unpack[4] = { _mm_vectorGetByIndex(rgb, 0),
+                                _mm_vectorGetByIndex(rgb, 1),
+                                _mm_vectorGetByIndex(rgb, 2),
+                                _mm_vectorGetByIndex(rgb, 3) };
+
         // Filmic S curve
-        index[c] = CLAMP(rgb_unpack[c] * 0x10000ul, 0, 0xffff);
-        rgb_unpack[c] = data->table[index[c]];
-        derivative[c] = data->grad_2[index[c]];
+        for (size_t c = 0; c < 3; ++c)
+        {
+          rgb_unpack[c] = data->table[(int)CLAMP(rgb_unpack[c] * 0x10000ul, 0, 0xffff)];
+        }
+
+        rgb = _mm_load_ps(rgb_unpack);
+        XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+        luma = XYZ[1];
+
       }
 
-      rgb = _mm_load_ps(rgb_unpack);
+      const float mid_distance = 4.0f * (luma - 0.5f) * (luma - 0.5f);
+      const float bounds = 1.0f / (1.0f - luma);
+      const float factor = CLAMP(1.0f - bounds * mid_distance * concavity / saturation, 0.0f, 1.0f);
+      const __m128 factor_sse = _mm_set1_ps(factor);
 
-      // Desaturate on the non-linear parts of the curve
-      XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
-      const __m128 luma = _mm_set1_ps(_mm_vectorGetByIndex(XYZ, 1));
-      const __m128 mid_distance = four * (luma - half) * (luma - half);
-      const __m128 concavity = _mm_load_ps(derivative); // derivative
-      const __m128 bounds = one / (one - luma);
-
-      __m128 factor = one - (bounds * mid_distance * concavity)  / saturation;
-      factor = _mm_max_ps(factor, zero);
-      factor = _mm_min_ps(factor, one);
-
-      rgb = luma + factor * (rgb - luma);
+      rgb = luma + factor_sse * (rgb - luma);
       rgb = _mm_max_ps(rgb, zero);
       rgb = _mm_min_ps(rgb, one);
 
@@ -768,7 +883,7 @@ static void saturation_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  p->saturation = dt_bauhaus_slider_get(slider);
+  p->saturation = Log2(dt_bauhaus_slider_get(slider) /100.0f + 1.0f) * 100.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -823,6 +938,14 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
   if(combo == 3) p->interpolator = 3; // Optimized
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
+}
+
+static void preserve_color_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  p->preserve_color = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -1044,6 +1167,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)p1;
   dt_iop_filmic_data_t *d = (dt_iop_filmic_data_t *)piece->data;
 
+  d->preserve_color = p->preserve_color;
+
   // source luminance - Used only in the log encoding
   const float white_source = p->white_point_source;
   const float grey_source = p->grey_point_source / 100.0f; // in %
@@ -1126,10 +1251,11 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->output_power, p->output_power);
   dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
   dt_bauhaus_slider_set(g->contrast, p->contrast);
-  dt_bauhaus_slider_set(g->saturation, p->saturation);
+  dt_bauhaus_slider_set(g->saturation, (powf(2.0f, p->saturation / 100.0f) - 1.0f) * 100.0f);
   dt_bauhaus_slider_set(g->balance, p->balance);
 
   dt_bauhaus_combobox_set(g->interpolator, p->interpolator);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->preserve_color), p->preserve_color);
 
   gtk_widget_queue_draw(self->widget);
 
@@ -1156,9 +1282,10 @@ void init(dt_iop_module_t *module)
                                  .output_power        = 2.2,  // target power (~ gamma)
                                  .latitude_stops      = 2.0,  // intent latitude
                                  .contrast            = 1.333,  // intent contrast
-                                 .saturation          = 20.0,   // intent saturation
+                                 .saturation          = 50.0,   // intent saturation
                                  .balance             = 0.0, // balance shadows/highlights
-                                 .interpolator        = CUBIC_SPLINE //interpolator
+                                 .interpolator        = CUBIC_SPLINE, //interpolator
+                                 .preserve_color      = 0, // run the saturated variant
                               };
   memcpy(module->params, &tmp, sizeof(dt_iop_filmic_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_filmic_params_t));
@@ -1339,7 +1466,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->balance), "value-changed", G_CALLBACK(balance_callback), self);
 
   // saturation slider
-  g->saturation = dt_bauhaus_slider_new_with_range(self, 0.01, 100., 0.05, p->saturation, 2);
+  g->saturation = dt_bauhaus_slider_new_with_range(self, 0., 100., 1.0, (powf(2.0f, p->saturation / 100.0f) - 1.0f) * 100.0f, 2);
   dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
   dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
@@ -1362,7 +1489,17 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->interpolator, _("change this method if you see reversed contrast or faded blacks"));
   g_signal_connect(G_OBJECT(g->interpolator), "value-changed", G_CALLBACK(interpolator_callback), self);
 
+  // Preserve color
+  g->preserve_color = gtk_check_button_new_with_label(_("preserve the chrominance"));
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g->preserve_color), p->preserve_color);
+  gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original color are preserved\n"
+                                                   "may produce over-saturated colors and reinforce lens chromatic aberrations"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->preserve_color , TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->preserve_color), "toggled", G_CALLBACK(preserve_color_callback), self);
+
+
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("destination/display")), FALSE, FALSE, 5);
+
 
   // Black slider
   g->black_point_target = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1, p->black_point_target, 2);
