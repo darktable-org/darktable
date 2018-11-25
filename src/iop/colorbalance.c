@@ -1647,6 +1647,7 @@ void gui_update(dt_iop_module_t *self)
 
   dt_bauhaus_slider_set_soft(g->grey, p->grey);
   dt_bauhaus_slider_set_soft(g->saturation, p->saturation - 1.0f);
+  dt_bauhaus_slider_set_soft(g->saturation_out, p->saturation_out - 1.0f);
   dt_bauhaus_slider_set_soft(g->contrast, 1.0f - p->contrast);
 
   dt_bauhaus_slider_set_soft(g->lift_factor, p->lift[CHANNEL_FACTOR] - 1.0f);
