@@ -718,14 +718,6 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   // look for last server information
   _piwigo_account_t *last_account = _piwigo_get_account(ui, server);
-  /*
-  GHashTable *table = dt_pwstorage_get("piwigo");
-  gchar *_username = g_strdup(g_hash_table_lookup(table, "username"));
-  gchar *_password = g_strdup(g_hash_table_lookup(table, "password"));
-  g_hash_table_destroy(table);
-  gchar *_username;
-  gchar *_password;
-  */
 
   GtkWidget *hbox, *label, *button;
 
@@ -1034,9 +1026,6 @@ static uint64_t _piwigo_album_id(const gchar *name, GList *albums)
 
 void *get_params(dt_imageio_module_storage_t *self)
 {
-  // have to return the size of the struct to store (i.e. without all the variable pointers at the end)
-  // TODO: if a hash to encrypted data is stored here, return only this size and store it at the beginning of
-  // the struct!
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)self->gui_data;
   if(!ui) return NULL; // gui not initialized, CLI mode
   dt_storage_piwigo_params_t *p = (dt_storage_piwigo_params_t *)g_malloc0(sizeof(dt_storage_piwigo_params_t));
