@@ -169,7 +169,11 @@ static void _piwigo_free_account(void *data)
 
 static void _piwigo_load_account(dt_storage_piwigo_gui_data_t *ui)
 {
-  if(!ui->accounts) g_list_free_full(ui->accounts, _piwigo_free_account);
+  if(!ui->accounts)
+  {
+    g_list_free_full(ui->accounts, _piwigo_free_account);
+    ui->accounts = NULL;
+  }
 
   GHashTable *table = dt_pwstorage_get("piwigo");
   GHashTableIter iter;
@@ -186,15 +190,19 @@ static void _piwigo_load_account(dt_storage_piwigo_gui_data_t *ui)
       json_parser_load_from_data(parser, data, strlen(data), NULL);
       JsonNode *root = json_parser_get_root(parser);
 
-      JsonObject *obj = json_node_get_object(root);
-      _piwigo_account_t *account = malloc(sizeof(_piwigo_account_t));
+      if(root)
+      {
+        JsonObject *obj = json_node_get_object(root);
+        _piwigo_account_t *account = malloc(sizeof(_piwigo_account_t));
 
-      account->server =  g_strdup(json_object_get_string_member(obj, "server"));
-      account->username =  g_strdup(json_object_get_string_member(obj, "username"));
-      account->password =  g_strdup(json_object_get_string_member(obj, "password"));
+        account->server =  g_strdup(json_object_get_string_member(obj, "server"));
+        account->username =  g_strdup(json_object_get_string_member(obj, "username"));
+        account->password =  g_strdup(json_object_get_string_member(obj, "password"));
 
-      if(account->server && strlen(account->server)>0)
-        ui->accounts = g_list_append(ui->accounts, account);
+        if(account->server && strlen(account->server)>0)
+          ui->accounts = g_list_append(ui->accounts, account);
+      }
+
       g_object_unref(parser);
     }
   }
@@ -461,7 +469,8 @@ static void _piwigo_authenticate(dt_storage_piwigo_gui_data_t *ui)
   }
   else
   {
-    g_free(ui->api->url);
+    _piwigo_set_status(ui, _("not authenticated, cannot reach server"), "#e07f7f");
+    _piwigo_ctx_destroy(&ui->api);
   }
 }
 
@@ -469,12 +478,10 @@ static void _piwigo_entry_changed(GtkEntry *entry, gpointer data)
 {
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
 
-  if(ui->api)
-  {
-    _piwigo_set_status(ui, _("not authenticated"), "#e07f7f");
-    _piwigo_ctx_destroy(&ui->api);
+  _piwigo_set_status(ui, _("not authenticated"), "#e07f7f");
     gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
-  }
+
+  if(ui->api) _piwigo_ctx_destroy(&ui->api);
 }
 
 static void _piwigo_server_entry_changed(GtkEntry *entry, gpointer data)
