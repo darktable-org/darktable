@@ -214,7 +214,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->contrast = o->contrast;
     n->saturation = o->saturation;
     n->balance = o->balance;
-    n->interpolator = o->balance;
+    n->interpolator = o->interpolator;
     n->preserve_color = 0;
     return 0;
   }
