@@ -204,6 +204,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
+    n->black_point_source = o->black_point_source;
     n->security_factor = o->security_factor;
     n->grey_point_target = o->grey_point_target;
     n->black_point_target = o->black_point_target;
