@@ -873,7 +873,7 @@ static void saturation_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  p->saturation = dt_bauhaus_slider_get(slider);
+  p->saturation = logf(9.0f * dt_bauhaus_slider_get(slider)/100.0 + 1.0f) / logf(10.0f) * 100.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1178,29 +1178,6 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
 
 }
 
-static inline float spline(const float t, const float A, const float B, const float mo, const float po)
-{
-  /*https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Catmull%E2%80%93Rom_spline */
-  const float t2 = t*t;
-  const float t3 = t2 * t;
-  return A * t3 + B * t2 + mo * t + po;
-}
-
-static inline float A(const float mo, const float md, const float po, const float pd)
-{
-  return mo + md + 2.0f * pd + 2.0f *po;
-}
-
-static inline float B(const float mo, const float md, const float po, const float pd)
-{
-  return -2.0f * mo - md - 3.0f *pd - 3.0f *po;
-}
-
-static inline float piece_wise_spline(const float t, const float A, const float B, const float mo, const float po)
-{
-  return spline(t, A,  B, mo, po);
-}
-
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1243,18 +1220,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // This will be used to selectively desaturate the non-linear parts
   // to avoid over-saturation in the toe and shoulder.
 
-  const float ground = d->saturation / 100.0f;
-  const float ceiling = 1.000f - ground;
-  const float mo[2] = { 1.0f, 0.0f },
-              md[2] = { 0.0f, -1.0f },
-              po[2] = { ground, ceiling },
-              pd[2] = { -ceiling, ground },
-              a[2] = { A(mo[0], md[0], po[0], pd[0]), A(mo[1], md[1], po[1], pd[1]) },
-              b[2] = { B(mo[0], md[0], po[0], pd[0]), B(mo[1], md[1], po[1], pd[1]) };
-
-  const int latitude_min_valid = (d->latitude_min > 0.0f) ? TRUE : FALSE;
-  const int latitude_max_valid = (d->latitude_max < 1.0f) ? TRUE : FALSE;
-
+  const float latitude = d->latitude_max - d->latitude_min;
+  const float center = (d->latitude_max + d->latitude_min)/2.0f;
+  const float saturation = d->saturation / 100.0f;
+  const float sigma = saturation * saturation * latitude * latitude;
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) shared(d) schedule(static)
@@ -1262,21 +1231,14 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   for(int k = 0; k < 65536; k++)
   {
     const float x = ((float)k) / 65536.0f;
-
-    if (latitude_min_valid && x < d->latitude_min && ground != 1.0f)
+    if (sigma != 0.0f)
     {
-      d->grad_2[k] = piece_wise_spline(x / d->latitude_min, a[0], b[0], po[0], pd[0]);
-    }
-    else if (latitude_max_valid && x > d->latitude_max && ground != 1.0f)
-    {
-      d->grad_2[k] = piece_wise_spline((x - d->latitude_max)/(1.0f - d->latitude_max), a[1], b[1], po[1], pd[1]);
+      d->grad_2[k] = expf(-0.5f * (center - x) * (center - x) / sigma);
     }
     else
     {
-      d->grad_2[k] = 1.0f;
+      d->grad_2[k] = 0.0f;
     }
-    // There is a risk that the spline overshoots
-    d->grad_2[k] = CLAMP(d->grad_2[k]*(1.0f - powf(2.0f, -d->dynamic_range * x)), 0.0f, 1.0f);
   }
 
 }
@@ -1315,7 +1277,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->output_power, p->output_power);
   dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
   dt_bauhaus_slider_set(g->contrast, p->contrast);
-  dt_bauhaus_slider_set(g->saturation, p->saturation);
+  dt_bauhaus_slider_set(g->saturation, (powf(10.0f, p->saturation/100.0f) - 1.0f) / 9.0f * 100.0f);
   dt_bauhaus_slider_set(g->balance, p->balance);
 
   dt_bauhaus_combobox_set(g->interpolator, p->interpolator);
@@ -1530,7 +1492,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->balance), "value-changed", G_CALLBACK(balance_callback), self);
 
   // saturation slider
-  g->saturation = dt_bauhaus_slider_new_with_range(self, 0., 100., 0.1, p->saturation, 2);
+  g->saturation = dt_bauhaus_slider_new_with_range(self, 0., 100., 0.1, (powf(10.0f, p->saturation/100.0f) - 1.0f) / 9.0f *100.0f, 2);
   dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
   dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
