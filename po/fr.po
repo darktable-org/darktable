@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-26 17:57+0100\n"
-"PO-Revision-Date: 2018-11-26 17:58+0100\n"
+"POT-Creation-Date: 2018-11-27 14:42+0100\n"
+"PO-Revision-Date: 2018-11-27 14:46+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2572,9 +2572,9 @@ msgstr "masque d'adoucissement"
 msgid "radius for gaussian blur of blend mask"
 msgstr "rayon du flou gaussien du masque d'adoucissement"
 
-#: ../src/develop/blend_gui.c:2117
-msgid "mask brightness"
-msgstr "masque de luminosité"
+#: ../src/develop/blend_gui.c:2117 ../src/iop/retouch.c:2888
+msgid "mask opacity"
+msgstr "opacité du masque"
 
 #: ../src/develop/blend_gui.c:2119
 msgid ""
@@ -5014,7 +5014,7 @@ msgid "scale"
 msgstr "échelle"
 
 #. centripetal spline
-#: ../src/iop/basecurve.c:1934 ../src/iop/filmic.c:1359
+#: ../src/iop/basecurve.c:1934 ../src/iop/filmic.c:1533
 #: ../src/iop/profile_gamma.c:867 ../src/iop/tonecurve.c:1257
 msgid "linear"
 msgstr "linéaire"
@@ -5134,7 +5134,7 @@ msgstr "taille des détails locaux (sigma spatial du filtre bilatéral)"
 
 #: ../src/iop/bilat.c:543 ../src/iop/colisa.c:366
 #: ../src/iop/colorbalance.c:2447 ../src/iop/colorbalance.c:2449
-#: ../src/iop/filmic.c:1319 ../src/iop/lowpass.c:673
+#: ../src/iop/filmic.c:1493 ../src/iop/lowpass.c:673
 msgid "contrast"
 msgstr "contraste"
 
@@ -5518,7 +5518,7 @@ msgstr "teinte"
 #: ../src/iop/colorbalance.c:2635 ../src/iop/colorchecker.c:1313
 #: ../src/iop/colorcorrection.c:289 ../src/iop/colorize.c:444
 #: ../src/iop/colorzones.c:1088 ../src/iop/colorzones.c:1122
-#: ../src/iop/filmic.c:1343 ../src/iop/graduatednd.c:1185
+#: ../src/iop/filmic.c:1517 ../src/iop/graduatednd.c:1185
 #: ../src/iop/lowpass.c:675 ../src/iop/soften.c:716
 #: ../src/iop/splittoning.c:501 ../src/iop/vignette.c:1152
 msgid "saturation"
@@ -6937,23 +6937,23 @@ msgstr "CE calculée: "
 msgid "what exposure correction has actually been used"
 msgstr "la correction d'exposition réellement utilisée"
 
-#: ../src/iop/filmic.c:159
+#: ../src/iop/filmic.c:164
 msgid "filmic"
 msgstr "filmique"
 
-#: ../src/iop/filmic.c:1256
+#: ../src/iop/filmic.c:1430
 msgid "double click to reset curve"
 msgstr "double-cliquer pour réinitialiser"
 
-#: ../src/iop/filmic.c:1259
+#: ../src/iop/filmic.c:1433
 msgid "logarithmic shaper"
 msgstr "forme logarithmique"
 
-#: ../src/iop/filmic.c:1263
+#: ../src/iop/filmic.c:1437
 msgid "middle grey luminance"
 msgstr "luminance du gris moyen"
 
-#: ../src/iop/filmic.c:1266
+#: ../src/iop/filmic.c:1440
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
@@ -6961,11 +6961,11 @@ msgstr ""
 "ajuster pour correspondre à la luminance moyenne du sujet.\n"
 "sauf pour les scènes sombres, cette valeur devrait être autour de 18%"
 
-#: ../src/iop/filmic.c:1275
+#: ../src/iop/filmic.c:1449
 msgid "white relative exposure"
 msgstr "exposition relative du blanc"
 
-#: ../src/iop/filmic.c:1278
+#: ../src/iop/filmic.c:1452
 msgid ""
 "number of stops between middle grey and pure white\n"
 "this is a reading a posemeter would give you on the scene"
@@ -6973,11 +6973,11 @@ msgstr ""
 "nombre de stops entre le gris moyen et le blanc pur\n"
 "ceci est la valeur que vous donnerait un posemètre sur la scène"
 
-#: ../src/iop/filmic.c:1286 ../src/iop/profile_gamma.c:901
+#: ../src/iop/filmic.c:1460 ../src/iop/profile_gamma.c:901
 msgid "black relative exposure"
 msgstr "exposition relative du noir"
 
-#: ../src/iop/filmic.c:1289 ../src/iop/profile_gamma.c:904
+#: ../src/iop/filmic.c:1463 ../src/iop/profile_gamma.c:904
 msgid ""
 "number of stops between middle grey and pure black\n"
 "this is a reading a posemeter would give you on the scene"
@@ -6985,15 +6985,15 @@ msgstr ""
 "nombre de stops entre le gris moyen et le noir pur\n"
 "ceci est la valeur que vous donnerait un posemètre sur la scène"
 
-#: ../src/iop/filmic.c:1297
+#: ../src/iop/filmic.c:1471
 msgid "auto tuning safety factor"
 msgstr "facteur de sécurité"
 
-#: ../src/iop/filmic.c:1298 ../src/iop/profile_gamma.c:925
+#: ../src/iop/filmic.c:1472 ../src/iop/profile_gamma.c:925
 msgid "safety factor"
 msgstr "facteur de sécurité"
 
-#: ../src/iop/filmic.c:1301
+#: ../src/iop/filmic.c:1475
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
 "useful in conjunction with \"auto tune levels\""
@@ -7001,28 +7001,28 @@ msgstr ""
 "élargir ou rétrécir la plage dynamique calculée\n"
 "ceci est utile avec l'utilisation des « niveaux automatiques »"
 
-#: ../src/iop/filmic.c:1307 ../src/iop/profile_gamma.c:933
+#: ../src/iop/filmic.c:1481 ../src/iop/profile_gamma.c:933
 msgid "auto tune levels"
 msgstr "niveaux automatiques"
 
-#: ../src/iop/filmic.c:1312 ../src/iop/profile_gamma.c:938
+#: ../src/iop/filmic.c:1486 ../src/iop/profile_gamma.c:938
 msgid "make an optimization with some guessing"
 msgstr "faire une optimisation basée sur des suppositions"
 
-#: ../src/iop/filmic.c:1315
+#: ../src/iop/filmic.c:1489
 msgid "filmic S curve"
 msgstr "courbe filmique en S"
 
-#: ../src/iop/filmic.c:1321
+#: ../src/iop/filmic.c:1495
 msgid "slope of the linear part of the curve"
 msgstr "pente de la partie linéaire de la courbe"
 
 #. geotagging
-#: ../src/iop/filmic.c:1326 ../src/libs/metadata_view.c:127
+#: ../src/iop/filmic.c:1500 ../src/libs/metadata_view.c:127
 msgid "latitude"
 msgstr "latitude"
 
-#: ../src/iop/filmic.c:1329
+#: ../src/iop/filmic.c:1503
 msgid ""
 "linearity domain in the middle of the curve\n"
 "increase to get more contrast at the extreme luminances"
@@ -7030,17 +7030,17 @@ msgstr ""
 "domaine de linéarité au centre de la courbe\n"
 "augmenter pour obtenir plus de contraste dans les luminances extrêmes"
 
-#: ../src/iop/filmic.c:1335
+#: ../src/iop/filmic.c:1509
 msgid "balance shadows-highlights"
 msgstr "équilibre ombres-ht. lumières"
 
-#: ../src/iop/filmic.c:1338
+#: ../src/iop/filmic.c:1512
 msgid "gives more room to shadows or highlights, to protect the details"
 msgstr ""
 "donne plus de place aux ombres ou aux hautes lumières, pour protéger les "
 "détails"
 
-#: ../src/iop/filmic.c:1346
+#: ../src/iop/filmic.c:1520
 msgid ""
 "desaturates the output, if the contrast adjustment\n"
 "produces over-saturation in shadows"
@@ -7048,39 +7048,53 @@ msgstr ""
 "désaturer la sortie, si l'ajustement du contraste\n"
 "produit des ombres sur-saturées "
 
-#: ../src/iop/filmic.c:1356 ../src/libs/export.c:629
+#: ../src/iop/filmic.c:1530 ../src/libs/export.c:629
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1452
 msgid "intent"
 msgstr "rendu"
 
-#: ../src/iop/filmic.c:1357
+#: ../src/iop/filmic.c:1531
 msgid "contrasted"
 msgstr "contrasté"
 
 #. cubic spline
-#: ../src/iop/filmic.c:1358
+#: ../src/iop/filmic.c:1532
 msgid "faded"
 msgstr "délavé"
 
 #. monotonic spline
-#: ../src/iop/filmic.c:1360
+#: ../src/iop/filmic.c:1534
 msgid "optimized"
 msgstr "optimisé"
 
-#: ../src/iop/filmic.c:1362
+#: ../src/iop/filmic.c:1536
 msgid "change this method if you see reversed contrast or faded blacks"
 msgstr ""
 "changer la méthode si des contrastes inversés ou noirs fades apparaissent"
 
-#: ../src/iop/filmic.c:1365
+#. Preserve color
+#: ../src/iop/filmic.c:1540
+msgid "preserve the chrominance"
+msgstr "préserver la chrominance"
+
+#: ../src/iop/filmic.c:1542
+msgid ""
+"ensure the original color are preserved\n"
+"may produce over-saturated colors and reinforce lens chromatic aberrations"
+msgstr ""
+"préserve les couleurs d'origine\n"
+"peut produire des couleurs sur-saturées et renforcer les aberrations "
+"chromatiques"
+
+#: ../src/iop/filmic.c:1548
 msgid "destination/display"
 msgstr "destination/affichage"
 
-#: ../src/iop/filmic.c:1369
+#: ../src/iop/filmic.c:1553
 msgid "black luminance"
 msgstr "luminance du noir"
 
-#: ../src/iop/filmic.c:1372
+#: ../src/iop/filmic.c:1556
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -7088,11 +7102,11 @@ msgstr ""
 "luminance du noir pur de sortie, devrait être 0%\n"
 "sauf pour obtenir des tons fades"
 
-#: ../src/iop/filmic.c:1378
+#: ../src/iop/filmic.c:1562
 msgid "middle grey destination"
 msgstr "destination du gris moyen"
 
-#: ../src/iop/filmic.c:1381
+#: ../src/iop/filmic.c:1565
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -7100,11 +7114,11 @@ msgstr ""
 "valeur du gris moyen de la cible de sortie ou de l'espace de couleur.\n"
 "ne jamais toucher sauf si vous savez ce que vous faites."
 
-#: ../src/iop/filmic.c:1387
+#: ../src/iop/filmic.c:1571
 msgid "white luminance"
 msgstr "luminance du blanc"
 
-#: ../src/iop/filmic.c:1390
+#: ../src/iop/filmic.c:1574
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -7112,11 +7126,11 @@ msgstr ""
 "luminance du blanc pur de sortie, devrait être 100%\n"
 "sauf pour obtenir des tons fades"
 
-#: ../src/iop/filmic.c:1396
+#: ../src/iop/filmic.c:1580
 msgid "destination power factor"
 msgstr "destination facteur de puissance"
 
-#: ../src/iop/filmic.c:1398
+#: ../src/iop/filmic.c:1582
 msgid ""
 "power or gamma of the transfer function of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -8732,10 +8746,6 @@ msgstr "rayon"
 #: ../src/iop/retouch.c:2881
 msgid "radius of the selected blur type"
 msgstr "rayon du flou sélectionné"
-
-#: ../src/iop/retouch.c:2888
-msgid "mask opacity"
-msgstr "opacité du masque"
 
 #: ../src/iop/retouch.c:2889
 msgid "set the opacity on the selected shape"
@@ -12340,6 +12350,9 @@ msgstr ""
 "nous vous suggérons de passer à la version 64 bits.\n"
 "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
 "corrigés.\n"
+
+#~ msgid "mask brightness"
+#~ msgstr "masque de luminosité"
 
 #~ msgid "revert log profile (last instance)"
 #~ msgstr "inverse profil logarithmique (dernière instance)"
