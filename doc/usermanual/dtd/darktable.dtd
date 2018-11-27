@@ -34,6 +34,7 @@
 <!ENTITY icon_liquify_curve "images/darkroom_module_liquify_curve.png">
 <!ENTITY icon_liquify_edit "images/darkroom_module_liquify_edit.png">
 <!ENTITY icon_preferences "images/darkroom_preferences.png">
+<!ENTITY icon_contextual_help "images/contextual_help.png">
 <!ENTITY icon_directory "images/lighttable_directory.png">
 <!ENTITY icon_styles "images/darkroom_styles.png">
 <!ENTITY icon_group_active "images/darkroom_group_active.png">
