@@ -1317,16 +1317,16 @@ void init(dt_iop_module_t *module)
   dt_iop_filmic_params_t tmp
     = (dt_iop_filmic_params_t){
                                  .grey_point_source   = 18, // source grey
-                                 .black_point_source  = -7.0,  // source black
+                                 .black_point_source  = -10.0,  // source black
                                  .white_point_source  = 3.0,  // source white
                                  .security_factor     = 0.0,  // security factor
                                  .grey_point_target   = 18.0, // target grey
                                  .black_point_target  = 0.0,  // target black
                                  .white_point_target  = 100.0,  // target white
                                  .output_power        = 2.2,  // target power (~ gamma)
-                                 .latitude_stops      = 2.0,  // intent latitude
-                                 .contrast            = 1.333,  // intent contrast
-                                 .saturation          = 50.0,   // intent saturation
+                                 .latitude_stops      = 8.0,  // intent latitude
+                                 .contrast            = 2.0,  // intent contrast
+                                 .saturation          = 100.0,   // intent saturation
                                  .balance             = 0.0, // balance shadows/highlights
                                  .interpolator        = CUBIC_SPLINE, //interpolator
                                  .preserve_color      = 0, // run the saturated variant
@@ -1496,7 +1496,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->contrast), "value-changed", G_CALLBACK(contrast_callback), self);
 
   // latitude slider
-  g->latitude_stops = dt_bauhaus_slider_new_with_range(self, 1.0, 16.0, 0.05, p->latitude_stops, 3);
+  g->latitude_stops = dt_bauhaus_slider_new_with_range(self, 2.0, 16.0, 0.05, p->latitude_stops, 3);
   dt_bauhaus_widget_set_label(g->latitude_stops, NULL, _("latitude"));
   dt_bauhaus_slider_set_format(g->latitude_stops, "%.2f EV");
   gtk_box_pack_start(GTK_BOX(self->widget), g->latitude_stops, TRUE, TRUE, 0);
