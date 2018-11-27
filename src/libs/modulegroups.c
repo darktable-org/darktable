@@ -423,7 +423,13 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
 static uint32_t _lib_modulegroups_get(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-  return d->current;
+
+  for(int k = 0; k < DT_MODULEGROUP_SIZE; k++)
+  {
+    if (d->current == _iop_get_group_order(k, k))
+      return k;
+  }
+  return DT_MODULEGROUP_FAVORITES;
 }
 
 #undef PADDING
