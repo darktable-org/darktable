@@ -280,9 +280,7 @@ static void add_preset(
   }
 
   if(p && bp)
-    dt_gui_presets_add_with_blendop(
-        name, self->op, version,
-        p, len, bp, 1);
+    dt_gui_presets_add_with_blendop(name, self->op, version, p, len, bp, 1);
   free(bp);
   free(p);
 }
