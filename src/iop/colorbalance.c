@@ -46,12 +46,7 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 // negative values to the wheels :(
 //#define SHOW_COLOR_WHEELS
 
-// debug
-#define AUTO
-#define CONTROLS
-#define OPTIM
-
-DT_MODULE_INTROSPECTION(2, dt_iop_colorbalance_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_colorbalance_params_t)
 
 /*
 
@@ -117,7 +112,7 @@ typedef struct dt_iop_colorbalance_params_t
 {
   dt_iop_colorbalance_mode_t mode;
   float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
-  float saturation, contrast, grey;
+  float saturation, contrast, grey, saturation_out;
 } dt_iop_colorbalance_params_t;
 
 typedef struct dt_iop_colorbalance_gui_data_t
@@ -125,16 +120,13 @@ typedef struct dt_iop_colorbalance_gui_data_t
   dt_pthread_mutex_t lock;
   GtkWidget *master_box;
   GtkWidget *mode;
-#ifdef CONTROLS
   GtkWidget *controls;
-#endif
   GtkWidget *hue_lift, *hue_gamma, *hue_gain;
   GtkWidget *sat_lift, *sat_gamma, *sat_gain;
   GtkWidget *lift_r, *lift_g, *lift_b, *lift_factor;
   GtkWidget *gamma_r, *gamma_g, *gamma_b, *gamma_factor;
   GtkWidget *gain_r, *gain_g, *gain_b, *gain_factor;
-  GtkWidget *saturation, *contrast, *grey;
-#ifdef AUTO
+  GtkWidget *saturation, *contrast, *grey, *saturation_out;
   GtkWidget *masterbox;
   GtkWidget *optim_label;
   GtkWidget *auto_luma;
@@ -147,14 +139,13 @@ typedef struct dt_iop_colorbalance_gui_data_t
   _colorbalance_patch_t luma_patches_flags[LEVELS];
   int which_colorpicker;
   dt_iop_color_picker_t color_picker;
-#endif
 } dt_iop_colorbalance_gui_data_t;
 
 typedef struct dt_iop_colorbalance_data_t
 {
   dt_iop_colorbalance_mode_t mode;
   float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
-  float saturation, contrast, grey;
+  float saturation, contrast, grey, saturation_out;
 } dt_iop_colorbalance_data_t;
 
 typedef struct dt_iop_colorbalance_global_data_t
@@ -188,7 +179,7 @@ int groups()
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1 && new_version == 3)
   {
     typedef struct dt_iop_colorbalance_params_v1_t
     {
@@ -210,15 +201,44 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->mode = LEGACY;
     return 0;
   }
+
+  if(old_version == 2 && new_version == 3)
+  {
+    typedef struct dt_iop_colorbalance_params_v2_t
+    {
+      dt_iop_colorbalance_mode_t mode;
+      float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
+      float saturation, contrast, grey;
+    } dt_iop_colorbalance_params_v2_t;
+
+    dt_iop_colorbalance_params_v2_t *o = (dt_iop_colorbalance_params_v2_t *)old_params;
+    dt_iop_colorbalance_params_t *n = (dt_iop_colorbalance_params_t *)new_params;
+    dt_iop_colorbalance_params_t *d = (dt_iop_colorbalance_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    for(int i = 0; i < CHANNEL_SIZE; i++)
+    {
+      n->lift[i] = o->lift[i];
+      n->gamma[i] = o->gamma[i];
+      n->gain[i] = o->gain[i];
+    }
+    n->mode = o->mode;
+    n->contrast = o->contrast;
+    n->saturation = o->saturation;
+    n->contrast = o->contrast;
+    n->grey = o->grey;
+    return 0;
+  }
   return 1;
 }
 
 // taken from denoiseprofile.c
-static void add_preset(dt_iop_module_so_t *self, const char *name, const char *pi, const char *bpi, const int blendop_version)
+static void add_preset(dt_iop_module_so_t *self, const char *name,
+                       const char *pi, const int version, const char *bpi, const int blendop_version)
 {
   int len, blen;
   uint8_t *p  = dt_exif_xmp_decode(pi, strlen(pi), &len);
-  assert(len == sizeof(dt_iop_colorbalance_params_t));
   uint8_t *bp = dt_exif_xmp_decode(bpi, strlen(bpi), &blen);
   if(blendop_version != dt_develop_blend_version())
   {
@@ -241,8 +261,7 @@ static void add_preset(dt_iop_module_so_t *self, const char *name, const char *p
   }
 
   if(p && bp)
-    dt_gui_presets_add_with_blendop(name, self->op, self->version(),
-                                    p, len, bp, 1);
+    dt_gui_presets_add_with_blendop(name, self->op, version, p, len, bp, 1);
   free(bp);
   free(p);
 }
@@ -250,14 +269,11 @@ static void add_preset(dt_iop_module_so_t *self, const char *name, const char *p
 void init_presets(dt_iop_module_so_t *self)
 {
   // these blobs were exported as dtstyle and copied from there:
-  add_preset(self, _("revert log profile (last instance)"),
-             "010000000000803f0000803f0000803f0000803f0100003f0000803f0000803f0000803f0000803f0000803f0000803f0000803f0000803f86eb513f00009041",
-             "00000000180000000000c842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f", 7);
   add_preset(self, _("split-toning teal-orange (2nd instance)"),
-             "010000009a99593f9eef833fea9d803feee4763f0000803f86b4873fc3c86f3f1867803f9a99993f443d803f2a41823f26037b3f6666663f0000803f00009041",
+             "010000009a99593f9eef833fea9d803feee4763f0000803f86b4873fc3c86f3f1867803f9a99993f443d803f2a41823f26037b3f6666663f0000803f00009041", 2,
              "0500000005000000000020420000000000000000070300020000a040000000000000000000000000000000000000003f0000403f0000803f0000803f0000d83e0000fe3e0000803f0000803f0000d83e0000fe3e0000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f0000000000000000cccc4c3d0000803f3333b33e0000203fc2162c3f176c613f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f", 7);
   add_preset(self, _("split-toning teal-orange (1st instance)"),
-             "010000000000803fa2077d3fd5887f3fc4b7813f3433333fe0416b3f0f36873f0029833f0000803f70767f3f1bf07a3fbacc823f0000403f0000803f00009041",
+             "010000000000803fa2077d3fd5887f3fc4b7813f3433333fe0416b3f0f36873f0029833f0000803f70767f3f1bf07a3fbacc823f0000403f0000803f00009041", 2,
              "0500000005000000000096420000000000000000060300000000a0400000000000000000000000000000000000000000000000000000803f0000803f00000000000000000000013f0000143f00000000000000000000013f0000143f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f0000000000000000cccc4c3d0000803fabaa2a3d5655553ecdcc4c3f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f", 7);
 }
 
@@ -300,6 +316,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // For neutral parameters, skip the computations doing x^1 or (x-a)*1 + a to save time
   const int run_contrast = (d->contrast == 1.0f) ? 0 : 1;
   const int run_saturation = (d->saturation == 1.0f) ? 0: 1;
+  const int run_saturation_out = (d->saturation_out == 1.0f) ? 0: 1;
 
   switch (d->mode)
   {
@@ -388,12 +405,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           float rgb[3] = { 0.0f };
           dt_XYZ_to_prophotorgb(XYZ, rgb);
 
-          const float luma = XYZ[1]; // the Y channel is the relative luminance
+          float luma = XYZ[1]; // the Y channel is the relative luminance
 
           // do the calculation in RGB space
           for(int c = 0; c < 3; c++)
           {
-            // main saturation
+            // main saturation input
             if (run_saturation) rgb[c] = luma + d->saturation * (rgb[c] - luma);
 
             // RGB gamma correction
@@ -402,6 +419,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             // lift gamma gain
             rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
             rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c], gamma_inv[c] * 2.2f);
+
+            // main saturation output
+            dt_prophotorgb_to_XYZ(rgb, XYZ);
+            luma = XYZ[1];
+            if (run_saturation_out) rgb[c] = luma + d->saturation_out * (rgb[c] - luma);
 
             // contrast
             if (run_contrast) rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c] / grey, contrast) * grey;
@@ -452,16 +474,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           float rgb[3];
           dt_XYZ_to_prophotorgb(XYZ, rgb);
 
-          const float luma = XYZ[1]; // the Y channel is the RGB luminance
+          float luma = XYZ[1]; // the Y channel is the RGB luminance
 
           // do the calculation in RGB space
           for(int c = 0; c < 3; c++)
           {
-            // main saturation
+            // main saturation input
             if (run_saturation) rgb[c] = luma + d->saturation * (rgb[c] - luma);
 
             // channel CDL
             rgb[c] = CDL(rgb[c], gain[c], lift[c], gamma[c]);
+
+            // main saturation output
+            dt_prophotorgb_to_XYZ(rgb, XYZ);
+            luma = XYZ[1];
+            if (run_saturation_out) rgb[c] = luma + d->saturation_out * (rgb[c] - luma);
 
             // fulcrum contrat
             if (run_contrast) rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c] / grey, contrast) * grey;
@@ -501,12 +528,14 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   float grey_corr = d->grey / 100.0f;
   const __m128 grey = _mm_setr_ps(grey_corr, grey_corr, grey_corr, 0.0f);
   const __m128 saturation = _mm_setr_ps(d->saturation, d->saturation, d->saturation, 0.0f);
+  const __m128 saturation_out = _mm_setr_ps(d->saturation_out, d->saturation_out, d->saturation_out, 0.0f);
   const __m128 zero = _mm_setzero_ps();
   const __m128 one = _mm_set1_ps(1.0);
 
   // For neutral parameters, skip the computations doing x^1 or (x-a)*1 + a to save time
   const int run_contrast = (d->contrast == 1.0f) ? 0 : 1;
   const int run_saturation = (d->saturation == 1.0f) ? 0: 1;
+  const int run_saturation_out = (d->saturation_out == 1.0f) ? 0: 1;
 
   switch (d->mode)
   {
@@ -594,12 +623,12 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           // XYZ -> sRGB
           __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
 
-          // do the calculation in RGB space
+          __m128 luma;
 
-          // adjust main saturation
+          // adjust main saturation input
           if (run_saturation)
           {
-            __m128 luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+            luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
             rgb = luma + saturation * (rgb - luma);
           }
 
@@ -610,6 +639,14 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           rgb = ((rgb - one) * lift + one) * gain;
           rgb = _mm_max_ps(rgb, zero);
           rgb = _mm_pow_ps(rgb, gamma_inv * gamma_RGB);
+
+          // adjust main saturation output
+          if (run_saturation_out)
+          {
+            XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+            luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+            rgb = luma + saturation_out * (rgb - luma);
+          }
 
           // fulcrum contrast
           if (run_contrast)
@@ -656,10 +693,12 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           // XYZ -> sRGB
           __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
 
+          __m128 luma;
+
           // adjust main saturation
           if (run_saturation)
           {
-            __m128 luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+            luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
             rgb = luma + saturation * (rgb - luma);
           }
 
@@ -669,6 +708,14 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           //power
           rgb = _mm_max_ps(rgb, zero);
           rgb = _mm_pow_ps(rgb, gamma);
+
+          // adjust main saturation output
+          if (run_saturation_out)
+          {
+            XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+            luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+            rgb = luma + saturation_out * (rgb - luma);
+          }
 
           // fulcrum contrast
           if (run_contrast)
@@ -757,7 +804,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                               d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR], 0.0f },
                   contrast = (d->contrast != 0.0f) ? 1.0f / d->contrast : 1000000.0f,
                   grey = d->grey / 100.0f,
-                  saturation = d->saturation;
+                  saturation = d->saturation,
+                  saturation_out = d->saturation_out;
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 0, sizeof(cl_mem), (void *)&dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -769,6 +817,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 7, sizeof(float), (void *)&saturation);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 8, sizeof(float), (void *)&contrast);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 9, sizeof(float), (void *)&grey);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 10, sizeof(float), (void *)&saturation_out);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_lgg, sizes);
       if(err != CL_SUCCESS) goto error;
       return TRUE;
@@ -791,7 +840,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                               0.0f },
                   contrast = (d->contrast != 0.0f) ? 1.0f / d->contrast : 1000000.0f,
                   grey = d->grey / 100.0f,
-                  saturation = d->saturation;
+                  saturation = d->saturation,
+                  saturation_out = d->saturation_out;
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 0, sizeof(cl_mem), (void *)&dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -803,6 +853,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 7, sizeof(float), (void *)&saturation);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 8, sizeof(float), (void *)&contrast);
       dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 9, sizeof(float), (void *)&grey);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 10, sizeof(float), (void *)&saturation_out);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_cdl, sizes);
       if(err != CL_SUCCESS) goto error;
       return TRUE;
@@ -822,9 +873,9 @@ static inline void update_saturation_slider_color(GtkWidget *slider, float hue)
   float rgb[3];
   if(hue != -1)
   {
-    hsl2rgb(rgb, hue, 1.0, 0.5);
+    hsl2rgb(rgb, hue, 1.0, 0.458656447);
     dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
-    hsl2rgb(rgb, hue, 0.0, 0.5);
+    hsl2rgb(rgb, hue, 0.0, 0.458656447);
     dt_bauhaus_slider_set_stop(slider, 0.0, rgb[0], rgb[1], rgb[2]);
     gtk_widget_queue_draw(GTK_WIDGET(slider));
   }
@@ -841,46 +892,46 @@ static inline void normalize_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *
     case (CHANNEL_FACTOR):
     {
       // correct all the channels
-      float rgb[3] = {p[CHANNEL_RED] / 2.0f, p[CHANNEL_GREEN] / 2.0f, p[CHANNEL_BLUE] / 2.0f };
+      float rgb[3] = {(p[CHANNEL_RED] - 1.0f), (p[CHANNEL_GREEN] - 1.0f), (p[CHANNEL_BLUE] - 1.0f) };
       float mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
-      p[CHANNEL_RED] = (rgb[0] - mean) * 2.0f + 1.f;
-      p[CHANNEL_GREEN] = (rgb[1] - mean) * 2.0f + 1.f;
-      p[CHANNEL_BLUE] = (rgb[2] - mean) * 2.0f + 1.f;
+      p[CHANNEL_RED] = (rgb[0] - mean) + 1.f;
+      p[CHANNEL_GREEN] = (rgb[1] - mean) + 1.f;
+      p[CHANNEL_BLUE] = (rgb[2] - mean) + 1.f;
       break;
     }
     case (CHANNEL_RED):
     {
       // correct all channels but the red
-      for (int iter = 0; iter < 50; ++iter)
+      for (int iter = 0; iter < 100; ++iter)
       {
-        float rgb[3] = {p[CHANNEL_RED] / 2.0f, p[CHANNEL_GREEN] / 2.0f, p[CHANNEL_BLUE] / 2.0f };
+        float rgb[3] = {(p[CHANNEL_RED] - 1.0f), (p[CHANNEL_GREEN] - 1.0f), (p[CHANNEL_BLUE] - 1.0f)};
         float mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
-        p[CHANNEL_GREEN] = (rgb[1] - mean) * 2.0f + 1.f;
-        p[CHANNEL_BLUE] = (rgb[2] - mean) * 2.0f + 1.f;
+        p[CHANNEL_GREEN] = (rgb[1] - mean) + 1.f;
+        p[CHANNEL_BLUE] = (rgb[2] - mean) + 1.f;
       }
       break;
     }
     case (CHANNEL_GREEN):
     {
       // correct all the channels
-      for (int iter = 0; iter < 50; ++iter)
+      for (int iter = 0; iter < 100; ++iter)
       {
-        float rgb[3] = {p[CHANNEL_RED] / 2.0f, p[CHANNEL_GREEN] / 2.0f, p[CHANNEL_BLUE] / 2.0f };
+        float rgb[3] = {(p[CHANNEL_RED] - 1.0f), (p[CHANNEL_GREEN] - 1.0f), (p[CHANNEL_BLUE] - 1.0f)};
         float mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
-        p[CHANNEL_RED] = (rgb[0] - mean) * 2.0f + 1.f;
-        p[CHANNEL_BLUE] = (rgb[2] - mean) * 2.0f + 1.f;
+        p[CHANNEL_RED] = (rgb[0] - mean) + 1.f;
+        p[CHANNEL_BLUE] = (rgb[2] - mean) + 1.f;
       }
       break;
     }
     case (CHANNEL_BLUE):
     {
       // correct all the channels
-      for (int iter = 0; iter < 50; ++iter)
+      for (int iter = 0; iter < 100; ++iter)
       {
-        float rgb[3] = {p[CHANNEL_RED] / 2.0f, p[CHANNEL_GREEN] / 2.0f, p[CHANNEL_BLUE] / 2.0f };
+        float rgb[3] = {(p[CHANNEL_RED] - 1.0f), (p[CHANNEL_GREEN] - 1.0f), (p[CHANNEL_BLUE] - 1.0f)};
         float mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
-        p[CHANNEL_RED] = (rgb[0] - mean) * 2.0f + 1.f;
-        p[CHANNEL_GREEN] = (rgb[1] - mean) * 2.0f + 1.f;
+        p[CHANNEL_RED] = (rgb[0] - mean) + 1.f;
+        p[CHANNEL_GREEN] = (rgb[1] - mean) + 1.f;
       }
       break;
     }
@@ -891,6 +942,53 @@ static inline void normalize_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *
   dt_bauhaus_slider_set_soft(G, p[CHANNEL_GREEN] - 1.0f);
   dt_bauhaus_slider_set_soft(B, p[CHANNEL_BLUE] - 1.0f);
   darktable.gui->reset = 0;
+}
+
+static inline void set_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *B, float hsl[3], float *p, int mode)
+{
+
+  float rgb[3] = { 0.0f };
+  hsl2rgb(rgb, hsl[0], hsl[1], 0.5f);
+
+  if(hsl[0] != -1)
+  {
+    // Express the RGB values in ratio
+    float mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
+    //float max = fmaxf(fmaxf(rgb[0], rgb[1]), rgb[2]);
+    p[CHANNEL_RED] = (rgb[0] - mean) * 0.75f  + 1.0f;
+    p[CHANNEL_GREEN] = (rgb[1] - mean) * 0.75f + 1.0f;
+    p[CHANNEL_BLUE] = (rgb[2] - mean) * 0.75f + 1.0f;
+
+    normalize_RGB_sliders(R, G, B, p, CHANNEL_FACTOR, mode);
+  }
+}
+
+static inline void set_HSL_sliders(GtkWidget *hue, GtkWidget *sat, float RGB[4])
+{
+  /** HSL sliders are set from the RGB values at any time.
+  * Only the RGB values are saved and used in the computations.
+  * The HSL sliders are merely an interface.
+  */
+  float RGB_norm[3] = { (RGB[CHANNEL_RED]), (RGB[CHANNEL_GREEN]), (RGB[CHANNEL_BLUE]) };
+  float mean = (RGB_norm[0] + RGB_norm[1] + RGB_norm[2]) / 3.0f;
+  for (int c = 0; c < 3; ++c) RGB_norm[c] = (RGB_norm[c] - mean) + 0.5f;
+
+  float h, s, l;
+  rgb2hsl(RGB_norm, &h, &s, &l);
+
+  if(h != -1.0f)
+  {
+    dt_bauhaus_slider_set_soft(hue, h);
+    dt_bauhaus_slider_set_soft(sat, s);
+    update_saturation_slider_color(GTK_WIDGET(sat), h);
+    gtk_widget_queue_draw(GTK_WIDGET(sat));
+  }
+  else
+  {
+    dt_bauhaus_slider_set_soft(hue, -1.0f);
+    dt_bauhaus_slider_set_soft(sat, 0.0f);
+    gtk_widget_queue_draw(GTK_WIDGET(sat));
+  }
 }
 
 static inline void _check_tuner_picker_labels(dt_iop_module_t *self)
@@ -910,30 +1008,6 @@ static inline void _check_tuner_picker_labels(dt_iop_module_t *self)
     dt_bauhaus_widget_set_label(g->auto_color, NULL, _("neutralize colors"));
 }
 
-static inline void set_HSL_sliders(GtkWidget *hue, GtkWidget *sat, float RGB[4])
-{
-  /** HSL sliders are set from the RGB values at any time.
-  * Only the RGB values are saved and used in the computations.
-  * The HSL sliders are merely an interface.
-  */
-  float RGB_norm[3] = { (RGB[CHANNEL_RED] / 2.0f), (RGB[CHANNEL_GREEN]) / 2.0f, (RGB[CHANNEL_BLUE] / 2.0f) };
-  float h, s, l;
-  rgb2hsl(RGB_norm, &h, &s, &l);
-
-  if(h != -1.0f)
-  {
-    dt_bauhaus_slider_set_soft(hue, h);
-    dt_bauhaus_slider_set_soft(sat, s);
-    update_saturation_slider_color(GTK_WIDGET(sat), h);
-    gtk_widget_queue_draw(GTK_WIDGET(sat));
-  }
-  else
-  {
-    dt_bauhaus_slider_set_soft(hue, -1.0f);
-    dt_bauhaus_slider_set_soft(sat, 0.0f);
-    gtk_widget_queue_draw(GTK_WIDGET(sat));
-  }
-}
 
 static void apply_autogrey(dt_iop_module_t *self)
 {
@@ -951,17 +1025,15 @@ static void apply_autogrey(dt_iop_module_t *self)
           (p->lift[CHANNEL_GREEN] + p->lift[CHANNEL_FACTOR] - 2.0f),
           (p->lift[CHANNEL_BLUE] + p->lift[CHANNEL_FACTOR] - 2.0f) },
       gamma[3]
-      = { p->gamma[CHANNEL_RED] * p->gamma[CHANNEL_FACTOR], p->gamma[CHANNEL_GREEN] * p->gamma[CHANNEL_FACTOR],
+      = { p->gamma[CHANNEL_RED] * p->gamma[CHANNEL_FACTOR],
+          p->gamma[CHANNEL_GREEN] * p->gamma[CHANNEL_FACTOR],
           p->gamma[CHANNEL_BLUE] * p->gamma[CHANNEL_FACTOR] },
-      gamma_inv[3]
-      = { (gamma[0] != 0.0f) ? 1.0f / gamma[0] : 1000000.0f, (gamma[1] != 0.0f) ? 1.0f / gamma[1] : 1000000.0f,
-          (gamma[2] != 0.0f) ? 1.0f / gamma[2] : 1000000.0f },
       gain[3] = { p->gain[CHANNEL_RED] * p->gain[CHANNEL_FACTOR], p->gain[CHANNEL_GREEN] * p->gain[CHANNEL_FACTOR],
                   p->gain[CHANNEL_BLUE] * p->gain[CHANNEL_FACTOR] };
 
   for(int c = 0; c < 3; c++)
   {
-    rgb[c] = CDL(rgb[c], gain[c], lift[c], gamma_inv[c]);
+    rgb[c] = CDL(rgb[c], gain[c], lift[c], 2.0f - gamma[c]);
     rgb[c] = CLAMP(rgb[c], 0.0f, 1.0f);
   }
 
@@ -976,14 +1048,11 @@ static void apply_autogrey(dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-#ifdef AUTO
 static void apply_lift_neutralize(dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-
-  const float gain[3] = { p->gain[CHANNEL_RED], p->gain[CHANNEL_GREEN], p->gain[CHANNEL_BLUE] };
 
   float XYZ[3] = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
@@ -991,20 +1060,18 @@ static void apply_lift_neutralize(dt_iop_module_t *self)
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
 // Save the patch color for the optimization
-#ifdef OPTIM
   for(int c = 0; c < 3; ++c) g->color_patches_lift[c] = RGB[c];
   g->color_patches_flags[LIFT] = USER_SELECTED;
-#endif
 
   // Compute the RGB values after the CDL factors
   for(int c = 0; c < 3; ++c)
-    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
 
   // Compute the luminance of the average grey
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
   // Get the parameter
-  for(int c = 0; c < 3; ++c) RGB[c] = XYZ[1] - RGB[c] * gain[c];
+  for(int c = 0; c < 3; ++c) RGB[c] = powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - RGB[c] * p->gain[c+1];
 
   p->lift[CHANNEL_RED] = RGB[0] + 1.0f;
   p->lift[CHANNEL_GREEN] = RGB[1] + 1.0f;
@@ -1030,24 +1097,22 @@ static void apply_gamma_neutralize(dt_iop_module_t *self)
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
 // Save the patch color for the optimization
-#ifdef OPTIM
   for(int c = 0; c < 3; ++c) g->color_patches_gamma[c] = RGB[c];
   g->color_patches_flags[GAMMA] = USER_SELECTED;
-#endif
 
   // Compute the RGB values after the CDL factors
   for(int c = 0; c < 3; ++c)
-    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
 
   // Compute the luminance of the average grey
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
   // Get the parameter
-  for(int c = 0; c < 3; ++c) RGB[c] = logf(RGB[c]) / logf(XYZ[1]);
+  for(int c = 0; c < 3; ++c) RGB[c] = logf(XYZ[1])/ logf(RGB[c] * p->gain[c + 1] + p->lift[c + 1] - 1.0f);
 
-  p->gamma[CHANNEL_RED] = RGB[0] + 1.0f;
-  p->gamma[CHANNEL_GREEN] = RGB[1] + 1.0f;
-  p->gamma[CHANNEL_BLUE] = RGB[2] + 1.0f;
+  p->gamma[CHANNEL_RED] = 2.0 - RGB[0];
+  p->gamma[CHANNEL_GREEN] = 2.0 - RGB[1];
+  p->gamma[CHANNEL_BLUE] = 2.0 - RGB[2];
 
   normalize_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, p->gamma, CHANNEL_FACTOR, SLOPE_OFFSET_POWER);
   darktable.gui->reset = 1;
@@ -1069,24 +1134,22 @@ static void apply_gain_neutralize(dt_iop_module_t *self)
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
 // Save the patch color for the optimization
-#ifdef OPTIM
   for(int c = 0; c < 3; c++) g->color_patches_gain[c] = RGB[c];
   g->color_patches_flags[GAIN] = USER_SELECTED;
-#endif
 
   // Compute the RGB values after the CDL factors
   for(int c = 0; c < 3; ++c)
-    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+    RGB[c] = CDL(RGB[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
 
   // Compute the luminance of the average grey
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
   // Get the parameter
-  for(int c = 0; c < 3; ++c) RGB[c] = XYZ[1] / MAX(RGB[c], 0.000001f);
+  for(int c = 0; c < 3; ++c) RGB[c] = (powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - p->lift[c+1] + 1.0f) / MAX(RGB[c], 0.000001f);
 
-  p->gain[CHANNEL_RED] = RGB[0] + 1.0f;
-  p->gain[CHANNEL_GREEN] = RGB[1] + 1.0f;
-  p->gain[CHANNEL_BLUE] = RGB[2] + 1.0f;
+  p->gain[CHANNEL_RED] = RGB[0];
+  p->gain[CHANNEL_GREEN] = RGB[1];
+  p->gain[CHANNEL_BLUE] = RGB[2];
 
   normalize_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, p->gain, CHANNEL_FACTOR, SLOPE_OFFSET_POWER);
   darktable.gui->reset = 1;
@@ -1105,10 +1168,8 @@ static void apply_lift_auto(dt_iop_module_t *self)
   float XYZ[3] = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color_min, XYZ);
 
-#ifdef OPTIM
   g->luma_patches[LIFT] = XYZ[1];
   g->luma_patches_flags[LIFT] = USER_SELECTED;
-#endif
 
   float RGB[3] = { 0.0f };
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
@@ -1131,16 +1192,14 @@ static void apply_gamma_auto(dt_iop_module_t *self)
   float XYZ[3] = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
 
-#ifdef OPTIM
   g->luma_patches[GAMMA] = XYZ[1];
   g->luma_patches_flags[GAMMA] = USER_SELECTED;
-#endif
 
   float RGB[3] = { 0.0f };
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
   p->gamma[CHANNEL_FACTOR]
-      = logf(MAX(p->gain[CHANNEL_FACTOR] * XYZ[1] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f)) / logf(0.1800f);
+      = 2.0f - logf(0.1842f) / logf(MAX(p->gain[CHANNEL_FACTOR] * XYZ[1] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f));
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->gamma_factor, p->gamma[CHANNEL_FACTOR] - 1.0f);
@@ -1158,10 +1217,8 @@ static void apply_gain_auto(dt_iop_module_t *self)
   float XYZ[3] = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color_max, XYZ);
 
-#ifdef OPTIM
   g->luma_patches[GAIN] = XYZ[1];
   g->luma_patches_flags[GAIN] = USER_SELECTED;
-#endif
 
   float RGB[3] = { 0.0f };
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
@@ -1174,9 +1231,7 @@ static void apply_gain_auto(dt_iop_module_t *self)
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
-#endif
 
-#ifdef AUTO
 static void apply_autocolor(dt_iop_module_t *self)
 {
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
@@ -1221,9 +1276,9 @@ static void apply_autocolor(dt_iop_module_t *self)
 
   for (int c = 0; c < 3; ++c)
   {
-    samples_lift[c] = CDL(g->color_patches_lift[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
-    samples_gamma[c] = CDL(g->color_patches_gamma[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
-    samples_gain[c] = CDL(g->color_patches_gain[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 1.0f / p->gamma[CHANNEL_FACTOR]);
+    samples_lift[c] = CDL(g->color_patches_lift[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
+    samples_gamma[c] = CDL(g->color_patches_gamma[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
+    samples_gain[c] = CDL(g->color_patches_gain[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
   }
 
   // Get the average patches luma value (= neutral grey equivalents) after the CDL factors
@@ -1253,26 +1308,26 @@ static void apply_autocolor(dt_iop_module_t *self)
   * To avoid divergence, we constrain the parameters between +- 0.25 around the neutral value.
   * Experimentally, nothing good happens out of these bounds.
   */
-  for (int runs = 0 ; runs < 500 ; ++runs)
+  for (int runs = 0 ; runs < 1000 ; ++runs)
   {
-    // compute RGB slope/gain
-    for (int c = 0; c < 3; ++c) RGB_gain[c] = CLAMP((powf(MAX(greys[GAIN], 0.000001f), RGB_gamma[c]) - RGB_lift[c]) / MAX(samples_gain[c], 0.000001f), 0.75f, 1.25f);
-    // compute RGB offset/lift
-    for (int c = 0; c < 3; ++c) RGB_lift[c] = CLAMP(powf(MAX(greys[LIFT], 0.000001f), RGB_gamma[c]) - MAX(samples_lift[c], 0.000001f)  * RGB_gain[c], -0.25f, 0.25f);
-    // compute  power/gamma
-    for (int c = 0; c < 3; ++c) RGB_gamma[c] = CLAMP(logf(MAX(RGB_gain[c] * samples_gamma[c] + RGB_lift[c], 0.000001f)) / logf(MAX(greys[GAMMA], 0.000001f)), 0.50f, 1.50f);
+    // compute RGB slope/gain (powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - p->lift[c+1] + 1.0f) / MAX(RGB[c], 0.000001f);
+    for (int c = 0; c < 3; ++c) RGB_gain[c] = CLAMP((powf(greys[GAIN], 1.0f / (2.0f - RGB_gamma[c])) - RGB_lift[c]) / MAX(samples_gain[c], 0.000001f), 0.0f, 2.0f);
+    // compute RGB offset/lift powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - RGB[c] * p->gain[c+1];
+    for (int c = 0; c < 3; ++c) RGB_lift[c] = CLAMP(powf(greys[LIFT], 1.0f / (2.0f - RGB_gamma[c])) - samples_lift[c] * RGB_gain[c], -1.0f, 1.0f);
+    // compute  power/gamma 2.0f - logf(0.1842f) / logf(MAX(p->gain[CHANNEL_FACTOR] * XYZ[1] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f));
+    for (int c = 0; c < 3; ++c) RGB_gamma[c] = 2.0f - CLAMP(logf(MAX(greys[GAMMA], 0.000001f)) / logf(MAX(RGB_gain[c] * samples_gamma[c] + RGB_lift[c], 0.000001f)), 0.0f, 2.0f);
   }
 
   // save
   p->lift[CHANNEL_RED] = RGB_lift[0] + 1.0f;
   p->lift[CHANNEL_GREEN] = RGB_lift[1] + 1.0f;
   p->lift[CHANNEL_BLUE] = RGB_lift[2] + 1.0f;
-  p->gamma[CHANNEL_RED] = RGB_gamma[0] + 1.0f;
-  p->gamma[CHANNEL_GREEN] = RGB_gamma[1] + 1.0f;
-  p->gamma[CHANNEL_BLUE] = RGB_gamma[2] + 1.0f;
-  p->gain[CHANNEL_RED] = RGB_gain[0] + 1.0f;
-  p->gain[CHANNEL_GREEN] = RGB_gain[1] + 1.0f;
-  p->gain[CHANNEL_BLUE] = RGB_gain[2] + 1.0f;
+  p->gamma[CHANNEL_RED] = RGB_gamma[0];
+  p->gamma[CHANNEL_GREEN] = RGB_gamma[1];
+  p->gamma[CHANNEL_BLUE] = RGB_gamma[2];
+  p->gain[CHANNEL_RED] = RGB_gain[0];
+  p->gain[CHANNEL_GREEN] = RGB_gain[1];
+  p->gain[CHANNEL_BLUE] = RGB_gain[2];
 
   normalize_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, p->lift, CHANNEL_FACTOR, SLOPE_OFFSET_POWER);
   normalize_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, p->gamma, CHANNEL_FACTOR,  SLOPE_OFFSET_POWER);
@@ -1327,7 +1382,7 @@ static void apply_autoluma(dt_iop_module_t *self)
   {
     p->gain[CHANNEL_FACTOR] = CLAMP(p->lift[CHANNEL_FACTOR] / g->luma_patches[GAIN], 0.0f, 2.0f);
     p->lift[CHANNEL_FACTOR] = CLAMP(-p->gain[CHANNEL_FACTOR] * g->luma_patches[LIFT] + 1.0f, 0.0f, 2.0f);
-    p->gamma[CHANNEL_FACTOR] = CLAMP(logf(MAX(p->gain[CHANNEL_FACTOR] * g->luma_patches[GAMMA] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f)) / logf(0.1800f), 0.0f, 2.0f);
+    p->gamma[CHANNEL_FACTOR] = CLAMP(2.0f - logf(0.1842f) / logf(MAX(p->gain[CHANNEL_FACTOR] * g->luma_patches[GAMMA] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f)), 0.0f, 2.0f);
   }
 
   darktable.gui->reset = 1;
@@ -1338,7 +1393,6 @@ static void apply_autoluma(dt_iop_module_t *self)
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
-#endif
 
 static void _iop_color_picker_update(dt_iop_module_t *self)
 {
@@ -1450,7 +1504,8 @@ void init(dt_iop_module_t *module)
                                                                      { 1.0f, 1.0f, 1.0f, 1.0f },
                                                                      1.0f,
                                                                      1.0f,
-                                                                     18.0f };
+                                                                     18.0f,
+                                                                     1.0f };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_colorbalance_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorbalance_params_t));
@@ -1560,9 +1615,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     }
   }
 
-
   d->grey = p->grey;
   d->saturation = p->saturation;
+  d->saturation_out = p->saturation_out;
   d->contrast = p->contrast;
 }
 
@@ -1578,25 +1633,6 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
-static inline void set_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *B, float hsl[3], float *p, int mode)
-{
-
-  float rgb[3] = { 0.0f };
-  hsl2rgb(rgb, hsl[0], hsl[1], hsl[2]);
-
-  if(hsl[0] != -1)
-  {
-    // Adjustement from http://filmicworlds.com/blog/minimal-color-grading-tools/
-    float mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
-    p[CHANNEL_RED] = (rgb[0] - mean) * 2.0f + 1.0f;
-    p[CHANNEL_GREEN] = (rgb[1] - mean) * 2.0f + 1.0f;
-    p[CHANNEL_BLUE] = (rgb[2] - mean) * 2.0f + 1.0f;
-
-    normalize_RGB_sliders(R, G, B, p, CHANNEL_FACTOR, mode);
-  }
-}
-
-
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
@@ -1610,6 +1646,7 @@ void gui_update(dt_iop_module_t *self)
 
   dt_bauhaus_slider_set_soft(g->grey, p->grey);
   dt_bauhaus_slider_set_soft(g->saturation, p->saturation - 1.0f);
+  dt_bauhaus_slider_set_soft(g->saturation_out, p->saturation_out - 1.0f);
   dt_bauhaus_slider_set_soft(g->contrast, 1.0f - p->contrast);
 
   dt_bauhaus_slider_set_soft(g->lift_factor, p->lift[CHANNEL_FACTOR] - 1.0f);
@@ -1627,7 +1664,6 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->gain_g, p->gain[CHANNEL_GREEN] - 1.0f);
   dt_bauhaus_slider_set_soft(g->gain_b, p->gain[CHANNEL_BLUE] - 1.0f);
 
-#ifdef AUTO
   if(p->mode == LEGACY || p->mode == LIFT_GAMMA_GAIN)
   {
     gtk_widget_set_visible(g->optim_label, FALSE);
@@ -1643,7 +1679,6 @@ void gui_update(dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
   _check_tuner_picker_labels(self);
-#endif
 
   if(p->mode == LEGACY)
   {
@@ -1658,7 +1693,6 @@ void gui_update(dt_iop_module_t *self)
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
 
-#ifdef CONTROLS
   // default control is HSL
   gtk_widget_set_visible(g->lift_r, FALSE);
   gtk_widget_set_visible(g->lift_g, FALSE);
@@ -1726,12 +1760,10 @@ void gui_update(dt_iop_module_t *self)
       break;
     }
   }
-#endif
 }
 
 void gui_reset(dt_iop_module_t *self)
 {
-#ifdef CONTROLS
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
   for (int k=0; k<LEVELS; k++)
@@ -1761,7 +1793,6 @@ void gui_reset(dt_iop_module_t *self)
   gtk_widget_set_visible(g->sat_gain, TRUE);
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
-#endif
 }
 
 static void mode_callback(GtkWidget *combo, dt_iop_module_t *self)
@@ -1770,7 +1801,6 @@ static void mode_callback(GtkWidget *combo, dt_iop_module_t *self)
   if(self->dt->gui->reset) return;
 
   p->mode = dt_bauhaus_combobox_get(combo);
-#ifdef AUTO
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
   if (p->mode == LEGACY || p->mode == LIFT_GAMMA_GAIN)
@@ -1787,7 +1817,6 @@ static void mode_callback(GtkWidget *combo, dt_iop_module_t *self)
   }
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
-#endif
 
   if (p->mode == LEGACY)
   {
@@ -1801,7 +1830,6 @@ static void mode_callback(GtkWidget *combo, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-#ifdef CONTROLS
 static void controls_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
@@ -1872,7 +1900,6 @@ static void controls_callback(GtkWidget *combo, dt_iop_module_t *self)
   }
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 }
-#endif
 
 static void hue_lift_callback(GtkWidget *slider, gpointer user_data)
 {
@@ -1905,7 +1932,7 @@ static void sat_lift_callback(GtkWidget *slider, gpointer user_data)
 
   float hsl[3] = {dt_bauhaus_slider_get(g->hue_lift),
                   dt_bauhaus_slider_get(slider),
-                  0.437462716f};
+                  0.458656447f};
 
   set_RGB_sliders(g->lift_r, g->lift_g, g->lift_b, hsl, p->lift, p->mode);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1922,7 +1949,7 @@ static void hue_gamma_callback(GtkWidget *slider, gpointer user_data)
 
   float hsl[3] = {dt_bauhaus_slider_get(slider),
                   dt_bauhaus_slider_get(g->sat_gamma),
-                  0.437462716f};
+                  0.458656447f};
 
   update_saturation_slider_color(g->sat_gamma, hsl[0]);
   set_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, hsl, p->gamma, p->mode);
@@ -1942,7 +1969,7 @@ static void sat_gamma_callback(GtkWidget *slider, gpointer user_data)
 
   float hsl[3] = {dt_bauhaus_slider_get(g->hue_gamma),
                   dt_bauhaus_slider_get(slider),
-                  0.437462716f};
+                  0.458656447f};
 
   set_RGB_sliders(g->gamma_r, g->gamma_g, g->gamma_b, hsl, p->gamma, p->mode);
 
@@ -1960,7 +1987,7 @@ static void hue_gain_callback(GtkWidget *slider, gpointer user_data)
 
   float hsl[3] = {dt_bauhaus_slider_get(slider),
                   dt_bauhaus_slider_get(g->sat_gain),
-                  0.437462716f};
+                  0.458656447f};
 
   update_saturation_slider_color(g->sat_gain, hsl[0]);
   set_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, hsl, p->gain, p->mode);
@@ -1980,7 +2007,7 @@ static void sat_gain_callback(GtkWidget *slider, gpointer user_data)
 
   float hsl[3] = {dt_bauhaus_slider_get(g->hue_gain),
                   dt_bauhaus_slider_get(slider),
-                  0.437462716f};
+                  0.458656447f};
 
   set_RGB_sliders(g->gain_r, g->gain_g, g->gain_b, hsl, p->gain, p->mode);
 
@@ -1996,6 +2023,18 @@ static void saturation_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
   p->saturation = dt_bauhaus_slider_get(slider) + 1.0f;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void saturation_out_callback(GtkWidget *slider, dt_iop_module_t *self)
+{
+  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  if(self->dt->gui->reset) return;
+
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+
+  p->saturation_out = dt_bauhaus_slider_get(slider) + 1.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2348,6 +2387,12 @@ void gui_init(dt_iop_module_t *self)
 
   g->mode = NULL;
 
+  for (int k=0; k<LEVELS; k++)
+  {
+    g->color_patches_flags[k] = INVALID;
+    g->luma_patches_flags[k] = INVALID;
+  }
+
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
@@ -2361,9 +2406,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->mode, _("color-grading mapping method"));
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
 
-
   // control choice
-#ifdef CONTROLS
   g->controls = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->controls, NULL, _("color control sliders"));
   dt_bauhaus_combobox_add(g->controls, _("HSL"));
@@ -2373,7 +2416,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->controls), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->controls, _("color-grading mapping method"));
   g_signal_connect(G_OBJECT(g->controls), "value-changed", G_CALLBACK(controls_callback), self);
-#endif
 
   // master
   g->master_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -2383,10 +2425,17 @@ void gui_init(dt_iop_module_t *self)
 
   g->saturation = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005, p->saturation - 1.0f, 5, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->saturation, -1.0f, 1.0f);
-  dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
+  dt_bauhaus_widget_set_label(g->saturation, NULL, _("input saturation"));
   gtk_box_pack_start(GTK_BOX(g->master_box), g->saturation, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->saturation, _("saturation"));
+  gtk_widget_set_tooltip_text(g->saturation, _("saturation correction before the color balance"));
   g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
+
+  g->saturation_out = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005, p->saturation_out - 1.0f, 5, 0);
+  dt_bauhaus_slider_enable_soft_boundaries(g->saturation_out, -1.0f, 1.0f);
+  dt_bauhaus_widget_set_label(g->saturation_out, NULL, _("output saturation"));
+  gtk_box_pack_start(GTK_BOX(g->master_box), g->saturation_out, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->saturation_out, _("saturation correction after the color balance"));
+  g_signal_connect(G_OBJECT(g->saturation_out), "value-changed", G_CALLBACK(saturation_out_callback), self);
 
   g->grey = dt_bauhaus_slider_new_with_range(self, 0.1, 100., 0.5, p->grey, 2);
   dt_bauhaus_widget_set_label(g->grey, NULL, _("contrast fulcrum"));
@@ -2489,11 +2538,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue_lift, _("select the hue"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->hue_lift, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->hue_lift), "value-changed", G_CALLBACK(hue_lift_callback), self);
-#ifdef AUTO
   dt_bauhaus_widget_set_quad_paint(g->hue_lift, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->hue_lift, TRUE);
   g_signal_connect(G_OBJECT(g->hue_lift), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-#endif
 
   g->sat_lift = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 0.25f, 0.0005f, 0.0f, 5, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->sat_lift, 0.0f, 1.0f);
@@ -2539,11 +2586,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue_gamma, _("select the hue"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->hue_gamma, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->hue_gamma), "value-changed", G_CALLBACK(hue_gamma_callback), self);
-#ifdef AUTO
   dt_bauhaus_widget_set_quad_paint(g->hue_gamma, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->hue_gamma, TRUE);
   g_signal_connect(G_OBJECT(g->hue_gamma), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-#endif
   g->sat_gamma = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 0.25f, 0.0005f, 0.0f, 5, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->sat_gamma, 0.0f, 1.0f);
   dt_bauhaus_widget_set_label(g->sat_gamma, NULL, _("saturation"));
@@ -2587,11 +2632,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue_gain, _("select the hue"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->hue_gain, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->hue_gain), "value-changed", G_CALLBACK(hue_gain_callback), self);
-#ifdef AUTO
   dt_bauhaus_widget_set_quad_paint(g->hue_gain, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->hue_gain, TRUE);
   g_signal_connect(G_OBJECT(g->hue_gain), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-#endif
   g->sat_gain = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 0.25f, 0.0005f, 0.0f, 5, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->sat_gain, 0.0f, 1.0f);
   dt_bauhaus_widget_set_label(g->sat_gain, NULL, _("saturation"));
@@ -2622,7 +2665,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->gain_b, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gain_b, 1.0, 0.0, 0.0, 1.0);
 
-#ifdef AUTO
   g->optim_label =  dt_ui_section_label_new(_("auto optimizers"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->optim_label, FALSE, FALSE, 5);
 
@@ -2646,9 +2688,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->auto_color), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
   gtk_widget_set_tooltip_text(g->auto_color, _("optimize the RGB curves to remove color casts"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_color, TRUE, TRUE, 0);
-#endif
 
-#ifdef CONTROLS
   // default control is HSL
   gtk_widget_set_visible(g->lift_r, FALSE);
   gtk_widget_set_visible(g->lift_g, FALSE);
@@ -2666,7 +2706,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_visible(g->sat_gamma, TRUE);
   gtk_widget_set_visible(g->hue_gain, TRUE);
   gtk_widget_set_visible(g->sat_gain, TRUE);
-#endif
+
 #undef ADD_FACTOR
 #undef ADD_CHANNEL
 
