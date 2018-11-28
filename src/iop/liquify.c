@@ -3256,6 +3256,21 @@ static void _liquify_cairo_paint_node_tool(cairo_t *cr, const gint x, const gint
                                            const gint flags, void *data);
 
 
+static float conf_set_get_default(const char *name, float def)
+{
+  float value;
+  if(dt_conf_key_exists(name))
+  {
+    value = dt_conf_get_float(name);
+  }
+  else
+  {
+    value = def;
+    dt_conf_set_float(name, value);
+  }
+  return value;
+}
+
 // we need this only because darktable has no radiobutton support
 static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *module)
 {
@@ -3314,12 +3329,9 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
 
       //  start with current saved size/strength
 
-      const float radius =
-        dt_conf_key_exists(CONF_RADIUS) ? dt_conf_get_float(CONF_RADIUS) : GET_UI_WIDTH (DEFAULT_RADIUS);
-      const float r =
-        dt_conf_key_exists(CONF_STRENGTH) ? dt_conf_get_float(CONF_STRENGTH) : GET_UI_WIDTH (DEFAULT_STRENGTH);
-      const float phi =
-        dt_conf_key_exists(CONF_ANGLE) ? dt_conf_get_float(CONF_ANGLE) : 0;
+      const float radius = conf_set_get_default(CONF_RADIUS, GET_UI_WIDTH(DEFAULT_RADIUS));
+      const float r = conf_set_get_default(CONF_STRENGTH, GET_UI_WIDTH(DEFAULT_STRENGTH));
+      const float phi = conf_set_get_default(CONF_ANGLE, 0);
 
       g->temp->warp.radius   = pt + radius;
       g->temp->warp.strength = pt + r * cexp (phi * I);
