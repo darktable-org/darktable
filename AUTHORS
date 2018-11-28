@@ -1,57 +1,45 @@
 * developers:
-Roman Lebedev,
+Pascal Obry,
 Tobias Ellinghaus,
+Roman Lebedev,
+Stefan Schöfegger,
 Peter Budai,
 johannes hanika,
 Ulrich Pegelow,
-Stefan Schöfegger,
-Pascal Obry,
-parafin,
-Jérémy Rosen,
-Christian Tellefsen,
-Alexandre Prokoudine.
+Alexandre Prokoudine,
+Aldric Renaudin,
+parafin.
 
 * translators:
 Pascal Obry,
 Ger Siemerink,
-Michel Leblond,
 Tobias Ellinghaus,
-shlomi braitbart,
-tatica,
-Novy Sawai,
+Maurizio Paglia,
 Alexandre Prokoudine,
-Germano Massullo,
+Timur I. Davletshin,
 Báthory Péter,
-Josep V. Moragues,
+shlomi braitbart,
+Aurélien PIERRE,
+Heiko Bauke,
 Matjaž Jeran,
-Matthieu Moy,
-Tomasz Golinski,
-Ulrich Pegelow,
-johannes hanika.
+Michel Leblond,
+Milan Knížek,
+mepi0011.
 
 * contributors (at least 4 commits):
+Aurélien PIERRE,
+rawfiner,
+edgardoh,
 Dan Torop,
 Ger Siemerink,
-Michel Leblond,
+Maurizio Paglia,
 Matthieu Moy,
+Andreas Schneider,
 Heiko Bauke,
-Žilvinas Žaltiena,
-itinerarium,
-Maximilian Trescher,
-Wolfgang Mader,
-Andrea Volpato,
-Matthieu Volat,
-shlomi braitbart,
-Dominik Markiewicz,
-tatica.
-
-* RawSpeed contributors (at least 1 commit):
-Axel Waggershauser,
-Nathaniel Watson,
-Dan Torop,
-Marco Caimi,
-Martijn Courteaux,
-Uwe Müssel,
-Vasily Khoruzhick.
+Rikard Öxler,
+Benoit Brummer,
+Timur I. Davletshin,
+grand-piano,
+phweyland.
 
 And all those of you that made previous releases possible
