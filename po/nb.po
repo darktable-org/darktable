@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-21 22:42+0100\n"
-"PO-Revision-Date: 2018-11-20 20:53+0100\n"
+"POT-Creation-Date: 2018-11-28 18:41+0100\n"
+"PO-Revision-Date: 2018-11-28 18:07+0100\n"
 "Last-Translator: Ragnar Wisløff <ragnar@wisloff.no>\n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -1086,7 +1086,7 @@ msgstr "for lang tid til å oppdatere forholdstall for samlingen"
 
 #: ../src/common/collection.c:1044 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
-#: ../src/iop/channelmixer.c:464 ../src/iop/colorbalance.c:2508
+#: ../src/iop/channelmixer.c:464 ../src/iop/colorbalance.c:2555
 #: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1188
 msgid "red"
 msgstr "rød"
@@ -1098,7 +1098,7 @@ msgstr "gul"
 
 #: ../src/common/collection.c:1048 ../src/develop/lightroom.c:826
 #: ../src/iop/bilateral.cc:361 ../src/iop/channelmixer.c:454
-#: ../src/iop/channelmixer.c:470 ../src/iop/colorbalance.c:2515
+#: ../src/iop/channelmixer.c:470 ../src/iop/colorbalance.c:2562
 #: ../src/iop/temperature.c:1357 ../src/iop/temperature.c:1370
 #: ../src/libs/collect.c:1188
 msgid "green"
@@ -1106,7 +1106,7 @@ msgstr "grønn"
 
 #: ../src/common/collection.c:1050 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:362 ../src/iop/channelmixer.c:455
-#: ../src/iop/channelmixer.c:476 ../src/iop/colorbalance.c:2522
+#: ../src/iop/channelmixer.c:476 ../src/iop/colorbalance.c:2569
 #: ../src/iop/temperature.c:1371 ../src/libs/collect.c:1188
 msgid "blue"
 msgstr "blå"
@@ -1218,21 +1218,26 @@ msgstr "sRGB (web-sikker)"
 msgid "BRG (for testing)"
 msgstr "BRG (for testing)"
 
-#: ../src/common/cups_print.c:396
+#: ../src/common/cups_print.c:407
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
 msgstr "fant ikke utskriftsfilen `%s' for bilde %d på `%s'"
 
-#: ../src/common/cups_print.c:415
+#: ../src/common/cups_print.c:426
 msgid "failed to create temporary file for printing options"
 msgstr "kunne ikke skrive midlertidig fil for utskriftsinnstillinger"
 
-#: ../src/common/cups_print.c:545
+#: ../src/common/cups_print.c:494
+#, c-format
+msgid "printing on `%s' cancelled"
+msgstr "utskrift på `%s' avbrutt"
+
+#: ../src/common/cups_print.c:557
 #, c-format
 msgid "error while printing `%s' on `%s'"
 msgstr "feil ved utskrift av `%s' på `%s'"
 
-#: ../src/common/cups_print.c:547
+#: ../src/common/cups_print.c:559
 #, c-format
 msgid "printing `%s' on `%s'"
 msgstr "skriver ut `%s' på `%s'"
@@ -1392,7 +1397,7 @@ msgstr ""
 #: ../src/common/history.c:1157 ../src/common/history.c:1160
 #: ../src/common/history.c:1176 ../src/common/styles.c:728
 #: ../src/common/styles.c:732 ../src/develop/blend_gui.c:2073
-#: ../src/develop/develop.c:1386 ../src/iop/ashift.c:4592
+#: ../src/develop/develop.c:1386 ../src/iop/ashift.c:4707
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "på"
@@ -1402,7 +1407,7 @@ msgstr "på"
 #: ../src/common/styles.c:732 ../src/develop/blend_gui.c:1845
 #: ../src/develop/blend_gui.c:2070 ../src/develop/develop.c:1386
 #: ../src/imageio/format/exr.cc:360 ../src/imageio/format/j2k.c:663
-#: ../src/iop/ashift.c:4591 ../src/iop/ashift.c:4597 ../src/iop/colorin.c:1866
+#: ../src/iop/ashift.c:4706 ../src/iop/ashift.c:4712 ../src/iop/colorin.c:1866
 #: ../src/iop/demosaic.c:5066 ../src/iop/vignette.c:1143
 #: ../src/libs/history.c:164 ../src/libs/live_view.c:436
 msgid "off"
@@ -2148,7 +2153,7 @@ msgstr ""
 "* intervall mellom nærliggende øvre/nedre markører: gradvis miksing"
 
 #: ../src/develop/blend_gui.c:1285 ../src/iop/colorzones.c:1098
-#: ../src/iop/tonecurve.c:1198
+#: ../src/iop/tonecurve.c:1204
 msgid "pick GUI color from image"
 msgstr "velg brukergrensesnitt-farge fra bilde"
 
@@ -2517,9 +2522,9 @@ msgstr "slørmaske"
 msgid "radius for gaussian blur of blend mask"
 msgstr "radius for gaussisk slør-maske"
 
-#: ../src/develop/blend_gui.c:2117
-msgid "mask brightness"
-msgstr "maske lysstyrke"
+#: ../src/develop/blend_gui.c:2117 ../src/iop/retouch.c:2888
+msgid "mask opacity"
+msgstr "gjennomsiktighet maske"
 
 #: ../src/develop/blend_gui.c:2119
 msgid ""
@@ -2566,43 +2571,43 @@ msgstr "maske forbedring"
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: modul `%s' versjonsfeil: %d != %d"
 
-#: ../src/develop/imageop.c:1008
+#: ../src/develop/imageop.c:1009
 msgid "new instance"
 msgstr "ny forekomst"
 
-#: ../src/develop/imageop.c:1013
+#: ../src/develop/imageop.c:1014
 msgid "duplicate instance"
 msgstr "duplikatforekomst"
 
-#: ../src/develop/imageop.c:1018 ../src/libs/masks.c:1155
+#: ../src/develop/imageop.c:1019 ../src/libs/masks.c:1155
 msgid "move up"
 msgstr "flytt opp"
 
-#: ../src/develop/imageop.c:1024 ../src/libs/masks.c:1158
+#: ../src/develop/imageop.c:1025 ../src/libs/masks.c:1158
 msgid "move down"
 msgstr "flytt ned"
 
 #. delete
-#: ../src/develop/imageop.c:1030 ../src/libs/image.c:142
+#: ../src/develop/imageop.c:1031 ../src/libs/image.c:142
 #: ../src/libs/styles.c:371 ../src/libs/tagging.c:575
 msgid "delete"
 msgstr "slett"
 
-#: ../src/develop/imageop.c:1037
+#: ../src/develop/imageop.c:1038
 msgid "rename"
 msgstr "gi nytt navn"
 
-#: ../src/develop/imageop.c:1064 ../src/develop/imageop.c:2050
+#: ../src/develop/imageop.c:1065 ../src/develop/imageop.c:2052
 #, c-format
 msgid "%s is switched on"
 msgstr "%s er skrudd på"
 
-#: ../src/develop/imageop.c:1064 ../src/develop/imageop.c:2050
+#: ../src/develop/imageop.c:1065 ../src/develop/imageop.c:2052
 #, c-format
 msgid "%s is switched off"
 msgstr "%s er skrudd av"
 
-#: ../src/develop/imageop.c:1387 ../src/gui/accelerators.c:628
+#: ../src/develop/imageop.c:1389 ../src/gui/accelerators.c:628
 #: ../src/gui/accelerators.c:713 ../src/gui/accelerators.c:878
 #: ../src/gui/accelerators.c:904 ../src/gui/presets.c:183
 #: ../src/gui/presets.c:290 ../src/gui/presets.c:632
@@ -2611,33 +2616,33 @@ msgstr "%s er skrudd av"
 msgid "preset"
 msgstr "forhåndsinnstilling"
 
-#: ../src/develop/imageop.c:1407
+#: ../src/develop/imageop.c:1409
 msgctxt "accel"
 msgid "fusion"
 msgstr "sammenblanding"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1412
+#: ../src/develop/imageop.c:1414
 msgctxt "accel"
 msgid "show module"
 msgstr "vis modul"
 
-#: ../src/develop/imageop.c:1413
+#: ../src/develop/imageop.c:1415
 msgctxt "accel"
 msgid "enable module"
 msgstr "bruk modul"
 
-#: ../src/develop/imageop.c:1415 ../src/libs/lib.c:602
+#: ../src/develop/imageop.c:1417 ../src/libs/lib.c:602
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "nullstill modul-parametre"
 
-#: ../src/develop/imageop.c:1416 ../src/libs/lib.c:606
+#: ../src/develop/imageop.c:1418 ../src/libs/lib.c:606
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "vis forhåndsinnstillings-meny"
 
-#: ../src/develop/imageop.c:2015
+#: ../src/develop/imageop.c:2017
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -2645,16 +2650,16 @@ msgstr ""
 "flere forekomster\n"
 "midtklikk lager ny forekomst"
 
-#: ../src/develop/imageop.c:2026 ../src/libs/lib.c:997
+#: ../src/develop/imageop.c:2028 ../src/libs/lib.c:997
 msgid "reset parameters"
 msgstr "nullstill parametre"
 
-#: ../src/develop/imageop.c:2035 ../src/gui/preferences.c:398
+#: ../src/develop/imageop.c:2037 ../src/gui/preferences.c:398
 #: ../src/libs/lib.c:1009
 msgid "presets"
 msgstr "forhåndsinnstillinger"
 
-#: ../src/develop/imageop.c:2037
+#: ../src/develop/imageop.c:2039
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -3358,7 +3363,7 @@ msgid "golden spiral"
 msgstr "gyldne spiral"
 
 #: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:678
-#: ../src/iop/denoiseprofile.c:2640 ../src/iop/lens.c:2093
+#: ../src/iop/denoiseprofile.c:2637 ../src/iop/lens.c:2093
 #: ../src/iop/rawdenoise.c:953 ../src/libs/tools/filter.c:117
 msgid "all"
 msgstr "alle"
@@ -3511,7 +3516,7 @@ msgstr "blender"
 
 #. focal length
 #: ../src/gui/preferences.c:444 ../src/gui/preferences.c:1306
-#: ../src/gui/presets.c:482 ../src/iop/ashift.c:4609 ../src/libs/camera.c:589
+#: ../src/gui/presets.c:482 ../src/iop/ashift.c:4724 ../src/libs/camera.c:589
 #: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:111
 msgid "focal length"
 msgstr "brennvidde"
@@ -4513,155 +4518,155 @@ msgstr[1] "%d/%d eksportert til google+-album"
 msgid "perspective correction"
 msgstr "perspektiv-korreksjon"
 
-#: ../src/iop/ashift.c:513 ../src/iop/watermark.c:258
+#: ../src/iop/ashift.c:514 ../src/iop/watermark.c:258
 msgctxt "accel"
 msgid "rotation"
 msgstr "rotasjon"
 
-#: ../src/iop/ashift.c:514
+#: ../src/iop/ashift.c:515
 msgctxt "accel"
 msgid "lens shift (v)"
 msgstr "objektiv-flytting (v)"
 
-#: ../src/iop/ashift.c:515
+#: ../src/iop/ashift.c:516
 msgctxt "accel"
 msgid "lens shift (h)"
 msgstr "objektiv-flytting (h)"
 
-#: ../src/iop/ashift.c:516
+#: ../src/iop/ashift.c:517
 msgctxt "accel"
 msgid "shear"
 msgstr "skjær"
 
-#: ../src/iop/ashift.c:2522
+#: ../src/iop/ashift.c:2506
 msgid "automatic cropping failed"
 msgstr "automatisk beskjæring feilet"
 
-#: ../src/iop/ashift.c:2542
+#: ../src/iop/ashift.c:2650
 msgid "data pending - please repeat"
 msgstr "venter på data - vennligst gjenta"
 
-#: ../src/iop/ashift.c:2548
+#: ../src/iop/ashift.c:2656
 msgid "could not detect structural data in image"
 msgstr "kunne ikke finne strukturdata i bildet"
 
-#: ../src/iop/ashift.c:2559
+#: ../src/iop/ashift.c:2667
 msgid "could not run outlier removal"
 msgstr "kunne ikke fjerne avvikende verdier"
 
-#: ../src/iop/ashift.c:2613
+#: ../src/iop/ashift.c:2721
 msgid "not enough structure for automatic correction"
 msgstr "ikke nok strukturdata for automatisk korrigering"
 
-#: ../src/iop/ashift.c:2618
+#: ../src/iop/ashift.c:2726
 msgid "automatic correction failed, please correct manually"
 msgstr "automatisk korrigering feilet, manuell korrigering nødvendig"
 
-#: ../src/iop/ashift.c:4364 ../src/iop/ashift.c:4365 ../src/iop/ashift.c:4466
-#: ../src/iop/ashift.c:4467
+#: ../src/iop/ashift.c:4475 ../src/iop/ashift.c:4476 ../src/iop/ashift.c:4579
+#: ../src/iop/ashift.c:4580
 #, c-format
 msgid "lens shift (%s)"
 msgstr "objektivforskyvning (%s)"
 
-#: ../src/iop/ashift.c:4364 ../src/iop/ashift.c:4365 ../src/iop/ashift.c:4466
-#: ../src/iop/ashift.c:4467 ../src/iop/clipping.c:1578
+#: ../src/iop/ashift.c:4475 ../src/iop/ashift.c:4476 ../src/iop/ashift.c:4579
+#: ../src/iop/ashift.c:4580 ../src/iop/clipping.c:1578
 #: ../src/iop/clipping.c:1868 ../src/iop/clipping.c:1887
 msgid "horizontal"
 msgstr "vannrett"
 
-#: ../src/iop/ashift.c:4364 ../src/iop/ashift.c:4365 ../src/iop/ashift.c:4466
-#: ../src/iop/ashift.c:4467 ../src/iop/clipping.c:1577
+#: ../src/iop/ashift.c:4475 ../src/iop/ashift.c:4476 ../src/iop/ashift.c:4579
+#: ../src/iop/ashift.c:4580 ../src/iop/clipping.c:1577
 #: ../src/iop/clipping.c:1869 ../src/iop/clipping.c:1886
 msgid "vertical"
 msgstr "loddrett"
 
-#: ../src/iop/ashift.c:4569 ../src/iop/graduatednd.c:1157
+#: ../src/iop/ashift.c:4684 ../src/iop/graduatednd.c:1157
 #: ../src/iop/watermark.c:1394
 msgid "rotation"
 msgstr "rotering"
 
-#: ../src/iop/ashift.c:4575
+#: ../src/iop/ashift.c:4690
 msgid "lens shift (vertical)"
 msgstr "objektivforskyvning (loddrett)"
 
-#: ../src/iop/ashift.c:4580
+#: ../src/iop/ashift.c:4695
 msgid "lens shift (horizontal)"
 msgstr "objektivforskyvning (vannrett)"
 
-#: ../src/iop/ashift.c:4585
+#: ../src/iop/ashift.c:4700
 msgid "shear"
 msgstr "forkastning"
 
-#: ../src/iop/ashift.c:4590 ../src/iop/clipping.c:2018
+#: ../src/iop/ashift.c:4705 ../src/iop/clipping.c:2018
 #: ../src/libs/live_view.c:343
 msgid "guides"
 msgstr "hjelpelinjer"
 
-#: ../src/iop/ashift.c:4596 ../src/iop/clipping.c:1894
+#: ../src/iop/ashift.c:4711 ../src/iop/clipping.c:1894
 msgid "automatic cropping"
 msgstr "automatisk beskjæring"
 
-#: ../src/iop/ashift.c:4598
+#: ../src/iop/ashift.c:4713
 msgid "largest area"
 msgstr "største område"
 
-#: ../src/iop/ashift.c:4599
+#: ../src/iop/ashift.c:4714
 msgid "original format"
 msgstr "originalens format"
 
-#: ../src/iop/ashift.c:4603
+#: ../src/iop/ashift.c:4718
 msgid "lens model"
 msgstr "objektiv-modell"
 
-#: ../src/iop/ashift.c:4604
+#: ../src/iop/ashift.c:4719
 msgid "generic"
 msgstr "generisk"
 
-#: ../src/iop/ashift.c:4605
+#: ../src/iop/ashift.c:4720
 msgid "specific"
 msgstr "spesifikk"
 
-#: ../src/iop/ashift.c:4618
+#: ../src/iop/ashift.c:4733
 msgid "crop factor"
 msgstr "beskjæringsfaktor"
 
-#: ../src/iop/ashift.c:4623
+#: ../src/iop/ashift.c:4738
 msgid "lens dependence"
 msgstr "objektiv-avhengig"
 
-#: ../src/iop/ashift.c:4633
+#: ../src/iop/ashift.c:4748
 msgid "aspect adjust"
 msgstr "juster forholdstall bilde"
 
-#: ../src/iop/ashift.c:4643
+#: ../src/iop/ashift.c:4758
 msgid "automatic fit"
 msgstr "automatisk tilpasning"
 
-#: ../src/iop/ashift.c:4662
+#: ../src/iop/ashift.c:4777
 msgid "get structure"
 msgstr "finn struktur"
 
-#: ../src/iop/ashift.c:4707
+#: ../src/iop/ashift.c:4822
 msgid "rotate image"
 msgstr "roter bilde"
 
-#: ../src/iop/ashift.c:4708 ../src/iop/ashift.c:4709
+#: ../src/iop/ashift.c:4823 ../src/iop/ashift.c:4824
 msgid "apply lens shift correction in one direction"
 msgstr "utfør objektivforskyvning i én retning"
 
-#: ../src/iop/ashift.c:4710
+#: ../src/iop/ashift.c:4825
 msgid "shear the image along one diagonal"
 msgstr "forskyv bildet langs én diagonal"
 
-#: ../src/iop/ashift.c:4711
+#: ../src/iop/ashift.c:4826
 msgid "display guide lines overlay"
 msgstr "vis hjelpelinjer"
 
-#: ../src/iop/ashift.c:4712 ../src/iop/clipping.c:1897
+#: ../src/iop/ashift.c:4827 ../src/iop/clipping.c:1897
 msgid "automatically crop to avoid black edges"
 msgstr "automatisk beskjæring for å unngå svarte kanter"
 
-#: ../src/iop/ashift.c:4713
+#: ../src/iop/ashift.c:4828
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -4669,12 +4674,12 @@ msgstr ""
 "objektivmodellering for prespektivkorrigering: generisk eller avhengig av "
 "brennvidden"
 
-#: ../src/iop/ashift.c:4715
+#: ../src/iop/ashift.c:4830
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "objektivets brennvidde, standardverdi tas fra exif-data hvis tilgjengelig"
 
-#: ../src/iop/ashift.c:4717
+#: ../src/iop/ashift.c:4832
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -4682,7 +4687,7 @@ msgstr ""
 "beskjæringsfaktor for kameraets sensor, standardverdi tas fra exif-data hvis "
 "tilgjengelig"
 
-#: ../src/iop/ashift.c:4720
+#: ../src/iop/ashift.c:4835
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -4690,12 +4695,12 @@ msgstr ""
 "nivå for objektivavhengighet i korrigering, sett til maksimum for full "
 "avhengighet, sett til null for generisk"
 
-#: ../src/iop/ashift.c:4722
+#: ../src/iop/ashift.c:4837
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "juster høyde/bredde-forholdet ved hjelp av skalering vannrett og loddrett"
 
-#: ../src/iop/ashift.c:4723
+#: ../src/iop/ashift.c:4838
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4705,7 +4710,7 @@ msgstr ""
 "ctrl-klikk for tilpasning med rotasjon alene\n"
 "shift-klikk for tilpasning med objektivforskyvning alene"
 
-#: ../src/iop/ashift.c:4726
+#: ../src/iop/ashift.c:4841
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -4715,7 +4720,7 @@ msgstr ""
 "ctrl-klikk for tilpasning med rotasjon alene\n"
 "shift-klikk for tilpasning med objektivforskyvning alene"
 
-#: ../src/iop/ashift.c:4729
+#: ../src/iop/ashift.c:4844
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -4730,7 +4735,7 @@ msgstr ""
 "shift-klikk for tilpasning med objektivforskyvning alene\n"
 "ctrl-shift-klikk for tilpasning med rotasjon og objektivforskyvning"
 
-#: ../src/iop/ashift.c:4735
+#: ../src/iop/ashift.c:4850
 msgid ""
 "analyse line structure in image\n"
 "ctrl-click for an additional edge enhancement\n"
@@ -4742,11 +4747,11 @@ msgstr ""
 "shift-klikk for ytterligere detaljforbedring\n"
 "ctrl-shift-klikk for en kombinasjon av begge metodene"
 
-#: ../src/iop/ashift.c:4739
+#: ../src/iop/ashift.c:4854
 msgid "remove line structure information"
 msgstr "fjern informasjon om linjestruktur"
 
-#: ../src/iop/ashift.c:4740
+#: ../src/iop/ashift.c:4855
 msgid "toggle visibility of structure lines"
 msgstr "skru av/på synlighet av strukturlinjer"
 
@@ -4789,12 +4794,12 @@ msgstr "stråler"
 msgid "clarity"
 msgstr "klarhet"
 
-#: ../src/iop/atrous.c:1422 ../src/iop/denoiseprofile.c:2457
+#: ../src/iop/atrous.c:1422 ../src/iop/denoiseprofile.c:2454
 #: ../src/iop/rawdenoise.c:782
 msgid "coarse"
 msgstr "grov"
 
-#: ../src/iop/atrous.c:1429 ../src/iop/denoiseprofile.c:2465
+#: ../src/iop/atrous.c:1429 ../src/iop/denoiseprofile.c:2462
 #: ../src/iop/rawdenoise.c:790
 msgid "fine"
 msgstr "fin"
@@ -4804,11 +4809,11 @@ msgid "contrasty"
 msgstr "mer kontrast"
 
 #: ../src/iop/atrous.c:1442 ../src/iop/atrous.c:1446
-#: ../src/iop/denoiseprofile.c:2474 ../src/iop/rawdenoise.c:799
+#: ../src/iop/denoiseprofile.c:2471 ../src/iop/rawdenoise.c:799
 msgid "smooth"
 msgstr "jevn"
 
-#: ../src/iop/atrous.c:1447 ../src/iop/denoiseprofile.c:2479
+#: ../src/iop/atrous.c:1447 ../src/iop/denoiseprofile.c:2476
 #: ../src/iop/rawdenoise.c:804
 msgid "noisy"
 msgstr "mer støy"
@@ -4929,7 +4934,7 @@ msgstr "som nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:220 ../src/iop/tonecurve.c:1239
+#: ../src/iop/basecurve.c:220 ../src/iop/tonecurve.c:1245
 msgid "cubic spline"
 msgstr "kubisk kurve"
 
@@ -4942,14 +4947,14 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "vannrett akse: input, loddrett akse: output. virker på RGB-kanaler"
 
 #: ../src/iop/basecurve.c:1933 ../src/iop/lens.c:2228
-#: ../src/iop/tonecurve.c:1250 ../src/iop/vignette.c:1149
+#: ../src/iop/tonecurve.c:1256 ../src/iop/vignette.c:1149
 #: ../src/iop/watermark.c:1391
 msgid "scale"
 msgstr "skala"
 
 #. centripetal spline
-#: ../src/iop/basecurve.c:1934 ../src/iop/filmic.c:1343
-#: ../src/iop/profile_gamma.c:867 ../src/iop/tonecurve.c:1251
+#: ../src/iop/basecurve.c:1934 ../src/iop/filmic.c:1522
+#: ../src/iop/profile_gamma.c:867 ../src/iop/tonecurve.c:1257
 msgid "linear"
 msgstr "lineær"
 
@@ -4957,7 +4962,7 @@ msgstr "lineær"
 msgid "logarithmic"
 msgstr "logaritmisk"
 
-#: ../src/iop/basecurve.c:1936 ../src/iop/tonecurve.c:1255
+#: ../src/iop/basecurve.c:1936 ../src/iop/tonecurve.c:1261
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -5025,8 +5030,8 @@ msgstr "lokal kontrast"
 msgid "local laplacian: inconsistent output"
 msgstr "lokal laplace-transformering: ikke konsistent output"
 
-#: ../src/iop/bilat.c:522 ../src/iop/colorbalance.c:2356
-#: ../src/iop/denoiseprofile.c:2692 ../src/iop/exposure.c:853
+#: ../src/iop/bilat.c:522 ../src/iop/colorbalance.c:2401
+#: ../src/iop/denoiseprofile.c:2689 ../src/iop/exposure.c:853
 #: ../src/iop/lens.c:2236 ../src/iop/levels.c:589
 #: ../src/iop/profile_gamma.c:850 ../src/libs/copy_history.c:316
 #: ../src/libs/export.c:648 ../src/libs/print_settings.c:1511
@@ -5067,8 +5072,8 @@ msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr "størrelse på lokale detaljer (rom-sigma i det bilaterale filteret)"
 
 #: ../src/iop/bilat.c:543 ../src/iop/colisa.c:366
-#: ../src/iop/colorbalance.c:2403 ../src/iop/colorbalance.c:2405
-#: ../src/iop/filmic.c:1303 ../src/iop/lowpass.c:673
+#: ../src/iop/colorbalance.c:2452 ../src/iop/colorbalance.c:2454
+#: ../src/iop/filmic.c:1482 ../src/iop/lowpass.c:673
 msgid "contrast"
 msgstr "kontrast"
 
@@ -5190,7 +5195,7 @@ msgstr "grenseverdi"
 msgid "the threshold of light"
 msgstr "grenseverdi for lys"
 
-#: ../src/iop/bloom.c:527 ../src/iop/denoiseprofile.c:2697
+#: ../src/iop/bloom.c:527 ../src/iop/denoiseprofile.c:2694
 #: ../src/iop/grain.c:630 ../src/iop/hazeremoval.c:189
 #: ../src/iop/hotpixels.c:463 ../src/iop/nlmeans.c:852 ../src/iop/velvia.c:381
 msgid "strength"
@@ -5424,8 +5429,8 @@ msgid "destination"
 msgstr "mål"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
-#: ../src/iop/channelmixer.c:450 ../src/iop/colorbalance.c:2487
-#: ../src/iop/colorbalance.c:2537 ../src/iop/colorbalance.c:2585
+#: ../src/iop/channelmixer.c:450 ../src/iop/colorbalance.c:2536
+#: ../src/iop/colorbalance.c:2584 ../src/iop/colorbalance.c:2630
 #: ../src/iop/colorize.c:430 ../src/iop/colorreconstruction.c:1365
 #: ../src/iop/colorreconstruction.c:1370 ../src/iop/colorzones.c:1090
 #: ../src/iop/colorzones.c:1121 ../src/iop/graduatednd.c:1171
@@ -5435,12 +5440,11 @@ msgstr "fargetone"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:451 ../src/iop/colisa.c:368
-#: ../src/iop/colorbalance.c:2386 ../src/iop/colorbalance.c:2388
-#: ../src/iop/colorbalance.c:2500 ../src/iop/colorbalance.c:2549
-#: ../src/iop/colorbalance.c:2597 ../src/iop/colorchecker.c:1313
+#: ../src/iop/colorbalance.c:2547 ../src/iop/colorbalance.c:2594
+#: ../src/iop/colorbalance.c:2640 ../src/iop/colorchecker.c:1313
 #: ../src/iop/colorcorrection.c:289 ../src/iop/colorize.c:444
 #: ../src/iop/colorzones.c:1088 ../src/iop/colorzones.c:1122
-#: ../src/iop/filmic.c:1327 ../src/iop/graduatednd.c:1185
+#: ../src/iop/filmic.c:1506 ../src/iop/graduatednd.c:1185
 #: ../src/iop/lowpass.c:675 ../src/iop/soften.c:716
 #: ../src/iop/splittoning.c:501 ../src/iop/vignette.c:1152
 msgid "saturation"
@@ -5542,7 +5546,7 @@ msgid "flip"
 msgstr "speilvend"
 
 #: ../src/iop/clipping.c:1870 ../src/iop/clipping.c:2055
-#: ../src/iop/colorbalance.c:2371 ../src/libs/live_view.c:378
+#: ../src/iop/colorbalance.c:2414 ../src/libs/live_view.c:378
 msgid "both"
 msgstr "begge"
 
@@ -5718,197 +5722,209 @@ msgstr "justering av lysstyrke"
 msgid "color saturation adjustment"
 msgstr "justering av fargemetning"
 
-#: ../src/iop/colorbalance.c:170
+#: ../src/iop/colorbalance.c:161
 msgid "color balance"
 msgstr "fargebalanse"
 
-#: ../src/iop/colorbalance.c:175
+#: ../src/iop/colorbalance.c:166
 msgid "lift/gamma/gain controls as seen in video editors"
 msgstr "kontroller for løft/gamma/forsterkning som brukt i videoredigering"
 
 #. these blobs were exported as dtstyle and copied from there:
-#: ../src/iop/colorbalance.c:253
-msgid "revert log profile (last instance)"
-msgstr "tilbake til log profil (siste kjøring)"
-
-#: ../src/iop/colorbalance.c:256
+#: ../src/iop/colorbalance.c:272
 msgid "split-toning teal-orange (2nd instance)"
 msgstr "splitt-toning grågrønn-oransje (andre kjøring)"
 
-#: ../src/iop/colorbalance.c:259
+#: ../src/iop/colorbalance.c:275
 msgid "split-toning teal-orange (1st instance)"
 msgstr "spitt-toning grågrønn-oransje (første kjøring)"
 
-#: ../src/iop/colorbalance.c:266 ../src/iop/exposure.c:121
+#: ../src/iop/colorbalance.c:282 ../src/iop/exposure.c:121
 #: ../src/iop/profile_gamma.c:123
 msgctxt "accel"
 msgid "mode"
 msgstr "modus"
 
-#: ../src/iop/colorbalance.c:267
+#: ../src/iop/colorbalance.c:283
 msgctxt "accel"
 msgid "controls"
 msgstr "kontroller"
 
-#: ../src/iop/colorbalance.c:902
+#: ../src/iop/colorbalance.c:1000
 msgid "optimize luma from patches"
 msgstr "optimaliser luma fra lapper"
 
-#: ../src/iop/colorbalance.c:904 ../src/iop/colorbalance.c:2633
+#: ../src/iop/colorbalance.c:1002 ../src/iop/colorbalance.c:2675
 msgid "optimize luma"
 msgstr "optimaliser luma"
 
-#: ../src/iop/colorbalance.c:908
+#: ../src/iop/colorbalance.c:1006
 msgid "neutralize colors from patches"
 msgstr "nøytraliser farger fra lapper"
 
-#: ../src/iop/colorbalance.c:910 ../src/iop/colorbalance.c:2642
+#: ../src/iop/colorbalance.c:1008 ../src/iop/colorbalance.c:2684
 msgid "neutralize colors"
 msgstr "nøytraliser farger"
 
-#: ../src/iop/colorbalance.c:2357
+#: ../src/iop/colorbalance.c:2402
 msgid "lift, gamma, gain (ProPhotoRGB)"
 msgstr "løft / gamma / forsterkning (ProPhotoRGB)"
 
-#: ../src/iop/colorbalance.c:2358
+#: ../src/iop/colorbalance.c:2403
 msgid "slope, offset, power (ProPhotoRGB)"
 msgstr "stigning / forskyvning / styrke (ProPhotoRGB)"
 
-#: ../src/iop/colorbalance.c:2359
+#: ../src/iop/colorbalance.c:2404
 msgid "lift, gamma, gain (sRGB)"
 msgstr "løft / gamma / forsterkning (sRGB)"
 
-#: ../src/iop/colorbalance.c:2361 ../src/iop/colorbalance.c:2374
+#: ../src/iop/colorbalance.c:2406 ../src/iop/colorbalance.c:2417
 msgid "color-grading mapping method"
 msgstr "farge-styrt kartleggingsmetode"
 
-#: ../src/iop/colorbalance.c:2368
+#: ../src/iop/colorbalance.c:2411
 msgid "color control sliders"
 msgstr "glidebrytere for fargestyring"
 
-#: ../src/iop/colorbalance.c:2369
+#: ../src/iop/colorbalance.c:2412
 msgid "HSL"
 msgstr "HSL"
 
-#: ../src/iop/colorbalance.c:2370
+#: ../src/iop/colorbalance.c:2413
 msgid "RGBL"
 msgstr "RGBL"
 
-#: ../src/iop/colorbalance.c:2382
+#: ../src/iop/colorbalance.c:2424
 msgid "master"
 msgstr "master"
 
-#: ../src/iop/colorbalance.c:2392
+#: ../src/iop/colorbalance.c:2428
+msgid "input saturation"
+msgstr "fargemetning inngående"
+
+#: ../src/iop/colorbalance.c:2430
+msgid "saturation correction before the color balance"
+msgstr "korreksjon av metning før fargebalanse"
+
+#: ../src/iop/colorbalance.c:2435
+msgid "output saturation"
+msgstr "fargemetning utgående"
+
+#: ../src/iop/colorbalance.c:2437
+msgid "saturation correction after the color balance"
+msgstr "korreksjon av metning etter fargebalanse"
+
+#: ../src/iop/colorbalance.c:2441
 msgid "contrast fulcrum"
 msgstr "kontrast vippepunkt"
 
-#: ../src/iop/colorbalance.c:2395
+#: ../src/iop/colorbalance.c:2444
 msgid "adjust to match a neutral tone"
 msgstr "juster for å stemme med nøytral tone"
 
-#: ../src/iop/colorbalance.c:2462 ../src/iop/colorbalance.c:2474
+#: ../src/iop/colorbalance.c:2511 ../src/iop/colorbalance.c:2523
 msgid "factor of "
 msgstr "faktor for "
 
-#: ../src/iop/colorbalance.c:2463
+#: ../src/iop/colorbalance.c:2512
 msgid "factor"
 msgstr "faktor"
 
 #. lift
-#: ../src/iop/colorbalance.c:2480
+#: ../src/iop/colorbalance.c:2529
 msgid "shadows : lift / offset"
 msgstr "skygger: løft / forskyvning"
 
-#: ../src/iop/colorbalance.c:2482
+#: ../src/iop/colorbalance.c:2531
 msgid "factor of lift"
 msgstr "faktor for løft"
 
-#: ../src/iop/colorbalance.c:2482
+#: ../src/iop/colorbalance.c:2531
 msgid "lift"
 msgstr "løft"
 
-#: ../src/iop/colorbalance.c:2489 ../src/iop/colorbalance.c:2539
-#: ../src/iop/colorbalance.c:2587
+#: ../src/iop/colorbalance.c:2538 ../src/iop/colorbalance.c:2586
+#: ../src/iop/colorbalance.c:2632
 msgid "select the hue"
 msgstr "velg fargetone"
 
-#: ../src/iop/colorbalance.c:2503 ../src/iop/colorbalance.c:2552
-#: ../src/iop/colorbalance.c:2600
+#: ../src/iop/colorbalance.c:2550 ../src/iop/colorbalance.c:2597
+#: ../src/iop/colorbalance.c:2643
 msgid "select the saturation"
 msgstr "velg fargemetning"
 
-#: ../src/iop/colorbalance.c:2508
+#: ../src/iop/colorbalance.c:2555
 msgid "factor of red for lift"
 msgstr "løftfaktor for rødt"
 
-#: ../src/iop/colorbalance.c:2515
+#: ../src/iop/colorbalance.c:2562
 msgid "factor of green for lift"
 msgstr "løftfaktor for grønt"
 
-#: ../src/iop/colorbalance.c:2522
+#: ../src/iop/colorbalance.c:2569
 msgid "factor of blue for lift"
 msgstr "løftfaktor for blått"
 
 #. gamma
-#: ../src/iop/colorbalance.c:2530
+#: ../src/iop/colorbalance.c:2577
 msgid "mid-tones : gamma / power"
 msgstr "mellomtoner: gamma / styrke"
 
-#: ../src/iop/colorbalance.c:2532
+#: ../src/iop/colorbalance.c:2579
 msgid "factor of gamma"
 msgstr "gammafaktor"
 
-#: ../src/iop/colorbalance.c:2532 ../src/iop/profile_gamma.c:852
+#: ../src/iop/colorbalance.c:2579 ../src/iop/profile_gamma.c:852
 #: ../src/iop/profile_gamma.c:874
 msgid "gamma"
 msgstr "gamma"
 
-#: ../src/iop/colorbalance.c:2556
+#: ../src/iop/colorbalance.c:2601
 msgid "factor of red for gamma"
 msgstr "gammafaktor for rødt"
 
-#: ../src/iop/colorbalance.c:2563
+#: ../src/iop/colorbalance.c:2608
 msgid "factor of green for gamma"
 msgstr "gammafaktor for grønt"
 
-#: ../src/iop/colorbalance.c:2570
+#: ../src/iop/colorbalance.c:2615
 msgid "factor of blue for gamma"
 msgstr "gammafaktor for blått"
 
 #. gain
-#: ../src/iop/colorbalance.c:2578
+#: ../src/iop/colorbalance.c:2623
 msgid "highlights : gain / slope"
 msgstr "høylys: forsterkning / stigning"
 
-#: ../src/iop/colorbalance.c:2580
+#: ../src/iop/colorbalance.c:2625
 msgid "factor of gain"
 msgstr "forsterkningsfaktor"
 
-#: ../src/iop/colorbalance.c:2580
+#: ../src/iop/colorbalance.c:2625
 msgid "gain"
 msgstr "forsterkning"
 
-#: ../src/iop/colorbalance.c:2604
+#: ../src/iop/colorbalance.c:2647
 msgid "factor of red for gain"
 msgstr "forsterkningsfaktor for rødt"
 
-#: ../src/iop/colorbalance.c:2611
+#: ../src/iop/colorbalance.c:2654
 msgid "factor of green for gain"
 msgstr "forsterkningsfaktor for grønt"
 
-#: ../src/iop/colorbalance.c:2618
+#: ../src/iop/colorbalance.c:2661
 msgid "factor of blue for gain"
 msgstr "forsterkningsfaktor for blått"
 
-#: ../src/iop/colorbalance.c:2626
+#: ../src/iop/colorbalance.c:2668
 msgid "auto optimizers"
 msgstr "automatisk optimalisering"
 
-#: ../src/iop/colorbalance.c:2638
+#: ../src/iop/colorbalance.c:2680
 msgid "fit the whole histogram and center the average luma"
 msgstr "tilpass hele histogrammet og sentrer gjennomsnittlig luma"
 
-#: ../src/iop/colorbalance.c:2647
+#: ../src/iop/colorbalance.c:2689
 msgid "optimize the RGB curves to remove color casts"
 msgstr "optimaliser RGB-kurvene for å fjerne fargefeil"
 
@@ -6073,7 +6089,7 @@ msgstr "inngående profil kunne ikke lages!"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "ikke støttet inngående profil er erstattet av lineær Rec709 RGB!"
 
-#: ../src/iop/colorin.c:1845 ../src/iop/denoiseprofile.c:2691
+#: ../src/iop/colorin.c:1845 ../src/iop/denoiseprofile.c:2688
 #: ../src/libs/export.c:607 ../src/libs/print_settings.c:1184
 #: ../src/libs/print_settings.c:1404
 msgid "profile"
@@ -6582,57 +6598,57 @@ msgid "denoise (profiled)"
 msgstr "støyfjerning (profiler)"
 
 #. these blobs were exported as dtstyle and copied from there:
-#: ../src/iop/denoiseprofile.c:293
+#: ../src/iop/denoiseprofile.c:290
 msgid "chroma (use on 1st instance)"
 msgstr "chroma (bruk i første instans)"
 
-#: ../src/iop/denoiseprofile.c:296
+#: ../src/iop/denoiseprofile.c:293
 msgid "luma (use on 2nd instance)"
 msgstr "luma (bruk i andre instans)"
 
-#: ../src/iop/denoiseprofile.c:2016
+#: ../src/iop/denoiseprofile.c:2013
 #, c-format
 msgid "found match for ISO %d"
 msgstr "fant treff for ISO %d"
 
-#: ../src/iop/denoiseprofile.c:2024
+#: ../src/iop/denoiseprofile.c:2021
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolert mellom ISO %d og %d"
 
-#: ../src/iop/denoiseprofile.c:2642 ../src/iop/rawdenoise.c:955
+#: ../src/iop/denoiseprofile.c:2639 ../src/iop/rawdenoise.c:955
 msgid "R"
 msgstr "R"
 
-#: ../src/iop/denoiseprofile.c:2644 ../src/iop/rawdenoise.c:957
+#: ../src/iop/denoiseprofile.c:2641 ../src/iop/rawdenoise.c:957
 msgid "G"
 msgstr "G"
 
-#: ../src/iop/denoiseprofile.c:2646 ../src/iop/rawdenoise.c:959
+#: ../src/iop/denoiseprofile.c:2643 ../src/iop/rawdenoise.c:959
 msgid "B"
 msgstr "B"
 
-#: ../src/iop/denoiseprofile.c:2693 ../src/iop/nlmeans.c:850
+#: ../src/iop/denoiseprofile.c:2690 ../src/iop/nlmeans.c:850
 msgid "patch size"
 msgstr "lapp-størrelse"
 
-#: ../src/iop/denoiseprofile.c:2695
+#: ../src/iop/denoiseprofile.c:2692
 msgid "search radius"
 msgstr "søkeradius"
 
-#: ../src/iop/denoiseprofile.c:2698
+#: ../src/iop/denoiseprofile.c:2695
 msgid "non-local means"
 msgstr "ikke-lokal metode"
 
-#: ../src/iop/denoiseprofile.c:2699
+#: ../src/iop/denoiseprofile.c:2696
 msgid "wavelets"
 msgstr "småbølger"
 
-#: ../src/iop/denoiseprofile.c:2700
+#: ../src/iop/denoiseprofile.c:2697
 msgid "profile used for variance stabilization"
 msgstr "profil brukt for stabilisering av varians"
 
-#: ../src/iop/denoiseprofile.c:2701
+#: ../src/iop/denoiseprofile.c:2698
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -6640,11 +6656,11 @@ msgstr ""
 "metode som brukes sentralt i støyfjerningsmodulen. ikke-lokal metode virker "
 "best for `lysstyrke' miksing, småbølger virker best for `farge' miksing"
 
-#: ../src/iop/denoiseprofile.c:2704
+#: ../src/iop/denoiseprofile.c:2701
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr "radius for lappene som skal matches. øk for sterkere skarphet"
 
-#: ../src/iop/denoiseprofile.c:2705
+#: ../src/iop/denoiseprofile.c:2702
 msgid ""
 "emergency use only: radius of the neighbourhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
@@ -6654,7 +6670,7 @@ msgstr ""
 "støyfjerning, men vær forberedt på lang behandlingstid! det kan ta mye tid å "
 "behandle store områder. du er advart!"
 
-#: ../src/iop/denoiseprofile.c:2706
+#: ../src/iop/denoiseprofile.c:2703
 msgid "finetune denoising strength"
 msgstr "finjustering av støyfjernings-effekt"
 
@@ -6840,23 +6856,23 @@ msgstr "beregnet EK: "
 msgid "what exposure correction has actually been used"
 msgstr "hvilken eksponeringskorreksjon har faktisk blitt brukt"
 
-#: ../src/iop/filmic.c:159
+#: ../src/iop/filmic.c:164
 msgid "filmic"
 msgstr "filmaktig"
 
-#: ../src/iop/filmic.c:1240
+#: ../src/iop/filmic.c:1419
 msgid "double click to reset curve"
 msgstr "dobbeltklikk for å nullstille kurve"
 
-#: ../src/iop/filmic.c:1243
+#: ../src/iop/filmic.c:1422
 msgid "logarithmic shaper"
 msgstr "logaritmisk formgiver"
 
-#: ../src/iop/filmic.c:1247
+#: ../src/iop/filmic.c:1426
 msgid "middle grey luminance"
 msgstr "middels grå luminans"
 
-#: ../src/iop/filmic.c:1250
+#: ../src/iop/filmic.c:1429
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
@@ -6864,11 +6880,11 @@ msgstr ""
 "juster for å matche gjennomsnittsluminans for motivet.\n"
 "bortsett fra i motlys-situasjoner bør dette være rundt 18%."
 
-#: ../src/iop/filmic.c:1259
+#: ../src/iop/filmic.c:1438
 msgid "white relative exposure"
 msgstr "hvit relativ eksponering"
 
-#: ../src/iop/filmic.c:1262
+#: ../src/iop/filmic.c:1441
 msgid ""
 "number of stops between middle grey and pure white\n"
 "this is a reading a posemeter would give you on the scene"
@@ -6876,11 +6892,11 @@ msgstr ""
 "antallet blenderstopp mellom midtpunkts grå og ren hvit\n"
 "dette er avlesningen en lysmåler ville gitt på stedet"
 
-#: ../src/iop/filmic.c:1270 ../src/iop/profile_gamma.c:901
+#: ../src/iop/filmic.c:1449 ../src/iop/profile_gamma.c:901
 msgid "black relative exposure"
 msgstr "svart relativ eksponering"
 
-#: ../src/iop/filmic.c:1273 ../src/iop/profile_gamma.c:904
+#: ../src/iop/filmic.c:1452 ../src/iop/profile_gamma.c:904
 msgid ""
 "number of stops between middle grey and pure black\n"
 "this is a reading a posemeter would give you on the scene"
@@ -6888,15 +6904,15 @@ msgstr ""
 "antallet blenderstopp mellom midtpunkts grå og ren svart\n"
 "dette er avlesningen en lysmåler ville gitt på stedet"
 
-#: ../src/iop/filmic.c:1281
+#: ../src/iop/filmic.c:1460
 msgid "auto tuning safety factor"
 msgstr "autojustering sikkerhetsfaktor"
 
-#: ../src/iop/filmic.c:1282 ../src/iop/profile_gamma.c:925
+#: ../src/iop/filmic.c:1461 ../src/iop/profile_gamma.c:925
 msgid "safety factor"
 msgstr "sikkerhetsfaktor"
 
-#: ../src/iop/filmic.c:1285
+#: ../src/iop/filmic.c:1464
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
 "useful in conjunction with \"auto tune levels\""
@@ -6904,28 +6920,28 @@ msgstr ""
 "utvid eller reduser den beregnede dynamiske spennvidde\n"
 "dette er nyttig sammen med \"autojustering av nivåer\""
 
-#: ../src/iop/filmic.c:1291 ../src/iop/profile_gamma.c:933
+#: ../src/iop/filmic.c:1470 ../src/iop/profile_gamma.c:933
 msgid "auto tune levels"
 msgstr "autojustering av nivåer"
 
-#: ../src/iop/filmic.c:1296 ../src/iop/profile_gamma.c:938
+#: ../src/iop/filmic.c:1475 ../src/iop/profile_gamma.c:938
 msgid "make an optimization with some guessing"
 msgstr "gjør en optimalisering med noe gjetning"
 
-#: ../src/iop/filmic.c:1299
+#: ../src/iop/filmic.c:1478
 msgid "filmic S curve"
 msgstr "filmaktig S-kurve"
 
-#: ../src/iop/filmic.c:1305
+#: ../src/iop/filmic.c:1484
 msgid "slope of the linear part of the curve"
 msgstr "stigningskoeffisient lineær del av kurve"
 
 #. geotagging
-#: ../src/iop/filmic.c:1310 ../src/libs/metadata_view.c:127
+#: ../src/iop/filmic.c:1489 ../src/libs/metadata_view.c:127
 msgid "latitude"
 msgstr "breddegrad"
 
-#: ../src/iop/filmic.c:1313
+#: ../src/iop/filmic.c:1492
 msgid ""
 "linearity domain in the middle of the curve\n"
 "increase to get more contrast at the extreme luminances"
@@ -6933,15 +6949,15 @@ msgstr ""
 "lineærdelen midt i kurven\n"
 "juster opp for å få mer kontrast i ekstreme luminanser"
 
-#: ../src/iop/filmic.c:1319
+#: ../src/iop/filmic.c:1498
 msgid "balance shadows-highlights"
 msgstr "balanse skygger og høylys"
 
-#: ../src/iop/filmic.c:1322
+#: ../src/iop/filmic.c:1501
 msgid "gives more room to shadows or highlights, to protect the details"
 msgstr "gir mer plass for skygger og høylys, for å bevare detaljene"
 
-#: ../src/iop/filmic.c:1330
+#: ../src/iop/filmic.c:1509
 msgid ""
 "desaturates the output, if the contrast adjustment\n"
 "produces over-saturation in shadows"
@@ -6949,38 +6965,51 @@ msgstr ""
 "reduserer fargemetningen på resultatet hvis kontrast-justeringen\n"
 "gir over-metning i skygger"
 
-#: ../src/iop/filmic.c:1340 ../src/libs/export.c:629
+#: ../src/iop/filmic.c:1519 ../src/libs/export.c:629
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1452
 msgid "intent"
 msgstr "hensikt"
 
-#: ../src/iop/filmic.c:1341
+#: ../src/iop/filmic.c:1520
 msgid "contrasted"
 msgstr "kontrast"
 
 #. cubic spline
-#: ../src/iop/filmic.c:1342
+#: ../src/iop/filmic.c:1521
 msgid "faded"
 msgstr "utvasket"
 
 #. monotonic spline
-#: ../src/iop/filmic.c:1344
+#: ../src/iop/filmic.c:1523
 msgid "optimized"
 msgstr "optimalisert"
 
-#: ../src/iop/filmic.c:1346
+#: ../src/iop/filmic.c:1525
 msgid "change this method if you see reversed contrast or faded blacks"
 msgstr "bytt metode hvis du ser omvendt kontrast eller utvasket svart"
 
-#: ../src/iop/filmic.c:1349
+#. Preserve color
+#: ../src/iop/filmic.c:1529
+msgid "preserve the chrominance"
+msgstr "bevar fargesettet"
+
+#: ../src/iop/filmic.c:1531
+msgid ""
+"ensure the original color are preserved\n"
+"may produce over-saturated colors and reinforce lens chromatic aberrations"
+msgstr ""
+"bevar de originale fargene\n"
+"kan resultere i over-mettede farger og forsterke objektivets kromatiske feil"
+
+#: ../src/iop/filmic.c:1537
 msgid "destination/display"
 msgstr "mål/visning"
 
-#: ../src/iop/filmic.c:1353
+#: ../src/iop/filmic.c:1542
 msgid "black luminance"
 msgstr "svart luminans"
 
-#: ../src/iop/filmic.c:1356
+#: ../src/iop/filmic.c:1545
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -6988,11 +7017,11 @@ msgstr ""
 "luminans for utgående svart, dette bør være 0%\n"
 "med mindre du ønsker et utvasket utseende"
 
-#: ../src/iop/filmic.c:1362
+#: ../src/iop/filmic.c:1551
 msgid "middle grey destination"
 msgstr "mellomgrå destinasjon"
 
-#: ../src/iop/filmic.c:1365
+#: ../src/iop/filmic.c:1554
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -7000,11 +7029,11 @@ msgstr ""
 "verdi for midtpunkt i gråskalaen til skjermen eller fargerommet.\n"
 "du bør ikke endre dette med mindre du vet hva du gjør."
 
-#: ../src/iop/filmic.c:1371
+#: ../src/iop/filmic.c:1560
 msgid "white luminance"
 msgstr "hvit luminans"
 
-#: ../src/iop/filmic.c:1374
+#: ../src/iop/filmic.c:1563
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -7012,11 +7041,11 @@ msgstr ""
 "luminans for utgående ren hvit, denne bør være 100%\n"
 "med mindre du ønsker et utvasket utseende"
 
-#: ../src/iop/filmic.c:1380
+#: ../src/iop/filmic.c:1569
 msgid "destination power factor"
 msgstr "mål styrkefaktor"
 
-#: ../src/iop/filmic.c:1382
+#: ../src/iop/filmic.c:1571
 msgid ""
 "power or gamma of the transfer function of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -7661,7 +7690,7 @@ msgstr "hvit"
 msgid "liquify"
 msgstr "bølgeeffekt"
 
-#: ../src/iop/liquify.c:3289
+#: ../src/iop/liquify.c:3304
 msgid ""
 "click and drag to add point\n"
 "scrool to change size\n"
@@ -7672,7 +7701,7 @@ msgstr ""
 "shift-rull musehjulet for å endre effektnivå - ctrl-rull musehjul for å "
 "endre retning"
 
-#: ../src/iop/liquify.c:3293
+#: ../src/iop/liquify.c:3308
 msgid ""
 "click to add line\n"
 "scrool to change size\n"
@@ -7683,7 +7712,7 @@ msgstr ""
 "shift-rull musehjulet for å endre effektnivå - ctrl-rull musehjul for å "
 "endre retning"
 
-#: ../src/iop/liquify.c:3297
+#: ../src/iop/liquify.c:3312
 msgid ""
 "click to add curve\n"
 "scrool to change size\n"
@@ -7694,11 +7723,11 @@ msgstr ""
 "shift-rull musehjulet for å endre effektnivå - ctrl-rull musehjul for å "
 "endre retning"
 
-#: ../src/iop/liquify.c:3300
+#: ../src/iop/liquify.c:3315
 msgid "click to edit nodes"
 msgstr "klikk for å endre knutepunkter"
 
-#: ../src/iop/liquify.c:3372
+#: ../src/iop/liquify.c:3384
 msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
@@ -7706,27 +7735,27 @@ msgstr ""
 "bruk et verktøy for å legge til vridning.\n"
 "høyre-klikk for å fjerne en vridning."
 
-#: ../src/iop/liquify.c:3374
+#: ../src/iop/liquify.c:3386
 msgid "warps|nodes count:"
 msgstr "antall vridninger|knutepunkter:"
 
-#: ../src/iop/liquify.c:3381
+#: ../src/iop/liquify.c:3393
 msgid "node tool: edit, add and delete nodes"
 msgstr "knutepunkt-verktøy: rediger, legge til og fjern knutepunkter"
 
-#: ../src/iop/liquify.c:3389
+#: ../src/iop/liquify.c:3401
 msgid "curve tool: draw curves"
 msgstr "kurve-verktøy: tegne kurver"
 
-#: ../src/iop/liquify.c:3397
+#: ../src/iop/liquify.c:3409
 msgid "line tool: draw lines"
 msgstr "linje-verktøy: tegne linjer"
 
-#: ../src/iop/liquify.c:3405
+#: ../src/iop/liquify.c:3417
 msgid "point tool: draw points"
 msgstr "punkt-verktøy: tegne punkter"
 
-#: ../src/iop/liquify.c:3412
+#: ../src/iop/liquify.c:3424
 msgid ""
 "ctrl-click: add node - right click: remove path\n"
 "ctrl-alt-click: toggle line/curve"
@@ -7734,7 +7763,7 @@ msgstr ""
 "ctrl-klikk: legg til knutepunkt - høyreklikk: fjern bane\n"
 "ctrl-alt-klikk: linje/bane av/på"
 
-#: ../src/iop/liquify.c:3414
+#: ../src/iop/liquify.c:3426
 msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl-click: autosmooth, cusp, smooth, symmetrical - right click to remove"
@@ -7743,23 +7772,23 @@ msgstr ""
 "ctrl-klikk: auto-utjevning, spiss, glatt, symmetrisk - høyreklikk for å "
 "fjerne"
 
-#: ../src/iop/liquify.c:3417 ../src/iop/liquify.c:3418
+#: ../src/iop/liquify.c:3429 ../src/iop/liquify.c:3430
 msgid "drag to change shape of path"
 msgstr "dra for å endre formen på banen"
 
-#: ../src/iop/liquify.c:3419
+#: ../src/iop/liquify.c:3431
 msgid "drag to adjust warp radius"
 msgstr "dra for å endre vridningsradius"
 
-#: ../src/iop/liquify.c:3420
+#: ../src/iop/liquify.c:3432
 msgid "drag to adjust hardness (center)"
 msgstr "dra for å justere hardhet (senter)"
 
-#: ../src/iop/liquify.c:3421
+#: ../src/iop/liquify.c:3433
 msgid "drag to adjust hardness (feather)"
 msgstr "dra for å justere hardhet (overgangssone)"
 
-#: ../src/iop/liquify.c:3422
+#: ../src/iop/liquify.c:3434
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl-click: linear, grow, and shrink"
@@ -7767,22 +7796,22 @@ msgstr ""
 "dra for å justere vridningseffekt\n"
 "ctrl-klikk: rettlinjet, voks og krymp"
 
-#: ../src/iop/liquify.c:3440
+#: ../src/iop/liquify.c:3452
 msgctxt "accel"
 msgid "point tool"
 msgstr "pekeverktøy"
 
-#: ../src/iop/liquify.c:3441
+#: ../src/iop/liquify.c:3453
 msgctxt "accel"
 msgid "line tool"
 msgstr "linje-verktøy"
 
-#: ../src/iop/liquify.c:3442
+#: ../src/iop/liquify.c:3454
 msgctxt "accel"
 msgid "curve tool"
 msgstr "kurve-verktøy"
 
-#: ../src/iop/liquify.c:3443
+#: ../src/iop/liquify.c:3455
 msgctxt "accel"
 msgid "node tool"
 msgstr "punkt-verktøy"
@@ -8610,10 +8639,6 @@ msgstr "tilsløring radius"
 msgid "radius of the selected blur type"
 msgstr "utstrekning for den valgte typen tilsløring"
 
-#: ../src/iop/retouch.c:2888
-msgid "mask opacity"
-msgstr "gjennomsiktighet maske"
-
 #: ../src/iop/retouch.c:2889
 msgid "set the opacity on the selected shape"
 msgstr "angi gjennomsiktighet for valgt maske"
@@ -8818,27 +8843,27 @@ msgstr "logaritmisk (base 2)"
 msgid "exponential (base 2)"
 msgstr "eksponensiell (base 2)"
 
-#: ../src/iop/tonecurve.c:1165
+#: ../src/iop/tonecurve.c:1171
 msgid "color space"
 msgstr "fargerom"
 
-#: ../src/iop/tonecurve.c:1166
+#: ../src/iop/tonecurve.c:1172
 msgid "Lab, linked channels"
 msgstr "Lab, koblede kanaler"
 
-#: ../src/iop/tonecurve.c:1167
+#: ../src/iop/tonecurve.c:1173
 msgid "Lab, independant channels"
 msgstr "Lab, uavhengige kanaler"
 
-#: ../src/iop/tonecurve.c:1168
+#: ../src/iop/tonecurve.c:1174
 msgid "XYZ, linked channels"
 msgstr "XYZ, koblede kanaler"
 
-#: ../src/iop/tonecurve.c:1169
+#: ../src/iop/tonecurve.c:1175
 msgid "RGB, linked channels"
 msgstr "RGB, koblede kanaler"
 
-#: ../src/iop/tonecurve.c:1171
+#: ../src/iop/tonecurve.c:1177
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data. auto "
@@ -8848,43 +8873,43 @@ msgstr ""
 "for chroma (a og b) for hvert bildepunkt vil da bli justert basert på data "
 "fra L-kurven. auto XYZ ligner, men påvirker metningsnivået i XYZ-rommet."
 
-#: ../src/iop/tonecurve.c:1181
+#: ../src/iop/tonecurve.c:1187
 msgid "  L  "
 msgstr "  L  "
 
-#: ../src/iop/tonecurve.c:1183
+#: ../src/iop/tonecurve.c:1189
 msgid "tonecurve for L channel"
 msgstr "tonekurve for L-kanal"
 
-#: ../src/iop/tonecurve.c:1185
+#: ../src/iop/tonecurve.c:1191
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:1187
+#: ../src/iop/tonecurve.c:1193
 msgid "tonecurve for a channel"
 msgstr "tonekurve for a-kanal"
 
-#: ../src/iop/tonecurve.c:1189
+#: ../src/iop/tonecurve.c:1195
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:1191
+#: ../src/iop/tonecurve.c:1197
 msgid "tonecurve for b channel"
 msgstr "tonekurve for b-kanal"
 
-#: ../src/iop/tonecurve.c:1238
+#: ../src/iop/tonecurve.c:1244
 msgid "interpolation method"
 msgstr "interpolasjonsmetode"
 
-#: ../src/iop/tonecurve.c:1240
+#: ../src/iop/tonecurve.c:1246
 msgid "centripetal spline"
 msgstr "sentripetal kurve"
 
-#: ../src/iop/tonecurve.c:1241
+#: ../src/iop/tonecurve.c:1247
 msgid "monotonic spline"
 msgstr "monotonisk kurve"
 
-#: ../src/iop/tonecurve.c:1243
+#: ../src/iop/tonecurve.c:1249
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
 "- cubic spline is better to produce smooth curves but oscillates when nodes "
@@ -8903,19 +8928,19 @@ msgstr ""
 "gamma, exp)\n"
 " \n"
 
-#: ../src/iop/tonecurve.c:1252
+#: ../src/iop/tonecurve.c:1258
 msgid "log-log (xy)"
 msgstr "log-log (xy)"
 
-#: ../src/iop/tonecurve.c:1253
+#: ../src/iop/tonecurve.c:1259
 msgid "semi-log (x)"
 msgstr "semi-log (x)"
 
-#: ../src/iop/tonecurve.c:1254
+#: ../src/iop/tonecurve.c:1260
 msgid "semi-log (y)"
 msgstr "semi-log (y)"
 
-#: ../src/iop/tonecurve.c:1262
+#: ../src/iop/tonecurve.c:1268
 msgid "base of the logarithm"
 msgstr "logaritmisk base"
 
@@ -12127,6 +12152,12 @@ msgstr ""
 "vi anbefaler på det sterkeste at du bytter til 64-bits versjonen.\n"
 "du vil GARANTERT få problemer som ikke kan løses om du bruker 32-bits "
 "versjonen.\n"
+
+#~ msgid "mask brightness"
+#~ msgstr "maske lysstyrke"
+
+#~ msgid "revert log profile (last instance)"
+#~ msgstr "tilbake til log profil (siste kjøring)"
 
 #~ msgid "wait for the preview to be updated."
 #~ msgstr "vent mens forhåndsvisningen oppdateres."
