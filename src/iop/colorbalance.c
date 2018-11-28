@@ -239,7 +239,6 @@ static void add_preset(dt_iop_module_so_t *self, const char *name,
 {
   int len, blen;
   uint8_t *p  = dt_exif_xmp_decode(pi, strlen(pi), &len);
-  assert(len == sizeof(dt_iop_colorbalance_params_t));
   uint8_t *bp = dt_exif_xmp_decode(bpi, strlen(bpi), &blen);
   if(blendop_version != dt_develop_blend_version())
   {
