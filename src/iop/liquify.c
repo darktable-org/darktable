@@ -770,7 +770,7 @@ build_lookup_table (const int distance, const float control1, const float contro
 
   // reparameterize bezier by x and keep only y values
 
-  float *lookup = dt_alloc_align (16, (distance + 1) * sizeof (float));
+  float *lookup = dt_alloc_align(16, (distance + 2) * sizeof(float));
   float *ptr = lookup;
   float complex *cptr = clookup + 1;
   const float complex *cptr_end = cptr + distance;
