@@ -2388,6 +2388,12 @@ void gui_init(dt_iop_module_t *self)
 
   g->mode = NULL;
 
+  for (int k=0; k<LEVELS; k++)
+  {
+    g->color_patches_flags[k] = INVALID;
+    g->luma_patches_flags[k] = INVALID;
+  }
+
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
