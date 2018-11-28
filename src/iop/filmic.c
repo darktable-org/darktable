@@ -981,34 +981,22 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   const float white_display = CLAMP(p->white_point_target, p->grey_point_target, 100.0f)  / 100.0f; // in %
 
   const float latitude = CLAMP(p->latitude_stops, 0.01f, dynamic_range * 0.99f);
-  const float balance = CLAMP(p->balance, 0.0f, 50.0f) / 100.0f; // in %
+  const float balance = CLAMP(p->balance, -50.0f, 50.0f) / 100.0f; // in %
 
-  float contrast = p->contrast;
-  if (contrast < grey_display / grey_log)
-  {
-    // We need grey_display - (contrast * grey_log) <= 0.0
-    contrast = 1.0001f * grey_display / grey_log;
-  }
+  const float contrast = p->contrast;
 
   // nodes for mapping from log encoding to desired target luminance
   // X coordinates
-  float toe_log = 0.0f +
-                        ((fabsf(black_source)) *
-                          (dynamic_range - latitude)
-                          / dynamic_range / dynamic_range);
+  float toe_log = grey_log - latitude/dynamic_range * fabsf(black_source/dynamic_range);
 
   toe_log = CLAMP(toe_log, 0.0f, grey_log);
 
-  float shoulder_log = 1.0f -
-                        ((white_source) *
-                          (dynamic_range - latitude)
-                          / dynamic_range / dynamic_range);
+  float shoulder_log = grey_log + latitude/dynamic_range * white_source/dynamic_range;
 
   shoulder_log = CLAMP(shoulder_log, grey_log, 1.0f);
 
   // interception
   float linear_intercept = grey_display - (contrast * grey_log);
-  if (linear_intercept > 0.0f) linear_intercept = -0.001f;
 
   // y coordinates
   float toe_display = (toe_log * contrast + linear_intercept);
@@ -1022,18 +1010,17 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
 
   // negative values drag to the left and compress the shadows, on the UI negative is the inverse
   const float coeff = -(dynamic_range - latitude) / dynamic_range * balance;
-  const float offset_y = coeff * contrast /norm;
 
-  toe_display += offset_y;
+  toe_display += coeff * contrast /norm;
   toe_display = CLAMP(toe_display, 0.0f, grey_display);
 
-  shoulder_display += offset_y;
+  shoulder_display += coeff * contrast /norm;
   shoulder_display = CLAMP(shoulder_display, grey_display, 1.0f);
 
-  toe_log += offset_y / contrast;
+  toe_log += coeff /norm;
   toe_log = CLAMP(toe_log, 0.0f, grey_log);
 
-  shoulder_log += offset_y / contrast;
+  shoulder_log += coeff /norm;
   shoulder_log = CLAMP(shoulder_log, grey_log, 1.0f);
 
   /**
@@ -1089,7 +1076,7 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
       d->latitude_max = white_log;
     }
 
-    //(_("filmic curve using 4 nodes - highlights lost"));
+    //dt_control_log(_("filmic curve using 4 nodes - highlights lost"));
 
   }
   else if (TOE_LOST && !SHOULDER_LOST)
@@ -1141,25 +1128,27 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   else
   {
     // everything OK
-    nodes = 4;
+    nodes = 5;
 
     x[0] = black_log;
     x[1] = toe_log;
-    //x[2] = grey_log,
-    x[2] = shoulder_log;
-    x[3] = white_log;
+    x[2] = grey_log,
+    x[3] = shoulder_log;
+    x[4] = white_log;
 
     y[0] = black_display;
     y[1] = toe_display;
-    //y[2] = grey_display,
-    y[2] = shoulder_display;
-    y[3] = white_display;
+    y[2] = grey_display,
+    y[3] = shoulder_display;
+    y[4] = white_display;
 
     if(d)
     {
       d->latitude_min = toe_log;
       d->latitude_max = shoulder_log;
     }
+
+    //dt_control_log(_("filmic curve using 5 nodes - everything alright"));
   }
 
   if (p->interpolator != 3)
@@ -1317,16 +1306,16 @@ void init(dt_iop_module_t *module)
   dt_iop_filmic_params_t tmp
     = (dt_iop_filmic_params_t){
                                  .grey_point_source   = 18, // source grey
-                                 .black_point_source  = -7.0,  // source black
+                                 .black_point_source  = -10.0,  // source black
                                  .white_point_source  = 3.0,  // source white
                                  .security_factor     = 0.0,  // security factor
                                  .grey_point_target   = 18.0, // target grey
                                  .black_point_target  = 0.0,  // target black
                                  .white_point_target  = 100.0,  // target white
                                  .output_power        = 2.2,  // target power (~ gamma)
-                                 .latitude_stops      = 2.0,  // intent latitude
-                                 .contrast            = 1.333,  // intent contrast
-                                 .saturation          = 50.0,   // intent saturation
+                                 .latitude_stops      = 8.0,  // intent latitude
+                                 .contrast            = 2.0,  // intent contrast
+                                 .saturation          = 100.0,   // intent saturation
                                  .balance             = 0.0, // balance shadows/highlights
                                  .interpolator        = CUBIC_SPLINE, //interpolator
                                  .preserve_color      = 0, // run the saturated variant
@@ -1496,7 +1485,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->contrast), "value-changed", G_CALLBACK(contrast_callback), self);
 
   // latitude slider
-  g->latitude_stops = dt_bauhaus_slider_new_with_range(self, 1.0, 16.0, 0.05, p->latitude_stops, 3);
+  g->latitude_stops = dt_bauhaus_slider_new_with_range(self, 2.0, 16.0, 0.05, p->latitude_stops, 3);
   dt_bauhaus_widget_set_label(g->latitude_stops, NULL, _("latitude"));
   dt_bauhaus_slider_set_format(g->latitude_stops, "%.2f EV");
   gtk_box_pack_start(GTK_BOX(self->widget), g->latitude_stops, TRUE, TRUE, 0);
