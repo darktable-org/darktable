@@ -114,7 +114,7 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "liquify")) return "correction_group.html#liquify";
   if(!strcmp(name, "ashift")) return "correction_group.html#perspective_correction";
   if(!strcmp(name, "lens")) return "correction_group.html#lens_correction";
-  if(!strcmp(name, "retouch")) return NULL; // TODO
+  if(!strcmp(name, "retouch")) return "correction_group.html#retouch";
   if(!strcmp(name, "spots")) return "correction_group.html#spot_removal";
   if(!strcmp(name, "exposure")) return "modules.html#exposure";
   if(!strcmp(name, "tonemap")) return "tone_group.html#tonemapping";
