@@ -57,7 +57,8 @@ const float STAMP_RELOCATION = 0.1;     // how many radii to move stamp forward 
 
 // enum of layers. sorted back to front.
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_LAYER_BACKGROUND,
   DT_LIQUIFY_LAYER_RADIUS,
   DT_LIQUIFY_LAYER_HARDNESS1,
@@ -80,7 +81,8 @@ typedef enum {
   DT_LIQUIFY_LAYER_LAST
 } dt_liquify_layer_enum_t;
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_LAYER_FLAG_HIT_TEST      =  1,   ///< include layer in hit testing
   DT_LIQUIFY_LAYER_FLAG_PREV_SELECTED =  2,   ///< show if previous node is selected
   DT_LIQUIFY_LAYER_FLAG_NODE_SELECTED =  4,   ///< show if node is selected
@@ -91,7 +93,8 @@ typedef enum {
   DT_LIQUIFY_LAYER_FLAG_ANY_TOOL      = 8 + 16 + 32 + 64,
 } dt_liquify_layer_flag_enum_t;
 
-typedef struct {
+typedef struct
+{
   float red, green, blue, alpha;
 } dt_liquify_rgba_t;
 
@@ -102,7 +105,8 @@ typedef struct {
 static const dt_liquify_rgba_t DT_LIQUIFY_COLOR_SELECTED = { 1.0, 1.0, 1.0, 1.0 };
 static const dt_liquify_rgba_t DT_LIQUIFY_COLOR_HOVER    = { 1.0, 1.0, 1.0, 0.8 };
 
-typedef struct {
+typedef struct
+{
   dt_liquify_layer_enum_t hover_master;    ///< hover whenever master layer hovers, eg. to
   dt_liquify_rgba_t fg;                    ///< the foreground color for this layer
   dt_liquify_rgba_t bg;                    ///< the background color for this layer
@@ -113,7 +117,8 @@ typedef struct {
   const char *hint;                        ///< hint displayed when hovering
 } dt_liquify_layer_t;
 
-dt_liquify_layer_t dt_liquify_layers[] = {
+dt_liquify_layer_t dt_liquify_layers[] =
+{
   { DT_LIQUIFY_LAYER_BACKGROUND,     COLOR_NULL,  COLOR_NULL, 0.0,  0,                                                                                                      },
   { DT_LIQUIFY_LAYER_RADIUS,         COLOR_DEBUG, COLOR_NULL, 0.25, DT_LIQUIFY_LAYER_FLAG_ANY_TOOL,                                                                         },
   { DT_LIQUIFY_LAYER_HARDNESS1,      COLOR_DEBUG, COLOR_NULL, 1.0,  0,                                                                                                      },
@@ -135,7 +140,8 @@ dt_liquify_layer_t dt_liquify_layers[] = {
   { DT_LIQUIFY_LAYER_STRENGTHPOINT,  GREY,        LGREY,      1.0,  DT_LIQUIFY_LAYER_FLAG_ANY_TOOL  | DT_LIQUIFY_LAYER_FLAG_HIT_TEST,                                       }
 };
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_UI_WIDTH_THINLINE,
   DT_LIQUIFY_UI_WIDTH_THICKLINE,
   DT_LIQUIFY_UI_WIDTH_DOUBLELINE,
@@ -147,7 +153,8 @@ typedef enum {
   DT_LIQUIFY_UI_WIDTH_LAST
 } dt_liquify_ui_width_enum_t;
 
-float dt_liquify_ui_widths [] = {
+float dt_liquify_ui_widths [] =
+{
   // value in 1/96 inch (that is: in pixels on a standard 96 dpi screen)
     2.0, // DT_LIQUIFY_UI_WIDTH_THINLINE
     3.0, // DT_LIQUIFY_UI_WIDTH_THICKLINE
@@ -159,14 +166,16 @@ float dt_liquify_ui_widths [] = {
     4.0  // DT_LIQUIFY_UI_WIDTH_MIN_DRAG
 };
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_WARP_TYPE_LINEAR,         ///< A linear warp originating from one point.
   DT_LIQUIFY_WARP_TYPE_RADIAL_GROW,    ///< A radial warp originating from one point.
   DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK,
   DT_LIQUIFY_WARP_TYPE_LAST
 } dt_liquify_warp_type_enum_t;
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_NODE_TYPE_CUSP,
   DT_LIQUIFY_NODE_TYPE_SMOOTH,
   DT_LIQUIFY_NODE_TYPE_SYMMETRICAL,
@@ -174,7 +183,8 @@ typedef enum {
   DT_LIQUIFY_NODE_TYPE_LAST
 } dt_liquify_node_type_enum_t;
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_STATUS_NONE = 0,
   DT_LIQUIFY_STATUS_NEW = 1,
   DT_LIQUIFY_STATUS_INTERPOLATED = 2,
@@ -184,14 +194,16 @@ typedef enum {
 
 // enumerates the shapes types we use.
 
-typedef enum {
+typedef enum
+{
   DT_LIQUIFY_PATH_INVALIDATED = 0,
   DT_LIQUIFY_PATH_MOVE_TO_V1,
   DT_LIQUIFY_PATH_LINE_TO_V1,
   DT_LIQUIFY_PATH_CURVE_TO_V1,
 } dt_liquify_path_data_enum_t;
 
-typedef struct {
+typedef struct
+{
   dt_liquify_path_data_enum_t type;
   dt_liquify_node_type_enum_t node_type;
   dt_liquify_layer_enum_t selected;
@@ -204,7 +216,8 @@ typedef struct {
 // Scalars and vectors are represented here as points because the only
 // thing we can reasonably distort_transform are points.
 
-typedef struct {
+typedef struct
+{
   float complex point;
   float complex strength;   ///< a point (the effective strength vector is: strength - point)
   float complex radius;     ///< a point (the effective radius scalar is: cabs (radius - point))
@@ -214,35 +227,41 @@ typedef struct {
   dt_liquify_status_enum_t status;
 } dt_liquify_warp_t;
 
-typedef struct {
+typedef struct
+{
   float complex ctrl1;
   float complex ctrl2;
 } dt_liquify_node_t;
 
 // set up lots of alternative ways to get at the popular members.
 
-typedef struct {
+typedef struct
+{
   dt_liquify_path_header_t header;
   dt_liquify_warp_t        warp;
   dt_liquify_node_t        node; // extended node data
 } dt_liquify_path_data_t;
 
-typedef struct {
+typedef struct
+{
   dt_liquify_layer_enum_t layer;
   dt_liquify_path_data_t *elem;
 } dt_liquify_hit_t;
 
 static const dt_liquify_hit_t NOWHERE = { DT_LIQUIFY_LAYER_BACKGROUND, NULL };
 
-typedef struct {
+typedef struct
+{
   dt_liquify_path_data_t nodes[MAX_NODES];
 } dt_iop_liquify_params_t;
 
-typedef struct {
+typedef struct
+{
   int warp_kernel;
 } dt_iop_liquify_global_data_t;
 
-typedef struct {
+typedef struct
+{
   dt_pthread_mutex_t lock;
   dt_iop_liquify_params_t params;
   int node_index; // last node index inserted
@@ -482,7 +501,8 @@ static void path_delete (dt_iop_liquify_params_t *p, dt_liquify_path_data_t *thi
  *
  */
 
-typedef struct {
+typedef struct
+{
   dt_develop_t *develop;
   dt_dev_pixelpipe_t *pipe;
   float from_scale;
@@ -571,23 +591,23 @@ static void _distort_paths (const struct dt_iop_module_t *module,
 
     switch (data->header.type)
     {
-    case DT_LIQUIFY_PATH_CURVE_TO_V1:
-      data->node.ctrl1 = (b[0] + b[1] * I) * params->to_scale;
-      b += 2;
-      data->node.ctrl2 = (b[0] + b[1] * I) * params->to_scale;
-      b += 2;
-      // fall thru
-    case DT_LIQUIFY_PATH_MOVE_TO_V1:
-    case DT_LIQUIFY_PATH_LINE_TO_V1:
-      data->warp.point = (b[0] + b[1] * I) * params->to_scale;
-      b += 2;
-      data->warp.strength = (b[0] + b[1] * I) * params->to_scale;
-      b += 2;
-      data->warp.radius = (b[0] + b[1] * I) * params->to_scale;
-      b += 2;
-      break;
-    default:
-      break;
+       case DT_LIQUIFY_PATH_CURVE_TO_V1:
+         data->node.ctrl1 = (b[0] + b[1] * I) * params->to_scale;
+         b += 2;
+         data->node.ctrl2 = (b[0] + b[1] * I) * params->to_scale;
+         b += 2;
+         // fall thru
+       case DT_LIQUIFY_PATH_MOVE_TO_V1:
+       case DT_LIQUIFY_PATH_LINE_TO_V1:
+         data->warp.point = (b[0] + b[1] * I) * params->to_scale;
+         b += 2;
+         data->warp.strength = (b[0] + b[1] * I) * params->to_scale;
+         b += 2;
+         data->warp.radius = (b[0] + b[1] * I) * params->to_scale;
+         b += 2;
+         break;
+       default:
+         break;
     }
   }
 
@@ -692,7 +712,8 @@ static const float get_arc_length (const float complex points[], const int n_poi
   return length;
 }
 
-typedef struct {
+typedef struct
+{
   int i;
   double length;
 } restart_cookie_t;
@@ -716,7 +737,9 @@ static const float complex point_at_arc_length (const float complex points[],
   {
     const float prev_length = length;
     length += cabsf (points[i-1] - points[i]);
-    if (length >= arc_length) {
+
+    if (length >= arc_length)
+    {
       const float t = (arc_length - prev_length) / (length - prev_length);
       if (restart)
       {
@@ -896,32 +919,32 @@ static void build_round_stamp (float complex **pstamp,
 
       switch (warp->type)
       {
-      case DT_LIQUIFY_WARP_TYPE_RADIAL_GROW:
-        *o1 = abs_lookup * ( x - y * I);
-        *o2 = abs_lookup * ( y - x * I);
-        *o3 = abs_lookup * (-y - x * I);
-        *o4 = abs_lookup * (-x - y * I);
-        *o5 = abs_lookup * (-x + y * I);
-        *o6 = abs_lookup * (-y + x * I);
-        *o7 = abs_lookup * ( y + x * I);
-        *o8 = abs_lookup * ( x + y * I);
-        break;
+         case DT_LIQUIFY_WARP_TYPE_RADIAL_GROW:
+           *o1 = abs_lookup * ( x - y * I);
+           *o2 = abs_lookup * ( y - x * I);
+           *o3 = abs_lookup * (-y - x * I);
+           *o4 = abs_lookup * (-x - y * I);
+           *o5 = abs_lookup * (-x + y * I);
+           *o6 = abs_lookup * (-y + x * I);
+           *o7 = abs_lookup * ( y + x * I);
+           *o8 = abs_lookup * ( x + y * I);
+           break;
 
-      case DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK:
-        *o1 = -abs_lookup * ( x - y * I);
-        *o2 = -abs_lookup * ( y - x * I);
-        *o3 = -abs_lookup * (-y - x * I);
-        *o4 = -abs_lookup * (-x - y * I);
-        *o5 = -abs_lookup * (-x + y * I);
-        *o6 = -abs_lookup * (-y + x * I);
-        *o7 = -abs_lookup * ( y + x * I);
-        *o8 = -abs_lookup * ( x + y * I);
-        break;
+         case DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK:
+           *o1 = -abs_lookup * ( x - y * I);
+           *o2 = -abs_lookup * ( y - x * I);
+           *o3 = -abs_lookup * (-y - x * I);
+           *o4 = -abs_lookup * (-x - y * I);
+           *o5 = -abs_lookup * (-x + y * I);
+           *o6 = -abs_lookup * (-y + x * I);
+           *o7 = -abs_lookup * ( y + x * I);
+           *o8 = -abs_lookup * ( x + y * I);
+           break;
 
-      default:
-        *o1 = *o2 = *o3 = *o4 = *o5 = *o6 = *o7 = *o8 =
-          strength * lookup_table[idist];
-        break;
+         default:
+           *o1 = *o2 = *o3 = *o4 = *o5 = *o6 = *o7 = *o8 =
+             strength * lookup_table[idist];
+           break;
       }
     }
   next_row: ; // ";" makes compiler happy
@@ -1192,19 +1215,21 @@ void modify_roi_in (struct dt_iop_module_t *module,
 
   distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params);
 
-  cairo_rectangle_int_t pipe_rect = {
-    0,
-    0,
-    lroundf((double)piece->buf_in.width * roi_in->scale),
-    lroundf((double)piece->buf_in.height * roi_in->scale)
-  };
+  cairo_rectangle_int_t pipe_rect =
+    {
+      0,
+      0,
+      lroundf((double)piece->buf_in.width * roi_in->scale),
+      lroundf((double)piece->buf_in.height * roi_in->scale)
+    };
 
-  cairo_rectangle_int_t roi_in_rect = {
-    roi_in->x,
-    roi_in->y,
-    roi_in->width,
-    roi_in->height
-  };
+  cairo_rectangle_int_t roi_in_rect =
+    {
+      roi_in->x,
+      roi_in->y,
+      roi_in->width,
+      roi_in->height
+    };
   cairo_region_t *roi_in_region = cairo_region_create_rectangle (&roi_in_rect);
 
   // get extent of all paths
@@ -1368,7 +1393,8 @@ static float bicubic(const float a, const float x)
   return 0.0f;
 }
 
-typedef struct {
+typedef struct
+{
   int size;
   int resolution;
 } dt_liquify_kernel_descriptor_t;
@@ -1396,52 +1422,52 @@ static cl_int_t apply_global_distortion_map_cl (struct dt_iop_module_t *module,
 
   switch (interpolation->id)
   {
-  case DT_INTERPOLATION_BILINEAR:
-    kdesc.size = 1;
-    kdesc.resolution = 1;
-    k = malloc (2 * sizeof (float));
-    k[0] = 1.0f;
-    k[1] = 0.0f;
-    break;
-  case DT_INTERPOLATION_BICUBIC:
-    kdesc.size = 2;
-    k = malloc ((kdesc.size * kdesc.resolution + 1) * sizeof (float));
-    for (int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
-      k[i] = bicubic (0.5f, (float) i / kdesc.resolution);
-    break;
-  case DT_INTERPOLATION_LANCZOS2:
-    kdesc.size = 2;
-    k = malloc ((kdesc.size * kdesc.resolution + 1) * sizeof (float));
-    for (int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
-      k[i] = lanczos (2, (float) i / kdesc.resolution);
-    break;
-  case DT_INTERPOLATION_LANCZOS3:
-    kdesc.size = 3;
-    k = malloc ((kdesc.size * kdesc.resolution + 1) * sizeof (float));
-    for (int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
-      k[i] = lanczos (3, (float) i / kdesc.resolution);
-    break;
-  default:
-    return FALSE;
+     case DT_INTERPOLATION_BILINEAR:
+       kdesc.size = 1;
+       kdesc.resolution = 1;
+       k = malloc (2 * sizeof (float));
+       k[0] = 1.0f;
+       k[1] = 0.0f;
+       break;
+     case DT_INTERPOLATION_BICUBIC:
+       kdesc.size = 2;
+       k = malloc ((kdesc.size * kdesc.resolution + 1) * sizeof (float));
+       for (int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
+         k[i] = bicubic (0.5f, (float) i / kdesc.resolution);
+       break;
+     case DT_INTERPOLATION_LANCZOS2:
+       kdesc.size = 2;
+       k = malloc ((kdesc.size * kdesc.resolution + 1) * sizeof (float));
+       for (int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
+         k[i] = lanczos (2, (float) i / kdesc.resolution);
+       break;
+     case DT_INTERPOLATION_LANCZOS3:
+       kdesc.size = 3;
+       k = malloc ((kdesc.size * kdesc.resolution + 1) * sizeof (float));
+       for (int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
+         k[i] = lanczos (3, (float) i / kdesc.resolution);
+       break;
+     default:
+       return FALSE;
   }
 
-  cl_mem_t dev_roi_in = dt_opencl_copy_host_to_device_constant (
-    devid, sizeof (dt_iop_roi_t), (void *) roi_in);
+  cl_mem_t dev_roi_in = dt_opencl_copy_host_to_device_constant
+    (devid, sizeof (dt_iop_roi_t), (void *) roi_in);
 
-  cl_mem_t dev_roi_out = dt_opencl_copy_host_to_device_constant (
-    devid, sizeof (dt_iop_roi_t), (void *) roi_out);
+  cl_mem_t dev_roi_out = dt_opencl_copy_host_to_device_constant
+    (devid, sizeof (dt_iop_roi_t), (void *) roi_out);
 
-  cl_mem_t dev_map = dt_opencl_copy_host_to_device_constant (
-    devid, map_extent->width * map_extent->height * sizeof (float complex), (void *) map);
+  cl_mem_t dev_map = dt_opencl_copy_host_to_device_constant
+    (devid, map_extent->width * map_extent->height * sizeof (float complex), (void *) map);
 
-  cl_mem_t dev_map_extent = dt_opencl_copy_host_to_device_constant (
-    devid, sizeof (cairo_rectangle_int_t), (void *) map_extent);
+  cl_mem_t dev_map_extent = dt_opencl_copy_host_to_device_constant
+    (devid, sizeof (cairo_rectangle_int_t), (void *) map_extent);
 
-  cl_mem_t dev_kdesc = dt_opencl_copy_host_to_device_constant (
-    devid, sizeof (dt_liquify_kernel_descriptor_t), (void *) &kdesc);
+  cl_mem_t dev_kdesc = dt_opencl_copy_host_to_device_constant
+    (devid, sizeof (dt_liquify_kernel_descriptor_t), (void *) &kdesc);
 
-  cl_mem_t dev_kernel = dt_opencl_copy_host_to_device_constant (
-    devid, (kdesc.size * kdesc.resolution  + 1) * sizeof (float), (void *) k);
+  cl_mem_t dev_kernel = dt_opencl_copy_host_to_device_constant
+    (devid, (kdesc.size * kdesc.resolution  + 1) * sizeof (float), (void *) k);
 
   if (dev_roi_in == NULL || dev_roi_out == NULL || dev_map == NULL || dev_map_extent == NULL
       || dev_kdesc == NULL || dev_kernel == NULL)
@@ -1468,7 +1494,7 @@ error:
   dt_opencl_release_mem_object (dev_map);
   dt_opencl_release_mem_object (dev_roi_out);
   dt_opencl_release_mem_object (dev_roi_in);
-  if (k             ) free (k);
+  if (k) free (k);
 
   return err;
 }
@@ -1880,7 +1906,8 @@ static dt_liquify_hit_t _draw_paths (dt_iop_module_t *module,
           cairo_move_to (cr, creal (prev->warp.point), cimag (prev->warp.point));
           if (data->header.type == DT_LIQUIFY_PATH_LINE_TO_V1)
             cairo_line_to (cr, creal (point), cimag (point));
-          if (data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1) {
+          if (data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+          {
             cairo_curve_to (cr, creal (data->node.ctrl1), cimag (data->node.ctrl1),
                             creal (data->node.ctrl2), cimag (data->node.ctrl2),
                             creal (point), cimag (point));
@@ -1902,20 +1929,20 @@ static dt_liquify_hit_t _draw_paths (dt_iop_module_t *module,
           const float w = GET_UI_WIDTH (GIZMO);
           switch (data->header.node_type)
           {
-          case DT_LIQUIFY_NODE_TYPE_CUSP:
-            draw_triangle (cr, point - w / 2.0 * I, -M_PI / 2.0, w);
-            break;
-          case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-            draw_rectangle (cr, point, M_PI / 4.0, w);
-            break;
-          case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
-            draw_rectangle (cr, point, 0, w);
-            break;
-          case DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH:
-            draw_circle (cr, point, w);
-            break;
-          default:
-            break;
+             case DT_LIQUIFY_NODE_TYPE_CUSP:
+               draw_triangle (cr, point - w / 2.0 * I, -M_PI / 2.0, w);
+               break;
+             case DT_LIQUIFY_NODE_TYPE_SMOOTH:
+               draw_rectangle (cr, point, M_PI / 4.0, w);
+               break;
+             case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
+               draw_rectangle (cr, point, 0, w);
+               break;
+             case DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH:
+               draw_circle (cr, point, w);
+               break;
+             default:
+               break;
           }
           THINLINE; BG_COLOR;
           FILL_TEST;
@@ -2268,15 +2295,15 @@ static void smooth_path_linsys (size_t n,
     switch (equation[i])
     {
     #define ABCD(A,B,C,D) { { a[i] = A; b[i] = B; c[i] = C; d[i] = D; continue; } }
-    case 1:  ABCD (0, 2, 1,       k[i] + 2 * k[i+1]   ); break;
-    case 2:  ABCD (1, 4, 1,   4 * k[i] + 2 * k[i+1]   ); break;
-    case 3:  ABCD (2, 7, 0,   8 * k[i] +     k[i+1]   ); break;
-    case 4:  ABCD (0, 1, 0,                  c1[i]    ); break;
-    case 5:  ABCD (0, 1, 0,                  c1[i]    ); break;
-    case 6:  ABCD (1, 4, 0,   4 * k[i] +     c2[i]    ); break;
-    case 7:  ABCD (0, 1, 0,                  c1[i]    ); break;
-    case 8:  ABCD (0, 3, 0,   2 * k[i] +     k[i+1]   ); break;
-    case 9:  ABCD (0, 2, 0,       k[i] +     c2[i]    ); break;
+       case 1:  ABCD (0, 2, 1,       k[i] + 2 * k[i+1]   ); break;
+       case 2:  ABCD (1, 4, 1,   4 * k[i] + 2 * k[i+1]   ); break;
+       case 3:  ABCD (2, 7, 0,   8 * k[i] +     k[i+1]   ); break;
+       case 4:  ABCD (0, 1, 0,                  c1[i]    ); break;
+       case 5:  ABCD (0, 1, 0,                  c1[i]    ); break;
+       case 6:  ABCD (1, 4, 0,   4 * k[i] +     c2[i]    ); break;
+       case 7:  ABCD (0, 1, 0,                  c1[i]    ); break;
+       case 8:  ABCD (0, 3, 0,   2 * k[i] +     k[i+1]   ); break;
+       case 9:  ABCD (0, 2, 0,       k[i] +     c2[i]    ); break;
     #undef ABCD
     }
   }
@@ -2301,18 +2328,18 @@ static void smooth_path_linsys (size_t n,
   {
     switch (equation[i])
     {
-    // keep end: c2 does not change
-    case 5:
-    case 6:
-    case 9:  break;
+       // keep end: c2 does not change
+       case 5:
+       case 6:
+       case 9:  break;
 
-    // straight end: put c2[i] halfway between c1[i] and k[i+1]
-    case 3:
-    case 7:
-    case 8:  c2[i] = (c1[i] + k[i+1]) / 2;  break;
+       // straight end: put c2[i] halfway between c1[i] and k[i+1]
+       case 3:
+       case 7:
+       case 8:  c2[i] = (c1[i] + k[i+1]) / 2;  break;
 
-    // smooth end: c2 and c1 are symmetrical around the knot
-    default: c2[i] = 2 * k[i+1] - c1[i+1];
+       // smooth end: c2 and c1 are symmetrical around the knot
+       default: c2[i] = 2 * k[i+1] - c1[i+1];
     }
   }
 
@@ -2690,109 +2717,110 @@ int mouse_moved (struct dt_iop_module_t *module,
 
     switch (g->dragging.layer)
     {
-    case DT_LIQUIFY_LAYER_CENTERPOINT:
-      switch (d->header.type)
-      {
-      case DT_LIQUIFY_PATH_CURVE_TO_V1:
-        d->node.ctrl2 += pt - d->warp.point;
-        // fall thru
-      case DT_LIQUIFY_PATH_MOVE_TO_V1:
-      case DT_LIQUIFY_PATH_LINE_TO_V1:
-        if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-          n->node.ctrl1 += pt - d->warp.point;
-        if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-          p->node.ctrl2 += pt - d->warp.point;
-        d->warp.radius   += pt - d->warp.point;
-        d->warp.strength += pt - d->warp.point;
-        d->warp.point = pt;
-        break;
-      default:
-        break;
-      }
-      break;
+       case DT_LIQUIFY_LAYER_CENTERPOINT:
+         switch (d->header.type)
+         {
+            case DT_LIQUIFY_PATH_CURVE_TO_V1:
+              d->node.ctrl2 += pt - d->warp.point;
+              // fall thru
+            case DT_LIQUIFY_PATH_MOVE_TO_V1:
+            case DT_LIQUIFY_PATH_LINE_TO_V1:
+              if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+                n->node.ctrl1 += pt - d->warp.point;
+              if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+                p->node.ctrl2 += pt - d->warp.point;
+              d->warp.radius   += pt - d->warp.point;
+              d->warp.strength += pt - d->warp.point;
+              d->warp.point = pt;
+              break;
+            default:
+              break;
+         }
+         break;
 
-    case DT_LIQUIFY_LAYER_CTRLPOINT1:
-      switch (d->header.type)
-      {
-      case DT_LIQUIFY_PATH_CURVE_TO_V1:
-        d->node.ctrl1 = pt;
-        if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-        {
-          switch (p->header.node_type)
-          {
-          case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-            p->node.ctrl2 = p->warp.point +
-              cabs (p->warp.point - p->node.ctrl2) *
-              cexp (carg (p->warp.point - pt) * I);
-            break;
-          case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
-            p->node.ctrl2 = 2 * p->warp.point - pt;
-            break;
-          default:
-            break;
-          }
-        }
-        break;
-      default:
-        break;
-      }
-      break;
+       case DT_LIQUIFY_LAYER_CTRLPOINT1:
+         switch (d->header.type)
+         {
+            case DT_LIQUIFY_PATH_CURVE_TO_V1:
+              d->node.ctrl1 = pt;
+              if (p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+              {
+                switch (p->header.node_type)
+                {
+                   case DT_LIQUIFY_NODE_TYPE_SMOOTH:
+                     p->node.ctrl2 = p->warp.point +
+                       cabs (p->warp.point - p->node.ctrl2) *
+                       cexp (carg (p->warp.point - pt) * I);
+                     break;
+                case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
+                  p->node.ctrl2 = 2 * p->warp.point - pt;
+                  break;
+                default:
+                  break;
+                }
+              }
+              break;
+            default:
+              break;
+         }
+         break;
 
-    case DT_LIQUIFY_LAYER_CTRLPOINT2:
-      switch (d->header.type)
-      {
-      case DT_LIQUIFY_PATH_CURVE_TO_V1:
-        d->node.ctrl2 = pt;
-        if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
-        {
-          switch (d->header.node_type)
-          {
-          case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-            n->node.ctrl1 = d->warp.point +
-              cabs (d->warp.point - n->node.ctrl1) *
-              cexp (carg (d->warp.point - pt) * I);
-            break;
-          case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
-            n->node.ctrl1 = 2 * d->warp.point - pt;
-            break;
-          default:
-            break;
-          }
-        }
-        break;
-      default:
-        break;
-      }
-      break;
+       case DT_LIQUIFY_LAYER_CTRLPOINT2:
+         switch (d->header.type)
+         {
+            case DT_LIQUIFY_PATH_CURVE_TO_V1:
+              d->node.ctrl2 = pt;
+              if (n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+              {
+                switch (d->header.node_type)
+                {
+                   case DT_LIQUIFY_NODE_TYPE_SMOOTH:
+                     n->node.ctrl1 = d->warp.point +
+                       cabs (d->warp.point - n->node.ctrl1) *
+                       cexp (carg (d->warp.point - pt) * I);
+                     break;
+                   case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
+                     n->node.ctrl1 = 2 * d->warp.point - pt;
+                     break;
+                   default:
+                     break;
+                }
+              }
+              break;
+            default:
+              break;
+         }
+         break;
 
-    case DT_LIQUIFY_LAYER_RADIUSPOINT:
-      d->warp.radius = pt;
-      dt_conf_set_float(CONF_RADIUS, cabs(d->warp.radius - d->warp.point));
-      break;
+       case DT_LIQUIFY_LAYER_RADIUSPOINT:
+         d->warp.radius = pt;
+         dt_conf_set_float(CONF_RADIUS, cabs(d->warp.radius - d->warp.point));
+         break;
 
-    case DT_LIQUIFY_LAYER_STRENGTHPOINT:
-      d->warp.strength = pt;
-      dt_conf_set_float(CONF_STRENGTH, cabs(d->warp.strength - d->warp.point));
-      dt_conf_set_float(CONF_ANGLE, carg(d->warp.strength - d->warp.point));
-      break;
+       case DT_LIQUIFY_LAYER_STRENGTHPOINT:
+         d->warp.strength = pt;
+         dt_conf_set_float(CONF_STRENGTH, cabs(d->warp.strength - d->warp.point));
+         dt_conf_set_float(CONF_ANGLE, carg(d->warp.strength - d->warp.point));
+         break;
 
-    case DT_LIQUIFY_LAYER_HARDNESSPOINT1:
-      d->warp.control1 = MIN (1.0, cabs (pt - *start_pt) / cabs (d->warp.radius - *start_pt));
-      break;
+       case DT_LIQUIFY_LAYER_HARDNESSPOINT1:
+         d->warp.control1 = MIN (1.0, cabs (pt - *start_pt) / cabs (d->warp.radius - *start_pt));
+         break;
 
-    case DT_LIQUIFY_LAYER_HARDNESSPOINT2:
-      d->warp.control2 = MIN (1.0, cabs (pt - *start_pt) / cabs (d->warp.radius - *start_pt));
-      break;
+       case DT_LIQUIFY_LAYER_HARDNESSPOINT2:
+         d->warp.control2 = MIN (1.0, cabs (pt - *start_pt) / cabs (d->warp.radius - *start_pt));
+         break;
 
-    default:
-      break;
+       default:
+         break;
     }
     handled = 1;
   }
 
 done:
   dt_pthread_mutex_unlock (&g->lock);
-  if (handled) {
+  if (handled)
+  {
     sync_pipe (module, handled == 2);
   }
   return handled;
@@ -3236,7 +3264,8 @@ done:
     g->last_button1_pressed_pos = -1;
   g->last_hit = NOWHERE;
   dt_pthread_mutex_unlock (&g->lock);
-  if (handled) {
+  if (handled)
+  {
     update_warp_count (g);
     sync_pipe (module, handled == 2);
   }
@@ -3314,19 +3343,20 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
     gtk_toggle_button_set_active (g->btn_line_tool,  btn == g->btn_line_tool);
     gtk_toggle_button_set_active (g->btn_curve_tool, btn == g->btn_curve_tool);
     gtk_toggle_button_set_active (g->btn_node_tool,  btn == g->btn_node_tool);
+
     if (btn == g->btn_point_tool)
       dt_control_hinter_message
         (darktable.control, _("click and drag to add point\nscrool to change size\n"
                               "shift-scroll to change strength - ctrl-scroll to change direction"));
-    if (btn == g->btn_line_tool)
+    else if (btn == g->btn_line_tool)
       dt_control_hinter_message
         (darktable.control, _("click to add line\nscrool to change size\n"
                               "shift-scroll to change strength - ctrl-scroll to change direction"));
-    if (btn == g->btn_curve_tool)
+    else if (btn == g->btn_curve_tool)
       dt_control_hinter_message
         (darktable.control, _("click to add curve\nscrool to change size\n"
                               "shift-scroll to change strength - ctrl-scroll to change direction"));
-    if (btn == g->btn_node_tool)
+    else if (btn == g->btn_node_tool)
       dt_control_hinter_message (darktable.control, _("click to edit nodes"));
 
     //  start the preview mode to show the shape that will be created
