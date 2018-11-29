@@ -129,5 +129,6 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "temperature")) return "modules.html#whitebalance";
   if(!strcmp(name, "invert")) return "modules.html#invert";
   if(!strcmp(name, "rawprepare")) return "modules.html#raw_black_white_point";
+  if(!strcmp(name, "filmic")) return "tone_group.html#filmic";
   return NULL;
 }
