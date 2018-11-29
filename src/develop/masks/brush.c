@@ -1013,78 +1013,6 @@ static float _brush_get_position_in_segment(float x, float y, dt_masks_form_t *f
   return tmin;
 }
 
-// set the initial source position value for a clone mask
-static void dt_brush_set_source_pos_initial_value(dt_masks_form_gui_t *gui, dt_masks_form_t *form, float *points,
-                                                  const float pzx, const float pzy)
-{
-  const float iwd = darktable.develop->preview_pipe->iwidth;
-  const float iht = darktable.develop->preview_pipe->iheight;
-  float pts[2] = { 0.f };
-
-  // if this is the first time the relative pos is used
-  if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE_TEMP)
-  {
-    // if is has not been defined by the user, set some default
-    if(gui->posx_source == -1.f && gui->posy_source == -1.f)
-    {
-      pts[0] = points[0];
-      pts[1] = points[1];
-      dt_dev_distort_backtransform(darktable.develop, pts, 1);
-      pts[0] /= iwd;
-      pts[1] /= iht;
-
-      form->source[0] = pts[0] + 0.01f;
-      form->source[1] = pts[1] + 0.01f;
-    }
-    else
-    {
-      // if a position was defined by the user, use the absolute value the first time
-      pts[0] = gui->posx_source;
-      pts[1] = gui->posy_source;
-      dt_dev_distort_backtransform(darktable.develop, pts, 1);
-
-      form->source[0] = pts[0] / iwd;
-      form->source[1] = pts[1] / iht;
-    }
-
-    // save the relative value for the next time
-    pts[0] = points[0];
-    pts[1] = points[1];
-    dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    pts[0] /= iwd;
-    pts[1] /= iht;
-
-    gui->posx_source = form->source[0] - pts[0];
-    gui->posy_source = form->source[1] - pts[1];
-
-    gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE;
-  }
-  else if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE)
-  {
-    // original pos was already defined and relative value calculated, just use it
-    pts[0] = points[0];
-    pts[1] = points[1];
-    dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    pts[0] /= iwd;
-    pts[1] /= iht;
-
-    form->source[0] = pts[0] + gui->posx_source;
-    form->source[1] = pts[1] + gui->posy_source;
-  }
-  else if(gui->source_pos_type == DT_MASKS_SOURCE_POS_ABSOLUTE)
-  {
-    // an absolute position was defined by the user
-    pts[0] = gui->posx_source;
-    pts[1] = gui->posy_source;
-    dt_dev_distort_backtransform(darktable.develop, pts, 1);
-
-    form->source[0] = pts[0] / iwd;
-    form->source[1] = pts[1] / iht;
-  }
-  else
-    fprintf(stderr, "unknown source position type\n");
-}
-
 static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
                                           uint32_t state, dt_masks_form_t *form, int parentid,
                                           dt_masks_form_gui_t *gui, int index)
@@ -1312,7 +1240,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
       // add support for clone masks
       if(form->type & DT_MASKS_CLONE)
       {
-        dt_brush_set_source_pos_initial_value(gui, form, dt_masks_dynbuf_buffer(gui->guipoints), pzx, pzy);
+        dt_masks_set_source_pos_initial_value(gui, DT_MASKS_BRUSH, form, pzx, pzy);
       }
       else
       {
