@@ -2553,13 +2553,99 @@ void dt_masks_set_source_pos_initial_state(dt_masks_form_gui_t *gui, const uint3
   else if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
     gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
   else
-    fprintf(stderr, "unknown state for setting masks position type\n");
+    fprintf(stderr, "[dt_masks_set_source_pos_initial_state] unknown state for setting masks position type\n");
 
   // both source types record an absolute position,
   // for the relative type, the first time is used the position is recorded,
   // the second time a relative position is calculated based on that one
   gui->posx_source = pzx * darktable.develop->preview_pipe->backbuf_width;
   gui->posy_source = pzy * darktable.develop->preview_pipe->backbuf_height;
+}
+
+// set the initial source position value for a clone mask
+void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int mask_type, dt_masks_form_t *form,
+                                                   const float pzx, const float pzy)
+{
+  const float wd = darktable.develop->preview_pipe->backbuf_width;
+  const float ht = darktable.develop->preview_pipe->backbuf_height;
+  const float iwd = darktable.develop->preview_pipe->iwidth;
+  const float iht = darktable.develop->preview_pipe->iheight;
+
+  // if this is the first time the relative pos is used
+  if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE_TEMP)
+  {
+    // if is has not been defined by the user, set some default
+    if(gui->posx_source == -1.f && gui->posy_source == -1.f)
+    {
+      if(mask_type & DT_MASKS_CIRCLE)
+      {
+        const float radius = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_size"));
+        
+        gui->posx_source = (radius * iwd);
+        gui->posy_source = -(radius * iht);
+      }
+      else if(mask_type & DT_MASKS_ELLIPSE)
+      {
+        const float radius_a = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_a");
+        const float radius_b = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_b");
+        
+        gui->posx_source = (radius_a * iwd);
+        gui->posy_source = -(radius_b * iht);
+      }
+      else if(mask_type & DT_MASKS_PATH)
+      {
+        gui->posx_source = (0.02f * iwd);
+        gui->posy_source = (0.02f * iht);
+      }
+      else if(mask_type & DT_MASKS_BRUSH)
+      {
+        gui->posx_source = 0.01f * iwd;
+        gui->posy_source = 0.01f * iht;
+      }
+      else
+        fprintf(stderr, "[dt_masks_set_source_pos_initial_value] unsuported masks type when calculating source position initial value\n");
+      
+      float pts[2] = { pzx * wd + gui->posx_source, pzy * ht + gui->posy_source };
+      dt_dev_distort_backtransform(darktable.develop, pts, 1);
+
+      form->source[0] = pts[0] / iwd;
+      form->source[1] = pts[1] / iht;
+    }
+    else
+    {
+      // if a position was defined by the user, use the absolute value the first time
+      float pts[2] = { gui->posx_source, gui->posy_source };
+      dt_dev_distort_backtransform(darktable.develop, pts, 1);
+
+      form->source[0] = pts[0] / iwd;
+      form->source[1] = pts[1] / iht;
+      
+      gui->posx_source = gui->posx_source - pzx * wd;
+      gui->posy_source = gui->posy_source - pzy * ht;
+    }
+
+    gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE;
+  }
+  else if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE)
+  {
+    // original pos was already defined and relative value calculated, just use it
+    float pts[2] = { pzx * wd + gui->posx_source, pzy * ht + gui->posy_source };
+    dt_dev_distort_backtransform(darktable.develop, pts, 1);
+    
+    form->source[0] = pts[0] / iwd;
+    form->source[1] = pts[1] / iht;
+  }
+  else if(gui->source_pos_type == DT_MASKS_SOURCE_POS_ABSOLUTE)
+  {
+    // an absolute position was defined by the user
+    float pts_src[2] = { gui->posx_source, gui->posy_source };
+    dt_dev_distort_backtransform(darktable.develop, pts_src, 1);
+
+    form->source[0] = pts_src[0] / iwd;
+    form->source[1] = pts_src[1] / iht;
+  }
+  else
+    fprintf(stderr, "[dt_masks_set_source_pos_initial_value] unknown source position type\n");
 }
 
 // calculates the source position value for preview drawing, on cairo coordinates
@@ -2569,13 +2655,13 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
 {
   float x = 0.f, y = 0.f;
 
-  const float wd = darktable.develop->preview_pipe->iwidth;
-  const float ht = darktable.develop->preview_pipe->iheight;
+  const float iwd = darktable.develop->preview_pipe->iwidth;
+  const float iht = darktable.develop->preview_pipe->iheight;
 
   if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE)
   {
-    x = xpos + gui->posx_source * wd;
-    y = ypos + gui->posy_source * ht;
+    x = xpos + gui->posx_source;
+    y = ypos + gui->posy_source;
   }
   else if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE_TEMP)
   {
@@ -2584,28 +2670,28 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
       if(mask_type & DT_MASKS_CIRCLE)
       {
         const float radius = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_size"));
-        x = xpos + radius * wd;
-        y = ypos - radius * ht;
+        x = xpos + radius * iwd;
+        y = ypos - radius * iht;
       }
       else if(mask_type & DT_MASKS_ELLIPSE)
       {
         const float radius_a = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_a");
         const float radius_b = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_b");
-        x = xpos + radius_a * wd;
-        y = ypos - radius_b * ht;
+        x = xpos + radius_a * iwd;
+        y = ypos - radius_b * iht;
       }
       else if(mask_type & DT_MASKS_PATH)
       {
-        x = xpos + 0.02f * wd;
-        y = ypos + 0.02f * ht;
+        x = xpos + 0.02f * iwd;
+        y = ypos + 0.02f * iht;
       }
       else if(mask_type & DT_MASKS_BRUSH)
       {
-        x = xpos + 0.01f * wd;
-        y = ypos + 0.01f * ht;
+        x = xpos + 0.01f * iwd;
+        y = ypos + 0.01f * iht;
       }
       else
-        fprintf(stderr, "unsuported masks type when calculating source position value\n");
+        fprintf(stderr, "[dt_masks_calculate_source_pos_value] unsuported masks type when calculating source position value\n");
     }
     else
     {
@@ -2629,7 +2715,7 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
     }
   }
   else
-    fprintf(stderr, "unknown source position type for setting source position value\n");
+    fprintf(stderr, "[dt_masks_calculate_source_pos_value] unknown source position type for setting source position value\n");
 
   *px = x;
   *py = y;
