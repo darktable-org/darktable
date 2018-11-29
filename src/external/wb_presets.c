@@ -465,6 +465,12 @@ const wb_data wb_preset[] =
   { "Canon", "PowerShot SX1 IS", FluorescentHigh, 0, { 1.687500, 1, 2.025670, 0 } },
   { "Canon", "PowerShot SX1 IS", Flash, 0,	{ 1.909699, 1, 1.795987, 0 } },
 
+  { "Canon", "Canon PowerShot SX160 IS", Daylight, 0,		{ 1.725252, 1, 1.444444, 1 } },
+  { "Canon", "Canon PowerShot SX160 IS", Cloudy, 0,		{ 1.843781, 1, 1.359204, 1 } },
+  { "Canon", "Canon PowerShot SX160 IS", Tungsten, 0,		{ 1.103726, 1, 2.322256, 1 } },
+  { "Canon", "Canon PowerShot SX160 IS", Fluorescent, 0,	{ 1.704705, 1, 1.463463, 1 } },
+  { "Canon", "Canon PowerShot SX160 IS", FluorescentHigh, 0,	{ 1.848423, 1, 1.355036, 1 } },
+
   /* -9/+9 fine tuning is B9/A9 in blue-amber and zero in magenta-green */
   { "Canon", "PowerShot SX50 HS", Daylight, -9,	{ 1.260171, 1, 2.286938, 0 } },
   { "Canon", "PowerShot SX50 HS", Daylight, 0,	{ 1.502585, 1, 1.871768, 0 } },
@@ -1754,6 +1760,14 @@ const wb_data wb_preset[] =
   { "Canon", "EOS M10", Tungsten        , 0, { 1.399530, 1, 2.615746, 0 } },
   { "Canon", "EOS M10", Shade           , 0, { 2.334441, 1, 1.330011, 0 } },
   { "Canon", "EOS M10", WhiteFluorescent, 0, { 1.809693, 1, 2.239953, 0 } },
+
+  // Canon EOS M100 Firmware Version 1.0.0
+  { "Canon", "EOS M100", Cloudy          , 0, { 1.70703125, 1, 1.181640625, 0 } },
+  { "Canon", "EOS M100", Daylight        , 0, { 1.5791015625, 1, 1.2734375, 0 } },
+  { "Canon", "EOS M100", Flash           , 0, { 1.9755859375, 1, 1.0107421875, 0 } },
+  { "Canon", "EOS M100", Tungsten        , 0, { 1.0810546875, 1, 1.8857421875, 0 } },
+  { "Canon", "EOS M100", Shade           , 0, { 1.8232421875, 1, 1.1015625, 0 } },
+  { "Canon", "EOS M100", Fluorescent     , 0, { 1.3544921875, 1, 1.7021484375, 0 } },
 
   { "Fujifilm", "FinePix E900", Daylight, 0,		{ 1.571875, 1, 1.128125, 0 } },
   { "Fujifilm", "FinePix E900", Shade, 0,		{ 1.668750, 1, 1.006250, 0 } },
@@ -5130,6 +5144,14 @@ const wb_data wb_preset[] =
   { "Olympus", "XZ-10", Fluorescent, 0,		{ 1.781250, 1, 2.414063, 0 } },
   { "Olympus", "XZ-10", Flash, 0,		{ 2.289063, 1, 1.394531, 0 } },
 
+  /* Firmware Version 1.1 */
+  { "Panasonic", "DC-GX9", Daylight, 0,     { 2.23046875, 1, 1.8984375,  0 } },
+  { "Panasonic", "DC-GX9", Cloudy, 0,       { 2.3671875,  1, 1.76953125, 0 } },
+  { "Panasonic", "DC-GX9", Shade, 0,        { 2.51171875, 1, 1.6640625,  0 } },
+  { "Panasonic", "DC-GX9", Incandescent, 0, { 1.609375,   1, 2.90234375, 0 } },
+  { "Panasonic", "DC-GX9", Flash, 0,        { 2.3203125,  1, 1.8046875,  0 } },
+
+
   { "Panasonic", "DC-G9", Daylight, 0,          { 2.242188, 1, 1.898438, 0 } },
   { "Panasonic", "DC-G9", Cloudy, 0,            { 2.375000, 1, 1.773438, 0 } },
   { "Panasonic", "DC-G9", Shade, 0,             { 2.507813, 1, 1.679688, 0 } },
@@ -5190,6 +5212,20 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-FZ200", "5000K", 0,	{ 1.928302, 1, 1.841509, 0 } },
   { "Panasonic", "DMC-FZ200", "5500K", 0,	{ 2.015094, 1, 1.758491, 0 } },
   { "Panasonic", "DMC-FZ200", "6500K", 0,	{ 2.203774, 1, 1.577358, 0 } },
+
+  /* Firmware version 2.2 */
+  /* Daylight is called "Fine Weather" in the EXIF tags and "Clear Sky" in the manual. */
+  { "Panasonic", "DMC-FZ300", Daylight, 0,  { 2.144531, 1, 1.859375, 0 } }, /*5500K*/
+  { "Panasonic", "DMC-FZ300", Cloudy, 0,  { 2.304688, 1, 1.707031, 0 } },
+  { "Panasonic", "DMC-FZ300", Shade, 0,	  { 2.429688, 1, 1.609375, 0 } },
+  { "Panasonic", "DMC-FZ300", Incandescent, 0,  { 1.5, 1, 2.722656, 0 } },
+  { "Panasonic", "DMC-FZ300", Flash, 0,   { 2.304688, 1, 1.761719, 0 } },
+  { "Panasonic", "DMC-FZ300", "2500K", 0, { 1.300781, 1, 3.214844, 0 } },
+  { "Panasonic", "DMC-FZ300", "3000K", 0, { 1.480469, 1, 2.808594, 0 } },
+  { "Panasonic", "DMC-FZ300", "5000K", 0, { 1.996094, 1, 2.0, 0 } },
+  { "Panasonic", "DMC-FZ300", "6500K", 0, { 2.332031, 1, 1.6875, 0 } },
+  { "Panasonic", "DMC-FZ300", "8500K", 0, { 2.574219, 1, 1.496094, 0 } },
+  { "Panasonic", "DMC-FZ300", "10000K", 0, { 2.703125, 1, 1.390625, 0 } },
 
   // Panasonic DMC-FZ1000 Firmware 2.0.0
   { "Panasonic", "DMC-FZ1000", Daylight, 0,	{ 2.425781, 1, 1.886719, 0 } },
@@ -6436,6 +6472,21 @@ const wb_data wb_preset[] =
   { "Samsung", "NX3000", DaylightFluorescent, 0,	{ 2.582031, 1, 1.835938, 0 } },
   { "Samsung", "NX3000", Tungsten, 0,			{ 1.539063, 1, 2.816406, 0 } },
   { "Samsung", "NX3000", Flash, 0,			{ 2.597656, 1, 1.566406, 0 } },
+
+  { "Sony", "DSC-RX0", Daylight            , 0, { 2.05078125, 1, 1.828125, 0 } },
+  { "Sony", "DSC-RX0", Shade               , 0, { 2.4375, 1, 1.515625, 0 } },
+  { "Sony", "DSC-RX0", Cloudy              , 0, { 2.2109375, 1, 1.6796875, 0 } },
+  { "Sony", "DSC-RX0", Tungsten            , 0, { 1.265625, 1, 3.22265625, 0 } },
+  { "Sony", "DSC-RX0", WarmWhiteFluorescent, 0, { 1.53125, 1, 3.1953125, 0 } },
+  { "Sony", "DSC-RX0", CoolWhiteFluorescent, 0, { 2.02734375, 1, 2.62890625, 0 } },
+  { "Sony", "DSC-RX0", DayWhiteFluorescent , 0, { 1.94921875, 1, 2.04296875, 0 } },
+  { "Sony", "DSC-RX0", DaylightFluorescent , 0, { 2.2265625, 1, 1.7421875, 0 } },
+  { "Sony", "DSC-RX0", Flash               , 0, { 1.8359375, 1, 2.02734375, 0 } },
+  { "Sony", "DSC-RX0", "2500K"             , 0, { 1.1015625, 1, 3.84765625, 0 } },
+  { "Sony", "DSC-RX0", "3200K"             , 0, { 1.4140625, 1, 2.80859375, 0 } },
+  { "Sony", "DSC-RX0", "4500K"             , 0, { 1.84765625, 1, 2.05078125, 0 } },
+  { "Sony", "DSC-RX0", "6000K"             , 0, { 2.1953125, 1, 1.6953125, 0 } },
+  { "Sony", "DSC-RX0", "8500K"             , 0, { 2.5625, 1, 1.43359375, 0 } },
 
   { "Sony", "DSC-RX1", Daylight, 0, { 2.38671875, 1, 1.55078125, 0 } },
   { "Sony", "DSC-RX1", Shade, 0, { 2.84375, 1, 1.2734375, 0 } },
