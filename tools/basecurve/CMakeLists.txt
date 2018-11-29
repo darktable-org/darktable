@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.5)
+cmake_minimum_required(VERSION 3.4.0)
 include(CheckCCompilerFlag)
 include(GNUInstallDirs)
 
