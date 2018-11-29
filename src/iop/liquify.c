@@ -3291,6 +3291,8 @@ static float conf_set_get_default(const char *name, float def)
   if(dt_conf_key_exists(name))
   {
     value = dt_conf_get_float(name);
+    // do some sanity check, the value must > 1.0 (these are value in pixels), reset to default if not
+    if(value<=1.0f && strcmp(name, CONF_ANGLE)) value = def;
   }
   else
   {
