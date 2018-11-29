@@ -257,7 +257,6 @@ static void add_preset(
 {
   int len, blen;
   uint8_t *p  = dt_exif_xmp_decode(pi, strlen(pi), &len);
-  assert(len == sizeof(dt_iop_denoiseprofile_params_t));
   uint8_t *bp = dt_exif_xmp_decode(bpi, strlen(bpi), &blen);
   if(blendop_version != dt_develop_blend_version())
   {
@@ -280,9 +279,7 @@ static void add_preset(
   }
 
   if(p && bp)
-    dt_gui_presets_add_with_blendop(
-        name, self->op, version,
-        p, len, bp, 1);
+    dt_gui_presets_add_with_blendop(name, self->op, version, p, len, bp, 1);
   free(bp);
   free(p);
 }
