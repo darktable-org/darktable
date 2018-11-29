@@ -3983,6 +3983,7 @@ static void cropmode_callback(GtkWidget *widget, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->cropmode = dt_bauhaus_combobox_get(widget);
+  (void)do_clean_structure(self, p);
   do_crop(self, p);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
