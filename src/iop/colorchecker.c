@@ -1159,7 +1159,8 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
         "click to select\n"
         "double click to reset\n"
         "right click to delete patch\n"
-        "shift-click while color picking to replace patch"),
+        "shift-click while color picking to replace patch\n"
+        "alt-click while color picking to match the color with the patch reference"),
       p->source_L[patch], p->source_a[patch], p->source_b[patch]);
   gtk_widget_set_tooltip_text(g->area, tooltip);
   return TRUE;
@@ -1209,6 +1210,16 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     self->gui_update(self);
     return TRUE;
+  }
+  else if((event->button == 1) &&
+          ((event->state & GDK_MOD1_MASK) == GDK_MOD1_MASK) &&
+          (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE))
+  {
+    // Make the picked color match target color on its chroma components
+    // NB: we don't match the L channel because the user is still left with
+    //     the option to increase the exposure by himself/herself
+    p->target_a[patch] = p->source_a[patch] - (self->picked_color[1] - p->source_a[patch]);
+    p->target_b[patch] = p->source_b[patch] - (self->picked_color[2] - p->source_b[patch]);
   }
   else if((event->button == 1) &&
           ((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK) &&
