@@ -646,7 +646,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       int nominator = pos->toRational(0).first;
       img->exif_focus_distance = fmax(0.0, (0.001 * nominator));
     }
-    else if(Exiv2::testVersion(0,25,0) && FIND_EXIF_TAG("Exif.CanonFi.FocusDistanceUpper"))
+    else if(EXIV2_MAKE_VERSION(0,25,0) <= Exiv2::versionNumber() && FIND_EXIF_TAG("Exif.CanonFi.FocusDistanceUpper"))
     {
       float FocusDistanceUpper = pos->toFloat();
       if(FocusDistanceUpper <= 0.0f || FocusDistanceUpper >= 0xffff)
@@ -724,7 +724,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
-    else if(Exiv2::testVersion(0,25,0) && FIND_EXIF_TAG("Exif.PentaxDng.LensType"))
+    else if(EXIV2_MAKE_VERSION(0,25,0) <= Exiv2::versionNumber() && FIND_EXIF_TAG("Exif.PentaxDng.LensType"))
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
@@ -2619,6 +2619,12 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   g_list_free_full(hierarchical, g_free);
 }
 
+#if EXIV2_VERSION >= EXIV2_MAKE_VERSION(0,27,0)
+#define ERROR_CODE(a) (static_cast<Exiv2::ErrorCode>((a)))
+#else
+#define ERROR_CODE(a) (a)
+#endif
+
 char *dt_exif_xmp_read_string(const int imgid)
 {
   try
@@ -2668,7 +2674,7 @@ char *dt_exif_xmp_read_string(const int imgid)
     if(Exiv2::XmpParser::encode(xmpPacket, xmpData,
       Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper) != 0)
     {
-      throw Exiv2::Error(1, "[xmp_write] failed to serialize xmp data");
+      throw Exiv2::Error(ERROR_CODE(1), "[xmp_write] failed to serialize xmp data");
     }
     return g_strdup(xmpPacket.c_str());
   }
@@ -2804,7 +2810,7 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
     if(Exiv2::XmpParser::encode(xmpPacket, xmpData,
        Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper) != 0)
     {
-      throw Exiv2::Error(1, "[xmp_write] failed to serialize xmp data");
+      throw Exiv2::Error(ERROR_CODE(1), "[xmp_write] failed to serialize xmp data");
     }
 
     // hash the new data and compare it to the old hash (if applicable)
