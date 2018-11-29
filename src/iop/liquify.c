@@ -3275,23 +3275,38 @@ static float conf_set_get_default(const char *name, float def)
 static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *module)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
+
+  // if currently dragging and a form (line or node) has been started, does nothing (expect reseting the toggle button status).
+
+  if (is_dragging(g) && g->temp && node_prev(&g->params, g->temp))
+  {
+    g_signal_handlers_block_matched(g->btn_point_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    g_signal_handlers_block_matched(g->btn_line_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    g_signal_handlers_block_matched(g->btn_curve_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    g_signal_handlers_block_matched(g->btn_node_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+
+    gtk_toggle_button_set_active (btn, !gtk_toggle_button_get_active(btn));
+
+    g_signal_handlers_unblock_matched(g->btn_point_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    g_signal_handlers_unblock_matched(g->btn_line_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    g_signal_handlers_unblock_matched(g->btn_curve_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    g_signal_handlers_unblock_matched(g->btn_node_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
+    return;
+  }
+
   dt_control_hinter_message (darktable.control, "");
+
+  // if we are on a preview, it means that a form (point, line, curve) has been started, but no node has yet been placed.
+  // in this case we abort the current preview and let the new tool activated.
 
   if (g->status & DT_LIQUIFY_STATUS_PREVIEW)
   {
     node_delete (&g->params, g->temp);
     g->temp = NULL;
     g->status &= ~DT_LIQUIFY_STATUS_PREVIEW;
-    gtk_toggle_button_set_active (g->btn_node_tool, 1);
-    goto done;
   }
 
-  // if currently dragging, does nothing
-  if (is_dragging(g))
-  {
-    gtk_toggle_button_set_active (btn, 0);
-    return;
-  }
+  // now, let's enable and start a new form safely
 
   if (gtk_toggle_button_get_active (btn))
   {
@@ -3344,7 +3359,6 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
     }
   }
 
-done:
   sync_pipe (module, FALSE);
   dt_iop_request_focus(module);
 }
