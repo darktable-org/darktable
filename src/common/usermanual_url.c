@@ -46,7 +46,7 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "location")) return "find_location.html#find_location";
   if(!strcmp(name, "map_settings")) return "map_settings.html#map_settings";
   if(!strcmp(name, "print_settings")) return "print_settings.html#print_settings";
-  if(!strcmp(name, "global_toolbox")) return NULL; //TODO differenciate preference from group etc
+  if(!strcmp(name, "global_toolbox")) return NULL;
   if(!strcmp(name, "global_toolbox_preferences")) return "preferences.html#preferences";
   if(!strcmp(name, "lighttable_mode")) return "lighttable_chapter.html#lighttable_overview";
   if(!strcmp(name, "module_toolbox")) return NULL;
