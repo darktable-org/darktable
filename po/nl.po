@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-25 13:52+0100\n"
-"PO-Revision-Date: 2018-11-25 14:11+0100\n"
+"POT-Creation-Date: 2018-11-29 16:10+0100\n"
+"PO-Revision-Date: 2018-11-29 16:20+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1101,7 +1101,7 @@ msgstr "teveel tijd om de beeldverhouding van de collectie te updaten"
 
 #: ../src/common/collection.c:1044 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
-#: ../src/iop/channelmixer.c:464 ../src/iop/colorbalance.c:2508
+#: ../src/iop/channelmixer.c:464 ../src/iop/colorbalance.c:2555
 #: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1188
 msgid "red"
 msgstr "rood"
@@ -1113,7 +1113,7 @@ msgstr "geel"
 
 #: ../src/common/collection.c:1048 ../src/develop/lightroom.c:826
 #: ../src/iop/bilateral.cc:361 ../src/iop/channelmixer.c:454
-#: ../src/iop/channelmixer.c:470 ../src/iop/colorbalance.c:2515
+#: ../src/iop/channelmixer.c:470 ../src/iop/colorbalance.c:2562
 #: ../src/iop/temperature.c:1357 ../src/iop/temperature.c:1370
 #: ../src/libs/collect.c:1188
 msgid "green"
@@ -1121,7 +1121,7 @@ msgstr "groen"
 
 #: ../src/common/collection.c:1050 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:362 ../src/iop/channelmixer.c:455
-#: ../src/iop/channelmixer.c:476 ../src/iop/colorbalance.c:2522
+#: ../src/iop/channelmixer.c:476 ../src/iop/colorbalance.c:2569
 #: ../src/iop/temperature.c:1371 ../src/libs/collect.c:1188
 msgid "blue"
 msgstr "blauw"
@@ -2550,9 +2550,9 @@ msgstr "masker verdoezelen"
 msgid "radius for gaussian blur of blend mask"
 msgstr "te gebruiken straal voor gaussian verdoezeling van het masker"
 
-#: ../src/develop/blend_gui.c:2117
-msgid "mask brightness"
-msgstr "masker helderheid"
+#: ../src/develop/blend_gui.c:2117 ../src/iop/retouch.c:2888
+msgid "mask opacity"
+msgstr "masker bedekking"
 
 #: ../src/develop/blend_gui.c:2119
 msgid ""
@@ -2602,43 +2602,43 @@ msgstr "maskerverfijning"
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module `%s' versie komt niet overeen: %d != %d"
 
-#: ../src/develop/imageop.c:1008
+#: ../src/develop/imageop.c:1009
 msgid "new instance"
 msgstr "nieuw exemplaar"
 
-#: ../src/develop/imageop.c:1013
+#: ../src/develop/imageop.c:1014
 msgid "duplicate instance"
 msgstr "kloon exemplaar"
 
-#: ../src/develop/imageop.c:1018 ../src/libs/masks.c:1155
+#: ../src/develop/imageop.c:1019 ../src/libs/masks.c:1155
 msgid "move up"
 msgstr "eerder"
 
-#: ../src/develop/imageop.c:1024 ../src/libs/masks.c:1158
+#: ../src/develop/imageop.c:1025 ../src/libs/masks.c:1158
 msgid "move down"
 msgstr "later"
 
 #. delete
-#: ../src/develop/imageop.c:1030 ../src/libs/image.c:142
+#: ../src/develop/imageop.c:1031 ../src/libs/image.c:142
 #: ../src/libs/styles.c:371 ../src/libs/tagging.c:575
 msgid "delete"
 msgstr "verwijderen"
 
-#: ../src/develop/imageop.c:1037
+#: ../src/develop/imageop.c:1038
 msgid "rename"
 msgstr "module naam wijzigen"
 
-#: ../src/develop/imageop.c:1064 ../src/develop/imageop.c:2050
+#: ../src/develop/imageop.c:1065 ../src/develop/imageop.c:2052
 #, c-format
 msgid "%s is switched on"
 msgstr "%s is ingeschakeld"
 
-#: ../src/develop/imageop.c:1064 ../src/develop/imageop.c:2050
+#: ../src/develop/imageop.c:1065 ../src/develop/imageop.c:2052
 #, c-format
 msgid "%s is switched off"
 msgstr "%s is uitgeschakeld"
 
-#: ../src/develop/imageop.c:1387 ../src/gui/accelerators.c:628
+#: ../src/develop/imageop.c:1389 ../src/gui/accelerators.c:628
 #: ../src/gui/accelerators.c:713 ../src/gui/accelerators.c:878
 #: ../src/gui/accelerators.c:904 ../src/gui/presets.c:183
 #: ../src/gui/presets.c:290 ../src/gui/presets.c:632
@@ -2647,33 +2647,33 @@ msgstr "%s is uitgeschakeld"
 msgid "preset"
 msgstr "voorkeur"
 
-#: ../src/develop/imageop.c:1407
+#: ../src/develop/imageop.c:1409
 msgctxt "accel"
 msgid "fusion"
 msgstr "samensmelten"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1412
+#: ../src/develop/imageop.c:1414
 msgctxt "accel"
 msgid "show module"
 msgstr "toon module"
 
-#: ../src/develop/imageop.c:1413
+#: ../src/develop/imageop.c:1415
 msgctxt "accel"
 msgid "enable module"
 msgstr "inschakelen module"
 
-#: ../src/develop/imageop.c:1415 ../src/libs/lib.c:602
+#: ../src/develop/imageop.c:1417 ../src/libs/lib.c:602
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "reset module"
 
-#: ../src/develop/imageop.c:1416 ../src/libs/lib.c:606
+#: ../src/develop/imageop.c:1418 ../src/libs/lib.c:606
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "toon vooraf ingesteld menu"
 
-#: ../src/develop/imageop.c:2015
+#: ../src/develop/imageop.c:2017
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -2681,16 +2681,16 @@ msgstr ""
 "acties meerdere exemplaren\n"
 "midden muisknop creëert een nieuw exemplaar"
 
-#: ../src/develop/imageop.c:2026 ../src/libs/lib.c:997
+#: ../src/develop/imageop.c:2028 ../src/libs/lib.c:997
 msgid "reset parameters"
 msgstr "reset"
 
-#: ../src/develop/imageop.c:2035 ../src/gui/preferences.c:398
+#: ../src/develop/imageop.c:2037 ../src/gui/preferences.c:398
 #: ../src/libs/lib.c:1009
 msgid "presets"
 msgstr "voorkeuren"
 
-#: ../src/develop/imageop.c:2037
+#: ../src/develop/imageop.c:2039
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -3396,7 +3396,7 @@ msgid "golden spiral"
 msgstr "gulden spiraal"
 
 #: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:678
-#: ../src/iop/denoiseprofile.c:2640 ../src/iop/lens.c:2093
+#: ../src/iop/denoiseprofile.c:2637 ../src/iop/lens.c:2093
 #: ../src/iop/rawdenoise.c:953 ../src/libs/tools/filter.c:117
 msgid "all"
 msgstr "alles"
@@ -4827,12 +4827,12 @@ msgstr "glans"
 msgid "clarity"
 msgstr "helderheid"
 
-#: ../src/iop/atrous.c:1422 ../src/iop/denoiseprofile.c:2457
+#: ../src/iop/atrous.c:1422 ../src/iop/denoiseprofile.c:2454
 #: ../src/iop/rawdenoise.c:782
 msgid "coarse"
 msgstr "grof"
 
-#: ../src/iop/atrous.c:1429 ../src/iop/denoiseprofile.c:2465
+#: ../src/iop/atrous.c:1429 ../src/iop/denoiseprofile.c:2462
 #: ../src/iop/rawdenoise.c:790
 msgid "fine"
 msgstr "fijn"
@@ -4842,11 +4842,11 @@ msgid "contrasty"
 msgstr "contrastrijk"
 
 #: ../src/iop/atrous.c:1442 ../src/iop/atrous.c:1446
-#: ../src/iop/denoiseprofile.c:2474 ../src/iop/rawdenoise.c:799
+#: ../src/iop/denoiseprofile.c:2471 ../src/iop/rawdenoise.c:799
 msgid "smooth"
 msgstr "vervaag"
 
-#: ../src/iop/atrous.c:1447 ../src/iop/denoiseprofile.c:2479
+#: ../src/iop/atrous.c:1447 ../src/iop/denoiseprofile.c:2476
 #: ../src/iop/rawdenoise.c:804
 msgid "noisy"
 msgstr "druk"
@@ -4986,7 +4986,7 @@ msgid "scale"
 msgstr "schaal"
 
 #. centripetal spline
-#: ../src/iop/basecurve.c:1934 ../src/iop/filmic.c:1359
+#: ../src/iop/basecurve.c:1934 ../src/iop/filmic.c:1522
 #: ../src/iop/profile_gamma.c:867 ../src/iop/tonecurve.c:1257
 msgid "linear"
 msgstr "lineair"
@@ -5063,8 +5063,8 @@ msgstr "lokaal contrast"
 msgid "local laplacian: inconsistent output"
 msgstr "local laplacian: tegenstrijdige uitgang"
 
-#: ../src/iop/bilat.c:522 ../src/iop/colorbalance.c:2356
-#: ../src/iop/denoiseprofile.c:2692 ../src/iop/exposure.c:853
+#: ../src/iop/bilat.c:522 ../src/iop/colorbalance.c:2401
+#: ../src/iop/denoiseprofile.c:2689 ../src/iop/exposure.c:853
 #: ../src/iop/lens.c:2236 ../src/iop/levels.c:589
 #: ../src/iop/profile_gamma.c:850 ../src/libs/copy_history.c:316
 #: ../src/libs/export.c:648 ../src/libs/print_settings.c:1511
@@ -5106,8 +5106,8 @@ msgstr ""
 "eigenschappen van afmeting lokale details (spatial sigma of bilateral filter)"
 
 #: ../src/iop/bilat.c:543 ../src/iop/colisa.c:366
-#: ../src/iop/colorbalance.c:2403 ../src/iop/colorbalance.c:2405
-#: ../src/iop/filmic.c:1319 ../src/iop/lowpass.c:673
+#: ../src/iop/colorbalance.c:2452 ../src/iop/colorbalance.c:2454
+#: ../src/iop/filmic.c:1482 ../src/iop/lowpass.c:673
 msgid "contrast"
 msgstr "contrast"
 
@@ -5230,7 +5230,7 @@ msgstr "drempel"
 msgid "the threshold of light"
 msgstr "drempel voor glans"
 
-#: ../src/iop/bloom.c:527 ../src/iop/denoiseprofile.c:2697
+#: ../src/iop/bloom.c:527 ../src/iop/denoiseprofile.c:2694
 #: ../src/iop/grain.c:630 ../src/iop/hazeremoval.c:189
 #: ../src/iop/hotpixels.c:463 ../src/iop/nlmeans.c:852 ../src/iop/velvia.c:381
 msgid "strength"
@@ -5468,8 +5468,8 @@ msgid "destination"
 msgstr "bestemming"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
-#: ../src/iop/channelmixer.c:450 ../src/iop/colorbalance.c:2487
-#: ../src/iop/colorbalance.c:2537 ../src/iop/colorbalance.c:2585
+#: ../src/iop/channelmixer.c:450 ../src/iop/colorbalance.c:2536
+#: ../src/iop/colorbalance.c:2584 ../src/iop/colorbalance.c:2630
 #: ../src/iop/colorize.c:430 ../src/iop/colorreconstruction.c:1365
 #: ../src/iop/colorreconstruction.c:1370 ../src/iop/colorzones.c:1090
 #: ../src/iop/colorzones.c:1121 ../src/iop/graduatednd.c:1171
@@ -5479,12 +5479,11 @@ msgstr "tint"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:451 ../src/iop/colisa.c:368
-#: ../src/iop/colorbalance.c:2386 ../src/iop/colorbalance.c:2388
-#: ../src/iop/colorbalance.c:2500 ../src/iop/colorbalance.c:2549
-#: ../src/iop/colorbalance.c:2597 ../src/iop/colorchecker.c:1313
+#: ../src/iop/colorbalance.c:2547 ../src/iop/colorbalance.c:2594
+#: ../src/iop/colorbalance.c:2640 ../src/iop/colorchecker.c:1313
 #: ../src/iop/colorcorrection.c:289 ../src/iop/colorize.c:444
 #: ../src/iop/colorzones.c:1088 ../src/iop/colorzones.c:1122
-#: ../src/iop/filmic.c:1343 ../src/iop/graduatednd.c:1185
+#: ../src/iop/filmic.c:1506 ../src/iop/graduatednd.c:1185
 #: ../src/iop/lowpass.c:675 ../src/iop/soften.c:716
 #: ../src/iop/splittoning.c:501 ../src/iop/vignette.c:1152
 msgid "saturation"
@@ -5586,7 +5585,7 @@ msgid "flip"
 msgstr "spiegelen"
 
 #: ../src/iop/clipping.c:1870 ../src/iop/clipping.c:2055
-#: ../src/iop/colorbalance.c:2371 ../src/libs/live_view.c:378
+#: ../src/iop/colorbalance.c:2414 ../src/libs/live_view.c:378
 msgid "both"
 msgstr "beide"
 
@@ -5762,197 +5761,209 @@ msgstr "aanpassen helderheid"
 msgid "color saturation adjustment"
 msgstr "aanpassen kleurverzadiging"
 
-#: ../src/iop/colorbalance.c:170
+#: ../src/iop/colorbalance.c:161
 msgid "color balance"
 msgstr "kleurenbalans"
 
-#: ../src/iop/colorbalance.c:175
+#: ../src/iop/colorbalance.c:166
 msgid "lift/gamma/gain controls as seen in video editors"
 msgstr "lift/gamma/gain controle zoals in video editors"
 
 #. these blobs were exported as dtstyle and copied from there:
-#: ../src/iop/colorbalance.c:253
-msgid "revert log profile (last instance)"
-msgstr "logboekprofiel terugzetten (laatste instantie)"
-
-#: ../src/iop/colorbalance.c:256
+#: ../src/iop/colorbalance.c:272
 msgid "split-toning teal-orange (2nd instance)"
 msgstr "split-toning blauwgroen-oranje (2de instantie)"
 
-#: ../src/iop/colorbalance.c:259
+#: ../src/iop/colorbalance.c:275
 msgid "split-toning teal-orange (1st instance)"
 msgstr "split-toning blauwgroen-oranje (1st instantie)"
 
-#: ../src/iop/colorbalance.c:266 ../src/iop/exposure.c:121
+#: ../src/iop/colorbalance.c:282 ../src/iop/exposure.c:121
 #: ../src/iop/profile_gamma.c:123
 msgctxt "accel"
 msgid "mode"
 msgstr "modus"
 
-#: ../src/iop/colorbalance.c:267
+#: ../src/iop/colorbalance.c:283
 msgctxt "accel"
 msgid "controls"
 msgstr "controles"
 
-#: ../src/iop/colorbalance.c:902
+#: ../src/iop/colorbalance.c:1000
 msgid "optimize luma from patches"
 msgstr "optimaliseer luminantie vanuit patronen"
 
-#: ../src/iop/colorbalance.c:904 ../src/iop/colorbalance.c:2633
+#: ../src/iop/colorbalance.c:1002 ../src/iop/colorbalance.c:2675
 msgid "optimize luma"
 msgstr "optimaliseer luminantie"
 
-#: ../src/iop/colorbalance.c:908
+#: ../src/iop/colorbalance.c:1006
 msgid "neutralize colors from patches"
 msgstr "kleuren neutraliseren vanuit patronen"
 
-#: ../src/iop/colorbalance.c:910 ../src/iop/colorbalance.c:2642
+#: ../src/iop/colorbalance.c:1008 ../src/iop/colorbalance.c:2684
 msgid "neutralize colors"
 msgstr "kleuren neutraliseren"
 
-#: ../src/iop/colorbalance.c:2357
+#: ../src/iop/colorbalance.c:2402
 msgid "lift, gamma, gain (ProPhotoRGB)"
 msgstr "lift, gamma, gain (ProPhotoRGB)"
 
-#: ../src/iop/colorbalance.c:2358
+#: ../src/iop/colorbalance.c:2403
 msgid "slope, offset, power (ProPhotoRGB)"
 msgstr "helling, afstand, kracht (ProPhotoRGB)"
 
-#: ../src/iop/colorbalance.c:2359
+#: ../src/iop/colorbalance.c:2404
 msgid "lift, gamma, gain (sRGB)"
 msgstr "lift, gamma, gain (sRGB)"
 
-#: ../src/iop/colorbalance.c:2361 ../src/iop/colorbalance.c:2374
+#: ../src/iop/colorbalance.c:2406 ../src/iop/colorbalance.c:2417
 msgid "color-grading mapping method"
 msgstr "kleurgraderende indelingsmethode"
 
-#: ../src/iop/colorbalance.c:2368
+#: ../src/iop/colorbalance.c:2411
 msgid "color control sliders"
 msgstr "kleur schuifregelaars"
 
-#: ../src/iop/colorbalance.c:2369
+#: ../src/iop/colorbalance.c:2412
 msgid "HSL"
 msgstr "HSL"
 
-#: ../src/iop/colorbalance.c:2370
+#: ../src/iop/colorbalance.c:2413
 msgid "RGBL"
 msgstr "RGBL"
 
-#: ../src/iop/colorbalance.c:2382
+#: ../src/iop/colorbalance.c:2424
 msgid "master"
 msgstr "meester"
 
-#: ../src/iop/colorbalance.c:2392
+#: ../src/iop/colorbalance.c:2428
+msgid "input saturation"
+msgstr "ingaaande verzadiging"
+
+#: ../src/iop/colorbalance.c:2430
+msgid "saturation correction before the color balance"
+msgstr "correctie verzadiging voor de kleurenbalans"
+
+#: ../src/iop/colorbalance.c:2435
+msgid "output saturation"
+msgstr "uitgaande verzadiging"
+
+#: ../src/iop/colorbalance.c:2437
+msgid "saturation correction after the color balance"
+msgstr "correctie verzadiging na de kleurenbalans"
+
+#: ../src/iop/colorbalance.c:2441
 msgid "contrast fulcrum"
 msgstr "contrast draaipunt"
 
-#: ../src/iop/colorbalance.c:2395
+#: ../src/iop/colorbalance.c:2444
 msgid "adjust to match a neutral tone"
 msgstr "pas aan om een neutrale toon overeen tekomen"
 
-#: ../src/iop/colorbalance.c:2462 ../src/iop/colorbalance.c:2474
+#: ../src/iop/colorbalance.c:2511 ../src/iop/colorbalance.c:2523
 msgid "factor of "
 msgstr "factor van"
 
-#: ../src/iop/colorbalance.c:2463
+#: ../src/iop/colorbalance.c:2512
 msgid "factor"
 msgstr "factor"
 
 #. lift
-#: ../src/iop/colorbalance.c:2480
+#: ../src/iop/colorbalance.c:2529
 msgid "shadows : lift / offset"
 msgstr "schaduwkleuren: lift/afstand"
 
-#: ../src/iop/colorbalance.c:2482
+#: ../src/iop/colorbalance.c:2531
 msgid "factor of lift"
 msgstr "liftfactor"
 
-#: ../src/iop/colorbalance.c:2482
+#: ../src/iop/colorbalance.c:2531
 msgid "lift"
 msgstr "lift"
 
-#: ../src/iop/colorbalance.c:2489 ../src/iop/colorbalance.c:2539
-#: ../src/iop/colorbalance.c:2587
+#: ../src/iop/colorbalance.c:2538 ../src/iop/colorbalance.c:2586
+#: ../src/iop/colorbalance.c:2632
 msgid "select the hue"
 msgstr "bepaal tint"
 
-#: ../src/iop/colorbalance.c:2503 ../src/iop/colorbalance.c:2552
-#: ../src/iop/colorbalance.c:2600
+#: ../src/iop/colorbalance.c:2550 ../src/iop/colorbalance.c:2597
+#: ../src/iop/colorbalance.c:2643
 msgid "select the saturation"
 msgstr "bepaal verzadiging"
 
-#: ../src/iop/colorbalance.c:2508
+#: ../src/iop/colorbalance.c:2555
 msgid "factor of red for lift"
 msgstr "liftfactor rood"
 
-#: ../src/iop/colorbalance.c:2515
+#: ../src/iop/colorbalance.c:2562
 msgid "factor of green for lift"
 msgstr "liftfactor groen"
 
-#: ../src/iop/colorbalance.c:2522
+#: ../src/iop/colorbalance.c:2569
 msgid "factor of blue for lift"
 msgstr "liftfactor blauw"
 
 #. gamma
-#: ../src/iop/colorbalance.c:2530
+#: ../src/iop/colorbalance.c:2577
 msgid "mid-tones : gamma / power"
 msgstr "middenkleuren: gamma/kracht"
 
-#: ../src/iop/colorbalance.c:2532
+#: ../src/iop/colorbalance.c:2579
 msgid "factor of gamma"
 msgstr "gammafactor"
 
-#: ../src/iop/colorbalance.c:2532 ../src/iop/profile_gamma.c:852
+#: ../src/iop/colorbalance.c:2579 ../src/iop/profile_gamma.c:852
 #: ../src/iop/profile_gamma.c:874
 msgid "gamma"
 msgstr "gamma"
 
-#: ../src/iop/colorbalance.c:2556
+#: ../src/iop/colorbalance.c:2601
 msgid "factor of red for gamma"
 msgstr "gammafactor rood"
 
-#: ../src/iop/colorbalance.c:2563
+#: ../src/iop/colorbalance.c:2608
 msgid "factor of green for gamma"
 msgstr "gammafactor groen"
 
-#: ../src/iop/colorbalance.c:2570
+#: ../src/iop/colorbalance.c:2615
 msgid "factor of blue for gamma"
 msgstr "gammafactor blauw"
 
 #. gain
-#: ../src/iop/colorbalance.c:2578
+#: ../src/iop/colorbalance.c:2623
 msgid "highlights : gain / slope"
 msgstr "hooglichten: gain/helling"
 
-#: ../src/iop/colorbalance.c:2580
+#: ../src/iop/colorbalance.c:2625
 msgid "factor of gain"
 msgstr "gain factor"
 
-#: ../src/iop/colorbalance.c:2580
+#: ../src/iop/colorbalance.c:2625
 msgid "gain"
 msgstr "gain"
 
-#: ../src/iop/colorbalance.c:2604
+#: ../src/iop/colorbalance.c:2647
 msgid "factor of red for gain"
 msgstr "gain factor rood"
 
-#: ../src/iop/colorbalance.c:2611
+#: ../src/iop/colorbalance.c:2654
 msgid "factor of green for gain"
 msgstr "gain factor groen"
 
-#: ../src/iop/colorbalance.c:2618
+#: ../src/iop/colorbalance.c:2661
 msgid "factor of blue for gain"
 msgstr "gain factor blauw"
 
-#: ../src/iop/colorbalance.c:2626
+#: ../src/iop/colorbalance.c:2668
 msgid "auto optimizers"
 msgstr "automatische optimalisators"
 
-#: ../src/iop/colorbalance.c:2638
+#: ../src/iop/colorbalance.c:2680
 msgid "fit the whole histogram and center the average luma"
 msgstr "maak het hele histogramm passend en centreer de gemiddelde luminantie"
 
-#: ../src/iop/colorbalance.c:2647
+#: ../src/iop/colorbalance.c:2689
 msgid "optimize the RGB curves to remove color casts"
 msgstr "verwijder kleurzwemen met de optimalisatie van RGB curven "
 
@@ -6119,7 +6130,7 @@ msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
 "niet ondersteund ingegeven profiel is vervangen door lineair Rec709 RGB!"
 
-#: ../src/iop/colorin.c:1845 ../src/iop/denoiseprofile.c:2691
+#: ../src/iop/colorin.c:1845 ../src/iop/denoiseprofile.c:2688
 #: ../src/libs/export.c:607 ../src/libs/print_settings.c:1184
 #: ../src/libs/print_settings.c:1404
 msgid "profile"
@@ -6266,26 +6277,26 @@ msgstr "voorgenomen output"
 
 #: ../src/iop/colorout.c:781 ../src/libs/export.c:631
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1455
-#: ../src/views/darkroom.c:1629 ../src/views/lighttable.c:2465
+#: ../src/views/darkroom.c:1629 ../src/views/lighttable.c:2467
 msgid "perceptual"
 msgstr "perceptueel"
 
 #: ../src/iop/colorout.c:782 ../src/libs/export.c:632
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
-#: ../src/views/darkroom.c:1630 ../src/views/lighttable.c:2466
+#: ../src/views/darkroom.c:1630 ../src/views/lighttable.c:2468
 msgid "relative colorimetric"
 msgstr "relatieve colorimetrie"
 
 #: ../src/iop/colorout.c:783 ../src/libs/export.c:633
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
-#: ../src/views/darkroom.c:1631 ../src/views/lighttable.c:2467
+#: ../src/views/darkroom.c:1631 ../src/views/lighttable.c:2469
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "verzadiging"
 
 #: ../src/iop/colorout.c:784 ../src/libs/export.c:634
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
-#: ../src/views/darkroom.c:1632 ../src/views/lighttable.c:2468
+#: ../src/views/darkroom.c:1632 ../src/views/lighttable.c:2470
 msgid "absolute colorimetric"
 msgstr "absolute colorimetrie"
 
@@ -6631,57 +6642,57 @@ msgid "denoise (profiled)"
 msgstr "ruisreductie (profiled)"
 
 #. these blobs were exported as dtstyle and copied from there:
-#: ../src/iop/denoiseprofile.c:293
+#: ../src/iop/denoiseprofile.c:290
 msgid "chroma (use on 1st instance)"
 msgstr "kleurwaarde (gebruiken voor 1ste laag)"
 
-#: ../src/iop/denoiseprofile.c:296
+#: ../src/iop/denoiseprofile.c:293
 msgid "luma (use on 2nd instance)"
 msgstr "luminantie (gebruiken voor 2de laag)"
 
-#: ../src/iop/denoiseprofile.c:2016
+#: ../src/iop/denoiseprofile.c:2013
 #, c-format
 msgid "found match for ISO %d"
 msgstr "overeenkomst voor ISO %d gevonden"
 
-#: ../src/iop/denoiseprofile.c:2024
+#: ../src/iop/denoiseprofile.c:2021
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "geïnterpoleerd uit ISO %d en %d"
 
-#: ../src/iop/denoiseprofile.c:2642 ../src/iop/rawdenoise.c:955
+#: ../src/iop/denoiseprofile.c:2639 ../src/iop/rawdenoise.c:955
 msgid "R"
 msgstr "R"
 
-#: ../src/iop/denoiseprofile.c:2644 ../src/iop/rawdenoise.c:957
+#: ../src/iop/denoiseprofile.c:2641 ../src/iop/rawdenoise.c:957
 msgid "G"
 msgstr "G"
 
-#: ../src/iop/denoiseprofile.c:2646 ../src/iop/rawdenoise.c:959
+#: ../src/iop/denoiseprofile.c:2643 ../src/iop/rawdenoise.c:959
 msgid "B"
 msgstr "B"
 
-#: ../src/iop/denoiseprofile.c:2693 ../src/iop/nlmeans.c:850
+#: ../src/iop/denoiseprofile.c:2690 ../src/iop/nlmeans.c:850
 msgid "patch size"
 msgstr "patch grootte"
 
-#: ../src/iop/denoiseprofile.c:2695
+#: ../src/iop/denoiseprofile.c:2692
 msgid "search radius"
 msgstr "zoek straal"
 
-#: ../src/iop/denoiseprofile.c:2698
+#: ../src/iop/denoiseprofile.c:2695
 msgid "non-local means"
 msgstr "non-local means"
 
-#: ../src/iop/denoiseprofile.c:2699
+#: ../src/iop/denoiseprofile.c:2696
 msgid "wavelets"
 msgstr "wavelets"
 
-#: ../src/iop/denoiseprofile.c:2700
+#: ../src/iop/denoiseprofile.c:2697
 msgid "profile used for variance stabilization"
 msgstr "profiel gebruikt voor variatie-stabilisering"
 
-#: ../src/iop/denoiseprofile.c:2701
+#: ../src/iop/denoiseprofile.c:2698
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -6689,11 +6700,11 @@ msgstr ""
 "gebruikte ontruis-kernmethode, non-local werkt het best bij het mengen van "
 "helderheid en wavelets bij  het kleur mengen"
 
-#: ../src/iop/denoiseprofile.c:2704
+#: ../src/iop/denoiseprofile.c:2701
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr "straal van de patronen om aan te passen, verhoog voor meer scherpte"
 
-#: ../src/iop/denoiseprofile.c:2705
+#: ../src/iop/denoiseprofile.c:2702
 msgid ""
 "emergency use only: radius of the neighbourhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
@@ -6703,7 +6714,7 @@ msgstr ""
 "zoeken, verhoog voor een betere ontruis prestatie, maar reken op langere "
 "looptijden, het kan erg langzaam reageren"
 
-#: ../src/iop/denoiseprofile.c:2706
+#: ../src/iop/denoiseprofile.c:2703
 msgid "finetune denoising strength"
 msgstr "kracht ruisonderdrukking afstemmen"
 
@@ -6890,23 +6901,23 @@ msgstr "berekende EC: "
 msgid "what exposure correction has actually been used"
 msgstr "welke belichtingscorrectie nu werkelijk is gebruikt"
 
-#: ../src/iop/filmic.c:159
+#: ../src/iop/filmic.c:164
 msgid "filmic"
 msgstr "filmic"
 
-#: ../src/iop/filmic.c:1256
+#: ../src/iop/filmic.c:1419
 msgid "double click to reset curve"
 msgstr "reset curve met dubbelklikken"
 
-#: ../src/iop/filmic.c:1259
+#: ../src/iop/filmic.c:1422
 msgid "logarithmic shaper"
 msgstr "logaritmische instellingen"
 
-#: ../src/iop/filmic.c:1263
+#: ../src/iop/filmic.c:1426
 msgid "middle grey luminance"
 msgstr "middengrijs luminantie"
 
-#: ../src/iop/filmic.c:1266
+#: ../src/iop/filmic.c:1429
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
@@ -6915,11 +6926,11 @@ msgstr ""
 "overeenkomen\n"
 "echter niet bij tegenlicht situaties, dit zou ongeveer 18% moeten zijn"
 
-#: ../src/iop/filmic.c:1275
+#: ../src/iop/filmic.c:1438
 msgid "white relative exposure"
 msgstr "relatieve belichting wit"
 
-#: ../src/iop/filmic.c:1278
+#: ../src/iop/filmic.c:1441
 msgid ""
 "number of stops between middle grey and pure white\n"
 "this is a reading a posemeter would give you on the scene"
@@ -6927,11 +6938,11 @@ msgstr ""
 "aantal stops tussen geheel middengrijs en zuiver wit\n"
 "dit is een meting die een posimeter zou geven"
 
-#: ../src/iop/filmic.c:1286 ../src/iop/profile_gamma.c:901
+#: ../src/iop/filmic.c:1449 ../src/iop/profile_gamma.c:901
 msgid "black relative exposure"
 msgstr "relatieve belichting zwart"
 
-#: ../src/iop/filmic.c:1289 ../src/iop/profile_gamma.c:904
+#: ../src/iop/filmic.c:1452 ../src/iop/profile_gamma.c:904
 msgid ""
 "number of stops between middle grey and pure black\n"
 "this is a reading a posemeter would give you on the scene"
@@ -6939,15 +6950,15 @@ msgstr ""
 "aantal stops tussen middengrijs en geheel zwart\n"
 "dit is een meting die een posimeter zou geven"
 
-#: ../src/iop/filmic.c:1297
+#: ../src/iop/filmic.c:1460
 msgid "auto tuning safety factor"
 msgstr "automatische afstemmingsveiligheidsfactor"
 
-#: ../src/iop/filmic.c:1298 ../src/iop/profile_gamma.c:925
+#: ../src/iop/filmic.c:1461 ../src/iop/profile_gamma.c:925
 msgid "safety factor"
 msgstr "veiligheidsfactor"
 
-#: ../src/iop/filmic.c:1301
+#: ../src/iop/filmic.c:1464
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
 "useful in conjunction with \"auto tune levels\""
@@ -6955,28 +6966,28 @@ msgstr ""
 "vergroot of verklein het berekende dynamisch bereik\n"
 "dit is nuttig in combinatie met \"automatische afstemming niveaus\""
 
-#: ../src/iop/filmic.c:1307 ../src/iop/profile_gamma.c:933
+#: ../src/iop/filmic.c:1470 ../src/iop/profile_gamma.c:933
 msgid "auto tune levels"
 msgstr "automatische afstemming niveaus"
 
-#: ../src/iop/filmic.c:1312 ../src/iop/profile_gamma.c:938
+#: ../src/iop/filmic.c:1475 ../src/iop/profile_gamma.c:938
 msgid "make an optimization with some guessing"
 msgstr "maak door wat gissingen een optimalisatie"
 
-#: ../src/iop/filmic.c:1315
+#: ../src/iop/filmic.c:1478
 msgid "filmic S curve"
 msgstr "filmic S curve"
 
-#: ../src/iop/filmic.c:1321
+#: ../src/iop/filmic.c:1484
 msgid "slope of the linear part of the curve"
 msgstr "helling van het lineair deel van de curve"
 
 #. geotagging
-#: ../src/iop/filmic.c:1326 ../src/libs/metadata_view.c:127
+#: ../src/iop/filmic.c:1489 ../src/libs/metadata_view.c:127
 msgid "latitude"
 msgstr "omvang"
 
-#: ../src/iop/filmic.c:1329
+#: ../src/iop/filmic.c:1492
 msgid ""
 "linearity domain in the middle of the curve\n"
 "increase to get more contrast at the extreme luminances"
@@ -6984,17 +6995,17 @@ msgstr ""
 "lineariteitsdomein in het midden van de curve\n"
 "verhoog voor meer contrast bij extreme luminanties"
 
-#: ../src/iop/filmic.c:1335
+#: ../src/iop/filmic.c:1498
 msgid "balance shadows-highlights"
 msgstr "balans tussen schaduwen en hooglichten"
 
-#: ../src/iop/filmic.c:1338
+#: ../src/iop/filmic.c:1501
 msgid "gives more room to shadows or highlights, to protect the details"
 msgstr ""
 "geeft meer ruimte voor shaduwen of hooglichten en beschermd daarmee de "
 "details"
 
-#: ../src/iop/filmic.c:1346
+#: ../src/iop/filmic.c:1509
 msgid ""
 "desaturates the output, if the contrast adjustment\n"
 "produces over-saturation in shadows"
@@ -7002,38 +7013,52 @@ msgstr ""
 "verminderd verzadiging van de uitvoer, wanneer de contrastaanpassing\n"
 "oververzadiging geeft in de schaduwen"
 
-#: ../src/iop/filmic.c:1356 ../src/libs/export.c:629
+#: ../src/iop/filmic.c:1519 ../src/libs/export.c:629
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1452
 msgid "intent"
 msgstr "intensie"
 
-#: ../src/iop/filmic.c:1357
+#: ../src/iop/filmic.c:1520
 msgid "contrasted"
 msgstr "gecontrasteerd"
 
 #. cubic spline
-#: ../src/iop/filmic.c:1358
+#: ../src/iop/filmic.c:1521
 msgid "faded"
 msgstr "vaal"
 
 #. monotonic spline
-#: ../src/iop/filmic.c:1360
+#: ../src/iop/filmic.c:1523
 msgid "optimized"
 msgstr "geoptimaliseerd"
 
-#: ../src/iop/filmic.c:1362
+#: ../src/iop/filmic.c:1525
 msgid "change this method if you see reversed contrast or faded blacks"
 msgstr "wijzig de methode wanneer je een omgekeerd contrast of vaal zwart ziet"
 
-#: ../src/iop/filmic.c:1365
+#. Preserve color
+#: ../src/iop/filmic.c:1529
+msgid "preserve the chrominance"
+msgstr "behoud de chrominantie"
+
+#: ../src/iop/filmic.c:1531
+msgid ""
+"ensure the original color are preserved\n"
+"may produce over-saturated colors and reinforce lens chromatic aberrations"
+msgstr ""
+"zorg ervoor dat de originele kleur behouden blijft\n"
+"kan oververzadigde kleuren produceren en chromatische lens -aberraties "
+"versterken"
+
+#: ../src/iop/filmic.c:1537
 msgid "destination/display"
 msgstr "bestemming /display"
 
-#: ../src/iop/filmic.c:1369
+#: ../src/iop/filmic.c:1542
 msgid "black luminance"
 msgstr "zwart luminantie"
 
-#: ../src/iop/filmic.c:1372
+#: ../src/iop/filmic.c:1545
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -7041,11 +7066,11 @@ msgstr ""
 "luminantie voor uitgaand pikzwart, dit moet uitkomen op 0%\n"
 "tenzij je een fletser beeld wenst"
 
-#: ../src/iop/filmic.c:1378
+#: ../src/iop/filmic.c:1551
 msgid "middle grey destination"
 msgstr "middengrijs bestemming"
 
-#: ../src/iop/filmic.c:1381
+#: ../src/iop/filmic.c:1554
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -7053,11 +7078,11 @@ msgstr ""
 "midden grijswaarde voor doel of kleurruimte\n"
 "wijzig dit niet tenzij je weet waarmee je bezig bent"
 
-#: ../src/iop/filmic.c:1387
+#: ../src/iop/filmic.c:1560
 msgid "white luminance"
 msgstr "wit luminantie"
 
-#: ../src/iop/filmic.c:1390
+#: ../src/iop/filmic.c:1563
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -7065,11 +7090,11 @@ msgstr ""
 "luminantie voor uitgaand zuiver wit, dit moet uitkomen op 100%\n"
 "tenzij je een fletser beeld wenst"
 
-#: ../src/iop/filmic.c:1396
+#: ../src/iop/filmic.c:1569
 msgid "destination power factor"
 msgstr "bestemmingskracht factor"
 
-#: ../src/iop/filmic.c:1398
+#: ../src/iop/filmic.c:1571
 msgid ""
 "power or gamma of the transfer function of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -7717,7 +7742,7 @@ msgstr "wit"
 msgid "liquify"
 msgstr "uitvloeien"
 
-#: ../src/iop/liquify.c:3289
+#: ../src/iop/liquify.c:3304
 msgid ""
 "click and drag to add point\n"
 "scrool to change size\n"
@@ -7728,7 +7753,7 @@ msgstr ""
 "wijzig sterkte met shift-scroll\n"
 "wijzig richting met ctrl-scroll"
 
-#: ../src/iop/liquify.c:3293
+#: ../src/iop/liquify.c:3308
 msgid ""
 "click to add line\n"
 "scrool to change size\n"
@@ -7739,7 +7764,7 @@ msgstr ""
 "wijzig sterkte met shift-scroll\n"
 "wijzig richting met ctrl-scroll"
 
-#: ../src/iop/liquify.c:3297
+#: ../src/iop/liquify.c:3312
 msgid ""
 "click to add curve\n"
 "scrool to change size\n"
@@ -7750,11 +7775,11 @@ msgstr ""
 "wijzig sterkte met shift-scroll\n"
 "wijzig richting met ctrl-scroll"
 
-#: ../src/iop/liquify.c:3300
+#: ../src/iop/liquify.c:3315
 msgid "click to edit nodes"
 msgstr "bewerk knooppunten door te klikken"
 
-#: ../src/iop/liquify.c:3372
+#: ../src/iop/liquify.c:3384
 msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
@@ -7762,27 +7787,27 @@ msgstr ""
 "voeg verdraaiingen toe met de gereedschappen\n"
 "verwijder een verdraaiing met de rechtermuisknop"
 
-#: ../src/iop/liquify.c:3374
+#: ../src/iop/liquify.c:3386
 msgid "warps|nodes count:"
 msgstr "verdraaiingen|knooppunten:"
 
-#: ../src/iop/liquify.c:3381
+#: ../src/iop/liquify.c:3393
 msgid "node tool: edit, add and delete nodes"
 msgstr "gereedschap knooppunt: bewerk, voeg toe en verwijder knooppunten"
 
-#: ../src/iop/liquify.c:3389
+#: ../src/iop/liquify.c:3401
 msgid "curve tool: draw curves"
 msgstr "gereedschap kromme: teken curven"
 
-#: ../src/iop/liquify.c:3397
+#: ../src/iop/liquify.c:3409
 msgid "line tool: draw lines"
 msgstr "gereedschap lijn: teken lijnen"
 
-#: ../src/iop/liquify.c:3405
+#: ../src/iop/liquify.c:3417
 msgid "point tool: draw points"
 msgstr "gereedschap punt: teken punten"
 
-#: ../src/iop/liquify.c:3412
+#: ../src/iop/liquify.c:3424
 msgid ""
 "ctrl-click: add node - right click: remove path\n"
 "ctrl-alt-click: toggle line/curve"
@@ -7790,7 +7815,7 @@ msgstr ""
 "ctrl+klik voegt een knooppunt toe - rechtermuisknop verwijdert pad\n"
 "ctrl-alt-click: schakelt lijn/curve"
 
-#: ../src/iop/liquify.c:3414
+#: ../src/iop/liquify.c:3426
 msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl-click: autosmooth, cusp, smooth, symmetrical - right click to remove"
@@ -7799,23 +7824,23 @@ msgstr ""
 "ctrl+klik: automatisch glad maken, knobbel, glad, symmetrisch - verwijder "
 "met rechtermuisknop"
 
-#: ../src/iop/liquify.c:3417 ../src/iop/liquify.c:3418
+#: ../src/iop/liquify.c:3429 ../src/iop/liquify.c:3430
 msgid "drag to change shape of path"
 msgstr "wijzig vorm van een pad door slepen"
 
-#: ../src/iop/liquify.c:3419
+#: ../src/iop/liquify.c:3431
 msgid "drag to adjust warp radius"
 msgstr "wijzig radius verdraaiingen door slepen"
 
-#: ../src/iop/liquify.c:3420
+#: ../src/iop/liquify.c:3432
 msgid "drag to adjust hardness (center)"
 msgstr "wijzig hardheid door slepen (centrum)"
 
-#: ../src/iop/liquify.c:3421
+#: ../src/iop/liquify.c:3433
 msgid "drag to adjust hardness (feather)"
 msgstr "wijzig hardheid door slepen (doezelaar)"
 
-#: ../src/iop/liquify.c:3422
+#: ../src/iop/liquify.c:3434
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl-click: linear, grow, and shrink"
@@ -7823,22 +7848,22 @@ msgstr ""
 "sleep om de kracht van verdraaiing in te stellen\n"
 "ctrl+klik: lineair, groeien en krimpen"
 
-#: ../src/iop/liquify.c:3440
+#: ../src/iop/liquify.c:3452
 msgctxt "accel"
 msgid "point tool"
 msgstr "gereedschap punt"
 
-#: ../src/iop/liquify.c:3441
+#: ../src/iop/liquify.c:3453
 msgctxt "accel"
 msgid "line tool"
 msgstr "gereedschap lijn"
 
-#: ../src/iop/liquify.c:3442
+#: ../src/iop/liquify.c:3454
 msgctxt "accel"
 msgid "curve tool"
 msgstr "gereedschap curve"
 
-#: ../src/iop/liquify.c:3443
+#: ../src/iop/liquify.c:3455
 msgctxt "accel"
 msgid "node tool"
 msgstr "gereedschap knooppunt"
@@ -8676,10 +8701,6 @@ msgstr "straal verdoezeling"
 #: ../src/iop/retouch.c:2881
 msgid "radius of the selected blur type"
 msgstr "straal van geselecteerd type verdoezeling"
-
-#: ../src/iop/retouch.c:2888
-msgid "mask opacity"
-msgstr "masker bedekking"
 
 #: ../src/iop/retouch.c:2889
 msgid "set the opacity on the selected shape"
@@ -11535,37 +11556,37 @@ msgstr "fotoreeks"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2288
+#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2290
 msgctxt "accel"
 msgid "rate 0"
 msgstr "classificatie 0"
 
-#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2289
+#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2291
 msgctxt "accel"
 msgid "rate 1"
 msgstr "waardering 1"
 
-#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2290
+#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2292
 msgctxt "accel"
 msgid "rate 2"
 msgstr "waardering 2"
 
-#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2291
+#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2293
 msgctxt "accel"
 msgid "rate 3"
 msgstr "waardering 3"
 
-#: ../src/libs/tools/filmstrip.c:174 ../src/views/lighttable.c:2292
+#: ../src/libs/tools/filmstrip.c:174 ../src/views/lighttable.c:2294
 msgctxt "accel"
 msgid "rate 4"
 msgstr "waardering 4"
 
-#: ../src/libs/tools/filmstrip.c:175 ../src/views/lighttable.c:2293
+#: ../src/libs/tools/filmstrip.c:175 ../src/views/lighttable.c:2295
 msgctxt "accel"
 msgid "rate 5"
 msgstr "waardering 5"
 
-#: ../src/libs/tools/filmstrip.c:176 ../src/views/lighttable.c:2294
+#: ../src/libs/tools/filmstrip.c:176 ../src/views/lighttable.c:2296
 msgctxt "accel"
 msgid "rate reject"
 msgstr "waardering afgekeurd"
@@ -11913,7 +11934,7 @@ msgstr ""
 "gamma controle in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
-#: ../src/views/darkroom.c:1627 ../src/views/lighttable.c:2463
+#: ../src/views/darkroom.c:1627 ../src/views/lighttable.c:2465
 msgid "display intent"
 msgstr "toon voornemen"
 
@@ -11921,11 +11942,11 @@ msgstr "toon voornemen"
 msgid "softproof profile"
 msgstr "softproofprofiel"
 
-#: ../src/views/darkroom.c:1643 ../src/views/lighttable.c:2471
+#: ../src/views/darkroom.c:1643 ../src/views/lighttable.c:2473
 msgid "display profile"
 msgstr "weergaveprofiel"
 
-#: ../src/views/darkroom.c:1675 ../src/views/lighttable.c:2492
+#: ../src/views/darkroom.c:1675 ../src/views/lighttable.c:2494
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "toon ICC profielen in %s of %s"
@@ -12077,94 +12098,94 @@ msgid "or add images in the collection module in the left panel"
 msgstr "of importeer afbeeldingen naar de catalogus in het linkerpaneel"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:2297
+#: ../src/views/lighttable.c:2299
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigeer omhoog"
 
-#: ../src/views/lighttable.c:2298
+#: ../src/views/lighttable.c:2300
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigeer omlaag"
 
-#: ../src/views/lighttable.c:2299
+#: ../src/views/lighttable.c:2301
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "volgende pagina"
 
-#: ../src/views/lighttable.c:2300
+#: ../src/views/lighttable.c:2302
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "vorige pagina"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2303
+#: ../src/views/lighttable.c:2305
 msgctxt "accel"
 msgid "scroll up"
 msgstr "blader omhoog"
 
-#: ../src/views/lighttable.c:2304
+#: ../src/views/lighttable.c:2306
 msgctxt "accel"
 msgid "scroll down"
 msgstr "blader omlaag"
 
-#: ../src/views/lighttable.c:2305
+#: ../src/views/lighttable.c:2307
 msgctxt "accel"
 msgid "scroll left"
 msgstr "blader naar links"
 
-#: ../src/views/lighttable.c:2306
+#: ../src/views/lighttable.c:2308
 msgctxt "accel"
 msgid "scroll right"
 msgstr "blader naar rechts"
 
-#: ../src/views/lighttable.c:2307
+#: ../src/views/lighttable.c:2309
 msgctxt "accel"
 msgid "scroll center"
 msgstr "scroll naar middelpunt"
 
-#: ../src/views/lighttable.c:2308
+#: ../src/views/lighttable.c:2310
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "afbeeldingen opnieuw op raster uitlijnen"
 
-#: ../src/views/lighttable.c:2309
+#: ../src/views/lighttable.c:2311
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "omkeren afbeelding"
 
-#: ../src/views/lighttable.c:2310
+#: ../src/views/lighttable.c:2312
 msgctxt "accel"
 msgid "select single image"
 msgstr "selecteer een  afbeelding"
 
 #. Preview key
-#: ../src/views/lighttable.c:2313
+#: ../src/views/lighttable.c:2315
 msgctxt "accel"
 msgid "preview"
 msgstr "voorbeeld"
 
-#: ../src/views/lighttable.c:2314
+#: ../src/views/lighttable.c:2316
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "voorbeeld met focusdetectie"
 
-#: ../src/views/lighttable.c:2315
+#: ../src/views/lighttable.c:2317
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "sticky-voorbeeld"
 
-#: ../src/views/lighttable.c:2316
+#: ../src/views/lighttable.c:2318
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "sticky-voorbeeld met focus detectie"
 
-#: ../src/views/lighttable.c:2317
+#: ../src/views/lighttable.c:2319
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "verlaat sticky-voorbeeld"
 
-#: ../src/views/lighttable.c:2435
+#: ../src/views/lighttable.c:2437
 msgid "set display profile"
 msgstr "kies weergaveprofiel"
 
@@ -12229,6 +12250,12 @@ msgstr ""
 "gebruik van 32-bit builds\n"
 "we adviseren u dringend om over te gaan naar een geschikte 64-bit build\n"
 "anders zult u zeker problemen ervaren die niet kunnen worden opgelost\n"
+
+#~ msgid "mask brightness"
+#~ msgstr "masker helderheid"
+
+#~ msgid "revert log profile (last instance)"
+#~ msgstr "logboekprofiel terugzetten (laatste instantie)"
 
 #~ msgid "enlarge or shrink the computed dynamic range"
 #~ msgstr "vergroot of verklein het berekende dynamisch bereik"

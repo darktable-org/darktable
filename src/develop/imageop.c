@@ -21,6 +21,7 @@
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
+#include "common/exif.h"
 #include "common/dtpthread.h"
 #include "common/imageio_rawspeed.h"
 #include "common/interpolation.h"
@@ -1251,9 +1252,6 @@ static void init_presets(dt_iop_module_so_t *module_so)
 
     if(module_version > old_params_version && module_so->legacy_params != NULL)
     {
-      fprintf(stderr, "[imageop_init_presets] updating '%s' preset '%s' from version %d to version %d\n",
-              module_so->op, name, old_params_version, module_version);
-
       // we need a dt_iop_module_t for legacy_params()
       dt_iop_module_t *module;
       module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
@@ -1285,6 +1283,10 @@ static void init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
+
+      fprintf(stderr, "[imageop_init_presets] updating '%s' preset '%s' from version %d to version %d\nto:'%s'",
+              module_so->op, name, old_params_version, module_version,
+              dt_exif_xmp_encode(new_params, new_params_size, NULL));
 
       // and write the new params back to the database
       sqlite3_stmt *stmt2;

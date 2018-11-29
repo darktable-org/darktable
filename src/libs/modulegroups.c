@@ -374,8 +374,10 @@ static gboolean _lib_modulegroups_set_gui_thread(gpointer user_data)
 
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)params->self->data;
 
+  const int group = _iop_get_group_order(params->group, params->group);
+
   /* if no change just update visibility */
-  if(d->current == params->group)
+  if(d->current == group)
   {
     _lib_modulegroups_update_iop_visibility(params->self);
     free(params);
@@ -411,10 +413,9 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
   for(int k = DT_MODULEGROUP_BASIC; k < DT_MODULEGROUP_SIZE; k++)
   {
     const int gid = _iop_get_group_order(k, k);
-
     if(_lib_modulegroups_test(self, gid, module->groups()))
     {
-      _lib_modulegroups_set(self, gid);
+      _lib_modulegroups_set(self, k);
       return;
     }
   }
@@ -423,7 +424,13 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
 static uint32_t _lib_modulegroups_get(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-  return d->current;
+
+  for(int k = 0; k < DT_MODULEGROUP_SIZE; k++)
+  {
+    if (d->current == _iop_get_group_order(k, k))
+      return k;
+  }
+  return DT_MODULEGROUP_FAVORITES;
 }
 
 #undef PADDING

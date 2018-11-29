@@ -1055,6 +1055,20 @@
 
     </sect2>
 
+    <sect2 status="final" id="contextual_help">
+
+      <title>Contextual help</title>
+
+      <para>
+        A button
+        <inlinegraphic fileref="&icon_contextual_help;" scalefit="1" width="2%" align="center" />
+        located in the upper panel allows you to open the online usermanual for various elements
+        of darktable. Click on this button, then click on the element for which you want help.
+        The related usermanual entry will open in your web browser.
+      </para>
+
+    </sect2>
+
   </sect1>
 
   <sect1 status="final" id="darktable_basic_workflow">

@@ -234,11 +234,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 }
 
 // taken from denoiseprofile.c
-static void add_preset(dt_iop_module_so_t *self, const char *name, const char *pi, const char *bpi, const int blendop_version)
+static void add_preset(dt_iop_module_so_t *self, const char *name,
+                       const char *pi, const int version, const char *bpi, const int blendop_version)
 {
   int len, blen;
   uint8_t *p  = dt_exif_xmp_decode(pi, strlen(pi), &len);
-  assert(len == sizeof(dt_iop_colorbalance_params_t));
   uint8_t *bp = dt_exif_xmp_decode(bpi, strlen(bpi), &blen);
   if(blendop_version != dt_develop_blend_version())
   {
@@ -261,8 +261,7 @@ static void add_preset(dt_iop_module_so_t *self, const char *name, const char *p
   }
 
   if(p && bp)
-    dt_gui_presets_add_with_blendop(name, self->op, self->version(),
-                                    p, len, bp, 1);
+    dt_gui_presets_add_with_blendop(name, self->op, version, p, len, bp, 1);
   free(bp);
   free(p);
 }
@@ -271,10 +270,10 @@ void init_presets(dt_iop_module_so_t *self)
 {
   // these blobs were exported as dtstyle and copied from there:
   add_preset(self, _("split-toning teal-orange (2nd instance)"),
-             "010000009a99593f9eef833fea9d803feee4763f0000803f86b4873fc3c86f3f1867803f9a99993f443d803f2a41823f26037b3f6666663f0000803f00009041",
+             "010000009a99593f9eef833fea9d803feee4763f0000803f86b4873fc3c86f3f1867803f9a99993f443d803f2a41823f26037b3f6666663f0000803f000090410000803f", 3,
              "0500000005000000000020420000000000000000070300020000a040000000000000000000000000000000000000003f0000403f0000803f0000803f0000d83e0000fe3e0000803f0000803f0000d83e0000fe3e0000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f0000000000000000cccc4c3d0000803f3333b33e0000203fc2162c3f176c613f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f", 7);
   add_preset(self, _("split-toning teal-orange (1st instance)"),
-             "010000000000803fa2077d3fd5887f3fc4b7813f3433333fe0416b3f0f36873f0029833f0000803f70767f3f1bf07a3fbacc823f0000403f0000803f00009041",
+             "010000000000803fa2077d3fd5887f3fc4b7813f3433333fe0416b3f0f36873f0029833f0000803f70767f3f1bf07a3fbacc823f0000403f0000803f000090410000803f", 3,
              "0500000005000000000096420000000000000000060300000000a0400000000000000000000000000000000000000000000000000000803f0000803f00000000000000000000013f0000143f00000000000000000000013f0000143f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f0000000000000000cccc4c3d0000803fabaa2a3d5655553ecdcc4c3f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f00000000000000000000803f0000803f", 7);
 }
 
@@ -2387,6 +2386,12 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
 
   g->mode = NULL;
+
+  for (int k=0; k<LEVELS; k++)
+  {
+    g->color_patches_flags[k] = INVALID;
+    g->luma_patches_flags[k] = INVALID;
+  }
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
