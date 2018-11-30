@@ -48,6 +48,7 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "print_settings")) return "print_settings.html#print_settings";
   if(!strcmp(name, "global_toolbox")) return NULL;
   if(!strcmp(name, "global_toolbox_preferences")) return "preferences.html#preferences";
+  if(!strcmp(name, "global_toolbox_help")) return "contextual_help.html#contextual_help";
   if(!strcmp(name, "lighttable_mode")) return "lighttable_chapter.html#lighttable_overview";
   if(!strcmp(name, "module_toolbox")) return NULL;
   if(!strcmp(name, "view_toolbox")) return NULL;
