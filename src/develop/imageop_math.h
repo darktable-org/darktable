@@ -21,7 +21,10 @@
 
 #pragma once
 
+#ifdef HAVE_OPENCL
 #include "CL/cl.h"           // for cl_mem
+#endif
+
 #include "common/image.h"    // for dt_image_t, dt_image_orientation_t
 #include "develop/imageop.h" // for dt_iop_roi_t
 #include <glib.h>            // for inline
