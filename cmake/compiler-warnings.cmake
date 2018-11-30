@@ -4,8 +4,6 @@ include(CheckCXXCompilerFlagAndEnableIt)
 
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wall)
 
-CHECK_COMPILER_FLAG_AND_ENABLE_IT(-fno-strict-aliasing)
-
 if(WIN32)
   # MSYS2 gcc compiler gives false positive warnings for (format (printf, 1, 2) - need to turn off for the time being
   CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-format)
