@@ -78,6 +78,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - CMake 3.4 is now required
 - In order to compile darktable you now need at least gcc-5.0+/clang-3.9+
 - Minimal clang version was bumped from 3.4+ to 3.9+
+- Packagers are advised to pass ```-DRAWSPEED_ENABLE_LTO=ON``` to CMake to enable partial LTO.
 
 ## RawSpeed changes
 
