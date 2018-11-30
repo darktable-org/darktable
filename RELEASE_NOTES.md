@@ -17,10 +17,9 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-- The maintainership of the [RawSpeed library](https://github.com/darktable-org/rawspeed) was transferred to the darktable project. The work on code cleanup, hardening, modernization, simplification and testing is ongoing.
-- Over 1500 commits to darktable+rawspeed since 2.4
-- 252 pull requests handled
-- 232+ issues closed
+- Over 1600 commits to darktable+rawspeed since 2.4
+- 260+ pull requests handled
+- 250+ issues closed
 - Updated user manual is coming soon™
 
 ## The Big Ones
@@ -77,7 +76,20 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 ## Changed Dependencies
 
 - CMake 3.4 is now required
-- In order to compile darktable you now need at least gcc-5.0+/clang-3.4+
+- In order to compile darktable you now need at least gcc-5.0+/clang-3.9+
+- Minimal clang version was bumped from 3.4+ to 3.9+
+
+## RawSpeed changes
+
+- GoPro '.GPR' raws are now supported via new, fast 'VC-5' parallel decompressor
+- Panasonic's new raw compression ('.RW2', GH5s, G9 cameras) is now supported via new fast, parallel 'Panasonic V5' decompressor
+- Panasonic's old (also '.RW2') raw decompressor got rewritten, re-parallelized
+- Phase One ('.IIQ') decompressor got parallelized
+- Nikon NEF 'lossy after split' raw support was recovered
+- Phase One ('.IIQ') Quadrant Correction is now supported
+- Olympus High-Res (uncompressed) raw support
+- Lot's and lot's and lot's of maintenance, sanitization, cleanups, small rewrites/refactoring.
+- NOTE: Canon '.CR3' raws are *NOT* supported as of yet.
 
 ## Camera support, compared to 2.4.0
 
@@ -110,8 +122,8 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Kodak EOS DCS 3
 - Nikon COOLPIX P1000 (12bit-uncompressed)
 - Nikon D2Xs (12bit-compressed, 12bit-uncompressed)
-- Nikon Z 6 (14bit-compressed, 12bit-compressed)
-- Nikon Z 7 (14bit-compressed, 12bit-compressed, 12bit-uncompressed)
+- Nikon Z 6 (except uncompressed raws)
+- Nikon Z 7 (except 14-bit uncompressed raw)
 - Olympus E-PL8
 - Olympus E-PL9
 - Olympus SH-2

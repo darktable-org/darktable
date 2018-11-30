@@ -1,11 +1,11 @@
 * developers:
+Roman Lebedev,
 Pascal Obry,
 Tobias Ellinghaus,
-Roman Lebedev,
 Stefan Schöfegger,
 Peter Budai,
-johannes hanika,
 Ulrich Pegelow,
+johannes hanika,
 Alexandre Prokoudine,
 Aldric Renaudin,
 parafin.
@@ -32,8 +32,8 @@ rawfiner,
 edgardoh,
 Dan Torop,
 Ger Siemerink,
-Maurizio Paglia,
 Matthieu Moy,
+Maurizio Paglia,
 Andreas Schneider,
 Heiko Bauke,
 Rikard Öxler,
@@ -41,5 +41,13 @@ Benoit Brummer,
 Timur I. Davletshin,
 grand-piano,
 phweyland.
+
+* RawSpeed contributors (at least 1 commit):
+Stefan Löffler,
+Stefan Hoffmeister,
+Robert Bieber,
+MacRat,
+Matthieu Volat,
+luz.paz.
 
 And all those of you that made previous releases possible
