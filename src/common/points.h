@@ -584,9 +584,9 @@ inline static void gen_rand_array(struct sfmt_state_t *s, w128_t *array, int siz
 #if defined(__BIG_ENDIAN__) && !defined(__amd64) && !defined(BIG_ENDIAN64)
 #define BIG_ENDIAN64 1
 #endif
-/*#if defined(HAVE_ALTIVEC) && !defined(BIG_ENDIAN64)
+#if defined(HAVE_ALTIVEC) && !defined(BIG_ENDIAN64)
 #define BIG_ENDIAN64 1
-#endif*/
+#endif
 #if defined(ONLY64) && !defined(BIG_ENDIAN64)
 #if defined(__GNUC__)
 #error "-DONLY64 must be specified with -DBIG_ENDIAN64"
