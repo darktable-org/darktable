@@ -51,6 +51,16 @@
 <!ENTITY icon_lighttable_except "images/lighttable_icon_except.png">
 <!ENTITY icon_lighttable_reject "images/lighttable_thumb_reject.png">
 <!ENTITY icon_lighttable_abort "images/lighttable_icon_abort.png">
+<!ENTITY icon_retouch_heal "images/darkroom_module_retouch_heal.png">
+<!ENTITY icon_retouch_clone "images/darkroom_module_retouch_clone.png">
+<!ENTITY icon_retouch_fill "images/darkroom_module_retouch_fill.png">
+<!ENTITY icon_retouch_blur "images/darkroom_module_retouch_blur.png">
+<!ENTITY icon_retouch_display_scale "images/darkroom_module_retouch_display_scale.png">
+<!ENTITY icon_retouch_auto_levels "images/darkroom_module_retouch_auto_levels.png">
+<!ENTITY icon_retouch_cut "images/darkroom_module_retouch_cut.png">
+<!ENTITY icon_retouch_paste "images/darkroom_module_retouch_paste.png">
+<!ENTITY icon_retouch_switch "images/darkroom_module_retouch_switch.png">
+<!ENTITY icon_retouch_mask "images/darkroom_module_retouch_mask.png">
 <!ENTITY shape_brush "images/shape_brush.png">
 <!ENTITY shape_circle "images/shape_circle.png">
 <!ENTITY shape_ellipse "images/shape_ellipse.png">
@@ -63,6 +73,8 @@
 <!ENTITY masks_intersection "images/masks_intersection.png">
 <!ENTITY masks_difference "images/masks_difference.png">
 <!ENTITY masks_exclusion "images/masks_exclusion.png">
+
+
 
 
 

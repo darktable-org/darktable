@@ -1,5 +1,8 @@
 add_subdirectory(external)
 
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-fno-strict-aliasing)
+# do not set it for the external libraries.
+
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
