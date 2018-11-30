@@ -28,6 +28,10 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
+#if defined(__SSE__)
+#include <xmmintrin.h>
+#endif
+
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
 DT_MODULE_INTROSPECTION(1, dt_iop_cacorrect_params_t)
