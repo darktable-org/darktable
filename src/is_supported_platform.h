@@ -37,12 +37,18 @@
 #define DT_SUPPORTED_ARMv8A 0
 #endif
 
+#if defined(__PPC64__)
+#define DT_SUPPORTED_PPC64 1
+#else
+#define DT_SUPPORTED_PPC64 0
+#endif
+
 #if DT_SUPPORTED_X86 && DT_SUPPORTED_ARMv8A
 #error "Looks like hardware platform detection macros are broken?"
 #endif
 
-#if !DT_SUPPORTED_X86 && !DT_SUPPORTED_ARMv8A
-#error "Unfortunately we only work on amd64/x86 (64-bit and maybe 32-bit) and ARMv8-A (64-bit only)."
+#if !DT_SUPPORTED_X86 && !DT_SUPPORTED_ARMv8A && !DT_SUPPORTED_PPC64
+#error "Unfortunately we only work on amd64/x86 (64-bit and maybe 32-bit),ARMv8-A (64-bit only), and PPC64LE (64-bit, little endian only)."
 #endif
 
 #if !DT_SUPPORTED_X86
@@ -57,6 +63,7 @@ if(sizeof(void *) < 8)
 #endif
 #endif
 
+#undef DT_SUPPORTED_PPC64
 #undef DT_SUPPORTED_ARMv8A
 #undef DT_SUPPORTED_X86
 
