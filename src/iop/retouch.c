@@ -2610,13 +2610,14 @@ void gui_init(dt_iop_module_t *self)
                  "shapes are added to the current scale"),
                (char *)NULL);
 
-  g->bt_brush
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g_signal_connect(G_OBJECT(g->bt_brush), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
-  g_object_set(G_OBJECT(g->bt_brush), "tooltip-text", _("add brush"), (char *)NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_brush), bs, bs);
-  gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_brush, FALSE, FALSE, 0);
+  g->bt_edit_masks
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g_signal_connect(G_OBJECT(g->bt_edit_masks), "button-press-event", G_CALLBACK(rt_edit_masks_callback), self);
+  g_object_set(G_OBJECT(g->bt_edit_masks), "tooltip-text", _("show and edit shapes on the current scale"),
+               (char *)NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
+  gtk_widget_set_size_request(GTK_WIDGET(g->bt_edit_masks), bs, bs);
+  gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_edit_masks, FALSE, FALSE, 0);
 
   g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
@@ -2641,14 +2642,13 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_circle), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_circle, FALSE, FALSE, 0);
 
-  g->bt_edit_masks
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g_signal_connect(G_OBJECT(g->bt_edit_masks), "button-press-event", G_CALLBACK(rt_edit_masks_callback), self);
-  g_object_set(G_OBJECT(g->bt_edit_masks), "tooltip-text", _("show and edit shapes on the current scale"),
-               (char *)NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_edit_masks), bs, bs);
-  gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_edit_masks, FALSE, FALSE, 0);
+  g->bt_brush
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g_signal_connect(G_OBJECT(g->bt_brush), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
+  g_object_set(G_OBJECT(g->bt_brush), "tooltip-text", _("add brush"), (char *)NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), FALSE);
+  gtk_widget_set_size_request(GTK_WIDGET(g->bt_brush), bs, bs);
+  gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_brush, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(hbox_shapes), GTK_WIDGET(g->label_form), FALSE, TRUE, 0);
 
@@ -2686,8 +2686,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_clone), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_clone), FALSE);
 
-  gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_blur, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_fill, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_blur, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_clone, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_heal, FALSE, FALSE, 0);
 
@@ -2911,15 +2911,6 @@ void gui_init(dt_iop_module_t *self)
   g_object_set(g->sl_mask_opacity, "tooltip-text", _("set the opacity on the selected shape"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->sl_mask_opacity), "value-changed", G_CALLBACK(rt_mask_opacity_callback), self);
 
-  // add all the controls to the iop
-  GtkWidget *lbl_rt_tools = dt_ui_section_label_new(_("retouch tools"));
-  gtk_box_pack_start(GTK_BOX(self->widget), lbl_rt_tools, FALSE, TRUE, 0);
-
-  // shapes toolbar
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox_shapes, TRUE, TRUE, 0);
-  // algorithms toolbar
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox_algo, TRUE, TRUE, 0);
-
   // wavelet decompose
   GtkWidget *lbl_wd = dt_ui_section_label_new(_("wavelet decompose"));
   gtk_box_pack_start(GTK_BOX(self->widget), lbl_wd, FALSE, TRUE, 0);
@@ -2933,6 +2924,15 @@ void gui_init(dt_iop_module_t *self)
 
   // preview single scale
   gtk_box_pack_start(GTK_BOX(self->widget), g->vbox_preview_scale, TRUE, TRUE, 0);
+
+  // add all the controls to the iop
+  GtkWidget *lbl_rt_tools = dt_ui_section_label_new(_("retouch tools"));
+  gtk_box_pack_start(GTK_BOX(self->widget), lbl_rt_tools, FALSE, TRUE, 0);
+
+  // shapes toolbar
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox_shapes, TRUE, TRUE, 0);
+  // algorithms toolbar
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox_algo, TRUE, TRUE, 0);
 
   // shapes
   GtkWidget *lbl_shapes = dt_ui_section_label_new(_("shapes"));
