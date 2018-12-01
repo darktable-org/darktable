@@ -33,6 +33,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - make it possible to change the cropped area in the perspective correction module
 - the mask blur has been complemented with a guided-filter to fine tune it
 - color balance module has two new modes based on ProPhotoRGB and HSL
+- Experimental support for PPC64le architecture (OpenCL support needs to be disabled, `-DUSE_OPENCL=OFF`)
 
 ## New Features And Changes
 
