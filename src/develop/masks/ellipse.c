@@ -621,8 +621,8 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
       const float ellipse_border = dt_conf_get_float("plugins/darkroom/spots/ellipse_border");
       const float rotation = dt_conf_get_float("plugins/darkroom/spots/ellipse_rotation");
       const int flags = dt_conf_get_int("plugins/darkroom/spots/ellipse_flags");
-      ellipse->radius[0] = MAX(0.01f, MIN(0.5f, a));
-      ellipse->radius[1] = MAX(0.01f, MIN(0.5f, b));
+      ellipse->radius[0] = MAX(0.001f, MIN(0.5f, a));
+      ellipse->radius[1] = MAX(0.001f, MIN(0.5f, b));
       ellipse->flags = flags;
       ellipse->rotation = rotation;
       const float min_radius = fmin(ellipse->radius[0], ellipse->radius[1]);
@@ -645,8 +645,8 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
       const float ellipse_border = dt_conf_get_float("plugins/darkroom/masks/ellipse/border");
       const float rotation = dt_conf_get_float("plugins/darkroom/masks/ellipse/rotation");
       const int flags = dt_conf_get_int("plugins/darkroom/masks/ellipse/flags");
-      ellipse->radius[0] = MAX(0.01f, MIN(0.5f, a));
-      ellipse->radius[1] = MAX(0.01f, MIN(0.5f, b));
+      ellipse->radius[0] = MAX(0.001f, MIN(0.5f, a));
+      ellipse->radius[1] = MAX(0.001f, MIN(0.5f, b));
       ellipse->flags = flags;
       ellipse->rotation = rotation;
       const float min_radius = fmin(ellipse->radius[0], ellipse->radius[1]);
