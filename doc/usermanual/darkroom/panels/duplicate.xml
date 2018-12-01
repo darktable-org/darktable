@@ -1,0 +1,42 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+                <!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+                %darktable_dtd;
+                ]>
+<sect2 status="final" id="duplicate">
+
+  <title>Duplicate manager</title>
+
+  <indexterm>
+    <primary>darkroom panels</primary>
+    <secondary>duplicate</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>duplicate</primary>
+  </indexterm>
+
+  <informaltable frame="none">
+    <tgroup cols="2" colsep="0" rowsep="0">
+      <colspec colwidth="6*"/>
+      <colspec colwidth="4*"/>
+      <tbody>
+        <row>
+          <entry>
+            The duplicate manager lists all versions (see duplicate <xref linkend="selected_images"/>)
+            of your image with their preview thumbnails.
+            Single click on a thumbnail to temporarily show the related version inside the center view.
+            Double click to completely switch to this version.
+            Top-right buttons let you create new duplicates. Either a 'virgin' version, or an
+            exact duplicate of the current image.
+            For your convenience, you can also set a name to each versions.
+          </entry>
+          <entry>
+            <graphic fileref="darkroom/images/panel_duplicate.png" scalefit="1" width="80%" align="center" />
+          </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+
+</sect2>
