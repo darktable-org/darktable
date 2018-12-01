@@ -693,6 +693,10 @@ void gui_reset(struct dt_iop_module_t *self)
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
 
+  dt_bauhaus_combobox_set(g->scale, 0); // linear
+  g->loglogscale = 0;
+  g->semilog = 0;
+
   g->channel = (tonecurve_channel_t)ch_L;
   gtk_widget_queue_draw(self->widget);
 }
