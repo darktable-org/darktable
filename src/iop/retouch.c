@@ -671,6 +671,15 @@ static void rt_masks_form_change_opacity(dt_iop_module_t *self, int formid, floa
   }
 }
 
+static float rt_masks_form_get_opacity(dt_iop_module_t *self, int formid)
+{
+  dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, formid);
+  if(grpt)
+    return grpt->opacity;
+  else
+    return 1.0f;
+}
+
 static void rt_paste_forms_from_scale(dt_iop_retouch_params_t *p, const int source_scale, const int dest_scale)
 {
   if(source_scale != dest_scale && source_scale >= 0 && dest_scale >= 0)
@@ -2046,6 +2055,19 @@ static void rt_mask_opacity_callback(GtkWidget *slider, dt_iop_module_t *self)
   }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+void gui_post_expose (struct dt_iop_module_t *self,
+                      cairo_t *cr,
+                      int32_t width,
+                      int32_t height,
+                      int32_t pointerx,
+                      int32_t pointery)
+{
+  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
+
+  if(rt_get_selected_shape_id() > 0)
+    dt_bauhaus_slider_set(g->sl_mask_opacity, rt_masks_form_get_opacity(self, rt_get_selected_shape_id()));
 }
 
 static gboolean rt_edit_masks_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
