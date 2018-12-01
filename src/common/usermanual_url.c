@@ -42,6 +42,7 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "history")) return "history.html#history";
   if(!strcmp(name, "colorpicker")) return "global_color_picker.html#global_color_picker";
   if(!strcmp(name, "masks")) return "mask_manager.html#mask_manager";
+  if(!strcmp(name, "duplicate")) return "duplicate.html#duplicate";
   if(!strcmp(name, "modulelist")) return "more_modules.html#more_modules";
   if(!strcmp(name, "location")) return "find_location.html#find_location";
   if(!strcmp(name, "map_settings")) return "map_settings.html#map_settings";
@@ -128,6 +129,5 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "temperature")) return "modules.html#whitebalance";
   if(!strcmp(name, "invert")) return "modules.html#invert";
   if(!strcmp(name, "rawprepare")) return "modules.html#raw_black_white_point";
-
   return NULL;
 }
