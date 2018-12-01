@@ -2889,15 +2889,6 @@ void gui_init(dt_iop_module_t *self)
   g_object_set(g->sl_mask_opacity, "tooltip-text", _("set the opacity on the selected shape"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->sl_mask_opacity), "value-changed", G_CALLBACK(rt_mask_opacity_callback), self);
 
-  // add all the controls to the iop
-  GtkWidget *lbl_rt_tools = dt_ui_section_label_new(_("retouch tools"));
-  gtk_box_pack_start(GTK_BOX(self->widget), lbl_rt_tools, FALSE, TRUE, 0);
-
-  // shapes toolbar
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox_shapes, TRUE, TRUE, 0);
-  // algorithms toolbar
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox_algo, TRUE, TRUE, 0);
-
   // wavelet decompose
   GtkWidget *lbl_wd = dt_ui_section_label_new(_("wavelet decompose"));
   gtk_box_pack_start(GTK_BOX(self->widget), lbl_wd, FALSE, TRUE, 0);
@@ -2911,6 +2902,15 @@ void gui_init(dt_iop_module_t *self)
 
   // preview single scale
   gtk_box_pack_start(GTK_BOX(self->widget), g->vbox_preview_scale, TRUE, TRUE, 0);
+
+  // add all the controls to the iop
+  GtkWidget *lbl_rt_tools = dt_ui_section_label_new(_("retouch tools"));
+  gtk_box_pack_start(GTK_BOX(self->widget), lbl_rt_tools, FALSE, TRUE, 0);
+
+  // shapes toolbar
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox_shapes, TRUE, TRUE, 0);
+  // algorithms toolbar
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox_algo, TRUE, TRUE, 0);
 
   // shapes
   GtkWidget *lbl_shapes = dt_ui_section_label_new(_("shapes"));
