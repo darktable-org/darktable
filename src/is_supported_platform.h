@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 Roman Lebedev.
+    copyright (c) 2016-2018 Roman Lebedev.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,7 +48,8 @@
 #endif
 
 #if !DT_SUPPORTED_X86 && !DT_SUPPORTED_ARMv8A && !DT_SUPPORTED_PPC64
-#error "Unfortunately we only work on amd64/x86 (64-bit and maybe 32-bit),ARMv8-A (64-bit only), and PPC64LE (64-bit, little endian only)."
+#error                                                                                                            \
+    "Unfortunately we only work on amd64/x86 (64-bit and maybe 32-bit); and ARMv8-A, PPC64 (64-bit little-endian only)."
 #endif
 
 #if !DT_SUPPORTED_X86
