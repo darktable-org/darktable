@@ -53,36 +53,8 @@
     </para>
 
     <para>
-      The GUI is divided in three main sections: retouch tools, wavelet decompose and shapes.
+      The GUI is divided in three main sections: wavelet decompose, retouch tools and shapes.
     </para>
-
-    <sect5>
-      <title>retouch tools section</title>
-      <para>
-        The shapes toolbar allows to add new shapes to the image. Shapes creation/editing
-        behaves like in the spot removal module. In addition, by Ctrl+click on any shape button,
-        the <emphasis>continuous add mode</emphasis> is activated. Once a shape is added,
-        darktable will remain in creation mode, allowing to add another shape of the same type.
-        To change the shape type to be added Ctrl+click on a different shape button to continue
-        on continuous add mode or plain click to add a single shape. To leave the continuous add
-        mode right click on any clear area of the image.
-      </para>
-      <para>
-        The algorithms toolbar allows to select between heal (
-        <inlinegraphic fileref="&icon_retouch_heal;" scalefit="1" width="2%" align="center" />
-        ), clone (
-        <inlinegraphic fileref="&icon_retouch_clone;" scalefit="1" width="2%" align="center" />
-        ), fill (
-        <inlinegraphic fileref="&icon_retouch_fill;" scalefit="1" width="2%" align="center" />
-        ) and blur (
-        <inlinegraphic fileref="&icon_retouch_blur;" scalefit="1" width="2%" align="center" />
-        ) algorithms. Before actually creating a shape the algorithm must be
-        selected&nbsp;&ndash; once a shape is created the algorithm cannot be changed.
-      </para>
-      <para>
-        Any combination of shape type and algorithm can be added to the image.
-      </para>
-    </sect5>
 
     <sect5>
       <title>wavelet decompose section</title>
@@ -125,12 +97,12 @@
       <para>
         The top slider adjusts the <emphasis>merge scale</emphasis> feature. This setting allows
         to apply a common edit on multiple consecutive scales within a group starting from the
-        scale selected by the slider to the highest scale (not including the residual image). If
-        the slider is set to 3 and the maximum scale is 5 then all edits that are added to scale
-        5 will be applied to scales 3 to 5. Edits added to scale 4 will be applied to scales 3
-        and 4, and edits added to scale 3 will be applied only to scale 3. <emphasis>Merged
-        scales</emphasis> are represented by a green-yellow color. A value of zero means that
-        the merge feature is not used.
+        highest scale (not including the residual image) down to the one selected by this
+        slider. If the slider is set to 3 and the maximum scale is 5 then all edits that are
+        added to scale 5 will be applied to scales 3 to 5. Edits added to scale 4 will be
+        applied to scales 3 and 4, and edits added to scale 3 will be applied only to scale 3.
+        <emphasis>Merged scales</emphasis> are represented by a green-yellow color. A value of
+        zero means that the merge feature is not used.
       </para>
       <para>
         The display wavelet scale button (
@@ -169,6 +141,34 @@
         ) works similar to the one on the blend module, but it will display only the shapes on
         the current scale. This option and display mask on the blend module cannot be set at the
         same time.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>retouch tools section</title>
+      <para>
+        The shapes toolbar allows to add new shapes to the image. Shapes creation/editing
+        behaves like in the spot removal module. In addition, by Ctrl+click on any shape button,
+        the <emphasis>continuous add mode</emphasis> is activated. Once a shape is added,
+        darktable will remain in creation mode, allowing to add another shape of the same type.
+        To change the shape type to be added Ctrl+click on a different shape button to continue
+        on continuous add mode or plain click to add a single shape. To leave the continuous add
+        mode right click on any clear area of the image.
+      </para>
+      <para>
+        The algorithms toolbar allows to select between heal (
+        <inlinegraphic fileref="&icon_retouch_heal;" scalefit="1" width="2%" align="center" />
+        ), clone (
+        <inlinegraphic fileref="&icon_retouch_clone;" scalefit="1" width="2%" align="center" />
+        ), fill (
+        <inlinegraphic fileref="&icon_retouch_fill;" scalefit="1" width="2%" align="center" />
+        ) and blur (
+        <inlinegraphic fileref="&icon_retouch_blur;" scalefit="1" width="2%" align="center" />
+        ) algorithms. Before actually creating a shape the algorithm must be
+        selected&nbsp;&ndash; once a shape is created the algorithm cannot be changed.
+      </para>
+      <para>
+        Any combination of shape type and algorithm can be added to the image.
       </para>
     </sect5>
 
