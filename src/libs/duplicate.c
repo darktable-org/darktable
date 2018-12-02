@@ -353,11 +353,11 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *bt = gtk_label_new(_("existing duplicates"));
   gtk_box_pack_start(GTK_BOX(hb), bt, FALSE, FALSE, 0);
   bt = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_ACTIVE | CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g_object_set(G_OBJECT(bt), "tooltip-text", _("create a 'virgin' duplicate of the image without any development"), (char *)NULL);
+  g_object_set(G_OBJECT(bt), "tooltip-text", _("duplicate image without its history"), (char *)NULL);
   g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_lib_duplicate_new_clicked_callback), self);
   gtk_box_pack_end(GTK_BOX(hb), bt, FALSE, FALSE, 0);
   bt = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g_object_set(G_OBJECT(bt), "tooltip-text", _("create a duplicate of the image with same history stack"), (char *)NULL);
+  g_object_set(G_OBJECT(bt), "tooltip-text", _("duplicate image with the same history stack"), (char *)NULL);
   g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_lib_duplicate_duplicate_clicked_callback), self);
   gtk_box_pack_end(GTK_BOX(hb), bt, FALSE, FALSE, 0);
 
