@@ -659,6 +659,10 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_focus_distance = (FocusDistanceLower + FocusDistanceUpper) / 200;
       }
     }
+    else if(FIND_EXIF_TAG("Exif.CanonSi.SubjectDistance"))
+    {
+      img->exif_focus_distance = pos->toFloat() / 100.0;
+    }
     else if((pos = Exiv2::subjectDistance(exifData)) != exifData.end() && pos->size())
     {
       img->exif_focus_distance = pos->toFloat();
