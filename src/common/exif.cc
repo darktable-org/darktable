@@ -648,15 +648,23 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
     else if(EXIV2_MAKE_VERSION(0,25,0) <= Exiv2::versionNumber() && FIND_EXIF_TAG("Exif.CanonFi.FocusDistanceUpper"))
     {
-      float FocusDistanceUpper = pos->toFloat();
-      if(FocusDistanceUpper <= 0.0f || FocusDistanceUpper >= 0xffff)
+      const float FocusDistanceUpper = pos->toFloat();
+      if(FocusDistanceUpper <= 0.0f || (int)FocusDistanceUpper >= 0xffff)
       {
         img->exif_focus_distance = 0.0f;
       }
-      else if(FIND_EXIF_TAG("Exif.CanonFi.FocusDistanceLower"))
+      else
       {
-        float FocusDistanceLower = pos->toFloat();
-        img->exif_focus_distance = (FocusDistanceLower + FocusDistanceUpper) / 200;
+        img->exif_focus_distance = FocusDistanceUpper / 100.0;
+        if(FIND_EXIF_TAG("Exif.CanonFi.FocusDistanceLower"))
+        {
+          const float FocusDistanceLower = pos->toFloat();
+          if(FocusDistanceLower > 0.0f && (int)FocusDistanceLower < 0xffff)
+          {
+            img->exif_focus_distance += FocusDistanceLower / 100.0;
+            img->exif_focus_distance /= 2.0;
+          }
+        }
       }
     }
     else if(FIND_EXIF_TAG("Exif.CanonSi.SubjectDistance"))
