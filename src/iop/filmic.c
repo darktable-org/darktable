@@ -27,6 +27,7 @@
 #include "develop/imageop_math.h"
 #include "dtgtk/button.h"
 #include "dtgtk/drawingarea.h"
+#include "dtgtk/expander.h"
 #include "dtgtk/paint.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -128,6 +129,8 @@ typedef struct dt_iop_filmic_gui_data_t
   GtkWidget *balance;
   GtkWidget *interpolator;
   GtkWidget *preserve_color;
+  GtkWidget *extra_expander;
+  GtkWidget *extra_toggle;
   int which_colorpicker;
   dt_iop_color_picker_t color_picker;
   GtkDrawingArea *area;
@@ -1290,6 +1293,9 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->interpolator, p->interpolator);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->preserve_color), p->preserve_color);
 
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander),
+                              gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->extra_toggle)));
+
   gtk_widget_queue_draw(self->widget);
 
 }
@@ -1352,6 +1358,10 @@ void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), FALSE);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->extra_toggle), dtgtk_cairo_paint_solid_arrow,
+                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_RIGHT, NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->extra_toggle), FALSE);
 }
 
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
@@ -1400,6 +1410,16 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
+}
+
+static void _extra_options_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->extra_toggle));
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), active);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->extra_toggle), dtgtk_cairo_paint_solid_arrow,
+                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_RIGHT), NULL);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -1534,13 +1554,26 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->preserve_color), "toggled", G_CALLBACK(preserve_color_callback), self);
 
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("destination/display")), FALSE, FALSE, 5);
+  // add collapsable section for those extra options that are generally not to be used
 
+  GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
+  GtkWidget *destdisp = dt_ui_section_label_new(_("destination/display"));
+  g->extra_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_RIGHT, NULL);
+  gtk_widget_set_size_request(g->extra_toggle,  DT_PIXEL_APPLY_DPI(15), DT_PIXEL_APPLY_DPI(15));
+  GtkWidget *extra_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  gtk_box_pack_start(GTK_BOX(destdisp_head), destdisp, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(destdisp_head), g->extra_toggle, FALSE, FALSE, 0);
+  gtk_widget_set_visible(extra_options, FALSE);
+  g->extra_expander = dtgtk_expander_new(destdisp_head, extra_options);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), TRUE);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->extra_expander, FALSE, FALSE, 0);
+
+  g_signal_connect(G_OBJECT(g->extra_toggle), "toggled", G_CALLBACK(_extra_options_button_changed),  (gpointer)self);
 
   // Black slider
   g->black_point_target = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1, p->black_point_target, 2);
   dt_bauhaus_widget_set_label(g->black_point_target, NULL, _("black luminance"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->black_point_target, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(extra_options), g->black_point_target, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->black_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->black_point_target, _("luminance of output pure black, "
                                                         "this should be 0%\nexcept if you want a faded look"));
@@ -1549,7 +1582,7 @@ void gui_init(dt_iop_module_t *self)
   // grey_point_source slider
   g->grey_point_target = dt_bauhaus_slider_new_with_range(self, 0.1, 50., 0.5, p->grey_point_target, 2);
   dt_bauhaus_widget_set_label(g->grey_point_target, NULL, _("middle grey destination"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->grey_point_target, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(extra_options), g->grey_point_target, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->grey_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->grey_point_target, _("midde grey value of the target display or color space.\n"
                                                       "you should never touch that unless you know what you are doing."));
@@ -1558,7 +1591,7 @@ void gui_init(dt_iop_module_t *self)
   // White slider
   g->white_point_target = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1., p->white_point_target, 2);
   dt_bauhaus_widget_set_label(g->white_point_target, NULL, _("white luminance"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->white_point_target, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(extra_options), g->white_point_target, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->white_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->white_point_target, _("luminance of output pure white, "
                                                         "this should be 100%\nexcept if you want a faded look"));
@@ -1567,7 +1600,7 @@ void gui_init(dt_iop_module_t *self)
   // power/gamma slider
   g->output_power = dt_bauhaus_slider_new_with_range(self, 1.0, 2.4, 0.1, p->output_power, 2);
   dt_bauhaus_widget_set_label(g->output_power, NULL, _("destination power factor"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->output_power, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(extra_options), g->output_power, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(g->output_power, _("power or gamma of the transfer function of the display or color space.\n"
                                                   "you should never touch that unless you know what you are doing."));
   g_signal_connect(G_OBJECT(g->output_power), "value-changed", G_CALLBACK(output_power_callback), self);
