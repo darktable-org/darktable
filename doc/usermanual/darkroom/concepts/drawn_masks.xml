@@ -78,6 +78,12 @@
     </para>
 
     <para>
+      Independent of the specific shape you can <emphasis>scroll</emphasis> to change the size
+      of the shape, <emphasis>shift+scroll</emphasis> to change the feather of the shape and
+      <emphasis>ctrl+scroll</emphasis> to change the opacity of the shape.
+    </para>
+
+    <para>
       If you <emphasis>ctrl-click</emphasis> on the edit mode symbol you enter a restricted edit
       mode. Certain actions like dragging a complete shape or changing its size are blocked.
       Only finetuning changes like dragging a node are allowed.
@@ -242,7 +248,8 @@
       <para>
         The general principle is the same as for the circle shape. In addition you get four
         nodes on the ellipse line. <emphasis>Click</emphasis> on the nodes to adjust the
-        ellipse's eccentricity. <emphasis>Ctrl-click</emphasis> on them to rotate the ellipse.
+        ellipse's eccentricity. <emphasis>Ctrl-click</emphasis> on them to rotate the ellipse
+        or, alternatively, use <emphasis>shift+ctrl+scroll</emphasis>.
         <emphasis>Shift-click</emphasis> in the shape to toggle the gradual decay between
         equidistant and proportional mode.
       </para>
