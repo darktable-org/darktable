@@ -2176,14 +2176,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(bd->bottom_box), TRUE, TRUE, 0);
     dt_gui_add_help_link(GTK_WIDGET(bd->bottom_box), "combined_masks.html");
 
-    if (bd->csp != iop_cs_Lab)
-    {
-      gtk_widget_set_sensitive(bd->masks_feathering_guide_combo, 0);
-      gtk_widget_set_sensitive(bd->feathering_radius_slider, 0);
-      gtk_widget_set_sensitive(bd->brightness_slider, 0);
-      gtk_widget_set_sensitive(bd->contrast_slider, 0);
-    }
-
     bd->blend_inited = 1;
     gtk_widget_queue_draw(GTK_WIDGET(iopw));
     dt_iop_gui_update_blending(module);
