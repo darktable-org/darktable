@@ -2067,7 +2067,11 @@ void gui_post_expose (struct dt_iop_module_t *self,
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
   if(rt_get_selected_shape_id() > 0)
+  {
+    darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->sl_mask_opacity, rt_masks_form_get_opacity(self, rt_get_selected_shape_id()));
+    darktable.gui->reset = 0;
+  }
 }
 
 static gboolean rt_edit_masks_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
