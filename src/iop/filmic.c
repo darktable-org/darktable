@@ -943,10 +943,36 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
   const int combo = dt_bauhaus_combobox_get(widget);
-  if(combo == 0) p->interpolator = CUBIC_SPLINE;
-  if(combo == 1) p->interpolator = CATMULL_ROM;
-  if(combo == 2) p->interpolator = MONOTONE_HERMITE;
-  if(combo == 3) p->interpolator = 3; // Optimized
+
+  switch (combo)
+  {
+    case CUBIC_SPLINE:
+    {
+      p->interpolator = CUBIC_SPLINE;
+      break;
+    }
+    case CATMULL_ROM:
+    {
+      p->interpolator = CATMULL_ROM;
+      break;
+    }
+    case MONOTONE_HERMITE:
+    {
+      p->interpolator = MONOTONE_HERMITE;
+      break;
+    }
+    case 3:
+    {
+      p->interpolator = 3; // Optimized
+      break;
+    }
+    default:
+    {
+      p->interpolator = CUBIC_SPLINE;
+      break;
+    }
+  }
+
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -1157,7 +1183,12 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   if (p->interpolator != 3)
   {
     // Compute the interpolation
-    curve = dt_draw_curve_new(0.0, 1.0, p->interpolator);
+
+    // Catch bad interpolators exceptions
+    int interpolator = 0;
+    if (p->interpolator > 0 && p->interpolator < 3) interpolator = p->interpolator;
+
+    curve = dt_draw_curve_new(0.0, 1.0, interpolator);
     for(int k = 0; k < nodes; k++) (void)dt_draw_curve_add_point(curve, x[k], y[k]);
 
     // Compute the LUT
@@ -1180,9 +1211,10 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
     dt_draw_curve_destroy(curve);
 
     // Average both LUT
+    /*
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) shared(table, table_temp, res) schedule(static)
-#endif
+#endif*/
     for(int k = 0; k < res; k++) table[k] = (table[k] + table_temp[k]) / 2.0f;
   }
 
