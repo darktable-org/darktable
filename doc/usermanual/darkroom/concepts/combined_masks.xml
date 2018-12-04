@@ -1,9 +1,9 @@
-<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect2 status="final" id="combined_masks">
+<sect3 status="final" id="combined_masks">
 
   <title>Combining drawn and parametric masks</title>
 
@@ -19,14 +19,15 @@
     theoretical details just jump down where we describe two typical use cases.
   </para>
 
-  <sect3 id="combined_masks_overview">
+  <sect4 id="combined_masks_overview">
 
     <title>Overview</title>
 
     <para>
       There are two main elements which control how individual masks are combined: the polarity
       setting of each individual mask, defined by the plus or minus buttons, and the setting in
-      the <quote>combine masks</quote> combobox (see <xref linkend="blending"/>).
+      the <quote>combine masks</quote> combobox (see
+      <xref linkend="blending_usage_mask_combination_inversion_combine"/>).
     </para>
 
     <para>
@@ -74,9 +75,9 @@
       inverted</emphasis> or <emphasis>inclusive &amp; inverted</emphasis> options.
     </para>
 
-  </sect3>
+  </sect4>
 
-  <sect3 id="combined_masks_usage">
+  <sect4 id="combined_masks_usage">
 
     <title>Usage</title>
 
@@ -106,10 +107,8 @@
       This gives two typical use cases:
     </para>
 
-    <sect4 id="combined_masks_usage_inclusive">
-
+    <sect5 id="combined_masks_usage_inclusive">
       <title>Inclusive mode</title>
-
       <para>
         For this mode you set the <quote>combine masks</quote> combobox to
         <emphasis>inclusive</emphasis> and make sure that all polarity buttons of all the
@@ -119,13 +118,10 @@
         selected. You now adjust the parametric mask sliders to bring more and more pixels into
         the selection or you draw shapes on the canvas to select specific areas of your image.
       </para>
+    </sect5>
 
-    </sect4>
-
-    <sect4 id="combined_masks_usage_exclusive">
-
+    <sect5 id="combined_masks_usage_exclusive">
       <title>Exclusive mode</title>
-
       <para>
         In the opposite case you set the <quote>combine masks</quote> combobox to
         <emphasis>exclusive</emphasis> and make sure that all polarity buttons are set to
@@ -135,23 +131,20 @@
         now gradually change the parametric mask sliders to exclude parts of your image as
         needed or you directly draw shapes on the canvas to specifically exclude these areas.
       </para>
-
       <para>
         For your convenience you find in the parametric masks GUI a
         <inlinegraphic fileref="&icon_module_invert;" scalefit="1" width="2%" align="center" />
         toggle button that inverts all channel polarities and toggles between inclusive and
         exclusive mode in the <quote>combine masks</quote> combobox.
       </para>
-
       <para>
         For novice users it is recommended to stick to these two use cases. This implies that
         you should decide beforehand how you want to construct your mask. Advanced users will
         find their way to take advantage of the many possible combinations of polarities and
         mask combination modes.
       </para>
+    </sect5>
 
-    </sect4>
+  </sect4>
 
-  </sect3>
-
-</sect2>
+</sect3>
