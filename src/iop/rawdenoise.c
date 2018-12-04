@@ -774,7 +774,7 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   PangoRectangle ink;
   PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-  pango_font_description_set_absolute_size(desc, (.06 * height) * PANGO_SCALE);
+  pango_font_description_set_absolute_size(desc, (.08 * height) * PANGO_SCALE);
   layout = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(layout, desc);
   cairo_set_source_rgb(cr, .1, .1, .1);
@@ -977,7 +977,7 @@ void gui_init(dt_iop_module_t *self)
 
   c->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
 
   gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->area), FALSE, FALSE, 0);
