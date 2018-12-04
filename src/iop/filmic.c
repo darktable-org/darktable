@@ -1066,11 +1066,11 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   int TOE_LOST = FALSE;
   int SHOULDER_LOST = FALSE;
 
-  if (toe_log == grey_log || toe_log == 0.0f || toe_display  == 0.0f || toe_display == grey_display)
+  if ((toe_log == grey_log && toe_display == grey_display) || (toe_log == 0.0f && toe_display  == 0.0f))
   {
     TOE_LOST = TRUE;
   }
-  if (shoulder_log == grey_log || shoulder_log == 1.0f || shoulder_display == grey_display || shoulder_display == 1.0f)
+  if ((shoulder_log == grey_log && shoulder_display == grey_display) || (shoulder_log == 1.0f && shoulder_display == 1.0f))
   {
     SHOULDER_LOST = TRUE;
   }
@@ -1184,9 +1184,9 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   {
     // Compute the interpolation
 
-    // Catch bad interpolators exceptions
-    int interpolator = 0;
-    if (p->interpolator > 0 && p->interpolator < 3) interpolator = p->interpolator;
+    // Catch bad interpolators exceptions (errors in saved params)
+    int interpolator = CUBIC_SPLINE;
+    if (p->interpolator > CUBIC_SPLINE && p->interpolator <= MONOTONE_HERMITE) interpolator = p->interpolator;
 
     curve = dt_draw_curve_new(0.0, 1.0, interpolator);
     for(int k = 0; k < nodes; k++) (void)dt_draw_curve_add_point(curve, x[k], y[k]);
