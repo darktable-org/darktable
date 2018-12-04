@@ -2615,7 +2615,7 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int m
       if(mask_type & DT_MASKS_CIRCLE)
       {
         const float radius = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_size"));
-        
+
         gui->posx_source = (radius * iwd);
         gui->posy_source = -(radius * iht);
       }
@@ -2623,7 +2623,7 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int m
       {
         const float radius_a = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_a");
         const float radius_b = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_b");
-        
+
         gui->posx_source = (radius_a * iwd);
         gui->posy_source = -(radius_b * iht);
       }
@@ -2639,7 +2639,7 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int m
       }
       else
         fprintf(stderr, "[dt_masks_set_source_pos_initial_value] unsuported masks type when calculating source position initial value\n");
-      
+
       float pts[2] = { pzx * wd + gui->posx_source, pzy * ht + gui->posy_source };
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
@@ -2654,7 +2654,7 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int m
 
       form->source[0] = pts[0] / iwd;
       form->source[1] = pts[1] / iht;
-      
+
       gui->posx_source = gui->posx_source - pzx * wd;
       gui->posy_source = gui->posy_source - pzy * ht;
     }
@@ -2666,7 +2666,7 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int m
     // original pos was already defined and relative value calculated, just use it
     float pts[2] = { pzx * wd + gui->posx_source, pzy * ht + gui->posy_source };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    
+
     form->source[0] = pts[0] / iwd;
     form->source[1] = pts[1] / iht;
   }
