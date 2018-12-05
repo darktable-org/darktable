@@ -1568,6 +1568,7 @@ void gui_init(dt_iop_module_t *self)
   // saturation slider
   g->saturation = dt_bauhaus_slider_new_with_range(self, 0., 200., 0.1, (powf(10.0f, p->saturation/100.0f) - 1.0f) / 9.0f *100.0f, 2);
   dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
+  dt_bauhaus_slider_enable_soft_boundaries(g->saturation, 0.0, 1000.0);
   dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output, if the contrast adjustment\n"
