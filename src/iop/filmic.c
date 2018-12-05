@@ -1025,22 +1025,15 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   // nodes for mapping from log encoding to desired target luminance
   // X coordinates
   float toe_log = grey_log - latitude/dynamic_range * fabsf(black_source/dynamic_range);
-
-  toe_log = CLAMP(toe_log, 0.0f, grey_log);
-
   float shoulder_log = grey_log + latitude/dynamic_range * white_source/dynamic_range;
 
-  shoulder_log = CLAMP(shoulder_log, grey_log, 1.0f);
 
   // interception
   float linear_intercept = grey_display - (contrast * grey_log);
 
   // y coordinates
   float toe_display = (toe_log * contrast + linear_intercept);
-  toe_display = CLAMP(toe_display, 0.0f, grey_display);
-
   float shoulder_display = (shoulder_log * contrast + linear_intercept);
-  shoulder_display = CLAMP(shoulder_display, grey_display, 1.0f);
 
   // Apply the highlights/shadows balance as a shift along the contrast slope
   const float norm = powf(powf(contrast, 2.0f) + 1.0f, 0.5f);
@@ -1049,16 +1042,15 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   const float coeff = -(dynamic_range - latitude) / dynamic_range * balance;
 
   toe_display += coeff * contrast /norm;
-  toe_display = CLAMP(toe_display, 0.0f, grey_display);
-
   shoulder_display += coeff * contrast /norm;
-  shoulder_display = CLAMP(shoulder_display, grey_display, 1.0f);
-
   toe_log += coeff /norm;
-  toe_log = CLAMP(toe_log, 0.0f, grey_log);
-
   shoulder_log += coeff /norm;
+
+  // Sanitize pass 1
+  toe_log = CLAMP(toe_log, 0.0f, grey_log);
   shoulder_log = CLAMP(shoulder_log, grey_log, 1.0f);
+  toe_display = CLAMP(toe_display, black_display, grey_display);
+  shoulder_display = CLAMP(shoulder_display, grey_display, white_display);
 
   /**
    * Now we have 3 segments :
@@ -1070,23 +1062,18 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
    * degenerating of the curve
   **/
 
-  // sanitize the nodes
+  // sanitize pass 2
   int TOE_LOST = FALSE;
   int SHOULDER_LOST = FALSE;
 
-  if ((toe_log == grey_log && toe_display == grey_display) || (toe_log == 0.0f && toe_display  == 0.0f))
+  if ((toe_log == grey_log && toe_display == grey_display) || (toe_log == 0.0f && toe_display  == black_display))
   {
     TOE_LOST = TRUE;
   }
-  if ((shoulder_log == grey_log && shoulder_display == grey_display) || (shoulder_log == 1.0f && shoulder_display == 1.0f))
+  if ((shoulder_log == grey_log && shoulder_display == grey_display) || (shoulder_log == 1.0f && shoulder_display == white_display))
   {
     SHOULDER_LOST = TRUE;
   }
-
-  // the cubic spline is extra sensitive to close nodes : they will produce cusps
-  // it's no better for other splines, although not as bad
-  if (toe_log < 0.001f || toe_display < 0.001f) TOE_LOST = TRUE;
-  if (shoulder_log > 0.999f || shoulder_display > 0.999f) SHOULDER_LOST = TRUE;
 
   // Build the curve from the nodes
 
