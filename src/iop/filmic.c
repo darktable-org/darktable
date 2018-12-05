@@ -1346,8 +1346,8 @@ void init(dt_iop_module_t *module)
                                  .black_point_target  = 0.0,  // target black
                                  .white_point_target  = 100.0,  // target white
                                  .output_power        = 2.2,  // target power (~ gamma)
-                                 .latitude_stops      = 4.0,  // intent latitude
-                                 .contrast            = 2.0,  // intent contrast
+                                 .latitude_stops      = 2.0,  // intent latitude
+                                 .contrast            = 1.618,  // intent contrast
                                  .saturation          = 100.0,   // intent saturation
                                  .balance             = 0.0, // balance shadows/highlights
                                  .interpolator        = CUBIC_SPLINE, //interpolator
