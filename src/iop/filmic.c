@@ -155,6 +155,13 @@ typedef struct dt_iop_filmic_data_t
   float latitude_max;
 } dt_iop_filmic_data_t;
 
+typedef struct dt_iop_filmic_nodes_t
+{
+  int nodes;
+  float y[5];
+  float x[5];
+} dt_iop_filmic_nodes_t;
+
 typedef struct dt_iop_filmic_global_data_t
 {
   int kernel_filmic;
@@ -943,10 +950,36 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
   const int combo = dt_bauhaus_combobox_get(widget);
-  if(combo == 0) p->interpolator = CUBIC_SPLINE;
-  if(combo == 1) p->interpolator = CATMULL_ROM;
-  if(combo == 2) p->interpolator = MONOTONE_HERMITE;
-  if(combo == 3) p->interpolator = 3; // Optimized
+
+  switch (combo)
+  {
+    case CUBIC_SPLINE:
+    {
+      p->interpolator = CUBIC_SPLINE;
+      break;
+    }
+    case CATMULL_ROM:
+    {
+      p->interpolator = CATMULL_ROM;
+      break;
+    }
+    case MONOTONE_HERMITE:
+    {
+      p->interpolator = MONOTONE_HERMITE;
+      break;
+    }
+    case 3:
+    {
+      p->interpolator = 3; // Optimized
+      break;
+    }
+    default:
+    {
+      p->interpolator = CUBIC_SPLINE;
+      break;
+    }
+  }
+
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -965,7 +998,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   if(!in) dt_iop_color_picker_reset(&g->color_picker, TRUE);
 }
 
-void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_temp, int res, dt_iop_filmic_data_t *d)
+void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_temp, int res,
+  dt_iop_filmic_data_t *d, dt_iop_filmic_nodes_t *nodes_data)
 {
   dt_draw_curve_t *curve;
 
@@ -991,22 +1025,15 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   // nodes for mapping from log encoding to desired target luminance
   // X coordinates
   float toe_log = grey_log - latitude/dynamic_range * fabsf(black_source/dynamic_range);
-
-  toe_log = CLAMP(toe_log, 0.0f, grey_log);
-
   float shoulder_log = grey_log + latitude/dynamic_range * white_source/dynamic_range;
 
-  shoulder_log = CLAMP(shoulder_log, grey_log, 1.0f);
 
   // interception
   float linear_intercept = grey_display - (contrast * grey_log);
 
   // y coordinates
   float toe_display = (toe_log * contrast + linear_intercept);
-  toe_display = CLAMP(toe_display, 0.0f, grey_display);
-
   float shoulder_display = (shoulder_log * contrast + linear_intercept);
-  shoulder_display = CLAMP(shoulder_display, grey_display, 1.0f);
 
   // Apply the highlights/shadows balance as a shift along the contrast slope
   const float norm = powf(powf(contrast, 2.0f) + 1.0f, 0.5f);
@@ -1015,16 +1042,15 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   const float coeff = -(dynamic_range - latitude) / dynamic_range * balance;
 
   toe_display += coeff * contrast /norm;
-  toe_display = CLAMP(toe_display, 0.0f, grey_display);
-
   shoulder_display += coeff * contrast /norm;
-  shoulder_display = CLAMP(shoulder_display, grey_display, 1.0f);
-
   toe_log += coeff /norm;
-  toe_log = CLAMP(toe_log, 0.0f, grey_log);
-
   shoulder_log += coeff /norm;
+
+  // Sanitize pass 1
+  toe_log = CLAMP(toe_log, 0.0f, grey_log);
   shoulder_log = CLAMP(shoulder_log, grey_log, 1.0f);
+  toe_display = CLAMP(toe_display, black_display, grey_display);
+  shoulder_display = CLAMP(shoulder_display, grey_display, white_display);
 
   /**
    * Now we have 3 segments :
@@ -1036,42 +1062,34 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
    * degenerating of the curve
   **/
 
-  // sanitize the nodes
+  // sanitize pass 2
   int TOE_LOST = FALSE;
   int SHOULDER_LOST = FALSE;
 
-  if (toe_log == grey_log || toe_log == 0.0f || toe_display  == 0.0f || toe_display == grey_display)
+  if ((toe_log == grey_log && toe_display == grey_display) || (toe_log == 0.0f && toe_display  == black_display))
   {
     TOE_LOST = TRUE;
   }
-  if (shoulder_log == grey_log || shoulder_log == 1.0f || shoulder_display == grey_display || shoulder_display == 1.0f)
+  if ((shoulder_log == grey_log && shoulder_display == grey_display) || (shoulder_log == 1.0f && shoulder_display == white_display))
   {
     SHOULDER_LOST = TRUE;
   }
 
-  // the cubic spline is extra sensitive to close nodes : they will produce cusps
-  // it's no better for other splines, although not as bad
-  if (toe_log < 0.001f || toe_display < 0.001f) TOE_LOST = TRUE;
-  if (shoulder_log > 0.999f || shoulder_display > 0.999f) SHOULDER_LOST = TRUE;
-
   // Build the curve from the nodes
-  int nodes;
-  float x[5] = {1.0f};
-  float y[5] = {1.0f};
 
   if (SHOULDER_LOST && !TOE_LOST)
   {
     // shoulder only broke - we remove it
-    nodes = 4;
-    x[0] = black_log;
-    x[1] = toe_log;
-    x[2] = grey_log;
-    x[3] = white_log;
+    nodes_data->nodes = 4;
+    nodes_data->x[0] = black_log;
+    nodes_data->x[1] = toe_log;
+    nodes_data->x[2] = grey_log;
+    nodes_data->x[3] = white_log;
 
-    y[0] = black_display;
-    y[1] = toe_display;
-    y[2] = grey_display;
-    y[3] = white_display;
+    nodes_data->y[0] = black_display;
+    nodes_data->y[1] = toe_display;
+    nodes_data->y[2] = grey_display;
+    nodes_data->y[3] = white_display;
 
     if(d)
     {
@@ -1085,17 +1103,17 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   else if (TOE_LOST && !SHOULDER_LOST)
   {
     // toe only broke - we remove it
-    nodes = 4;
+    nodes_data->nodes = 4;
 
-    x[0] = black_log;
-    x[1] = grey_log;
-    x[2] = shoulder_log;
-    x[3] = white_log;
+    nodes_data->x[0] = black_log;
+    nodes_data->x[1] = grey_log;
+    nodes_data->x[2] = shoulder_log;
+    nodes_data->x[3] = white_log;
 
-    y[0] = black_display;
-    y[1] = grey_display;
-    y[2] = shoulder_display;
-    y[3] = white_display;
+    nodes_data->y[0] = black_display;
+    nodes_data->y[1] = grey_display;
+    nodes_data->y[2] = shoulder_display;
+    nodes_data->y[3] = white_display;
 
     if(d)
     {
@@ -1109,15 +1127,15 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   else if (TOE_LOST && SHOULDER_LOST)
   {
     // toe and shoulder both broke - we remove them
-    nodes = 3;
+    nodes_data->nodes = 3;
 
-    x[0] = black_log;
-    x[1] = grey_log;
-    x[2] = white_log;
+    nodes_data->x[0] = black_log;
+    nodes_data->x[1] = grey_log;
+    nodes_data->x[2] = white_log;
 
-    y[0] = black_display;
-    y[1] = grey_display;
-    y[2] = white_display;
+    nodes_data->y[0] = black_display;
+    nodes_data->y[1] = grey_display;
+    nodes_data->y[2] = white_display;
 
     if(d)
     {
@@ -1131,19 +1149,19 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   else
   {
     // everything OK
-    nodes = 5;
+    nodes_data->nodes = 5;
 
-    x[0] = black_log;
-    x[1] = toe_log;
-    x[2] = grey_log,
-    x[3] = shoulder_log;
-    x[4] = white_log;
+    nodes_data->x[0] = black_log;
+    nodes_data->x[1] = toe_log;
+    nodes_data->x[2] = grey_log,
+    nodes_data->x[3] = shoulder_log;
+    nodes_data->x[4] = white_log;
 
-    y[0] = black_display;
-    y[1] = toe_display;
-    y[2] = grey_display,
-    y[3] = shoulder_display;
-    y[4] = white_display;
+    nodes_data->y[0] = black_display;
+    nodes_data->y[1] = toe_display;
+    nodes_data->y[2] = grey_display,
+    nodes_data->y[3] = shoulder_display;
+    nodes_data->y[4] = white_display;
 
     if(d)
     {
@@ -1157,8 +1175,13 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   if (p->interpolator != 3)
   {
     // Compute the interpolation
-    curve = dt_draw_curve_new(0.0, 1.0, p->interpolator);
-    for(int k = 0; k < nodes; k++) (void)dt_draw_curve_add_point(curve, x[k], y[k]);
+
+    // Catch bad interpolators exceptions (errors in saved params)
+    int interpolator = CUBIC_SPLINE;
+    if (p->interpolator > CUBIC_SPLINE && p->interpolator <= MONOTONE_HERMITE) interpolator = p->interpolator;
+
+    curve = dt_draw_curve_new(0.0, 1.0, interpolator);
+    for(int k = 0; k < nodes_data->nodes; k++) (void)dt_draw_curve_add_point(curve, nodes_data->x[k], nodes_data->y[k]);
 
     // Compute the LUT
     dt_draw_curve_calc_values(curve, 0.0f, 1.0f, res, NULL, table);
@@ -1169,13 +1192,13 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   {
     // Compute the monotonic interpolation
     curve = dt_draw_curve_new(0.0, 1.0, MONOTONE_HERMITE);
-    for(int k = 0; k < nodes; k++) (void)dt_draw_curve_add_point(curve, x[k], y[k]);
+    for(int k = 0; k < nodes_data->nodes; k++) (void)dt_draw_curve_add_point(curve, nodes_data->x[k], nodes_data->y[k]);
     dt_draw_curve_calc_values(curve, 0.0f, 1.0f, res, NULL, table_temp);
     dt_draw_curve_destroy(curve);
 
     // Compute the cubic spline interpolation
     curve = dt_draw_curve_new(0.0, 1.0, CUBIC_SPLINE);
-    for(int k = 0; k < nodes; k++) (void)dt_draw_curve_add_point(curve, x[k], y[k]);
+    for(int k = 0; k < nodes_data->nodes; k++) (void)dt_draw_curve_add_point(curve, nodes_data->x[k], nodes_data->y[k]);
     dt_draw_curve_calc_values(curve, 0.0f, 1.0f, res, NULL, table);
     dt_draw_curve_destroy(curve);
 
@@ -1224,7 +1247,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->contrast = contrast;
 
   // compute the curves and their LUT
-  compute_curve_lut(p, d->table, d->table_temp, 0x10000, d);
+  dt_iop_filmic_nodes_t *nodes_data = (dt_iop_filmic_nodes_t *)malloc(sizeof(dt_iop_filmic_nodes_t));
+  compute_curve_lut(p, d->table, d->table_temp, 0x10000, d, nodes_data);
+  free(nodes_data);
+  nodes_data = NULL;
 
   // Build a window function based on the log.
   // This will be used to selectively desaturate the non-linear parts
@@ -1319,8 +1345,8 @@ void init(dt_iop_module_t *module)
                                  .black_point_target  = 0.0,  // target black
                                  .white_point_target  = 100.0,  // target white
                                  .output_power        = 2.2,  // target power (~ gamma)
-                                 .latitude_stops      = 4.0,  // intent latitude
-                                 .contrast            = 2.0,  // intent contrast
+                                 .latitude_stops      = 2.0,  // intent latitude
+                                 .contrast            = 1.618,  // intent contrast
                                  .saturation          = 100.0,   // intent saturation
                                  .balance             = 0.0, // balance shadows/highlights
                                  .interpolator        = CUBIC_SPLINE, //interpolator
@@ -1369,7 +1395,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_filmic_gui_data_t *c = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  compute_curve_lut(p, c->table, c->table_temp, 256, NULL);
+  dt_iop_filmic_nodes_t *nodes_data = (dt_iop_filmic_nodes_t *)malloc(sizeof(dt_iop_filmic_nodes_t));
+  compute_curve_lut(p, c->table, c->table_temp, 256, NULL, nodes_data);
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
@@ -1394,6 +1421,23 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb(cr, .1, .1, .1);
   dt_draw_grid(cr, 4, 0, 0, width, height);
+
+  // draw nodes
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
+  cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
+
+  for(int k = 0; k < nodes_data->nodes; k++)
+  {
+    const float x = nodes_data->x[k],
+                y = nodes_data->y[k];
+
+    cairo_arc(cr, x * width, (1.0 - y) * (double)height, DT_PIXEL_APPLY_DPI(3), 0, 2. * M_PI);
+    cairo_stroke_preserve(cr);
+    cairo_fill(cr);
+    cairo_stroke(cr);
+  }
+  free(nodes_data);
+  nodes_data = NULL;
 
   // draw curve
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
@@ -1433,10 +1477,11 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
+  // Add after darktable 2.6
+  // dt_bauhaus_widget_set_label(GTK_WIDGET(g->area), _("read-only graph, use the parameters below to set the nodes"));
   gtk_widget_set_margin_start(GTK_WIDGET(g->area), margin_width);
   gtk_widget_set_margin_end(GTK_WIDGET(g->area), margin_width);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double click to reset curve"));
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("logarithmic shaper")), FALSE, FALSE, 5);
@@ -1476,7 +1521,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->black_point_source), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 
   // Security factor
-  g->security_factor = dt_bauhaus_slider_new_with_range(self, -200., 200., 1.0, p->security_factor, 2);
+  g->security_factor = dt_bauhaus_slider_new_with_range(self, -50., 50., 1.0, p->security_factor, 2);
   dt_bauhaus_widget_set_label(g->security_factor, NULL, _("auto tuning safety factor"));
   dt_bauhaus_widget_set_label(g->security_factor, NULL, _("safety factor"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->security_factor, TRUE, TRUE, 0);
@@ -1499,6 +1544,7 @@ void gui_init(dt_iop_module_t *self)
 
   // contrast slider
   g->contrast = dt_bauhaus_slider_new_with_range(self, 1., 3., 0.01, p->contrast, 3);
+  dt_bauhaus_slider_enable_soft_boundaries(g->contrast, 0.0, 5.0);
   dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->contrast, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->contrast, _("slope of the linear part of the curve"));
@@ -1506,6 +1552,7 @@ void gui_init(dt_iop_module_t *self)
 
   // latitude slider
   g->latitude_stops = dt_bauhaus_slider_new_with_range(self, 1., 7.0, 0.05, p->latitude_stops, 3);
+  dt_bauhaus_slider_enable_soft_boundaries(g->latitude_stops, 0.0, 16.0);
   dt_bauhaus_widget_set_label(g->latitude_stops, NULL, _("latitude"));
   dt_bauhaus_slider_set_format(g->latitude_stops, "%.2f EV");
   gtk_box_pack_start(GTK_BOX(self->widget), g->latitude_stops, TRUE, TRUE, 0);
@@ -1524,6 +1571,7 @@ void gui_init(dt_iop_module_t *self)
   // saturation slider
   g->saturation = dt_bauhaus_slider_new_with_range(self, 0., 200., 0.1, (powf(10.0f, p->saturation/100.0f) - 1.0f) / 9.0f *100.0f, 2);
   dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
+  dt_bauhaus_slider_enable_soft_boundaries(g->saturation, 0.0, 1000.0);
   dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output, if the contrast adjustment\n"
