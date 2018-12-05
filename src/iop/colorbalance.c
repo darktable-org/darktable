@@ -1649,17 +1649,17 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->saturation_out, p->saturation_out * 100.0f);
   dt_bauhaus_slider_set_soft(g->contrast, 1.0f - p->contrast);
 
-  dt_bauhaus_slider_set_soft(g->lift_factor, p->lift[CHANNEL_FACTOR] - 1.0f);
+  dt_bauhaus_slider_set_soft(g->lift_factor, (p->lift[CHANNEL_FACTOR] - 1.0f) * 100.0f);
   dt_bauhaus_slider_set_soft(g->lift_r, p->lift[CHANNEL_RED] - 1.0f);
   dt_bauhaus_slider_set_soft(g->lift_g, p->lift[CHANNEL_GREEN] - 1.0f);
   dt_bauhaus_slider_set_soft(g->lift_b, p->lift[CHANNEL_BLUE] - 1.0f);
 
-  dt_bauhaus_slider_set_soft(g->gamma_factor, p->gamma[CHANNEL_FACTOR] - 1.0f);
+  dt_bauhaus_slider_set_soft(g->gamma_factor, (p->gamma[CHANNEL_FACTOR] - 1.0f) * 100.0f);
   dt_bauhaus_slider_set_soft(g->gamma_r, p->gamma[CHANNEL_RED] - 1.0f);
   dt_bauhaus_slider_set_soft(g->gamma_g, p->gamma[CHANNEL_GREEN] - 1.0f);
   dt_bauhaus_slider_set_soft(g->gamma_b, p->gamma[CHANNEL_BLUE] - 1.0f);
 
-  dt_bauhaus_slider_set_soft(g->gain_factor, p->gain[CHANNEL_FACTOR] - 1.0f);
+  dt_bauhaus_slider_set_soft(g->gain_factor, (p->gain[CHANNEL_FACTOR] - 1.0f) * 100.0f);
   dt_bauhaus_slider_set_soft(g->gain_r, p->gain[CHANNEL_RED] - 1.0f);
   dt_bauhaus_slider_set_soft(g->gain_g, p->gain[CHANNEL_GREEN] - 1.0f);
   dt_bauhaus_slider_set_soft(g->gain_b, p->gain[CHANNEL_BLUE] - 1.0f);
@@ -2070,7 +2070,7 @@ static void lift_factor_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
-  p->lift[CHANNEL_FACTOR] = dt_bauhaus_slider_get(slider) + 1.0f;
+  p->lift[CHANNEL_FACTOR] = dt_bauhaus_slider_get(slider) / 100.0f + 1.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 static void lift_red_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -2133,7 +2133,7 @@ static void gamma_factor_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
-  p->gamma[CHANNEL_FACTOR] = dt_bauhaus_slider_get(slider) + 1.0f;
+  p->gamma[CHANNEL_FACTOR] = dt_bauhaus_slider_get(slider) / 100.0f + 1.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 static void gamma_red_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -2194,7 +2194,7 @@ static void gain_factor_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
-  p->gain[CHANNEL_FACTOR] = dt_bauhaus_slider_get(slider) + 1.0f;
+  p->gain[CHANNEL_FACTOR] = dt_bauhaus_slider_get(slider) / 100.0f + 1.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 static void gain_red_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -2505,9 +2505,10 @@ void gui_init(dt_iop_module_t *self)
 #endif
 
 #define ADD_FACTOR(which)                                                                                         \
-  g->which##_factor = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005,                      \
-                                                                    p->which[CHANNEL_FACTOR] - 1.0f, 5, 0);       \
-  dt_bauhaus_slider_enable_soft_boundaries(g->which##_factor, -1.0, 1.0);                                         \
+  g->which##_factor = dt_bauhaus_slider_new_with_range_and_feedback(self, -50.0, 50.0, 0.5,                      \
+                                                                    (p->which[CHANNEL_FACTOR] - 1.0f) * 100.0f, 2, 0);       \
+  dt_bauhaus_slider_enable_soft_boundaries(g->which##_factor, -100.0, 100.0);                                         \
+  dt_bauhaus_slider_set_format(g->which##_factor, "%.2f %%");                                                     \
   dt_bauhaus_slider_set_stop(g->which##_factor, 0.0, 0.0, 0.0, 0.0);                                              \
   dt_bauhaus_slider_set_stop(g->which##_factor, 1.0, 1.0, 1.0, 1.0);                                              \
   gtk_widget_set_tooltip_text(g->which##_factor, _("factor of " #which));                                         \
