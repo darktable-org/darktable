@@ -122,7 +122,7 @@
       </para>
 
       <para>
-        On overwrite mode the behavior is the same except that the history of the destination
+        In overwrite mode the behavior is the same except that the history of the destination
         image is deleted before the paste operation. The <quote>copy all</quote>/<quote>paste
         all</quote> action with this mode works differently; it will make an exact duplicate of
         the source image history to the destination image with all instances of all names of the
