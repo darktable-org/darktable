@@ -1424,7 +1424,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   // draw nodes
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+  cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
 
   for(int k = 0; k < nodes_data->nodes; k++)
   {
@@ -1432,6 +1432,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
                 y = nodes_data->y[k];
 
     cairo_arc(cr, x * width, (1.0 - y) * (double)height, DT_PIXEL_APPLY_DPI(3), 0, 2. * M_PI);
+    cairo_stroke_preserve(cr);
+    cairo_fill(cr);
     cairo_stroke(cr);
   }
   free(nodes_data);
@@ -1475,6 +1477,7 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
+  dt_bauhaus_widget_set_label(g->area, NULL, _("read-only graph, use the parameters below to set the nodes"));
   gtk_widget_set_margin_start(GTK_WIDGET(g->area), margin_width);
   gtk_widget_set_margin_end(GTK_WIDGET(g->area), margin_width);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
