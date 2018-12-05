@@ -545,7 +545,7 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, gchar *sele
     to_select = g_strdup(dt_bauhaus_combobox_get_text(ui->album_list));
     if(to_select)
     {
-      // cut the count of picture in albumd to get the name only
+      // cut the count of picture in album to get the name only
       gchar *p = to_select;
       while(*p)
       {
@@ -598,8 +598,17 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, gchar *sele
       g_strlcpy(new_album->name, json_object_get_string_member(album, "name"), sizeof(new_album->name));
       new_album->id = json_object_get_int_member(album, "id");
       new_album->size = json_object_get_int_member(album, "nb_images");
+      const int isroot = json_object_get_null_member(album, "id_uppercat");
+      int indent = 0;
 
-      snprintf(data, sizeof(data), "%s (%ld)", new_album->name, new_album->size);
+      if(!isroot)
+      {
+        const char *hierarchy = json_object_get_string_member(album, "uppercats");
+        char const *p = hierarchy;
+        while(*p++) if(*p == ',') indent++;
+      }
+
+      snprintf(data, sizeof(data), "%*c%s (%ld)", indent * 3, ' ', new_album->name, new_album->size);
 
       if(to_select && !strcmp(new_album->name, to_select)) index = i + 1;
 
@@ -607,8 +616,8 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, gchar *sele
 
       ui->albums = g_list_append(ui->albums, new_album);
 
-      dt_bauhaus_combobox_add(ui->album_list, data);
-      dt_bauhaus_combobox_add(ui->parent_album_list, data);
+      dt_bauhaus_combobox_add_aligned(ui->album_list, data, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+      dt_bauhaus_combobox_add_aligned(ui->parent_album_list, data, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
     }
   }
   else
