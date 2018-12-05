@@ -978,7 +978,7 @@ static inline void set_HSL_sliders(GtkWidget *hue, GtkWidget *sat, float RGB[4])
 
   if(h != -1.0f)
   {
-    dt_bauhaus_slider_set_soft(hue, h);
+    dt_bauhaus_slider_set_soft(hue, h * 360.0f);
     dt_bauhaus_slider_set_soft(sat, s * 100.0f);
     update_saturation_slider_color(GTK_WIDGET(sat), h);
     gtk_widget_queue_draw(GTK_WIDGET(sat));
@@ -1910,7 +1910,7 @@ static void hue_lift_callback(GtkWidget *slider, gpointer user_data)
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
-  float hsl[3] = {dt_bauhaus_slider_get(slider),
+  float hsl[3] = {dt_bauhaus_slider_get(slider) / 360.0f,
                   dt_bauhaus_slider_get(g->sat_lift) / 100.0f,
                   0.437462716f};
 
@@ -1930,7 +1930,7 @@ static void sat_lift_callback(GtkWidget *slider, gpointer user_data)
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
-  float hsl[3] = {dt_bauhaus_slider_get(g->hue_lift),
+  float hsl[3] = {dt_bauhaus_slider_get(g->hue_lift) / 360.0f,
                   dt_bauhaus_slider_get(slider) / 100.0f,
                   0.458656447f};
 
@@ -1947,7 +1947,7 @@ static void hue_gamma_callback(GtkWidget *slider, gpointer user_data)
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
-  float hsl[3] = {dt_bauhaus_slider_get(slider),
+  float hsl[3] = {dt_bauhaus_slider_get(slider) / 360.0f,
                   dt_bauhaus_slider_get(g->sat_gamma) / 100.0f,
                   0.458656447f};
 
@@ -1967,7 +1967,7 @@ static void sat_gamma_callback(GtkWidget *slider, gpointer user_data)
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
-  float hsl[3] = {dt_bauhaus_slider_get(g->hue_gamma),
+  float hsl[3] = {dt_bauhaus_slider_get(g->hue_gamma) / 360.0f,
                   dt_bauhaus_slider_get(slider) / 100.0f,
                   0.458656447f};
 
@@ -1985,7 +1985,7 @@ static void hue_gain_callback(GtkWidget *slider, gpointer user_data)
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
-  float hsl[3] = {dt_bauhaus_slider_get(slider),
+  float hsl[3] = {dt_bauhaus_slider_get(slider) / 360.0f,
                   dt_bauhaus_slider_get(g->sat_gain) / 100.0f,
                   0.458656447f};
 
@@ -2005,7 +2005,7 @@ static void sat_gain_callback(GtkWidget *slider, gpointer user_data)
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
-  float hsl[3] = {dt_bauhaus_slider_get(g->hue_gain),
+  float hsl[3] = {dt_bauhaus_slider_get(g->hue_gain) / 360.0f,
                   dt_bauhaus_slider_get(slider) / 100.0f,
                   0.458656447f};
 
@@ -2534,8 +2534,9 @@ void gui_init(dt_iop_module_t *self)
   (void)lift_messages;
   ADD_FACTOR(lift)
 
-  g->hue_lift = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.0005f, 0.0f, 5, 0);
+  g->hue_lift = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 360.0f, 0.5f, 0.0f, 2, 0);
   dt_bauhaus_widget_set_label(g->hue_lift, NULL, _("hue"));
+  dt_bauhaus_slider_set_format(g->hue_lift, "%.2f °");
   draw_hue_slider(g->hue_lift);
   gtk_widget_set_tooltip_text(g->hue_lift, _("select the hue"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->hue_lift, TRUE, TRUE, 0);
@@ -2583,8 +2584,9 @@ void gui_init(dt_iop_module_t *self)
   (void)gamma_messages;
   ADD_FACTOR(gamma)
 
-  g->hue_gamma = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.0005f, 0.0f, 5, 0);
+  g->hue_gamma = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 360.0f, 0.5f, 0.0f, 2, 0);
   dt_bauhaus_widget_set_label(g->hue_gamma, NULL, _("hue"));
+  dt_bauhaus_slider_set_format(g->hue_gamma, "%.2f °");
   draw_hue_slider(g->hue_gamma);
   gtk_widget_set_tooltip_text(g->hue_gamma, _("select the hue"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->hue_gamma, TRUE, TRUE, 0);
@@ -2631,8 +2633,9 @@ void gui_init(dt_iop_module_t *self)
   (void)gain_messages;
   ADD_FACTOR(gain)
 
-  g->hue_gain = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.0005f, 0.0f, 5, 0);
+  g->hue_gain = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 360.0f, 0.05f, 0.0f, 2, 0);
   dt_bauhaus_widget_set_label(g->hue_gain, NULL, _("hue"));
+  dt_bauhaus_slider_set_format(g->hue_gain, "%.2f °");
   draw_hue_slider(g->hue_gain);
   gtk_widget_set_tooltip_text(g->hue_gain, _("select the hue"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->hue_gain, TRUE, TRUE, 0);
