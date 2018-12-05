@@ -1502,8 +1502,8 @@ void init(dt_iop_module_t *module)
                                                                      { 1.0f, 1.0f, 1.0f, 1.0f },
                                                                      { 1.0f, 1.0f, 1.0f, 1.0f },
                                                                      { 1.0f, 1.0f, 1.0f, 1.0f },
-                                                                     1.0f,
-                                                                     1.0f,
+                                                                     100.0f,
+                                                                     100.0f,
                                                                      18.0f,
                                                                      1.0f };
 
@@ -1645,8 +1645,8 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->mode, p->mode);
 
   dt_bauhaus_slider_set_soft(g->grey, p->grey);
-  dt_bauhaus_slider_set_soft(g->saturation, p->saturation - 1.0f);
-  dt_bauhaus_slider_set_soft(g->saturation_out, p->saturation_out - 1.0f);
+  dt_bauhaus_slider_set_soft(g->saturation, p->saturation * 100.0);
+  dt_bauhaus_slider_set_soft(g->saturation_out, p->saturation_out * 100.0f);
   dt_bauhaus_slider_set_soft(g->contrast, 1.0f - p->contrast);
 
   dt_bauhaus_slider_set_soft(g->lift_factor, p->lift[CHANNEL_FACTOR] - 1.0f);
@@ -2022,7 +2022,7 @@ static void saturation_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
-  p->saturation = dt_bauhaus_slider_get(slider) + 1.0f;
+  p->saturation = dt_bauhaus_slider_get(slider) / 100.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2034,7 +2034,7 @@ static void saturation_out_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
-  p->saturation_out = dt_bauhaus_slider_get(slider) + 1.0f;
+  p->saturation_out = dt_bauhaus_slider_get(slider) / 100.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2423,15 +2423,17 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(g->master_box), dt_ui_section_label_new(_("master")), FALSE, FALSE, 2);
 
-  g->saturation = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005, p->saturation - 1.0f, 5, 0);
-  dt_bauhaus_slider_enable_soft_boundaries(g->saturation, -1.0f, 1.0f);
+  g->saturation = dt_bauhaus_slider_new_with_range(self, 50.0, 150.0, 0.5, p->saturation * 100.0, 2);
+  dt_bauhaus_slider_enable_soft_boundaries(g->saturation, 0.0f, 200.0f);
+  dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
   dt_bauhaus_widget_set_label(g->saturation, NULL, _("input saturation"));
   gtk_box_pack_start(GTK_BOX(g->master_box), g->saturation, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->saturation, _("saturation correction before the color balance"));
   g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
 
-  g->saturation_out = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005, p->saturation_out - 1.0f, 5, 0);
-  dt_bauhaus_slider_enable_soft_boundaries(g->saturation_out, -1.0f, 1.0f);
+  g->saturation_out = dt_bauhaus_slider_new_with_range(self, 50.0, 150.0, 0.5, p->saturation_out * 100.0, 2);
+  dt_bauhaus_slider_set_format(g->saturation_out, "%.2f %%");
+  dt_bauhaus_slider_enable_soft_boundaries(g->saturation_out, 0.0, 200.0f);
   dt_bauhaus_widget_set_label(g->saturation_out, NULL, _("output saturation"));
   gtk_box_pack_start(GTK_BOX(g->master_box), g->saturation_out, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->saturation_out, _("saturation correction after the color balance"));
