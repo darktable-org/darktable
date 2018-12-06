@@ -70,18 +70,18 @@
     <sect5 status="draft">
       <title>color spaces</title>
       <para>
-        Depending on the desired intent, you car apply the tone curve in 3 different color spaces:
-        <ul>
-          <li>Lab, linked channels,</li>
-          <li>Lab, separated channels,</li>
-          <li>XYZ, linked channels,</li>
-          <li>RGB, linked channels.</li>
-        </ul>
+        Depending on the desired intent, you can apply the tone curve in 3 different color spaces:
+        <itemizedlist>
+          <listitem>Lab, linked channels,</listitem>
+          <listitem>Lab, separated channels,</listitem>
+          <listitem>XYZ, linked channels,</listitem>
+          <listitem>RGB, linked channels.</listitem>
+        </itemizedlist>
       </para>
 
       <para>
         Lab is a perceptual color space that is designed to approximate the way human beings
-        percieve colours and lightness, and representing the colour information independantly
+        percieve colours and lightness, and representing the colour information independently
         from the the lightness information.
         In <quote>Lab, separated channels</quote>, you get a a fullly independant control
         over the chrominance (a, b channels) and the luminance (L channel).
@@ -115,7 +115,7 @@
         is known to desaturate highlights and resaturate lowlights, but this has been proved to
         be the most reliable way to edit contrast, and is the standard way to do it in most
         softwares. This mode makes the tone curve module behave the same way as the
-        <xref linkend="basecurve"/>, except this one works in camera space RGB.
+        basecurve, except this one works in camera space RGB.
       </para>
 
       <para>
