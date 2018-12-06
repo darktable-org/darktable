@@ -525,7 +525,7 @@ static void _piwigo_album_changed(GtkComboBox *cb, gpointer data)
 }
 
 /** Refresh albums */
-static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, gchar *select_album)
+static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, const gchar *select_album)
 {
   gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(ui->parent_album_list), FALSE);
@@ -885,6 +885,18 @@ void gui_cleanup(dt_imageio_module_storage_t *self)
 
 void gui_reset(dt_imageio_module_storage_t *self)
 {
+}
+
+static gboolean _finalize_store(gpointer user_data)
+{
+  dt_storage_piwigo_gui_data_t *g = (dt_storage_piwigo_gui_data_t *)user_data;
+  _piwigo_refresh_albums(g, dt_bauhaus_combobox_get_text(g->album_list));
+  return FALSE;
+}
+
+void finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
+{
+  g_main_context_invoke(NULL, _finalize_store, self->gui_data);
 }
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
