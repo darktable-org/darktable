@@ -235,6 +235,8 @@ if(USE_OPENMP)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   endif()
 
+  list(APPEND LIBS ${OpenMP_C_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
+
   if(WIN32)
     list(APPEND LIBS gomp)
   endif(WIN32)
