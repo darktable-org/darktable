@@ -1149,19 +1149,19 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   else
   {
     // everything OK
-    nodes_data->nodes = 5;
+    nodes_data->nodes = 4;
 
     nodes_data->x[0] = black_log;
     nodes_data->x[1] = toe_log;
-    nodes_data->x[2] = grey_log,
-    nodes_data->x[3] = shoulder_log;
-    nodes_data->x[4] = white_log;
+    //nodes_data->x[2] = grey_log,
+    nodes_data->x[2] = shoulder_log;
+    nodes_data->x[3] = white_log;
 
     nodes_data->y[0] = black_display;
     nodes_data->y[1] = toe_display;
-    nodes_data->y[2] = grey_display,
-    nodes_data->y[3] = shoulder_display;
-    nodes_data->y[4] = white_display;
+    //nodes_data->y[2] = grey_display,
+    nodes_data->y[2] = shoulder_display;
+    nodes_data->y[3] = white_display;
 
     if(d)
     {
