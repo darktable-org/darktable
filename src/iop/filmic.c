@@ -1149,19 +1149,19 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   else
   {
     // everything OK
-    nodes_data->nodes = 5;
+    nodes_data->nodes = 4;
 
     nodes_data->x[0] = black_log;
     nodes_data->x[1] = toe_log;
-    nodes_data->x[2] = grey_log,
-    nodes_data->x[3] = shoulder_log;
-    nodes_data->x[4] = white_log;
+    //nodes_data->x[2] = grey_log,
+    nodes_data->x[2] = shoulder_log;
+    nodes_data->x[3] = white_log;
 
     nodes_data->y[0] = black_display;
     nodes_data->y[1] = toe_display;
-    nodes_data->y[2] = grey_display,
-    nodes_data->y[3] = shoulder_display;
-    nodes_data->y[4] = white_display;
+    //nodes_data->y[2] = grey_display,
+    nodes_data->y[2] = shoulder_display;
+    nodes_data->y[3] = white_display;
 
     if(d)
     {
@@ -1338,15 +1338,15 @@ void init(dt_iop_module_t *module)
   dt_iop_filmic_params_t tmp
     = (dt_iop_filmic_params_t){
                                  .grey_point_source   = 18, // source grey
-                                 .black_point_source  = -10.0,  // source black
-                                 .white_point_source  = 3.0,  // source white
+                                 .black_point_source  = -8.64,  // source black
+                                 .white_point_source  = 2.45,  // source white
                                  .security_factor     = 0.0,  // security factor
                                  .grey_point_target   = 18.0, // target grey
                                  .black_point_target  = 0.0,  // target black
                                  .white_point_target  = 100.0,  // target white
                                  .output_power        = 2.2,  // target power (~ gamma)
                                  .latitude_stops      = 2.0,  // intent latitude
-                                 .contrast            = 1.618,  // intent contrast
+                                 .contrast            = 1.5,  // intent contrast
                                  .saturation          = 100.0,   // intent saturation
                                  .balance             = 0.0, // balance shadows/highlights
                                  .interpolator        = CUBIC_SPLINE, //interpolator
@@ -1422,14 +1422,30 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_set_source_rgb(cr, .1, .1, .1);
   dt_draw_grid(cr, 4, 0, 0, width, height);
 
+  // solve the equations for the rescaling parameters
+  const float DR = (p->white_point_source - p->black_point_source);
+  const float grey = -p->black_point_source / DR;
+  float a = DR;
+  float b = Log2( 1.0f / (-1 + powf(2.0f, a)));
+  float d = - powf(2.0f, b);
+
+  for (int i = 0; i < 50; ++i)
+  { // Optimization loop for the non-linear problem
+    a = Log2((0.5f - d) / (1.0f - d)) / (grey - 1.0f);
+    b = Log2( 1.0f / (-1 + powf(2.0f, a)));
+    d = - powf(2.0f, b);
+  }
+
+  const float gamma = (logf(p->grey_point_target / 100.0f) / logf(0.5f)) / p->output_power;
+
   // draw nodes
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
 
   for(int k = 0; k < nodes_data->nodes; k++)
   {
-    const float x = nodes_data->x[k],
-                y = nodes_data->y[k];
+    const float x = powf(2.0f, a * nodes_data->x[k] + b) + d,
+                y = powf(nodes_data->y[k], 1.0f / gamma);
 
     cairo_arc(cr, x * width, (1.0 - y) * (double)height, DT_PIXEL_APPLY_DPI(3), 0, 2. * M_PI);
     cairo_stroke_preserve(cr);
@@ -1446,7 +1462,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   for(int k = 1; k < 256; k++)
   {
-    cairo_line_to(cr, k * width / 255.0, (double)height * (1.0 - c->table[k]));
+    const float x = powf(2.0f, a * k / 255.0f + b) + d,
+                y = powf(c->table[k], 1.0f / gamma);
+    cairo_line_to(cr, x * width, (double)height * (1.0 - y));
   }
   cairo_stroke(cr);
   cairo_destroy(cr);
