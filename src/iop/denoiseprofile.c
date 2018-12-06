@@ -384,7 +384,7 @@ static inline void precondition(const float *const in, float *const buf, const i
       for(int c = 0; c < 3; c++)
       {
         const float d = fmaxf(0.0f, in2[c] / a[c] + sigma2_plus_3_8[c]);
-        buf2[c] = d > 0.0f ? 2.0f * sqrtf(d) : 0.0f;
+        buf2[c] = 2.0f * sqrtf(d);
       }
       buf2 += 4;
       in2 += 4;
