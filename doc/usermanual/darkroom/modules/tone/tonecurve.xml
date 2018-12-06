@@ -72,10 +72,10 @@
       <para>
         Depending on the desired intent, you can apply the tone curve in 3 different color spaces:
         <itemizedlist>
-          <listitem>Lab, linked channels,</listitem>
-          <listitem>Lab, separated channels,</listitem>
-          <listitem>XYZ, linked channels,</listitem>
-          <listitem>RGB, linked channels.</listitem>
+          <listitem><para>Lab, linked channels,</para></listitem>
+          <listitem><para>Lab, separated channels,</para></listitem>
+          <listitem><para>XYZ, linked channels,</para></listitem>
+          <listitem><para>RGB, linked channels.</para></listitem>
         </itemizedlist>
       </para>
 
