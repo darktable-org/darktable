@@ -1422,14 +1422,30 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_set_source_rgb(cr, .1, .1, .1);
   dt_draw_grid(cr, 4, 0, 0, width, height);
 
+  // solve the equations for the rescaling parameters
+  const float DR = (p->white_point_source - p->black_point_source);
+  const float grey = -p->black_point_source / DR;
+  float a = DR;
+  float b = Log2( 1.0f / (-1 + powf(2.0f, a)));
+  float d = - powf(2.0f, b);
+
+  for (int i = 0; i < 50; ++i)
+  { // Optimization loop for the non-linear problem
+    a = Log2((0.5f - d) / (1.0f - d)) / (grey - 1.0f);
+    b = Log2( 1.0f / (-1 + powf(2.0f, a)));
+    d = - powf(2.0f, b);
+  }
+
+  const float gamma = (logf(p->grey_point_target / 100.0f) / logf(0.5f)) / p->output_power;
+
   // draw nodes
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
 
   for(int k = 0; k < nodes_data->nodes; k++)
   {
-    const float x = nodes_data->x[k],
-                y = nodes_data->y[k];
+    const float x = powf(2.0f, a * nodes_data->x[k] + b) + d,
+                y = powf(nodes_data->y[k], 1.0f / gamma);
 
     cairo_arc(cr, x * width, (1.0 - y) * (double)height, DT_PIXEL_APPLY_DPI(3), 0, 2. * M_PI);
     cairo_stroke_preserve(cr);
@@ -1446,7 +1462,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   for(int k = 1; k < 256; k++)
   {
-    cairo_line_to(cr, k * width / 255.0, (double)height * (1.0 - c->table[k]));
+    const float x = powf(2.0f, a * k / 255.0f + b) + d,
+                y = powf(c->table[k], 1.0f / gamma);
+    cairo_line_to(cr, x * width, (double)height * (1.0 - y));
   }
   cairo_stroke(cr);
   cairo_destroy(cr);
