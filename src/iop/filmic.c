@@ -1338,15 +1338,15 @@ void init(dt_iop_module_t *module)
   dt_iop_filmic_params_t tmp
     = (dt_iop_filmic_params_t){
                                  .grey_point_source   = 18, // source grey
-                                 .black_point_source  = -10.0,  // source black
-                                 .white_point_source  = 3.0,  // source white
+                                 .black_point_source  = -8.64,  // source black
+                                 .white_point_source  = 2.45,  // source white
                                  .security_factor     = 0.0,  // security factor
                                  .grey_point_target   = 18.0, // target grey
                                  .black_point_target  = 0.0,  // target black
                                  .white_point_target  = 100.0,  // target white
                                  .output_power        = 2.2,  // target power (~ gamma)
                                  .latitude_stops      = 2.0,  // intent latitude
-                                 .contrast            = 1.618,  // intent contrast
+                                 .contrast            = 1.5,  // intent contrast
                                  .saturation          = 100.0,   // intent saturation
                                  .balance             = 0.0, // balance shadows/highlights
                                  .interpolator        = CUBIC_SPLINE, //interpolator
