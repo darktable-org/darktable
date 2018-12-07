@@ -124,6 +124,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Kodak EOS DCS 3
 - Nikon COOLPIX P1000 (12bit-uncompressed)
 - Nikon D2Xs (12bit-compressed, 12bit-uncompressed)
+- Nikon D3500 (12bit-compressed)
 - Nikon Z 6 (except uncompressed raws)
 - Nikon Z 7 (except 14-bit uncompressed raw)
 - Olympus E-PL8
@@ -133,6 +134,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Panasonic DC-G9 (4:3)
 - Panasonic DC-GH5S (4:3, 3:2, 16:9, 1:1)
 - Panasonic DC-GX9 (4:3)
+- Panasonic DC-LX100M2 (4:3, 1:1, 16:9, 3:2)
 - Panasonic DC-TZ200 (3:2)
 - Panasonic DC-TZ202 (3:2)
 - Panasonic DMC-FZ2000 (3:2)
@@ -147,6 +149,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Pentax KP
 - Phase One P65+
 - Sjcam SJ6 LEGEND (chdk-b, chdk-c)
+- Sony DSC-HX99
 - Sony DSC-RX0
 - Sony DSC-RX100M5A
 - Sony DSC-RX10M4
@@ -161,6 +164,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Nikon D5600
 - Nikon D7500
 - Nikon D850
+- Nikon Z 6
 - Olympus E-M10 Mark III
 - Olympus E-M1MarkII
 - Panasonic DC-G9
