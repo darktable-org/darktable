@@ -1691,30 +1691,28 @@ void gui_update(dt_iop_module_t *self)
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
 
-  // default control is HSL
-  gtk_widget_set_visible(g->lift_r, FALSE);
-  gtk_widget_set_visible(g->lift_g, FALSE);
-  gtk_widget_set_visible(g->lift_b, FALSE);
-  gtk_widget_set_visible(g->gamma_r, FALSE);
-  gtk_widget_set_visible(g->gamma_g, FALSE);
-  gtk_widget_set_visible(g->gamma_b, FALSE);
-  gtk_widget_set_visible(g->gain_r, FALSE);
-  gtk_widget_set_visible(g->gain_g, FALSE);
-  gtk_widget_set_visible(g->gain_b, FALSE);
-
-  gtk_widget_set_visible(g->hue_lift, TRUE);
-  gtk_widget_set_visible(g->sat_lift, TRUE);
-  gtk_widget_set_visible(g->hue_gamma, TRUE);
-  gtk_widget_set_visible(g->sat_gamma, TRUE);
-  gtk_widget_set_visible(g->hue_gain, TRUE);
-  gtk_widget_set_visible(g->sat_gain, TRUE);
-
-  int control_mode = dt_bauhaus_combobox_get(g->controls);
+  const int control_mode = dt_bauhaus_combobox_get(g->controls);
 
   switch (control_mode)
   {
     case HSL:
     {
+      gtk_widget_set_visible(g->lift_r, FALSE);
+      gtk_widget_set_visible(g->lift_g, FALSE);
+      gtk_widget_set_visible(g->lift_b, FALSE);
+      gtk_widget_set_visible(g->gamma_r, FALSE);
+      gtk_widget_set_visible(g->gamma_g, FALSE);
+      gtk_widget_set_visible(g->gamma_b, FALSE);
+      gtk_widget_set_visible(g->gain_r, FALSE);
+      gtk_widget_set_visible(g->gain_g, FALSE);
+      gtk_widget_set_visible(g->gain_b, FALSE);
+
+      gtk_widget_set_visible(g->hue_lift, TRUE);
+      gtk_widget_set_visible(g->sat_lift, TRUE);
+      gtk_widget_set_visible(g->hue_gamma, TRUE);
+      gtk_widget_set_visible(g->sat_gamma, TRUE);
+      gtk_widget_set_visible(g->hue_gain, TRUE);
+      gtk_widget_set_visible(g->sat_gain, TRUE);
       break;
     }
     case RGBL:
@@ -1832,7 +1830,7 @@ static void controls_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
-  int control_mode = dt_bauhaus_combobox_get(combo);
+  const int control_mode = dt_bauhaus_combobox_get(combo);
 
   switch (control_mode)
   {
