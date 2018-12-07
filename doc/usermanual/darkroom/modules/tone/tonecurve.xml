@@ -28,7 +28,7 @@
           <row>
             <entry>
               This module is a classic digital photography tool. darktable's tone curve
-              can work in 3 different color spaces: RGB, XYZ or Lab.
+              can work in three different color spaces: RGB, XYZ or Lab.
             </entry>
             <entry>
               <graphic fileref="darkroom/modules/images/tonecurve.png" scalefit="1" width="80%" align="center" />
@@ -70,7 +70,7 @@
     <sect5 status="draft">
       <title>color spaces</title>
       <para>
-        Depending on the desired intent, you can apply the tone curve in 3 different color spaces:
+        Depending on the desired intent, you can apply the tone curve in three different color spaces:
         <itemizedlist>
           <listitem><para>Lab, linked channels,</para></listitem>
           <listitem><para>Lab, separated channels,</para></listitem>
@@ -81,13 +81,13 @@
 
       <para>
         Lab is a perceptual color space that is designed to approximate the way human beings
-        percieve colours and lightness, and representing the colour information independently
-        from the the lightness information.
-        In <quote>Lab, separated channels</quote>, you get a a fullly independant control
-        over the chrominance (a, b channels) and the luminance (L channel).
-        In <quote>Lab, linked channels</quote>, only the luminance (L channel) control is
+        perceive colors and lightness, and representing the color information independently
+        of the the lightness information.
+        In <quote>Lab, separated channels</quote>, you get a fullly independent control
+        over the chrominance (a/b-channels) and the luminance (L-channel).
+        In <quote>Lab, linked channels</quote>, only the luminance (L-channel) control is
         available. The color saturation correction will be automatically computed, for each pixel,
-        from the contrast correction applied on the luminance channel.
+        from the contrast correction applied to the luminance channel.
         This works better in cases where a subtle contrast correction is applied,
         but gives increasingly inaccurate saturation correction as the contrast gets more
         dramatically enhanced.
@@ -95,35 +95,35 @@
 
       <para>
         XYZ is a linear technical color space designed to link the physiologic light response
-        of human eyes to RGB spaces. As Lab, it separates the lightness from the colour
+        of human eyes to RGB spaces. As Lab, it separates the lightness from the color
         information, but it does so in a way that does not account for the role of the brain
-        correction in human perceptions.
+        correction in human perception.
         The <quote>XYZ, linked channels,</quote> mode offers an alternative for
         <quote>Lab, linked channels</quote>.
         It works by applying the L-channel curve to all three channels in the XYZ
         color space. Look at blend mode <quote>coloradjustment</quote> if you want to tune
         the strength of automatic chroma scaling (see <xref linkend="blending_operators"/>).
-        This mode is known to produce a slight hue shift toward yellow.
+        This mode is known to produce a slight hue shift towards yellow.
       </para>
 
       <para>
         RGB spaces are linear color spaces designed to capture and display images in additive
-        synthesis. They are related to the capture and display media and do not isolate
-        colour and lightness information.
+        synthesis. They are related to capture and display media and do not isolate
+        color and lightness information.
         The <quote>RGB, linked channels,</quote> works in ProPhoto RGB and applies the L-channel
         curve to all three channels in the RGB color space. Adding contrast in RGB space
-        is known to desaturate highlights and resaturate lowlights, but this has been proved to
+        is known to desaturate highlights and boost saturation in lowlights, but this has proven to
         be the most reliable way to edit contrast, and is the standard way to do it in most
-        softwares. This mode makes the tone curve module behave the same way as the
-        basecurve, except this one works in camera space RGB.
+        software. This mode makes the tone curve module behave the same way as the
+        basecurve (see <xref linkend="base_curve"/>), except the latter one works in camera RGB space.
       </para>
 
       <para>
-        Notice that the interface is controlled in Lab. This means that the middle grey
-        coordinate is always 50 % in the graph, no matter what color space is used, as well
-        as the inset histogram displayed in background. The
-        controls are converted to the relevant color space before the module is run, so
-        in RGB and XYZ, the middle-grey is remapped from 50 % to 18 % back-end.
+        Notice that the interface is controlled in Lab in all cases. This means that the middle gray
+        coordinate is always 50% in the graph, no matter what color space is used. The same applies to
+        the inset histogram displayed in the background of the curve. The
+        controls are converted to the relevant color space before the corrections are applied&nbsp;&ndash;
+        in RGB and XYZ, the middle-gray is therefore remapped from 50% to 18%.
       </para>
 
     </sect5>
@@ -182,12 +182,12 @@
         Arguably, the most visually pleasing method is the <quote>cubic spline</quote>. Since
         it gives smooth curves, the contrast in the image is better enhanced. However, this
         method is very sensitive to the nodes position, and can produce cusps and oscillations
-        when the nodes are too close from each other, or when there are too many of them.
-        This method works better when there are only 4 to 5 nodes, evenly-spaced.
+        when the nodes are too close to each other, or when there are too many of them.
+        This method works best when there are only 4 to 5 nodes, evenly spaced.
       </para>
       <para>
         The <quote>centripetal spline</quote> is a method designed specifically to avoid
-        cusps and oscillations, but its counterpart is it will follow the nodes more loosely.
+        cusps and oscillations, but as a drawback it will follow the nodes more loosely.
         It is very robust, no matter the number of nodes and their spacing, but will produce
         a more faded and dull contrast.
       </para>
@@ -197,42 +197,42 @@
         produce. This method is very suitable when you try to build an analytical function
         from a node interpolation (for example: exponential, logarithm, power, etc.). Such
         functions are provided as presets. It is a good trade-off between the two
-        aforementionned methods.
+        aforementioned methods.
       </para>
     </sect5>
 
     <sect5 status="draft">
       <title>scale</title>
       <para>
-        The scale allows you to distort the graph display so that interesting graphical
-        properties arise to help you draw meaningful curves. Notice that the scaling
-        options only affect the curve display, not the actual parameters.
+        The scale allows you to distort the graph display so that certain graphical
+        properties emerge to help you draw meaningful curves. Notice that the scaling
+        option only affects the curve display, not the actual parameters.
       </para>
       <para>
-        By default, the <quote>linear</quote> scale is used. This scale uses evenly-spaced
-        abcissa and ordinates.
+        By default, the <quote>linear</quote> scale is used. This scale uses evenly spaced
+        abscissa and ordinates axes.
       </para>
       <para>
         The <quote>log-log (x, y)</quote> scale will compress the high values and dilate
-        the low values, on both the abcissa and the ordinates, so that the nodes in lowlights
+        the low values, on both the abcissa and the axis of ordinates, so that the nodes in lowlights
         get more space on the graph and can be controlled more clearly.
       </para>
       <para>
-        The <quote>semi-log (x)</quote> is similar to the log-log scale, but the ordinates
-        axis is left linear and only the abcissa is logarithmically scaled. This is useful
+        The <quote>semi-log (x)</quote> is similar to the log-log scale, but the axis of ordinates
+        is left linear and only the abcissa is logarithmically scaled. This is useful
         when you want to draw a purely exponential function: in semi-log (x) scale, exponential
         become identity lines.
       </para>
       <para>
         The <quote>semi-log (y)</quote> is similar to the log-log scale, but the abscissa
-        axis is left linear and only the ordinates is logarithmically scaled. This is useful
+        axis is left linear and only the axis of ordinates is logarithmically scaled. This is useful
         when you want to draw a purely logarithmic function: in semi-log (y) scale, logarithms
         become identity lines.
       </para>
       <para>
         When using non-linear scales, a <quote>base of the logarithm</quote> slider appears
         that lets you control the amount of compression/dilatation operated by the logarithmic
-        scales. If you draw purely exponential or logarithmic function from identity lines,
+        scales. If you draw purely exponential or logarithmic functions from identity lines,
         setting this values defines the base of such functions.
       </para>
     </sect5>
