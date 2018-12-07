@@ -3356,7 +3356,7 @@
           ]
         },
         {
-          "comment": "olympus e-1 contributed by Damjan Vrenčur",
+          "comment": "olympus e-1 contributed by Damjan Vrencur",
           "model": "E-1",
           "profiles": [
             {"name": "Olympus E-1 iso 100", "iso": 100, "a": [8.74217127024554e-06, 5.2878702810528e-06, 5.26501875218597e-06], "b": [-2.20532019462792e-07, -2.01005398728175e-07, 1.09193447076722e-09]},
@@ -3366,7 +3366,7 @@
           ]
         },
         {
-          "comment": "olympus e-3 contributed by Damjan Vrenčur, blue channel dodgy",
+          "comment": "olympus e-3 contributed by Damjan Vrencur, blue channel dodgy",
           "model": "E-3",
           "profiles": [
             {"name": "Olympus E-3 iso 100", "iso": 100, "a": [6.84566571893634e-06, 4.98951315081828e-06, 0.0], "b": [-9.5642661191206e-08, -1.27485239580422e-07, 0.0]},
@@ -3580,7 +3580,7 @@
           ]
         },
         {
-          "comment": "olympus e-p2 contributed by Damjan Vrenčur",
+          "comment": "olympus e-p2 contributed by Damjan Vrencur",
           "model": "E-P2",
           "profiles": [
             {"name": "Olympus E-P2 iso 100", "iso": 100, "a": [9.77938622752664e-06, 5.50631328403374e-06, 7.93222949932615e-06], "b": [-9.84226935907546e-08, 8.81250381399964e-09, 1.20170803975941e-07]},
