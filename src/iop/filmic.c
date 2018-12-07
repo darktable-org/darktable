@@ -231,7 +231,108 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+/* UNCOMMENT AFTER DARKTABLE 2.6 IS RELEASED
 
+void init_presets(dt_iop_module_so_t *self)
+{
+  dt_iop_filmic_params_t p;
+  memset(&p, 0, sizeof(p));
+
+  // Fine-tune settings, no use here
+  p.interpolator = CUBIC_SPLINE;
+  p.balance = 0.0f;
+
+  // Output - standard display, gamma 2.2
+  p.output_power = 2.2f;
+  p.white_point_target = 100.0f;
+  p.black_point_target = 0.0f;
+  p.grey_point_target = 18.0f;
+
+  // Input - standard raw picture
+  p.security_factor = 0.0f;
+  p.contrast = 1.5f;
+
+  // Presets indoors
+  p.grey_point_source = 18.0f;
+  p.preserve_color = 0;
+  p.latitude_stops = 2.0f;
+  p.saturation = 100.0f;
+  p.white_point_source = 2.45f;
+
+  p.black_point_source = -7.55f;
+  dt_gui_presets_add_generic(_("indoors, 10 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.black_point_source = -8.55f;
+  dt_gui_presets_add_generic(_("indoors, 11 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.black_point_source = -9.55f;
+  dt_gui_presets_add_generic(_("indoors, 12 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // Presets outdoors
+  p.grey_point_source = 9.0f;
+  p.preserve_color = 1;
+  p.latitude_stops = 3.0f;
+  p.saturation = 50.0f;
+  p.white_point_source = 3.45f;
+
+  p.black_point_source = -6.55f;
+  dt_gui_presets_add_generic(_("outdoors, 10 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.black_point_source = -7.55f;
+  dt_gui_presets_add_generic(_("outdoors, 11 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.black_point_source = -8.55f;
+  dt_gui_presets_add_generic(_("outdoors, 12 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // Presets backlighting
+  p.grey_point_source = 4.5f;
+  p.preserve_color = 1;
+  p.latitude_stops = 4.0f;
+  p.saturation = 50.0f;
+  p.white_point_source = 4.45f;
+
+  p.black_point_source = -5.55f;
+  dt_gui_presets_add_generic(_("backlighting, 10 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.black_point_source = -6.55f;
+  dt_gui_presets_add_generic(_("backlighting, 11 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.black_point_source = -7.55f;
+  dt_gui_presets_add_generic(_("backlighting, 12 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // Presets sunset
+  p.grey_point_source = 2.25f;
+  p.preserve_color = 1;
+  p.latitude_stops = 5.0f;
+  p.saturation = 50.0f;
+  p.white_point_source = 5.45f;
+
+  p.black_point_source = -5.55f;
+  dt_gui_presets_add_generic(_("sunset, 11 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.black_point_source = -6.55f;
+  dt_gui_presets_add_generic(_("sunset, 12 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.black_point_source = -7.55f;
+  dt_gui_presets_add_generic(_("sunset, 13 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // Presets very dark subject
+  p.grey_point_source = 1.125f;
+  p.preserve_color = 1;
+  p.latitude_stops = 6.0f;
+  p.saturation = 50.0f;
+  p.white_point_source = 6.45f;
+
+  p.black_point_source = -7.55f;
+  dt_gui_presets_add_generic(_("very dark subject, 12 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.black_point_source = -8.55f;
+  dt_gui_presets_add_generic(_("very dark subject, 13 EV"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.black_point_source = -9.55f;
+  dt_gui_presets_add_generic(_("very dark subject, 14 EV"), self->op, self->version(), &p, sizeof(p), 1);
+}
+*/
 
 static inline float Log2(float x)
 {
@@ -1385,7 +1486,7 @@ void init(dt_iop_module_t *module)
   dt_iop_filmic_params_t tmp
     = (dt_iop_filmic_params_t){
                                  .grey_point_source   = 18, // source grey
-                                 .black_point_source  = -8.64,  // source black
+                                 .black_point_source  = -8.65,  // source black
                                  .white_point_source  = 2.45,  // source white
                                  .security_factor     = 0.0,  // security factor
                                  .grey_point_target   = 18.0, // target grey
