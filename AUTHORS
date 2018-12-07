@@ -3,12 +3,12 @@ Roman Lebedev,
 Pascal Obry,
 Tobias Ellinghaus,
 Stefan Schöfegger,
-Peter Budai,
 Ulrich Pegelow,
+Peter Budai,
 johannes hanika,
+parafin,
 Alexandre Prokoudine,
 Aldric Renaudin,
-parafin,
 Edouard Gomez.
 
 * translators:
@@ -19,14 +19,14 @@ Maurizio Paglia,
 Alexandre Prokoudine,
 Timur I. Davletshin,
 Báthory Péter,
+mepi0011,
 shlomi braitbart,
 Aurélien PIERRE,
 Heiko Bauke,
 Matjaž Jeran,
 Michel Leblond,
 Milan Knížek,
-mepi0011.
-Ragnar Wisløff
+Ragnar Wisløff.
 
 * contributors (at least 4 commits):
 Aurélien PIERRE,
@@ -50,9 +50,12 @@ Robert Bridge.
 * RawSpeed contributors (at least 1 commit):
 Stefan Löffler,
 Stefan Hoffmeister,
+parafin,
 Robert Bieber,
-Shita Yuuma,
+Tobias Ellinghaus,
 Matthieu Volat,
+Shita Yuuma,
+Stefan Schöfegger,
 luz.paz.
 
 And all those of you that made previous releases possible
