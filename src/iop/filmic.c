@@ -582,12 +582,18 @@ static void apply_auto_grey(dt_iop_module_t *self)
   float XYZ[3] = { 0.0f };
   dt_Lab_to_XYZ(self->picked_color, XYZ);
 
-  float grey = XYZ[1];
-  float prev_grey = p->grey_point_source;
+  const float grey = XYZ[1];
+  const float prev_grey = p->grey_point_source;
   p->grey_point_source = 100.f * grey;
-  float grey_var = Log2(prev_grey / p->grey_point_source);
+  const float grey_var = Log2(prev_grey / p->grey_point_source);
   p->black_point_source = p->black_point_source + grey_var;
   p->white_point_source = p->white_point_source + grey_var;
+
+  // Ensure the lowlights range is bigger that the highlights range
+  if (p->black_point_source > -p->white_point_source)
+  {
+    p->black_point_source = -p->white_point_source;
+  }
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->grey_point_source, p->grey_point_source);
@@ -605,16 +611,24 @@ static void apply_auto_black(dt_iop_module_t *self)
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
 
-  float noise = powf(2.0f, -16.0f);
+  const float noise = powf(2.0f, -16.0f);
   float XYZ[3] = { 0.0f };
 
   // Black
-  dt_Lab_to_prophotorgb(self->picked_color_min, XYZ);
-  float black = (XYZ[0] + XYZ[1] + XYZ[2]) / 3.0f;
+  dt_Lab_to_XYZ(self->picked_color_min, XYZ);
+  const float black = XYZ[1];
   float EVmin = Log2Thres(black / (p->grey_point_source / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
-  p->black_point_source = EVmin;
+  // Ensure the lowlights range is bigger that the highlights range
+  if (EVmin < -p->white_point_source)
+  {
+    p->black_point_source = EVmin;
+  }
+  else
+  {
+    p->black_point_source = -p->white_point_source;
+  }
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
@@ -633,12 +647,12 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
 
-  float noise = powf(2.0f, -16.0f);
+  const float noise = powf(2.0f, -16.0f);
   float XYZ[3] = { 0.0f };
 
   // White
-  dt_Lab_to_prophotorgb(self->picked_color_max, XYZ);
-  float white = fmaxf(fmaxf(XYZ[0], XYZ[1]), XYZ[2]);
+  dt_Lab_to_XYZ(self->picked_color_max, XYZ);
+  const float white = XYZ[1];
   float EVmax = Log2Thres(white / (p->grey_point_source / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
@@ -692,27 +706,36 @@ static void apply_autotune(dt_iop_module_t *self)
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
 
-  float noise = powf(2.0f, -16.0f);
+  const float noise = powf(2.0f, -16.0f);
   float XYZ[3] = { 0.0f };
 
   // Grey
   dt_Lab_to_XYZ(self->picked_color, XYZ);
-  float grey = XYZ[1];
+  const float grey = XYZ[1];
   p->grey_point_source = 100.f * grey;
 
   // Black
-  dt_Lab_to_prophotorgb(self->picked_color_min, XYZ);
-  float black = (XYZ[0] + XYZ[1] + XYZ[2]) / 3.0f;
+  dt_Lab_to_XYZ(self->picked_color_min, XYZ);
+  const float black = XYZ[1];
   float EVmin = Log2Thres(black / (p->grey_point_source / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
   // White
-  dt_Lab_to_prophotorgb(self->picked_color_max, XYZ);
-  float white = fmaxf(fmaxf(XYZ[0], XYZ[1]), XYZ[2]);
+  dt_Lab_to_XYZ(self->picked_color_max, XYZ);
+  const float white = XYZ[1];
   float EVmax = Log2Thres(white / (p->grey_point_source / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
-  p->black_point_source = EVmin;
+  // Ensure the lowlights range is bigger that the highlights range
+  if (EVmin < -EVmax)
+  {
+    p->black_point_source = EVmin;
+  }
+  else
+  {
+    p->black_point_source = -EVmax;
+  }
+
   p->white_point_source = EVmax;
 
   darktable.gui->reset = 1;
@@ -801,6 +824,12 @@ static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
   p->black_point_source = p->black_point_source + grey_var;
   p->white_point_source = p->white_point_source + grey_var;
 
+  // Ensure the lowlights range is bigger that the highlights range
+  if (p->black_point_source > -p->white_point_source)
+  {
+    p->black_point_source = -p->white_point_source;
+  }
+
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
@@ -820,6 +849,15 @@ static void white_point_source_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   p->white_point_source = dt_bauhaus_slider_get(slider);
 
+  // Ensure the lowlights range is bigger that the highlights range
+  if (p->black_point_source > -p->white_point_source)
+  {
+    p->black_point_source = -p->white_point_source;
+    darktable.gui->reset = 1;
+    dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
+    darktable.gui->reset = 0;
+  }
+
   sanitize_latitude(p, g);
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
@@ -835,6 +873,15 @@ static void black_point_source_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   p->black_point_source = dt_bauhaus_slider_get(slider);
+
+  // Ensure the lowlights range is bigger that the highlights range
+  if (p->black_point_source > -p->white_point_source)
+  {
+    p->black_point_source = -p->white_point_source;
+    darktable.gui->reset = 1;
+    dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
+    darktable.gui->reset = 0;
+  }
 
   sanitize_latitude(p, g);
 
@@ -1530,7 +1577,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->white_point_source), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 
   // Black slider
-  g->black_point_source = dt_bauhaus_slider_new_with_range(self, -12.0, -4.0, 0.1, p->black_point_source, 2);
+  g->black_point_source = dt_bauhaus_slider_new_with_range(self, -14.0, -4.0, 0.1, p->black_point_source, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->black_point_source, -16.0, -0.1);
   dt_bauhaus_widget_set_label(g->black_point_source, NULL, _("black relative exposure"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->black_point_source, TRUE, TRUE, 0);
