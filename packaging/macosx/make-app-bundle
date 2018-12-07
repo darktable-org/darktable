@@ -31,7 +31,8 @@ fi
 
 if [ -n "$CODECERT" ]
 then
-	codesign --deep --verbose --force -s "${CODECERT}" package/darktable.app
+	find package/darktable.app/Contents/Resources/lib -type d -name \*.dSYM -prune -or -type f \! -name loaders.cache -exec codesign --verbose --force --options runtime -s "${CODECERT}" \{} \;
+	codesign --deep --verbose --force --options runtime -s "${CODECERT}" package/darktable.app
 fi
 
 PROGN=darktable
@@ -65,6 +66,11 @@ echo '
 chmod -Rf go-w /Volumes/"${PROGN}"
 sync
 hdiutil detach ${device}
-hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o "${PROGN}"-$(git describe --tags|sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')
+DMG="${PROGN}-$(git describe --tags|sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')"
+hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o "${DMG}"
+if [ -n "${APPLEID}" ]
+then
+	xcrun altool --notarize-app --primary-bundle-id org.darktable --username "${APPLEID}" --file "${DMG}".dmg
+fi
 rm -f pack.temp.dmg
 rm -Rf package
