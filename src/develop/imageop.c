@@ -1050,6 +1050,9 @@ static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton 
 #else
   gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
 #endif
+
+  // make sure the button is deactivated now that the menu is opened
+  dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }
 
 static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
