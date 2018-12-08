@@ -30,6 +30,9 @@
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "imageio/storage/imageio_storage_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <curl/curl.h>
 #include <flickcurl.h>
 #include <stdio.h>
@@ -198,6 +201,9 @@ static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_dat
     GtkWidget *flickr_auth_dialog
         = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO,
                                  GTK_BUTTONS_OK_CANCEL, _("flickr authentication"));
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(flickr_auth_dialog);
+#endif
     gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(flickr_auth_dialog), "%s\n\n%s", text1, text2);
 
     result = gtk_dialog_run(GTK_DIALOG(flickr_auth_dialog));

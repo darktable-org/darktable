@@ -43,6 +43,9 @@
 #include "lua/glist.h"
 #include "lua/lua.h"
 #endif
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 void dt_film_init(dt_film_t *film)
 {
@@ -309,6 +312,9 @@ static gboolean ask_and_delete(gpointer user_data)
                                   GTK_BUTTONS_YES_NO,
                                   ngettext("do you want to remove this empty directory?",
                                            "do you want to remove these empty directories?", n_empty_dirs));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
 
   gtk_window_set_title(GTK_WINDOW(dialog),
                        ngettext("remove empty directory?", "remove empty directories?", n_empty_dirs));

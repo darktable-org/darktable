@@ -30,6 +30,9 @@
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "imageio/storage/imageio_storage_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <curl/curl.h>
 #include <json-glib/json-glib.h>
 #include <libxml/parser.h>
@@ -734,6 +737,9 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
   GtkDialog *picasa_auth_dialog = GTK_DIALOG(
       gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
                              GTK_BUTTONS_OK_CANCEL, _("google+ authentication")));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(GTK_WIDGET(picasa_auth_dialog));
+#endif
   gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(picasa_auth_dialog), "%s\n\n%s", text1, text2);
 
   GtkWidget *entry = gtk_entry_new();

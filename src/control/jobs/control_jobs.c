@@ -723,6 +723,9 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
       modal_dialog->filename,
       modal_dialog->error_message != NULL ? ": " : "",
       modal_dialog->error_message != NULL ? modal_dialog->error_message : "");
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
 
   if (modal_dialog->send_to_trash)
     gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
@@ -1400,6 +1403,9 @@ gboolean dt_control_remove_images()
         ngettext("do you really want to remove %d selected image from the collection?",
                  "do you really want to remove %d selected images from the collection?", number),
         number);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
 
     gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1446,6 +1452,9 @@ void dt_control_delete_images()
         : ngettext("do you really want to physically delete %d selected image from disk?",
           "do you really want to physically delete %d selected images from disk?", number),
         number);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
 
     gtk_window_set_title(GTK_WINDOW(dialog), send_to_trash ? _("trash images?") : _("delete images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1500,6 +1509,9 @@ void dt_control_move_images()
                  "(all unselected duplicates will be moved along)",
                  number),
         number, dir);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
     gtk_window_set_title(GTK_WINDOW(dialog), ngettext("move image?", "move images?", number));
 
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1554,6 +1566,9 @@ void dt_control_copy_images()
         ngettext("do you really want to physically copy the %d selected image to %s?",
                  "do you really want to physically copy %d selected images to %s?", number),
         number, dir);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
     gtk_window_set_title(GTK_WINDOW(dialog), ngettext("copy image?", "copy images?", number));
 
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
