@@ -23,7 +23,7 @@ done
 if [ -z "$STRIPDEBUGINFO" ]
 then
 	find package/darktable.app/Contents/Resources/lib/darktable \( -name \*.dylib -or -name \*.so \) -exec dsymutil \{} \;
-	for i in package/darktable.app/Contents/MacOS/*-bin package/darktable.app/Contents/MacOS/darktable-rs-identify
+	for i in package/darktable.app/Contents/MacOS/*-bin
 	do
 		dsymutil "$i"
 	done
