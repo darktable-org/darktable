@@ -1534,7 +1534,7 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), FALSE);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->extra_toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_RIGHT, NULL);
+                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->extra_toggle), FALSE);
 }
 
@@ -1592,8 +1592,12 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   for(int k = 0; k < nodes_data->nodes; k++)
   {
-    const float x = powf(2.0f, a * nodes_data->x[k] + b) + d,
-                y = powf(nodes_data->y[k], 1.0f / gamma);
+    /*
+     * Use double precision locally to avoid cancellation effect on
+     * the "+ d" operation.
+     */
+    const float x = pow(2.0, (double)a * nodes_data->x[k] + b) + d;
+    const float y = powf(nodes_data->y[k], 1.0f / gamma);
 
     cairo_arc(cr, x * width, (1.0 - y) * (double)height, DT_PIXEL_APPLY_DPI(3), 0, 2. * M_PI);
     cairo_stroke_preserve(cr);
@@ -1610,8 +1614,12 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   for(int k = 1; k < 256; k++)
   {
-    const float x = powf(2.0f, a * k / 255.0f + b) + d,
-                y = powf(c->table[k], 1.0f / gamma);
+    /*
+     * Use double precision locally to avoid cancellation effect on
+     * the "+ d" operation.
+     */
+    const float x = pow(2.0, (double)a * k / 255.0 + b) + d;
+    const float y = powf(c->table[k], 1.0f / gamma);
     cairo_line_to(cr, x * width, (double)height * (1.0 - y));
   }
   cairo_stroke(cr);
@@ -1629,7 +1637,7 @@ static void _extra_options_button_changed(GtkDarktableToggleButton *widget, gpoi
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->extra_toggle));
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), active);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->extra_toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_RIGHT), NULL);
+                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -1774,7 +1782,7 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   GtkWidget *destdisp = dt_ui_section_label_new(_("destination/display"));
-  g->extra_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_RIGHT, NULL);
+  g->extra_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
   gtk_widget_set_size_request(g->extra_toggle,  DT_PIXEL_APPLY_DPI(15), DT_PIXEL_APPLY_DPI(15));
   GtkWidget *extra_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(destdisp_head), destdisp, TRUE, TRUE, 0);
