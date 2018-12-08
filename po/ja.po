@@ -2491,7 +2491,7 @@ msgstr "標準または反転モードでマスク適用"
 
 #: ../src/develop/blend_gui.c:2093
 msgid "feathering guide"
-msgstr "ぼかしガイド"
+msgstr "フェザリング ガイド"
 
 #: ../src/develop/blend_gui.c:2095
 msgid "output image"
@@ -2507,11 +2507,11 @@ msgstr "入力または出力画像でマスクのカイドを選択します"
 
 #: ../src/develop/blend_gui.c:2111
 msgid "feathering radius"
-msgstr "ぼかし半径"
+msgstr "フェザリング半径"
 
 #: ../src/develop/blend_gui.c:2113
 msgid "spatial radius of feathering"
-msgstr "ぼかしの範囲"
+msgstr "フェザリングの範囲"
 
 #: ../src/develop/blend_gui.c:2119
 msgid "mask blur"
@@ -4985,7 +4985,7 @@ msgid ""
 "fuse this image stopped up/down a couple of times with itself, to compress "
 "high dynamic range. expose for the highlights before use."
 msgstr ""
-"オーバー/アンダー露光の画像で複数回繰り返し、ハイダイナミックレンジ圧縮し融合"
+"オーバー/アンダー露光の画像で複数回繰り返し、ハイダイナミックレンジ圧縮し合成"
 "します。使用前にハイライトを露光します"
 
 #: ../src/iop/basecurve.c:1952
@@ -7254,7 +7254,7 @@ msgstr "距離"
 
 #: ../src/iop/hazeremoval.c:196
 msgid "limit haze removal up to a specific spatial depth"
-msgstr "ヘイズ除去を特定の空間的深さまで制限します"
+msgstr "特定の奥行きまでヘイズ除去を限定します"
 
 #: ../src/iop/highlights.c:79
 msgid "highlight reconstruction"
@@ -8036,7 +8036,7 @@ msgid ""
 "number of stops between pure black and pure white\n"
 "this is a reading a posemeter would give you on the scene"
 msgstr ""
-"純粋な黒と白の中間の数値設定\n"
+"純粋な黒と白の中間の段数\n"
 "露出計が現場で測定する値に対応します"
 
 #. Security factor
@@ -8888,12 +8888,12 @@ msgid ""
 "- monotonic is better for accuracy of pure analytical functions (log, gamma, "
 "exp)\n"
 msgstr ""
-"カーブに揺らぎや尖りが見られる場合この手法を変更してください\n"
-"- 3次スプラインは、滑らかなカーブを生成するの良いですが、ノードが近接すると揺"
+"カーブに揺らぎや尖りが見られる場合、この手法を変更してください\n"
+"- 3次スプラインは、滑らかなカーブを生成するには良いですが、ノードが近接すると揺"
 "らぎます\n"
 "- centripetalスプラインは、近接したノードの揺らぎや尖りが避けられ良いですが、"
 "それほど滑らかではありません\n"
-"- 単調スプラインは、純粋な分析関数の点で優れています (log, gamma, exp)\n"
+"- 単調スプラインは、純粋な分析関数の正確さの点で優れています (log, gamma, exp)\n"
 
 #: ../src/iop/tonecurve.c:1262
 msgid "log-log (xy)"
@@ -10870,7 +10870,7 @@ msgstr "用紙が選択されるまで印刷できません"
 #: ../src/libs/print_settings.c:428
 #, c-format
 msgid "cannot get image %d for printing"
-msgstr "印刷のための画像 %d を取得できません"
+msgstr "印刷する画像 %d を取得できません"
 
 #: ../src/libs/print_settings.c:695
 #, c-format
