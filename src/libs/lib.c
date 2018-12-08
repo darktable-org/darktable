@@ -138,6 +138,9 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_pre
         GtkWidget *dlg_overwrite = gtk_message_dialog_new(
             GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
             _("preset `%s' already exists.\ndo you want to overwrite?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+        dt_osx_disallow_fullscreen(dlg_overwrite);
+#endif
         gtk_window_set_title(GTK_WINDOW(dlg_overwrite), _("overwrite preset?"));
         dlg_ret = gtk_dialog_run(GTK_DIALOG(dlg_overwrite));
         gtk_widget_destroy(dlg_overwrite);
@@ -329,6 +332,9 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
   GtkWidget *dialog
       = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
                                GTK_BUTTONS_YES_NO, _("do you really want to delete the preset `%s'?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
   gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
   {

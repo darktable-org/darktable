@@ -550,6 +550,9 @@ static void _camera_import_dialog_run(_camera_import_dialog_t *data)
         GtkWidget *dialog
             = gtk_message_dialog_new(NULL, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
                                      _("please use YYYY-MM-DD format for date override"));
+#ifdef GDK_WINDOWING_QUARTZ
+        dt_osx_disallow_fullscreen(dialog);
+#endif
         g_signal_connect_swapped(dialog, "response", G_CALLBACK(gtk_widget_destroy), dialog);
         gtk_dialog_run(GTK_DIALOG(dialog));
         all_good = FALSE;

@@ -969,6 +969,9 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
       GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT,
                                                  GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
                                                  _("do you really want to delete the preset `%s'?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+      dt_osx_disallow_fullscreen(dialog);
+#endif
       gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
       if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
       {
@@ -1077,6 +1080,9 @@ static void restore_defaults(GtkButton *button, gpointer data)
       = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING, GTK_BUTTONS_OK_CANCEL,
                                _("are you sure you want to restore the default keybindings?  this will "
                                  "erase any modifications you have made."));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(message);
+#endif
   if(gtk_dialog_run(GTK_DIALOG(message)) == GTK_RESPONSE_OK)
   {
     // First load the default keybindings for immediate effect
