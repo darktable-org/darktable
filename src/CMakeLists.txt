@@ -1,5 +1,8 @@
 add_subdirectory(external)
 
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-fno-strict-aliasing)
+# do not set it for the external libraries.
+
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
@@ -231,6 +234,8 @@ if(USE_OPENMP)
   if(OpenMP_CXX_FLAGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   endif()
+
+  list(APPEND LIBS ${OpenMP_C_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
 
   if(WIN32)
     list(APPEND LIBS gomp)
