@@ -2491,7 +2491,7 @@ msgstr "標準または反転モードでマスク適用"
 
 #: ../src/develop/blend_gui.c:2093
 msgid "feathering guide"
-msgstr "フェザリング ガイド"
+msgstr "ぼかし ガイド"
 
 #: ../src/develop/blend_gui.c:2095
 msgid "output image"
@@ -2507,11 +2507,11 @@ msgstr "入力または出力画像でマスクのカイドを選択します"
 
 #: ../src/develop/blend_gui.c:2111
 msgid "feathering radius"
-msgstr "フェザリング半径"
+msgstr "ぼかし半径"
 
 #: ../src/develop/blend_gui.c:2113
 msgid "spatial radius of feathering"
-msgstr "フェザリングの範囲"
+msgstr "ぼかしの範囲"
 
 #: ../src/develop/blend_gui.c:2119
 msgid "mask blur"
