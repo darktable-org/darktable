@@ -102,6 +102,9 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
       GtkWidget *dialog
           = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
                                    GTK_BUTTONS_CLOSE, _("error loading file '%s'"), dtfilename);
+#ifdef GDK_WINDOWING_QUARTZ
+      dt_osx_disallow_fullscreen(dialog);
+#endif
       gtk_dialog_run(GTK_DIALOG(dialog));
       gtk_widget_destroy(dialog);
     }
@@ -195,6 +198,9 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
         GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
         ngettext("do you really want to clear history of %d selected image?",
                  "do you really want to clear history of %d selected images?", number), number);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
 
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete images' history?"));
     res = gtk_dialog_run(GTK_DIALOG(dialog));
