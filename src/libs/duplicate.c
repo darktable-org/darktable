@@ -254,6 +254,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   dt_develop_t *dev = darktable.develop;
 
   int first_imgid = -1;
+  int count = 0;
 
   // we get a summarize of all versions of the image
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT i.version, i.id, m.value FROM images AS "
@@ -265,14 +266,13 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dev->image_storage.filename, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_METADATA_XMP_DC_TITLE);
 
+  GtkWidget *bt = NULL;
+
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *dr = gtk_drawing_area_new();
     const int imgid = sqlite3_column_int(stmt, 1);
-
-    // select original picture
-    if (first_imgid == -1) first_imgid = imgid;
 
     gtk_widget_set_size_request (dr, 100, 100);
     g_object_set_data (G_OBJECT (dr),"imgid",GINT_TO_POINTER(imgid));
@@ -295,7 +295,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     g_signal_connect(G_OBJECT(tb), "focus-out-event", G_CALLBACK(_lib_duplicate_caption_out_callback), self);
     dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(tb));
     GtkWidget *lb = gtk_label_new (g_strdup(chl));
-    GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    bt = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(imgid));
     gtk_widget_set_size_request(bt, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
     g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
@@ -305,7 +305,11 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_box_pack_start(GTK_BOX(hb), lb, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hb), bt, FALSE, FALSE, 0);
 
+    // select original picture
+    if (first_imgid == -1) first_imgid = imgid;
+
     gtk_box_pack_start(GTK_BOX(d->duplicate_box), hb, FALSE, FALSE, 0);
+    count++;
   }
   sqlite3_finalize (stmt);
 
@@ -324,6 +328,13 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   d->select = DT_DUPLICATE_SELECT_NONE;
 
   gtk_widget_show_all(d->duplicate_box);
+
+  // we have a single image, do not allow it to be removed so hide last bt
+  if(count==1)
+  {
+    gtk_widget_set_sensitive(bt, FALSE);
+    gtk_widget_set_visible(bt, FALSE);
+  }
 }
 
 static void _lib_duplicate_mipmap_updated_callback(gpointer instance, dt_lib_module_t *self)
