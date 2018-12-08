@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-12-05 16:43+0900\n"
-"PO-Revision-Date: 2018-12-08 00:24+0900\n"
+"PO-Revision-Date: 2018-12-08 11:58+0900\n"
 "Last-Translator: a3novy <a3novy01@gmail.com>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -947,7 +947,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:5
 msgid "Virtual light table, showing a collection"
-msgstr "バーチャル・ライトテーブルとダークルーム"
+msgstr "バーチャル・ライトテーブル, コレクションを表示"
 
 #: ../data/darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
@@ -2530,8 +2530,8 @@ msgid ""
 "shifts and tilts the tone curve of the blend mask to adjust its brightness "
 "without affecting fully transparent/fully opaque regions"
 msgstr ""
-"完全に透明/不透明な領域に影響を与えずに、ブレンドマスクのトーンカーブをシフト"
-"とチルトで輝度を調整します"
+"透明/不透明な領域に影響を与えずに、ブレンドマスクのトーンカーブをシフトとチル"
+"トで、輝度を調整します"
 
 #: ../src/develop/blend_gui.c:2137
 msgid "mask contrast"
@@ -4974,23 +4974,23 @@ msgstr "なし"
 
 #: ../src/iop/basecurve.c:1944
 msgid "two exposures"
-msgstr "露光２"
+msgstr "2回 露光"
 
 #: ../src/iop/basecurve.c:1945
 msgid "three exposures"
-msgstr "露光３"
+msgstr "3回 露光"
 
 #: ../src/iop/basecurve.c:1946
 msgid ""
 "fuse this image stopped up/down a couple of times with itself, to compress "
 "high dynamic range. expose for the highlights before use."
 msgstr ""
-"ハイダイナミックレンジを圧縮するために、画像を数回上げ下げして融合します。使"
-"用前にハイライトを露光してください"
+"オーバー/アンダー露光の画像で複数回繰り返し、ハイダイナミックレンジ圧縮し融合"
+"します。使用前にハイライトを露光します"
 
 #: ../src/iop/basecurve.c:1952
 msgid "how many stops to shift the individual exposures apart"
-msgstr "個々の露光をシフトする数"
+msgstr "個々の露光量を何段シフトするか"
 
 #: ../src/iop/basecurve.c:1953
 msgid "exposure shift"
@@ -5000,7 +5000,9 @@ msgstr "露光シフト"
 msgid ""
 "whether to shift exposure up or down (-1: reduce highlight, +1: reduce "
 "shadows)"
-msgstr "露光を上下にシフトするかどうか(-1: ハイライト低減、+1シャドウ低減)"
+msgstr ""
+"露光オーバー/アンダーにシフトするかどうか(-1: ハイライト低減、+1: シャドウ低"
+"減)"
 
 #: ../src/iop/basecurve.c:1965
 msgid "exposure bias"
@@ -5008,12 +5010,12 @@ msgstr "露光バイアス"
 
 #: ../src/iop/bilat.c:96 ../src/iop/clahe.c:66
 msgid "local contrast"
-msgstr "ローカルコントラスト"
+msgstr "ローカル コントラスト"
 
 #. TODO: remove this debug output at some point:
 #: ../src/iop/bilat.c:310
 msgid "local laplacian: inconsistent output"
-msgstr "ローカル・ラプラシアン; 不整合な出力"
+msgstr "ローカル ラプラシアン: 不整合な出力"
 
 #: ../src/iop/bilat.c:522 ../src/iop/colorbalance.c:2401
 #: ../src/iop/denoiseprofile.c:2689 ../src/iop/exposure.c:853
@@ -5037,7 +5039,7 @@ msgid ""
 "the filter used for local contrast enhancement. bilateral is faster but can "
 "lead to artifacts around edges for extreme settings."
 msgstr ""
-"ローカルコントラストの強調に使用されるフィルタ。 バイラテラルは高速ですが極端"
+"ローカル コントラストの強調に使用されるフィルタ。 バイラテラルは高速ですが極端"
 "な設定のため、エッジの周りにアーチファクトが発生する可能性があります"
 
 #: ../src/iop/bilat.c:532 ../src/iop/globaltonemap.c:726
@@ -5046,7 +5048,7 @@ msgstr "ディテール"
 
 #: ../src/iop/bilat.c:534
 msgid "changes the local contrast"
-msgstr "ローカルコントラストを変更"
+msgstr "ローカル コントラストを変更"
 
 #: ../src/iop/bilat.c:537 ../src/iop/grain.c:622
 msgid "coarseness"
@@ -5054,7 +5056,7 @@ msgstr "粗さ"
 
 #: ../src/iop/bilat.c:539
 msgid "feature size of local details (spatial sigma of bilateral filter)"
-msgstr "ローカル・ディテールの特徴サイズ (バイラテラル・フィルタの空間シグマ)"
+msgstr "ローカル ディテールの特徴サイズ (バイラテラル・フィルタの空間シグマ)"
 
 #: ../src/iop/bilat.c:543 ../src/iop/colisa.c:366
 #: ../src/iop/colorbalance.c:2452 ../src/iop/colorbalance.c:2454
@@ -5073,7 +5075,7 @@ msgstr "ハイライト"
 
 #: ../src/iop/bilat.c:550
 msgid "changes the local contrast of highlights"
-msgstr "ハイライトのローカルコントラストを変更"
+msgstr "ハイライトのローカル コントラストを変更"
 
 #: ../src/iop/bilat.c:554 ../src/iop/shadhi.c:828 ../src/iop/splittoning.c:534
 msgid "shadows"
@@ -5081,7 +5083,7 @@ msgstr "シャドウ"
 
 #: ../src/iop/bilat.c:555
 msgid "changes the local contrast of shadows"
-msgstr "シャドウのローカルコントラストを変更"
+msgstr "シャドウのローカル コントラストを変更"
 
 #: ../src/iop/bilat.c:560
 msgid "midtone range"
@@ -5094,7 +5096,7 @@ msgid ""
 "contrast"
 msgstr ""
 "中間トーンを定義します。低下させると良好なダイナミックレンジ圧縮(シャドウとハ"
-"イライトのコントラスト低減)、増加させると強力なローカルコントラストになります"
+"イライトのコントラスト低減)、増加させると強力なローカル コントラストになります"
 
 #: ../src/iop/bilateral.cc:70
 msgid "denoise (bilateral filter)"
@@ -6419,11 +6421,11 @@ msgid ""
 " - static: fast, only uses the threshold as a static limit"
 msgstr ""
 "色保護の手法:\n"
-" - 大域平均: 高速, 高倍率でわずかに違うプレビューで表示されることがあります局"
+" - 大域平均: 高速, 高倍率でわずかに違うプレビューで表示されることがあります; 局"
 "所平均と比較し,時に過大または過小に彩度を保護することがあります\n"
-" - 局所平均: 低速, 近傍色参照による大域平均よりも優れた彩度保護をするかもしれ"
+" - 局所平均: 低速, 近傍色参照による大域平均よりも優れた彩度保護を行うかもしれ"
 "ません。適用される個所ではより彩度低下を可能にします\n"
-" - 静的: 高速, 静的制限のしきい値を使用します"
+" - 静的: 高速, 静的制限のしきい値のみ使用します"
 
 #: ../src/iop/defringe.c:461
 msgid "edge detection radius"
@@ -6931,7 +6933,7 @@ msgid ""
 "desaturates the output, if the contrast adjustment\n"
 "produces over-saturation in shadows"
 msgstr ""
-"コントラスト調整を行う場合、出力を低彩度化します\n"
+"コントラスト調整を行う場合、出力は低彩度化します\n"
 "シャドウが過飽和になります"
 
 #: ../src/iop/filmic.c:1539 ../src/libs/export.c:629
@@ -7085,7 +7087,7 @@ msgstr "ガンマ"
 
 #: ../src/iop/globaltonemap.c:103
 msgid "global tonemap"
-msgstr "グローバル・トーンマップ"
+msgstr "グローバル トーンマップ"
 
 #: ../src/iop/globaltonemap.c:697
 msgid "operator"
@@ -7093,7 +7095,7 @@ msgstr "オペレータ"
 
 #: ../src/iop/globaltonemap.c:703
 msgid "the global tonemap operator"
-msgstr "グローバル・トーンマップの処理手法"
+msgstr "グローバル トーンマップの処理手法"
 
 #: ../src/iop/globaltonemap.c:709
 msgid "bias"
@@ -7252,7 +7254,7 @@ msgstr "距離"
 
 #: ../src/iop/hazeremoval.c:196
 msgid "limit haze removal up to a specific spatial depth"
-msgstr "ヘイズの除去を特定の空間的広がりに制限します"
+msgstr "ヘイズ除去を特定の空間的深さまで制限します"
 
 #: ../src/iop/highlights.c:79
 msgid "highlight reconstruction"
@@ -7851,7 +7853,7 @@ msgstr "ローパス"
 
 #: ../src/iop/lowpass.c:623
 msgid "local contrast mask"
-msgstr "ローカルコントラスト・マスク"
+msgstr "ローカル コントラスト・マスク"
 
 #: ../src/iop/lowpass.c:657
 msgid "filter order"
@@ -9318,8 +9320,8 @@ msgid ""
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr ""
-"ブラケットあたりのステップ数、ステップはカメラで設定可能で、通常は1ステップあ"
-"たり3ステップです\n"
+"ブラケットあたりのステップ数、ステップはカメラで設定可能で、通常は1段あたり3"
+"ステップです\n"
 "言い換えれば、ブラケット間の1EV露光ステップは3ステップです"
 
 #. user specified properties
