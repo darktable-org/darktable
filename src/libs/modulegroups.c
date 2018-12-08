@@ -217,7 +217,7 @@ static void _lib_modulegroups_viewchanged_callback(gpointer instance, dt_view_t 
 {
 }
 
-static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, uint32_t iop_group)
+static gboolean _lib_modulegroups_test_internal(dt_lib_module_t *self, uint32_t group, uint32_t iop_group)
 {
   if(iop_group & IOP_SPECIAL_GROUP_ACTIVE_PIPE && group == DT_MODULEGROUP_ACTIVE_PIPE)
     return TRUE;
@@ -234,6 +234,11 @@ static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, ui
   else if(iop_group & IOP_GROUP_EFFECT && group == DT_MODULEGROUP_EFFECT)
     return TRUE;
   return FALSE;
+}
+
+static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, uint32_t iop_group)
+{
+  return _lib_modulegroups_test_internal(self, _iop_get_group_order(group, group), iop_group);
 }
 
 static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
@@ -304,7 +309,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
         default:
         {
-          if(_lib_modulegroups_test(self, d->current, module->groups())
+          if(_lib_modulegroups_test_internal(self, d->current, module->groups())
              && module->so->state != dt_iop_state_HIDDEN
              && (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
           {
@@ -407,13 +412,12 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
   /* do nothing if module is member of current group */
-  if(_lib_modulegroups_test(self, d->current, module->groups())) return;
+  if(_lib_modulegroups_test_internal(self, d->current, module->groups())) return;
 
   /* lets find the group which is not favorite/active pipe */
   for(int k = DT_MODULEGROUP_BASIC; k < DT_MODULEGROUP_SIZE; k++)
   {
-    const int gid = _iop_get_group_order(k, k);
-    if(_lib_modulegroups_test(self, gid, module->groups()))
+    if(_lib_modulegroups_test(self, k, module->groups()))
     {
       _lib_modulegroups_set(self, k);
       return;
