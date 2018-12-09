@@ -26,7 +26,7 @@ SUDO=""
 
 PRINT_HELP=0
 
-FEATURES="FLICKR LIBSECRET KWALLET OPENMP OPENCL UNITY TETHERING GEO LUA OPENEXR WEBP"
+FEATURES="CAMERA COLORD FLICKR GRAPHICSMAGICK KWALLET LIBSECRET LUA MAP MAC_INTEGRATION NLS OPENCL OPENEXR OPENMP UNITY WEBP"
 
 # prepare a lowercase version with a space before and after
 # it's very important for parse_feature, has no impact in for loop expansions

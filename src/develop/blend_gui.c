@@ -317,6 +317,16 @@ static void _blendop_masks_mode_callback(GtkWidget *combo, dt_iop_gui_blend_data
       data->module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
       dtgtk_button_set_active(DTGTK_BUTTON(data->showmask), 0);
       gtk_widget_hide(GTK_WIDGET(data->showmask));
+
+      // disable also guided-filters on RAW based color space
+      gtk_widget_set_sensitive(data->masks_feathering_guide_combo, 0);
+      gtk_widget_hide(GTK_WIDGET(data->masks_feathering_guide_combo));
+      gtk_widget_set_sensitive(data->feathering_radius_slider, 0);
+      gtk_widget_hide(GTK_WIDGET(data->feathering_radius_slider));
+      gtk_widget_set_sensitive(data->brightness_slider, 0);
+      gtk_widget_hide(GTK_WIDGET(data->brightness_slider));
+      gtk_widget_set_sensitive(data->contrast_slider, 0);
+      gtk_widget_hide(GTK_WIDGET(data->contrast_slider));
     }
     else
     {
@@ -2131,7 +2141,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     g_signal_connect(G_OBJECT(bd->contrast_slider), "value-changed",
                      G_CALLBACK(_blendop_blendif_contrast_callback), bd);
 
-    
+
     bd->showmask = dtgtk_button_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(bd->showmask, _("display mask and/or color channel. ctrl-click to display mask, "
                                                 "shift-click to display channel. hover over parametric mask slider to "

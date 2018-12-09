@@ -111,6 +111,12 @@
       To delete an instance just press <quote>delete</quote> from the drop-down menu.
     </para>
 
+    <para>
+      An instance can have any name without influencing the edits. To change the name use the
+      <quote>rename</quote> option. See <xref linkend="history_stack"/> for more details on how
+      the instance name impacts copying and pasting history stacks.
+    </para>
+
   </sect3>
 
 </sect2>

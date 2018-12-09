@@ -30,6 +30,9 @@
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "imageio/storage/imageio_storage_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <curl/curl.h>
 #include <json-glib/json-glib.h>
 #include <stdio.h>
@@ -625,6 +628,9 @@ static gchar *facebook_get_user_auth_token_from_url(dt_storage_facebook_gui_data
   GtkDialog *fb_auth_dialog = GTK_DIALOG(
       gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
                              GTK_BUTTONS_OK_CANCEL, _("facebook authentication")));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(GTK_WIDGET(fb_auth_dialog));
+#endif
   gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(fb_auth_dialog), "%s\n\n%s", text1, text2);
 
   GtkWidget *entry = gtk_entry_new();
@@ -712,6 +718,9 @@ static gboolean facebook_get_user_auth_token_from_server(dt_storage_facebook_gui
       _("a new window or tab of your browser should have been "
         "loaded. you have to login into your facebook account there "
         "and authorize darktable to upload photos before continuing."));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
 
   gtk_window_set_title(GTK_WINDOW(dialog), _("facebook authentication"));
 
