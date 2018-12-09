@@ -144,6 +144,12 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       DESTINATION share/glib-2.0/schemas/
       COMPONENT DTApplication)
 
+  # Add libthai files
+  install(DIRECTORY
+      "${MINGW_PATH}/../share/libthai/"
+      DESTINATION share/libthai/
+      COMPONENT DTApplication)
+
   # Add libgphoto2 files
   install(DIRECTORY
       "${MINGW_PATH}/../lib/libgphoto2"
