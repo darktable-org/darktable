@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-12-05 16:43+0900\n"
-"PO-Revision-Date: 2018-12-08 11:58+0900\n"
+"PO-Revision-Date: 2018-12-09 17:31+0900\n"
 "Last-Translator: a3novy <a3novy01@gmail.com>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -951,7 +951,7 @@ msgstr "バーチャル・ライトテーブル, コレクションを表示"
 
 #: ../data/darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
-msgstr "開いた画像のあるバーチャル暗室"
+msgstr "画像がオープンされたバーチャル暗室"
 
 #: ../data/darktable.appdata.xml.in.h:7
 msgid "Virtual dark room, sharpening an image"
@@ -2156,7 +2156,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:1295 ../src/iop/colorzones.c:1098
 #: ../src/iop/tonecurve.c:1208
 msgid "pick GUI color from image"
-msgstr "画像からGUIカラーを選択"
+msgstr "画像からGUIカラーを抽出"
 
 #: ../src/develop/blend_gui.c:1299
 msgid "reset blend mask settings"
@@ -2830,7 +2830,7 @@ msgstr ""
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
-"タイリングはモジュール '%s' に失敗しました。出力が文字化けしている可能性があ"
+"モジュール '%s' のタイリングに失敗しました。出力が文字化けしている可能性があ"
 "ります"
 
 #: ../src/dtgtk/resetlabel.c:58
@@ -2865,7 +2865,7 @@ msgstr "曇天"
 #. "Shadows" should be switched to this:
 #: ../src/external/wb_presets.c:50
 msgid "shade"
-msgstr "日陰"
+msgstr "晴天日陰"
 
 #: ../src/external/wb_presets.c:51
 msgid "incandescent"
@@ -5039,8 +5039,8 @@ msgid ""
 "the filter used for local contrast enhancement. bilateral is faster but can "
 "lead to artifacts around edges for extreme settings."
 msgstr ""
-"ローカル コントラストの強調に使用されるフィルタ。 バイラテラルは高速ですが極端"
-"な設定のため、エッジの周りにアーチファクトが発生する可能性があります"
+"ローカル コントラストの強調に使用されるフィルタ。 バイラテラルは高速ですが極"
+"端な設定のため、エッジの周りにアーチファクトが発生する可能性があります"
 
 #: ../src/iop/bilat.c:532 ../src/iop/globaltonemap.c:726
 msgid "detail"
@@ -5096,7 +5096,8 @@ msgid ""
 "contrast"
 msgstr ""
 "中間トーンを定義します。低下させると良好なダイナミックレンジ圧縮(シャドウとハ"
-"イライトのコントラスト低減)、増加させると強力なローカル コントラストになります"
+"イライトのコントラスト低減)、増加させると強力なローカル コントラストになりま"
+"す"
 
 #: ../src/iop/bilateral.cc:70
 msgid "denoise (bilateral filter)"
@@ -5161,7 +5162,7 @@ msgstr "しきい値"
 #: ../src/iop/bloom.c:95 ../src/iop/grain.c:436 ../src/iop/hotpixels.c:88
 msgctxt "accel"
 msgid "strength"
-msgstr "適用量"
+msgstr "強さ"
 
 #: ../src/iop/bloom.c:515 ../src/iop/soften.c:709 ../src/libs/camera.c:606
 msgid "size"
@@ -5185,11 +5186,11 @@ msgstr "ライトのしきい値"
 #: ../src/iop/grain.c:630 ../src/iop/hazeremoval.c:189
 #: ../src/iop/hotpixels.c:463 ../src/iop/nlmeans.c:852 ../src/iop/velvia.c:381
 msgid "strength"
-msgstr "適用量"
+msgstr "強さ"
 
 #: ../src/iop/bloom.c:528
 msgid "the strength of bloom"
-msgstr "ブルームの適用量"
+msgstr "ブルームの強さ"
 
 #: ../src/iop/borders.c:163
 msgid "framing"
@@ -5501,7 +5502,7 @@ msgstr "保持する輪郭のサイズ"
 
 #: ../src/iop/clahe.c:338 ../src/iop/nlmeans.c:859
 msgid "strength of the effect"
-msgstr "効果の適用量"
+msgstr "効果の強さ"
 
 #: ../src/iop/clipping.c:297
 msgid "crop and rotate"
@@ -6421,8 +6422,8 @@ msgid ""
 " - static: fast, only uses the threshold as a static limit"
 msgstr ""
 "色保護の手法:\n"
-" - 大域平均: 高速, 高倍率でわずかに違うプレビューで表示されることがあります; 局"
-"所平均と比較し,時に過大または過小に彩度を保護することがあります\n"
+" - 大域平均: 高速, 高倍率でわずかに違うプレビューで表示されることがあります; "
+"局所平均と比較し,時に過大または過小に彩度を保護することがあります\n"
 " - 局所平均: 低速, 近傍色参照による大域平均よりも優れた彩度保護を行うかもしれ"
 "ません。適用される個所ではより彩度低下を可能にします\n"
 " - 静的: 高速, 静的制限のしきい値のみ使用します"
@@ -6648,7 +6649,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:2703
 msgid "finetune denoising strength"
-msgstr "ノイズ低減の適用量を微調整します"
+msgstr "ノイズ低減の強さを微調整します"
 
 #: ../src/iop/dither.c:104 ../src/iop/vignette.c:1157
 msgid "dithering"
@@ -6853,7 +6854,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1458
 msgid "white relative exposure"
-msgstr "白 相対露出"
+msgstr "白 相対露光量"
 
 #: ../src/iop/filmic.c:1461
 msgid ""
@@ -6865,7 +6866,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1469 ../src/iop/profile_gamma.c:901
 msgid "black relative exposure"
-msgstr "黒 相対露出"
+msgstr "黒 相対露光量"
 
 #: ../src/iop/filmic.c:1472 ../src/iop/profile_gamma.c:904
 msgid ""
@@ -6897,7 +6898,7 @@ msgstr "レベル 自動調整"
 
 #: ../src/iop/filmic.c:1495 ../src/iop/profile_gamma.c:938
 msgid "make an optimization with some guessing"
-msgstr "推測して最適化を行います"
+msgstr "推測し最適化を行います"
 
 #: ../src/iop/filmic.c:1498
 msgid "filmic S curve"
@@ -7254,7 +7255,7 @@ msgstr "距離"
 
 #: ../src/iop/hazeremoval.c:196
 msgid "limit haze removal up to a specific spatial depth"
-msgstr "特定の奥行きまでヘイズ除去を限定します"
+msgstr "特定の奥行きまでヘイズ除去を制限します"
 
 #: ../src/iop/highlights.c:79
 msgid "highlight reconstruction"
@@ -7331,7 +7332,7 @@ msgstr "ホットピクセルのしきい値を下げる"
 
 #: ../src/iop/hotpixels.c:464
 msgid "strength of hot pixel correction"
-msgstr "ホットピクセル補正の適用量"
+msgstr "ホットピクセル補正の強さ"
 
 #. 3 neighbours
 #: ../src/iop/hotpixels.c:469
@@ -7362,7 +7363,7 @@ msgstr "反転"
 #: ../src/iop/invert.c:128
 msgctxt "accel"
 msgid "pick color of film material from image"
-msgstr "画像からフィルムベースのカラーを選択"
+msgstr "画像からフィルムベースのカラーを抽出"
 
 #: ../src/iop/invert.c:610
 msgid "color of film material"
@@ -7378,7 +7379,7 @@ msgstr "フィルムベースのカラーを選択"
 
 #: ../src/iop/invert.c:647
 msgid "pick color of film material from image"
-msgstr "画像からフィルムベースのカラーを選択"
+msgstr "画像からフィルムベースのカラーを抽出"
 
 #: ../src/iop/lens.c:134
 msgid "lens correction"
@@ -7668,7 +7669,7 @@ msgid ""
 msgstr ""
 "クリックとドラッグでポイントを追加します\n"
 "スクロールでサイズを変更します\n"
-"shift-スクロールで適用量を変更します - ctrl-スクロールで方向を変更します"
+"shift-スクロールで強さを変更します - ctrl-スクロールで方向を変更します"
 
 #: ../src/iop/liquify.c:3359
 msgid ""
@@ -7678,7 +7679,7 @@ msgid ""
 msgstr ""
 "クリックでラインを追加します\n"
 "スクロールでサイズを変更します\n"
-"shift-スクロールで適用量を変更します - ctrl-スクロールで方向を変更します"
+"shift-スクロールで強さを変更します - ctrl-スクロールで方向を変更します"
 
 #: ../src/iop/liquify.c:3363
 msgid ""
@@ -7688,7 +7689,7 @@ msgid ""
 msgstr ""
 "クリックでカーブを追加します\n"
 "スクロールでサイズを変更します\n"
-"shift-スクロールで適用量を変更します -  ctrl-スクロールで方向を変更します"
+"shift-スクロールで強さを変更します -  ctrl-スクロールで方向を変更します"
 
 #: ../src/iop/liquify.c:3366
 msgid "click to edit nodes"
@@ -7759,7 +7760,7 @@ msgid ""
 "drag to adjust warp strength\n"
 "ctrl-click: linear, grow, and shrink"
 msgstr ""
-"ドラッグでワープの適用量を調整します\n"
+"ドラッグでワープの強さを調整します\n"
 "ctrl+クリック: 線形に拡大、縮小します"
 
 #: ../src/iop/liquify.c:3502
@@ -8144,15 +8145,15 @@ msgstr ""
 
 #: ../src/iop/relight.c:55
 msgid "fill-light 0.25EV with 4 zones"
-msgstr "4つのゾーンに +0.25EV の補助光"
+msgstr "4つのゾーンに +0.25EV のフィルライト"
 
 #: ../src/iop/relight.c:58
 msgid "fill-shadow -0.25EV with 4 zones"
-msgstr "4つのゾーンに -0.25EV の補助影"
+msgstr "4つのゾーンに -0.25EV のフィルシャドウ"
 
 #: ../src/iop/relight.c:89
 msgid "fill light"
-msgstr "補助光効果"
+msgstr "フィルライト"
 
 #: ../src/iop/relight.c:105
 msgctxt "accel"
@@ -8161,7 +8162,7 @@ msgstr "幅"
 
 #: ../src/iop/relight.c:368
 msgid "the fill-light in EV"
-msgstr "補助光 .EV"
+msgstr "フィルライト  EV"
 
 #: ../src/iop/relight.c:373 ../src/libs/metadata_view.c:115
 #: ../src/libs/print_settings.c:1305
@@ -8171,15 +8172,15 @@ msgstr "幅"
 #: ../src/iop/relight.c:375
 #, no-c-format
 msgid "width of fill-light area defined in zones"
-msgstr "ゾーンに定義された補助光範囲の幅"
+msgstr "ゾーンに定義されたフィルライトの範囲の幅"
 
 #: ../src/iop/relight.c:386
 msgid "select the center of fill-light"
-msgstr "補助光の中心を選択"
+msgstr "フィルライトの中心を選択"
 
 #: ../src/iop/relight.c:402
 msgid "toggle tool for picking median lightness in image"
-msgstr "画像の中間の明度を選択するための切り換えツール"
+msgstr "画像の中間の明度を抽出するツールの切り替え"
 
 #: ../src/iop/rotatepixels.c:71
 msgctxt "modulename"
@@ -8320,7 +8321,7 @@ msgstr "シャープ化の範囲"
 
 #: ../src/iop/sharpen.c:765
 msgid "strength of the sharpen"
-msgstr "シャープ化の適用量"
+msgstr "シャープ化の強さ"
 
 #: ../src/iop/sharpen.c:768
 msgid "threshold to activate sharpen"
@@ -8367,15 +8368,15 @@ msgstr "バランス"
 
 #: ../src/iop/splittoning.c:124
 msgid "authentic sepia"
-msgstr "本格的なセピア"
+msgstr "伝統的なセピア"
 
 #: ../src/iop/splittoning.c:133
 msgid "authentic cyanotype"
-msgstr "本格的なサイアノタイプ"
+msgstr "伝統的なサイアノタイプ"
 
 #: ../src/iop/splittoning.c:142
 msgid "authentic platinotype"
-msgstr "本格的なプラチナプリント"
+msgstr "伝統的なプラチナプリント"
 
 #: ../src/iop/splittoning.c:151
 msgid "chocolate brown"
@@ -8889,11 +8890,12 @@ msgid ""
 "exp)\n"
 msgstr ""
 "カーブに揺らぎや尖りが見られる場合、この手法を変更してください\n"
-"- 3次スプラインは、滑らかなカーブを生成するには良いですが、ノードが近接すると揺"
-"らぎます\n"
+"- 3次スプラインは、滑らかなカーブを生成するには良いですが、ノードが近接すると"
+"揺らぎます\n"
 "- centripetalスプラインは、近接したノードの揺らぎや尖りが避けられ良いですが、"
 "それほど滑らかではありません\n"
-"- 単調スプラインは、純粋な分析関数の正確さの点で優れています (log, gamma, exp)\n"
+"- 単調スプラインは、純粋な分析関数の正確さの点で優れています (log, gamma, "
+"exp)\n"
 
 #: ../src/iop/tonecurve.c:1262
 msgid "log-log (xy)"
@@ -8936,7 +8938,7 @@ msgstr "中間トーンのバイアス"
 
 #: ../src/iop/velvia.c:382
 msgid "the strength of saturation boost"
-msgstr "彩度増加の適用量"
+msgstr "彩度増加の強さ"
 
 #: ../src/iop/velvia.c:387
 msgid "mid-tones bias"
@@ -8961,7 +8963,7 @@ msgstr "周辺光量補正"
 #: ../src/iop/vignette.c:171
 msgctxt "accel"
 msgid "fall-off strength"
-msgstr "光量低下の範囲"
+msgstr "光量低下の強さ"
 
 #: ../src/iop/vignette.c:174
 msgctxt "accel"
@@ -9006,7 +9008,7 @@ msgstr "16-bit 出力"
 
 #: ../src/iop/vignette.c:1150
 msgid "fall-off strength"
-msgstr "光量低下の範囲"
+msgstr "光量低下の強さ"
 
 #: ../src/iop/vignette.c:1153
 msgid "horizontal center"
