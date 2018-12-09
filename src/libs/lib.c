@@ -776,8 +776,10 @@ static void _preset_popup_posistion(GtkMenu *menu, gint *x, gint *y, gboolean *p
 }
 #endif
 
-static void popup_callback(GtkButton *button, dt_lib_module_t *module)
+static void popup_callback(GtkButton *button, GdkEventButton *event, dt_lib_module_t *module)
 {
+  if(event->button != 1 && event->button != 2) return;
+
   dt_lib_module_info_t *mi = (dt_lib_module_info_t *)calloc(1, sizeof(dt_lib_module_info_t));
 
   mi->plugin_name = g_strdup(module->plugin_name);
@@ -820,6 +822,8 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
                  gtk_get_current_event_time());
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
 #endif
+
+  dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }
 
 void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
@@ -1013,7 +1017,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
     hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     module->presets_button = GTK_WIDGET(hw[idx]);
     gtk_widget_set_tooltip_text(hw[idx], _("presets"));
-    g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(popup_callback), module);
+    g_signal_connect(G_OBJECT(hw[idx]), "button-press-event", G_CALLBACK(popup_callback), module);
   }
   else
     hw[idx] = gtk_fixed_new();

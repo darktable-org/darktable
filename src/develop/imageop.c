@@ -1660,20 +1660,25 @@ static void _preset_popup_position(GtkMenu *menu, gint *x, gint *y, gboolean *pu
 }
 #endif
 
-static void popup_callback(GtkButton *button, dt_iop_module_t *module)
+static void popup_callback(GtkButton *button, GdkEventButton *event, dt_iop_module_t *module)
 {
-  dt_gui_presets_popup_menu_show_for_module(module);
-  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+  if(event->button == 1 || event->button == 2)
+  {
+    dt_gui_presets_popup_menu_show_for_module(module);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
 #if GTK_CHECK_VERSION(3, 22, 0)
-  gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu,
-                           dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander)), GDK_GRAVITY_SOUTH_WEST,
-                           GDK_GRAVITY_NORTH_WEST, NULL);
+    gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu,
+                             dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander)), GDK_GRAVITY_SOUTH_WEST,
+                             GDK_GRAVITY_NORTH_WEST, NULL);
 #else
-  gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_position, button, 0,
-                 gtk_get_current_event_time());
-  gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
+    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_position, button, 0,
+                   gtk_get_current_event_time());
+    gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
 #endif
+  }
+
+  dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }
 
 void dt_iop_request_focus(dt_iop_module_t *module)
@@ -2043,7 +2048,7 @@ got_image:
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets"));
   else
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets\nmiddle-click to apply on new instance"));
-  g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(popup_callback), module);
+  g_signal_connect(G_OBJECT(hw[idx]), "button-press-event", G_CALLBACK(popup_callback), module);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
   /* add enabled button spacer */
