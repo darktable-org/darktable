@@ -18,6 +18,10 @@
 
 #define __STDC_FORMAT_MACROS
 
+#if defined(__SSE__)
+#include <xmmintrin.h>
+#endif
+
 extern "C" {
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
