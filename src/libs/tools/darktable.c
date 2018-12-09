@@ -25,6 +25,9 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #include <librsvg/rsvg.h>
 // ugh, ugly hack. why do people break stuff all the time?
@@ -241,6 +244,9 @@ static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEvent
 static void _lib_darktable_show_about_dialog()
 {
   GtkWidget *dialog = gtk_about_dialog_new();
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
   gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), darktable_package_version);
   char *copyright = g_strdup_printf(_("copyright (c) the authors 2009-%s"), darktable_last_commit_year);

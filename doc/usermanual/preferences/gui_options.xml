@@ -129,6 +129,13 @@
     quality rendering path which is better but slower (default 720p).
   </para>
 
+  <bridgehead renderas="sect4">enable extended thumb overlay</bridgehead>
+
+  <para>
+    If enabled adds additional information to the thumbnail under the mouse cursor: image name,
+    exposure time, aperture, focal length, ISO value (default off).
+  </para>
+
 <!--  
   <bridgehead renderas="sect4">maximum width of image drawing area</bridgehead>
 

@@ -42,6 +42,9 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "libs/modulegroups.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #include <assert.h>
 #include <gmodule.h>
@@ -1047,6 +1050,9 @@ static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton 
 #else
   gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
 #endif
+
+  // make sure the button is deactivated now that the menu is opened
+  dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }
 
 static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
@@ -1759,9 +1765,6 @@ static void dt_iop_gui_set_single_expanded(dt_iop_module_t *module, gboolean exp
    * we do that first, so update_expanded won't think it should be visible
    * and undo our changes right away. */
   module->expanded = expanded;
-  char var[1024];
-  snprintf(var, sizeof(var), "plugins/darkroom/%s/expanded", module->op);
-  dt_conf_set_bool(var, expanded);
 
   /* show / hide plugin widget */
   if(expanded)
@@ -1784,6 +1787,10 @@ static void dt_iop_gui_set_single_expanded(dt_iop_module_t *module, gboolean exp
       dt_control_queue_redraw_center();
     }
   }
+
+  char var[1024];
+  snprintf(var, sizeof(var), "plugins/darkroom/%s/expanded", module->op);
+  dt_conf_set_bool(var, expanded);
 }
 
 void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolean collapse_others)
@@ -1793,13 +1800,12 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolea
   /* handle shiftclick on expander, hide all except this */
   if(collapse_others)
   {
-    int current_group = dt_dev_modulegroups_get(module->dev);
+    const int current_group = dt_dev_modulegroups_get(module->dev);
     GList *iop = g_list_first(module->dev->iop);
     gboolean all_other_closed = TRUE;
     while(iop)
     {
       dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-
       if(m != module && dt_iop_shown_in_group(m, current_group))
       {
         all_other_closed = all_other_closed && !m->expanded;
@@ -1824,7 +1830,7 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
 {
   if(!module->expander) return;
 
-  gboolean expanded = module->expanded;
+  const gboolean expanded = module->expanded;
 
   /* update expander arrow state */
   GtkWidget *icon;
@@ -2147,7 +2153,7 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
     dt_iop_gui_set_state(module, dt_iop_state_ACTIVE);
   }
 
-  uint32_t current_group = dt_dev_modulegroups_get(module->dev);
+  const uint32_t current_group = dt_dev_modulegroups_get(module->dev);
   if(!dt_iop_shown_in_group(module, current_group))
   {
     dt_dev_modulegroups_switch(darktable.develop, module);

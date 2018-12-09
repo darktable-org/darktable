@@ -28,6 +28,9 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 #include "common/iop_group.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -283,6 +286,9 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
 
   GtkColorSelectionDialog  *csd = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("select tone color")));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(GTK_WIDGET(csd));
+#endif
   g_signal_connect (G_OBJECT (csd->ok_button), "clicked",
                     G_CALLBACK (colorpick_button_callback), csd);
   g_signal_connect (G_OBJECT (csd->cancel_button), "clicked",

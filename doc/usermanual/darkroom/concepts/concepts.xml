@@ -38,22 +38,6 @@
 
   <xi:include href="blending.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-<!-- Blending operators -->
-
-  <xi:include href="blend_operators.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
-<!-- Drawn masks  -->
-
-  <xi:include href="drawn_masks.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
-<!-- Parametric masks  -->
-
-  <xi:include href="parametric_masks.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
-<!-- Combined masks  -->
-
-  <xi:include href="combined_masks.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
 <!-- Color management -->
 
   <xi:include href="colormanagement.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

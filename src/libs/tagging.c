@@ -323,6 +323,9 @@ static void delete_button_clicked(GtkButton *button, gpointer user_data)
         ngettext("do you really want to delete the tag `%s'?\n%d image is assigned this tag!",
                  "do you really want to delete the tag `%s'?\n%d images are assigned this tag!", count),
         tagname, count);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete tag?"));
     res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);

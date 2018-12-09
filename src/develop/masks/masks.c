@@ -323,24 +323,59 @@ static void _check_id(dt_masks_form_t *form)
 void dt_masks_gui_form_save_creation(dt_develop_t *dev, dt_iop_module_t *module, dt_masks_form_t *form,
                                      dt_masks_form_gui_t *gui)
 {
+  GList *l;
+
   // we check if the id is already registered
   _check_id(form);
 
-  dev->forms = g_list_append(dev->forms, form);
   if(gui) gui->creation = FALSE;
 
-  guint nb = g_list_length(dev->forms);
+  // mask nb will be at least the length of the list
+  guint nb = 0;
 
-  if(form->type & DT_MASKS_CIRCLE)
-    snprintf(form->name, sizeof(form->name), _("circle #%d"), nb);
-  else if(form->type & DT_MASKS_PATH)
-    snprintf(form->name, sizeof(form->name), _("path #%d"), nb);
-  else if(form->type & DT_MASKS_GRADIENT)
-    snprintf(form->name, sizeof(form->name), _("gradient #%d"), nb);
-  else if(form->type & DT_MASKS_ELLIPSE)
-    snprintf(form->name, sizeof(form->name), _("ellipse #%d"), nb);
-  else if(form->type & DT_MASKS_BRUSH)
-    snprintf(form->name, sizeof(form->name), _("brush #%d"), nb);
+  // count only the same forms to have a clean numbering
+  l = dev->forms;
+  while(l)
+  {
+    dt_masks_form_t *f = (dt_masks_form_t *)l->data;
+    if(f->type == form->type) nb++;
+    l = g_list_next(l);
+  }
+
+  gboolean exist = FALSE;
+
+  // check that we do not have duplicate, in case some masks have been
+  // removed we can have hole and so nb could already exists.
+  do
+  {
+    exist = FALSE;
+    nb++;
+
+    if(form->type & DT_MASKS_CIRCLE)
+      snprintf(form->name, sizeof(form->name), _("circle #%d"), nb);
+    else if(form->type & DT_MASKS_PATH)
+      snprintf(form->name, sizeof(form->name), _("path #%d"), nb);
+    else if(form->type & DT_MASKS_GRADIENT)
+      snprintf(form->name, sizeof(form->name), _("gradient #%d"), nb);
+    else if(form->type & DT_MASKS_ELLIPSE)
+      snprintf(form->name, sizeof(form->name), _("ellipse #%d"), nb);
+    else if(form->type & DT_MASKS_BRUSH)
+      snprintf(form->name, sizeof(form->name), _("brush #%d"), nb);
+
+    l = dev->forms;
+    while(l)
+    {
+      dt_masks_form_t *f = (dt_masks_form_t *)l->data;
+      if(!strcmp(f->name, form->name))
+      {
+        exist = TRUE;
+        break;
+      }
+      l = g_list_next(l);
+    }
+  } while(exist);
+
+  dev->forms = g_list_append(dev->forms, form);
 
   dt_masks_write_form(form, dev);
 
@@ -2580,7 +2615,7 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int m
       if(mask_type & DT_MASKS_CIRCLE)
       {
         const float radius = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_size"));
-        
+
         gui->posx_source = (radius * iwd);
         gui->posy_source = -(radius * iht);
       }
@@ -2588,7 +2623,7 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int m
       {
         const float radius_a = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_a");
         const float radius_b = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_b");
-        
+
         gui->posx_source = (radius_a * iwd);
         gui->posy_source = -(radius_b * iht);
       }
@@ -2604,7 +2639,7 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int m
       }
       else
         fprintf(stderr, "[dt_masks_set_source_pos_initial_value] unsuported masks type when calculating source position initial value\n");
-      
+
       float pts[2] = { pzx * wd + gui->posx_source, pzy * ht + gui->posy_source };
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
@@ -2619,7 +2654,7 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int m
 
       form->source[0] = pts[0] / iwd;
       form->source[1] = pts[1] / iht;
-      
+
       gui->posx_source = gui->posx_source - pzx * wd;
       gui->posy_source = gui->posy_source - pzy * ht;
     }
@@ -2631,7 +2666,7 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int m
     // original pos was already defined and relative value calculated, just use it
     float pts[2] = { pzx * wd + gui->posx_source, pzy * ht + gui->posy_source };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    
+
     form->source[0] = pts[0] / iwd;
     form->source[1] = pts[1] / iht;
   }

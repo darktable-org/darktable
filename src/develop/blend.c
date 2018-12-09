@@ -2964,14 +2964,15 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     {
       int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
       if(w < 1) w = 1;
-      float sqrt_eps = 0;
+      float sqrt_eps = 1.f;
+      float guide_weight = 1.f;
       switch(cst)
       {
         case iop_cs_rgb:
-          sqrt_eps = 0.01f;
+          guide_weight = 100.f;
           break;
         case iop_cs_Lab:
-          sqrt_eps = 0.01f * 100;
+          guide_weight = 1.f;
           break;
         case iop_cs_RAW:
         default:
@@ -2994,7 +2995,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         }
         guide = guide_tmp;
       }
-      guided_filter(guide, mask_bak, mask, owidth, oheight, ch, w, sqrt_eps, 0.f, 1.f);
+      guided_filter(guide, mask_bak, mask, owidth, oheight, ch, w, sqrt_eps, guide_weight, 0.f, 1.f);
       if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN) dt_free_align(guide);
       dt_free_align(mask_bak);
     }
@@ -3285,14 +3286,15 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
       if (w < 1)
         w = 1;
-      float sqrt_eps = 0;
+      float sqrt_eps = 1.f;
+      float guide_weight = 1.f;
       switch(cst)
       {
       case iop_cs_rgb:
-        sqrt_eps = 1e-2f;
+        guide_weight = 100.f;
         break;
       case iop_cs_Lab:
-        sqrt_eps = 1e-2f * 100;
+        guide_weight = 1.f;
         break;
       case iop_cs_RAW:
       default:
@@ -3308,7 +3310,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
         err = dt_opencl_enqueue_copy_image(devid, dev_in, guide, origin_2, origin_1, region);
         if(err != CL_SUCCESS) goto error;
       }
-      guided_filter_cl(devid, guide, dev_mask_2, dev_mask_1, owidth, oheight, ch, w, sqrt_eps, 0.f, 1.f);
+      guided_filter_cl(devid, guide, dev_mask_2, dev_mask_1, owidth, oheight, ch, w, sqrt_eps, guide_weight, 0.f,
+                       1.f);
       if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN) dt_opencl_release_mem_object(guide);
     }
     else

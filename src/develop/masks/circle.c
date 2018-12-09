@@ -227,7 +227,7 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
       const float spots_border = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_border"));
       circle->radius = MAX(0.001f, spots_size);
       circle->border = MAX(0.0005f, spots_border);
-      
+
       // calculate the source position
       if(form->type & DT_MASKS_CLONE)
       {
@@ -302,7 +302,7 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
       gui2->scrollx = pzx;
       gui2->scrolly = pzy;
       gui2->form_selected = TRUE; // we also want to be selected after button released
-      
+
       dt_masks_select_form(module, dt_masks_get_from_id(darktable.develop, form->formid));
     }
     return 1;
@@ -517,8 +517,10 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       float xpos, ypos;
       if(gui->posx == -1.f && gui->posy == -1.f)
       {
-        xpos = (.5f + dt_control_get_dev_zoom_x()) * darktable.develop->preview_pipe->backbuf_width;
-        ypos = (.5f + dt_control_get_dev_zoom_y()) * darktable.develop->preview_pipe->backbuf_height;
+        const float zoom_x = dt_control_get_dev_zoom_x();
+        const float zoom_y = dt_control_get_dev_zoom_y();
+        xpos = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
+        ypos = (.5f + zoom_y) * darktable.develop->preview_pipe->backbuf_height;
       }
       else
       {
@@ -560,7 +562,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
         dt_masks_calculate_source_pos_value(gui, DT_MASKS_CIRCLE, xpos, ypos, xpos, ypos, &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
-      
+
       cairo_restore(cr);
     }
 

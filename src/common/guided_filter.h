@@ -22,12 +22,10 @@
 
 struct dt_iop_roi_t;
 
-void guided_filter(const float * guide, const float * in, float * out,
-                   int width, int height, int ch, int w,
-                   float sqrt_eps, float min, float max);
+void guided_filter(const float *guide, const float *in, float *out, int width, int height, int ch, int w,
+                   float sqrt_eps, float guide_weight, float min, float max);
 
 #ifdef HAVE_OPENCL
-void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out,
-                      int width, int height, int ch, int w,
-                      float sqrt_eps, float min, float max);
+void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, int width, int height, int ch, int w,
+                      float sqrt_eps, float guide_weight, float min, float max);
 #endif

@@ -40,31 +40,27 @@ typedef struct tile
   int left, right, lower, upper;
 } tile;
 
-typedef float rgb_lab_pixel[3];
-
-typedef struct rgb_lab_image
+typedef struct color_image
 {
-  rgb_lab_pixel *data;
+  float *data;
   int width, height, stride;
-} rgb_lab_image;
+} color_image;
 
-static inline float *get_rgb_lab_pixel(rgb_lab_image img, size_t i)
+static inline float *get_color_pixel(color_image img, size_t i)
 {
-  return ((float *)img.data) + i * img.stride;
+  return img.data + i * img.stride;
 }
-
-typedef float gray_pixel;
 
 typedef struct gray_image
 {
-  gray_pixel *data;
+  float *data;
   int width, height;
 } gray_image;
 
 // allocate space for 1-component image of size width x height
 static inline gray_image new_gray_image(int width, int height)
 {
-  return (gray_image){ dt_alloc_align(64, sizeof(gray_pixel) * width * height), width, height };
+  return (gray_image){ dt_alloc_align(64, sizeof(float) * width * height), width, height };
 }
 
 // free space for 1-component image
@@ -151,7 +147,7 @@ static void box_mean(gray_image img1, gray_image img2, int w)
     img2_bak = new_gray_image(max_i(img2.width, img2.height), 1);
     for(int i1 = 0; i1 < img2.height; i1++)
     {
-      memcpy(img2_bak.data, img2.data + (size_t)i1 * img2.width, sizeof(gray_pixel) * img2.width);
+      memcpy(img2_bak.data, img2.data + (size_t)i1 * img2.width, sizeof(float) * img2.width);
       box_mean_1d(img2.width, img2_bak.data, img2.data + (size_t)i1 * img2.width, 1, w);
     }
   }
@@ -171,8 +167,8 @@ static void box_mean(gray_image img1, gray_image img2, int w)
 
 // apply guided filter to single-component image img using the 3-components
 // image imgg as a guide
-static void guided_filter_tiling(rgb_lab_image imgg, gray_image img, gray_image img_out, tile target, int w,
-                                 float eps, float min, float max)
+static void guided_filter_tiling(color_image imgg, gray_image img, gray_image img_out, tile target, const int w,
+                                 const float eps, const float guide_weight, const float min, const float max)
 {
   const tile source = { max_i(target.left - 2 * w, 0), min_i(target.right + 2 * w, imgg.width),
                         max_i(target.lower - 2 * w, 0), min_i(target.upper + 2 * w, imgg.height) };
@@ -189,11 +185,11 @@ static void guided_filter_tiling(rgb_lab_image imgg, gray_image img, gray_image 
     for(int i_imgg = source.left; i_imgg < source.right; i_imgg++)
     {
       int i = i_imgg - source.left;
-      float *pixel = get_rgb_lab_pixel(imgg, i_imgg + (size_t)j_imgg * imgg.width);
+      float *pixel = get_color_pixel(imgg, i_imgg + (size_t)j_imgg * imgg.width);
       size_t k = i + (size_t)j * width;
-      imgg_mean_r.data[k] = pixel[0];
-      imgg_mean_g.data[k] = pixel[1];
-      imgg_mean_b.data[k] = pixel[2];
+      imgg_mean_r.data[k] = pixel[0] * guide_weight;
+      imgg_mean_g.data[k] = pixel[1] * guide_weight;
+      imgg_mean_b.data[k] = pixel[2] * guide_weight;
       img_mean.data[k] = img.data[i_imgg + (size_t)j_imgg * img.width];
     }
   }
@@ -216,7 +212,8 @@ static void guided_filter_tiling(rgb_lab_image imgg, gray_image img, gray_image 
     for(int i_imgg = source.left; i_imgg < source.right; i_imgg++)
     {
       int i = i_imgg - source.left;
-      float *pixel = get_rgb_lab_pixel(imgg, i_imgg + (size_t)j_imgg * imgg.width);
+      float *pixel_ = get_color_pixel(imgg, i_imgg + (size_t)j_imgg * imgg.width);
+      float pixel[3] = { pixel_[0] * guide_weight, pixel_[1] * guide_weight, pixel_[2] * guide_weight };
       size_t k = i + (size_t)j * width;
       cov_imgg_img_r.data[k] = pixel[0] * img.data[i_imgg + (size_t)j_imgg * imgg.width];
       cov_imgg_img_g.data[k] = pixel[1] * img.data[i_imgg + (size_t)j_imgg * imgg.width];
@@ -267,10 +264,8 @@ static void guided_filter_tiling(rgb_lab_image imgg, gray_image img, gray_image 
       float Sigma_1_1 = var_imgg_gg.data[i];
       float Sigma_1_2 = var_imgg_gb.data[i];
       float Sigma_2_2 = var_imgg_bb.data[i];
-      rgb_lab_pixel cov_imgg_img;
-      cov_imgg_img[0] = cov_imgg_img_r.data[i];
-      cov_imgg_img[1] = cov_imgg_img_g.data[i];
-      cov_imgg_img[2] = cov_imgg_img_b.data[i];
+      float cov_imgg_img[3]
+          = { cov_imgg_img[0] = cov_imgg_img_r.data[i], cov_imgg_img_g.data[i], cov_imgg_img_b.data[i] };
       float det0 = Sigma_0_0 * (Sigma_1_1 * Sigma_2_2 - Sigma_1_2 * Sigma_1_2)
                    - Sigma_0_1 * (Sigma_0_1 * Sigma_2_2 - Sigma_0_2 * Sigma_1_2)
                    + Sigma_0_2 * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);
@@ -316,8 +311,10 @@ static void guided_filter_tiling(rgb_lab_image imgg, gray_image img, gray_image 
     size_t k = (target.left - source.left) + (size_t)(j_imgg - source.lower) * width;
     for(int i_imgg = target.left; i_imgg < target.right; i_imgg++, k++, l++)
     {
-      float *pixel = get_rgb_lab_pixel(imgg, l);
-      float res = a_r.data[k] * pixel[0] + a_g.data[k] * pixel[1] + a_b.data[k] * pixel[2] + b.data[k];
+      float *pixel = get_color_pixel(imgg, l);
+      float res = a_r.data[k] * pixel[0] + a_g.data[k] * pixel[1] + a_b.data[k] * pixel[2];
+      res *= guide_weight;
+      res += b.data[k];
       if(res < min) res = min;
       if(res > max) res = max;
       img_out.data[i_imgg + (size_t)j_imgg * imgg.width] = res;
@@ -342,16 +339,17 @@ static void guided_filter_tiling(rgb_lab_image imgg, gray_image img, gray_image 
 }
 
 
-void guided_filter(const float *const guide, const float *const in, float *const out,
-                   const int width, const int height, const int ch,
-                   int w, // window size
-                   float sqrt_eps, // regularization parameter
-                   float min, float max)
+void guided_filter(const float *const guide, const float *const in, float *const out, const int width,
+                   const int height, const int ch,
+                   const int w,              // window size
+                   const float sqrt_eps,     // regularization parameter
+                   const float guide_weight, // to balance the amplitudes in the guiding image and the input image
+                   const float min, const float max)
 {
   assert(ch >= 3);
   assert(w >= 1);
 
-  rgb_lab_image img_guide = (rgb_lab_image){ (rgb_lab_pixel *)guide, width, height, ch };
+  color_image img_guide = (color_image){ (float *)guide, width, height, ch };
   gray_image img_in = (gray_image){ (float *)in, width, height };
   gray_image img_out = (gray_image){ out, width, height };
   const int tile_width = max_i(3 * w, 512);
@@ -365,15 +363,19 @@ void guided_filter(const float *const guide, const float *const in, float *const
     for(int i = 0; i < width; i += tile_width)
     {
       tile target = { i, min_i(i + tile_width, width), j, min_i(j + tile_width, height) };
-      guided_filter_tiling(img_guide, img_in, img_out, target, w, eps, min, max);
+      guided_filter_tiling(img_guide, img_in, img_out, target, w, eps, guide_weight, min, max);
     }
   }
 }
 
 #ifdef HAVE_OPENCL
-void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out,
-                     int width, int height, int ch, int w,
-                     float sqrt_eps, float min, float max)
+void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int width, const int height,
+                      const int ch,
+                      const int w,              // window size
+                      const float sqrt_eps,     // regularization parameter
+                      const float guide_weight, // to balance the amplitudes in the guiding image and the input
+                                                // image
+                      const float min, const float max)
 {
   // fall-back implementation: copy data from device memory to host memory and perform filter
   // by CPU until there is a proper OpenCL implementation
@@ -385,7 +387,7 @@ void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out,
   if(err != CL_SUCCESS) goto error;
   err = dt_opencl_read_host_from_device(devid, in_host, in, width, height, sizeof(float));
   if(err != CL_SUCCESS) goto error;
-  guided_filter(guide_host, in_host, out_host, width, height, ch, w, sqrt_eps, 0.0f, 1.0f);
+  guided_filter(guide_host, in_host, out_host, width, height, ch, w, sqrt_eps, guide_weight, min, max);
   err = dt_opencl_write_host_to_device(devid, out_host, out, width, height, sizeof(float));
   if(err != CL_SUCCESS) goto error;
 error:

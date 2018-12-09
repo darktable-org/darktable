@@ -27,6 +27,9 @@
 #include "gui/preferences.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 DT_MODULE(1)
 
@@ -229,6 +232,9 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
                                                        GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
                                                        _("do you want to access https://www.darktable.org/?"));
+#ifdef GDK_WINDOWING_QUARTZ
+            dt_osx_disallow_fullscreen(dialog);
+#endif
 
             gtk_window_set_title(GTK_WINDOW(dialog), _("access the online usermanual?"));
             gint res = gtk_dialog_run(GTK_DIALOG(dialog));

@@ -23,6 +23,8 @@
 
   <xi:include href="history.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="duplicate.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="colorpicker.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="maskmanager.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

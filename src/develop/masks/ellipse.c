@@ -621,8 +621,8 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
       const float ellipse_border = dt_conf_get_float("plugins/darkroom/spots/ellipse_border");
       const float rotation = dt_conf_get_float("plugins/darkroom/spots/ellipse_rotation");
       const int flags = dt_conf_get_int("plugins/darkroom/spots/ellipse_flags");
-      ellipse->radius[0] = MAX(0.01f, MIN(0.5f, a));
-      ellipse->radius[1] = MAX(0.01f, MIN(0.5f, b));
+      ellipse->radius[0] = MAX(0.001f, MIN(0.5f, a));
+      ellipse->radius[1] = MAX(0.001f, MIN(0.5f, b));
       ellipse->flags = flags;
       ellipse->rotation = rotation;
       const float min_radius = fmin(ellipse->radius[0], ellipse->radius[1]);
@@ -645,8 +645,8 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
       const float ellipse_border = dt_conf_get_float("plugins/darkroom/masks/ellipse/border");
       const float rotation = dt_conf_get_float("plugins/darkroom/masks/ellipse/rotation");
       const int flags = dt_conf_get_int("plugins/darkroom/masks/ellipse/flags");
-      ellipse->radius[0] = MAX(0.01f, MIN(0.5f, a));
-      ellipse->radius[1] = MAX(0.01f, MIN(0.5f, b));
+      ellipse->radius[0] = MAX(0.001f, MIN(0.5f, a));
+      ellipse->radius[1] = MAX(0.001f, MIN(0.5f, b));
       ellipse->flags = flags;
       ellipse->rotation = rotation;
       const float min_radius = fmin(ellipse->radius[0], ellipse->radius[1]);
@@ -709,7 +709,7 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
       gui2->scrollx = pzx;
       gui2->scrolly = pzy;
       gui2->form_selected = TRUE; // we also want to be selected after button released
-      
+
       dt_masks_select_form(module, dt_masks_get_from_id(darktable.develop, form->formid));
     }
     return 1;
@@ -1098,9 +1098,8 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
 
       if(pzx == -1.f && pzy == -1.f)
       {
-        float zoom_x, zoom_y;
-        zoom_y = dt_control_get_dev_zoom_y();
-        zoom_x = dt_control_get_dev_zoom_x();
+        const float zoom_x = dt_control_get_dev_zoom_x();
+        const float zoom_y = dt_control_get_dev_zoom_y();
         pzx = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
         pzy = (.5f + zoom_y) * darktable.develop->preview_pipe->backbuf_height;
       }

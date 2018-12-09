@@ -119,6 +119,12 @@
         This entry is to select one of the installed printers.
       </para>
 
+      <bridgehead renderas="sect4">media</bridgehead>
+
+      <para>
+        The media kind loaded on the printer (Plain Paper, Luster Photo Paper, etc.).
+      </para>
+
       <bridgehead renderas="sect4">profile</bridgehead>
 
       <para>

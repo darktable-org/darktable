@@ -3982,8 +3982,13 @@ static void cropmode_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   p->cropmode = dt_bauhaus_combobox_get(widget);
-  (void)do_clean_structure(self, p);
+  if(g->lines != NULL && !g->lines_suppressed)
+  {
+    g->lines_suppressed = 1;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), g->lines_suppressed);
+  }
   do_crop(self, p);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
