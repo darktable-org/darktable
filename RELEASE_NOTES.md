@@ -219,8 +219,10 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Pentax K-01
 - Pentax KP
 - Samsung NX1
+- Sony DSC-RX100M3
 - Sony DSC-RX100M4
 - Sony DSC-RX10M3
+- Sony DSC-RX10M4
 - Sony ILCE-7M3
 
 ## Translations
