@@ -226,21 +226,22 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 ## Translations
 
 - Afrikaans
+- Albanian
+- Chinese
 - Czech
-- German
+- Dutch
 - Finnish
 - French
 - Galician
+- German
 - Hebrew
 - Hungarian
 - Italian
-- Norwegian Bokmål
+- Japanese
 - Nepal
-- Dutch
+- Norwegian Bokmål
 - Portuguese
 - Romanian
 - Russian
 - Slovenian
-- Albanian
 - Thai
-- Chinese
