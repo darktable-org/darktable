@@ -43,7 +43,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - add optional scrollbars on lighttable, or lighttable and darkroom
 - allow each masks of the clone module to have the opacity adjusted
 - lightroom import module supports the creator, rights, title, description and publisher information.
-- enhance TurboPrint support by displaying the dialogue with all possible options
+- enhance TurboPrint support by displaying the dialogue with all possible options (print cancellation will be fixed in TurboPrint 2.47)
 - new sort filter based on the image's aspect
 - new sort filter based on the image's shutter speed
 - new sort filter based on the image's group
