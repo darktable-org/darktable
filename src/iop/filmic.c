@@ -669,7 +669,7 @@ static void sanitize_latitude(dt_iop_filmic_params_t *p, dt_iop_filmic_gui_data_
     // it can never be higher than the dynamic range
     p->latitude_stops =  (p->white_point_source - p->black_point_source) * 0.99f;
     darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
+    dt_bauhaus_slider_set_soft(g->latitude_stops, p->latitude_stops);
     darktable.gui->reset = 0;
   }
 }
@@ -690,16 +690,10 @@ static void apply_auto_grey(dt_iop_module_t *self)
   p->black_point_source = p->black_point_source + grey_var;
   p->white_point_source = p->white_point_source + grey_var;
 
-  // Ensure the lowlights range is bigger that the highlights range
-  if (p->black_point_source > -p->white_point_source)
-  {
-    p->black_point_source = -p->white_point_source;
-  }
-
   darktable.gui->reset = 1;
-  dt_bauhaus_slider_set(g->grey_point_source, p->grey_point_source);
-  dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
-  dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);
+  dt_bauhaus_slider_set_soft(g->grey_point_source, p->grey_point_source);
+  dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
+  dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   darktable.gui->reset = 0;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -721,18 +715,8 @@ static void apply_auto_black(dt_iop_module_t *self)
   float EVmin = Log2Thres(black / (p->grey_point_source / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
-  // Ensure the lowlights range is bigger that the highlights range
-  if (EVmin < -p->white_point_source)
-  {
-    p->black_point_source = EVmin;
-  }
-  else
-  {
-    p->black_point_source = -p->white_point_source;
-  }
-
   darktable.gui->reset = 1;
-  dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
+  dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
   darktable.gui->reset = 0;
 
   sanitize_latitude(p, g);
@@ -760,7 +744,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   p->white_point_source = EVmax;
 
   darktable.gui->reset = 1;
-  dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);
+  dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   darktable.gui->reset = 0;
 
   sanitize_latitude(p, g);
@@ -827,22 +811,12 @@ static void apply_autotune(dt_iop_module_t *self)
   float EVmax = Log2Thres(white / (p->grey_point_source / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
-  // Ensure the lowlights range is bigger that the highlights range
-  if (EVmin < -EVmax)
-  {
-    p->black_point_source = EVmin;
-  }
-  else
-  {
-    p->black_point_source = -EVmax;
-  }
-
   p->white_point_source = EVmax;
 
   darktable.gui->reset = 1;
-  dt_bauhaus_slider_set(g->grey_point_source, p->grey_point_source);
-  dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
-  dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);
+  dt_bauhaus_slider_set_soft(g->grey_point_source, p->grey_point_source);
+  dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
+  dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   darktable.gui->reset = 0;
 
   sanitize_latitude(p, g);
@@ -925,12 +899,6 @@ static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
   p->black_point_source = p->black_point_source + grey_var;
   p->white_point_source = p->white_point_source + grey_var;
 
-  // Ensure the lowlights range is bigger that the highlights range
-  if (p->black_point_source > -p->white_point_source)
-  {
-    p->black_point_source = -p->white_point_source;
-  }
-
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
@@ -950,15 +918,6 @@ static void white_point_source_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   p->white_point_source = dt_bauhaus_slider_get(slider);
 
-  // Ensure the lowlights range is bigger that the highlights range
-  if (p->black_point_source > -p->white_point_source)
-  {
-    p->black_point_source = -p->white_point_source;
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
-    darktable.gui->reset = 0;
-  }
-
   sanitize_latitude(p, g);
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
@@ -974,15 +933,6 @@ static void black_point_source_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   p->black_point_source = dt_bauhaus_slider_get(slider);
-
-  // Ensure the lowlights range is bigger that the highlights range
-  if (p->black_point_source > -p->white_point_source)
-  {
-    p->black_point_source = -p->white_point_source;
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
-    darktable.gui->reset = 0;
-  }
 
   sanitize_latitude(p, g);
 
@@ -1451,15 +1401,15 @@ void gui_update(dt_iop_module_t *self)
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
   self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
 
-  dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);
-  dt_bauhaus_slider_set(g->grey_point_source, p->grey_point_source);
-  dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
-  dt_bauhaus_slider_set(g->security_factor, p->security_factor);
-  dt_bauhaus_slider_set(g->white_point_target, p->white_point_target);
-  dt_bauhaus_slider_set(g->grey_point_target, p->grey_point_target);
-  dt_bauhaus_slider_set(g->black_point_target, p->black_point_target);
-  dt_bauhaus_slider_set(g->output_power, p->output_power);
-  dt_bauhaus_slider_set(g->latitude_stops, p->latitude_stops);
+  dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
+  dt_bauhaus_slider_set_soft(g->grey_point_source, p->grey_point_source);
+  dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
+  dt_bauhaus_slider_set_soft(g->security_factor, p->security_factor);
+  dt_bauhaus_slider_set_soft(g->white_point_target, p->white_point_target);
+  dt_bauhaus_slider_set_soft(g->grey_point_target, p->grey_point_target);
+  dt_bauhaus_slider_set_soft(g->black_point_target, p->black_point_target);
+  dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
+  dt_bauhaus_slider_set_soft(g->latitude_stops, p->latitude_stops);
   dt_bauhaus_slider_set(g->contrast, p->contrast);
   dt_bauhaus_slider_set(g->saturation, (powf(10.0f, p->saturation/100.0f) - 1.0f) / 9.0f * 100.0f);
   dt_bauhaus_slider_set(g->balance, p->balance);
@@ -1686,7 +1636,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->white_point_source), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 
   // Black slider
-  g->black_point_source = dt_bauhaus_slider_new_with_range(self, -14.0, -4.0, 0.1, p->black_point_source, 2);
+  g->black_point_source = dt_bauhaus_slider_new_with_range(self, -14.0, -3.0, 0.1, p->black_point_source, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->black_point_source, -16.0, -0.1);
   dt_bauhaus_widget_set_label(g->black_point_source, NULL, _("black relative exposure"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->black_point_source, TRUE, TRUE, 0);
