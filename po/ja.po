@@ -8140,12 +8140,12 @@ msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
 msgstr ""
-"RAW ブラック/ホワイトポイント\n"
+"RAW ブラック/ホワイトポイント補正\n"
 "必要なセンサーでのみ作動します"
 
 #: ../src/iop/relight.c:55
 msgid "fill-light 0.25EV with 4 zones"
-msgstr "4つのゾーンに +0.25EV のフィルライト"
+msgstr "4つのゾーンに 0.25EV のフィルライト"
 
 #: ../src/iop/relight.c:58
 msgid "fill-shadow -0.25EV with 4 zones"
@@ -8454,7 +8454,7 @@ msgstr "ブレンドマスクが表示されているときは、マスクを表
 
 #: ../src/iop/retouch.c:2609
 msgid "# shapes:"
-msgstr "# 形状:"
+msgstr "# シェイプ:"
 
 #: ../src/iop/retouch.c:2613
 msgid ""
@@ -8626,7 +8626,7 @@ msgstr "レタッチ ツール"
 #. shapes
 #: ../src/iop/retouch.c:2942
 msgid "shapes"
-msgstr "形状"
+msgstr "シェイプ"
 
 #: ../src/iop/retouch.c:3270
 msgctxt "accel"
