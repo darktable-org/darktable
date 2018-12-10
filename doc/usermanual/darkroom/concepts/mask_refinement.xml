@@ -131,4 +131,63 @@
 
   </sect4>
 
+  <sect4>
+
+    <title>Examples</title>
+
+    <sect5 id="blending_examples_feathering">
+      <title>Feathering a drawn mask</title>
+      <para>
+        <informaltable frame="none">
+          <tgroup cols="4" colsep="0" rowsep="0">
+            <colspec colwidth="1*"/>
+            <colspec colwidth="1*"/>
+            <colspec colwidth="1*"/>
+            <colspec colwidth="1*"/>
+            <tbody>
+              <row>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/feathering_1.png" scalefit="1" width="96%" align="center" />
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/feathering_2.png" scalefit="1" width="96%" align="center" />
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/feathering_3.png" scalefit="1" width="96%" align="center" />
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/feathering_4.png" scalefit="1" width="96%" align="center" />
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </para>
+      <para>
+        It can be rather tedious to create a drawn mask by hand, which matches precisely a
+        particular object or person in an image. In this example, we want to enhance the color
+        contrast of the lion sculpture shown in the left image above without affecting the
+        background. For this purpose, a rough selection of the sculpture is created by a drawn
+        mask. See the second image above, where the <quote>displays mask</quote> feature is
+        active. Note that the mask is rather fuzzy and it does not match precisely the lion
+        sculpture. Adjusting the feathering radius, the mask opacity and the mask contrast leads
+        to a well matching mask with little effort. In the third image above the feathering
+        radius has been adjusted to 50, a blur radius of 5 was chosen to smooth the mask to some
+        degree. The mask opacity and the mask contrast have been increased to 0.3 and 0.5,
+        respectively, to further enhance the mask. The last image above shows the final result,
+        where the color enhancement via the color contrast module (see
+        <xref
+	linkend="color_contrast"/>) is restricted to the lion sculpture due to the mask.
+      </para>
+      <para>
+        Mask feathering works in this example particularly well because the sculpture in the
+        original image is well separated from the blurry background. The distinct edge at the
+        border of the sculpture guides the feathering mask adjustment to match the shape of the
+        sculpture. Note that feathering can be applied to drawn masks as well as to parametric
+        masks.
+      </para>
+    </sect5>
+
+  </sect4>
+
 </sect3>
