@@ -159,6 +159,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 ### White Balance Presets
 
 - Canon EOS M100
+- Fujifilm X-T3
 - Leaf Credo 40
 - Nikon D3400
 - Nikon D5600
