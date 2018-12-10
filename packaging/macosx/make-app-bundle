@@ -68,9 +68,27 @@ sync
 hdiutil detach ${device}
 DMG="${PROGN}-$(git describe --tags|sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')"
 hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o "${DMG}"
-if [ -n "${APPLEID}" ]
-then
-	xcrun altool --notarize-app --primary-bundle-id org.darktable --username "${APPLEID}" --file "${DMG}".dmg
-fi
 rm -f pack.temp.dmg
 rm -Rf package
+if [ -n "${APPLEID}" ]
+then
+	UUID="$(xcrun altool --notarize-app --primary-bundle-id org.darktable -u "${APPLEID}" -p "${APPLEPW}" -f "${DMG}".dmg --output-format xml | grep -A 1 '<key>RequestUUID</key>' | tail -n 1 | cut -d'>' -f2 | cut -d'<' -f1)"
+	if [ -n "$(UUID)" ]
+	then
+		STATUS="in progress"
+		while [ "${STATUS}" = "in progress" ]
+		do
+			echo "Waiting 1 minute for notarization to complete..."
+			sleep 60
+			STATUS="$(xcrun altool --notarization-info "${UUID}" -u "${APPLEID}" -p "${APPLEPW}" --output-format xml | grep -A 1 '<key>Status</key>' | tail -n 1 | cut -d'>' -f2 | cut -d'<' -f1)"
+		done
+		if [ "${STATUS}" = "success" ]
+		then
+			xcrun stapler staple "${DMG}".dmg
+		else
+			echo "Notarization unsuccessful: ${STATUS}!"
+		fi
+	else
+		echo "Failed to upload package for notarization!"
+	fi
+fi
