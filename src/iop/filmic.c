@@ -715,6 +715,8 @@ static void apply_auto_black(dt_iop_module_t *self)
   float EVmin = Log2Thres(black / (p->grey_point_source / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
+  p->black_point_source = EVmin;
+
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
   darktable.gui->reset = 0;
@@ -811,6 +813,7 @@ static void apply_autotune(dt_iop_module_t *self)
   float EVmax = Log2Thres(white / (p->grey_point_source / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
+  p->black_point_source = EVmin;
   p->white_point_source = EVmax;
 
   darktable.gui->reset = 1;
