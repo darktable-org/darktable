@@ -1530,7 +1530,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   b = Log2( 1.0f / (-1 + powf(2.0f, a)));
   d = - powf(2.0f, b);
 
-  if (grey > powf(p->grey_point_target, p->output_power))
+  if (grey > powf(p->grey_point_target / 100.0f, p->output_power))
   {
     // The x-coordinate rescaling is valid only when the log grey value (dynamic range center)
     // is greater or equal to the destination grey value
