@@ -1523,15 +1523,25 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // solve the equations for the rescaling parameters
   const float DR = (p->white_point_source - p->black_point_source);
   const float grey = -p->black_point_source / DR;
-  float a = DR;
-  float b = Log2( 1.0f / (-1 + powf(2.0f, a)));
-  float d = - powf(2.0f, b);
+  int rescale = FALSE;
 
-  for (int i = 0; i < 50; ++i)
-  { // Optimization loop for the non-linear problem
-    a = Log2((0.5f - d) / (1.0f - d)) / (grey - 1.0f);
-    b = Log2( 1.0f / (-1 + powf(2.0f, a)));
-    d = - powf(2.0f, b);
+  float a, b, d;
+  a = DR;
+  b = Log2( 1.0f / (-1 + powf(2.0f, a)));
+  d = - powf(2.0f, b);
+
+  if (grey > powf(p->grey_point_target, p->output_power))
+  {
+    // The x-coordinate rescaling is valid only when the log grey value (dynamic range center)
+    // is greater or equal to the destination grey value
+    rescale = TRUE;
+
+    for (int i = 0; i < 50; ++i)
+    { // Optimization loop for the non-linear problem
+      a = Log2((0.5f - d) / (1.0f - d)) / (grey - 1.0f);
+      b = Log2( 1.0f / (-1 + powf(2.0f, a)));
+      d = - powf(2.0f, b);
+    }
   }
 
   const float gamma = (logf(p->grey_point_target / 100.0f) / logf(0.5f)) / p->output_power;
@@ -1546,7 +1556,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
      * Use double precision locally to avoid cancellation effect on
      * the "+ d" operation.
      */
-    const float x = pow(2.0, (double)a * nodes_data->x[k] + b) + d;
+    const float x = (rescale) ? pow(2.0, (double)a * nodes_data->x[k] + b) + d : nodes_data->x[k];
     const float y = powf(nodes_data->y[k], 1.0f / gamma);
 
     cairo_arc(cr, x * width, (1.0 - y) * (double)height, DT_PIXEL_APPLY_DPI(3), 0, 2. * M_PI);
@@ -1568,7 +1578,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
      * Use double precision locally to avoid cancellation effect on
      * the "+ d" operation.
      */
-    const float x = pow(2.0, (double)a * k / 255.0 + b) + d;
+    const float x = (rescale) ? pow(2.0, (double)a * k / 255.0 + b) + d : k / 255.0;
     const float y = powf(c->table[k], 1.0f / gamma);
     cairo_line_to(cr, x * width, (double)height * (1.0 - y));
   }
