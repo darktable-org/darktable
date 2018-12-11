@@ -73,7 +73,7 @@ rm -Rf package
 if [ -n "${APPLEID}" ]
 then
 	UUID="$(xcrun altool --notarize-app --primary-bundle-id org.darktable -u "${APPLEID}" -p "${APPLEPW}" -f "${DMG}".dmg --output-format xml | grep -A 1 '<key>RequestUUID</key>' | tail -n 1 | cut -d'>' -f2 | cut -d'<' -f1)"
-	if [ -n "$(UUID)" ]
+	if [ -n "${UUID}" ]
 	then
 		STATUS="in progress"
 		while [ "${STATUS}" = "in progress" ]
