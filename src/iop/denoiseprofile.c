@@ -2259,37 +2259,31 @@ void gui_update(dt_iop_module_t *self)
 {
   // let gui slider match current parameters:
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-  if(g) // make sure the module is displayed in the gui
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  dt_bauhaus_slider_set(g->radius, p->radius);
+  dt_bauhaus_slider_set(g->nbhood, p->nbhood);
+  dt_bauhaus_slider_set(g->strength, p->strength);
+  dt_bauhaus_combobox_set(g->mode, p->mode);
+  dt_bauhaus_combobox_set(g->profile, -1);
+  if(p->mode == MODE_WAVELETS)
+    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "wavelets");
+  else
+    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
+  if(p->a[0] == -1.0)
   {
-    dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-    if(p) // make sure there are params
+    dt_bauhaus_combobox_set(g->profile, 0);
+  }
+  else
+  {
+    int i = 1;
+    for(GList *iter = g->profiles; iter; iter = g_list_next(iter), i++)
     {
-      dt_bauhaus_slider_set(g->radius, p->radius);
-      dt_bauhaus_slider_set(g->nbhood, p->nbhood);
-      dt_bauhaus_slider_set(g->strength, p->strength);
-      dt_bauhaus_combobox_set(g->mode, p->mode);
-      dt_bauhaus_combobox_set(g->profile, -1);
-      if(p->mode == MODE_WAVELETS)
-        gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "wavelets");
-      else
-        gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
-      if(p->a[0] == -1.0)
+      dt_noiseprofile_t *profile = (dt_noiseprofile_t *)iter->data;
+      if(!memcmp(profile->a, p->a, sizeof(float) * 3)
+         && !memcmp(profile->b, p->b, sizeof(float) * 3))
       {
-        dt_bauhaus_combobox_set(g->profile, 0);
-      }
-      else
-      {
-        int i = 1;
-        for(GList *iter = g->profiles; iter; iter = g_list_next(iter), i++)
-        {
-          dt_noiseprofile_t *profile = (dt_noiseprofile_t *)iter->data;
-          if(!memcmp(profile->a, p->a, sizeof(float) * 3)
-             && !memcmp(profile->b, p->b, sizeof(float) * 3))
-          {
-            dt_bauhaus_combobox_set(g->profile, i);
-            break;
-          }
-        }
+        dt_bauhaus_combobox_set(g->profile, i);
+        break;
       }
     }
   }
