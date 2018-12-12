@@ -1560,17 +1560,20 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 
 void dt_iop_gui_update(dt_iop_module_t *module)
 {
-  int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
-  if(!dt_iop_is_hidden(module))
+  if(module->gui_data)
   {
-    module->gui_update(module);
-    dt_iop_gui_update_blending(module);
-    dt_iop_gui_update_expanded(module);
-    _iop_gui_update_label(module);
-    if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+    int reset = darktable.gui->reset;
+    darktable.gui->reset = 1;
+    if(!dt_iop_is_hidden(module))
+    {
+      if(module->params) module->gui_update(module);
+      dt_iop_gui_update_blending(module);
+      dt_iop_gui_update_expanded(module);
+      _iop_gui_update_label(module);
+      if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+    }
+    darktable.gui->reset = reset;
   }
-  darktable.gui->reset = reset;
 }
 
 void dt_iop_gui_reset(dt_iop_module_t *module)
