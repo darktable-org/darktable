@@ -622,7 +622,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       free(module);
     }
   }
-  
+
   // we also clear the saved modules
   while(dev->alliop)
   {
@@ -630,7 +630,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     free(dev->alliop->data);
     dev->alliop = g_list_delete_link(dev->alliop, dev->alliop);
   }
-  
+
   dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
   dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
   dt_masks_read_forms(dev);
