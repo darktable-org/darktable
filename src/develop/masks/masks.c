@@ -612,21 +612,27 @@ int dt_masks_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
 int dt_masks_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
                              int *width, int *height, int *posx, int *posy)
 {
-  if(form->type & DT_MASKS_CIRCLE)
+  *width = *height = *posx = *posy = 0;
+
+  // must be a clone form
+  if(form->type & DT_MASKS_CLONE)
   {
-    return dt_circle_get_source_area(module, piece, form, width, height, posx, posy);
-  }
-  else if(form->type & DT_MASKS_PATH)
-  {
-    return dt_path_get_source_area(module, piece, form, width, height, posx, posy);
-  }
-  else if(form->type & DT_MASKS_ELLIPSE)
-  {
-    return dt_ellipse_get_source_area(module, piece, form, width, height, posx, posy);
-  }
-  else if(form->type & DT_MASKS_BRUSH)
-  {
-    return dt_brush_get_source_area(module, piece, form, width, height, posx, posy);
+    if(form->type & DT_MASKS_CIRCLE)
+    {
+      return dt_circle_get_source_area(module, piece, form, width, height, posx, posy);
+    }
+    else if(form->type & DT_MASKS_PATH)
+    {
+      return dt_path_get_source_area(module, piece, form, width, height, posx, posy);
+    }
+    else if(form->type & DT_MASKS_ELLIPSE)
+    {
+      return dt_ellipse_get_source_area(module, piece, form, width, height, posx, posy);
+    }
+    else if(form->type & DT_MASKS_BRUSH)
+    {
+      return dt_brush_get_source_area(module, piece, form, width, height, posx, posy);
+    }
   }
   return 0;
 }
