@@ -172,10 +172,12 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Panasonic DC-GX9
 - Panasonic DMC-FZ300
 - Sony DSC-RX0
-- Sony DSC-RX1RM2
 - Sony DSC-RX100M5
 - Sony DSC-RX100M5A
 - Sony DSC-RX100M6
+- Sony DSC-RX10M3
+- Sony DSC-RX10M4
+- Sony DSC-RX1RM2
 - Sony ILCE-6500
 - Sony ILCE-7M3
 - Sony ILCE-7RM3
@@ -183,26 +185,30 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 ### Noise Profiles
 
 - Canon EOS 200D
-- Canon EOS Kiss X9
-- Canon EOS Rebel SL2
 - Canon EOS 750D
-- Canon EOS Kiss X8i
-- Canon EOS Rebel T6i
 - Canon EOS 760D
-- Canon EOS 8000D
-- Canon EOS Rebel T6s
 - Canon EOS 77D
-- Canon EOS 9000D
+- Canon EOS 8000D
 - Canon EOS 800D
+- Canon EOS 9000D
+- Canon EOS Kiss X8i
+- Canon EOS Kiss X9
 - Canon EOS Kiss X9i
-- Canon EOS Rebel T7i
 - Canon EOS M100
 - Canon EOS M6
+- Canon EOS Rebel SL2
+- Canon EOS Rebel T6i
+- Canon EOS Rebel T6s
+- Canon EOS Rebel T7i
 - Canon PowerShot G1 X Mark II
 - Canon PowerShot G1 X Mark III
 - Canon PowerShot G9 X
+- Fujifilm X-A5
+- Fujifilm X-E3
 - Fujifilm X-T3
 - Fujifilm X100F
+- Nikon 1 J3
+- Nikon AW1
 - Nikon COOLPIX B700
 - Nikon D5600
 - Nikon D7500
