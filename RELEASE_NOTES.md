@@ -1,4 +1,4 @@
-we're proud to announce the second release candidate for the upcoming 2.6 series of darktable, 2.6.0rc1!
+we're proud to announce the third release candidate for the upcoming 2.6 series of darktable, 2.6.0rc2!
 
 the github release is here: [https://github.com/darktable-org/darktable/releases/tag/release-2.6.0rc2](https://github.com/darktable-org/darktable/releases/tag/release-2.6.0rc2).
 
