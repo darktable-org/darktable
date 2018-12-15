@@ -172,6 +172,10 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Panasonic DC-GX9
 - Panasonic DMC-FZ300
 - Sony DSC-RX0
+- Sony DSC-RX1RM2
+- Sony DSC-RX100M5
+- Sony DSC-RX100M5A
+- Sony DSC-RX100M6
 - Sony ILCE-6500
 - Sony ILCE-7M3
 - Sony ILCE-7RM3
