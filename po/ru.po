@@ -190,8 +190,8 @@ msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"Включите эту опцию, если в папках хранятся одновременно файлы Raw и JPEG и "
-"вы не хотите импортировать обе копии."
+"Включите эту опцию, если в папках хранятся одновременно файлы Raw и JPEG. "
+"Данная опция игнорирует файлы JPEG."
 
 #: ../build/src/preferences_gen.h:1903
 msgid "recursive directory traversal when importing filmrolls"
@@ -1929,8 +1929,7 @@ msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
 msgstr[0] "Вы действительно хотите переместить в корзину %d выбранный снимок?"
 msgstr[1] "Вы действительно хотите переместить в корзину %d выбранных снимка?"
-msgstr[2] ""
-"Вы действительно хотите переместить в корзину %d выбранных снимков с диска?"
+msgstr[2] "Вы действительно хотите переместить в корзину %d выбранных снимков с диска?"
 
 #: ../src/control/jobs/control_jobs.c:1452
 #, c-format
@@ -3028,7 +3027,7 @@ msgid ""
 "no thumbnails to be generated, done."
 msgstr ""
 "ВНИМАНИЕ: Опция записи миниатюр на диск отключена в настройках darktable.\n"
-"Включите её, если вы хотите сгенерировать миниатюры."
+"Включите её, если необходимо сгенерировать миниатюры."
 
 #: ../src/generate-cache/main.c:221
 #, c-format
@@ -3157,7 +3156,7 @@ msgid ""
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 msgstr ""
-"Включите, если хотите указать иную дату и время следующими переменными:\n"
+"Включите, если необходимо указать иную дату и время следующими переменными:\n"
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 
@@ -3173,7 +3172,7 @@ msgstr "Параметры"
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
-msgstr "Выберите снимки, которые хотите импортировать как новую съёмку"
+msgstr "Выберите снимки, чтобы импортировать их как новую съёмку"
 
 #: ../src/gui/camera_import_dialog.c:552
 msgid "please use YYYY-MM-DD format for date override"
@@ -6891,7 +6890,7 @@ msgstr "Применённая экспокоррекция"
 
 #: ../src/iop/filmic.c:174
 msgid "filmic"
-msgstr "Тональная кривая (filmic)"
+msgstr "Плёночная тональная кривая"
 
 #: ../src/iop/filmic.c:1624
 msgid "logarithmic shaper"
@@ -6899,7 +6898,7 @@ msgstr "Логарифмическая кривая"
 
 #: ../src/iop/filmic.c:1629
 msgid "middle grey luminance"
-msgstr "Светлота серой точки"
+msgstr "Серая точка"
 
 #: ../src/iop/filmic.c:1632
 msgid ""
@@ -6967,8 +6966,8 @@ msgid ""
 "linearity domain in the middle of the curve\n"
 "increase to get more contrast at the extreme luminances"
 msgstr ""
-"Размер линейной части кривой. Увеличьте значение, если хотите\n"
-"больше контраста в верхних и нижних частях диапазона."
+"Размер линейной части кривой. Увеличьте значение, если необходим\n"
+"более выраженный контраст в верхних и нижних частях диапазона."
 
 #: ../src/iop/filmic.c:1704
 msgid "balance shadows-highlights"
@@ -7034,7 +7033,7 @@ msgstr "Светлота низов"
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
-msgstr "Значения, отличные от 0%, высветляют тёмные элементы на выводе"
+msgstr "Значения, отличные от 0%, высветляют тёмные элементы изображения"
 
 #: ../src/iop/filmic.c:1771
 msgid "middle grey destination"
@@ -7045,8 +7044,8 @@ msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
-"Значения, отличные от 18%, сдвигают баланс серого на выводе в светлую или "
-"тёмную сторону"
+"Значения, отличные от 18%, сдвигают баланс серого изображения\n"
+"в светлую или тёмную сторону"
 
 #: ../src/iop/filmic.c:1780
 msgid "white luminance"
@@ -7056,17 +7055,17 @@ msgstr "Светлота верхов"
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
-msgstr "Значения, отличные от 100%, затемняют светлые элементы на выводе"
+msgstr "Значения, отличные от 100%, затемняют светлые элементы изображения"
 
 #: ../src/iop/filmic.c:1789
 msgid "destination power factor"
-msgstr "Коэффициент усиления на выходе"
+msgstr "Коэффициент усиления"
 
 #: ../src/iop/filmic.c:1791
 msgid ""
 "power or gamma of the transfer function of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
-msgstr "Коэффициент усиления на выходе (гамма)"
+msgstr "Коэффициент усиления (гамма)"
 
 #: ../src/iop/finalscale.c:39
 msgctxt "modulename"
@@ -8492,26 +8491,23 @@ msgstr "Ретушь"
 #: ../src/iop/retouch.c:1957
 msgid "cannot display scales when the blending mask is displayed"
 msgstr ""
-"Не возможно отобразить уровни при включенном режиме отображения маски "
-"смешивания"
+"Не возможно отобразить уровни при включенном режиме отображения маски смешивания"
 
 #: ../src/iop/retouch.c:2225
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
-"Не возможно отобразить маски при включенном режиме отображения маски "
-"смешивания"
+"Не возможно отобразить маски при включенном режиме отображения маски смешивания"
 
 #: ../src/iop/retouch.c:2609
 msgid "# shapes:"
-msgstr "Фигур: "
+msgstr "Фигур:"
 
 #: ../src/iop/retouch.c:2613
 msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
 msgstr ""
-"Для добавления фигуры выберите алгоритм, тип фигуры и щёлкните на "
-"изображении.\n"
+"Для добавления фигуры выберите алгоритм, тип фигуры и щёлкните на изображении.\n"
 "Фигуры добавляются в текущий уровень."
 
 #: ../src/iop/retouch.c:2620
@@ -8559,12 +8555,12 @@ msgid ""
 msgstr ""
 "Верхний ползунок настраивает начало объединения уровней.\n"
 "Нижний ползунок настраивает количество уровней.\n"
-"Красная индикатор указывает текущий уровень.\n"
+"Красный индикатор указывает текущий уровень.\n"
 "Зелёный индикатор наличие фигур в текущем уровне."
 
 #: ../src/iop/retouch.c:2747
 msgid "display masks"
-msgstr "Показывать маски"
+msgstr "Показать маски"
 
 #: ../src/iop/retouch.c:2754
 msgid "temporarily switch off shapes"
@@ -8572,7 +8568,7 @@ msgstr "Временно отключить фигуры"
 
 #: ../src/iop/retouch.c:2762
 msgid "display wavelet scale"
-msgstr "Показывать частотный уровень"
+msgstr "Показать частотный уровень"
 
 #: ../src/iop/retouch.c:2771
 msgid "cut shapes from current scale"
@@ -8939,24 +8935,24 @@ msgid ""
 "exp)\n"
 msgstr ""
 "Алгоритм расчёта тональной кривой:\n"
-"Кубический сплайн — плавные кривые, но даёт выступы, если узлы расположены "
-"близко;\n"
-"Центростремительный сплайн — более резкие выступы, если узлы расположены "
-"близко;\n"
-"Монотонный сплайн — наибольшее подобие аналитическим функциям (log, gamma, "
-"exp).\n"
+"Кубический сплайн — плавные кривые, но даёт выступы,\n"
+"если узлы расположены близко;\n"
+"Центростремительный сплайн — более резкие выступы,\n"
+"если узлы расположены близко;\n"
+"Монотонный сплайн — наибольшее подобие аналитическим\n"
+"функциям (log, gamma, exp).\n"
 
 #: ../src/iop/tonecurve.c:1262
 msgid "log-log (xy)"
-msgstr "Логарифм по осям x и y"
+msgstr "Логарифмич. по осям x и y"
 
 #: ../src/iop/tonecurve.c:1263
 msgid "semi-log (x)"
-msgstr "Логарифм по оси х"
+msgstr "Логарифмич. по оси х"
 
 #: ../src/iop/tonecurve.c:1264
 msgid "semi-log (y)"
-msgstr "Логарифм по оси y"
+msgstr "Логарифмич. по оси y"
 
 #: ../src/iop/tonecurve.c:1272
 msgid "base of the logarithm"
@@ -9460,11 +9456,11 @@ msgstr "Члены группы"
 #: ../src/libs/collect.c:1405 ../src/libs/collect.c:1419
 #: ../src/libs/collect.c:1761
 msgid "clear this rule"
-msgstr "Удалить критерий поиска"
+msgstr "Очистить критерий поиска"
 
 #: ../src/libs/collect.c:1410
 msgid "clear this rule or add new rules"
-msgstr "Удалить критерий поиска или добавить новые"
+msgstr "Очистить критерий поиска или добавить новый"
 
 #: ../src/libs/collect.c:1463
 msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
@@ -9793,7 +9789,7 @@ msgstr "Записать файлы XMP"
 
 #: ../src/libs/duplicate.c:52
 msgid "duplicate manager"
-msgstr "Менеджер копий"
+msgstr "Управление копиями"
 
 #: ../src/libs/duplicate.c:367
 msgid "existing duplicates"
@@ -9801,11 +9797,11 @@ msgstr "Существующие копии"
 
 #: ../src/libs/duplicate.c:370
 msgid "create a 'virgin' duplicate of the image without any developpement"
-msgstr "Создать дубликат вместе с пустой историей изменений"
+msgstr "Создать дубликат с пустой историей изменений"
 
 #: ../src/libs/duplicate.c:374
 msgid "create a duplicate of the image with same history stack"
-msgstr "Создать дубликат вместе с историей изменений"
+msgstr "Создать дубликат вместе с существующей историей изменений"
 
 #: ../src/libs/export.c:64
 msgid "export selected"
@@ -10089,7 +10085,7 @@ msgstr "Создать копию"
 
 #: ../src/libs/image.c:222
 msgid "add a duplicate to the collection, including its history stack"
-msgstr "Добавить дубликат вместе с историей изменений в текущую коллекцию"
+msgstr "Создать дубликат вместе с историей изменений в текущую коллекцию"
 
 #: ../src/libs/image.c:229
 msgid "rotate selected images 90 degrees CCW"
@@ -11611,12 +11607,12 @@ msgstr "Свернуть сгруппированные снимки"
 #: ../src/libs/tools/global_toolbox.c:102
 #: ../src/libs/tools/global_toolbox.c:164
 msgid "hide image overlays"
-msgstr "Скрыть дополнительную информацию о снимках"
+msgstr "Скрыть подсказки о снимках"
 
 #: ../src/libs/tools/global_toolbox.c:104
 #: ../src/libs/tools/global_toolbox.c:166
 msgid "show image overlays"
-msgstr "Показать дополнительную информацию о снимках"
+msgstr "Показать подсказки о снимках"
 
 #: ../src/libs/tools/global_toolbox.c:112
 msgid "enable this, then click on a control element to see its online help"
@@ -11638,11 +11634,11 @@ msgstr "Открыть онлайн справку?"
 
 #: ../src/libs/tools/global_toolbox.c:283
 msgid "help url opened in web brower"
-msgstr "Документация по указанному элементу открыта в браузере"
+msgstr "Онлайн справка по указанному элементу открыта в браузере"
 
 #: ../src/libs/tools/global_toolbox.c:288
 msgid "there is no help available for this element"
-msgstr "Документация по указанному элементу не доступна"
+msgstr "Онлайн справка по указанному элементу не доступна"
 
 #: ../src/libs/tools/global_toolbox.c:351
 msgctxt "accel"
