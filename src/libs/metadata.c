@@ -477,7 +477,6 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   char *buf = (char *)params;
 
   const char *title = buf;
-  if(!title) return 1;
   const int title_len = strlen(title) + 1;
 
   buf += title_len;
@@ -503,11 +502,11 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   if(size != title_len + description_len + rights_len + creator_len + publisher_len)
     return 1;
 
-  if(title != NULL && title[0] != '\0') dt_metadata_set(-1, "Xmp.dc.title", title);
-  if(description != NULL && description[0] != '\0') dt_metadata_set(-1, "Xmp.dc.description", description);
-  if(rights != NULL && rights[0] != '\0') dt_metadata_set(-1, "Xmp.dc.rights", rights);
-  if(creator != NULL && creator[0] != '\0') dt_metadata_set(-1, "Xmp.dc.creator", creator);
-  if(publisher != NULL && publisher[0] != '\0') dt_metadata_set(-1, "Xmp.dc.publisher", publisher);
+  if(title[0] != '\0') dt_metadata_set(-1, "Xmp.dc.title", title);
+  if(description[0] != '\0') dt_metadata_set(-1, "Xmp.dc.description", description);
+  if(rights[0] != '\0') dt_metadata_set(-1, "Xmp.dc.rights", rights);
+  if(creator[0] != '\0') dt_metadata_set(-1, "Xmp.dc.creator", creator);
+  if(publisher[0] != '\0') dt_metadata_set(-1, "Xmp.dc.publisher", publisher);
 
   dt_image_synch_xmp(-1);
   update(self, FALSE);

@@ -248,7 +248,6 @@ static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_dat
         g_hash_table_destroy(table);
 
         return ctx;
-        break;
 
       default:
         dt_print(DT_DEBUG_PWSTORAGE, "[flickr] user cancelled the login process\n");

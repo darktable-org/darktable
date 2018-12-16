@@ -1182,17 +1182,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     d->all_off = 0;
     d->crop_auto = 0;
   }
-  else if(p->k_type == 0)
-  {
-    d->all_off = 1;
-    d->k_apply = 0;
-  }
   else
   {
     d->all_off = 1;
     d->k_apply = 0;
   }
-
 
   if(gui_has_focus(self))
   {

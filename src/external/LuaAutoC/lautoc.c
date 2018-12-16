@@ -964,8 +964,6 @@ bool luaA_enum_has_value_type(lua_State* L, luaA_Type type, const void* value) {
   lua_pushfstring(L, "luaA_enum_has_value: Enum '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
   return false;
-  
-  return false;
 }
 
 bool luaA_enum_has_name_type(lua_State* L, luaA_Type type, const char* name) {
