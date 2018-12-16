@@ -254,7 +254,6 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
         break;
       default:
         return DT_IMAGEIO_FILE_CORRUPTED;
-        break;
     }
 
     // dimensions of uncropped image
@@ -399,7 +398,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
       }
     }
   }
-  else if(cpp == 3 || cpp == 4)
+  else // case cpp == 3 or 4
   {
 /*
  * standard 3-ch image

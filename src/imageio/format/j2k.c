@@ -397,12 +397,12 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
 
     switch(prec)
     {
-      case 8:
-        for(int i = 0; i < w * h; i++)
-        {
-          for(int k = 0; k < numcomps; k++) image->comps[k].data[i] = DOWNSAMPLE_FLOAT_TO_8BIT(in[i * 4 + k]);
-        }
-        break;
+//      case 8:
+//        for(int i = 0; i < w * h; i++)
+//        {
+//          for(int k = 0; k < numcomps; k++) image->comps[k].data[i] = DOWNSAMPLE_FLOAT_TO_8BIT(in[i * 4 + k]);
+//        }
+//        break;
       case 12:
         for(int i = 0; i < w * h; i++)
         {
@@ -410,19 +410,19 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
             image->comps[k].data[i] = DOWNSAMPLE_FLOAT_TO_12BIT(in[i * 4 + k]);
         }
         break;
-      case 16:
-        for(int i = 0; i < w * h; i++)
-        {
-          for(int k = 0; k < numcomps; k++)
-            image->comps[k].data[i] = DOWNSAMPLE_FLOAT_TO_16BIT(in[i * 4 + k]);
-        }
-        break;
-      default:
-        fprintf(stderr, "Error: this shouldn't happen, there is no bit depth of %d for jpeg 2000 images.\n",
-                prec);
-        free(rates);
-        opj_image_destroy(image);
-        return 1;
+//      case 16:
+//        for(int i = 0; i < w * h; i++)
+//        {
+//          for(int k = 0; k < numcomps; k++)
+//            image->comps[k].data[i] = DOWNSAMPLE_FLOAT_TO_16BIT(in[i * 4 + k]);
+//        }
+//        break;
+//      default:
+//        fprintf(stderr, "Error: this shouldn't happen, there is no bit depth of %d for jpeg 2000 images.\n",
+//                prec);
+//        free(rates);
+//        opj_image_destroy(image);
+//        return 1;
     }
   }
 
