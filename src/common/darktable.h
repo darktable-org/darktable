@@ -107,6 +107,10 @@ typedef unsigned int u_int;
 #define __DT_CLONE_TARGETS__
 #endif
 
+/* Helper to force heap vectors to be aligned on 64 bits blocks to enable AVX2 */
+#define DT_ALIGNED_ARRAY __attribute__((aligned(64)))
+#define DT_ALIGNED_PIXEL __attribute__((aligned(16)))
+
 #ifndef _RELEASE
 #include "common/poison.h"
 #endif
