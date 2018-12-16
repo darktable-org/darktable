@@ -69,7 +69,7 @@ static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject
 
 static void _update_collected_images(dt_view_t *self);
 
-static gboolean _is_custom_image_order_required();
+static gboolean _is_custom_image_order_required(dt_view_t *self);
 
 /**
  * this organises the whole library:

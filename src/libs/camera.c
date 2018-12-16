@@ -611,22 +611,19 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   if(options)
   {
     GSList *item = options;
-    if(item)
+    do
     {
-      do
-      {
-        dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)item->data;
+      dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)item->data;
 
-        /* get the label from key */
-        char *p = entry->key;
-        const char *end = entry->key + strlen(entry->key);
-        while(p++ < end)
-          if(*p == '_') *p = ' ';
+      /* get the label from key */
+      char *p = entry->key;
+      const char *end = entry->key + strlen(entry->key);
+      while(p++ < end)
+        if(*p == '_') *p = ' ';
 
-        if((prop = _lib_property_add_new(lib, entry->key, entry->value)) != NULL)
-          _lib_property_add_to_gui(prop, lib);
-      } while((item = g_slist_next(item)) != NULL);
-    }
+      if((prop = _lib_property_add_new(lib, entry->key, entry->value)) != NULL)
+        _lib_property_add_to_gui(prop, lib);
+    } while((item = g_slist_next(item)) != NULL);
     g_slist_free_full(options, dt_conf_string_entry_free);
   }
   /* build the propertymenu  we do it now because it needs an actual camera */

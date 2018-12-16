@@ -524,13 +524,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
     // if the user points at this image, we really want it:
     if(!img) img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
-    int zoom = 1;
-    float imgwd = 0.90f;
-    if(zoom == 1)
-    {
-      imgwd = .97f;
-    }
-
+    const float imgwd = 0.97f;
     dt_mipmap_buffer_t buf;
     dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * w, imgwd * h);
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, 0, 'r');
@@ -542,12 +536,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
       const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf.width);
       surface = cairo_image_surface_create_for_data(buf.buf, CAIRO_FORMAT_RGB24, buf.width,
                                                     buf.height, stride);
-      if(zoom == 1)
-      {
-        scale = fminf(fminf(w, pw) / (float)buf.width, fminf(h, ph) / (float)buf.height);
-      }
-      else
-        scale = fminf(w * imgwd / (float)buf.width, h * imgwd / (float)buf.height);
+      scale = fminf(fminf(w, pw) / (float)buf.width, fminf(h, ph) / (float)buf.height);
     }
 
     // draw centered and fitted:
