@@ -3352,15 +3352,15 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
 
     if (btn == g->btn_point_tool)
       dt_control_hinter_message
-        (darktable.control, _("click and drag to add point\nscrool to change size\n"
+        (darktable.control, _("click and drag to add point\nscroll to change size\n"
                               "shift-scroll to change strength - ctrl-scroll to change direction"));
     else if (btn == g->btn_line_tool)
       dt_control_hinter_message
-        (darktable.control, _("click to add line\nscrool to change size\n"
+        (darktable.control, _("click to add line\nscroll to change size\n"
                               "shift-scroll to change strength - ctrl-scroll to change direction"));
     else if (btn == g->btn_curve_tool)
       dt_control_hinter_message
-        (darktable.control, _("click to add curve\nscrool to change size\n"
+        (darktable.control, _("click to add curve\nscroll to change size\n"
                               "shift-scroll to change strength - ctrl-scroll to change direction"));
     else if (btn == g->btn_node_tool)
       dt_control_hinter_message (darktable.control, _("click to edit nodes"));
