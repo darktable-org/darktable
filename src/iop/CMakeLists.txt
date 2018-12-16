@@ -140,6 +140,7 @@ add_iop(hazeremoval "hazeremoval.c")
 add_iop(filmic "filmic.c" DEFAULT_VISIBLE)
 add_iop(mask_manager "mask_manager.c")
 add_iop(lut3d "lut3d.c")
+add_iop(toneequal "toneequal.c" DEFAULT_VISIBLE)
 
 if(RSVG2_FOUND)
   add_iop(watermark "watermark.c")
