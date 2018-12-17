@@ -2602,6 +2602,7 @@ void gui_init(dt_iop_module_t *self)
   g->lvlbar_mouse_y = -1;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // shapes toolbar
   GtkWidget *hbox_shapes = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
@@ -3031,7 +3032,7 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
           // we get the area for the source
           int fl, ft, fw, fh;
 
-          if(!dt_masks_get_source_area(self, piece, form, &fw, &fh, &fl, &ft))
+          if(!dt_masks_get_area(self, piece, form, &fw, &fh, &fl, &ft))
           {
             forms = g_list_next(forms);
             continue;
