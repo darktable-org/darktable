@@ -14,9 +14,9 @@ EFFECT=5
 
 module_group=(
     $BASIC
-    $COLOR
     $CORRECT
     $TONE
+    $COLOR
     $EFFECT
 )
 
@@ -42,11 +42,11 @@ group_basic=(
     'tone mapping'
     'unbreak input profile'
     'white balance'
+    'filmic'
 )
 
 group_tone=(
     'bloom'
-    'color balance'
     'contrast brightness saturation'
     'equalizer'
     'fill light'
@@ -56,11 +56,11 @@ group_tone=(
     'shadows and highlights'
     'tone curve'
     'zone system'
-    'filmic'
 )
 
 group_color=(
     'channel mixer'
+    'color balance'
     'color contrast'
     'color correction'
     'color look up table'
