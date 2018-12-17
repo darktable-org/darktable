@@ -49,10 +49,13 @@
 #include "win/main_wrapper.h"
 #endif
 
+#define DT_MAX_STYLE_NAME_LENGTH 128
+
 static void usage(const char *progname)
 {
   fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max "
-                  "height>,--bpp <bpp>,--hq <0|1|true|false>,--upscale <0|1|true|false>,--verbose] [--core <darktable options>]\n",
+                  "height>,--bpp <bpp>,--hq <0|1|true|false>,--upscale <0|1|true|false>,--style <style name>, --overwrite,"
+                  "--verbose] [--core <darktable options>]\n",
           progname);
 }
 
@@ -68,8 +71,9 @@ int main(int argc, char *arg[])
   char *input_filename = NULL;
   char *xmp_filename = NULL;
   char *output_filename = NULL;
+  char *style = NULL;
   int file_counter = 0;
-  int width = 0, height = 0, bpp = 0;
+  int width = 0, height = 0, bpp = 0, overwrite = 0;
   gboolean verbose = FALSE, high_quality = TRUE, upscale = FALSE;
 
   int k;
@@ -137,6 +141,15 @@ int main(int argc, char *arg[])
         }
         g_free(str);
       }
+      else if(!strcmp(arg[k], "--style") && argc > k + 1)
+      {
+        k++;
+        style = arg[k];
+      }
+      else if(!strcmp(arg[k], "--overwrite"))
+      {
+        overwrite = 1;
+      }
       else if(!strcmp(arg[k], "-v") || !strcmp(arg[k], "--verbose"))
       {
         verbose = TRUE;
@@ -198,7 +211,7 @@ int main(int argc, char *arg[])
   }
 
   // init dt without gui and without data.db:
-  if(dt_init(m_argc, m_arg, FALSE, FALSE, NULL))
+  if(dt_init(m_argc, m_arg, FALSE, TRUE, NULL))
   {
     free(m_arg);
     exit(1);
@@ -353,7 +366,15 @@ int main(int argc, char *arg[])
   fdata->max_width = (w != 0 && fdata->max_width > w) ? w : fdata->max_width;
   fdata->max_height = (h != 0 && fdata->max_height > h) ? h : fdata->max_height;
   fdata->style[0] = '\0';
-  fdata->style_append = 0;
+  fdata->style_append = 1; // make append the default and override with --overwrite
+
+  if(style) 
+  {
+    g_strlcpy((char *)fdata->style, style, DT_MAX_STYLE_NAME_LENGTH);
+    fdata->style[127] = '\0';
+    if(overwrite)
+      fdata->style_append = 0;
+  }
 
   if(storage->initialize_store)
   {
