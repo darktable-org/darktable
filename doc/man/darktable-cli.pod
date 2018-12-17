@@ -14,6 +14,8 @@ Options:
     --bpp <bpp>
     --hq <0|1|true|false>
     --upscale <0|1|true|false>
+    --style <style name>
+    --overwrite
     --verbose
 
 =head1 DESCRIPTION
@@ -78,6 +80,18 @@ Defaults to true.
 
 A flag that defines whether to allow upscaling during export.
 Defaults to false.
+
+=item B<< --style <style name>  >>
+
+Specify the name of a style to be applied during export.  If a style
+is specified, the path to the darktable configuration directory must
+also be specified (i.e. --core --configdir ~/.config/darktable).
+Defaults to no style specified.
+
+=item B<< --overwrite  >>
+
+The specified style overwrites the history stack instead of being
+appended to it.
 
 =item B<< --verbose  >>
 

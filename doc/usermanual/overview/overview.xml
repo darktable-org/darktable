@@ -427,6 +427,9 @@
               [--height &lt;max height&gt;]
               [--bpp &lt;bpp&gt;]
               [--hq &lt;0|1|true|false&gt;]
+              [--upscale &lt;0|1|true|false&gt;]
+              [--style &lt;style name&gt;]
+              [--overwrite]
               [--verbose]
               [--core &lt;darktable options&gt;]</synopsis>
 
@@ -520,6 +523,40 @@
             <listitem><para>
               A flag that defines whether to use high quality resampling during export (see
               <xref linkend="core_options"/>). Defaults to true.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>--upscale &lt;0|1|true|false&gt;</term>
+
+            <listitem><para>
+              A flag that defines whether allow upscaling during export. Defaults to false.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>--style &lt;style name&gt;</term>
+
+            <listitem><para>
+              Specify the name of a style to be applied during export.  If a style
+              is specified, the path to the darktable configuration directory must
+              also be specified (i.e. --core --configdir ~/.config/darktable).
+              Defaults to no style specified.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>--overwrite</term>
+
+            <listitem><para>
+              The specified style overwrites the history stack instead of being
+              appended to it.
             </para></listitem>
 
           </varlistentry>
