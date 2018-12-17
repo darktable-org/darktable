@@ -1,0 +1,249 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="draft" id="filmic">
+
+  <title>Filmic</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>filmic</secondary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module compresses the tonal range of an image by reproducing the tone and color response of 
+              classic film. Doing so, it will protect the colors and contrast in mid-tones, recover the shadows,
+              and compress bright highlights. It is then very suitable in portrait photography, especially in back-lighting
+              situations, but will need extra care when details need to be preserved in highlights (clouds, for example).
+            </entry>
+            <entry>
+              It derivates from
+				      the same-named module in Blender 3D modeller by T.J. Sobotka. While it is primarily intended
+				      to recover high-dynamic range from raw sensor data, it can be used with any image in replacement
+				      of the base curve module. A full tutorial with examples and comments on the results
+				      can be found on its developer's website: 
+				        https://eng.aurelienpierre.com/2018/11/30/filmic-darktable-and-the-quest-of-the-hdr-tone-mapping/
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/tonemapping.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+  
+  <sect4>
+    <title>Pre-requisites</title>
+    
+    <para>
+      In order to get the best out of filmic, images need some preparation before:
+      <itemizedlist>
+        <listitem><para>
+          On-camera, expose the shot "to the right". It consists in under-exposing the shot so that 
+          the highlights are at the right of the histogram, just on the verge of clipping, but not clipped.
+          It does not matter if the picture preview is very dark on your camera screen: as long as highlights
+          are unclipped, filmic should be able to recover details from the raw data. But clipped data are not recoverable.
+          Some cameras have a clipping alert preview to help you diagnose this, and some even have an highlight-priority exposure mode.
+        </para></listitem>
+        <listitem><para>
+          In darktable's exposure module, correct the black level and the exposure value to avoid any clipping. It is especially important
+          to avoid negative pixels values (in black areas), because they will be clipped in filmic. For some cameras models (Canon, mainly), rawspeed, 
+          the raw decoding library of darktable, may set an exaggerated black level, resulting in crushed blacks and negative values.
+          If so, brighten the blacks by setting a negative black level value in the exposure module.
+        </para></listitem>
+        <listitem><para>
+          If you plan on using filmic's auto-tuners, use the white-balance module first to correct color-casts and get neutral colors.
+          In RGB color spaces, luminance and chrominance are linked, and filmic's luminance detection relies on both
+          to get accurate measures. If your picture is very noisy, add an initial step of denoising to help the black exposure
+          readings, and use an high-quality demosaicing.
+        </para></listitem>
+        <listitem><para>
+          If you plan on using filmic's chrominance preservation mode, avoid using any tone-mapping module and the 
+          base curves module. These may produce unpredictible color-shifts that would make the chrominance preservation useless.
+          They are usually not needed if you use filmic.
+        </para></listitem>
+      <itemizedlist>
+    </para>
+  </sect>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      There are 4 steps in the filmic process:
+      <itemizedlist>
+        <listitem><para>
+          Apply a logarithmic shaper to the RGB signal, to raise the midtones luminance in
+          the same way human eyes and film respond to lightness. This is similar to what <emphasis>unbreak input profile<emphasis>
+          does in its logarithmic mode.
+        </para></listitem> 
+        <listitem><para>
+          Apply an S-shaped parametric curve to enhance the contrast and remap the grey value to the middle grey of the display. 
+          This is similar to what the base curve or tone curve modules do.
+        </para></listitem> 
+        <listitem><para>
+          Apply a selective desaturation on extreme luminance values so that shadows degrade progressively toward pure black and 
+          highlights degrade progressively toward pure white.
+        </para></listitem> 
+        <listitem><para>
+          Apply an inverse gamma transfer function to linearize the output for the display gamma. Having a gamma correction
+          applied on top of logarithmically-encoded data would result in a double-up, with the luminance raised twice.
+        </para></listitem>
+      <itemizedlist>
+    </para>
+    
+    <para>
+      The sliders ranges of filmic are limited to usual and safe values, but values are allowed out of these ranges
+      by clicking on the sliders with the right button and inputting values on the keyboard.
+    </para>
+
+    <sect5>
+    
+      <title>Logarithmic shaper</title>
+
+      <sect6>
+      
+        <title>Middle-grey luminance</title>
+        
+        <para>
+          The middle-grey luminance is the luminance in XYZ space of the scene-referred 18 % grey. Its color-picker tool reads 
+          the average luminance over the drawn area. If you happen to have a grey card or a color-chart
+          (IT8 chart or colorchecker) shot in the scene lighting conditions, then the grey color-picker tool
+          can be used to quickely sample the luminance of the grey patch on the picture. 
+          In other situations, the color-picker can be used to sample the average luminance of the subject. 
+        </para>
+        <para>
+          This setting has an effect on the picture that is analogous to a lightness correction. Values close to 100 % will not compress
+          the highlights but will fail to recover shadows. Values close to 0 % will recover greatly the shadows but will compress 
+          the highlights more harshely and result in local-contrast losses.
+          The standard middle-grey value for linearly-encoded camera RGB is 18 %. Good values of grey are usually the average luminance of the 
+          whole picture or of the subject. Values much higher than 18 % will make the filmic S curve difficult to control.
+        </para>
+        <param>
+          When modifying the middle-grey luminance, the white and black exposures are automatically slided accordingly, 
+          to preserve the dynamic range from clipping and to help you set find the righ parameter faster.
+        </param>
+        
+      </sect6>
+      
+      <sect6>
+      
+        <title>White relative exposure</title>
+        
+        <para>
+          The white relative exposure is the number of stops (EV) between pure white and the middle grey. It is the right bound
+          of the dynamic range. It should be adjusted to avoid highlight clipping. The white exposure color-picker tool
+          reads the maximum luminance in XYZ space over the drawn area, assumes it is pure white, and sets the white exposure
+          parameter to remap the reading to 100 % luminance.
+        </para>
+        
+        <para>
+          When the grey is set at 18 %, the white exposure will always be around 2.45 EV.
+        
+      </sect6>
+      
+        <sect6>
+      
+        <title>Black relative exposure</title>
+        
+        <para>
+          The black relative exposure is the number of stops (EV) between pure black and the middle grey. It is the left bound
+          of the dynamic range. The black exposure color-picker tool
+          reads the minimum luminance in XYZ space over the drawn area, assumes it is pure black, and sets the black exposure
+          parameter to remap the reading to 0 % luminance. The black color-picker reading is very sensitive to noise, and 
+          cannot identify if the minimum luminance is pure black (actual data) or just noise. It works better on low-ISO
+          pictures and with high-quality demosaicing.
+        </para>
+        <para>
+          The black relative exposure allows you to choose how far you want to recover lowlights. On the contrary to the white
+          exposure it will not be possible to completely avoid clipping in blacks. When the black exposure is very low, the
+          filmic S curve becomes very difficult to control and the final contrast is often faded. Every camera sensor
+          has a maximum physical dynamic range for each ISO value (you can find them measured on dxomark.com or dpreview.com),
+          the software dynamic range in filmic (dynamic range = white exposure - black exposure) should generally not be greater 
+          than the physical dynamic range of the sensor. For better control of the filmic S curve, the black exposure should be kept
+          close to the white exposure in absolute value (and ideally greater, in absolute value), so the dynamic range is 
+          almost centered in 0 EV. Another guide to validate the black exposure value is the S curve should always go
+          through the center of the graph display.
+        </para>
+        
+      </sect6>
+      
+      <sect6>
+      
+        <title>Safety factor and auto-tune</title>
+        
+        <para>
+          The auto-tune color picker combines all three color-pickers above, and will allow to set the grey, white 
+          and black exposures all at once, using the average of the drawn region as the grey estimation, the maximum as the white, 
+          and the minimum as the black. This gives good results in landscape photography but usually fails for portraits
+          and indoors scenes.
+        </para>
+        <para>
+          When no true white and no true black are available on the scene, the maximum and minimum XYZ values read on the
+          image are not valid assumptions anymore, so the safety-factor will allow you to shrink or enlarge symmetrically
+          the detected dynamic range and the current parameters. This works will all color-pickers.
+        </para>
+        
+      </sect6>
+      
+    </sect5>
+
+    <sect5>
+      <title>Filmic S curve</title>
+      <para>
+        The filmic S curve is created from the user parameters, by computing the position of virtual nodes and interpolating them,
+        similarly to the tone curve module (but here, the nodes cannot be moved manually). While this allow a quicker curve
+        parametrization, not all the combinations of paramater deliver good curves, and the graph display will give a 
+        diagnostic interface. Good curves are either graceful S with a linear central portion and curved extremities,
+        or lines following the diagonal of the graph. 
+      </para>
+      
+      <sect6>
+      
+        <title>Contrast</title>
+        
+        <para>
+          The contrast parameter drives the slope of the central part of the curve. The larger the dynamic range is, the greater 
+          the contrast should be set, to avoid reversed branches that would invert the image contrast. Proper values of contrast
+          lie between 1.4 (at 8 EV dynamic range) and 1.7 (at 14 EV dynamic range). This parameter will mostly affect
+          mid-tones.
+        </para>
+        
+      </sect6>
+      
+      <sect6>
+      
+        <title>Latitude</title>
+        
+        <para>
+          The latitude is the range between the 2 nodes enclosing the central linear portion of the curve. The bigger the latitude is,
+          the more linearly the luminance is affected, which is desirable to preserve the chrominance. The latitude defines
+          the range of luminances that is not desaturated in the third step of filmic processing. This parameter will mostly
+          affect extreme luminances. It is usually better to keep it as great as possible, and adjust the contrast to avoid clipping. 
+          Proper values lie between 25 % and 50 % of the dynamic range, and should be increased by 1 EV each time the grey value is
+          divided by 2.
+        </para>
+        
+      </sect6>
+      
+      
+    </sect5>
+
+  </sect4>
+
+</sect3>
