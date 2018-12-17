@@ -56,7 +56,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ cd ~/src/darktable/packaging/macosx
      $ ./make-app-bundle
     If you have an Apple Developer ID Application certificate and want to produce signed app then replace the previous command with this one:
-     $ CODECERT="Developer ID Application" APPLEID="developer@apple.id" ./make-app-bundle
+     $ CODECERT="Developer ID Application" APPLEID="developer@apple.id" APPLEPW="@keychain:DevIDPassword" ./make-app-bundle
     You may have to provide more specific name for a certificate if you have several matching in your keychain.
 
 4). Assuming that darktable is the only program installed into /usr/local you should remove the install directory before doing next build:

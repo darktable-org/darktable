@@ -934,12 +934,6 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
   return FALSE; /* event not handled */
 }
 
-static gboolean _rename_module_destroy(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  gtk_widget_destroy(GTK_WIDGET(user_data));
-  return FALSE;
-}
-
 static void _iop_gui_rename_module(dt_iop_module_t *module)
 {
   const int bs = DT_PIXEL_APPLY_DPI(12);
@@ -972,16 +966,17 @@ static void _iop_gui_rename_module(dt_iop_module_t *module)
 
   GtkWidget *entry = gtk_entry_new();
   gtk_widget_set_size_request(entry, w, h);
-  gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
 
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
   gtk_container_add(GTK_CONTAINER(d->floating_window), entry);
-  g_signal_connect(entry, "focus-out-event", G_CALLBACK(_rename_module_destroy), d->floating_window);
   g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), d);
 
   gtk_entry_set_text(GTK_ENTRY(entry), module->multi_name);
 
-  gtk_widget_show_all(d->floating_window);
+  gtk_widget_show(d->floating_window);
+  gtk_widget_show(entry);
+  gtk_window_resize(GTK_WINDOW(d->floating_window), w, h + 4);
+  gtk_window_set_modal(GTK_WINDOW(d->floating_window), TRUE);
   gtk_widget_grab_focus(entry);
   gtk_window_present(GTK_WINDOW(d->floating_window));
 }
@@ -1565,17 +1560,20 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 
 void dt_iop_gui_update(dt_iop_module_t *module)
 {
-  int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
-  if(!dt_iop_is_hidden(module))
+  if(module->gui_data)
   {
-    module->gui_update(module);
-    dt_iop_gui_update_blending(module);
-    dt_iop_gui_update_expanded(module);
-    _iop_gui_update_label(module);
-    if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+    int reset = darktable.gui->reset;
+    darktable.gui->reset = 1;
+    if(!dt_iop_is_hidden(module))
+    {
+      if(module->params) module->gui_update(module);
+      dt_iop_gui_update_blending(module);
+      dt_iop_gui_update_expanded(module);
+      _iop_gui_update_label(module);
+      if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+    }
+    darktable.gui->reset = reset;
   }
-  darktable.gui->reset = reset;
 }
 
 void dt_iop_gui_reset(dt_iop_module_t *module)

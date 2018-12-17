@@ -204,11 +204,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   else if(new_version == 5)
   {
     dt_iop_denoiseprofile_params_v4_t v4;
-    int err = 0;
-    if(old_version < 4) // first update to v4
-      err = legacy_params(self, old_params, old_version, &v4, 4);
-    else memcpy(&v4, old_params, sizeof(v4)); // was v4 already
-    if(err) return 1;
+    if(old_version < 4)
+    {
+      // first update to v4
+      if(legacy_params(self, old_params, old_version, &v4, 4))
+        return 1;
+    }
+    else
+      memcpy(&v4, old_params, sizeof(v4)); // was v4 already
+
     dt_iop_denoiseprofile_params_t *v5 = new_params;
     v5->radius = v4.radius;
     v5->strength = v4.strength;
