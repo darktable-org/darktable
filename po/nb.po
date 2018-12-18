@@ -9770,7 +9770,7 @@ msgid "existing duplicates"
 msgstr "eksisterende duplikater"
 
 #: ../src/libs/duplicate.c:356
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "lager et 'jomfruelig' duplikat av bildet uten noe redigering"
 
 #: ../src/libs/duplicate.c:360

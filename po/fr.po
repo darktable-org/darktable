@@ -9891,7 +9891,7 @@ msgid "existing duplicates"
 msgstr "clones existants"
 
 #: ../src/libs/duplicate.c:367
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "créer un clone vierge"
 
 #: ../src/libs/duplicate.c:371

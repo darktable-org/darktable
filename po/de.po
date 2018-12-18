@@ -10011,7 +10011,7 @@ msgid "existing duplicates"
 msgstr "Existierenden Duplikate"
 
 #: ../src/libs/duplicate.c:356
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr ""
 "Erstellt ein 'jungfräuliches' Duplikat des Bildes ohne jegliche Entwicklung"
 

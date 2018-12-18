@@ -9831,7 +9831,7 @@ msgid "existing duplicates"
 msgstr "bestaande duplo's"
 
 #: ../src/libs/duplicate.c:371
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "maakt een schone duplo van de afbeelding zonder de bewerkingen"
 
 #: ../src/libs/duplicate.c:375

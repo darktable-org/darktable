@@ -9739,7 +9739,7 @@ msgid "existing duplicates"
 msgstr "既存の複製"
 
 #: ../src/libs/duplicate.c:356
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "素の現像していない画像を複製します"
 
 #: ../src/libs/duplicate.c:360

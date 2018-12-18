@@ -9826,7 +9826,7 @@ msgid "existing duplicates"
 msgstr "Olemassa olevat kopiot"
 
 #: ../src/libs/duplicate.c:370
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "Luo ilman muokkaushistoriaa oleva kopioi kuvasta."
 
 #: ../src/libs/duplicate.c:374
