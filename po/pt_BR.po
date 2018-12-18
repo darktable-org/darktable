@@ -9823,7 +9823,7 @@ msgid "existing duplicates"
 msgstr "duplicatas existentes"
 
 #: ../src/libs/duplicate.c:370
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "cria uma duplicata da imagem sem nenhum desenvolvimento"
 
 #: ../src/libs/duplicate.c:374

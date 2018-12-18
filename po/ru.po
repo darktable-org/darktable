@@ -9609,7 +9609,7 @@ msgid "existing duplicates"
 msgstr "Существующие копии"
 
 #: ../src/libs/duplicate.c:370
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "Создать дубликат с пустой историей изменений"
 
 #: ../src/libs/duplicate.c:374

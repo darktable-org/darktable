@@ -9895,7 +9895,7 @@ msgid "existing duplicates"
 msgstr "obstajajoči duplikati"
 
 #: ../src/libs/duplicate.c:356
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "tvori 'deviški' duplikat slike brez kakršnegakoli razvoja"
 
 #: ../src/libs/duplicate.c:360
