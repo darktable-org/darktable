@@ -687,7 +687,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   const float prev_grey = p->grey_point_source;
   p->grey_point_source = 100.f * grey;
   const float grey_var = Log2(prev_grey / p->grey_point_source);
-  p->black_point_source = p->black_point_source + grey_var;
+  p->black_point_source = p->black_point_source - grey_var;
   p->white_point_source = p->white_point_source + grey_var;
 
   darktable.gui->reset = 1;
@@ -899,7 +899,7 @@ static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
   p->grey_point_source = dt_bauhaus_slider_get(slider);
 
   float grey_var = Log2(prev_grey / p->grey_point_source);
-  p->black_point_source = p->black_point_source + grey_var;
+  p->black_point_source = p->black_point_source - grey_var;
   p->white_point_source = p->white_point_source + grey_var;
 
   darktable.gui->reset = 1;
