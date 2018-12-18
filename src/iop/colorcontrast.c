@@ -118,7 +118,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-#if 0 // BAUHAUS doesn't support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green vs magenta"));
@@ -135,8 +134,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "blue vs yellow",
                               GTK_WIDGET(g->b_scale));
 }
-
-#endif
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -160,8 +157,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
+      out[k] = in[k];
       out[k + 1] = (in[k + 1] * d->a_steepness) + d->a_offset;
       out[k + 2] = (in[k + 2] * d->b_steepness) + d->b_offset;
+      out[k + 4] = in[k + 4];
     }
   }
   else
@@ -171,8 +170,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
+      out[k] = in[k];
       out[k + 1] = CLAMP((in[k + 1] * d->a_steepness) + d->a_offset, -128.0f, 128.0f);
       out[k + 2] = CLAMP((in[k + 2] * d->b_steepness) + d->b_offset, -128.0f, 128.0f);
+      out[k + 4] = in[k + 4];
     }
   }
 }
@@ -192,6 +193,11 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   const int unbound = d->unbound;
 
+  const __m128 scale = _mm_set_ps(1.0f, d->b_steepness, d->a_steepness, 1.0f);
+  const __m128 offset = _mm_set_ps(0.0f, d->b_offset, d->a_offset, 0.0f);
+  const __m128 min = _mm_set_ps(-INFINITY, -128.0f, -128.0f, -INFINITY);
+  const __m128 max = _mm_set_ps(INFINITY, 128.0f, 128.0f, INFINITY);
+
 // iterate over all output pixels (same coordinates as input)
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) shared(d)
@@ -201,11 +207,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
     float *in = ((float *)ivoid) + (size_t)ch * roi_in->width * j;
     float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
-
-    const __m128 scale = _mm_set_ps(1.0f, d->b_steepness, d->a_steepness, 1.0f);
-    const __m128 offset = _mm_set_ps(0.0f, d->b_offset, d->a_offset, 0.0f);
-    const __m128 min = _mm_set_ps(-INFINITY, -128.0f, -128.0f, -INFINITY);
-    const __m128 max = _mm_set_ps(INFINITY, 128.0f, 128.0f, INFINITY);
 
     if(unbound)
     {
