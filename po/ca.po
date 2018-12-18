@@ -9842,7 +9842,7 @@ msgid "existing duplicates"
 msgstr "duplicats existents"
 
 #: ../src/libs/duplicate.c:356
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "crea un duplicat 'verge' de la imatge sense cap tipus de processat"
 
 #: ../src/libs/duplicate.c:360
