@@ -378,6 +378,7 @@ static inline float gaussian(float x, float std)
   return expf(- (x * x) / (2.0f * std * std)) / (std * powf(2.0f * M_PI, 0.5f));
 }
 
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -488,6 +489,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
 
 #if defined(__SSE__)
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -1099,6 +1101,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   if(!in) dt_iop_color_picker_reset(&g->color_picker, TRUE);
 }
 
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_temp, int res,
   dt_iop_filmic_data_t *d, dt_iop_filmic_nodes_t *nodes_data)
 {

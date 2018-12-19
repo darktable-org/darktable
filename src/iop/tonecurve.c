@@ -288,6 +288,7 @@ error:
 }
 #endif
 
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -307,7 +308,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int unbound_ab = d->unbound_ab;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for SIMD() default(none) shared(d) schedule(static)
 #endif
   for(int k = 0; k < height; k++)
   {

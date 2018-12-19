@@ -192,6 +192,7 @@ static void process_common_setup(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 }
 
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                    const void *const ivoid, void *const ovoid,
                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -224,7 +225,7 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
     if(gauss && tmp)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmp) schedule(static)
+#pragma omp parallel for SIMD() default(none) shared(tmp) schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)width * height; k++) tmp[k] = ((float *)ivoid)[ch * k];
 
@@ -233,7 +234,7 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
       /* create zonemap preview for input */
       dt_pthread_mutex_lock(&g->lock);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmp, g) schedule(static)
+#pragma omp parallel for SIMD() default(none) shared(tmp, g) schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)width * height; k++)
       {
@@ -253,7 +254,7 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
       /* create zonemap preview for output */
       dt_pthread_mutex_lock(&g->lock);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmp, g) schedule(static)
+#pragma omp parallel for SIMD() default(none) shared(tmp, g) schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)width * height; k++)
       {
@@ -267,6 +268,7 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
   }
 }
 
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -300,6 +302,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE__)
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -311,7 +314,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int size = d->params.size;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) schedule(static) collapse(2)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {

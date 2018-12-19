@@ -154,7 +154,7 @@ error:
   return NULL;
 }
 
-
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 {
 
@@ -173,7 +173,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 
 // vertical blur column by column
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,           \
+#pragma omp parallel for SIMD() default(none) shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,           \
                                               coefn) schedule(static)
 #endif
   for(int i = 0; i < width; i++)
@@ -245,7 +245,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 
 // horizontal blur line by line
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,           \
+#pragma omp parallel for SIMD() default(none) shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,           \
                                               coefn) schedule(static)
 #endif
   for(int j = 0; j < height; j++)
@@ -319,6 +319,7 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 
 
 #if defined(__SSE__)
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 static void dt_gaussian_blur_4c_sse(dt_gaussian_t *g, const float *const in, float *const out)
 {
 
@@ -340,7 +341,7 @@ static void dt_gaussian_blur_4c_sse(dt_gaussian_t *g, const float *const in, flo
 
 // vertical blur column by column
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(temp, a0, a1, a2, a3, b1, b2, coefp, coefn) schedule(static)
+#pragma omp parallel for SIMD() default(none) shared(temp, a0, a1, a2, a3, b1, b2, coefp, coefn) schedule(static)
 #endif
   for(int i = 0; i < width; i++)
   {

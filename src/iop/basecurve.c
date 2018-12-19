@@ -808,7 +808,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   }
 }
 
-
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 static inline void apply_ev_and_curve(
     const float *const in,
     float *const out,
@@ -819,7 +819,7 @@ static inline void apply_ev_and_curve(
     const float *const unbounded_coeffs)
 {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)width * height; k++)
   {
@@ -838,6 +838,7 @@ static inline void apply_ev_and_curve(
   }
 }
 
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 static inline void compute_features(
     float *const col,
     const int wd,
@@ -848,7 +849,7 @@ static inline void compute_features(
   // 2) saturation
   // 3) local contrast (handled in laplacian form later)
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
 #endif
   for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
   {
@@ -868,6 +869,7 @@ static inline void compute_features(
   }
 }
 
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 static inline void gauss_blur(
     const float *const input,
     float *const output,
@@ -878,7 +880,7 @@ static inline void gauss_blur(
   float *tmp = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
   memset(tmp, 0, 4*wd*ht*sizeof(float));
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(tmp)
+#pragma omp parallel for SIMD() default(none) schedule(static) shared(tmp)
 #endif
   for(int j=0;j<ht;j++)
   { // horizontal pass
@@ -897,7 +899,7 @@ static inline void gauss_blur(
   }
   memset(output, 0, 4*wd*ht*sizeof(float));
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(tmp)
+#pragma omp parallel for SIMD() default(none) schedule(static) shared(tmp)
 #endif
   for(int i=0;i<wd;i++)
   { // vertical pass
@@ -914,6 +916,7 @@ static inline void gauss_blur(
   dt_free_align(tmp);
 }
 
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 static inline void gauss_expand(
     const float *const input, // coarse input
     float *const fine,        // upsampled, blurry output
@@ -924,7 +927,7 @@ static inline void gauss_expand(
   // fill numbers in even pixels, zero odd ones
   memset(fine, 0, 4*wd*ht*sizeof(float));
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
 #endif
   for(int j=0;j<ht;j+=2)
     for(int i=0;i<wd;i+=2)
@@ -965,6 +968,7 @@ static inline void gauss_reduce(
   }
 }
 
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                     void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -1011,7 +1015,7 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     h = ht;
     gauss_reduce(col[0], col[1], out, w, h);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(col) schedule(static)
+#pragma omp parallel for SIMD() default(none) shared(col) schedule(static)
 #endif
     for(size_t k = 0; k < 4ul * wd * ht; k += 4)
       col[0][k + 3] *= .1f + sqrtf(out[k] * out[k] + out[k + 1] * out[k + 1] + out[k + 2] * out[k + 2]);
@@ -1047,7 +1051,7 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       // abuse output buffer as temporary memory:
       if(k != num_levels - 1) gauss_expand(col[k + 1], out, w, h);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(col, comb, w, h, num_levels, k) schedule(static)
+#pragma omp parallel for SIMD() default(none) shared(col, comb, w, h, num_levels, k) schedule(static)
 #endif
       for(int j = 0; j < h; j++)
         for(int i = 0; i < w; i++)
@@ -1081,7 +1085,7 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
     // normalise both gaussian base and laplacians:
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(comb, w, h, k) schedule(static)
+#pragma omp parallel for SIMD() default(none) shared(comb, w, h, k) schedule(static)
 #endif
     for(size_t i = 0; i < (size_t)4 * w * h; i += 4)
       if(comb[k][i + 3] > 1e-8f)
@@ -1091,7 +1095,7 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     { // reconstruct output image
       gauss_expand(comb[k + 1], out, w, h);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(comb, w, h, k) schedule(static)
+#pragma omp parallel for SIMD() default(none) shared(comb, w, h, k) schedule(static)
 #endif
       for(int j = 0; j < h; j++)
         for(int i = 0; i < w; i++)
@@ -1104,7 +1108,7 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 #endif
   // copy output buffer
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(comb) schedule(static)
+#pragma omp parallel for SIMD() default(none) shared(comb) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)4 * wd * ht; k += 4)
   {
@@ -1124,6 +1128,7 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   free(comb);
 }
 
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 void process_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -1133,7 +1138,7 @@ void process_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, co
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -1151,6 +1156,7 @@ void process_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, co
   }
 }
 
+__attribute__((target_clones( "avx2", "avx", "sse4.2", "sse3", "popcnt", "default")))
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
