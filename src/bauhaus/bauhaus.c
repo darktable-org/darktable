@@ -460,30 +460,30 @@ void dt_bauhaus_init()
 
   if(!gtk_style_context_lookup_color(ctx, "bauhaus_fg", &darktable.bauhaus->color_fg))
   {
-    darktable.bauhaus->color_fg.red = 0.0;
-    darktable.bauhaus->color_fg.green = 1.0;
-    darktable.bauhaus->color_fg.blue = 0.0;
+    darktable.bauhaus->color_fg.red = 0x99 / 255.0;
+    darktable.bauhaus->color_fg.green = 0x99 / 255.0;
+    darktable.bauhaus->color_fg.blue = 0x99 / 255.0;
     darktable.bauhaus->color_fg.alpha = 1.0;
   }
   if(!gtk_style_context_lookup_color(ctx, "bauhaus_fg_insensitive", &darktable.bauhaus->color_fg_insensitive))
   {
-    darktable.bauhaus->color_fg_insensitive.red = 1.0;
-    darktable.bauhaus->color_fg_insensitive.green = 0.0;
-    darktable.bauhaus->color_fg_insensitive.blue = 1.0;
-    darktable.bauhaus->color_fg_insensitive.alpha = 1.0;
+    darktable.bauhaus->color_fg_insensitive.red = 0x19 / 255.0;
+    darktable.bauhaus->color_fg_insensitive.green = 0x19 / 255.0;
+    darktable.bauhaus->color_fg_insensitive.blue = 0x19 / 255.0;
+    darktable.bauhaus->color_fg_insensitive.alpha = .5;
   }
   if(!gtk_style_context_lookup_color(ctx, "bauhaus_bg", &darktable.bauhaus->color_bg))
   {
-    darktable.bauhaus->color_bg.red = 1.0;
-    darktable.bauhaus->color_bg.green = 0.0;
-    darktable.bauhaus->color_bg.blue = 0.0;
-    darktable.bauhaus->color_bg.alpha = 1.0;
+    darktable.bauhaus->color_bg.red = 0x99 / 255.0;
+    darktable.bauhaus->color_bg.green = 0x99 / 255.0;
+    darktable.bauhaus->color_bg.blue = 0x99 / 255.0;
+    darktable.bauhaus->color_bg.alpha = .2;
   }
   if(!gtk_style_context_lookup_color(ctx, "bauhaus_border", &darktable.bauhaus->color_border))
   {
-    darktable.bauhaus->color_border.red = 0.0;
-    darktable.bauhaus->color_border.green = 0.0;
-    darktable.bauhaus->color_border.blue = 1.0;
+    darktable.bauhaus->color_border.red = 0x19 / 255.0;
+    darktable.bauhaus->color_border.green = 0x19 / 255.0;
+    darktable.bauhaus->color_border.blue = 0x19 / 255.0;
     darktable.bauhaus->color_border.alpha = 1.0;
   }
 
