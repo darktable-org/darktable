@@ -94,7 +94,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   /* draw standard button background if not transparent nor flat styled */
   if((flags & CPF_STYLE_FLAT))
   {
-    if(flags & CPF_PRELIGHT || flags & CPF_ACTIVE)
+    if(flags & CPF_PRELIGHT || (flags & CPF_ACTIVE && !(flags & CPF_BG_TRANSPARENT)))
     {
       cairo_rectangle(cr, 0, 0, width, height);
       gdk_cairo_set_source_rgba(cr, &bg_color);
@@ -108,7 +108,6 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
     if(!(flags & CPF_DO_NOT_USE_BORDER))
       gtk_render_frame(context, cr, 0, 0, width, height);
   }
-
 
   /* create pango text settings if label exists */
   PangoLayout *layout = NULL;
