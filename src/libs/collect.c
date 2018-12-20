@@ -1601,7 +1601,7 @@ int position()
   return 400;
 }
 
-static void entry_focus_in_callback(GtkWidget *w, GdkEventFocus *event, dt_lib_collect_rule_t *d)
+static gboolean entry_focus_in_callback(GtkWidget *w, GdkEventFocus *event, dt_lib_collect_rule_t *d)
 {
   dt_lib_collect_t *c = get_collect(d);
   if(c->active_rule != d->num)
@@ -1609,6 +1609,8 @@ static void entry_focus_in_callback(GtkWidget *w, GdkEventFocus *event, dt_lib_c
     c->active_rule = d->num;
     update_view(c->rule + c->active_rule);
   }
+
+  return FALSE;
 }
 
 static void menuitem_mode(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
