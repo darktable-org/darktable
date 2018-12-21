@@ -32,6 +32,8 @@
 @define-color thumbnail_border_color #191919; /* rectangle directly around image */
 @define-color thumbnail_selected_border_color #e5e5e5;
 
+@define-color filmstrip_bg_color @lighttable_bg_color;
+
 * {
   font: ${GTK_CSS_FONT};
   color: @fg_color;
