@@ -76,7 +76,6 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   else
   {
     flags &= ~(CPF_ACTIVE);
-    fg_color.alpha = CLAMP(fg_color.alpha / 2.0, 0.3, 1.0);
   }
 
   /* prelight */
@@ -96,9 +95,18 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   {
     if(flags & CPF_PRELIGHT || flags & CPF_ACTIVE)
     {
-      cairo_rectangle(cr, 0, 0, width, height);
-      gdk_cairo_set_source_rgba(cr, &bg_color);
-      cairo_fill(cr);
+      // When CPF_BG_TRANSPARENT is set, change the background on
+      // PRELIGHT, but not on ACTIVE
+      if(!(flags & CPF_BG_TRANSPARENT) || (flags & CPF_PRELIGHT))
+      {
+        cairo_rectangle(cr, 0, 0, width, height);
+        gdk_cairo_set_source_rgba(cr, &bg_color);
+        cairo_fill(cr);
+      }
+    }
+    else if(!(flags & CPF_ACTIVE))
+    {
+      fg_color.alpha = CLAMP(fg_color.alpha / 2.0, 0.3, 1.0);
     }
   }
   else if(!(flags & CPF_BG_TRANSPARENT))
