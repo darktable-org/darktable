@@ -252,6 +252,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Japanese
 - Nepal
 - Norwegian Bokmål
+- Polish
 - Portuguese
 - Romanian
 - Russian
