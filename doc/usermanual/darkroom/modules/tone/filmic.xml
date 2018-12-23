@@ -107,6 +107,9 @@
     <para>
       The sliders ranges of filmic are limited to usual and safe values, but values are allowed out of these ranges
       by clicking on the sliders with the right button and inputting values on the keyboard.
+      Filmic has no neutral parameters, that would result in a no-operation: as soon as the
+      module is enabled, the image is always at least slightly affected. The default parameters
+      are tuned to have minimal impact on most pictures.
     </para>
 
     <sect5>
@@ -171,7 +174,8 @@
           reads the minimum luminance in XYZ space over the drawn area, assumes it is pure black, and sets the black exposure
           parameter to remap the minimum reading to 0 % luminance. The black color-picker measurement is very sensitive to noise, and
           cannot identify if the minimum luminance is pure black (actual data) or just noise. It works better on low-ISO
-          pictures and with high-quality demosaicing.
+          pictures and with high-quality demosaicing. When the color-picker puts the black exposure at -16 EV, it
+          is a sign that the measure failed and you need to adjust it manually.
         </para>
         <para>
           The black relative exposure allows you to choose how far you want to recover lowlights. On the contrary to the white
@@ -273,21 +277,46 @@
         <para>
           The saturation parameter is a fine-tuning control that applies on top of the
           latitude parameter. By default, the picture is desaturated selectively in extreme
-          luminances (near-white and near-black). The desaturation mask is a gaussian window
-          which standard-deviation is latitude × saturation, and which average is the center
-          of the latitude. As the latitude affects the luminance and the saturation, you
+          luminances (near-white and near-black), and untouched in mid-tones. This is how
+          film behaves and is also useful to avoid gamut clipping, because very bright and
+          very saturated colours are usually out of the sRGB gamut.
+        </para>
+        <para>
+          The desaturation mask is a gaussian window
+          which standard-deviation is latitude × saturation, and which is centered on the
+          latitude. As the latitude affects the luminance and the saturation, you
           should set it first, leaving the saturation at 100 %. Once you are happy with
           the luminance mapping, you can then fine-tune the saturation parameter
           to adjust the desaturation.
         </para>
 
         <para>
-          The saturation parameter sets at 100 % means the desaturation window is defined
-          solely from
-          the latitude parameter (so there is always a bit of desaturation). To desaturate more
+          The saturation parameter sets at 100 % means the desaturation window standard-deviation
+          is 100 % of the latitude width. To desaturate more
           aggressively at extreme luminances, the saturation should be set lower than 100 %.
           To almost disable the desaturation, saturation values can be set as high as 1000 %,
           using right-clic and inputting the values on the keyboard.
+        </para>
+
+      </sect6>
+
+      <sect6>
+
+        <title>Intent</title>
+
+        <para>
+          The intent parameter controls the interpolation algorithm used to derivate the curve
+          from the position of the nodes. It is similar to the tone-curve module, but the
+          options are translated into common language. <emphasis>Contrasted</emphasis> uses
+          a cubic-spline interpolation that produce a smooth round curve and pleasing contrast,
+          however it can be sensible to close nodes and produce cusps and oscillations in this
+          setup. <emphasis>Linear</emphasis> uses a monotonic Hermite interpolation that ensures
+          the monotonicity of the curve, but produces a flatter contrast at the extremities.
+          <emphasis>Faded</emphasis> uses a Catmul-Rom centripetal interpolation, designed
+          to avoid cusps at all cost, but produces even flatter contrast at the extremities,
+          which can be used creatively to emulate old faded photographs. <emphasis>Optimized</emphasis>
+          is an average between the <emphasis>contrasted</emphasis> and <emphasis>linear</emphasis>
+          modes, providing a fair trade-off at the expense of being heavier on the CPU.
         </para>
 
       </sect6>
@@ -306,19 +335,92 @@
         <para>
           When using the chrominance preservation mode, the RGB ratios are saved before any
           correction in filmic. Only the maximum of the 3 RGB channels is used in the tone-mapping,
-          as an estimation of the luminance.
-          At the end of the process, the RGB ratios are restored as before. This bounds the 3 RGB
+          as an estimation of the luminance. At the end of the process, the RGB ratios are restored as before.
+          This leads to marginally faster runtimes, and links the 3 RGB
           channels all along the process, to ensure the hue and
           the saturation are kept untouched, which is desirable when you performed precise
           color-adjustments. However, this does not follow the eye response to luminance,
           so, keeping the saturation as-is when pushing up the luminance will always look
           over-saturated. This is why, when using this mode, an extra-desaturation should
-          be performed, for example using the output saturation in color balance module at
+          be performed, for example, using the output saturation in color balance module at
           65 - 85 %. In that case, color balance should be used to adjust the main saturation
           of the mid-tones, then an additional pass would fix the saturation of extreme
           luminances with the saturation parameter of filmic, set between 12-33 %.
         </para>
 
+        <para>
+          It is advised to perform all filmic settings in the regular RGB mode (unlinked channels),
+          then enable the chrominance preservation last, and then adjust the saturation.
+        </para>
+
+      </sect6>
+
+    </sect5>
+
+    <sect5>
+      <title>Destination/Display</title>
+
+      <para>
+        The destination parameters set the target luminance values used to remap the tones
+        through filmic. The default parameters will work 99 % of the times, the remaining 1 %
+        being when you output in linear RGB space (REC709, REC2020) for media handling
+        log-encoded data. These settings are then
+        to be used with caution because darktable does not allow separate pipelines for diplay
+        preview and for file output.
+      </para>
+
+      <sect6>
+        <title>Black luminance</title>
+
+        <para>
+          The black luminance parameter allows to set the ground-level black of the target
+          medium. Set it greater than 0 % if you want raised, faded blacks to achieve a retro
+          look.
+        </para>
+      </sect6>
+
+      <sect6>
+        <title>Middle-grey destination</title>
+
+        <para>
+          This is the middle-grey of the output medium, that is used as a target for the
+          filmic S curve central node. On gamma-corrected media, the actual grey is computed
+          with the gamma correction (middle-grey^(1/gamma)), so a middle-grey parameter of
+          18 % with a gamma of 2.2 gives an actual middle-grey target of 45.87 %.
+        </para>
+      </sect6>
+
+      <sect6>
+        <title>White luminance</title>
+
+        <para>
+          The white luminance parameter allows to set the ceiling-level white of the target
+          medium. Set it lower than 100 % if you want dampened, muted whites to achieve a retro
+          look.
+        </para>
+      </sect6>
+
+      <sect6>
+        <title>Destination power factor</title>
+
+        <para>
+          The power of the output transfer function, often improperly called the gamma (only screen have a gamma),
+          is the parameter used to raise or compress the mid-tones to account for the display
+          non-linearities or to avoid quantization artifacts when encoding in 8 bits file formats.
+          This is a common operation when applying ICC color profiles (except for linear RGB
+          spaces, like REC 709 or REC 2020, which have a linear "gamma" of 1.0). However,
+          at the output of filmic, the signal is logarithmically encoded, which is not something
+          ICC color profiles know to handle. As a consequence, if we let them apply a gamma 1/2.2 on top,
+          it will result in a double up, and the middle-grey will be remapped to 76 % instead
+          of 45 % as it should.
+        </para>
+
+        <para>
+          To avoid double ups and washed pictures, filmic applies a "gamma" compression reverting the output ICC
+          gamma correction, so the middle-grey is correctely remapped at the end.
+          To remove this compression,
+          set the destination power factor to 1.0 and the middle-grey destination to 45 %.
+        </para>
       </sect6>
 
     </sect5>
