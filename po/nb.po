@@ -7693,7 +7693,7 @@ msgstr "bølgeeffekt"
 #: ../src/iop/liquify.c:3304
 msgid ""
 "click and drag to add point\n"
-"scrool to change size\n"
+"scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
 "klikk og dra for å legge til punkt\n"
@@ -7704,7 +7704,7 @@ msgstr ""
 #: ../src/iop/liquify.c:3308
 msgid ""
 "click to add line\n"
-"scrool to change size\n"
+"scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
 "klikk for å legge til linje\n"
@@ -7715,7 +7715,7 @@ msgstr ""
 #: ../src/iop/liquify.c:3312
 msgid ""
 "click to add curve\n"
-"scrool to change size\n"
+"scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
 "klikk for å legge til kurve\n"
@@ -9770,7 +9770,7 @@ msgid "existing duplicates"
 msgstr "eksisterende duplikater"
 
 #: ../src/libs/duplicate.c:356
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "lager et 'jomfruelig' duplikat av bildet uten noe redigering"
 
 #: ../src/libs/duplicate.c:360

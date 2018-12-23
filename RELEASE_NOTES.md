@@ -132,6 +132,9 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Olympus SH-2
 - Panasonic DC-FZ80 (4:3)
 - Panasonic DC-G9 (4:3)
+- Panasonic DC-GF9 (4:3)
+- Panasonic DC-GX800 (4:3)
+- Panasonic DC-GX850 (4:3)
 - Panasonic DC-GH5S (4:3, 3:2, 16:9, 1:1)
 - Panasonic DC-GX9 (4:3)
 - Panasonic DC-LX100M2 (4:3, 1:1, 16:9, 3:2)
@@ -174,7 +177,6 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Sony DSC-RX0
 - Sony DSC-RX100M5
 - Sony DSC-RX100M5A
-- Sony DSC-RX100M6
 - Sony DSC-RX10M3
 - Sony DSC-RX10M4
 - Sony DSC-RX1RM2
@@ -185,21 +187,21 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 ### Noise Profiles
 
 - Canon EOS 200D
-- Canon EOS 750D
-- Canon EOS 760D
-- Canon EOS 77D
-- Canon EOS 8000D
-- Canon EOS 800D
-- Canon EOS 9000D
-- Canon EOS Kiss X8i
 - Canon EOS Kiss X9
+- Canon EOS Rebel SL2
+- Canon EOS 750D
+- Canon EOS Kiss X8i
+- Canon EOS Rebel T6i
+- Canon EOS 760D
+- Canon EOS 8000D
+- Canon EOS Rebel T6s
+- Canon EOS 77D
+- Canon EOS 9000D
+- Canon EOS 800D
 - Canon EOS Kiss X9i
+- Canon EOS Rebel T7i
 - Canon EOS M100
 - Canon EOS M6
-- Canon EOS Rebel SL2
-- Canon EOS Rebel T6i
-- Canon EOS Rebel T6s
-- Canon EOS Rebel T7i
 - Canon PowerShot G1 X Mark II
 - Canon PowerShot G1 X Mark III
 - Canon PowerShot G9 X
@@ -207,8 +209,8 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Fujifilm X-E3
 - Fujifilm X-T3
 - Fujifilm X100F
+- Nikon 1 AW1
 - Nikon 1 J3
-- Nikon AW1
 - Nikon COOLPIX B700
 - Nikon D5600
 - Nikon D7500
@@ -229,10 +231,8 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Pentax K-01
 - Pentax KP
 - Samsung NX1
-- Sony DSC-RX100M3
 - Sony DSC-RX100M4
 - Sony DSC-RX10M3
-- Sony DSC-RX10M4
 - Sony ILCE-7M3
 
 ## Translations
