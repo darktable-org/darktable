@@ -7738,7 +7738,7 @@ msgstr "Sulatus"
 #: ../src/iop/liquify.c:3355
 msgid ""
 "click and drag to add point\n"
-"scrool to change size\n"
+"scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
 "Napsautus ja raahaaminen lisää pisteen.\n"
@@ -7748,7 +7748,7 @@ msgstr ""
 #: ../src/iop/liquify.c:3359
 msgid ""
 "click to add line\n"
-"scrool to change size\n"
+"scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
 "Napsautus lisää viivan.\n"
@@ -7758,7 +7758,7 @@ msgstr ""
 #: ../src/iop/liquify.c:3363
 msgid ""
 "click to add curve\n"
-"scrool to change size\n"
+"scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
 "Napsautus lisää kurvin.\n"
@@ -9826,7 +9826,7 @@ msgid "existing duplicates"
 msgstr "Olemassa olevat kopiot"
 
 #: ../src/libs/duplicate.c:370
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "Luo ilman muokkaushistoriaa oleva kopioi kuvasta."
 
 #: ../src/libs/duplicate.c:374

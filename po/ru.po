@@ -1445,7 +1445,7 @@ msgid ""
 "couldn't expand to a unique filename for session, please check your import session "
 "settings."
 msgstr ""
-"Не удалось расширить до уникального имени файла в сеансе, проверьте параметры импорта"
+"Ошибка получения уникального имени файла сеанса, проверьте параметры импорта"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -1716,12 +1716,12 @@ msgstr[2] "Удаление из коллекции %d снимков"
 #: ../src/control/jobs/control_jobs.c:721
 #, c-format
 msgid "could not send %s to trash%s%s"
-msgstr "Не удалось отправить %s в корзину%s%s"
+msgstr "Ошибка удаления %s в корзину%s%s"
 
 #: ../src/control/jobs/control_jobs.c:722
 #, c-format
 msgid "could not physically delete %s%s%s"
-msgstr "Не удалось удалить с диска %s%s%s"
+msgstr "Ошибка удаления с диска %s%s%s"
 
 #: ../src/control/jobs/control_jobs.c:731
 msgid "physically delete"
@@ -2023,7 +2023,7 @@ msgstr "Смешивание пропущено в модуле '%s': облас
 
 #: ../src/develop/blend.c:2894 ../src/develop/blend.c:3150
 msgid "could not allocate buffer for blending"
-msgstr "Не удалось назначить буфер для смешивания"
+msgstr "Ошибка выделения буфера для смешивания"
 
 #: ../src/develop/blend_gui.c:582
 msgid "display mask is currently disabled by another module"
@@ -2633,7 +2633,7 @@ msgstr ""
 
 #: ../src/develop/lightroom.c:1032
 msgid "cannot find lightroom XMP!"
-msgstr "Не удалось найти XMP от Lightroom!"
+msgstr "Ошибка при поиске файла XMP от Lightroom!"
 
 #: ../src/develop/lightroom.c:1064 ../src/develop/lightroom.c:1086
 #: ../src/develop/lightroom.c:1106
@@ -2929,7 +2929,7 @@ msgstr "Создание каталога кэша «%s»\n"
 #: ../src/generate-cache/main.c:54
 #, c-format
 msgid "could not create directory '%s'!\n"
-msgstr "Не удалось создать каталог «%s»!\n"
+msgstr "Ошибка создания каталога «%s»!\n"
 
 #: ../src/generate-cache/main.c:78
 #, c-format
@@ -3814,7 +3814,7 @@ msgstr "Некорректный размер полей, использую 0"
 #: ../src/imageio/storage/gallery.c:383 ../src/imageio/storage/picasa.c:1302
 #, c-format
 msgid "could not export to file `%s'!"
-msgstr "Не удалось экспортировать в файл «%s»!"
+msgstr "Ошибка экспорта в файл «%s»!"
 
 #: ../src/imageio/format/pdf.c:410
 msgid "PDF"
@@ -4108,12 +4108,12 @@ msgstr "Перезаписать"
 #: ../src/imageio/storage/latex.c:272
 #, c-format
 msgid "could not create directory `%s'!"
-msgstr "Не удалось создать каталог «%s»!"
+msgstr "Ошибка создания каталога «%s»!"
 
 #: ../src/imageio/storage/disk.c:262
 #, c-format
 msgid "could not write to directory `%s'!"
-msgstr "Не удалось записать в каталог «%s»!"
+msgstr "Ошибка записи в каталог «%s»!"
 
 #: ../src/imageio/storage/disk.c:299 ../src/imageio/storage/email.c:142
 #: ../src/imageio/storage/gallery.c:391 ../src/imageio/storage/latex.c:361
@@ -4134,7 +4134,7 @@ msgstr "Изображения, экспортированные из darktable"
 
 #: ../src/imageio/storage/email.c:242
 msgid "could not launch email client!"
-msgstr "Не удалось запустить почтовый клиент!"
+msgstr "Ошибка запуска почтового клиента!"
 
 #: ../src/imageio/storage/facebook.c:253
 #, c-format
@@ -4199,7 +4199,7 @@ msgstr "Другая учётная запись"
 
 #: ../src/imageio/storage/facebook.c:885 ../src/imageio/storage/picasa.c:943
 msgid "unable to retrieve the album list"
-msgstr "Не удалось получить список альбомов"
+msgstr "Ошибка получения списка альбомов"
 
 #: ../src/imageio/storage/facebook.c:893 ../src/imageio/storage/flickr.c:393
 #: ../src/imageio/storage/flickr.c:420
@@ -4250,15 +4250,15 @@ msgstr "Друзьям друзей"
 
 #: ../src/imageio/storage/facebook.c:1317
 msgid "unable to create album, no title provided"
-msgstr "Не удалось создать альбом, не указан заголовок"
+msgstr "Ошибка создания альбома, не указан заголовок"
 
 #: ../src/imageio/storage/facebook.c:1326
 msgid "unable to create album"
-msgstr "Не удалось создать альбом"
+msgstr "Ошибка создания альбома"
 
 #: ../src/imageio/storage/facebook.c:1336
 msgid "unable to export photo to webalbum"
-msgstr "Невозможно экспортировать снимки в альбом"
+msgstr "Ошибка экспорта снимков в альбом"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/facebook.c:1348
@@ -4298,7 +4298,7 @@ msgstr "Альбом Flickr"
 #: ../src/imageio/storage/flickr.c:338 ../src/imageio/storage/flickr.c:378
 #: ../src/imageio/storage/flickr.c:832 ../src/imageio/storage/flickr.c:838
 msgid "not authenticated"
-msgstr "Нет авторизации"
+msgstr "Авторизация отсутствует"
 
 #: ../src/imageio/storage/flickr.c:374 ../src/imageio/storage/flickr.c:828
 msgid "authenticated"
@@ -4364,7 +4364,7 @@ msgstr "Щёлкните кнопку «Войти»"
 
 #: ../src/imageio/storage/flickr.c:675
 msgid "could not upload to flickr!"
-msgstr "Не удалось загрузить на Flickr!"
+msgstr "Ошибка загрузки на Flickr!"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/flickr.c:726
@@ -4469,7 +4469,7 @@ msgstr "Наклон"
 
 #: ../src/iop/ashift.c:2506
 msgid "automatic cropping failed"
-msgstr "Не удалось выполнить автокадрирование"
+msgstr "Ошибка автокадрирования"
 
 #: ../src/iop/ashift.c:2650
 msgid "data pending - please repeat"
@@ -4481,7 +4481,7 @@ msgstr "Не могу определить структуру линий в из
 
 #: ../src/iop/ashift.c:2667
 msgid "could not run outlier removal"
-msgstr "Не удалось удалить посторонние линии"
+msgstr "Ошибка удаления посторонних линий"
 
 #: ../src/iop/ashift.c:2721
 msgid "not enough structure for automatic correction"
@@ -5965,7 +5965,7 @@ msgstr "Цветовая матрица «%s» не найдена!"
 
 #: ../src/iop/colorin.c:1429
 msgid "input profile could not be generated!"
-msgstr "Не удалось создать профиль ввода!"
+msgstr "Ошибка создания профиля ввода!"
 
 #: ../src/iop/colorin.c:1507
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
@@ -7542,7 +7542,7 @@ msgstr "Пластика"
 #: ../src/iop/liquify.c:3355
 msgid ""
 "click and drag to add point\n"
-"scrool to change size\n"
+"scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
 "Щёлкните и перетащите указатель для добавления точки, колесо меняет размер\n"
@@ -7551,7 +7551,7 @@ msgstr ""
 #: ../src/iop/liquify.c:3359
 msgid ""
 "click to add line\n"
-"scrool to change size\n"
+"scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
 "Щёлкните для добавления линии, колесо меняет размер\n"
@@ -7560,7 +7560,7 @@ msgstr ""
 #: ../src/iop/liquify.c:3363
 msgid ""
 "click to add curve\n"
-"scrool to change size\n"
+"scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
 "Щёлкните для добавления кривой, колесо меняет размер\n"
@@ -9609,7 +9609,7 @@ msgid "existing duplicates"
 msgstr "Существующие копии"
 
 #: ../src/libs/duplicate.c:370
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "Создать дубликат с пустой историей изменений"
 
 #: ../src/libs/duplicate.c:374
@@ -9775,8 +9775,8 @@ msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
 msgstr ""
-"Перетаскивание меняет экспозицию,\n"
-"двойной щелчок обнуляет изменения"
+"Перетаскивание настраивает экспозицию,\n"
+"двойной щелчок сбрасывает изменения"
 
 #: ../src/libs/histogram.c:491
 msgid "set histogram mode to linear"
@@ -9819,8 +9819,8 @@ msgid ""
 "drag to change black point,\n"
 "doubleclick resets"
 msgstr ""
-"Перетаскивание меняет точку чёрного,\n"
-"двойной щелчок обнуляет изменения"
+"Перетаскивание настраивает чёрную точку,\n"
+"двойной щелчок сбрасывает изменения"
 
 #: ../src/libs/history.c:84
 msgctxt "accel"
@@ -10708,7 +10708,7 @@ msgstr "Обработка «%s» для «%s»"
 #: ../src/libs/print_settings.c:280
 #, c-format
 msgid "cannot open printer profile `%s'"
-msgstr "Не удалось открыть профиль принтера «%s»!"
+msgstr "Ошибка открытия профиля принтера «%s»!"
 
 #: ../src/libs/print_settings.c:289
 #, c-format
@@ -10718,7 +10718,7 @@ msgstr "Ошибка получения профиля вывода для сн�
 #: ../src/libs/print_settings.c:297
 #, c-format
 msgid "cannot apply printer profile `%s'"
-msgstr "Не удалось применить профиль принтера «%s»!"
+msgstr "Ошибка применения профиля принтера «%s»!"
 
 #: ../src/libs/print_settings.c:317
 msgid "failed to create temporary pdf for printing"
@@ -10726,15 +10726,15 @@ msgstr "Ошибка создания временного файла PDF для
 
 #: ../src/libs/print_settings.c:391
 msgid "cannot print until a picture is selected"
-msgstr "Не удалось начать печать пока не выбран снимок"
+msgstr "Ошибка печати, не выбран снимок"
 
 #: ../src/libs/print_settings.c:396
 msgid "cannot print until a printer is selected"
-msgstr "Не удалось начать печать пока не выбран принтер"
+msgstr "Ошибка печати, не выбран принтер"
 
 #: ../src/libs/print_settings.c:401
 msgid "cannot print until a paper is selected"
-msgstr "Не удалось начать печать пока не указаны параметры страницы"
+msgstr "Ошибка печати, не указаны параметры страницы"
 
 #. in this case no need to release from cache what we couldn't get
 #: ../src/libs/print_settings.c:428
@@ -12212,7 +12212,7 @@ msgstr ""
 #~ msgstr "Двойной щелчок сбрасывает изменения до «%<PRId64>»"
 
 #~ msgid "failed to create filmroll for camera import, import aborted."
-#~ msgstr "Не удалось создать съёмку для импорта с камеры, импорт прерван."
+#~ msgstr "Ошибка создания съёмки для импорта с камеры, импорт прерван."
 
 #, fuzzy
 #~ msgid "error creating GUI, see stderr"
@@ -12348,7 +12348,7 @@ msgstr ""
 #~ msgstr "Удалить локальную копию фото"
 
 #~ msgid "failed to create session path %s."
-#~ msgstr "Не удалось создать каталог сеанса %s."
+#~ msgstr "Ошибка создания каталога сеанса %s."
 
 #, fuzzy
 #~ msgctxt "accel"
@@ -12762,7 +12762,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "could not attach xmp data to file `%s'!"
-#~ msgstr "Не удалось создать каталог «%s»!"
+#~ msgstr "Ошибка создания каталога «%s»!"
 
 #, fuzzy
 #~ msgid ""
