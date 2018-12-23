@@ -612,7 +612,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
   const int wd = img->width;
   const int ht = img->height;
-  const float max_scale = upscale ? 100.0 : 1.0;
+
 
   int res = 0;
 
@@ -767,8 +767,11 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
   const int width = format_params->max_width;
   const int height = format_params->max_height;
-  const double scalex = width > 0 ? fminf(width / (double)pipe.processed_width, max_scale) : 1.0;
-  const double scaley = height > 0 ? fminf(height / (double)pipe.processed_height, max_scale) : 1.0;
+
+  const float max_scale = ( upscale && ( width > 0 || height > 0 )) ? 100.0 : 1.0;
+
+  const double scalex = width > 0 ? fminf(width / (double)pipe.processed_width, max_scale) : max_scale;
+  const double scaley = height > 0 ? fminf(height / (double)pipe.processed_height, max_scale) : max_scale;
   const double scale = fminf(scalex, scaley);
 
   const int processed_width = scale * pipe.processed_width + .5f;
