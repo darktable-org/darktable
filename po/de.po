@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-11-28 09:13+0100\n"
-"PO-Revision-Date: 2018-12-04 15:42+0100\n"
+"PO-Revision-Date: 2018-12-18 12:47+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -2554,7 +2554,7 @@ msgstr "Maske normal oder invertiert anwenden"
 #| msgctxt "accel"
 #| msgid "tethering view"
 msgid "feathering guide"
-msgstr "Feathering Hilfslinien"
+msgstr "Ausblenden anwenden auf"
 
 #: ../src/develop/blend_gui.c:2085
 msgid "output image"
@@ -2566,18 +2566,18 @@ msgstr "Eingangsbild"
 
 #: ../src/develop/blend_gui.c:2095
 msgid "choose to guide mask by input or output image"
-msgstr "wählen die Anwendung der Maske durch das Eingangs- oder Ausgangsbild."
+msgstr "Wähle die Anwendung der Maske durch das Eingangs- oder Ausgangsbild."
 
 #: ../src/develop/blend_gui.c:2101
 #| msgctxt "accel"
 #| msgid "tethering view"
 msgid "feathering radius"
-msgstr "Feathering Radius"
+msgstr "Ausblend-Radius"
 
 #: ../src/develop/blend_gui.c:2103
 #| msgid "spatial extent of the unblurring"
 msgid "spatial radius of feathering"
-msgstr "Räumlicher Radius für Feathering"
+msgstr "Räumlicher Radius für das Ausblenden"
 
 #: ../src/develop/blend_gui.c:2109
 msgid "mask blur"
@@ -2809,7 +2809,7 @@ msgid ""
 "scroll to set size, shift+scroll to set feather size\n"
 "ctrl+scroll to set shape opacity"
 msgstr ""
-"scrollen um die Größe einzustellen, Umschalt+scrollen um Feathergröße "
+"scrollen um die Größe einzustellen, Umschalt+scrollen um Ausblend-Größe "
 "einzustellen\n"
 "Strg+scrollen um die Deckkraft einzustellen"
 
@@ -2825,9 +2825,9 @@ msgid ""
 "shift+click to switch feathering mode, ctrl+scroll to set shape opacity,\n"
 "shift+scroll to set feather size, ctrl+click to rotate"
 msgstr ""
-"Umschalt+Klick um den Feathering-Modus zu wechseln, Strg+Scrollen um die "
+"Umschalt+Klick um den Ausblend-Modus zu wechseln, Strg+Scrollen um die "
 "Deckkraft zu ändern,\n"
-"Shift+Scrollen um Feather-Größe einzustellen, Strg+Klick zum Drehen"
+"Shift+Scrollen um Ausblend-Größe einzustellen, Strg+Klick zum Drehen"
 
 #: ../src/develop/masks/masks.c:191
 msgid ""
@@ -7837,7 +7837,7 @@ msgstr "Verflüssigen"
 #: ../src/iop/liquify.c:3289
 msgid ""
 "click and drag to add point\n"
-"scrool to change size\n"
+"scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
 "Klick und ziehen um Punkt hinzufügen\n"
@@ -7848,7 +7848,7 @@ msgstr ""
 #: ../src/iop/liquify.c:3293
 msgid ""
 "click to add line\n"
-"scrool to change size\n"
+"scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
 "Klick zu hinzufügen einer Linie\n"
@@ -7859,7 +7859,7 @@ msgstr ""
 #: ../src/iop/liquify.c:3297
 msgid ""
 "click to add curve\n"
-"scrool to change size\n"
+"scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
 "Klick zu hinzufügen einer Kurve\n"
@@ -10011,7 +10011,7 @@ msgid "existing duplicates"
 msgstr "Existierenden Duplikate"
 
 #: ../src/libs/duplicate.c:356
-msgid "create a 'virgin' duplicate of the image without any developpement"
+msgid "create a 'virgin' duplicate of the image without any development"
 msgstr ""
 "Erstellt ein 'jungfräuliches' Duplikat des Bildes ohne jegliche Entwicklung"
 
