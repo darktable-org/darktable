@@ -1208,19 +1208,48 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
   else
     masks_density = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/density"), 1.0f);
 
-  if(gui->creation && which == 1
+  if(gui->creation && which == 1 && gui->creation_pause)
+  {
+    gui->creation_pause = FALSE;
+    if(!gui->guipoints) return 1;
+    dt_masks_dynbuf_add(gui->guipoints, pzx * darktable.develop->preview_pipe->backbuf_width);
+    dt_masks_dynbuf_add(gui->guipoints, pzy * darktable.develop->preview_pipe->backbuf_height);
+
+    dt_masks_dynbuf_add(gui->guipoints_payload, 0);
+    dt_masks_dynbuf_add(gui->guipoints_payload, 0);
+    dt_masks_dynbuf_add(gui->guipoints_payload, 0);
+    dt_masks_dynbuf_add(gui->guipoints_payload, 0);
+
+    gui->guipoints_count++;
+
+    dt_masks_dynbuf_add(gui->guipoints, pzx * darktable.develop->preview_pipe->backbuf_width);
+    dt_masks_dynbuf_add(gui->guipoints, pzy * darktable.develop->preview_pipe->backbuf_height);
+
+    dt_masks_dynbuf_add(gui->guipoints_payload, masks_border);
+    dt_masks_dynbuf_add(gui->guipoints_payload, masks_hardness);
+    dt_masks_dynbuf_add(gui->guipoints_payload, masks_density);
+    dt_masks_dynbuf_add(gui->guipoints_payload, pressure);
+
+    gui->guipoints_count++;
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+  else if(gui->creation && which == 1
      && (((state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
          || ((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)))
   {
     // set some absolute or relative position for the source of the clone mask
-    if(form->type & DT_MASKS_CLONE) dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
-
+    if(form->type & DT_MASKS_CLONE) {
+       dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
+    }
+    gui->creation_pause = FALSE;
     return 1;
   }
   else if(which == 1)
   {
     if(gui->creation)
     {
+      gui->creation_pause = FALSE;
       float wd = darktable.develop->preview_pipe->backbuf_width;
       float ht = darktable.develop->preview_pipe->backbuf_height;
 
@@ -1520,6 +1549,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
 {
   if(!gui) return 0;
 
+  if(!gui->guipoints) return 1;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
 
@@ -1529,7 +1559,23 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
   else
     masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), 0.5f);
 
-  if(gui->creation && which == 1 && (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
+  if(gui->creation && which == 1 && (state & GDK_CONTROL_MASK))
+  {
+    gui->creation_pause = TRUE;
+    dt_masks_dynbuf_add(gui->guipoints, pzx * darktable.develop->preview_pipe->backbuf_width);
+    dt_masks_dynbuf_add(gui->guipoints, pzy * darktable.develop->preview_pipe->backbuf_height);
+    const float border = 0; //dt_masks_dynbuf_get(gui->guipoints_payload, -4);
+    const float hardness = 0; //dt_masks_dynbuf_get(gui->guipoints_payload, -3);
+    const float density = 0; //dt_masks_dynbuf_get(gui->guipoints_payload, -2);
+    dt_masks_dynbuf_add(gui->guipoints_payload, border);
+    dt_masks_dynbuf_add(gui->guipoints_payload, hardness);
+    dt_masks_dynbuf_add(gui->guipoints_payload, density);
+    dt_masks_dynbuf_add(gui->guipoints_payload, 0);
+    gui->guipoints_count++;
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+  else if(gui->creation && which == 1 && (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
   {
     // user just set the source position, so just return
     return 1;
@@ -1872,7 +1918,7 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
 
   if(gui->creation)
   {
-    if(gui->guipoints)
+    if(gui->guipoints&&!gui->creation_pause)
     {
       dt_masks_dynbuf_add(gui->guipoints, pzx * darktable.develop->preview_pipe->backbuf_width);
       dt_masks_dynbuf_add(gui->guipoints, pzy * darktable.develop->preview_pipe->backbuf_height);

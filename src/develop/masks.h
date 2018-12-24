@@ -223,6 +223,7 @@ typedef struct dt_masks_form_gui_t
 
 
   gboolean creation;
+  gboolean creation_pause;
   gboolean creation_continuous;
   gboolean creation_closing_form;
   dt_iop_module_t *creation_module;
