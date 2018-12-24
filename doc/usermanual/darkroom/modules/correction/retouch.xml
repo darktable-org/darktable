@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect3 status="draft" id="retouch">
+<sect3 status="final" id="retouch">
 
   <title>Retouch</title>
 

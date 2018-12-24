@@ -673,7 +673,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
 
   </sect2>
 
-  <sect2 status="draft" id="darktable_and_opencl_profiling">
+  <sect2 status="final" id="darktable_and_opencl_profiling">
 
     <title>OpenCL scheduling profile</title>
 

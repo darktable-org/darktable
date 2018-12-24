@@ -67,7 +67,7 @@
       below) at the selected spot or area are shown on top left of the widget.
     </para>
 
-    <sect5 status="draft">
+    <sect5>
       <title>color spaces</title>
       <para>
         Depending on the desired intent, you can apply the tone curve in three different color spaces:
@@ -171,7 +171,7 @@
       </para>
     </sect5>
 
-    <sect5 status="draft">
+    <sect5>
       <title>interpolation method</title>
       <para>
         The interpolation is the process by which a continuous curve is derived from a few
@@ -201,7 +201,7 @@
       </para>
     </sect5>
 
-    <sect5 status="draft">
+    <sect5>
       <title>scale</title>
       <para>
         The scale allows you to distort the graph display so that certain graphical
