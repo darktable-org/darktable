@@ -85,7 +85,7 @@
     </para></listitem>
 
     <listitem><para>
-      The powerful export system supports Picasa webalbum, flickr upload, disk storage, 1:1
+      The powerful export system supports Google+ webalbum, flickr upload, disk storage, 1:1
       copy, email attachments and can generate a simple html-based web gallery. darktable allows
       you to export to low dynamic range (JPEG, JPEG2000, PNG, TIFF, PDF), 16-bit (PPM, TIFF),
       or linear high dynamic range (PFM, EXR) images.
@@ -1243,7 +1243,8 @@
 
         <para>
           Sometimes you will need to remove spots caused by sensor dirt. The
-          <link linkend="spot_removal"><emphasis>spot removal</emphasis></link> module is at
+          <link linkend="spot_removal"><emphasis>spot removal</emphasis></link> module and the
+          <link linkend="retouch"><emphasis>retouch</emphasis></link> module are at
           hand and can also correct other disturbing elements like skin blemishes. If your
           camera has stuck pixels or tends to produce hot pixels at high ISO values or longer
           exposure times, have a look at the <link linkend="hotpixels"><emphasis>hot
