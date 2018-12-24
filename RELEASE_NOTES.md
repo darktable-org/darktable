@@ -237,24 +237,14 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 ## Translations
 
-- Afrikaans
-- Albanian
-- Chinese
-- Czech
+- Catalan
 - Dutch
 - Finnish
 - French
-- Galician
 - German
-- Hebrew
 - Hungarian
-- Italian
 - Japanese
-- Nepal
 - Norwegian Bokmål
-- Polish
 - Portuguese
-- Romanian
 - Russian
 - Slovenian
-- Thai
