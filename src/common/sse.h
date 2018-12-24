@@ -123,6 +123,25 @@ static inline __m128 _mm_pow_ps1(__m128 x, float y)
 }
 
 
+#define ALIGNED(a) __attribute__((aligned(a)))
+#define VEC4(a)                                                                                              \
+  {                                                                                                          \
+    (a), (a), (a), (a)                                                                                       \
+  }
+
+static const __m128 fone ALIGNED(16) = VEC4(0x3f800000u);
+static const __m128 femo ALIGNED(16) = VEC4(0x00adf880u);
+
+/* SSE intrinsics version of dt_fast_expf defined in darktable.h */
+static inline __m128 _mm_expf_ps(const __m128 x)
+{
+  const __m128 f = fone + (x * femo);                     // f(n) = i1 + x(n)*(i2-i1)
+  const __m128i i = _mm_cvtps_epi32(f);                   // i(n) = int(f(n))
+  const __m128i mask = _mm_srai_epi32(i, 31);             // mask(n) = 0xffffffff if i(n) < 0
+  return _mm_castsi128_ps(_mm_andnot_si128(mask, i));     // return *(float*)&i, i(n) = 0 if i(n) < 0
+}
+
+
 /**
  * Allow access of the content of a SSE vector
  **/
