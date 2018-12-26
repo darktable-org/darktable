@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-26 22:22+0100\n"
-"PO-Revision-Date: 2018-12-26 22:25+0100\n"
+"POT-Creation-Date: 2018-12-26 22:49+0100\n"
+"PO-Revision-Date: 2018-12-26 22:57+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1303,15 +1303,15 @@ msgstr ""
 
 #: ../src/common/darktable.c:787 ../src/imageio/format/pdf.c:666
 #: ../src/imageio/format/pdf.c:691 ../src/imageio/storage/flickr.c:498
-#: ../src/iop/clipping.c:1895 ../src/libs/export.c:595
-#: ../src/libs/metadata_view.c:270
+#: ../src/imageio/storage/piwigo.c:815 ../src/iop/clipping.c:1895
+#: ../src/libs/export.c:595 ../src/libs/metadata_view.c:270
 msgid "no"
 msgstr "non"
 
 #: ../src/common/darktable.c:787 ../src/imageio/format/pdf.c:667
 #: ../src/imageio/format/pdf.c:692 ../src/imageio/storage/flickr.c:497
-#: ../src/iop/clipping.c:1896 ../src/libs/export.c:596
-#: ../src/libs/metadata_view.c:270
+#: ../src/imageio/storage/piwigo.c:814 ../src/iop/clipping.c:1896
+#: ../src/libs/export.c:596 ../src/libs/metadata_view.c:270
 msgid "yes"
 msgstr "oui"
 
@@ -2272,20 +2272,20 @@ msgstr "inverser la polarité du masque dessiné"
 msgid "add gradient"
 msgstr "ajouter un dégradé"
 
-#: ../src/develop/blend_gui.c:1515 ../src/iop/spots.c:650
-#: ../src/iop/retouch.c:2629 ../src/libs/masks.c:991 ../src/libs/masks.c:1030
+#: ../src/develop/blend_gui.c:1515 ../src/iop/retouch.c:2629
+#: ../src/iop/spots.c:650 ../src/libs/masks.c:991 ../src/libs/masks.c:1030
 #: ../src/libs/masks.c:1648
 msgid "add path"
 msgstr "ajouter un chemin"
 
-#: ../src/develop/blend_gui.c:1524 ../src/iop/spots.c:658
-#: ../src/iop/retouch.c:2637 ../src/libs/masks.c:987 ../src/libs/masks.c:1026
+#: ../src/develop/blend_gui.c:1524 ../src/iop/retouch.c:2637
+#: ../src/iop/spots.c:658 ../src/libs/masks.c:987 ../src/libs/masks.c:1026
 #: ../src/libs/masks.c:1656
 msgid "add ellipse"
 msgstr "ajouter une ellipse"
 
-#: ../src/develop/blend_gui.c:1533 ../src/iop/spots.c:666
-#: ../src/iop/retouch.c:2645 ../src/libs/masks.c:983 ../src/libs/masks.c:1022
+#: ../src/develop/blend_gui.c:1533 ../src/iop/retouch.c:2645
+#: ../src/iop/spots.c:666 ../src/libs/masks.c:983 ../src/libs/masks.c:1022
 #: ../src/libs/masks.c:1664
 msgid "add circle"
 msgstr "ajouter un cercle"
@@ -3938,6 +3938,7 @@ msgstr "taille des bords non valide, 0 est utilisé"
 #: ../src/imageio/storage/email.c:135 ../src/imageio/storage/facebook.c:1308
 #: ../src/imageio/storage/flickr.c:655 ../src/imageio/storage/gallery.c:345
 #: ../src/imageio/storage/gallery.c:383 ../src/imageio/storage/picasa.c:1302
+#: ../src/imageio/storage/piwigo.c:967
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "impossible d'exporter le fichier « %s » !"
@@ -3953,9 +3954,9 @@ msgstr "PDF"
 #. DT_COLLECTION_SORT_CUSTOM_ORDER
 #: ../src/imageio/format/pdf.c:580 ../src/imageio/storage/facebook.c:1120
 #: ../src/imageio/storage/flickr.c:539 ../src/imageio/storage/gallery.c:184
-#: ../src/imageio/storage/latex.c:184 ../src/libs/collect.h:34
-#: ../src/libs/metadata.c:336 ../src/libs/metadata_view.c:122
-#: ../src/libs/tools/filter.c:147
+#: ../src/imageio/storage/latex.c:184 ../src/imageio/storage/piwigo.c:857
+#: ../src/libs/collect.h:34 ../src/libs/metadata.c:336
+#: ../src/libs/metadata_view.c:122 ../src/libs/tools/filter.c:147
 msgid "title"
 msgstr "titre"
 
@@ -4332,7 +4333,8 @@ msgid "unable to retrieve the album list"
 msgstr "impossible de rafraîchir la liste d'album"
 
 #: ../src/imageio/storage/facebook.c:893 ../src/imageio/storage/flickr.c:393
-#: ../src/imageio/storage/flickr.c:420
+#: ../src/imageio/storage/flickr.c:420 ../src/imageio/storage/piwigo.c:518
+#: ../src/imageio/storage/piwigo.c:582
 msgid "create new album"
 msgstr "créer un nouvel album"
 
@@ -4342,12 +4344,14 @@ msgid "logout"
 msgstr "se déconnecter"
 
 #. Set default permission to private
+#. login button
 #: ../src/imageio/storage/facebook.c:971 ../src/imageio/storage/facebook.c:991
 #: ../src/imageio/storage/facebook.c:1038
 #: ../src/imageio/storage/facebook.c:1064
 #: ../src/imageio/storage/facebook.c:1183 ../src/imageio/storage/flickr.c:481
 #: ../src/imageio/storage/picasa.c:998 ../src/imageio/storage/picasa.c:1140
 #: ../src/imageio/storage/picasa.c:1153 ../src/imageio/storage/picasa.c:1211
+#: ../src/imageio/storage/piwigo.c:802
 msgid "login"
 msgstr "connexion"
 
@@ -4368,6 +4372,7 @@ msgid "only me"
 msgstr "juste moi"
 
 #: ../src/imageio/storage/facebook.c:1171 ../src/imageio/storage/flickr.c:507
+#: ../src/imageio/storage/piwigo.c:828
 msgid "friends"
 msgstr "amis"
 
@@ -4428,10 +4433,13 @@ msgstr "album web flickr"
 
 #: ../src/imageio/storage/flickr.c:338 ../src/imageio/storage/flickr.c:378
 #: ../src/imageio/storage/flickr.c:832 ../src/imageio/storage/flickr.c:838
+#: ../src/imageio/storage/piwigo.c:466 ../src/imageio/storage/piwigo.c:481
+#: ../src/imageio/storage/piwigo.c:493
 msgid "not authenticated"
 msgstr "non authentifié"
 
 #: ../src/imageio/storage/flickr.c:374 ../src/imageio/storage/flickr.c:828
+#: ../src/imageio/storage/piwigo.c:458
 msgid "authenticated"
 msgstr "authentifié"
 
@@ -4448,19 +4456,19 @@ msgstr "utilisateur"
 msgid "flickr login"
 msgstr "identifiant flickr"
 
-#: ../src/imageio/storage/flickr.c:496
+#: ../src/imageio/storage/flickr.c:496 ../src/imageio/storage/piwigo.c:813
 msgid "export tags"
 msgstr "exporter les mots-clés"
 
-#: ../src/imageio/storage/flickr.c:505
+#: ../src/imageio/storage/flickr.c:505 ../src/imageio/storage/piwigo.c:825
 msgid "visible to"
 msgstr "visible par"
 
-#: ../src/imageio/storage/flickr.c:506
+#: ../src/imageio/storage/flickr.c:506 ../src/imageio/storage/piwigo.c:830
 msgid "you"
 msgstr "vous"
 
-#: ../src/imageio/storage/flickr.c:508
+#: ../src/imageio/storage/flickr.c:508 ../src/imageio/storage/piwigo.c:829
 msgid "family"
 msgstr "famille"
 
@@ -4468,7 +4476,7 @@ msgstr "famille"
 msgid "friends + family"
 msgstr "amis + famille"
 
-#: ../src/imageio/storage/flickr.c:510
+#: ../src/imageio/storage/flickr.c:510 ../src/imageio/storage/piwigo.c:826
 msgid "everyone"
 msgstr "tout le monde"
 
@@ -4477,7 +4485,7 @@ msgstr "tout le monde"
 msgid "photosets"
 msgstr "albums"
 
-#: ../src/imageio/storage/flickr.c:524
+#: ../src/imageio/storage/flickr.c:524 ../src/imageio/storage/piwigo.c:844
 msgid "refresh album list"
 msgstr "rafraîchir la liste d'album"
 
@@ -4489,7 +4497,7 @@ msgstr "mon nouvel album"
 msgid "exported from darktable"
 msgstr "exportée depuis darktable"
 
-#: ../src/imageio/storage/flickr.c:567
+#: ../src/imageio/storage/flickr.c:567 ../src/imageio/storage/piwigo.c:875
 msgid "click login button to start"
 msgstr "appuyer sur connexion pour commencer"
 
@@ -4572,6 +4580,77 @@ msgid "%d/%d exported to google+ album"
 msgid_plural "%d/%d exported to google+ album"
 msgstr[0] "%d/%d exportée vers l'album google+"
 msgstr[1] "%d/%d exportées vers l'album google+"
+
+#: ../src/imageio/storage/piwigo.c:472
+msgid "not authenticated, cannot reach server"
+msgstr "non authentifié, impossible de contacter le serveur"
+
+#: ../src/imageio/storage/piwigo.c:583
+msgid "---"
+msgstr "---"
+
+#: ../src/imageio/storage/piwigo.c:624
+msgid "cannot refresh albums"
+msgstr "impossible de rafraîchir la liste d'album"
+
+#: ../src/imageio/storage/piwigo.c:717
+msgid "piwigo"
+msgstr "piwigo"
+
+#: ../src/imageio/storage/piwigo.c:742
+msgid "accounts"
+msgstr "compte"
+
+#: ../src/imageio/storage/piwigo.c:759
+msgid "server"
+msgstr "serveur"
+
+#: ../src/imageio/storage/piwigo.c:774
+msgid "user"
+msgstr "utilisateur"
+
+#: ../src/imageio/storage/piwigo.c:788
+msgid "password"
+msgstr "mot de passe"
+
+#: ../src/imageio/storage/piwigo.c:803
+msgid "piwigo login"
+msgstr "login"
+
+#: ../src/imageio/storage/piwigo.c:827
+msgid "contacts"
+msgstr "contacts"
+
+#. Available albums
+#: ../src/imageio/storage/piwigo.c:838
+msgid "albums"
+msgstr "albums"
+
+#: ../src/imageio/storage/piwigo.c:863
+msgid "new album"
+msgstr "nouvel album"
+
+#. parent album list
+#. Available albums
+#: ../src/imageio/storage/piwigo.c:871
+msgid "parent album"
+msgstr "album parent"
+
+#: ../src/imageio/storage/piwigo.c:988
+msgid "cannot create a new piwigo album!"
+msgstr "impossible de créer un nouvel album piwigo!"
+
+#: ../src/imageio/storage/piwigo.c:997
+msgid "could not upload to piwigo!"
+msgstr "impossible d'exporter sur piwigo!"
+
+#. this makes sense only if the export was successful
+#: ../src/imageio/storage/piwigo.c:1021
+#, c-format
+msgid "%d/%d exported to piwigo webalbum"
+msgid_plural "%d/%d exported to piwigo webalbum"
+msgstr[0] "%d/%d exportée vers piwigo"
+msgstr[1] "%d/%d exportées vers piwigo"
 
 #: ../src/iop/ashift.c:112
 msgid "perspective correction"
@@ -5779,7 +5858,7 @@ msgctxt "accel"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/colisa.c:367 ../src/iop/soften.c:723 ../src/iop/retouch.c:2882
+#: ../src/iop/colisa.c:367 ../src/iop/retouch.c:2882 ../src/iop/soften.c:723
 #: ../src/iop/vignette.c:1151
 msgid "brightness"
 msgstr "luminosité"
@@ -8004,7 +8083,7 @@ msgstr "luminosité"
 msgid "soften with"
 msgstr "adoucir avec"
 
-#: ../src/iop/lowpass.c:679 ../src/iop/shadhi.c:822 ../src/iop/retouch.c:2899
+#: ../src/iop/lowpass.c:679 ../src/iop/retouch.c:2899 ../src/iop/shadhi.c:822
 msgid "gaussian"
 msgstr "gaussien"
 
@@ -8307,6 +8386,243 @@ msgstr ""
 "récupérer la lumière moyenne\n"
 " d'une zone de l'image"
 
+#: ../src/iop/retouch.c:191
+msgid "retouch"
+msgstr "retouche"
+
+#: ../src/iop/retouch.c:1957
+msgid "cannot display scales when the blending mask is displayed"
+msgstr ""
+"impossible d'afficher les échelles de décomposition en ondelette lorsque les "
+"masques de fusion sont affichés"
+
+#: ../src/iop/retouch.c:2225
+msgid "cannot display masks when the blending mask is displayed"
+msgstr ""
+"impossible d'afficher les masques lorsque les masques de fusion sont affichés"
+
+#: ../src/iop/retouch.c:2610
+msgid "# shapes:"
+msgstr "# formes:"
+
+#: ../src/iop/retouch.c:2614
+msgid ""
+"to add a shape select an algorithm and a shape type and click on the image.\n"
+"shapes are added to the current scale"
+msgstr ""
+"pour ajouter une forme sélectionner un algorithme et un type de forme, puis "
+"cliquer sur l'image\n"
+"les formes sont ajoutées que l'échelle de décomposition actuelle"
+
+#: ../src/iop/retouch.c:2621
+msgid "show and edit shapes on the current scale"
+msgstr "montre et édite les formes de l'échelle actuelle"
+
+#: ../src/iop/retouch.c:2663
+msgid "algorithms:"
+msgstr "algorithmes:"
+
+#: ../src/iop/retouch.c:2668
+msgid "activates fill tool"
+msgstr "activer outil de remplissage"
+
+#: ../src/iop/retouch.c:2675
+msgid "activates blur tool"
+msgstr "activer l'outil de flou"
+
+#: ../src/iop/retouch.c:2682
+msgid "activates healing tool"
+msgstr "activer l'outil de correction"
+
+#: ../src/iop/retouch.c:2689
+msgid "activates cloning tool"
+msgstr "activer l'outil de copie"
+
+#: ../src/iop/retouch.c:2702
+msgid "# scales:"
+msgstr "# échelles:"
+
+#: ../src/iop/retouch.c:2709
+msgid "current:"
+msgstr "actuelle:"
+
+#: ../src/iop/retouch.c:2716
+msgid "merge from:"
+msgstr "fusion depuis:"
+
+#: ../src/iop/retouch.c:2726
+msgid ""
+"top slider adjusts where the merge scales start\n"
+"bottom slider adjusts the number of scales\n"
+"red box indicates the current scale\n"
+"green line indicates that the scale has shapes on it"
+msgstr ""
+"curseur du haut pour ajuster le début de la fusion\n"
+"curseur du bas pour ajuster le nombre d'échelle de décomposition\n"
+"l'échelle actuelle est sélectionné par un cadre rouge\n"
+"les échelles comportant des formes sont sur-lignées en vert"
+
+#: ../src/iop/retouch.c:2748
+msgid "display masks"
+msgstr "affiche les masques"
+
+#: ../src/iop/retouch.c:2755
+msgid "temporarily switch off shapes"
+msgstr "désactive les formes temporairement"
+
+#: ../src/iop/retouch.c:2763
+msgid "display wavelet scale"
+msgstr "affiche une seule échelle de la décomposition"
+
+#: ../src/iop/retouch.c:2772
+msgid "cut shapes from current scale"
+msgstr "couper les formes de l'échelle de décomposition actuelle"
+
+#: ../src/iop/retouch.c:2779
+msgid "paste cutted shapes to current scale"
+msgstr "coller les formes sur l'échelle de décomposition actuelle"
+
+#: ../src/iop/retouch.c:2804
+msgid "preview single scale"
+msgstr "pré-visualisation d'une seule échelle"
+
+#: ../src/iop/retouch.c:2811
+msgid "adjust preview levels"
+msgstr "ajuste les niveaux de pré-visualisation"
+
+#: ../src/iop/retouch.c:2830
+msgid "auto levels"
+msgstr "niveaux automatiques"
+
+#: ../src/iop/retouch.c:2842
+msgid "shape selected:"
+msgstr "forme sélectionnée:"
+
+#: ../src/iop/retouch.c:2846
+msgid ""
+"click on a shape to select it,\n"
+"to unselect click on an empty space"
+msgstr ""
+"cliquer sur la forme pour la sélectionner\n"
+"pour déselectionner cliquer en dehors d'une forme"
+
+#: ../src/iop/retouch.c:2853
+msgid "fill mode"
+msgstr "mode de remplissage"
+
+#: ../src/iop/retouch.c:2854
+msgid "erase"
+msgstr "effacer"
+
+#: ../src/iop/retouch.c:2855 ../src/iop/watermark.c:1344
+msgid "color"
+msgstr "couleur"
+
+#: ../src/iop/retouch.c:2856
+msgid "erase the detail or fills with choosen color"
+msgstr "efface les détails ou rempli avec la couleur choisie"
+
+#: ../src/iop/retouch.c:2868 ../src/iop/retouch.c:2869
+msgid "select fill color"
+msgstr "sélectionner la couleur de remplissage"
+
+#: ../src/iop/retouch.c:2875
+msgid "pick fill color from image"
+msgstr "choisir une couleur dans l'image"
+
+#: ../src/iop/retouch.c:2879
+msgid "fill color: "
+msgstr "couleur"
+
+#: ../src/iop/retouch.c:2884
+msgid "adjusts color brightness to fine-tune it. works with erase as well"
+msgstr ""
+"ajuste la luminosité de la couleur. marche aussi avec le mode d'effacement"
+
+#: ../src/iop/retouch.c:2898
+msgid "blur type"
+msgstr "flou"
+
+#: ../src/iop/retouch.c:2900
+msgid "bilateral"
+msgstr "bilatéral"
+
+#: ../src/iop/retouch.c:2901
+msgid "type for the blur algorithm"
+msgstr "type d'algorithme de flou"
+
+#: ../src/iop/retouch.c:2907
+msgid "blur radius"
+msgstr "rayon"
+
+#: ../src/iop/retouch.c:2908
+msgid "radius of the selected blur type"
+msgstr "rayon du flou sélectionné"
+
+#: ../src/iop/retouch.c:2916
+msgid "set the opacity on the selected shape"
+msgstr "fixer l'opacité de la forme sélectionnée"
+
+#. wavelet decompose
+#: ../src/iop/retouch.c:2920
+msgid "wavelet decompose"
+msgstr "décomposition en ondelettes"
+
+#. add all the controls to the iop
+#: ../src/iop/retouch.c:2934
+msgid "retouch tools"
+msgstr "outils de retouche"
+
+#. shapes
+#: ../src/iop/retouch.c:2943
+msgid "shapes"
+msgstr "formes"
+
+#: ../src/iop/retouch.c:3271
+msgctxt "accel"
+msgid "retouch tool circle"
+msgstr "cercle de l'outil retouche"
+
+#: ../src/iop/retouch.c:3272
+msgctxt "accel"
+msgid "retouch tool ellipse"
+msgstr "ellipse de l'outil retouche"
+
+#: ../src/iop/retouch.c:3273
+msgctxt "accel"
+msgid "retouch tool path"
+msgstr "chemin de l'outil retouche"
+
+#: ../src/iop/retouch.c:3274
+msgctxt "accel"
+msgid "retouch tool brush"
+msgstr "pinceau de l'outil retouche"
+
+#: ../src/iop/retouch.c:3276
+msgctxt "accel"
+msgid "continuous add circle"
+msgstr "ajouter en continu un cercle"
+
+#: ../src/iop/retouch.c:3277
+msgctxt "accel"
+msgid "continuous add ellipse"
+msgstr "ajouter en continu une ellipse"
+
+#: ../src/iop/retouch.c:3278
+msgctxt "accel"
+msgid "continuous add path"
+msgstr "ajouter en continu un chemin"
+
+#: ../src/iop/retouch.c:3279
+msgctxt "accel"
+msgid "continuous add brush"
+msgstr "ajouter en continu une forme au pinceau"
+
+#: ../src/iop/retouch.c:4287 ../src/iop/retouch.c:5134
+#, c-format
+msgid "max scale is %i for this image size"
+msgstr "l'échelle maximum est %i pour la taille de cette image"
+
 #: ../src/iop/rotatepixels.c:71
 msgctxt "modulename"
 msgid "rotate pixels"
@@ -8566,243 +8882,6 @@ msgstr "chemin de correction des taches"
 msgctxt "accel"
 msgid "spot show or hide"
 msgstr "montrer cacher masques de correction"
-
-#: ../src/iop/retouch.c:191
-msgid "retouch"
-msgstr "retouche"
-
-#: ../src/iop/retouch.c:1957
-msgid "cannot display scales when the blending mask is displayed"
-msgstr ""
-"impossible d'afficher les échelles de décomposition en ondelette lorsque les "
-"masques de fusion sont affichés"
-
-#: ../src/iop/retouch.c:2225
-msgid "cannot display masks when the blending mask is displayed"
-msgstr ""
-"impossible d'afficher les masques lorsque les masques de fusion sont affichés"
-
-#: ../src/iop/retouch.c:2610
-msgid "# shapes:"
-msgstr "# formes:"
-
-#: ../src/iop/retouch.c:2614
-msgid ""
-"to add a shape select an algorithm and a shape type and click on the image.\n"
-"shapes are added to the current scale"
-msgstr ""
-"pour ajouter une forme sélectionner un algorithme et un type de forme, puis "
-"cliquer sur l'image\n"
-"les formes sont ajoutées que l'échelle de décomposition actuelle"
-
-#: ../src/iop/retouch.c:2621
-msgid "show and edit shapes on the current scale"
-msgstr "montre et édite les formes de l'échelle actuelle"
-
-#: ../src/iop/retouch.c:2663
-msgid "algorithms:"
-msgstr "algorithmes:"
-
-#: ../src/iop/retouch.c:2668
-msgid "activates fill tool"
-msgstr "activer outil de remplissage"
-
-#: ../src/iop/retouch.c:2675
-msgid "activates blur tool"
-msgstr "activer l'outil de flou"
-
-#: ../src/iop/retouch.c:2682
-msgid "activates healing tool"
-msgstr "activer l'outil de correction"
-
-#: ../src/iop/retouch.c:2689
-msgid "activates cloning tool"
-msgstr "activer l'outil de copie"
-
-#: ../src/iop/retouch.c:2702
-msgid "# scales:"
-msgstr "# échelles:"
-
-#: ../src/iop/retouch.c:2709
-msgid "current:"
-msgstr "actuelle:"
-
-#: ../src/iop/retouch.c:2716
-msgid "merge from:"
-msgstr "fusion depuis:"
-
-#: ../src/iop/retouch.c:2726
-msgid ""
-"top slider adjusts where the merge scales start\n"
-"bottom slider adjusts the number of scales\n"
-"red box indicates the current scale\n"
-"green line indicates that the scale has shapes on it"
-msgstr ""
-"curseur du haut pour ajuster le début de la fusion\n"
-"curseur du bas pour ajuster le nombre d'échelle de décomposition\n"
-"l'échelle actuelle est sélectionné par un cadre rouge\n"
-"les échelles comportant des formes sont sur-lignées en vert"
-
-#: ../src/iop/retouch.c:2748
-msgid "display masks"
-msgstr "affiche les masques"
-
-#: ../src/iop/retouch.c:2755
-msgid "temporarily switch off shapes"
-msgstr "désactive les formes temporairement"
-
-#: ../src/iop/retouch.c:2763
-msgid "display wavelet scale"
-msgstr "affiche une seule échelle de la décomposition"
-
-#: ../src/iop/retouch.c:2772
-msgid "cut shapes from current scale"
-msgstr "couper les formes de l'échelle de décomposition actuelle"
-
-#: ../src/iop/retouch.c:2779
-msgid "paste cutted shapes to current scale"
-msgstr "coller les formes sur l'échelle de décomposition actuelle"
-
-#: ../src/iop/retouch.c:2804
-msgid "preview single scale"
-msgstr "pré-visualisation d'une seule échelle"
-
-#: ../src/iop/retouch.c:2811
-msgid "adjust preview levels"
-msgstr "ajuste les niveaux de pré-visualisation"
-
-#: ../src/iop/retouch.c:2830
-msgid "auto levels"
-msgstr "niveaux automatiques"
-
-#: ../src/iop/retouch.c:2842
-msgid "shape selected:"
-msgstr "forme sélectionnée:"
-
-#: ../src/iop/retouch.c:2846
-msgid ""
-"click on a shape to select it,\n"
-"to unselect click on an empty space"
-msgstr ""
-"cliquer sur la forme pour la sélectionner\n"
-"pour déselectionner cliquer en dehors d'une forme"
-
-#: ../src/iop/retouch.c:2853
-msgid "fill mode"
-msgstr "mode de remplissage"
-
-#: ../src/iop/retouch.c:2854
-msgid "erase"
-msgstr "effacer"
-
-#: ../src/iop/retouch.c:2855 ../src/iop/watermark.c:1344
-msgid "color"
-msgstr "couleur"
-
-#: ../src/iop/retouch.c:2856
-msgid "erase the detail or fills with choosen color"
-msgstr "efface les détails ou rempli avec la couleur choisie"
-
-#: ../src/iop/retouch.c:2868 ../src/iop/retouch.c:2869
-msgid "select fill color"
-msgstr "sélectionner la couleur de remplissage"
-
-#: ../src/iop/retouch.c:2875
-msgid "pick fill color from image"
-msgstr "choisir une couleur dans l'image"
-
-#: ../src/iop/retouch.c:2879
-msgid "fill color: "
-msgstr "couleur"
-
-#: ../src/iop/retouch.c:2884
-msgid "adjusts color brightness to fine-tune it. works with erase as well"
-msgstr ""
-"ajuste la luminosité de la couleur. marche aussi avec le mode d'effacement"
-
-#: ../src/iop/retouch.c:2898
-msgid "blur type"
-msgstr "flou"
-
-#: ../src/iop/retouch.c:2900
-msgid "bilateral"
-msgstr "bilatéral"
-
-#: ../src/iop/retouch.c:2901
-msgid "type for the blur algorithm"
-msgstr "type d'algorithme de flou"
-
-#: ../src/iop/retouch.c:2907
-msgid "blur radius"
-msgstr "rayon"
-
-#: ../src/iop/retouch.c:2908
-msgid "radius of the selected blur type"
-msgstr "rayon du flou sélectionné"
-
-#: ../src/iop/retouch.c:2916
-msgid "set the opacity on the selected shape"
-msgstr "fixer l'opacité de la forme sélectionnée"
-
-#. wavelet decompose
-#: ../src/iop/retouch.c:2920
-msgid "wavelet decompose"
-msgstr "décomposition en ondelettes"
-
-#. add all the controls to the iop
-#: ../src/iop/retouch.c:2934
-msgid "retouch tools"
-msgstr "outils de retouche"
-
-#. shapes
-#: ../src/iop/retouch.c:2943
-msgid "shapes"
-msgstr "formes"
-
-#: ../src/iop/retouch.c:3271
-msgctxt "accel"
-msgid "retouch tool circle"
-msgstr "cercle de l'outil retouche"
-
-#: ../src/iop/retouch.c:3272
-msgctxt "accel"
-msgid "retouch tool ellipse"
-msgstr "ellipse de l'outil retouche"
-
-#: ../src/iop/retouch.c:3273
-msgctxt "accel"
-msgid "retouch tool path"
-msgstr "chemin de l'outil retouche"
-
-#: ../src/iop/retouch.c:3274
-msgctxt "accel"
-msgid "retouch tool brush"
-msgstr "pinceau de l'outil retouche"
-
-#: ../src/iop/retouch.c:3276
-msgctxt "accel"
-msgid "continuous add circle"
-msgstr "ajouter en continu un cercle"
-
-#: ../src/iop/retouch.c:3277
-msgctxt "accel"
-msgid "continuous add ellipse"
-msgstr "ajouter en continu une ellipse"
-
-#: ../src/iop/retouch.c:3278
-msgctxt "accel"
-msgid "continuous add path"
-msgstr "ajouter en continu un chemin"
-
-#: ../src/iop/retouch.c:3279
-msgctxt "accel"
-msgid "continuous add brush"
-msgstr "ajouter en continu une forme au pinceau"
-
-#: ../src/iop/retouch.c:4287 ../src/iop/retouch.c:5134
-#, c-format
-msgid "max scale is %i for this image size"
-msgstr "l'échelle maximum est %i pour la taille de cette image"
 
 #: ../src/iop/temperature.c:161
 msgctxt "modulename"
@@ -11536,6 +11615,11 @@ msgstr "exporter"
 msgid "export all tags to a Lightroom keyword file"
 msgstr "exporte tous les tags dans un fichier de mot-clé Lightroom"
 
+#: ../src/libs/tools/battery_indicator.c:38
+#: ../src/libs/tools/battery_indicator.c:71
+msgid "battery indicator"
+msgstr "indicateur de batterie"
+
 #: ../src/libs/tools/colorlabels.c:40
 msgid "colorlabels"
 msgstr "labels de couleur"
@@ -11848,6 +11932,10 @@ msgstr "boîte à outils de module"
 msgid "ratings"
 msgstr "étoiles"
 
+#: ../src/libs/tools/view_toolbox.c:46
+msgid "view toolbox"
+msgstr "afficher la boîte à outils"
+
 #: ../src/libs/tools/viewswitcher.c:58
 msgid "viewswitcher"
 msgstr "changer de vue"
@@ -11857,10 +11945,6 @@ msgstr "changer de vue"
 #: ../src/libs/tools/viewswitcher.c:146
 msgid "other"
 msgstr "autre"
-
-#: ../src/libs/tools/view_toolbox.c:46
-msgid "view toolbox"
-msgstr "afficher la boîte à outils"
 
 #: ../src/lua/lualib.c:295
 msgctxt "accel"
@@ -13120,9 +13204,6 @@ msgstr ""
 #~ msgid "private"
 #~ msgstr "privé"
 
-#~ msgid "%d/%d exported to picasa webalbum"
-#~ msgstr "%d/%d exportée(s) vers picasa web"
-
 #~ msgid ""
 #~ "center view will be dithered if this option is on and module dithering is "
 #~ "activated (default for new images). switch this to off if you can accept "
@@ -13367,9 +13448,6 @@ msgstr ""
 #~ msgid "float hdr"
 #~ msgstr "HDR flottant"
 
-#~ msgid "user"
-#~ msgstr "utilisateur"
-
 #~ msgid "album"
 #~ msgstr "album"
 
@@ -13390,15 +13468,6 @@ msgstr ""
 
 #~ msgid "match images with selected image and views the result"
 #~ msgstr "recherche les images similaires et affiche le résultat"
-
-#~ msgid "password"
-#~ msgstr "mot de passe"
-
-#~ msgid "albums"
-#~ msgstr "albums"
-
-#~ msgid "my new album"
-#~ msgstr "mon nouvel album"
 
 #~ msgid "public album"
 #~ msgstr "album public"
@@ -13973,9 +14042,6 @@ msgstr ""
 #~ msgctxt "global import"
 #~ msgid "import"
 #~ msgstr "importation"
-
-#~ msgid "(---)"
-#~ msgstr "(---)"
 
 #~ msgctxt "gammaslider"
 #~ msgid "linear"
