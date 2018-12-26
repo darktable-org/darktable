@@ -71,6 +71,7 @@ src/imageio/storage/flickr.c
 src/imageio/storage/gallery.c
 src/imageio/storage/latex.c
 src/imageio/storage/picasa.c
+src/imageio/storage/piwigo.c
 src/iop/amaze_demosaic_RT.cc
 src/iop/ashift.c
 src/iop/atrous.c
@@ -126,6 +127,7 @@ src/iop/rawdenoise.c
 src/iop/rawoverexposed.c
 src/iop/rawprepare.c
 src/iop/relight.c
+src/iop/retouch.c
 src/iop/rotatepixels.c
 src/iop/scalepixels.c
 src/iop/shadhi.c
@@ -133,7 +135,6 @@ src/iop/sharpen.c
 src/iop/soften.c
 src/iop/splittoning.c
 src/iop/spots.c
-src/iop/retouch.c
 src/iop/temperature.c
 src/iop/tonecurve.c
 src/iop/tonemap.cc
@@ -172,6 +173,7 @@ src/libs/session.c
 src/libs/snapshots.c
 src/libs/styles.c
 src/libs/tagging.c
+src/libs/tools/battery_indicator.c
 src/libs/tools/colorlabels.c
 src/libs/tools/darktable.c
 src/libs/tools/filmstrip.c
@@ -181,8 +183,8 @@ src/libs/tools/hinter.c
 src/libs/tools/lighttable.c
 src/libs/tools/module_toolbox.c
 src/libs/tools/ratings.c
-src/libs/tools/viewswitcher.c
 src/libs/tools/view_toolbox.c
+src/libs/tools/viewswitcher.c
 src/lua/lualib.c
 src/lua/preferences.c
 src/views/darkroom.c
