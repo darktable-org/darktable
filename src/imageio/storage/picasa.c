@@ -728,7 +728,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 
   ////////////// build & show the validation dialog
   const gchar *text1 = _("step 1: a new window or tab of your browser should have been "
-                         "loaded. you have to login into your google+ account there "
+                         "loaded. you have to login into your google account there "
                          "and authorize darktable to upload photos before continuing.");
   const gchar *text2 = _("step 2: paste the verification code shown to you in the browser "
                          "and click the OK button once you are done.");
@@ -736,7 +736,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkDialog *picasa_auth_dialog = GTK_DIALOG(
       gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-                             GTK_BUTTONS_OK_CANCEL, _("google+ authentication")));
+                             GTK_BUTTONS_OK_CANCEL, _("google authentication")));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(GTK_WIDGET(picasa_auth_dialog));
 #endif
@@ -1165,7 +1165,7 @@ static void ui_login_clicked(GtkButton *button, gpointer data)
 /* plugin name */
 const char *name(const struct dt_imageio_module_storage_t *self)
 {
-  return _("google+ photos");
+  return _("google photos");
 }
 
 /* construct widget above */
@@ -1276,7 +1276,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   gint fd = g_mkstemp(fname);
   if(fd == -1)
   {
-    dt_control_log("failed to create temporary image for google+ export");
+    dt_control_log("failed to create temporary image for google photos export");
     return 1;
   }
   close(fd);
@@ -1307,7 +1307,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   const char *photoid = picasa_upload_photo_to_album(ctx, ctx->album_id, fname, title, summary, imgid);
   if(photoid == NULL)
   {
-    dt_control_log(_("unable to export photo to google+ album"));
+    dt_control_log(_("unable to export to google photos album"));
     result = 0;
     goto cleanup;
   }
@@ -1320,7 +1320,7 @@ cleanup:
   if(result)
   {
     // this makes sense only if the export was successful
-    dt_control_log(ngettext("%d/%d exported to google+ album", "%d/%d exported to google+ album", num), num, total);
+    dt_control_log(ngettext("%d/%d exported to google photos album", "%d/%d exported to google photos album", num), num, total);
   }
   return 0;
 }
