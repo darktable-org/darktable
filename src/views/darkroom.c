@@ -622,7 +622,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       free(module);
     }
   }
-  
+
   // we also clear the saved modules
   while(dev->alliop)
   {
@@ -630,7 +630,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     free(dev->alliop->data);
     dev->alliop = g_list_delete_link(dev->alliop, dev->alliop);
   }
-  
+
   dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
   dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
   dt_masks_read_forms(dev);
@@ -2187,9 +2187,15 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   closeup = 0;
   if(up)
   {
-    if(scale == 1.0f && !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)) return;
-    if(scale >= 2.0f)
+    if((scale == 1.0f || scale == 2.0f) && !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)) return;
+    if(scale >= 16.0f)
       return;
+    else if(scale >= 8.0f)
+      scale = 16.0;
+    else if(scale >= 4.0f)
+      scale = 8.0;
+    else if(scale >= 2.0f)
+      scale = 4.0;
     else if(scale < fitscale)
       scale += .05f * (1.0f - fitscale);
     else
@@ -2203,16 +2209,37 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       return;
     else if(scale <= fitscale)
       scale -= .05f * (1.0f - fitscale);
-    else
+    else if(scale <= 2.0f)
       scale -= .1f * (1.0f - fitscale);
+    else if(scale <= 4.0f)
+      scale = 2.0f;
+    else if(scale <= 8.0f)
+      scale = 4.0f;
+    else
+      scale = 8.0f;
   }
   // we want to be sure to stop at 1:1 and FIT levels
   if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f;
   if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
-  scale = fmaxf(fminf(scale, 2.0f), 0.5 * fitscale);
+  scale = fmaxf(fminf(scale, 16.0f), 0.5 * fitscale);
 
   // for 200% zoom we want pixel doubling instead of interpolation
-  if(scale > 1.9999f)
+  if(scale > 15.9999f)
+  {
+    scale = 1.0f; // don't interpolate
+    closeup = 4;  // enable closeup mode (pixel doubling)
+  }
+  else if(scale > 7.9999f)
+  {
+    scale = 1.0f; // don't interpolate
+    closeup = 3;  // enable closeup mode (pixel doubling)
+  }
+  else if(scale > 3.9999f)
+  {
+    scale = 1.0f; // don't interpolate
+    closeup = 2;  // enable closeup mode (pixel doubling)
+  }
+  else if(scale > 1.9999f)
   {
     scale = 1.0f; // don't interpolate
     closeup = 1;  // enable closeup mode (pixel doubling)
