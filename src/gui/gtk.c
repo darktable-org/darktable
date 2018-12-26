@@ -1191,7 +1191,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
     [DT_GUI_COLOR_FILMSTRIP_BG] = { "filmstrip_bg_color", { 0.2, 0.2, 0.2, 1.0 } },
   };
 
-  for(int i = 0; i < DT_GUI_COLOR_LAST; i++)
+  // starting from 1 as DT_GUI_COLOR_BG is not part of this table
+  for(int i = 1; i < DT_GUI_COLOR_LAST; i++)
   {
     if(!gtk_style_context_lookup_color(ctx, init[i].name, &c[i]))
     {
