@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-26 22:49+0100\n"
-"PO-Revision-Date: 2018-12-26 22:57+0100\n"
+"POT-Creation-Date: 2018-12-26 23:04+0100\n"
+"PO-Revision-Date: 2018-12-26 23:05+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -4534,11 +4534,11 @@ msgstr "entrer le titre du livre"
 #: ../src/imageio/storage/picasa.c:730
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
-"have to login into your google+ account there and authorize darktable to "
+"have to login into your google account there and authorize darktable to "
 "upload photos before continuing."
 msgstr ""
 "étape 1 : une nouvelle fenêtre ou un nouvel onglet s'est ouvert dans votre "
-"navigateur. connectez-vous à votre compte google+ et autorisez darktable à "
+"navigateur. connectez-vous à votre compte google et autorisez darktable à "
 "charger des fichiers pour continuer."
 
 #: ../src/imageio/storage/picasa.c:733
@@ -4550,8 +4550,8 @@ msgstr ""
 "cliquer \"OK\""
 
 #: ../src/imageio/storage/picasa.c:739
-msgid "google+ authentication"
-msgstr "authentification google+"
+msgid "google authentication"
+msgstr "authentification google photos"
 
 #: ../src/imageio/storage/picasa.c:747
 msgid "verification code:"
@@ -4566,20 +4566,20 @@ msgid "drop box"
 msgstr "drop box"
 
 #: ../src/imageio/storage/picasa.c:1168
-msgid "google+ photos"
-msgstr "photos google+"
+msgid "google photos"
+msgstr "google photos"
 
 #: ../src/imageio/storage/picasa.c:1310
-msgid "unable to export photo to google+ album"
-msgstr "impossible d'exporter les photos vers l'album google+"
+msgid "unable to export to google photos album"
+msgstr "impossible d'exporter vers l'album google photos"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/picasa.c:1323
 #, c-format
-msgid "%d/%d exported to google+ album"
-msgid_plural "%d/%d exported to google+ album"
-msgstr[0] "%d/%d exportée vers l'album google+"
-msgstr[1] "%d/%d exportées vers l'album google+"
+msgid "%d/%d exported to google photos album"
+msgid_plural "%d/%d exported to google photos album"
+msgstr[0] "%d/%d exportée vers l'album google photos"
+msgstr[1] "%d/%d exportées vers l'album google photos"
 
 #: ../src/imageio/storage/piwigo.c:472
 msgid "not authenticated, cannot reach server"
