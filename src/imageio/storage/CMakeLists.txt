@@ -12,7 +12,7 @@ if(FLICKCURL_FOUND)
 endif(FLICKCURL_FOUND)
 
 if (JsonGlib_FOUND)
-	list(APPEND MODULES facebook picasa)
+	list(APPEND MODULES facebook picasa piwigo)
 endif(JsonGlib_FOUND)
 
 foreach(module ${MODULES})
