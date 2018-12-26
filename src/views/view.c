@@ -884,7 +884,10 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   const gboolean draw_audio = !image_only;
 
   cairo_save(cr);
-  float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
+  dt_gui_color_t bgcol = DT_GUI_COLOR_THUMBNAIL_BG;
+  dt_gui_color_t fontcol = DT_GUI_COLOR_THUMBNAIL_FONT;
+  dt_gui_color_t outlinecol = DT_GUI_COLOR_THUMBNAIL_OUTLINE;
+
   int selected = 0, is_grouped = 0;
   // this is a gui thread only thing. no mutex required:
   const int imgsel = dt_control_get_mouse_over_id(); //  darktable.control->global_settings.lib_image_mouse_over_id;
@@ -910,15 +913,16 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 
   if(selected == 1 && zoom != 1) // If zoom == 1 there is no need to set colors here
   {
-    outlinecol = 0.4;
-    bgcol = 0.6;
-    fontcol = 0.5;
+    outlinecol = DT_GUI_COLOR_THUMBNAIL_SELECTED_OUTLINE;
+    bgcol = DT_GUI_COLOR_THUMBNAIL_SELECTED_BG;
+    fontcol = DT_GUI_COLOR_THUMBNAIL_SELECTED_FONT;
   }
   if(imgsel == imgid || zoom == 1)
   {
-    bgcol = 0.8; // mouse over
-    fontcol = 0.7;
-    outlinecol = 0.6;
+    // mouse over
+    bgcol = DT_GUI_COLOR_THUMBNAIL_HOVER_BG;
+    fontcol = DT_GUI_COLOR_THUMBNAIL_HOVER_FONT;
+    outlinecol = DT_GUI_COLOR_THUMBNAIL_HOVER_OUTLINE;
   }
   // release image cache lock as early as possible, to avoid deadlocks (mipmap cache might need to lock it, too)
   if(img)
@@ -968,10 +972,10 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     cairo_line_to(cr, x0 + radius, y1);
     cairo_curve_to(cr, x0 + off1, y1, x0, y1 - off1, x0, y1 - radius);
     cairo_close_path(cr);
-    cairo_set_source_rgb(cr, bgcol, bgcol, bgcol);
+    dt_gui_gtk_set_source_rgb(cr, bgcol);
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 0.005 * width);
-    cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+    dt_gui_gtk_set_source_rgb(cr, outlinecol);
     cairo_stroke(cr);
 
     if(img)
@@ -987,7 +991,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       const char *ext = img->filename + strlen(img->filename);
       while(ext > img->filename && *ext != '.') ext--;
       ext++;
-      cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
+      dt_gui_gtk_set_source_rgb(cr, fontcol);
 
       char* upcase_ext = g_ascii_strup(ext, -1);  // extension in capital letters to avoid character descenders
 
@@ -1149,7 +1153,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     else
     {
       // border around image
-      cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_BORDER);
       if(buf.buf && (selected || zoom == 1))
       {
         const float border = zoom == 1 ? DT_PIXEL_APPLY_DPI(16 / scale) : DT_PIXEL_APPLY_DPI(2 / scale);
@@ -1178,7 +1182,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           cairo_new_sub_path(cr);
           cairo_rectangle(cr, -border, -border, buf.width + 2. * border, buf.height + 2. * border);
           cairo_stroke_preserve(cr);
-          cairo_set_source_rgb(cr, 1.0 - bordercol, 1.0 - bordercol, 1.0 - bordercol);
+          dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
           cairo_fill(cr);
         }
       }
@@ -1202,7 +1206,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     {
       // draw mouseover hover effects, set event hook for mouse button down!
       cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
-      cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+      dt_gui_gtk_set_source_rgb(cr, outlinecol);
       cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
       float r1, r2;
       if(zoom != 1)
@@ -1255,10 +1259,10 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           cairo_line_to(cr, x0 + radius, y1);
           cairo_curve_to(cr, x0 + off1, y1, x0, y1 - off1, x0, y1 - radius);
           cairo_close_path(cr);
-          cairo_set_source_rgb(cr, bgcol, bgcol, bgcol);
+          dt_gui_gtk_set_source_rgb(cr, bgcol);
           cairo_fill_preserve(cr);
           cairo_set_line_width(cr, 0.005 * width);
-          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+          dt_gui_gtk_set_source_rgb(cr, outlinecol);
           cairo_stroke(cr);
 
           // some exif data
@@ -1268,7 +1272,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           layout = pango_cairo_create_layout(cr);
           pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
           pango_layout_set_font_description(layout, desc);
-          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+          dt_gui_gtk_set_source_rgb(cr, outlinecol);
 
           cairo_move_to(cr, x0 + exif_offset, y0 + exif_offset);
           pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
@@ -1307,9 +1311,9 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
             else if((img->flags & 0x7) > k)
             {
               cairo_fill_preserve(cr);
-              cairo_set_source_rgb(cr, 1.0 - bordercol, 1.0 - bordercol, 1.0 - bordercol);
+              dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
               cairo_stroke(cr);
-              cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+              dt_gui_gtk_set_source_rgb(cr, outlinecol);
             }
             else
               cairo_stroke(cr);
@@ -1343,7 +1347,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       cairo_line_to(cr, x - r2, y + r2);
       cairo_close_path(cr);
       cairo_stroke(cr);
-      cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+      dt_gui_gtk_set_source_rgb(cr, outlinecol);
       cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
 
       if(draw_audio)
@@ -1397,7 +1401,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           _y = y - (.17 * .04) * fscale;
         }
         cairo_save(cr);
-        if(img && (imgid != img->group_id)) cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
+        if(img && (imgid != img->group_id)) dt_gui_gtk_set_source_rgb(cr, fontcol);
         dtgtk_cairo_paint_grouping(cr, _x, _y, s, s, 23, NULL);
         cairo_restore(cr);
         // mouse is over the grouping icon
@@ -1521,7 +1525,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           cairo_set_source_rgb(cr, 1, 1, 1);
           cairo_fill_preserve(cr);
           cairo_set_line_width(cr, 0.005 * width);
-          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+          dt_gui_gtk_set_source_rgb(cr, outlinecol);
           cairo_stroke(cr);
         }
         else

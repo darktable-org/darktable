@@ -643,7 +643,7 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   strip->image_over = DT_VIEW_DESERT;
 
   /* fill background */
-  cairo_set_source_rgb(cr, .2, .2, .2);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_FILMSTRIP_BG);
   cairo_paint(cr);
 
   int offset = strip->offset;
