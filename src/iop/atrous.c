@@ -463,6 +463,9 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
 
       _mm_stream_ps(pdetail, pin0 - sum);
       _mm_stream_ps(pcoarse, sum);
+
+      pdetail += 4;
+      pcoarse += 4;
     }
   }
 
@@ -478,11 +481,12 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
       const size_t inc = (row_begin_i + i) * 4;
       float *pdetail = detail + inc;
       float *pcoarse = out + inc;
+      float *pin = tmp + inc;
 
       const __m128 detailin = _mm_load_ps(pdetail);
 
       //pixel to be convolved
-      const __m128 pin0 = _mm_load_ps(tmp + inc);
+      const __m128 pin0 = _mm_load_ps(pin);
 
       // neighbours to filter
       const __m128 pin1 = _mm_load_ps(tmp + ASAN_COL(i, row_begin_i, -2, mult, max_width));
@@ -494,6 +498,10 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
 
       _mm_stream_ps(pdetail, detailin + pin0 - sum);
       _mm_stream_ps(pcoarse, sum);
+
+      pin += 4;
+      pdetail += 4;
+      pcoarse += 4;
     }
   }
 
@@ -543,18 +551,22 @@ static void eaw_synthesize_sse2(float *const out, const float *const in, const f
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)
 #endif
-  for(size_t k = 0; k < (size_t)4 * width * height; k += 4)
+  for(size_t k = 0; k < width * height; ++k)
   {
-    const __m128 pin = _mm_load_ps(in + k);
-    const __m128 pdetail = _mm_load_ps(detail + k);
-    float *pout = out + k;
+    const __m128 *pin = (__m128 *)in + k;
+    const __m128 *pdetail = (__m128 *)detail + k;
+    float *pout = out + k * 4;
 
     const __m128i maski = _mm_set1_epi32(0x80000000u);
     const __m128 *mask = (__m128 *)&maski;
     const __m128 absamt
-        = _mm_max_ps(_mm_setzero_ps(), (_mm_andnot_ps(*mask, pdetail) -  threshold));
-    const __m128 amount = _mm_or_ps(_mm_and_ps(pdetail, *mask), absamt);
-    _mm_stream_ps(pout, (pin + (boost * amount)));
+        = _mm_max_ps(_mm_setzero_ps(), (_mm_andnot_ps(*mask, *pdetail) -  threshold));
+    const __m128 amount = _mm_or_ps(_mm_and_ps(*pdetail, *mask), absamt);
+    _mm_stream_ps(pout, (*pin + (boost * amount)));
+
+    ++pin;
+    ++pdetail;
+    pout += 4;
   }
   _mm_sfence();
 }
