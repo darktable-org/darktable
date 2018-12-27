@@ -159,7 +159,7 @@ retouch_copy_image_to_buffer_masked(__read_only image2d_t buffer_src, global flo
   const float f = mask_scaled[idx_mask] * opacity;
   const float w = buffer_dest[idx_dest].w;
 
-  float4 pix = read_imagef(buffer_src, (int2)(x, y));
+  float4 pix = read_imagef(buffer_src, sampleri, (int2)(x, y));
   buffer_dest[idx_dest] = buffer_dest[idx_dest] * (1.0f - f) + pix * f;
 
   buffer_dest[idx_dest].w = w;
