@@ -152,7 +152,7 @@
         The middle-grey luminance is the luminance in XYZ space of the scene referred 18% grey.
         Its color picker tool reads the average luminance over the drawn area. If you happen to
         have a grey card or a color chart (IT8 chart or colorchecker) shot in the scene lighting
-        conditions, then the grey color picker tool can be used to quickely sample the luminance
+        conditions, then the grey color picker tool can be used to quickly sample the luminance
         of the grey patch on the picture. In other situations, the color picker can be used to
         sample the average luminance of the subject.
       </para>
@@ -170,7 +170,7 @@
       <para>
         When modifying the middle-grey luminance, the white and black exposures are
         automatically slided accordingly, to preserve the dynamic range from clipping and to
-        help you set find the righ parameter faster. If you are not happy with the auto
+        help you set find the right parameter faster. If you are not happy with the auto
         adjustment performed by the grey slider, you can correct again the white and black
         exposure parameters afterwards.
       </para>
