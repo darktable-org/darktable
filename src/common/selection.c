@@ -200,6 +200,7 @@ void dt_selection_toggle(dt_selection_t *selection, uint32_t imgid)
   else
   {
     dt_selection_select(selection, imgid);
+    selection->last_single_id = imgid;
   }
 
   /* update hint message */
