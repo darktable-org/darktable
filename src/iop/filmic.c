@@ -231,8 +231,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-/* UNCOMMENT AFTER DARKTABLE 2.6 IS RELEASED
-
 void init_presets(dt_iop_module_so_t *self)
 {
   dt_iop_filmic_params_t p;
@@ -332,7 +330,6 @@ void init_presets(dt_iop_module_so_t *self)
   p.black_point_source = -9.55f;
   dt_gui_presets_add_generic(_("very dark subject, 14 EV"), self->op, self->version(), &p, sizeof(p), 1);
 }
-*/
 
 static inline float Log2(float x)
 {
@@ -1614,8 +1611,7 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
-  // Add after darktable 2.6
-  // dt_bauhaus_widget_set_label(GTK_WIDGET(g->area), _("read-only graph, use the parameters below to set the nodes"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("read-only graph, use the parameters below to set the nodes"));
   gtk_widget_set_margin_start(GTK_WIDGET(g->area), margin_width);
   gtk_widget_set_margin_end(GTK_WIDGET(g->area), margin_width);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
@@ -1642,7 +1638,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->white_point_source, NULL, _("white relative exposure"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->white_point_source, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->white_point_source, "%.2f EV");
-  gtk_widget_set_tooltip_text(g->white_point_source, _("number of stops between middle grey and pure white\nthis is a reading a posemeter would give you on the scene"));
+  gtk_widget_set_tooltip_text(g->white_point_source, _("number of stops between middle grey and pure white\n"
+                                                        "this is a reading a posemeter would give you on the scene"));
   g_signal_connect(G_OBJECT(g->white_point_source), "value-changed", G_CALLBACK(white_point_source_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->white_point_source, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->white_point_source, TRUE);
