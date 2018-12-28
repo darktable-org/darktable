@@ -49,7 +49,7 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
     // Log profile
     maxRGB = maxRGB / grey;
     maxRGB = (maxRGB < noise) ? noise : maxRGB;
-    maxRGB = (log2(maxRGB) - shadows_range) / dynamic_range;
+    maxRGB = (native_log2(maxRGB) - shadows_range) / dynamic_range;
     maxRGB = clamp(maxRGB, 0.0f, 1.0f);
 
     const float index = maxRGB;
@@ -69,7 +69,7 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
     // Log profile
     o = o / grey;
     o = (o < noise) ? noise : o;
-    o = (log2(o) - shadows4) / dynamic4;
+    o = (native_log2(o) - shadows4) / dynamic4;
     o = clamp(o, (float4)0.0f, (float4)1.0f);
 
     const float index = prophotorgb_to_XYZ(o).y;
