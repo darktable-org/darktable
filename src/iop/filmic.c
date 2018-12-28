@@ -595,7 +595,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       // sRGB -> XYZ
       XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
       // XYZ -> Lab
-      _mm_store_ps(out, dt_XYZ_to_Lab_sse2(XYZ));
+      _mm_stream_ps(out, dt_XYZ_to_Lab_sse2(XYZ));
     }
   }
 
