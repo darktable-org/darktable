@@ -303,7 +303,7 @@ void init_presets(dt_iop_module_so_t *self)
   // Presets indoors
   p.grey_point_source = 18.0f;
   p.preserve_color = 0;
-  p.latitude_stops = 2.0f;git
+  p.latitude_stops = 2.0f;
   p.saturation = 100.0f;
   p.global_saturation = 100.0f;
   p.white_point_source = 2.45f;
