@@ -1230,11 +1230,11 @@ static void apply_autocolor(dt_iop_module_t *self)
   for (int runs = 0 ; runs < 1000 ; ++runs)
   {
     // compute RGB slope/gain (powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - p->lift[c+1] + 1.0f) / MAX(RGB[c], 0.000001f);
-    for (int c = 0; c < 3; ++c) RGB_gain[c] = CLAMP((powf(greys[GAIN], 1.0f / (2.0f - RGB_gamma[c])) - RGB_lift[c]) / MAX(samples_gain[c], 0.000001f), 0.0f, 2.0f);
+    for (int c = 0; c < 3; ++c) RGB_gain[c] = CLAMP((powf(greys[GAIN], 1.0f / (2.0f - RGB_gamma[c])) - RGB_lift[c]) / MAX(samples_gain[c], 0.000001f), 0.75f, 1.25f);
     // compute RGB offset/lift powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - RGB[c] * p->gain[c+1];
-    for (int c = 0; c < 3; ++c) RGB_lift[c] = CLAMP(powf(greys[LIFT], 1.0f / (2.0f - RGB_gamma[c])) - samples_lift[c] * RGB_gain[c], -1.0f, 1.0f);
+    for (int c = 0; c < 3; ++c) RGB_lift[c] = CLAMP(powf(greys[LIFT], 1.0f / (2.0f - RGB_gamma[c])) - samples_lift[c] * RGB_gain[c], -0.025f, 0.025f);
     // compute  power/gamma 2.0f - logf(0.1842f) / logf(MAX(p->gain[CHANNEL_FACTOR] * XYZ[1] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f));
-    for (int c = 0; c < 3; ++c) RGB_gamma[c] = 2.0f - CLAMP(logf(MAX(greys[GAMMA], 0.000001f)) / logf(MAX(RGB_gain[c] * samples_gamma[c] + RGB_lift[c], 0.000001f)), 0.0f, 2.0f);
+    for (int c = 0; c < 3; ++c) RGB_gamma[c] = 2.0f - CLAMP(logf(MAX(greys[GAMMA], 0.000001f)) / logf(MAX(RGB_gain[c] * samples_gamma[c] + RGB_lift[c], 0.000001f)), 0.75f, 1.25f);
   }
 
   // save
@@ -1572,7 +1572,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->grey, p->grey);
   dt_bauhaus_slider_set_soft(g->saturation, p->saturation * 100.0);
   dt_bauhaus_slider_set_soft(g->saturation_out, p->saturation_out * 100.0f);
-  dt_bauhaus_slider_set_soft(g->contrast, 1.0f - p->contrast);
+  dt_bauhaus_slider_set_soft(g->contrast, (1.0f - p->contrast) * 100.0f);
 
   dt_bauhaus_slider_set_soft(g->lift_factor, (p->lift[CHANNEL_FACTOR] - 1.0f) * 100.0f);
   dt_bauhaus_slider_set_soft(g->lift_r, p->lift[CHANNEL_RED] - 1.0f);
@@ -1969,7 +1969,7 @@ static void contrast_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
-  p->contrast = - dt_bauhaus_slider_get(slider) + 1.0f;
+  p->contrast = - dt_bauhaus_slider_get(slider) / 100.0f + 1.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2363,8 +2363,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_toggle(g->grey, TRUE);
   g_signal_connect(G_OBJECT(g->grey), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 
-  g->contrast = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.005, p->contrast - 1.0f, 4, 0);
-  dt_bauhaus_slider_enable_soft_boundaries(g->contrast, -0.99, 0.99);
+  g->contrast = dt_bauhaus_slider_new_with_range(self, -50, 50, 0.5, (p->contrast - 1.0f)*100.0f, 2);
+  dt_bauhaus_slider_enable_soft_boundaries(g->contrast, -99, 99);
+  dt_bauhaus_slider_set_format(g->contrast, "%+.2f %%");
   dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast"));
   gtk_box_pack_start(GTK_BOX(g->master_box), g->contrast, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->contrast, _("contrast"));
