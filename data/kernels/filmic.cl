@@ -22,7 +22,8 @@ kernel void
 filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
         const float dynamic_range, const float shadows_range, const float grey,
         read_only image2d_t table, read_only image2d_t diff,
-        const float contrast, const float power, const int preserve_color)
+        const float contrast, const float power, const int preserve_color,
+        const float saturation)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -30,14 +31,21 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
   if(x >= width || y >= height) return;
 
   float4 i = read_imagef(in, sampleri, (int2)(x, y));
-  float4 o = Lab_to_XYZ(i);
-  o = XYZ_to_prophotorgb(o);
+  const float4 xyz = Lab_to_XYZ(i);
+  float4 o = XYZ_to_prophotorgb(xyz);
 
   const float noise = pow(2.0f, -16.0f);
   const float4 noise4 = noise;
   const float4 dynamic4 = dynamic_range;
   const float4 shadows4 = shadows_range;
   float derivative, luma;
+
+  // Global desaturation
+  if (saturation != 1.0f)
+  {
+    const float4 lum = xyz.y;
+    o = lum + (float4)saturation * (o - lum);
+  }
 
   if (preserve_color)
   {
