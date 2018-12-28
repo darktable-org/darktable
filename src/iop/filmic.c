@@ -1756,7 +1756,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Black slider
   g->black_point_target = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1, p->black_point_target, 2);
-  dt_bauhaus_widget_set_label(g->black_point_target, NULL, _("black luminance"));
+  dt_bauhaus_widget_set_label(g->black_point_target, NULL, _("target black luminance"));
   gtk_box_pack_start(GTK_BOX(extra_options), g->black_point_target, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->black_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->black_point_target, _("luminance of output pure black, "
@@ -1765,7 +1765,7 @@ void gui_init(dt_iop_module_t *self)
 
   // grey_point_source slider
   g->grey_point_target = dt_bauhaus_slider_new_with_range(self, 0.1, 50., 0.5, p->grey_point_target, 2);
-  dt_bauhaus_widget_set_label(g->grey_point_target, NULL, _("middle grey destination"));
+  dt_bauhaus_widget_set_label(g->grey_point_target, NULL, _("target middle grey"));
   gtk_box_pack_start(GTK_BOX(extra_options), g->grey_point_target, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->grey_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->grey_point_target, _("midde grey value of the target display or color space.\n"
@@ -1774,7 +1774,7 @@ void gui_init(dt_iop_module_t *self)
 
   // White slider
   g->white_point_target = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1., p->white_point_target, 2);
-  dt_bauhaus_widget_set_label(g->white_point_target, NULL, _("white luminance"));
+  dt_bauhaus_widget_set_label(g->white_point_target, NULL, _("target white luminance"));
   gtk_box_pack_start(GTK_BOX(extra_options), g->white_point_target, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->white_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->white_point_target, _("luminance of output pure white, "
@@ -1783,7 +1783,7 @@ void gui_init(dt_iop_module_t *self)
 
   // power/gamma slider
   g->output_power = dt_bauhaus_slider_new_with_range(self, 1.0, 2.4, 0.1, p->output_power, 2);
-  dt_bauhaus_widget_set_label(g->output_power, NULL, _("destination power factor"));
+  dt_bauhaus_widget_set_label(g->output_power, NULL, _("target gamma"));
   gtk_box_pack_start(GTK_BOX(extra_options), g->output_power, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(g->output_power, _("power or gamma of the transfer function of the display or color space.\n"
                                                   "you should never touch that unless you know what you are doing."));
