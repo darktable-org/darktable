@@ -190,7 +190,7 @@ int flags()
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1 && new_version == 3)
   {
     typedef struct dt_iop_filmic_params_v1_t
     {
@@ -303,7 +303,7 @@ void init_presets(dt_iop_module_so_t *self)
   // Presets indoors
   p.grey_point_source = 18.0f;
   p.preserve_color = 0;
-  p.latitude_stops = 2.0f;
+  p.latitude_stops = 2.0f;git
   p.saturation = 100.0f;
   p.global_saturation = 100.0f;
   p.white_point_source = 2.45f;
