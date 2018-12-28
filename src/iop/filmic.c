@@ -322,6 +322,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.preserve_color = 1;
   p.latitude_stops = 3.0f;
   p.saturation = 50.0f;
+  p.global_saturation = 80.0f;
   p.white_point_source = 3.45f;
 
   p.black_point_source = -6.55f;
