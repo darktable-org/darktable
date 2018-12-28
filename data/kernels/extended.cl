@@ -591,9 +591,9 @@ colorbalance (read_only image2d_t in, write_only image2d_t out, const int width,
   float4 sRGB = XYZ_to_sRGB(Lab_to_XYZ(Lab));
 
   // Lift gamma gain
-  sRGB = (sRGB <= (float4)0.0031308f) ? 12.92f * sRGB : (1.0f + 0.055f) * pow(sRGB, (float4)1.0f/2.4f) - (float4)0.055f;
-  sRGB = pow(fmax(((sRGB - (float4)1.0f) * lift + (float4)1.0f) * gain, (float4)0.0f), gamma_inv);
-  sRGB = (sRGB <= (float4)0.04045f) ? sRGB / 12.92f : pow((sRGB + (float4)0.055f) / (1.0f + 0.055f), (float4)2.4f);
+  sRGB = (sRGB <= (float4)0.0031308f) ? 12.92f * sRGB : (1.0f + 0.055f) * native_powr(sRGB, (float4)1.0f/2.4f) - (float4)0.055f;
+  sRGB = native_powr(fmax(((sRGB - (float4)1.0f) * lift + (float4)1.0f) * gain, (float4)0.0f), gamma_inv);
+  sRGB = (sRGB <= (float4)0.04045f) ? sRGB / 12.92f : native_powr((sRGB + (float4)0.055f) / (1.0f + 0.055f), (float4)2.4f);
   Lab.xyz = XYZ_to_Lab(sRGB_to_XYZ(sRGB)).xyz;
 
   write_imagef (out, (int2)(x, y), Lab);
@@ -621,9 +621,9 @@ colorbalance_lgg (read_only image2d_t in, write_only image2d_t out, const int wi
   }
 
   // Lift gamma gain
-  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : pow(RGB, (float4)1.0f/2.2f);
+  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : native_powr(RGB, (float4)1.0f/2.2f);
   RGB = ((RGB - (float4)1.0f) * lift + (float4)1.0f) * gain;
-  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : pow(RGB, gamma_inv * (float4)2.2f);
+  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : native_powr(RGB, gamma_inv * (float4)2.2f);
 
   // saturation output
   if (saturation_out != 1.0f)
@@ -669,7 +669,7 @@ colorbalance_cdl (read_only image2d_t in, write_only image2d_t out, const int wi
 
   // lift power slope
   RGB = RGB * gain + lift;
-  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : pow(RGB, gamma_inv);
+  RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : native_powr(RGB, gamma_inv);
 
   // saturation output
   if (saturation_out != 1.0f)
@@ -684,7 +684,7 @@ colorbalance_cdl (read_only image2d_t in, write_only image2d_t out, const int wi
   {
     const float4 contrast4 = contrast;
     const float4 grey4 = grey;
-    RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : pow(RGB / grey4, contrast4) * grey4;
+    RGB = (RGB <= (float4)0.0f) ? (float4)0.0f : native_powr(RGB / grey4, contrast4) * grey4;
   }
 
   Lab.xyz = prophotorgb_to_Lab(RGB).xyz;
