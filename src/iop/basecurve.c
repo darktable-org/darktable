@@ -305,7 +305,7 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *presets, int count, int *force_autoapply)
+static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *presets, int count, gboolean force_autoapply)
 {
   // transform presets above to db entries.
   for(int k = 0; k < count; k++)
@@ -329,7 +329,7 @@ static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *pres
     dt_gui_presets_update_ldr(_(presets[k].name), self->op, self->version(), FOR_RAW);
     // make it auto-apply for matching images:
     dt_gui_presets_update_autoapply(_(presets[k].name), self->op, self->version(),
-                                    force_autoapply ? *force_autoapply : presets[k].autoapply);
+                                    force_autoapply ? 1 : presets[k].autoapply);
     // hide all non-matching presets in case the model string is set.
     // When force_autoapply was given always filter (as these are per-camera presets)
     dt_gui_presets_update_filter(_(presets[k].name), self->op, self->version(),
@@ -342,9 +342,9 @@ void init_presets(dt_iop_module_so_t *self)
   // sql begin
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
-  set_presets(self, basecurve_presets, basecurve_presets_cnt, NULL);
-  int force_autoapply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply_percamera_presets");
-  set_presets(self, basecurve_camera_presets, basecurve_camera_presets_cnt, &force_autoapply);
+  set_presets(self, basecurve_presets, basecurve_presets_cnt, FALSE);
+  const gboolean force_autoapply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply_percamera_presets");
+  set_presets(self, basecurve_camera_presets, basecurve_camera_presets_cnt, force_autoapply);
 
   // sql commit
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
