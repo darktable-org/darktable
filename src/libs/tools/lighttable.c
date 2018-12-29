@@ -99,6 +99,7 @@ void gui_init(dt_lib_module_t *self)
   widget = gtk_combo_box_text_new();
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("zoomable light table"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("file manager"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("expose"));
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("plugins/lighttable/layout"));
 
