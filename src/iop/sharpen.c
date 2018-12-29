@@ -92,7 +92,7 @@ void init_presets(dt_iop_module_so_t *self)
   // restrict to raw images
   dt_gui_presets_update_ldr(_("sharpen"), self->op, self->version(), FOR_RAW);
   // make it auto-apply for matching images:
-  dt_gui_presets_update_autoapply(_("sharpen"), self->op, self->version(), 1);
+  dt_gui_presets_update_autoapply(_("sharpen"), self->op, self->version(), 0);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
