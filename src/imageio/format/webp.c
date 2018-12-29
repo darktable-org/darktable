@@ -146,7 +146,6 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
 
   // TODO(jinxos): expose more config options in the UI
   config.lossless = webp_data->comp_type;
-  config.exact = !!(config.lossless);
   config.image_hint = webp_data->hint;
   config.method = 6;
 
