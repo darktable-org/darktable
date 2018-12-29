@@ -77,6 +77,7 @@ typedef enum dt_lighttable_layout_t
   DT_LAYOUT_FIRST = -1,
   DT_LAYOUT_ZOOMABLE = 0,
   DT_LAYOUT_FILEMANAGER = 1,
+  DT_LAYOUT_EXPOSE = 2,
   DT_LAYOUT_LAST = 2
 } dt_lighttable_layout_t;
 
@@ -176,6 +177,17 @@ typedef struct dt_library_t
 
 } dt_library_t;
 
+typedef struct dt_layout_image_t
+{
+    gint imgid;
+    gint width, height, x, y;
+} dt_layout_image_t;
+
+static inline float absmul(float a, float b) {
+  return a > b ? a/b : b/a;
+}
+
+
 /* drag and drop callbacks to reorder picture sequence (dnd)*/
 
 static void _dnd_get_picture_reorder(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
@@ -220,6 +232,15 @@ static void switch_layout_to(dt_library_t *lib, int new_layout)
     lib->offset_changed = TRUE;
     lib->offset_x = 0;
     lib->offset_y = 0;
+  }
+
+  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
+  gtk_widget_show(GTK_WIDGET(m->widget));
+
+  if(new_layout == 2) {
+    gtk_widget_show(GTK_WIDGET(m->widget));
+  } else {
+    gtk_widget_hide(GTK_WIDGET(m->widget));
   }
 }
 
@@ -1412,6 +1433,232 @@ failure:
   return missing;
 }
 
+static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
+                           int32_t pointery)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  int32_t mouse_over_id;
+  int missing = 0;
+
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
+  cairo_paint(cr);
+
+  dt_view_set_scrollbar(self, 0, 0, 1, 1, 0, 0, 1, 1);
+
+  int sel_img_count = dt_collection_get_selected_count(NULL);
+
+  if(sel_img_count == 0) return 0;
+
+  gchar *query = NULL;
+  gchar *sq = NULL;
+
+  sq = dt_collection_get_sort_query(darktable.collection);
+
+  query = dt_util_dstrcat(query, "SELECT imgid, aspect_ratio, width, height FROM main.selected_images AS sel "
+                                 "JOIN main.images AS imgs ON sel.imgid = imgs.id %s", sq);
+
+
+  sqlite3_stmt *stmt;
+  /* prepare a new main query statement for collection */
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              query, -1,
+                              &stmt, NULL);
+
+  if(!stmt) return 0;
+
+  mouse_over_id = dt_control_get_mouse_over_id();
+
+  int id;
+  double aspect_ratio;
+
+  dt_layout_image_t *images = malloc(sel_img_count * sizeof(dt_layout_image_t));
+
+  int i = 0;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    id = sqlite3_column_int(stmt, 0);
+    aspect_ratio = sqlite3_column_double(stmt, 1);
+    if (!aspect_ratio) aspect_ratio = (double)sqlite3_column_int(stmt, 2) / (double)sqlite3_column_int(stmt, 3);
+
+    images[i].imgid = id;
+    images[i].width = (gint) (sqrt(aspect_ratio) * 100);
+    images[i].height = (gint) (1/sqrt(aspect_ratio) * 100);
+    i++;
+  }
+
+  int sum_w = 0, max_h = 0, max_w = 0;
+
+  GList *slots = NULL;
+
+  unsigned int total_width = 0, total_height = 0;
+  int distance = 1;
+  float avg_ratio = 0;
+
+  // Get total window width and max window width/height
+  for(i = 0; i < sel_img_count; i++) {
+    sum_w += images[i].width;
+    max_w = MAX(max_w, images[i].width);
+    max_h = MAX(max_h, images[i].height);
+    avg_ratio += images[i].width / (float) images[i].height;
+  }
+
+  avg_ratio /= sel_img_count;
+
+  int per_row, tmp_per_row, per_col, tmp_per_col;
+  per_row = tmp_per_row = ceil(sqrt(sel_img_count));
+  per_col = tmp_per_col = (sel_img_count + per_row - 1) / per_row; // ceil(sel_img_count/per_row)
+
+  float tmp_slot_ratio, slot_ratio;
+  tmp_slot_ratio = slot_ratio = (width/ (float) per_row) / (height/ (float) per_col);
+
+
+  do {
+    per_row = tmp_per_row;
+    per_col = tmp_per_col;
+    slot_ratio = tmp_slot_ratio;
+
+    if(avg_ratio > slot_ratio) {
+      tmp_per_row = per_row - 1;
+    } else {
+      tmp_per_row = per_row + 1;
+    }
+    if(tmp_per_row == 0) break;
+    tmp_per_col = (sel_img_count + tmp_per_row - 1) / tmp_per_row; //ceil(sel_img_count / tmp_per_row);
+
+    tmp_slot_ratio = (width/ (float) tmp_per_row) / (height/( float) tmp_per_col);
+
+  } while(per_row > 0 && per_row <= sel_img_count && absmul(tmp_slot_ratio, avg_ratio) < absmul(slot_ratio, avg_ratio));
+
+
+
+  // Vertical layout
+  for(i = 0; i < sel_img_count; i++) {
+    GList *slot_iter = g_list_first(slots);
+    for (; slot_iter; slot_iter = slot_iter->next) {
+      GList *slot = (GList *) slot_iter->data;
+      // Calculate current total height of slot
+      int slot_h = distance;
+      GList *slot_cw_iter = slot;
+      while(slot_cw_iter != NULL) {
+        dt_layout_image_t *slot_cw = (dt_layout_image_t *) slot_cw_iter->data;
+        slot_h = slot_h + slot_cw->height + distance;
+        slot_cw_iter = slot_cw_iter->next;
+      }
+      // Add window to slot if the slot height after adding the window
+      // doesn't exceed max window height
+      if (slot_h + distance + images[i].height < max_h) {
+        slot_iter->data = g_list_append(slot, &(images[i]));
+        break;
+      }
+    }
+    // Otherwise, create a new slot with only this window
+    if (!slot_iter)
+      slots = g_list_append(slots, g_list_append(NULL, &(images[i])));
+  }
+
+  GList *rows = g_list_append(NULL, NULL);
+  {
+    int row_y = 0, x = 0, row_h = 0;
+    int max_row_w = sum_w/per_col;//sqrt((float) sum_w * max_h);// * pow((float) width/height, 0.02);
+    for (GList *slot_iter = slots; slot_iter != NULL; slot_iter = slot_iter->next) {
+      GList *slot = (GList *) slot_iter->data;
+      // Max width of windows in the slot
+      int slot_max_w = 0;
+      for (GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next) {
+        dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
+        slot_max_w = MAX(slot_max_w, cw->width);
+      }
+      int y = row_y;
+      for (GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next) {
+        dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
+        cw->x = x + (slot_max_w - cw->width) / 2;
+        cw->y = y;
+        y += cw->height + distance;
+        rows->data = g_list_append(rows->data, cw);
+      }
+      row_h = MAX(row_h, y - row_y);
+      total_height = MAX(total_height, y);
+      x += slot_max_w + distance;
+      total_width = MAX(total_width, x);
+      if (x > max_row_w) {
+        x = 0;
+        row_y += row_h;
+        row_h = 0;
+        rows = g_list_append(rows, 0);
+        rows = rows->next;
+      }
+      g_list_free(slot);
+    }
+    g_list_free(slots);
+    slots = NULL;
+  }
+
+  total_width -= distance;
+  total_height -= distance;
+
+  for (GList *iter = rows; iter != NULL; iter = iter->next) {
+    GList *row = (GList *) iter->data;
+    int row_w = 0, xoff;
+    for (GList *slot_cw_iter = row; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next) {
+      dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
+      row_w = MAX(row_w, cw->x + cw->width);
+    }
+    xoff = (total_width - row_w) / 2;
+    for (GList *cw_iter = row; cw_iter != NULL; cw_iter = cw_iter->next) {
+      dt_layout_image_t *cw = (dt_layout_image_t *) cw_iter->data;
+      cw->x += xoff;
+    }
+    g_list_free(row);
+  }
+
+  g_list_free(rows);
+
+  float factor;
+  factor = (float) (width - 1) / total_width;
+  if (factor * total_height > height - 1)
+    factor = (float) (height - 1) / total_height;
+
+  int xoff = (width - (float) total_width * factor) / 2;
+  int yoff = (height - (float) total_height * factor) / 2;
+  for(i = 0; i < sel_img_count; i++) {
+    images[i].width = images[i].width * factor;
+    images[i].height = images[i].height * factor;
+    images[i].x = images[i].x * factor + xoff;
+    images[i].y = images[i].y * factor + yoff;
+  }
+
+  for(i = 0; i < sel_img_count; i++) {
+    cairo_save(cr);
+    // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
+    cairo_translate(cr, images[i].x, images[i].y);
+    dt_view_image_expose(&(lib->image_over), images[i].imgid, cr, images[i].width, images[i].height, 1, 0,
+                                    0, FALSE, TRUE);
+    cairo_restore(cr);
+
+    // set mouse over id
+    if(pointerx > images[i].x && pointerx < images[i].x + images[i].width && pointery > images[i].y && pointery < images[i].y + images[i].height)
+    {
+      mouse_over_id = images[i].imgid;
+      dt_control_set_mouse_over_id(mouse_over_id);
+    }
+  }
+
+  free(images);
+
+
+  failure:
+
+  sqlite3_finalize(stmt);
+
+  /* free allocated strings */
+  g_free(sq);
+
+  g_free(query);
+
+  if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
+  return missing;
+}
+
 /**
  * Displays a full screen preview of the image currently under the mouse pointer.
  */
@@ -1653,8 +1900,11 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
       case DT_LAYOUT_FILEMANAGER:
         missing_thumbnails = expose_filemanager(self, cr, width, height, pointerx, pointery);
         break;
-      case DT_LAYOUT_ZOOMABLE:
+      case DT_LAYOUT_ZOOMABLE: // zoomable
         missing_thumbnails = expose_zoomable(self, cr, width, height, pointerx, pointery);
+        break;
+      case DT_LAYOUT_EXPOSE: // compare
+        missing_thumbnails = expose_expose(self, cr, width, height, pointerx, pointery);
         break;
     }
   }
