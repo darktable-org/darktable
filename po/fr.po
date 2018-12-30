@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-27 18:43+0100\n"
-"PO-Revision-Date: 2018-12-27 18:49+0100\n"
+"POT-Creation-Date: 2018-12-30 17:51+0100\n"
+"PO-Revision-Date: 2018-12-29 22:16+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1025,57 +1025,57 @@ msgstr ""
 "dE moyen: %.02f\n"
 "dE max: %.02f"
 
-#: ../src/cli/main.c:106
+#: ../src/cli/main.c:110
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 msgstr ""
 "TODO: désolé, dû à des restrictions d'interfaces de programmation, il n'est "
 "pas possible de régler le BPP"
 
-#: ../src/cli/main.c:118
+#: ../src/cli/main.c:122
 msgid "unknown option for --hq"
 msgstr "option inconnue pour --hq"
 
-#: ../src/cli/main.c:134
+#: ../src/cli/main.c:138
 msgid "unknown option for --upscale"
 msgstr "option inconnue pour --upscale"
 
-#: ../src/cli/main.c:188
+#: ../src/cli/main.c:201
 #, c-format
 msgid "error: output file is a directory. please specify file name"
 msgstr ""
 "erreur: le fichier de sortie est un répertoire, merci de spécifier un nom de "
 "fichier"
 
-#: ../src/cli/main.c:197
+#: ../src/cli/main.c:210
 msgid "output file already exists, it will get renamed"
 msgstr "ficher de sortie existant, il va être renommé"
 
-#: ../src/cli/main.c:214
+#: ../src/cli/main.c:227
 #, c-format
 msgid "error: can't open folder %s"
 msgstr "erreur : impossible d'ouvrir le répertoire « %s »"
 
-#: ../src/cli/main.c:232
+#: ../src/cli/main.c:245
 #, c-format
 msgid "error: can't open file %s"
 msgstr "erreur : impossible d'ouvrir le fichier « %s »"
 
-#: ../src/cli/main.c:246
+#: ../src/cli/main.c:259
 #, c-format
 msgid "no images to export, aborting\n"
 msgstr "aucune image à exporter, annulation\n"
 
-#: ../src/cli/main.c:260
+#: ../src/cli/main.c:273
 #, c-format
 msgid "error: can't open xmp file %s"
 msgstr "erreur : impossible d'ouvrir le fichier « %s »"
 
 # dans le contexte de la table lumineuse, "history stack" se traduit par "développement"
-#: ../src/cli/main.c:278
+#: ../src/cli/main.c:291
 msgid "empty history stack"
 msgstr "réinitialiser le développement"
 
-#: ../src/cli/main.c:301
+#: ../src/cli/main.c:314
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -1083,18 +1083,18 @@ msgstr ""
 "impossible de trouver le module d'export vers le disque. vérifier votre "
 "installation, quelque chose est brisée."
 
-#: ../src/cli/main.c:309
+#: ../src/cli/main.c:322
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "impossible d'obtenir les paramètres du module de stockage, exportation "
 "abandonnée..."
 
-#: ../src/cli/main.c:322
+#: ../src/cli/main.c:335
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "extension inconnue « .%s »"
 
-#: ../src/cli/main.c:331
+#: ../src/cli/main.c:344
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
@@ -1106,7 +1106,7 @@ msgstr "trop de temps pour mettre à jour l'aspect pour la collection"
 
 #: ../src/common/collection.c:1044 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
-#: ../src/iop/channelmixer.c:464 ../src/iop/colorbalance.c:2497
+#: ../src/iop/channelmixer.c:464 ../src/iop/colorbalance.c:2475
 #: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1188
 msgid "red"
 msgstr "rouge"
@@ -1118,7 +1118,7 @@ msgstr "jaune"
 
 #: ../src/common/collection.c:1048 ../src/develop/lightroom.c:826
 #: ../src/iop/bilateral.cc:361 ../src/iop/channelmixer.c:454
-#: ../src/iop/channelmixer.c:470 ../src/iop/colorbalance.c:2504
+#: ../src/iop/channelmixer.c:470 ../src/iop/colorbalance.c:2482
 #: ../src/iop/temperature.c:1357 ../src/iop/temperature.c:1370
 #: ../src/libs/collect.c:1188
 msgid "green"
@@ -1126,7 +1126,7 @@ msgstr "vert"
 
 #: ../src/common/collection.c:1050 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:362 ../src/iop/channelmixer.c:455
-#: ../src/iop/channelmixer.c:476 ../src/iop/colorbalance.c:2511
+#: ../src/iop/channelmixer.c:476 ../src/iop/colorbalance.c:2489
 #: ../src/iop/temperature.c:1371 ../src/libs/collect.c:1188
 msgid "blue"
 msgstr "bleu"
@@ -2651,12 +2651,12 @@ msgstr "supprimer"
 msgid "rename"
 msgstr "renommer"
 
-#: ../src/develop/imageop.c:1066 ../src/develop/imageop.c:2056
+#: ../src/develop/imageop.c:1066 ../src/develop/imageop.c:2061
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1066 ../src/develop/imageop.c:2056
+#: ../src/develop/imageop.c:1066 ../src/develop/imageop.c:2061
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
@@ -2666,7 +2666,7 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:904 ../src/gui/presets.c:189
 #: ../src/gui/presets.c:302 ../src/gui/presets.c:647
 #: ../src/iop/temperature.c:1452 ../src/libs/import.c:576 ../src/libs/lib.c:314
-#: ../src/libs/lib.c:342 ../src/libs/lib.c:1163
+#: ../src/libs/lib.c:342 ../src/libs/lib.c:1167
 msgid "preset"
 msgstr "pré-réglage"
 
@@ -2696,7 +2696,7 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:2021
+#: ../src/develop/imageop.c:2026
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -2704,16 +2704,16 @@ msgstr ""
 "actions instances multiples\n"
 "clic-milieu pour créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:2032 ../src/libs/lib.c:1003
+#: ../src/develop/imageop.c:2037 ../src/libs/lib.c:1007
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:2041 ../src/gui/preferences.c:398
-#: ../src/libs/lib.c:1015
+#: ../src/develop/imageop.c:2046 ../src/gui/preferences.c:398
+#: ../src/libs/lib.c:1019
 msgid "presets"
 msgstr "pré-réglages"
 
-#: ../src/develop/imageop.c:2043
+#: ../src/develop/imageop.c:2048
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -5093,7 +5093,7 @@ msgid "scale"
 msgstr "échelle"
 
 #. centripetal spline
-#: ../src/iop/basecurve.c:1934 ../src/iop/filmic.c:1726
+#: ../src/iop/basecurve.c:1934 ../src/iop/filmic.c:1802
 #: ../src/iop/profile_gamma.c:867 ../src/iop/tonecurve.c:1261
 msgid "linear"
 msgstr "linéaire"
@@ -5170,7 +5170,7 @@ msgstr "contraste local"
 msgid "local laplacian: inconsistent output"
 msgstr "laplacien local: résultat incohérent"
 
-#: ../src/iop/bilat.c:522 ../src/iop/colorbalance.c:2338
+#: ../src/iop/bilat.c:522 ../src/iop/colorbalance.c:2315
 #: ../src/iop/denoiseprofile.c:2693 ../src/iop/exposure.c:853
 #: ../src/iop/lens.c:2236 ../src/iop/levels.c:589
 #: ../src/iop/profile_gamma.c:850 ../src/libs/copy_history.c:322
@@ -5212,8 +5212,8 @@ msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr "taille des détails locaux (sigma spatial du filtre bilatéral)"
 
 #: ../src/iop/bilat.c:543 ../src/iop/colisa.c:366
-#: ../src/iop/colorbalance.c:2368 ../src/iop/colorbalance.c:2370
-#: ../src/iop/filmic.c:1684 ../src/iop/lowpass.c:673
+#: ../src/iop/colorbalance.c:2369 ../src/iop/colorbalance.c:2371
+#: ../src/iop/filmic.c:1751 ../src/iop/lowpass.c:673
 msgid "contrast"
 msgstr "contraste"
 
@@ -5582,8 +5582,8 @@ msgid "destination"
 msgstr "canal de destination"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
-#: ../src/iop/channelmixer.c:450 ../src/iop/colorbalance.c:2476
-#: ../src/iop/colorbalance.c:2526 ../src/iop/colorbalance.c:2575
+#: ../src/iop/channelmixer.c:450 ../src/iop/colorbalance.c:2454
+#: ../src/iop/colorbalance.c:2504 ../src/iop/colorbalance.c:2553
 #: ../src/iop/colorize.c:436 ../src/iop/colorreconstruction.c:1365
 #: ../src/iop/colorreconstruction.c:1370 ../src/iop/colorzones.c:1090
 #: ../src/iop/colorzones.c:1121 ../src/iop/graduatednd.c:1171
@@ -5593,13 +5593,13 @@ msgstr "teinte"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:451 ../src/iop/colisa.c:368
-#: ../src/iop/colorbalance.c:2489 ../src/iop/colorbalance.c:2539
-#: ../src/iop/colorbalance.c:2588 ../src/iop/colorchecker.c:1313
+#: ../src/iop/colorbalance.c:2467 ../src/iop/colorbalance.c:2517
+#: ../src/iop/colorbalance.c:2566 ../src/iop/colorchecker.c:1313
 #: ../src/iop/colorcorrection.c:289 ../src/iop/colorize.c:450
 #: ../src/iop/colorzones.c:1088 ../src/iop/colorzones.c:1122
-#: ../src/iop/filmic.c:1709 ../src/iop/graduatednd.c:1185
-#: ../src/iop/lowpass.c:675 ../src/iop/soften.c:716
-#: ../src/iop/splittoning.c:501 ../src/iop/vignette.c:1152
+#: ../src/iop/graduatednd.c:1185 ../src/iop/lowpass.c:675
+#: ../src/iop/soften.c:716 ../src/iop/splittoning.c:501
+#: ../src/iop/vignette.c:1152
 msgid "saturation"
 msgstr "saturation"
 
@@ -5699,7 +5699,7 @@ msgid "flip"
 msgstr "symétrie miroir"
 
 #: ../src/iop/clipping.c:1870 ../src/iop/clipping.c:2055
-#: ../src/iop/colorbalance.c:2351 ../src/libs/live_view.c:378
+#: ../src/iop/colorbalance.c:2328 ../src/libs/live_view.c:378
 msgid "both"
 msgstr "les deux"
 
@@ -5902,181 +5902,181 @@ msgctxt "accel"
 msgid "controls"
 msgstr "contrôles"
 
-#: ../src/iop/colorbalance.c:936
+#: ../src/iop/colorbalance.c:913
 msgid "optimize luma from patches"
 msgstr "optimiser luma à partir des patches"
 
-#: ../src/iop/colorbalance.c:938 ../src/iop/colorbalance.c:2623
+#: ../src/iop/colorbalance.c:915 ../src/iop/colorbalance.c:2601
 msgid "optimize luma"
 msgstr "optimiser luma"
 
-#: ../src/iop/colorbalance.c:942
+#: ../src/iop/colorbalance.c:919
 msgid "neutralize colors from patches"
 msgstr "neutraliser les couleurs à partir des patches"
 
-#: ../src/iop/colorbalance.c:944 ../src/iop/colorbalance.c:2632
+#: ../src/iop/colorbalance.c:921 ../src/iop/colorbalance.c:2610
 msgid "neutralize colors"
 msgstr "neutraliser les couleurs"
 
-#: ../src/iop/colorbalance.c:2339
+#: ../src/iop/colorbalance.c:2316
 msgid "lift, gamma, gain (ProPhotoRGB)"
 msgstr "lift, gamma, gain (ProPhotoRGB)"
 
-#: ../src/iop/colorbalance.c:2340
+#: ../src/iop/colorbalance.c:2317
 msgid "slope, offset, power (ProPhotoRGB)"
 msgstr "slope, offset, power (ProPhotoRGB)"
 
-#: ../src/iop/colorbalance.c:2341
+#: ../src/iop/colorbalance.c:2318
 msgid "lift, gamma, gain (sRGB)"
 msgstr "lift, gamma, gain (sRGB)"
 
-#: ../src/iop/colorbalance.c:2343 ../src/iop/colorbalance.c:2354
+#: ../src/iop/colorbalance.c:2320 ../src/iop/colorbalance.c:2331
 msgid "color-grading mapping method"
 msgstr "méthode d'ajustement des couleurs"
 
-#: ../src/iop/colorbalance.c:2348
+#: ../src/iop/colorbalance.c:2325
 msgid "color control sliders"
 msgstr "contrôle des couleurs"
 
-#: ../src/iop/colorbalance.c:2349
+#: ../src/iop/colorbalance.c:2326
 msgid "HSL"
 msgstr "TSL"
 
-#: ../src/iop/colorbalance.c:2350
+#: ../src/iop/colorbalance.c:2327
 msgid "RGBL"
 msgstr "RGBL"
 
-#: ../src/iop/colorbalance.c:2361
+#: ../src/iop/colorbalance.c:2338
 msgid "master"
 msgstr "maître"
 
-#: ../src/iop/colorbalance.c:2366
+#: ../src/iop/colorbalance.c:2343
 msgid "input saturation"
 msgstr "saturation en entrée"
 
-#: ../src/iop/colorbalance.c:2368
+#: ../src/iop/colorbalance.c:2345
 msgid "saturation correction before the color balance"
 msgstr "correction de la saturation avant la balance des couleurs"
 
-#: ../src/iop/colorbalance.c:2374
+#: ../src/iop/colorbalance.c:2351
 msgid "output saturation"
 msgstr "saturation en sortie"
 
-#: ../src/iop/colorbalance.c:2376
+#: ../src/iop/colorbalance.c:2353
 msgid "saturation correction after the color balance"
 msgstr "correction de la saturation après la balance des couleurs"
 
-#: ../src/iop/colorbalance.c:2380
+#: ../src/iop/colorbalance.c:2357
 msgid "contrast fulcrum"
 msgstr "pivot du contraste"
 
-#: ../src/iop/colorbalance.c:2383
+#: ../src/iop/colorbalance.c:2360
 msgid "adjust to match a neutral tone"
 msgstr "ajuste pour des tons neutres"
 
-#: ../src/iop/colorbalance.c:2451 ../src/iop/colorbalance.c:2463
+#: ../src/iop/colorbalance.c:2429 ../src/iop/colorbalance.c:2441
 msgid "factor of "
 msgstr "facteur de "
 
-#: ../src/iop/colorbalance.c:2452
+#: ../src/iop/colorbalance.c:2430
 msgid "factor"
 msgstr "facteur"
 
 #. lift
-#: ../src/iop/colorbalance.c:2469
+#: ../src/iop/colorbalance.c:2447
 msgid "shadows : lift / offset"
 msgstr "ombres : lift / offset"
 
-#: ../src/iop/colorbalance.c:2471
+#: ../src/iop/colorbalance.c:2449
 msgid "factor of lift"
 msgstr "facteur de lift"
 
-#: ../src/iop/colorbalance.c:2471
+#: ../src/iop/colorbalance.c:2449
 msgid "lift"
 msgstr "lift"
 
-#: ../src/iop/colorbalance.c:2479 ../src/iop/colorbalance.c:2529
-#: ../src/iop/colorbalance.c:2578
+#: ../src/iop/colorbalance.c:2457 ../src/iop/colorbalance.c:2507
+#: ../src/iop/colorbalance.c:2556
 msgid "select the hue"
 msgstr "sélectionne la teinte"
 
-#: ../src/iop/colorbalance.c:2492 ../src/iop/colorbalance.c:2542
-#: ../src/iop/colorbalance.c:2591
+#: ../src/iop/colorbalance.c:2470 ../src/iop/colorbalance.c:2520
+#: ../src/iop/colorbalance.c:2569
 msgid "select the saturation"
 msgstr "sélectionne la saturation"
 
-#: ../src/iop/colorbalance.c:2497
+#: ../src/iop/colorbalance.c:2475
 msgid "factor of red for lift"
 msgstr "facteur rouge du lift"
 
-#: ../src/iop/colorbalance.c:2504
+#: ../src/iop/colorbalance.c:2482
 msgid "factor of green for lift"
 msgstr "facteur vert du lift"
 
-#: ../src/iop/colorbalance.c:2511
+#: ../src/iop/colorbalance.c:2489
 msgid "factor of blue for lift"
 msgstr "facteur bleu du lift"
 
 #. gamma
-#: ../src/iop/colorbalance.c:2519
+#: ../src/iop/colorbalance.c:2497
 msgid "mid-tones : gamma / power"
 msgstr "tons moyens : gamma / power"
 
-#: ../src/iop/colorbalance.c:2521
+#: ../src/iop/colorbalance.c:2499
 msgid "factor of gamma"
 msgstr "facteur gamma"
 
-#: ../src/iop/colorbalance.c:2521 ../src/iop/profile_gamma.c:852
+#: ../src/iop/colorbalance.c:2499 ../src/iop/profile_gamma.c:852
 #: ../src/iop/profile_gamma.c:874
 msgid "gamma"
 msgstr "gamma"
 
-#: ../src/iop/colorbalance.c:2546
+#: ../src/iop/colorbalance.c:2524
 msgid "factor of red for gamma"
 msgstr "facteur rouge du gamma"
 
-#: ../src/iop/colorbalance.c:2553
+#: ../src/iop/colorbalance.c:2531
 msgid "factor of green for gamma"
 msgstr "facteur vert du gamma"
 
-#: ../src/iop/colorbalance.c:2560
+#: ../src/iop/colorbalance.c:2538
 msgid "factor of blue for gamma"
 msgstr "facteur bleu du gamma"
 
 #. gain
-#: ../src/iop/colorbalance.c:2568
+#: ../src/iop/colorbalance.c:2546
 msgid "highlights : gain / slope"
 msgstr "hautes lumières : gain / slope"
 
-#: ../src/iop/colorbalance.c:2570
+#: ../src/iop/colorbalance.c:2548
 msgid "factor of gain"
 msgstr "facteur du gain"
 
-#: ../src/iop/colorbalance.c:2570
+#: ../src/iop/colorbalance.c:2548
 msgid "gain"
 msgstr "gain"
 
-#: ../src/iop/colorbalance.c:2595
+#: ../src/iop/colorbalance.c:2573
 msgid "factor of red for gain"
 msgstr "facteur rouge du gain"
 
-#: ../src/iop/colorbalance.c:2602
+#: ../src/iop/colorbalance.c:2580
 msgid "factor of green for gain"
 msgstr "facteur vert du gain"
 
-#: ../src/iop/colorbalance.c:2609
+#: ../src/iop/colorbalance.c:2587
 msgid "factor of blue for gain"
 msgstr "facteur bleu du gain"
 
-#: ../src/iop/colorbalance.c:2616
+#: ../src/iop/colorbalance.c:2594
 msgid "auto optimizers"
 msgstr "optimiseurs automatiques"
 
-#: ../src/iop/colorbalance.c:2628
+#: ../src/iop/colorbalance.c:2606
 msgid "fit the whole histogram and center the average luma"
 msgstr "ajuste l'histogramme et centre la luminosité moyenne"
 
-#: ../src/iop/colorbalance.c:2637
+#: ../src/iop/colorbalance.c:2615
 msgid "optimize the RGB curves to remove color casts"
 msgstr "optimise les courbes RGB et supprime les dérives de couleur"
 
@@ -6170,29 +6170,29 @@ msgstr "absolue"
 msgid "color contrast"
 msgstr "contraste de couleur"
 
-#: ../src/iop/colorcontrast.c:124
+#: ../src/iop/colorcontrast.c:123
 msgctxt "accel"
 msgid "green vs magenta"
 msgstr "vert vs magenta"
 
-#: ../src/iop/colorcontrast.c:125
+#: ../src/iop/colorcontrast.c:124
 msgctxt "accel"
 msgid "blue vs yellow"
 msgstr "bleu vs jaune"
 
-#: ../src/iop/colorcontrast.c:393
+#: ../src/iop/colorcontrast.c:394
 msgid "green vs magenta"
 msgstr "vert vs magenta"
 
-#: ../src/iop/colorcontrast.c:395
+#: ../src/iop/colorcontrast.c:396
 msgid "steepness of the a* curve in Lab"
 msgstr "pente de la courbe a* (Lab)"
 
-#: ../src/iop/colorcontrast.c:401
+#: ../src/iop/colorcontrast.c:402
 msgid "blue vs yellow"
 msgstr "bleu vs jaune"
 
-#: ../src/iop/colorcontrast.c:403
+#: ../src/iop/colorcontrast.c:404
 msgid "steepness of the b* curve in Lab"
 msgstr "pente de la courbe b* (Lab)"
 
@@ -7016,85 +7016,61 @@ msgstr "CE calculée: "
 msgid "what exposure correction has actually been used"
 msgstr "la correction d'exposition réellement utilisée"
 
-#: ../src/iop/filmic.c:174
+#: ../src/iop/filmic.c:177
 msgid "filmic"
 msgstr "filmique"
 
-#: ../src/iop/filmic.c:261
-msgid "indoors, 10 EV"
-msgstr "intérieur, 10 EV"
-
-#: ../src/iop/filmic.c:264
-msgid "indoors, 11 EV"
-msgstr "intérieur, 11 EV"
-
-#: ../src/iop/filmic.c:267
-msgid "indoors, 12 EV"
-msgstr "intérieur, 12 EV"
-
-#: ../src/iop/filmic.c:277
-msgid "outdoors, 10 EV"
-msgstr "extérieur, 10 EV"
-
-#: ../src/iop/filmic.c:280
-msgid "outdoors, 11 EV"
-msgstr "extérieur, 11 EV"
-
-#: ../src/iop/filmic.c:283
-msgid "outdoors, 12 EV"
-msgstr "extérieur, 12 EV"
-
-#: ../src/iop/filmic.c:293
-msgid "backlighting, 10 EV"
-msgstr "contre-jour, 10 EV"
-
-#: ../src/iop/filmic.c:296
-msgid "backlighting, 11 EV"
-msgstr "contre-jour, 11 EV"
-
-#: ../src/iop/filmic.c:299
-msgid "backlighting, 12 EV"
-msgstr "contre-jour, 12 EV"
-
 #: ../src/iop/filmic.c:309
-msgid "sunset, 11 EV"
-msgstr "coucher de soleil, 11 EV"
+msgid "09 EV (low-key)"
+msgstr "09 EV (clair-obscur)"
 
-#: ../src/iop/filmic.c:312
-msgid "sunset, 12 EV"
-msgstr "coucher de soleil, 12 EV"
+#: ../src/iop/filmic.c:316
+msgid "10 EV (indoors)"
+msgstr "10 EV (intérieur)"
 
-#: ../src/iop/filmic.c:315
-msgid "sunset, 13 EV"
-msgstr "coucher de soleil, 13 EV"
+#: ../src/iop/filmic.c:323
+msgid "11 EV (dim outdoors)"
+msgstr "11 EV (extérieur sombre)"
 
-#: ../src/iop/filmic.c:325
-msgid "very dark subject, 12 EV"
-msgstr "sujet très sombre, 12 EV"
+#: ../src/iop/filmic.c:330
+msgid "12 EV (outdoors)"
+msgstr "12 EV (extérieur)"
 
-#: ../src/iop/filmic.c:328
-msgid "very dark subject, 13 EV"
-msgstr "sujet très sombre, 13 EV"
+#: ../src/iop/filmic.c:337
+msgid "13 EV (bright outdoors)"
+msgstr "13 EV (extérieur lumineux)"
 
-#: ../src/iop/filmic.c:331
-msgid "very dark subject, 14 EV"
-msgstr "sujet très sombre, 14 EV"
+#: ../src/iop/filmic.c:344
+msgid "14 EV (backlighting)"
+msgstr "14 EV (contre-jour)"
 
-#: ../src/iop/filmic.c:1614
+#: ../src/iop/filmic.c:351
+msgid "15 EV (sunset)"
+msgstr "15 EV (coucher de soleil)"
+
+#: ../src/iop/filmic.c:358
+msgid "16 EV (HDR)"
+msgstr "16 EV (HDR)"
+
+#: ../src/iop/filmic.c:365
+msgid "18 EV (HDR++)"
+msgstr "18 EV (HDR++)"
+
+#: ../src/iop/filmic.c:1681
 msgid "read-only graph, use the parameters below to set the nodes"
 msgstr ""
 "graphe non interactif, utiliser les paramètres ci-dessous pour modifier les "
 "nœuds"
 
-#: ../src/iop/filmic.c:1620
+#: ../src/iop/filmic.c:1687
 msgid "logarithmic shaper"
 msgstr "transformation logarithmique"
 
-#: ../src/iop/filmic.c:1625
+#: ../src/iop/filmic.c:1692
 msgid "middle grey luminance"
 msgstr "luminance du gris moyen"
 
-#: ../src/iop/filmic.c:1628
+#: ../src/iop/filmic.c:1695
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
@@ -7102,11 +7078,11 @@ msgstr ""
 "ajuster pour correspondre à la luminance moyenne du sujet.\n"
 "sauf pour les scènes sombres, cette valeur devrait être autour de 18%"
 
-#: ../src/iop/filmic.c:1638
+#: ../src/iop/filmic.c:1705
 msgid "white relative exposure"
 msgstr "exposition relative du blanc"
 
-#: ../src/iop/filmic.c:1641
+#: ../src/iop/filmic.c:1708
 msgid ""
 "number of stops between middle grey and pure white\n"
 "this is a reading a posemeter would give you on the scene"
@@ -7114,11 +7090,11 @@ msgstr ""
 "nombre de stops entre le gris moyen et le blanc pur\n"
 "ceci est la valeur que vous donnerait un posemètre sur la scène"
 
-#: ../src/iop/filmic.c:1651 ../src/iop/profile_gamma.c:901
+#: ../src/iop/filmic.c:1718 ../src/iop/profile_gamma.c:901
 msgid "black relative exposure"
 msgstr "exposition relative du noir"
 
-#: ../src/iop/filmic.c:1654 ../src/iop/profile_gamma.c:904
+#: ../src/iop/filmic.c:1721 ../src/iop/profile_gamma.c:904
 msgid ""
 "number of stops between middle grey and pure black\n"
 "this is a reading a posemeter would give you on the scene"
@@ -7126,11 +7102,11 @@ msgstr ""
 "nombre de stops entre le gris moyen et le noir pur\n"
 "ceci est la valeur que vous donnerait un posemètre sur la scène"
 
-#: ../src/iop/filmic.c:1662 ../src/iop/profile_gamma.c:925
+#: ../src/iop/filmic.c:1729 ../src/iop/profile_gamma.c:925
 msgid "safety factor"
 msgstr "facteur de sécurité"
 
-#: ../src/iop/filmic.c:1665
+#: ../src/iop/filmic.c:1732
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
 "useful in conjunction with \"auto tune levels\""
@@ -7138,28 +7114,28 @@ msgstr ""
 "élargir ou rétrécir la plage dynamique calculée\n"
 "ceci est utile avec l'utilisation des « niveaux automatiques »"
 
-#: ../src/iop/filmic.c:1671 ../src/iop/profile_gamma.c:933
+#: ../src/iop/filmic.c:1738 ../src/iop/profile_gamma.c:933
 msgid "auto tune levels"
 msgstr "niveaux automatiques"
 
-#: ../src/iop/filmic.c:1676 ../src/iop/profile_gamma.c:938
+#: ../src/iop/filmic.c:1743 ../src/iop/profile_gamma.c:938
 msgid "make an optimization with some guessing"
 msgstr "faire une optimisation basée sur des suppositions"
 
-#: ../src/iop/filmic.c:1679
+#: ../src/iop/filmic.c:1746
 msgid "filmic S curve"
 msgstr "courbe filmique en S"
 
-#: ../src/iop/filmic.c:1686
+#: ../src/iop/filmic.c:1753
 msgid "slope of the linear part of the curve"
 msgstr "pente de la partie linéaire de la courbe"
 
 #. geotagging
-#: ../src/iop/filmic.c:1692 ../src/libs/metadata_view.c:127
+#: ../src/iop/filmic.c:1759 ../src/libs/metadata_view.c:127
 msgid "latitude"
 msgstr "latitude"
 
-#: ../src/iop/filmic.c:1695
+#: ../src/iop/filmic.c:1762
 msgid ""
 "linearity domain in the middle of the curve\n"
 "increase to get more contrast at the extreme luminances"
@@ -7167,17 +7143,29 @@ msgstr ""
 "domaine de linéarité au centre de la courbe\n"
 "augmenter pour obtenir plus de contraste dans les luminances extrêmes"
 
-#: ../src/iop/filmic.c:1701
+#: ../src/iop/filmic.c:1768
 msgid "balance shadows-highlights"
 msgstr "équilibre ombres-ht. lumières"
 
-#: ../src/iop/filmic.c:1704
+#: ../src/iop/filmic.c:1771
 msgid "gives more room to shadows or highlights, to protect the details"
 msgstr ""
 "donne plus de place aux ombres ou aux hautes lumières, pour protéger les "
 "détails"
 
-#: ../src/iop/filmic.c:1713
+#: ../src/iop/filmic.c:1776
+msgid "global saturation"
+msgstr "saturation globale"
+
+#: ../src/iop/filmic.c:1780
+msgid "desaturates the output"
+msgstr "désature la sortie"
+
+#: ../src/iop/filmic.c:1785
+msgid "extreme luminance saturation"
+msgstr "saturation luminance extrême"
+
+#: ../src/iop/filmic.c:1789
 msgid ""
 "desaturates the output, if the contrast adjustment\n"
 "produces over-saturation in shadows"
@@ -7185,36 +7173,36 @@ msgstr ""
 "désaturer la sortie, si l'ajustement du contraste\n"
 "produit des ombres sur-saturées "
 
-#: ../src/iop/filmic.c:1723 ../src/libs/export.c:629
+#: ../src/iop/filmic.c:1799 ../src/libs/export.c:629
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1452
 msgid "intent"
 msgstr "rendu"
 
-#: ../src/iop/filmic.c:1724
+#: ../src/iop/filmic.c:1800
 msgid "contrasted"
 msgstr "contrasté"
 
 #. cubic spline
-#: ../src/iop/filmic.c:1725
+#: ../src/iop/filmic.c:1801
 msgid "faded"
 msgstr "délavé"
 
 #. monotonic spline
-#: ../src/iop/filmic.c:1727
+#: ../src/iop/filmic.c:1803
 msgid "optimized"
 msgstr "optimisé"
 
-#: ../src/iop/filmic.c:1729
+#: ../src/iop/filmic.c:1805
 msgid "change this method if you see reversed contrast or faded blacks"
 msgstr ""
 "changer la méthode si des contrastes inversés ou noirs fades apparaissent"
 
 #. Preserve color
-#: ../src/iop/filmic.c:1733
+#: ../src/iop/filmic.c:1809
 msgid "preserve the chrominance"
 msgstr "préserver la chrominance"
 
-#: ../src/iop/filmic.c:1735
+#: ../src/iop/filmic.c:1811
 msgid ""
 "ensure the original color are preserved\n"
 "may produce over-saturated colors and reinforce lens chromatic aberrations"
@@ -7223,15 +7211,15 @@ msgstr ""
 "peut produire des couleurs sur-saturées et renforcer les aberrations "
 "chromatiques"
 
-#: ../src/iop/filmic.c:1744
+#: ../src/iop/filmic.c:1820
 msgid "destination/display"
 msgstr "destination/affichage"
 
-#: ../src/iop/filmic.c:1759
-msgid "black luminance"
-msgstr "luminance du noir"
+#: ../src/iop/filmic.c:1835
+msgid "target black luminance"
+msgstr "luminance du noir cible"
 
-#: ../src/iop/filmic.c:1762
+#: ../src/iop/filmic.c:1838
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -7239,11 +7227,11 @@ msgstr ""
 "luminance du noir pur de sortie, devrait être 0%\n"
 "sauf pour obtenir des tons fades"
 
-#: ../src/iop/filmic.c:1768
-msgid "middle grey destination"
+#: ../src/iop/filmic.c:1844
+msgid "target middle grey"
 msgstr "gris moyen cible"
 
-#: ../src/iop/filmic.c:1771
+#: ../src/iop/filmic.c:1847
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -7251,11 +7239,11 @@ msgstr ""
 "valeur du gris moyen de la cible de sortie ou de l'espace de couleur.\n"
 "ne jamais toucher sauf si vous savez ce que vous faites."
 
-#: ../src/iop/filmic.c:1777
-msgid "white luminance"
-msgstr "luminance du blanc"
+#: ../src/iop/filmic.c:1853
+msgid "target white luminance"
+msgstr "luminance du blanc cible"
 
-#: ../src/iop/filmic.c:1780
+#: ../src/iop/filmic.c:1856
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -7263,11 +7251,11 @@ msgstr ""
 "luminance du blanc pur de sortie, devrait être 100%\n"
 "sauf pour obtenir des tons fades"
 
-#: ../src/iop/filmic.c:1786
-msgid "destination power factor"
+#: ../src/iop/filmic.c:1862
+msgid "target gamma"
 msgstr "gamma cible"
 
-#: ../src/iop/filmic.c:1788
+#: ../src/iop/filmic.c:1864
 msgid ""
 "power or gamma of the transfer function of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -10136,7 +10124,7 @@ msgstr "exporte avec les réglages actuels"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1195 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:2396
+#: ../src/views/darkroom.c:2423
 msgctxt "accel"
 msgid "export"
 msgstr "exporter"
@@ -12199,115 +12187,115 @@ msgstr "profils ICC d'épreuvage dans %s ou %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2388 ../src/views/map.c:859 ../src/views/print.c:329
+#: ../src/views/darkroom.c:2415 ../src/views/map.c:859 ../src/views/print.c:329
 #: ../src/views/tethering.c:388
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activer/désactiver le bandeau"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2391
+#: ../src/views/darkroom.c:2418
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom en gros plan"
 
-#: ../src/views/darkroom.c:2392
+#: ../src/views/darkroom.c:2419
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoomer"
 
-#: ../src/views/darkroom.c:2393
+#: ../src/views/darkroom.c:2420
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajusté"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2399
+#: ../src/views/darkroom.c:2426
 msgctxt "accel"
 msgid "image forward"
 msgstr "image suivante"
 
-#: ../src/views/darkroom.c:2400
+#: ../src/views/darkroom.c:2427
 msgctxt "accel"
 msgid "image back"
 msgstr "image précédente"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:2403
+#: ../src/views/darkroom.c:2430
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw sur-exposé"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:2406
+#: ../src/views/darkroom.c:2433
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sur-exposition"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:2409
+#: ../src/views/darkroom.c:2436
 msgctxt "accel"
 msgid "softproof"
 msgstr "épreuvage"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:2412
+#: ../src/views/darkroom.c:2439
 msgctxt "accel"
 msgid "gamut check"
 msgstr "vérification de gamut"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2415
+#: ../src/views/darkroom.c:2442
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "augmenter la taille du pinceau"
 
-#: ../src/views/darkroom.c:2416
+#: ../src/views/darkroom.c:2443
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "diminuer la taille du pinceau"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2419
+#: ../src/views/darkroom.c:2446
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "augmenter la dureté du pinceau"
 
-#: ../src/views/darkroom.c:2420
+#: ../src/views/darkroom.c:2447
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "diminuer la dureté du pinceau"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2423
+#: ../src/views/darkroom.c:2450
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "augmenter la luminosité du pinceau"
 
-#: ../src/views/darkroom.c:2424
+#: ../src/views/darkroom.c:2451
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "diminuer la luminosité du pinceau"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:2427
+#: ../src/views/darkroom.c:2454
 msgctxt "accel"
 msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2430 ../src/views/map.c:856
+#: ../src/views/darkroom.c:2457 ../src/views/map.c:856
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:2431 ../src/views/map.c:857
+#: ../src/views/darkroom.c:2458 ../src/views/map.c:857
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:2434
+#: ../src/views/darkroom.c:2461
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permet de recadrer et zoomer pendant l'édition des masques"
@@ -12493,6 +12481,57 @@ msgstr ""
 "nous vous suggérons de passer à la version 64 bits.\n"
 "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
 "corrigés.\n"
+
+#~ msgid "shuffle"
+#~ msgstr "mélangé"
+
+#~ msgid "indoors, 10 EV"
+#~ msgstr "intérieur, 10 EV"
+
+#~ msgid "indoors, 11 EV"
+#~ msgstr "intérieur, 11 EV"
+
+#~ msgid "indoors, 12 EV"
+#~ msgstr "intérieur, 12 EV"
+
+#~ msgid "outdoors, 10 EV"
+#~ msgstr "extérieur, 10 EV"
+
+#~ msgid "outdoors, 11 EV"
+#~ msgstr "extérieur, 11 EV"
+
+#~ msgid "outdoors, 12 EV"
+#~ msgstr "extérieur, 12 EV"
+
+#~ msgid "backlighting, 11 EV"
+#~ msgstr "contre-jour, 11 EV"
+
+#~ msgid "backlighting, 12 EV"
+#~ msgstr "contre-jour, 12 EV"
+
+#~ msgid "sunset, 11 EV"
+#~ msgstr "coucher de soleil, 11 EV"
+
+#~ msgid "sunset, 12 EV"
+#~ msgstr "coucher de soleil, 12 EV"
+
+#~ msgid "sunset, 13 EV"
+#~ msgstr "coucher de soleil, 13 EV"
+
+#~ msgid "very dark subject, 12 EV"
+#~ msgstr "sujet très sombre, 12 EV"
+
+#~ msgid "very dark subject, 13 EV"
+#~ msgstr "sujet très sombre, 13 EV"
+
+#~ msgid "very dark subject, 14 EV"
+#~ msgstr "sujet très sombre, 14 EV"
+
+#~ msgid "middle grey destination"
+#~ msgstr "gris moyen cible"
+
+#~ msgid "destination power factor"
+#~ msgstr "gamma cible"
 
 #~ msgid "double click to reset curve"
 #~ msgstr "double-cliquer pour réinitialiser"
