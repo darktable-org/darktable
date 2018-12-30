@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-30 18:06+0100\n"
-"PO-Revision-Date: 2018-12-30 18:10+0100\n"
+"POT-Creation-Date: 2018-12-30 18:39+0100\n"
+"PO-Revision-Date: 2018-12-30 18:48+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1100,23 +1100,23 @@ msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
 "abandonnée..."
 
-#: ../src/common/collection.c:405
+#: ../src/common/collection.c:420
 msgid "too much time to update aspect ratio for the collection"
 msgstr "trop de temps pour mettre à jour l'aspect pour la collection"
 
-#: ../src/common/collection.c:1052 ../src/develop/lightroom.c:822
+#: ../src/common/collection.c:1075 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:360 ../src/iop/channelmixer.c:453
 #: ../src/iop/channelmixer.c:464 ../src/iop/colorbalance.c:2475
 #: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1188
 msgid "red"
 msgstr "rouge"
 
-#: ../src/common/collection.c:1054 ../src/develop/lightroom.c:824
+#: ../src/common/collection.c:1077 ../src/develop/lightroom.c:824
 #: ../src/iop/temperature.c:1360 ../src/libs/collect.c:1188
 msgid "yellow"
 msgstr "jaune"
 
-#: ../src/common/collection.c:1056 ../src/develop/lightroom.c:826
+#: ../src/common/collection.c:1079 ../src/develop/lightroom.c:826
 #: ../src/iop/bilateral.cc:361 ../src/iop/channelmixer.c:454
 #: ../src/iop/channelmixer.c:470 ../src/iop/colorbalance.c:2482
 #: ../src/iop/temperature.c:1357 ../src/iop/temperature.c:1370
@@ -1124,40 +1124,40 @@ msgstr "jaune"
 msgid "green"
 msgstr "vert"
 
-#: ../src/common/collection.c:1058 ../src/develop/lightroom.c:828
+#: ../src/common/collection.c:1081 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:362 ../src/iop/channelmixer.c:455
 #: ../src/iop/channelmixer.c:476 ../src/iop/colorbalance.c:2489
 #: ../src/iop/temperature.c:1371 ../src/libs/collect.c:1188
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:1060 ../src/libs/collect.c:1188
+#: ../src/common/collection.c:1083 ../src/libs/collect.c:1188
 msgid "purple"
 msgstr "violet"
 
-#: ../src/common/collection.c:1069 ../src/libs/collect.c:1155
+#: ../src/common/collection.c:1092 ../src/libs/collect.c:1155
 msgid "altered"
 msgstr "développées"
 
-#: ../src/common/collection.c:1075 ../src/libs/collect.c:1164
+#: ../src/common/collection.c:1098 ../src/libs/collect.c:1164
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:1081 ../src/libs/collect.c:1173
+#: ../src/common/collection.c:1104 ../src/libs/collect.c:1173
 msgid "not copied locally"
 msgstr "non copiée localement"
 
 #. grouping
-#: ../src/common/collection.c:1294 ../src/libs/collect.c:1277
+#: ../src/common/collection.c:1317 ../src/libs/collect.c:1277
 msgid "group leaders"
 msgstr "tête de groupe"
 
-#: ../src/common/collection.c:1492
+#: ../src/common/collection.c:1515
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "« %d » image sur « %d » (#%d) sélectionnée dans la collection courante"
 
-#: ../src/common/collection.c:1498
+#: ../src/common/collection.c:1521
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -4185,8 +4185,7 @@ msgstr ""
 "photo: photographie d'extérieur, avec lumière naturelle\n"
 " graphique: image avec des couleurs uniformes (schéma, etc)"
 
-#. the modules that are activated by default in the initial configuration
-#: ../src/imageio/format/webp.c:345 ../src/libs/modulelist.c:369
+#: ../src/imageio/format/webp.c:345
 msgid "default"
 msgstr "défaut"
 
@@ -9782,6 +9781,7 @@ msgstr "tag"
 msgid "date"
 msgstr "date"
 
+#. DT_COLLECTION_SORT_FILENAME
 #: ../src/libs/collect.h:33 ../src/libs/tools/filter.c:140
 msgid "time"
 msgstr "date/heure"
@@ -11151,12 +11151,69 @@ msgid "more modules"
 msgstr "plus de modules"
 
 #: ../src/libs/modulelist.c:365
-msgid "show none"
-msgstr "aucun module"
+msgid "subset: no module"
+msgstr "groupe: aucun module"
 
 #: ../src/libs/modulelist.c:366
-msgid "show all"
-msgstr "tous les modules"
+msgid "subset: all modules"
+msgstr "groupe: tous les modules"
+
+#. the modules that are activated by default in the initial configuration
+#: ../src/libs/modulelist.c:369
+msgid "subset: default modules"
+msgstr "groupe: modules par défaut"
+
+#. raw handling
+#. tones
+#. colors
+#. sharpness
+#. image reconstruction
+#: ../src/libs/modulelist.c:378
+msgid "workspace: all-purpose"
+msgstr "atelier : générique"
+
+#. raw handling
+#. tones
+#. colors
+#. sharpness
+#. image reconstruction
+#. HDR reconstruction - tones
+#. HDR reconstruction - colors
+#: ../src/libs/modulelist.c:389
+msgid "workspace: landscape & HDR"
+msgstr "atelier : paysage & HDR"
+
+#: ../src/libs/modulelist.c:400
+msgid "workspace: architecture & streets"
+msgstr "atelier : architecture & rues"
+
+#. raw handling
+#. tones
+#. colors
+#. sharpness
+#. image reconstruction
+#. retouch
+#: ../src/libs/modulelist.c:410
+msgid "workspace: portrait & beauty"
+msgstr "atelier : portrait & beauté"
+
+#. raw handling
+#. tones
+#. colors
+#. sharpness
+#. image reconstruction
+#. denoising
+#: ../src/libs/modulelist.c:420
+msgid "workspace: lowlight & high ISO"
+msgstr "atelier: basse lumière & hauts ISO"
+
+#: ../src/libs/modulelist.c:427
+msgid "subset: creative modules only"
+msgstr "groupe: modules créatifs"
+
+#: ../src/libs/modulelist.c:436
+msgid "subset: technical modules only"
+msgstr "groupe: modules techniques"
 
 #: ../src/libs/navigation.c:65
 msgid "navigation"
@@ -12519,6 +12576,12 @@ msgstr ""
 "nous vous suggérons de passer à la version 64 bits.\n"
 "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
 "corrigés.\n"
+
+#~ msgid "show none"
+#~ msgstr "aucun module"
+
+#~ msgid "show all"
+#~ msgstr "tous les modules"
 
 #~ msgid "B/W"
 #~ msgstr "N/B"
