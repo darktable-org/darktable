@@ -2107,7 +2107,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                      G_CALLBACK(_blendop_masks_feathering_guide_callback), bd);
 
 
-    bd->feathering_radius_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 250.0, 0.1, 0.0, 1);
+    bd->feathering_radius_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 1000.0, 0.1, 0.0, 1);
     dt_bauhaus_widget_set_label(bd->feathering_radius_slider, _("blend"), _("feathering radius"));
     dt_bauhaus_slider_set_format(bd->feathering_radius_slider, "%.1f");
     gtk_widget_set_tooltip_text(bd->feathering_radius_slider, _("spatial radius of feathering"));
