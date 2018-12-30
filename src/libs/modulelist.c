@@ -373,8 +373,8 @@ void init_presets(dt_lib_module_t *self)
                         "|filmic|tonecurve|levels"                                  // tones
                         "|channelmixer|colorbalance|colorzones|colorchecker|vibrance" // colors
                         "|sharpen|bilat|atrous"                                     // sharpness
-                        "|cacorrect|defringe|highlights|lens|colorreconstruction"   // image reconstruction
-                        );
+                        "|cacorrect|defringe|highlights|lens|colorreconstruction");   // image reconstruction
+
   dt_lib_presets_add(_("0. all-purpose toolbox"), self->plugin_name, self->version(), params, len);
 
   params = gen_params(1, &len,
@@ -384,8 +384,8 @@ void init_presets(dt_lib_module_t *self)
                         "|sharpen|bilat|atrous"                                     // sharpness
                         "|cacorrect|defringe|highlights|lens|colorreconstruction"   // image reconstruction
                         "|graduatednd|zonesystem|tonemap|shadhi"                    // HDR reconstruction - tones
-                        "|hazeremoval|channelmixer"                                 // HDR reconstruction - colors
-                        );
+                        "|hazeremoval|channelmixer");                                 // HDR reconstruction - colors
+
   dt_lib_presets_add(_("3. landscape & HDR toolbox"), self->plugin_name, self->version(), params, len);
 
   params = gen_params(1, &len,
@@ -395,8 +395,8 @@ void init_presets(dt_lib_module_t *self)
                         "|sharpen|bilat|atrous"                                     // sharpness
                         "|cacorrect|defringe|highlights|lens|colorreconstruction"   // image reconstruction
                         "|graduatednd|zonesystem|tonemap|shadhi|"                   // HDR reconstruction - tones
-                        "|ashift|channelmixer|retouch"
-                        );
+                        "|ashift|channelmixer|retouch");
+
   dt_lib_presets_add(_("2. architecture & streets toolbox"), self->plugin_name, self->version(), params, len);
 
   params = gen_params(1, &len,
@@ -405,8 +405,8 @@ void init_presets(dt_lib_module_t *self)
                         "|channelmixer|colorbalance|colorzones|colorchecker|vibrance" // colors
                         "|sharpen|bilat|atrous"                                     // sharpness
                         "|cacorrect|defringe|highlights|lens|colorreconstruction"   // image reconstruction
-                        "|retouch|liquify|soften"                      // retouch
-                        );
+                        "|retouch|liquify|soften");                      // retouch
+
   dt_lib_presets_add(_("1. portrait & beauty toolbox"), self->plugin_name, self->version(), params, len);
 
   params = gen_params(1, &len,
@@ -415,8 +415,8 @@ void init_presets(dt_lib_module_t *self)
                         "|channelmixer|colorbalance|colorzones|colorchecker|vibrance" // colors
                         "|sharpen|bilat|atrous"                                     // sharpness
                         "|cacorrect|defringe|highlights|lens|colorreconstruction"   // image reconstruction
-                        "|denoiseprofile|bilateral|hotpixels"                       // denoising
-                        );
+                        "|denoiseprofile|bilateral|hotpixels");                       // denoising
+
   dt_lib_presets_add(_("4. lowlight & high ISO toolbox"), self->plugin_name, self->version(), params, len);
 
   params = gen_params(1, &len,
@@ -424,6 +424,7 @@ void init_presets(dt_lib_module_t *self)
                         "|vignette|relight|lowlight|bloom|soften|colisa|monochrome"
                         "|watermark|border|grain"
                         );
+
   dt_lib_presets_add(_("I. creative filters only"), self->plugin_name, self->version(), params, len);
 
   params = gen_params(1, &len,
@@ -431,8 +432,8 @@ void init_presets(dt_lib_module_t *self)
                         "|sharpen|bilat|atrous|highpass|lowpass"                    // sharpness
                         "|cacorrect|defringe|highlights|lens|colorreconstruction"   // image reconstruction
                         "|denoiseprofile|bilateral|hotpixels|rawdenoise|nlmeans"    // denoising
-                        "|dither|profile_gamma|invert|scalepixels|rotatepixels|colorchecker"
-                        );
+                        "|dither|profile_gamma|invert|scalepixels|rotatepixels|colorchecker");
+
   dt_lib_presets_add(_("II. technical modules only"), self->plugin_name, self->version(), params, len);
 
 
