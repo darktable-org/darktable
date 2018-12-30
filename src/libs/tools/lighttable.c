@@ -131,6 +131,9 @@ void gui_init(dt_lib_module_t *self)
   _lib_lighttable_zoom_slider_changed(GTK_RANGE(d->zoom), self); // the slider defaults to 1 and GTK doesn't
                                                                  // fire a value-changed signal when setting
                                                                  // it to 1 => empty text box
+  gtk_widget_set_no_show_all(d->zoom, TRUE);
+  gtk_widget_set_no_show_all(d->zoom_entry, TRUE);
+  _lib_lighttable_layout_changed(GTK_COMBO_BOX(widget), self);
 
   darktable.view_manager->proxy.lighttable.module = self;
   darktable.view_manager->proxy.lighttable.set_zoom = _lib_lighttable_set_zoom;
@@ -246,6 +249,17 @@ static void _lib_lighttable_layout_changed(GtkComboBox *widget, gpointer user_da
 {
   const int new_layout = gtk_combo_box_get_active(widget);
   const int current_layout = dt_conf_get_int("plugins/lighttable/layout");
+
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+
+  if(new_layout == 2) {
+    gtk_widget_hide(d->zoom);
+    gtk_widget_hide(d->zoom_entry);
+  } else {
+    gtk_widget_show(d->zoom);
+    gtk_widget_show(d->zoom_entry);
+  }
 
   if(current_layout != new_layout)
   {
