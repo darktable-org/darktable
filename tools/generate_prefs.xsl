@@ -84,7 +84,105 @@
 
 	<xsl:text>&#xA;static void&#xA;init_tab_gui</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), scroll, gtk_label_new(_("GUI options")));&#xA;</xsl:text>
 
-	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='gui']">
+<xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("import"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
+      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
+      gtk_widget_set_hexpand(lbox, TRUE);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+</xsl:text>
+
+	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='gui' and @section='import']">
+		<xsl:apply-templates select="." mode="tab_block"/>
+	</xsl:for-each>
+
+<xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("lighttable"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
+      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
+      gtk_widget_set_hexpand(lbox, TRUE);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+</xsl:text>
+
+	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='gui' and @section='lighttable']">
+		<xsl:apply-templates select="." mode="tab_block"/>
+	</xsl:for-each>
+
+<xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("darkroom"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
+      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
+      gtk_widget_set_hexpand(lbox, TRUE);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+</xsl:text>
+
+	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='gui' and @section='darkroom']">
+		<xsl:apply-templates select="." mode="tab_block"/>
+	</xsl:for-each>
+
+<xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("map / geolocalisation"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
+      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
+      gtk_widget_set_hexpand(lbox, TRUE);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+</xsl:text>
+
+	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='gui' and @section='geoloc']">
+		<xsl:apply-templates select="." mode="tab_block"/>
+	</xsl:for-each>
+
+<xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("security"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
+      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
+      gtk_widget_set_hexpand(lbox, TRUE);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+</xsl:text>
+
+	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='gui' and @section='security']">
+		<xsl:apply-templates select="." mode="tab_block"/>
+	</xsl:for-each>
+
+<xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("miscellaneous"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
+      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
+      gtk_widget_set_hexpand(lbox, TRUE);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+</xsl:text>
+
+	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='gui' and not(@section)]">
 		<xsl:apply-templates select="." mode="tab_block"/>
 	</xsl:for-each>
 	<xsl:value-of select="$tab_end" />
@@ -93,11 +191,77 @@
 
 	<xsl:text>&#xA;static void&#xA;init_tab_core</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), scroll, gtk_label_new(_("core options")));&#xA;</xsl:text>
 
-	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='core']">
+<xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("quality"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
+      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
+      gtk_widget_set_hexpand(lbox, TRUE);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+      gtk_grid_attach(GTK_GRID(grid), seclabel, 0, line++, 2, 1);
+   }
+</xsl:text>
+
+	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='core' and @section='quality']">
+	  <xsl:apply-templates select="." mode="tab_block"/>
+	</xsl:for-each>
+
+<xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("xmp"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
+      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
+      gtk_widget_set_hexpand(lbox, TRUE);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+</xsl:text>
+
+	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='core' and @section='xmp']">
+	  <xsl:apply-templates select="." mode="tab_block"/>
+	</xsl:for-each>
+
+<xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("cpu / gpu / memory"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
+      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
+      gtk_widget_set_hexpand(lbox, TRUE);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+</xsl:text>
+
+	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='core' and @section='cpugpu']">
 		<xsl:if test="name != 'opencl' or $HAVE_OPENCL=1">
 			<xsl:apply-templates select="." mode="tab_block"/>
 		</xsl:if>
 	</xsl:for-each>
+
+<xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("miscelaneous"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
+      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
+      gtk_widget_set_hexpand(lbox, TRUE);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+</xsl:text>
+
+	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='core' and not(@section)]">
+	  <xsl:apply-templates select="." mode="tab_block"/>
+	</xsl:for-each>
+
 	<xsl:value-of select="$tab_end" />
 
         <!-- session -->
