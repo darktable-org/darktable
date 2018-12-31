@@ -374,7 +374,7 @@
                 $(Xmp.dc.description)
               </entry>
               <entry>
-                The description of the image
+                The description of the image.  This is the field to use when you're looking for the user-specified text that some cameras add at shoot time to exif field <quote>User Comment</quote> (also called <quote>Exif.Photo.UserComment</quote>).
               </entry>
             </row>
             <row>
