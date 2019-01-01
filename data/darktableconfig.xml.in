@@ -1701,8 +1701,8 @@
     <name>plugins/darkroom/sharpen/auto_apply</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>auto-apply shapen</shortdescription>
-    <longdescription>this added shapen is not recommanded on cameras without a low pass filter. the default is to not add any sharpen automatically as most recent cameras have not low-pass filter. (need a restart)</longdescription>
+    <shortdescription>auto-apply sharpen</shortdescription>
+    <longdescription>this added sharpen is not recommended on cameras without a low-pass filter. the default is to not add any sharpening automatically as most recent cameras have no low-pass filter. (need a restart)</longdescription>
   </dtconfig>
   <dtconfig>
     <name>screen_dpi_overwrite</name>
