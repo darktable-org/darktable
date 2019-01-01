@@ -1134,7 +1134,23 @@ void init_presets(dt_iop_module_so_t *self)
 
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f( 32.0 * k / (BANDS - 1.0) + 1.0) / log2f(33.0);
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float fine = GAUSS(x, 0.5 * sigma);
+    float medium = GAUSS(x, sigma);
+    float coarse = GAUSS(x, 2 * sigma);
+    float coeff = 0.5f + (coarse + medium + fine) / 18.0f;
+    float noise = (coarse + medium + fine) / 810;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: large ++++"), self->op, self->version(), &p, sizeof(p), 1);
+
+  for(int k = 0; k < BANDS; k++)
+  {
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
     float fine = GAUSS(x, 0.5 * sigma);
     float medium = GAUSS(x, sigma);
     float coarse = GAUSS(x, 2 * sigma);
@@ -1149,7 +1165,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("deblur: large +++"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f( 64.0 * k / (BANDS - 1.0) + 1.0) / log2f(65.0);
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
     float fine = GAUSS(x, 0.5 * sigma);
     float medium = GAUSS(x, sigma);
     float coeff = 0.5f + (medium + fine) / 21.0f;
@@ -1163,7 +1179,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("deblur: medium +++"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f( 128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
     float fine = GAUSS(x, 0.5 * sigma);
     float coeff = 0.5f + fine / 14.25f;
     float noise = fine / 360;
@@ -1176,7 +1192,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("deblur: fine +++"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f( 32.0 * k / (BANDS - 1.0) + 1.0) / log2f(33.0);
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
     float fine = GAUSS(x, 0.5 * sigma);
     float medium = GAUSS(x, sigma);
     float coarse = GAUSS(x, 2 * sigma);
@@ -1190,7 +1206,7 @@ void init_presets(dt_iop_module_so_t *self)
   }
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f( 32.0 * k / (BANDS - 1.0) + 1.0) / log2f(33.0);
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
     float fine = GAUSS(x, 0.5 * sigma);
     float medium = GAUSS(x, sigma);
     float coarse = GAUSS(x, 2 * sigma);
@@ -1205,7 +1221,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("deblur: large ++"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f( 64.0 * k / (BANDS - 1.0) + 1.0) / log2f(65.0);
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
     float fine = GAUSS(x, 0.5 * sigma);
     float medium = GAUSS(x, sigma);
     float coeff = 0.5f + (medium + fine) / 28.0f;
@@ -1219,7 +1235,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("deblur: medium ++"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f( 128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
     float fine = GAUSS(x, 0.5 * sigma);
     float coeff = 0.5f + fine / 19.0f;
     float noise = fine / 480;
@@ -1232,7 +1248,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("deblur: fine ++"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f( 32.0 * k / (BANDS - 1.0) + 1.0) / log2f(33.0);
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
     float fine = GAUSS(x, 0.5 * sigma);
     float medium = GAUSS(x, sigma);
     float coarse = GAUSS(x, 2 * sigma);
@@ -1247,7 +1263,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("deblur: large +"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f( 64.0 * k / (BANDS - 1.0) + 1.0) / log2f(65.0);
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
     float fine = GAUSS(x, 0.5 * sigma);
     float medium = GAUSS(x, sigma);
     float coeff = 0.5f + (medium + fine) / 42.0f;
@@ -1261,7 +1277,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("deblur: medium +"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f( 128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
     float fine = GAUSS(x, 0.5 * sigma);
     float coeff = 0.5f + fine / 28.5f;
     float noise = fine / 720;
