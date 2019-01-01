@@ -247,7 +247,7 @@
 
 <xsl:text>
    {
-      GtkWidget *seclabel = gtk_label_new(_("miscelaneous"));
+      GtkWidget *seclabel = gtk_label_new(_("miscellaneous"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
