@@ -1096,7 +1096,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
       float pzx = gui->posx;
       float pzy = gui->posy;
 
-      if(pzx == -1.f && pzy == -1.f)
+      if((pzx == -1.f && pzy == -1.f) || gui->mouse_leaved_center)
       {
         const float zoom_x = dt_control_get_dev_zoom_x();
         const float zoom_y = dt_control_get_dev_zoom_y();
