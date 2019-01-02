@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-02 09:55+0100\n"
-"PO-Revision-Date: 2019-01-02 09:55+0100\n"
+"POT-Creation-Date: 2019-01-02 15:09+0100\n"
+"PO-Revision-Date: 2019-01-02 15:27+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3541,17 +3541,17 @@ msgstr "aucu_ne"
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/gui/hist_dialog.c:166 ../src/gui/styles_dialog.c:339
-#: ../src/gui/styles_dialog.c:348
+#: ../src/gui/hist_dialog.c:173 ../src/gui/styles_dialog.c:357
+#: ../src/gui/styles_dialog.c:366
 msgid "include"
 msgstr "inclure"
 
-#: ../src/gui/hist_dialog.c:173 ../src/gui/styles_dialog.c:368
-#: ../src/gui/styles_dialog.c:371
+#: ../src/gui/hist_dialog.c:180 ../src/gui/styles_dialog.c:386
+#: ../src/gui/styles_dialog.c:389
 msgid "item"
 msgstr "élément"
 
-#: ../src/gui/hist_dialog.c:201
+#: ../src/gui/hist_dialog.c:206
 msgid "can't copy history out of unaltered image"
 msgstr "impossible de copier le développement d'une image non développée"
 
@@ -3873,19 +3873,19 @@ msgstr "duplique le style avant d'appliquer les changements"
 msgid "create new style"
 msgstr "nouveau style"
 
-#: ../src/gui/styles_dialog.c:301
+#: ../src/gui/styles_dialog.c:319
 msgid "enter a name for the new style"
 msgstr "entrer un nom pour le style"
 
-#: ../src/gui/styles_dialog.c:305
+#: ../src/gui/styles_dialog.c:323
 msgid "enter a description for the new style, this description is searchable"
 msgstr "entrer une description pour le nouveau style (recherche)"
 
-#: ../src/gui/styles_dialog.c:360
+#: ../src/gui/styles_dialog.c:378
 msgid "update"
 msgstr "modifier"
 
-#: ../src/gui/styles_dialog.c:455
+#: ../src/gui/styles_dialog.c:473
 msgid "can't create style out of unaltered image"
 msgstr "impossible de créer un style depuis une image non développée"
 
@@ -4962,90 +4962,130 @@ msgctxt "accel"
 msgid "mix"
 msgstr "fusion"
 
-#: ../src/iop/atrous.c:1044
+#: ../src/iop/atrous.c:1046
 msgctxt "eq_preset"
 msgid "coarse"
 msgstr "global"
 
-#: ../src/iop/atrous.c:1058
+#: ../src/iop/atrous.c:1060
 msgid "denoise & sharpen"
 msgstr "réduction du bruit & accentuation"
 
-#: ../src/iop/atrous.c:1072
+#: ../src/iop/atrous.c:1074
 msgctxt "atrous"
 msgid "sharpen"
 msgstr "renforcer la netteté"
 
-#: ../src/iop/atrous.c:1086
+#: ../src/iop/atrous.c:1088
 msgid "denoise chroma"
 msgstr "réduction du bruit chromatique"
 
-#: ../src/iop/atrous.c:1100 ../src/iop/equalizer.c:331
+#: ../src/iop/atrous.c:1102 ../src/iop/equalizer.c:331
 msgid "denoise"
 msgstr "réduction du bruit"
 
-#: ../src/iop/atrous.c:1115 ../src/iop/bloom.c:78
+#: ../src/iop/atrous.c:1117 ../src/iop/bloom.c:78
 msgid "bloom"
 msgstr "lumière d'arrière-plan"
 
-#: ../src/iop/atrous.c:1129
+#: ../src/iop/atrous.c:1131
 msgid "clarity"
 msgstr "clarté"
 
-#: ../src/iop/atrous.c:1425 ../src/iop/denoiseprofile.c:2458
+#: ../src/iop/atrous.c:1149
+msgid "deblur: large blur, strength 4"
+msgstr "défloutage: large, force 4"
+
+#: ../src/iop/atrous.c:1165
+msgid "deblur: large blur, strength 3"
+msgstr "défloutage: large, force 3"
+
+#: ../src/iop/atrous.c:1179
+msgid "deblur: medium blur, strength 3"
+msgstr "défloutage: moyen, force 3"
+
+#: ../src/iop/atrous.c:1192
+msgid "deblur: fine blur, strength 3"
+msgstr "défloutage: fin, force 3"
+
+#: ../src/iop/atrous.c:1209
+msgid "deblur: large blur, strength 2"
+msgstr "défloutage: large, force 2"
+
+#: ../src/iop/atrous.c:1223
+msgid "deblur: medium blur, strength 2"
+msgstr "défloutage: moyen, force 2"
+
+#: ../src/iop/atrous.c:1236
+msgid "deblur: fine blur, strength 2"
+msgstr "défloutage: fin, force 2"
+
+#: ../src/iop/atrous.c:1253
+msgid "deblur: large blur, strength 1"
+msgstr "défloutage: large, force 1"
+
+#: ../src/iop/atrous.c:1267
+msgid "deblur: medium blur, strength 1"
+msgstr "défloutage: moyen, force 1"
+
+#: ../src/iop/atrous.c:1280
+msgid "deblur: fine blur, strength 1"
+msgstr "défloutage: fine, force 1"
+
+#: ../src/iop/atrous.c:1577 ../src/iop/denoiseprofile.c:2458
 #: ../src/iop/rawdenoise.c:782
 msgid "coarse"
 msgstr "global"
 
-#: ../src/iop/atrous.c:1432 ../src/iop/denoiseprofile.c:2466
+#: ../src/iop/atrous.c:1584 ../src/iop/denoiseprofile.c:2466
 #: ../src/iop/rawdenoise.c:790
 msgid "fine"
 msgstr "détail"
 
-#: ../src/iop/atrous.c:1444
+#: ../src/iop/atrous.c:1596
 msgid "contrasty"
 msgstr "contrasté"
 
-#: ../src/iop/atrous.c:1445 ../src/iop/atrous.c:1449
+#: ../src/iop/atrous.c:1597 ../src/iop/atrous.c:1601
 #: ../src/iop/denoiseprofile.c:2475 ../src/iop/rawdenoise.c:799
 msgid "smooth"
 msgstr "flou"
 
-#: ../src/iop/atrous.c:1450 ../src/iop/denoiseprofile.c:2480
+#: ../src/iop/atrous.c:1602 ../src/iop/denoiseprofile.c:2480
 #: ../src/iop/rawdenoise.c:804
 msgid "noisy"
 msgstr "bruité"
 
 #. case atrous_s:
-#: ../src/iop/atrous.c:1453
+#: ../src/iop/atrous.c:1605
 msgid "bold"
 msgstr "net"
 
-#: ../src/iop/atrous.c:1454
+#: ../src/iop/atrous.c:1606
 msgid "dull"
 msgstr "flou"
 
-#: ../src/iop/atrous.c:1667 ../src/iop/equalizer.c:389 ../src/iop/nlmeans.c:854
+#: ../src/iop/atrous.c:1819 ../src/iop/equalizer.c:389 ../src/iop/nlmeans.c:854
 msgid "luma"
 msgstr "luma"
 
-#: ../src/iop/atrous.c:1669
+#: ../src/iop/atrous.c:1821
 msgid "change lightness at each feature size"
 msgstr "changer la luminosité pour chaque taille"
 
-#: ../src/iop/atrous.c:1672 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:856
+#: ../src/iop/atrous.c:1824 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:856
 msgid "chroma"
 msgstr "chroma"
 
-#: ../src/iop/atrous.c:1674
+#: ../src/iop/atrous.c:1826
 msgid "change color saturation at each feature size"
 msgstr "changer la saturation pour chaque taille"
 
-#: ../src/iop/atrous.c:1676
+#: ../src/iop/atrous.c:1828
 msgid "edges"
 msgstr "contours"
 
-#: ../src/iop/atrous.c:1678
+#: ../src/iop/atrous.c:1830
 msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
@@ -5053,12 +5093,12 @@ msgstr ""
 "change les halos de contour à chaque niveau de détail\n"
 "change uniquement les résultats des sections luma et chroma"
 
-#: ../src/iop/atrous.c:1704 ../src/iop/colorzones.c:1112
+#: ../src/iop/atrous.c:1856 ../src/iop/colorzones.c:1112
 #: ../src/iop/soften.c:731
 msgid "mix"
 msgstr "fusion"
 
-#: ../src/iop/atrous.c:1705 ../src/iop/colorzones.c:1114
+#: ../src/iop/atrous.c:1857 ../src/iop/colorzones.c:1114
 msgid "make effect stronger or weaker"
 msgstr "rend l'effet plus fort ou plus faible"
 
@@ -5151,7 +5191,7 @@ msgid "scale"
 msgstr "échelle"
 
 #. centripetal spline
-#: ../src/iop/basecurve.c:1937 ../src/iop/filmic.c:1802
+#: ../src/iop/basecurve.c:1937 ../src/iop/filmic.c:1801
 #: ../src/iop/profile_gamma.c:867 ../src/iop/tonecurve.c:1261
 msgid "linear"
 msgstr "linéaire"
@@ -5271,7 +5311,7 @@ msgstr "taille des détails locaux (sigma spatial du filtre bilatéral)"
 
 #: ../src/iop/bilat.c:543 ../src/iop/colisa.c:366
 #: ../src/iop/colorbalance.c:2369 ../src/iop/colorbalance.c:2371
-#: ../src/iop/filmic.c:1751 ../src/iop/lowpass.c:673
+#: ../src/iop/filmic.c:1746 ../src/iop/lowpass.c:673
 msgid "contrast"
 msgstr "contraste"
 
@@ -7146,21 +7186,21 @@ msgstr "16 EV (HDR)"
 msgid "18 EV (HDR++)"
 msgstr "18 EV (HDR++)"
 
-#: ../src/iop/filmic.c:1681
+#: ../src/iop/filmic.c:1671
 msgid "read-only graph, use the parameters below to set the nodes"
 msgstr ""
 "graphe non interactif, utiliser les paramètres ci-dessous pour modifier les "
 "nœuds"
 
-#: ../src/iop/filmic.c:1687
+#: ../src/iop/filmic.c:1677
 msgid "logarithmic shaper"
 msgstr "transformation logarithmique"
 
-#: ../src/iop/filmic.c:1692
+#: ../src/iop/filmic.c:1682
 msgid "middle grey luminance"
 msgstr "luminance du gris moyen"
 
-#: ../src/iop/filmic.c:1695
+#: ../src/iop/filmic.c:1685
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
@@ -7168,138 +7208,174 @@ msgstr ""
 "ajuster pour correspondre à la luminance moyenne du sujet.\n"
 "sauf pour les scènes sombres, cette valeur devrait être autour de 18%"
 
-#: ../src/iop/filmic.c:1705
+#: ../src/iop/filmic.c:1695
 msgid "white relative exposure"
 msgstr "exposition relative du blanc"
 
-#: ../src/iop/filmic.c:1708
+#: ../src/iop/filmic.c:1698
 msgid ""
-"number of stops between middle grey and pure white\n"
-"this is a reading a posemeter would give you on the scene"
+"number of stops between middle grey and pure white.\n"
+"this is a reading a lightmeter would give you on the scene.\n"
+"adjust so highlights clipping is avoided"
 msgstr ""
 "nombre de stops entre le gris moyen et le blanc pur\n"
-"ceci est la valeur que vous donnerait un posemètre sur la scène"
+"ceci est la valeur que vous donnerait un posemètre sur la scène\n"
+"ajuster pour éviter de tronquer les hautes lumières."
 
-#: ../src/iop/filmic.c:1718 ../src/iop/profile_gamma.c:901
+#: ../src/iop/filmic.c:1709 ../src/iop/profile_gamma.c:901
 msgid "black relative exposure"
 msgstr "exposition relative du noir"
 
-#: ../src/iop/filmic.c:1721 ../src/iop/profile_gamma.c:904
+#: ../src/iop/filmic.c:1712
 msgid ""
-"number of stops between middle grey and pure black\n"
-"this is a reading a posemeter would give you on the scene"
+"number of stops between middle grey and pure black.\n"
+"this is a reading a lightmeter would give you on the scene.\n"
+"increase to get more contrast.\n"
+"decrease to recover more details in low-lights."
 msgstr ""
 "nombre de stops entre le gris moyen et le noir pur\n"
-"ceci est la valeur que vous donnerait un posemètre sur la scène"
+"ceci est la valeur que vous donnerait un posemètre sur la scène\n"
+"augmenter pour avoir plus de contraste\n"
+"diminuer pour récupérer des détails dans les basses lumières."
 
-#: ../src/iop/filmic.c:1729 ../src/iop/profile_gamma.c:925
+#: ../src/iop/filmic.c:1722 ../src/iop/profile_gamma.c:925
 msgid "safety factor"
 msgstr "facteur de sécurité"
 
-#: ../src/iop/filmic.c:1732
+#: ../src/iop/filmic.c:1725
 msgid ""
-"enlarge or shrink the computed dynamic range\n"
-"useful in conjunction with \"auto tune levels\""
+"enlarge or shrink the computed dynamic range.\n"
+"useful in conjunction with \"auto tune levels\"."
 msgstr ""
 "élargir ou rétrécir la plage dynamique calculée\n"
 "ceci est utile avec l'utilisation des « niveaux automatiques »"
 
-#: ../src/iop/filmic.c:1738 ../src/iop/profile_gamma.c:933
+#: ../src/iop/filmic.c:1731 ../src/iop/profile_gamma.c:933
 msgid "auto tune levels"
 msgstr "niveaux automatiques"
 
-#: ../src/iop/filmic.c:1743 ../src/iop/profile_gamma.c:938
-msgid "make an optimization with some guessing"
-msgstr "faire une optimisation basée sur des suppositions"
+#: ../src/iop/filmic.c:1736
+msgid ""
+"try to optimize the settings with some guessing.\n"
+"this will fit the luminance range inside the histogram bounds.\n"
+"works better for landscapes and evenly-lit pictures\n"
+"but fails for high-keys and low-keys."
+msgstr ""
+"essai d'optimiser les réglages par analyse.\n"
+"l'étendu de la luminance sera placée dans l'histogramme.\n"
+"marche mieux sur les paysages et images exposées uniformément\n"
+"et donnera de mauvais résultat sur des clairs-obscurs et high-key."
 
-#: ../src/iop/filmic.c:1746
+#: ../src/iop/filmic.c:1741
 msgid "filmic S curve"
 msgstr "courbe filmique en S"
 
-#: ../src/iop/filmic.c:1753
-msgid "slope of the linear part of the curve"
-msgstr "pente de la partie linéaire de la courbe"
+#: ../src/iop/filmic.c:1748
+msgid ""
+"slope of the linear part of the curve\n"
+"affects mostly the mid-tones"
+msgstr ""
+"pente de la partie linéaire de la courbe\n"
+"touche principalement les tons moyens."
 
 #. geotagging
-#: ../src/iop/filmic.c:1759 ../src/libs/metadata_view.c:127
+#: ../src/iop/filmic.c:1755 ../src/libs/metadata_view.c:127
 msgid "latitude"
 msgstr "latitude"
 
-#: ../src/iop/filmic.c:1762
+#: ../src/iop/filmic.c:1758
 msgid ""
-"linearity domain in the middle of the curve\n"
-"increase to get more contrast at the extreme luminances"
+"width of the linear domain in the middle of the curve.\n"
+"increase to get more contrast at the extreme luminances.\n"
+"this has no effect on mid-tones."
 msgstr ""
 "domaine de linéarité au centre de la courbe\n"
-"augmenter pour obtenir plus de contraste dans les luminances extrêmes"
+"augmenter pour obtenir plus de contraste dans les luminances extrêmes\n"
+"ce réglage n'a aucun effet dans les tons moyens."
+
+#: ../src/iop/filmic.c:1765
+msgid "shadows/highlights balance"
+msgstr "balance ombres/hautes lumières"
 
 #: ../src/iop/filmic.c:1768
-msgid "balance shadows-highlights"
-msgstr "équilibre ombres-ht. lumières"
-
-#: ../src/iop/filmic.c:1771
-msgid "gives more room to shadows or highlights, to protect the details"
+msgid ""
+"slides the latitude along the slope\n"
+"to give more room to shadows or highlights.\n"
+"use it if you need to protect the details\n"
+"at one extremity of the histogram."
 msgstr ""
-"donne plus de place aux ombres ou aux hautes lumières, pour protéger les "
-"détails"
+"décale la latitude le long de la courbe\n"
+"pour donner plus d'espace aux ombres ou hautes lumières.\n"
+"à utiliser pour protéger les détails\n"
+"aux extrémités de l'histogramme."
 
-#: ../src/iop/filmic.c:1776
+#: ../src/iop/filmic.c:1774
 msgid "global saturation"
 msgstr "saturation globale"
 
-#: ../src/iop/filmic.c:1780
-msgid "desaturates the output"
-msgstr "désature la sortie"
+#: ../src/iop/filmic.c:1778
+msgid ""
+"desaturates the input of the module globally.\n"
+"you need to set this value below 100%\n"
+"if the chrominance preservation is enabled."
+msgstr ""
+"désature globalement en entrée.\n"
+"la valeur doit être en dessous de 100%\n"
+"si la conservation de la chrominance est activée."
 
-#: ../src/iop/filmic.c:1785
+#: ../src/iop/filmic.c:1784
 msgid "extreme luminance saturation"
 msgstr "saturation luminance extrême"
 
-#: ../src/iop/filmic.c:1789
+#: ../src/iop/filmic.c:1788
 msgid ""
-"desaturates the output, if the contrast adjustment\n"
-"produces over-saturation in shadows"
+"desaturates the output of the module\n"
+"specifically at extreme luminances.\n"
+"decrease if shadows and/or highlights are over-saturated."
 msgstr ""
-"désaturer la sortie, si l'ajustement du contraste\n"
-"produit des ombres sur-saturées "
+"désature la sortie du module\n"
+"plus particulièrement aux luminances extrêmes.\n"
+"diminuer si les ombres et/ou les hautes lumières sont sur-saturés."
 
-#: ../src/iop/filmic.c:1799 ../src/libs/export.c:629
+#: ../src/iop/filmic.c:1798 ../src/libs/export.c:629
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1452
 msgid "intent"
 msgstr "rendu"
 
-#: ../src/iop/filmic.c:1800
+#: ../src/iop/filmic.c:1799
 msgid "contrasted"
 msgstr "contrasté"
 
 #. cubic spline
-#: ../src/iop/filmic.c:1801
+#: ../src/iop/filmic.c:1800
 msgid "faded"
 msgstr "délavé"
 
 #. monotonic spline
-#: ../src/iop/filmic.c:1803
+#: ../src/iop/filmic.c:1802
 msgid "optimized"
 msgstr "optimisé"
 
-#: ../src/iop/filmic.c:1805
+#: ../src/iop/filmic.c:1804
 msgid "change this method if you see reversed contrast or faded blacks"
 msgstr ""
 "changer la méthode si des contrastes inversés ou noirs fades apparaissent"
 
 #. Preserve color
-#: ../src/iop/filmic.c:1809
+#: ../src/iop/filmic.c:1808
 msgid "preserve the chrominance"
 msgstr "préserver la chrominance"
 
-#: ../src/iop/filmic.c:1811
+#: ../src/iop/filmic.c:1810
 msgid ""
-"ensure the original color are preserved\n"
-"may produce over-saturated colors and reinforce lens chromatic aberrations"
+"ensure the original color are preserved.\n"
+"may reinforce chromatic aberrations.\n"
+"you need to manually tune the saturation when using this mode."
 msgstr ""
 "préserve les couleurs d'origine\n"
 "peut produire des couleurs sur-saturées et renforcer les aberrations "
-"chromatiques"
+"chromatiques\n"
+"il est nécessaire d'ajuster manuellement la saturation dans ce mode."
 
 #: ../src/iop/filmic.c:1820
 msgid "destination/display"
@@ -7347,11 +7423,12 @@ msgstr "gamma cible"
 
 #: ../src/iop/filmic.c:1864
 msgid ""
-"power or gamma of the transfer function of the display or color space.\n"
+"power or gamma of the transfer function\n"
+"of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
-"power ou gamma de la fonction de transfert de l'affichage ou de l'espace de "
-"couleur.\n"
+"power ou gamma de la fonction de transfert\n"
+"de l'affichage ou de l'espace de couleur.\n"
 "ne jamais toucher sauf si vous savez ce que vous faites."
 
 #: ../src/iop/finalscale.c:39
@@ -8372,6 +8449,14 @@ msgstr "luma du gris moyen"
 msgid "adjust to match the average luma of the subject"
 msgstr "ajuster pour faire correspondre à la luma moyenne du sujet"
 
+#: ../src/iop/profile_gamma.c:904
+msgid ""
+"number of stops between middle grey and pure black\n"
+"this is a reading a posemeter would give you on the scene"
+msgstr ""
+"nombre de stops entre le gris moyen et le noir pur\n"
+"ceci est la valeur que vous donnerait un posemètre sur la scène"
+
 #: ../src/iop/profile_gamma.c:913
 msgid "dynamic range"
 msgstr "plage dynamique"
@@ -8396,6 +8481,10 @@ msgid ""
 msgstr ""
 "élargir ou rétrécir la plage dynamique calculée\n"
 "ceci est utile lorsque du bruit perturbe les mesures"
+
+#: ../src/iop/profile_gamma.c:938
+msgid "make an optimization with some guessing"
+msgstr "faire une optimisation basée sur des suppositions"
 
 #: ../src/iop/rawdenoise.c:124
 msgid "raw denoise"
@@ -12621,6 +12710,24 @@ msgstr ""
 "nous vous suggérons de passer à la version 64 bits.\n"
 "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
 "corrigés.\n"
+
+#~ msgid "balance shadows-highlights"
+#~ msgstr "équilibre ombres-ht. lumières"
+
+#~ msgid "gives more room to shadows or highlights, to protect the details"
+#~ msgstr ""
+#~ "donne plus de place aux ombres ou aux hautes lumières, pour protéger les "
+#~ "détails"
+
+#~ msgid "desaturates the output"
+#~ msgstr "désature la sortie"
+
+#~ msgid ""
+#~ "desaturates the output, if the contrast adjustment\n"
+#~ "produces over-saturation in shadows"
+#~ msgstr ""
+#~ "désaturer la sortie, si l'ajustement du contraste\n"
+#~ "produit des ombres sur-saturées "
 
 #~ msgid "show none"
 #~ msgstr "aucun module"
