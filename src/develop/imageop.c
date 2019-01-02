@@ -915,7 +915,7 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
       const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
       if(strcmp(d->module->multi_name, name) != 0)
       {
-        g_strlcpy(d->module->multi_name, name, sizeof(d->module->multi_name) - 1);
+        g_strlcpy(d->module->multi_name, name, sizeof(d->module->multi_name));
         dt_dev_add_history_item(d->module->dev, d->module, TRUE);
         dt_iop_gui_update_header(d->module);
       }
