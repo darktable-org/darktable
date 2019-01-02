@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-01 10:45+0100\n"
-"PO-Revision-Date: 2019-01-01 10:50+0100\n"
+"POT-Creation-Date: 2019-01-02 09:55+0100\n"
+"PO-Revision-Date: 2019-01-02 09:55+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -482,7 +482,7 @@ msgstr ""
 msgid "ask before deleting a tag"
 msgstr "demander avant de supprimer un mot-clé"
 
-#: ../build/src/preferences_gen.h:2555
+#: ../build/src/preferences_gen.h:2555 ../build/src/preferences_gen.h:3357
 msgid "miscellaneous"
 msgstr "divers"
 
@@ -717,14 +717,14 @@ msgstr ""
 "générique du fabricant si une est disponible (nécessite un redémarrage)"
 
 #: ../build/src/preferences_gen.h:3014
-msgid "auto-apply shapen"
+msgid "auto-apply sharpen"
 msgstr "applique automatiquement de la netteté"
 
 #: ../build/src/preferences_gen.h:3026
 msgid ""
-"this added shapen is not recommanded on cameras without a low pass filter. "
-"the default is to not add any sharpen automatically as most recent cameras "
-"have not low-pass filter. (need a restart)"
+"this added sharpen is not recommended on cameras without a low-pass filter. "
+"the default is to not add any sharpening automatically as most recent "
+"cameras have no low-pass filter. (need a restart)"
 msgstr ""
 "ajouter de la netteté n'est pas recommandé pour les appareils photos n'ayant "
 "pas de filtre pass-bas. par défaut le module netteté est désactivé car la "
@@ -916,10 +916,6 @@ msgstr ""
 "l'image complète et le CPU pour la prévisualisation. les autres options "
 "possibles sont : GPU multiples - utilise les GPU en parallèle; GPU très "
 "rapide - utilise le GPU séquentiellement pour l'image et la prévisualisation."
-
-#: ../build/src/preferences_gen.h:3357
-msgid "miscelaneous"
-msgstr ""
 
 #: ../build/src/preferences_gen.h:3368
 msgid "omit hierarchy in simple tag lists"
