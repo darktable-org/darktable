@@ -1146,7 +1146,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large ++++"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("deblur: large blur, strength 4"), self->op, self->version(), &p, sizeof(p), 1);
 
   for(int k = 0; k < BANDS; k++)
   {
@@ -1162,7 +1162,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large +++"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("deblur: large blur, strength 3"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
     float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
@@ -1176,7 +1176,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: medium +++"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("deblur: medium blur, strength 3"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
     float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
@@ -1189,21 +1189,9 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: fine +++"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k = 0; k < BANDS; k++)
-  {
-    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
-    float fine = GAUSS(x, 0.5 * sigma);
-    float medium = GAUSS(x, sigma);
-    float coarse = GAUSS(x, 2 * sigma);
-    float coeff = 0.5f + (coarse + medium + fine) / 48.0f;
-    float noise = (coarse + medium + fine) / 2160;
+  dt_gui_presets_add_generic(_("deblur: fine blur, strength 3"), self->op, self->version(), &p, sizeof(p), 1);
 
-    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
-    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
-    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
-  }
+
   for(int k = 0; k < BANDS; k++)
   {
     float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
@@ -1218,7 +1206,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large ++"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("deblur: large blur, strength 2"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
     float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
@@ -1232,7 +1220,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: medium ++"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("deblur: medium blur, strength 2"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
     float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
@@ -1245,7 +1233,9 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: fine ++"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("deblur: fine blur, strength 2"), self->op, self->version(), &p, sizeof(p), 1);
+
+
   for(int k = 0; k < BANDS; k++)
   {
     float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
@@ -1260,7 +1250,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large +"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("deblur: large blur, strength 1"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
     float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
@@ -1274,7 +1264,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: medium +"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("deblur: medium blur, strength 1"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k = 0; k < BANDS; k++)
   {
     float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
@@ -1287,7 +1277,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: fine +"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("deblur: fine blur, strength 1"), self->op, self->version(), &p, sizeof(p), 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
