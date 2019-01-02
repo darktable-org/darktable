@@ -1683,7 +1683,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->grey_point_source, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->grey_point_source, "%.2f %%");
   gtk_widget_set_tooltip_text(g->grey_point_source, _("adjust to match the average luminance of the subject.\n"
-                                                      "except in back-lighting situations, this should be around 18 \%."));
+                                                      "except in back-lighting situations, this should be around 18 %%."));
   g_signal_connect(G_OBJECT(g->grey_point_source), "value-changed", G_CALLBACK(grey_point_source_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->grey_point_source, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->grey_point_source, TRUE);
@@ -1776,7 +1776,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->global_saturation, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->global_saturation, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->global_saturation, _("desaturates the input of the module globally.\n"
-                                                      "you need to set this value below 100 \% \nif the chrominance preservation is enabled."));
+                                                      "you need to set this value below 100 %% \nif the chrominance preservation is enabled."));
   g_signal_connect(G_OBJECT(g->global_saturation), "value-changed", G_CALLBACK(global_saturation_callback), self);
 
   // saturation slider
@@ -1836,7 +1836,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(extra_options), g->black_point_target, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->black_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->black_point_target, _("luminance of output pure black, "
-                                                        "this should be 0 %\nexcept if you want a faded look"));
+                                                        "this should be 0 %%nexcept if you want a faded look"));
   g_signal_connect(G_OBJECT(g->black_point_target), "value-changed", G_CALLBACK(black_point_target_callback), self);
 
   // grey_point_source slider
@@ -1854,7 +1854,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(extra_options), g->white_point_target, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->white_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->white_point_target, _("luminance of output pure white, "
-                                                        "this should be 100 %\nexcept if you want a faded look"));
+                                                        "this should be 100 %%nexcept if you want a faded look"));
   g_signal_connect(G_OBJECT(g->white_point_target), "value-changed", G_CALLBACK(white_point_target_callback), self);
 
   // power/gamma slider
