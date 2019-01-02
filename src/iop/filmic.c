@@ -1683,7 +1683,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->grey_point_source, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->grey_point_source, "%.2f %%");
   gtk_widget_set_tooltip_text(g->grey_point_source, _("adjust to match the average luminance of the subject.\n"
-                                                      "except in back-lighting situations, this should be around 18%."));
+                                                      "except in back-lighting situations, this should be around 18 \%."));
   g_signal_connect(G_OBJECT(g->grey_point_source), "value-changed", G_CALLBACK(grey_point_source_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->grey_point_source, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->grey_point_source, TRUE);
@@ -1695,8 +1695,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->white_point_source, NULL, _("white relative exposure"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->white_point_source, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->white_point_source, "%.2f EV");
-  gtk_widget_set_tooltip_text(g->white_point_source, _("number of stops between middle grey and pure white\n"
-                                                        "this is a reading a posemeter would give you on the scene"));
+  gtk_widget_set_tooltip_text(g->white_point_source, _("number of stops between middle grey and pure white.\n"
+                                                       "this is a reading a lightmeter would give you on the scene.\n"
+                                                       "adjust so highlights clipping is avoided"));
   g_signal_connect(G_OBJECT(g->white_point_source), "value-changed", G_CALLBACK(white_point_source_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->white_point_source, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->white_point_source, TRUE);
@@ -1708,7 +1709,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->black_point_source, NULL, _("black relative exposure"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->black_point_source, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->black_point_source, "%.2f EV");
-  gtk_widget_set_tooltip_text(g->black_point_source, _("number of stops between middle grey and pure black\nthis is a reading a posemeter would give you on the scene"));
+  gtk_widget_set_tooltip_text(g->black_point_source, _("number of stops between middle grey and pure black.\n"
+                                                       "this is a reading a lightmeter would give you on the scene.\n"
+                                                       "increase to get more contrast.\ndecrease to recover more details in low-lights."));
   g_signal_connect(G_OBJECT(g->black_point_source), "value-changed", G_CALLBACK(black_point_source_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->black_point_source, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->black_point_source, TRUE);
@@ -1719,8 +1722,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->security_factor, NULL, _("safety factor"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->security_factor, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->security_factor, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range\n"
-                                                    "useful in conjunction with \"auto tune levels\""));
+  gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range.\n"
+                                                    "useful in conjunction with \"auto tune levels\"."));
   g_signal_connect(G_OBJECT(g->security_factor), "value-changed", G_CALLBACK(security_threshold_callback), self);
 
   // Auto tune slider
@@ -1730,7 +1733,9 @@ void gui_init(dt_iop_module_t *self)
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->auto_button, TRUE);
   g_signal_connect(G_OBJECT(g->auto_button), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-  gtk_widget_set_tooltip_text(g->auto_button, _("make an optimization with some guessing"));
+  gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some guessing.\n"
+                                                "this will fit the luminance range inside the histogram bounds.\n"
+                                                "works better for landscapes and evenly-lit pictures \nbut fails for high-keys and low-keys." ));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("filmic S curve")), FALSE, FALSE, 5);
@@ -1740,7 +1745,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->contrast, 0.0, 5.0);
   dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->contrast, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->contrast, _("slope of the linear part of the curve"));
+  gtk_widget_set_tooltip_text(g->contrast, _("slope of the linear part of the curve\n"
+                                             "affects mostly the mid-tones"));
   g_signal_connect(G_OBJECT(g->contrast), "value-changed", G_CALLBACK(contrast_callback), self);
 
   // latitude slider
@@ -1749,16 +1755,18 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->latitude_stops, NULL, _("latitude"));
   dt_bauhaus_slider_set_format(g->latitude_stops, "%.2f EV");
   gtk_box_pack_start(GTK_BOX(self->widget), g->latitude_stops, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->latitude_stops, _("linearity domain in the middle of the curve\n"
-                                                   "increase to get more contrast at the extreme luminances"));
+  gtk_widget_set_tooltip_text(g->latitude_stops, _("width of the linear domain in the middle of the curve.\n"
+                                                   "increase to get more contrast at the extreme luminances.\n"
+                                                   "this has no effect on mid-tones."));
   g_signal_connect(G_OBJECT(g->latitude_stops), "value-changed", G_CALLBACK(latitude_stops_callback), self);
 
   // balance slider
   g->balance = dt_bauhaus_slider_new_with_range(self, -50., 50., 1.0, p->balance, 2);
-  dt_bauhaus_widget_set_label(g->balance, NULL, _("balance shadows-highlights"));
+  dt_bauhaus_widget_set_label(g->balance, NULL, _("shadows/highlights balance"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->balance, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->balance, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->balance, _("gives more room to shadows or highlights, to protect the details"));
+  gtk_widget_set_tooltip_text(g->balance, _("slides the latitude along the slope \nto give more room to shadows or highlights.\n"
+                                            "use it if you need to protect the details\n at one extremity of the histogram."));
   g_signal_connect(G_OBJECT(g->balance), "value-changed", G_CALLBACK(balance_callback), self);
 
   // saturation slider
@@ -1767,7 +1775,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->global_saturation, 0.0, 1000.0);
   dt_bauhaus_slider_set_format(g->global_saturation, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->global_saturation, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->global_saturation, _("desaturates the output"));
+  gtk_widget_set_tooltip_text(g->global_saturation, _("desaturates the input of the module globally.\n"
+                                                      "you need to set this value below 100 \% \nif the chrominance preservation is enabled."));
   g_signal_connect(G_OBJECT(g->global_saturation), "value-changed", G_CALLBACK(global_saturation_callback), self);
 
   // saturation slider
@@ -1776,8 +1785,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->saturation, 0.0, 1000.0);
   dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output, if the contrast adjustment\n"
-                                               "produces over-saturation in shadows"));
+  gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module \nspecifically at extreme luminances.\n"
+                                               "decrease if shadows and/or highlights are over-saturated."));
   g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
 
     /* From src/common/curve_tools.h :
@@ -1798,8 +1807,9 @@ void gui_init(dt_iop_module_t *self)
   // Preserve color
   g->preserve_color = gtk_check_button_new_with_label(_("preserve the chrominance"));
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g->preserve_color), p->preserve_color);
-  gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original color are preserved\n"
-                                                   "may produce over-saturated colors and reinforce lens chromatic aberrations"));
+  gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original color are preserved.\n"
+                                                   "may reinforce chromatic aberrations.\n"
+                                                   "you need to manually tune the saturation when using this mode."));
   gtk_box_pack_start(GTK_BOX(self->widget), g->preserve_color , TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->preserve_color), "toggled", G_CALLBACK(preserve_color_callback), self);
 
@@ -1826,7 +1836,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(extra_options), g->black_point_target, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->black_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->black_point_target, _("luminance of output pure black, "
-                                                        "this should be 0%\nexcept if you want a faded look"));
+                                                        "this should be 0 %\nexcept if you want a faded look"));
   g_signal_connect(G_OBJECT(g->black_point_target), "value-changed", G_CALLBACK(black_point_target_callback), self);
 
   // grey_point_source slider
@@ -1844,15 +1854,15 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(extra_options), g->white_point_target, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->white_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->white_point_target, _("luminance of output pure white, "
-                                                        "this should be 100%\nexcept if you want a faded look"));
+                                                        "this should be 100 %\nexcept if you want a faded look"));
   g_signal_connect(G_OBJECT(g->white_point_target), "value-changed", G_CALLBACK(white_point_target_callback), self);
 
   // power/gamma slider
   g->output_power = dt_bauhaus_slider_new_with_range(self, 1.0, 2.4, 0.1, p->output_power, 2);
   dt_bauhaus_widget_set_label(g->output_power, NULL, _("target gamma"));
   gtk_box_pack_start(GTK_BOX(extra_options), g->output_power, FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(g->output_power, _("power or gamma of the transfer function of the display or color space.\n"
-                                                  "you should never touch that unless you know what you are doing."));
+  gtk_widget_set_tooltip_text(g->output_power, _("power or gamma of the transfer function \nof the display or color space.\n"
+                                                 "you should never touch that unless you know what you are doing."));
   g_signal_connect(G_OBJECT(g->output_power), "value-changed", G_CALLBACK(output_power_callback), self);
 
   init_picker(&g->color_picker,
