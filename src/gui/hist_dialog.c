@@ -145,15 +145,22 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
 #endif
 
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 3));
-  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
-  gtk_container_add(content_area, GTK_WIDGET(box));
+
+  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(300));
+  gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(700));
+  gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(scroll), TRUE);
+  gtk_widget_set_margin_start(scroll, DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_end(scroll, DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_top(scroll, DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_bottom(scroll, DT_PIXEL_APPLY_DPI(5));
 
   /* create the list of items */
   d->items = GTK_TREE_VIEW(gtk_tree_view_new());
+  gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(d->items));
+  gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(scroll), TRUE, TRUE, 0);
+
   GtkListStore *liststore
       = gtk_list_store_new(DT_HIST_ITEMS_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
 
@@ -176,8 +183,6 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
 
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->items)), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->items), GTK_TREE_MODEL(liststore));
-
-  gtk_box_pack_start(box, GTK_WIDGET(d->items), TRUE, TRUE, 0);
 
   /* fill list with history items */
   GtkTreeIter iter;
