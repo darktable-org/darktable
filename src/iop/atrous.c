@@ -36,7 +36,6 @@
 #include <stdlib.h>
 #if defined(__SSE__)
 #include <xmmintrin.h>
-#include <emmintrin.h>
 #endif
 
 #define INSET DT_PIXEL_APPLY_DPI(5)
