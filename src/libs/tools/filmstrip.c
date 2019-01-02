@@ -631,8 +631,8 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int32_t width = allocation.width;
-  int32_t height = allocation.height;
+  const int32_t width = allocation.width;
+  const int32_t height = allocation.height;
 
   gdouble pointerx = strip->pointerx;
   gdouble pointery = strip->pointery;
@@ -654,7 +654,7 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   int max_cols = (int)(width / (float)wd) + 2;
   if(max_cols % 2 == 0) max_cols += 1;
 
-  const int col_start = max_cols / 2 - strip->offset;
+  const int col_start = max_cols / 2 - offset;
   const int empty_edge = (width - (max_cols * wd)) / 2;
   int step_res = SQLITE_ROW;
 
@@ -665,7 +665,6 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   const int seli = (pointery > 0 && pointery <= ht) ? pointerx / (float)wd : -1;
   const int img_pointerx = (int)fmodf(pointerx, wd);
   const int img_pointery = (int)pointery;
-
 
   /* get the count of current collection */
   strip->collection_count = dt_collection_get_count(darktable.collection);
@@ -682,7 +681,6 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset - max_cols / 2);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_cols);
-
 
   cairo_save(cr);
   cairo_translate(cr, empty_edge, 0.0f);
