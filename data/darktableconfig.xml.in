@@ -987,6 +987,13 @@
     <shortdescription>ask before deleting a tag</shortdescription>
     <longdescription/>
   </dtconfig>
+  <dtconfig prefs="gui" section="security">
+    <name>plugins/lighttable/style/ask_before_delete_style</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>ask before deleting a style</shortdescription>
+    <longdescription/>
+  </dtconfig>
   <dtconfig>
     <name>plugins/map/show_map_osd</name>
     <type>bool</type>
