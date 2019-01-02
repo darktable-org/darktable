@@ -528,16 +528,6 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
 
 #if defined(__SSE__)
-
-/* Find the max in a SSE vector */
-static inline __m128 _mm_hmax_ps(__m128 x) {
-    const __m128 max1 = _mm_shuffle_ps(x, x, _MM_SHUFFLE(0,0,3,2));
-    const __m128 max2 = _mm_max_ps(x, max1);
-    const __m128 max3 = _mm_shuffle_ps(max2, max2, _MM_SHUFFLE(0,0,0,1));
-    const __m128 max4 = _mm_max_ps(max2, max3);
-    return max4;
-}
-
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -584,8 +574,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     if (preserve_color)
     {
       // Get the max of the RGB values
-      __m128 max_sse = _mm_hmax_ps(rgb);
-      float max = _mm_cvtss_f32(max_sse);
+      float max = fmax(fmaxf(rgb[0], rgb[1]), rgb[2]);
+      __m128 max_sse = _mm_set_ps(max, max, max, max);
 
       // Save the ratios
       const __m128 ratios = rgb / max_sse;
