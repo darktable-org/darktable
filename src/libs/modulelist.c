@@ -357,19 +357,88 @@ void init_presets(dt_lib_module_t *self)
   int len;
   char *params_none = gen_params(0, &len, NULL);
   char *params_all = gen_params(1, &len, NULL);
-  char *params_default = gen_params(1, &len,
+  char *params = gen_params(1, &len,
                                     "|basecurve|clipping|colisa|colorcorrection|colorin|colorout"
                                     "|demosaic|exposure|flip|graduatednd|grain|lens|levels|monochrome"
                                     "|shadhi|sharpen|temperature|tonecurve|vignette|");
 
-  dt_lib_presets_add(_("show none"), self->plugin_name, self->version(), params_none, len);
-  dt_lib_presets_add(_("show all"), self->plugin_name, self->version(), params_all, len);
+  dt_lib_presets_add(_("subset: no module"), self->plugin_name, self->version(), params_none, len);
+  dt_lib_presets_add(_("subset: all modules"), self->plugin_name, self->version(), params_all, len);
 
   /* the modules that are activated by default in the initial configuration */
-  dt_lib_presets_add(_("default"), self->plugin_name, self->version(), params_default, len);
+  dt_lib_presets_add(_("subset: default modules"), self->plugin_name, self->version(), params, len);
+
+  params = gen_params(1, &len,
+                        "|demosaic|exposure|colorin|temperature|clipping"           // raw handling
+                        "|filmic|tonecurve|levels"                                  // tones
+                        "|channelmixer|colorbalance|colorzones|colorchecker|vibrance" // colors
+                        "|sharpen|bilat|atrous"                                     // sharpness
+                        "|cacorrect|defringe|highlights|lens|colorreconstruction");   // image reconstruction
+
+  dt_lib_presets_add(_("workspace: all-purpose"), self->plugin_name, self->version(), params, len);
+
+  params = gen_params(1, &len,
+                        "|demosaic|exposure|colorin|temperature|clipping"           // raw handling
+                        "|filmic|tonecurve|levels"                                  // tones
+                        "|channelmixer|colorbalance|colorzones|colorchecker|vibrance" // colors
+                        "|sharpen|bilat|atrous"                                     // sharpness
+                        "|cacorrect|defringe|highlights|lens|colorreconstruction"   // image reconstruction
+                        "|graduatednd|zonesystem|tonemap|shadhi"                    // HDR reconstruction - tones
+                        "|hazeremoval|channelmixer");                                 // HDR reconstruction - colors
+
+  dt_lib_presets_add(_("workspace: landscape & HDR"), self->plugin_name, self->version(), params, len);
+
+  params = gen_params(1, &len,
+                        "|demosaic|exposure|colorin|temperature|clipping"           // raw handling
+                        "|filmic|tonecurve|levels"                                  // tones
+                        "|channelmixer|colorbalance|colorzones|colorchecker|vibrance" // colors
+                        "|sharpen|bilat|atrous"                                     // sharpness
+                        "|cacorrect|defringe|highlights|lens|colorreconstruction"   // image reconstruction
+                        "|graduatednd|zonesystem|tonemap|shadhi|"                   // HDR reconstruction - tones
+                        "|ashift|channelmixer|retouch");
+
+  dt_lib_presets_add(_("workspace: architecture & streets"), self->plugin_name, self->version(), params, len);
+
+  params = gen_params(1, &len,
+                        "|demosaic|exposure|colorin|temperature|clipping"           // raw handling
+                        "|filmic|tonecurve|levels"                                  // tones
+                        "|channelmixer|colorbalance|colorzones|colorchecker|vibrance" // colors
+                        "|sharpen|bilat|atrous"                                     // sharpness
+                        "|cacorrect|defringe|highlights|lens|colorreconstruction"   // image reconstruction
+                        "|retouch|liquify|soften");                      // retouch
+
+  dt_lib_presets_add(_("workspace: portrait & beauty"), self->plugin_name, self->version(), params, len);
+
+  params = gen_params(1, &len,
+                        "|demosaic|exposure|colorin|temperature|clipping"           // raw handling
+                        "|filmic|tonecurve|levels"                                  // tones
+                        "|channelmixer|colorbalance|colorzones|colorchecker|vibrance" // colors
+                        "|sharpen|bilat|atrous"                                     // sharpness
+                        "|cacorrect|defringe|highlights|lens|colorreconstruction"   // image reconstruction
+                        "|denoiseprofile|bilateral|hotpixels");                       // denoising
+
+  dt_lib_presets_add(_("workspace: lowlight & high ISO"), self->plugin_name, self->version(), params, len);
+
+  params = gen_params(1, &len,
+                        "|velvia|splittoning|colormapping|colorize|colorcorrection"
+                        "|vignette|relight|lowlight|bloom|soften|colisa|monochrome"
+                        "|watermark|border|grain|colorcontrast");
+
+  dt_lib_presets_add(_("subset: creative modules only"), self->plugin_name, self->version(), params, len);
+
+  params = gen_params(1, &len,
+                        "|demosaic|exposure|colorin|temperature|colorout|rawprepare"// raw handling
+                        "|sharpen|bilat|atrous|highpass|lowpass"                    // sharpness
+                        "|cacorrect|defringe|highlights|lens|colorreconstruction"   // image reconstruction
+                        "|denoiseprofile|bilateral|hotpixels|rawdenoise|nlmeans"    // denoising
+                        "|dither|profile_gamma|invert|scalepixels|rotatepixels|colorchecker");
+
+  dt_lib_presets_add(_("subset: technical modules only"), self->plugin_name, self->version(), params, len);
+
 
   free(params_none);
   free(params_all);
+  free(params);
 }
 
 void *get_params(dt_lib_module_t *self, int *size)

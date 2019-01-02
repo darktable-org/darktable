@@ -702,3 +702,14 @@ cell:selected
 {
     color: #FFFF00;
 }
+
+#pref_section
+{
+    border-bottom: 2px solid @fg_color;
+}
+#pref_section *
+{
+    font-size: 1.3em;
+    margin-left: 10em;
+    margin-right: 10em;
+}

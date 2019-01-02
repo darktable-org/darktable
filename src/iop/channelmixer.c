@@ -40,16 +40,16 @@
 #include <string.h>
 
 /** Crazy presets b&w ...
-  Film Type			R		G		B						R	G	B
-  AGFA 200X		18		41		41		Ilford Pan F		33	36	31
-  Agfapan 25		25		39		36		Ilford SFX		36	31	33
-  Agfapan 100		21		40		39		Ilford XP2 Super	21	42	37
-  Agfapan 400		20		41		39		Kodak T-Max 100	24	37	39
-  Ilford Delta 100	21		42		37		Kodak T-Max 400	27	36	37
-  Ilford Delta 400	22		42		36		Kodak Tri-X 400	25	35	40
-  Ilford Delta 3200	31		36		33		Normal Contrast	43	33	30
-  Ilford FP4		28		41		31		High Contrast		40	34	60
-  Ilford HP5		23		37		40		Generic B/W		24	68	8
+  Film Type     R   G   B           R G B
+  AGFA 200X   18    41    41    Ilford Pan F    33  36  31
+  Agfapan 25    25    39    36    Ilford SFX    36  31  33
+  Agfapan 100   21    40    39    Ilford XP2 Super  21  42  37
+  Agfapan 400   20    41    39    Kodak T-Max 100 24  37  39
+  Ilford Delta 100  21    42    37    Kodak T-Max 400 27  36  37
+  Ilford Delta 400  22    42    36    Kodak Tri-X 400 25  35  40
+  Ilford Delta 3200 31    36    33    Normal Contrast 43  33  30
+  Ilford FP4    28    41    31    High Contrast   40  34  60
+  Ilford HP5    23    37    40    Generic B/W   24  68  8
 */
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
@@ -513,7 +513,7 @@ void init_presets(dt_iop_module_so_t *self)
                                                               { 0, 0, 0.1, 0, 1, 0, 0 },
                                                               { 0, 0, 0.800, 0, 0, 1, 0 } },
                              sizeof(dt_iop_channelmixer_params_t), 1);
-  dt_gui_presets_add_generic(_("B/W"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("B/W luminance-based"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.21 },
                                                               { 0, 0, 0, 0, 1, 0, 0.72 },
                                                               { 0, 0, 0, 0, 0, 1, 0.07 } },
@@ -533,6 +533,55 @@ void init_presets(dt_iop_module_so_t *self)
                                                               { 0, 0, 0, 0, 0, 0, 0.750 },
                                                               { 0, 0, 0, 0, 0, 0, -0.15 } },
                              sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Ilford Delta 100-400"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.21 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.42 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.37 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Ilford Delta 3200"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.31 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.36 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.33 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Ilford FP4"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.28 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.41 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.31 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Ilford HP5"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.23 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.37 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.40 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Ilford SFX"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.36 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.31 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.33 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Kodak T-Max 100"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.24 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.37 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.39 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Kodak T-max 400"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.27 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.36 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.37 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
+  dt_gui_presets_add_generic(_("B/W Kodak Tri-X 400"), self->op, self->version(),
+                             &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 0, 0.25 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.35 },
+                                                              { 0, 0, 0, 0, 0, 0, 0.40 } },
+                             sizeof(dt_iop_channelmixer_params_t), 1);
+
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }

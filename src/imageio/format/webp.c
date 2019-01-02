@@ -67,20 +67,36 @@ typedef struct dt_imageio_webp_gui_data_t
   GtkWidget *hint;
 } dt_imageio_webp_gui_data_t;
 
+#define _stringify(a) #a
+#define stringify(a) _stringify(a)
+
 static const char *const EncoderError[] = {
-  "ok", "out_of_memory: out of memory allocating objects",
+  "ok",
+  "out_of_memory: out of memory allocating objects",
   "bitstream_out_of_memory: out of memory re-allocating byte buffer",
-  "null_parameter: null parameter passed to function", "invalid_configuration: configuration is invalid",
+  "null_parameter: null parameter passed to function",
+  "invalid_configuration: configuration is invalid",
   "bad_dimension: bad picture dimension. maximum width and height "
-  "allowed is 16383 pixels.",
+  "allowed is " stringify(WEBP_MAX_DIMENSION) " pixels.",
   "partition0_overflow: partition #0 is too big to fit 512k.\n"
   "to reduce the size of this partition, try using less segments "
   "with the -segments option, and eventually reduce the number of "
   "header bits using -partition_limit. more details are available "
   "in the manual (`man cwebp`)",
-  "partition_overflow: partition is too big to fit 16M", "bad_write: picture writer returned an i/o error",
-  "file_too_big: file would be too big to fit in 4G", "user_abort: encoding abort requested by user"
+  "partition_overflow: partition is too big to fit 16M",
+  "bad_write: picture writer returned an i/o error",
+  "file_too_big: file would be too big to fit in 4G",
+  "user_abort: encoding abort requested by user"
 };
+
+const char *get_error_str(int err)
+{
+  if (err < 0 || err >= sizeof(EncoderError)/sizeof(EncoderError[0]))
+  {
+    return "unknown error (err=%d). consider filling a bug to DT to update the webp error list";
+  }
+  return EncoderError[err];
+}
 
 void init(dt_imageio_module_format_t *self)
 {
@@ -112,67 +128,71 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
                 void *exif, int exif_len, int imgid, int num, int total)
 {
+  FILE *out = NULL;
+  WebPPicture pic;
+  int pic_init = 0;
+
   dt_imageio_webp_t *webp_data = (dt_imageio_webp_t *)webp;
-  FILE *out = g_fopen(filename, "wb");
+  out = g_fopen(filename, "w+b");
+  if (!out)
+  {
+    fprintf(stderr, "[webp export] error saving to %s\n", filename);
+    goto error;
+  }
 
   // Create, configure and validate a WebPConfig instance
   WebPConfig config;
-  if(!WebPConfigPreset(&config, webp_data->hint, (float)webp_data->quality)) goto Error;
+  if(!WebPConfigPreset(&config, webp_data->hint, (float)webp_data->quality)) goto error;
+
   // TODO(jinxos): expose more config options in the UI
   config.lossless = webp_data->comp_type;
   config.image_hint = webp_data->hint;
+  config.method = 6;
 
   // these are to allow for large image export.
   // TODO(jinxos): these values should be adjusted as needed and ideally determined at runtime.
   config.segments = 4;
   config.partition_limit = 70;
+  if(!WebPValidateConfig(&config))
+  {
+    fprintf(stderr, "[webp export] error validating encoder configuration\n");
+    goto error;
+  }
 
-  WebPPicture pic;
-  if(!WebPPictureInit(&pic)) goto Error;
+  if(!WebPPictureInit(&pic)) goto error;
+  pic_init = 1;
   pic.width = webp_data->width;
   pic.height = webp_data->height;
-  if(!out)
-  {
-    fprintf(stderr, "[webp export] error saving to %s\n", filename);
-    goto Error;
-  }
-  else
-  {
-    pic.writer = FileWriter;
-    pic.custom_ptr = out;
-  }
+  pic.use_argb = !!(config.lossless);
+  pic.writer = FileWriter;
+  pic.custom_ptr = out;
 
   WebPPictureImportRGBX(&pic, (const uint8_t *)in_tmp, webp_data->width * 4);
   if(!config.lossless)
   {
+    // webp is more efficient at coding YUV images, as we go lossy
+    // let the encoder where best to spend its bits instead of forcing it
+    // to spend bits equally on RGB data that doesn't weight the same when
+    // considering the human visual system.
     WebPPictureARGBToYUVA(&pic, WEBP_YUV420A);
   }
-  else
-  {
-    WebPCleanupTransparentArea(&pic);
-    WebPPictureYUVAToARGB(&pic);
-  }
-  if(!WebPValidateConfig(&config))
-  {
-    fprintf(stderr, "error validating encoder config\n");
-    goto Error;
-  }
+
   if(!WebPEncode(&config, &pic))
   {
-    fprintf(stderr, "[webp export] error during encoding!\n");
-    fprintf(stderr, "[webp export] error code: %d (%s)\n", pic.error_code, EncoderError[pic.error_code]);
-    goto Error;
+    fprintf(stderr, "[webp export] error during encoding (err:%d - %s)\n",
+            pic.error_code, get_error_str(pic.error_code));
+    goto error;
   }
+
   WebPPictureFree(&pic);
+  pic_init = 0;
   fclose(out);
+  out = NULL;
   return 0;
 
-Error:
-  WebPPictureFree(&pic);
-  if(out != NULL)
-  {
-    fclose(out);
-  }
+error:
+  if (pic_init) WebPPictureFree(&pic);
+  if(out) fclose(out);
   return 1;
 }
 

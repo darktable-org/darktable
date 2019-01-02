@@ -265,7 +265,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
       float Sigma_1_2 = var_imgg_gb.data[i];
       float Sigma_2_2 = var_imgg_bb.data[i];
       float cov_imgg_img[3]
-          = { cov_imgg_img[0] = cov_imgg_img_r.data[i], cov_imgg_img_g.data[i], cov_imgg_img_b.data[i] };
+          = { cov_imgg_img_r.data[i], cov_imgg_img_g.data[i], cov_imgg_img_b.data[i] };
       float det0 = Sigma_0_0 * (Sigma_1_1 * Sigma_2_2 - Sigma_1_2 * Sigma_1_2)
                    - Sigma_0_1 * (Sigma_0_1 * Sigma_2_2 - Sigma_0_2 * Sigma_1_2)
                    + Sigma_0_2 * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);

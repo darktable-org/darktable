@@ -12,8 +12,16 @@ if(FLICKCURL_FOUND)
 endif(FLICKCURL_FOUND)
 
 if (JsonGlib_FOUND)
-	list(APPEND MODULES facebook picasa piwigo)
+	list(APPEND MODULES facebook picasa)
 endif(JsonGlib_FOUND)
+
+find_package(CURL 7.56)
+if(CURL_FOUND)
+  message(STATUS "Found recent CURL version to build piwigo.")
+  list(APPEND MODULES piwigo)
+else(CURL_FOUND)
+  message(STATUS "Cannot found recent CURL version (>= 7.56) to build piwigo.")
+endif(CURL_FOUND)
 
 foreach(module ${MODULES})
 	add_library(${module} MODULE "${module}.c")
