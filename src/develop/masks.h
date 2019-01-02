@@ -197,6 +197,8 @@ typedef struct dt_masks_form_gui_t
 
   // values for mouse positions, etc...
   float posx, posy, dx, dy, scrollx, scrolly, posx_source, posy_source;
+  // TRUE if mouse has leaved the center window
+  gboolean mouse_leaved_center;
   gboolean form_selected;
   gboolean border_selected;
   gboolean source_selected;
@@ -307,6 +309,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
 void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, int32_t width, int32_t height,
                                  int32_t pointerx, int32_t pointery);
 int dt_masks_events_mouse_leave(struct dt_iop_module_t *module);
+int dt_masks_events_mouse_enter(struct dt_iop_module_t *module);
 
 /** functions used to manipulate gui datas */
 void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index);

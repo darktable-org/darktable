@@ -1945,6 +1945,13 @@ void mouse_leave(dt_view_t *self)
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
 
+void mouse_enter(dt_view_t *self)
+{
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  // masks
+  dt_masks_events_mouse_enter(dev->gui_module);
+}
+
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));

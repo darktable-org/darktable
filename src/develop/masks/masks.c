@@ -211,6 +211,7 @@ void dt_masks_init_form_gui(dt_masks_form_gui_t *gui)
   memset(gui, 0, sizeof(dt_masks_form_gui_t));
 
   gui->posx = gui->posy = -1.0f;
+  gui->mouse_leaved_center = TRUE;
   gui->posx_source = gui->posy_source = -1.0f;
   gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
 }
@@ -1300,17 +1301,20 @@ void dt_masks_free_form(dt_masks_form_t *form)
 
 int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
 {
-  // reset mouse position for masks
   if(darktable.develop->form_gui)
   {
     dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+    gui->mouse_leaved_center = TRUE;
+  }
+  return 0;
+}
 
-    // if masks are being created or edited don't reset the position
-    if(gui->creation || gui->form_dragging || gui->source_dragging || gui->point_dragging >= 0
-       || gui->feather_dragging >= 0 || gui->seg_dragging >= 0 || gui->point_border_dragging >= 0)
-      return 0;
-
-    gui->posx = gui->posy = -1.f;
+int dt_masks_events_mouse_enter(struct dt_iop_module_t *module)
+{
+  if(darktable.develop->form_gui)
+  {
+    dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+    gui->mouse_leaved_center = FALSE;
   }
   return 0;
 }
@@ -1328,6 +1332,8 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
 
   if(gui)
   {
+    // This assume that if this event is generated the mouse is over the center window
+    gui->mouse_leaved_center = FALSE;
     gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
     gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
   }

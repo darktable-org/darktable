@@ -515,7 +515,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       radius2 *= MIN(wd, ht);
 
       float xpos, ypos;
-      if(gui->posx == -1.f && gui->posy == -1.f)
+      if((gui->posx == -1.f && gui->posy == -1.f) || gui->mouse_leaved_center)
       {
         const float zoom_x = dt_control_get_dev_zoom_x();
         const float zoom_y = dt_control_get_dev_zoom_y();

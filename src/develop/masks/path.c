@@ -1958,7 +1958,7 @@ static void dt_path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
     else
     {
       float xpos, ypos;
-      if(gui->posx == -1.f && gui->posy == -1.f)
+      if((gui->posx == -1.f && gui->posy == -1.f) || gui->mouse_leaved_center)
       {
         xpos = (.5f + dt_control_get_dev_zoom_x()) * darktable.develop->preview_pipe->backbuf_width;
         ypos = (.5f + dt_control_get_dev_zoom_y()) * darktable.develop->preview_pipe->backbuf_height;
