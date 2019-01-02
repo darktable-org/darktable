@@ -1683,7 +1683,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->grey_point_source, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->grey_point_source, "%.2f %%");
   gtk_widget_set_tooltip_text(g->grey_point_source, _("adjust to match the average luminance of the subject.\n"
-                                                      "except in back-lighting situations, this should be around 18 %%."));
+                                                      "except in back-lighting situations, this should be around 18%."));
   g_signal_connect(G_OBJECT(g->grey_point_source), "value-changed", G_CALLBACK(grey_point_source_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->grey_point_source, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->grey_point_source, TRUE);
@@ -1735,7 +1735,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->auto_button), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some guessing.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"
-                                                "works better for landscapes and evenly-lit pictures \nbut fails for high-keys and low-keys." ));
+                                                "works better for landscapes and evenly-lit pictures\nbut fails for high-keys and low-keys." ));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("filmic S curve")), FALSE, FALSE, 5);
@@ -1765,8 +1765,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->balance, NULL, _("shadows/highlights balance"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->balance, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->balance, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->balance, _("slides the latitude along the slope \nto give more room to shadows or highlights.\n"
-                                            "use it if you need to protect the details\n at one extremity of the histogram."));
+  gtk_widget_set_tooltip_text(g->balance, _("slides the latitude along the slope\nto give more room to shadows or highlights.\n"
+                                            "use it if you need to protect the details\nat one extremity of the histogram."));
   g_signal_connect(G_OBJECT(g->balance), "value-changed", G_CALLBACK(balance_callback), self);
 
   // saturation slider
@@ -1776,7 +1776,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->global_saturation, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->global_saturation, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->global_saturation, _("desaturates the input of the module globally.\n"
-                                                      "you need to set this value below 100 %% \nif the chrominance preservation is enabled."));
+                                                      "you need to set this value below 100%\nif the chrominance preservation is enabled."));
   g_signal_connect(G_OBJECT(g->global_saturation), "value-changed", G_CALLBACK(global_saturation_callback), self);
 
   // saturation slider
@@ -1785,7 +1785,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->saturation, 0.0, 1000.0);
   dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module \nspecifically at extreme luminances.\n"
+  gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\nspecifically at extreme luminances.\n"
                                                "decrease if shadows and/or highlights are over-saturated."));
   g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
 
@@ -1836,7 +1836,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(extra_options), g->black_point_target, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->black_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->black_point_target, _("luminance of output pure black, "
-                                                        "this should be 0 %%\nexcept if you want a faded look"));
+                                                        "this should be 0%\nexcept if you want a faded look"));
   g_signal_connect(G_OBJECT(g->black_point_target), "value-changed", G_CALLBACK(black_point_target_callback), self);
 
   // grey_point_source slider
@@ -1854,14 +1854,14 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(extra_options), g->white_point_target, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->white_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->white_point_target, _("luminance of output pure white, "
-                                                        "this should be 100 %%\nexcept if you want a faded look"));
+                                                        "this should be 100%\nexcept if you want a faded look"));
   g_signal_connect(G_OBJECT(g->white_point_target), "value-changed", G_CALLBACK(white_point_target_callback), self);
 
   // power/gamma slider
   g->output_power = dt_bauhaus_slider_new_with_range(self, 1.0, 2.4, 0.1, p->output_power, 2);
   dt_bauhaus_widget_set_label(g->output_power, NULL, _("target gamma"));
   gtk_box_pack_start(GTK_BOX(extra_options), g->output_power, FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(g->output_power, _("power or gamma of the transfer function \nof the display or color space.\n"
+  gtk_widget_set_tooltip_text(g->output_power, _("power or gamma of the transfer function\nof the display or color space.\n"
                                                  "you should never touch that unless you know what you are doing."));
   g_signal_connect(G_OBJECT(g->output_power), "value-changed", G_CALLBACK(output_power_callback), self);
 
