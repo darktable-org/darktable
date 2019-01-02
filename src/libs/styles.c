@@ -194,11 +194,33 @@ static char *get_style_name(dt_lib_styles_t *list_style)
 static void delete_clicked(GtkWidget *w, gpointer user_data)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
-  char *name = get_style_name(d);
+  const char *name = get_style_name(d);
+
   if(name)
   {
-    dt_styles_delete_by_name(name);
-    _gui_styles_update_view(d);
+    gint res = GTK_RESPONSE_YES;
+
+    if(dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style"))
+    {
+      const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+      GtkWidget *dialog = gtk_message_dialog_new
+      (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+       _("do you really want to delete style '%s'?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+      dt_osx_disallow_fullscreen(dialog);
+#endif
+
+      gtk_window_set_title(GTK_WINDOW(dialog), _("delete style?"));
+      res = gtk_dialog_run(GTK_DIALOG(dialog));
+      gtk_widget_destroy(dialog);
+    }
+
+    if(res == GTK_RESPONSE_YES)
+    {
+      dt_styles_delete_by_name(name);
+      _gui_styles_update_view(d);
+    }
   }
 }
 
