@@ -160,7 +160,7 @@ function set_iop_group()
     done
 }
 
-sed -i "/plugins\/darkroom\/group\//d" $FILE
+sed -i "/plugins\/darkroom\/[^/]*\/modulegroup/d" $FILE
 
 set_iop_group $BASIC   "${group_basic[@]}"
 set_iop_group $TONE    "${group_tone[@]}"
