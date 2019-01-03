@@ -429,7 +429,7 @@
               [--hq &lt;0|1|true|false&gt;]
               [--upscale &lt;0|1|true|false&gt;]
               [--style &lt;style name&gt;]
-              [--overwrite]
+              [--style-overwrite]
               [--verbose]
               [--core &lt;darktable options&gt;]</synopsis>
 
@@ -552,7 +552,7 @@
 
           <varlistentry>
 
-            <term>--overwrite</term>
+            <term>--style-overwrite</term>
 
             <listitem><para>
               The specified style overwrites the history stack instead of being
