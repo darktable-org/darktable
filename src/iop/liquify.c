@@ -29,7 +29,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <assert.h>
 #include <cairo.h>
 #include <complex.h>
@@ -285,17 +284,17 @@ typedef struct
 
 
 // this returns a translatable name
-const char *name ()
+const char *name()
 {
   return _("liquify");
 }
 
-int groups ()
+int default_group()
 {
-return dt_iop_get_group("liquify", IOP_GROUP_CORRECT);
+return IOP_GROUP_CORRECT;
 }
 
-int flags ()
+int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }

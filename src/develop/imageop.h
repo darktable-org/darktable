@@ -149,7 +149,7 @@ typedef struct dt_iop_module_so_t
   /** callbacks, loaded once, referenced by the instances. */
   int (*version)();
   const char *(*name)();
-  int (*groups)();
+  int (*default_group)();
   int (*flags)();
 
   const char *(*description)();
@@ -335,8 +335,8 @@ typedef struct dt_iop_module_t
   int (*version)();
   /** get name of the module, to be translated. */
   const char *(*name)();
-  /** get the groups this module belongs to. */
-  int (*groups)();
+  /** get the default group this module belongs to. */
+  int (*default_group)();
   /** get the iop module flags. */
   int (*flags)();
 

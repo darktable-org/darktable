@@ -40,7 +40,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_flip_params_t)
 
@@ -76,9 +75,9 @@ const char *name()
   return _("orientation");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("orientation", IOP_GROUP_BASIC);
+  return IOP_GROUP_BASIC;
 }
 
 int operation_tags()

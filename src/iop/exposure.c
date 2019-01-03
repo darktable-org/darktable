@@ -45,7 +45,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #define exposure2white(x) exp2f(-(x))
 #define white2exposure(x) -dt_log2f(fmaxf(1e-20f, x))
@@ -106,9 +105,9 @@ const char *name()
   return _("exposure");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("exposure", IOP_GROUP_BASIC);
+  return IOP_GROUP_BASIC;
 }
 
 int flags()

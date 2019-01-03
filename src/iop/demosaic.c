@@ -30,7 +30,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <math.h>
 #include <memory.h>
@@ -161,9 +160,9 @@ const char *name()
   return _("demosaic");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("demosaic", IOP_GROUP_BASIC);
+  return IOP_GROUP_BASIC;
 }
 
 int flags()

@@ -31,7 +31,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -104,10 +103,9 @@ const char *name()
   return _("dithering");
 }
 
-
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("dithering", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()

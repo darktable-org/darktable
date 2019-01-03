@@ -37,7 +37,6 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 #include "gui/presets.h"
 #include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 //#include <gtk/gtk.h>
 #include <stdlib.h>
@@ -171,9 +170,9 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("color balance", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,

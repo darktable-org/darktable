@@ -25,6 +25,7 @@
 #include "common/dtpthread.h"
 #include "common/imageio_rawspeed.h"
 #include "common/interpolation.h"
+#include "common/iop_group.h"
 #include "common/module.h"
 #include "common/opencl.h"
 #include "common/usermanual_url.h"
@@ -110,10 +111,10 @@ gint sort_plugins(gconstpointer a, gconstpointer b)
   return am->priority - bm->priority;
 }
 
-/* default groups for modules which does not implement the groups() function */
-static int default_groups()
+/* default group for modules which do not implement the default_group() function */
+static int default_group()
 {
-  return IOP_GROUP_ALL;
+  return IOP_GROUP_BASIC;
 }
 
 /* default flags for modules which does not implement the flags() function */
@@ -234,8 +235,8 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
   }
   if(!g_module_symbol(module->module, "dt_module_mod_version", (gpointer) & (module->version))) goto error;
   if(!g_module_symbol(module->module, "name", (gpointer) & (module->name))) goto error;
-  if(!g_module_symbol(module->module, "groups", (gpointer) & (module->groups)))
-    module->groups = default_groups;
+  if(!g_module_symbol(module->module, "default_group", (gpointer) & (module->default_group)))
+    module->default_group = default_group;
   if(!g_module_symbol(module->module, "flags", (gpointer) & (module->flags))) module->flags = default_flags;
   if(!g_module_symbol(module->module, "description", (gpointer) & (module->description))) module->description = NULL;
   if(!g_module_symbol(module->module, "operation_tags", (gpointer) & (module->operation_tags)))
@@ -395,7 +396,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
 
   module->version = so->version;
   module->name = so->name;
-  module->groups = so->groups;
+  module->default_group = so->default_group;
   module->flags = so->flags;
   module->description = so->description;
   module->operation_tags = so->operation_tags;
@@ -1102,7 +1103,7 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
   /* add special group flag for favorite */
   if(module->so->state == dt_iop_state_FAVORITE) additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
 
-  return dt_dev_modulegroups_test(module->dev, group, module->groups() | additional_flags);
+  return dt_dev_modulegroups_test(module->dev, group, dt_iop_get_group(module) | additional_flags);
 }
 
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)

@@ -25,7 +25,6 @@
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <math.h>
 #include <stdlib.h>
@@ -69,9 +68,9 @@ const char *name()
   return _("defringe");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("defringe", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()

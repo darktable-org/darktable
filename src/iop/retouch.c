@@ -32,7 +32,6 @@
 #include "develop/imageop_math.h"
 #include "develop/masks.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
 #include <stdlib.h>
@@ -191,9 +190,9 @@ const char *name()
   return _("retouch");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("retouch", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()
