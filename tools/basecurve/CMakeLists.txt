@@ -1,5 +1,7 @@
 find_package(OpenMP)
 
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/modules")
+find_library(M_LIBRARY m)
 find_package(Exiv2 REQUIRED)
 include_directories(${EXIV2_INCLUDE_DIR})
 
