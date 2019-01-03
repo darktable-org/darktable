@@ -523,12 +523,11 @@ set(THEME_DIRECTORY "${CMAKE_INSTALL_DATAROOTDIR}/icons/${THEME}")
 
 # we need some specific functions:
 if(NOT WIN32)
-  IF(CMAKE_SYSTEM MATCHES "SunOS.*")
-  add_definitions("-D_XOPEN_SOURCE=600")
-  elseif(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
-  else(CMAKE_SYSTEM MATCHES "SunOS.*")
-  add_definitions("-D_XOPEN_SOURCE=700")
-  endif(CMAKE_SYSTEM MATCHES "SunOS.*")
+    if(CMAKE_SYSTEM MATCHES "SunOS.*")
+        add_definitions("-D_XOPEN_SOURCE=600")
+    else()
+        add_definitions("-D_XOPEN_SOURCE=700")
+    endif(CMAKE_SYSTEM MATCHES "SunOS.*")
 endif(NOT WIN32)
 
 # Set default component name - that way external modules like RawSpeed will install their
