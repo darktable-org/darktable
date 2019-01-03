@@ -44,7 +44,6 @@ extern "C" {
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 }
@@ -75,9 +74,9 @@ const char *name()
 }
 
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("tone mapping", IOP_GROUP_TONE);
+  return IOP_GROUP_TONE;
 }
 
 int flags()

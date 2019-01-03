@@ -36,7 +36,6 @@
 #include "common/imageio_tiff.h"
 #include "develop/imageop_math.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include "external/adobe_coeff.c"
 #if defined(__SSE__)
@@ -113,9 +112,9 @@ const char *name()
   return _("input color profile");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("input color profile", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
 int flags()

@@ -31,7 +31,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -298,11 +297,10 @@ const char *name()
   return _("base curve");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("base curve", IOP_GROUP_BASIC);
+  return IOP_GROUP_BASIC;
 }
-
 
 int flags()
 {

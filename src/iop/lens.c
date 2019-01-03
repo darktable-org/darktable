@@ -32,7 +32,6 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <assert.h>
 #include <ctype.h>
 #include <gtk/gtk.h>
@@ -134,9 +133,9 @@ const char *name()
   return _("lens correction");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("lens correction", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int operation_tags()

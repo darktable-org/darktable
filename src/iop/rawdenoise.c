@@ -29,7 +29,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -129,9 +128,9 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("raw denoise", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)

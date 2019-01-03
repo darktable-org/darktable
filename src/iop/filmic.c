@@ -34,12 +34,10 @@
 #include "gui/presets.h"
 #include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 
 #include "develop/imageop.h"
 #include "gui/draw.h"
-#include "common/iop_group.h"
 #include "libs/colorpicker.h"
 
 #include <assert.h>
@@ -177,9 +175,9 @@ const char *name()
   return _("filmic");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("filmic", IOP_GROUP_TONE);
+  return IOP_GROUP_TONE;
 }
 
 int flags()

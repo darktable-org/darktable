@@ -65,8 +65,8 @@ void cleanup_global(struct dt_iop_module_so_t *self);
 int version();
 /** get name of the module, to be translated. */
 const char *name();
-/** get the groups this module belongs to. */
-int groups();
+/** get the default group this module belongs to. */
+int default_group();
 /** get the iop module flags. */
 int flags();
 

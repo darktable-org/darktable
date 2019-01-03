@@ -43,7 +43,7 @@ const char *name()
   return C_("modulename", "gamma");
 }
 
-int groups()
+int default_group()
 {
   return IOP_GROUP_COLOR;
 }
