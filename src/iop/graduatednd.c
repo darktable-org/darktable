@@ -37,7 +37,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -147,9 +146,9 @@ int flags()
          | IOP_FLAGS_TILING_FULL_ROI;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("graduated density", IOP_GROUP_EFFECT);
+  return IOP_GROUP_EFFECT;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)

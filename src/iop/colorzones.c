@@ -31,7 +31,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <inttypes.h>
 #include <math.h>
@@ -120,9 +119,9 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("color zones", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

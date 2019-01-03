@@ -29,7 +29,6 @@
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -103,9 +102,9 @@ int flags()
 }
 
 // where does it appear in the gui?
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("local contrast", IOP_GROUP_TONE);
+  return IOP_GROUP_TONE;
 }
 
 int legacy_params(

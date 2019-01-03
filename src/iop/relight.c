@@ -35,7 +35,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 
@@ -94,9 +93,9 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("fill light", IOP_GROUP_TONE);
+  return IOP_GROUP_TONE;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)

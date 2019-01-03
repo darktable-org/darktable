@@ -33,7 +33,6 @@
 #include "gui/presets.h"
 #include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -107,9 +106,9 @@ const char *name()
   return _("unbreak input profile");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("unbreak input profile", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
 int flags()

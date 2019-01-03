@@ -27,7 +27,7 @@
 #include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
+
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -66,9 +66,9 @@ const char *name()
   return _("local contrast");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("local contrast", IOP_GROUP_EFFECT);
+  return IOP_GROUP_EFFECT;
 }
 
 int flags()

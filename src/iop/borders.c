@@ -33,7 +33,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -163,9 +162,9 @@ const char *name()
   return _("framing");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("framing", IOP_GROUP_EFFECT);
+  return IOP_GROUP_EFFECT;
 }
 
 int operation_tags()

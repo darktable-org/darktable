@@ -29,9 +29,9 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include "iop/gaussian_elimination.h"
 #include "libs/colorpicker.h"
+
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -115,9 +115,9 @@ const char *name()
   return _("color look up table");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("color look up table", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
 int flags()

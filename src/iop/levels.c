@@ -37,7 +37,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_GUI_CURVE_INFL .3f
@@ -120,9 +119,9 @@ const char *name()
   return _("levels");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("levels", IOP_GROUP_TONE);
+  return IOP_GROUP_TONE;
 }
 
 int flags()

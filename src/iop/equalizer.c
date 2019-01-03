@@ -89,7 +89,7 @@ const char *name()
 }
 
 
-int groups()
+int default_group()
 {
   return IOP_GROUP_CORRECT;
 }
