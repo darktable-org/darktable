@@ -936,6 +936,7 @@ static void ui_refresh_albums_fill(PicasaAlbum *album, GtkListStore *list_store)
 
 static void ui_refresh_albums(dt_storage_picasa_gui_data_t *ui)
 {
+
   gboolean getlistok;
   GList *albumList = picasa_get_album_list(ui->picasa_api, &getlistok);
   if(!getlistok)
@@ -943,6 +944,8 @@ static void ui_refresh_albums(dt_storage_picasa_gui_data_t *ui)
     dt_control_log(_("unable to retrieve the album list"));
     goto cleanup;
   }
+
+  int current_index = gtk_combo_box_get_active(ui->comboBox_album);
 
   GtkListStore *model_album = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_album));
   GtkTreeIter iter;
@@ -958,8 +961,8 @@ static void ui_refresh_albums(dt_storage_picasa_gui_data_t *ui)
   }
   g_list_foreach(albumList, (GFunc)ui_refresh_albums_fill, model_album);
 
-  if(albumList != NULL) gtk_combo_box_set_active(ui->comboBox_album, 2);
-  // FIXME: get the albumid and set it in the PicasaCtx
+  if (albumList != NULL && current_index != -1)
+    gtk_combo_box_set_active(ui->comboBox_album, current_index);
   else
     gtk_combo_box_set_active(ui->comboBox_album, 0);
 
