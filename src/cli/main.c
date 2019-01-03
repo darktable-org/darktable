@@ -54,8 +54,8 @@
 static void usage(const char *progname)
 {
   fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max "
-                  "height>,--bpp <bpp>,--hq <0|1|true|false>,--upscale <0|1|true|false>,--style <style name>, --overwrite,"
-                  "--verbose] [--core <darktable options>]\n",
+                  "height>,--bpp <bpp>,--hq <0|1|true|false>,--upscale <0|1|true|false>,--style <style name>,"
+                  "--style-overwrite,--verbose] [--core <darktable options>]\n",
           progname);
 }
 
@@ -73,7 +73,7 @@ int main(int argc, char *arg[])
   char *output_filename = NULL;
   char *style = NULL;
   int file_counter = 0;
-  int width = 0, height = 0, bpp = 0, overwrite = 0;
+  int width = 0, height = 0, bpp = 0, style_overwrite = 0;
   gboolean verbose = FALSE, high_quality = TRUE, upscale = FALSE;
 
   int k;
@@ -146,9 +146,9 @@ int main(int argc, char *arg[])
         k++;
         style = arg[k];
       }
-      else if(!strcmp(arg[k], "--overwrite"))
+      else if(!strcmp(arg[k], "--style-overwrite"))
       {
-        overwrite = 1;
+        style_overwrite = 1;
       }
       else if(!strcmp(arg[k], "-v") || !strcmp(arg[k], "--verbose"))
       {
@@ -366,13 +366,13 @@ int main(int argc, char *arg[])
   fdata->max_width = (w != 0 && fdata->max_width > w) ? w : fdata->max_width;
   fdata->max_height = (h != 0 && fdata->max_height > h) ? h : fdata->max_height;
   fdata->style[0] = '\0';
-  fdata->style_append = 1; // make append the default and override with --overwrite
+  fdata->style_append = 1; // make append the default and override with --style-overwrite
 
   if(style) 
   {
     g_strlcpy((char *)fdata->style, style, DT_MAX_STYLE_NAME_LENGTH);
     fdata->style[127] = '\0';
-    if(overwrite)
+    if(style_overwrite)
       fdata->style_append = 0;
   }
 
