@@ -1126,7 +1126,7 @@ static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_gr
       dt_selection_select_filmroll(darktable.selection);
   }
 
-  gtk_widget_queue_draw(strip->filmstrip);
+  //gtk_widget_queue_draw(strip->filmstrip);
   return TRUE;
 }
 
@@ -1210,8 +1210,8 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
   {
     dt_selection_select_single(darktable.selection, imgid);
     /* redraw filmstrip */
-    if(darktable.view_manager->proxy.filmstrip.module)
-      gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
+    //if(darktable.view_manager->proxy.filmstrip.module)
+    //  gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
   }
   sqlite3_finalize(stmt);
 
