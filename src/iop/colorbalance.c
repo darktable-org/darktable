@@ -1024,14 +1024,14 @@ static void apply_gamma_neutralize(dt_iop_module_t *self)
   // Get the parameter
   for(int c = 0; c < 3; ++c) RGB[c] = logf(XYZ[1])/ logf(RGB[c] * p->gain[c + 1] + p->lift[c + 1] - 1.0f);
 
-  p->gamma[CHANNEL_RED] = 2.0 - RGB[0];
-  p->gamma[CHANNEL_GREEN] = 2.0 - RGB[1];
-  p->gamma[CHANNEL_BLUE] = 2.0 - RGB[2];
+  p->gamma[CHANNEL_RED] = CLAMP(2.0 - RGB[0], 0.0001f, 2.0f);
+  p->gamma[CHANNEL_GREEN] = CLAMP(2.0 - RGB[1], 0.0001f, 2.0f);
+  p->gamma[CHANNEL_BLUE] = CLAMP(2.0 - RGB[2], 0.0001f, 2.0f);
 
   darktable.gui->reset = 1;
-  dt_bauhaus_slider_set_soft(g->gamma_r, RGB[0] - 1.0f);
-  dt_bauhaus_slider_set_soft(g->gamma_g, RGB[1] - 1.0f);
-  dt_bauhaus_slider_set_soft(g->gamma_b, RGB[2] - 1.0f);
+  dt_bauhaus_slider_set_soft(g->gamma_r, -RGB[0] + 1.0f);
+  dt_bauhaus_slider_set_soft(g->gamma_g, -RGB[1] + 1.0f);
+  dt_bauhaus_slider_set_soft(g->gamma_b, -RGB[2] + 1.0f);
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
   darktable.gui->reset = 0;
 
