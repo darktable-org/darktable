@@ -825,8 +825,8 @@ void gui_update(dt_iop_module_t *self)
   // let gui slider match current parameters:
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  dt_bauhaus_slider_set(g->radius, p->radius);
-  dt_bauhaus_slider_set(g->strength, p->strength);
+  dt_bauhaus_slider_set_soft(g->radius, p->radius);
+  dt_bauhaus_slider_set_soft(g->strength, p->strength);
   dt_bauhaus_slider_set(g->luma, p->luma * 100.f);
   dt_bauhaus_slider_set(g->chroma, p->chroma * 100.f);
 }
@@ -839,7 +839,9 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g->radius = dt_bauhaus_slider_new_with_range(self, 1.0f, 4.0f, 1., 2.f, 0);
+  dt_bauhaus_slider_enable_soft_boundaries(g->radius, 0.0, 10.0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);
+  dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.0f, 100000.0f);
   g->luma = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);
   g->chroma = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 100.f, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
