@@ -600,7 +600,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
 
-  dt_bauhaus_slider_set(g->threshold, p->threshold);
+  dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "non_raw" : "raw");
   gtk_widget_queue_draw(self->widget);
 }
@@ -992,6 +992,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(rawdenoise_scrolled), self);
 
   c->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 0.1, 0.001, p->threshold, 3);
+  dt_bauhaus_slider_enable_soft_boundaries(c->threshold, 0.0, 1.0);
   gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->threshold), TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(c->threshold, NULL, _("noise threshold"));
   g_signal_connect(G_OBJECT(c->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
