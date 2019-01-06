@@ -1203,6 +1203,13 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/demosaic/fdc_xover_iso</name>
+    <type>int</type>
+    <default>1600</default>
+    <shortdescription>crossover iso for X-Trans fdc demosaicing</shortdescription>
+    <longdescription>up to, and including, this iso, X-Trans frequency domain chroma demosaicing uses the hybrid mode for determining chroma; for all higher iso values the pure fdc is used.</longdescription>
+  </dtconfig>
   <dtconfig prefs="core" section="quality">
     <name>plugins/darkroom/demosaic/quality</name>
     <type>
