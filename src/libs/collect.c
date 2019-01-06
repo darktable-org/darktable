@@ -1429,6 +1429,7 @@ void gui_reset(dt_lib_module_t *self)
 {
   dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
   dt_conf_set_int("plugins/lighttable/collect/item0", DT_COLLECTION_PROP_FILMROLL);
+  dt_conf_set_int("plugins/lighttable/collect/mode0", 0);
   dt_conf_set_string("plugins/lighttable/collect/string0", "");
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
   d->active_rule = 0;
