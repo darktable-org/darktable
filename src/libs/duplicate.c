@@ -217,7 +217,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   }
 
   // we erase everything
-  cairo_set_source_rgb(cri, .2, .2, .2);
+  dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
   cairo_paint(cri);
 
   //we draw the cached image
@@ -236,7 +236,7 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
   guint width, height;
   width = gtk_widget_get_allocated_width (widget);
   height = gtk_widget_get_allocated_height (widget);
-  cairo_set_source_rgb(cr, .2, .2, .2);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
   cairo_paint(cr);
 
   int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
