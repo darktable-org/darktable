@@ -156,7 +156,9 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_LIGHTTABLE;
 }
 
-typedef enum dt_lighttable_direction_t {
+typedef enum dt_lighttable_direction_t
+{
+  DIRECTION_NONE = -1,
   DIRECTION_UP = 0,
   DIRECTION_DOWN = 1,
   DIRECTION_LEFT = 2,
@@ -167,7 +169,7 @@ typedef enum dt_lighttable_direction_t {
   DIRECTION_BOTTOM = 7,
   DIRECTION_PGUP = 8,
   DIRECTION_PGDOWN = 9,
-  DIRECTION_CENTER = 10
+  DIRECTION_CENTER = 10,
 } dt_lighttable_direction_t;
 
 static void switch_layout_to(dt_library_t *lib, int new_layout)
@@ -2032,7 +2034,7 @@ int key_released(dt_view_t *self, guint key, guint state)
   if(lib->key_select && (key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R))
   {
     lib->key_select = 0;
-    lib->key_select_direction = -1;
+    lib->key_select_direction = DIRECTION_NONE;
   }
 
   if(!darktable.control->key_accelerators_on) return 0;
