@@ -484,7 +484,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
                                int32_t pointery)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  gboolean offset_changed = FALSE;
+  const gboolean offset_changed = lib->offset_changed;
   int missing = 0;
 
   /* query new collection count */
@@ -504,7 +504,6 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_paint(cr);
 
-  offset_changed = lib->offset_changed;
 
   const float wd = width / (float)iir;
   const float ht = width / (float)iir;
@@ -512,7 +511,6 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   int pi = pointerx / (float)wd;
   int pj = pointery / (float)ht;
   if(pointerx < 0 || pointery < 0) pi = pj = -1;
-  // const int pidx = grid_to_index(pj, pi, iir, offset);
 
   const int img_pointerx = iir == 1 ? pointerx : fmodf(pointerx, wd);
   const int img_pointery = iir == 1 ? pointery : fmodf(pointery, ht);
@@ -650,6 +648,7 @@ end_query_cache:
   {
     before_mouse_over_id = dt_control_get_mouse_over_id();
   }
+
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
@@ -676,34 +675,41 @@ end_query_cache:
         /* set mouse over id if pointer is in current row / col */
         if (lib->using_arrows)
         {
-
           if(before_mouse_over_id == -1)
           {
             // mouse has never been in filemanager area set mouse on first image and ignore this movement
             before_mouse_over_id = query_ids[0];
           }
+
           if(before_mouse_over_id == id)
           {
             // I would like to jump from before_mouse_over_id to query_ids[idx]
-            int idx = current_image+lib->key_jump_offset-1;
-            int current_row = (int)((current_image-1)/iir);
-            int current_col = current_image%iir;
+            const int idx = current_image+lib->key_jump_offset-1;
+            const int current_row = (int)((current_image-1)/iir);
+            const int current_col = current_image%iir;
 
             // detect if the current movement need some extra movement (page adjust)
-            if (current_row  == (int)(max_rows-1.5) && lib->key_jump_offset == iir)
+            if(current_row  == (int)(max_rows-1.5) && lib->key_jump_offset == iir)
+            {
               // going DOWN from last row
               move_view(lib, DIRECTION_DOWN);
-            else if (current_row  == 0 && lib->key_jump_offset == iir*-1)
+            }
+            else if(current_row  == 0 && lib->key_jump_offset == iir*-1)
             {
               // going UP from first row
               move_view(lib, DIRECTION_UP);
             }
-            else if (current_row == (int)(max_rows-1.5) && current_col ==  0 && lib->key_jump_offset == 1)
+            else if(current_row == (int)(max_rows-1.5) && current_col ==  0 && lib->key_jump_offset == 1)
+            {
               // going RIGHT from last visible
               move_view(lib, DIRECTION_DOWN);
-            else if (current_row == 0 && current_col ==  1 && lib->key_jump_offset == -1)
+            }
+            else if(current_row == 0 && current_col ==  1 && lib->key_jump_offset == -1)
+            {
               // going LEFT from first visible
               move_view(lib, DIRECTION_UP);
+            }
+
             if (idx > -1 && idx < lib->collection_count && query_ids[idx])
             {
                 // offset is valid..we know where to jump
@@ -744,7 +750,7 @@ end_query_cache:
         }
 
         cairo_save(cr);
-        // if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
+
         if(iir == 1)
         {
           // we are on the single-image display at a time, in this case we want the selection to be updated to
@@ -793,7 +799,6 @@ escape_image_loop:
       }
 
       id = query_ids[current_image];
-
 
       if(id > 0)
       {
@@ -963,6 +968,7 @@ after_drawing:
     darktable.gui->center_tooltip = 0;
     gtk_widget_set_tooltip_text(dt_ui_center(darktable.gui->ui), "");
   }
+
   return missing;
 }
 
@@ -1083,7 +1089,6 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
 
   // mouse left the area, but we leave mouse over as it was, especially during panning
   // if(!pan && pointerx > 0 && pointerx < width && pointery > 0 && pointery < height)
-  // dt_control_set_mouse_over_id(-1);
   if(!pan && zoom != 1) dt_control_set_mouse_over_id(-1);
 
   // set scrollbar positions, clamp zoom positions
@@ -1139,8 +1144,8 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   const int max_cols = (zoom == 1) ? 1 : (MIN(DT_LIBRARY_MAX_ZOOM - MAX(0, offset_i), 1 + (int)(zoom + .5)));
 
   int offset = MAX(0, offset_i) + DT_LIBRARY_MAX_ZOOM * offset_j;
-  int img_pointerx = zoom == 1 ? pointerx : fmodf(pointerx + zoom_x, wd);
-  int img_pointery = zoom == 1 ? pointery : fmodf(pointery + zoom_y, ht);
+  const int img_pointerx = zoom == 1 ? pointerx : fmodf(pointerx + zoom_x, wd);
+  const int img_pointery = zoom == 1 ? pointery : fmodf(pointery + zoom_y, ht);
 
   // assure 1:1 is not switching images on resize/tab events:
   if(!track && lib->offset != 0x7fffffff && zoom == 1)
@@ -1468,7 +1473,6 @@ static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *ac
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-
   if(layout == 1)
     move_view(lib, DIRECTION_TOP);
   else
@@ -1483,7 +1487,6 @@ static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-
   if(layout == 1)
     move_view(lib, DIRECTION_BOTTOM);
   else
@@ -1546,7 +1549,7 @@ static gboolean realign_key_accel_callback(GtkAccelGroup *accel_group, GObject *
 static gboolean select_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
 {
-  uint32_t id = dt_control_get_mouse_over_id();
+  const uint32_t id = dt_control_get_mouse_over_id();
   dt_selection_toggle(darktable.selection, id);
   return TRUE;
 }
@@ -1554,7 +1557,7 @@ static gboolean select_toggle_callback(GtkAccelGroup *accel_group, GObject *acce
 static gboolean select_single_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
 {
-  uint32_t id = dt_control_get_mouse_over_id();
+  const uint32_t id = dt_control_get_mouse_over_id();
   dt_selection_select_single(darktable.selection, id);
   return TRUE;
 }
@@ -1761,8 +1764,10 @@ void mouse_enter(dt_view_t *self)
   if (lib->using_arrows == 0)
   {
     if(id == -1)
-      dt_control_set_mouse_over_id(
-          lib->last_mouse_over_id); // this seems to be needed to fix the strange events fluxbox emits
+    {
+      // this seems to be needed to fix the strange events fluxbox emits
+      dt_control_set_mouse_over_id(lib->last_mouse_over_id);
+    }
   }
 }
 
@@ -1914,7 +1919,6 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
     {
       case DT_VIEW_DESERT:
       {
-
         if (lib->using_arrows)
         {
           // in this case dt_control_get_mouse_over_id() means "last image visited with arrows"
@@ -1922,7 +1926,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           return 0;
         }
 
-        int32_t id = dt_control_get_mouse_over_id();
+        const int32_t id = dt_control_get_mouse_over_id();
         if((lib->modifiers & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
           dt_selection_select_single(darktable.selection, id);
         else if((lib->modifiers & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
@@ -1939,18 +1943,18 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       case DT_VIEW_STAR_4:
       case DT_VIEW_STAR_5:
       {
-        int32_t mouse_over_id = dt_control_get_mouse_over_id();
+        const int32_t mouse_over_id = dt_control_get_mouse_over_id();
         dt_ratings_apply_to_image_or_group(mouse_over_id, lib->image_over);
         _update_collected_images(self);
         break;
       }
       case DT_VIEW_GROUP:
       {
-        int32_t mouse_over_id = dt_control_get_mouse_over_id();
+        const int32_t mouse_over_id = dt_control_get_mouse_over_id();
         const dt_image_t *image = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'r');
         if(!image) return 0;
-        int group_id = image->group_id;
-        int id = image->id;
+        const int group_id = image->group_id;
+        const int id = image->id;
         dt_image_cache_read_release(darktable.image_cache, image);
         if(state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) // just add the whole group to the selection. TODO:
                                                         // make this also work for collapsed groups.
@@ -1978,7 +1982,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       }
       case DT_VIEW_AUDIO:
       {
-        int32_t mouse_over_id = dt_control_get_mouse_over_id();
+        const int32_t mouse_over_id = dt_control_get_mouse_over_id();
         gboolean start_audio = TRUE;
         if(lib->audio_player_id != -1)
         {
@@ -2031,6 +2035,7 @@ int key_released(dt_view_t *self, guint key, guint state)
 {
   dt_control_accels_t *accels = &darktable.control->accels;
   dt_library_t *lib = (dt_library_t *)self->data;
+
   if(lib->key_select && (key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R))
   {
     lib->key_select = 0;
@@ -2104,7 +2109,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
      || (key == accels->lighttable_preview_sticky_focus.accel_key
          && state == accels->lighttable_preview_sticky_focus.accel_mods))
   {
-    int32_t mouse_over_id = dt_control_get_mouse_over_id();
+    const int32_t mouse_over_id = dt_control_get_mouse_over_id();
     if(lib->full_preview_id == -1 && mouse_over_id != -1)
     {
       if((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
@@ -2156,7 +2161,6 @@ int key_pressed(dt_view_t *self, guint key, guint state)
         lib->display_focus = 1;
       }
 
-      // dt_dev_invalidate(darktable.develop);
       return 1;
     }
     return 0;
@@ -2167,7 +2171,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     lib->key_select = 1;
   }
 
-  if((key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods) || (key == accels->lighttable_left.accel_key && layout == 1 && zoom != 1))
+  // key move left
+  if((key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
+     || (key == accels->lighttable_left.accel_key && layout == 1 && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = -DT_LIBRARY_MAX_ZOOM;
@@ -2190,8 +2196,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 1;
   }
 
-  //if(key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
-  if((key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods) || (key == accels->lighttable_right.accel_key && layout == 1 && zoom != 1))
+  // key move right
+  if((key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
+     || (key == accels->lighttable_right.accel_key && layout == 1 && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = +DT_LIBRARY_MAX_ZOOM;
@@ -2214,7 +2221,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 1;
   }
 
-  if((key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods) || (key == accels->lighttable_up.accel_key && layout == 1 && zoom != 1))
+  // key move up
+  if((key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods)
+     || (key == accels->lighttable_up.accel_key && layout == 1 && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = -DT_LIBRARY_MAX_ZOOM;
@@ -2235,7 +2244,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 1;
   }
 
-  if((key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods) || (key == accels->lighttable_down.accel_key && layout == 1 && zoom != 1))
+  // key move donw
+  if((key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods)
+     || (key == accels->lighttable_down.accel_key && layout == 1 && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = +DT_LIBRARY_MAX_ZOOM;
@@ -2489,7 +2500,6 @@ void gui_init(dt_view_t *self)
       }
     }
   }
-
 
   char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
   char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
