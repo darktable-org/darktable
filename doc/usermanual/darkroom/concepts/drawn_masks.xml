@@ -280,10 +280,9 @@
         The size of the complete shape can be modified by
         <emphasis>scrolling</emphasis>&nbsp;&ndash; analogous to the circle shape. The same
         holds true for the width of the border, i.e. the area with a gradual opacity decay,
-        which can be changed by <emphasis>scrolling</emphasis> when it is highlighted or by
-        <emphasis>shift+scroll</emphasis> from anywhere within the shape. Single nodes as well
-        as path segments can be moved by mouse <emphasis>dragging</emphasis>. If a node is
-        selected by <emphasis>clicking</emphasis> on it, a further control point
+        which can be changed by <emphasis>shift+scroll</emphasis> from anywhere within the shape.
+        Single nodes as well as path segments can be moved by mouse <emphasis>dragging</emphasis>.
+        If a node is selected by <emphasis>clicking</emphasis> on it, a further control point
         appears&nbsp;&ndash; you can move it around to modify the curvature of the line and
         reset to default by <emphasis>right-clicking</emphasis>. <emphasis>Dragging</emphasis>
         one of the control points on the border adjusts the border width just in that part of
