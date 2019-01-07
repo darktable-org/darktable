@@ -56,6 +56,22 @@
 
 DT_MODULE(1)
 
+typedef enum dt_lighttable_direction_t
+{
+  DIRECTION_NONE = -1,
+  DIRECTION_UP = 0,
+  DIRECTION_DOWN = 1,
+  DIRECTION_LEFT = 2,
+  DIRECTION_RIGHT = 3,
+  DIRECTION_ZOOM_IN = 4,
+  DIRECTION_ZOOM_OUT = 5,
+  DIRECTION_TOP = 6,
+  DIRECTION_BOTTOM = 7,
+  DIRECTION_PGUP = 8,
+  DIRECTION_PGDOWN = 9,
+  DIRECTION_CENTER = 10,
+} dt_lighttable_direction_t;
+
 typedef enum dt_lighttable_layout_t
 {
   DT_LAYOUT_FIRST = -1,
@@ -92,7 +108,7 @@ typedef struct dt_library_t
   int key_jump_offset;
   int using_arrows;
   int key_select;
-  int key_select_direction;
+  dt_lighttable_direction_t key_select_direction;
   dt_lighttable_layout_t layout;
   uint32_t modifiers;
   uint32_t center, pan;
@@ -107,6 +123,12 @@ typedef struct dt_library_t
   gboolean offset_changed;
   int images_in_row;
   int max_rows;
+
+  float thumb_size;
+  int last_mouse_over_thumb;
+  int32_t last_exposed_id;
+  float offset_x, offset_y;
+  gboolean force_expose_all;
 
   uint8_t *full_res_thumb;
   int32_t full_res_thumb_id, full_res_thumb_wd, full_res_thumb_ht;
@@ -164,22 +186,6 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_LIGHTTABLE;
 }
 
-typedef enum dt_lighttable_direction_t
-{
-  DIRECTION_NONE = -1,
-  DIRECTION_UP = 0,
-  DIRECTION_DOWN = 1,
-  DIRECTION_LEFT = 2,
-  DIRECTION_RIGHT = 3,
-  DIRECTION_ZOOM_IN = 4,
-  DIRECTION_ZOOM_OUT = 5,
-  DIRECTION_TOP = 6,
-  DIRECTION_BOTTOM = 7,
-  DIRECTION_PGUP = 8,
-  DIRECTION_PGDOWN = 9,
-  DIRECTION_CENTER = 10,
-} dt_lighttable_direction_t;
-
 static void switch_layout_to(dt_library_t *lib, int new_layout)
 {
   // some sanity check for the new layout
@@ -197,18 +203,22 @@ static void switch_layout_to(dt_library_t *lib, int new_layout)
     lib->center = 0;
 
     lib->offset_changed = TRUE;
+    lib->offset_x = 0;
+    lib->offset_y = 0;
   }
 }
 
 static void move_view(dt_library_t *lib, dt_lighttable_direction_t dir)
 {
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+  const int current_offset = lib->offset;
 
   switch(dir)
   {
     case DIRECTION_UP:
     {
       if(lib->offset >= 1) lib->offset = lib->offset - iir;
+      while(lib->offset < 0) lib->offset += iir;
     }
     break;
     case DIRECTION_DOWN:
@@ -249,7 +259,7 @@ static void move_view(dt_library_t *lib, dt_lighttable_direction_t dir)
   }
 
   lib->first_visible_filemanager = lib->offset;
-  lib->offset_changed = TRUE;
+  lib->offset_changed = (current_offset != lib->offset);
 }
 
 /* This function allows the file manager view to zoom "around" the image
@@ -289,6 +299,8 @@ static void zoom_around_image(dt_library_t *lib, double pointerx, double pointer
 static void _view_lighttable_collection_listener_callback(gpointer instance, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->force_expose_all = TRUE;
   _unregister_custom_image_order_drag_n_drop(self);
   _register_custom_image_order_drag_n_drop(self);
 
@@ -443,6 +455,13 @@ void init(dt_view_t *self)
   lib->full_res_thumb_id = -1;
   lib->audio_player_id = -1;
 
+  lib->thumb_size = -1;
+  lib->last_mouse_over_thumb = -1;
+  lib->last_exposed_id = -1;
+  lib->force_expose_all = FALSE;
+  lib->offset_x = 0;
+  lib->offset_y = 0;
+
   /* setup collection listener and initialize main_query statement */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_view_lighttable_collection_listener_callback), (gpointer)self);
@@ -508,14 +527,21 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   /* get image over id */
   lib->image_over = DT_VIEW_DESERT;
   int32_t mouse_over_id = dt_control_get_mouse_over_id(), mouse_over_group = -1;
+  /* need to keep this one as it needs to be refreshed */
+  const int initial_mouse_over_id = mouse_over_id;
 
   /* fill background */
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
-  cairo_paint(cr);
-
+  if (mouse_over_id == -1 || lib->force_expose_all || iir == 1 || offset_changed)
+  {
+    lib->force_expose_all = TRUE;
+    lib->last_exposed_id = -1;
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
+    cairo_paint(cr);
+  }
 
   const float wd = width / (float)iir;
   const float ht = width / (float)iir;
+  lib->thumb_size = wd;
 
   int pi = pointerx / (float)wd;
   int pj = pointery / (float)ht;
@@ -652,6 +678,7 @@ end_query_cache:
   cairo_save(cr);
   int current_image = 0;
   int before_mouse_over_id = 0;
+  const int before_last_exposed_id = lib->last_exposed_id;
 
   if (lib->using_arrows)
   {
@@ -719,37 +746,48 @@ end_query_cache:
               move_view(lib, DIRECTION_UP);
             }
 
-            if (idx > -1 && idx < lib->collection_count && query_ids[idx])
+            // handle the selection from keyboard, shift + movement
+            if (lib->key_jump_offset != 0 && lib->key_select)
             {
-                // offset is valid..we know where to jump
-                mouse_over_id = query_ids[idx];
+              const int direction = (lib->key_jump_offset > 0) ? DIRECTION_RIGHT : DIRECTION_LEFT;
+              if (lib->key_select_direction != direction)
+              {
+                if(lib->key_select_direction != DIRECTION_NONE)
+                  dt_selection_toggle(darktable.selection, before_mouse_over_id);
+                lib->key_select_direction = direction;
+              }
+              int loop_count = abs(lib->key_jump_offset); // ex: from -10 to 1  // from 10 to 1
+              while (loop_count--)
+              {
+                // ex shift + down toggle selection on images_in_row images
+                const int to_toggle = idx+(-1*lib->key_jump_offset/abs(lib->key_jump_offset)*loop_count);
+                if (query_ids[to_toggle])
+                  dt_selection_toggle(darktable.selection, query_ids[to_toggle]);
+              }
+            }
+
+            if(idx > -1 && idx < lib->collection_count && query_ids[idx])
+            {
+              // offset is valid..we know where to jump
+              mouse_over_id = query_ids[idx];
+
+              // we reset the key_jump_offset only in this case, we know where to jump. If we don't know it may
+              // be the case that we are moving UP and the row is still not displayed. Next cycle the row will
+              // be displayed (move_view) and the picture will be available.
+              lib->key_jump_offset = 0;
             }
             else
+            {
               // going into a non existing position. Do nothing
               mouse_over_id = before_mouse_over_id;
+              lib->force_expose_all = TRUE;
+            }
 
-            if (lib->key_jump_offset != 0)
+            // if we have moved the view we need to expose again all pictures as the first row or last one need to
+            // be redrawn properly. for this we just record the missing thumbs.
+            if(lib->offset_changed && mouse_over_id != -1)
             {
-              if (lib->key_select)
-              {
-                // managing shift + movement
-                int direction = (lib->key_jump_offset > 0) ? DIRECTION_RIGHT : DIRECTION_LEFT;
-                if (lib->key_select_direction != direction)
-                {
-                  lib->key_select_direction = direction;
-                  dt_selection_toggle(darktable.selection, before_mouse_over_id);
-                }
-                int loop_count = abs(lib->key_jump_offset); // ex: from -10 to 1  // from 10 to 1
-                int to_toggle = 0;
-                while (loop_count--)
-                {
-                  // ex shift + down toggle selection on images_in_row images
-                  to_toggle =  idx+(-1*lib->key_jump_offset/abs(lib->key_jump_offset)*loop_count);
-                  if (query_ids[to_toggle])
-                    dt_selection_toggle(darktable.selection, query_ids[to_toggle]);
-                }
-              }
-              lib->key_jump_offset = 0; // avoid key_release events move cursor. TBD: return the right value in key_pressed and trash the flag
+              missing += iir;
             }
           }
         }
@@ -757,6 +795,8 @@ end_query_cache:
         {
           mouse_over_id = id;
         }
+
+        if(!lib->pan && (iir != 1 || mouse_over_id != -1)) dt_control_set_mouse_over_id(mouse_over_id);
 
         cairo_save(cr);
 
@@ -767,10 +807,14 @@ end_query_cache:
           // this single image.
           dt_selection_select_single(darktable.selection, id);
         }
-        missing += dt_view_image_expose(
+        if (id == mouse_over_id || lib->force_expose_all || id == before_last_exposed_id || id == initial_mouse_over_id)
+        {
+          if(!lib->force_expose_all && id == mouse_over_id) lib->last_exposed_id = id;
+          missing += dt_view_image_expose(
             &(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir,
             pi == col && pj == row ? img_pointerx : -1,
             pi == col && pj == row ? img_pointery : -1, FALSE, FALSE);
+        }
 
         cairo_restore(cr);
       }
@@ -793,6 +837,27 @@ escape_image_loop:
     drawing_offset = lib->offset;
     offset = 0;
   }
+
+  if(iir > 1)
+  {
+    // clear rows & cols around thumbs, needed to clear the group borders
+    cairo_save(cr);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
+    for(int row = 0; row < max_rows; row++)
+    {
+      cairo_move_to(cr, 0, row * ht);
+      cairo_line_to(cr, width, row * ht);
+    }
+    for(int col = 0; col < max_cols; col++)
+    {
+      cairo_move_to(cr, col * wd, 0);
+      cairo_line_to(cr, col * wd, height);
+    }
+    cairo_set_line_width(cr, 0.011 * wd);
+    cairo_stroke(cr);
+    cairo_restore(cr);
+  }
+
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
@@ -998,6 +1063,8 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   lib->collection_count = dt_collection_get_count(darktable.collection);
 
   mouse_over_id = dt_control_get_mouse_over_id();
+  /* need to keep this one as it needs to be refreshed */
+  const int initial_mouse_over_id = mouse_over_id;
   zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
   zoom_x = lib->zoom_x;
   zoom_y = lib->zoom_y;
@@ -1008,11 +1075,16 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   lib->images_in_row = zoom;
   lib->image_over = DT_VIEW_DESERT;
 
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
-  cairo_paint(cr);
+  if (mouse_over_id == -1 || lib->force_expose_all || pan)
+  {
+    lib->force_expose_all = TRUE;
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
+    cairo_paint(cr);
+  }
 
   const float wd = width / zoom;
   const float ht = width / zoom;
+  lib->thumb_size = wd;
 
   static float oldzoom = -1;
   if(oldzoom < 0) oldzoom = zoom;
@@ -1133,6 +1205,8 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
       zoom_y = ht * ceilf((float)lib->collection_count / DT_LIBRARY_MAX_ZOOM) - ht;
   }
 
+  lib->offset_x = zoom_x;
+  lib->offset_y = zoom_y;
 
   int offset_i = (int)(zoom_x / wd);
   int offset_j = (int)(zoom_y / ht);
@@ -1175,6 +1249,7 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
 
   cairo_translate(cr, -offset_x * wd, -offset_y * ht);
   cairo_translate(cr, -MIN(offset_i * wd, 0.0), 0.0);
+  const int before_last_exposed_id = lib->last_exposed_id;
 
   for(int row = 0; row < max_rows; row++)
   {
@@ -1207,8 +1282,13 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
 
         cairo_save(cr);
         // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
-        missing += dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx,
-                             img_pointery, FALSE, FALSE);
+        if (id == mouse_over_id || lib->force_expose_all || id == before_last_exposed_id || id == initial_mouse_over_id)
+        {
+          if(!lib->force_expose_all && id == mouse_over_id) lib->last_exposed_id = id;
+          missing += dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom,
+                                          img_pointerx, img_pointery, FALSE, FALSE);
+        }
+
         cairo_restore(cr);
         if(zoom == 1)
         {
@@ -1431,10 +1511,13 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
 
 static gboolean _expose_again(gpointer user_data)
 {
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_library_t *lib = (dt_library_t *)self->data;
   // unfortunately there might have been images without thumbnails during expose.
   // this can have multiple reasons: not loaded yet (we'll receive a signal when done)
   // or still locked for writing.. we won't be notified when this changes.
   // so we just track whether there were missing images and expose again.
+  lib->force_expose_all = TRUE;
   dt_control_queue_redraw_center();
   return FALSE; // don't call again
 }
@@ -1472,8 +1555,11 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   const double end = dt_get_wtime();
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] expose took %0.04f sec\n", end - start);
+
   if(missing_thumbnails)
-    g_timeout_add(500, _expose_again, 0);
+    g_timeout_add(250, _expose_again, self);
+  else
+    lib->force_expose_all = FALSE;
 }
 
 static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1558,7 +1644,10 @@ static gboolean realign_key_accel_callback(GtkAccelGroup *accel_group, GObject *
 static gboolean select_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
 {
+  dt_view_t *self = (dt_view_t *)data;
+  dt_library_t *lib = (dt_library_t *)self->data;
   const uint32_t id = dt_control_get_mouse_over_id();
+  lib->key_select_direction = DIRECTION_NONE;
   dt_selection_toggle(darktable.selection, id);
   return TRUE;
 }
@@ -1566,7 +1655,10 @@ static gboolean select_toggle_callback(GtkAccelGroup *accel_group, GObject *acce
 static gboolean select_single_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
 {
+  dt_view_t *self = (dt_view_t *)data;
+  dt_library_t *lib = (dt_library_t *)self->data;
   const uint32_t id = dt_control_get_mouse_over_id();
+  lib->key_select_direction = DIRECTION_NONE;
   dt_selection_select_single(darktable.selection, id);
   return TRUE;
 }
@@ -1580,6 +1672,10 @@ static gboolean star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acc
   int next_image_rowid = -1;
 
   dt_library_t *lib = (dt_library_t *)self->data;
+
+  // needed as we can have a reordering of the pictures
+  lib->force_expose_all = TRUE;
+
   if(lib->using_arrows)
   {
     // if using arrows may be the image I'm rating is going to disappear from the collection.
@@ -1697,6 +1793,7 @@ void enter(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->button = 0;
   lib->pan = 0;
+  lib->force_expose_all = TRUE;
   dt_collection_hint_message(darktable.collection);
 
   // hide panel if we are in full preview mode
@@ -1821,6 +1918,7 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+  lib->force_expose_all = TRUE;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   if(lib->full_preview_id > -1)
   {
@@ -1862,7 +1960,45 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
-  dt_control_queue_redraw_center();
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  // real px, py in the thumb lighttable must account for the possible offset_[xy] when using the zoomable lighttable
+  const double px = x + lib->offset_x;
+  const double py = y + lib->offset_y;
+
+  // no redraw by default
+  gboolean do_redraw = FALSE;
+
+  lib->using_arrows = 0;
+
+  if(lib->images_in_row == 1 || lib->full_preview_id != -1 || lib->thumb_size == -1 || px < 0 || py < 0)
+  {
+    // a single image in a row or full preview or we don't have yet the thumb size (first expose)
+    do_redraw = TRUE;
+  }
+  else
+  {
+    // compute the actual thumb number, this is not at all the thumb id, but a count of the thumb starting by the
+    // columns and continuing on the line. this goal is to filter out as much as possible the redraw event. when we
+    // stays on the same thumb we do not redraw, there is nothing to do. the exception is a small border around the
+    // thumb to ensure the stars, reject tag and the dev history sensitive area are reacting.
+
+    const int mouse_over_thumb = (int)(1.0 + px / lib->thumb_size) + (lib->images_in_row * (int)(py / lib->thumb_size));
+    const int x_offset = (int)fmodf(px, lib->thumb_size);
+    const int y_offset = (int)fmodf(py, lib->thumb_size);
+    const int end_pos = (lib->thumb_size * 85) / 100;
+    const int start_pos = (lib->thumb_size * 10) / 100;
+
+    if (lib->last_mouse_over_thumb == -1 || lib->last_mouse_over_thumb != mouse_over_thumb
+        || (y_offset > end_pos || y_offset < start_pos)
+        || (x_offset > end_pos || x_offset < start_pos))
+    {
+      lib->last_mouse_over_thumb = mouse_over_thumb;
+      do_redraw = TRUE;
+    }
+  }
+
+  if(do_redraw) dt_control_queue_redraw_center();
 }
 
 
@@ -1913,6 +2049,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   lib->select_offset_y = lib->zoom_y;
   lib->select_offset_x += x;
   lib->select_offset_y += y;
+  lib->force_expose_all = TRUE;
 
   if (dt_control_get_mouse_over_id() < 0 || !_is_custom_image_order_required(self))
   {
@@ -2045,6 +2182,11 @@ int key_released(dt_view_t *self, guint key, guint state)
   dt_control_accels_t *accels = &darktable.control->accels;
   dt_library_t *lib = (dt_library_t *)self->data;
 
+  // in zoomable lighttable mode always expose full when a key is pressed as the whole area is
+  // adjusted each time a navigation key is used.
+  if (lib->layout == DT_LAYOUT_ZOOMABLE)
+    lib->force_expose_all = TRUE;
+
   if(lib->key_select && (key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R))
   {
     lib->key_select = 0;
@@ -2052,6 +2194,10 @@ int key_released(dt_view_t *self, guint key, guint state)
   }
 
   if(!darktable.control->key_accelerators_on) return 0;
+
+  // hide/show sideborders, we need a full expose
+  if(key == accels->global_sideborders.accel_key && state == accels->global_sideborders.accel_mods)
+    lib->force_expose_all = TRUE;
 
   if(((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
       || (key == accels->lighttable_preview_display_focus.accel_key
@@ -2071,6 +2217,7 @@ int key_released(dt_view_t *self, guint key, guint state)
 
     lib->full_preview = 0;
     lib->display_focus = 0;
+    lib->force_expose_all = TRUE;
   }
 
   return 1;
@@ -2107,6 +2254,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
     lib->full_preview = 0;
     lib->display_focus = 0;
+    lib->force_expose_all = TRUE;
     return 1;
   }
 
@@ -2170,6 +2318,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
         lib->display_focus = 1;
       }
 
+      lib->force_expose_all = TRUE;
       return 1;
     }
     return 0;
@@ -2279,24 +2428,29 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   if(key == accels->lighttable_center.accel_key && state == accels->lighttable_center.accel_mods)
   {
+    lib->force_expose_all = TRUE;
     lib->center = 1;
     return 1;
   }
 
+  // zoom out key
   if(key == accels->global_zoom_in.accel_key && state == accels->global_zoom_in.accel_mods)
   {
     zoom--;
     if(zoom < 1) zoom = 1;
 
+    lib->force_expose_all = TRUE;
     dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
     return 1;
   }
 
+  // zoom in key
   if(key == accels->global_zoom_out.accel_key && state == accels->global_zoom_out.accel_mods)
   {
     zoom++;
     if(zoom > 2 * DT_LIBRARY_MAX_ZOOM) zoom = 2 * DT_LIBRARY_MAX_ZOOM;
 
+    lib->force_expose_all = TRUE;
     dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
     return 1;
   }
