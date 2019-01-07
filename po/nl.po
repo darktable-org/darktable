@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-07 14:01+0100\n"
-"PO-Revision-Date: 2019-01-07 14:19+0100\n"
+"POT-Creation-Date: 2019-01-07 19:43+0100\n"
+"PO-Revision-Date: 2019-01-07 19:55+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -488,14 +488,12 @@ msgid "ask before deleting a tag"
 msgstr "vraag om bevestiging voordat een label wordt verwijderd"
 
 #: ../build/src/preferences_gen.h:2580
-#, fuzzy
-#| msgid "ask before deleting a tag"
 msgid "ask before deleting a style"
-msgstr "vraag om bevestiging voordat een label wordt verwijderd"
+msgstr "vraag of een stijl verwijderd mag worden"
 
 #: ../build/src/preferences_gen.h:2599 ../build/src/preferences_gen.h:3401
 msgid "miscellaneous"
-msgstr ""
+msgstr "diversen"
 
 #: ../build/src/preferences_gen.h:2610
 msgid "width of the side panels in pixels"
@@ -710,14 +708,12 @@ msgstr ""
 "lanzos2, lanczos3)"
 
 #: ../build/src/preferences_gen.h:3018
-#, fuzzy
-#| msgid "auto-apply per camera basecurve presets"
 msgid "auto-apply basecurve"
-msgstr "automatisch toepassen van basecurve voorkeuren "
+msgstr "basecurve automatisch toepassen"
 
 #: ../build/src/preferences_gen.h:3030
 msgid "use a basecurve by default (needs a restart)"
-msgstr ""
+msgstr "gebruik standaard een basecurve(herstarten noodzakelijk)"
 
 #: ../build/src/preferences_gen.h:3038
 msgid "auto-apply per camera basecurve presets"
@@ -732,10 +728,8 @@ msgstr ""
 "de generieke uitgave van de fabrikant (herstarten is noodzakelijk)"
 
 #: ../build/src/preferences_gen.h:3058
-#, fuzzy
-#| msgid "auto-applying presets applied"
 msgid "auto-apply sharpen"
-msgstr "automatisch toepassing van voorkeuren toegepast"
+msgstr "verscherpen automatisch toepassen"
 
 #: ../build/src/preferences_gen.h:3070
 msgid ""
@@ -745,7 +739,6 @@ msgid ""
 msgstr ""
 
 #: ../build/src/preferences_gen.h:3078
-#| msgid "map"
 msgid "xmp"
 msgstr "xmp"
 
@@ -4596,10 +4589,8 @@ msgstr ""
 "op de oké-button."
 
 #: ../src/imageio/storage/picasa.c:739
-#, fuzzy
-#| msgid "google+ authentication"
 msgid "google authentication"
-msgstr "aanmelden google+"
+msgstr "aanmelden google"
 
 #: ../src/imageio/storage/picasa.c:747
 msgid "verification code:"
@@ -4614,52 +4605,41 @@ msgid "drop box"
 msgstr "drop box"
 
 #: ../src/imageio/storage/picasa.c:1171
-#| msgid "google+ photos"
 msgid "google photos"
 msgstr "google foto's"
 
 #: ../src/imageio/storage/picasa.c:1313
-#, fuzzy
-#| msgid "unable to export photo to google+ album"
 msgid "unable to export to google photos album"
-msgstr "exporteren naar google+ album is niet mogelijk"
+msgstr "exporteren naar google foto album lukt niet"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/picasa.c:1326
-#, fuzzy, c-format
-#| msgid "%d/%d exported to google+ album"
-#| msgid_plural "%d/%d exported to google+ album"
+#, c-format
 msgid "%d/%d exported to google photos album"
 msgid_plural "%d/%d exported to google photos album"
-msgstr[0] "%d/%d geëxporteerd naar google+-album"
-msgstr[1] "%d/%d geëxporteerd naar google+-album"
+msgstr[0] "%d/%d geëxporteerd naar google foto album"
+msgstr[1] "%d/%d geëxporteerd naar google foto album"
 
 #: ../src/imageio/storage/piwigo.c:472
-#, fuzzy
-#| msgid "not authenticated"
 msgid "not authenticated, cannot reach server"
-msgstr "niet aangemeld"
+msgstr "niet aangemeld, server onbereikbaar"
 
 #: ../src/imageio/storage/piwigo.c:583
-#| msgid "(---)"
 msgid "---"
 msgstr "---"
 
 #: ../src/imageio/storage/piwigo.c:624
-#, fuzzy
-#| msgid "refresh album list"
 msgid "cannot refresh albums"
-msgstr "actualiseer album lijst"
+msgstr "actualiseren album lijst mislukt"
 
 #: ../src/imageio/storage/piwigo.c:717
 msgid "piwigo"
 msgstr "piwigo"
 
 #: ../src/imageio/storage/piwigo.c:742
-#, fuzzy
 #| msgid "count"
 msgid "accounts"
-msgstr "tel"
+msgstr "accounts"
 
 #: ../src/imageio/storage/piwigo.c:759
 msgid "server"
@@ -4678,10 +4658,8 @@ msgid "piwigo login"
 msgstr "piwigo login"
 
 #: ../src/imageio/storage/piwigo.c:827
-#, fuzzy
-#| msgid "contact sheet"
 msgid "contacts"
-msgstr "contactformulier"
+msgstr "contacten"
 
 #. Available albums
 #: ../src/imageio/storage/piwigo.c:838
@@ -4689,10 +4667,8 @@ msgid "albums"
 msgstr "albums"
 
 #: ../src/imageio/storage/piwigo.c:863
-#, fuzzy
-#| msgid "my new album"
 msgid "new album"
-msgstr "mijn nieuwe album"
+msgstr "nieuwe album"
 
 #. parent album list
 #. Available albums
