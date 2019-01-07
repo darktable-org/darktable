@@ -57,7 +57,7 @@ ENV LLVM_VER=7
 
 # pls keep sorted :)
 RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
-    apt-get install appstream-util clang-$LLVM_VER cmake desktop-file-utils
+    apt-get install appstream-util clang-$LLVM_VER cmake desktop-file-utils \
     g++-$GCC_VER gcc-$GCC_VER gettext git intltool libatk1.0-dev \
     libc++-$LLVM_VER-dev libcairo2-dev libcolord-dev libcolord-gtk-dev \
     libcups2-dev libcurl4-gnutls-dev libexiv2-dev libflickcurl-dev \
