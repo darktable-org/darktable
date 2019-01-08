@@ -290,10 +290,6 @@ void init_presets(dt_iop_module_so_t *self)
   add_preset(self, _("similar to Kodachrome"),
              "gz02eJxjZACBBvvrixvsrXIb7IN21NnD+CA2iG59HWhvZFxsX15ebp+e1gaWT0tLA9ICDrNmRtoDACjOF7c=", 3,
              "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQcA5qIZBA==", 8);
-
-  add_preset(self, _("similar to Fujichrome"),
-             "gz02eJxjZACBBvvrixvs39XU2wftqLMH8fsOldrvlGsF49bXgWAaJAbCIPm0tDQgLeAwa2akPQBNwxjQ", 3,
-             "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQcA5qIZBA==", 8);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
