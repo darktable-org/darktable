@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-01-08 20:15+0100\n"
-"PO-Revision-Date: 2019-01-08 22:03+0100\n"
+"PO-Revision-Date: 2019-01-08 22:15+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -4566,18 +4566,13 @@ msgstr "geef de titel van het boek"
 
 #. //////////// build & show the validation dialog
 #: ../src/imageio/storage/picasa.c:730
-#, fuzzy
-#| msgid ""
-#| "step 1: a new window or tab of your browser should have been loaded. you "
-#| "have to login into your google+ account there and authorize darktable to "
-#| "upload photos before continuing."
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your google account there and authorize darktable to "
 "upload photos before continuing."
 msgstr ""
-"stap 1: een nieuwe webpagina of tabblad is nu opgestart, log in op uw google"
-"+-account en autoriseer darktable voor het uploaden van foto's voordat u "
+"stap 1: een nieuwe webpagina of tabblad is nu opgestart, log in op uw google "
+"account en autoriseer darktable voor het uploaden van foto's voordat u "
 "verder gaat"
 
 #: ../src/imageio/storage/picasa.c:733
@@ -7086,12 +7081,16 @@ msgid ""
 "if poorly set, it will clip near-black colors out of gamut\n"
 "by pushing RGB values into negatives."
 msgstr ""
+"wijzig het zwart niveau om het clippen van negatieve RGB waarden te "
+"voorkomen\n"
+"gebruik het nooit voor meer dichtheid in de schaduwkleuren\n"
+"indien slecht ingesteld, worden bijna-zwarte kleuren uit het gamma "
+"verwijderd\n"
+"door RGB waarden in het negatieve te drukken"
 
 #: ../src/iop/exposure.c:871
-#, fuzzy
-#| msgid "black level %i"
 msgid "black level correction"
-msgstr "zwart-niveau %i"
+msgstr "zwart niveau correctie"
 
 #: ../src/iop/exposure.c:882
 msgid "adjust the exposure correction"
