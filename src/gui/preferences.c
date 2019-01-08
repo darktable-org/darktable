@@ -287,21 +287,21 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
                               -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    gint rowid = sqlite3_column_int(stmt, 0);
-    gchar *name = (gchar *)sqlite3_column_text(stmt, 1);
-    gchar *operation = (gchar *)sqlite3_column_text(stmt, 2);
+    const gint rowid = sqlite3_column_int(stmt, 0);
+    const gchar *name = (gchar *)sqlite3_column_text(stmt, 1);
+    const gchar *operation = (gchar *)sqlite3_column_text(stmt, 2);
     const gboolean autoapply = (sqlite3_column_int(stmt, 3) == 0 ? FALSE : TRUE);
-    gchar *model = (gchar *)sqlite3_column_text(stmt, 4);
-    gchar *maker = (gchar *)sqlite3_column_text(stmt, 5);
-    gchar *lens = (gchar *)sqlite3_column_text(stmt, 6);
-    float iso_min = sqlite3_column_double(stmt, 7);
-    float iso_max = sqlite3_column_double(stmt, 8);
-    float exposure_min = sqlite3_column_double(stmt, 9);
-    float exposure_max = sqlite3_column_double(stmt, 10);
-    float aperture_min = sqlite3_column_double(stmt, 11);
-    float aperture_max = sqlite3_column_double(stmt, 12);
-    int focal_length_min = sqlite3_column_double(stmt, 13);
-    int focal_length_max = sqlite3_column_double(stmt, 14);
+    const gchar *model = (gchar *)sqlite3_column_text(stmt, 4);
+    const gchar *maker = (gchar *)sqlite3_column_text(stmt, 5);
+    const gchar *lens = (gchar *)sqlite3_column_text(stmt, 6);
+    const float iso_min = sqlite3_column_double(stmt, 7);
+    const float iso_max = sqlite3_column_double(stmt, 8);
+    const float exposure_min = sqlite3_column_double(stmt, 9);
+    const float exposure_max = sqlite3_column_double(stmt, 10);
+    const float aperture_min = sqlite3_column_double(stmt, 11);
+    const float aperture_max = sqlite3_column_double(stmt, 12);
+    const int focal_length_min = sqlite3_column_double(stmt, 13);
+    const int focal_length_max = sqlite3_column_double(stmt, 14);
     const gboolean writeprotect = (sqlite3_column_int(stmt, 15) == 0 ? FALSE : TRUE);
 
     gchar *iso = NULL, *exposure = NULL, *aperture = NULL, *focal_length = NULL;
@@ -561,8 +561,8 @@ static void tree_insert_accel(gpointer accel_struct, gpointer model_link)
   GtkAccelKey key;
 
   // Getting the first significant parts of the paths
-  char *accel_path = accel->path;
-  char *translated_path = accel->translated_path;
+  const char *accel_path = accel->path;
+  const char *translated_path = accel->translated_path;
 
   /* if prefixed lets forward pointer */
   if(!strncmp(accel_path, "<Darktable>", strlen("<Darktable>")))
@@ -581,7 +581,6 @@ static void tree_insert_accel(gpointer accel_struct, gpointer model_link)
 static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gchar *accel_path,
                             const gchar *translated_path, guint accel_key, GdkModifierType accel_mods)
 {
-
   int i;
   gboolean found = FALSE;
   gchar *val_str;
@@ -603,9 +602,9 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gcha
   else
   {
     /* we are on a branch let's get the node name */
-    gchar *end = g_strstr_len(accel_path, strlen(accel_path), "/");
+    const gchar *end = g_strstr_len(accel_path, strlen(accel_path), "/");
+    const gchar *trans_end = g_strstr_len(translated_path, strlen(translated_path), "/");
     gchar *node = g_strndup(accel_path, end - accel_path);
-    gchar *trans_end = g_strstr_len(translated_path, strlen(translated_path), "/");
     gchar *trans_node;
     // safeguard against broken translations
     if(trans_end)
@@ -735,8 +734,8 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent, gc
 
 static void delete_matching_accels(gpointer current, gpointer mapped)
 {
-  dt_accel_t *current_accel = (dt_accel_t *)current;
-  dt_accel_t *mapped_accel = (dt_accel_t *)mapped;
+  const dt_accel_t *current_accel = (dt_accel_t *)current;
+  const dt_accel_t *mapped_accel = (dt_accel_t *)mapped;
   GtkAccelKey current_key;
   GtkAccelKey mapped_key;
 
