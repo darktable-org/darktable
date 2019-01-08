@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-01-08 20:15+0100\n"
-"PO-Revision-Date: 2019-01-08 21:23+0100\n"
+"PO-Revision-Date: 2019-01-08 22:03+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -5995,10 +5995,8 @@ msgid "split-toning teal-orange (1st instance)"
 msgstr "split-toning blauwgroen-oranje (1st instantie)"
 
 #: ../src/iop/colorbalance.c:278
-#, fuzzy
-#| msgid "generic"
 msgid "generic film"
-msgstr "algemeen"
+msgstr "generieke film"
 
 #: ../src/iop/colorbalance.c:282
 msgid "similar to Kodak Portra"
@@ -7184,6 +7182,8 @@ msgstr "18 EV (HDR++)"
 #: ../src/iop/filmic.c:1669
 msgid "read-only graph, use the parameters below to set the nodes"
 msgstr ""
+"alleen-lezen grafiek\n"
+"gebruik onderstaande parameters om de knooppunten in te stellen"
 
 #: ../src/iop/filmic.c:1675
 msgid "logarithmic shaper"
@@ -7206,27 +7206,21 @@ msgid "white relative exposure"
 msgstr "relatieve belichting wit"
 
 #: ../src/iop/filmic.c:1696
-#, fuzzy
-#| msgid ""
-#| "number of stops between middle grey and pure white\n"
-#| "this is a reading a posemeter would give you on the scene"
 msgid ""
 "number of stops between middle grey and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
 "adjust so highlights clipping is avoided"
 msgstr ""
-"aantal stops tussen geheel middengrijs en zuiver wit\n"
-"dit is een meting die een posimeter zou geven"
+"aantal stops tussen middengrijs en zuiver wit\n"
+"dit is een waarde die een lichtmeter voor de afbeelding zou geven\n"
+"pas het zodanig aan dat \n"
+"clippen van hooglichten wordt voorkomen"
 
 #: ../src/iop/filmic.c:1707 ../src/iop/profile_gamma.c:900
 msgid "black relative exposure"
 msgstr "relatieve belichting zwart"
 
 #: ../src/iop/filmic.c:1710
-#, fuzzy
-#| msgid ""
-#| "number of stops between middle grey and pure black\n"
-#| "this is a reading a posemeter would give you on the scene"
 msgid ""
 "number of stops between middle grey and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -7234,23 +7228,21 @@ msgid ""
 "decrease to recover more details in low-lights."
 msgstr ""
 "aantal stops tussen middengrijs en geheel zwart\n"
-"dit is een meting die een posimeter zou geven"
+"dit is een waarde die een lichtmeter voor de afbeelding zou geven\n"
+"verhoog voor meer contrast\n"
+"verlaag om details in schaduwkleuren te herwinnen"
 
 #: ../src/iop/filmic.c:1720 ../src/iop/profile_gamma.c:924
 msgid "safety factor"
 msgstr "veiligheidsfactor"
 
 #: ../src/iop/filmic.c:1723
-#, fuzzy
-#| msgid ""
-#| "enlarge or shrink the computed dynamic range\n"
-#| "useful in conjunction with \"auto tune levels\""
 msgid ""
 "enlarge or shrink the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
 msgstr ""
 "vergroot of verklein het berekende dynamisch bereik\n"
-"dit is nuttig in combinatie met \"automatische afstemming niveaus\""
+"nuttig in combinatie met \"automatische afstemming niveaus\""
 
 #: ../src/iop/filmic.c:1729 ../src/iop/profile_gamma.c:932
 msgid "auto tune levels"
@@ -7263,18 +7255,22 @@ msgid ""
 "works better for landscapes and evenly-lit pictures\n"
 "but fails for high-keys and low-keys."
 msgstr ""
+"probeert instellingen te optimaliseren door te gissen\n"
+"dit plaatst het luminantiebereik binnen de histogramgrenzen\n"
+"het is met name geschikt voor landschappen en gelijkmatig verlichte foto's\n"
+"en werkt niet bij highkey en lowkey afbeeldingen"
 
 #: ../src/iop/filmic.c:1739
 msgid "filmic S curve"
 msgstr "filmic S curve"
 
 #: ../src/iop/filmic.c:1746
-#, fuzzy
-#| msgid "slope of the linear part of the curve"
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
-msgstr "helling van het lineair deel van de curve"
+msgstr ""
+"helling van het lineaire deel van de curve\n"
+"beïnvloed met name de middenkleuren"
 
 #. geotagging
 #: ../src/iop/filmic.c:1753 ../src/libs/metadata_view.c:127
@@ -7282,23 +7278,18 @@ msgid "latitude"
 msgstr "omvang"
 
 #: ../src/iop/filmic.c:1756
-#, fuzzy
-#| msgid ""
-#| "linearity domain in the middle of the curve\n"
-#| "increase to get more contrast at the extreme luminances"
 msgid ""
 "width of the linear domain in the middle of the curve.\n"
 "increase to get more contrast at the extreme luminances.\n"
 "this has no effect on mid-tones."
 msgstr ""
-"lineariteitsdomein in het midden van de curve\n"
-"verhoog voor meer contrast bij extreme luminanties"
+"breedte van het lineaire domein in het midden van de curve\n"
+"verhoog voor meer contrast bij extreme luminanties\n"
+"het heeft geen effect op middenkleuren"
 
 #: ../src/iop/filmic.c:1763
-#, fuzzy
-#| msgid "shadows and highlights"
 msgid "shadows/highlights balance"
-msgstr "schaduwen en hooglichten"
+msgstr "schaduwen en hooglichten balans"
 
 #: ../src/iop/filmic.c:1766
 msgid ""
@@ -7309,10 +7300,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmic.c:1772
-#, fuzzy
-#| msgid "set the global saturation"
 msgid "global saturation"
-msgstr "kies globale verzadiging"
+msgstr "globale verzadiging"
 
 #: ../src/iop/filmic.c:1776
 msgid ""
@@ -7322,10 +7311,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmic.c:1782
-#, fuzzy
-#| msgid "set the global saturation"
 msgid "extreme luminance saturation"
-msgstr "kies globale verzadiging"
+msgstr "extreme luminantieverzadiging"
 
 #: ../src/iop/filmic.c:1786
 msgid ""
@@ -7363,18 +7350,15 @@ msgid "preserve the chrominance"
 msgstr "behoud chrominantie"
 
 #: ../src/iop/filmic.c:1808
-#, fuzzy
-#| msgid ""
-#| "ensure the original color are preserved\n"
-#| "may produce over-saturated colors and reinforce lens chromatic aberrations"
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations.\n"
 "you need to manually tune the saturation when using this mode."
 msgstr ""
 "zorg ervoor dat de originele kleur behouden blijft\n"
-"kan oververzadigde kleuren produceren en chromatische lens -aberraties "
-"versterken"
+"mogelijk worden chromatische aberraties versterkt\n"
+"bij het gebruik van deze modus zul je handmatig de verzadiging moeten "
+"afstellen"
 
 #: ../src/iop/filmic.c:1818
 msgid "destination/display"
@@ -7421,17 +7405,13 @@ msgid "target gamma"
 msgstr "mikpunt gamma"
 
 #: ../src/iop/filmic.c:1862
-#, fuzzy
-#| msgid ""
-#| "power or gamma of the transfer function of the display or color space.\n"
-#| "you should never touch that unless you know what you are doing."
 msgid ""
 "power or gamma of the transfer function\n"
 "of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
-"vermogen of gamma van de overdrachtsfunctie van het display of de "
-"kleurruimte\n"
+"kracht van gamma van de overdrachtsfunctie\n"
+"van de weergave van de kleurruimte\n"
 "wijzig dit alleen als je zeker weet wat je doet"
 
 #: ../src/iop/finalscale.c:39
