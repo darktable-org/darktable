@@ -69,6 +69,13 @@ typedef struct dt_lib_filmstrip_t
   dt_lib_filmstrip_select_t select;
   int32_t select_id;
 
+  float thumb_size;
+  int offset_x;
+  int last_mouse_over_thumb;
+  int32_t last_exposed_id;
+  gboolean force_expose_all;
+  cairo_surface_t *surface;
+
   dt_gui_hist_dialog_t dg;
 } dt_lib_filmstrip_t;
 
@@ -288,6 +295,12 @@ void gui_init(dt_lib_module_t *self)
   d->mouse_over_id = -1;
   d->pointerx = -1;
   d->pointery = -1;
+  d->thumb_size = -1;
+  d->last_mouse_over_thumb = -1;
+  d->last_exposed_id = -1;
+  d->force_expose_all = FALSE;
+  d->offset_x = 0;
+  d->surface = NULL;
   dt_gui_hist_dialog_init(&d->dg);
 
   /* creating drawing area */
@@ -386,7 +399,7 @@ static gboolean _lib_filmstrip_mouse_leave_callback(GtkWidget *w, GdkEventCrossi
 
   /* suppress mouse over highlight upon leave */
   strip->pointery = -1;
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(strip->filmstrip);
 
   return TRUE;
 }
@@ -423,6 +436,8 @@ static gboolean _lib_filmstrip_size_handle_button_callback(GtkWidget *w, GdkEven
 
       gtk_widget_get_size_request(d->filmstrip, NULL, &d->size_handle_height);
       d->size_handle_is_dragging = TRUE;
+      cairo_surface_destroy(d->surface);
+      d->surface = NULL;
     }
     else if(e->type == GDK_BUTTON_RELEASE)
       d->size_handle_is_dragging = FALSE;
@@ -457,6 +472,8 @@ static gboolean _lib_filmstrip_size_handle_motion_notify_callback(GtkWidget *w, 
 
     dt_conf_set_int("plugins/lighttable/filmstrip/height", sy);
 
+    cairo_surface_destroy(d->surface);
+    d->surface = NULL;
     gtk_widget_set_size_request(d->filmstrip, -1, sy);
 
     return TRUE;
@@ -470,11 +487,41 @@ static gboolean _lib_filmstrip_motion_notify_callback(GtkWidget *w, GdkEventMoti
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
+  // no redraw by default
+  gboolean do_redraw = FALSE;
+
   strip->pointerx = e->x;
   strip->pointery = e->y;
 
+  if(strip->thumb_size == -1)
+  {
+    do_redraw = TRUE;
+  }
+  else
+  {
+    // compute the actual thumb number, this is not at all the thumb id, but a count of the thumb starting from the
+    // left and continuing to the right. this goal is to filter out as much as possible the redraw event. when we
+    // stay on the same thumb we do not redraw, there is nothing to do. the exception is a small border around the
+    // thumb to ensure the stars, reject tag and the dev history sensitive area are reacting.
+    const double px = e->x - strip->offset_x;
+    const double py = e->y;
+    const int mouse_over_thumb = (int)(1.0 + px / strip->thumb_size);
+    const float x_offset = fmodf(px, strip->thumb_size);
+    const float y_offset = fmodf(py, strip->thumb_size);
+    const float end_pos = (strip->thumb_size * 85) / 100;
+    const float start_pos = (strip->thumb_size * 10) / 100;
+
+    if (strip->last_mouse_over_thumb == -1 || strip->last_mouse_over_thumb != mouse_over_thumb
+        || (y_offset > end_pos || y_offset < start_pos)
+        || (x_offset > end_pos || x_offset < start_pos))
+    {
+      strip->last_mouse_over_thumb = mouse_over_thumb;
+      do_redraw = TRUE;
+    }
+  }
+
   /* redraw */
-  gtk_widget_queue_draw(self->widget);
+  if(do_redraw) gtk_widget_queue_draw(strip->filmstrip);
   return TRUE;
 }
 
@@ -488,7 +535,8 @@ static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, 
   if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
   {
     strip->offset = CLAMP(strip->offset + delta_x + delta_y, 0, strip->collection_count-1);
-    gtk_widget_queue_draw(self->widget);
+    strip->force_expose_all = TRUE;
+    gtk_widget_queue_draw(strip->filmstrip);
   }
 
   return TRUE;
@@ -563,7 +611,8 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
             if(_lib_filmstrip_imgid_in_collection(darktable.collection, mouse_over_id) == 0)
               dt_view_filmstrip_scroll_relative(0, offset);
 
-          gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
+          //  gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
+          gtk_widget_queue_draw(strip->filmstrip);
           return TRUE;
         }
 
@@ -593,6 +642,7 @@ static gboolean _lib_filmstrip_button_release_callback(GtkWidget *w, GdkEventBut
   const int32_t mouse_over_id = strip->mouse_over_id;
   const int32_t select_id = strip->select_id;
   gboolean result = FALSE;
+  strip->force_expose_all = TRUE;
 
   if(mouse_over_id == select_id && mouse_over_id > 0)
   {
@@ -611,24 +661,27 @@ static gboolean _lib_filmstrip_button_release_callback(GtkWidget *w, GdkEventBut
   strip->select_id = -1;
 
   /* redraw filmstrip */
-  if(result && darktable.view_manager->proxy.filmstrip.module)
-    gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
-
+  gtk_widget_queue_draw(strip->filmstrip);
   return result;
 }
 
 static gboolean _expose_again(gpointer user_data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
   // unfortunately there might have been images without thumbnails during expose.
   // this can have multiple reasons: not loaded yet (we'll receive a signal when done)
   // or still locked for writing.. we won't be notified when this changes.
   // so we just track whether there were missing images and expose again.
   if(darktable.view_manager->proxy.filmstrip.module)
-    gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
+  {
+    strip->force_expose_all = TRUE;
+    gtk_widget_queue_draw(strip->filmstrip);
+  }
   return FALSE; // don't call again
 }
 
-static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
@@ -638,8 +691,17 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   const int32_t width = allocation.width;
   const int32_t height = allocation.height;
 
-  gdouble pointerx = strip->pointerx;
-  gdouble pointery = strip->pointery;
+  // create the persistent surface if it does not exists, this surface will be invalidated each time
+  // a resize of the filmstrip is done.
+  if(!strip->surface)
+  {
+    strip->surface
+      = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
+    strip->force_expose_all = TRUE;
+  }
+
+  // get cairo drawing handle
+  cairo_t *cr = cairo_create(strip->surface);
 
   if(darktable.gui->center_tooltip == 1) darktable.gui->center_tooltip++;
 
@@ -647,25 +709,33 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   strip->image_over = DT_VIEW_DESERT;
 
   /* fill background */
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_FILMSTRIP_BG);
-  cairo_paint(cr);
+  if (strip->mouse_over_id == -1 || strip->force_expose_all)
+  {
+    strip->force_expose_all = TRUE;
+    strip->last_exposed_id = -1;
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_FILMSTRIP_BG);
+    cairo_paint(cr);
+  }
 
   int offset = strip->offset;
 
   const float wd = height;
   const float ht = height;
+  strip->thumb_size = wd;
 
   int max_cols = (int)(width / (float)wd) + 2;
   if(max_cols % 2 == 0) max_cols += 1;
 
   const int col_start = max_cols / 2 - offset;
   const int empty_edge = (width - (max_cols * wd)) / 2;
+  strip->offset_x = empty_edge;
   int step_res = SQLITE_ROW;
 
   sqlite3_stmt *stmt = NULL;
 
   /* mouse over image position in filmstrip */
-  pointerx -= empty_edge;
+  const gdouble pointerx = strip->pointerx - empty_edge;
+  const gdouble pointery = strip->pointery;
   const int seli = (pointery > 0 && pointery <= ht) ? pointerx / (float)wd : -1;
   const int img_pointerx = (int)fmodf(pointerx, wd);
   const int img_pointery = (int)pointery;
@@ -680,15 +750,20 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   if(offset < 0) strip->offset = offset = 0;
   if(offset > strip->collection_count - 1) strip->offset = offset = strip->collection_count - 1;
 
-  // dt_view_set_scrollbar(self, offset, count, max_cols, 0, 1, 1);
-
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset - max_cols / 2);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_cols);
 
   cairo_save(cr);
   cairo_translate(cr, empty_edge, 0.0f);
+  const int before_last_exposed_id = strip->last_exposed_id;
+  const int initial_mouse_over_id = strip->mouse_over_id;
   int missing = 0;
+
+  // invalidate mouse_over_id to ensure the exposed image won't get the over background until set below
+  // when we reach seli.
+
+  dt_control_set_mouse_over_id(-1);
 
   for(int col = 0; col < max_cols; col++)
   {
@@ -711,13 +786,20 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
       {
         strip->mouse_over_id = id;
         mouse_over_id = id;
+        dt_control_set_mouse_over_id(mouse_over_id);
       }
       cairo_save(cr);
       // FIXME find out where the y translation is done, how big the value is and use it directly instead of
       // getting it from the matrix ...
       cairo_matrix_t m;
       cairo_get_matrix(cr, &m);
-      missing += dt_view_image_expose(&(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery, FALSE, FALSE);
+
+      if (id == strip->mouse_over_id || strip->force_expose_all || id == before_last_exposed_id || id == initial_mouse_over_id)
+      {
+        if(!strip->force_expose_all && id == mouse_over_id) strip->last_exposed_id = id;
+        missing += dt_view_image_expose
+          (&(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery, FALSE, FALSE);
+      }
       cairo_restore(cr);
     }
     else if(step_res == SQLITE_DONE)
@@ -755,7 +837,15 @@ failure:
   if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
 #endif
 
-  if(missing) g_timeout_add(250, _expose_again, widget);
+  // copy back the new content into the cairo handle of the draw callback
+  cairo_destroy(cr);
+  cairo_set_source_surface(wcr, strip->surface, 0, 0);
+  cairo_paint(wcr);
+
+  if(missing)
+    g_timeout_add(250, _expose_again, user_data);
+  else
+    strip->force_expose_all = FALSE;
 
   return TRUE;
 }
@@ -763,7 +853,9 @@ failure:
 static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_control_queue_redraw_widget(self->widget);
+  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
+  strip->force_expose_all = TRUE;
+  dt_control_queue_redraw_widget(strip->filmstrip);
 }
 
 static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate)
@@ -787,6 +879,7 @@ static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gb
   }
 
   /* redraw filmstrip. since this is a proxy function it could be used from another thread */
+  strip->force_expose_all = TRUE;
   dt_control_queue_redraw_widget(self->widget);
 }
 
@@ -915,7 +1008,12 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
                                                           guint keyval, GdkModifierType modifier,
                                                           gpointer data)
 {
-  int num = GPOINTER_TO_INT(data);
+  dt_lib_module_t *self = (dt_lib_module_t *)darktable.view_manager->proxy.filmstrip.module;
+  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
+
+  const int num = GPOINTER_TO_INT(data);
+  strip->force_expose_all = TRUE;
+
   switch(num)
   {
     case DT_VIEW_DESERT:
@@ -930,10 +1028,8 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
       if(mouse_over_id <= 0) return FALSE;
       /* get image from cache */
 
-      int32_t activated_image = -1;
-
-      activated_image = darktable.view_manager->proxy.filmstrip.activated_image(
-          darktable.view_manager->proxy.filmstrip.module);
+      const int32_t activated_image = darktable.view_manager->proxy.filmstrip.activated_image(
+        darktable.view_manager->proxy.filmstrip.module);
 
       int offset = 0;
       if(mouse_over_id == activated_image) offset = dt_collection_image_offset(mouse_over_id);
@@ -960,10 +1056,14 @@ static gboolean _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *acc
                                                               GObject *acceleratable, guint keyval,
                                                               GdkModifierType modifier, gpointer data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)darktable.view_manager->proxy.filmstrip.module;
+  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
+
+  strip->force_expose_all = TRUE;
+
   dt_colorlabels_key_accel_callback(NULL, NULL, 0, 0, data);
   /* redraw filmstrip */
-  if(darktable.view_manager->proxy.filmstrip.module)
-    gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
+  gtk_widget_queue_draw(strip->filmstrip);
   return TRUE;
 }
 
@@ -971,6 +1071,11 @@ static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_gr
                                                          guint keyval, GdkModifierType modifier,
                                                          gpointer data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)darktable.view_manager->proxy.filmstrip.module;
+  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
+
+  strip->force_expose_all = TRUE;
+
   switch(GPOINTER_TO_INT(data))
   {
     case 0: // all
@@ -989,9 +1094,7 @@ static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_gr
       dt_selection_select_filmroll(darktable.selection);
   }
 
-  if(darktable.view_manager->proxy.filmstrip.module)
-    gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
-
+  gtk_widget_queue_draw(strip->filmstrip);
   return TRUE;
 }
 
