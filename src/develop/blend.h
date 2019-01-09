@@ -69,11 +69,11 @@ typedef enum dt_develop_blend_mode_t
 
 typedef enum dt_develop_mask_mode_t
 {
-  DEVELOP_MASK_DISABLED = 0x00,
-  DEVELOP_MASK_ENABLED = 0x01,
-  DEVELOP_MASK_MASK = 0x02,
-  DEVELOP_MASK_CONDITIONAL = 0x04,
-  DEVELOP_MASK_BOTH = (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL)
+  DEVELOP_MASK_DISABLED = 0,                                                         // off
+  DEVELOP_MASK_ENABLED = 1,                                                          // uniformly
+  DEVELOP_MASK_MASK = 1 << 1,                                                        // drawn mask
+  DEVELOP_MASK_CONDITIONAL = 1 << 2,                                                 // parametric mask
+  DEVELOP_MASK_MASK_CONDITIONAL = (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL)     // drawn & parametric
 } dt_develop_mask_mode_t;
 
 typedef enum dt_develop_mask_combine_mode_t
