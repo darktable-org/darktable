@@ -449,8 +449,9 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
     const uint32_t imgid = GPOINTER_TO_INT(t->data);
 
-    dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, 0, 1, 0,
-                                 "pre:rawprepare", 0, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL, NULL, num, total);
+    dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE, TRUE,
+                                 FALSE, "pre:rawprepare", FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL, NULL,
+                                 num, total);
 
     t = g_list_delete_link(t, t);
 
