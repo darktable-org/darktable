@@ -2867,7 +2867,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display =
-    (self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH)) ?
+    (self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL)) ?
       self->request_mask_display : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   // check if we only should blend lightness channel. will affect only Lab space
@@ -2879,7 +2879,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   // check if mask should be suppressed temporarily (i.e. just set to global
   // opacity value)
   const _Bool suppress_mask = self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
-                              && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH);
+                              && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL);
   const _Bool mask_feather = d->feathering_radius > 0.1f;
   const _Bool mask_blur = d->blur_radius > 0.1f;
   const _Bool mask_tone_curve = fabsf(d->contrast) >= 0.01f || fabsf(d->brightness) >= 0.01f;
@@ -3122,7 +3122,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display
       = (self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe)
-         && (mask_mode & DEVELOP_MASK_BOTH))
+         && (mask_mode & DEVELOP_MASK_CONDITIONAL))
             ? self->request_mask_display
             : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
@@ -3135,7 +3135,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   // check if mask should be suppressed temporarily (i.e. just set to global
   // opacity value)
   const _Bool suppress_mask = self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
-                              && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH);
+                              && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL);
   const _Bool mask_feather = d->feathering_radius > 0.1f;
   const _Bool mask_blur = d->blur_radius > 0.1f;
   const _Bool mask_tone_curve = fabsf(d->contrast) >= 0.01f || fabsf(d->brightness) >= 0.01f;
@@ -3506,7 +3506,6 @@ gboolean dt_develop_blend_params_is_all_zero(const void *params, size_t length)
 int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const old_params,
                                    const int old_version, void *new_params, const int new_version,
                                    const int length)
-
 {
   // first deal with all-zero parmameter sets, regardless of version number.
   // these occurred in previous
