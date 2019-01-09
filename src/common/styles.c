@@ -1053,7 +1053,6 @@ static void dt_style_save(StyleData *style)
 
 void dt_styles_import_from_file(const char *style_path)
 {
-
   FILE *style_file;
   StyleData *style;
   GMarkupParseContext *parser;
