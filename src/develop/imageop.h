@@ -232,6 +232,8 @@ typedef struct dt_iop_module_so_t
                            size_t points_count);
   int (*distort_backtransform)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                                float *points, size_t points_count);
+  void (*distort_mask)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                       float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
   // introspection related callbacks
   gboolean have_introspection;
@@ -445,6 +447,9 @@ typedef struct dt_iop_module_t
   /** reverse points after the iop is applied => point before process */
   int (*distort_backtransform)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                                float *points, size_t points_count);
+  /** apply the image distortion to a single channel float buffer. only needed by iops that distort the image */
+  void (*distort_mask)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                       float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
   /** Key accelerator registration callbacks */
   void (*connect_key_accels)(struct dt_iop_module_t *self);

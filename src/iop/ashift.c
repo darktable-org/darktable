@@ -926,6 +926,67 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   return 1;
 }
 
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
+
+  // if module is set to neutral parameters we just copy input->output and are done
+  if(isneutral(data))
+  {
+    memcpy(out, in, (size_t)roi_out->width * roi_out->height * sizeof(float));
+    return;
+  }
+
+  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+
+  float ihomograph[3][3];
+  homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
+             data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
+
+  // clipping offset
+  const float fullwidth = (float)piece->buf_out.width / (data->cr - data->cl);
+  const float fullheight = (float)piece->buf_out.height / (data->cb - data->ct);
+  const float cx = roi_out->scale * fullwidth * data->cl;
+  const float cy = roi_out->scale * fullheight * data->ct;
+
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(ihomograph, interpolation)
+#endif
+  // go over all pixels of output image
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    float *_out = out + (size_t)j * roi_out->width;
+    for(int i = 0; i < roi_out->width; i++, _out++)
+    {
+      float pin[3], pout[3];
+
+      // convert output pixel coordinates to original image coordinates
+      pout[0] = roi_out->x + i + cx;
+      pout[1] = roi_out->y + j + cy;
+      pout[0] /= roi_out->scale;
+      pout[1] /= roi_out->scale;
+      pout[2] = 1.0f;
+
+      // apply homograph
+      mat3mulv(pin, (float *)ihomograph, pout);
+
+      // convert to input pixel coordinates
+      pin[0] /= pin[2];
+      pin[1] /= pin[2];
+      pin[0] *= roi_in->scale;
+      pin[1] *= roi_in->scale;
+      pin[0] -= roi_in->x;
+      pin[1] -= roi_in->y;
+
+      // get output values by interpolation from input image
+      dt_interpolation_compute_pixel1c(interpolation, in, _out, pin[0], pin[1], roi_in->width,
+                                       roi_in->height, roi_in->width);
+    }
+  }
+}
+
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in)
 {
@@ -2792,7 +2853,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // save a copy of preview input buffer for parameter fitting
     if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)width * height)
     {
-      // if needed to allocate buffer
+      // if needed allocate buffer
       free(g->buf); // a no-op if g->buf is NULL
       // only get new buffer if no old buffer available or old buffer does not fit in terms of size
       g->buf = malloc((size_t)width * height * 4 * sizeof(float));
