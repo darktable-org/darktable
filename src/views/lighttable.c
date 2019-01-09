@@ -129,6 +129,7 @@ typedef struct dt_library_t
   int32_t last_exposed_id;
   float offset_x, offset_y;
   gboolean force_expose_all;
+  GHashTable *thumbs_table;
 
   uint8_t *full_res_thumb;
   int32_t full_res_thumb_id, full_res_thumb_wd, full_res_thumb_ht;
@@ -462,6 +463,8 @@ void init(dt_view_t *self)
   lib->offset_x = 0;
   lib->offset_y = 0;
 
+  lib->thumbs_table = g_hash_table_new(g_int_hash, g_int_equal);
+
   /* setup collection listener and initialize main_query statement */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_view_lighttable_collection_listener_callback), (gpointer)self);
@@ -485,6 +488,7 @@ void cleanup(dt_view_t *self)
   dt_conf_set_float("lighttable/ui/zoom_x", lib->zoom_x);
   dt_conf_set_float("lighttable/ui/zoom_y", lib->zoom_y);
   if(lib->audio_player_id != -1) _stop_audio(lib);
+  g_hash_table_destroy(lib->thumbs_table);
   free(lib->full_res_thumb);
   free(self->data);
 }
@@ -807,13 +811,25 @@ end_query_cache:
           // this single image.
           dt_selection_select_single(darktable.selection, id);
         }
-        if (id == mouse_over_id || lib->force_expose_all || id == before_last_exposed_id || id == initial_mouse_over_id)
+        if (id == mouse_over_id
+            || lib->force_expose_all
+            || id == before_last_exposed_id
+            || id == initial_mouse_over_id
+            || g_hash_table_contains(lib->thumbs_table, (gpointer)&id))
         {
           if(!lib->force_expose_all && id == mouse_over_id) lib->last_exposed_id = id;
-          missing += dt_view_image_expose(
+          const int thumb_missed = dt_view_image_expose(
             &(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir,
             pi == col && pj == row ? img_pointerx : -1,
             pi == col && pj == row ? img_pointery : -1, FALSE, FALSE);
+
+          // if thumb is missing, record it for expose int next round
+          if(thumb_missed)
+            g_hash_table_add(lib->thumbs_table, (gpointer)&id);
+          else
+            g_hash_table_remove(lib->thumbs_table, (gpointer)&id);
+
+          missing += thumb_missed;
         }
 
         cairo_restore(cr);
@@ -1281,12 +1297,24 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
         }
 
         cairo_save(cr);
-        // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
-        if (id == mouse_over_id || lib->force_expose_all || id == before_last_exposed_id || id == initial_mouse_over_id)
+
+        if (id == mouse_over_id
+            || lib->force_expose_all
+            || id == before_last_exposed_id
+            || id == initial_mouse_over_id
+            || g_hash_table_contains(lib->thumbs_table, (gpointer)&id))
         {
           if(!lib->force_expose_all && id == mouse_over_id) lib->last_exposed_id = id;
-          missing += dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom,
-                                          img_pointerx, img_pointery, FALSE, FALSE);
+          const int thumb_missed = dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom,
+                                                        img_pointerx, img_pointery, FALSE, FALSE);
+
+          // if thumb is missing, record it for expose int next round
+          if(thumb_missed)
+            g_hash_table_add(lib->thumbs_table, (gpointer)&id);
+          else
+            g_hash_table_remove(lib->thumbs_table, (gpointer)&id);
+
+          missing += thumb_missed;
         }
 
         cairo_restore(cr);
@@ -1511,13 +1539,10 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
 
 static gboolean _expose_again(gpointer user_data)
 {
-  dt_view_t *self = (dt_view_t *)user_data;
-  dt_library_t *lib = (dt_library_t *)self->data;
   // unfortunately there might have been images without thumbnails during expose.
   // this can have multiple reasons: not loaded yet (we'll receive a signal when done)
   // or still locked for writing.. we won't be notified when this changes.
   // so we just track whether there were missing images and expose again.
-  lib->force_expose_all = TRUE;
   dt_control_queue_redraw_center();
   return FALSE; // don't call again
 }
@@ -1559,7 +1584,11 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   if(missing_thumbnails)
     g_timeout_add(250, _expose_again, self);
   else
+  {
+    // clear hash map of thumb to redisplay, we are done
+    g_hash_table_remove_all(lib->thumbs_table);
     lib->force_expose_all = FALSE;
+  }
 }
 
 static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,

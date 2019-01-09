@@ -75,6 +75,7 @@ typedef struct dt_lib_filmstrip_t
   int32_t last_exposed_id;
   gboolean force_expose_all;
   cairo_surface_t *surface;
+  GHashTable *thumbs_table;
 
   dt_gui_hist_dialog_t dg;
 } dt_lib_filmstrip_t;
@@ -301,6 +302,7 @@ void gui_init(dt_lib_module_t *self)
   d->force_expose_all = FALSE;
   d->offset_x = 0;
   d->surface = NULL;
+  d->thumbs_table = g_hash_table_new(g_int_hash, g_int_equal);
   dt_gui_hist_dialog_init(&d->dg);
 
   /* creating drawing area */
@@ -377,12 +379,16 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
+
   /* disconnect from signals */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_filmstrip_collection_changed_callback),
                                (gpointer)self);
 
   /* unset viewmanager proxy */
   darktable.view_manager->proxy.filmstrip.module = NULL;
+
+  g_hash_table_destroy(strip->thumbs_table);
 
   /* cleanup */
   free(self->data);
@@ -675,7 +681,6 @@ static gboolean _expose_again(gpointer user_data)
   // so we just track whether there were missing images and expose again.
   if(darktable.view_manager->proxy.filmstrip.module)
   {
-    strip->force_expose_all = TRUE;
     gtk_widget_queue_draw(strip->filmstrip);
   }
   return FALSE; // don't call again
@@ -794,11 +799,24 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
       cairo_matrix_t m;
       cairo_get_matrix(cr, &m);
 
-      if (id == strip->mouse_over_id || strip->force_expose_all || id == before_last_exposed_id || id == initial_mouse_over_id)
+      if (id == strip->mouse_over_id
+          || strip->force_expose_all
+          || id == before_last_exposed_id
+          || id == initial_mouse_over_id
+          || g_hash_table_contains(strip->thumbs_table, (gpointer)&id))
       {
         if(!strip->force_expose_all && id == mouse_over_id) strip->last_exposed_id = id;
-        missing += dt_view_image_expose
+
+        const int thumb_missed = dt_view_image_expose
           (&(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery, FALSE, FALSE);
+
+        // if thumb is missing, record it for expose int next round
+        if(thumb_missed)
+          g_hash_table_add(strip->thumbs_table, (gpointer)&id);
+        else
+          g_hash_table_remove(strip->thumbs_table, (gpointer)&id);
+
+        missing += thumb_missed;
       }
       cairo_restore(cr);
     }
@@ -845,7 +863,11 @@ failure:
   if(missing)
     g_timeout_add(250, _expose_again, user_data);
   else
+  {
+    // clear hash map of thumb to redisplay, we are done
+    g_hash_table_remove_all(strip->thumbs_table);
     strip->force_expose_all = FALSE;
+  }
 
   return TRUE;
 }
