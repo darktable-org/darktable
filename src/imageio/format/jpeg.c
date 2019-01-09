@@ -315,7 +315,7 @@ read_icc_profile (j_decompress_ptr cinfo,
 
 int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total)
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe)
 {
   dt_imageio_jpeg_t *jpg = (dt_imageio_jpeg_t *)jpg_tmp;
   const uint8_t *in = (const uint8_t *)in_tmp;

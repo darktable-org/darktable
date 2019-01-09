@@ -1108,7 +1108,7 @@ static int _bpp(dt_imageio_module_data_t *data)
 
 static int _write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                         dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                        void *exif, int exif_len, int imgid, int num, int total)
+                        void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe)
 {
   _dummy_data_t *d = (_dummy_data_t *)data;
   memcpy(d->buf, in, data->width * data->height * sizeof(uint32_t));
