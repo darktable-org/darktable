@@ -1723,7 +1723,7 @@ void dt_dev_modules_update_multishow(dt_develop_t *dev)
     modules = g_list_next(modules);
   }
 }
-gchar *dt_history_item_get_name(struct dt_iop_module_t *module)
+gchar *dt_history_item_get_name(const struct dt_iop_module_t *module)
 {
   gchar *label;
   /* create a history button and add to box */
@@ -1733,7 +1733,8 @@ gchar *dt_history_item_get_name(struct dt_iop_module_t *module)
     label = g_strdup_printf("%s %s", module->name(), module->multi_name);
   return label;
 }
-gchar *dt_history_item_get_name_html(struct dt_iop_module_t *module)
+
+gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module)
 {
   gchar *label;
   /* create a history button and add to box */
