@@ -58,6 +58,7 @@ FILE(GLOB SOURCE_FILES
   "common/module.c"
   "common/noiseprofiles.c"
   "common/pdf.c"
+  "common/presets.c"
   "common/styles.c"
   "common/selection.c"
   "common/system_signal_handling.c"
