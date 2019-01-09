@@ -572,16 +572,16 @@ int dt_imageio_export(const uint32_t imgid, const char *filename, dt_imageio_mod
     /* This is a just a copy, skip process and just export */
     return format->write_image(format_params, filename, NULL, icc_type, icc_filename, NULL, 0, imgid, num, total);
   else
-    return dt_imageio_export_with_flags(imgid, filename, format, format_params, 0, 0, high_quality, upscale,
-                                        0, NULL, copy_metadata, icc_type, icc_filename, icc_intent, storage,
+    return dt_imageio_export_with_flags(imgid, filename, format, format_params, FALSE, FALSE, high_quality, upscale,
+                                        FALSE, NULL, copy_metadata, icc_type, icc_filename, icc_intent, storage,
                                         storage_params, num, total);
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
 int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
                                  dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params,
-                                 const int32_t ignore_exif, const int32_t display_byteorder,
-                                 const gboolean high_quality, const gboolean upscale, const int32_t thumbnail_export,
+                                 const gboolean ignore_exif, const gboolean display_byteorder,
+                                 const gboolean high_quality, const gboolean upscale, const gboolean thumbnail_export,
                                  const char *filter, const gboolean copy_metadata,
                                  dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                                  dt_iop_color_intent_t icc_intent,

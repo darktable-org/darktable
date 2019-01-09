@@ -184,11 +184,11 @@ static int process_next_image(dt_slideshow_t *d)
   sqlite3_finalize(stmt);
 
   // this is a little slow, might be worth to do an option:
-  const int high_quality = dt_conf_get_bool("plugins/slideshow/high_quality");
+  const gboolean high_quality = dt_conf_get_bool("plugins/slideshow/high_quality");
   if(id)
     // the flags are: ignore exif, display byteorder, high quality, upscale, thumbnail
-    dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 1, high_quality, 1, 0,
-                                 0, 0, DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL, 1, 1);
+    dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE, high_quality, TRUE,
+                                 FALSE, NULL, FALSE, DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL, 1, 1);
   return 0;
 }
 
