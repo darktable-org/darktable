@@ -126,7 +126,7 @@ static int FileWriter(const uint8_t *data, size_t data_size, const WebPPicture *
 
 int write_image(dt_imageio_module_data_t *webp, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total)
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe)
 {
   FILE *out = NULL;
   WebPPicture pic;

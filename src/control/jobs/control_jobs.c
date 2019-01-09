@@ -297,7 +297,8 @@ static float envelope(const float xx)
 static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const char *filename,
                                         const void *const ivoid,
                                         dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                                        void *exif, int exif_len, int imgid, int num, int total)
+                                        void *exif, int exif_len, int imgid, int num, int total,
+                                        dt_dev_pixelpipe_t *pipe)
 {
   dt_control_merge_hdr_format_t *data = (dt_control_merge_hdr_format_t *)datai;
   dt_control_merge_hdr_t *d = data->d;
