@@ -361,8 +361,8 @@ void dt_dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *m
 /** same, but for all modules */
 void dt_dev_modules_update_multishow(dt_develop_t *dev);
 /** generates item multi-instance name */
-gchar *dt_history_item_get_name(struct dt_iop_module_t *module);
-gchar *dt_history_item_get_name_html(struct dt_iop_module_t *module);
+gchar *dt_history_item_get_name(const struct dt_iop_module_t *module);
+gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module);
 
 /*
  * distort functions

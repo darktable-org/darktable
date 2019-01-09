@@ -70,6 +70,8 @@ typedef struct dt_dev_histogram_stats_t
 typedef void dt_iop_params_t;
 #endif
 
+const char *dt_pixelpipe_name(dt_dev_pixelpipe_type_t pipe);
+
 #include "develop/pixelpipe_hb.h"
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
