@@ -871,6 +871,9 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 // on my machine with 7 image per row it seems grouping has the largest
 // impact from around 400ms -> 55ms per redraw.
 
+  // this is a gui thread only thing. no mutex required:
+  const int imgsel = dt_control_get_mouse_over_id(); //  darktable.control->global_settings.lib_image_mouse_over_id;
+
   // active if zoom>1 or in the proper area
   const gboolean in_metadata_zone = (px < width && py < height / 2) || (zoom > 1);
 
@@ -889,8 +892,6 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   dt_gui_color_t outlinecol = DT_GUI_COLOR_THUMBNAIL_OUTLINE;
 
   int selected = 0, is_grouped = 0;
-  // this is a gui thread only thing. no mutex required:
-  const int imgsel = dt_control_get_mouse_over_id(); //  darktable.control->global_settings.lib_image_mouse_over_id;
 
   if (draw_selected)
   {
