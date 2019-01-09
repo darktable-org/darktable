@@ -1876,7 +1876,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     {
       dt_bauhaus_combobox_add(bd->masks_modes_combo, _("drawn & parametric mask"));
       bd->masks_modes
-          = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED | DEVELOP_MASK_BOTH));
+          = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK_CONDITIONAL));
     }
 
     dt_bauhaus_combobox_set(bd->masks_modes_combo, 0);
