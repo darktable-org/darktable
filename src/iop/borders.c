@@ -230,6 +230,30 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   return 1;
 }
 
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
+
+  const int border_tot_width = (piece->buf_out.width - piece->buf_in.width) * roi_in->scale;
+  const int border_tot_height = (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
+  const int border_size_t = border_tot_height * d->pos_v;
+  const int border_size_l = border_tot_width * d->pos_h;
+  const int border_in_x = MAX(border_size_l - roi_out->x, 0);
+  const int border_in_y = MAX(border_size_t - roi_out->y, 0);
+
+  // fill the image with 0 so that the added border isn't part of the mask
+  memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
+
+  // blit image inside border and fill the output with previous processed out
+  for(int j = 0; j < roi_in->height; j++)
+  {
+    float *outb = out + (size_t)(j + border_in_y) * roi_out->width + border_in_x;
+    const float *inb = in + (size_t)j * roi_in->width;
+    memcpy(outb, inb, roi_in->width * sizeof(float));
+  }
+}
+
 // 1st pass: how large would the output be, given this input roi?
 // this is always called with the full buffer before processing.
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,

@@ -318,6 +318,8 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
     module->distort_transform = default_distort_transform;
   if(!g_module_symbol(module->module, "distort_backtransform", (gpointer) & (module->distort_backtransform)))
     module->distort_backtransform = default_distort_backtransform;
+  if(!g_module_symbol(module->module, "distort_mask", (gpointer) & (module->distort_mask)))
+    module->distort_mask = NULL;
 
   if(!g_module_symbol(module->module, "modify_roi_in", (gpointer) & (module->modify_roi_in)))
     module->modify_roi_in = dt_iop_modify_roi_in;
@@ -433,6 +435,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->process_tiling_cl = so->process_tiling_cl;
   module->distort_transform = so->distort_transform;
   module->distort_backtransform = so->distort_backtransform;
+  module->distort_mask = so->distort_mask;
   module->modify_roi_in = so->modify_roi_in;
   module->modify_roi_out = so->modify_roi_out;
   module->legacy_params = so->legacy_params;

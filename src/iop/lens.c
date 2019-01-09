@@ -821,6 +821,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   return 1;
 }
+
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
                           size_t points_count)
 {
@@ -846,6 +847,69 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   free(buf);
   lf_modifier_destroy(modifier);
   return 1;
+}
+
+// TODO: Shall we keep LF_MODIFY_TCA in the modifiers?
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_lensfun_data_t *const d = (dt_iop_lensfun_data_t *)piece->data;
+
+  if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
+  {
+    memcpy(out, in, sizeof(float) * roi_out->width * roi_out->height);
+    return;
+  }
+
+  const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
+  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+  lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
+
+  int modify_flags = d->modify_flags & (/*LF_MODIFY_TCA |*/ LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE);
+  const int modflags = lf_modifier_initialize(modifier, d->lens, LF_PF_F32, d->focal, d->aperture, d->distance,
+                                              d->scale, d->target_geom, modify_flags, d->inverse);
+  dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+
+  if(!(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE)))
+  {
+    memcpy(out, in, sizeof(float) * roi_out->width * roi_out->height);
+    lf_modifier_destroy(modifier);
+    return;
+  }
+
+  const struct dt_interpolation *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+
+  // acquire temp memory for distorted pixel coords
+  const size_t bufsize = (size_t)roi_out->width * 2 * 3;
+  float *buf = dt_alloc_align(16, bufsize * sizeof(float) * dt_get_num_threads());
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(buf, modifier) schedule(static)
+#endif
+  for(int y = 0; y < roi_out->height; y++)
+  {
+    float *bufptr = buf + bufsize * dt_get_thread_num();
+    lf_modifier_apply_subpixel_geometry_distortion(modifier, roi_out->x, roi_out->y + y, roi_out->width, 1, bufptr);
+
+    // reverse transform the global coords from lf to our buffer
+    float *_out = out + (size_t)y * roi_out->width;
+    for(int x = 0; x < roi_out->width; x++, bufptr += 6, _out++)
+    {
+      if(d->do_nan_checks && (!isfinite(bufptr[2]) || !isfinite(bufptr[3])))
+      {
+        *_out = 0.0f;
+        continue;
+      }
+
+      // take green channel distortion also for alpha channel
+      const float pi0 = bufptr[2] - roi_in->x;
+      const float pi1 = bufptr[3] - roi_in->y;
+      *_out = dt_interpolation_compute_sample(interpolation, in, pi0, pi1, roi_in->width, roi_in->height, 1,
+                                              roi_in->width);
+    }
+  }
+  dt_free_align(buf);
+  lf_modifier_destroy(modifier);
 }
 
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,

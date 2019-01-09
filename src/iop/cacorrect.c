@@ -72,12 +72,6 @@ int flags()
   return IOP_FLAGS_ONE_INSTANCE;
 }
 
-/** modify regions of interest (optional, per pixel ops don't need this) */
-// void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
-// *roi_out, const dt_iop_roi_t *roi_in);
-// void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t
-// *roi_out, dt_iop_roi_t *roi_in);
-
 /*==================================================================================
  * begin raw therapee code, hg checkout of march 09, 2016 branch master.
  *==================================================================================*/

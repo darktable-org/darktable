@@ -230,6 +230,18 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   return 1;
 }
 
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+
+  const int bpp = sizeof(float);
+  const int stride = bpp * roi_in->width;
+
+  dt_imageio_flip_buffers((char *)out, (const char *)in, bpp, roi_in->width, roi_in->height,
+                          roi_in->width, roi_in->height, stride, d->orientation);
+}
+
 // 1st pass: how large would the output be, given this input roi?
 // this is always called with the full buffer before processing.
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,

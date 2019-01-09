@@ -87,6 +87,8 @@ int default_group()
 // *roi_out, const dt_iop_roi_t *roi_in);
 // void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t
 // *roi_out, dt_iop_roi_t *roi_in);
+// void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+// float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
 /** process, all real work is done here. */
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,

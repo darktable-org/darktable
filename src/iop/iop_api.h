@@ -192,6 +192,8 @@ int distort_transform(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
 int distort_backtransform(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points,
                           size_t points_count);
 
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const struct dt_iop_roi_t *const roi_in, const struct dt_iop_roi_t *const roi_out);
 
 // introspection related callbacks, will be auto-implemented if DT_MODULE_INTROSPECTION() is used,
 int introspection_init(struct dt_iop_module_so_t *self, int api_version);

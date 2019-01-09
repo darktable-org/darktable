@@ -4360,6 +4360,12 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 }
 #endif
 
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  rt_copy_in_to_out(in, roi_in, out, roi_out, 1, 0, 0);
+}
+
 #ifdef HAVE_OPENCL
 
 cl_int rt_process_stats_cl(const int devid, cl_mem dev_img, const int width, const int height, float levels[3])
