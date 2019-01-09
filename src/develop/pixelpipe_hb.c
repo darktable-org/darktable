@@ -244,30 +244,28 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
-    // if(module->enabled) // no! always create nodes. just don't process.
-    {
-      dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)calloc(1, sizeof(dt_dev_pixelpipe_iop_t));
-      piece->enabled = module->enabled;
-      piece->request_histogram = DT_REQUEST_ONLY_IN_GUI;
-      piece->histogram_params.roi = NULL;
-      piece->histogram_params.bins_count = 256;
-      piece->histogram_stats.bins_count = 0;
-      piece->histogram_stats.pixels = 0;
-      piece->colors
-          = ((dt_iop_module_colorspace(module) == iop_cs_RAW) && (pipe->image.flags & DT_IMAGE_RAW)) ? 1 : 4;
-      piece->iscale = pipe->iscale;
-      piece->iwidth = pipe->iwidth;
-      piece->iheight = pipe->iheight;
-      piece->module = module;
-      piece->pipe = pipe;
-      piece->data = NULL;
-      piece->hash = 0;
-      piece->process_cl_ready = 0;
-      piece->process_tiling_ready = 0;
-      dt_iop_init_pipe(piece->module, pipe, piece);
-      pipe->nodes = g_list_append(pipe->nodes, piece);
-    }
-
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)calloc(1, sizeof(dt_dev_pixelpipe_iop_t));
+    piece->enabled = module->enabled;
+    piece->request_histogram = DT_REQUEST_ONLY_IN_GUI;
+    piece->histogram_params.roi = NULL;
+    piece->histogram_params.bins_count = 256;
+    piece->histogram_stats.bins_count = 0;
+    piece->histogram_stats.pixels = 0;
+    piece->colors
+        = ((dt_iop_module_colorspace(module) == iop_cs_RAW) && (pipe->image.flags & DT_IMAGE_RAW)) ? 1 : 4;
+    piece->iscale = pipe->iscale;
+    piece->iwidth = pipe->iwidth;
+    piece->iheight = pipe->iheight;
+    piece->module = module;
+    piece->pipe = pipe;
+    piece->data = NULL;
+    piece->hash = 0;
+    piece->process_cl_ready = 0;
+    piece->process_tiling_ready = 0;
+    memset(&piece->processed_roi_in, 0, sizeof(piece->processed_roi_in));
+    memset(&piece->processed_roi_out, 0, sizeof(piece->processed_roi_out));
+    dt_iop_init_pipe(piece->module, pipe, piece);
+    pipe->nodes = g_list_append(pipe->nodes, piece);
     modules = g_list_next(modules);
   }
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
@@ -732,6 +730,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     dt_iop_buffer_dsc_t *input_format = &_input_format;
 
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
+
+    piece->processed_roi_in = roi_in;
+    piece->processed_roi_out = *roi_out;
 
     if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, &cl_mem_input, &input_format, &roi_in,
                                     g_list_previous(modules), g_list_previous(pieces), pos - 1))
