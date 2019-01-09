@@ -53,10 +53,11 @@ typedef struct dt_dev_pixelpipe_iop_t
   int colors;          // how many colors per pixel
   dt_iop_roi_t buf_in,
       buf_out;                // theoretical full buffer regions of interest, as passed through modify_roi_out
+  dt_iop_roi_t processed_roi_in, processed_roi_out; // the actual roi that was used for processing the piece
   int process_cl_ready;       // set this to 0 in commit_params to temporarily disable the use of process_cl
   int process_tiling_ready;   // set this to 0 in commit_params to temporarily disable tiling
 
-  // the following are used  internally for caching:
+  // the following are used internally for caching:
   dt_iop_buffer_dsc_t dsc_in, dsc_out;
 } dt_dev_pixelpipe_iop_t;
 
