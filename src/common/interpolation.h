@@ -105,6 +105,11 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor, const
                                       const float x, const float y, const int width, const int height,
                                       const int linestride);
 
+// same as above for single channel images (i.e., masks). no SSE or CPU code paths for now
+void dt_interpolation_compute_pixel1c(const struct dt_interpolation *itor, const float *in, float *out,
+                                      const float x, const float y, const int width, const int height,
+                                      const int linestride);
+
 /** Get an interpolator from type
  * @param type Interpolator to search for
  * @return requested interpolator or default if not found (this function can't fail)
@@ -183,6 +188,17 @@ int dt_interpolation_resample_roi_cl(const struct dt_interpolation *itor, int de
                                      const dt_iop_roi_t *const roi_out, cl_mem dev_in,
                                      const dt_iop_roi_t *const roi_in);
 #endif
+
+// same as above for single channel images (i.e., masks). no SSE or CPU code paths for now
+void dt_interpolation_resample_1c(const struct dt_interpolation *itor, float *out,
+                                  const dt_iop_roi_t *const roi_out, const int32_t out_stride,
+                                  const float *const in, const dt_iop_roi_t *const roi_in,
+                                  const int32_t in_stride);
+
+void dt_interpolation_resample_roi_1c(const struct dt_interpolation *itor, float *out,
+                                      const dt_iop_roi_t *const roi_out, const int32_t out_stride,
+                                      const float *const in, const dt_iop_roi_t *const roi_in,
+                                      const int32_t in_stride);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
