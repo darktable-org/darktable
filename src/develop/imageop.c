@@ -88,7 +88,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
 {
   memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
-  memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
+  dt_iop_commit_blend_params(module, &_default_blendop_params);
 }
 
 static void dt_iop_modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
@@ -482,7 +482,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->blend_params = calloc(1, sizeof(dt_develop_blend_params_t));
   module->default_blendop_params = calloc(1, sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
-  memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
+  dt_iop_commit_blend_params(module, &_default_blendop_params);
 
   if(module->priority == 0)
   {
@@ -567,7 +567,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   if(is_zero)
   {
     // we set priority of next to 0
-    next->multi_priority = 0;
+    dt_iop_update_multi_priority(next, 0);
 
     // we change this in the history stack too
     GList *history = g_list_first(module->dev->history);
@@ -823,7 +823,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
       memcpy(module->params, base->params, module->params_size);
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
       {
-        memcpy(module->blend_params, base->blend_params, sizeof(dt_develop_blend_params_t));
+        dt_iop_commit_blend_params(module, base->blend_params);
         if(base->blend_params->mask_id > 0)
         {
           module->blend_params->mask_id = 0;
@@ -1510,6 +1510,12 @@ void dt_iop_unload_modules_so()
   }
 }
 
+// make sure that blend_params are in sync with the iop struct
+void dt_iop_commit_blend_params(dt_iop_module_t *module, const dt_develop_blend_params_t *blendop_params)
+{
+  memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+}
+
 void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
                           dt_develop_blend_params_t *blendop_params, dt_dev_pixelpipe_t *pipe,
                           dt_dev_pixelpipe_iop_t *piece)
@@ -1536,7 +1542,8 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
     }
     memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
     // this should be redundant! (but is not)
-    memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+    dt_iop_commit_blend_params(module, blendop_params);
+
     /* and we add masks */
     dt_masks_group_get_hash_buffer(grp, str + pos);
 
@@ -1638,7 +1645,7 @@ static void dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module
   }
   /* reset to default params */
   memcpy(module->params, module->default_params, module->params_size);
-  memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+  dt_iop_commit_blend_params(module, module->default_blendop_params);
 
   /* reset ui to its defaults */
   dt_iop_gui_reset(module);
@@ -2310,6 +2317,12 @@ void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
 {
   dt_iop_so_gui_set_state(module->so, state);
 }
+
+void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority)
+{
+  module->multi_priority = new_priority;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

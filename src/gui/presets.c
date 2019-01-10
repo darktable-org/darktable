@@ -680,7 +680,7 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
     if(blendop_params && (blendop_version == dt_develop_blend_version())
        && (bl_length == sizeof(dt_develop_blend_params_t)))
     {
-      memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+      dt_iop_commit_blend_params(module, blendop_params);
     }
     else if(blendop_params
             && dt_develop_blend_legacy_params(module, blendop_params, blendop_version, module->blend_params,
@@ -690,7 +690,7 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
     }
     else
     {
-      memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+      dt_iop_commit_blend_params(module, module->default_blendop_params);
     }
 
     if(!writeprotect) dt_gui_store_last_preset(name);

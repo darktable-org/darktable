@@ -493,7 +493,7 @@ static int _rebuild_multi_priority(GList *history_list)
     // we keep the history version
     if(hitem->module && hitem->module->multi_priority != hitem->multi_priority)
     {
-      hitem->module->multi_priority = hitem->multi_priority;
+      dt_iop_update_multi_priority(hitem->module, hitem->multi_priority);
       changed = 1;
     }
 
@@ -543,7 +543,7 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
 
       // adjust the multi_name of the new module
       g_strlcpy(module->multi_name, hitem->multi_name, sizeof(module->multi_name));
-      module->multi_priority = hitem->multi_priority;
+      dt_iop_update_multi_priority(module, hitem->multi_priority);
 
       // we insert this module into dev->iop
       iop_list = g_list_insert_sorted(iop_list, module, sort_plugins);
