@@ -90,11 +90,13 @@ static char *_pipe_type_to_str(int pipe_type)
   return r;
 }
 
-int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels)
+int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
+                                 gboolean store_masks)
 {
   int res = dt_dev_pixelpipe_init_cached(pipe, 4 * sizeof(float) * width * height, 2);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
   pipe->levels = levels;
+  pipe->store_all_raster_masks = store_masks;
   return res;
 }
 
@@ -155,6 +157,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->icc_intent = DT_INTENT_LAST;
   pipe->iop = NULL;
   pipe->forms = NULL;
+  pipe->store_all_raster_masks = FALSE;
 
   return 1;
 }
@@ -218,6 +221,8 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
     piece->blendop_data = NULL;
     free(piece->histogram);
     piece->histogram = NULL;
+    g_hash_table_destroy(piece->raster_masks);
+    piece->raster_masks = NULL;
     free(piece);
     nodes = g_list_next(nodes);
   }
@@ -262,6 +267,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     piece->hash = 0;
     piece->process_cl_ready = 0;
     piece->process_tiling_ready = 0;
+    piece->raster_masks = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, dt_free_align_ptr);
     memset(&piece->processed_roi_in, 0, sizeof(piece->processed_roi_in));
     memset(&piece->processed_roi_out, 0, sizeof(piece->processed_roi_out));
     dt_iop_init_pipe(piece->module, pipe, piece);
@@ -2423,6 +2429,80 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop
   *width = roi_out.width;
   *height = roi_out.height;
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
+}
+
+float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_module_t *raster_mask_source,
+                              const int raster_mask_id, const dt_iop_module_t *target_module,
+                              gboolean *free_mask)
+{
+  if(!raster_mask_source)
+    return NULL;
+
+  *free_mask = FALSE;
+  float *raster_mask = NULL;
+
+  GList *source_iter;
+  for(source_iter = pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
+  {
+    const dt_dev_pixelpipe_iop_t *candidate = (dt_dev_pixelpipe_iop_t *)source_iter->data;
+    if(candidate->module == raster_mask_source)
+      break;
+  }
+
+  if(source_iter)
+  {
+    const dt_dev_pixelpipe_iop_t *source_piece = (dt_dev_pixelpipe_iop_t *)source_iter->data;
+    if(source_piece)
+    {
+      raster_mask = g_hash_table_lookup(source_piece->raster_masks, GINT_TO_POINTER(raster_mask_id));
+      if(raster_mask)
+      {
+        for(GList *iter = g_list_next(source_iter); iter; iter = g_list_next(iter))
+        {
+          dt_dev_pixelpipe_iop_t *module = (dt_dev_pixelpipe_iop_t *)iter->data;
+
+          if(module->enabled
+            && !(module->module->dev->gui_module && module->module->dev->gui_module->operation_tags_filter()
+                 & module->module->operation_tags()))
+          {
+            if(module->module->distort_mask
+              && !(!strcmp(module->module->op, "finalscale") // hack against pipes not using finalscale
+                    && module->processed_roi_in.width == 0
+                    && module->processed_roi_in.height == 0))
+            {
+              float *transformed_mask = dt_alloc_align(64, sizeof(float)
+                                                          * module->processed_roi_out.width
+                                                          * module->processed_roi_out.height);
+              module->module->distort_mask(module->module,
+                                          module,
+                                          raster_mask,
+                                          transformed_mask,
+                                          &module->processed_roi_in,
+                                          &module->processed_roi_out);
+              if(*free_mask) dt_free_align(raster_mask);
+              *free_mask = TRUE;
+              raster_mask = transformed_mask;
+            }
+            else if(!module->module->distort_mask &&
+                    (module->processed_roi_in.width != module->processed_roi_out.width ||
+                     module->processed_roi_in.height != module->processed_roi_out.height ||
+                     module->processed_roi_in.x != module->processed_roi_out.x ||
+                     module->processed_roi_in.y != module->processed_roi_out.y))
+              printf("FIXME: module `%s' changed the roi from %d x %d @ %d / %d to %d x %d | %d / %d but doesn't have "
+                     "distort_mask() implemented!\n", module->module->op, module->processed_roi_in.width,
+                     module->processed_roi_in.height, module->processed_roi_in.x, module->processed_roi_in.y,
+                     module->processed_roi_out.width, module->processed_roi_out.height, module->processed_roi_out.x,
+                     module->processed_roi_out.y);
+          }
+
+          if(module->module == target_module)
+            break;
+        }
+      }
+    }
+  }
+
+  return raster_mask;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

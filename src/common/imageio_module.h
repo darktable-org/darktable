@@ -49,7 +49,7 @@ typedef enum dt_imageio_format_flags_t
  */
 
 /*
- * custom data for the module. append private stuff after width and height.
+ * custom data for the module. append private stuff after these.
  * this will be inited once when the export button is hit, so the user can make
  * gui adjustments that won't affect the currently running export.
  */
