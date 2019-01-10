@@ -76,6 +76,7 @@ typedef struct dt_lib_filmstrip_t
   gboolean force_expose_all;
   cairo_surface_t *surface;
   GHashTable *thumbs_table;
+  int32_t panel_width;
 
   dt_gui_hist_dialog_t dg;
 } dt_lib_filmstrip_t;
@@ -302,6 +303,7 @@ void gui_init(dt_lib_module_t *self)
   d->force_expose_all = FALSE;
   d->offset_x = 0;
   d->surface = NULL;
+  d->panel_width = -1;
   d->thumbs_table = g_hash_table_new(g_int_hash, g_int_equal);
   dt_gui_hist_dialog_init(&d->dg);
 
@@ -695,6 +697,14 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
   gtk_widget_get_allocation(widget, &allocation);
   const int32_t width = allocation.width;
   const int32_t height = allocation.height;
+
+  // windows could have been expanded for example, we need to create a new surface of the good size and redraw
+  if(width != strip->panel_width)
+  {
+    cairo_surface_destroy(strip->surface);
+    strip->surface = NULL;
+    strip->panel_width = width;
+  }
 
   // create the persistent surface if it does not exists, this surface will be invalidated each time
   // a resize of the filmstrip is done.
