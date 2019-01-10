@@ -269,8 +269,7 @@ typedef struct dt_develop_blend_params7_t
 /** blend legacy parameters version 8 */
 typedef struct dt_develop_blend_params8_t
 {
-  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask
-   *  or raster mask */
+  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
   uint32_t mask_mode;
   /** blending mode */
   uint32_t blend_mode;
