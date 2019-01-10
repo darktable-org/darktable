@@ -19,7 +19,8 @@
   <para>
     This menu gives you an overview of the presets that are defined for darktable's modules. In
     this dialog you can select whether a certain user defined preset shall be auto-applied to
-    matching images.
+    matching images. By pressing the <quote>import</quote> button at the bottom of the window
+    you can import a saved preset.
   </para>
 
   <para>
@@ -34,7 +35,8 @@
   </para>
 
   <para>
-    Double clicking on a user-defined preset will open a menu.
+    Double clicking on a user-defined preset will open a menu. This allows editing the preset
+    or saving it to an external .dtpreset file.
   </para>
 
   <para>
