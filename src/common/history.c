@@ -789,7 +789,7 @@ static int _history_merge_module_into_history(dt_develop_t *dev_dest, dt_iop_mod
       else
       {
         module->instance = mod_src->instance;
-        module->multi_priority = multi_priority;
+        dt_iop_update_multi_priority(module, multi_priority);
 
         dev_dest->iop = g_list_insert_sorted(dev_dest->iop, module, sort_plugins);
       }
@@ -831,9 +831,9 @@ static int _history_merge_module_into_history(dt_develop_t *dev_dest, dt_iop_mod
         if(mod_dest->instance == module->instance)
         {
           if(mod_dest->multi_priority < multi_priority)
-            mod_dest->multi_priority++;
+            dt_iop_update_multi_priority(mod_dest, mod_dest->multi_priority + 1);
           else if(mod_dest == module)
-            mod_dest->multi_priority = 0;
+            dt_iop_update_multi_priority(mod_dest, 0);
           
           // also update the history
           GList *history = g_list_first(dev_dest->history);

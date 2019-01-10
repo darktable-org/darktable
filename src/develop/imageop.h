@@ -508,6 +508,7 @@ void dt_iop_gui_update_header(dt_iop_module_t *module);
 void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
                           struct dt_develop_blend_params_t *blendop_params, struct dt_dev_pixelpipe_t *pipe,
                           struct dt_dev_pixelpipe_iop_t *piece);
+void dt_iop_commit_blend_params(dt_iop_module_t *module, const struct dt_develop_blend_params_t *blendop_params);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
 /** get the widget of plugin ui in expander */
@@ -552,6 +553,9 @@ gchar *dt_iop_get_localized_name(const gchar *op);
 
 /** Connects common accelerators to an iop module */
 void dt_iop_connect_common_accels(dt_iop_module_t *module);
+
+/** set multi_priority and update raster mask links */
+void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
