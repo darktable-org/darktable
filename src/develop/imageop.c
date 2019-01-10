@@ -611,11 +611,11 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   darktable.gui->reset = 0;
 }
 
-static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
+static void dt_iop_gui_move_up_down_callback(GtkButton *button, dt_iop_module_t *module, gboolean up)
 {
-  // we find the next module
-  GList *modules = g_list_last(module->dev->iop);
-  dt_iop_module_t *next = NULL;
+  // we find the next/previous module
+  GList *modules = up ? g_list_first(module->dev->iop) : g_list_last(module->dev->iop);
+  dt_iop_module_t *other = NULL;
   int find = 0;
   while(modules)
   {
@@ -624,17 +624,17 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
       find = 1;
     else if(mod->instance == module->instance && find == 1)
     {
-      next = mod;
+      other = mod;
       break;
     }
-    modules = g_list_previous(modules);
+    modules = up ? g_list_next(modules) : g_list_previous(modules);
   }
-  if(!next) return;
+  if(!other) return;
 
   // we exchange the priority of both module
-  int oldp = next->multi_priority;
-  next->multi_priority = module->multi_priority;
-  module->multi_priority = oldp;
+  int oldp = other->multi_priority;
+  dt_iop_update_multi_priority(other, module->multi_priority);
+  dt_iop_update_multi_priority(module, oldp);
 
   // we change this in the history stack too
   GList *history = g_list_first(module->dev->history);
@@ -643,138 +643,65 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     if(hist->module == module)
       hist->multi_priority = module->multi_priority;
-    else if(hist->module == next)
-      hist->multi_priority = next->multi_priority;
+    else if(hist->module == other)
+      hist->multi_priority = other->multi_priority;
     history = g_list_next(history);
   }
 
   // we update the list of iop
-  modules = g_list_first(next->dev->iop);
+  modules = g_list_first(other->dev->iop);
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
     if(mod == module)
     {
-      next->dev->iop = g_list_remove_link(next->dev->iop, modules);
+      other->dev->iop = g_list_remove_link(other->dev->iop, modules);
       break;
     }
     modules = g_list_next(modules);
   }
-  next->dev->iop = g_list_insert_sorted(next->dev->iop, module, sort_plugins);
+  other->dev->iop = g_list_insert_sorted(other->dev->iop, module, sort_plugins);
 
   // we update the headers
-  dt_dev_module_update_multishow(next->dev, module);
-  dt_dev_module_update_multishow(next->dev, next);
+  dt_dev_module_update_multishow(other->dev, module);
+  dt_dev_module_update_multishow(other->dev, other);
 
   // we move the headers
   GValue gv = { 0, { { 0 } } };
   g_value_init(&gv, G_TYPE_INT);
   gtk_container_child_get_property(
-      GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
-      module->expander, "position", &gv);
+    GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
+                                   module->expander, "position", &gv);
   gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
-                        module->expander, g_value_get_int(&gv) + 1);
+                        module->expander, g_value_get_int(&gv) + (up ? -1 : 1));
 
   /* signal that history has changed */
-  if(next->dev->gui_attached)
+  if(other->dev->gui_attached)
   {
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
 
   // we rebuild the pipe
-  next->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-  next->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  next->dev->pipe->cache_obsolete = 1;
-  next->dev->preview_pipe->cache_obsolete = 1;
+  other->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
+  other->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+  other->dev->pipe->cache_obsolete = 1;
+  other->dev->preview_pipe->cache_obsolete = 1;
 
   // invalidate buffers and force redraw of darkroom
-  dt_dev_invalidate_all(next->dev);
+  dt_dev_invalidate_all(other->dev);
 
   /* redraw */
   dt_control_queue_redraw_center();
 }
 
+static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
+{
+  dt_iop_gui_move_up_down_callback(button, module, FALSE);
+}
+
 static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
 {
-  // we find the previous module
-  GList *modules = g_list_first(module->dev->iop);
-  dt_iop_module_t *prev = NULL;
-  int find = 0;
-  while(modules)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    if(mod == module)
-      find = 1;
-    else if(mod->instance == module->instance && find == 1)
-    {
-      prev = mod;
-      break;
-    }
-    modules = g_list_next(modules);
-  }
-  if(!prev) return;
-
-  // we exchange the priority of both module
-  int oldp = prev->multi_priority;
-  prev->multi_priority = module->multi_priority;
-  module->multi_priority = oldp;
-
-  // we change this in the history stack too
-  GList *history = g_list_first(module->dev->history);
-  while(history)
-  {
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    if(hist->module == module)
-      hist->multi_priority = module->multi_priority;
-    else if(hist->module == prev)
-      hist->multi_priority = prev->multi_priority;
-    history = g_list_next(history);
-  }
-
-  // we update the list of iop
-  modules = g_list_first(prev->dev->iop);
-  while(modules)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    if(mod == module)
-    {
-      prev->dev->iop = g_list_remove_link(prev->dev->iop, modules);
-      break;
-    }
-    modules = g_list_next(modules);
-  }
-  prev->dev->iop = g_list_insert_sorted(prev->dev->iop, module, sort_plugins);
-
-  // we update the headers
-  dt_dev_module_update_multishow(prev->dev, module);
-  dt_dev_module_update_multishow(prev->dev, prev);
-
-  // we move the headers
-  GValue gv = { 0, { { 0 } } };
-  g_value_init(&gv, G_TYPE_INT);
-  gtk_container_child_get_property(
-      GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
-      module->expander, "position", &gv);
-  gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
-                        module->expander, g_value_get_int(&gv) - 1);
-
-  /* signal that history has changed */
-  if(prev->dev->gui_attached)
-  {
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
-  }
-
-  // we rebuild the pipe
-  prev->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-  prev->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  prev->dev->pipe->cache_obsolete = 1;
-  prev->dev->preview_pipe->cache_obsolete = 1;
-
-  // invalidate buffers and force redraw of darkroom
-  dt_dev_invalidate_all(prev->dev);
-
-  /* redraw */
-  dt_control_queue_redraw_center();
+  dt_iop_gui_move_up_down_callback(button, module, TRUE);
 }
 
 dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
