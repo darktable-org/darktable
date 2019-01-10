@@ -699,11 +699,10 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
   const int32_t height = allocation.height;
 
   // windows could have been expanded for example, we need to create a new surface of the good size and redraw
-  if(width != strip->panel_width)
+  if(strip->surface && width != strip->panel_width)
   {
     cairo_surface_destroy(strip->surface);
     strip->surface = NULL;
-    strip->panel_width = width;
   }
 
   // create the persistent surface if it does not exists, this surface will be invalidated each time
@@ -713,6 +712,7 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
     strip->surface
       = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
     strip->force_expose_all = TRUE;
+    strip->panel_width = width;
   }
 
   // get cairo drawing handle
