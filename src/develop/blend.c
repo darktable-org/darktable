@@ -2905,6 +2905,35 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 #endif
     for(size_t i = 0; i < buffsize; i++) mask[i] = opacity;
   }
+  else if(mask_mode & DEVELOP_MASK_RASTER)
+  {
+    /* use a raster mask from another module earlier in the pipe */
+    gboolean free_mask = FALSE; // if no transformations were applied we get the cached original back
+    float *raster_mask = dt_dev_get_raster_mask(piece->pipe, self->raster_mask.sink.source, self->raster_mask.sink.id,
+                                                self, &free_mask);
+
+    if(raster_mask)
+    {
+      // invert if required
+      if(d->raster_mask_invert)
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(raster_mask)
+#endif
+        for(size_t i = 0; i < buffsize; i++) mask[i] = 1.0 - raster_mask[i];
+      else
+        memcpy(mask, raster_mask, buffsize * sizeof(float));
+      if(free_mask) dt_free_align(raster_mask);
+    }
+    else
+    {
+      // fallback for when the raster mask couldn't be applied
+      const float value = d->raster_mask_invert ? 0.0 : 1.0;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none)
+#endif
+      for(size_t i = 0; i < buffsize; i++) mask[i] = value;
+    }
+  }
   else
   {
     // we blend with a drawn and/or parametric mask
@@ -3073,7 +3102,17 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     piece->pipe->mask_display = request_mask_display;
   }
 
-  dt_free_align(_mask);
+  // check if we should store the mask for export or use in subsequent modules
+  // TODO: should we skip raster masks?
+  if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, 0))
+  {
+    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(0), _mask);
+  }
+  else
+  {
+    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(0));
+    dt_free_align(_mask);
+  }
 }
 
 #ifdef HAVE_OPENCL
@@ -3525,7 +3564,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 1 && new_version == 8)
+  if(old_version == 1 && new_version == 9)
   {
     if(length != sizeof(dt_develop_blend_params1_t)) return 1;
 
@@ -3541,7 +3580,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 2 && new_version == 8)
+  if(old_version == 2 && new_version == 9)
   {
     if(length != sizeof(dt_develop_blend_params2_t)) return 1;
 
@@ -3565,7 +3604,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 3 && new_version == 8)
+  if(old_version == 3 && new_version == 9)
   {
     if(length != sizeof(dt_develop_blend_params3_t)) return 1;
 
@@ -3587,7 +3626,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 4 && new_version == 8)
+  if(old_version == 4 && new_version == 9)
   {
     if(length != sizeof(dt_develop_blend_params4_t)) return 1;
 
@@ -3610,7 +3649,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 5 && new_version == 8)
+  if(old_version == 5 && new_version == 9)
   {
     if(length != sizeof(dt_develop_blend_params5_t)) return 1;
 
@@ -3636,7 +3675,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 6 && new_version == 8)
+  if(old_version == 6 && new_version == 9)
   {
     if(length != sizeof(dt_develop_blend_params6_t)) return 1;
 
@@ -3656,7 +3695,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 7 && new_version == 8)
+  if(old_version == 7 && new_version == 9)
   {
     if(length != sizeof(dt_develop_blend_params7_t)) return 1;
 
@@ -3672,6 +3711,30 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->mask_id = o->mask_id;
     n->blur_radius = o->radius;
     n->blendif = o->blendif;
+    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    return 0;
+  }
+
+  if(old_version == 8 && new_version == 9)
+  {
+    if(length != sizeof(dt_develop_blend_params7_t)) return 1;
+
+    dt_develop_blend_params8_t *o = (dt_develop_blend_params8_t *)old_params;
+    dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
+    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+    n->mask_mode = o->mask_mode;
+    n->blend_mode = o->blend_mode;
+    n->opacity = o->opacity;
+    n->mask_combine = o->mask_combine;
+    n->mask_id = o->mask_id;
+    n->blendif = o->blendif;
+    n->feathering_radius = o->feathering_radius;
+    n->feathering_guide = o->feathering_guide;
+    n->blur_radius = o->blur_radius;
+    n->contrast = o->contrast;
+    n->brightness = o->brightness;
     memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
     return 0;
   }

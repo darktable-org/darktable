@@ -80,7 +80,8 @@ static dt_develop_blend_params_t _default_blendop_params
         { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-          0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f } };
+          0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f },
+        { 0 }, 0, 0, FALSE };
 
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module);
 
@@ -391,6 +392,10 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->bypass_blendif = 0;
   module->enabled = module->default_enabled = 0; // all modules disabled by default.
   g_strlcpy(module->op, so->op, 20);
+  module->raster_mask.source.users = g_hash_table_new(NULL, NULL);
+  module->raster_mask.source.masks = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
+  module->raster_mask.sink.source = NULL;
+  module->raster_mask.sink.id = 0;
 
   // only reference cached results of dlopen:
   module->module = so->module;
@@ -1423,6 +1428,10 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   module->default_blendop_params = NULL;
   free(module->histogram);
   module->histogram = NULL;
+  g_hash_table_destroy(module->raster_mask.source.users);
+  g_hash_table_destroy(module->raster_mask.source.masks);
+  module->raster_mask.source.users = NULL;
+  module->raster_mask.source.masks = NULL;
 }
 
 void dt_iop_unload_modules_so()
@@ -1437,10 +1446,50 @@ void dt_iop_unload_modules_so()
   }
 }
 
+void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode)
+{
+  static const int key = 0;
+  // showing raster masks doesn't make sense, one can use the original source instead. or does it?
+  if(mask_mode & DEVELOP_MASK_ENABLED && !(mask_mode & DEVELOP_MASK_RASTER))
+  {
+    char *modulename = dt_history_item_get_name(module);
+    g_hash_table_insert(module->raster_mask.source.masks, GINT_TO_POINTER(key), modulename);
+  }
+  else
+  {
+    g_hash_table_remove(module->raster_mask.source.masks, GINT_TO_POINTER(key));
+  }
+}
+
 // make sure that blend_params are in sync with the iop struct
 void dt_iop_commit_blend_params(dt_iop_module_t *module, const dt_develop_blend_params_t *blendop_params)
 {
+  if(module->raster_mask.sink.source)
+    g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
+
   memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+  dt_iop_set_mask_mode(module, blendop_params->mask_mode);
+
+  if(module->dev)
+  {
+    for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
+    {
+      dt_iop_module_t *m = (dt_iop_module_t *)iter->data;
+      if(!strcmp(m->op, blendop_params->raster_mask_source))
+      {
+        if(m->multi_priority == blendop_params->raster_mask_instance)
+        {
+          g_hash_table_insert(m->raster_mask.source.users, module, GINT_TO_POINTER(blendop_params->raster_mask_id));
+          module->raster_mask.sink.source = m;
+          module->raster_mask.sink.id = blendop_params->raster_mask_id;
+          return;
+        }
+      }
+    }
+  }
+
+  module->raster_mask.sink.source = NULL;
+  module->raster_mask.sink.id = 0;
 }
 
 void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
@@ -2247,7 +2296,40 @@ void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
 
 void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority)
 {
+  GHashTableIter iter;
+  gpointer key, value;
+
+  g_hash_table_iter_init(&iter, module->raster_mask.source.users);
+  while(g_hash_table_iter_next(&iter, &key, &value))
+  {
+    dt_iop_module_t *sink_module = (dt_iop_module_t *)key;
+
+    sink_module->blend_params->raster_mask_instance = new_priority;
+
+    // also fix history entries
+    for(GList *hiter = module->dev->history; hiter; hiter = g_list_next(hiter))
+    {
+      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)hiter->data;
+      if(hist->module == sink_module)
+        hist->blend_params->raster_mask_instance = new_priority;
+    }
+  }
+
   module->multi_priority = new_priority;
+}
+
+gboolean dt_iop_is_raster_mask_used(dt_iop_module_t *module, int id)
+{
+  GHashTableIter iter;
+  gpointer key, value;
+
+  g_hash_table_iter_init(&iter, module->raster_mask.source.users);
+  while(g_hash_table_iter_next(&iter, &key, &value))
+  {
+    if(GPOINTER_TO_INT(value) == id)
+      return TRUE;
+  }
+  return FALSE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

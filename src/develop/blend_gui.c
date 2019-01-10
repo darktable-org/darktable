@@ -282,6 +282,8 @@ static void _blendop_masks_mode_callback(GtkWidget *combo, dt_iop_gui_blend_data
     gtk_widget_hide(GTK_WIDGET(data->top_box));
   }
 
+  dt_iop_set_mask_mode(data->module, mask_mode);
+
   if((mask_mode & DEVELOP_MASK_ENABLED)
      && ((data->masks_inited && (mask_mode & DEVELOP_MASK_MASK))
          || (data->blendif_inited && (mask_mode & DEVELOP_MASK_CONDITIONAL))))
@@ -359,6 +361,19 @@ static void _blendop_masks_mode_callback(GtkWidget *combo, dt_iop_gui_blend_data
     gtk_widget_hide(GTK_WIDGET(data->masks_box));
   }
 
+  if(data->raster_inited && (mask_mode & DEVELOP_MASK_RASTER))
+  {
+    gtk_widget_show(GTK_WIDGET(data->raster_box));
+  }
+  else if(data->raster_inited)
+  {
+//     dt_masks_set_edit_mode(data->module, DT_MASKS_EDIT_OFF);
+    gtk_widget_hide(GTK_WIDGET(data->raster_box));
+  }
+  else
+  {
+    gtk_widget_hide(GTK_WIDGET(data->raster_box));
+  }
 
   if(data->blendif_inited && (mask_mode & DEVELOP_MASK_CONDITIONAL))
   {
@@ -1554,6 +1569,157 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
   gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->masks_box));
 }
 
+typedef struct raster_combo_entry_t
+{
+  dt_iop_module_t *module;
+  int id;
+} raster_combo_entry_t;
+
+static void _raster_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
+{
+  dt_iop_module_t *module = *m;
+  dt_iop_request_focus(module);
+
+  dt_bauhaus_combobox_clear(w);
+
+  raster_combo_entry_t *entry = (raster_combo_entry_t *)malloc(sizeof(raster_combo_entry_t));
+  entry->module = NULL;
+  entry->id = 0;
+  dt_bauhaus_combobox_add_full(w, _("no mask used"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, entry, free);
+
+  int i = 1;
+
+  for(GList* iter = darktable.develop->iop; iter; iter = g_list_next(iter))
+  {
+    dt_iop_module_t *iop = (dt_iop_module_t *)iter->data;
+    if(iop == module)
+      break;
+
+    GHashTableIter masks_iter;
+    gpointer key, value;
+
+    g_hash_table_iter_init(&masks_iter, iop->raster_mask.source.masks);
+    while(g_hash_table_iter_next(&masks_iter, &key, &value))
+    {
+      const int id = GPOINTER_TO_INT(key);
+      const char *modulename = (char *)value;
+      entry = (raster_combo_entry_t *)malloc(sizeof(raster_combo_entry_t));
+      entry->module = iop;
+      entry->id = id;
+      dt_bauhaus_combobox_add_full(w, modulename, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, entry, free);
+      if(iop == module->raster_mask.sink.source && module->raster_mask.sink.id == id)
+        dt_bauhaus_combobox_set(w, i);
+      i++;
+    }
+  }
+}
+
+static void _raster_value_changed_callback(GtkWidget *widget, struct dt_iop_module_t *module)
+{
+  raster_combo_entry_t *entry = dt_bauhaus_combobox_get_data(widget);
+
+  // nothing to do
+  if(entry->module == module->raster_mask.sink.source && entry->id == module->raster_mask.sink.id)
+    return;
+
+  if(module->raster_mask.sink.source)
+  {
+    // we no longer use this one
+    g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
+  }
+
+  module->raster_mask.sink.source = entry->module;
+  module->raster_mask.sink.id = entry->id;
+
+  gboolean reprocess = FALSE;
+
+  if(entry->module)
+  {
+    reprocess = dt_iop_is_raster_mask_used(entry->module, 0) == FALSE;
+    g_hash_table_add(entry->module->raster_mask.source.users, module);
+
+    // update blend_params!
+    memcpy(module->blend_params->raster_mask_source, entry->module->op, sizeof(module->blend_params->raster_mask_source));
+    module->blend_params->raster_mask_instance = entry->module->multi_priority;
+    module->blend_params->raster_mask_id = entry->id;
+  }
+  else
+  {
+    memset(module->blend_params->raster_mask_source, 0, sizeof(module->blend_params->raster_mask_source));
+    module->blend_params->raster_mask_instance = 0;
+    module->blend_params->raster_mask_id = 0;
+  }
+
+  dt_dev_add_history_item(module->dev, module, TRUE);
+
+  if(reprocess)
+    dt_dev_reprocess_all(module->dev);
+}
+
+void dt_iop_gui_update_raster(dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+  dt_develop_blend_params_t *bp = module->blend_params;
+
+  if(!bd || !bd->masks_support || !bd->raster_inited) return;
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->raster_polarity), bp->raster_mask_invert);
+
+  _raster_combo_populate(bd->raster_combo, &module);
+}
+
+static void _raster_polarity_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+
+  dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)self->blend_params;
+
+  bp->raster_mask_invert = gtk_toggle_button_get_active(togglebutton);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+void dt_iop_gui_init_raster(GtkBox *blendw, dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+
+  bd->raster_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  // add event box so that one can click into the area to get help for drawn masks
+  GtkWidget* event_box = gtk_event_box_new();
+//  dt_gui_add_help_link(GTK_WIDGET(event_box), "raster_mask.html");
+  gtk_container_add(GTK_CONTAINER(blendw), event_box);
+
+  /* create and add raster support if module supports it (it's coupled to masks at the moment) */
+  if(bd->masks_support)
+  {
+    const int bs = DT_PIXEL_APPLY_DPI(14);
+
+    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+    bd->raster_combo = dt_bauhaus_combobox_new(module);
+    dt_bauhaus_widget_set_label(bd->raster_combo, _("blend"), _("raster mask"));
+    dt_bauhaus_combobox_add(bd->raster_combo, _("no mask used"));
+    dt_bauhaus_combobox_set(bd->raster_combo, 0);
+    g_signal_connect(G_OBJECT(bd->raster_combo), "value-changed",
+                     G_CALLBACK(_raster_value_changed_callback), module);
+    dt_bauhaus_combobox_add_populate_fct(bd->raster_combo, _raster_combo_populate);
+    gtk_box_pack_start(GTK_BOX(hbox), bd->raster_combo, TRUE, TRUE, 0);
+
+    bd->raster_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER,
+                                                 NULL);
+    gtk_widget_set_tooltip_text(bd->raster_polarity, _("toggle polarity of raster mask"));
+    g_signal_connect(G_OBJECT(bd->raster_polarity), "toggled", G_CALLBACK(_raster_polarity_callback), module);
+    gtk_widget_set_size_request(GTK_WIDGET(bd->raster_polarity), bs, bs);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->raster_polarity), FALSE);
+    gtk_box_pack_start(GTK_BOX(hbox), bd->raster_polarity, FALSE, FALSE, 0);
+
+    gtk_box_pack_start(GTK_BOX(bd->raster_box), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+
+    bd->raster_inited = 1;
+  }
+  gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->raster_box));
+}
+
 void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
 {
   if(!module->blend_data) return;
@@ -1643,6 +1809,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
 
   dt_iop_gui_update_blendif(module);
   dt_iop_gui_update_masks(module);
+  dt_iop_gui_update_raster(module);
 
   /* now show hide controls as required */
   const unsigned int mask_mode = module->blend_params->mask_mode;
@@ -1716,6 +1883,20 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     gtk_widget_hide(GTK_WIDGET(bd->masks_box));
   }
 
+  if(bd->raster_inited && (mask_mode & DEVELOP_MASK_RASTER))
+  {
+    gtk_widget_show(GTK_WIDGET(bd->raster_box));
+  }
+  else if(bd->raster_inited)
+  {
+//     dt_masks_set_edit_mode(module, DT_MASKS_EDIT_OFF);
+
+    gtk_widget_hide(GTK_WIDGET(bd->raster_box));
+  }
+  else
+  {
+    gtk_widget_hide(GTK_WIDGET(bd->raster_box));
+  }
 
   if(bd->blendif_inited && (mask_mode & DEVELOP_MASK_CONDITIONAL))
   {
@@ -1877,6 +2058,13 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
       dt_bauhaus_combobox_add(bd->masks_modes_combo, _("drawn & parametric mask"));
       bd->masks_modes
           = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK_CONDITIONAL));
+    }
+
+    if(bd->masks_support)
+    {
+      dt_bauhaus_combobox_add(bd->masks_modes_combo, _("raster mask"));
+      bd->masks_modes
+          = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED | DEVELOP_MASK_RASTER));
     }
 
     dt_bauhaus_combobox_set(bd->masks_modes_combo, 0);
@@ -2168,6 +2356,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->top_box), TRUE, TRUE, 0);
 
     dt_iop_gui_init_masks(GTK_BOX(iopw), module);
+    dt_iop_gui_init_raster(GTK_BOX(iopw), module);
     dt_iop_gui_init_blendif(GTK_BOX(iopw), module);
 
     GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4*DT_BAUHAUS_SPACE);

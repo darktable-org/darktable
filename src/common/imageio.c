@@ -620,7 +620,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
   res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
-                         : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params));
+                         : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params), TRUE); // TODO
   if(!res)
   {
     dt_control_log(
