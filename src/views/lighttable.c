@@ -2000,9 +2000,9 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 
   lib->using_arrows = 0;
 
-  if(lib->images_in_row == 1 || lib->full_preview_id != -1 || lib->thumb_size == -1 || px < 0 || py < 0)
+  if(lib->pan || lib->images_in_row == 1 || lib->full_preview_id != -1 || lib->thumb_size == -1 || px < 0 || py < 0)
   {
-    // a single image in a row or full preview or we don't have yet the thumb size (first expose)
+    // we are panning or a single image in a row or full preview or we don't have yet the thumb size (first expose)
     do_redraw = TRUE;
   }
   else
