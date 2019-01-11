@@ -93,7 +93,8 @@ static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject
 
 static void _update_collected_images(dt_view_t *self);
 
-static gboolean _is_custom_image_order_required(dt_view_t *self);
+/* returns TRUE if lighttable is using the custom order filter */
+static gboolean _is_custom_image_order_actif(dt_view_t *self);
 
 /**
  * this organises the whole library:
@@ -2080,7 +2081,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   lib->select_offset_y += y;
   lib->force_expose_all = TRUE;
 
-  if (dt_control_get_mouse_over_id() < 0 || !_is_custom_image_order_required(self))
+  if (dt_control_get_mouse_over_id() < 0 || !_is_custom_image_order_actif(self))
   {
     lib->pan = 1;
   }
@@ -2706,7 +2707,7 @@ void gui_init(dt_view_t *self)
   g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), NULL);
 }
 
-static gboolean _is_custom_image_order_required(dt_view_t *self)
+static gboolean _is_custom_image_order_actif(dt_view_t *self)
 {
   if (darktable.gui)
   {
@@ -2733,7 +2734,7 @@ static void _register_custom_image_order_drag_n_drop(dt_view_t *self)
   // register drag and drop for custom image ordering only
   // if "custom order" is selected and if the view "Lighttable"
   // is active
-  if (_is_custom_image_order_required(self))
+  if (_is_custom_image_order_actif(self))
   {
     // drag and drop for custom order of picture sequence (dnd) and drag&drop of external files/folders into darktable
     gtk_drag_source_set(dt_ui_center(darktable.gui->ui), GDK_BUTTON1_MASK, target_list_internal, n_targets_internal, GDK_ACTION_COPY);
