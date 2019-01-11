@@ -3161,7 +3161,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display
       = (self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe)
-         && (mask_mode & DEVELOP_MASK_CONDITIONAL))
+         && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL))
             ? self->request_mask_display
             : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
