@@ -2035,6 +2035,11 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+  // when custom order is used, we need to redraw the whole lighttable
+  if ((which == 1 || which == GDK_BUTTON1_MASK) && _is_custom_image_order_actif(self))
+  {
+    lib->force_expose_all = TRUE;
+  }
   lib->pan = 0;
   if(which == 1 || which == GDK_BUTTON1_MASK) dt_control_change_cursor(GDK_LEFT_PTR);
   return 1;
