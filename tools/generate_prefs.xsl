@@ -201,7 +201,6 @@
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
-      gtk_grid_attach(GTK_GRID(grid), seclabel, 0, line++, 2, 1);
    }
 </xsl:text>
 
