@@ -412,8 +412,12 @@ static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *file
     ctx->curl_ctx = curl_easy_init();
     ctx->authenticated = FALSE;
 
-    // an error during the curl post command, could be an authentication issue, try to authenticate again
-    _piwigo_api_authenticate(ctx);
+    if(!isauth)
+    {
+      // an error during the curl post command, could be an authentication issue, try to authenticate again
+      // but only if this is not an authentication post, otherwise this will happen below anyway.
+      _piwigo_api_authenticate(ctx);
+    }
 
     // authentication ok, send again
     if(ctx->response && !ctx->error_occured)
