@@ -228,7 +228,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2103
 msgid "rating an image one star twice will not zero out the rating"
-msgstr "appliquer une étoile deux fois à une image ne supprimera pas l' étoile"
+msgstr "appliquer une étoile deux fois à une image ne supprimera pas l'étoile"
 
 #: ../build/src/preferences_gen.h:2115
 msgid ""
@@ -2069,7 +2069,7 @@ msgstr[1] ""
 #: ../src/control/jobs/control_jobs.c:1515
 msgid "move image?"
 msgid_plural "move images?"
-msgstr[0] "déplacer l' image ?"
+msgstr[0] "déplacer l'image ?"
 msgstr[1] "déplacer les images ?"
 
 #: ../src/control/jobs/control_jobs.c:1540
