@@ -3029,7 +3029,7 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
             continue;
           }
 
-          // we get the area for the source
+          // we get the area for the form
           int fl, ft, fw, fh;
 
           if(!dt_masks_get_area(self, piece, form, &fw, &fh, &fl, &ft))
