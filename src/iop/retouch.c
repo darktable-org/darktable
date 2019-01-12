@@ -917,8 +917,9 @@ static int rt_masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop
   return res;
 }
 
-static int rt_masks_get_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
-                              dt_masks_form_t *form, int *dx, int *dy)
+/* returns (dx dy) to get from the source to the destination */
+static int rt_masks_get_delta_to_destination(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
+                                             dt_masks_form_t *form, int *dx, int *dy)
 {
   int res = 0;
 
@@ -3028,7 +3029,7 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
             continue;
           }
 
-          // we get the area for the source
+          // we get the area for the form
           int fl, ft, fw, fh;
 
           if(!dt_masks_get_area(self, piece, form, &fw, &fh, &fl, &ft))
@@ -3044,17 +3045,17 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
           roir = fmaxf(fl + fw, roir);
           roib = fmaxf(ft + fh, roib);
 
-          // heal needs both source and destination areas
+          // heal/clone need both source and destination areas
           const dt_iop_retouch_algo_type_t algo = rt_get_algorithm_from_formid(p, formid);
-          if(algo == DT_IOP_RETOUCH_HEAL)
+          if(algo == DT_IOP_RETOUCH_HEAL || algo == DT_IOP_RETOUCH_CLONE)
           {
             int dx = 0, dy = 0;
-            if(rt_masks_get_delta(self, piece, roi_in, form, &dx, &dy))
+            if(rt_masks_get_delta_to_destination(self, piece, roi_in, form, &dx, &dy))
             {
-              roiy = fminf(ft + dy, roiy);
-              roix = fminf(fl + dx, roix);
-              roir = fmaxf(fl + fw + dx, roir);
-              roib = fmaxf(ft + fh + dy, roib);
+              roiy = fminf(ft - dy, roiy);
+              roix = fminf(fl - dx, roix);
+              roir = fmaxf(fl + fw - dx, roir);
+              roib = fmaxf(ft + fh - dy, roib);
             }
           }
         }
@@ -3125,7 +3126,7 @@ static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self, st
           // get the destination area
           int fl_dest, ft_dest;
           int dx = 0, dy = 0;
-          if(!rt_masks_get_delta(self, piece, roi_in, form, &dx, &dy))
+          if(!rt_masks_get_delta_to_destination(self, piece, roi_in, form, &dx, &dy))
           {
             forms = g_list_next(forms);
             continue;
@@ -4144,7 +4145,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
 
         if(algo != DT_IOP_RETOUCH_BLUR && algo != DT_IOP_RETOUCH_FILL)
         {
-          if(!rt_masks_get_delta(self, piece, roi_layer, form, &dx, &dy))
+          if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy))
           {
             forms = g_list_next(forms);
             if(mask) free(mask);
@@ -4955,7 +4956,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
         const dt_iop_retouch_algo_type_t algo = p->rt_forms[index].algorithm;
         if(algo != DT_IOP_RETOUCH_BLUR && algo != DT_IOP_RETOUCH_FILL)
         {
-          if(!rt_masks_get_delta(self, piece, roi_layer, form, &dx, &dy))
+          if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy))
           {
             forms = g_list_next(forms);
             if(mask) free(mask);
