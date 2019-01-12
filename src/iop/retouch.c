@@ -3046,9 +3046,9 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
           roir = fmaxf(fl + fw, roir);
           roib = fmaxf(ft + fh, roib);
 
-          // heal needs both source and destination areas
+          // heal/clone need both source and destination areas
           const dt_iop_retouch_algo_type_t algo = rt_get_algorithm_from_formid(p, formid);
-          if(algo == DT_IOP_RETOUCH_HEAL)
+          if(algo == DT_IOP_RETOUCH_HEAL || algo == DT_IOP_RETOUCH_CLONE)
           {
             int dx = 0, dy = 0;
             if(rt_masks_get_delta(self, piece, roi_in, form, &dx, &dy))
