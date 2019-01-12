@@ -26,6 +26,7 @@ static const char *bad_opencl_drivers[] = {
 
   "beignet",
   "pocl",
+  "neo",
   NULL
 
   // clang-format on
