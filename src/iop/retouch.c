@@ -917,6 +917,7 @@ static int rt_masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop
   return res;
 }
 
+/* returns (dx dy) to get from the source to the destination */
 static int rt_masks_get_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
                               dt_masks_form_t *form, int *dx, int *dy)
 {
@@ -3051,10 +3052,10 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
             int dx = 0, dy = 0;
             if(rt_masks_get_delta(self, piece, roi_in, form, &dx, &dy))
             {
-              roiy = fminf(ft + dy, roiy);
-              roix = fminf(fl + dx, roix);
-              roir = fmaxf(fl + fw + dx, roir);
-              roib = fmaxf(ft + fh + dy, roib);
+              roiy = fminf(ft - dy, roiy);
+              roix = fminf(fl - dx, roix);
+              roir = fmaxf(fl + fw - dx, roir);
+              roib = fmaxf(ft + fh - dy, roib);
             }
           }
         }
