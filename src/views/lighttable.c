@@ -82,6 +82,8 @@ typedef enum dt_lighttable_layout_t
 
 static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data);
+static gboolean colorlabels_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                               GdkModifierType modifier, gpointer data);
 static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                          GdkModifierType modifier, gpointer data);
 static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -97,6 +99,8 @@ static void _update_collected_images(dt_view_t *self);
 static gboolean _is_custom_image_order_actif(dt_view_t *self);
 /* returns TRUE if lighttable is using the custom order filter */
 static gboolean _is_rating_order_actif(dt_view_t *self);
+/* returns TRUE if lighttable is using the custom order filter */
+static gboolean _is_colorlabels_order_actif(dt_view_t *self);
 /* register for redraw only the selected images */
 static void _redraw_selected_images(dt_view_t *self);
 
@@ -1780,6 +1784,23 @@ static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   return TRUE;
 }
 
+static gboolean colorlabels_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                               GdkModifierType modifier, gpointer data)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  // needed as we can have a reordering of the pictures
+  if(_is_colorlabels_order_actif(self))
+    lib->force_expose_all = TRUE;
+  else
+    _redraw_selected_images(self);
+
+  dt_colorlabels_key_accel_callback(NULL, NULL, 0, 0, data);
+
+  return TRUE;
+}
+
 static void _lighttable_mipmaps_updated_signal_callback(gpointer instance, gpointer user_data)
 {
   dt_control_queue_redraw_center();
@@ -2508,6 +2529,14 @@ void init_key_accels(dt_view_t *self)
 {
   // Initializing accelerators
 
+  // Color labels keys
+  dt_accel_register_view(self, NC_("accel", "color red"), GDK_KEY_F1, 0);
+  dt_accel_register_view(self, NC_("accel", "color yellow"), GDK_KEY_F2, 0);
+  dt_accel_register_view(self, NC_("accel", "color green"), GDK_KEY_F3, 0);
+  dt_accel_register_view(self, NC_("accel", "color blue"), GDK_KEY_F4, 0);
+  dt_accel_register_view(self, NC_("accel", "color purple"), GDK_KEY_F5, 0);
+  dt_accel_register_view(self, NC_("accel", "clear color labels"), 0, 0);
+
   // Rating keys
   dt_accel_register_view(self, NC_("accel", "rate 0"), GDK_KEY_0, 0);
   dt_accel_register_view(self, NC_("accel", "rate 1"), GDK_KEY_1, 0);
@@ -2545,20 +2574,34 @@ void connect_key_accels(dt_view_t *self)
 {
   GClosure *closure;
 
+  // Color labels keys
+  closure = g_cclosure_new(G_CALLBACK(colorlabels_key_accel_callback), GINT_TO_POINTER(0), NULL);
+  dt_accel_connect_view(self, "color red", closure);
+  closure = g_cclosure_new(G_CALLBACK(colorlabels_key_accel_callback), GINT_TO_POINTER(1), NULL);
+  dt_accel_connect_view(self, "color yellow", closure);
+  closure = g_cclosure_new(G_CALLBACK(colorlabels_key_accel_callback), GINT_TO_POINTER(2), NULL);
+  dt_accel_connect_view(self, "color green", closure);
+  closure = g_cclosure_new(G_CALLBACK(colorlabels_key_accel_callback), GINT_TO_POINTER(3), NULL);
+  dt_accel_connect_view(self, "color blue", closure);
+  closure = g_cclosure_new(G_CALLBACK(colorlabels_key_accel_callback), GINT_TO_POINTER(4), NULL);
+  dt_accel_connect_view(self, "color purple", closure);
+  closure = g_cclosure_new(G_CALLBACK(colorlabels_key_accel_callback), GINT_TO_POINTER(5), NULL);
+  dt_accel_connect_view(self, "clear color labels", closure);
+
   // Rating keys
-  closure = g_cclosure_new(G_CALLBACK(star_key_accel_callback), GINT_TO_POINTER(DT_VIEW_DESERT), NULL);
+  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_DESERT), NULL);
   dt_accel_connect_view(self, "rate 0", closure);
-  closure = g_cclosure_new(G_CALLBACK(star_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_1), NULL);
+  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_1), NULL);
   dt_accel_connect_view(self, "rate 1", closure);
-  closure = g_cclosure_new(G_CALLBACK(star_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_2), NULL);
+  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_2), NULL);
   dt_accel_connect_view(self, "rate 2", closure);
-  closure = g_cclosure_new(G_CALLBACK(star_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_3), NULL);
+  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_3), NULL);
   dt_accel_connect_view(self, "rate 3", closure);
-  closure = g_cclosure_new(G_CALLBACK(star_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_4), NULL);
+  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_4), NULL);
   dt_accel_connect_view(self, "rate 4", closure);
-  closure = g_cclosure_new(G_CALLBACK(star_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_5), NULL);
+  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_STAR_5), NULL);
   dt_accel_connect_view(self, "rate 5", closure);
-  closure = g_cclosure_new(G_CALLBACK(star_key_accel_callback), GINT_TO_POINTER(DT_VIEW_REJECT), NULL);
+  closure = g_cclosure_new(G_CALLBACK(rating_key_accel_callback), GINT_TO_POINTER(DT_VIEW_REJECT), NULL);
   dt_accel_connect_view(self, "rate reject", closure);
 
   // Navigation keys
@@ -2757,6 +2800,28 @@ static gboolean _is_rating_order_actif(dt_view_t *self)
     dt_view_t *current_view = darktable.view_manager->current_view;
     if (layout == DT_LAYOUT_FILEMANAGER
         && darktable.collection->params.sort == DT_COLLECTION_SORT_RATING
+        && current_view
+        && current_view->view(self) == DT_VIEW_LIGHTTABLE)
+    {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+static gboolean _is_colorlabels_order_actif(dt_view_t *self)
+{
+  if (darktable.gui)
+  {
+    const int layout = dt_conf_get_int("plugins/lighttable/layout");
+
+    // only in file manager
+    // only in light table
+    // only if custom image order is selected
+    dt_view_t *current_view = darktable.view_manager->current_view;
+    if (layout == DT_LAYOUT_FILEMANAGER
+        && darktable.collection->params.sort == DT_COLLECTION_SORT_COLOR
         && current_view
         && current_view->view(self) == DT_VIEW_LIGHTTABLE)
     {
