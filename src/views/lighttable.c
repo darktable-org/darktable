@@ -2766,7 +2766,7 @@ void gui_init(dt_view_t *self)
   g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), NULL);
 }
 
-static gboolean _is_custom_image_order_actif(dt_view_t *self)
+static gboolean _is_order_actif(dt_view_t *self, dt_collection_sort_t sort)
 {
   if (darktable.gui)
   {
@@ -2777,7 +2777,7 @@ static gboolean _is_custom_image_order_actif(dt_view_t *self)
     // only if custom image order is selected
     dt_view_t *current_view = darktable.view_manager->current_view;
     if (layout == DT_LAYOUT_FILEMANAGER
-        && darktable.collection->params.sort == DT_COLLECTION_SORT_CUSTOM_ORDER
+        && darktable.collection->params.sort == sort
         && current_view
         && current_view->view(self) == DT_VIEW_LIGHTTABLE)
     {
@@ -2786,50 +2786,21 @@ static gboolean _is_custom_image_order_actif(dt_view_t *self)
   }
 
   return FALSE;
+}
+
+static gboolean _is_custom_image_order_actif(dt_view_t *self)
+{
+  return _is_order_actif(self, DT_COLLECTION_SORT_CUSTOM_ORDER);
 }
 
 static gboolean _is_rating_order_actif(dt_view_t *self)
 {
-  if (darktable.gui)
-  {
-    const int layout = dt_conf_get_int("plugins/lighttable/layout");
-
-    // only in file manager
-    // only in light table
-    // only if custom image order is selected
-    dt_view_t *current_view = darktable.view_manager->current_view;
-    if (layout == DT_LAYOUT_FILEMANAGER
-        && darktable.collection->params.sort == DT_COLLECTION_SORT_RATING
-        && current_view
-        && current_view->view(self) == DT_VIEW_LIGHTTABLE)
-    {
-      return TRUE;
-    }
-  }
-
-  return FALSE;
+  return _is_order_actif(self, DT_COLLECTION_SORT_RATING);
 }
 
 static gboolean _is_colorlabels_order_actif(dt_view_t *self)
 {
-  if (darktable.gui)
-  {
-    const int layout = dt_conf_get_int("plugins/lighttable/layout");
-
-    // only in file manager
-    // only in light table
-    // only if custom image order is selected
-    dt_view_t *current_view = darktable.view_manager->current_view;
-    if (layout == DT_LAYOUT_FILEMANAGER
-        && darktable.collection->params.sort == DT_COLLECTION_SORT_COLOR
-        && current_view
-        && current_view->view(self) == DT_VIEW_LIGHTTABLE)
-    {
-      return TRUE;
-    }
-  }
-
-  return FALSE;
+  return _is_order_actif(self, DT_COLLECTION_SORT_COLOR);
 }
 
 static void _redraw_selected_images(dt_view_t *self)
