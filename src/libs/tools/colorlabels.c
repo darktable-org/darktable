@@ -99,29 +99,6 @@ void gui_cleanup(dt_lib_module_t *self)
 static void _lib_colorlabels_button_clicked_callback(GtkWidget *w, gpointer user_data)
 {
   dt_colorlabels_key_accel_callback(NULL, NULL, 0, 0, user_data);
-  dt_control_queue_redraw_center();
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "color red"), GDK_KEY_F1, 0);
-  dt_accel_register_lib(self, NC_("accel", "color yellow"), GDK_KEY_F2, 0);
-  dt_accel_register_lib(self, NC_("accel", "color green"), GDK_KEY_F3, 0);
-  dt_accel_register_lib(self, NC_("accel", "color blue"), GDK_KEY_F4, 0);
-  dt_accel_register_lib(self, NC_("accel", "color purple"), GDK_KEY_F5, 0);
-  dt_accel_register_lib(self, NC_("accel", "clear color labels"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "color red", GTK_WIDGET(d->buttons[0]));
-  dt_accel_connect_button_lib(self, "color yellow", GTK_WIDGET(d->buttons[1]));
-  dt_accel_connect_button_lib(self, "color green", GTK_WIDGET(d->buttons[2]));
-  dt_accel_connect_button_lib(self, "color blue", GTK_WIDGET(d->buttons[3]));
-  dt_accel_connect_button_lib(self, "color purple", GTK_WIDGET(d->buttons[4]));
-  dt_accel_connect_button_lib(self, "clear color labels", GTK_WIDGET(d->buttons[5]));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
