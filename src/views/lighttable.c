@@ -828,7 +828,7 @@ end_query_cache:
             pi == col && pj == row ? img_pointerx : -1,
             pi == col && pj == row ? img_pointery : -1, FALSE, FALSE);
 
-          // if thumb is missing, record it for expose int next round
+          // if thumb is missing, record it for expose in next round
           if(thumb_missed)
             g_hash_table_add(lib->thumbs_table, (gpointer)&id);
           else
@@ -1313,7 +1313,7 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
           const int thumb_missed = dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom,
                                                         img_pointerx, img_pointery, FALSE, FALSE);
 
-          // if thumb is missing, record it for expose int next round
+          // if thumb is missing, record it for expose in next round
           if(thumb_missed)
             g_hash_table_add(lib->thumbs_table, (gpointer)&id);
           else
