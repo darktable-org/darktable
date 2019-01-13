@@ -80,8 +80,8 @@ typedef enum dt_lighttable_layout_t
   DT_LAYOUT_LAST = 2
 } dt_lighttable_layout_t;
 
-static gboolean star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                        GdkModifierType modifier, gpointer data);
+static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier, gpointer data);
 static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                          GdkModifierType modifier, gpointer data);
 static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -95,6 +95,10 @@ static void _update_collected_images(dt_view_t *self);
 
 /* returns TRUE if lighttable is using the custom order filter */
 static gboolean _is_custom_image_order_actif(dt_view_t *self);
+/* returns TRUE if lighttable is using the custom order filter */
+static gboolean _is_rating_order_actif(dt_view_t *self);
+/* register for redraw only the selected images */
+static void _redraw_selected_images(dt_view_t *self);
 
 /**
  * this organises the whole library:
@@ -1697,8 +1701,8 @@ static gboolean select_single_callback(GtkAccelGroup *accel_group, GObject *acce
   return TRUE;
 }
 
-static gboolean star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                        GdkModifierType modifier, gpointer data)
+static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier, gpointer data)
 {
   dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
   int num = GPOINTER_TO_INT(data);
@@ -1708,7 +1712,10 @@ static gboolean star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acc
   dt_library_t *lib = (dt_library_t *)self->data;
 
   // needed as we can have a reordering of the pictures
-  lib->force_expose_all = TRUE;
+  if(_is_rating_order_actif(self))
+    lib->force_expose_all = TRUE;
+  else
+    _redraw_selected_images(self);
 
   if(lib->using_arrows)
   {
@@ -2736,6 +2743,42 @@ static gboolean _is_custom_image_order_actif(dt_view_t *self)
   }
 
   return FALSE;
+}
+
+static gboolean _is_rating_order_actif(dt_view_t *self)
+{
+  if (darktable.gui)
+  {
+    const int layout = dt_conf_get_int("plugins/lighttable/layout");
+
+    // only in file manager
+    // only in light table
+    // only if custom image order is selected
+    dt_view_t *current_view = darktable.view_manager->current_view;
+    if (layout == DT_LAYOUT_FILEMANAGER
+        && darktable.collection->params.sort == DT_COLLECTION_SORT_RATING
+        && current_view
+        && current_view->view(self) == DT_VIEW_LIGHTTABLE)
+    {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+static void _redraw_selected_images(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int imgid  = sqlite3_column_int(stmt, 0);
+    g_hash_table_add(lib->thumbs_table, (gpointer)&imgid);
+  }
+  sqlite3_finalize(stmt);
 }
 
 static void _register_custom_image_order_drag_n_drop(dt_view_t *self)
