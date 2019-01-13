@@ -733,21 +733,25 @@ end_query_cache:
             if(current_row  == (int)(max_rows-1.5) && lib->key_jump_offset == iir)
             {
               // going DOWN from last row
+              lib->force_expose_all = TRUE;
               move_view(lib, DIRECTION_DOWN);
             }
             else if(current_row  == 0 && lib->key_jump_offset == iir*-1)
             {
               // going UP from first row
+              lib->force_expose_all = TRUE;
               move_view(lib, DIRECTION_UP);
             }
             else if(current_row == (int)(max_rows-1.5) && current_col ==  0 && lib->key_jump_offset == 1)
             {
               // going RIGHT from last visible
+              lib->force_expose_all = TRUE;
               move_view(lib, DIRECTION_DOWN);
             }
             else if(current_row == 0 && current_col ==  1 && lib->key_jump_offset == -1)
             {
               // going LEFT from first visible
+              lib->force_expose_all = TRUE;
               move_view(lib, DIRECTION_UP);
             }
 
