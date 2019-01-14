@@ -255,11 +255,16 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
   if(iter >= 1000) return 8;
 
   // be careful to the gnd direction
-  if(pts[2] - pts[0] > 0 && v > M_PI) v = v - M_PI;
-  if(pts[2] - pts[0] > 0 && v < -M_PI) v = M_PI + v;
-
-  if(pts[2] - pts[0] < 0 && v < M_PI && v >= 0) v = v - M_PI;
-  if(pts[2] - pts[0] < 0 && v > -M_PI && v < 0) v = v + M_PI;
+  if(pts[2] - pts[0] > 0)
+  {
+    if(v >  M_PI) v = v - M_PI;
+    if(v < -M_PI) v = M_PI + v;
+  }
+  else if(pts[2] - pts[0] < 0)
+  {
+    if(v <  M_PI && v >= 0) v = v - M_PI;
+    if(v > -M_PI && v < 0)  v = v + M_PI;
+  }
 
   *rotation = -v * 180.0 / M_PI;
 
