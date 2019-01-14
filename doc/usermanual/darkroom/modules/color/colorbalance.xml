@@ -68,6 +68,14 @@
     </para>
 
     <para>
+      The master settings affect the whole image. They are not available in
+      <emphasis>lift, gamma, gain (sRGB)</emphasis> mode. The slider ranges are limited
+      to usual values ([50;150] % for saturations, [-50;50] % for contrast), but higher and lower
+      values can be defined from keyboard inputs after a right-click on the corresponding
+      slider.
+    </para>
+
+    <para>
       Side note: although this module acts on RGB colors its location in pixelpipe puts it into
       the Lab color space. Accordingly the modules converts from Lab to RGB, does its color
       adjustments, and then converts back to Lab.
@@ -158,54 +166,42 @@
     </sect5>
 
     <sect5>
-      <title>Master</title>
-
+      <title>Input saturation</title>
       <para>
-        The master settings affect the whole image. They are not available in
-        <emphasis>lift, gamma, gain (sRGB)</emphasis> mode. The slider ranges are limited
-        to usual values ([50;150] % for saturations, [-50;50] % for contrast), but higher
-        values can be defined from keyboard inputs after a right-click on the corresponding
-        slider.
+        The input saturation is a saturation correction applied before the color balance.
+        It can be used to dampen colors before adjusting the balance, to make difficult
+        pictures easier to process.
+        When you desaturate entirely the image, it creates a luminance-based monochrome
+        picture that can be used as a luminance mask, to create color filters with the
+        color balance settings, like split-toning or sepia effect
+        (you might want to use blending modes then).
       </para>
-
-      <sect6>
-        <title>Input saturation</title>
-        <para>
-          The input saturation is a saturation correction applied before the color balance.
-          It can be used to dampen colors before adjusting the balance, to make difficult
-          pictures easier to process.
-          When you desaturate entirely the image, it creates a luminance-based monochrome
-          picture that can be used as a luminance mask, to create color filters with the
-          color balance settings, like split-toning or sepia effect
-          (you might want to use blending modes then).
-        </para>
-      </sect6>
-
-      <sect6>
-        <title>Output saturation</title>
-        <para>
-          The output saturation is a saturation correction applied just after the color balance.
-          It is useful once you have found a proper hue balance but find the
-          effect too heavy, so you can adjust the global saturation at once instead of editing
-          each channel saturation separately at the expense of possibly messing the colors.
-        </para>
-      </sect6>
-
-      <sect6>
-        <title>Contrast and Contrast fulcrum</title>
-        <para>
-          The contrast slider allows to increase the luminance separation. The fulcrum value
-          defines the luminance value that will not be affected by the contrast correction,
-          so the contrast will roll over the fulcrum. Luminance values above the fulcrum
-          will be amplified almost linearly. Luminance values below the fulcrum value will
-          be compressed with a power function (creating a toe). This correction comes after
-          the output saturation and is applied on all RGB channels separately, so hues and saturations
-          might not be preserved in case of dramatic settings (shadows might be resaturated,
-          highlights might be desaturated, and some color shift is to be expected).
-        </para>
-      </sect6>
-
     </sect5>
+
+    <sect5>
+      <title>Output saturation</title>
+      <para>
+        The output saturation is a saturation correction applied just after the color balance.
+        It is useful once you have found a proper hue balance but find the
+        effect too heavy, so you can adjust the global saturation at once instead of editing
+        each channel saturation separately at the expense of possibly messing the colors.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>Contrast and Contrast fulcrum</title>
+      <para>
+        The contrast slider allows to increase the luminance separation. The fulcrum value
+        defines the luminance value that will not be affected by the contrast correction,
+        so the contrast will roll over the fulcrum. Luminance values above the fulcrum
+        will be amplified almost linearly. Luminance values below the fulcrum value will
+        be compressed with a power function (creating a toe). This correction comes after
+        the output saturation and is applied on all RGB channels separately, so hues and saturations
+        might not be preserved in case of dramatic settings (shadows might be resaturated,
+        highlights might be desaturated, and some color shift is to be expected).
+      </para>
+    </sect5>
+
 
     <sect5>
       <title>Shadows, Mid-tones, Highlights</title>
@@ -313,6 +309,29 @@
         <emphasis>lift, gamma, gain</emphasis> too.
       </para>
     </sect5>
+
+  </sect4>
+
+  <sect4>
+    <title>Examples</title>
+
+    <para>
+      Several presets are provided in the module to help you understand how it can be used.
+    </para>
+
+    <para>
+      The teal/orange color-grading preset is a very popular look in cinema, and a good showcase.
+      It is meant to be used with 2 instances and masks: the first instance will exclude
+      skin tones and will shift neutral colors toward teal blue, the second will partially revert
+      the first one and add more vibrance on skin tones only. Together, they will help creating
+      separation between subjects and backgrounds. The masking and blending parameters will
+      need to be tweaked to fit every picture though.
+    </para>
+
+    <para>
+      Other presets provide Kodak film emulations. The same way, you can recreate any film
+      look you like with color balance.
+    </para>
 
   </sect4>
 
