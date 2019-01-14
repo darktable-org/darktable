@@ -72,6 +72,7 @@ typedef struct dt_slideshow_t
   uint32_t state_waiting_for_user; // user input (needed to step the cycle at one point)
 
   uint32_t auto_advance;
+  int delay;
 
   // some magic to hide the mosue pointer
   guint mouse_timeout;
@@ -263,7 +264,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
           // start new one-off timer from when flipping buffers.
           // this will show images before processing-heavy shots a little
           // longer, but at least not result in shorter viewing times just after these
-          if(d->auto_advance) g_timeout_add_seconds(5, auto_advance, d);
+          if(d->auto_advance) g_timeout_add_seconds(d->delay, auto_advance, d);
         }
         // and execute the next case, too
       }
@@ -379,7 +380,7 @@ void enter(dt_view_t *self)
   d->state_waiting_for_user = 1;
 
   d->auto_advance = 0;
-
+  d->delay = dt_conf_get_int("slideshow_delay");
   // restart from beginning, will first increment counter by step and then prefetch
   d->front_num = d->back_num = dt_view_lighttable_get_position(darktable.view_manager) - 1;
   d->step = 1;
