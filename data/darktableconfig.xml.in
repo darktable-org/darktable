@@ -26,7 +26,7 @@
     <name>slideshow_delay</name>
     <type>int</type>
     <default>5</default>
-    <shortdescription>waiting time between each pictures</shortdescription>
+    <shortdescription>waiting time between each picture in slideshow</shortdescription>
   </dtconfig>
   <dtconfig prefs="core" section="cpugpu">
     <name>cache_memory</name>
