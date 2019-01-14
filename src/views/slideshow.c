@@ -494,6 +494,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
   dt_control_accels_t *accels = &darktable.control->accels;
+
   if(key == accels->slideshow_start.accel_key && state == accels->slideshow_start.accel_mods)
   {
     if(!d->auto_advance)
@@ -508,6 +509,25 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     }
     return 0;
   }
+  else if(key == GDK_KEY_Right || key == GDK_KEY_KP_Add)
+  {
+    d->delay = CLAMP(d->delay + 1, 1, 60);
+    dt_control_log(_("slideshow delay set to %d"), d->delay);
+    dt_conf_set_int("slideshow_delay", d->delay);
+    return 0;
+  }
+  else if(key == GDK_KEY_Left || key == GDK_KEY_KP_Subtract)
+  {
+    d->delay = CLAMP(d->delay - 1, 1, 60);
+    dt_control_log(_("slideshow delay set to %d"), d->delay);
+    dt_conf_set_int("slideshow_delay", d->delay);
+    return 0;
+  }
+  else if(key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R)
+  {
+    return 0;
+  }
+
   // go back to lt mode
   dt_ctl_switch_mode_to("lighttable");
   return 0;
