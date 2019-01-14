@@ -36,17 +36,17 @@ DT_MODULE(1)
 
 typedef enum dt_slideshow_event_t
 {
-  s_request_step,
-  s_request_step_back,
-  s_image_loaded,
-  s_blended,
+  S_REQUEST_STEP,
+  S_REQUEST_STEP_BACK,
+  S_IMAGE_LOADED,
+  S_BLENDED
 } dt_slideshow_event_t;
 
 typedef enum dt_slideshow_state_t
 {
-  s_prefetching,
-  s_waiting_for_user,
-  s_blending,
+  S_PREFETCHING,
+  S_WAITING_FOR_USER,
+  S_BLENDING
 } dt_slideshow_state_t;
 
 typedef struct dt_slideshow_t
@@ -118,7 +118,7 @@ static int write_image(dt_imageio_module_data_t *datai, const char *filename, co
     data->d->back_height = datai->height;
   }
   dt_pthread_mutex_unlock(&data->d->lock);
-  _step_state(data->d, s_image_loaded);
+  _step_state(data->d, S_IMAGE_LOADED);
   // trigger expose
   dt_control_queue_redraw_center();
   return 0;
@@ -211,7 +211,7 @@ static gboolean auto_advance(gpointer user_data)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)user_data;
   if(!d->auto_advance) return FALSE;
-  _step_state(d, s_request_step);
+  _step_state(d, S_REQUEST_STEP);
   return FALSE;
 }
 
@@ -220,10 +220,10 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
 {
   dt_pthread_mutex_lock(&d->lock);
 
-  if(event == s_request_step || event == s_request_step_back)
+  if(event == S_REQUEST_STEP || event == S_REQUEST_STEP_BACK)
   {
-    if(event == s_request_step) d->step = 1;
-    if(event == s_request_step_back) d->step = -1;
+    if(event == S_REQUEST_STEP) d->step = 1;
+    if(event == S_REQUEST_STEP_BACK) d->step = -1;
     // make sure we only enter busy if really flipping the bit
     if(d->state_waiting_for_user) dt_control_log_busy_enter();
     d->state_waiting_for_user = 0;
@@ -231,19 +231,19 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
 
   switch(d->state)
   {
-    case s_prefetching:
-      if(event == s_image_loaded)
+    case S_PREFETCHING:
+      if(event == S_IMAGE_LOADED)
       {
-        d->state = s_waiting_for_user;
+        d->state = S_WAITING_FOR_USER;
         // and go to next case
       }
       else
         break;
 
-    case s_waiting_for_user:
+    case S_WAITING_FOR_USER:
       if(d->state_waiting_for_user == 0)
       {
-        d->state = s_blending;
+        d->state = S_BLENDING;
         // swap buffers, start blending cycle
         if(d->front_num + d->step == d->back_num)
         {
@@ -270,7 +270,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
       else
         break;
 
-    case s_blending:
+    case S_BLENDING:
       // draw new front buf
       dt_control_queue_redraw_center();
 
@@ -279,14 +279,14 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
       {
         // start bgjob
         dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, process_job_create(d));
-        d->state = s_prefetching;
+        d->state = S_PREFETCHING;
       }
       break;
 
     default:
       // uh. should never happen. sanitize:
       d->state_waiting_for_user = 1;
-      d->state = s_prefetching;
+      d->state = S_PREFETCHING;
       break;
   }
   dt_pthread_mutex_unlock(&d->lock);
@@ -375,7 +375,7 @@ void enter(dt_view_t *self)
 
   // start in prefetching phase, do that by initing one state before
   // and stepping through that at the very end of this function
-  d->state = s_blending;
+  d->state = S_BLENDING;
   d->state_waiting_for_user = 1;
 
   d->auto_advance = 0;
@@ -386,7 +386,7 @@ void enter(dt_view_t *self)
   dt_pthread_mutex_unlock(&d->lock);
 
   // start first job
-  _step_state(d, s_request_step);
+  _step_state(d, S_REQUEST_STEP);
 }
 
 void leave(dt_view_t *self)
@@ -472,9 +472,9 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
   if(which == 1)
-    _step_state(d, s_request_step);
+    _step_state(d, S_REQUEST_STEP);
   else if(which == 3)
-    _step_state(d, s_request_step_back);
+    _step_state(d, S_REQUEST_STEP_BACK);
   else
     return 1;
 
@@ -495,7 +495,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     if(!d->auto_advance)
     {
       d->auto_advance = 1;
-      _step_state(d, s_request_step);
+      _step_state(d, S_REQUEST_STEP);
     }
     else
       d->auto_advance = 0;
