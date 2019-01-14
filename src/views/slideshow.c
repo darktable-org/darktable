@@ -512,14 +512,14 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   else if(key == GDK_KEY_Right || key == GDK_KEY_KP_Add)
   {
     d->delay = CLAMP(d->delay + 1, 1, 60);
-    dt_control_log(_("slideshow delay set to %d"), d->delay);
+    dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
     dt_conf_set_int("slideshow_delay", d->delay);
     return 0;
   }
   else if(key == GDK_KEY_Left || key == GDK_KEY_KP_Subtract)
   {
     d->delay = CLAMP(d->delay - 1, 1, 60);
-    dt_control_log(_("slideshow delay set to %d"), d->delay);
+    dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
     dt_conf_set_int("slideshow_delay", d->delay);
     return 0;
   }
