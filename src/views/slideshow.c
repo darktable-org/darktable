@@ -389,6 +389,7 @@ void enter(dt_view_t *self)
 
   // start first job
   _step_state(d, S_REQUEST_STEP);
+  dt_control_log(_("waiting to start slideshow"));
 }
 
 void leave(dt_view_t *self)
@@ -500,7 +501,10 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       _step_state(d, S_REQUEST_STEP);
     }
     else
+    {
       d->auto_advance = 0;
+      dt_control_log(_("slideshow paused"));
+    }
     return 0;
   }
   // go back to lt mode
