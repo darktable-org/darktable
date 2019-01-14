@@ -385,6 +385,8 @@ void enter(dt_view_t *self)
   d->step = 1;
   dt_pthread_mutex_unlock(&d->lock);
 
+  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+
   // start first job
   _step_state(d, S_REQUEST_STEP);
 }
