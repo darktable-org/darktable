@@ -389,6 +389,8 @@ static void _piwigo_api_authenticate(_piwigo_api_context_t *ctx)
   args = _piwigo_query_add_arguments(args, "password", ctx->password);
   if(!strcmp(ctx->server, "piwigo.com"))
     ctx->url = g_strdup_printf("https://%s.piwigo.com/ws.php?format=json", ctx->username);
+  else if(strstr(ctx->server, "http") == ctx->server)
+    ctx->url = g_strdup_printf("%s/ws.php?format=json", ctx->server);
   else
     ctx->url = g_strdup_printf("https://%s/ws.php?format=json", ctx->server);
 
@@ -763,6 +765,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   label = gtk_label_new(_("server"));
   g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
   ui->server_entry = GTK_ENTRY(gtk_entry_new());
+  gtk_widget_set_tooltip_text(GTK_WIDGET(ui->server_entry),
+                              _("the server name\ndefault protocol is https\nspecify http:// if non secure server"));
   gtk_widget_set_hexpand(GTK_WIDGET(ui->server_entry), TRUE);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->server_entry));
   gtk_entry_set_text(ui->server_entry, last_account?last_account->server:"piwigo.com");
