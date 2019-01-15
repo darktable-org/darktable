@@ -443,6 +443,9 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_save(cr); // pretend we didn't already pop the stack
     cairo_save(cr);
   }
+
+  d->width = width;
+  d->height = height;
   dt_pthread_mutex_unlock(&d->lock);
 }
 
