@@ -205,7 +205,7 @@ void dt_gui_preferences_show()
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
 #endif
-  gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER);
+  gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ON_PARENT);
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(_preferences_dialog));
   GtkWidget *notebook = gtk_notebook_new();
   gtk_widget_set_size_request(notebook, -1, DT_PIXEL_APPLY_DPI(500));
