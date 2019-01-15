@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-01-15 16:40+0100\n"
-"PO-Revision-Date: 2019-01-15 16:49+0100\n"
+"PO-Revision-Date: 2019-01-15 17:59+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -741,6 +741,10 @@ msgid ""
 "the default is to not add any sharpening automatically as most recent "
 "cameras have no low-pass filter. (need a restart)"
 msgstr ""
+"deze toegevoegde verscherping wordt niet aanbevolen voor camera's zonder een "
+"lowpass filter, standaard wordt geen verscherping toegepast omdat de "
+"nieuwere camera's doorgaans geen lowpass filter bezitten (herstarten "
+"noodzakelijke)"
 
 #: ../build/src/preferences_gen.h:3131
 msgid "xmp"
@@ -2352,10 +2356,8 @@ msgid "raster mask"
 msgstr "raster masker"
 
 #: ../src/develop/blend_gui.c:1710
-#, fuzzy
-#| msgid "toggle polarity of drawn mask"
 msgid "toggle polarity of raster mask"
-msgstr "keer getekend masker om"
+msgstr "keer getekend raster masker om"
 
 #. * generate a list of all available blend modes
 #: ../src/develop/blend_gui.c:1982 ../src/libs/live_view.c:408
@@ -7310,7 +7312,7 @@ msgid ""
 "but fails for high-keys and low-keys."
 msgstr ""
 "probeert instellingen te optimaliseren door te gissen\n"
-"dit plaatst het luminantiebereik binnen de histogramgrenzen\n"
+"dit plaatst het luminantie bereik binnen de histogramgrenzen\n"
 "het is met name geschikt voor landschappen en gelijkmatig verlichte foto's\n"
 "en werkt niet bij highkey en lowkey afbeeldingen"
 
@@ -7352,6 +7354,10 @@ msgid ""
 "use it if you need to protect the details\n"
 "at one extremity of the histogram."
 msgstr ""
+"schuift de breedtegraad langs de helling\n"
+"voor meer ruimte voor schaduwen en hooglichten\n"
+"gebruik dit voor bescherming van de details\n"
+"aan één uiteinde van het histogram"
 
 #: ../src/iop/filmic.c:1772
 msgid "global saturation"
@@ -7363,10 +7369,13 @@ msgid ""
 "you need to set this value below 100%\n"
 "if the chrominance preservation is enabled."
 msgstr ""
+"verminderd globaal de verzadiging van de invoer\n"
+"stel de waarde in op minder dan 100%\n"
+"als het behoud van chrominantie is ingeschakeld"
 
 #: ../src/iop/filmic.c:1782
 msgid "extreme luminance saturation"
-msgstr "extreme luminantieverzadiging"
+msgstr "extreme luminantie verzadiging"
 
 #: ../src/iop/filmic.c:1786
 msgid ""
@@ -7374,6 +7383,9 @@ msgid ""
 "specifically at extreme luminances.\n"
 "decrease if shadows and/or highlights are over-saturated."
 msgstr ""
+"vermindert globaal de verzadiging van de uitvoer\n"
+"met name bij extreme luminanties\n"
+"verlaag het als schaduwen en/of hooglichten oververzadigd zijn"
 
 #: ../src/iop/filmic.c:1796 ../src/libs/export.c:629
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1455
@@ -12666,8 +12678,8 @@ msgstr "presentatie gepauzeerd"
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "presentatie wissel ingesteld op %d seconde"
+msgstr[1] "presentatie wissel ingesteld op %d seconden"
 
 #: ../src/views/slideshow.c:538
 msgctxt "accel"
