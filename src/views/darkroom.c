@@ -492,17 +492,13 @@ int try_enter(dt_view_t *self)
 
 static void select_this_image(const int imgid)
 {
-  // select this image, if no multiple selection:
-  if(dt_collection_get_selected_count(NULL) < 2)
-  {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-  }
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 }
 
 static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
