@@ -120,7 +120,8 @@ typedef struct dt_view_t
   GSList *accel_closures;
 } dt_view_t;
 
-typedef enum dt_view_image_over_t {
+typedef enum dt_view_image_over_t
+{
   DT_VIEW_ERR = -1,
   DT_VIEW_DESERT = 0,
   DT_VIEW_STAR_1 = 1,
