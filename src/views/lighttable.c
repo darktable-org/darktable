@@ -112,6 +112,7 @@ typedef struct dt_library_t
 {
   // tmp mouse vars:
   float select_offset_x, select_offset_y;
+  float pan_x, pan_y;
   int32_t last_selected_idx, selection_origin_idx;
   int button;
   int key_jump_offset;
@@ -121,6 +122,7 @@ typedef struct dt_library_t
   dt_lighttable_layout_t layout;
   uint32_t modifiers;
   uint32_t center, pan;
+  dt_view_image_over_t activate_on_release;
   int32_t track, offset, first_visible_zoomable, first_visible_filemanager;
   float zoom_x, zoom_y;
   dt_view_image_over_t image_over;
@@ -469,6 +471,7 @@ void init(dt_view_t *self)
   lib->button = 0;
   lib->modifiers = 0;
   lib->center = lib->pan = lib->track = 0;
+  lib->activate_on_release = DT_VIEW_ERR;
   lib->zoom_x = dt_conf_get_float("lighttable/ui/zoom_x");
   lib->zoom_y = dt_conf_get_float("lighttable/ui/zoom_y");
   lib->full_preview = 0;
@@ -1138,7 +1141,11 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   if(oldzoom < 0) oldzoom = zoom;
 
   // TODO: exaggerate mouse gestures to pan when zoom == 1
-  if(pan) // && mouse_over_id >= 0)
+
+  // 10000 and -1 are introduced in src/views/view.c:dt_view_manager_expose()
+  // when the pointer is out of the window. No idea why these numbers, however
+  // sometimes they arrive here and we must check.
+  if(pan && (pointerx != 10000 || pointery != -1)) // && mouse_over_id >= 0)
   {
     zoom_x = lib->select_offset_x - /* (zoom == 1 ? 2. : 1.)*/ pointerx;
     zoom_y = lib->select_offset_y - /* (zoom == 1 ? 2. : 1.)*/ pointery;
@@ -1582,6 +1589,15 @@ static gboolean _expose_again(gpointer user_data)
   return FALSE; // don't call again
 }
 
+void begin_pan(dt_library_t *lib, double x, double y)
+{
+  lib->select_offset_x = lib->zoom_x + x;
+  lib->select_offset_y = lib->zoom_y + y;
+  lib->pan_x = x;
+  lib->pan_y = y;
+  lib->pan = 1;
+}
+
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   const double start = dt_get_wtime();
@@ -1610,6 +1626,31 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
       case DT_LAYOUT_ZOOMABLE:
         missing_thumbnails = expose_zoomable(self, cr, width, height, pointerx, pointery);
         break;
+    }
+  }
+  if(lib->layout != 0)
+  { // file manager
+    lib->activate_on_release = DT_VIEW_ERR;
+  }
+  else
+  { // zoomable lt
+    // If the mouse button was clicked on a control element and we are now
+    // leaving that element, or the mouse was clicked on an image and it has
+    // moved a little, then we decide to interpret the action as the start of
+    // a pan. In the first case we begin the pan, in the second the pan was
+    // already started however we did not signal it with the GDK_HAND1 pointer,
+    // so we still have to set the pointer (see comments in button_pressed()).
+    float distance = fabs(pointerx - lib->pan_x) + fabs(pointery - lib->pan_y);
+    if(lib->activate_on_release != lib->image_over
+       || (lib->activate_on_release == DT_VIEW_DESERT && distance > DT_PIXEL_APPLY_DPI(5)))
+    {
+      if(lib->activate_on_release != DT_VIEW_ERR && !lib->pan)
+      {
+        begin_pan(lib, pointerx, pointery);
+        dt_control_change_cursor(GDK_HAND1);
+      }
+      if(lib->activate_on_release == DT_VIEW_DESERT) dt_control_change_cursor(GDK_HAND1);
+      lib->activate_on_release = DT_VIEW_ERR;
     }
   }
   const double end = dt_get_wtime();
@@ -1878,6 +1919,7 @@ void enter(dt_view_t *self)
   lib->button = 0;
   lib->pan = 0;
   lib->force_expose_all = TRUE;
+  lib->activate_on_release = DT_VIEW_ERR;
   dt_collection_hint_message(darktable.collection);
 
   // hide panel if we are in full preview mode
@@ -1920,6 +1962,7 @@ void leave(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->button = 0;
   lib->pan = 0;
+  lib->activate_on_release = DT_VIEW_ERR;
 
   // exit preview mode if non-sticky
   if(lib->full_preview_id != -1 && lib->full_preview_sticky == 0)
@@ -1939,6 +1982,7 @@ void reset(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->center = 1;
   lib->track = lib->pan = 0;
+  lib->activate_on_release = DT_VIEW_ERR;
   lib->offset = 0x7fffffff;
   lib->first_visible_zoomable = -1;
   lib->first_visible_filemanager = 0;
@@ -2041,6 +2085,38 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   }
 }
 
+void activate_control_element(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  switch(lib->image_over)
+  {
+    case DT_VIEW_DESERT:
+    {
+      int32_t id = dt_control_get_mouse_over_id();
+      if((lib->modifiers & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
+        dt_selection_select_single(darktable.selection, id);
+      else if((lib->modifiers & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
+        dt_selection_toggle(darktable.selection, id);
+      else if((lib->modifiers & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
+        dt_selection_select_range(darktable.selection, id);
+      break;
+    }
+    case DT_VIEW_REJECT:
+    case DT_VIEW_STAR_1:
+    case DT_VIEW_STAR_2:
+    case DT_VIEW_STAR_3:
+    case DT_VIEW_STAR_4:
+    case DT_VIEW_STAR_5:
+    {
+      int32_t mouse_over_id = dt_control_get_mouse_over_id();
+      dt_ratings_apply_to_image_or_group(mouse_over_id, lib->image_over);
+      _update_collected_images(self);
+      break;
+    }
+    default:
+      break;
+  }
+}
 
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
@@ -2095,6 +2171,17 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
     lib->force_expose_all = TRUE;
   }
   lib->pan = 0;
+  // If a control element was activated by the button press and we decided to
+  // defer action until release, then now it's time to act.
+  if(lib->activate_on_release != DT_VIEW_ERR)
+  {
+    if(lib->activate_on_release == lib->image_over)
+    {
+      activate_control_element(self);
+      lib->force_expose_all = TRUE;
+    }
+    lib->activate_on_release = DT_VIEW_ERR;
+  }
   if(which == 1 || which == GDK_BUTTON1_MASK) dt_control_change_cursor(GDK_LEFT_PTR);
   return 1;
 }
@@ -2139,13 +2226,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   lib->select_offset_x += x;
   lib->select_offset_y += y;
   lib->force_expose_all = TRUE;
+  lib->activate_on_release = DT_VIEW_ERR;
 
-  if (dt_control_get_mouse_over_id() < 0 || !_is_custom_image_order_actif(self))
-  {
-    lib->pan = 1;
-  }
-
-  if(which == 1) dt_control_change_cursor(GDK_HAND1);
   if(which == 1 && type == GDK_2BUTTON_PRESS) return 0;
   // image button pressed?
   if(which == 1)
@@ -2153,36 +2235,35 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
     switch(lib->image_over)
     {
       case DT_VIEW_DESERT:
-      {
-        if (lib->using_arrows)
+        // Here we begin to pan immediately, even though later we might decide
+        // that the event was actually a click. For this reason we do not set
+        // the pointer to GDK_HAND1 until we can exclude that it is a click,
+        // namely until the pointer has moved a little distance. The code taking
+        // care of this is in expose(). Pan only makes sense in zoomable lt.
+        if(lib->layout == 0) begin_pan(lib, x, y);
+        if(lib->layout == 1 && lib->using_arrows)
         {
           // in this case dt_control_get_mouse_over_id() means "last image visited with arrows"
           lib->using_arrows = 0;
           return 0;
         }
-
-        const int32_t id = dt_control_get_mouse_over_id();
-        if((lib->modifiers & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
-          dt_selection_select_single(darktable.selection, id);
-        else if((lib->modifiers & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
-          dt_selection_toggle(darktable.selection, id);
-        else if((lib->modifiers & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
-          dt_selection_select_range(darktable.selection, id);
-
-        break;
-      }
+      // no break here intentionally
       case DT_VIEW_REJECT:
       case DT_VIEW_STAR_1:
       case DT_VIEW_STAR_2:
       case DT_VIEW_STAR_3:
       case DT_VIEW_STAR_4:
       case DT_VIEW_STAR_5:
-      {
-        const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-        dt_ratings_apply_to_image_or_group(mouse_over_id, lib->image_over);
-        _update_collected_images(self);
+        // In file manager we act immediatley, in zoomable lt we defer action
+        // until either the button is released or the pointer leaves the
+        // activated control. In the second case, we cancel the action, and
+        // instead we begin to pan. We do this for those users intending to
+        // pan that accidentally hit a control element.
+        if(lib->layout == 1) // filemanager
+          activate_control_element(self);
+        else // zoomable lighttable --> defer action to check for pan
+          lib->activate_on_release = lib->image_over;
         break;
-      }
       case DT_VIEW_GROUP:
       {
         const int32_t mouse_over_id = dt_control_get_mouse_over_id();
@@ -2260,6 +2341,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         break;
       }
       default:
+        begin_pan(lib, x, y);
+        dt_control_change_cursor(GDK_HAND1);
         return 0;
     }
   }
