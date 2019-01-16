@@ -278,7 +278,7 @@ void enter(dt_view_t *self)
   GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
   if(selected_images)
   {
-    int imgid = GPOINTER_TO_INT(selected_images->data);
+    const int imgid = GPOINTER_TO_INT(selected_images->data);
     prt->image_id = imgid;
     dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, TRUE);
   }
