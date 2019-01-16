@@ -83,6 +83,13 @@ DT_MODULE_INTROSPECTION(3, dt_iop_filmic_params_t)
  *
  * */
 
+enum dt_filmic_chroma_preserve
+{
+  CHROMA_PRESERVE_NONE = 0,
+  CHROMA_PRESERVE_RGB = 1,
+  CHROMA_PRESERVE_XYZ = 2
+} dt_filmic_chroma_preserve;
+
 typedef enum dt_iop_filmic_pickcolor_type_t
 {
   DT_PICKPROFLOG_NONE = 0,
@@ -225,7 +232,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->saturation = o->saturation;
     n->balance = o->balance;
     n->interpolator = o->interpolator;
-    n->preserve_color = 0;
+    n->preserve_color = CHROMA_PRESERVE_NONE;
     n->global_saturation = 100;
     return 0;
   }
@@ -454,7 +461,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       }
     }
 
-    if (preserve_color)
+    if (preserve_color == CHROMA_PRESERVE_RGB)
     {
       int index;
       float ratios[4];
@@ -573,7 +580,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       rgb = luma + saturation_sse * (rgb - luma);
     }
 
-    if (preserve_color)
+    if (preserve_color == CHROMA_PRESERVE_RGB)
     {
       // Get the max of the RGB values
       float max = fmax(fmaxf(rgb[0], rgb[1]), rgb[2]);
@@ -596,6 +603,25 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       max_sse = _mm_set1_ps(max);
       rgb = ratios * max_sse;
       luma = max_sse;
+    }
+    else if (preserve_color == CHROMA_PRESERVE_XYZ)
+    {
+      // Convert to xyY
+      __m128 xyY = dt_XYZ_to_xyY_sse2(dt_prophotoRGB_to_XYZ_sse2(rgb));
+
+      // Log tone-mapping on Y
+      xyY[2] = xyY[2] / grey;
+      xyY[2] = (xyY[2] > eps) ? (fastlog2(xyY[2]) - black) / dynamic_range : eps;
+      xyY[2] = CLAMP(xyY[2], 0.0f, 1.0f);
+
+      // Filmic S curve on the Y
+      const int index = CLAMP(xyY[2] * 0x10000ul, 0, 0xffff);
+      xyY[2] = data->table[index];
+      concavity = data->grad_2[index];
+
+      // Convert back to XYZ
+      rgb = dt_XYZ_to_prophotoRGB_sse2(dt_xyY_to_XYZ_sse2(xyY));
+      luma = xyY[2];
     }
     else
     {
@@ -1135,9 +1161,35 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
 
 static void preserve_color_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  p->preserve_color = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  const int combo = dt_bauhaus_combobox_get(widget);
+
+  switch (combo)
+  {
+    case CHROMA_PRESERVE_NONE:
+    {
+      p->preserve_color = CHROMA_PRESERVE_NONE;
+      break;
+    }
+    case CHROMA_PRESERVE_RGB:
+    {
+      p->preserve_color = CHROMA_PRESERVE_RGB;
+      break;
+    }
+    case CHROMA_PRESERVE_XYZ:
+    {
+      p->preserve_color = CHROMA_PRESERVE_XYZ;
+      break;
+    }
+    default:
+    {
+      p->preserve_color = CHROMA_PRESERVE_NONE;
+      break;
+    }
+  }
+
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1468,7 +1520,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->balance, p->balance);
 
   dt_bauhaus_combobox_set(g->interpolator, p->interpolator);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->preserve_color), p->preserve_color);
+  dt_bauhaus_combobox_set(g->preserve_color, p->preserve_color);
 
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander),
                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->extra_toggle)));
@@ -1766,6 +1818,23 @@ void gui_init(dt_iop_module_t *self)
                                             "use it if you need to protect the details\nat one extremity of the histogram."));
   g_signal_connect(G_OBJECT(g->balance), "value-changed", G_CALLBACK(balance_callback), self);
 
+  /* From src/common/curve_tools.h :
+    #define CUBIC_SPLINE 0
+    #define CATMULL_ROM 1
+    #define MONOTONE_HERMITE 2
+  */
+  g->interpolator = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->interpolator, NULL, _("intent"));
+  dt_bauhaus_combobox_add(g->interpolator, _("contrasted")); // cubic spline
+  dt_bauhaus_combobox_add(g->interpolator, _("faded")); // centripetal spline
+  dt_bauhaus_combobox_add(g->interpolator, _("linear")); // monotonic spline
+  dt_bauhaus_combobox_add(g->interpolator, _("optimized")); // monotonic spline
+  gtk_box_pack_start(GTK_BOX(self->widget), g->interpolator , TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->interpolator, _("change this method if you see reversed contrast or faded blacks"));
+  g_signal_connect(G_OBJECT(g->interpolator), "value-changed", G_CALLBACK(interpolator_callback), self);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("color correction")), FALSE, FALSE, 5);
+
   // saturation slider
   g->global_saturation = dt_bauhaus_slider_new_with_range(self, 0., 200., 0.5, p->global_saturation, 2);
   dt_bauhaus_widget_set_label(g->global_saturation, NULL, _("global saturation"));
@@ -1786,29 +1855,17 @@ void gui_init(dt_iop_module_t *self)
                                                "decrease if shadows and/or highlights are over-saturated."));
   g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
 
-    /* From src/common/curve_tools.h :
-    #define CUBIC_SPLINE 0
-    #define CATMULL_ROM 1
-    #define MONOTONE_HERMITE 2
-  */
-  g->interpolator = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->interpolator, NULL, _("intent"));
-  dt_bauhaus_combobox_add(g->interpolator, _("contrasted")); // cubic spline
-  dt_bauhaus_combobox_add(g->interpolator, _("faded")); // centripetal spline
-  dt_bauhaus_combobox_add(g->interpolator, _("linear")); // monotonic spline
-  dt_bauhaus_combobox_add(g->interpolator, _("optimized")); // monotonic spline
-  gtk_box_pack_start(GTK_BOX(self->widget), g->interpolator , TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->interpolator, _("change this method if you see reversed contrast or faded blacks"));
-  g_signal_connect(G_OBJECT(g->interpolator), "value-changed", G_CALLBACK(interpolator_callback), self);
-
   // Preserve color
-  g->preserve_color = gtk_check_button_new_with_label(_("preserve the chrominance"));
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g->preserve_color), p->preserve_color);
+  g->preserve_color = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->preserve_color, NULL, _("preserve the chrominance"));
+  dt_bauhaus_combobox_add(g->preserve_color, _("disabled"));
+  dt_bauhaus_combobox_add(g->preserve_color, _("in RGB"));
+  dt_bauhaus_combobox_add(g->preserve_color, _("in xyY"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->preserve_color, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original color are preserved.\n"
                                                    "may reinforce chromatic aberrations.\n"
                                                    "you need to manually tune the saturation when using this mode."));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->preserve_color , TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->preserve_color), "toggled", G_CALLBACK(preserve_color_callback), self);
+  g_signal_connect(G_OBJECT(g->preserve_color), "value-changed", G_CALLBACK(preserve_color_callback), self);
 
 
   // add collapsable section for those extra options that are generally not to be used
