@@ -114,7 +114,7 @@ typedef struct dt_library_t
   dt_lighttable_layout_t layout;
   uint32_t modifiers;
   uint32_t center, pan;
-  int activate_on_release;
+  dt_view_image_over_t activate_on_release;
   int32_t track, offset, first_visible_zoomable, first_visible_filemanager;
   float zoom_x, zoom_y;
   dt_view_image_over_t image_over;
