@@ -30,6 +30,8 @@
 #include <strings.h>
 #include <tiffio.h>
 
+#define LAB_CONVERSION_PROFILE DT_COLORSPACE_LIN_REC2020
+
 typedef struct tiff_t
 {
   TIFF *tiff;
@@ -43,6 +45,7 @@ typedef struct tiff_t
   float *mipbuf;
   tdata_t buf;
 } tiff_t;
+
 
 static inline int _read_planar_8(tiff_t *t)
 {
@@ -138,6 +141,98 @@ static inline int _read_planar_f(tiff_t *t)
   return 1;
 }
 
+static inline int _read_planar_8_Lab(tiff_t *t, uint16_t photometric)
+{
+  const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  const cmsHPROFILE output_profile = dt_colorspaces_get_profile(LAB_CONVERSION_PROFILE, "", DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
+  const cmsHTRANSFORM xform = cmsCreateTransform(Lab, TYPE_LabA_FLT, output_profile, TYPE_RGBA_FLT, INTENT_PERCEPTUAL, 0);
+
+  for(uint32_t row = 0; row < t->height; row++)
+  {
+    uint8_t *in = ((uint8_t *)t->buf);
+    float *output = ((float *)t->mipbuf) + (size_t)4 * row * t->width;
+    float *out = output;
+
+    /* read scanline */
+    if(TIFFReadScanline(t->tiff, in, row, 0) == -1) goto failed;
+
+    for(uint32_t i = 0; i < t->width; i++, in += t->spp, out += 4)
+    {
+      out[0] = ((float)in[0]) * (100.0f/255.0f);
+
+      if(photometric == PHOTOMETRIC_CIELAB)
+      {
+        out[1] = ((float)((int8_t)in[1]));
+        out[2] = ((float)((int8_t)in[2]));
+      }
+      else // photometric == PHOTOMETRIC_ICCLAB
+      {
+        out[1] = ((float)(in[1])) - 128.0f;
+        out[2] = ((float)(in[2])) - 128.0f;
+      }
+
+      out[3] = 0;
+    }
+
+    cmsDoTransform(xform, output, output, t->width);
+  }
+
+  cmsDeleteTransform(xform);
+
+  return 1;
+
+failed:
+  cmsDeleteTransform(xform);
+  return -1;
+}
+
+
+static inline int _read_planar_16_Lab(tiff_t *t, uint16_t photometric)
+{
+  const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  const cmsHPROFILE output_profile = dt_colorspaces_get_profile(LAB_CONVERSION_PROFILE, "", DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
+  const cmsHTRANSFORM xform = cmsCreateTransform(Lab, TYPE_LabA_FLT, output_profile, TYPE_RGBA_FLT, INTENT_PERCEPTUAL, 0);
+
+  for(uint32_t row = 0; row < t->height; row++)
+  {
+    uint16_t *in = ((uint16_t *)t->buf);
+    float *output = ((float *)t->mipbuf) + (size_t)4 * row * t->width;
+    float *out = output;
+
+    /* read scanline */
+    if(TIFFReadScanline(t->tiff, in, row, 0) == -1) goto failed;
+
+    for(uint32_t i = 0; i < t->width; i++, in += t->spp, out += 4)
+    {
+      out[0] = ((float)in[0]) * (100.0f/65535.0f);
+
+      if(photometric == PHOTOMETRIC_CIELAB)
+      {
+        out[1] = ((float)((int16_t)in[1])) / 256.0f;
+        out[2] = ((float)((int16_t)in[2])) / 256.0f;
+      }
+      else // photometric == PHOTOMETRIC_ICCLAB
+      {
+        out[1] = (((float)(in[1])) - 32768.0f) / 256.0f;
+        out[2] = (((float)(in[2])) - 32768.0f) / 256.0f;
+      }
+
+      out[3] = 0;
+    }
+
+    cmsDoTransform(xform, output, output, t->width);
+  }
+
+  cmsDeleteTransform(xform);
+
+  return 1;
+
+failed:
+  cmsDeleteTransform(xform);
+  return -1;
+}
+
+
 static void _warning_error_handler(const char *type, const char* module, const char* fmt, va_list ap)
 {
   fprintf(stderr, "[tiff_open] %s: %s: ", type, module);
@@ -171,6 +266,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   tiff_t t;
   uint16_t config;
+  uint16_t photometric;
 
   t.image = img;
 
@@ -190,6 +286,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   TIFFGetField(t.tiff, TIFFTAG_SAMPLESPERPIXEL, &t.spp);
   TIFFGetFieldDefaulted(t.tiff, TIFFTAG_SAMPLEFORMAT, &t.sampleformat);
   TIFFGetField(t.tiff, TIFFTAG_PLANARCONFIG, &config);
+  TIFFGetField(t.tiff, TIFFTAG_PHOTOMETRIC, &photometric);
 
   if(TIFFRasterScanlineSize(t.tiff) != TIFFScanlineSize(t.tiff)) return DT_IMAGEIO_FILE_CORRUPTED;
 
@@ -242,7 +339,11 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   int ok = 1;
 
-  if(t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
+  if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
+    ok = _read_planar_8_Lab(&t, photometric);
+  else if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
+    ok = _read_planar_16_Lab(&t, photometric);
+  else if(t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
     ok = _read_planar_8(&t);
   else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
     ok = _read_planar_16(&t);
@@ -265,6 +366,7 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
   TIFF *tiff = NULL;
   uint32_t profile_len = 0;
   uint8_t *profile = NULL;
+  uint16_t photometric;
 
   if(!(filename && *filename && out)) return 0;
 
@@ -278,7 +380,20 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
 
   if(tiff == NULL) return 0;
 
-  if(TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profile_len, &profile))
+  TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric);
+
+  if(photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB)
+  {
+    profile = dt_colorspaces_get_profile(LAB_CONVERSION_PROFILE, "", DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
+
+    cmsSaveProfileToMem(profile, 0, &profile_len);
+    if(profile_len > 0)
+    {
+      *out = (uint8_t *)malloc(profile_len);
+      cmsSaveProfileToMem(profile, *out, &profile_len);
+    }
+  }
+  else if(TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profile_len, &profile))
   {
     *out = (uint8_t *)malloc(profile_len);
     memcpy(*out, profile, profile_len);
