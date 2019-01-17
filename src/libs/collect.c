@@ -1035,7 +1035,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                DT_LIB_COLLECT_COL_COUNT, (*(token + 1)?0:count), -1);
 
             // also add the item count to parents
-            if((folders || days || times) && !*(token + 1)){
+            if((folders || days || times) && !*(token + 1))
+            {
               guint parentcount;
               GtkTreeIter parent2, child = iter;
 
