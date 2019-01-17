@@ -125,7 +125,7 @@ static gboolean _view_map_prefs_changed(dt_map_t *lib);
 static void _view_map_build_main_query(dt_map_t *lib);
 
 /* center map to on the baricenter of the image list */
-static void _view_map_center_on_image_list(dt_view_t *self, GList *selected_images);
+static gboolean _view_map_center_on_image_list(dt_view_t *self, const GList *selected_images);
 /* center map on the given image */
 static void _view_map_center_on_image(dt_view_t *self, const int32_t imgid);
 
@@ -788,8 +788,24 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
 static gboolean _display_selected(gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
+  gboolean done = FALSE;
+
   GList *selected_images = dt_collection_get_selected(darktable.collection, -1);
-  _view_map_center_on_image_list(self, selected_images);
+  if(selected_images)
+  {
+    done = _view_map_center_on_image_list(self, selected_images);
+    g_list_free(selected_images);
+  }
+
+  if(!done)
+  {
+    GList *collection_images = dt_collection_get_all(darktable.collection, -1);
+    if(collection_images)
+    {
+      done = _view_map_center_on_image_list(self, collection_images);
+      g_list_free(collection_images);
+    }
+  }
   return FALSE; // don't call again
 }
 
@@ -839,8 +855,9 @@ void enter(dt_view_t *self)
   {
     dt_view_filmstrip_scroll_to_image(darktable.view_manager, GPOINTER_TO_INT(selected_images->data), FALSE);
     g_list_free(selected_images);
-    g_timeout_add(250, _display_selected, self);
   }
+
+  g_timeout_add(250, _display_selected, self);
 }
 
 void leave(dt_view_t *self)
@@ -1072,11 +1089,17 @@ static void _view_map_check_preference_changed(gpointer instance, gpointer user_
 
 static void _view_map_collection_changed(gpointer instance, gpointer user_data)
 {
-  dt_view_t *view = (dt_view_t *)user_data;
-  dt_map_t *lib = (dt_map_t *)view->data;
+  dt_view_t *self = (dt_view_t *)user_data;
+  GList *collection_images = dt_collection_get_all(darktable.collection, -1);
+  if(collection_images)
+  {
+    _view_map_center_on_image_list(self, collection_images);
+    g_list_free(collection_images);
+  }
 
   if(dt_conf_get_bool("plugins/map/filter_images_drawn"))
   {
+    dt_map_t *lib = (dt_map_t *)self->data;
     /* only redraw when map mode is currently active, otherwise enter() does the magic */
     if(darktable.view_manager->proxy.map.view) g_signal_emit_by_name(lib->map, "changed");
   }
@@ -1101,16 +1124,17 @@ static void _view_map_center_on_image(dt_view_t *self, const int32_t imgid)
   }
 }
 
-static void _view_map_center_on_image_list(dt_view_t *self, GList *selected_images)
+static gboolean _view_map_center_on_image_list(dt_view_t *self, const GList *selected_images)
 {
   // TODO: do something better than this approximation
   const float FIVE_KM = (0.01f * 1.852) * 5.0; // minimum context around single image/place
 
-  GList *l = selected_images;
+  GList const *l = selected_images;
   float max_longitude = -INFINITY;
   float max_latitude = -INFINITY;
   float min_longitude = INFINITY;
   float min_latitude = INFINITY;
+  int count = 0;
 
   while(l)
   {
@@ -1118,36 +1142,45 @@ static void _view_map_center_on_image_list(dt_view_t *self, GList *selected_imag
     float lon = 0, lat = 0, el = 0;
     _get_image_location(imgid, &lon, &lat, &el);
 
-    max_longitude = MAX(max_longitude, lon);
-    min_longitude = MIN(min_longitude, lon);
-    max_latitude = MAX(max_latitude, lat);
-    min_latitude = MIN(min_latitude, lat);
-
+    if(!isnan(lon) && !isnan(lat))
+    {
+      max_longitude = MAX(max_longitude, lon);
+      min_longitude = MIN(min_longitude, lon);
+      max_latitude = MAX(max_latitude, lat);
+      min_latitude = MIN(min_latitude, lat);
+      count++;
+    }
     l = g_list_next(l);
   }
 
-  // growth bounding box to avoid having the pictures on the border, and this will give a bit of context.
+  if(count>0)
+  {
+    // enlarge the bounding box to avoid having the pictures on the border, and this will give a bit of context.
 
-  float d_lon = max_longitude - min_longitude;
-  float d_lat = max_latitude - min_latitude;
+    float d_lon = max_longitude - min_longitude;
+    float d_lat = max_latitude - min_latitude;
 
-  if(d_lon>1.0)
-    d_lon /= 100.0;
+    if(d_lon>1.0)
+      d_lon /= 100.0;
+    else
+      d_lon = (FIVE_KM - d_lon) / 2.0;
+
+    if(d_lat>1.0)
+      d_lat /= 100.0;
+    else
+      d_lat = (FIVE_KM - d_lat) / 2.0;
+
+    max_longitude = CLAMP(max_longitude + d_lon, -180, 180);
+    min_longitude = CLAMP(min_longitude - d_lon, -180, 180);
+
+    max_latitude = CLAMP(max_latitude + d_lat, -90, 90);
+    min_latitude = CLAMP(min_latitude - d_lat, -90, 90);
+
+    _view_map_center_on_bbox(self, min_longitude, min_latitude, max_longitude, max_latitude);
+    return TRUE;
+  }
   else
-    d_lon = (FIVE_KM - d_lon) / 2.0;
-
-  if(d_lat>1.0)
-    d_lat /= 100.0;
-  else
-    d_lat = (FIVE_KM - d_lat) / 2.0;
-
-  max_longitude = CLAMP(max_longitude + d_lon, -180, 180);
-  min_longitude = CLAMP(min_longitude - d_lon, -180, 180);
-
-  max_latitude = CLAMP(max_latitude + d_lat, -90, 90);
-  min_latitude = CLAMP(min_latitude - d_lat, -90, 90);
-
-  _view_map_center_on_bbox(self, min_longitude, min_latitude, max_longitude, max_latitude);
+    return FALSE;
 }
 
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data)
