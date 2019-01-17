@@ -88,16 +88,23 @@ denoiseprofile_dist(read_only image2d_t in, global float* U4, const int width, c
 
   if(x >= width || y >= height) return;
 
+  int xpq = x + q.x;
+  int ypq = y + q.y;
+  // Convert out of bounds indexes to 0
   // Reminder: q.x and q.y can be negative
-  float dist = 0.0f;
-  if(x+q.x < width && y+q.y < height
-    && x+q.x >= 0 && y+q.y >= 0)
-  {
-    float4 p1 = read_imagef(in, sampleri, (int2)(x, y));
-    float4 p2 = read_imagef(in, sampleri, (int2)(x, y) + q);
-    float4 tmp = (p1 - p2)*(p1 - p2);
-    dist = tmp.x + tmp.y + tmp.z;
-  }
+  // the boolean conditions will be equal to
+  // 0 in case of out of bounds, and will be
+  // equal to 1 in the other case
+  xpq *= (x+q.x < width && x+q.x >= 0);
+  ypq *= (y+q.y < height && y+q.y >= 0);
+
+  float4 p1 = read_imagef(in, sampleri, (int2)(x, y));
+  float4 p2 = read_imagef(in, sampleri, (int2)(xpq, ypq));
+  float4 tmp = (p1 - p2)*(p1 - p2);
+  float dist = tmp.x + tmp.y + tmp.z;
+
+  // make dist equal to 0 in case xpq or ypq is out of bounds
+  dist *= (x+q.x < width && x+q.x >= 0 && y+q.y < height && y+q.y >= 0);
 
   U4[gidx] = dist;
 }
@@ -219,34 +226,30 @@ denoiseprofile_accu(read_only image2d_t in, global float4* U2, global float* U4,
 
   if(x >= width || y >= height) return;
 
+  // wpq and wmq are weights for the image read of
+  // indexes (int2)(x, y) + q and (int2)(x, y) - q)
+  // respectively
+  // we want wpq and wmq equal to 1 only if
+  // their associated index is in bounds
   int wpq = 1;
   int wmq = 1;
-  if(q.x<0)
-  {
-    if(x-q.x >= width) wmq = 0;
-    if(x+q.x < 0) wpq = 0;
-  }
-  else
-  {
-    if(x+q.x >= width) wpq = 0;
-    if(x-q.x < 0) wmq = 0;
-  }
-  if(q.y<0)
-  {
-    if(y-q.y >= height) wmq = 0;
-    if(y+q.y < 0) wpq = 0;
-  }
-  else
-  {
-    if(y+q.y >= height) wpq = 0;
-    if(y-q.y < 0) wmq = 0;
-  }
 
+  // handle bounds for x
+  // Reminder: q.x can be negative
+  wpq *= (x+q.x < width);
+  wmq *= (x-q.x < width);
+  wpq *= (x+q.x >= 0);
+  wmq *= (x-q.x >= 0);
 
-  float4 u1_pq = 0;
-  if(wpq) u1_pq = read_imagef(in, sampleri, (int2)(x, y) + q);
-  float4 u1_mq = 0;
-  if(wmq) u1_mq = read_imagef(in, sampleri, (int2)(x, y) - q);
+  // handle bounds for y
+  // Reminder: q.y can be negative
+  wpq *= (y+q.y >= 0);
+  wmq *= (y-q.y >= 0);
+  wpq *= (y+q.y < height);
+  wmq *= (y-q.y < height);
+
+  float4 u1_pq = wpq ? read_imagef(in, sampleri, (int2)(x, y) + q) : (float4)0.0f;
+  float4 u1_mq = wmq ? read_imagef(in, sampleri, (int2)(x, y) - q) : (float4)0.0f;
 
   float  u4    = U4[gidx];
   float  u4_mq = U4[mad24(clamp(y-q.y, 0, height-1), width, clamp(x-q.x, 0, width-1))];
