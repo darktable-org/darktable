@@ -553,7 +553,6 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
 
   /* get grid stride */
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
-  lib->images_in_row = iir;
 
   /* get image over id */
   lib->image_over = DT_VIEW_DESERT;
@@ -562,13 +561,15 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   const int initial_mouse_over_id = mouse_over_id;
 
   /* fill background */
-  if (mouse_over_id == -1 || lib->force_expose_all || iir == 1 || offset_changed)
+  if (mouse_over_id == -1 || lib->force_expose_all || iir == 1 || offset_changed || lib->images_in_row != iir)
   {
     lib->force_expose_all = TRUE;
     lib->last_exposed_id = -1;
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
     cairo_paint(cr);
   }
+
+  lib->images_in_row = iir;
 
   const float wd = width / (float)iir;
   const float ht = width / (float)iir;
