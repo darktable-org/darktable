@@ -648,54 +648,33 @@ uint32_t dt_collection_get_selected_count(const dt_collection_t *collection)
 GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean selected)
 {
   GList *list = NULL;
-  gchar *query = NULL;
-  gchar *sq = NULL;
-
-  /* get collection order */
-  if((collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    sq = dt_collection_get_sort_query(collection);
-
-  sqlite3_stmt *stmt = NULL;
-
-  /* build the query string */
-  query = dt_util_dstrcat(query, "SELECT DISTINCT a.id FROM main.images AS a ");
-
-  if(collection->params.sort == DT_COLLECTION_SORT_COLOR
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    query = dt_util_dstrcat(query, "LEFT OUTER JOIN main.color_labels AS b ON a.id = b.imgid ");
-  else if(collection->params.sort == DT_COLLECTION_SORT_TITLE
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    query = dt_util_dstrcat(query,
-                            "LEFT OUTER JOIN main.meta_data AS m ON a.id = m.id AND m.key = %d ", DT_METADATA_XMP_DC_TITLE);
-  else if(collection->params.sort == DT_COLLECTION_SORT_DESCRIPTION
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    query = dt_util_dstrcat(query,
-                            "LEFT OUTER JOIN main.meta_data AS m ON a.id = m.id AND m.key = %d ", DT_METADATA_XMP_DC_DESCRIPTION);
-  else if(collection->params.sort == DT_COLLECTION_SORT_PATH
-          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    query = dt_util_dstrcat(
-        query, "JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id ");
-
-  if (selected)
-    query = dt_util_dstrcat(query, "WHERE a.id IN (SELECT imgid FROM main.selected_images) %s LIMIT ?1", sq);
-  else
-    query = dt_util_dstrcat(query, "%s LIMIT ?1", sq);
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, limit);
-
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  const gchar *query = dt_collection_get_query(collection);
+  if(query)
   {
-    const int imgid = sqlite3_column_int(stmt, 0);
-    list = g_list_append(list, GINT_TO_POINTER(imgid));
+    sqlite3_stmt *stmt = NULL;
+    gchar *q;
+
+    if(selected)
+      q = g_strdup_printf("SELECT id FROM main.selected_images AS s JOIN (%s) AS a WHERE a.id = s.imgid", query);
+    else
+      q = g_strdup_printf("%s", query);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), q, -1, &stmt, NULL);
+    if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
+    {
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, -1);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, limit);
+    }
+
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const int imgid = sqlite3_column_int(stmt, 0);
+      list = g_list_append(list, GINT_TO_POINTER(imgid));
+    }
+
+    sqlite3_finalize(stmt);
+    g_free(q);
   }
-
-  sqlite3_finalize(stmt);
-
-  /* free allocated strings */
-  g_free(sq);
-
-  g_free(query);
 
   return list;
 }
