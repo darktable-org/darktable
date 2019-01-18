@@ -2890,6 +2890,15 @@ const wb_data wb_preset[] =
   { "Nikon", "D300S", HighTempMercuryVaporFluorescent, 0, { 1.961, 1, 1.328, 0 } },
   { "Nikon", "D300S", HighTempMercuryVaporFluorescent, 6, { 1.855, 1, 1.523, 0 } },
 
+  /*NIKON D500 Software Ver.1.12*/
+  { "NIKON CORPORATION", "NIKON D500", DirectSunlight      , 0, { 2.271484375, 1, 1.526855469, 0 } },
+  { "NIKON CORPORATION", "NIKON D500", Shade               , 0, { 2.876464844, 1, 1.242675781, 0 } },
+  { "NIKON CORPORATION", "NIKON D500", Cloudy              , 0, { 2.452636719, 1, 1.384765625, 0 } },
+  { "NIKON CORPORATION", "NIKON D500", Incandescent        , 0, { 1.431640625, 1, 2.411621094, 0 } },
+  { "NIKON CORPORATION", "NIKON D500", CoolWhiteFluorescent, 0, { 2.032714844, 1, 2.232910156, 0 } },
+  { "NIKON CORPORATION", "NIKON D500", Flash               , 0, { 2.592773438, 1, 1.320800781, 0 } },
+  { "NIKON CORPORATION", "NIKON D500", "5000K"             , 0, { 2.216308594, 1, 1.577148438, 0 } },
+
   { "Nikon", "D600", DirectSunlight, 0,		{ 1.906250, 1, 1.390625, 0 } },
   { "Nikon", "D600", Flash, 0,			{ 2.136719, 1, 1.214844, 0 } },
   { "Nikon", "D600", Cloudy, 0,			{ 2.039063, 1, 1.261719, 0 } },
