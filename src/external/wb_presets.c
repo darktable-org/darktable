@@ -2890,6 +2890,15 @@ const wb_data wb_preset[] =
   { "Nikon", "D300S", HighTempMercuryVaporFluorescent, 0, { 1.961, 1, 1.328, 0 } },
   { "Nikon", "D300S", HighTempMercuryVaporFluorescent, 6, { 1.855, 1, 1.523, 0 } },
 
+  /*NIKON D500 Software Ver.1.12*/
+  { "NIKON CORPORATION", "NIKON D500", DirectSunlight      , 0, { 2.271484375, 1, 1.526855469, 0 } },
+  { "NIKON CORPORATION", "NIKON D500", Shade               , 0, { 2.876464844, 1, 1.242675781, 0 } },
+  { "NIKON CORPORATION", "NIKON D500", Cloudy              , 0, { 2.452636719, 1, 1.384765625, 0 } },
+  { "NIKON CORPORATION", "NIKON D500", Incandescent        , 0, { 1.431640625, 1, 2.411621094, 0 } },
+  { "NIKON CORPORATION", "NIKON D500", CoolWhiteFluorescent, 0, { 2.032714844, 1, 2.232910156, 0 } },
+  { "NIKON CORPORATION", "NIKON D500", Flash               , 0, { 2.592773438, 1, 1.320800781, 0 } },
+  { "NIKON CORPORATION", "NIKON D500", "5000K"             , 0, { 2.216308594, 1, 1.577148438, 0 } },
+
   { "Nikon", "D600", DirectSunlight, 0,		{ 1.906250, 1, 1.390625, 0 } },
   { "Nikon", "D600", Flash, 0,			{ 2.136719, 1, 1.214844, 0 } },
   { "Nikon", "D600", Cloudy, 0,			{ 2.039063, 1, 1.261719, 0 } },
@@ -3067,6 +3076,15 @@ const wb_data wb_preset[] =
   { "Nikon", "D850", DayWhiteFluorescent             , 0, { 1.76953125,  1, 1.3984375,   0 } },
   { "Nikon", "D850", DaylightFluorescent             , 0, { 2.018066406, 1, 1.112304688, 0 } },
   { "Nikon", "D850", HighTempMercuryVaporFluorescent , 0, { 2.379882812, 1, 1.3671875,   0 } },
+
+  /*NIKON D850 Software Ver.1.03*/
+  { "NIKON CORPORATION", "NIKON D850", DirectSunlight      , 0, { 1.900390625, 1, 1.375488281, 0 } },
+  { "NIKON CORPORATION", "NIKON D850", Shade               , 0, { 2.396484375, 1, 1.114257812, 0 } },
+  { "NIKON CORPORATION", "NIKON D850", Cloudy              , 0, { 2.049804688, 1, 1.244628906, 0 } },
+  { "NIKON CORPORATION", "NIKON D850", Incandescent        , 0, { 1.205078125, 1, 2.206542969, 0 } },
+  { "NIKON CORPORATION", "NIKON D850", CoolWhiteFluorescent, 0, { 1.721191406, 1, 2.064453125, 0 } },
+  { "NIKON CORPORATION", "NIKON D850", Flash               , 0, { 2.1640625, 1, 1.204101562, 0 } },
+  { "NIKON CORPORATION", "NIKON D850", "5000K"             , 0, { 1.849121094, 1, 1.421386719, 0 } },
 
   { "Nikon", "D40", Incandescent, -3,		{ 1.492188, 1, 2.164063, 0 } },
   { "Nikon", "D40", Incandescent, -2,		{ 1.437500, 1, 2.367188, 0 } },
