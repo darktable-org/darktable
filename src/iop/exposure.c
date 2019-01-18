@@ -45,7 +45,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #define exposure2white(x) exp2f(-(x))
 #define white2exposure(x) -dt_log2f(fmaxf(1e-20f, x))
@@ -106,9 +105,9 @@ const char *name()
   return _("exposure");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("exposure", IOP_GROUP_BASIC);
+  return IOP_GROUP_BASIC;
 }
 
 int flags()
@@ -864,9 +863,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode), TRUE, TRUE, 0);
 
   g->black = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1, .001, p->black, 4);
-  gtk_widget_set_tooltip_text(g->black, _("adjust the black level"));
+  gtk_widget_set_tooltip_text(g->black, _("adjust the black level to unclip negative RGB values.\n"
+                                          "you should never use it to add more density in blacks!\n"
+                                          "if poorly set, it will clip near-black colors out of gamut\n"
+                                          "by pushing RGB values into negatives."));
   dt_bauhaus_slider_set_format(g->black, "%.4f");
-  dt_bauhaus_widget_set_label(g->black, NULL, _("black"));
+  dt_bauhaus_widget_set_label(g->black, NULL, _("black level correction"));
   dt_bauhaus_slider_enable_soft_boundaries(g->black, -1.0, 1.0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->black), TRUE, TRUE, 0);
 

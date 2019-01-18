@@ -71,7 +71,7 @@ const char *name()
   return _("overexposed");
 }
 
-int groups()
+int default_group()
 {
   return IOP_GROUP_BASIC;
 }

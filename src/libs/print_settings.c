@@ -151,7 +151,7 @@ static const char *mime(dt_imageio_module_data_t *data)
 
 static int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                        dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                       void *exif, int exif_len, int imgid, int num, int total)
+                       void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe)
 {
   dt_print_format_t *d = (dt_print_format_t *)data;
 
@@ -240,12 +240,15 @@ static int _print_job_run(dt_job_t *job)
   dt_control_job_set_progress(job, 0.05);
   dt_control_log(_("processing `%s' for `%s'"), params->job_title, params->prt.printer.name);
 
-  const int high_quality = 1;
-  const int upscale = 1;
-  const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(params->imgid, params->buf_icc_type, params->buf_icc_profile);
+  const gboolean high_quality = TRUE;
+  const gboolean upscale = TRUE;
+  const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(params->imgid,
+                                                                                        params->buf_icc_type,
+                                                                                        params->buf_icc_profile);
 
-  dt_imageio_export_with_flags(params->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, upscale, 0,
-                               NULL, FALSE, params->buf_icc_type, params->buf_icc_profile, params->buf_icc_intent,  NULL, NULL, 1, 1);
+  dt_imageio_export_with_flags(params->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE,
+                               high_quality, upscale, FALSE, NULL, FALSE, params->buf_icc_type, params->buf_icc_profile,
+                               params->buf_icc_intent,  NULL, NULL, 1, 1);
 
   // after exporting we know the real size of the image, compute the layout
 

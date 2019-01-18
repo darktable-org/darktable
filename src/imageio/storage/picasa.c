@@ -30,6 +30,9 @@
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "imageio/storage/imageio_storage_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <curl/curl.h>
 #include <json-glib/json-glib.h>
 #include <libxml/parser.h>
@@ -725,7 +728,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 
   ////////////// build & show the validation dialog
   const gchar *text1 = _("step 1: a new window or tab of your browser should have been "
-                         "loaded. you have to login into your google+ account there "
+                         "loaded. you have to login into your google account there "
                          "and authorize darktable to upload photos before continuing.");
   const gchar *text2 = _("step 2: paste the verification code shown to you in the browser "
                          "and click the OK button once you are done.");
@@ -733,7 +736,10 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkDialog *picasa_auth_dialog = GTK_DIALOG(
       gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-                             GTK_BUTTONS_OK_CANCEL, _("google+ authentication")));
+                             GTK_BUTTONS_OK_CANCEL, _("google authentication")));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(GTK_WIDGET(picasa_auth_dialog));
+#endif
   gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(picasa_auth_dialog), "%s\n\n%s", text1, text2);
 
   GtkWidget *entry = gtk_entry_new();
@@ -930,6 +936,7 @@ static void ui_refresh_albums_fill(PicasaAlbum *album, GtkListStore *list_store)
 
 static void ui_refresh_albums(dt_storage_picasa_gui_data_t *ui)
 {
+
   gboolean getlistok;
   GList *albumList = picasa_get_album_list(ui->picasa_api, &getlistok);
   if(!getlistok)
@@ -937,6 +944,8 @@ static void ui_refresh_albums(dt_storage_picasa_gui_data_t *ui)
     dt_control_log(_("unable to retrieve the album list"));
     goto cleanup;
   }
+
+  int current_index = gtk_combo_box_get_active(ui->comboBox_album);
 
   GtkListStore *model_album = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_album));
   GtkTreeIter iter;
@@ -952,8 +961,8 @@ static void ui_refresh_albums(dt_storage_picasa_gui_data_t *ui)
   }
   g_list_foreach(albumList, (GFunc)ui_refresh_albums_fill, model_album);
 
-  if(albumList != NULL) gtk_combo_box_set_active(ui->comboBox_album, 2);
-  // FIXME: get the albumid and set it in the PicasaCtx
+  if (albumList != NULL && current_index != -1)
+    gtk_combo_box_set_active(ui->comboBox_album, current_index);
   else
     gtk_combo_box_set_active(ui->comboBox_album, 0);
 
@@ -1159,7 +1168,7 @@ static void ui_login_clicked(GtkButton *button, gpointer data)
 /* plugin name */
 const char *name(const struct dt_imageio_module_storage_t *self)
 {
-  return _("google+ photos");
+  return _("google photos");
 }
 
 /* construct widget above */
@@ -1270,7 +1279,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   gint fd = g_mkstemp(fname);
   if(fd == -1)
   {
-    dt_control_log("failed to create temporary image for google+ export");
+    dt_control_log("failed to create temporary image for google photos export");
     return 1;
   }
   close(fd);
@@ -1301,7 +1310,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   const char *photoid = picasa_upload_photo_to_album(ctx, ctx->album_id, fname, title, summary, imgid);
   if(photoid == NULL)
   {
-    dt_control_log(_("unable to export photo to google+ album"));
+    dt_control_log(_("unable to export to google photos album"));
     result = 0;
     goto cleanup;
   }
@@ -1314,7 +1323,7 @@ cleanup:
   if(result)
   {
     // this makes sense only if the export was successful
-    dt_control_log(ngettext("%d/%d exported to google+ album", "%d/%d exported to google+ album", num), num, total);
+    dt_control_log(ngettext("%d/%d exported to google photos album", "%d/%d exported to google photos album", num), num, total);
   }
   return 0;
 }

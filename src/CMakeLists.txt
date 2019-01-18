@@ -1,5 +1,8 @@
 add_subdirectory(external)
 
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-fno-strict-aliasing)
+# do not set it for the external libraries.
+
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
@@ -55,6 +58,7 @@ FILE(GLOB SOURCE_FILES
   "common/module.c"
   "common/noiseprofiles.c"
   "common/pdf.c"
+  "common/presets.c"
   "common/styles.c"
   "common/selection.c"
   "common/system_signal_handling.c"
@@ -110,6 +114,7 @@ FILE(GLOB SOURCE_FILES
   "gui/preferences.c"
   "gui/presets.c"
   "gui/styles_dialog.c"
+  "gui/color_picker_proxy.c"
   "libs/lib.c"
   "views/view.c"
   )
@@ -231,6 +236,8 @@ if(USE_OPENMP)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   endif()
 
+  list(APPEND LIBS ${OpenMP_C_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
+
   if(WIN32)
     list(APPEND LIBS gomp)
   endif(WIN32)
@@ -301,7 +308,16 @@ if(USE_WEBP)
   else(USE_WEBP)
 endif(USE_WEBP)
 
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
+if(USE_LENSFUN)
+  find_package(LensFun)
+  if(LENSFUN_FOUND)
+    include_directories(SYSTEM ${LensFun_INCLUDE_DIRS})
+    list(APPEND LIBS ${LensFun_LIBRARIES})
+    add_definitions(${LensFun_DEFINITIONS})
+  endif()
+endif()
+
+foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})

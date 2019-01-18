@@ -31,7 +31,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
+
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -135,9 +135,9 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("color reconstruction", IOP_GROUP_BASIC);
+  return IOP_GROUP_BASIC;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -1302,7 +1302,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colorreconstruct_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorreconstruct_params_t));
   module->default_enabled = 0;
-  module->priority = 371; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 385; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorreconstruct_params_t);
   module->gui_data = NULL;
   dt_iop_colorreconstruct_params_t tmp = (dt_iop_colorreconstruct_params_t){ 100.0f, 400.0f, 10.0f, 0.66f, COLORRECONSTRUCT_PRECEDENCE_NONE };

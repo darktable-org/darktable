@@ -323,6 +323,9 @@ static void delete_button_clicked(GtkButton *button, gpointer user_data)
         ngettext("do you really want to delete the tag `%s'?\n%d image is assigned this tag!",
                  "do you really want to delete the tag `%s'?\n%d images are assigned this tag!", count),
         tagname, count);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete tag?"));
     res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -663,9 +666,14 @@ static gboolean _match_selected_func(GtkEntryCompletion *completion, GtkTreeMode
 
   if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING) return TRUE;
 
+  GtkEditable *e = (GtkEditable *)gtk_entry_completion_get_entry(completion);
+  if(!GTK_IS_EDITABLE(e))
+  {
+    return FALSE;
+  }
+
   gtk_tree_model_get(model, iter, column, &tag, -1);
   
-  GtkEditable *e = (GtkEditable *)gtk_entry_completion_get_entry(completion);
   gint cut_off, cur_pos = gtk_editable_get_position(e);
 
   gchar *currentText = gtk_editable_get_chars(e, 0, -1);
@@ -693,6 +701,12 @@ static gboolean _completion_match_func(GtkEntryCompletion *completion, const gch
   gboolean res = FALSE;
 
   GtkEditable *e = (GtkEditable *)gtk_entry_completion_get_entry(completion);
+
+  if(!GTK_IS_EDITABLE(e))
+  {
+    return FALSE;
+  }
+  
   gint cur_pos = gtk_editable_get_position(e);
   gboolean onLastTag = (g_strstr_len(&key[cur_pos], -1, ",") == NULL);
   if(!onLastTag)

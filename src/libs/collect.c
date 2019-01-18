@@ -922,26 +922,26 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       char *name = g_strdup((const char *)sqlite3_column_text(stmt, 0));
-      char *name_folded = g_utf8_casefold(name, -1);
       gchar *collate_key = NULL;
 
       const int count = sqlite3_column_int(stmt, 2);
 
       if(folders)
       {
+        char *name_folded = g_utf8_casefold(name, -1);
         char *name_folded_slash = g_strconcat(name_folded, G_DIR_SEPARATOR_S, NULL);
         collate_key = g_utf8_collate_key_for_filename(name_folded_slash, -1);
         g_free(name_folded_slash);
+        g_free(name_folded);
       }
       else if(tags)
-        collate_key = tag_collate_key(name_folded);
+        collate_key = tag_collate_key(name);
 
       name_key_tuple_t *tuple = (name_key_tuple_t *)malloc(sizeof(name_key_tuple_t));
       tuple->name = name;
       tuple->collate_key = collate_key;
       tuple->count = count;
       sorted_names = g_list_prepend(sorted_names, tuple);
-      g_free(name_folded);
     }
     sqlite3_finalize(stmt);
 
@@ -1035,7 +1035,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                DT_LIB_COLLECT_COL_COUNT, (*(token + 1)?0:count), -1);
 
             // also add the item count to parents
-            if((folders || days || times) && !*(token + 1)){
+            if((folders || days || times) && !*(token + 1))
+            {
               guint parentcount;
               GtkTreeIter parent2, child = iter;
 
@@ -1429,6 +1430,7 @@ void gui_reset(dt_lib_module_t *self)
 {
   dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
   dt_conf_set_int("plugins/lighttable/collect/item0", DT_COLLECTION_PROP_FILMROLL);
+  dt_conf_set_int("plugins/lighttable/collect/mode0", 0);
   dt_conf_set_string("plugins/lighttable/collect/string0", "");
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
   d->active_rule = 0;
@@ -1601,7 +1603,7 @@ int position()
   return 400;
 }
 
-static void entry_focus_in_callback(GtkWidget *w, GdkEventFocus *event, dt_lib_collect_rule_t *d)
+static gboolean entry_focus_in_callback(GtkWidget *w, GdkEventFocus *event, dt_lib_collect_rule_t *d)
 {
   dt_lib_collect_t *c = get_collect(d);
   if(c->active_rule != d->num)
@@ -1609,6 +1611,8 @@ static void entry_focus_in_callback(GtkWidget *w, GdkEventFocus *event, dt_lib_c
     c->active_rule = d->num;
     update_view(c->rule + c->active_rule);
   }
+
+  return FALSE;
 }
 
 static void menuitem_mode(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)

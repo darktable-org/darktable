@@ -29,7 +29,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -129,9 +128,9 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("raw denoise", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -601,7 +600,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
 
-  dt_bauhaus_slider_set(g->threshold, p->threshold);
+  dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "non_raw" : "raw");
   gtk_widget_queue_draw(self->widget);
 }
@@ -774,7 +773,7 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   PangoRectangle ink;
   PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-  pango_font_description_set_absolute_size(desc, (.06 * height) * PANGO_SCALE);
+  pango_font_description_set_absolute_size(desc, (.08 * height) * PANGO_SCALE);
   layout = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(layout, desc);
   cairo_set_source_rgb(cr, .1, .1, .1);
@@ -977,7 +976,7 @@ void gui_init(dt_iop_module_t *self)
 
   c->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
 
   gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->area), FALSE, FALSE, 0);
@@ -993,6 +992,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(rawdenoise_scrolled), self);
 
   c->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 0.1, 0.001, p->threshold, 3);
+  dt_bauhaus_slider_enable_soft_boundaries(c->threshold, 0.0, 1.0);
   gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->threshold), TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(c->threshold, NULL, _("noise threshold"));
   g_signal_connect(G_OBJECT(c->threshold), "value-changed", G_CALLBACK(threshold_callback), self);

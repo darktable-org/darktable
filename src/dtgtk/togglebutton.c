@@ -76,7 +76,6 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   else
   {
     flags &= ~(CPF_ACTIVE);
-    fg_color.alpha = CLAMP(fg_color.alpha / 2.0, 0.3, 1.0);
   }
 
   /* prelight */
@@ -94,11 +93,20 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   /* draw standard button background if not transparent nor flat styled */
   if((flags & CPF_STYLE_FLAT))
   {
-    if(flags & CPF_PRELIGHT || flags & CPF_ACTIVE)
+    if(flags & CPF_PRELIGHT || (flags & CPF_ACTIVE && !(flags & CPF_BG_TRANSPARENT)))
     {
-      cairo_rectangle(cr, 0, 0, width, height);
-      gdk_cairo_set_source_rgba(cr, &bg_color);
-      cairo_fill(cr);
+      // When CPF_BG_TRANSPARENT is set, change the background on
+      // PRELIGHT, but not on ACTIVE
+      if(!(flags & CPF_BG_TRANSPARENT) || (flags & CPF_PRELIGHT))
+      {
+        cairo_rectangle(cr, 0, 0, width, height);
+        gdk_cairo_set_source_rgba(cr, &bg_color);
+        cairo_fill(cr);
+      }
+    }
+    else if(!(flags & CPF_ACTIVE))
+    {
+      fg_color.alpha = CLAMP(fg_color.alpha / 2.0, 0.3, 1.0);
     }
   }
   else if(!(flags & CPF_BG_TRANSPARENT))
@@ -108,7 +116,6 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
     if(!(flags & CPF_DO_NOT_USE_BORDER))
       gtk_render_frame(context, cr, 0, 0, width, height);
   }
-
 
   /* create pango text settings if label exists */
   PangoLayout *layout = NULL;

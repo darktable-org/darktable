@@ -23,10 +23,13 @@
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
+
+#if defined(__SSE__)
+#include <xmmintrin.h>
+#endif
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
@@ -59,21 +62,15 @@ const char *name()
   return _("chromatic aberrations");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("chromatic aberrations", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()
 {
   return IOP_FLAGS_ONE_INSTANCE;
 }
-
-/** modify regions of interest (optional, per pixel ops don't need this) */
-// void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
-// *roi_out, const dt_iop_roi_t *roi_in);
-// void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t
-// *roi_out, dt_iop_roi_t *roi_in);
 
 /*==================================================================================
  * begin raw therapee code, hg checkout of march 09, 2016 branch master.

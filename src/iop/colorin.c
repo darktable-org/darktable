@@ -36,7 +36,6 @@
 #include "common/imageio_tiff.h"
 #include "develop/imageop_math.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include "external/adobe_coeff.c"
 #if defined(__SSE__)
@@ -113,9 +112,9 @@ const char *name()
   return _("input color profile");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("input color profile", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
 int flags()
@@ -1699,7 +1698,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 357; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 371; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
 }

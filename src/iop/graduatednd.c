@@ -37,7 +37,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -147,9 +146,9 @@ int flags()
          | IOP_FLAGS_TILING_FULL_ROI;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("graduated density", IOP_GROUP_EFFECT);
+  return IOP_GROUP_EFFECT;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -255,11 +254,16 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
   if(iter >= 1000) return 8;
 
   // be careful to the gnd direction
-  if(pts[2] - pts[0] > 0 && v > M_PI * 0.5) v = v - M_PI;
-  if(pts[2] - pts[0] > 0 && v < -M_PI * 0.5) v = M_PI + v;
-
-  if(pts[2] - pts[0] < 0 && v < M_PI * 0.5 && v >= 0) v = v - M_PI;
-  if(pts[2] - pts[0] < 0 && v > -M_PI * 0.5 && v < 0) v = v + M_PI;
+  if(pts[2] - pts[0] > 0)
+  {
+    if(v >  M_PI) v = v - M_PI;
+    if(v < -M_PI) v = M_PI + v;
+  }
+  else if(pts[2] - pts[0] < 0)
+  {
+    if(v <  M_PI && v >= 0) v = v - M_PI;
+    if(v > -M_PI && v < 0)  v = v + M_PI;
+  }
 
   *rotation = -v * 180.0 / M_PI;
 
@@ -1086,7 +1090,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_graduatednd_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_graduatednd_params_t));
   module->default_enabled = 0;
-  module->priority = 285; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 299; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_graduatednd_params_t);
   module->gui_data = NULL;
   dt_iop_graduatednd_params_t tmp = (dt_iop_graduatednd_params_t){ 1.0, 0, 0, 50, 0, 0 };

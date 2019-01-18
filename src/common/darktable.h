@@ -87,7 +87,7 @@ typedef unsigned int u_int;
 
 #include "common/usermanual_url.h"
 
-#define DT_MODULE_VERSION 18 // version of dt's module interface
+#define DT_MODULE_VERSION 19 // version of dt's module interface
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
@@ -257,8 +257,10 @@ void dt_gettime(char *datetime, size_t datetime_len);
 void *dt_alloc_align(size_t alignment, size_t size);
 #ifdef _WIN32
 void dt_free_align(void *mem);
+#define dt_free_align_ptr dt_free_align
 #else
 #define dt_free_align(A) free(A)
+#define dt_free_align_ptr free
 #endif
 
 static inline gboolean dt_is_aligned(const void *pointer, size_t byte_count)

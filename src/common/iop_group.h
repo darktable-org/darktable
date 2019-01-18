@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2018 Pascal Obry
+    copyright (c) 2019 tobias ellinghaus
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -18,15 +19,10 @@
 
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "develop/imageop.h"
 
-int dt_iop_get_group(const char *name, const int default_group);
+int dt_iop_get_group(const dt_iop_module_t *module);
 
-#ifdef __cplusplus
-}
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

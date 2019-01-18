@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
+#include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -30,13 +31,13 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
+#include <complex.h>
+#include <glib.h>
 #include <math.h>
 #include <memory.h>
 #include <stdlib.h>
 #include <string.h>
-#include <complex.h>
 
 // we assume people have -msee support.
 #if defined(__SSE__)
@@ -161,9 +162,9 @@ const char *name()
   return _("demosaic");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("demosaic", IOP_GROUP_BASIC);
+  return IOP_GROUP_BASIC;
 }
 
 int flags()
@@ -993,8 +994,9 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 #undef TS
 
 #define TS 122
-static void xtrans_fdc_interpolate(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
-                                   const dt_iop_roi_t *const roi_in, const uint8_t (*const xtrans)[6])
+static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, const float *const in,
+                                   const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
+                                   const uint8_t (*const xtrans)[6])
 {
 
   static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
@@ -1596,8 +1598,18 @@ static void xtrans_fdc_interpolate(float *out, const float *const in, const dt_i
     }
   }
 
+  // depending on the iso, use either a hybrid approach for chroma, or pure fdc
+  float hybrid_fdc[2] = { 1.0f, 0.0f };
+  const int xover_iso = dt_conf_get_int("plugins/darkroom/demosaic/fdc_xover_iso");
+  int iso = self->dev->image_storage.exif_iso;
+  if(iso > xover_iso)
+  {
+    hybrid_fdc[0] = 0.0f;
+    hybrid_fdc[1] = 1.0f;
+  }
+
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out, rowoffset, coloffset) schedule(dynamic)
+#pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out, rowoffset, coloffset, hybrid_fdc) schedule(dynamic)
 #endif
   // step through TSxTS cells of image, each tile overlapping the
   // prior as interpolation needs a substantial border
@@ -1817,9 +1829,7 @@ static void xtrans_fdc_interpolate(float *out, const float *const in, const dt_i
           {
             int i = d > 1 || ((d ^ c) & 1)
                             || ((fabsf(rfx[0][1] - rfx[c][1]) + fabsf(rfx[0][1] - rfx[-c][1]))
-                                < 2.f * (fabsf(rfx[0][1] - rfx[h][1]) + fabsf(rfx[0][1] - rfx[-h][1])))
-                        ? c
-                        : h;
+                                < 2.f * (fabsf(rfx[0][1] - rfx[h][1]) + fabsf(rfx[0][1] - rfx[-h][1]))) ? c : h;
             rfx[0][f] = (rfx[i][f] + rfx[-i][f] + 2.f * rfx[0][1] - rfx[i][1] - rfx[-i][1]) / 2.f;
           }
         }
@@ -1831,20 +1841,32 @@ static void xtrans_fdc_interpolate(float *out, const float *const in, const dt_i
           for(int col = left + pad_g22; col < mcol - pad_g22; col++)
             if((col - sgcol) % 3)
             {
+              float redblue[3][3];
               float(*rfx)[3] = &rgb[0][row - top][col - left];
               const short *const hex = hexmap(row, col, allhex);
               for(int d = 0; d < ndir; d += 2, rfx += TS * TS)
                 if(hex[d] + hex[d + 1])
                 {
                   float g = 3.f * rfx[0][1] - 2.f * rfx[hex[d]][1] - rfx[hex[d + 1]][1];
-                  for(int c = 0; c < 4; c += 2) rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 3.f;
+                  for(int c = 0; c < 4; c += 2)
+                  {
+                    rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 3.f;
+                    redblue[d][c] = rfx[0][c];
+                  }
                 }
                 else
                 {
                   float g = 2.f * rfx[0][1] - rfx[hex[d]][1] - rfx[hex[d + 1]][1];
-                  for(int c = 0; c < 4; c += 2) rfx[0][c] = (g + rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 2.f;
+                  for(int c = 0; c < 4; c += 2)
+                  {
+                    rfx[0][c] = (g + rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 2.f;
+                    redblue[d][c] = rfx[0][c];
+                  }
                 }
-            }
+              // to fill in red and blue also for diagonal directions
+              for(int d = 0; d < ndir; d += 2, rfx += TS * TS)
+                for(int c = 0; c < 4; c += 2) rfx[0][c] = (redblue[0][c] + redblue[2][c]) * 0.5f;
+           }
 
       // jump back to the first set of rgb buffers (this is a nop
       // unless on the second pass)
@@ -1929,8 +1951,9 @@ static void xtrans_fdc_interpolate(float *out, const float *const in, const dt_i
         }
 
       /* Calculate chroma values in fdc:       */
-      for(int row = 6; row < mrow - 6; row++) // 6 as manual padding
-        for(int col = 6; col < mcol - 6; col++) // 6 as manual padding
+      const int pad_fdc = 6;
+      for(int row = pad_fdc; row < mrow - pad_fdc; row++)
+        for(int col = pad_fdc; col < mcol - pad_fdc; col++)
         {
           int myrow, mycol;
           uint8_t hm[8] = { 0 };
@@ -1941,11 +1964,6 @@ static void xtrans_fdc_interpolate(float *out, const float *const in, const dt_i
             maxval = (maxval < hm[d] ? hm[d] : maxval);
           }
           maxval -= maxval >> 3;
-          for(int d = 0; d < ndir - 4; d++)
-            if(hm[d] < hm[d + 4])
-              hm[d] = 0;
-            else if(hm[d] > hm[d + 4])
-              hm[d + 4] = 0;
           float dircount = 0;
           float dirsum = 0.f;
           for(int d = 0; d < ndir; d++)
@@ -1998,11 +2016,11 @@ static void xtrans_fdc_interpolate(float *out, const float *const in, const dt_i
           // now separate luma and chroma for
           // frequency domain chroma
           // and store it in fdc_chroma
-          float cbcr[2];
-#define CCLIP(x) (((x) < -0.5f) ? -0.5f : ((x) > 0.5f) ? 0.5f : (x))
-          cbcr[0] = CCLIP(-0.16874f * rgbpix[0] - 0.33126f * rgbpix[1] + 0.50000f * rgbpix[2]);
-          cbcr[1] = CCLIP(0.50000f * rgbpix[0] - 0.41869f * rgbpix[1] - 0.08131f * rgbpix[2]);
-          for(int c = 0; c < 2; c++) *(fdc_chroma + c * TS * TS + row * TS + col) = cbcr[c];
+          float uv[2];
+          float y = 0.2627f * rgbpix[0] + 0.6780f * rgbpix[1] + 0.0593f * rgbpix[2];
+          uv[0] = (rgbpix[2] - y) * 0.56433f;
+          uv[1] = (rgbpix[0] - y) * 0.67815f;
+          for(int c = 0; c < 2; c++) *(fdc_chroma + c * TS * TS + row * TS + col) = uv[c];
         }
 
       /* Average the most homogenous pixels for the final result:       */
@@ -2031,15 +2049,12 @@ static void xtrans_fdc_interpolate(float *out, const float *const in, const dt_i
             }
           float rgbpix[3];
           for(int c = 0; c < 3; c++) rgbpix[c] = avg[c] / avg[3];
-          // preserve only luma component of Markesteijn for this pixel
-          float y = 0.29900f * rgbpix[0] + 0.58700f * rgbpix[1] + 0.11400f * rgbpix[2];
-          float cbcr[2];
-          // instead of merely reding the values, perform 5 pixel median filter
-          // one median filter is required to avoid textile artifacts
-          for(int chrm = 0; chrm < 2; chrm++)
-          {
-            float temp[5];
-            float tempf;
+          // preserve all components of Markesteijn for this pixel
+          float y = 0.2627f * rgbpix[0] + 0.6780f * rgbpix[1] + 0.0593f * rgbpix[2];
+          float um = (rgbpix[2] - y) * 0.56433f;
+          float vm = (rgbpix[0] - y) * 0.67815f;
+          float uvf[2];
+          // macros for fast meadian filtering
 #define PIX_SWAP(a, b)                                                                                            \
   {                                                                                                               \
     tempf = (a);                                                                                                  \
@@ -2050,7 +2065,13 @@ static void xtrans_fdc_interpolate(float *out, const float *const in, const dt_i
   {                                                                                                               \
     if((a) > (b)) PIX_SWAP((a), (b));                                                                             \
   }
-            // Load the window into temp
+          // instead of merely reading the values, perform 5 pixel median filter
+          // one median filter is required to avoid textile artifacts
+          for(int chrm = 0; chrm < 2; chrm++)
+          {
+            float temp[5];
+            float tempf;
+            // load the window into temp
             memcpy(&temp[0], fdc_chroma + chrm * TS * TS + (row - 1) * TS + (col), 1 * sizeof(float));
             memcpy(&temp[1], fdc_chroma + chrm * TS * TS + (row)*TS + (col - 1), 3 * sizeof(float));
             memcpy(&temp[4], fdc_chroma + chrm * TS * TS + (row + 1) * TS + (col), 1 * sizeof(float));
@@ -2061,12 +2082,18 @@ static void xtrans_fdc_interpolate(float *out, const float *const in, const dt_i
             PIX_SORT(temp[1], temp[2]);
             PIX_SORT(temp[2], temp[3]);
             PIX_SORT(temp[1], temp[2]);
-            cbcr[chrm] = temp[2];
+            uvf[chrm] = temp[2];
           }
-          // combine the luma from Markesteijn with the chroma from FDC
-          rgbpix[0] = y + 1.40200f * cbcr[1];
-          rgbpix[1] = y - 0.34414f * cbcr[0] - 0.71414f * cbcr[1];
-          rgbpix[2] = y + 1.77200f * cbcr[0];
+          // use hybrid or pure fdc, depending on what was set above.
+          // in case of hybrid, use the chroma that has the smallest
+          // absolute value
+          float uv[2];
+          uv[0] = (((ABS(uvf[0]) < ABS(um)) & (ABS(uvf[1]) < (1.02f * ABS(vm)))) ? uvf[0] : um) * hybrid_fdc[0] + uvf[0] * hybrid_fdc[1];
+          uv[1] = (((ABS(uvf[1]) < ABS(vm)) & (ABS(uvf[0]) < (1.02f * ABS(vm)))) ? uvf[1] : vm) * hybrid_fdc[0] + uvf[1] * hybrid_fdc[1];
+          // combine the luma from Markesteijn with the chroma from above
+          rgbpix[0] = y + 1.474600014746f * uv[1];
+          rgbpix[1] = y - 0.15498578286403f * uv[0] - 0.571353132557189f * uv[1];
+          rgbpix[2] = y + 1.77201282937288f * uv[0];
           for(int c = 0; c < 3; c++) out[4 * (width * (row + top) + col + left) + c] = rgbpix[c];
         }
     }
@@ -2613,6 +2640,14 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
   if(median) dt_free_align((float *)input);
 }
 
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  dt_interpolation_resample_roi_1c(itor, out, roi_out, roi_out->width * sizeof(float), in, roi_in,
+                                   roi_in->width * sizeof(float));
+}
+
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *const roi_in)
 {
@@ -2801,7 +2836,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     else if(piece->pipe->dsc.filters == 9u)
     {
       if(demosaicing_method == DT_IOP_DEMOSAIC_FDC && (qual_flags & DEMOSAIC_XTRANS_FULL))
-        xtrans_fdc_interpolate(tmp, pixels, &roo, &roi, xtrans);
+        xtrans_fdc_interpolate(self, tmp, pixels, &roo, &roi, xtrans);
       else if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && (qual_flags & DEMOSAIC_XTRANS_FULL))
         xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans,
                                        1 + (demosaicing_method - DT_IOP_DEMOSAIC_MARKESTEIJN) * 2);
@@ -3212,7 +3247,6 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
       if(dev_tmp == NULL) goto error;
 
-      do
       {
         dt_opencl_local_buffer_t locopt
           = (dt_opencl_local_buffer_t){ .xoffset = 2*3, .xfactor = 1, .yoffset = 2*3, .yfactor = 1,
@@ -3235,10 +3269,8 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_ppg_green, sizes, local);
         if(err != CL_SUCCESS) goto error;
-      } while(0);
+      }
 
-
-      do
       {
         dt_opencl_local_buffer_t locopt
           = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
@@ -3261,9 +3293,8 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_ppg_redblue, sizes, local);
         if(err != CL_SUCCESS) goto error;
-      } while(0);
+      }
 
-      do
       {
         // manage borders
         size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
@@ -3275,7 +3306,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
                                  (void *)&piece->pipe->dsc.filters);
         err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_border_interpolate, sizes);
         if(err != CL_SUCCESS) goto error;
-      } while(0);
+      }
     }
 
     if(scaled)
@@ -3569,7 +3600,6 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
     if(dev_tmp == NULL) goto error;
 
-    do
     {
       // manage borders for linear interpolation part
       const int border = 1;
@@ -3586,9 +3616,8 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 8, sizeof(cl_mem), (void *)&dev_xtrans);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_border_interpolate, sizes);
       if(err != CL_SUCCESS) goto error;
-    } while(0);
+    }
 
-    do
     {
       // do linear interpolation
       dt_opencl_local_buffer_t locopt
@@ -3611,7 +3640,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
                                (locopt.sizex + 2) * (locopt.sizey + 2) * sizeof(float), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_lin_interpolate, sizes, local);
       if(err != CL_SUCCESS) goto error;
-    } while(0);
+    }
 
 
     if(qual_flags & DEMOSAIC_ONLY_VNG_LINEAR)
@@ -3651,7 +3680,6 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       if(err != CL_SUCCESS) goto error;
     }
 
-    do
     {
       // manage borders
       const int border = 2;
@@ -3668,7 +3696,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_border_interpolate, 8, sizeof(cl_mem), (void *)&dev_xtrans);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_border_interpolate, sizes);
       if(err != CL_SUCCESS) goto error;
-    } while(0);
+    }
 
     if(filters4 != 9)
     {
@@ -3903,7 +3931,6 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       dev_tmp = dev_out;
     }
 
-    do
     {
       // copy from dev_in to first rgb image buffer.
       size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
@@ -3916,7 +3943,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_initial_copy, 6, sizeof(cl_mem), (void *)&dev_xtrans);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_initial_copy, sizes);
       if(err != CL_SUCCESS) goto error;
-    } while(0);
+    }
 
 
     // duplicate dev_rgb[0] to dev_rgb[1], dev_rgb[2], and dev_rgb[3]
@@ -3937,7 +3964,6 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_green_minmax, &locopt_g1_g3))
       goto error;
 
-    do
     {
       size_t sizes[3] = { ROUNDUP(width, locopt_g1_g3.sizex), ROUNDUP(height, locopt_g1_g3.sizey), 1 };
       size_t local[3] = { locopt_g1_g3.sizex, locopt_g1_g3.sizey, 1 };
@@ -3955,7 +3981,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
                                (locopt_g1_g3.sizex + 2*3) * (locopt_g1_g3.sizey + 2*3) * sizeof(float), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_green_minmax, sizes, local);
       if(err != CL_SUCCESS) goto error;
-    } while(0);
+    }
 
     // interpolate green horizontally, vertically, and along both diagonals
     const int pad_g_interp = 3;
@@ -3967,7 +3993,6 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     if(!dt_opencl_local_buffer_opt(devid, gd->kernel_markesteijn_interpolate_green, &locopt_g_interp))
       goto error;
 
-    do
     {
       size_t sizes[3] = { ROUNDUP(width, locopt_g_interp.sizex), ROUNDUP(height, locopt_g_interp.sizey), 1 };
       size_t local[3] = { locopt_g_interp.sizex, locopt_g_interp.sizey, 1 };
@@ -3988,7 +4013,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
                                (locopt_g_interp.sizex + 2*6) * (locopt_g_interp.sizey + 2*6) * 4 * sizeof(float), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_interpolate_green, sizes, local);
       if(err != CL_SUCCESS) goto error;
-    } while(0);
+    }
 
     // multi-pass loop: one pass for Markesteijn-1 and three passes for Markesteijn-3
     for(int pass = 0; pass < passes; pass++)
@@ -4277,7 +4302,6 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       if(err != CL_SUCCESS) goto error;
     }
 
-    do
     {
       // adjust maximum value
       size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
@@ -4287,7 +4311,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_max_corr, 3, sizeof(int), (void *)&pad_tile);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_homo_max_corr, sizes);
       if(err != CL_SUCCESS) goto error;
-    } while(0);
+    }
 
     // for Markesteijn-3: use only one of two directions if there is a difference in homogeneity
     for(int d = 0; d < ndir - 4; d++)
@@ -4302,7 +4326,6 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       if(err != CL_SUCCESS) goto error;
     }
 
-    do
     {
       // initialize output buffer to zero
       size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
@@ -4312,7 +4335,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_zero, 3, sizeof(int), (void *)&pad_tile);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_zero, sizes);
       if(err != CL_SUCCESS) goto error;
-    } while(0);
+    }
 
     // need to get another temp buffer for the output image (may use the space of dev_drv[] freed earlier)
     dev_tmptmp = dt_opencl_alloc_device(devid, (size_t)width, height, 4 * sizeof(float));
@@ -4352,7 +4375,6 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       if(err != CL_SUCCESS) goto error;
     }
 
-    do
     {
       // process the final image
       size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
@@ -4364,7 +4386,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_final, 5, 4*sizeof(float), (void *)processed_maximum);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_markesteijn_final, sizes);
       if(err != CL_SUCCESS) goto error;
-    } while(0);
+    }
 
     // now it's time to get rid of most of the temporary buffers (except of dev_tmp and dev_xtrans)
     for(int n = 0; n < 8; n++)

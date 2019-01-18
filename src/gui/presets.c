@@ -28,6 +28,9 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "libs/modulegroups.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <assert.h>
 #include <stdlib.h>
 
@@ -91,14 +94,16 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const i
           0,
           0,
           0.0f,
+          DEVELOP_MASK_GUIDE_IN,
           0.0f,
           0.0f,
-          DEVELOP_MASK_BLUR_GAUSSIAN,
+          0.0f,
           { 0, 0, 0, 0 },
           { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
             0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
             0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f } };
+            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f },
+          { 0 }, 0, 0, FALSE };
   dt_gui_presets_add_with_blendop(
       name, op, version, params, params_size,
       &default_blendop_params, enabled);
@@ -175,6 +180,9 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_iop_module_t *modul
   GtkWidget *dialog
       = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
                                GTK_BUTTONS_YES_NO, _("do you really want to delete the preset `%s'?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
   gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
   {
@@ -214,6 +222,9 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
         GtkWidget *dlg_changename
             = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING,
                                      GTK_BUTTONS_OK, _("please give preset a name"));
+#ifdef GDK_WINDOWING_QUARTZ
+        dt_osx_disallow_fullscreen(dlg_changename);
+#endif
 
         gtk_window_set_title(GTK_WINDOW(dlg_changename), _("unnamed preset"));
 
@@ -241,6 +252,9 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
         GtkWidget *dlg_overwrite = gtk_message_dialog_new(
             GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
             _("preset `%s' already exists.\ndo you want to overwrite?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+        dt_osx_disallow_fullscreen(dlg_overwrite);
+#endif
 
         gtk_window_set_title(GTK_WINDOW(dlg_overwrite), _("overwrite preset?"));
 
@@ -371,6 +385,9 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"), name, module->name());
   dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, _("_ok"),
                                        GTK_RESPONSE_ACCEPT, _("_cancel"), GTK_RESPONSE_REJECT, NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
@@ -664,7 +681,7 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
     if(blendop_params && (blendop_version == dt_develop_blend_version())
        && (bl_length == sizeof(dt_develop_blend_params_t)))
     {
-      memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+      dt_iop_commit_blend_params(module, blendop_params);
     }
     else if(blendop_params
             && dt_develop_blend_legacy_params(module, blendop_params, blendop_version, module->blend_params,
@@ -674,7 +691,7 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
     }
     else
     {
-      memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+      dt_iop_commit_blend_params(module, module->default_blendop_params);
     }
 
     if(!writeprotect) dt_gui_store_last_preset(name);

@@ -144,6 +144,12 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       DESTINATION share/glib-2.0/schemas/
       COMPONENT DTApplication)
 
+  # Add libthai files
+  install(DIRECTORY
+      "${MINGW_PATH}/../share/libthai/"
+      DESTINATION share/libthai/
+      COMPONENT DTApplication)
+
   # Add libgphoto2 files
   install(DIRECTORY
       "${MINGW_PATH}/../lib/libgphoto2"
@@ -168,21 +174,23 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       PATTERN "*.la" EXCLUDE)
 
   # Add lensfun libraries
-  set(LENSFUN_DB_GLOBAL "${MINGW_PATH}/../share/lensfun/version_1")
-  set(LENSFUN_DB_UPDATES "${MINGW_PATH}/../var/lib/lensfun-updates/version_1")
-  set(LENSFUN_DB "${LENSFUN_DB_GLOBAL}")
-  if(EXISTS "${LENSFUN_DB_UPDATES}")
-    file(READ "${LENSFUN_DB_GLOBAL}/timestamp.txt" LENSFUN_TS)
-    file(READ "${LENSFUN_DB_UPDATES}/timestamp.txt" LENSFUN_TS_UPDATE)
-    if(LENSFUN_TS LESS LENSFUN_TS_UPDATE)
-      set(LENSFUN_DB "${LENSFUN_DB_UPDATES}")
+  if(LENSFUN_FOUND)
+    set(LENSFUN_DB_GLOBAL "${MINGW_PATH}/../share/lensfun/version_1")
+    set(LENSFUN_DB_UPDATES "${MINGW_PATH}/../var/lib/lensfun-updates/version_1")
+    set(LENSFUN_DB "${LENSFUN_DB_GLOBAL}")
+    if(EXISTS "${LENSFUN_DB_UPDATES}")
+      file(READ "${LENSFUN_DB_GLOBAL}/timestamp.txt" LENSFUN_TS)
+      file(READ "${LENSFUN_DB_UPDATES}/timestamp.txt" LENSFUN_TS_UPDATE)
+      if(LENSFUN_TS LESS LENSFUN_TS_UPDATE)
+        set(LENSFUN_DB "${LENSFUN_DB_UPDATES}")
+      endif()
     endif()
-  endif()
-  message(STATUS "Installing lensfun database from ${LENSFUN_DB}")
-  install(DIRECTORY
-      "${LENSFUN_DB}"
-      DESTINATION share/lensfun/
-      COMPONENT DTApplication)
+    message(STATUS "Installing lensfun database from ${LENSFUN_DB}")
+    install(DIRECTORY
+        "${LENSFUN_DB}"
+        DESTINATION share/lensfun/
+        COMPONENT DTApplication)
+  endif(LENSFUN_FOUND)
 
   # Add iso-codes
   if(ISO_CODES_FOUND)

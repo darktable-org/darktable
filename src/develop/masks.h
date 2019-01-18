@@ -197,6 +197,8 @@ typedef struct dt_masks_form_gui_t
 
   // values for mouse positions, etc...
   float posx, posy, dx, dy, scrollx, scrolly, posx_source, posy_source;
+  // TRUE if mouse has leaved the center window
+  gboolean mouse_leaved_center;
   gboolean form_selected;
   gboolean border_selected;
   gboolean source_selected;
@@ -281,8 +283,10 @@ dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, int id);
 dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id);
 
 /** read the forms from the db */
+void dt_masks_read_forms_ext(dt_develop_t *dev, const int imgid, gboolean no_image);
 void dt_masks_read_forms(dt_develop_t *dev);
 /** write the forms into the db */
+void dt_masks_write_forms_ext(dt_develop_t *dev, const int imgid, gboolean undo);
 void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev);
 void dt_masks_write_forms(dt_develop_t *dev);
 void dt_masks_free_form(dt_masks_form_t *form);
@@ -305,6 +309,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
 void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, int32_t width, int32_t height,
                                  int32_t pointerx, int32_t pointery);
 int dt_masks_events_mouse_leave(struct dt_iop_module_t *module);
+int dt_masks_events_mouse_enter(struct dt_iop_module_t *module);
 
 /** functions used to manipulate gui datas */
 void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index);
@@ -344,6 +349,8 @@ void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel);
 void dt_masks_draw_clone_source_pos(cairo_t *cr, const float zoom_scale, const float x, const float y);
 void dt_masks_set_source_pos_initial_state(dt_masks_form_gui_t *gui, const uint32_t state, const float pzx,
                                            const float pzy);
+void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int mask_type, dt_masks_form_t *form,
+                                                   const float pzx, const float pzy);
 void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mask_type, const float initial_xpos,
                                          const float initial_ypos, const float xpos, const float ypos, float *px,
                                          float *py, const int adding);

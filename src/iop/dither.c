@@ -31,7 +31,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -104,10 +103,9 @@ const char *name()
   return _("dithering");
 }
 
-
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("dithering", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()
@@ -372,7 +370,6 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
   }
 
   // last row
-  do
   {
     float *out = ((float *)ovoid) + (size_t)ch * (height - 1) * width;
 
@@ -390,7 +387,7 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
     // lower right pixel
     nearest_color(out + ch * (width - 1), err, f, rf);
 
-  } while(0);
+  }
 
   // copy alpha channel if needed
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -538,7 +535,6 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
   }
 
   // last row
-  do
   {
     float *out = ((float *)ovoid) + (size_t)ch * (height - 1) * width;
 
@@ -556,7 +552,7 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
     // lower right pixel
     (void)nearest_color(out + ch * (width - 1), f, rf);
 
-  } while(0);
+  }
 
   // copy alpha channel if needed
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);

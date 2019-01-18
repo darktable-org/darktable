@@ -25,7 +25,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -62,9 +61,9 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("scale pixels", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int operation_tags()
@@ -124,6 +123,14 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   }
 
   return 1;
+}
+
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  // TODO
+  memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
+  fprintf(stderr, "TODO: implement %s() in %s\n", __FUNCTION__, __FILE__);
 }
 
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,

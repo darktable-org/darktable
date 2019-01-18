@@ -18,7 +18,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define _XOPEN_SOURCE 600
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -241,9 +240,11 @@ static inline void mutate(CurveData *c, CurveData *t, float* basecurve)
     float min = (c->m_anchors[k-1].x + c->m_anchors[k].x)/2.0f;
     float max = (c->m_anchors[k+1].x + c->m_anchors[k].x)/2.0f;
     const float x = min + drand48()*(max-min);
-    uint32_t pos = x*CURVE_RESOLUTION;
+    uint32_t pos = 0;
+    if (x * CURVE_RESOLUTION > CURVE_RESOLUTION) {
+        pos = x * CURVE_RESOLUTION;
+    }
     if(pos >= CURVE_RESOLUTION) pos = CURVE_RESOLUTION-1;
-    if(pos < 0) pos = 0;
     t->m_anchors[k].x = x;
     t->m_anchors[k].y = basecurve[pos];
   }
@@ -473,9 +474,11 @@ fit_curve(CurveData* best, int* nopt, float* minsqerr, CurveSample* csample, int
       {
         float x = k/(tent.m_numAnchors-1.0f);
         x *= x*x; // move closer to 0
-        uint32_t pos = x*CURVE_RESOLUTION;
+        uint32_t pos = 0;
+        if (x * CURVE_RESOLUTION > CURVE_RESOLUTION) {
+            pos = x * CURVE_RESOLUTION;
+        }
         if(pos >= CURVE_RESOLUTION) pos = CURVE_RESOLUTION-1;
-        if(pos < 0) pos = 0;
         tent.m_anchors[k].x = x;
         tent.m_anchors[k].y = curve[pos];
       }

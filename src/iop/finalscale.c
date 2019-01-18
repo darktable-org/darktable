@@ -44,7 +44,7 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
 }
 
-int groups()
+int default_group()
 {
   return IOP_GROUP_BASIC;
 }
@@ -60,6 +60,14 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->width  = (roi_out->width  - .5f)/roi_out->scale;
   roi_in->height = (roi_out->height - .5f)/roi_out->scale;
   roi_in->scale = 1.0f;
+}
+
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  dt_interpolation_resample_roi_1c(itor, out, roi_out, roi_out->width * sizeof(float), in, roi_in,
+                                   roi_in->width * sizeof(float));
 }
 
 #ifdef HAVE_OPENCL

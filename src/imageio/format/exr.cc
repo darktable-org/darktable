@@ -66,10 +66,7 @@ enum dt_imageio_exr_compression_t
 
 typedef struct dt_imageio_exr_t
 {
-  int max_width, max_height;
-  int width, height;
-  char style[128];
-  gboolean style_append;
+  dt_imageio_module_data_t global;
   dt_imageio_exr_compression_t compression;
 } dt_imageio_exr_t;
 
@@ -103,7 +100,7 @@ void cleanup(dt_imageio_module_format_t *self)
 
 int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total)
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe)
 {
   const dt_imageio_exr_t *exr = (dt_imageio_exr_t *)tmp;
 
@@ -111,7 +108,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
 
   Imf::Blob exif_blob(exif_len, (uint8_t *)exif);
 
-  Imf::Header header(exr->width, exr->height, 1, Imath::V2f(0, 0), 1, Imf::INCREASING_Y,
+  Imf::Header header(exr->global.width, exr->global.height, 1, Imath::V2f(0, 0), 1, Imf::INCREASING_Y,
                      (Imf::Compression)exr->compression);
 
   char comment[1024];
@@ -208,13 +205,13 @@ icc_end:
   const float *in = (const float *)in_tmp;
 
   data.insert("R", Imf::Slice(Imf::PixelType::FLOAT, (char *)(in + 0), 4 * sizeof(float),
-                              4 * sizeof(float) * exr->width));
+                              4 * sizeof(float) * exr->global.width));
 
   data.insert("G", Imf::Slice(Imf::PixelType::FLOAT, (char *)(in + 1), 4 * sizeof(float),
-                              4 * sizeof(float) * exr->width));
+                              4 * sizeof(float) * exr->global.width));
 
   data.insert("B", Imf::Slice(Imf::PixelType::FLOAT, (char *)(in + 2), 4 * sizeof(float),
-                              4 * sizeof(float) * exr->width));
+                              4 * sizeof(float) * exr->global.width));
 
   file.setFrameBuffer(data);
   file.writeTiles(0, file.numXTiles() - 1, 0, file.numYTiles() - 1);
@@ -236,7 +233,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
     memcpy(new_params, old_params, old_params_size);
     new_params->compression = (dt_imageio_exr_compression_t)PIZ_COMPRESSION;
-    new_params->style_append = 0;
+    new_params->global.style_append = FALSE;
     *new_size = self->params_size(self);
     return new_params;
   }
@@ -264,7 +261,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 
     // last param was dropped (pixel type)
     memcpy(new_params, old_params, old_params_size);
-    new_params->style_append = 0;
+    new_params->global.style_append = FALSE;
     new_params->compression = o->compression;
 
     *new_size = self->params_size(self);
@@ -284,7 +281,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
 
     memcpy(new_params, old_params, sizeof(dt_imageio_exr_t));
-    new_params->style_append = 0;
+    new_params->global.style_append = FALSE;
     new_params->compression = o->compression;
 
     *new_size = self->params_size(self);

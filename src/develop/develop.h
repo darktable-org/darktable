@@ -270,10 +270,14 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid);
 void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid);
 /** checks if provided imgid is the image currently in develop */
 int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid);
+void dt_dev_add_history_item_ext(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable, gboolean no_image);
 void dt_dev_add_history_item(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable);
 void dt_dev_reload_history_items(dt_develop_t *dev);
+void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
+void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid);
 void dt_dev_write_history(dt_develop_t *dev);
+void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_image);
 void dt_dev_read_history(dt_develop_t *dev);
 void dt_dev_free_history_item(gpointer data);
 void dt_dev_invalidate_history_module(GList *list, struct dt_iop_module_t *module);
@@ -357,8 +361,8 @@ void dt_dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *m
 /** same, but for all modules */
 void dt_dev_modules_update_multishow(dt_develop_t *dev);
 /** generates item multi-instance name */
-gchar *dt_history_item_get_name(struct dt_iop_module_t *module);
-gchar *dt_history_item_get_name_html(struct dt_iop_module_t *module);
+gchar *dt_history_item_get_name(const struct dt_iop_module_t *module);
+gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module);
 
 /*
  * distort functions

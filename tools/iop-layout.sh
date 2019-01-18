@@ -5,8 +5,8 @@
 BASIC=1
 TONE=2
 COLOR=3
-EFFECT=4
-CORRECT=5
+CORRECT=4
+EFFECT=5
 
 ###
 # module-group order, just reorder the module-group
@@ -14,10 +14,10 @@ CORRECT=5
 
 module_group=(
     $BASIC
+    $CORRECT
     $TONE
     $COLOR
     $EFFECT
-    $CORRECT
 )
 
 ###
@@ -25,81 +25,82 @@ module_group=(
 ###
 
 group_basic=(
-    'base curve'
-    'white balance'
-    'shadows and highlights'
-    'orientation'
-    'raw black/white point'
-    'color reconstruction'
+    'basecurve'
+    'clipping'
     'demosaic'
-    'contrast brightness saturation'
-    'crop and rotate'
     'exposure'
-    'highlight reconstruction'
+    'graduatednd'
+    'colorin'
     'invert'
+    'lens'
+    'flip'
+    'colorout'
+    'ashift'
+    'rawprepare'
+    'rotatepixels'
+    'scalepixels'
+    'tonemap'
+    'profile_gamma'
+    'temperature'
+    'filmic'
 )
 
 group_tone=(
-    'zone system'
-    'tone curve'
-    'tone mapping'
+    'bloom'
+    'colisa'
+    'atrous'
+    'relight'
+    'globaltonemap'
     'levels'
-    'fill light'
-    'local contrast'
-    'global tonemap'
+    'bilat'
+    'shadhi'
+    'tonecurve'
+    'zonesystem'
 )
 
 group_color=(
-    'unbreak input profile'
+    'channelmixer'
+    'colorbalance'
+    'colorcontrast'
+    'colorcorrection'
+    'colorchecker'
+    'colormapping'
+    'colortransfer'
+    'colorzones'
+    'colorize'
+    'lowlight'
+    'monochrome'
+    'splittoning'
     'velvia'
     'vibrance'
-    'color balance'
-    'color contrast'
-    'color correction'
-    'color look up table'
-    'output color profile'
-    'channel mixer'
-    'color transfer'
-    'color zones'
-    'input color profile'
-    'monochrome'
 )
 
 group_correct=(
-    'perspective correction'
-    'raw denoise'
-    'retouch'
-    'rotate pixels'
-    'scale pixels'
-    'sharpen'
-    'spot removal'
-    'hot pixels'
+    'cacorrect'
+    'colorreconstruct'
     'defringe'
-    'chromatic aberrations'
-    'denoise (bilateral filter)'
-    'denoise (non-local means)'
-    'denoise (profiled)'
-    'dithering'
-    'equalizer'
-    'lens correction'
-    'liquify'
-    'haze removal'
+    'bilateral'
+    'nlmeans'
+    'denoiseprofile'
+    'dither'
+    'hazeremoval'
+    'highlights'
+    'hotpixels'
+    'rawdenoise'
 )
 
 group_effect=(
-    'watermark'
-    'bloom'
-    'vignetting'
-    'split toning'
-    'lowlight vision'
-    'lowpass'
-    'color mapping'
-    'colorize'
-    'framing'
-    'graduated density'
+    'borders'
     'grain'
     'highpass'
+    'liquify'
+    'lowpass'
+    'retouch'
+    'sharpen'
     'soften'
+    'spots'
+    'vignette'
+    'watermark'
 )
 
 ######################################### END OF CONFIGURATION HERE
@@ -129,12 +130,25 @@ pos=0
 while [ "x${module_group[pos]}" != "x" ]; do
     group=${module_group[pos]}
     pos=$(( $pos + 1 ))
-    echo "plugins/darkroom/group_order/$pos=$group" >> $FILE
+    echo "plugins/darkroom/group_order/$group=$pos" >> $FILE
 done
+
+function get_group_pos()
+{
+    local GROUP=$1
+
+    pos=0
+    while [ "x${module_group[pos]}" != "x" ]; do
+        if [ ${module_group[pos]} == $GROUP ]; then
+            echo $(( $pos + 1 ))
+        fi
+        pos=$(( $pos + 1 ));
+    done
+}
 
 function set_iop_group()
 {
-    local GROUP=$1
+    local GROUP_POS=$(get_group_pos $1)
     shift
     local LIST=("${@}")
 
@@ -142,14 +156,14 @@ function set_iop_group()
     while [ "x${LIST[pos]}" != "x" ]; do
         name=${LIST[pos]}
         pos=$(( $pos + 1 ))
-        echo "plugins/darkroom/group/$name=$GROUP" >> $FILE
+        echo "plugins/darkroom/$name/modulegroup=$GROUP_POS" >> $FILE
     done
 }
 
-sed -i "/plugins\/darkroom\/group\//d" $FILE
+sed -i "/plugins\/darkroom\/[^/]*\/modulegroup/d" $FILE
 
-set_iop_group 1 "${group_basic[@]}"
-set_iop_group 2 "${group_tone[@]}"
-set_iop_group 3 "${group_color[@]}"
-set_iop_group 4 "${group_correct[@]}"
-set_iop_group 5 "${group_effect[@]}"
+set_iop_group $BASIC   "${group_basic[@]}"
+set_iop_group $TONE    "${group_tone[@]}"
+set_iop_group $COLOR   "${group_color[@]}"
+set_iop_group $CORRECT "${group_correct[@]}"
+set_iop_group $EFFECT  "${group_effect[@]}"

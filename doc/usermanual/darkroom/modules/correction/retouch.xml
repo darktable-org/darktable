@@ -1,0 +1,266 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="retouch">
+
+  <title>Retouch</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>retouch</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>retouch</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              Retouch allows to heal, clone, fill and blur certain areas of the image. It can
+              perform a wavelet decomposition which separates the image into different frequency
+              scales, from fine to coarse, and apply retouch operations to each wavelet scale
+              individually.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/retouch.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      For a basic use, with default parameters, add the shapes to the image like with the spot
+      removal module (see <xref linkend="spot_removal"/>). To use the wavelet decompose first
+      select one of the scales as the current scale (see below) and then add the shapes.
+    </para>
+
+    <para>
+      The GUI is divided in three main sections: wavelet decompose, retouch tools and shapes.
+    </para>
+
+    <sect5>
+      <title>wavelet decompose section</title>
+      <para>
+        The wavelet decompose toolbar controls the wavelet decompose algorithm. It has a central
+        area divided in boxes and two sliders. The first box, scale zero, represents the
+        original image, the second is the wavelet scale 1, and so on.
+      </para>
+      <para>
+        The bottom slider adjusts the number of scales, zero means no wavelet decompose is done.
+        The maximum number of scales depends on the image size, but any number can be selected.
+        If the image is not big enough for the selected number of scales the maximum number of
+        scales for this image size is used and the rest of the scales are ignored.
+      </para>
+      <para>
+        The image is decomposed to the selected number of scales plus the residual image, so if
+        5 is selected as the number of scales, scale zero is the original image, scales 1 to 5
+        are the detail scales, and scale 6 is the residual image. As a visual aid, the original
+        image is always represented by a black box, detail scales are light gray, residual image
+        white and inactive scales dark gray.
+      </para>
+      <para>
+        The central area allows to select the current scale on which the user can then apply
+        retouch tools by left clicking any of the boxes. The selected scale is marked by a red
+        frame. Any scale can be selected as the current scale, even if it is greater than the
+        number of scales. If a shape is added to a scale greater than the residual image it will
+        be ignored, as the scale is not processed.
+      </para>
+      <para>
+        Only the shapes on the current scale are displayed, when the current scale is changed
+        shapes will be displayed accordingly.
+      </para>
+      <para>
+        A green line on top of each box indicates that the scale has shapes associated with it.
+      </para>
+      <para>
+        Fine detail scales can only be seen at certain zoom level, a light gray line on top of
+        each box will indicate that the scale is visible at current zoom level.
+      </para>
+      <para>
+        The top slider adjusts the <emphasis>merge scale</emphasis> feature. This setting allows
+        to apply a common edit on multiple consecutive scales within a group starting from the
+        highest scale (not including the residual image) down to the one selected by this
+        slider. If the slider is set to 3 and the maximum scale is 5 then all edits that are
+        added to scale 5 will be applied to scales 3 to 5. Edits added to scale 4 will be
+        applied to scales 3 and 4, and edits added to scale 3 will be applied only to scale 3.
+        <emphasis>Merged scales</emphasis> are represented by a green-yellow color. A value of
+        zero means that the merge feature is not used.
+      </para>
+      <para>
+        The display wavelet scale button (
+        <inlinegraphic fileref="&icon_retouch_display_scale;" scalefit="1" width="2%" align="center" />
+        ) allow to view the current wavelet scale. The module's blend feature is temporary
+        disabled when this option is set. If blending in the module is active and the option to
+        display masks is active this option cannot be set. When this option is active a new
+        section, <quote>preview single scale</quote>, will be displayed, allowing to adjust the
+        levels for the displayed image. This is purely a convenience feature so you can adjust
+        wavelet scale display to your needs. It does not have an effect on the final output
+        image. An auto levels button (
+        <inlinegraphic fileref="&icon_retouch_auto_levels;" scalefit="1" width="2%" align="center" />
+        ) is also available; it works on the displayed image, so different results can be
+        expected depending on the image displayed when zoomed in/out. Levels are only applied to
+        detail scales, not the original or residual image.
+      </para>
+      <para>
+        The cut and paste buttons allow to move all the shapes from one scale to another. In
+        order to do this first select the current scale, click the cut button (
+        <inlinegraphic fileref="&icon_retouch_cut;" scalefit="1" width="2%" align="center" />
+        ), select the destination scale and click paste (
+        <inlinegraphic fileref="&icon_retouch_paste;" scalefit="1" width="2%" align="center" />
+        ). This can be useful when there are edits on the residual image and one has to change
+        the number of scales; since the residual image is changed, shapes need to be moved to
+        the new one.
+      </para>
+      <para>
+        The switch off shapes button (
+        <inlinegraphic fileref="&icon_retouch_switch;" scalefit="1" width="2%" align="center" />
+        ) temporarily disables the processing of all shapes for a simple before/after
+        comparison.
+      </para>
+      <para>
+        The display masks button (
+        <inlinegraphic fileref="&icon_retouch_mask;" scalefit="1" width="2%" align="center" />
+        ) works similar to the one on the blend module, but it will display only the shapes on
+        the current scale. This option and display mask on the blend module cannot be set at the
+        same time.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>retouch tools section</title>
+      <para>
+        The shapes toolbar allows to add new shapes to the image. Shapes creation/editing
+        behaves like in the spot removal module. In addition, by Ctrl+click on any shape button,
+        the <emphasis>continuous add mode</emphasis> is activated. Once a shape is added,
+        darktable will remain in creation mode, allowing to add another shape of the same type.
+        To change the shape type to be added Ctrl+click on a different shape button to continue
+        on continuous add mode or plain click to add a single shape. To leave the continuous add
+        mode right click on any clear area of the image.
+      </para>
+      <para>
+        The algorithms toolbar allows to select between heal (
+        <inlinegraphic fileref="&icon_retouch_heal;" scalefit="1" width="2%" align="center" />
+        ), clone (
+        <inlinegraphic fileref="&icon_retouch_clone;" scalefit="1" width="2%" align="center" />
+        ), fill (
+        <inlinegraphic fileref="&icon_retouch_fill;" scalefit="1" width="2%" align="center" />
+        ) and blur (
+        <inlinegraphic fileref="&icon_retouch_blur;" scalefit="1" width="2%" align="center" />
+        ) algorithms. Before actually creating a shape the algorithm must be
+        selected&nbsp;&ndash; once a shape is created the algorithm cannot be changed.
+      </para>
+      <para>
+        Any combination of shape type and algorithm can be added to the image.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>shapes section</title>
+      <para>
+        The shape selected field displays the selected shape (if any). To select a shape click
+        on it, to deselect click on a free area on the image.
+      </para>
+      <para>
+        Mask opacity is displayed when a shape is selected. It displays/sets the opacity of the
+        mask. Opacity is a property of the currently selected shape and won't be used as default
+        value for newly added shapes.
+      </para>
+      <para>
+        Different properties will be displayed depending on the selected algorithm:
+        <informaltable frame="none" width="80%">
+          <tgroup cols="2" colsep="0" rowsep="0">
+            <colspec colwidth='1*'/>
+            <colspec colwidth='4*'/>
+            <tbody>
+              <row>
+                <entry>
+                  <emphasis>fill algorithm</emphasis>
+                </entry>
+                <entry>
+                  <variablelist>
+
+                    <varlistentry>
+
+                      <term>fill mode</term>
+
+                      <listitem><para>
+                        Can be erase or color. Erase is used to delete details from a wavelet
+                        scale. Color allows to select a color to fill the area defined by the
+                        shape.
+                      </para></listitem>
+
+                    </varlistentry>
+
+                    <varlistentry>
+
+                      <term>brightness</term>
+
+                      <listitem><para>
+                        Adds the selected value to the color, allowing to make it brighter or
+                        darker. Works the same with both fill modes.
+                      </para></listitem>
+
+                    </varlistentry>
+
+                  </variablelist>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <emphasis>blur algorithm</emphasis>
+                </entry>
+                <entry>
+                  <variablelist>
+
+                    <varlistentry>
+
+                      <term>blur type</term>
+
+                      <listitem><para>
+                        Can be gaussian or bilateral.
+                      </para></listitem>
+
+                    </varlistentry>
+
+                    <varlistentry>
+
+                      <term>blur radius</term>
+
+                      <listitem><para>
+                        Sets the blur radius.
+                      </para></listitem>
+
+                    </varlistentry>
+
+                  </variablelist>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+        The value set on each one of these properties is used as a default when a new shape is
+        created.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

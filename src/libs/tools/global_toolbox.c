@@ -27,6 +27,9 @@
 #include "gui/preferences.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 DT_MODULE(1)
 
@@ -108,6 +111,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->help_button, FALSE, FALSE, 2);
   gtk_widget_set_tooltip_text(d->help_button, _("enable this, then click on a control element to see its online help"));
   g_signal_connect(G_OBJECT(d->help_button), "clicked", G_CALLBACK(_lib_help_button_clicked), d);
+  dt_gui_add_help_link(d->help_button, dt_get_help_url("global_toolbox_help"));
 
   // the rest of these is added in reverse order as they are always put at the end of the container.
   // that's done so that buttons added via Lua will come first.
@@ -229,6 +233,9 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
                                                        GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
                                                        _("do you want to access https://www.darktable.org/?"));
+#ifdef GDK_WINDOWING_QUARTZ
+            dt_osx_disallow_fullscreen(dialog);
+#endif
 
             gtk_window_set_title(GTK_WINDOW(dialog), _("access the online usermanual?"));
             gint res = gtk_dialog_run(GTK_DIALOG(dialog));

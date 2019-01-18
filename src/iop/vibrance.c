@@ -31,7 +31,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -70,9 +69,9 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("vibrance", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
 #if 0 // BAUHAUS doesn't support keyaccels yet...
@@ -216,7 +215,7 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_vibrance_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_vibrance_params_t));
   module->default_enabled = 0;
-  module->priority = 428; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 442; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_vibrance_params_t);
   module->gui_data = NULL;
   dt_iop_vibrance_params_t tmp = (dt_iop_vibrance_params_t){ 25 };

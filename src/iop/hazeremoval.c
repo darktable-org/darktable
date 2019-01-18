@@ -41,7 +41,6 @@
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <float.h>
 #include <gtk/gtk.h>
@@ -92,9 +91,9 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("haze removal", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -123,7 +122,7 @@ void init(dt_iop_module_t *self)
   self->params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
   self->default_enabled = 0;
-  self->priority = 342; // module order created by iop_dependencies.py, do not edit!
+  self->priority = 357; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_hazeremoval_params_t);
   self->gui_data = NULL;
   dt_iop_hazeremoval_params_t tmp = (dt_iop_hazeremoval_params_t){ 0.5f, 0.25f };

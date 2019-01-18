@@ -34,7 +34,6 @@
 #include "gui/guides.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <assert.h>
 #include <gdk/gdkkeysyms.h>
@@ -297,9 +296,9 @@ const char *name()
   return _("crop and rotate");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("crop and rotate", IOP_GROUP_BASIC);
+  return IOP_GROUP_BASIC;
 }
 
 int flags()
@@ -522,6 +521,79 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   }
 
   return 1;
+}
+
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+
+  // only crop, no rot fast and sharp path:
+  if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
+  {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(d)
+#endif
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      const float *_in = in + (size_t)roi_out->width * j;
+      float *_out = out + (size_t)roi_out->width * j;
+      memcpy(_out, _in, sizeof(float) * roi_out->width);
+    }
+  }
+  else
+  {
+    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+    const float rx = piece->buf_in.width * roi_in->scale;
+    const float ry = piece->buf_in.height * roi_in->scale;
+    float k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
+    const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
+    const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
+    float ma, mb, md, me, mg, mh;
+    keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(d, interpolation, k_space, ma, mb, md, me, mg, mh)
+#endif
+    // (slow) point-by-point transformation.
+    // TODO: optimize with scanlines and linear steps between?
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      float *_out = out + (size_t)j * roi_out->width;
+      for(int i = 0; i < roi_out->width; i++, _out++)
+      {
+        float pi[2], po[2];
+
+        pi[0] = roi_out->x - roi_out->scale * d->enlarge_x + roi_out->scale * d->cix + i + 0.5f;
+        pi[1] = roi_out->y - roi_out->scale * d->enlarge_y + roi_out->scale * d->ciy + j + 0.5f;
+
+        // transform this point using matrix m
+        if(d->flip)
+        {
+          pi[1] -= d->tx * roi_out->scale;
+          pi[0] -= d->ty * roi_out->scale;
+        }
+        else
+        {
+          pi[0] -= d->tx * roi_out->scale;
+          pi[1] -= d->ty * roi_out->scale;
+        }
+        pi[0] /= roi_out->scale;
+        pi[1] /= roi_out->scale;
+        backtransform(pi, po, d->m, d->k_h, d->k_v);
+        po[0] *= roi_in->scale;
+        po[1] *= roi_in->scale;
+        po[0] += d->tx * roi_in->scale;
+        po[1] += d->ty * roi_in->scale;
+        if(d->k_apply == 1) keystone_backtransform(po, k_space, ma, mb, md, me, mg, mh, kxa, kya);
+        po[0] -= roi_in->x + 0.5f;
+        po[1] -= roi_in->y + 0.5f;
+
+        *_out = dt_interpolation_compute_sample(interpolation, in, po[0], po[1], roi_in->width, roi_in->height, 1,
+                                                roi_in->width);
+      }
+    }
+  }
 }
 
 static int _iop_clipping_set_max_clip(struct dt_iop_module_t *self)
@@ -870,8 +942,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(d, interpolation, k_space, ma, mb, md, me,    \
-                                                               mg, mh)
+#pragma omp parallel for schedule(static) default(none) shared(d, interpolation, k_space, ma, mb, md, me, mg, mh)
 #endif
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
@@ -1182,17 +1253,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     d->all_off = 0;
     d->crop_auto = 0;
   }
-  else if(p->k_type == 0)
-  {
-    d->all_off = 1;
-    d->k_apply = 0;
-  }
   else
   {
     d->all_off = 1;
     d->k_apply = 0;
   }
-
 
   if(gui_has_focus(self))
   {
@@ -1691,7 +1756,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
-  module->priority = 457; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 285; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)

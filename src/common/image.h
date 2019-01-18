@@ -221,10 +221,8 @@ uint32_t dt_image_import_lua(int32_t film_id, const char *filename, gboolean ove
 /** removes the given image from the database. */
 void dt_image_remove(const int32_t imgid);
 /** duplicates the given image in the database with the duplicate getting the supplied version number. if that
-   version
-    already exists just return the imgid without producing new duplicate. called with newversion -1 a new
-   duplicate
-    is produced with the next free version number. */
+    version already exists just return the imgid without producing new duplicate. called with newversion -1 a new
+    duplicate is produced with the next free version number. */
 int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newversion);
 /** duplicates the given image in the database. */
 int32_t dt_image_duplicate(const int32_t imgid);

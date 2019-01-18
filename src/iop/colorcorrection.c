@@ -29,7 +29,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <assert.h>
 #include <math.h>
@@ -75,9 +74,9 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("color correction", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
 void init_presets(dt_iop_module_so_t *self)

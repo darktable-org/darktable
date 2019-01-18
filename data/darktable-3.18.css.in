@@ -20,6 +20,20 @@
 @define-color bauhaus_bg alpha(@bauhaus_border, 0.2);
 @define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.2);
 
+@define-color thumbnail_bg_color #666666; /* area between border and outline */
+@define-color thumbnail_selected_bg_color #999999;
+@define-color thumbnail_hover_bg_color #cccccc;
+@define-color thumbnail_outline_color #333333; /* square around image+metadata */
+@define-color thumbnail_selected_outline_color #666666;
+@define-color thumbnail_hover_outline_color #999999;
+@define-color thumbnail_font_color #6c6c6c;
+@define-color thumbnail_selected_font_color #7f7f7f;
+@define-color thumbnail_hover_font_color #b2b2b2;
+@define-color thumbnail_border_color #191919; /* rectangle directly around image */
+@define-color thumbnail_selected_border_color #e5e5e5;
+
+@define-color filmstrip_bg_color @lighttable_bg_color;
+
 * {
   font: Sans 8;
   color: @fg_color;

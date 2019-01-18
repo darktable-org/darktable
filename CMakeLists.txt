@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.4.0)
 
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0025 NEW)
@@ -80,6 +80,8 @@ option(BUILD_TESTS "Build tests in src/tests/, runnable from the build/ director
 option(BUILD_BATTERY_INDICATOR "Add an icon to the top toolbar showing the state of a laptop battery" OFF)
 option(BUILD_MSYS2_INSTALL "Build an MSYS2 version of the install, aka for Windows platform, but without dependency installs" OFF)
 option(BUILD_NOISE_TOOLS "Build tools for generating noise proifles" OFF)
+option(BUILD_CURVE_TOOLS "Build tools for generating base and tone curves" OFF)
+option(USE_LENSFUN "Enable LensFun support" ON)
 
 if(USE_OPENCL)
   option(TESTBUILD_OPENCL_PROGRAMS "Test-compile opencl programs (needs llvm and clang 3.9+)" ON)
@@ -152,9 +154,10 @@ if(APPLE)
 	LIST(APPEND CMAKE_PREFIX_PATH /opt/local /usr/local)
 	set(CMAKE_FIND_FRAMEWORK "LAST")
 	# except libstdc++ (only one linked via -l flag, not full path)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib")
-	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/lib")
-	set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -L/usr/lib")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib" CACHE STRING "" FORCE)
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/lib" CACHE STRING "" FORCE)
+	set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -L/usr/lib" CACHE STRING "" FORCE)
+	mark_as_advanced(CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
 
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE")
@@ -521,12 +524,11 @@ set(THEME_DIRECTORY "${CMAKE_INSTALL_DATAROOTDIR}/icons/${THEME}")
 
 # we need some specific functions:
 if(NOT WIN32)
-  IF(CMAKE_SYSTEM MATCHES "SunOS.*")
-  add_definitions("-D_XOPEN_SOURCE=600")
-  elseif(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
-  else(CMAKE_SYSTEM MATCHES "SunOS.*")
-  add_definitions("-D_XOPEN_SOURCE=700")
-  endif(CMAKE_SYSTEM MATCHES "SunOS.*")
+    if(CMAKE_SYSTEM MATCHES "SunOS.*")
+        add_definitions("-D_XOPEN_SOURCE=600")
+    else()
+        add_definitions("-D_XOPEN_SOURCE=700")
+    endif(CMAKE_SYSTEM MATCHES "SunOS.*")
 endif(NOT WIN32)
 
 # Set default component name - that way external modules like RawSpeed will install their

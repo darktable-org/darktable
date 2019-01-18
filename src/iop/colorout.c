@@ -30,7 +30,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -80,9 +79,9 @@ const char *name()
   return _("output color profile");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("output color profile", IOP_GROUP_COLOR);
+  return IOP_GROUP_COLOR;
 }
 
 int flags()

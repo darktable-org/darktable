@@ -892,15 +892,6 @@ static gboolean mouse_moved(GtkWidget *w, GdkEventMotion *event, gpointer user_d
     gdk_event_get_axis ((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
   }
   dt_control_mouse_moved(event->x, event->y, pressure, event->state & 0xf);
-  gint x, y;
-  gdk_window_get_device_position(event->window,
-#if GTK_CHECK_VERSION(3, 20, 0)
-                                 gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(w))),
-#else
-                                 gdk_device_manager_get_client_pointer(
-                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
-#endif
-                                 &x, &y, NULL);
   return FALSE;
 }
 
@@ -1166,23 +1157,40 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   c[DT_GUI_COLOR_BG] = (GdkRGBA){ 0.1333, 0.1333, 0.1333, 1.0 };
 
-  c[DT_GUI_COLOR_DARKROOM_BG] = (GdkRGBA){ .2, .2, .2, 1.0 };
-  gtk_style_context_lookup_color(ctx, "darkroom_bg_color", &c[DT_GUI_COLOR_DARKROOM_BG]);
+  struct color_init
+  {
+    const char *name;
+    GdkRGBA default_col;
+  } init[DT_GUI_COLOR_LAST] = {
+    [DT_GUI_COLOR_DARKROOM_BG] = { "darkroom_bg_color", { .2, .2, .2, 1.0 } },
+    [DT_GUI_COLOR_DARKROOM_PREVIEW_BG] = { "darkroom_preview_bg_color", { .1, .1, .1, 1.0 } },
+    [DT_GUI_COLOR_LIGHTTABLE_BG] = { "lighttable_bg_color", { .2, .2, .2, 1.0 } },
+    [DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG] = { "lighttable_preview_bg_color", { .1, .1, .1, 1.0 } },
+    [DT_GUI_COLOR_BRUSH_CURSOR] = { "brush_cursor", { 1., 1., 1., 0.9 } },
+    [DT_GUI_COLOR_BRUSH_TRACE] = { "brush_trace", { 0., 0., 0., 0.8 } },
+    [DT_GUI_COLOR_THUMBNAIL_BG] = { "thumbnail_bg_color", { 0.4, 0.4, 0.4, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_SELECTED_BG] = { "thumbnail_selected_bg_color", { 0.6, 0.6, 0.6, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_HOVER_BG] = { "thumbnail_hover_bg_color", { 0.8, 0.8, 0.8, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_OUTLINE] = { "thumbnail_outline_color", { 0.2, 0.2, 0.2, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_SELECTED_OUTLINE] = { "thumbnail_selected_outline_color", { 0.4, 0.4, 0.4, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_HOVER_OUTLINE] = { "thumbnail_hover_outline_color", { 0.6, 0.6, 0.6, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_FONT] = { "thumbnail_font_color", { 0.425, 0.425, 0.425, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_SELECTED_FONT] = { "thumbnail_selected_font_color", { 0.5, 0.5, 0.5, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_HOVER_FONT] = { "thumbnail_hover_font_color", { 0.7, 0.7, 0.7, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_BORDER] = { "thumbnail_border_color", { 0.1, 0.1, 0.1, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER] = { "thumbnail_selected_border_color", { 0.9, 0.9, 0.9, 1.0 } },
+    [DT_GUI_COLOR_FILMSTRIP_BG] = { "filmstrip_bg_color", { 0.2, 0.2, 0.2, 1.0 } },
+  };
 
-  c[DT_GUI_COLOR_DARKROOM_PREVIEW_BG] = (GdkRGBA){ .1, .1, .1, 1.0 };
-  gtk_style_context_lookup_color(ctx, "darkroom_preview_bg_color", &c[DT_GUI_COLOR_DARKROOM_PREVIEW_BG]);
+  // starting from 1 as DT_GUI_COLOR_BG is not part of this table
+  for(int i = 1; i < DT_GUI_COLOR_LAST; i++)
+  {
+    if(!gtk_style_context_lookup_color(ctx, init[i].name, &c[i]))
+    {
+      c[i] = init[i].default_col;
+    }
+  }
 
-  c[DT_GUI_COLOR_LIGHTTABLE_BG] = (GdkRGBA){ .2, .2, .2, 1.0 };
-  gtk_style_context_lookup_color(ctx, "lighttable_bg_color", &c[DT_GUI_COLOR_LIGHTTABLE_BG]);
-
-  c[DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG] = (GdkRGBA){ .1, .1, .1, 1.0 };
-  gtk_style_context_lookup_color(ctx, "lighttable_preview_bg_color", &c[DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG]);
-
-  c[DT_GUI_COLOR_BRUSH_CURSOR] = (GdkRGBA){ 1., 1., 1., 0.9 };
-  gtk_style_context_lookup_color(ctx, "brush_cursor", &c[DT_GUI_COLOR_BRUSH_CURSOR]);
-
-  c[DT_GUI_COLOR_BRUSH_TRACE] = (GdkRGBA){ 0., 0., 0., 0.8 };
-  gtk_style_context_lookup_color(ctx, "brush_trace", &c[DT_GUI_COLOR_BRUSH_TRACE]);
 
   // let's try to support pressure sensitive input devices like tablets for mask drawing
   dt_print(DT_DEBUG_INPUT, "[input device] Input devices found:\n\n");

@@ -492,17 +492,13 @@ int try_enter(dt_view_t *self)
 
 static void select_this_image(const int imgid)
 {
-  // select this image, if no multiple selection:
-  if(dt_collection_get_selected_count(NULL) < 2)
-  {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-  }
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 }
 
 static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
@@ -622,7 +618,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       free(module);
     }
   }
-  
+
   // we also clear the saved modules
   while(dev->alliop)
   {
@@ -630,7 +626,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     free(dev->alliop->data);
     dev->alliop = g_list_delete_link(dev->alliop, dev->alliop);
   }
-  
+
   dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
   dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
   dt_masks_read_forms(dev);
@@ -1945,6 +1941,13 @@ void mouse_leave(dt_view_t *self)
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
 
+void mouse_enter(dt_view_t *self)
+{
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  // masks
+  dt_masks_events_mouse_enter(dev->gui_module);
+}
+
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
@@ -2187,9 +2190,15 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   closeup = 0;
   if(up)
   {
-    if(scale == 1.0f && !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)) return;
-    if(scale >= 2.0f)
+    if((scale == 1.0f || scale == 2.0f) && !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)) return;
+    if(scale >= 16.0f)
       return;
+    else if(scale >= 8.0f)
+      scale = 16.0;
+    else if(scale >= 4.0f)
+      scale = 8.0;
+    else if(scale >= 2.0f)
+      scale = 4.0;
     else if(scale < fitscale)
       scale += .05f * (1.0f - fitscale);
     else
@@ -2203,16 +2212,37 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       return;
     else if(scale <= fitscale)
       scale -= .05f * (1.0f - fitscale);
-    else
+    else if(scale <= 2.0f)
       scale -= .1f * (1.0f - fitscale);
+    else if(scale <= 4.0f)
+      scale = 2.0f;
+    else if(scale <= 8.0f)
+      scale = 4.0f;
+    else
+      scale = 8.0f;
   }
   // we want to be sure to stop at 1:1 and FIT levels
   if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f;
   if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
-  scale = fmaxf(fminf(scale, 2.0f), 0.5 * fitscale);
+  scale = fmaxf(fminf(scale, 16.0f), 0.5 * fitscale);
 
   // for 200% zoom we want pixel doubling instead of interpolation
-  if(scale > 1.9999f)
+  if(scale > 15.9999f)
+  {
+    scale = 1.0f; // don't interpolate
+    closeup = 4;  // enable closeup mode (pixel doubling)
+  }
+  else if(scale > 7.9999f)
+  {
+    scale = 1.0f; // don't interpolate
+    closeup = 3;  // enable closeup mode (pixel doubling)
+  }
+  else if(scale > 3.9999f)
+  {
+    scale = 1.0f; // don't interpolate
+    closeup = 2;  // enable closeup mode (pixel doubling)
+  }
+  else if(scale > 1.9999f)
   {
     scale = 1.0f; // don't interpolate
     closeup = 1;  // enable closeup mode (pixel doubling)

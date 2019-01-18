@@ -32,7 +32,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -73,9 +72,9 @@ const char *name()
   return C_("modulename", "sharpen");
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("sharpen", IOP_GROUP_CORRECT);
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()
@@ -91,8 +90,9 @@ void init_presets(dt_iop_module_so_t *self)
                              1);
   // restrict to raw images
   dt_gui_presets_update_ldr(_("sharpen"), self->op, self->version(), FOR_RAW);
-  // make it auto-apply for matching images:
-  dt_gui_presets_update_autoapply(_("sharpen"), self->op, self->version(), 1);
+  // make it auto-apply if needed for matching images:
+  const gboolean auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
+  dt_gui_presets_update_autoapply(_("sharpen"), self->op, self->version(), auto_apply);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)

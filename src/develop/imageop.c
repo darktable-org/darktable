@@ -21,9 +21,11 @@
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
+#include "common/exif.h"
 #include "common/dtpthread.h"
 #include "common/imageio_rawspeed.h"
 #include "common/interpolation.h"
+#include "common/iop_group.h"
 #include "common/module.h"
 #include "common/opencl.h"
 #include "common/usermanual_url.h"
@@ -41,6 +43,9 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "libs/modulegroups.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #include <assert.h>
 #include <gmodule.h>
@@ -67,14 +72,16 @@ static dt_develop_blend_params_t _default_blendop_params
         0,
         0,
         0.0f,
+        DEVELOP_MASK_GUIDE_IN,
         0.0f,
         0.0f,
-        DEVELOP_MASK_BLUR_GAUSSIAN,
+        0.0f,
         { 0, 0, 0, 0 },
         { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-          0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f } };
+          0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f },
+        { 0 }, 0, 0, FALSE };
 
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module);
 
@@ -82,7 +89,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
 {
   memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
-  memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
+  dt_iop_commit_blend_params(module, &_default_blendop_params);
 }
 
 static void dt_iop_modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
@@ -105,10 +112,10 @@ gint sort_plugins(gconstpointer a, gconstpointer b)
   return am->priority - bm->priority;
 }
 
-/* default groups for modules which does not implement the groups() function */
-static int default_groups()
+/* default group for modules which do not implement the default_group() function */
+static int default_group()
 {
-  return IOP_GROUP_ALL;
+  return IOP_GROUP_BASIC;
 }
 
 /* default flags for modules which does not implement the flags() function */
@@ -229,8 +236,8 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
   }
   if(!g_module_symbol(module->module, "dt_module_mod_version", (gpointer) & (module->version))) goto error;
   if(!g_module_symbol(module->module, "name", (gpointer) & (module->name))) goto error;
-  if(!g_module_symbol(module->module, "groups", (gpointer) & (module->groups)))
-    module->groups = default_groups;
+  if(!g_module_symbol(module->module, "default_group", (gpointer) & (module->default_group)))
+    module->default_group = default_group;
   if(!g_module_symbol(module->module, "flags", (gpointer) & (module->flags))) module->flags = default_flags;
   if(!g_module_symbol(module->module, "description", (gpointer) & (module->description))) module->description = NULL;
   if(!g_module_symbol(module->module, "operation_tags", (gpointer) & (module->operation_tags)))
@@ -312,6 +319,8 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
     module->distort_transform = default_distort_transform;
   if(!g_module_symbol(module->module, "distort_backtransform", (gpointer) & (module->distort_backtransform)))
     module->distort_backtransform = default_distort_backtransform;
+  if(!g_module_symbol(module->module, "distort_mask", (gpointer) & (module->distort_mask)))
+    module->distort_mask = NULL;
 
   if(!g_module_symbol(module->module, "modify_roi_in", (gpointer) & (module->modify_roi_in)))
     module->modify_roi_in = dt_iop_modify_roi_in;
@@ -383,6 +392,10 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->bypass_blendif = 0;
   module->enabled = module->default_enabled = 0; // all modules disabled by default.
   g_strlcpy(module->op, so->op, 20);
+  module->raster_mask.source.users = g_hash_table_new(NULL, NULL);
+  module->raster_mask.source.masks = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
+  module->raster_mask.sink.source = NULL;
+  module->raster_mask.sink.id = 0;
 
   // only reference cached results of dlopen:
   module->module = so->module;
@@ -390,7 +403,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
 
   module->version = so->version;
   module->name = so->name;
-  module->groups = so->groups;
+  module->default_group = so->default_group;
   module->flags = so->flags;
   module->description = so->description;
   module->operation_tags = so->operation_tags;
@@ -427,6 +440,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->process_tiling_cl = so->process_tiling_cl;
   module->distort_transform = so->distort_transform;
   module->distort_backtransform = so->distort_backtransform;
+  module->distort_mask = so->distort_mask;
   module->modify_roi_in = so->modify_roi_in;
   module->modify_roi_out = so->modify_roi_out;
   module->legacy_params = so->legacy_params;
@@ -473,7 +487,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->blend_params = calloc(1, sizeof(dt_develop_blend_params_t));
   module->default_blendop_params = calloc(1, sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
-  memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
+  dt_iop_commit_blend_params(module, &_default_blendop_params);
 
   if(module->priority == 0)
   {
@@ -558,7 +572,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   if(is_zero)
   {
     // we set priority of next to 0
-    next->multi_priority = 0;
+    dt_iop_update_multi_priority(next, 0);
 
     // we change this in the history stack too
     GList *history = g_list_first(module->dev->history);
@@ -602,11 +616,11 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   darktable.gui->reset = 0;
 }
 
-static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
+static void dt_iop_gui_move_up_down_callback(GtkButton *button, dt_iop_module_t *module, gboolean up)
 {
-  // we find the next module
-  GList *modules = g_list_last(module->dev->iop);
-  dt_iop_module_t *next = NULL;
+  // we find the next/previous module
+  GList *modules = up ? g_list_first(module->dev->iop) : g_list_last(module->dev->iop);
+  dt_iop_module_t *other = NULL;
   int find = 0;
   while(modules)
   {
@@ -615,17 +629,17 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
       find = 1;
     else if(mod->instance == module->instance && find == 1)
     {
-      next = mod;
+      other = mod;
       break;
     }
-    modules = g_list_previous(modules);
+    modules = up ? g_list_next(modules) : g_list_previous(modules);
   }
-  if(!next) return;
+  if(!other) return;
 
   // we exchange the priority of both module
-  int oldp = next->multi_priority;
-  next->multi_priority = module->multi_priority;
-  module->multi_priority = oldp;
+  int oldp = other->multi_priority;
+  dt_iop_update_multi_priority(other, module->multi_priority);
+  dt_iop_update_multi_priority(module, oldp);
 
   // we change this in the history stack too
   GList *history = g_list_first(module->dev->history);
@@ -634,138 +648,65 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     if(hist->module == module)
       hist->multi_priority = module->multi_priority;
-    else if(hist->module == next)
-      hist->multi_priority = next->multi_priority;
+    else if(hist->module == other)
+      hist->multi_priority = other->multi_priority;
     history = g_list_next(history);
   }
 
   // we update the list of iop
-  modules = g_list_first(next->dev->iop);
+  modules = g_list_first(other->dev->iop);
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
     if(mod == module)
     {
-      next->dev->iop = g_list_remove_link(next->dev->iop, modules);
+      other->dev->iop = g_list_remove_link(other->dev->iop, modules);
       break;
     }
     modules = g_list_next(modules);
   }
-  next->dev->iop = g_list_insert_sorted(next->dev->iop, module, sort_plugins);
+  other->dev->iop = g_list_insert_sorted(other->dev->iop, module, sort_plugins);
 
   // we update the headers
-  dt_dev_module_update_multishow(next->dev, module);
-  dt_dev_module_update_multishow(next->dev, next);
+  dt_dev_module_update_multishow(other->dev, module);
+  dt_dev_module_update_multishow(other->dev, other);
 
   // we move the headers
   GValue gv = { 0, { { 0 } } };
   g_value_init(&gv, G_TYPE_INT);
   gtk_container_child_get_property(
-      GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
-      module->expander, "position", &gv);
+    GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
+                                   module->expander, "position", &gv);
   gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
-                        module->expander, g_value_get_int(&gv) + 1);
+                        module->expander, g_value_get_int(&gv) + (up ? -1 : 1));
 
   /* signal that history has changed */
-  if(next->dev->gui_attached)
+  if(other->dev->gui_attached)
   {
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
 
   // we rebuild the pipe
-  next->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-  next->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  next->dev->pipe->cache_obsolete = 1;
-  next->dev->preview_pipe->cache_obsolete = 1;
+  other->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
+  other->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+  other->dev->pipe->cache_obsolete = 1;
+  other->dev->preview_pipe->cache_obsolete = 1;
 
   // invalidate buffers and force redraw of darkroom
-  dt_dev_invalidate_all(next->dev);
+  dt_dev_invalidate_all(other->dev);
 
   /* redraw */
   dt_control_queue_redraw_center();
 }
 
+static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
+{
+  dt_iop_gui_move_up_down_callback(button, module, FALSE);
+}
+
 static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
 {
-  // we find the previous module
-  GList *modules = g_list_first(module->dev->iop);
-  dt_iop_module_t *prev = NULL;
-  int find = 0;
-  while(modules)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    if(mod == module)
-      find = 1;
-    else if(mod->instance == module->instance && find == 1)
-    {
-      prev = mod;
-      break;
-    }
-    modules = g_list_next(modules);
-  }
-  if(!prev) return;
-
-  // we exchange the priority of both module
-  int oldp = prev->multi_priority;
-  prev->multi_priority = module->multi_priority;
-  module->multi_priority = oldp;
-
-  // we change this in the history stack too
-  GList *history = g_list_first(module->dev->history);
-  while(history)
-  {
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    if(hist->module == module)
-      hist->multi_priority = module->multi_priority;
-    else if(hist->module == prev)
-      hist->multi_priority = prev->multi_priority;
-    history = g_list_next(history);
-  }
-
-  // we update the list of iop
-  modules = g_list_first(prev->dev->iop);
-  while(modules)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    if(mod == module)
-    {
-      prev->dev->iop = g_list_remove_link(prev->dev->iop, modules);
-      break;
-    }
-    modules = g_list_next(modules);
-  }
-  prev->dev->iop = g_list_insert_sorted(prev->dev->iop, module, sort_plugins);
-
-  // we update the headers
-  dt_dev_module_update_multishow(prev->dev, module);
-  dt_dev_module_update_multishow(prev->dev, prev);
-
-  // we move the headers
-  GValue gv = { 0, { { 0 } } };
-  g_value_init(&gv, G_TYPE_INT);
-  gtk_container_child_get_property(
-      GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
-      module->expander, "position", &gv);
-  gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
-                        module->expander, g_value_get_int(&gv) - 1);
-
-  /* signal that history has changed */
-  if(prev->dev->gui_attached)
-  {
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
-  }
-
-  // we rebuild the pipe
-  prev->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-  prev->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  prev->dev->pipe->cache_obsolete = 1;
-  prev->dev->preview_pipe->cache_obsolete = 1;
-
-  // invalidate buffers and force redraw of darkroom
-  dt_dev_invalidate_all(prev->dev);
-
-  /* redraw */
-  dt_control_queue_redraw_center();
+  dt_iop_gui_move_up_down_callback(button, module, TRUE);
 }
 
 dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
@@ -814,7 +755,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
       memcpy(module->params, base->params, module->params_size);
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
       {
-        memcpy(module->blend_params, base->blend_params, sizeof(dt_develop_blend_params_t));
+        dt_iop_commit_blend_params(module, base->blend_params);
         if(base->blend_params->mask_id > 0)
         {
           module->blend_params->mask_id = 0;
@@ -910,7 +851,7 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
       const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
       if(strcmp(d->module->multi_name, name) != 0)
       {
-        g_strlcpy(d->module->multi_name, name, sizeof(d->module->multi_name) - 1);
+        g_strlcpy(d->module->multi_name, name, sizeof(d->module->multi_name));
         dt_dev_add_history_item(d->module->dev, d->module, TRUE);
         dt_iop_gui_update_header(d->module);
       }
@@ -927,12 +868,6 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
     return TRUE;
   }
   return FALSE; /* event not handled */
-}
-
-static gboolean _rename_module_destroy(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  gtk_widget_destroy(GTK_WIDGET(user_data));
-  return FALSE;
 }
 
 static void _iop_gui_rename_module(dt_iop_module_t *module)
@@ -967,16 +902,17 @@ static void _iop_gui_rename_module(dt_iop_module_t *module)
 
   GtkWidget *entry = gtk_entry_new();
   gtk_widget_set_size_request(entry, w, h);
-  gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
 
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
   gtk_container_add(GTK_CONTAINER(d->floating_window), entry);
-  g_signal_connect(entry, "focus-out-event", G_CALLBACK(_rename_module_destroy), d->floating_window);
   g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), d);
 
   gtk_entry_set_text(GTK_ENTRY(entry), module->multi_name);
 
-  gtk_widget_show_all(d->floating_window);
+  gtk_widget_show(d->floating_window);
+  gtk_widget_show(entry);
+  gtk_window_resize(GTK_WINDOW(d->floating_window), w, h + 4);
+  gtk_window_set_modal(GTK_WINDOW(d->floating_window), TRUE);
   gtk_widget_grab_focus(entry);
   gtk_window_present(GTK_WINDOW(d->floating_window));
 }
@@ -1045,6 +981,9 @@ static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton 
 #else
   gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
 #endif
+
+  // make sure the button is deactivated now that the menu is opened
+  dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }
 
 static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
@@ -1099,7 +1038,7 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
   /* add special group flag for favorite */
   if(module->so->state == dt_iop_state_FAVORITE) additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
 
-  return dt_dev_modulegroups_test(module->dev, group, module->groups() | additional_flags);
+  return dt_dev_modulegroups_test(module->dev, group, dt_iop_get_group(module) | additional_flags);
 }
 
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
@@ -1250,9 +1189,6 @@ static void init_presets(dt_iop_module_so_t *module_so)
 
     if(module_version > old_params_version && module_so->legacy_params != NULL)
     {
-      fprintf(stderr, "[imageop_init_presets] updating '%s' preset '%s' from version %d to version %d\n",
-              module_so->op, name, old_params_version, module_version);
-
       // we need a dt_iop_module_t for legacy_params()
       dt_iop_module_t *module;
       module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
@@ -1284,6 +1220,10 @@ static void init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
+
+      fprintf(stderr, "[imageop_init_presets] updating '%s' preset '%s' from version %d to version %d\nto:'%s'",
+              module_so->op, name, old_params_version, module_version,
+              dt_exif_xmp_encode(new_params, new_params_size, NULL));
 
       // and write the new params back to the database
       sqlite3_stmt *stmt2;
@@ -1437,7 +1377,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, d
   return 0;
 }
 
-GList *dt_iop_load_modules(dt_develop_t *dev)
+GList *dt_iop_load_modules_ext(dt_develop_t *dev, gboolean no_image)
 {
   GList *res = NULL;
   dt_iop_module_t *module;
@@ -1456,7 +1396,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     res = g_list_insert_sorted(res, module, sort_plugins);
     module->data = module_so->data;
     module->so = module_so;
-    dt_iop_reload_defaults(module);
+    if(!no_image) dt_iop_reload_defaults(module);
     iop = g_list_next(iop);
   }
 
@@ -1471,6 +1411,11 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
   return res;
 }
 
+GList *dt_iop_load_modules(dt_develop_t *dev)
+{
+  return dt_iop_load_modules_ext(dev, FALSE);
+}
+
 void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
   module->cleanup(module);
@@ -1483,6 +1428,10 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   module->default_blendop_params = NULL;
   free(module->histogram);
   module->histogram = NULL;
+  g_hash_table_destroy(module->raster_mask.source.users);
+  g_hash_table_destroy(module->raster_mask.source.masks);
+  module->raster_mask.source.users = NULL;
+  module->raster_mask.source.masks = NULL;
 }
 
 void dt_iop_unload_modules_so()
@@ -1495,6 +1444,52 @@ void dt_iop_unload_modules_so()
     free(darktable.iop->data);
     darktable.iop = g_list_delete_link(darktable.iop, darktable.iop);
   }
+}
+
+void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode)
+{
+  static const int key = 0;
+  // showing raster masks doesn't make sense, one can use the original source instead. or does it?
+  if(mask_mode & DEVELOP_MASK_ENABLED && !(mask_mode & DEVELOP_MASK_RASTER))
+  {
+    char *modulename = dt_history_item_get_name(module);
+    g_hash_table_insert(module->raster_mask.source.masks, GINT_TO_POINTER(key), modulename);
+  }
+  else
+  {
+    g_hash_table_remove(module->raster_mask.source.masks, GINT_TO_POINTER(key));
+  }
+}
+
+// make sure that blend_params are in sync with the iop struct
+void dt_iop_commit_blend_params(dt_iop_module_t *module, const dt_develop_blend_params_t *blendop_params)
+{
+  if(module->raster_mask.sink.source)
+    g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
+
+  memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+  dt_iop_set_mask_mode(module, blendop_params->mask_mode);
+
+  if(module->dev)
+  {
+    for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
+    {
+      dt_iop_module_t *m = (dt_iop_module_t *)iter->data;
+      if(!strcmp(m->op, blendop_params->raster_mask_source))
+      {
+        if(m->multi_priority == blendop_params->raster_mask_instance)
+        {
+          g_hash_table_insert(m->raster_mask.source.users, module, GINT_TO_POINTER(blendop_params->raster_mask_id));
+          module->raster_mask.sink.source = m;
+          module->raster_mask.sink.id = blendop_params->raster_mask_id;
+          return;
+        }
+      }
+    }
+  }
+
+  module->raster_mask.sink.source = NULL;
+  module->raster_mask.sink.id = 0;
 }
 
 void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
@@ -1523,7 +1518,8 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
     }
     memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
     // this should be redundant! (but is not)
-    memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+    dt_iop_commit_blend_params(module, blendop_params);
+
     /* and we add masks */
     dt_masks_group_get_hash_buffer(grp, str + pos);
 
@@ -1551,17 +1547,20 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 
 void dt_iop_gui_update(dt_iop_module_t *module)
 {
-  int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
-  if(!dt_iop_is_hidden(module))
+  if(module->gui_data)
   {
-    module->gui_update(module);
-    dt_iop_gui_update_blending(module);
-    dt_iop_gui_update_expanded(module);
-    _iop_gui_update_label(module);
-    if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+    int reset = darktable.gui->reset;
+    darktable.gui->reset = 1;
+    if(!dt_iop_is_hidden(module))
+    {
+      if(module->params) module->gui_update(module);
+      dt_iop_gui_update_blending(module);
+      dt_iop_gui_update_expanded(module);
+      _iop_gui_update_label(module);
+      if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+    }
+    darktable.gui->reset = reset;
   }
-  darktable.gui->reset = reset;
 }
 
 void dt_iop_gui_reset(dt_iop_module_t *module)
@@ -1622,7 +1621,7 @@ static void dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module
   }
   /* reset to default params */
   memcpy(module->params, module->default_params, module->params_size);
-  memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+  dt_iop_commit_blend_params(module, module->default_blendop_params);
 
   /* reset ui to its defaults */
   dt_iop_gui_reset(module);
@@ -1646,20 +1645,25 @@ static void _preset_popup_position(GtkMenu *menu, gint *x, gint *y, gboolean *pu
 }
 #endif
 
-static void popup_callback(GtkButton *button, dt_iop_module_t *module)
+static void popup_callback(GtkButton *button, GdkEventButton *event, dt_iop_module_t *module)
 {
-  dt_gui_presets_popup_menu_show_for_module(module);
-  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+  if(event->button == 1 || event->button == 2)
+  {
+    dt_gui_presets_popup_menu_show_for_module(module);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
 #if GTK_CHECK_VERSION(3, 22, 0)
-  gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu,
-                           dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander)), GDK_GRAVITY_SOUTH_WEST,
-                           GDK_GRAVITY_NORTH_WEST, NULL);
+    gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu,
+                             dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander)), GDK_GRAVITY_SOUTH_WEST,
+                             GDK_GRAVITY_NORTH_WEST, NULL);
 #else
-  gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_position, button, 0,
-                 gtk_get_current_event_time());
-  gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
+    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_position, button, 0,
+                   gtk_get_current_event_time());
+    gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
 #endif
+  }
+
+  dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }
 
 void dt_iop_request_focus(dt_iop_module_t *module)
@@ -1751,9 +1755,6 @@ static void dt_iop_gui_set_single_expanded(dt_iop_module_t *module, gboolean exp
    * we do that first, so update_expanded won't think it should be visible
    * and undo our changes right away. */
   module->expanded = expanded;
-  char var[1024];
-  snprintf(var, sizeof(var), "plugins/darkroom/%s/expanded", module->op);
-  dt_conf_set_bool(var, expanded);
 
   /* show / hide plugin widget */
   if(expanded)
@@ -1776,6 +1777,10 @@ static void dt_iop_gui_set_single_expanded(dt_iop_module_t *module, gboolean exp
       dt_control_queue_redraw_center();
     }
   }
+
+  char var[1024];
+  snprintf(var, sizeof(var), "plugins/darkroom/%s/expanded", module->op);
+  dt_conf_set_bool(var, expanded);
 }
 
 void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolean collapse_others)
@@ -1785,13 +1790,12 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolea
   /* handle shiftclick on expander, hide all except this */
   if(collapse_others)
   {
-    int current_group = dt_dev_modulegroups_get(module->dev);
+    const int current_group = dt_dev_modulegroups_get(module->dev);
     GList *iop = g_list_first(module->dev->iop);
     gboolean all_other_closed = TRUE;
     while(iop)
     {
       dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-
       if(m != module && dt_iop_shown_in_group(m, current_group))
       {
         all_other_closed = all_other_closed && !m->expanded;
@@ -1816,7 +1820,7 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
 {
   if(!module->expander) return;
 
-  gboolean expanded = module->expanded;
+  const gboolean expanded = module->expanded;
 
   /* update expander arrow state */
   GtkWidget *icon;
@@ -2029,7 +2033,7 @@ got_image:
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets"));
   else
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets\nmiddle-click to apply on new instance"));
-  g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(popup_callback), module);
+  g_signal_connect(G_OBJECT(hw[idx]), "button-press-event", G_CALLBACK(popup_callback), module);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
   /* add enabled button spacer */
@@ -2038,7 +2042,7 @@ got_image:
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
   /* add enabled button */
-  hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT, NULL);
+  hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT, NULL);
   gtk_widget_set_no_show_all(hw[idx], TRUE);
   gchar *module_label = dt_history_item_get_name(module);
   snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
@@ -2139,7 +2143,7 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
     dt_iop_gui_set_state(module, dt_iop_state_ACTIVE);
   }
 
-  uint32_t current_group = dt_dev_modulegroups_get(module->dev);
+  const uint32_t current_group = dt_dev_modulegroups_get(module->dev);
   if(!dt_iop_shown_in_group(module, current_group))
   {
     dt_dev_modulegroups_switch(darktable.develop, module);
@@ -2289,6 +2293,45 @@ void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
 {
   dt_iop_so_gui_set_state(module->so, state);
 }
+
+void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority)
+{
+  GHashTableIter iter;
+  gpointer key, value;
+
+  g_hash_table_iter_init(&iter, module->raster_mask.source.users);
+  while(g_hash_table_iter_next(&iter, &key, &value))
+  {
+    dt_iop_module_t *sink_module = (dt_iop_module_t *)key;
+
+    sink_module->blend_params->raster_mask_instance = new_priority;
+
+    // also fix history entries
+    for(GList *hiter = module->dev->history; hiter; hiter = g_list_next(hiter))
+    {
+      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)hiter->data;
+      if(hist->module == sink_module)
+        hist->blend_params->raster_mask_instance = new_priority;
+    }
+  }
+
+  module->multi_priority = new_priority;
+}
+
+gboolean dt_iop_is_raster_mask_used(dt_iop_module_t *module, int id)
+{
+  GHashTableIter iter;
+  gpointer key, value;
+
+  g_hash_table_iter_init(&iter, module->raster_mask.source.users);
+  while(g_hash_table_iter_next(&iter, &key, &value))
+  {
+    if(GPOINTER_TO_INT(value) == id)
+      return TRUE;
+  }
+  return FALSE;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

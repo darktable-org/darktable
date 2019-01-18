@@ -23,7 +23,6 @@
 #include "develop/imageop.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -78,9 +77,9 @@ int flags()
 }
 
 // where does it appear in the gui?
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("silly example", IOP_GROUP_BASIC);
+  return IOP_GROUP_BASIC;
 }
 
 /** modify regions of interest (optional, per pixel ops don't need this) */
@@ -88,6 +87,8 @@ int groups()
 // *roi_out, const dt_iop_roi_t *roi_in);
 // void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t
 // *roi_out, dt_iop_roi_t *roi_in);
+// void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+// float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
 /** process, all real work is done here. */
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,

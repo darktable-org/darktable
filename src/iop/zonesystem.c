@@ -37,7 +37,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
-#include "common/iop_group.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -124,9 +123,9 @@ int flags()
          | IOP_FLAGS_PREVIEW_NON_OPENCL;
 }
 
-int groups()
+int default_group()
 {
-  return dt_iop_get_group("zone system", IOP_GROUP_TONE);
+  return IOP_GROUP_TONE;
 }
 
 /* get the zone index of pixel lightness from zonemap */
