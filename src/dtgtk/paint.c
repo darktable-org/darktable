@@ -478,6 +478,61 @@ void dtgtk_cairo_paint_masks_path(cairo_t *cr, gint x, gint y, gint w, gint h, g
   cairo_identity_matrix(cr);
 }
 
+void dtgtk_cairo_paint_masks_vertgradient(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  gint s = w < h ? w : h;
+  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_scale(cr, s, s);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  if(flags & CPF_ACTIVE)
+    cairo_set_line_width(cr, 0.25);
+  else
+    cairo_set_line_width(cr, 0.125);
+  cairo_rectangle(cr, 0.0, 0.0, 1.0, 1.0);
+  cairo_stroke_preserve(cr);
+  cairo_pattern_t *pat = NULL;
+  pat = cairo_pattern_create_linear(0.0, 0.5, 1.0, 0.5);
+  cairo_pattern_add_color_stop_rgba(pat, 0.0, 0.6, 0.6, 0.6, 1.0);
+  cairo_pattern_add_color_stop_rgba(pat, 1.0, 0.2, 0.2, 0.2, 1.0);
+  cairo_rectangle(cr, 0.1, 0.1, 0.8, 0.8);
+  cairo_set_source(cr, pat);
+  cairo_fill(cr);
+  cairo_pattern_destroy(pat);
+  cairo_identity_matrix(cr);
+}
+
+
+void dtgtk_cairo_paint_masks_brush_and_inverse(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  gint s = w < h ? w : h;
+  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_scale(cr, s, s);
+
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  if(flags & CPF_ACTIVE)
+    cairo_set_line_width(cr, 0.25);
+  else
+    cairo_set_line_width(cr, 0.125);
+  cairo_move_to(cr, 0.0, 1.0);
+  cairo_line_to(cr, 0.1, 0.7);
+  cairo_line_to(cr, 0.8, 0.0);
+  cairo_line_to(cr, 1.0, 0.2);
+  cairo_line_to(cr, 0.3, 0.9);
+  cairo_line_to(cr, 0.0, 1.0);
+  //  cairo_fill_preserve(cr);
+  cairo_stroke(cr);
+
+  //cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_set_line_width(cr, 0.15);
+  cairo_arc(cr, 0.5, 0.5, 0.46, 0, 2.0 * M_PI);
+  cairo_stroke(cr);
+  cairo_arc(cr, 0.5, 0.5, 0.46, 3.0 * M_PI / 2.0, M_PI / 2.0);
+  cairo_fill(cr);
+
+  cairo_stroke(cr);
+  cairo_identity_matrix(cr);
+}
+
 void dtgtk_cairo_paint_masks_brush(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   gint s = w < h ? w : h;
