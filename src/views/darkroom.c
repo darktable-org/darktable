@@ -2248,14 +2248,16 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     closeup = 1;  // enable closeup mode (pixel doubling)
   }
 
-  dt_control_set_dev_zoom_scale(scale);
   if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
   if(fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
+  dt_control_set_dev_zoom_scale(scale);
+  dt_control_set_dev_closeup(closeup);
+  scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+
   zoom_x -= mouse_off_x / (procw * scale);
   zoom_y -= mouse_off_y / (proch * scale);
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
   dt_control_set_dev_zoom(zoom);
-  dt_control_set_dev_closeup(closeup);
   dt_control_set_dev_zoom_x(zoom_x);
   dt_control_set_dev_zoom_y(zoom_y);
 
