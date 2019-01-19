@@ -138,6 +138,9 @@ typedef enum dt_view_image_over_t
     or the imgid otherwise */
 int32_t dt_view_get_image_to_act_on();
 
+/** guess the image_over flag assuming that all possible controls are displayed */
+dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);
+
 /** expose an image, set image over flags. return != 0 if thumbnail wasn't loaded yet. */
 int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t index, cairo_t *cr, int32_t width,
                          int32_t height, int32_t zoom, int32_t px, int32_t py, gboolean full_preview, gboolean image_only);

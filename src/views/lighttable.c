@@ -136,8 +136,10 @@ typedef struct dt_library_t
   int max_rows;
   int32_t single_img_id;
 
+  float pointed_img_x, pointed_img_y, pointed_img_wd, pointed_img_ht;
+  dt_view_image_over_t pointed_img_over;
+
   float thumb_size;
-  int last_mouse_over_thumb;
   int32_t last_exposed_id;
   float offset_x, offset_y;
   gboolean force_expose_all;
@@ -484,7 +486,7 @@ void init(dt_view_t *self)
   lib->single_img_id = -1;
 
   lib->thumb_size = -1;
-  lib->last_mouse_over_thumb = -1;
+  lib->pointed_img_over = DT_VIEW_ERR;
   lib->last_exposed_id = -1;
   lib->force_expose_all = FALSE;
   lib->offset_x = 0;
@@ -546,6 +548,8 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   const gboolean offset_changed = lib->offset_changed;
   int missing = 0;
 
+  lib->zoom_x = lib->zoom_y = 0;
+
   /* query new collection count */
   lib->collection_count = dt_collection_get_count(darktable.collection);
 
@@ -556,6 +560,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
 
   /* get image over id */
   lib->image_over = DT_VIEW_DESERT;
+  lib->pointed_img_over = DT_VIEW_ERR;
   int32_t mouse_over_id = dt_control_get_mouse_over_id(), mouse_over_group = -1;
   /* need to keep this one as it needs to be refreshed */
   const int initial_mouse_over_id = mouse_over_id;
@@ -859,6 +864,16 @@ end_query_cache:
             pi == col && pj == row ? img_pointerx : -1,
             pi == col && pj == row ? img_pointery : -1, FALSE, FALSE);
 
+          if(id == mouse_over_id)
+          {
+            lib->pointed_img_x = col * wd;
+            lib->pointed_img_y = row * ht;
+            lib->pointed_img_wd = wd;
+            lib->pointed_img_ht = iir == 1 ? height : ht;
+            lib->pointed_img_over = dt_view_guess_image_over(lib->pointed_img_wd, lib->pointed_img_ht, iir,
+                                                             img_pointerx, img_pointery);
+          }
+
           // if thumb is missing, record it for expose in next round
           if(thumb_missed)
             g_hash_table_add(lib->thumbs_table, (gpointer)&id);
@@ -1126,8 +1141,9 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
 
   lib->images_in_row = zoom;
   lib->image_over = DT_VIEW_DESERT;
+  lib->pointed_img_over = DT_VIEW_ERR;
 
-  if (mouse_over_id == -1 || lib->force_expose_all || pan)
+  if(mouse_over_id == -1 || lib->force_expose_all || pan || zoom == 1)
   {
     lib->force_expose_all = TRUE;
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
@@ -1348,6 +1364,16 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
           const int thumb_missed = dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom,
                                                         img_pointerx, img_pointery, FALSE, FALSE);
 
+          if(id == mouse_over_id)
+          {
+            lib->pointed_img_x = -offset_x * wd - MIN(offset_i * wd, 0.0) + col * wd;
+            lib->pointed_img_y = -offset_y * ht + row * ht;
+            lib->pointed_img_wd = wd;
+            lib->pointed_img_ht = zoom == 1 ? height : ht;
+            lib->pointed_img_over = dt_view_guess_image_over(lib->pointed_img_wd, lib->pointed_img_ht, zoom,
+                                                             img_pointerx, img_pointery);
+          }
+
           // if thumb is missing, record it for expose in next round
           if(thumb_missed)
             g_hash_table_add(lib->thumbs_table, (gpointer)&id);
@@ -1393,6 +1419,9 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
                                int32_t pointery)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+
+  lib->pointed_img_over = DT_VIEW_ERR;
+
   int offset = 0;
   if(lib->track > 2) offset = 1;
   if(lib->track < -2) offset = -1;
@@ -2123,45 +2152,18 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  // real px, py in the thumb lighttable must account for the possible offset_[xy] when using the zoomable lighttable
-  const double px = x + lib->offset_x;
-  const double py = y + lib->offset_y;
-
-  // no redraw by default
-  gboolean do_redraw = FALSE;
-
   lib->using_arrows = 0;
 
-  if(lib->pan || lib->images_in_row == 1 || lib->full_preview_id != -1 || lib->thumb_size == -1 || px < 0 || py < 0)
+  if(lib->pan || lib->pointed_img_over == DT_VIEW_ERR || x < lib->pointed_img_x || y < lib->pointed_img_y
+     || x > lib->pointed_img_x + lib->pointed_img_wd || y > lib->pointed_img_y + lib->pointed_img_ht
+     || lib->pointed_img_over
+            != dt_view_guess_image_over(lib->pointed_img_wd, lib->pointed_img_ht, lib->images_in_row,
+                                        lib->images_in_row == 1 ? x : fmodf(x + lib->zoom_x, lib->pointed_img_wd),
+                                        lib->images_in_row == 1 ? y : fmodf(y + lib->zoom_y, lib->pointed_img_ht)))
   {
-    // we are panning or a single image in a row or full preview or we don't have yet the thumb size (first expose)
-    do_redraw = TRUE;
+    dt_control_queue_redraw_center();
   }
-  else
-  {
-    // compute the actual thumb number, this is not at all the thumb id, but a count of the thumb starting by the
-    // columns and continuing on the line. this goal is to filter out as much as possible the redraw event. when we
-    // stays on the same thumb we do not redraw, there is nothing to do. the exception is a small border around the
-    // thumb to ensure the stars, reject tag and the dev history sensitive area are reacting.
-
-    const int mouse_over_thumb = (int)(1.0 + px / lib->thumb_size) + (lib->images_in_row * (int)(py / lib->thumb_size));
-    const int x_offset = (int)fmodf(px, lib->thumb_size);
-    const int y_offset = (int)fmodf(py, lib->thumb_size);
-    const int end_pos = (lib->thumb_size * 85) / 100;
-    const int start_pos = (lib->thumb_size * 10) / 100;
-
-    if (lib->last_mouse_over_thumb == -1 || lib->last_mouse_over_thumb != mouse_over_thumb
-        || (y_offset > end_pos || y_offset < start_pos)
-        || (x_offset > end_pos || x_offset < start_pos))
-    {
-      lib->last_mouse_over_thumb = mouse_over_thumb;
-      do_redraw = TRUE;
-    }
-  }
-
-  if(do_redraw) dt_control_queue_redraw_center();
 }
-
 
 int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
