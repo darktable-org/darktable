@@ -92,11 +92,8 @@ denoiseprofile_dist(read_only image2d_t in, global float* U4, const int width, c
   int ypq = y + q.y;
   // Convert out of bounds indexes to 0
   // Reminder: q.x and q.y can be negative
-  // the boolean conditions will be equal to
-  // 0 in case of out of bounds, and will be
-  // equal to 1 in the other case
-  xpq *= (x+q.x < width && x+q.x >= 0);
-  ypq *= (y+q.y < height && y+q.y >= 0);
+  xpq *= (x+q.x < width && x+q.x >= 0) ? 1 : 0;
+  ypq *= (y+q.y < height && y+q.y >= 0) ? 1 : 0;
 
   float4 p1 = read_imagef(in, sampleri, (int2)(x, y));
   float4 p2 = read_imagef(in, sampleri, (int2)(xpq, ypq));
@@ -104,7 +101,7 @@ denoiseprofile_dist(read_only image2d_t in, global float* U4, const int width, c
   float dist = tmp.x + tmp.y + tmp.z;
 
   // make dist equal to 0 in case xpq or ypq is out of bounds
-  dist *= (x+q.x < width && x+q.x >= 0 && y+q.y < height && y+q.y >= 0);
+  dist *= (x+q.x < width && x+q.x >= 0 && y+q.y < height && y+q.y >= 0)  ? 1.0f : 0.0f;
 
   U4[gidx] = dist;
 }
@@ -236,17 +233,17 @@ denoiseprofile_accu(read_only image2d_t in, global float4* U2, global float* U4,
 
   // handle bounds for x
   // Reminder: q.x can be negative
-  wpq *= (x+q.x < width);
-  wmq *= (x-q.x < width);
-  wpq *= (x+q.x >= 0);
-  wmq *= (x-q.x >= 0);
+  wpq *= (x+q.x < width) ? 1 : 0;
+  wmq *= (x-q.x < width) ? 1 : 0;
+  wpq *= (x+q.x >= 0) ? 1 : 0;
+  wmq *= (x-q.x >= 0) ? 1 : 0;
 
   // handle bounds for y
   // Reminder: q.y can be negative
-  wpq *= (y+q.y >= 0);
-  wmq *= (y-q.y >= 0);
-  wpq *= (y+q.y < height);
-  wmq *= (y-q.y < height);
+  wpq *= (y+q.y >= 0) ? 1 : 0;
+  wmq *= (y-q.y >= 0) ? 1 : 0;
+  wpq *= (y+q.y < height) ? 1 : 0;
+  wmq *= (y-q.y < height) ? 1 : 0;
 
   float4 u1_pq = wpq ? read_imagef(in, sampleri, (int2)(x, y) + q) : (float4)0.0f;
   float4 u1_mq = wmq ? read_imagef(in, sampleri, (int2)(x, y) - q) : (float4)0.0f;
