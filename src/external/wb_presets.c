@@ -3078,13 +3078,13 @@ const wb_data wb_preset[] =
   { "Nikon", "D850", HighTempMercuryVaporFluorescent , 0, { 2.379882812, 1, 1.3671875,   0 } },
 
   /*NIKON D850 Software Ver.1.03*/
-  { "NIKON CORPORATION", "NIKON D850", DirectSunlight      , 0, { 1.900390625, 1, 1.375488281, 0 } },
-  { "NIKON CORPORATION", "NIKON D850", Shade               , 0, { 2.396484375, 1, 1.114257812, 0 } },
-  { "NIKON CORPORATION", "NIKON D850", Cloudy              , 0, { 2.049804688, 1, 1.244628906, 0 } },
-  { "NIKON CORPORATION", "NIKON D850", Incandescent        , 0, { 1.205078125, 1, 2.206542969, 0 } },
-  { "NIKON CORPORATION", "NIKON D850", CoolWhiteFluorescent, 0, { 1.721191406, 1, 2.064453125, 0 } },
-  { "NIKON CORPORATION", "NIKON D850", Flash               , 0, { 2.1640625, 1, 1.204101562, 0 } },
-  { "NIKON CORPORATION", "NIKON D850", "5000K"             , 0, { 1.849121094, 1, 1.421386719, 0 } },
+  { "NIKON", "D850", DirectSunlight      , 0, { 1.900390625, 1, 1.375488281, 0 } },
+  { "NIKON", "D850", Shade               , 0, { 2.396484375, 1, 1.114257812, 0 } },
+  { "NIKON", "D850", Cloudy              , 0, { 2.049804688, 1, 1.244628906, 0 } },
+  { "NIKON", "D850", Incandescent        , 0, { 1.205078125, 1, 2.206542969, 0 } },
+  { "NIKON", "D850", CoolWhiteFluorescent, 0, { 1.721191406, 1, 2.064453125, 0 } },
+  { "NIKON", "D850", Flash               , 0, { 2.1640625, 1, 1.204101562, 0 } },
+  { "NIKON", "D850", "5000K"             , 0, { 1.849121094, 1, 1.421386719, 0 } },
 
   { "Nikon", "D40", Incandescent, -3,		{ 1.492188, 1, 2.164063, 0 } },
   { "Nikon", "D40", Incandescent, -2,		{ 1.437500, 1, 2.367188, 0 } },
