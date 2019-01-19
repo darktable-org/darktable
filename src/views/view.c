@@ -862,6 +862,86 @@ int32_t dt_view_get_image_to_act_on()
   }
 }
 
+dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py)
+{
+  // active if zoom>1 or in the proper area
+  gboolean in_metadata_zone = (px < width && py < height / 2) || (zoom > 1);
+
+  gboolean draw_metadata = darktable.gui->show_overlays || in_metadata_zone;
+
+  if(draw_metadata && width > DECORATION_SIZE_LIMIT)
+  {
+    float fscale = DT_PIXEL_APPLY_DPI(fminf(width, height));
+    float r1, r2;
+    if(zoom != 1)
+    {
+      r1 = 0.05 * width;
+      r2 = 0.022 * width;
+    }
+    else
+    {
+      r1 = 0.015 * fscale;
+      r2 = 0.007 * fscale;
+    }
+
+    gboolean extended_thumb_overlay = dt_conf_get_bool("plugins/lighttable/extended_thumb_overlay");
+    float x, y;
+    if(zoom != 1)
+      y = (extended_thumb_overlay ? 0.93 : 0.9) * height;
+    else
+      y = .12 * fscale;
+
+    for(int k = 0; k < 5; k++)
+    {
+      if(zoom != 1)
+        x = (0.26 + k * 0.12) * width;
+      else
+        x = (.08 + k * 0.04) * fscale;
+
+      if((px - x) * (px - x) + (py - y) * (py - y) < r1 * r1) return DT_VIEW_STAR_1 + k;
+    }
+
+    if(zoom != 1)
+      x = 0.08 * width;
+    else
+      x = .04 * fscale;
+
+    if((px - x) * (px - x) + (py - y) * (py - y) < r1 * r1) return DT_VIEW_REJECT;
+
+    // align to right
+    float s = (r1 + r2) * .5;
+    if(zoom != 1)
+    {
+      x = width * 0.9 - s * 5;
+      y = height * 0.1;
+    }
+    else
+      x = (.04 + 8 * 0.04 - 1.9 * .04) * fscale;
+    // mouse is over the audio icon
+    if(fabsf(px - x) <= 1.2 * s && fabsf(py - y) <= 1.2 * s) return DT_VIEW_AUDIO;
+
+    if(darktable.gui && darktable.gui->grouping)
+    {
+      s = (r1 + r2) * .6;
+      float _x, _y;
+      if(zoom != 1)
+      {
+        _x = width * 0.9 - s * 2.5;
+        _y = height * 0.1 - s * .4;
+      }
+      else
+      {
+        _x = (.04 + 8 * 0.04 - 1.1 * .04) * fscale;
+        _y = y - (.17 * .04) * fscale;
+      }
+      // mouse is over the grouping icon
+      if(fabs(px - _x - .5 * s) <= .8 * s && fabs(py - _y - .5 * s) <= .8 * s) return DT_VIEW_GROUP;
+    }
+  }
+
+  return DT_VIEW_DESERT;
+}
+
 int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo_t *cr, int32_t width,
                          int32_t height, int32_t zoom, int32_t px, int32_t py, gboolean full_preview, gboolean image_only)
 {
