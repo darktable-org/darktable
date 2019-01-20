@@ -42,7 +42,9 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #ifdef __SSE2__
@@ -52,7 +54,7 @@
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 
 
-DT_MODULE_INTROSPECTION(3, dt_iop_filmic_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_filmic_params_t)
 
 /**
  * DOCUMENTATION
@@ -116,6 +118,7 @@ typedef struct dt_iop_filmic_params_t
   float balance;
   int interpolator;
   int preserve_color;
+  float gamut_compression;
 } dt_iop_filmic_params_t;
 
 typedef struct dt_iop_filmic_gui_data_t
@@ -138,6 +141,7 @@ typedef struct dt_iop_filmic_gui_data_t
   GtkWidget *preserve_color;
   GtkWidget *extra_expander;
   GtkWidget *extra_toggle;
+  GtkWidget *gamut_compression;
   dt_iop_color_picker_t color_picker;
   GtkDrawingArea *area;
   float table[256];      // precomputed look-up table
@@ -160,6 +164,7 @@ typedef struct dt_iop_filmic_data_t
   int preserve_color;
   float latitude_min;
   float latitude_max;
+  float gamut_compression;
 } dt_iop_filmic_data_t;
 
 typedef struct dt_iop_filmic_nodes_t
@@ -194,7 +199,7 @@ int flags()
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 4)
   {
     typedef struct dt_iop_filmic_params_v1_t
     {
@@ -234,10 +239,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->interpolator = o->interpolator;
     n->preserve_color = CHROMA_PRESERVE_NONE;
     n->global_saturation = 100;
+    n->gamut_compression = 1.0f;
     return 0;
   }
 
-  if (old_version == 2 && new_version == 3)
+  if (old_version == 2 && new_version == 4)
   {
     typedef struct dt_iop_filmic_params_v2_t
     {
@@ -278,6 +284,53 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->interpolator = o->interpolator;
     n->preserve_color = o->preserve_color;
     n->global_saturation = 100;
+    n->gamut_compression = 1.0f;
+    return 0;
+  }
+
+  if (old_version == 3 && new_version == 4)
+  {
+    typedef struct dt_iop_filmic_params_v3_t
+    {
+      float grey_point_source;
+      float black_point_source;
+      float white_point_source;
+      float security_factor;
+      float grey_point_target;
+      float black_point_target;
+      float white_point_target;
+      float output_power;
+      float latitude_stops;
+      float contrast;
+      float saturation;
+      float global_saturation;
+      float balance;
+      int interpolator;
+      int preserve_color;
+    } dt_iop_filmic_params_v3_t;
+
+    dt_iop_filmic_params_v3_t *o = (dt_iop_filmic_params_v3_t *)old_params;
+    dt_iop_filmic_params_t *n = (dt_iop_filmic_params_t *)new_params;
+    dt_iop_filmic_params_t *d = (dt_iop_filmic_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    n->grey_point_source = o->grey_point_source;
+    n->white_point_source = o->white_point_source;
+    n->black_point_source = o->black_point_source;
+    n->security_factor = o->security_factor;
+    n->grey_point_target = o->grey_point_target;
+    n->black_point_target = o->black_point_target;
+    n->white_point_target = o->white_point_target;
+    n->output_power = o->output_power;
+    n->latitude_stops = o->latitude_stops;
+    n->contrast = o->contrast;
+    n->saturation = o->saturation;
+    n->balance = o->balance;
+    n->interpolator = o->interpolator;
+    n->preserve_color = o->preserve_color;
+    n->global_saturation = o->global_saturation;
+    n->gamut_compression = 1.0f;
     return 0;
   }
   return 1;
@@ -290,6 +343,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   // Fine-tune settings, no use here
   p.interpolator = CUBIC_SPLINE;
+  p.gamut_compression = 1.0f;
 
   // Output - standard display, gamma 2.2
   p.output_power = 2.2f;
@@ -435,7 +489,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float saturation = data->global_saturation / 100.0f;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
+#pragma omp parallel for simd default(none) schedule(static)
 #endif
   for(size_t k = 0; k < roi_out->height * roi_out->width * ch; k += ch)
   {
@@ -530,6 +584,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
+#define GAUSS(x, avg, std) expf(-((x - avg) * (x - avg)) / (std*std))
+
 
 #if defined(__SSE__)
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -544,6 +600,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float black = data->black_source;
   const float dynamic_range = data->dynamic_range;
   const float saturation = (data->global_saturation / 100.0f);
+  const float gamut_compression = data->gamut_compression * 2.0f;
+  //const gint run_gamut = TRUE; //(data->gamut_compression == 1.0f) ? FALSE : TRUE;
 
   const __m128 grey_sse = _mm_set1_ps(grey);
   const __m128 black_sse = _mm_set1_ps(black);
@@ -560,14 +618,15 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const __m128 one = _mm_set1_ps(1.0f);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for simd default(none) schedule(static)
 #endif
   for(size_t k = 0; k < roi_out->height * roi_out->width * ch; k += ch)
   {
-    float *in = ((float *)ivoid) + k;
+    const float *in = ((float *)ivoid) + k;
     float *out = ((float *)ovoid) + k;
 
-    __m128 XYZ = dt_Lab_to_XYZ_sse2(_mm_load_ps(in));
+    __m128 Lab = _mm_load_ps(in);
+    __m128 XYZ = dt_Lab_to_XYZ_sse2(Lab);
     __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
 
     __m128 concavity;
@@ -653,17 +712,79 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
 
     rgb = luma + concavity * (rgb - luma);
-    rgb = _mm_max_ps(rgb, zero);
-    rgb = _mm_min_ps(rgb, one);
+
+    // Gamut compression
+    /*
+    __m128 xyY = dt_XYZ_to_xyY_sse2(dt_prophotoRGB_to_XYZ_sse2(rgb));
+
+    const float x = xyY[0] - 0.33333333f;
+    const float y = xyY[1] - 0.33333333f;
+    const float Y = xyY[2];
+
+    // Coordinates in the xy chroma plane
+    float radius_chroma = powf((x*x + y*y), 0.5f);
+    const float angle_chroma = atan2(y, x);
+
+    // Coordinates in the xyY space
+    float radius = powf((x*x + y*y + Y*Y), 0.5f);
+    const float angle_chroma_luma = atan2(Y, radius_chroma);
+
+    // Chroma adjustment
+    radius = CLAMP(radius, 0.0f, 1.0f);
+    radius_chroma = CLAMP(radius_chroma, 0.0f, fabsf(radius * cosf(angle_chroma_luma)));
+    const float ratio = (1.0f + expf(16.0f * (radius_chroma - 0.18f)));
+    radius_chroma = radius_chroma / ratio;
+    radius_chroma = CLAMP(radius_chroma, 0.0f, 0.333333f);
+    xyY[0] = CLAMP(0.3333333333f + radius_chroma * cosf(angle_chroma), 0.0f, 1.0f);
+    xyY[1] = CLAMP(0.3333333333f + radius_chroma * sinf(angle_chroma), 0.0f, 1.0f);
+    xyY[2] = radius * sinf(angle_chroma_luma) / ratio;
+
+    rgb = dt_XYZ_to_prophotoRGB_sse2(dt_xyY_to_XYZ_sse2(xyY));
+    */
 
     // Apply the transfer function of the display
+    rgb = _mm_max_ps(rgb, zero);
+    rgb = _mm_min_ps(rgb, one);
     rgb = _mm_pow_ps(rgb, power);
 
     // transform the result back to Lab
     // sRGB -> XYZ
     XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+
+
+    if(FALSE)
+    {
+      __m128 Lch = dt_Lab_to_Lch_sse2(Lab);
+
+      const float radius = powf((Lch[0]*Lch[0] + Lch[1]*Lch[1]), 0.5f);
+      //const float angle_Lc = atanf(Lch[0] / Lch[1]);
+      //FILE *f = fopen("/tmp/radius.txt", "wb");
+      //fprintf(stderr, "%f\n", radius);
+      const float ratio = GAUSS(radius / 100.0f, 0.67f, gamut_compression) * GAUSS(Lch[1] / 100.0f, 0.0f, gamut_compression);
+
+      Lch[1] *= ratio; //radius * cosf(angle_Lc);
+      Lab = dt_Lch_to_Lab_sse2(Lch);
+    }
+
+    __m128 IPT = dt_XYZ_to_IPThdr_sse2(XYZ);
+    float radius = powf((IPT[2]*IPT[2] + IPT[1]*IPT[1]), 0.5f);
+    //const float radius_IPT = powf(radius*radius + IPT[0]*IPT[0], 0.5f);
+    const __m128 trigo = IPT / radius; // IPT[1] = cos(hue); IPT[2] = sin(hue)
+    //const float sinus = IPT[2]/radius;
+    //const float cosinus = IPT[1]/radius;
+    //const float tangente = sinus / cosinus;
+    //const float angle = atanf(tangente);
+
+    radius *= GAUSS(radius / 100.0f, 0.0f, gamut_compression);
+
+    IPT[1] = radius * trigo[1];
+    IPT[2] = radius * trigo[2];
+
+    XYZ = dt_IPThdr_to_XYZ_sse2(IPT);
+
     // XYZ -> Lab
-    _mm_stream_ps(out, dt_XYZ_to_Lab_sse2(XYZ));
+    Lab = dt_XYZ_to_Lab_sse2(XYZ);
+    _mm_stream_ps(out, Lab);
   }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -1070,6 +1191,17 @@ static void global_saturation_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void gamut_compression_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  p->gamut_compression = dt_bauhaus_slider_get(slider);
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void white_point_target_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1447,6 +1579,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->saturation = p->saturation;
   d->global_saturation = p->global_saturation;
   d->contrast = contrast;
+  d->gamut_compression = p->gamut_compression;
 
   // compute the curves and their LUT
   dt_iop_filmic_nodes_t *nodes_data = (dt_iop_filmic_nodes_t *)malloc(sizeof(dt_iop_filmic_nodes_t));
@@ -1517,6 +1650,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->contrast, p->contrast);
   dt_bauhaus_slider_set(g->global_saturation, p->global_saturation);
   dt_bauhaus_slider_set(g->saturation, (powf(10.0f, p->saturation/100.0f) - 1.0f) / 9.0f * 100.0f);
+  dt_bauhaus_slider_set(g->gamut_compression, p->gamut_compression);
   dt_bauhaus_slider_set(g->balance, p->balance);
 
   dt_bauhaus_combobox_set(g->interpolator, p->interpolator);
@@ -1555,6 +1689,7 @@ void init(dt_iop_module_t *module)
                                  .balance             = 0.0, // balance shadows/highlights
                                  .interpolator        = CUBIC_SPLINE, //interpolator
                                  .preserve_color      = 0, // run the saturated variant
+                                 .gamut_compression   = 1.0,
                               };
   memcpy(module->params, &tmp, sizeof(dt_iop_filmic_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_filmic_params_t));
@@ -1854,6 +1989,16 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\nspecifically at extreme luminances.\n"
                                                "decrease if shadows and/or highlights are over-saturated."));
   g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
+
+  // gamut compression slider
+  g->gamut_compression = dt_bauhaus_slider_new_with_range(self, 0., 2., 0.1, p->gamut_compression, 4);
+  dt_bauhaus_widget_set_label(g->gamut_compression, NULL, _("gamut compression"));
+  //dt_bauhaus_slider_enable_soft_boundaries(g->gamut_compression, 0.0, 1.0);
+  //dt_bauhaus_slider_set_format(g->gamut_compression, "%.2f %%");
+  gtk_box_pack_start(GTK_BOX(self->widget), g->gamut_compression, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->gamut_compression, _("desaturates the input of the module globally.\n"
+                                                      "you need to set this value below 100%\nif the chrominance preservation is enabled."));
+  g_signal_connect(G_OBJECT(g->gamut_compression), "value-changed", G_CALLBACK(gamut_compression_callback), self);
 
   // Preserve color
   g->preserve_color = dt_bauhaus_combobox_new(self);
