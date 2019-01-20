@@ -654,12 +654,18 @@ static void _blendop_masks_modes_toggle(GtkToggleButton *button, dt_iop_module_t
   if(darktable.gui->reset) return;
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
-	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
+  gboolean was_toggled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->selected_mask_mode), FALSE);  //unsets currently toggled in any case
+	if (was_toggled)
 	{
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->selected_mask_mode), FALSE);  //unsets currently toggled
 		dt_bauhaus_combobox_set(data->masks_modes_combo, mask_mode);
-		data->selected_mask_mode = (GtkWidget*) button;
+		data->selected_mask_mode = GTK_WIDGET(button);
 	}
+  else
+  {
+    dt_bauhaus_combobox_set(data->masks_modes_combo, DEVELOP_MASK_DISABLED);
+    data->selected_mask_mode = GTK_WIDGET(data->masks_modes_toggles.none);
+  }
 }
 
 static void _blendop_masks_modes_uni_toggled(GtkToggleButton *button, dt_iop_module_t *module)
@@ -1799,7 +1805,6 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
   module->blend_data = NULL;
 }
 
-
 void dt_iop_gui_update_blending(dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
@@ -2460,7 +2465,7 @@ switch(bd->csp)
     gtk_box_pack_start(GTK_BOX(bd->masks_modes_box), GTK_WIDGET(bd->masks_modes_toggles.param), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->masks_modes_box), GTK_WIDGET(bd->masks_modes_toggles.both), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->masks_modes_box), GTK_WIDGET(bd->masks_modes_toggles.raster), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->masks_modes_box), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->masks_modes_box), FALSE, FALSE, 0);
     
 		bd->top_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
     gtk_box_pack_start(GTK_BOX(bd->top_box), bd->blend_modes_combo, TRUE, TRUE, 0);
