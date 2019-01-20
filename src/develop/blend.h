@@ -362,17 +362,6 @@ typedef struct dt_iop_blend_mode_t
   unsigned int mode;
 } dt_iop_blend_mode_t;
 
-typedef struct masks_modes_toggles_t
-{
-	  GtkWidget *none;
-  	GtkWidget *uni;
-	  GtkWidget *drawn;
-	  GtkWidget *param;
-	  GtkWidget *both;
-	  GtkWidget *raster;
-} masks_modes_toggles_t;
-
-
 /** blend gui data */
 typedef struct dt_iop_gui_blend_data_t
 {
