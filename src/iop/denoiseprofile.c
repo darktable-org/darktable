@@ -2016,6 +2016,7 @@ void reload_defaults(dt_iop_module_t *module)
       }
       if(last && last->iso < iso && current->iso > iso)
       {
+        g->interpolated.iso = iso;
         dt_noiseprofile_interpolate(last, current, &g->interpolated);
         // signal later autodetection in commit_params:
         g->interpolated.a[0] = -1.0f;
@@ -2130,6 +2131,7 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
     }
     if(last && last->iso < iso && current->iso > iso)
     {
+      interpolated.iso = iso;
       dt_noiseprofile_interpolate(last, current, &interpolated);
       break;
     }
