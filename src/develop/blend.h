@@ -393,7 +393,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkLabel *lower_label[8];
   GtkLabel *upper_picker_label;
   GtkLabel *lower_picker_label;
-	GtkWidget *selected_mask_mode;
+  GtkWidget *selected_mask_mode;
   GtkWidget *upper_polarity;
   GtkWidget *lower_polarity;
   GtkWidget *colorpicker;
