@@ -188,7 +188,7 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
 
   if(!(ftype & DT_MASKS_GROUP) || gui->group_edited < 0) return;
 
-  // we get the slected form
+  // we get the selected form
   const dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
   const dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
   if(!sel) return;
@@ -1459,7 +1459,7 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
         || gui->feather_selected)
        && !gui->creation && gui->group_edited >= 0)
     {
-      // we get the slected form
+      // we get the selected form
       dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
       if(fpt)
       {
@@ -2169,7 +2169,7 @@ void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
 
   // we first need to test if the opacity can be set to the form
   if(form->type & DT_MASKS_GROUP) return;
-  int id = form->formid;
+  const int id = form->formid;
   float amount = 0.05f;
   if(!up) amount = -amount;
 
@@ -2180,7 +2180,7 @@ void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
     if(fpt->formid == id)
     {
-      float nv = fpt->opacity + amount;
+      const float nv = fpt->opacity + amount;
       if(nv <= 1.0f && nv >= 0.0f)
       {
         fpt->opacity = nv;
@@ -2238,7 +2238,7 @@ static int _find_in_group(dt_masks_form_t *grp, int formid)
   int nb = 0;
   while(forms)
   {
-    dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
+    const dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
     dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, grpt->formid);
     if(form)
     {
