@@ -25,15 +25,17 @@
 #include <xmmintrin.h>
 
 #define d50_sse _mm_set_ps(0.0f, 0.8249f, 1.0f, 0.9642f)
+#define d50_inv_sse _mm_set_ps(1.0f, 0.8249f, 1.0f, 0.9642f)
+
 #define coef_Lab_to_XYZ_sse _mm_set_ps(0.0f, -1.0f / 200.0f, 1.0f / 116.0f, 1.0f / 500.0f)
 #define offset_Lab_to_XYZ_sse _mm_set1_ps(0.137931034f)
 #define epsilon_Lab_to_XYZ_sse _mm_set1_ps(0.20689655172413796f) // cbrtf(216.0f/24389.0f);
-#define kappa_rcp_x16_sse _mm_set1_ps(16.0f * 27.0f / 24389.0f)
-#define kappa_rcp_x116_sse _mm_set1_ps(116.0f * 27.0f / 24389.0f)
-#define epsilon_XYZ_to_Lab_sse _mm_set1_ps(216.0f / 24389.0f)
-#define kappa_sse _mm_set1_ps(24389.0f / 27.0f)
-#define d50_inv_sse _mm_set_ps(1.0f, 0.8249f, 1.0f, 0.9642f)
+
 #define coef_XYZ_to_Lab_sse _mm_set_ps(0.0f, 200.0f, 500.0f, 116.0f)
+#define kappa_sse _mm_set1_ps(24389.0f / 27.0f)
+#define kappa_rcp_x16_sse 16.0f / kappa_sse
+#define kappa_rcp_x116_sse 116.0f / kappa_sse
+#define epsilon_XYZ_to_Lab_sse _mm_set1_ps(216.0f / 24389.0f)
 
 static inline __m128 lab_f_inv_m(const __m128 x)
 {
@@ -95,27 +97,18 @@ static inline __m128 dt_XYZ_to_xyY_sse2(const __m128 XYZ)    // XYZ  = [  .   Z 
    xyY[3] = some crap (alpha layer, we don't care)
    * */
 
-  __m128 shuf, sums, xyY;
-
-  // Horizontal sum of the first 3 elements
-  shuf = _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(3, 1, 2, 2));  // shuf = [  .   Y  |  Z    Z   ]
-  sums = XYZ + shuf;                                         // sums = [ 2*. Y+Z | Z+Y  X+Z  ]
-  shuf = _mm_movehl_ps(shuf, sums);                          // shuf = [  .   Y  | 2*.  Y+Z  ]
-  sums = _mm_add_ss(shuf, XYZ);                              // sums = [  .   Y  | 2*. X+Y+Z ]
+  // Horizontal sum of the first 3 elements - SIMD is worthless here,
+  // so we let the compiler handle the shuffling
+  const float sum = XYZ[0] + XYZ[1] + XYZ[2];
 
   // Normalize XYZ
-  xyY = XYZ / _mm_shuffle_ps(sums, sums, _MM_SHUFFLE(0, 0, 0, 0)); // xyY  = [  . Z/sums[0]|Y/sums[0] X/sums[0]]
-  shuf = _mm_movehl_ps(shuf, shuf);                          // shuf = [  .   Y  |  .    Y   ]
-  return _mm_movelh_ps(xyY, shuf);                           // xyY  = [  .   Y  |Y/sum X/sum]
+  __m128 xyY = XYZ / sum;
+  xyY[2] = XYZ[1];
+  return xyY;
 }
-
-#define one_z _mm_set_ps(0.0f, 1.0f, 0.0f, 0.0f)
-
 
 static inline __m128 dt_xyY_to_XYZ_sse2(const __m128 xyY)    // XYZ  = [  .   Y  |  y    x   ]
 {
-  __m128 shuf, sums, XYZ;
-
   /**
   XYZ    = sums                     * xyY[2] / shuf
   ---------------------------------------------------
@@ -125,13 +118,149 @@ static inline __m128 dt_xyY_to_XYZ_sse2(const __m128 xyY)    // XYZ  = [  .   Y 
   XYZ[3] = some crap (alpha layer, we don't care)
   **/
 
-  shuf = _mm_shuffle_ps(xyY, xyY, _MM_SHUFFLE(1, 1, 1, 1));  // shuf = [  y     y   |  y     y  ]
-  sums = -xyY - shuf;                                        // sums = [ -.    -Y   | -y   -x-y ]
-  sums = _mm_movelh_ps(xyY, sums) + one_z ;                  // sums = [ -y  -x-y+1 |  y     x  ]
-
-  XYZ = sums * _mm_shuffle_ps(xyY, xyY, _MM_SHUFFLE(2, 2, 2, 2)) / shuf;
-  return XYZ;                           // xyY  = [  Y   Y  |Y/sum X/sum]
+  __m128 XYZ = xyY;
+  XYZ[2] = 1.0f - xyY[0] - xyY[1];
+  XYZ = XYZ * xyY[2] / xyY[1];
+  return XYZ;
 }
+
+// XYZ -> LCM, assuming equal energy illuminant
+// https://en.wikipedia.org/wiki/LMS_color_space
+#define xyz_to_lms_0_sse _mm_setr_ps( 0.4002f, -0.22900f, 0.0f, 0.0f)
+#define xyz_to_lms_1_sse _mm_setr_ps( 0.7075f, 1.1500f, 0.0f, 0.0f)
+#define xyz_to_lms_2_sse _mm_setr_ps(-0.0809f, 0.0612f, 0.9184f, 0.0f)
+
+static inline __m128 dt_XYZ_to_LMS_sse2(const __m128 XYZ)
+{
+  __m128 lms
+      = xyz_to_lms_0_sse * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(0, 0, 0, 0)) +
+        xyz_to_lms_1_sse * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(1, 1, 1, 1)) +
+        xyz_to_lms_2_sse * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(2, 2, 2, 2));
+  return lms;
+}
+
+// LCM -> XYZ, assuming equal energy illuminant
+// https://en.wikipedia.org/wiki/LMS_color_space
+#define lms_to_xyz_0_sse _mm_setr_ps( 1.85924f,  0.36683f, 0.0f, 0.0f)
+#define lms_to_xyz_1_sse _mm_setr_ps(-1.13830f,  0.64388f, 0.0f, 0.0f)
+#define lms_to_xyz_2_sse _mm_setr_ps( 0.23884f, -0.01059f, 1.08885f, 0.0f)
+
+static inline __m128 dt_LMS_to_XYZ_sse2(const __m128 LMS)
+{
+  __m128 xyz
+      = lms_to_xyz_0_sse * _mm_shuffle_ps(LMS, LMS, _MM_SHUFFLE(0, 0, 0, 0)) +
+        lms_to_xyz_1_sse * _mm_shuffle_ps(LMS, LMS, _MM_SHUFFLE(1, 1, 1, 1)) +
+        lms_to_xyz_2_sse * _mm_shuffle_ps(LMS, LMS, _MM_SHUFFLE(2, 2, 2, 2));
+  return xyz;
+}
+
+#define epsilon_LMS_hdr _mm_set1_ps(0.5213250183194932)
+#define two_pow_epsilon _mm_pow_ps(_mm_set1_ps(2.0f), epsilon_LMS_hdr)
+#define inv_epsilon_LMS_hdr 1.0f / epsilon_LMS_hdr
+
+static inline __m128 dt_Michaelis_Menten(const __m128 LMS)
+{
+  /** Outputs NaN where LMS < 0
+   * */
+  // See https://eng.aurelienpierre.com/2019/01/17/derivating-hdr-ipt-direct-and-inverse-transformations/#fixing_ipt-hdr
+  const __m128 LMS_pow_epsilon = _mm_pow_ps(LMS, epsilon_LMS_hdr);
+  __m128 hdr = 246.06076715f * LMS_pow_epsilon / (LMS_pow_epsilon + two_pow_epsilon);
+  return hdr;
+}
+
+static inline __m128 dt_Michaelis_Menten_inverse(const __m128 LMShdr)
+{
+  // See https://eng.aurelienpierre.com/2019/01/17/derivating-hdr-ipt-direct-and-inverse-transformations/#fixing_ipt-hdr
+  const __m128 twice_LMShdr = 20000000.0f * LMShdr;
+  const __m128 radicand = - (twice_LMShdr * two_pow_epsilon) / (twice_LMShdr - 4921215343.0f);
+  return _mm_pow_ps(radicand, inv_epsilon_LMS_hdr);
+}
+
+#define zeros_sse _mm_setzero_ps()
+
+static inline __m128 dt_LMS_to_LMShdr(const __m128 LMS)
+{
+  /** Returns dt_Michaelis_Menten(LMS) where LMS >= 0
+   * and - dt_Michaelis_Menten(-LMS) where LMS < 0
+   * */
+  // See https://eng.aurelienpierre.com/2019/01/17/derivating-hdr-ipt-direct-and-inverse-transformations/#fixing_ipt-hdr
+  const __m128 positive = _mm_cmpge_ps(LMS, zeros_sse); // positive or zero
+  const __m128 negative = _mm_cmplt_ps(LMS, zeros_sse); // stricly negative
+  return _mm_or_ps(_mm_and_ps(positive, dt_Michaelis_Menten(LMS)),
+                    _mm_and_ps(negative, -dt_Michaelis_Menten(-LMS)));
+}
+
+static inline __m128 dt_LMShdr_to_LMS(const __m128 LMShdr)
+{
+  /** Returns dt_Michaelis_Menten_inv(LMS) where LMS >= 0
+   * and - dt_Michaelis_Menten_inv(-LMS) where LMS < 0
+   * */
+  // See https://eng.aurelienpierre.com/2019/01/17/derivating-hdr-ipt-direct-and-inverse-transformations/#fixing_ipt-hdr
+  const __m128 positive = _mm_cmpge_ps(LMShdr, zeros_sse); // positive or zero
+  const __m128 negative = _mm_cmplt_ps(LMShdr, zeros_sse); // stricly negative
+  return _mm_or_ps(_mm_and_ps(positive, dt_Michaelis_Menten_inverse(LMShdr)),
+                    _mm_and_ps(negative, -dt_Michaelis_Menten_inverse(-LMShdr)));
+}
+
+// LMS-HDR -> IPT-HDR
+// https://eng.aurelienpierre.com/2019/01/17/derivating-hdr-ipt-direct-and-inverse-transformations/#fixing_ipt-hdr
+#define lms_to_ipt_0_sse _mm_setr_ps( 0.40000f,  4.45500f, 0.80560f, 0.0f)
+#define lms_to_ipt_1_sse _mm_setr_ps( 0.40000f, -4.85100f, 0.35720f, 0.0f)
+#define lms_to_ipt_2_sse _mm_setr_ps( 0.20000f,  0.39600f,-1.16280f, 0.0f)
+
+static inline __m128 dt_LMShdr_to_IPThdr_sse2(const __m128 LMShdr)
+{
+  __m128 ipthdr
+      = lms_to_ipt_0_sse * _mm_shuffle_ps(LMShdr, LMShdr, _MM_SHUFFLE(0, 0, 0, 0)) +
+        lms_to_ipt_1_sse * _mm_shuffle_ps(LMShdr, LMShdr, _MM_SHUFFLE(1, 1, 1, 1)) +
+        lms_to_ipt_2_sse * _mm_shuffle_ps(LMShdr, LMShdr, _MM_SHUFFLE(2, 2, 2, 2));
+  return ipthdr;
+}
+
+// IPT-HDR -> LMS-HDR
+// https://eng.aurelienpierre.com/2019/01/17/derivating-hdr-ipt-direct-and-inverse-transformations/#fixing_ipt-hdr
+#define ipt_to_lms_0_sse _mm_setr_ps( 1.00000f,  1.00000f, 1.00000f, 0.0f)
+#define ipt_to_lms_1_sse _mm_setr_ps( 0.09757f, -0.11388f, 0.13322f, 0.0f)
+#define ipt_to_lms_2_sse _mm_setr_ps( 0.20523f,  0.13322f,-0.67689f, 0.0f)
+
+static inline __m128 dt_IPThdr_to_LMShdr_sse2(const __m128 IPThdr)
+{
+  __m128 lmshdr
+      = ipt_to_lms_0_sse * _mm_shuffle_ps(IPThdr, IPThdr, _MM_SHUFFLE(0, 0, 0, 0)) +
+        ipt_to_lms_1_sse * _mm_shuffle_ps(IPThdr, IPThdr, _MM_SHUFFLE(1, 1, 1, 1)) +
+        ipt_to_lms_2_sse * _mm_shuffle_ps(IPThdr, IPThdr, _MM_SHUFFLE(2, 2, 2, 2));
+  return lmshdr;
+}
+
+static inline __m128 dt_XYZ_to_IPThdr_sse2(const __m128 XYZ)
+{
+  /** Wrapper function for direct transfer **/
+  return dt_LMShdr_to_IPThdr_sse2(dt_LMS_to_LMShdr(dt_XYZ_to_LMS_sse2(XYZ)));
+}
+
+static inline __m128 dt_IPThdr_to_XYZ_sse2(const __m128 IPT)
+{
+  /** Wrapper function for direct transfer **/
+  return dt_LMS_to_XYZ_sse2(dt_LMShdr_to_LMS(dt_IPThdr_to_LMShdr_sse2(IPT)));
+}
+
+static inline __m128 dt_Lab_to_Lch_sse2(const __m128 Lab)
+{
+  __m128 Lch = Lab;
+  __m128 Lab2 = Lab * Lab;
+  Lch[1] = powf((Lab2[1] + Lab2[2]), 0.5f);
+  Lch[2] = atan2f(Lab[2], Lab[1]);
+  return Lch;
+}
+
+static inline __m128 dt_Lch_to_Lab_sse2(const __m128 Lch)
+{
+  __m128 Lab = Lch;
+  Lab[1] = cosf(Lch[2]) * Lch[1];
+  Lab[2] = sinf(Lch[2]) * Lch[1];
+  return Lab;
+}
+
 
 /** uses D50 white point. */
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
@@ -175,34 +304,35 @@ static inline __m128 dt_sRGB_to_XYZ_sse2(__m128 rgb)
 }
 
 /** uses D50 white point. */
+// XYZ -> prophotoRGB matrix, D50
+#define xyz_to_rgb_0_sse _mm_setr_ps( 1.3459433f, -0.5445989f, 0.0000000f, 0.0f)
+#define xyz_to_rgb_1_sse _mm_setr_ps(-0.2556075f,  1.5081673f, 0.0000000f, 0.0f)
+#define xyz_to_rgb_2_sse _mm_setr_ps(-0.0511118f,  0.0205351f,  1.2118128f, 0.0f)
+
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
 static inline __m128 dt_XYZ_to_prophotoRGB_sse2(__m128 XYZ)
 {
-  // XYZ -> prophotoRGB matrix, D50
-  const __m128 xyz_to_rgb_0 = _mm_setr_ps( 1.3459433f, -0.5445989f, 0.0000000f, 0.0f);
-  const __m128 xyz_to_rgb_1 = _mm_setr_ps(-0.2556075f,  1.5081673f, 0.0000000f, 0.0f);
-  const __m128 xyz_to_rgb_2 = _mm_setr_ps(-0.0511118f,  0.0205351f,  1.2118128f, 0.0f);
-
   __m128 rgb
-      = xyz_to_rgb_0 * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(0, 0, 0, 0)) +
-        xyz_to_rgb_1 * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(1, 1, 1, 1)) +
-        xyz_to_rgb_2 * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(2, 2, 2, 2));
+      = xyz_to_rgb_0_sse * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(0, 0, 0, 0)) +
+        xyz_to_rgb_1_sse * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(1, 1, 1, 1)) +
+        xyz_to_rgb_2_sse * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(2, 2, 2, 2));
   return rgb;
 }
+
+// prophotoRGB -> XYZ matrix, D50
+#define rgb_to_xyz_0_sse _mm_setr_ps(0.7976749f, 0.2880402f, 0.0000000f, 0.0f)
+#define rgb_to_xyz_1_sse _mm_setr_ps(0.1351917f, 0.7118741f, 0.0000000f, 0.0f)
+#define rgb_to_xyz_2_sse _mm_setr_ps(0.0313534f, 0.0000857f, 0.8252100f, 0.0f)
 
 /** uses D50 white point. */
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
 static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
 {
-  // prophotoRGB -> XYZ matrix, D50
-  const __m128 rgb_to_xyz_0 = _mm_setr_ps(0.7976749f, 0.2880402f, 0.0000000f, 0.0f);
-  const __m128 rgb_to_xyz_1 = _mm_setr_ps(0.1351917f, 0.7118741f, 0.0000000f, 0.0f);
-  const __m128 rgb_to_xyz_2 = _mm_setr_ps(0.0313534f, 0.0000857f, 0.8252100f, 0.0f);
 
   __m128 XYZ
-      = rgb_to_xyz_0 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0)) +
-        rgb_to_xyz_1 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1)) +
-        rgb_to_xyz_2 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2));
+      = rgb_to_xyz_0_sse * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0)) +
+        rgb_to_xyz_1_sse * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1)) +
+        rgb_to_xyz_2_sse * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2));
   return XYZ;
 }
 #endif
