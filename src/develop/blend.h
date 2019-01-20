@@ -386,6 +386,8 @@ typedef struct dt_iop_gui_blend_data_t
   dt_iop_module_t *module;
   GList *blend_modes;
   GList *masks_modes;
+  GList *masks_modes_toggles;
+	GtkWidget *selected_mask_mode;//FLO
   GList *masks_combine;
   GList *masks_invert;
   GList *masks_feathering_guide;
@@ -393,6 +395,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *iopw;
   GtkBox *top_box;
   GtkBox *bottom_box;
+  GtkBox *masks_modes_box;//FLO
   GtkBox *blendif_box;
   GtkBox *masks_box;
   GtkBox *raster_box;
@@ -408,14 +411,6 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *showmask;
   GtkWidget *suppress;
   void (*scale_print[8])(float value, char *string, int n);
-  GtkWidget *masks_modes_combo;
-
-  //FLO
-  GtkBox *masks_modes_box;
-	masks_modes_toggles_t masks_modes_toggles;
-	GtkWidget *selected_mask_mode;
-  //
-
   GtkWidget *masks_combine_combo;
   GtkWidget *blend_modes_combo;
   GtkWidget *masks_invert_combo;
