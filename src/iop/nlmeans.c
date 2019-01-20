@@ -185,15 +185,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
   const float sharpness = 3000.0f / (1.0f + d->strength);
 
-  if(P < 1)
-  {
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { width, height, 1 };
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-    if(err != CL_SUCCESS) goto error;
-    return TRUE;
-  }
-
   float max_L = 120.0f, max_C = 512.0f;
   float nL = 1.0f / max_L, nC = 1.0f / max_C;
   float nL2 = nL * nL, nC2 = nC * nC;
@@ -375,12 +366,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
   const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
   const float sharpness = 3000.0f / (1.0f + d->strength);
-  if(P < 1)
-  {
-    // nothing to do from this distance:
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * 4 * roi_out->width * roi_out->height);
-    return;
-  }
 
   // adjust to Lab, make L more important
   // float max_L = 100.0f, max_C = 256.0f;
@@ -519,12 +504,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
   const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
   const float sharpness = 3000.0f / (1.0f + d->strength);
-  if(P < 1)
-  {
-    // nothing to do from this distance:
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * 4 * roi_out->width * roi_out->height);
-    return;
-  }
 
   // adjust to Lab, make L more important
   // float max_L = 100.0f, max_C = 256.0f;
