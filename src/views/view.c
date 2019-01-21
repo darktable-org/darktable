@@ -862,6 +862,193 @@ int32_t dt_view_get_image_to_act_on()
   }
 }
 
+// Draw one of the controls that overlay thumbnails (e.g. stars) and check if the pointer is hovering it.
+// cr == NULL --> only check for pointer hovering
+// active --> non zero if the control can be activated by the mouse hovering it
+// return value non zero --> mouse is hovering
+
+int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *cr, const dt_image_t *img,
+                               int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py,
+                               dt_gui_color_t outlinecol, dt_gui_color_t fontcol)
+{
+  int ret = 0; // return value
+
+  float fscale = DT_PIXEL_APPLY_DPI(fminf(width, height));
+  float r1, r2;
+  if(zoom != 1)
+  {
+    r1 = 0.05 * width;
+    r2 = 0.022 * width;
+  }
+  else
+  {
+    r1 = 0.015 * fscale;
+    r2 = 0.007 * fscale;
+  }
+
+  gboolean extended_thumb_overlay = dt_conf_get_bool("plugins/lighttable/extended_thumb_overlay");
+  float x, y;
+  if(zoom != 1)
+    y = (extended_thumb_overlay ? 0.93 : 0.9) * height;
+  else
+    y = .12 * fscale;
+
+  int rejected = img && (img->flags & 0x7) == 6;
+
+  switch(what)
+  {
+    case DT_VIEW_STAR_1:
+    case DT_VIEW_STAR_2:
+    case DT_VIEW_STAR_3:
+    case DT_VIEW_STAR_4:
+    case DT_VIEW_STAR_5:
+      if(zoom != 1)
+        x = (0.26 + (what - DT_VIEW_STAR_1) * 0.12) * width;
+      else
+        x = (.08 + (what - DT_VIEW_STAR_1) * 0.04) * fscale;
+
+      if(cr) dt_view_star(cr, x, y, r1, r2);
+
+      if(active && (px - x) * (px - x) + (py - y) * (py - y) < r1 * r1)
+      {
+        ret = 1;
+        if(cr) cairo_fill(cr);
+      }
+      else if(cr && img && (img->flags & 0x7) > what - DT_VIEW_STAR_1)
+      {
+        cairo_fill_preserve(cr);
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
+        cairo_stroke(cr);
+        dt_gui_gtk_set_source_rgb(cr, outlinecol);
+      }
+      else if(cr)
+        cairo_stroke(cr);
+
+      break;
+
+    case DT_VIEW_REJECT:
+      if(zoom != 1)
+        x = 0.08 * width;
+      else
+        x = .04 * fscale;
+
+      if(cr && rejected) cairo_set_source_rgb(cr, 1., 0., 0.);
+
+      if(active && (px - x) * (px - x) + (py - y) * (py - y) < r1 * r1)
+      {
+        ret = 1;
+        if(cr)
+        {
+          cairo_new_sub_path(cr);
+          cairo_arc(cr, x, y, (r1 + r2) * .5, 0, 2.0f * M_PI);
+          cairo_stroke(cr);
+        }
+      }
+
+      if(cr)
+      {
+        if(rejected) cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.5));
+
+        // reject cross:
+        cairo_move_to(cr, x - r2, y - r2);
+        cairo_line_to(cr, x + r2, y + r2);
+        cairo_move_to(cr, x + r2, y - r2);
+        cairo_line_to(cr, x - r2, y + r2);
+        cairo_close_path(cr);
+        cairo_stroke(cr);
+        dt_gui_gtk_set_source_rgb(cr, outlinecol);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
+      }
+
+      break;
+
+    case DT_VIEW_GROUP:
+    {
+      // draw grouping icon and border if the current group is expanded
+      // align to the right, left of altered
+      float s = (r1 + r2) * .6;
+      if(zoom != 1)
+      {
+        x = width * 0.9 - s * 2.5;
+        y = height * 0.1 - s * .4;
+      }
+      else
+      {
+        x = (.04 + 8 * 0.04 - 1.1 * .04) * fscale;
+        y = y - (.17 * .04) * fscale;
+      }
+      if(cr)
+      {
+        cairo_save(cr);
+        if(img && (img->id != img->group_id)) dt_gui_gtk_set_source_rgb(cr, fontcol);
+        dtgtk_cairo_paint_grouping(cr, x, y, s, s, 23, NULL);
+        cairo_restore(cr);
+      }
+
+      if(active && fabs(px - x - .5 * s) <= .8 * s && fabs(py - y - .5 * s) <= .8 * s) ret = 1;
+
+      break;
+    }
+
+    case DT_VIEW_AUDIO:
+    {
+      // align to right
+      float s = (r1 + r2) * .5;
+      if(zoom != 1)
+      {
+        x = width * 0.9 - s * 5;
+        y = height * 0.1;
+      }
+      else
+        x = (.04 + 8 * 0.04 - 1.9 * .04) * fscale;
+      if(cr) dt_view_draw_audio(cr, x, y, s);
+      // mouse is over the audio icon
+      if(active && fabsf(px - x) <= 1.2 * s && fabsf(py - y) <= 1.2 * s) ret = 1;
+
+      break;
+    }
+
+    case DT_VIEW_ALTERED:
+    {
+      // align to right
+      float s = (r1 + r2) * .5;
+      if(zoom != 1)
+      {
+        x = width * 0.9;
+        y = height * 0.1;
+      }
+      else
+        x = (.04 + 8 * 0.04) * fscale;
+      if(cr) dt_view_draw_altered(cr, x, y, s);
+      if(active && fabsf(px - x) <= 1.2 * s && fabsf(py - y) <= 1.2 * s) ret = 1;
+
+      break;
+    }
+
+    default: // if what == DT_VIEW_DESERT just return 0
+      return 0;
+  }
+
+  return ret;
+}
+
+dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py)
+{
+  // active if zoom>1 or in the proper area
+  gboolean in_metadata_zone = (px < width && py < height / 2) || (zoom > 1);
+
+  gboolean draw_metadata = darktable.gui->show_overlays || in_metadata_zone;
+
+  if(draw_metadata && width > DECORATION_SIZE_LIMIT)
+  {
+    dt_view_image_over_t i;
+    for(i = DT_VIEW_ERR; i < DT_VIEW_END; i++)
+      if(dt_view_process_image_over(i, 1, NULL, NULL, width, height, zoom, px, py, 0, 0)) return i;
+  }
+
+  return DT_VIEW_DESERT;
+}
+
 int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo_t *cr, int32_t width,
                          int32_t height, int32_t zoom, int32_t px, int32_t py, gboolean full_preview, gboolean image_only)
 {
@@ -1209,24 +1396,8 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
       dt_gui_gtk_set_source_rgb(cr, outlinecol);
       cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
-      float r1, r2;
-      if(zoom != 1)
-      {
-        r1 = 0.05 * width;
-        r2 = 0.022 * width;
-      }
-      else
-      {
-        r1 = 0.015 * fscale;
-        r2 = 0.007 * fscale;
-      }
 
       const gboolean extended_thumb_overlay = dt_conf_get_bool("plugins/lighttable/extended_thumb_overlay");
-      float x, y;
-      if(zoom != 1)
-        y = (extended_thumb_overlay ? 0.93 : 0.9) * height;
-      else
-        y = .12 * fscale;
       const gboolean image_is_rejected = (img && ((img->flags & 0x7) == 6));
 
       if(img)
@@ -1292,82 +1463,27 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           cairo_restore(cr);
         }
 
-        for(int k = 0; k < 5; k++)
+        if(!image_is_rejected) // if rejected: draw no stars
         {
-          if(zoom != 1)
-            x = (0.26 + k * 0.12) * width;
-          else
-            x = (.08 + k * 0.04) * fscale;
-
-          if(!image_is_rejected) // if rejected: draw no stars
+          for(int k = 0; k < 5; k++)
           {
-            dt_view_star(cr, x, y, r1, r2);
-            // Only draw hovering effects in stars for the hovered image
-            // printf ("Image selected: %d - Image processed: %d\n", imgsel, imgid);
-            if((imgsel == imgid || zoom == 1) && ((px - x) * (px - x) + (py - y) * (py - y) < r1 * r1))
-            {
-              *image_over = DT_VIEW_STAR_1 + k;
-              cairo_fill(cr);
-            }
-            else if((img->flags & 0x7) > k)
-            {
-              cairo_fill_preserve(cr);
-              dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
-              cairo_stroke(cr);
-              dt_gui_gtk_set_source_rgb(cr, outlinecol);
-            }
-            else
-              cairo_stroke(cr);
+            dt_view_image_over_t star = DT_VIEW_STAR_1 + k;
+            if(dt_view_process_image_over(star, imgsel == imgid || zoom == 1, cr, img,
+                                          width, height, zoom, px, py, outlinecol, fontcol))
+              *image_over = star;
           }
         }
       }
 
-      // Image rejected?
-      if(zoom != 1)
-        x = 0.08 * width;
-      else
-        x = .04 * fscale;
+      if(dt_view_process_image_over(DT_VIEW_REJECT, imgsel == imgid || zoom == 1, cr, img,
+                                    width, height, zoom, px, py, outlinecol, fontcol))
+        *image_over = DT_VIEW_REJECT;
 
-      if(image_is_rejected) cairo_set_source_rgb(cr, 1., 0., 0.);
-
-      // Only draw hovering effects in stars for the hovered image
-      if((imgsel == imgid || zoom == 1) && ((px - x) * (px - x) + (py - y) * (py - y) < r1 * r1))
+      if(draw_audio && img && (img->flags & DT_IMAGE_HAS_WAV))
       {
-        *image_over = DT_VIEW_REJECT; // mouse sensitive
-        cairo_new_sub_path(cr);
-        cairo_arc(cr, x, y, (r1 + r2) * .5, 0, 2.0f * M_PI);
-        cairo_stroke(cr);
-      }
-
-      if(image_is_rejected) cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.5));
-
-      // reject cross:
-      cairo_move_to(cr, x - r2, y - r2);
-      cairo_line_to(cr, x + r2, y + r2);
-      cairo_move_to(cr, x + r2, y - r2);
-      cairo_line_to(cr, x - r2, y + r2);
-      cairo_close_path(cr);
-      cairo_stroke(cr);
-      dt_gui_gtk_set_source_rgb(cr, outlinecol);
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
-
-      if(draw_audio)
-      {
-        if(img && (img->flags & DT_IMAGE_HAS_WAV))
-        {
-          // align to right
-          const float s = (r1 + r2) * .5;
-          if(zoom != 1)
-          {
-            x = width * 0.9 - s * 5;
-            y = height * 0.1;
-          }
-          else
-            x = (.04 + 8 * 0.04 - 1.9 * .04) * fscale;
-          dt_view_draw_audio(cr, x, y, s);
-          // mouse is over the audio icon
-          if(fabsf(px - x) <= 1.2 * s && fabsf(py - y) <= 1.2 * s) *image_over = DT_VIEW_AUDIO;
-        }
+        if(dt_view_process_image_over(DT_VIEW_AUDIO, imgsel == imgid || zoom == 1, cr, img,
+                                      width, height, zoom, px, py, outlinecol, fontcol))
+          *image_over = DT_VIEW_AUDIO;
       }
 
       if(draw_grouping)
@@ -1387,48 +1503,17 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       // image part of a group?
       if(is_grouped && darktable.gui && darktable.gui->grouping)
       {
-        // draw grouping icon and border if the current group is expanded
-        // align to the right, left of altered
-        const float s = (r1 + r2) * .6;
-        float _x, _y;
-        if(zoom != 1)
-        {
-          _x = width * 0.9 - s * 2.5;
-          _y = height * 0.1 - s * .4;
-        }
-        else
-        {
-          _x = (.04 + 8 * 0.04 - 1.1 * .04) * fscale;
-          _y = y - (.17 * .04) * fscale;
-        }
-        cairo_save(cr);
-        if(img && (imgid != img->group_id)) dt_gui_gtk_set_source_rgb(cr, fontcol);
-        dtgtk_cairo_paint_grouping(cr, _x, _y, s, s, 23, NULL);
-        cairo_restore(cr);
-        // mouse is over the grouping icon
-        if(img && fabs(px - _x - .5 * s) <= .8 * s && fabs(py - _y - .5 * s) <= .8 * s)
+        if(dt_view_process_image_over(DT_VIEW_GROUP, img != NULL, cr, img,
+                                      width, height, zoom, px, py, outlinecol, fontcol))
           *image_over = DT_VIEW_GROUP;
       }
 
       // image altered?
       if(draw_history && dt_image_altered(imgid))
       {
-        // align to right
-        const float s = (r1 + r2) * .5;
-        if(zoom != 1)
-        {
-          x = width * 0.9;
-          y = height * 0.1;
-        }
-        else
-          x = (.04 + 8 * 0.04) * fscale;
-        dt_view_draw_altered(cr, x, y, s);
-        // g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
-        if(img && fabsf(px - x) <= 1.2 * s
-           && fabsf(py - y) <= 1.2 * s) // mouse hovers over the altered-icon -> history tooltip!
-        {
+        if(dt_view_process_image_over(DT_VIEW_ALTERED, img != NULL, cr, img,
+                                      width, height, zoom, px, py, outlinecol, fontcol))
           darktable.gui->center_tooltip = 1;
-        }
       }
     }
   }

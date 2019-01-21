@@ -131,12 +131,17 @@ typedef enum dt_view_image_over_t
   DT_VIEW_STAR_5 = 5,
   DT_VIEW_REJECT = 6,
   DT_VIEW_GROUP = 7,
-  DT_VIEW_AUDIO = 8
+  DT_VIEW_AUDIO = 8,
+  DT_VIEW_ALTERED = 9,
+  DT_VIEW_END = 10 // placeholder for the end of the list
 } dt_view_image_over_t;
 
 /** returns -1 if the action has to be applied to the selection,
     or the imgid otherwise */
 int32_t dt_view_get_image_to_act_on();
+
+/** guess the image_over flag assuming that all possible controls are displayed */
+dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);
 
 /** expose an image, set image over flags. return != 0 if thumbnail wasn't loaded yet. */
 int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t index, cairo_t *cr, int32_t width,
