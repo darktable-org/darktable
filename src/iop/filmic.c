@@ -537,8 +537,13 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float grey = data->grey_source;
   const float black = data->black_source;
   const float dynamic_range = data->dynamic_range;
-  const __m128 power = _mm_set1_ps(data->output_power);
   const float saturation = (data->global_saturation / 100.0f);
+
+  const __m128 grey_sse = _mm_set1_ps(grey);
+  const __m128 black_sse = _mm_set1_ps(black);
+  const __m128 dynamic_range_sse = _mm_set1_ps(dynamic_range);
+  const __m128 power = _mm_set1_ps(data->output_power);
+  const __m128 saturation_sse = _mm_set1_ps(saturation);
 
   // If saturation == 100, we have a no-op. Disable the op then.
   const int desaturate = (data->global_saturation == 100.0f) ? FALSE : TRUE;
@@ -559,21 +564,21 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     __m128 XYZ = dt_Lab_to_XYZ_sse2(_mm_load_ps(in));
     __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
 
-    float concavity;
-    float luma;
+    __m128 concavity;
+    __m128 luma;
 
     // Global saturation adjustment
     if (desaturate)
     {
-      luma = XYZ[1];
-      rgb = luma + saturation * (rgb - luma);
+      luma = _mm_set1_ps(XYZ[1]);
+      rgb = luma + saturation_sse * (rgb - luma);
     }
 
     if (preserve_color)
     {
       // Get the max of the RGB values
       float max = fmax(fmaxf(rgb[0], rgb[1]), rgb[2]);
-      __m128 max_sse = _mm_set_ps(max, max, max, max);
+      __m128 max_sse = _mm_set1_ps(max);
 
       // Save the ratios
       const __m128 ratios = rgb / max_sse;
@@ -586,26 +591,26 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       // Filmic S curve on the max RGB
       const int index = CLAMP(max * 0x10000ul, 0, 0xffff);
       max = data->table[index];
-      concavity = data->grad_2[index];
+      concavity = _mm_set1_ps(data->grad_2[index]);
 
       // Re-apply ratios
-      rgb = ratios * max;
-      luma = max;
+      rgb = ratios * max_sse;
+      luma = max_sse;
     }
     else
     {
       // Log tone-mapping
-      rgb = rgb / grey;
+      rgb = rgb / grey_sse;
       rgb = _mm_max_ps(rgb, EPS);
       rgb = _mm_log2_ps(rgb);
-      rgb -= black;
-      rgb /=  dynamic_range;
+      rgb -= black_sse;
+      rgb /=  dynamic_range_sse;
       rgb = _mm_max_ps(rgb, zero);
       rgb = _mm_min_ps(rgb, one);
 
       // Store the derivative at the pixel luminance
       XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
-      concavity = data->grad_2[(int)CLAMP(XYZ[1] * 0x10000ul, 0, 0xffff)];
+      concavity = _mm_set1_ps(data->grad_2[(int)CLAMP(XYZ[1] * 0x10000ul, 0, 0xffff)]);
 
       // Unpack SSE vector to regular array
       float rgb_unpack[4];
@@ -618,7 +623,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
       rgb = _mm_load_ps(rgb_unpack);
       XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
-      luma = XYZ[1];
+      luma = _mm_set1_ps(XYZ[1]);
     }
 
     rgb = luma + concavity * (rgb - luma);
