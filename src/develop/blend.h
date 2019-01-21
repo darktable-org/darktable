@@ -362,6 +362,7 @@ typedef struct dt_iop_blend_mode_t
   unsigned int mode;
 } dt_iop_blend_mode_t;
 
+
 /** blend gui data */
 typedef struct dt_iop_gui_blend_data_t
 {
