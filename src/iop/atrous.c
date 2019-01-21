@@ -210,9 +210,9 @@ static inline __m128 weight_sse2(const __m128 c1, const __m128 c2, const float s
 #define SUM_PIXEL_CONTRIBUTION_COMMON_SSE2(ii, jj)                                                           \
   {                                                                                                          \
     const float f = filter[(ii)] * filter[(jj)];                                                             \
-    const __m128 wp = weight_sse2(*px, *px2, sharpen);                                                       \
+    const __m128 wp = weight_sse2(px, px2, sharpen);                                                       \
     const __m128 w = f * wp;                                                                                 \
-    const __m128 pd = w * *px2;                                                                              \
+    const __m128 pd = w * px2;                                                                              \
     sum += pd;                                                                                               \
     wgt += w;                                                                                                \
   }
@@ -246,7 +246,7 @@ static inline __m128 weight_sse2(const __m128 c1, const __m128 c2, const float s
     if(x >= width) x = width - 1;                                                                            \
     if(y >= height) y = height - 1;                                                                          \
                                                                                                              \
-    px2 = ((__m128 *)in) + x + y * width;                                                                    \
+    px2 = _mm_load_ps((float *)in +  4 * (x + y * width));                                                   \
                                                                                                              \
     SUM_PIXEL_CONTRIBUTION_COMMON_SSE2(ii, jj);                                                              \
   } while(0)
@@ -257,7 +257,7 @@ static inline __m128 weight_sse2(const __m128 c1, const __m128 c2, const float s
   float wgt[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                                                 \
   const size_t inc = 4 * (j * width + i);                                                                    \
   const float *px = ((float *)in) + inc;                                                                     \
-  const float *px2;                                                                                          \
+  float *px2;                                                                                                \
   float *pdetail = detail + inc;                                                                             \
   float *pcoarse = out + inc;
 
@@ -266,8 +266,8 @@ static inline __m128 weight_sse2(const __m128 c1, const __m128 c2, const float s
   __m128 sum = _mm_setzero_ps();                                                                             \
   __m128 wgt = _mm_setzero_ps();                                                                             \
   const size_t inc = 4 * (j * width + i);                                                                    \
-  const __m128 *px = (__m128 *)(in + inc);                                                                   \
-  const __m128 *px2;                                                                                         \
+  const __m128 px = _mm_load_ps(in + inc);                                                                   \
+  __m128 px2;                                                                                          \
   float *pdetail = detail + inc;                                                                             \
   float *pcoarse = out + inc;
 #endif
@@ -281,7 +281,7 @@ static inline __m128 weight_sse2(const __m128 c1, const __m128 c2, const float s
 #if defined(__SSE2__)
 #define SUM_PIXEL_EPILOGUE_SSE                                                                               \
   sum /= wgt;                                                                                                \
-  _mm_stream_ps(pdetail, *px - sum);                                                              \
+  _mm_stream_ps(pdetail, px - sum);                                                                          \
   _mm_stream_ps(pcoarse, sum);
 #endif
 
@@ -454,15 +454,13 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
     for(size_t i = 2 * mult; i < width - 2 * mult; i++)
     {
       SUM_PIXEL_PROLOGUE_SSE
-      px2 = ((__m128 *)in) + i - 2 * mult + (size_t)(j - 2 * mult) * width;
       for(int jj = 0; jj < 5; jj++)
       {
         for(int ii = 0; ii < 5; ii++)
         {
+          px2 = _mm_load_ps(((float *)in) + 4 * (i - 2 * mult + (j - 2 * mult) * width + jj * (width - 5) * mult + ii * mult));
           SUM_PIXEL_CONTRIBUTION_COMMON_SSE2(ii, jj);
-          px2 += mult;
         }
-        px2 += (width - 5) * mult;
       }
       SUM_PIXEL_EPILOGUE_SSE
     }
@@ -548,8 +546,8 @@ static void eaw_synthesize_sse2(float *const out, const float *const in, const f
                                 const float *thrsf, const float *boostf, const size_t width,
                                 const size_t height)
 {
-  const __m128 threshold = _mm_set_ps(thrsf[3], thrsf[2], thrsf[1], thrsf[0]);
-  const __m128 boost = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
+  const __m128 threshold = _mm_loadu_ps(thrsf);
+  const __m128 boost = _mm_loadu_ps(boostf);
   const __m128 zeros = _mm_setzero_ps();
   const __m128i maski = _mm_set1_epi32(0x80000000u);
   __m128 *const mask = (__m128 *)&maski;
@@ -559,14 +557,14 @@ static void eaw_synthesize_sse2(float *const out, const float *const in, const f
 #endif
   for(size_t k = 0; k < width * height * 4; k += 4)
   {
-    const __m128 *pin = (__m128 *)(in + k);
-    const __m128 *pdetail = (__m128 *)(detail + k);
+    const __m128 pin = _mm_load_ps(in + k);
+    const __m128 pdetail = _mm_load_ps(detail + k);
     float *pout = out + k;
 
     const __m128 absamt
-        = _mm_max_ps(zeros, (_mm_andnot_ps(*mask, *pdetail) - threshold));
-    const __m128 amount = _mm_or_ps(_mm_and_ps(*pdetail, *mask), absamt);
-    _mm_stream_ps(pout, (*pin + (boost * amount)));
+        = _mm_max_ps(zeros, (_mm_andnot_ps(*mask, pdetail) - threshold));
+    const __m128 amount = _mm_or_ps(_mm_and_ps(pdetail, *mask), absamt);
+    _mm_stream_ps(pout, (pin + (boost * amount)));
   }
   _mm_sfence();
 }
