@@ -1025,7 +1025,7 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
       break;
     }
 
-    default: // this is an error, we should never end up here
+    default: // if what == DT_VIEW_DESERT just return 0
       return 0;
   }
 
