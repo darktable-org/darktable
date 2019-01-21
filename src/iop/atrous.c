@@ -345,7 +345,11 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
       {
         for(size_t ii = 0; ii < 5; ii++)
         {
-          px2 = ((float *)in) + 4 * (i - 2 * mult + (j - 2 * mult) * width + jj * (width - 5) * mult + ii * mult);
+          const size_t iii = (ii)-2;
+          const size_t jjj = (jj)-2;
+          const size_t x = i + mult * iii;
+          const size_t y = j + mult * jjj;
+          px2 = (float *)in +  4 * (x + y * width);
           SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj);
         }
       }
@@ -458,7 +462,11 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
       {
         for(int ii = 0; ii < 5; ii++)
         {
-          px2 = _mm_load_ps(((float *)in) + 4 * (i - 2 * mult + (j - 2 * mult) * width + jj * (width - 5) * mult + ii * mult));
+          const size_t iii = (ii)-2;
+          const size_t jjj = (jj)-2;
+          const size_t x = i + mult * iii;
+          const size_t y = j + mult * jjj;
+          px2 = _mm_load_ps((float *)in +  4 * (x + y * width));
           SUM_PIXEL_CONTRIBUTION_COMMON_SSE2(ii, jj);
         }
       }
