@@ -463,8 +463,7 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
      * to avoid unneeded branching in the inner loops */
     for(size_t i = 2 * mult; i < width - 2 * mult; i++)
     {
-      __m128 sum_jj[5] = { _mm_setzero_ps() };
-      __m128 wgt_jj[5] = { _mm_setzero_ps() };
+      __m128 sum_jj[5], wgt_jj[5];
 
       const size_t inc = 4 * (j * width + i);
 
