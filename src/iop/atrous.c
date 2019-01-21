@@ -229,7 +229,7 @@ static inline __m128 weight_sse2(const __m128 c1, const __m128 c2, const float s
     if(x >= width) x = width - 1;                                                                            \
     if(y >= height) y = height - 1;                                                                          \
                                                                                                              \
-    px2 = ((float *)in) + 4 * (x + y * width);                                                               \
+    px2 = ((float *)in) + 4 * (x + y * width);                                                        \
                                                                                                              \
     SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj);                                                                   \
   } while(0)
@@ -246,7 +246,7 @@ static inline __m128 weight_sse2(const __m128 c1, const __m128 c2, const float s
     if(x >= width) x = width - 1;                                                                            \
     if(y >= height) y = height - 1;                                                                          \
                                                                                                              \
-    px2 = _mm_load_ps((float *)in +  4 * (x + y * width));                                                   \
+    const __m128 px2 = _mm_load_ps((float *)in +  4 * (x + y * width));                                                   \
                                                                                                              \
     SUM_PIXEL_CONTRIBUTION_COMMON_SSE2(ii, jj);                                                              \
   } while(0)
@@ -267,7 +267,6 @@ static inline __m128 weight_sse2(const __m128 c1, const __m128 c2, const float s
   __m128 wgt = _mm_setzero_ps();                                                                             \
   const size_t inc = 4 * (j * width + i);                                                                    \
   const __m128 px = _mm_load_ps(in + inc);                                                                   \
-  __m128 px2;                                                                                          \
   float *pdetail = detail + inc;                                                                             \
   float *pcoarse = out + inc;
 #endif
@@ -400,6 +399,11 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 #undef SUM_PIXEL_EPILOGUE
 
 #if defined(__SSE2__)
+static inline int shift_filter(int mult, size_t i, int ii)
+{
+  return i - mult * (-2 + ii);
+}
+
 static void eaw_decompose_sse2(float *const out, const float *const in, float *const detail, const int scale,
                                const float sharpen, const size_t width, const size_t height)
 {
@@ -418,10 +422,11 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
       SUM_PIXEL_PROLOGUE_SSE
       for(int jj = 0; jj < 5; jj++)
       {
-        for(int ii = 0; ii < 5; ii++)
-        {
-          SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(ii, jj);
-        }
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(0, jj);
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(1, jj);
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(2, jj);
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(3, jj);
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(4, jj);
       }
       SUM_PIXEL_EPILOGUE_SSE
     }
@@ -439,10 +444,11 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
       SUM_PIXEL_PROLOGUE_SSE
       for(int jj = 0; jj < 5; jj++)
       {
-        for(int ii = 0; ii < 5; ii++)
-        {
-          SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(ii, jj);
-        }
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(0, jj);
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(1, jj);
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(2, jj);
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(3, jj);
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(4, jj);
       }
       SUM_PIXEL_EPILOGUE_SSE
     }
@@ -457,20 +463,52 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
      * to avoid unneeded branching in the inner loops */
     for(size_t i = 2 * mult; i < width - 2 * mult; i++)
     {
-      SUM_PIXEL_PROLOGUE_SSE
+      __m128 sum_jj[5] = { _mm_setzero_ps() };
+      __m128 wgt_jj[5] = { _mm_setzero_ps() };
+
+      const size_t inc = 4 * (j * width + i);
+
+      const __m128 px = _mm_load_ps(in + inc);
+      float *pdetail = detail + inc;
+      float *pcoarse = out + inc;
+
       for(int jj = 0; jj < 5; jj++)
       {
-        for(int ii = 0; ii < 5; ii++)
-        {
-          const size_t iii = (ii)-2;
-          const size_t jjj = (jj)-2;
-          const size_t x = i + mult * iii;
-          const size_t y = j + mult * jjj;
-          px2 = _mm_load_ps((float *)in +  4 * (x + y * width));
-          SUM_PIXEL_CONTRIBUTION_COMMON_SSE2(ii, jj);
-        }
+        size_t y = (j + mult * (-2 + jj)) * width;
+        float filter_jj[5];
+        for (int ii = 0; ii < 5; ++ii) filter_jj[ii] = filter[ii] * filter[jj];
+
+        __m128 w[5], pd[5], pix[5];
+
+        // Loop on memory : load vectors
+        pix[0] = _mm_load_ps((float *)in +  4 * (shift_filter(mult, i, 0) + y));
+        pix[1] = _mm_load_ps((float *)in +  4 * (shift_filter(mult, i, 1) + y));
+        pix[2] = _mm_load_ps((float *)in +  4 * (shift_filter(mult, i, 2) + y));
+        pix[3] = _mm_load_ps((float *)in +  4 * (shift_filter(mult, i, 3) + y));
+        pix[4] = _mm_load_ps((float *)in +  4 * (shift_filter(mult, i, 4) + y));
+
+        // Loop on values
+        w[0] = filter_jj[0] * weight_sse2(px, pix[0], sharpen);
+        w[1] = filter_jj[1] * weight_sse2(px, pix[1], sharpen);
+        w[2] = filter_jj[2] * weight_sse2(px, pix[2], sharpen);
+        w[3] = filter_jj[3] * weight_sse2(px, pix[3], sharpen);
+        w[4] = filter_jj[4] * weight_sse2(px, pix[4], sharpen);
+
+        pd[0] = w[0] * pix[0];
+        pd[1] = w[1] * pix[1];
+        pd[2] = w[2] * pix[2];
+        pd[3] = w[3] * pix[3];
+        pd[4] = w[4] * pix[4];
+
+        sum_jj[jj] = pd[0] + pd[1] + pd[2] + pd[3] + pd[4];
+        wgt_jj[jj] = w[0] + w[1] + w[2] + w[3] + w[4];
       }
-      SUM_PIXEL_EPILOGUE_SSE
+
+      const __m128 wgt = wgt_jj[0] + wgt_jj[1] + wgt_jj[2] + wgt_jj[3] + wgt_jj[4];
+      const __m128 sum = (sum_jj[0] + sum_jj[1] + sum_jj[2] + sum_jj[3] + sum_jj[4]) / wgt;
+
+      _mm_stream_ps(pdetail, px - sum);
+      _mm_stream_ps(pcoarse, sum);
     }
   }
 
@@ -485,10 +523,11 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
       SUM_PIXEL_PROLOGUE_SSE
       for(int jj = 0; jj < 5; jj++)
       {
-        for(int ii = 0; ii < 5; ii++)
-        {
-          SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(ii, jj);
-        }
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(0, jj);
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(1, jj);
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(2, jj);
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(3, jj);
+        SUM_PIXEL_CONTRIBUTION_WITH_TEST_SSE2(4, jj);
       }
       SUM_PIXEL_EPILOGUE_SSE
     }
