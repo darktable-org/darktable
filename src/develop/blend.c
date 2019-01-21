@@ -3249,6 +3249,38 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_set_mask, sizes);
     if(err != CL_SUCCESS) goto error;
   }
+  else if(mask_mode & DEVELOP_MASK_RASTER)
+  {
+    /* use a raster mask from another module earlier in the pipe */
+    gboolean free_mask = FALSE; // if no transformations were applied we get the cached original back
+    float *raster_mask = dt_dev_get_raster_mask(piece->pipe, self->raster_mask.sink.source, self->raster_mask.sink.id,
+                                                self, &free_mask);
+
+    if(raster_mask)
+    {
+      // invert if required
+      if(d->raster_mask_invert)
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(raster_mask)
+#endif
+        for(size_t i = 0; i < buffsize; i++) mask[i] = 1.0 - raster_mask[i];
+      else
+        memcpy(mask, raster_mask, buffsize * sizeof(float));
+      if(free_mask) dt_free_align(raster_mask);
+    }
+    else
+    {
+      // fallback for when the raster mask couldn't be applied
+      const float value = d->raster_mask_invert ? 0.0 : 1.0;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none)
+#endif
+      for(size_t i = 0; i < buffsize; i++) mask[i] = value;
+    }
+
+    err = dt_opencl_write_host_to_device(devid, mask, dev_mask_1, owidth, oheight, sizeof(float));
+    if(err != CL_SUCCESS) goto error;
+  }
   else
   {
     // we blend with a drawn and/or parametric mask
@@ -3401,11 +3433,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       dev_mask_1 = dev_mask_2;
       dev_mask_2 = tmp;
     }
-  }
 
-  // get rid of dev_mask_2
-  dt_opencl_release_mem_object(dev_mask_2);
-  dev_mask_2 = NULL;
+    // get rid of dev_mask_2
+    dt_opencl_release_mem_object(dev_mask_2);
+    dev_mask_2 = NULL;
+  }
 
   // get temporary buffer for output image to overcome readonly/writeonly limitation
   dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, 4 * sizeof(float));
@@ -3452,7 +3484,25 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     piece->pipe->mask_display = request_mask_display;
   }
 
-  dt_free_align(_mask);
+
+  // check if we should store the mask for export or use in subsequent modules
+  // TODO: should we skip raster masks?
+  if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, 0))
+  {
+    //  get back final mask from the device to store it for later use
+    if(!(mask_mode & DEVELOP_MASK_RASTER))
+    {
+      err = dt_opencl_read_buffer_from_device(devid, mask, dev_mask_1, owidth, oheight, sizeof(float));
+      if(err != CL_SUCCESS) goto error;
+    }
+    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(0), _mask);
+    }
+  else
+  {
+    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(0));
+    dt_free_align(_mask);
+  }
+
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_mask_1);
   dt_opencl_release_mem_object(dev_tmp);
