@@ -191,22 +191,6 @@ static inline __m128 weight_sse2(const __m128 c1, const __m128 c2, const float s
   exp = _mm_castsi128_ps(_mm_srli_si128(_mm_castps_si128(exp), 4)); // (0, wc, wc, wl)
   return _mm_or_ps(exp, ooo1);                                      // (1, wc, wc, wl)
 }
-
-#define CONVOLVE_SSE \
-  const __m128 L_0 =  _mm_set1_ps( pin0[0] );  \
-  const __m128 a_0 =  _mm_set1_ps( pin0[1] );  \
-  const __m128 b_0 =  _mm_set1_ps( pin0[2] );  \
-  const __m128 L_f = _mm_set_ps(pin4[0], pin3[0], pin2[0], pin1[0]); \
-  const __m128 a_f = _mm_set_ps(pin4[1], pin3[1], pin2[1], pin1[1]); \
-  const __m128 b_f = _mm_set_ps(pin4[2], pin3[2], pin2[2], pin1[2]); \
-  const __m128 w_L = filter * weight_chan_sse2(L_0, L_f, sharpen); \
-  const __m128 w_c = filter * weight_chan_sse2(a_0 + b_0, a_f + b_f, sharpen); \
-  const __m128 wgt = (_mm_set_ps(0.0f, sum_vect_sse(w_L)[0], sum_vect_sse(w_c)[0], sum_vect_sse(w_c)[0]) + w_0); \
-  const __m128 w_1 = _mm_set_ps(0.0f, w_c[0], w_c[0], w_L[0]); \
-  const __m128 w_2 = _mm_set_ps(0.0f, w_c[1], w_c[1], w_L[1]); \
-  const __m128 w_3 = _mm_set_ps(0.0f, w_c[2], w_c[2], w_L[2]); \
-  const __m128 w_4 = _mm_set_ps(0.0f, w_c[3], w_c[3], w_L[3]); \
-  const __m128 sum = (w_1 * pin1 + w_2 * pin2 + w_3 * pin3 + w_4 * pin4 + w_0 * pin0) * _mm_rcp_ps(wgt);
 #endif
 
 #define SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj)                                                                \
