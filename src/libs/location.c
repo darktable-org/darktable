@@ -357,6 +357,7 @@ static gboolean _lib_location_search(gpointer user_data)
   curl_easy_setopt(curl, CURLOPT_USERAGENT, (char *)darktable_package_string);
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
   curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20L);
+  curl_easy_setopt(curl, CURLOPT_CAINFO, "../share/curl/curl-ca-bundle.crt");
 
   res = curl_easy_perform(curl);
   if(res != 0) goto bail_out;

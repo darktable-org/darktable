@@ -314,7 +314,7 @@ static JsonObject *picasa_query_get(PicasaContext *ctx, const gchar *method, GHa
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
 #endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_SSL_VERIFYPEER, FALSE);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_CAINFO, "../share/curl/curl-ca-bundle.crt");
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
   int res = curl_easy_perform(ctx->curl_ctx);
 
@@ -367,7 +367,7 @@ static JsonObject *picasa_query_post_auth(PicasaContext *ctx, const gchar *metho
 #ifdef picasa_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
 #endif
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_SSL_VERIFYPEER, FALSE);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_CAINFO, "../share/curl/curl-ca-bundle.crt");
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
 
@@ -507,6 +507,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_POSTFIELDSIZE, postdata_length);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, &buffer);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_CAINFO, "../share/curl/curl-ca-bundle.crt");
 
   int res = curl_easy_perform(ctx->curl_ctx);
 
@@ -616,6 +617,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_READFUNCTION, _picasa_api_buffer_read_func);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, &response);
+      curl_easy_setopt(ctx->curl_ctx, CURLOPT_CAINFO, "../share/curl/curl-ca-bundle.crt");
       res = curl_easy_perform(ctx->curl_ctx);
 
       if(res != CURLE_OK)

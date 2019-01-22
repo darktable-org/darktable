@@ -332,7 +332,7 @@ static JsonObject *fb_query_get(FBContext *ctx, const gchar *method, GHashTable 
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
 #endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_SSL_VERIFYPEER, FALSE);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_CAINFO, "../share/curl/curl-ca-bundle.crt");
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
   int res = curl_easy_perform(ctx->curl_ctx);
 
@@ -410,7 +410,7 @@ static JsonObject *fb_query_post(FBContext *ctx, const gchar *method, GHashTable
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
 #endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPPOST, formlist.formpost);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_SSL_VERIFYPEER, FALSE);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_CAINFO, "../share/curl/curl-ca-bundle.crt");
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
   int res = curl_easy_perform(ctx->curl_ctx);

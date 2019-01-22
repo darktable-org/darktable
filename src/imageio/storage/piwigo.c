@@ -282,7 +282,7 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx, GList *args, ch
 #ifdef piwigo_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
 #endif
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_SSL_VERIFYPEER, FALSE);
+  curl_easy_setopt(ctx->curl_ctx, CURLOPT_CAINFO, "../share/curl/curl-ca-bundle.crt");
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
 
