@@ -2920,9 +2920,12 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(raster_mask)
 #endif
-        for(size_t i = 0; i < buffsize; i++) mask[i] = 1.0 - raster_mask[i];
+        for(size_t i = 0; i < buffsize; i++) mask[i] = (1.0 - raster_mask[i]) * opacity;
       else
-        memcpy(mask, raster_mask, buffsize * sizeof(float));
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(raster_mask)
+#endif
+        for(size_t i = 0; i < buffsize; i++) mask[i] = raster_mask[i] * opacity;
       if(free_mask) dt_free_align(raster_mask);
     }
     else
@@ -3263,9 +3266,12 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(raster_mask)
 #endif
-        for(size_t i = 0; i < buffsize; i++) mask[i] = 1.0 - raster_mask[i];
+        for(size_t i = 0; i < buffsize; i++) mask[i] = (1.0 - raster_mask[i]) * opacity;
       else
-        memcpy(mask, raster_mask, buffsize * sizeof(float));
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(raster_mask)
+#endif
+        for(size_t i = 0; i < buffsize; i++) mask[i] = raster_mask[i] * opacity;
       if(free_mask) dt_free_align(raster_mask);
     }
     else
