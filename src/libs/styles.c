@@ -39,7 +39,7 @@ typedef struct dt_lib_styles_t
 {
   GtkEntry *entry;
   GtkWidget *duplicate;
-  GtkTreeView *list;
+  GtkTreeView *tree;
   GtkWidget *delete_button, *import_button, *export_button, *edit_button;
 } dt_lib_styles_t;
 
@@ -94,10 +94,10 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
 {
   /* clear current list */
   GtkTreeIter iter;
-  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->list));
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->tree));
   g_object_ref(model);
-  gtk_tree_view_set_model(GTK_TREE_VIEW(d->list), NULL);
-  gtk_list_store_clear(GTK_LIST_STORE(model));
+  gtk_tree_view_set_model(GTK_TREE_VIEW(d->tree), NULL);
+  gtk_tree_store_clear(GTK_TREE_STORE(model));
 
   GList *result = dt_styles_get_list(gtk_entry_get_text(d->entry));
   if(result)
@@ -119,8 +119,8 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
         tooltip = g_strdup(items_string);
       }
 
-      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_STYLES_COL_NAME, style->name, DT_STYLES_COL_TOOLTIP,
+      gtk_tree_store_append(GTK_TREE_STORE(model), &iter, NULL);
+      gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_STYLES_COL_NAME, style->name, DT_STYLES_COL_TOOLTIP,
                          tooltip, -1);
 
       g_free(items_string);
@@ -129,8 +129,8 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
     g_list_free_full(result, dt_style_free);
   }
 
-  gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->list), DT_STYLES_COL_TOOLTIP);
-  gtk_tree_view_set_model(GTK_TREE_VIEW(d->list), model);
+  gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->tree), DT_STYLES_COL_TOOLTIP);
+  gtk_tree_view_set_model(GTK_TREE_VIEW(d->tree), model);
   g_object_unref(model);
 }
 
@@ -141,7 +141,7 @@ static void _styles_row_activated_callback(GtkTreeView *view, GtkTreePath *path,
 
   GtkTreeModel *model;
   GtkTreeIter iter;
-  model = gtk_tree_view_get_model(d->list);
+  model = gtk_tree_view_get_model(d->tree);
 
   if(!gtk_tree_model_get_iter(model, &iter, path)) return;
 
@@ -165,8 +165,8 @@ static void edit_clicked(GtkWidget *w, gpointer user_data)
 
   GtkTreeIter iter;
   GtkTreeModel *model;
-  model = gtk_tree_view_get_model(d->list);
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->list));
+  model = gtk_tree_view_get_model(d->tree);
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->tree));
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
   char *name = NULL;
   gtk_tree_model_get(model, &iter, DT_STYLES_COL_NAME, &name, -1);
@@ -181,8 +181,8 @@ static char *get_style_name(dt_lib_styles_t *list_style)
 {
   GtkTreeIter iter;
   GtkTreeModel *model;
-  model = gtk_tree_view_get_model(list_style->list);
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(list_style->list));
+  model = gtk_tree_view_get_model(list_style->tree);
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(list_style->tree));
 
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return NULL;
 
@@ -329,22 +329,22 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *w;
   GtkWidget *scrolled;
 
-  /* list */
-  d->list = GTK_TREE_VIEW(gtk_tree_view_new());
-  gtk_tree_view_set_headers_visible(d->list, FALSE);
-  GtkListStore *liststore = gtk_list_store_new(DT_STYLES_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING);
+  /* tree */
+  d->tree = GTK_TREE_VIEW(gtk_tree_view_new());
+  gtk_tree_view_set_headers_visible(d->tree, FALSE);
+  GtkTreeStore *treestore = gtk_tree_store_new(DT_STYLES_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING);
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
-  gtk_tree_view_append_column(GTK_TREE_VIEW(d->list), col);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(d->tree), col);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_add_attribute(col, renderer, "text", DT_STYLES_COL_NAME);
 
-  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->list)), GTK_SELECTION_SINGLE);
-  gtk_tree_view_set_model(GTK_TREE_VIEW(d->list), GTK_TREE_MODEL(liststore));
-  g_object_unref(liststore);
+  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->tree)), GTK_SELECTION_SINGLE);
+  gtk_tree_view_set_model(GTK_TREE_VIEW(d->tree), GTK_TREE_MODEL(treestore));
+  g_object_unref(treestore);
 
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->list), _("available styles,\ndoubleclick to apply"));
-  g_signal_connect(d->list, "row-activated", G_CALLBACK(_styles_row_activated_callback), d);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->tree), _("available styles,\ndoubleclick to apply"));
+  g_signal_connect(d->tree, "row-activated", G_CALLBACK(_styles_row_activated_callback), d);
 
   /* filter entry */
   w = gtk_entry_new();
@@ -362,7 +362,7 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->entry), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(scrolled), TRUE, FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(scrolled), GTK_WIDGET(d->list));
+  gtk_container_add(GTK_CONTAINER(scrolled), GTK_WIDGET(d->tree));
 
   d->duplicate = gtk_check_button_new_with_label(_("create duplicate"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->duplicate), TRUE, FALSE, 0);
@@ -412,7 +412,7 @@ void gui_init(dt_lib_module_t *self)
 
   // add entry completion
   GtkEntryCompletion *completion = gtk_entry_completion_new();
-  gtk_entry_completion_set_model(completion, gtk_tree_view_get_model(GTK_TREE_VIEW(d->list)));
+  gtk_entry_completion_set_model(completion, gtk_tree_view_get_model(GTK_TREE_VIEW(d->tree)));
   gtk_entry_completion_set_text_column(completion, 0);
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_set_completion(d->entry, completion);
