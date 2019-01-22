@@ -655,15 +655,30 @@ GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean 
     gchar *q;
 
     if(selected)
-      q = g_strdup_printf("SELECT id FROM main.selected_images AS s JOIN (%s) AS a WHERE a.id = s.imgid", query);
+      q = g_strdup_printf("SELECT id FROM main.selected_images AS s JOIN (%s) AS a WHERE a.id = s.imgid LIMIT -1, ?3", query);
     else
       q = g_strdup_printf("%s", query);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), q, -1, &stmt, NULL);
-    if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
+
+    if(selected)
     {
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, -1);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, limit);
+      if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
+      {
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, -1);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+      }
+
+      // the limit is done on the main select and not on the JOIN
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, limit);
+    }
+    else
+    {
+      if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
+      {
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, -1);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, limit);
+      }
     }
 
     while(sqlite3_step(stmt) == SQLITE_ROW)
