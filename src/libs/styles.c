@@ -87,8 +87,54 @@ typedef enum _styles_columns_t
 {
   DT_STYLES_COL_NAME = 0,
   DT_STYLES_COL_TOOLTIP,
+  DT_STYLES_COL_FULLNAME,
   DT_STYLES_NUM_COLS
 } _styles_columns_t;
+
+#pragma GCC diagnostic ignored "-Wunused-function"
+
+static gboolean _get_node_for_name(GtkTreeModel *model, gboolean root, GtkTreeIter *iter, const gchar *parent_name)
+{
+  GtkTreeIter parent = *iter;
+
+  if(root)
+  {
+    // iter is null, we are at the top level
+    // if we have no nodes in this tree, let's create it now
+    if(!gtk_tree_model_get_iter_first(model, iter))
+    {
+      gtk_tree_store_append(GTK_TREE_STORE(model), iter, NULL);
+      return FALSE;
+    }
+  }
+  else
+  {
+    // if we have no children, create one, this is our node
+    if(!gtk_tree_model_iter_children(GTK_TREE_MODEL(model), iter, &parent))
+    {
+      gtk_tree_store_append(GTK_TREE_STORE(model), iter, &parent);
+      return FALSE;
+    }
+  }
+
+  // here we have iter to be on the right level, let's check if we can find parent_name
+  gchar *name;
+
+  do
+  {
+    gtk_tree_model_get(model, iter, DT_STYLES_COL_NAME, &name, -1);
+    if(!g_strcmp0(name, parent_name))
+    {
+      return TRUE;
+    }
+  }
+  while(gtk_tree_model_iter_next(model, iter));
+
+  // not found, create it under parent
+  gtk_tree_store_append(GTK_TREE_STORE(model), iter, root?NULL:&parent);
+
+  return FALSE;
+}
 
 static void _gui_styles_update_view(dt_lib_styles_t *d)
 {
@@ -106,7 +152,7 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
     {
       dt_style_t *style = (dt_style_t *)result->data;
 
-      char *items_string = dt_styles_get_item_list_as_string(style->name);
+      gchar *items_string = (gchar *)dt_styles_get_item_list_as_string(style->name);
       gchar *tooltip = NULL;
 
       if(style->description && *style->description)
@@ -119,9 +165,30 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
         tooltip = g_strdup(items_string);
       }
 
-      gtk_tree_store_append(GTK_TREE_STORE(model), &iter, NULL);
-      gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_STYLES_COL_NAME, style->name, DT_STYLES_COL_TOOLTIP,
-                         tooltip, -1);
+      gchar **split = g_strsplit(style->name, "|", 0);
+      int k = 0;
+
+      while(split[k])
+      {
+        const gchar *s = split[k];
+        const gboolean node_found = _get_node_for_name(model, k==0, &iter, s);
+
+        if(!node_found)
+        {
+          if(split[k+1])
+          {
+            gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_STYLES_COL_NAME, s, -1);
+          }
+          else
+          {
+            // a leaf
+            gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
+                               DT_STYLES_COL_NAME, s, DT_STYLES_COL_TOOLTIP, tooltip, DT_STYLES_COL_FULLNAME, style->name, -1);
+          }
+        }
+        k++;
+      }
+      g_strfreev(split);
 
       g_free(items_string);
       g_free(tooltip);
@@ -146,7 +213,7 @@ static void _styles_row_activated_callback(GtkTreeView *view, GtkTreePath *path,
   if(!gtk_tree_model_get_iter(model, &iter, path)) return;
 
   gchar *name;
-  gtk_tree_model_get(model, &iter, DT_STYLES_COL_NAME, &name, -1);
+  gtk_tree_model_get(model, &iter, DT_STYLES_COL_FULLNAME, &name, -1);
 
   if(name) dt_styles_apply_to_selection(name, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
 }
@@ -169,7 +236,7 @@ static void edit_clicked(GtkWidget *w, gpointer user_data)
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->tree));
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
   char *name = NULL;
-  gtk_tree_model_get(model, &iter, DT_STYLES_COL_NAME, &name, -1);
+  gtk_tree_model_get(model, &iter, DT_STYLES_COL_FULLNAME, &name, -1);
   if(name)
   {
     dt_gui_styles_dialog_edit(name);
@@ -187,7 +254,7 @@ static char *get_style_name(dt_lib_styles_t *list_style)
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return NULL;
 
   char *name = NULL;
-  gtk_tree_model_get(model, &iter, DT_STYLES_COL_NAME, &name, -1);
+  gtk_tree_model_get(model, &iter, DT_STYLES_COL_FULLNAME, &name, -1);
   return name;
 }
 
@@ -332,7 +399,7 @@ void gui_init(dt_lib_module_t *self)
   /* tree */
   d->tree = GTK_TREE_VIEW(gtk_tree_view_new());
   gtk_tree_view_set_headers_visible(d->tree, FALSE);
-  GtkTreeStore *treestore = gtk_tree_store_new(DT_STYLES_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING);
+  GtkTreeStore *treestore = gtk_tree_store_new(DT_STYLES_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(GTK_TREE_VIEW(d->tree), col);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
