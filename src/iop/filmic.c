@@ -716,9 +716,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     // Gamut compression
     if(run_gamut)
     {
-      XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
-
-      __m128 IPT = dt_XYZ_to_IPThdr_sse2(XYZ);
+      __m128 IPT = dt_XYZ_to_IPThdr_sse2(dt_prophotoRGB_to_XYZ_sse2(rgb));
       float radius = powf((IPT[2]*IPT[2] + IPT[1]*IPT[1]), 0.5f);
       const __m128 trigo = IPT / radius; // IPT[1] = cos(hue); IPT[2] = sin(hue)
 
@@ -727,8 +725,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       IPT[1] = radius * trigo[1];
       IPT[2] = radius * trigo[2];
 
-      XYZ = dt_IPThdr_to_XYZ_sse2(IPT);
-      rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
+      rgb = dt_XYZ_to_prophotoRGB_sse2(dt_IPThdr_to_XYZ_sse2(IPT));
     }
 
     // Apply the transfer function of the display
