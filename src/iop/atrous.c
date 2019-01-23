@@ -584,7 +584,7 @@ static void eaw_synthesize(float *const out, const float *const in, const float 
   const float boost[4] = { boostf[0], boostf[1], boostf[2], boostf[3] };
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) collapse(2)
+#pragma omp parallel for default(none) schedule(static) collapse(2)
 #endif
   for(size_t k = 0; k < (size_t)4 * width * height; k += 4)
   {
@@ -609,7 +609,7 @@ static void eaw_synthesize_sse2(float *const out, const float *const in, const f
   __m128 *const mask = (__m128 *)&maski;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd schedule(static) default(none)
+#pragma omp parallel for schedule(static) default(none)
 #endif
   for(size_t k = 0; k < width * height * 4; k += 4)
   {
