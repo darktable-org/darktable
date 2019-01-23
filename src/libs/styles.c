@@ -394,7 +394,7 @@ void gui_init(dt_lib_module_t *self)
   /* filter entry */
   w = gtk_entry_new();
   d->entry = GTK_ENTRY(w);
-  gtk_widget_set_tooltip_text(w, _("enter style name"));
+  gtk_widget_set_tooltip_text(w, _("filter style names"));
   g_signal_connect(d->entry, "changed", G_CALLBACK(entry_callback), d);
   g_signal_connect(d->entry, "activate", G_CALLBACK(entry_activated), d);
 
