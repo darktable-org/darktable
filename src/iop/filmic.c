@@ -594,6 +594,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       concavity = _mm_set1_ps(data->grad_2[index]);
 
       // Re-apply ratios
+      max_sse = _mm_set1_ps(max);
       rgb = ratios * max_sse;
       luma = max_sse;
     }
