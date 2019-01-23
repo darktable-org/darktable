@@ -601,7 +601,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float dynamic_range = data->dynamic_range;
   const float saturation = (data->global_saturation / 100.0f);
   const float gamut_compression = data->gamut_compression * 2.0f;
-  //const gint run_gamut = TRUE; //(data->gamut_compression == 1.0f) ? FALSE : TRUE;
+  const int run_gamut = (data->gamut_compression == 1.0f) ? FALSE : TRUE;
 
   const __m128 grey_sse = _mm_set1_ps(grey);
   const __m128 black_sse = _mm_set1_ps(black);
@@ -714,33 +714,22 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     rgb = luma + concavity * (rgb - luma);
 
     // Gamut compression
-    /*
-    __m128 xyY = dt_XYZ_to_xyY_sse2(dt_prophotoRGB_to_XYZ_sse2(rgb));
+    if(run_gamut)
+    {
+      XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
 
-    const float x = xyY[0] - 0.33333333f;
-    const float y = xyY[1] - 0.33333333f;
-    const float Y = xyY[2];
+      __m128 IPT = dt_XYZ_to_IPThdr_sse2(XYZ);
+      float radius = powf((IPT[2]*IPT[2] + IPT[1]*IPT[1]), 0.5f);
+      const __m128 trigo = IPT / radius; // IPT[1] = cos(hue); IPT[2] = sin(hue)
 
-    // Coordinates in the xy chroma plane
-    float radius_chroma = powf((x*x + y*y), 0.5f);
-    const float angle_chroma = atan2(y, x);
+      radius *= gamut_compression;
 
-    // Coordinates in the xyY space
-    float radius = powf((x*x + y*y + Y*Y), 0.5f);
-    const float angle_chroma_luma = atan2(Y, radius_chroma);
+      IPT[1] = radius * trigo[1];
+      IPT[2] = radius * trigo[2];
 
-    // Chroma adjustment
-    radius = CLAMP(radius, 0.0f, 1.0f);
-    radius_chroma = CLAMP(radius_chroma, 0.0f, fabsf(radius * cosf(angle_chroma_luma)));
-    const float ratio = (1.0f + expf(16.0f * (radius_chroma - 0.18f)));
-    radius_chroma = radius_chroma / ratio;
-    radius_chroma = CLAMP(radius_chroma, 0.0f, 0.333333f);
-    xyY[0] = CLAMP(0.3333333333f + radius_chroma * cosf(angle_chroma), 0.0f, 1.0f);
-    xyY[1] = CLAMP(0.3333333333f + radius_chroma * sinf(angle_chroma), 0.0f, 1.0f);
-    xyY[2] = radius * sinf(angle_chroma_luma) / ratio;
-
-    rgb = dt_XYZ_to_prophotoRGB_sse2(dt_xyY_to_XYZ_sse2(xyY));
-    */
+      XYZ = dt_IPThdr_to_XYZ_sse2(IPT);
+      rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
+    }
 
     // Apply the transfer function of the display
     rgb = _mm_max_ps(rgb, zero);
@@ -750,38 +739,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     // transform the result back to Lab
     // sRGB -> XYZ
     XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
-
-
-    if(FALSE)
-    {
-      __m128 Lch = dt_Lab_to_Lch_sse2(Lab);
-
-      const float radius = powf((Lch[0]*Lch[0] + Lch[1]*Lch[1]), 0.5f);
-      //const float angle_Lc = atanf(Lch[0] / Lch[1]);
-      //FILE *f = fopen("/tmp/radius.txt", "wb");
-      //fprintf(stderr, "%f\n", radius);
-      const float ratio = GAUSS(radius / 100.0f, 0.67f, gamut_compression) * GAUSS(Lch[1] / 100.0f, 0.0f, gamut_compression);
-
-      Lch[1] *= ratio; //radius * cosf(angle_Lc);
-      Lab = dt_Lch_to_Lab_sse2(Lch);
-    }
-
-    __m128 IPT = dt_XYZ_to_IPThdr_sse2(XYZ);
-    float radius = powf((IPT[2]*IPT[2] + IPT[1]*IPT[1]), 0.5f);
-    //const float radius_IPT = powf(radius*radius + IPT[0]*IPT[0], 0.5f);
-    const __m128 trigo = IPT / radius; // IPT[1] = cos(hue); IPT[2] = sin(hue)
-    //const float sinus = IPT[2]/radius;
-    //const float cosinus = IPT[1]/radius;
-    //const float tangente = sinus / cosinus;
-    //const float angle = atanf(tangente);
-
-    radius *= GAUSS(radius / 100.0f, 0.0f, gamut_compression);
-
-    IPT[1] = radius * trigo[1];
-    IPT[2] = radius * trigo[2];
-
-    XYZ = dt_IPThdr_to_XYZ_sse2(IPT);
-
     // XYZ -> Lab
     Lab = dt_XYZ_to_Lab_sse2(XYZ);
     _mm_stream_ps(out, Lab);
