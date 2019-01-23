@@ -958,7 +958,6 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
     do
     {
       dt_style_t *style = (dt_style_t *)styles->data;
-      GtkWidget *mi = gtk_menu_item_new_with_label(style->name);
 
       char *items_string = dt_styles_get_item_list_as_string(style->name);
       gchar *tooltip = NULL;
@@ -972,9 +971,74 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
         tooltip = g_strdup(items_string);
       }
 
-      gtk_widget_set_tooltip_markup(mi, tooltip);
+      gchar **split = g_strsplit(style->name, "|", 0);
 
-      gtk_menu_shell_append(menu, mi);
+      // if sub-menu, do not put leading group in final name
+
+      gchar *mi_name = NULL;
+
+      if(split[1])
+      {
+        mi_name = g_strdup(split[1]);
+        for(int i=2; split[i]; i++)
+          mi_name = g_strconcat(mi_name, " | ", split[i], NULL);
+      }
+      else
+        mi_name = g_strdup(split[0]);
+
+      GtkWidget *mi = gtk_menu_item_new_with_label(mi_name);
+      gtk_widget_set_tooltip_markup(mi, tooltip);
+      g_free(mi_name);
+
+      // check if we already have a sub-menu with this name
+      GtkMenu *sm = NULL;
+
+      GList *childs = gtk_container_get_children(GTK_CONTAINER(menu));
+      while(childs)
+      {
+        GtkMenuItem *smi = (GtkMenuItem *)childs->data;
+        if(!g_strcmp0(split[0],gtk_menu_item_get_label(smi)))
+        {
+          sm = (GtkMenu *)gtk_menu_item_get_submenu(smi);
+          g_list_free(childs);
+          break;
+        }
+        childs = g_list_next(childs);
+      }
+
+      GtkMenuItem *smi = NULL;
+
+      // no sub-menu
+      if(!sm)
+      {
+        // but do we need one, that is, next item starts with the same group
+        GList *next = g_list_next(styles);
+        if(next)
+        {
+          dt_style_t *next_style = (dt_style_t *)next->data;
+          gchar **next_split = g_strsplit(next_style->name, "|", 0);
+
+          if(!g_strcmp0(next_split[0],split[0]))
+          {
+            smi = (GtkMenuItem *)gtk_menu_item_new_with_label(split[0]);
+            sm = (GtkMenu *)gtk_menu_new();
+            gtk_menu_item_set_submenu(smi, GTK_WIDGET(sm));
+          }
+          g_strfreev(next_split);
+        }
+      }
+
+      if(sm)
+        gtk_menu_shell_append(GTK_MENU_SHELL(sm), mi);
+      else
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+
+      if(smi)
+      {
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(smi));
+        gtk_widget_show(GTK_WIDGET(smi));
+      }
+
       g_signal_connect_swapped(G_OBJECT(mi), "activate",
                                G_CALLBACK(_darkroom_ui_apply_style_activate_callback),
                                (gpointer)g_strdup(style->name));
@@ -982,6 +1046,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
       g_free(items_string);
       g_free(tooltip);
+      g_strfreev(split);
     } while((styles = g_list_next(styles)) != NULL);
     g_list_free_full(styles, dt_style_free);
   }
