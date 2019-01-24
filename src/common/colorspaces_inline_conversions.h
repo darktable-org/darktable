@@ -267,12 +267,14 @@ static inline __m128 dt_XYZ_to_IPThdr_sse2(const __m128 XYZ)
 {
   /** Wrapper function for direct transfer **/
   return dt_LMShdr_to_IPThdr_sse2(dt_LMS_to_LMShdr(dt_XYZ_to_LMS_sse2(XYZ)));
+  //return dt_XYZ_to_LMS_sse2(XYZ);
 }
 
 static inline __m128 dt_IPThdr_to_XYZ_sse2(const __m128 IPT)
 {
   /** Wrapper function for direct transfer **/
   return dt_LMS_to_XYZ_sse2(dt_LMShdr_to_LMS(dt_IPThdr_to_LMShdr_sse2(IPT)));
+  //return dt_LMS_to_XYZ_sse2(IPT);
 }
 
 static inline __m128 dt_Lab_to_Lch_sse2(const __m128 Lab)

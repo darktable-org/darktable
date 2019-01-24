@@ -230,7 +230,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->black_point_target = o->black_point_target;
     n->white_point_target = o->white_point_target;
     n->output_power = o->output_power;
-    n->latitude_stops = o->latitude_stops;
+    n->latitude_stops = o->latitude_stops / (o->white_point_source - o->black_point_source);
     n->contrast = o->contrast;
     n->saturation = o->saturation;
     n->balance = o->balance;
@@ -274,7 +274,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->black_point_target = o->black_point_target;
     n->white_point_target = o->white_point_target;
     n->output_power = o->output_power;
-    n->latitude_stops = o->latitude_stops;
+    n->latitude_stops = o->latitude_stops / (o->white_point_source - o->black_point_source);
     n->contrast = o->contrast;
     n->saturation = o->saturation;
     n->balance = o->balance;
@@ -319,7 +319,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->black_point_target = o->black_point_target;
     n->white_point_target = o->white_point_target;
     n->output_power = o->output_power;
-    n->latitude_stops = o->latitude_stops;
+    n->latitude_stops = o->latitude_stops / (o->white_point_source - o->black_point_source);
     n->contrast = o->contrast;
     n->saturation = o->saturation;
     n->balance = o->balance;
@@ -356,63 +356,63 @@ void init_presets(dt_iop_module_so_t *self)
 
   // Presets low-key
   p.grey_point_source = 25.4f;
-  p.latitude_stops = 2.25f;
+  p.latitude_stops = 0.27f;
   p.white_point_source = 1.95f;
   p.black_point_source = -7.05f;
   dt_gui_presets_add_generic(_("09 EV (low-key)"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Presets indoors
   p.grey_point_source = 18.0f;
-  p.latitude_stops = 2.75f;
+  p.latitude_stops = 0.27f;
   p.white_point_source = 2.45f;
   p.black_point_source = -7.55f;
   dt_gui_presets_add_generic(_("10 EV (indoors)"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Presets dim-outdoors
   p.grey_point_source = 12.77f;
-  p.latitude_stops = 3.0f;
+  p.latitude_stops = 0.27f;
   p.white_point_source = 2.95f;
   p.black_point_source = -8.05f;
   dt_gui_presets_add_generic(_("11 EV (dim outdoors)"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Presets outdoors
   p.grey_point_source = 9.0f;
-  p.latitude_stops = 3.5f;
+  p.latitude_stops = 0.27f;
   p.white_point_source = 3.45f;
   p.black_point_source = -8.55f;
   dt_gui_presets_add_generic(_("12 EV (outdoors)"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Presets outdoors
   p.grey_point_source = 6.38f;
-  p.latitude_stops = 3.75f;
+  p.latitude_stops = 0.27f;
   p.white_point_source = 3.95f;
   p.black_point_source = -9.05f;
   dt_gui_presets_add_generic(_("13 EV (bright outdoors)"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Presets backlighting
   p.grey_point_source = 4.5f;
-  p.latitude_stops = 4.25f;
+  p.latitude_stops = 0.27f;
   p.white_point_source = 4.45f;
   p.black_point_source = -9.55f;
   dt_gui_presets_add_generic(_("14 EV (backlighting)"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Presets sunset
   p.grey_point_source = 3.19f;
-  p.latitude_stops = 4.50f;
+  p.latitude_stops = 0.27f;
   p.white_point_source = 4.95f;
   p.black_point_source = -10.05f;
   dt_gui_presets_add_generic(_("15 EV (sunset)"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Presets HDR
   p.grey_point_source = 2.25f;
-  p.latitude_stops = 5.0f;
+  p.latitude_stops = 0.27f;
   p.white_point_source = 5.45f;
   p.black_point_source = -10.55f;
   dt_gui_presets_add_generic(_("16 EV (HDR)"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Presets HDR+
   p.grey_point_source = 1.125f;
-  p.latitude_stops = 6.0f;
+  p.latitude_stops = 0.27f;
   p.white_point_source = 6.45f;
   p.black_point_source = -11.55f;
   dt_gui_presets_add_generic(_("18 EV (HDR++)"), self->op, self->version(), &p, sizeof(p), 1);
@@ -767,19 +767,6 @@ error:
 }
 #endif
 
-static void sanitize_latitude(dt_iop_filmic_params_t *p, dt_iop_filmic_gui_data_t *g)
-{
-  if (p->latitude_stops > (p->white_point_source - p->black_point_source) * 0.99f)
-  {
-    // The film latitude is its linear part
-    // it can never be higher than the dynamic range
-    p->latitude_stops =  (p->white_point_source - p->black_point_source) * 0.99f;
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set_soft(g->latitude_stops, p->latitude_stops);
-    darktable.gui->reset = 0;
-  }
-}
-
 static void apply_auto_grey(dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
@@ -819,16 +806,12 @@ static void apply_auto_black(dt_iop_module_t *self)
   dt_Lab_to_XYZ(self->picked_color_min, XYZ);
   const float black = XYZ[1];
   float EVmin = Log2Thres(black / (p->grey_point_source / 100.0f), noise);
-  // EVmin *= (1.0f + p->security_factor / 100.0f);
 
   p->black_point_source = EVmin;
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
   darktable.gui->reset = 0;
-
-  sanitize_latitude(p, g);
-
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -847,7 +830,6 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   dt_Lab_to_XYZ(self->picked_color_max, XYZ);
   const float white = XYZ[1];
   float EVmax = Log2Thres(white / (p->grey_point_source / 100.0f), noise);
-  //EVmax *= (1.0f + p->security_factor / 100.0f);
 
   p->white_point_source = EVmax;
 
@@ -855,46 +837,9 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   darktable.gui->reset = 0;
 
-  sanitize_latitude(p, g);
-
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
-
-/*
-static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-
-  float previous = p->security_factor;
-  p->security_factor = dt_bauhaus_slider_get(slider);
-  float ratio = (p->security_factor - previous) / (previous + 100.0f);
-
-  float EVmin = p->black_point_source;
-  EVmin = EVmin + ratio * EVmin;
-
-  float EVmax = p->white_point_source;
-  EVmax = EVmax + ratio * EVmax;
-
-  p->white_point_source = EVmax;
-  p->black_point_source = EVmin;
-
-  darktable.gui->reset = 1;
-  dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
-  dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
-  darktable.gui->reset = 0;
-
-  sanitize_latitude(p, g);
-
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  gtk_widget_queue_draw(self->widget);
-}
-*/
 
 static void apply_autotune(dt_iop_module_t *self)
 {
@@ -913,13 +858,11 @@ static void apply_autotune(dt_iop_module_t *self)
   dt_Lab_to_XYZ(self->picked_color_min, XYZ);
   const float black = XYZ[1];
   float EVmin = Log2Thres(black / (p->grey_point_source / 100.0f), noise);
-  //EVmin *= (1.0f + p->security_factor / 100.0f);
 
   // White
   dt_Lab_to_XYZ(self->picked_color_max, XYZ);
   const float white = XYZ[1];
   float EVmax = Log2Thres(white / (p->grey_point_source / 100.0f), noise);
-  //EVmax *= (1.0f + p->security_factor / 100.0f);
 
   p->black_point_source = EVmin;
   p->white_point_source = EVmax;
@@ -929,8 +872,6 @@ static void apply_autotune(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   darktable.gui->reset = 0;
-
-  sanitize_latitude(p, g);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
@@ -1008,9 +949,7 @@ static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
   darktable.gui->reset = 0;
-
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
-
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -1022,11 +961,7 @@ static void white_point_source_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   p->white_point_source = dt_bauhaus_slider_get(slider);
-
-  sanitize_latitude(p, g);
-
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
-
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -1038,11 +973,7 @@ static void black_point_source_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   p->black_point_source = dt_bauhaus_slider_get(slider);
-
-  sanitize_latitude(p, g);
-
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
-
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -1065,11 +996,7 @@ static void latitude_stops_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-
-  p->latitude_stops = dt_bauhaus_slider_get(slider);
-
-  sanitize_latitude(p, g);
-
+  p->latitude_stops = dt_bauhaus_slider_get(slider) / 100.0f;
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
@@ -1268,7 +1195,7 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   const float grey_display = powf(CLAMP(p->grey_point_target, p->black_point_target, p->white_point_target) / 100.0f, 1.0f / (p->output_power));
   const float white_display = CLAMP(p->white_point_target, p->grey_point_target, 100.0f)  / 100.0f; // in %
 
-  const float latitude = CLAMP(p->latitude_stops, 0.01f, dynamic_range * 0.99f);
+  const float latitude = p->latitude_stops * dynamic_range;
   const float balance = CLAMP(p->balance, -50.0f, 50.0f) / 100.0f; // in %
 
   const float contrast = p->contrast;
@@ -1347,9 +1274,6 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
       d->latitude_min = toe_log;
       d->latitude_max = white_log;
     }
-
-    //dt_control_log(_("filmic curve using 4 nodes - highlights lost"));
-
   }
   else if (TOE_LOST && !SHOULDER_LOST)
   {
@@ -1371,9 +1295,6 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
       d->latitude_min = black_log;
       d->latitude_max = shoulder_log;
     }
-
-    //dt_control_log(_("filmic curve using 4 nodes - shadows lost"));
-
   }
   else if (TOE_LOST && SHOULDER_LOST)
   {
@@ -1393,9 +1314,6 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
       d->latitude_min = black_log;
       d->latitude_max = white_log;
     }
-
-    //dt_control_log(_("filmic curve using 3 nodes - highlights & shadows lost"));
-
   }
   else
   {
@@ -1404,13 +1322,11 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
 
     nodes_data->x[0] = black_log;
     nodes_data->x[1] = toe_log;
-    //nodes_data->x[2] = grey_log,
     nodes_data->x[2] = shoulder_log;
     nodes_data->x[3] = white_log;
 
     nodes_data->y[0] = black_display;
     nodes_data->y[1] = toe_display;
-    //nodes_data->y[2] = grey_display,
     nodes_data->y[2] = shoulder_display;
     nodes_data->y[3] = white_display;
 
@@ -1419,8 +1335,6 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
       d->latitude_min = toe_log;
       d->latitude_max = shoulder_log;
     }
-
-    //dt_control_log(_("filmic curve using 5 nodes - everything alright"));
   }
 
   if (p->interpolator != 3)
@@ -1564,7 +1478,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->grey_point_target, p->grey_point_target);
   dt_bauhaus_slider_set_soft(g->black_point_target, p->black_point_target);
   dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-  dt_bauhaus_slider_set_soft(g->latitude_stops, p->latitude_stops);
+  dt_bauhaus_slider_set_soft(g->latitude_stops, p->latitude_stops * 100.0f);
   dt_bauhaus_slider_set(g->contrast, p->contrast);
   dt_bauhaus_slider_set(g->global_saturation, p->global_saturation);
   dt_bauhaus_slider_set(g->saturation, (powf(10.0f, p->saturation/100.0f) - 1.0f) / 9.0f * 100.0f);
@@ -1599,7 +1513,7 @@ void init(dt_iop_module_t *module)
                                  .black_point_target  = 0.0,  // target black
                                  .white_point_target  = 100.0,  // target white
                                  .output_power        = 2.2,  // target power (~ gamma)
-                                 .latitude_stops      = 2.0,  // intent latitude
+                                 .latitude_stops      = 0.25,  // intent latitude
                                  .contrast            = 1.5,  // intent contrast
                                  .saturation          = 100.0,   // intent saturation
                                  .global_saturation   = 100.0,
@@ -1853,10 +1767,9 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->contrast), "value-changed", G_CALLBACK(contrast_callback), self);
 
   // latitude slider
-  g->latitude_stops = dt_bauhaus_slider_new_with_range(self, 2., 8.0, 0.05, p->latitude_stops, 3);
-  dt_bauhaus_slider_enable_soft_boundaries(g->latitude_stops, 0.01, 16.0);
+  g->latitude_stops = dt_bauhaus_slider_new_with_range(self, 0.1, 100.0, 1.0, p->latitude_stops * 100.0f, 2);
   dt_bauhaus_widget_set_label(g->latitude_stops, NULL, _("latitude"));
-  dt_bauhaus_slider_set_format(g->latitude_stops, "%.2f EV");
+  dt_bauhaus_slider_set_format(g->latitude_stops, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->latitude_stops, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->latitude_stops, _("width of the linear domain in the middle of the curve.\n"
                                                    "increase to get more contrast at the extreme luminances.\n"
