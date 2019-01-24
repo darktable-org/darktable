@@ -84,7 +84,7 @@ static inline __m128 dt_XYZ_to_Lab_sse2(const __m128 XYZ)
   return coef_XYZ_to_Lab_sse * (_mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 1, 0, 1)) - _mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 2, 1, 3)));
 }
 
-static inline __m128 dt_XYZ_to_xyY_sse2(const __m128 XYZ)    // XYZ  = [  .   Z  |  Y    X   ]
+static inline __m128 dt_XYZ_to_xyY_sse2(const __m128 XYZ)
 {
   /** The xyY space is essentially a normalized XYZ space, where Y is the linear luminance
    * and (x, y) the normalized chroma coordinates
@@ -99,7 +99,7 @@ static inline __m128 dt_XYZ_to_xyY_sse2(const __m128 XYZ)    // XYZ  = [  .   Z 
 
   // Horizontal sum of the first 3 elements - SIMD is worthless here,
   // so we let the compiler handle the shuffling
-  const float sum = XYZ[0] + XYZ[1] + XYZ[2];
+  const __m128 sum = _mm_set1_ps(XYZ[0] + XYZ[1] + XYZ[2]);
 
   // Normalize XYZ
   __m128 xyY = XYZ / sum;
@@ -120,15 +120,25 @@ static inline __m128 dt_xyY_to_XYZ_sse2(const __m128 xyY)    // XYZ  = [  .   Y 
 
   __m128 XYZ = xyY;
   XYZ[2] = 1.0f - xyY[0] - xyY[1];
-  XYZ = XYZ * xyY[2] / xyY[1];
+  XYZ = XYZ * _mm_set1_ps(xyY[2] / xyY[1]);
   return XYZ;
 }
 
-// XYZ -> LCM, assuming equal energy illuminant
-// https://en.wikipedia.org/wiki/LMS_color_space
-#define xyz_to_lms_0_sse _mm_setr_ps( 0.4002f, -0.22900f, 0.0f, 0.0f)
+/** XYZ -> LCM, assuming XYZ D50, adjusted from D65 values using Bradford transform
+* https://en.wikipedia.org/wiki/LMS_color_space
+*
+*[[ 0.44098236  0.7087099  -0.09297051]
+* [-0.20549234  1.13475958  0.03785294]
+* [-0.00848096  0.01381604  0.69075766]]
+**/
+/* D65 coeffs
+#define xyz_to_lms_0_sse _mm_setr_ps( 0.4002f, -0.22800f, 0.0f, 0.0f)
 #define xyz_to_lms_1_sse _mm_setr_ps( 0.7075f, 1.1500f, 0.0f, 0.0f)
 #define xyz_to_lms_2_sse _mm_setr_ps(-0.0809f, 0.0612f, 0.9184f, 0.0f)
+*/
+#define xyz_to_lms_0_sse _mm_setr_ps( 0.44098236f, -0.20549234f, -0.00848096f, 0.0f)
+#define xyz_to_lms_1_sse _mm_setr_ps( 0.7087099f, 1.13475958f, 0.01381604f, 0.0f)
+#define xyz_to_lms_2_sse _mm_setr_ps(-0.09297051f, 0.03785294f, 0.69075766f, 0.0f)
 
 static inline __m128 dt_XYZ_to_LMS_sse2(const __m128 XYZ)
 {
@@ -139,11 +149,21 @@ static inline __m128 dt_XYZ_to_LMS_sse2(const __m128 XYZ)
   return lms;
 }
 
-// LCM -> XYZ, assuming equal energy illuminant
-// https://en.wikipedia.org/wiki/LMS_color_space
+/** LCM -> XYZ, assuming XYZ D50, adjusted from D65 values using Bradford transform
+* https://en.wikipedia.org/wiki/LMS_color_space
+*[[ 1.75959743 -1.10256915  0.29724775]
+* [ 0.31813513  0.68248784  0.0054187 ]
+* [ 0.01524082 -0.02718773  1.45122688]]
+* */
+/* D65 coeffs
 #define lms_to_xyz_0_sse _mm_setr_ps( 1.85924f,  0.36683f, 0.0f, 0.0f)
 #define lms_to_xyz_1_sse _mm_setr_ps(-1.13830f,  0.64388f, 0.0f, 0.0f)
 #define lms_to_xyz_2_sse _mm_setr_ps( 0.23884f, -0.01059f, 1.08885f, 0.0f)
+*/
+
+#define lms_to_xyz_0_sse _mm_setr_ps( 1.75959743f,  0.31813513f, 0.01524082f, 0.0f)
+#define lms_to_xyz_1_sse _mm_setr_ps(-1.10256915f,  0.68248784f, -0.02718773f, 0.0f)
+#define lms_to_xyz_2_sse _mm_setr_ps( 0.29724775f,  0.0054187f, 1.45122688f, 0.0f)
 
 static inline __m128 dt_LMS_to_XYZ_sse2(const __m128 LMS)
 {
@@ -204,6 +224,11 @@ static inline __m128 dt_LMShdr_to_LMS(const __m128 LMShdr)
 
 // LMS-HDR -> IPT-HDR
 // https://eng.aurelienpierre.com/2019/01/17/derivating-hdr-ipt-direct-and-inverse-transformations/#fixing_ipt-hdr
+/**
+ * [[ 0.4     0.4     0.2   ]
+    [ 4.455  -4.851   0.396 ]
+    [ 0.8056  0.3572 -1.1628]]
+ * */
 #define lms_to_ipt_0_sse _mm_setr_ps( 0.40000f,  4.45500f, 0.80560f, 0.0f)
 #define lms_to_ipt_1_sse _mm_setr_ps( 0.40000f, -4.85100f, 0.35720f, 0.0f)
 #define lms_to_ipt_2_sse _mm_setr_ps( 0.20000f,  0.39600f,-1.16280f, 0.0f)
@@ -219,14 +244,20 @@ static inline __m128 dt_LMShdr_to_IPThdr_sse2(const __m128 LMShdr)
 
 // IPT-HDR -> LMS-HDR
 // https://eng.aurelienpierre.com/2019/01/17/derivating-hdr-ipt-direct-and-inverse-transformations/#fixing_ipt-hdr
-#define ipt_to_lms_0_sse _mm_setr_ps( 1.00000f,  1.00000f, 1.00000f, 0.0f)
-#define ipt_to_lms_1_sse _mm_setr_ps( 0.09757f, -0.11388f, 0.13322f, 0.0f)
-#define ipt_to_lms_2_sse _mm_setr_ps( 0.20523f,  0.13322f,-0.67689f, 0.0f)
+/**
+ * [[ 1.          0.09756893  0.20522643]
+    [ 1.         -0.11387649  0.13321716]
+    [ 1.          0.03261511 -0.67688718]]
+
+*/
+#define ipt_to_lms_0_sse _mm_setr_ps( 1.00000000f,  1.00000000f, 1.00000000f, 0.0f)
+#define ipt_to_lms_1_sse _mm_setr_ps( 0.09756893f, -0.11387649f, 0.03261511f, 0.0f)
+#define ipt_to_lms_2_sse _mm_setr_ps( 0.20522643f,  0.13321716f,-0.67688718f, 0.0f)
 
 static inline __m128 dt_IPThdr_to_LMShdr_sse2(const __m128 IPThdr)
 {
   __m128 lmshdr
-      = ipt_to_lms_0_sse * _mm_shuffle_ps(IPThdr, IPThdr, _MM_SHUFFLE(0, 0, 0, 0)) +
+      = _mm_shuffle_ps(IPThdr, IPThdr, _MM_SHUFFLE(0, 0, 0, 0)) +
         ipt_to_lms_1_sse * _mm_shuffle_ps(IPThdr, IPThdr, _MM_SHUFFLE(1, 1, 1, 1)) +
         ipt_to_lms_2_sse * _mm_shuffle_ps(IPThdr, IPThdr, _MM_SHUFFLE(2, 2, 2, 2));
   return lmshdr;

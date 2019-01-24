@@ -337,6 +337,37 @@ static inline float dt_fast_expf(const float x)
   return f;
 }
 
+static inline float dt_fast_inv_sqrtf(const float number)
+{
+  // fast inverse square root from Quake III Arena
+  // https://en.wikipedia.org/wiki/Fast_inverse_square_root
+  long i;
+  float x2, y;
+  const float threehalfs = 1.5F;
+
+  x2 = number * 0.5F;
+  y  = number;
+  i  = * ( long * ) &y;                       // evil floating point bit level hacking
+  i  = 0x5f3759df - ( i >> 1 );               // what the fuck?
+  y  = * ( float * ) &i;
+  y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
+
+  return y;                                   // 1 / sqrt(number)
+}
+
+static inline float dt_fast_log2f(float x)
+{
+  union { float f; unsigned int i; } vx = { x };
+  union { unsigned int i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
+  float y = vx.i;
+
+  y *= 1.1920928955078125e-7f;
+
+  return y - 124.22551499f
+    - 1.498030302f * mx.f
+    - 1.72587999f / (0.3520887068f + mx.f);
+}
+
 static inline void dt_print_mem_usage()
 {
 #if defined(__linux__)
