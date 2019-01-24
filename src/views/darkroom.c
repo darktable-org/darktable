@@ -1008,24 +1008,12 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
       GtkMenuItem *smi = NULL;
 
-      // no sub-menu
-      if(!sm)
+      // no sub-menu, but we need one
+      if(!sm && split[1])
       {
-        // but do we need one, that is, next item starts with the same group
-        GList *next = g_list_next(styles);
-        if(next)
-        {
-          dt_style_t *next_style = (dt_style_t *)next->data;
-          gchar **next_split = g_strsplit(next_style->name, "|", 0);
-
-          if(!g_strcmp0(next_split[0],split[0]))
-          {
-            smi = (GtkMenuItem *)gtk_menu_item_new_with_label(split[0]);
-            sm = (GtkMenu *)gtk_menu_new();
-            gtk_menu_item_set_submenu(smi, GTK_WIDGET(sm));
-          }
-          g_strfreev(next_split);
-        }
+        smi = (GtkMenuItem *)gtk_menu_item_new_with_label(split[0]);
+        sm = (GtkMenu *)gtk_menu_new();
+        gtk_menu_item_set_submenu(smi, GTK_WIDGET(sm));
       }
 
       if(sm)
