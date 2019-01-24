@@ -184,9 +184,10 @@ static inline __m128 weight_sse2(const __m128 c1, const __m128 c2, const float s
   const __m128 diff = (c1 - c2);
   const __m128 square = diff * diff;                                // (?, d3, d2, d1)
   const __m128 square2 = _mm_shuffle_ps(square, square, _MM_SHUFFLE(3, 1, 2, 0)); // (?, d2, d3, d1)
-  const __m128 added = square + square2 - square;                   // (?, d2+d3, d2+d3, d1)
+  __m128 added = square + square2;                                  // (?, d2+d3, d2+d3, 2*d1)
+  added = _mm_sub_ss(added, square);                                // (?, d2+d3, d2+d3, d1)
   const __m128 sharpened = added * vsharpen;                        // (?, -s*(d2+d3), -s*(d2+d3), -s*d1)
-  __m128 exp = _mm_expf_ps(sharpened);                        // (?, wc, wc, wl)
+  __m128 exp = _mm_expf_ps(sharpened);                              // (?, wc, wc, wl)
   exp = _mm_castsi128_ps(_mm_slli_si128(_mm_castps_si128(exp), 4)); // (wc, wc, wl, 0)
   exp = _mm_castsi128_ps(_mm_srli_si128(_mm_castps_si128(exp), 4)); // (0, wc, wc, wl)
   return _mm_or_ps(exp, ooo1);                                      // (1, wc, wc, wl)
