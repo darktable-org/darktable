@@ -106,7 +106,6 @@ typedef struct dt_iop_filmic_params_t
   float grey_point_source;
   float black_point_source;
   float white_point_source;
-  float security_factor;
   float grey_point_target;
   float black_point_target;
   float white_point_target;
@@ -126,7 +125,7 @@ typedef struct dt_iop_filmic_gui_data_t
   GtkWidget *white_point_source;
   GtkWidget *grey_point_source;
   GtkWidget *black_point_source;
-  GtkWidget *security_factor;
+  //GtkWidget *security_factor;
   GtkWidget *auto_button;
   GtkWidget *grey_point_target;
   GtkWidget *white_point_target;
@@ -228,7 +227,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
     n->black_point_source = o->black_point_source;
-    n->security_factor = o->security_factor;
     n->grey_point_target = o->grey_point_target;
     n->black_point_target = o->black_point_target;
     n->white_point_target = o->white_point_target;
@@ -273,7 +271,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
     n->black_point_source = o->black_point_source;
-    n->security_factor = o->security_factor;
     n->grey_point_target = o->grey_point_target;
     n->black_point_target = o->black_point_target;
     n->white_point_target = o->white_point_target;
@@ -319,7 +316,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
     n->black_point_source = o->black_point_source;
-    n->security_factor = o->security_factor;
     n->grey_point_target = o->grey_point_target;
     n->black_point_target = o->black_point_target;
     n->white_point_target = o->white_point_target;
@@ -353,7 +349,6 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey_point_target = 18.0f;
 
   // Input - standard raw picture
-  p.security_factor = 0.0f;
   p.contrast = 1.618f;
   p.preserve_color = 1;
   p.balance = -12.0f;
@@ -424,18 +419,6 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("18 EV (HDR++)"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
-static inline float Log2(float x)
-{
-  if(x > 0.0f)
-  {
-    return logf(x) / logf(2.0f);
-  }
-  else
-  {
-    return x;
-  }
-}
-
 static inline float Log2Thres(float x, float Thres)
 {
   if(x > Thres)
@@ -446,26 +429,6 @@ static inline float Log2Thres(float x, float Thres)
   {
     return logf(Thres) / logf(2.f);
   }
-}
-
-
-// From data/kernels/extended.cl
-static inline float fastlog2(float x)
-{
-  union { float f; unsigned int i; } vx = { x };
-  union { unsigned int i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
-  float y = vx.i;
-
-  y *= 1.1920928955078125e-7f;
-
-  return y - 124.22551499f
-    - 1.498030302f * mx.f
-    - 1.72587999f / (0.3520887068f + mx.f);
-}
-
-static inline float gaussian(float x, float std)
-{
-  return expf(- (x * x) / (2.0f * std * std)) / (std * powf(2.0f * M_PI, 0.5f));
 }
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
@@ -527,7 +490,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
       // Log tone-mapping
       max = max / data->grey_source;
-      max = (max > EPS) ? (fastlog2(max) - data->black_source) / data->dynamic_range : EPS;
+      max = (max > EPS) ? (dt_fast_log2f(max) - data->black_source) / data->dynamic_range : EPS;
       max = CLAMP(max, 0.0f, 1.0f);
 
       // Filmic S curve on the max RGB
@@ -548,7 +511,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       {
         // Log tone-mapping on RGB
         rgb[c] = rgb[c] / data->grey_source;
-        rgb[c] = (rgb[c] > EPS) ? (fastlog2(rgb[c]) - data->black_source) / data->dynamic_range : EPS;
+        rgb[c] = (rgb[c] > EPS) ? (dt_fast_log2f(rgb[c]) - data->black_source) / data->dynamic_range : EPS;
         rgb[c] = CLAMP(rgb[c], 0.0f, 1.0f);
 
         // Store the index of the LUT
@@ -601,7 +564,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float black = data->black_source;
   const float dynamic_range = data->dynamic_range;
   const float saturation = (data->global_saturation / 100.0f);
-  const float gamut_compression = data->gamut_compression * 2.0f;
+  const float gamut_compression = (1.0f / data->gamut_compression);
   const int run_gamut = (data->gamut_compression == 1.0f) ? FALSE : TRUE;
 
   const __m128 grey_sse = _mm_set1_ps(grey);
@@ -651,7 +614,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
       // Log tone-mapping
       max = max / grey;
-      max = (max > eps) ? (fastlog2(max) - black) / dynamic_range : eps;
+      max = (max > eps) ? (dt_fast_log2f(max) - black) / dynamic_range : eps;
       max = CLAMP(max, 0.0f, 1.0f);
 
       // Filmic S curve on the max RGB
@@ -671,17 +634,17 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
       // Log tone-mapping on Y
       xyY[2] = xyY[2] / grey;
-      xyY[2] = (xyY[2] > eps) ? (fastlog2(xyY[2]) - black) / dynamic_range : eps;
+      xyY[2] = (xyY[2] > eps) ? (dt_fast_log2f(xyY[2]) - black) / dynamic_range : eps;
       xyY[2] = CLAMP(xyY[2], 0.0f, 1.0f);
 
       // Filmic S curve on the Y
       const int index = CLAMP(xyY[2] * 0x10000ul, 0, 0xffff);
       xyY[2] = data->table[index];
-      concavity = data->grad_2[index];
+      concavity = _mm_set1_ps(data->grad_2[index]);
 
       // Convert back to XYZ
       rgb = dt_XYZ_to_prophotoRGB_sse2(dt_xyY_to_XYZ_sse2(xyY));
-      luma = xyY[2];
+      luma = _mm_set1_ps(xyY[2]);
     }
     else
     {
@@ -718,13 +681,12 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     if(run_gamut)
     {
       __m128 IPT = dt_XYZ_to_IPThdr_sse2(dt_prophotoRGB_to_XYZ_sse2(rgb));
-      float radius = powf((IPT[2]*IPT[2] + IPT[1]*IPT[1]), 0.5f);
-      const __m128 trigo = IPT / radius; // IPT[1] = cos(hue); IPT[2] = sin(hue)
+      // Warning: compute the inverse of the radius aka 1/radius (because it's faster)
+      const __m128 inv_radius = _mm_set1_ps(dt_fast_inv_sqrtf(IPT[2]*IPT[2] + IPT[1]*IPT[1]));
+      const __m128 trigo = IPT * inv_radius; // IPT[1] = cos(hue); IPT[2] = sin(hue)
 
-      radius *= gamut_compression;
-
-      IPT[1] = radius * trigo[1];
-      IPT[2] = radius * trigo[2];
+      IPT[1] = trigo[1] / (gamut_compression * inv_radius[0]);
+      IPT[2] = trigo[2] / (gamut_compression * inv_radius[0]);
 
       rgb = dt_XYZ_to_prophotoRGB_sse2(dt_IPThdr_to_XYZ_sse2(IPT));
     }
@@ -831,7 +793,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   const float grey = XYZ[1];
   const float prev_grey = p->grey_point_source;
   p->grey_point_source = 100.f * grey;
-  const float grey_var = Log2(prev_grey / p->grey_point_source);
+  const float grey_var = log2f(prev_grey / p->grey_point_source);
   p->black_point_source = p->black_point_source - grey_var;
   p->white_point_source = p->white_point_source + grey_var;
 
@@ -858,7 +820,7 @@ static void apply_auto_black(dt_iop_module_t *self)
   dt_Lab_to_XYZ(self->picked_color_min, XYZ);
   const float black = XYZ[1];
   float EVmin = Log2Thres(black / (p->grey_point_source / 100.0f), noise);
-  EVmin *= (1.0f + p->security_factor / 100.0f);
+  // EVmin *= (1.0f + p->security_factor / 100.0f);
 
   p->black_point_source = EVmin;
 
@@ -886,7 +848,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   dt_Lab_to_XYZ(self->picked_color_max, XYZ);
   const float white = XYZ[1];
   float EVmax = Log2Thres(white / (p->grey_point_source / 100.0f), noise);
-  EVmax *= (1.0f + p->security_factor / 100.0f);
+  //EVmax *= (1.0f + p->security_factor / 100.0f);
 
   p->white_point_source = EVmax;
 
@@ -900,6 +862,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
+/*
 static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -932,6 +895,7 @@ static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
+*/
 
 static void apply_autotune(dt_iop_module_t *self)
 {
@@ -950,13 +914,13 @@ static void apply_autotune(dt_iop_module_t *self)
   dt_Lab_to_XYZ(self->picked_color_min, XYZ);
   const float black = XYZ[1];
   float EVmin = Log2Thres(black / (p->grey_point_source / 100.0f), noise);
-  EVmin *= (1.0f + p->security_factor / 100.0f);
+  //EVmin *= (1.0f + p->security_factor / 100.0f);
 
   // White
   dt_Lab_to_XYZ(self->picked_color_max, XYZ);
   const float white = XYZ[1];
   float EVmax = Log2Thres(white / (p->grey_point_source / 100.0f), noise);
-  EVmax *= (1.0f + p->security_factor / 100.0f);
+  //EVmax *= (1.0f + p->security_factor / 100.0f);
 
   p->black_point_source = EVmin;
   p->white_point_source = EVmax;
@@ -1043,7 +1007,7 @@ static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
   float prev_grey = p->grey_point_source;
   p->grey_point_source = dt_bauhaus_slider_get(slider);
 
-  float grey_var = Log2(prev_grey / p->grey_point_source);
+  float grey_var = log2f(prev_grey / p->grey_point_source);
   p->black_point_source = p->black_point_source - grey_var;
   p->white_point_source = p->white_point_source + grey_var;
 
@@ -1158,7 +1122,7 @@ static void gamut_compression_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-  p->gamut_compression = dt_bauhaus_slider_get(slider);
+  p->gamut_compression = dt_bauhaus_slider_get(slider) / 100.0f;
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1602,7 +1566,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   dt_bauhaus_slider_set_soft(g->grey_point_source, p->grey_point_source);
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
-  dt_bauhaus_slider_set_soft(g->security_factor, p->security_factor);
+  //dt_bauhaus_slider_set_soft(g->security_factor, p->security_factor);
   dt_bauhaus_slider_set_soft(g->white_point_target, p->white_point_target);
   dt_bauhaus_slider_set_soft(g->grey_point_target, p->grey_point_target);
   dt_bauhaus_slider_set_soft(g->black_point_target, p->black_point_target);
@@ -1611,7 +1575,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->contrast, p->contrast);
   dt_bauhaus_slider_set(g->global_saturation, p->global_saturation);
   dt_bauhaus_slider_set(g->saturation, (powf(10.0f, p->saturation/100.0f) - 1.0f) / 9.0f * 100.0f);
-  dt_bauhaus_slider_set(g->gamut_compression, p->gamut_compression);
+  dt_bauhaus_slider_set(g->gamut_compression, p->gamut_compression * 100.0f);
   dt_bauhaus_slider_set(g->balance, p->balance);
 
   dt_bauhaus_combobox_set(g->interpolator, p->interpolator);
@@ -1638,7 +1602,6 @@ void init(dt_iop_module_t *module)
                                  .grey_point_source   = 18, // source grey
                                  .black_point_source  = -8.65,  // source black
                                  .white_point_source  = 2.45,  // source white
-                                 .security_factor     = 0.0,  // security factor
                                  .grey_point_target   = 18.0, // target grey
                                  .black_point_target  = 0.0,  // target black
                                  .white_point_target  = 100.0,  // target white
@@ -1729,7 +1692,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   float a, b, d;
   a = DR;
-  b = Log2( 1.0f / (-1 + powf(2.0f, a)));
+  b = log2f( 1.0f / (-1 + powf(2.0f, a)));
   d = - powf(2.0f, b);
 
   if (grey > powf(p->grey_point_target / 100.0f, p->output_power))
@@ -1740,8 +1703,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     for (int i = 0; i < 50; ++i)
     { // Optimization loop for the non-linear problem
-      a = Log2((0.5f - d) / (1.0f - d)) / (grey - 1.0f);
-      b = Log2( 1.0f / (-1 + powf(2.0f, a)));
+      a = log2f((0.5f - d) / (1.0f - d)) / (grey - 1.0f);
+      b = log2f( 1.0f / (-1 + powf(2.0f, a)));
       d = - powf(2.0f, b);
     }
   }
@@ -1863,6 +1826,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->black_point_source), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 
   // Security factor
+  /*
   g->security_factor = dt_bauhaus_slider_new_with_range(self, -50., 50., 1.0, p->security_factor, 2);
   dt_bauhaus_widget_set_label(g->security_factor, NULL, _("safety factor"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->security_factor, TRUE, TRUE, 0);
@@ -1870,6 +1834,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range.\n"
                                                     "useful in conjunction with \"auto tune levels\"."));
   g_signal_connect(G_OBJECT(g->security_factor), "value-changed", G_CALLBACK(security_threshold_callback), self);
+  */
 
   // Auto tune slider
   g->auto_button = dt_bauhaus_combobox_new(self);
@@ -1952,10 +1917,10 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
 
   // gamut compression slider
-  g->gamut_compression = dt_bauhaus_slider_new_with_range(self, 0., 2., 0.1, p->gamut_compression, 4);
+  g->gamut_compression = dt_bauhaus_slider_new_with_range(self, 0.01, 100., 0.1, p->gamut_compression * 100.0f, 2);
   dt_bauhaus_widget_set_label(g->gamut_compression, NULL, _("gamut compression"));
-  //dt_bauhaus_slider_enable_soft_boundaries(g->gamut_compression, 0.0, 1.0);
-  //dt_bauhaus_slider_set_format(g->gamut_compression, "%.2f %%");
+  dt_bauhaus_slider_enable_soft_boundaries(g->gamut_compression, 0.0, 2.0);
+  dt_bauhaus_slider_set_format(g->gamut_compression, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(self->widget), g->gamut_compression, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->gamut_compression, _("desaturates the input of the module globally.\n"
                                                       "you need to set this value below 100%\nif the chrominance preservation is enabled."));
