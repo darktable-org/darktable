@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-15 16:40+0100\n"
-"PO-Revision-Date: 2019-01-15 17:59+0100\n"
+"POT-Creation-Date: 2019-01-24 07:43+0100\n"
+"PO-Revision-Date: 2019-01-24 08:02+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -118,7 +118,7 @@ msgstr ""
 "initiële classificatie van alle afbeeldingen bij het importeren van een map"
 
 #: ../build/src/preferences_gen.h:1963 ../src/libs/tools/lighttable.c:64
-#: ../src/views/lighttable.c:190
+#: ../src/views/lighttable.c:195
 msgid "lighttable"
 msgstr "bibliotheek"
 
@@ -333,7 +333,7 @@ msgid ""
 "defines how color channels are displayed when activated in the parametric "
 "masks feature."
 msgstr ""
-"bepaald hoe kleurkanalen worden weergegeven indien geactiveerd in het "
+"bepaalt hoe kleurkanalen worden weergegeven indien geactiveerd in het "
 "parametrisch masker"
 
 #: ../build/src/preferences_gen.h:2313
@@ -563,7 +563,7 @@ msgstr "bibliotheek + ontwikkelmodule"
 
 #: ../build/src/preferences_gen.h:2797
 msgid "defines where scrollbars should be displayed"
-msgstr "bepaald waar scrollbars zichtbaar zijn"
+msgstr "bepaalt waar scrollbars zichtbaar zijn"
 
 #: ../build/src/preferences_gen.h:2805
 msgid "method to use for getting the display profile"
@@ -924,7 +924,7 @@ msgid ""
 "parallel on two different GPUs; very fast GPU - process both pixelipes "
 "sequentially on the GPU."
 msgstr ""
-"bepaald hoe voorbeelden en volledige pixelpipe taken worden gepland op "
+"bepaalt hoe voorbeelden en volledige pixelpipe taken worden gepland op "
 "OpenCL systemen - GPU verwerkt volledig en CPU verwerkt preview pipe "
 "(aanpasbaar door instelbare parameters); meerdere GPU's - verwerkt beide "
 "pixelpipes parallel op twee verschillende GPU's; zeer snelle GPU -verwerkt "
@@ -1079,14 +1079,14 @@ msgstr "grafische vormgeving;fotografie;raw;"
 #: ../src/imageio/storage/gallery.c:107 ../src/imageio/storage/latex.c:106
 #: ../src/libs/collect.c:242 ../src/libs/copy_history.c:77
 #: ../src/libs/geotagging.c:476 ../src/libs/import.c:775
-#: ../src/libs/import.c:882 ../src/libs/lib.c:218 ../src/libs/styles.c:235
-#: ../src/libs/styles.c:258 ../src/libs/tagging.c:377 ../src/libs/tagging.c:417
+#: ../src/libs/import.c:882 ../src/libs/lib.c:218 ../src/libs/styles.c:302
+#: ../src/libs/styles.c:325 ../src/libs/tagging.c:377 ../src/libs/tagging.c:417
 msgid "_cancel"
 msgstr "_annuleer"
 
 #: ../src/chart/main.c:459 ../src/gui/preferences.c:1025
 #: ../src/gui/preferences.c:1256 ../src/gui/styles_dialog.c:284
-#: ../src/libs/styles.c:236
+#: ../src/libs/styles.c:303
 msgid "_save"
 msgstr "_opslaan"
 
@@ -1174,60 +1174,60 @@ msgstr ""
 msgid "too much time to update aspect ratio for the collection"
 msgstr "teveel tijd om de beeldverhouding van de collectie te updaten"
 
-#: ../src/common/collection.c:1075 ../src/develop/lightroom.c:822
+#: ../src/common/collection.c:1069 ../src/develop/lightroom.c:822
 #: ../src/iop/bilateral.cc:363 ../src/iop/channelmixer.c:452
 #: ../src/iop/channelmixer.c:463 ../src/iop/colorbalance.c:2490
-#: ../src/iop/temperature.c:1367 ../src/libs/collect.c:1188
+#: ../src/iop/temperature.c:1359 ../src/libs/collect.c:1189
 msgid "red"
 msgstr "rood"
 
-#: ../src/common/collection.c:1077 ../src/develop/lightroom.c:824
-#: ../src/iop/temperature.c:1358 ../src/libs/collect.c:1188
+#: ../src/common/collection.c:1071 ../src/develop/lightroom.c:824
+#: ../src/iop/temperature.c:1350 ../src/libs/collect.c:1189
 msgid "yellow"
 msgstr "geel"
 
-#: ../src/common/collection.c:1079 ../src/develop/lightroom.c:826
+#: ../src/common/collection.c:1073 ../src/develop/lightroom.c:826
 #: ../src/iop/bilateral.cc:364 ../src/iop/channelmixer.c:453
 #: ../src/iop/channelmixer.c:469 ../src/iop/colorbalance.c:2497
-#: ../src/iop/temperature.c:1355 ../src/iop/temperature.c:1368
-#: ../src/libs/collect.c:1188
+#: ../src/iop/temperature.c:1347 ../src/iop/temperature.c:1360
+#: ../src/libs/collect.c:1189
 msgid "green"
 msgstr "groen"
 
-#: ../src/common/collection.c:1081 ../src/develop/lightroom.c:828
+#: ../src/common/collection.c:1075 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:365 ../src/iop/channelmixer.c:454
 #: ../src/iop/channelmixer.c:475 ../src/iop/colorbalance.c:2504
-#: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1188
+#: ../src/iop/temperature.c:1361 ../src/libs/collect.c:1189
 msgid "blue"
 msgstr "blauw"
 
-#: ../src/common/collection.c:1083 ../src/libs/collect.c:1188
+#: ../src/common/collection.c:1077 ../src/libs/collect.c:1189
 msgid "purple"
 msgstr "paars"
 
-#: ../src/common/collection.c:1092 ../src/libs/collect.c:1155
+#: ../src/common/collection.c:1086 ../src/libs/collect.c:1156
 msgid "altered"
 msgstr "aangepast"
 
-#: ../src/common/collection.c:1098 ../src/libs/collect.c:1164
+#: ../src/common/collection.c:1092 ../src/libs/collect.c:1165
 msgid "tagged"
 msgstr "gelabeld"
 
-#: ../src/common/collection.c:1104 ../src/libs/collect.c:1173
+#: ../src/common/collection.c:1098 ../src/libs/collect.c:1174
 msgid "not copied locally"
 msgstr "niet lokaal gekopieerd"
 
 #. grouping
-#: ../src/common/collection.c:1317 ../src/libs/collect.c:1277
+#: ../src/common/collection.c:1311 ../src/libs/collect.c:1278
 msgid "group leaders"
 msgstr "groepsleiders"
 
-#: ../src/common/collection.c:1515
+#: ../src/common/collection.c:1509
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "%d afbeelding van %d (#%d) uit de collectie is geselecteerd"
 
-#: ../src/common/collection.c:1521
+#: ../src/common/collection.c:1515
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -1372,14 +1372,14 @@ msgstr ""
 
 #: ../src/common/darktable.c:787 ../src/imageio/format/pdf.c:666
 #: ../src/imageio/format/pdf.c:691 ../src/imageio/storage/flickr.c:497
-#: ../src/imageio/storage/piwigo.c:819 ../src/iop/clipping.c:1960
+#: ../src/imageio/storage/piwigo.c:823 ../src/iop/clipping.c:1960
 #: ../src/libs/export.c:595 ../src/libs/metadata_view.c:270
 msgid "no"
 msgstr "nee"
 
 #: ../src/common/darktable.c:787 ../src/imageio/format/pdf.c:667
 #: ../src/imageio/format/pdf.c:692 ../src/imageio/storage/flickr.c:496
-#: ../src/imageio/storage/piwigo.c:818 ../src/iop/clipping.c:1961
+#: ../src/imageio/storage/piwigo.c:822 ../src/iop/clipping.c:1961
 #: ../src/libs/export.c:596 ../src/libs/metadata_view.c:270
 msgid "yes"
 msgstr "ja"
@@ -1485,16 +1485,16 @@ msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "kopieer eerst de afbeeldingsgeschiedenis voordat je het op een andere toepast"
 
-#: ../src/common/history.c:1157 ../src/common/history.c:1160
-#: ../src/common/history.c:1176 ../src/common/styles.c:728
+#: ../src/common/history.c:1158 ../src/common/history.c:1161
+#: ../src/common/history.c:1177 ../src/common/styles.c:728
 #: ../src/common/styles.c:732 ../src/develop/blend_gui.c:2271
 #: ../src/develop/develop.c:1385 ../src/iop/ashift.c:4774
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "aan"
 
-#: ../src/common/history.c:1157 ../src/common/history.c:1160
-#: ../src/common/history.c:1176 ../src/common/styles.c:728
+#: ../src/common/history.c:1158 ../src/common/history.c:1161
+#: ../src/common/history.c:1177 ../src/common/styles.c:728
 #: ../src/common/styles.c:732 ../src/develop/blend_gui.c:2036
 #: ../src/develop/blend_gui.c:2268 ../src/develop/develop.c:1385
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
@@ -2030,7 +2030,7 @@ msgstr "verplaats afbeeldingen"
 #: ../src/imageio/storage/disk.c:95 ../src/imageio/storage/disk.c:169
 #: ../src/imageio/storage/gallery.c:107 ../src/imageio/storage/gallery.c:178
 #: ../src/imageio/storage/latex.c:106 ../src/imageio/storage/latex.c:177
-#: ../src/libs/styles.c:235 ../src/lua/preferences.c:592
+#: ../src/libs/styles.c:302 ../src/lua/preferences.c:592
 msgid "select directory"
 msgstr "selecteer map"
 
@@ -2139,12 +2139,12 @@ msgstr "importeren afbeelding %s"
 msgid "import image"
 msgstr "importeer afbeelding"
 
-#: ../src/develop/blend.c:2861 ../src/develop/blend.c:3154
+#: ../src/develop/blend.c:2860 ../src/develop/blend.c:3158
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
 msgstr "mengen in module '%s' overgeslagen: roi's komen niet overeen"
 
-#: ../src/develop/blend.c:2894 ../src/develop/blend.c:3189
+#: ../src/develop/blend.c:2895 ../src/develop/blend.c:3193
 msgid "could not allocate buffer for blending"
 msgstr "toewijzen buffer t.g.v. mengen mislukt"
 
@@ -2351,7 +2351,6 @@ msgid "add brush"
 msgstr "penseel toevoegen"
 
 #: ../src/develop/blend_gui.c:1700 ../src/develop/blend_gui.c:2065
-#| msgid "parametric mask"
 msgid "raster mask"
 msgstr "raster masker"
 
@@ -2706,7 +2705,7 @@ msgstr "later"
 
 #. delete
 #: ../src/develop/imageop.c:965 ../src/libs/image.c:142
-#: ../src/libs/styles.c:393 ../src/libs/tagging.c:578
+#: ../src/libs/styles.c:460 ../src/libs/tagging.c:578
 msgid "delete"
 msgstr "verwijderen"
 
@@ -2728,7 +2727,7 @@ msgstr "%s is uitgeschakeld"
 #: ../src/gui/accelerators.c:713 ../src/gui/accelerators.c:878
 #: ../src/gui/accelerators.c:904 ../src/gui/presets.c:190
 #: ../src/gui/presets.c:303 ../src/gui/presets.c:648
-#: ../src/iop/temperature.c:1450 ../src/libs/import.c:576 ../src/libs/lib.c:314
+#: ../src/iop/temperature.c:1442 ../src/libs/import.c:576 ../src/libs/lib.c:314
 #: ../src/libs/lib.c:342 ../src/libs/lib.c:1167
 msgid "preset"
 msgstr "voorkeur"
@@ -2821,116 +2820,126 @@ msgid_plural "%s have been imported"
 msgstr[0] "%s is geïmporteerd"
 msgstr[1] "%s zijn geïmporteerd"
 
-#: ../src/develop/masks/masks.c:162
+#: ../src/develop/masks/masks.c:202
 msgid "ctrl+click to add a sharp node"
 msgstr "ctrl+klik: toevoegen scherp knooppunt"
 
-#: ../src/develop/masks/masks.c:164
+#: ../src/develop/masks/masks.c:204
 msgid "ctrl+click to switch between smooth/sharp node"
 msgstr "ctrl+klik schakelt tussen gladde/scherpe knooppunten"
 
-#: ../src/develop/masks/masks.c:166
+#: ../src/develop/masks/masks.c:206
 msgid "right-click to reset curvature"
 msgstr "klik rechtermuisknop om kromming te resetten"
 
-#: ../src/develop/masks/masks.c:168
+#: ../src/develop/masks/masks.c:208
 msgid "ctrl+click to add a node"
 msgstr "ctrl+klik voegt een knooppunt toe"
 
-#: ../src/develop/masks/masks.c:170 ../src/develop/masks/masks.c:203
-msgid "ctrl+scroll to set shape opacity, shift+scroll to set feather size"
+#: ../src/develop/masks/masks.c:210 ../src/develop/masks/masks.c:248
+#, c-format
+msgid ""
+"shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
-"ctrl+scroll voor instelling dekking door vorm, shift+scroll voor instelling "
-"afmeting doezelaar"
+"shift+scroll om de doezelaar maat in te stellen,  ctrl+scroll om vormdekking "
+"in te stellen (%d%%)"
 
-#: ../src/develop/masks/masks.c:175
-msgid "ctrl+scroll to set shape opacity"
-msgstr "ctrl+scroll: bepaalt dekking van vorm"
+#: ../src/develop/masks/masks.c:215
+#, c-format
+msgid "ctrl+scroll to set shape opacity (%d%%)"
+msgstr "ctrl+scroll om vormdekking in te stellen (%d%%)"
 
-#: ../src/develop/masks/masks.c:177
+#: ../src/develop/masks/masks.c:217
 msgid "move to rotate shape"
 msgstr "verplaats om de vorm te draaien"
 
-#: ../src/develop/masks/masks.c:182 ../src/develop/masks/masks.c:201
+#: ../src/develop/masks/masks.c:223 ../src/develop/masks/masks.c:245
+#, c-format
 msgid ""
 "scroll to set size, shift+scroll to set feather size\n"
-"ctrl+scroll to set shape opacity"
+"ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
-"scroll voor instellen afmeting, shift+scroll voor instellen doezelaar\n"
-"ctrl+scroll voor instellen vormdekking"
+"scroll voor instellen afmeting, shift+scroll voor instellen doezelaar maat\n"
+"ctrl+scroll om vormdekking in te stellen (%d%%)"
 
-#: ../src/develop/masks/masks.c:184
+#: ../src/develop/masks/masks.c:225
 msgid "ctrl+click to rotate"
 msgstr "ctrl+klik om te draaien"
 
-#: ../src/develop/masks/masks.c:186
+#: ../src/develop/masks/masks.c:228
+#, c-format
 msgid ""
-"shift+click to switch feathering mode, ctrl+scroll to set shape opacity,\n"
-"shift+scroll to set feather size, ctrl+click to rotate"
+"shift+click to switch feathering mode, ctrl+click to rotate\n"
+"shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"
 msgstr ""
-"shift+klik schakelt doezelaar, ctrl+scroll voor instellen vormdekking,\n"
-"shift+scroll voor instellen doezelaar, ctrl+klikvoor draaiing"
+"shift+klik schakelt doezelaar modus\n"
+"ctrl+scroll voor draaiing\n"
+"shift+scroll om de doezelaar maat in te stellen\n"
+"ctrl+scroll om vormdekking in te stellen (%d%%)"
 
-#: ../src/develop/masks/masks.c:191
+#: ../src/develop/masks/masks.c:234
+#, c-format
 msgid ""
 "scroll to set brush size, shift+scroll to set hardness,\n"
-"ctrl+scroll to set opacity"
+"ctrl+scroll to set opacity (%d%%)"
 msgstr ""
-"scroll bepaaldt penseel dikte, shift+scroll bepaaldt hardheid,\n"
-"ctrl+scroll bepaaldt dekking"
+"scroll bepaalt penseel dikte, shift+scroll bepaalt hardheid,\n"
+"ctrl+scroll om vormdekking in te stellen (%d%%)"
 
-#: ../src/develop/masks/masks.c:194
+#: ../src/develop/masks/masks.c:237
+#, c-format
+msgid "scroll to set hardness, ctrl+scroll to set shape opacity (%d%%)"
+msgstr ""
+"scroll bepaalt hardheid, ctrl+scroll om vormdekking in te stellen (%d%%)"
+
+#: ../src/develop/masks/masks.c:239
 msgid "scroll to set brush size"
 msgstr "bepaal penseel dikte door te scrollen"
 
-#: ../src/develop/masks/masks.c:196
-msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
-msgstr "scrollen bepaalt hardheid, ctrl+scroll bepaalt dekking door vorm"
-
-#: ../src/develop/masks/masks.c:356
+#: ../src/develop/masks/masks.c:401
 #, c-format
 msgid "circle #%d"
 msgstr "cirkel  #%d"
 
-#: ../src/develop/masks/masks.c:358
+#: ../src/develop/masks/masks.c:403
 #, c-format
 msgid "path #%d"
 msgstr "pad #%d"
 
-#: ../src/develop/masks/masks.c:360
+#: ../src/develop/masks/masks.c:405
 #, c-format
 msgid "gradient #%d"
 msgstr "kleurverloop #%d"
 
-#: ../src/develop/masks/masks.c:362
+#: ../src/develop/masks/masks.c:407
 #, c-format
 msgid "ellipse #%d"
 msgstr "ellips #%d"
 
-#: ../src/develop/masks/masks.c:364
+#: ../src/develop/masks/masks.c:409
 #, c-format
 msgid "brush #%d"
 msgstr "penseel #%d"
 
-#: ../src/develop/masks/masks.c:433
+#: ../src/develop/masks/masks.c:478
 #, c-format
 msgid "copy of %s"
 msgstr "kopie van %s"
 
-#: ../src/develop/masks/masks.c:1122
+#: ../src/develop/masks/masks.c:1167
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: masker versie komt niet overeen: %d != %d"
 
-#: ../src/develop/masks/masks.c:1901 ../src/libs/masks.c:1038
+#: ../src/develop/masks/masks.c:1934 ../src/libs/masks.c:1038
 msgid "add existing shape"
 msgstr "bestaande vorm toevoegen"
 
-#: ../src/develop/masks/masks.c:1926
+#: ../src/develop/masks/masks.c:1959
 msgid "use same shapes as"
 msgstr "gebruik dezelfde vorm als"
 
-#: ../src/develop/masks/masks.c:2238
+#: ../src/develop/masks/masks.c:2271
 msgid "masks can not contain themselves"
 msgstr "maskers mogen zichzelf niet insluiten"
 
@@ -3053,7 +3062,7 @@ msgstr "avondzon"
 msgid "underwater"
 msgstr "onderwater"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1546
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1607
 msgid "black & white"
 msgstr "zwart en wit"
 
@@ -3269,78 +3278,78 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "gebruik YYYY-MM-DD voor datum overschrijving"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:1104
+#: ../src/gui/gtk.c:1095
 msgctxt "accel"
 msgid "tethering view"
 msgstr "tethering weergave"
 
-#: ../src/gui/gtk.c:1105
+#: ../src/gui/gtk.c:1096
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "weergave bibliotheek"
 
-#: ../src/gui/gtk.c:1106
+#: ../src/gui/gtk.c:1097
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "weergave ontwikkelen"
 
-#: ../src/gui/gtk.c:1107
+#: ../src/gui/gtk.c:1098
 msgctxt "accel"
 msgid "map view"
 msgstr "bekijk kaart"
 
-#: ../src/gui/gtk.c:1108
+#: ../src/gui/gtk.c:1099
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "presentatieweergave"
 
-#: ../src/gui/gtk.c:1109
+#: ../src/gui/gtk.c:1100
 msgctxt "accel"
 msgid "print view"
 msgstr "printer weergave"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:1132
+#: ../src/gui/gtk.c:1123
 msgctxt "accel"
 msgid "quit"
 msgstr "verlaat"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:1137
+#: ../src/gui/gtk.c:1128
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "volledig scherm aan/uit"
 
-#: ../src/gui/gtk.c:1138
+#: ../src/gui/gtk.c:1129
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "verlaat volledig scherm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:1146
+#: ../src/gui/gtk.c:1137
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "zijpanelen aan/uit"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:1149
+#: ../src/gui/gtk.c:1140
 msgctxt "accel"
 msgid "toggle header"
 msgstr "header aan/uit"
 
 #. View-switch
-#: ../src/gui/gtk.c:1152
+#: ../src/gui/gtk.c:1143
 msgctxt "accel"
 msgid "switch view"
 msgstr "wissel weergave"
 
 #. Global zoom in & zoom out
-#: ../src/gui/gtk.c:1158 ../src/libs/tools/lighttable.c:142
+#: ../src/gui/gtk.c:1149 ../src/libs/tools/lighttable.c:142
 msgctxt "accel"
 msgid "zoom in"
 msgstr "inzoomen"
 
-#: ../src/gui/gtk.c:1159 ../src/libs/tools/lighttable.c:143
+#: ../src/gui/gtk.c:1150 ../src/libs/tools/lighttable.c:143
 msgctxt "accel"
 msgid "zoom out"
 msgstr "uitzoomen"
@@ -3482,7 +3491,7 @@ msgid "golden spiral"
 msgstr "gulden spiraal"
 
 #: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:678
-#: ../src/iop/denoiseprofile.c:2640 ../src/iop/lens.c:2156
+#: ../src/iop/denoiseprofile.c:2642 ../src/iop/lens.c:2156
 #: ../src/iop/rawdenoise.c:952 ../src/libs/tools/filter.c:117
 msgid "all"
 msgstr "alles"
@@ -3666,7 +3675,7 @@ msgstr "koppeling"
 #. Export button
 #. export button
 #: ../src/gui/preferences.c:563 ../src/libs/export.c:673
-#: ../src/libs/styles.c:407
+#: ../src/libs/styles.c:474
 msgid "export"
 msgstr "exporteren"
 
@@ -3697,7 +3706,7 @@ msgstr "kies bestand voor import"
 #: ../src/gui/preferences.c:1051 ../src/gui/preferences.c:1135
 #: ../src/libs/collect.c:243 ../src/libs/copy_history.c:78
 #: ../src/libs/geotagging.c:477 ../src/libs/import.c:776
-#: ../src/libs/import.c:883 ../src/libs/styles.c:259
+#: ../src/libs/import.c:883 ../src/libs/styles.c:326
 msgid "_open"
 msgstr "_open"
 
@@ -3868,7 +3877,7 @@ msgid "favourite"
 msgstr "favoriet"
 
 #: ../src/gui/styles_dialog.c:168 ../src/gui/styles_dialog.c:174
-#: ../src/libs/styles.c:246
+#: ../src/libs/styles.c:313
 #, c-format
 msgid "style %s was successfully saved"
 msgstr "stijl '%s' is succesvol opgeslagen"
@@ -4014,7 +4023,7 @@ msgstr "ongeldige randdikte, gebruikt 0"
 #: ../src/imageio/storage/email.c:135 ../src/imageio/storage/facebook.c:1308
 #: ../src/imageio/storage/flickr.c:654 ../src/imageio/storage/gallery.c:345
 #: ../src/imageio/storage/gallery.c:383 ../src/imageio/storage/picasa.c:1305
-#: ../src/imageio/storage/piwigo.c:971
+#: ../src/imageio/storage/piwigo.c:975
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "exporteren naar bestand `%s' mislukt!"
@@ -4030,7 +4039,7 @@ msgstr "PDF"
 #. DT_COLLECTION_SORT_CUSTOM_ORDER
 #: ../src/imageio/format/pdf.c:580 ../src/imageio/storage/facebook.c:1120
 #: ../src/imageio/storage/flickr.c:538 ../src/imageio/storage/gallery.c:184
-#: ../src/imageio/storage/latex.c:184 ../src/imageio/storage/piwigo.c:861
+#: ../src/imageio/storage/latex.c:184 ../src/imageio/storage/piwigo.c:865
 #: ../src/libs/collect.h:34 ../src/libs/metadata.c:336
 #: ../src/libs/metadata_view.c:122 ../src/libs/tools/filter.c:147
 msgid "title"
@@ -4403,8 +4412,8 @@ msgid "unable to retrieve the album list"
 msgstr "ophalen van  albumlijst lukt niet"
 
 #: ../src/imageio/storage/facebook.c:893 ../src/imageio/storage/flickr.c:392
-#: ../src/imageio/storage/flickr.c:419 ../src/imageio/storage/piwigo.c:522
-#: ../src/imageio/storage/piwigo.c:586
+#: ../src/imageio/storage/flickr.c:419 ../src/imageio/storage/piwigo.c:524
+#: ../src/imageio/storage/piwigo.c:588
 msgid "create new album"
 msgstr "creëer nieuwe map"
 
@@ -4421,7 +4430,7 @@ msgstr "uitloggen"
 #: ../src/imageio/storage/facebook.c:1183 ../src/imageio/storage/flickr.c:480
 #: ../src/imageio/storage/picasa.c:1001 ../src/imageio/storage/picasa.c:1143
 #: ../src/imageio/storage/picasa.c:1156 ../src/imageio/storage/picasa.c:1214
-#: ../src/imageio/storage/piwigo.c:806
+#: ../src/imageio/storage/piwigo.c:810
 msgid "login"
 msgstr "inloggen"
 
@@ -4442,7 +4451,7 @@ msgid "only me"
 msgstr "alleen ik"
 
 #: ../src/imageio/storage/facebook.c:1171 ../src/imageio/storage/flickr.c:506
-#: ../src/imageio/storage/piwigo.c:832
+#: ../src/imageio/storage/piwigo.c:836
 msgid "friends"
 msgstr "vrienden"
 
@@ -4503,13 +4512,13 @@ msgstr "flickr webalbum"
 
 #: ../src/imageio/storage/flickr.c:337 ../src/imageio/storage/flickr.c:377
 #: ../src/imageio/storage/flickr.c:831 ../src/imageio/storage/flickr.c:837
-#: ../src/imageio/storage/piwigo.c:470 ../src/imageio/storage/piwigo.c:485
-#: ../src/imageio/storage/piwigo.c:497
+#: ../src/imageio/storage/piwigo.c:472 ../src/imageio/storage/piwigo.c:487
+#: ../src/imageio/storage/piwigo.c:499
 msgid "not authenticated"
 msgstr "niet aangemeld"
 
 #: ../src/imageio/storage/flickr.c:373 ../src/imageio/storage/flickr.c:827
-#: ../src/imageio/storage/piwigo.c:462
+#: ../src/imageio/storage/piwigo.c:464
 msgid "authenticated"
 msgstr "authentificatie"
 
@@ -4526,19 +4535,19 @@ msgstr "flickr"
 msgid "flickr login"
 msgstr "inloggen flickr"
 
-#: ../src/imageio/storage/flickr.c:495 ../src/imageio/storage/piwigo.c:817
+#: ../src/imageio/storage/flickr.c:495 ../src/imageio/storage/piwigo.c:821
 msgid "export tags"
 msgstr "exporteer labels"
 
-#: ../src/imageio/storage/flickr.c:504 ../src/imageio/storage/piwigo.c:829
+#: ../src/imageio/storage/flickr.c:504 ../src/imageio/storage/piwigo.c:833
 msgid "visible to"
 msgstr "zichtbaar voor"
 
-#: ../src/imageio/storage/flickr.c:505 ../src/imageio/storage/piwigo.c:834
+#: ../src/imageio/storage/flickr.c:505 ../src/imageio/storage/piwigo.c:838
 msgid "you"
 msgstr "jezelf"
 
-#: ../src/imageio/storage/flickr.c:507 ../src/imageio/storage/piwigo.c:833
+#: ../src/imageio/storage/flickr.c:507 ../src/imageio/storage/piwigo.c:837
 msgid "family"
 msgstr "familie"
 
@@ -4546,7 +4555,7 @@ msgstr "familie"
 msgid "friends + family"
 msgstr "vrienden en familie"
 
-#: ../src/imageio/storage/flickr.c:509 ../src/imageio/storage/piwigo.c:830
+#: ../src/imageio/storage/flickr.c:509 ../src/imageio/storage/piwigo.c:834
 msgid "everyone"
 msgstr "iedereen"
 
@@ -4555,7 +4564,7 @@ msgstr "iedereen"
 msgid "photosets"
 msgstr "fotosets"
 
-#: ../src/imageio/storage/flickr.c:523 ../src/imageio/storage/piwigo.c:848
+#: ../src/imageio/storage/flickr.c:523 ../src/imageio/storage/piwigo.c:852
 msgid "refresh album list"
 msgstr "actualiseer album lijst"
 
@@ -4567,7 +4576,7 @@ msgstr "mijn nieuwe fotoset"
 msgid "exported from darktable"
 msgstr "geëxporteerd van darktable"
 
-#: ../src/imageio/storage/flickr.c:566 ../src/imageio/storage/piwigo.c:879
+#: ../src/imageio/storage/flickr.c:566 ../src/imageio/storage/piwigo.c:883
 msgid "click login button to start"
 msgstr "toets login button om te starten"
 
@@ -4651,71 +4660,81 @@ msgid_plural "%d/%d exported to google photos album"
 msgstr[0] "%d/%d geëxporteerd naar google foto album"
 msgstr[1] "%d/%d geëxporteerd naar google foto album"
 
-#: ../src/imageio/storage/piwigo.c:476
+#: ../src/imageio/storage/piwigo.c:478
 msgid "not authenticated, cannot reach server"
 msgstr "niet aangemeld, server onbereikbaar"
 
-#: ../src/imageio/storage/piwigo.c:587
+#: ../src/imageio/storage/piwigo.c:589
 msgid "---"
 msgstr "---"
 
-#: ../src/imageio/storage/piwigo.c:628
+#: ../src/imageio/storage/piwigo.c:630
 msgid "cannot refresh albums"
 msgstr "actualiseren album lijst mislukt"
 
-#: ../src/imageio/storage/piwigo.c:721
+#: ../src/imageio/storage/piwigo.c:723
 msgid "piwigo"
 msgstr "piwigo"
 
-#: ../src/imageio/storage/piwigo.c:746
+#: ../src/imageio/storage/piwigo.c:748
 msgid "accounts"
 msgstr "accounts"
 
-#: ../src/imageio/storage/piwigo.c:763
+#: ../src/imageio/storage/piwigo.c:765
 msgid "server"
 msgstr "server"
 
-#: ../src/imageio/storage/piwigo.c:778
+#: ../src/imageio/storage/piwigo.c:769
+msgid ""
+"the server name\n"
+"default protocol is https\n"
+"specify http:// if non secure server"
+msgstr ""
+"de servernaam\n"
+"standaardprotocol is https\n"
+"geef http: // op als niet-beveiligde server"
+
+#: ../src/imageio/storage/piwigo.c:782
 msgid "user"
 msgstr "gebruiker"
 
-#: ../src/imageio/storage/piwigo.c:792
+#: ../src/imageio/storage/piwigo.c:796
 msgid "password"
 msgstr "wachtwoord"
 
-#: ../src/imageio/storage/piwigo.c:807
+#: ../src/imageio/storage/piwigo.c:811
 msgid "piwigo login"
 msgstr "piwigo login"
 
-#: ../src/imageio/storage/piwigo.c:831
+#: ../src/imageio/storage/piwigo.c:835
 msgid "contacts"
 msgstr "contacten"
 
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:842
+#: ../src/imageio/storage/piwigo.c:846
 msgid "albums"
 msgstr "albums"
 
-#: ../src/imageio/storage/piwigo.c:867
+#: ../src/imageio/storage/piwigo.c:871
 msgid "new album"
 msgstr "nieuwe album"
 
 #. parent album list
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:875
+#: ../src/imageio/storage/piwigo.c:879
 msgid "parent album"
 msgstr "ouder album"
 
-#: ../src/imageio/storage/piwigo.c:992
+#: ../src/imageio/storage/piwigo.c:996
 msgid "cannot create a new piwigo album!"
 msgstr "aanmaak nieuwe piwigo album is mislukt"
 
-#: ../src/imageio/storage/piwigo.c:1001
+#: ../src/imageio/storage/piwigo.c:1005
 msgid "could not upload to piwigo!"
 msgstr "upload naar piwigo mislukt!"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/piwigo.c:1025
+#: ../src/imageio/storage/piwigo.c:1029
 #, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
@@ -5042,12 +5061,12 @@ msgstr "aanscherpen: middelmatig,kracht 1"
 msgid "deblur: fine blur, strength 1"
 msgstr "aanscherpen: bescheiden, kracht 1"
 
-#: ../src/iop/atrous.c:1576 ../src/iop/denoiseprofile.c:2455
+#: ../src/iop/atrous.c:1576 ../src/iop/denoiseprofile.c:2457
 #: ../src/iop/rawdenoise.c:781
 msgid "coarse"
 msgstr "ruw"
 
-#: ../src/iop/atrous.c:1583 ../src/iop/denoiseprofile.c:2463
+#: ../src/iop/atrous.c:1583 ../src/iop/denoiseprofile.c:2465
 #: ../src/iop/rawdenoise.c:789
 msgid "fine"
 msgstr "fijn"
@@ -5057,11 +5076,11 @@ msgid "contrasty"
 msgstr "contrastrijk"
 
 #: ../src/iop/atrous.c:1596 ../src/iop/atrous.c:1600
-#: ../src/iop/denoiseprofile.c:2472 ../src/iop/rawdenoise.c:798
+#: ../src/iop/denoiseprofile.c:2474 ../src/iop/rawdenoise.c:798
 msgid "smooth"
 msgstr "effen"
 
-#: ../src/iop/atrous.c:1601 ../src/iop/denoiseprofile.c:2477
+#: ../src/iop/atrous.c:1601 ../src/iop/denoiseprofile.c:2479
 #: ../src/iop/rawdenoise.c:803
 msgid "noisy"
 msgstr "rimpelig"
@@ -5075,7 +5094,7 @@ msgstr "fors"
 msgid "dull"
 msgstr "mat"
 
-#: ../src/iop/atrous.c:1818 ../src/iop/equalizer.c:389 ../src/iop/nlmeans.c:850
+#: ../src/iop/atrous.c:1818 ../src/iop/equalizer.c:389 ../src/iop/nlmeans.c:829
 msgid "luma"
 msgstr "luma"
 
@@ -5083,7 +5102,7 @@ msgstr "luma"
 msgid "change lightness at each feature size"
 msgstr "wijzig helderheid voor elke afmeting"
 
-#: ../src/iop/atrous.c:1823 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:852
+#: ../src/iop/atrous.c:1823 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:831
 msgid "chroma"
 msgstr "kleurwaarde"
 
@@ -5201,7 +5220,7 @@ msgid "scale"
 msgstr "schaal"
 
 #. centripetal spline
-#: ../src/iop/basecurve.c:1939 ../src/iop/filmic.c:1799
+#: ../src/iop/basecurve.c:1939 ../src/iop/filmic.c:1805
 #: ../src/iop/profile_gamma.c:866 ../src/iop/tonecurve.c:1263
 msgid "linear"
 msgstr "lineair"
@@ -5279,11 +5298,11 @@ msgid "local laplacian: inconsistent output"
 msgstr "local laplacian: tegenstrijdige uitgang"
 
 #: ../src/iop/bilat.c:521 ../src/iop/colorbalance.c:2330
-#: ../src/iop/denoiseprofile.c:2692 ../src/iop/exposure.c:852
+#: ../src/iop/denoiseprofile.c:2694 ../src/iop/exposure.c:852
 #: ../src/iop/lens.c:2299 ../src/iop/levels.c:588
 #: ../src/iop/profile_gamma.c:849 ../src/libs/copy_history.c:322
 #: ../src/libs/export.c:648 ../src/libs/print_settings.c:1514
-#: ../src/views/darkroom.c:1476
+#: ../src/views/darkroom.c:1537
 msgid "mode"
 msgstr "modus"
 
@@ -5322,7 +5341,7 @@ msgstr ""
 
 #: ../src/iop/bilat.c:542 ../src/iop/colisa.c:366
 #: ../src/iop/colorbalance.c:2384 ../src/iop/colorbalance.c:2386
-#: ../src/iop/filmic.c:1744 ../src/iop/lowpass.c:672
+#: ../src/iop/filmic.c:1750 ../src/iop/lowpass.c:672
 msgid "contrast"
 msgstr "contrast"
 
@@ -5445,9 +5464,9 @@ msgstr "drempel"
 msgid "the threshold of light"
 msgstr "drempel voor glans"
 
-#: ../src/iop/bloom.c:526 ../src/iop/denoiseprofile.c:2697
+#: ../src/iop/bloom.c:526 ../src/iop/denoiseprofile.c:2699
 #: ../src/iop/grain.c:629 ../src/iop/hazeremoval.c:188
-#: ../src/iop/hotpixels.c:462 ../src/iop/nlmeans.c:848 ../src/iop/velvia.c:380
+#: ../src/iop/hotpixels.c:462 ../src/iop/nlmeans.c:827 ../src/iop/velvia.c:380
 msgid "strength"
 msgstr "kracht"
 
@@ -5803,7 +5822,7 @@ msgstr "hoeveelheid"
 msgid "size of features to preserve"
 msgstr "te bewaren resultaat"
 
-#: ../src/iop/clahe.c:338 ../src/iop/nlmeans.c:855
+#: ../src/iop/clahe.c:338 ../src/iop/nlmeans.c:834
 msgid "strength of the effect"
 msgstr "sterkte van het effect"
 
@@ -6243,7 +6262,6 @@ msgid "helmholtz/kohlrausch monochrome"
 msgstr "helmholtz/kohlrausch monochroom"
 
 #: ../src/iop/colorchecker.c:294
-#| msgid "histogram equalization"
 msgid "Fuji Astia emulation"
 msgstr "Fuji Astia emulation"
 
@@ -6414,7 +6432,7 @@ msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
 "niet ondersteund ingegeven profiel is vervangen door lineair Rec709 RGB!"
 
-#: ../src/iop/colorin.c:1844 ../src/iop/denoiseprofile.c:2691
+#: ../src/iop/colorin.c:1844 ../src/iop/denoiseprofile.c:2693
 #: ../src/libs/export.c:607 ../src/libs/print_settings.c:1187
 #: ../src/libs/print_settings.c:1407
 msgid "profile"
@@ -6561,26 +6579,26 @@ msgstr "voorgenomen output"
 
 #: ../src/iop/colorout.c:780 ../src/libs/export.c:631
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
-#: ../src/views/darkroom.c:1629 ../src/views/lighttable.c:2732
+#: ../src/views/darkroom.c:1690 ../src/views/lighttable.c:2840
 msgid "perceptual"
 msgstr "perceptueel"
 
 #: ../src/iop/colorout.c:781 ../src/libs/export.c:632
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
-#: ../src/views/darkroom.c:1630 ../src/views/lighttable.c:2733
+#: ../src/views/darkroom.c:1691 ../src/views/lighttable.c:2841
 msgid "relative colorimetric"
 msgstr "relatieve colorimetrie"
 
 #: ../src/iop/colorout.c:782 ../src/libs/export.c:633
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
-#: ../src/views/darkroom.c:1631 ../src/views/lighttable.c:2734
+#: ../src/views/darkroom.c:1692 ../src/views/lighttable.c:2842
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "verzadiging"
 
 #: ../src/iop/colorout.c:783 ../src/libs/export.c:634
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
-#: ../src/views/darkroom.c:1632 ../src/views/lighttable.c:2735
+#: ../src/views/darkroom.c:1693 ../src/views/lighttable.c:2843
 msgid "absolute colorimetric"
 msgstr "absolute colorimetrie"
 
@@ -6939,44 +6957,44 @@ msgstr "luminantie (gebruiken voor 2de laag)"
 msgid "found match for ISO %d"
 msgstr "overeenkomst voor ISO %d "
 
-#: ../src/iop/denoiseprofile.c:2022
+#: ../src/iop/denoiseprofile.c:2023
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "geïnterpoleerd uit ISO %d en %d"
 
-#: ../src/iop/denoiseprofile.c:2642 ../src/iop/rawdenoise.c:954
+#: ../src/iop/denoiseprofile.c:2644 ../src/iop/rawdenoise.c:954
 msgid "R"
 msgstr "R"
 
-#: ../src/iop/denoiseprofile.c:2644 ../src/iop/rawdenoise.c:956
+#: ../src/iop/denoiseprofile.c:2646 ../src/iop/rawdenoise.c:956
 msgid "G"
 msgstr "G"
 
-#: ../src/iop/denoiseprofile.c:2646 ../src/iop/rawdenoise.c:958
+#: ../src/iop/denoiseprofile.c:2648 ../src/iop/rawdenoise.c:958
 msgid "B"
 msgstr "B"
 
-#: ../src/iop/denoiseprofile.c:2693 ../src/iop/nlmeans.c:846
+#: ../src/iop/denoiseprofile.c:2695 ../src/iop/nlmeans.c:825
 msgid "patch size"
 msgstr "patch grootte"
 
-#: ../src/iop/denoiseprofile.c:2695
+#: ../src/iop/denoiseprofile.c:2697
 msgid "search radius"
 msgstr "zoek straal"
 
-#: ../src/iop/denoiseprofile.c:2698
+#: ../src/iop/denoiseprofile.c:2700
 msgid "non-local means"
 msgstr "non-local means"
 
-#: ../src/iop/denoiseprofile.c:2699
+#: ../src/iop/denoiseprofile.c:2701
 msgid "wavelets"
 msgstr "wavelets"
 
-#: ../src/iop/denoiseprofile.c:2700
+#: ../src/iop/denoiseprofile.c:2702
 msgid "profile used for variance stabilization"
 msgstr "profiel gebruikt voor variatie-stabilisering"
 
-#: ../src/iop/denoiseprofile.c:2701
+#: ../src/iop/denoiseprofile.c:2703
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -6984,11 +7002,11 @@ msgstr ""
 "gebruikte ontruis-kernmethode, non-local werkt het best bij het mengen van "
 "helderheid en wavelets bij  het kleur mengen"
 
-#: ../src/iop/denoiseprofile.c:2704
+#: ../src/iop/denoiseprofile.c:2706
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr "straal van de patronen om aan te passen, verhoog voor meer scherpte"
 
-#: ../src/iop/denoiseprofile.c:2705
+#: ../src/iop/denoiseprofile.c:2707
 msgid ""
 "emergency use only: radius of the neighbourhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
@@ -6998,7 +7016,7 @@ msgstr ""
 "zoeken, verhoog voor een betere ontruis prestatie, maar reken op langere "
 "looptijden, het kan erg langzaam reageren"
 
-#: ../src/iop/denoiseprofile.c:2706
+#: ../src/iop/denoiseprofile.c:2708
 msgid "finetune denoising strength"
 msgstr "kracht ruisonderdrukking afstemmen"
 
@@ -7161,7 +7179,7 @@ msgstr ""
 "schakelen"
 
 #: ../src/iop/exposure.c:891 ../src/iop/highlights.c:1059
-#: ../src/views/darkroom.c:1504
+#: ../src/views/darkroom.c:1565
 msgid "clipping threshold"
 msgstr "drempel clipping"
 
@@ -7235,21 +7253,21 @@ msgstr "16 EV (HDR)"
 msgid "18 EV (HDR++)"
 msgstr "18 EV (HDR++)"
 
-#: ../src/iop/filmic.c:1669
+#: ../src/iop/filmic.c:1675
 msgid "read-only graph, use the parameters below to set the nodes"
 msgstr ""
 "alleen-lezen grafiek\n"
 "gebruik onderstaande parameters om de knooppunten in te stellen"
 
-#: ../src/iop/filmic.c:1675
+#: ../src/iop/filmic.c:1681
 msgid "logarithmic shaper"
 msgstr "logaritmische instellingen"
 
-#: ../src/iop/filmic.c:1680
+#: ../src/iop/filmic.c:1686
 msgid "middle grey luminance"
 msgstr "middengrijs luminantie"
 
-#: ../src/iop/filmic.c:1683
+#: ../src/iop/filmic.c:1689
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
@@ -7257,11 +7275,11 @@ msgstr ""
 "wijzig om de gemiddelde luminantie van het onderwerp te laten overeenkomen\n"
 "behalve bij tegenlicht situaties, de waarde zal ongeveer 18% zijn"
 
-#: ../src/iop/filmic.c:1693
+#: ../src/iop/filmic.c:1699
 msgid "white relative exposure"
 msgstr "relatieve belichting wit"
 
-#: ../src/iop/filmic.c:1696
+#: ../src/iop/filmic.c:1702
 msgid ""
 "number of stops between middle grey and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -7272,11 +7290,11 @@ msgstr ""
 "pas het zodanig aan dat \n"
 "clippen van hooglichten wordt voorkomen"
 
-#: ../src/iop/filmic.c:1707 ../src/iop/profile_gamma.c:900
+#: ../src/iop/filmic.c:1713 ../src/iop/profile_gamma.c:900
 msgid "black relative exposure"
 msgstr "relatieve belichting zwart"
 
-#: ../src/iop/filmic.c:1710
+#: ../src/iop/filmic.c:1716
 msgid ""
 "number of stops between middle grey and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -7288,11 +7306,11 @@ msgstr ""
 "verhoog voor meer contrast\n"
 "verlaag om details in schaduwkleuren te herwinnen"
 
-#: ../src/iop/filmic.c:1720 ../src/iop/profile_gamma.c:924
+#: ../src/iop/filmic.c:1726 ../src/iop/profile_gamma.c:924
 msgid "safety factor"
 msgstr "veiligheidsfactor"
 
-#: ../src/iop/filmic.c:1723
+#: ../src/iop/filmic.c:1729
 msgid ""
 "enlarge or shrink the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
@@ -7300,11 +7318,11 @@ msgstr ""
 "vergroot of verklein het berekende dynamisch bereik\n"
 "nuttig in combinatie met \"automatische afstemming niveaus\""
 
-#: ../src/iop/filmic.c:1729 ../src/iop/profile_gamma.c:932
+#: ../src/iop/filmic.c:1735 ../src/iop/profile_gamma.c:932
 msgid "auto tune levels"
 msgstr "automatische afstemming niveaus"
 
-#: ../src/iop/filmic.c:1734
+#: ../src/iop/filmic.c:1740
 msgid ""
 "try to optimize the settings with some guessing.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -7316,11 +7334,11 @@ msgstr ""
 "het is met name geschikt voor landschappen en gelijkmatig verlichte foto's\n"
 "en werkt niet bij highkey en lowkey afbeeldingen"
 
-#: ../src/iop/filmic.c:1739
+#: ../src/iop/filmic.c:1745
 msgid "filmic S curve"
 msgstr "filmic S curve"
 
-#: ../src/iop/filmic.c:1746
+#: ../src/iop/filmic.c:1752
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -7329,11 +7347,11 @@ msgstr ""
 "beïnvloed met name de middenkleuren"
 
 #. geotagging
-#: ../src/iop/filmic.c:1753 ../src/libs/metadata_view.c:127
+#: ../src/iop/filmic.c:1759 ../src/libs/metadata_view.c:127
 msgid "latitude"
 msgstr "omvang"
 
-#: ../src/iop/filmic.c:1756
+#: ../src/iop/filmic.c:1762
 msgid ""
 "width of the linear domain in the middle of the curve.\n"
 "increase to get more contrast at the extreme luminances.\n"
@@ -7343,11 +7361,11 @@ msgstr ""
 "verhoog voor meer contrast bij extreme luminanties\n"
 "het heeft geen effect op middenkleuren"
 
-#: ../src/iop/filmic.c:1763
+#: ../src/iop/filmic.c:1769
 msgid "shadows/highlights balance"
 msgstr "schaduwen en hooglichten balans"
 
-#: ../src/iop/filmic.c:1766
+#: ../src/iop/filmic.c:1772
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -7359,11 +7377,11 @@ msgstr ""
 "gebruik dit voor bescherming van de details\n"
 "aan één uiteinde van het histogram"
 
-#: ../src/iop/filmic.c:1772
+#: ../src/iop/filmic.c:1778
 msgid "global saturation"
 msgstr "globale verzadiging"
 
-#: ../src/iop/filmic.c:1776
+#: ../src/iop/filmic.c:1782
 msgid ""
 "desaturates the input of the module globally.\n"
 "you need to set this value below 100%\n"
@@ -7373,11 +7391,11 @@ msgstr ""
 "stel de waarde in op minder dan 100%\n"
 "als het behoud van chrominantie is ingeschakeld"
 
-#: ../src/iop/filmic.c:1782
+#: ../src/iop/filmic.c:1788
 msgid "extreme luminance saturation"
 msgstr "extreme luminantie verzadiging"
 
-#: ../src/iop/filmic.c:1786
+#: ../src/iop/filmic.c:1792
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -7387,35 +7405,35 @@ msgstr ""
 "met name bij extreme luminanties\n"
 "verlaag het als schaduwen en/of hooglichten oververzadigd zijn"
 
-#: ../src/iop/filmic.c:1796 ../src/libs/export.c:629
+#: ../src/iop/filmic.c:1802 ../src/libs/export.c:629
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1455
 msgid "intent"
 msgstr "intensie"
 
-#: ../src/iop/filmic.c:1797
+#: ../src/iop/filmic.c:1803
 msgid "contrasted"
 msgstr "gecontrasteerd"
 
 #. cubic spline
-#: ../src/iop/filmic.c:1798
+#: ../src/iop/filmic.c:1804
 msgid "faded"
 msgstr "vaal"
 
 #. monotonic spline
-#: ../src/iop/filmic.c:1800
+#: ../src/iop/filmic.c:1806
 msgid "optimized"
 msgstr "geoptimaliseerd"
 
-#: ../src/iop/filmic.c:1802
+#: ../src/iop/filmic.c:1808
 msgid "change this method if you see reversed contrast or faded blacks"
 msgstr "wijzig de methode wanneer je een omgekeerd contrast of vaal zwart ziet"
 
 #. Preserve color
-#: ../src/iop/filmic.c:1806
+#: ../src/iop/filmic.c:1812
 msgid "preserve the chrominance"
 msgstr "behoud chrominantie"
 
-#: ../src/iop/filmic.c:1808
+#: ../src/iop/filmic.c:1814
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations.\n"
@@ -7426,15 +7444,15 @@ msgstr ""
 "bij het gebruik van deze modus zul je handmatig de verzadiging moeten "
 "afstellen"
 
-#: ../src/iop/filmic.c:1818
+#: ../src/iop/filmic.c:1824
 msgid "destination/display"
 msgstr "bestemming /display"
 
-#: ../src/iop/filmic.c:1833
+#: ../src/iop/filmic.c:1839
 msgid "target black luminance"
 msgstr "mikpunt zwart luminantie"
 
-#: ../src/iop/filmic.c:1836
+#: ../src/iop/filmic.c:1842
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -7442,11 +7460,11 @@ msgstr ""
 "luminantie voor uitgaand pikzwart, dit moet uitkomen op 0%\n"
 "tenzij een fletser beeld gewenst wordt"
 
-#: ../src/iop/filmic.c:1842
+#: ../src/iop/filmic.c:1848
 msgid "target middle grey"
 msgstr "mikpunt midden grijs"
 
-#: ../src/iop/filmic.c:1845
+#: ../src/iop/filmic.c:1851
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -7454,11 +7472,11 @@ msgstr ""
 "midden grijswaarde voor doel of kleurruimte\n"
 "wijzig dit niet tenzij je weet waarmee je bezig bent"
 
-#: ../src/iop/filmic.c:1851
+#: ../src/iop/filmic.c:1857
 msgid "target white luminance"
 msgstr "mikpunt wit luminantie"
 
-#: ../src/iop/filmic.c:1854
+#: ../src/iop/filmic.c:1860
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -7466,11 +7484,11 @@ msgstr ""
 "luminantie voor uitgaand zuiver wit, dit moet uitkomen op 100%\n"
 "tenzij je een fletser beeld wenst"
 
-#: ../src/iop/filmic.c:1860
+#: ../src/iop/filmic.c:1866
 msgid "target gamma"
 msgstr "mikpunt gamma"
 
-#: ../src/iop/filmic.c:1862
+#: ../src/iop/filmic.c:1868
 msgid ""
 "power or gamma of the transfer function\n"
 "of the display or color space.\n"
@@ -8410,15 +8428,15 @@ msgctxt "accel"
 msgid "chroma"
 msgstr "kleurwaarde"
 
-#: ../src/iop/nlmeans.c:854
+#: ../src/iop/nlmeans.c:833
 msgid "radius of the patches to match"
 msgstr "te evenaren straal van de patronen"
 
-#: ../src/iop/nlmeans.c:856
+#: ../src/iop/nlmeans.c:835
 msgid "how much to smooth brightness"
 msgstr "de mate van afvlakking voor helderheid"
 
-#: ../src/iop/nlmeans.c:857
+#: ../src/iop/nlmeans.c:836
 msgid "how much to smooth colors"
 msgstr "de mate van afvlakking voor kleuren"
 
@@ -9208,49 +9226,49 @@ msgstr "spot"
 msgid "`%s' color matrix not found for image"
 msgstr "`%s' kleuren matrix is niet gevonden"
 
-#: ../src/iop/temperature.c:992
+#: ../src/iop/temperature.c:962
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "ophalen camera-witbalans info van `%s' is niet gelukt!"
 
-#: ../src/iop/temperature.c:1356
+#: ../src/iop/temperature.c:1348
 msgid "magenta"
 msgstr "magenta"
 
-#: ../src/iop/temperature.c:1357
+#: ../src/iop/temperature.c:1349
 msgid "cyan"
 msgstr "cyaan"
 
-#: ../src/iop/temperature.c:1370
+#: ../src/iop/temperature.c:1362
 msgid "emerald"
 msgstr "smaragd"
 
-#: ../src/iop/temperature.c:1435
+#: ../src/iop/temperature.c:1427
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:1436
+#: ../src/iop/temperature.c:1428
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:1452
+#: ../src/iop/temperature.c:1444
 msgid "choose white balance preset from camera"
 msgstr "kies voor camera-witbalans"
 
-#: ../src/iop/temperature.c:1455
+#: ../src/iop/temperature.c:1447
 msgid "finetune"
 msgstr "fijnafstelling"
 
-#: ../src/iop/temperature.c:1456
+#: ../src/iop/temperature.c:1448
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:1460
+#: ../src/iop/temperature.c:1452
 msgid "fine tune white balance preset"
 msgstr "fijnafstelling witbalans voorkeur"
 
-#: ../src/iop/temperature.c:1465
+#: ../src/iop/temperature.c:1457
 msgid "white balance disabled for camera"
 msgstr "camera-witbalans is uitgeschakeld"
 
@@ -9878,36 +9896,36 @@ msgstr "uitschrijven"
 msgid "uncategorized"
 msgstr "ongecatagoriseerd"
 
-#: ../src/libs/collect.c:1155
+#: ../src/libs/collect.c:1156
 msgid "not altered"
 msgstr "niet gewijzigd"
 
-#: ../src/libs/collect.c:1164
+#: ../src/libs/collect.c:1165
 msgid "not tagged"
 msgstr "niet gelabeld"
 
-#: ../src/libs/collect.c:1173
+#: ../src/libs/collect.c:1174
 msgid "copied locally"
 msgstr "lokaal gekopieerd"
 
-#: ../src/libs/collect.c:1277
+#: ../src/libs/collect.c:1278
 msgid "group followers"
 msgstr "groep volgers"
 
-#: ../src/libs/collect.c:1405 ../src/libs/collect.c:1419
-#: ../src/libs/collect.c:1764
+#: ../src/libs/collect.c:1406 ../src/libs/collect.c:1420
+#: ../src/libs/collect.c:1765
 msgid "clear this rule"
 msgstr "verwijder voorwaarde"
 
-#: ../src/libs/collect.c:1410
+#: ../src/libs/collect.c:1411
 msgid "clear this rule or add new rules"
 msgstr "voorwaarde toevoegen / verwijderen"
 
-#: ../src/libs/collect.c:1464
+#: ../src/libs/collect.c:1465
 msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "geef zoekopdracht, gebruik <, <=, >, >=, <>, =, [;] als operators"
 
-#: ../src/libs/collect.c:1469
+#: ../src/libs/collect.c:1470
 msgid ""
 "type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
 "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
@@ -9915,32 +9933,32 @@ msgstr ""
 "geef zoekopdracht, gebruik <, <=, >, >=, <>, =, [;] als operators, geef data "
 "in de vorm van: YYYY:MM:DD HH:MM:SS (alleen het jaar is verplicht)"
 
-#: ../src/libs/collect.c:1475 ../src/libs/collect.c:1850
+#: ../src/libs/collect.c:1476 ../src/libs/collect.c:1851
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "type uw zoekopdracht, gebruik `%' als vervanging"
 
-#: ../src/libs/collect.c:1770
+#: ../src/libs/collect.c:1771
 msgid "narrow down search"
 msgstr "submappen"
 
-#: ../src/libs/collect.c:1775
+#: ../src/libs/collect.c:1776
 msgid "add more images"
 msgstr "afbeeldingen toevoegen"
 
-#: ../src/libs/collect.c:1780
+#: ../src/libs/collect.c:1781
 msgid "exclude images"
 msgstr "afbeeldingen uitsluiten"
 
-#: ../src/libs/collect.c:1787
+#: ../src/libs/collect.c:1788
 msgid "change to: and"
 msgstr "wijzig in <en>"
 
-#: ../src/libs/collect.c:1792
+#: ../src/libs/collect.c:1793
 msgid "change to: or"
 msgstr "wijzig in <of>"
 
-#: ../src/libs/collect.c:1797
+#: ../src/libs/collect.c:1798
 msgid "change to: except"
 msgstr "wijzig in <en niet>"
 
@@ -10088,7 +10106,7 @@ msgid "XMP sidecar files"
 msgstr "xmp bestanden"
 
 #: ../src/libs/copy_history.c:92 ../src/libs/geotagging.c:498
-#: ../src/libs/import.c:806 ../src/libs/styles.c:276
+#: ../src/libs/import.c:806 ../src/libs/styles.c:343
 msgid "all files"
 msgstr "alle bestanden"
 
@@ -10328,7 +10346,7 @@ msgstr "exporteer met huidige instellingen"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1195 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:2430
+#: ../src/views/darkroom.c:2493
 msgctxt "accel"
 msgid "export"
 msgstr "exporteer"
@@ -11647,7 +11665,7 @@ msgid "session"
 msgstr "sessie"
 
 #. create
-#: ../src/libs/session.c:109 ../src/libs/styles.c:380
+#: ../src/libs/session.c:109 ../src/libs/styles.c:447
 msgid "create"
 msgstr "creëer"
 
@@ -11687,24 +11705,24 @@ msgctxt "accel"
 msgid "import"
 msgstr "importeren"
 
-#: ../src/libs/styles.c:209
+#: ../src/libs/styles.c:276
 #, c-format
 msgid "do you really want to delete style '%s'?"
 msgstr "stijl '%s' echt verwijderen?"
 
-#: ../src/libs/styles.c:214
+#: ../src/libs/styles.c:281
 msgid "delete style?"
 msgstr "verwijder stijl"
 
-#: ../src/libs/styles.c:258
+#: ../src/libs/styles.c:325
 msgid "select style"
 msgstr "selecteer stijl"
 
-#: ../src/libs/styles.c:271
+#: ../src/libs/styles.c:338
 msgid "darktable style files"
 msgstr "dt-stijl bestanden"
 
-#: ../src/libs/styles.c:346
+#: ../src/libs/styles.c:413
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -11712,46 +11730,46 @@ msgstr ""
 "beschikbare stijlen,\n"
 "dubbelklikken is toepassen"
 
-#: ../src/libs/styles.c:352
-msgid "enter style name"
-msgstr "voer de stijlnaam in"
+#: ../src/libs/styles.c:419
+msgid "filter style names"
+msgstr "filter stijlnamen"
 
-#: ../src/libs/styles.c:367
+#: ../src/libs/styles.c:434
 msgid "create duplicate"
 msgstr "creëer kloon"
 
-#: ../src/libs/styles.c:372
+#: ../src/libs/styles.c:439
 msgid "creates a duplicate of the image before applying style"
 msgstr "maakt een kloon van de afbeelding voordat stijl wordt toegepast"
 
-#: ../src/libs/styles.c:382
+#: ../src/libs/styles.c:449
 msgid "create styles from history stack of selected images"
 msgstr "creëer stijlen van bewerkingsstappen van geselecteerde afbeeldingen"
 
 #. edit
-#: ../src/libs/styles.c:386
+#: ../src/libs/styles.c:453
 msgid "edit"
 msgstr "bewerk"
 
-#: ../src/libs/styles.c:389
+#: ../src/libs/styles.c:456
 msgid "edit the selected style in list above"
 msgstr "bewerk geselecteerde stijl uit bovenstaande lijst"
 
-#: ../src/libs/styles.c:396
+#: ../src/libs/styles.c:463
 msgid "deletes the selected style in list above"
 msgstr "verwijder stijl"
 
 #. import button
-#: ../src/libs/styles.c:400
+#: ../src/libs/styles.c:467
 msgctxt "styles"
 msgid "import"
 msgstr "importeren"
 
-#: ../src/libs/styles.c:402
+#: ../src/libs/styles.c:469
 msgid "import style from a style file"
 msgstr "importeer stijl uit een stijl bestand"
 
-#: ../src/libs/styles.c:409
+#: ../src/libs/styles.c:476
 msgid "export the selected style into a style file"
 msgstr "exporteer stijl in een stijl bestand"
 
@@ -11984,37 +12002,37 @@ msgstr "fotoreeks"
 
 #. setup rating key accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:2541
+#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:2649
 msgctxt "accel"
 msgid "rate 0"
 msgstr "classificatie 0"
 
-#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:2542
+#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:2650
 msgctxt "accel"
 msgid "rate 1"
 msgstr "waardering 1"
 
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:2543
+#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:2651
 msgctxt "accel"
 msgid "rate 2"
 msgstr "waardering 2"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:2544
+#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:2652
 msgctxt "accel"
 msgid "rate 3"
 msgstr "waardering 3"
 
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:2545
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:2653
 msgctxt "accel"
 msgid "rate 4"
 msgstr "waardering 4"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:2546
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:2654
 msgctxt "accel"
 msgid "rate 5"
 msgstr "waardering 5"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:2547
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:2655
 msgctxt "accel"
 msgid "rate reject"
 msgstr "waardering afgekeurd"
@@ -12053,27 +12071,27 @@ msgstr "kloon afbeelding"
 #. setup color label accelerators
 #. Initializing accelerators
 #. Color labels keys
-#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:2533
+#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:2641
 msgctxt "accel"
 msgid "color red"
 msgstr "kleur rood"
 
-#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:2534
+#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:2642
 msgctxt "accel"
 msgid "color yellow"
 msgstr "kleur geel"
 
-#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:2535
+#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:2643
 msgctxt "accel"
 msgid "color green"
 msgstr "kleur groen"
 
-#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:2536
+#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:2644
 msgctxt "accel"
 msgid "color blue"
 msgstr "kleur blauw"
 
-#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:2537
+#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:2645
 msgctxt "accel"
 msgid "color purple"
 msgstr "kleur paars"
@@ -12248,29 +12266,29 @@ msgstr "gammacontrole"
 msgid "soft proof"
 msgstr "soft proof"
 
-#: ../src/views/darkroom.c:939
+#: ../src/views/darkroom.c:935
 msgid "no userdefined presets for favorite modules were found"
 msgstr ""
 "voorkeuren, door gebruiker gedefinieerd, voor favoriete modules ontbreken"
 
-#: ../src/views/darkroom.c:944
+#: ../src/views/darkroom.c:940
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "stijl '%s\" is toegepast op de huidige afbeelding"
 
-#: ../src/views/darkroom.c:1003
+#: ../src/views/darkroom.c:1064
 msgid "no styles have been created yet"
 msgstr "er is nog niet eerder een stijl aangemaakt"
 
-#: ../src/views/darkroom.c:1427
+#: ../src/views/darkroom.c:1488
 msgid "quick access to presets of your favorites"
 msgstr "snelle toegang tot de voorkeuren van uw favorieten"
 
-#: ../src/views/darkroom.c:1436
+#: ../src/views/darkroom.c:1497
 msgid "quick access for applying any of your styles"
 msgstr "snelle toegang om een stijl toe te passen"
 
-#: ../src/views/darkroom.c:1448
+#: ../src/views/darkroom.c:1509
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -12278,47 +12296,47 @@ msgstr ""
 "raw overbelichtingsindicator in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
-#: ../src/views/darkroom.c:1477
+#: ../src/views/darkroom.c:1538
 msgid "mark with CFA color"
 msgstr "markeer met CFA kleur"
 
-#: ../src/views/darkroom.c:1478
+#: ../src/views/darkroom.c:1539
 msgid "mark with solid color"
 msgstr "markeer met een vastgestelde kleur"
 
-#: ../src/views/darkroom.c:1479
+#: ../src/views/darkroom.c:1540
 msgid "false color"
 msgstr "fout gekleurde pixels"
 
-#: ../src/views/darkroom.c:1481
+#: ../src/views/darkroom.c:1542
 msgid "select how to mark the clipped pixels"
 msgstr "bepaal hoe geclipte pixels worden gemarkeerd"
 
-#: ../src/views/darkroom.c:1488 ../src/views/darkroom.c:1545
+#: ../src/views/darkroom.c:1549 ../src/views/darkroom.c:1606
 msgid "color scheme"
 msgstr "kleurenschema"
 
-#: ../src/views/darkroom.c:1489
+#: ../src/views/darkroom.c:1550
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rood"
 
-#: ../src/views/darkroom.c:1490
+#: ../src/views/darkroom.c:1551
 msgctxt "solidcolor"
 msgid "green"
 msgstr "groen"
 
-#: ../src/views/darkroom.c:1491
+#: ../src/views/darkroom.c:1552
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "blauw"
 
-#: ../src/views/darkroom.c:1492
+#: ../src/views/darkroom.c:1553
 msgctxt "solidcolor"
 msgid "black"
 msgstr "zwart"
 
-#: ../src/views/darkroom.c:1496
+#: ../src/views/darkroom.c:1557
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -12326,7 +12344,7 @@ msgstr ""
 "kies een vaste kleur voor indicatie van overbelichting\n"
 "werkt alleen in de stand: markeer met een vaste kleur"
 
-#: ../src/views/darkroom.c:1506
+#: ../src/views/darkroom.c:1567
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -12336,7 +12354,7 @@ msgstr ""
 "1.0 - wit niveau\n"
 "0.0 - zwart niveau"
 
-#: ../src/views/darkroom.c:1517
+#: ../src/views/darkroom.c:1578
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -12344,35 +12362,35 @@ msgstr ""
 "over- en onderbelichtingsindicator in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
-#: ../src/views/darkroom.c:1547
+#: ../src/views/darkroom.c:1608
 msgid "red & blue"
 msgstr "rood en blauw"
 
-#: ../src/views/darkroom.c:1548
+#: ../src/views/darkroom.c:1609
 msgid "purple & green"
 msgstr "paars en groen"
 
-#: ../src/views/darkroom.c:1550
+#: ../src/views/darkroom.c:1611
 msgid "select colors to indicate over/under exposure"
 msgstr "kies kleuren voor weergave over/onderbelichting"
 
-#: ../src/views/darkroom.c:1559
+#: ../src/views/darkroom.c:1620
 msgid "lower threshold"
 msgstr "drempel onderkant"
 
-#: ../src/views/darkroom.c:1560
+#: ../src/views/darkroom.c:1621
 msgid "threshold of what shall be considered underexposed"
 msgstr "drempel voor wat moet worden beschouwd als onderbelicht"
 
-#: ../src/views/darkroom.c:1568
+#: ../src/views/darkroom.c:1629
 msgid "upper threshold"
 msgstr "drempel bovenkant"
 
-#: ../src/views/darkroom.c:1569
+#: ../src/views/darkroom.c:1630
 msgid "threshold of what shall be considered overexposed"
 msgstr "drempel voor wat moet worden beschouwd als overbelicht"
 
-#: ../src/views/darkroom.c:1580
+#: ../src/views/darkroom.c:1641
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -12380,7 +12398,7 @@ msgstr ""
 "softproofing in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
-#: ../src/views/darkroom.c:1594
+#: ../src/views/darkroom.c:1655
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -12388,141 +12406,141 @@ msgstr ""
 "gamma controle in/uit schakelen\n"
 "opties via de rechtermuisknop"
 
-#: ../src/views/darkroom.c:1627 ../src/views/lighttable.c:2730
+#: ../src/views/darkroom.c:1688 ../src/views/lighttable.c:2838
 msgid "display intent"
 msgstr "toon voornemen"
 
-#: ../src/views/darkroom.c:1642
+#: ../src/views/darkroom.c:1703
 msgid "softproof profile"
 msgstr "softproofprofiel"
 
-#: ../src/views/darkroom.c:1643 ../src/views/lighttable.c:2738
+#: ../src/views/darkroom.c:1704 ../src/views/lighttable.c:2846
 msgid "display profile"
 msgstr "weergaveprofiel"
 
-#: ../src/views/darkroom.c:1675 ../src/views/lighttable.c:2758
+#: ../src/views/darkroom.c:1736 ../src/views/lighttable.c:2866
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "toon ICC profielen in %s of %s"
 
-#: ../src/views/darkroom.c:1678
+#: ../src/views/darkroom.c:1739
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "softproof ICC profielen in %s of  %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2422 ../src/views/map.c:859 ../src/views/print.c:329
+#: ../src/views/darkroom.c:2485 ../src/views/map.c:892 ../src/views/print.c:329
 #: ../src/views/tethering.c:388
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "wissel fotoreeks"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2425
+#: ../src/views/darkroom.c:2488
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "maximaal inzoomen"
 
-#: ../src/views/darkroom.c:2426
+#: ../src/views/darkroom.c:2489
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoom vullen"
 
-#: ../src/views/darkroom.c:2427
+#: ../src/views/darkroom.c:2490
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom passend"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2433
+#: ../src/views/darkroom.c:2496
 msgctxt "accel"
 msgid "image forward"
 msgstr "volgende afbeelding"
 
-#: ../src/views/darkroom.c:2434
+#: ../src/views/darkroom.c:2497
 msgctxt "accel"
 msgid "image back"
 msgstr "vorige afbeelding"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:2437
+#: ../src/views/darkroom.c:2500
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw overbelicht"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:2440
+#: ../src/views/darkroom.c:2503
 msgctxt "accel"
 msgid "overexposed"
 msgstr "overbelicht"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:2443
+#: ../src/views/darkroom.c:2506
 msgctxt "accel"
 msgid "softproof"
 msgstr "soft proof"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:2446
+#: ../src/views/darkroom.c:2509
 msgctxt "accel"
 msgid "gamut check"
 msgstr "gammacontrole"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2449
+#: ../src/views/darkroom.c:2512
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "verhoog penseeldikte"
 
 # Eventueel kan ook gebruikt worden:
 # 'penseeldikte verminderen' (geldt voor alle penseel-combinaties, bv 'penseelhardheid verminderen')
-#: ../src/views/darkroom.c:2450
+#: ../src/views/darkroom.c:2513
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "verminder penseeldikte"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2453
+#: ../src/views/darkroom.c:2516
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "verhoog penseelhardheid"
 
-#: ../src/views/darkroom.c:2454
+#: ../src/views/darkroom.c:2517
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "verminder penseelhardheid"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2457
+#: ../src/views/darkroom.c:2520
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "verhoog penseeldekking"
 
-#: ../src/views/darkroom.c:2458
+#: ../src/views/darkroom.c:2521
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "verminder penseeldekking"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:2461
+#: ../src/views/darkroom.c:2524
 msgctxt "accel"
 msgid "full preview"
 msgstr "voorbeeld"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2464 ../src/views/map.c:856
+#: ../src/views/darkroom.c:2527 ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "herstel"
 
-#: ../src/views/darkroom.c:2465 ../src/views/map.c:857
+#: ../src/views/darkroom.c:2528 ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
 msgstr "opnieuw"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:2468
+#: ../src/views/darkroom.c:2531
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "sta tijdens het bewerken van maskers herschalen en zoomen toe"
@@ -12531,124 +12549,124 @@ msgstr "sta tijdens het bewerken van maskers herschalen en zoomen toe"
 msgid "good knight"
 msgstr "goedenacht"
 
-#: ../src/views/lighttable.c:590 ../src/views/slideshow.c:332
+#: ../src/views/lighttable.c:614 ../src/views/slideshow.c:332
 msgid "there are no images in this collection"
 msgstr "er bevinden zich geen afbeeldingen in deze collectie"
 
-#: ../src/views/lighttable.c:594
+#: ../src/views/lighttable.c:618
 msgid "if you have not imported any images yet"
 msgstr "als nog geen afbeeldingen zijn geïmporteerd"
 
-#: ../src/views/lighttable.c:598
+#: ../src/views/lighttable.c:622
 msgid "you can do so in the import module"
 msgstr "dit kan worden uitgevoerd vanuit de importeer-module"
 
-#: ../src/views/lighttable.c:606
+#: ../src/views/lighttable.c:630
 msgid "try to relax the filter settings in the top panel"
 msgstr "verruim het filter in het toppaneel"
 
-#: ../src/views/lighttable.c:615
+#: ../src/views/lighttable.c:639
 msgid "or add images in the collection module in the left panel"
 msgstr "of importeer afbeeldingen naar de catalogus in het linkerpaneel"
 
-#: ../src/views/lighttable.c:2538
+#: ../src/views/lighttable.c:2646
 msgctxt "accel"
 msgid "clear color labels"
 msgstr "verwijder kleurlabels"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:2550
+#: ../src/views/lighttable.c:2658
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigeer omhoog"
 
-#: ../src/views/lighttable.c:2551
+#: ../src/views/lighttable.c:2659
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigeer omlaag"
 
-#: ../src/views/lighttable.c:2552
+#: ../src/views/lighttable.c:2660
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "volgende pagina"
 
-#: ../src/views/lighttable.c:2553
+#: ../src/views/lighttable.c:2661
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "vorige pagina"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2556
+#: ../src/views/lighttable.c:2664
 msgctxt "accel"
 msgid "scroll up"
 msgstr "blader omhoog"
 
-#: ../src/views/lighttable.c:2557
+#: ../src/views/lighttable.c:2665
 msgctxt "accel"
 msgid "scroll down"
 msgstr "blader omlaag"
 
-#: ../src/views/lighttable.c:2558
+#: ../src/views/lighttable.c:2666
 msgctxt "accel"
 msgid "scroll left"
 msgstr "blader naar links"
 
-#: ../src/views/lighttable.c:2559
+#: ../src/views/lighttable.c:2667
 msgctxt "accel"
 msgid "scroll right"
 msgstr "blader naar rechts"
 
-#: ../src/views/lighttable.c:2560
+#: ../src/views/lighttable.c:2668
 msgctxt "accel"
 msgid "scroll center"
 msgstr "scroll naar middelpunt"
 
-#: ../src/views/lighttable.c:2561
+#: ../src/views/lighttable.c:2669
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "afbeeldingen opnieuw op raster uitlijnen"
 
-#: ../src/views/lighttable.c:2562
+#: ../src/views/lighttable.c:2670
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "omkeren afbeelding"
 
-#: ../src/views/lighttable.c:2563
+#: ../src/views/lighttable.c:2671
 msgctxt "accel"
 msgid "select single image"
 msgstr "selecteer een  afbeelding"
 
 #. Preview key
-#: ../src/views/lighttable.c:2566
+#: ../src/views/lighttable.c:2674
 msgctxt "accel"
 msgid "preview"
 msgstr "voorbeeld"
 
-#: ../src/views/lighttable.c:2567
+#: ../src/views/lighttable.c:2675
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "voorbeeld met focusdetectie"
 
-#: ../src/views/lighttable.c:2568
+#: ../src/views/lighttable.c:2676
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "sticky-voorbeeld"
 
-#: ../src/views/lighttable.c:2569
+#: ../src/views/lighttable.c:2677
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "sticky-voorbeeld met focus detectie"
 
-#: ../src/views/lighttable.c:2570
+#: ../src/views/lighttable.c:2678
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "verlaat sticky-voorbeeld"
 
-#: ../src/views/lighttable.c:2702
+#: ../src/views/lighttable.c:2810
 msgid "set display profile"
 msgstr "kies weergaveprofiel"
 
-#: ../src/views/map.c:129
+#: ../src/views/map.c:134
 msgid "map"
 msgstr "kaart"
 
@@ -12670,18 +12688,18 @@ msgstr "presentatie"
 msgid "waiting to start slideshow"
 msgstr "wacht op start presentatie"
 
-#: ../src/views/slideshow.c:508
+#: ../src/views/slideshow.c:511
 msgid "slideshow paused"
 msgstr "presentatie gepauzeerd"
 
-#: ../src/views/slideshow.c:515 ../src/views/slideshow.c:522
+#: ../src/views/slideshow.c:518 ../src/views/slideshow.c:525
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
 msgstr[0] "presentatie wissel ingesteld op %d seconde"
 msgstr[1] "presentatie wissel ingesteld op %d seconden"
 
-#: ../src/views/slideshow.c:538
+#: ../src/views/slideshow.c:541
 msgctxt "accel"
 msgid "start and stop"
 msgstr "start en stop"
@@ -12724,6 +12742,11 @@ msgstr ""
 "gebruik van 32-bit builds\n"
 "we adviseren u dringend om over te gaan naar een geschikte 64-bit build\n"
 "anders zult u zeker problemen ervaren die niet kunnen worden opgelost\n"
+
+#~ msgid "ctrl+scroll to set shape opacity, shift+scroll to set feather size"
+#~ msgstr ""
+#~ "ctrl+scroll voor instelling dekking door vorm, shift+scroll voor "
+#~ "instelling afmeting doezelaar"
 
 #~ msgid "adjust the black level"
 #~ msgstr "aanpassen zwartpunt"
