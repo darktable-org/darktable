@@ -336,22 +336,26 @@ static inline float dt_fast_expf(const float x)
   return f;
 }
 
-static inline float dt_fast_inv_sqrtf(const float number)
+static inline float dt_fast_sqrtf(const float x)
 {
-  // fast inverse square root from Quake III Arena
-  // https://en.wikipedia.org/wiki/Fast_inverse_square_root
-  long i;
-  float x2, y;
-  const float threehalfs = 1.5F;
+  // "fast" square root using Taylor series between 0 and 2
+  const float y = 1.0f - x;
+  const float y2 = y * y;
+  const float y3 = y2 * y;
+  const float y4 = y3 * y;
+  const float y5 = y4 * y;
+  const float y6 = y5 * y;
+  const float y7 = y6 * y;
 
-  x2 = number * 0.5F;
-  y  = number;
-  i  = * ( long * ) &y;                       // evil floating point bit level hacking
-  i  = 0x5f3759df - ( i >> 1 );               // what the fuck?
-  y  = * ( float * ) &i;
-  y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
+  const float a1 = 2.0f / 4.0f;
+  const float a2 = 24.0f / 192.0f;
+  const float a3 = 720.0f / 11520.0f;
+  const float a4 = 40320.0f / 1032192.0f;
+  const float a5 = 3628800.0f / 132710400.0f;
+  const float a6 = 479001600.0f / 23357030400.0f;
+  const float a7 = 87178291200.0f / 5410337587200.0f;
 
-  return y;                                   // 1 / sqrt(number)
+  return 1.0f - (a1 * y + a2 * y2 + a3 * y3 + a4 * y4 + a5 * y5 + a6 * y6 + a7 * y7);
 }
 
 static inline float dt_fast_log2f(float x)

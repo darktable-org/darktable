@@ -564,7 +564,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float black = data->black_source;
   const float dynamic_range = data->dynamic_range;
   const float saturation = (data->global_saturation / 100.0f);
-  const float gamut_compression = (1.0f / data->gamut_compression);
+  const float gamut_compression = (data->gamut_compression);
   const int run_gamut = (data->gamut_compression == 1.0f) ? FALSE : TRUE;
 
   const __m128 grey_sse = _mm_set1_ps(grey);
@@ -682,11 +682,11 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     {
       __m128 IPT = dt_XYZ_to_IPThdr_sse2(dt_prophotoRGB_to_XYZ_sse2(rgb));
       // Warning: compute the inverse of the radius aka 1/radius (because it's faster)
-      const __m128 inv_radius = _mm_set1_ps(dt_fast_inv_sqrtf(IPT[2]*IPT[2] + IPT[1]*IPT[1]));
-      const __m128 trigo = IPT * inv_radius; // IPT[1] = cos(hue); IPT[2] = sin(hue)
+      const __m128 radius = _mm_set1_ps(powf(IPT[2]*IPT[2] + IPT[1]*IPT[1], 0.5f));
+      const __m128 trigo = IPT / radius; // IPT[1] = cos(hue); IPT[2] = sin(hue)
 
-      IPT[1] = trigo[1] / (gamut_compression * inv_radius[0]);
-      IPT[2] = trigo[2] / (gamut_compression * inv_radius[0]);
+      IPT[1] = trigo[1] * (gamut_compression * radius[0]);
+      IPT[2] = trigo[2] * (gamut_compression * radius[0]);
 
       rgb = dt_XYZ_to_prophotoRGB_sse2(dt_IPThdr_to_XYZ_sse2(IPT));
     }
