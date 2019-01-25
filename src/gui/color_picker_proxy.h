@@ -29,9 +29,16 @@
 #include <gtk/gtk.h>
 #include "develop/imageop.h"
 
+typedef enum _iop_color_picker_kind_t
+{
+  DT_COLOR_PICKER_POINT = 0,
+  DT_COLOR_PICKER_AREA
+} dt_iop_color_picker_kind_t;
+
 typedef struct _iop_color_picker_t
 {
   dt_iop_module_t *module;
+  dt_iop_color_picker_kind_t kind;
   /* get and set the selected picker corresponding to button, the module must record the previous
      selected picker and return ALREADY_SELECTED if the same picker has been selected. The return
      value corresponds to the module internal picker id. */
@@ -48,6 +55,7 @@ typedef struct _iop_color_picker_t
 /* init color picker, this must be called when all picker widgets are created */
 void init_picker (dt_iop_color_picker_t *picker,
                   dt_iop_module_t *module,
+                  dt_iop_color_picker_kind_t kind,
                   int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
                   void (*apply)(dt_iop_module_t *self),
                   void (*reset)(dt_iop_module_t *self),
