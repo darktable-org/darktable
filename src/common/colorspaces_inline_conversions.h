@@ -97,12 +97,11 @@ static inline __m128 dt_XYZ_to_xyY_sse2(const __m128 XYZ)
    xyY[3] = some crap (alpha layer, we don't care)
    * */
 
-  // Horizontal sum of the first 3 elements - SIMD is worthless here,
-  // so we let the compiler handle the shuffling
-  const __m128 sum = _mm_set1_ps(XYZ[0] + XYZ[1] + XYZ[2]);
-
   // Normalize XYZ
-  __m128 xyY = XYZ / sum;
+  __m128 xyY = XYZ /
+                ( _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(3, 0, 0, 0)) +
+                  _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(3, 1, 1, 1)) +
+                  _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(3, 2, 2, 2)));
   xyY[2] = XYZ[1];
   return xyY;
 }
@@ -113,7 +112,7 @@ static inline __m128 dt_xyY_to_XYZ_sse2(const __m128 xyY)    // XYZ  = [  .   Y 
   XYZ    = sums                     * xyY[2] / shuf
   ---------------------------------------------------
   XYZ[0] = xyY[0]                   * xyY[2] / xyY[1]
-  XYZ[1] = xyY[1]                   * xyY[2] / xyY[1]
+  XYZ[1] = xyY[1]                   * xyY[2] / xyY[1] = xyY[2]
   XYZ[2] = (1.0f - xyY[0] - xyY[1]) * xyY[2] / xyY[1]
   XYZ[3] = some crap (alpha layer, we don't care)
   **/
@@ -204,9 +203,8 @@ static inline __m128 dt_LMS_to_LMShdr(const __m128 LMS)
    * and - dt_Michaelis_Menten(-LMS) where LMS < 0
    * */
   // See https://eng.aurelienpierre.com/2019/01/17/derivating-hdr-ipt-direct-and-inverse-transformations/#fixing_ipt-hdr
-  const __m128 positive = _mm_cmpge_ps(LMS, zeros_sse); // positive or zero
   const __m128 negative = _mm_cmplt_ps(LMS, zeros_sse); // stricly negative
-  return _mm_or_ps(_mm_and_ps(positive, dt_Michaelis_Menten(LMS)),
+  return _mm_or_ps(_mm_andnot_ps(negative, dt_Michaelis_Menten(LMS)),
                     _mm_and_ps(negative, -dt_Michaelis_Menten(-LMS)));
 }
 
@@ -216,9 +214,8 @@ static inline __m128 dt_LMShdr_to_LMS(const __m128 LMShdr)
    * and - dt_Michaelis_Menten_inv(-LMS) where LMS < 0
    * */
   // See https://eng.aurelienpierre.com/2019/01/17/derivating-hdr-ipt-direct-and-inverse-transformations/#fixing_ipt-hdr
-  const __m128 positive = _mm_cmpge_ps(LMShdr, zeros_sse); // positive or zero
   const __m128 negative = _mm_cmplt_ps(LMShdr, zeros_sse); // stricly negative
-  return _mm_or_ps(_mm_and_ps(positive, dt_Michaelis_Menten_inverse(LMShdr)),
+  return _mm_or_ps(_mm_andnot_ps(negative, dt_Michaelis_Menten_inverse(LMShdr)),
                     _mm_and_ps(negative, -dt_Michaelis_Menten_inverse(-LMShdr)));
 }
 
@@ -428,6 +425,43 @@ static inline void dt_Lab_to_XYZ(const float *Lab, float *XYZ)
   XYZ[0] = d50[0] * lab_f_inv(fx);
   XYZ[1] = lab_f_inv(fy);
   XYZ[2] = d50[2] * lab_f_inv(fz);
+}
+
+static inline void dt_XYZ_to_xyY(const float *XYZ, float *xyY)
+{
+#if defined(__SSE__) // last chance to get the fast variant
+  _mm_store_ps(xyY, dt_XYZ_to_xyY_sse2(_mm_load_ps(XYZ)));
+#else
+  const float sum = XYZ[0] + XYZ[1] + XYZ[2];
+  xyY[0] = XYZ[0] / sum;
+  xyY[1] = XYZ[1] / sum;
+  xyY[2] = XYZ[1];
+#endif
+}
+
+static inline void dt_xyY_to_XYZ(const float *xyY, float *XYZ)
+{
+#if defined(__SSE__) // last chance to get the fast variant
+  _mm_store_ps(XYZ, dt_xyY_to_XYZ_sse2(_mm_load_ps(xyY)));
+#else
+  XYZ[0] = xyY[0] * xyY[2] / xyY[1];
+  XYZ[1] = xyY[2];
+  XYZ[2] = (1.0f - xyY[0] - xyY[1]) * xyY[2] / xyY[1];
+#endif
+}
+
+static inline void dt_Lab_to_Lch(const float *Lab, float *Lch)
+{
+  Lch[0] = Lab[0];
+  Lch[1] = powf((Lab[1] * Lab[1] + Lab[2] * Lab[2]), 0.5f);
+  Lch[2] = atan2f(Lab[2], Lab[1]);
+}
+
+static inline void dt_Lch_to_Lab(const float *Lch, float *Lab)
+{
+  Lab[0] = Lch[0];
+  Lab[1] = cosf(Lch[2]) * Lch[1];
+  Lab[2] = sinf(Lch[2]) * Lch[1];
 }
 
 /** uses D50 white point. */

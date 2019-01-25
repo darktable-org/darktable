@@ -25,6 +25,12 @@
 #include "CL/cl.h"           // for cl_mem
 #endif
 
+#ifdef __SSE__
+#include "common/sse.h"
+#include <xmmintrin.h> // for _mm_set_ps, _mm_mul_ps, _mm_set...
+#include <emmintrin.h> // for _mm_set_epi32, _mm_add_epi32
+#endif
+
 #include "common/image.h"    // for dt_image_t, dt_image_orientation_t
 #include "develop/imageop.h" // for dt_iop_roi_t
 #include <glib.h>            // for inline
@@ -155,10 +161,10 @@ static inline float dt_iop_eval_exp(const float *const coeff, const float x)
 }
 
 /** Copy alpha channel 1:1 from input to output */
-static inline void dt_iop_alpha_copy(const void *ivoid, void *ovoid, const int width, const int height)
+static inline void dt_iop_alpha_copy(const void *const ivoid, void *const ovoid, const int width, const int height)
 {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ovoid, ivoid)
+#pragma omp parallel for simd schedule(static) default(none)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -207,6 +213,71 @@ static inline int fcol(const int row, const int col, const uint32_t filters, con
   else
     return FC(row, col, filters);
 }
+
+/** Get the corresponding index of a float in a 16-bits LUT of a transfer function **/
+inline uint16_t dt_iop_get_lut_index(const float value)
+{
+  return CLAMP(value * 0x10000ul, 0, 0xffff);
+}
+
+/** Correct the saturation linearly in RGB
+ *    saturation: ratio in [0;2] by which the saturation should be affected
+ *    luminance: linear luminance of the pixel in XYZ or RGB
+ * **/
+inline void dt_linear_saturation_rgb(float *RGB, const float luminance, const float saturation)
+{
+  RGB[0] = luminance + saturation * (RGB[0] - luminance);
+  RGB[1] = luminance + saturation * (RGB[1] - luminance);
+  RGB[2] = luminance + saturation * (RGB[2] - luminance);
+}
+
+#if defined(__SSE__)
+inline void dt_linear_saturation_rgb_sse2(__m128 *RGB, const __m128 luminance, const __m128 saturation)
+{
+  *RGB = luminance + saturation * (*RGB - luminance);
+}
+#endif
+
+/** Logarithmic shaper / tone-mapping
+ * from https://github.com/ampas/aces-dev/blob/master/transforms/ctl/utilities/ACESutil.Lin_to_Log2_param.ctl
+ * */
+static inline void lin_to_log2f(float *lin, const float middle_grey,
+                                    const float min_exposure, const float dynamic_range)
+{
+  if (*lin <= 0.0f)
+  {
+    *lin = 0.0f;
+    return;
+  }
+
+  const float logNorm = (dt_fast_log2f(*lin / middle_grey) - min_exposure) / dynamic_range;
+
+  if( logNorm < 0.0f)
+  {
+    *lin = 0.0f;
+    return;
+  }
+  else
+  {
+    *lin = logNorm;
+  }
+}
+
+#if defined(__SSE__)
+#define zeros_sse _mm_setzero_ps()
+#define ones_sse _mm_set1_ps(1.0f)
+
+static inline void lin_to_log2f_sse(__m128 *lin, const __m128 middle_grey,
+                                    const __m128 min_exposure, const __m128 dynamic_range)
+{
+  __m128 positive = _mm_cmpgt_ps(*lin, zeros_sse); // strictly positive
+  const __m128 logNorm = (_mm_log2_ps(*lin / middle_grey) - min_exposure)/dynamic_range;
+
+  positive = _mm_and_ps(positive, _mm_cmpge_ps(logNorm, zeros_sse));
+
+  *lin = _mm_or_ps(_mm_and_ps(positive, logNorm), _mm_andnot_ps(positive, zeros_sse));
+}
+#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
