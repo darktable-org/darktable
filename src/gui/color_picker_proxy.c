@@ -50,7 +50,10 @@ static void _internal_iop_color_picker_reset(dt_iop_color_picker_t *picker)
 
 static void _internal_iop_color_picker_update(dt_iop_color_picker_t *picker)
 {
- dt_bauhaus_widget_set_quad_active(picker->colorpick, picker->internal == PICKER_STATUS_SELECTED);
+  if(DTGTK_IS_TOGGLEBUTTON(picker->colorpick))
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(picker->colorpick), picker->internal == PICKER_STATUS_SELECTED);
+  else
+    dt_bauhaus_widget_set_quad_active(picker->colorpick, picker->internal == PICKER_STATUS_SELECTED);
 }
 
 void dt_iop_color_picker_reset(dt_iop_color_picker_t *picker, gboolean update)
