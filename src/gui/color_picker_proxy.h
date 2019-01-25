@@ -22,6 +22,9 @@
   This API encapsulate the color picker behavior for IOP module. Providing
   4 routines (get_set, apply, reset and update, it will handle multiple
   color pickers in a module.
+
+  A simpler version require only apply to be passed and the pciker widget when
+  a single color picker is available in a module.
 */
 
 #define ALREADY_SELECTED -1
@@ -39,6 +42,8 @@ typedef struct _iop_color_picker_t
 {
   dt_iop_module_t *module;
   dt_iop_color_picker_kind_t kind;
+  int internal;
+  GtkWidget *colorpick;
   /* get and set the selected picker corresponding to button, the module must record the previous
      selected picker and return ALREADY_SELECTED if the same picker has been selected. The return
      value corresponds to the module internal picker id. */
@@ -60,6 +65,13 @@ void init_picker (dt_iop_color_picker_t *picker,
                   void (*apply)(dt_iop_module_t *self),
                   void (*reset)(dt_iop_module_t *self),
                   void (*update)(dt_iop_module_t *self));
+
+/* init for a single color picker in iop, this must be called when all picker widget are created */
+void init_single_picker (dt_iop_color_picker_t *picker,
+                         dt_iop_module_t *module,
+                         GtkWidget *colorpick,
+                         dt_iop_color_picker_kind_t kind,
+                         void (*apply)(dt_iop_module_t *self));
 
 /* the color picker callback which must be used for every picker, as an example:
 
