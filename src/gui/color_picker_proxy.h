@@ -45,7 +45,7 @@ typedef struct _iop_color_picker_t
   void (*update)(dt_iop_module_t *self);
 } dt_iop_color_picker_t;
 
-/* init color picker, this must be call when all picker widget are created */
+/* init color picker, this must be called when all picker widgets are created */
 void init_picker (dt_iop_color_picker_t *picker,
                   dt_iop_module_t *module,
                   int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
