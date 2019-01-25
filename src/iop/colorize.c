@@ -41,12 +41,6 @@
 
 DT_MODULE_INTROSPECTION(2, dt_iop_colorize_params_t)
 
-typedef enum dt_iop_colorize_pickcolor_type_t
-{
-  DT_COLORIZE_NONE = 0,
-  DT_COLORIZE_HUESAT = 1,
-} dt_iop_colorize_pickcolor_type_t;
-
 // legacy parameters of version 1 of module
 typedef struct dt_iop_colorize_params1_t
 {
@@ -72,7 +66,6 @@ typedef struct dt_iop_colorize_gui_data_t
   GtkWidget *scale1, *scale2; //  lightness, source_lightnessmix
   GtkWidget *gslider1, *gslider2; // hue, saturation
   dt_iop_color_picker_t color_picker;
-  dt_iop_colorize_pickcolor_type_t which_colorpicker;
 } dt_iop_colorize_gui_data_t;
 
 typedef struct dt_iop_colorize_data_t
@@ -277,20 +270,6 @@ static void saturation_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
-{
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
-
-  const dt_iop_colorize_pickcolor_type_t current_picker = g->which_colorpicker;
-
-  g->which_colorpicker = DT_COLORIZE_HUESAT;
-
-  if (current_picker == g->which_colorpicker)
-    return ALREADY_SELECTED;
-  else
-    return g->which_colorpicker;
-}
-
 static void _iop_color_picker_apply(struct dt_iop_module_t *self)
 {
   dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
@@ -320,18 +299,6 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self)
   darktable.gui->reset = 0;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _iop_color_picker_update(dt_iop_module_t *self)
-{
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
-  dt_bauhaus_widget_set_quad_active(g->gslider1, g->which_colorpicker == DT_COLORIZE_HUESAT);
-}
-
-static void _iop_color_picker_reset(struct dt_iop_module_t *self)
-{
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
-  g->which_colorpicker = DT_COLORIZE_NONE;
 }
 
 void gui_reset(struct dt_iop_module_t *self)
@@ -478,13 +445,11 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(lightness_callback), self);
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(source_lightness_mix_callback), self);
 
-  init_picker(&g->color_picker,
-              self,
-              DT_COLOR_PICKER_POINT,
-              _iop_color_picker_get_set,
-              _iop_color_picker_apply,
-              _iop_color_picker_reset,
-              _iop_color_picker_update);
+  init_single_picker(&g->color_picker,
+                     self,
+                     g->gslider1,
+                     DT_COLOR_PICKER_POINT,
+                     _iop_color_picker_apply);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
