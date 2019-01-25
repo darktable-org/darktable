@@ -91,8 +91,6 @@ typedef enum _styles_columns_t
   DT_STYLES_NUM_COLS
 } _styles_columns_t;
 
-#pragma GCC diagnostic ignored "-Wunused-function"
-
 static gboolean _get_node_for_name(GtkTreeModel *model, gboolean root, GtkTreeIter *iter, const gchar *parent_name)
 {
   GtkTreeIter parent = *iter;
